@@ -127,6 +127,7 @@
 			<jsp:param name="datePatternPref" value="false"/>
 			<jsp:param name="timePref" value="false"/>
 			<jsp:param name="timeAvail" value="true"/>
+			<jsp:param name="coursePref" value="true"/>
 		</jsp:include>
 		
 <!-- buttons -->

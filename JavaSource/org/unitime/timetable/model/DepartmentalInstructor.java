@@ -530,4 +530,12 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     	}
     	return ret;
     }
+    
+    public Set<CourseOffering> getAvailableCourses() {
+    	return new TreeSet<CourseOffering>(
+    			DepartmentalInstructorDAO.getInstance().getSession().createQuery(
+    					"from CourseOffering c where c.subjectArea.department.uniqueId = :departmentId and c.isControl = true and c.instructionalOffering.notOffered = false"
+    				).setLong("departmentId", getDepartment().getUniqueId()).setCacheable(true).list()
+    			);
+    }
 }

@@ -17,6 +17,7 @@
  * limitations under the License.
  * 
 --%>
+<%@page import="org.unitime.timetable.model.CourseOffering"%>
 <%@page import="org.unitime.timetable.form.PreferencesForm"%>
 <%@ page language="java" autoFlush="true"%>
 <%@ page import="org.unitime.timetable.action.PreferencesAction" %>
@@ -478,6 +479,64 @@
 	   	</logic:iterate>
 	</logic:notEqual>
 
+<!-- Course Preferences -->
+	<logic:equal value="true" parameter="coursePref">
+		<TR><TD colspan='2'>&nbsp;</TD></TR>
+		<TR>
+			<TD valign="middle" colspan='2'>
+				<A name='CoursePref'/>
+				<tt:section-header title="<%=MSG.sectionTitleCoursePreferences() %>">
+					<html:submit property="op" 
+						styleClass="btn" 
+						accesskey="<%=MSG.accessAddCoursePreference() %>"
+						title="<%=MSG.titleAddCoursePreference(MSG.accessAddCoursePreference()) %>">
+						<loc:message name="actionAddCoursePreference" />
+					</html:submit>
+				</tt:section-header>
+			</TD>
+		</TR>
+
+		<logic:iterate name="<%=frmName%>" property="coursePrefs" id="coursePref" indexId="ctr">
+			<TR>
+				<TD colspan="2">
+					<%  String levelId = (String)frm.getCoursePrefLevels().get(ctr.intValue());
+						boolean disabled = !frm.getAllowHardPrefs() && !Preference.BLANK_PREF_VALUE.equals(levelId) && PreferenceLevel.getPreferenceLevel(Integer.parseInt(levelId)).isHard(); 
+						if (disabled) {
+					%>
+							<html:hidden name="<%=frmName%>" property='<%= "coursePrefs[" + ctr + "]" %>' value="<%=(String)frm.getCoursePrefs().get(ctr.intValue())%>" />
+							<html:hidden name="<%=frmName%>" property='<%= "coursePrefLevels[" + ctr + "]" %>' value="<%=(String)frm.getCoursePrefLevels().get(ctr.intValue())%>" />
+					<%
+						}
+					%>
+					<html:select style="width:350px;" property='<%= "coursePrefs[" + ctr + "]" %>'
+						disabled="<%=disabled%>">					
+						<html:option value="-">-</html:option>
+						<html:options collection="<%=CourseOffering.CRS_OFFERING_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="courseNameWithTitle" />
+					</html:select>
+					&nbsp;&nbsp;
+					<html:select property='<%= "coursePrefLevels[" + ctr + "]" %>' disabled="<%=disabled%>">					
+						<html:option value="-">-</html:option>
+						<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
+						<% pr = (PreferenceLevel)prLevel; 
+						   if (frm.getAllowHardPrefs() || disabled || !pr.isHard()) {%>
+							<html:option
+								style='<%="background-color:" + pr.prefcolor() + ";"%>'
+								value="<%=pr.getUniqueId().toString()%>" >
+								<%=pr.getPrefName()%>
+							</html:option>
+						<% } %>
+					   	</logic:iterate>
+					</html:select> &nbsp;
+					<html:submit property="op" 
+						styleClass="btn" 
+						title="<%=MSG.titleRemoveCoursePreference() %>"
+						onclick="<%= \"javascript: doDel('coursePref', '\" + ctr + \"');\"%>">
+						<loc:message name="actionRemoveCoursePreference" />
+					</html:submit> 			
+				</TD>
+			</TR>
+	   	</logic:iterate>
+	</logic:equal>
 
 	<INPUT type="hidden" name="deleteType" id="deleteType" value="">
 	<INPUT type="hidden" name="deleteId" id="deleteId" value="">

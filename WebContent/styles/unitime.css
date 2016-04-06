@@ -4238,3 +4238,15 @@ unitime-RoomSharingWidget .legend .blank {
 	display: inline-block;
 	padding-right: 3px;
 }
+
+.unitime-InstructorAttributes {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-InstructorAttributes .attribute {
+	display: inline-block;
+	width: 24%;
+	white-space: nowrap;
+    overflow:hidden !important;
+    text-overflow: ellipsis;
+}

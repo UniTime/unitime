@@ -27,6 +27,8 @@ import org.unitime.timetable.model.dao.InstructorAttributeDAO;
 
 public class InstructorAttribute extends BaseInstructorAttribute implements Comparable<InstructorAttribute> {
 	private static final long serialVersionUID = 331064011983395675L;
+	
+	public static String ATTRIBUTES_LIST_ATTR_NAME = "attributesList";
 
 	public InstructorAttribute() {
 		super();

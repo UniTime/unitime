@@ -55,8 +55,10 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.InstructorAttribute;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Preference;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.Event.MultiMeeting;
@@ -455,7 +457,15 @@ public class InstructorDetailAction extends PreferencesAction {
 		        LookupTables.setupBldgs(request, inst);		 // Building Prefs
 		        LookupTables.setupRoomFeatures(request, inst); // Preference Levels
 		        LookupTables.setupRoomGroups(request, inst);   // Room Groups
+		        LookupTables.setupCourses(request, inst); // Courses
 			}
+			
+	        frm.setMaxLoad(inst.getMaxLoad() == null ? null : Formats.getNumberFormat("0.##").format(inst.getMaxLoad()));
+	        frm.setTeachingPreference(inst.getTeachingPreference() == null ? PreferenceLevel.sProhibited : inst.getTeachingPreference().getPrefProlog());
+	        frm.clearAttributes();
+	        for (InstructorAttribute attribute: inst.getAttributes())
+	        	frm.setAttribute(attribute.getUniqueId(), true);
+	        LookupTables.setupInstructorAttributes(request, inst.getDepartment());
 			
 			DepartmentalInstructor previous = inst.getPreviousDepartmentalInstructor(sessionContext, Right.InstructorDetail);
 			frm.setPreviousId(previous==null?null:previous.getUniqueId().toString());

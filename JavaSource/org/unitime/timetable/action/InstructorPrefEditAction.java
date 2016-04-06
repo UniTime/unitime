@@ -45,13 +45,16 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.InstructorAttribute;
 import org.unitime.timetable.model.Preference;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 
@@ -293,6 +296,7 @@ public class InstructorPrefEditAction extends PreferencesAction {
             LookupTables.setupBldgs(request, inst);		 // Building Prefs
             LookupTables.setupRoomFeatures(request, inst); // Preference Levels
             LookupTables.setupRoomGroups(request, inst);   // Room Groups
+            LookupTables.setupCourses(request, inst); // Courses
 		
             BackTracker.markForBack(
             		request,
@@ -342,6 +346,12 @@ public class InstructorPrefEditAction extends PreferencesAction {
 		if (inst.getNote() != null) {
 			frm.setNote(inst.getNote().trim());
 		}
+		
+        frm.setMaxLoad(inst.getMaxLoad() == null ? null : Formats.getNumberFormat("0.##").format(inst.getMaxLoad()));
+        frm.setTeachingPreference(inst.getTeachingPreference() == null ? PreferenceLevel.sProhibited : inst.getTeachingPreference().getPrefProlog());
+        frm.clearAttributes();
+        for (InstructorAttribute attribute: inst.getAttributes())
+        	frm.setAttribute(attribute.getUniqueId(), true);
 		
 		try {
 			DepartmentalInstructor previous = inst.getPreviousDepartmentalInstructor(sessionContext, Right.InstructorPreferences);

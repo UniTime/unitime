@@ -17,6 +17,7 @@
  * limitations under the License.
  * 
 --%>
+<%@page import="org.unitime.timetable.model.CourseOffering"%>
 <%@page import="org.unitime.timetable.util.IdValue"%>
 <%@ page language="java" autoFlush="true"%>
 <%@ page import="org.unitime.timetable.action.PreferencesAction" %>
@@ -244,6 +245,30 @@
 	   	</logic:empty>
 	</logic:notEqual>
 	
+<!-- Course Preferences -->
+	<logic:equal value="true" parameter="coursePref">
+		<logic:notEmpty name="<%=frmName%>" property="coursePrefs">
+		<TR>
+			<TD valign="top"><loc:message name="propertyCourse"/> </TD>
+			<TD>
+				<logic:iterate name="<%=frmName%>" property="coursePrefs" id="coursePref" indexId="ctr">
+					<% PreferenceLevel preference = null; %>
+					<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
+						<logic:equal name="<%=frmName%>" property='<%="coursePrefLevels["+ctr+"]"%>' value="<%=((PreferenceLevel)prLevel).getUniqueId().toString()%>">
+							<% preference = (PreferenceLevel)prLevel; %>
+						</logic:equal>
+					</logic:iterate>
+					<logic:iterate scope="request" name="<%=CourseOffering.CRS_OFFERING_LIST_ATTR_NAME%>" id="co">
+						<logic:equal name="co" property="uniqueId" value="<%=(String)coursePref%>">
+							<div style='color:<%=preference.prefcolor()%>' title='<%=preference.getPrefName()%>: <%=((CourseOffering)co).getCourseNameWithTitle()%>'><B><%=((CourseOffering)co).getCourseName()%></B></div>
+						</logic:equal>
+					</logic:iterate>
+	   			</logic:iterate>
+		   	</TD>
+	   	</TR>
+	   	</logic:notEmpty>
+	</logic:equal>
+	
 	<logic:notEmpty name="<%=Location.AVAILABLE_LOCATIONS_ATTR%>" scope="request">
 		<TR>
 			<TD valign="top"><loc:message name="propertyAvailableRooms"/></TD>
@@ -280,8 +305,6 @@
 		</logic:notEmpty>
 	</logic:notEqual>
 	
-
-
 	</loc:bundle>		
 <% } catch (Exception e) { 
 	 Debug.error(e);

@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.action;
 
+import java.text.ParseException;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -43,13 +45,16 @@ import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.InstructorAttribute;
 import org.unitime.timetable.model.PositionType;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Staff;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.StaffDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 
 
 /**
@@ -200,6 +205,7 @@ public class InstructorAction extends Action {
 			}
 			else {    
 			    inst = new DepartmentalInstructor();
+			    inst.setAttributes(new HashSet<InstructorAttribute>());
 			}
 
 			if (frm.getFname() != null && frm.getFname().trim().length()>0) {
@@ -247,6 +253,20 @@ public class InstructorAction extends Action {
 			} else 
 				inst.setNote(null);
 			
+			if (frm.getMaxLoad() != null && !frm.getMaxLoad().isEmpty()) {
+				try {
+					inst.setMaxLoad(Formats.getNumberFormat("0.##").parse(frm.getMaxLoad()).floatValue());
+				} catch (ParseException e) {}
+			} else {
+				inst.setMaxLoad(null);
+			}
+			
+			if (frm.getTeachingPreference() != null && !frm.getTeachingPreference().isEmpty() && !PreferenceLevel.sProhibited.equals(frm.getTeachingPreference())) {
+				inst.setTeachingPreference(PreferenceLevel.getPreferenceLevel(frm.getTeachingPreference()));
+			} else {
+				inst.setTeachingPreference(null);
+			}
+			
 			Department d = null;
 			//get department
 			if (sessionContext.getAttribute(SessionAttribute.DepartmentId) != null) {
@@ -259,6 +279,16 @@ public class InstructorAction extends Action {
 			    throw new Exception("Department Id could not be retrieved from session");
             
             inst.setIgnoreToFar(new Boolean(frm.getIgnoreDist()));
+            
+			for (InstructorAttribute attribute: inst.getDepartment().getAvailableAttributes()) {
+				if (frm.getAttribute(attribute.getUniqueId())) {
+					if (!inst.getAttributes().contains(attribute))
+						inst.getAttributes().add(attribute);
+				} else {
+					if (inst.getAttributes().contains(attribute))
+						inst.getAttributes().remove(attribute);
+				}
+			}
             
 			hibSession.saveOrUpdate(inst);
 

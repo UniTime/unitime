@@ -59,6 +59,7 @@
 				</html:submit>
 				</html:form>
 			</tt:section-title>
+			<logic:notEmpty name="<%=frmName%>" property="deptUniqueId">
 			<TABLE border="0" cellspacing="0" cellpadding="0" align="right"><TR>
 				<sec:authorize access="hasPermission(#deptUniqueId, 'Department', 'InstructorsExportPdf')">
 					<TD>
@@ -94,6 +95,7 @@
 					</TD>
 				</sec:authorize>
 			</TR></TABLE>
+			</logic:notEmpty>
 		</tt:section-header>
 		</TD></TR>
 		<TR><TD colspan="2" align="center"><html:errors/></TD></TR>

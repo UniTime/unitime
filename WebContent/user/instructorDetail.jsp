@@ -150,6 +150,48 @@
 				</i></TD>
 			</TR>
 		</logic:equal>
+		<TR>
+			<TD><loc:message name="propertyTeachingPreference"/></TD>
+			<TD>
+				<logic:iterate scope="request" name="<%=org.unitime.timetable.model.PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="pr" type="org.unitime.timetable.model.PreferenceLevel" >
+					<logic:equal name="<%=frmName%>" property='teachingPreference' value="<%=pr.getPrefProlog()%>">
+						<logic:equal name="pr" property="prefProlog" value="0">
+							<b><bean:write name="pr" property="prefName"/></b>
+						</logic:equal>
+						<logic:notEqual name="pr" property="prefProlog" value="0">
+							<div style='color:<%=pr.prefcolor()%>'><b><bean:write name="pr" property="prefName"/></b></div>
+						</logic:notEqual>
+					</logic:equal>
+				</logic:iterate>
+			</TD>
+		</TR>
+		<logic:notEmpty name="<%=frmName%>" property="maxLoad">
+			<TR>
+				<TD><loc:message name="propertyMaxLoad"/></TD>
+				<TD><bean:write name="<%=frmName%>" property="maxLoad"/></TD>
+			</TR>
+		</logic:notEmpty>
+		<logic:iterate scope="request" name="<%=org.unitime.timetable.model.InstructorAttributeType.ATTRIBUTE_TYPES_LIST_ATTR_NAME%>" id="type" type="org.unitime.timetable.model.InstructorAttributeType" >
+			<% boolean hasType = false; %>
+			<logic:iterate scope="request" name="<%=org.unitime.timetable.model.InstructorAttribute.ATTRIBUTES_LIST_ATTR_NAME%>" id="attribute" type="org.unitime.timetable.model.InstructorAttribute" >
+				<logic:equal name="attribute" property="type.uniqueId" value="<%=type.getUniqueId().toString()%>">
+					<logic:equal name="<%=frmName%>" property='<%="attribute(" + attribute.getUniqueId() + ")"%>' value="true">
+						<% hasType = true; %>
+					</logic:equal>
+				</logic:equal>
+			</logic:iterate>
+			<% if (hasType) { %>
+			<TR><TD style="vertical-align: top;"><bean:write name="type" property="label"/>:</TD><TD>
+			<logic:iterate scope="request" name="<%=org.unitime.timetable.model.InstructorAttribute.ATTRIBUTES_LIST_ATTR_NAME%>" id="attribute" type="org.unitime.timetable.model.InstructorAttribute" >
+				<logic:equal name="attribute" property="type.uniqueId" value="<%=type.getUniqueId().toString()%>">
+					<logic:equal name="<%=frmName%>" property='<%="attribute(" + attribute.getUniqueId() + ")"%>' value="true">
+						<div class='unitime-InstructorAttribute'><bean:write name="attribute" property="name"/></div>
+					</logic:equal>
+				</logic:equal>
+			</logic:iterate>
+			</TD></TR>
+			<% } %>
+		</logic:iterate>
 
 <!-- Class Assignments -->
 		<TR>
@@ -206,6 +248,7 @@
 		</TR>
 		<jsp:include page="preferencesDetail.jspf">
 			<jsp:param name="frmName" value="<%=frmName%>"/>
+			<jsp:param name="coursePref" value="true"/>
 		</jsp:include>
 	<% } else { %>
 		<TR>

@@ -286,6 +286,18 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Student Accommodations:")
 	String propertyAccommodations();
 	
+	@DefaultMessage("Teaching Preference:")
+	String propertyTeachingPreference();
+	
+	@DefaultMessage("Maximal Teaching Load:")
+	String propertyMaxLoad();
+	
+	@DefaultMessage("Course:")
+	String propertyCourse();
+	
+	@DefaultMessage("units")
+	String teachingLoadUnits();
+	
 	@DefaultMessage("this one")
 	String messageThisOne(); //used in getAssignmentTable - if the initial assignment is "this one"
 	
@@ -953,6 +965,12 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Delete")
 	String actionRemoveDistributionPreference();
 	
+	@DefaultMessage("Add Course Preference")
+	String actionAddCoursePreference();
+	
+	@DefaultMessage("Delete")
+	String actionRemoveCoursePreference();
+	
 	@DefaultMessage("Delete")
 	String actionDeleteConfiguration();
 	
@@ -1321,6 +1339,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("B")
 	String accessBackInstructorDetail();
+	
+	@DefaultMessage("C")
+	String accessAddCoursePreference();
 	
 	@DefaultMessage("Search/Display Offerings (Alt+{0})")
 	String titleSearchInstructionalOfferings(String accessKey);
@@ -1706,6 +1727,12 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Reopen this class.")
 	String titleReopenClass();
 	
+	@DefaultMessage("Add Course Preference (Alt+{0})")
+	String titleAddCoursePreference(String accessKey);
+	
+	@DefaultMessage("Remove Course Preference")
+	String titleRemoveCoursePreference();
+	
 	@DefaultMessage("Course numbers can be specified using wildcard (*). E.g. 2*")
 	String tooltipCourseNumber();
 	
@@ -1819,6 +1846,12 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Invalid room preference level.")
 	String errorInvalidRoomPreferenceLevel();
+	
+	@DefaultMessage("Invalid course preference: Check for duplicate / blank selection.")
+	String errorInvalidCoursePreference();
+	
+	@DefaultMessage("Invalid course preference level.")
+	String errorInvalidCoursePreferenceLevel();
 	
 	@DefaultMessage("Null Operation not supported.")
 	String errorNullOperationNotSupported();
@@ -2170,6 +2203,12 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Conflicting Meetings")
 	String sectionTitleEventConflicts();
+	
+	@DefaultMessage("Teaching Properties")
+	String sectionTeachingProperties();
+	
+	@DefaultMessage("Course Preferences")
+	String sectionTitleCoursePreferences();
 
 	@DefaultMessage("Instructor Displayed")
 	String titleInstructorDisplayed();

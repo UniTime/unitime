@@ -60,6 +60,7 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.InstructorCoursePref;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
 import org.unitime.timetable.model.PeriodPreferenceModel;
@@ -75,6 +76,7 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.BuildingDAO;
+import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DistributionTypeDAO;
 import org.unitime.timetable.model.dao.ExamTypeDAO;
@@ -132,6 +134,7 @@ public class PreferencesAction extends Action {
     public final String HASH_DIST_PREF = "DistPref";
     public final String HASH_PERIOD_PREF = "PeriodPref";
     public final String HASH_DATE_PATTERN_PREF = "DatePatternPref";
+    public final String HASH_COURSE_PREF = "CoursePref";
     
     // --------------------------------------------------------- Methods
 
@@ -193,6 +196,9 @@ public class PreferencesAction extends Action {
         if(op.equals(MSG.actionAddTimePreference())) 
             addTimePattern(request, frm, errors);
         
+        if(op.equals(MSG.actionAddCoursePreference())) 
+            addCoursePref(request, frm, errors);
+
         // Delete single preference
         if(op.equals(MSG.actionRemoveBuildingPreference())
         		|| op.equals(MSG.actionRemoveDistributionPreference())
@@ -201,6 +207,7 @@ public class PreferencesAction extends Action {
         		|| op.equals(MSG.actionRemoveRoomPreference())
         		|| op.equals(MSG.actionRemoveTimePattern())
         		|| op.equals(MSG.actionRemoveInstructor())
+        		|| op.equals(MSG.actionRemoveCoursePreference())
         		)
             doDelete(request, frm);
         
@@ -275,6 +282,29 @@ public class PreferencesAction extends Action {
                        new ActionMessage(
                                "errors.generic", 
                                MSG.errorInvalidDistributionPreference()) );
+            saveErrors(request, errors);
+        }
+    }
+    
+    protected void addCoursePref(
+            HttpServletRequest request, 
+            PreferencesForm frm,
+            ActionMessages errors ) {
+ 
+        List lst = frm.getCoursePrefs();
+        if(frm.checkPrefs(lst)) {
+            for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
+	            frm.addToCoursePrefs(
+	                    Preference.BLANK_PREF_VALUE, 
+	                    Preference.BLANK_PREF_VALUE );
+            }
+            request.setAttribute(HASH_ATTR, HASH_COURSE_PREF);
+        }
+        else {
+            errors.add("coursePrefs", 
+                       new ActionMessage(
+                               "errors.generic", 
+                               MSG.errorInvalidCoursePreference()) );
             saveErrors(request, errors);
         }
     }
@@ -474,6 +504,15 @@ public class PreferencesAction extends Action {
                 frm.setDatePatternPrefs(lst);
                 frm.setDatePatternPrefLevels(lstL);
                 request.setAttribute(HASH_ATTR, HASH_RM_GROUP);
+            }
+            if(deleteType.equals("coursePref")) {
+                List lst = frm.getCoursePrefs();
+                List lstL = frm.getCoursePrefLevels();
+                lst.remove(deleteId);
+                lstL.remove(deleteId);
+                frm.setCoursePrefs(lst);
+                frm.setCoursePrefLevels(lstL);
+                request.setAttribute(HASH_ATTR, HASH_COURSE_PREF);
             }
         }
     }
@@ -815,6 +854,29 @@ public class PreferencesAction extends Action {
         		s.add(gp);
         	}
         } 
+        
+        // Course Prefs
+        lst = frm.getCoursePrefs();
+        lstL = frm.getCoursePrefLevels();
+        
+        for(int i=0; i<lst.size(); i++) {
+            String id = (String)lst.get(i);
+            if (id==null || id.equals(Preference.BLANK_PREF_VALUE))
+                continue;
+            
+            String pref = (String) lstL.get(i);
+            Debug.debug("Course: " + id + ": " + pref);
+
+            CourseOfferingDAO cdao = new CourseOfferingDAO();
+            CourseOffering course = cdao.get(new Long(id));
+            
+            InstructorCoursePref cp = new InstructorCoursePref();
+            cp.setOwner(pg);
+            cp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
+            cp.setCourse(course);
+
+            s.add(cp);
+        }        
         
         // Set values in subpart
         pg.setPreferences(s);
@@ -1183,6 +1245,19 @@ public class PreferencesAction extends Action {
                 dp.getDatePattern().getUniqueId().toString(), 
                 dp.getPrefLevel().getUniqueId().toString() );
     	}
+    	
+        // Course Prefs
+    	frm.getCoursePrefs().clear();
+    	frm.getCoursePrefLevels().clear();
+        Set coursePrefs = pg.effectivePreferences(InstructorCoursePref.class, leadInstructors);
+        iter = coursePrefs.iterator();
+        while (iter.hasNext()){
+        	InstructorCoursePref cp = (InstructorCoursePref) iter.next();
+            Debug.debug("Adding course pref ... " + cp.getCourse().getCourseName());
+            frm.addToCoursePrefs(
+                    cp.getCourse().getUniqueId().toString(), 
+                    cp.getPrefLevel().getUniqueId().toString() );
+        }
 
         if (addBlankRows) frm.addBlankPrefRows();
     }

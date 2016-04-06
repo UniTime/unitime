@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.action;
 
+import java.util.Vector;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -34,9 +36,11 @@ import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.InstructorEditForm;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.LookupTables;
 
 
 /** 
@@ -92,7 +96,15 @@ public class InstructorAddAction extends InstructorAction {
 			Department d = new DepartmentDAO().get(new Long(deptId));
 			frm.setDeptName(d.getName().trim());
 			frm.setDeptCode(d.getDeptCode());
+	        LookupTables.setupInstructorAttributes(request, d);
 		}
+		
+		Vector<PreferenceLevel> prefs = new Vector<PreferenceLevel>();
+    	for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList()) {
+    		if (!pref.getPrefProlog().equalsIgnoreCase(PreferenceLevel.sRequired))
+    			prefs.addElement(pref);
+    	}
+    	request.setAttribute(PreferenceLevel.PREF_LEVEL_ATTR_NAME, prefs);
 		
 		sessionContext.checkPermission(frm.getDeptCode(), "Department", Right.InstructorAdd);
 				

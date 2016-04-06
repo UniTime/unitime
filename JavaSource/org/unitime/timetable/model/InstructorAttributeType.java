@@ -23,6 +23,8 @@ import org.unitime.timetable.model.base.BaseInstructorAttributeType;
 
 public class InstructorAttributeType extends BaseInstructorAttributeType implements Comparable<InstructorAttributeType> {
 	private static final long serialVersionUID = 1L;
+	
+	public static String ATTRIBUTE_TYPES_LIST_ATTR_NAME = "attributeTypesList";
 
 	public InstructorAttributeType() {
 		super();

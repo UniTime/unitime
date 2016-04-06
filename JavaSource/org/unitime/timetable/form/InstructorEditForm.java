@@ -21,6 +21,8 @@ package org.unitime.timetable.form;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -32,6 +34,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
 import org.unitime.timetable.model.PositionType;
+import org.unitime.timetable.model.PreferenceLevel;
 
 
 /** 
@@ -89,6 +92,10 @@ public class InstructorEditForm extends PreferencesForm  {
     
     private boolean ignoreDist;
 	private Boolean lookupEnabled;
+	
+	private String maxLoad;
+	private String teachingPreference;
+	private Map<Long, Boolean> attributes;
     
 	// --------------------------------------------------------- Methods
     
@@ -169,6 +176,38 @@ public class InstructorEditForm extends PreferencesForm  {
         this.screenName = screenName;
     }
     
+    public String getTeachingPreference() { return teachingPreference; }
+    public void setTeachingPreference(String teachingPref) { this.teachingPreference = teachingPref; }
+    
+    public String getMaxLoad() { return maxLoad; }
+    public void setMaxLoad(String maxLoad) { this.maxLoad = maxLoad; }
+    
+    public boolean getAttribute(long attributeId) {
+    	if (attributes == null) return false;
+    	Boolean value = attributes.get(attributeId);
+    	return (value == null ? false : value.booleanValue());
+    }
+    
+    public void setAttribute(long attributeId, Boolean value) {
+    	if (attributes == null) attributes = new HashMap<Long, Boolean>();
+    	attributes.put(attributeId, value == null ? false : value.booleanValue());
+    }
+
+    public boolean getAttribute(String attributeId) {
+    	if (attributes == null) return false;
+    	Boolean value = attributes.get(Long.valueOf(attributeId));
+    	return (value == null ? false : value.booleanValue());
+    }
+    
+    public void setAttribute(String attributeId, boolean value) {
+    	if (attributes == null) attributes = new HashMap<Long, Boolean>();
+    	attributes.put(Long.valueOf(attributeId), value);
+    }
+    
+    public void clearAttributes() {
+    	attributes = null;
+    }
+    
 	/** 
 	 * Method reset
 	 * @param mapping
@@ -184,6 +223,9 @@ public class InstructorEditForm extends PreferencesForm  {
         prevId = nextId = null;
         ignoreDist = false;
         email = null;
+        teachingPreference = PreferenceLevel.sProhibited;
+        maxLoad = null;
+        attributes = null;
 	}
 	
 	/**

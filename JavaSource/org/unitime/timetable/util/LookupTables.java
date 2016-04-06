@@ -47,6 +47,8 @@ import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamType;
+import org.unitime.timetable.model.InstructorAttribute;
+import org.unitime.timetable.model.InstructorAttributeType;
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.PositionType;
@@ -193,6 +195,15 @@ public class LookupTables {
 
     public static void setupRoomGroups(HttpServletRequest request, PreferenceGroup pg) throws Exception {
         request.setAttribute(RoomGroup.GROUP_LIST_ATTR_NAME, pg.getAvailableRoomGroups());
+    }
+
+    public static void setupCourses(HttpServletRequest request, PreferenceGroup pg) throws Exception {
+        request.setAttribute(CourseOffering.CRS_OFFERING_LIST_ATTR_NAME, pg.getAvailableCourses());
+    }
+    
+    public static void setupInstructorAttributes(HttpServletRequest request, Department dept) {
+        request.setAttribute(InstructorAttributeType.ATTRIBUTE_TYPES_LIST_ATTR_NAME, dept.getAvailableAttributeTypes());
+        request.setAttribute(InstructorAttribute.ATTRIBUTES_LIST_ATTR_NAME, dept.getAvailableAttributes());
     }
 
     public static void setupDatePatterns(HttpServletRequest request, UserContext user, String inheritString, DatePattern inheritedDatePattern, Department department, DatePattern currentDatePattern) {
