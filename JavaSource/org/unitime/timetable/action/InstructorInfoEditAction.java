@@ -355,7 +355,8 @@ public class InstructorInfoEditAction extends InstructorAction {
         frm.clearAttributes();
         for (InstructorAttribute attribute: inst.getAttributes())
         	frm.setAttribute(attribute.getUniqueId(), true);
-        LookupTables.setupInstructorAttributes(request, inst.getDepartment());
+        LookupTables.setupInstructorAttributeTypes(request, inst);
+        LookupTables.setupInstructorAttributes(request, inst);
         
         try {
 			DepartmentalInstructor previous = inst.getPreviousDepartmentalInstructor(sessionContext, Right.InstructorEdit);

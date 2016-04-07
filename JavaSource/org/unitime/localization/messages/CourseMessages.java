@@ -295,6 +295,15 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Course:")
 	String propertyCourse();
 	
+	@DefaultMessage("Instructor:")
+	String propertyInstructorAttribute();
+	
+	@DefaultMessage("Need Instructor Assignment:")
+	String propertyNeedInstructorAssignment();
+	
+	@DefaultMessage("Teaching Load:")
+	String propertyTeachingLoad();
+	
 	@DefaultMessage("units")
 	String teachingLoadUnits();
 	
@@ -971,6 +980,12 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Delete")
 	String actionRemoveCoursePreference();
 	
+	@DefaultMessage("Add Instructor Preference")
+	String actionAddInstructorAttributePreference();
+	
+	@DefaultMessage("Delete")
+	String actionRemoveInstructorAttributePreference();
+
 	@DefaultMessage("Delete")
 	String actionDeleteConfiguration();
 	
@@ -1342,6 +1357,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("C")
 	String accessAddCoursePreference();
+	
+	@DefaultMessage("I")
+	String accessAddInstructorAttributePreference();
 	
 	@DefaultMessage("Search/Display Offerings (Alt+{0})")
 	String titleSearchInstructionalOfferings(String accessKey);
@@ -1730,8 +1748,14 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Add Course Preference (Alt+{0})")
 	String titleAddCoursePreference(String accessKey);
 	
+	@DefaultMessage("Add Instructor Preference (Alt+{0})")
+	String titleAddInstructorAttributePreference(String accessKey);
+	
 	@DefaultMessage("Remove Course Preference")
 	String titleRemoveCoursePreference();
+	
+	@DefaultMessage("Remove Instructor Preference")
+	String titleRemoveInstructorAttributePreference();
 	
 	@DefaultMessage("Course numbers can be specified using wildcard (*). E.g. 2*")
 	String tooltipCourseNumber();
@@ -1853,6 +1877,12 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Invalid course preference level.")
 	String errorInvalidCoursePreferenceLevel();
 	
+	@DefaultMessage("Invalid instructor preference: Check for duplicate / blank selection.")
+	String errorInvalidAttributePreference();
+	
+	@DefaultMessage("Invalid instructor preference level.")
+	String errorInvalidAttributePreferenceLevel();
+
 	@DefaultMessage("Null Operation not supported.")
 	String errorNullOperationNotSupported();
 	
@@ -2008,6 +2038,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("No instructor was selected from the list")
 	String errorNoInstructorSelectedFromList();
+	
+	@DefaultMessage("<b>Teaching Load</b> is required.")
+	String errorNoTeachingLoad();
 	
 	@DefaultMessage("This instructor is allowed to teach two back-to-back classes that are too far away.")
 	String descriptionInstructorIgnoreTooFar();
@@ -2210,6 +2243,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Course Preferences")
 	String sectionTitleCoursePreferences();
 
+	@DefaultMessage("Instructor Preferences")
+	String sectionTitleInstructorAttributePreferences();
+
 	@DefaultMessage("Instructor Displayed")
 	String titleInstructorDisplayed();
 	
@@ -2287,6 +2323,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Only students meeting reservations are allowed to enroll into this offering.")
 	String descriptionByReservationOnly2();
+	
+	@DefaultMessage("If checked, classes from this subpart will be included in the Instructor Scheduling problem.")
+	String descriptionNeedInstructorAssignment();
 	
 	@DefaultMessage("Yes")
 	String yes();
@@ -2581,4 +2620,13 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Building")
 	String prefBuilding();
+	
+	@DefaultMessage("<font color='red'><B>DISABLED</B></font><i> -- Classes of this subpart may be timetabled during overlapping times.</i>")
+	String classDetailNoSpread();
+	
+	@DefaultMessage("<font color='red'><B>ENABLED</B></font><i> -- Students are allowed to take classes from this subpart even when they overlap with other classes.</i>")
+	String classDetailAllowOverlap();
+	
+	@DefaultMessage("<font color='red'><B>ENABLED</B></font><i> -- Classes from this subpart will be included in the Instructor Scheduling problem.</i>")
+	String classDetailNeedInstructorAssignment();
 }

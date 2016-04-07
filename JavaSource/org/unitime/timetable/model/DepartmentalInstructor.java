@@ -538,4 +538,12 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     				).setLong("departmentId", getDepartment().getUniqueId()).setCacheable(true).list()
     			);
     }
+    
+	public Set getAvailableAttributeTypes() {
+		return getDepartment().getAvailableAttributeTypes();
+    }
+
+	public Set getAvailableAttributes() {
+		return getDepartment().getAvailableAttributes();
+    }    
 }

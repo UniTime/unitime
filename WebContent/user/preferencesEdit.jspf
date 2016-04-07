@@ -17,6 +17,8 @@
  * limitations under the License.
  * 
 --%>
+<%@page import="org.unitime.timetable.model.DepartmentalInstructor"%>
+<%@page import="org.unitime.timetable.model.InstructorAttribute"%>
 <%@page import="org.unitime.timetable.model.CourseOffering"%>
 <%@page import="org.unitime.timetable.form.PreferencesForm"%>
 <%@ page language="java" autoFlush="true"%>
@@ -479,6 +481,67 @@
 	   	</logic:iterate>
 	</logic:notEqual>
 
+<!-- Instructor Attribute Preferences -->
+	<logic:equal value="true" parameter="attributePref">
+		<logic:notEmpty name="<%=InstructorAttribute.ATTRIBUTES_LIST_ATTR_NAME%>" scope="request">
+		<TR><TD colspan='2'>&nbsp;</TD></TR>
+		<TR>
+			<TD valign="middle" colspan='2'>
+				<A name='AttributePref'/>
+				<tt:section-header title="<%=MSG.sectionTitleInstructorAttributePreferences() %>">
+					<html:submit property="op" 
+						styleClass="btn" 
+						accesskey="<%=MSG.accessAddInstructorAttributePreference() %>"
+						title="<%=MSG.titleAddInstructorAttributePreference(MSG.accessAddInstructorAttributePreference()) %>">
+						<loc:message name="actionAddInstructorAttributePreference" />
+					</html:submit>
+				</tt:section-header>
+			</TD>
+		</TR>
+
+		<logic:iterate name="<%=frmName%>" property="attributePrefs" id="attributePref" indexId="ctr">
+			<TR>
+				<TD colspan="2">
+					<%  String levelId = (String)frm.getAttributePrefLevels().get(ctr.intValue());
+						boolean disabled = !frm.getAllowHardPrefs() && !Preference.BLANK_PREF_VALUE.equals(levelId) && PreferenceLevel.getPreferenceLevel(Integer.parseInt(levelId)).isHard(); 
+						if (disabled) {
+					%>
+							<html:hidden name="<%=frmName%>" property='<%= "attributePrefs[" + ctr + "]" %>' value="<%=(String)frm.getAttributePrefs().get(ctr.intValue())%>" />
+							<html:hidden name="<%=frmName%>" property='<%= "attributePrefLevels[" + ctr + "]" %>' value="<%=(String)frm.getAttributePrefLevels().get(ctr.intValue())%>" />
+					<%
+						}
+					%>
+					<html:select style="width:350px;" property='<%= "attributePrefs[" + ctr + "]" %>'
+						disabled="<%=disabled%>">					
+						<html:option value="-">-</html:option>
+						<html:options collection="<%=InstructorAttribute.ATTRIBUTES_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="nameWithType" />
+					</html:select>
+					&nbsp;&nbsp;
+					<html:select property='<%= "attributePrefLevels[" + ctr + "]" %>' disabled="<%=disabled%>">					
+						<html:option value="-">-</html:option>
+						<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
+						<% pr = (PreferenceLevel)prLevel; 
+						   if (frm.getAllowHardPrefs() || disabled || !pr.isHard()) {%>
+							<html:option
+								style='<%="background-color:" + pr.prefcolor() + ";"%>'
+								value="<%=pr.getUniqueId().toString()%>" >
+								<%=pr.getPrefName()%>
+							</html:option>
+						<% } %>
+					   	</logic:iterate>
+					</html:select> &nbsp;
+					<html:submit property="op" 
+						styleClass="btn" 
+						title="<%=MSG.titleRemoveInstructorAttributePreference() %>"
+						onclick="<%= \"javascript: doDel('attributePref', '\" + ctr + \"');\"%>">
+						<loc:message name="actionRemoveInstructorAttributePreference" />
+					</html:submit> 			
+				</TD>
+			</TR>
+	   	</logic:iterate>
+	   	</logic:notEmpty>
+	</logic:equal>
+	
 <!-- Course Preferences -->
 	<logic:equal value="true" parameter="coursePref">
 		<TR><TD colspan='2'>&nbsp;</TD></TR>
@@ -538,6 +601,67 @@
 	   	</logic:iterate>
 	</logic:equal>
 
+<!-- Course Preferences (of a class or subpart) -->
+	<logic:equal value="true" parameter="instructorPref">
+		<logic:notEmpty name="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME%>" scope="request">
+		<TR><TD colspan='2'>&nbsp;</TD></TR>
+		<TR>
+			<TD valign="middle" colspan='2'>
+				<A name='CoursePref'/>
+				<tt:section-header title="<%=MSG.sectionTitleCoursePreferences() %>">
+					<html:submit property="op" 
+						styleClass="btn" 
+						accesskey="<%=MSG.accessAddCoursePreference() %>"
+						title="<%=MSG.titleAddCoursePreference(MSG.accessAddCoursePreference()) %>">
+						<loc:message name="actionAddCoursePreference" />
+					</html:submit>
+				</tt:section-header>
+			</TD>
+		</TR>
+
+		<logic:iterate name="<%=frmName%>" property="coursePrefs" id="coursePref" indexId="ctr">
+			<TR>
+				<TD colspan="2">
+					<%  String levelId = (String)frm.getCoursePrefLevels().get(ctr.intValue());
+						boolean disabled = !frm.getAllowHardPrefs() && !Preference.BLANK_PREF_VALUE.equals(levelId) && PreferenceLevel.getPreferenceLevel(Integer.parseInt(levelId)).isHard(); 
+						if (disabled) {
+					%>
+							<html:hidden name="<%=frmName%>" property='<%= "coursePrefs[" + ctr + "]" %>' value="<%=(String)frm.getCoursePrefs().get(ctr.intValue())%>" />
+							<html:hidden name="<%=frmName%>" property='<%= "coursePrefLevels[" + ctr + "]" %>' value="<%=(String)frm.getCoursePrefLevels().get(ctr.intValue())%>" />
+					<%
+						}
+					%>
+					<html:select style="width:350px;" property='<%= "coursePrefs[" + ctr + "]" %>'
+						disabled="<%=disabled%>">					
+						<html:option value="-">-</html:option>
+						<html:options collection="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME%>" property="value" labelProperty="label" />
+					</html:select>
+					&nbsp;&nbsp;
+					<html:select property='<%= "coursePrefLevels[" + ctr + "]" %>' disabled="<%=disabled%>">					
+						<html:option value="-">-</html:option>
+						<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
+						<% pr = (PreferenceLevel)prLevel; 
+						   if (frm.getAllowHardPrefs() || disabled || !pr.isHard()) {%>
+							<html:option
+								style='<%="background-color:" + pr.prefcolor() + ";"%>'
+								value="<%=pr.getUniqueId().toString()%>" >
+								<%=pr.getPrefName()%>
+							</html:option>
+						<% } %>
+					   	</logic:iterate>
+					</html:select> &nbsp;
+					<html:submit property="op" 
+						styleClass="btn" 
+						title="<%=MSG.titleRemoveCoursePreference() %>"
+						onclick="<%= \"javascript: doDel('coursePref', '\" + ctr + \"');\"%>">
+						<loc:message name="actionRemoveCoursePreference" />
+					</html:submit> 			
+				</TD>
+			</TR>
+	   	</logic:iterate>
+	   	</logic:notEmpty>
+	</logic:equal>
+	
 	<INPUT type="hidden" name="deleteType" id="deleteType" value="">
 	<INPUT type="hidden" name="deleteId" id="deleteId" value="">
 	<INPUT type="hidden" name="reloadCause" id="reloadCause" value="">

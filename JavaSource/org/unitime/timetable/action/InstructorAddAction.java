@@ -96,6 +96,7 @@ public class InstructorAddAction extends InstructorAction {
 			Department d = new DepartmentDAO().get(new Long(deptId));
 			frm.setDeptName(d.getName().trim());
 			frm.setDeptCode(d.getDeptCode());
+	        LookupTables.setupInstructorAttributeTypes(request, d);
 	        LookupTables.setupInstructorAttributes(request, d);
 		}
 		

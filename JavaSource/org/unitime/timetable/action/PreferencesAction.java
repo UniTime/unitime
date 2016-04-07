@@ -21,8 +21,10 @@ package org.unitime.timetable.action;
 
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
@@ -60,6 +62,8 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.InstructorAttribute;
+import org.unitime.timetable.model.InstructorAttributePref;
 import org.unitime.timetable.model.InstructorCoursePref;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
@@ -78,8 +82,10 @@ import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DatePatternDAO;
+import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.DistributionTypeDAO;
 import org.unitime.timetable.model.dao.ExamTypeDAO;
+import org.unitime.timetable.model.dao.InstructorAttributeDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
 import org.unitime.timetable.model.dao.RoomGroupDAO;
@@ -135,6 +141,7 @@ public class PreferencesAction extends Action {
     public final String HASH_PERIOD_PREF = "PeriodPref";
     public final String HASH_DATE_PATTERN_PREF = "DatePatternPref";
     public final String HASH_COURSE_PREF = "CoursePref";
+    public final String HASH_ATTRIBUTE_PREF = "AttributePref";
     
     // --------------------------------------------------------- Methods
 
@@ -199,6 +206,9 @@ public class PreferencesAction extends Action {
         if(op.equals(MSG.actionAddCoursePreference())) 
             addCoursePref(request, frm, errors);
 
+        if(op.equals(MSG.actionAddInstructorAttributePreference())) 
+            addAttributePref(request, frm, errors);
+
         // Delete single preference
         if(op.equals(MSG.actionRemoveBuildingPreference())
         		|| op.equals(MSG.actionRemoveDistributionPreference())
@@ -208,6 +218,7 @@ public class PreferencesAction extends Action {
         		|| op.equals(MSG.actionRemoveTimePattern())
         		|| op.equals(MSG.actionRemoveInstructor())
         		|| op.equals(MSG.actionRemoveCoursePreference())
+        		|| op.equals(MSG.actionRemoveInstructorAttributePreference())
         		)
             doDelete(request, frm);
         
@@ -305,6 +316,29 @@ public class PreferencesAction extends Action {
                        new ActionMessage(
                                "errors.generic", 
                                MSG.errorInvalidCoursePreference()) );
+            saveErrors(request, errors);
+        }
+    }
+    
+    protected void addAttributePref(
+            HttpServletRequest request, 
+            PreferencesForm frm,
+            ActionMessages errors ) {
+ 
+        List lst = frm.getAttributePrefs();
+        if(frm.checkPrefs(lst)) {
+            for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
+	            frm.addToAttributePrefs(
+	                    Preference.BLANK_PREF_VALUE, 
+	                    Preference.BLANK_PREF_VALUE );
+            }
+            request.setAttribute(HASH_ATTR, HASH_ATTRIBUTE_PREF);
+        }
+        else {
+            errors.add("attributePrefs", 
+                       new ActionMessage(
+                               "errors.generic", 
+                               MSG.errorInvalidAttributePreference()) );
             saveErrors(request, errors);
         }
     }
@@ -513,6 +547,15 @@ public class PreferencesAction extends Action {
                 frm.setCoursePrefs(lst);
                 frm.setCoursePrefLevels(lstL);
                 request.setAttribute(HASH_ATTR, HASH_COURSE_PREF);
+            }
+            if(deleteType.equals("attributePref")) {
+                List lst = frm.getAttributePrefs();
+                List lstL = frm.getAttributePrefLevels();
+                lst.remove(deleteId);
+                lstL.remove(deleteId);
+                frm.setCoursePrefs(lst);
+                frm.setCoursePrefLevels(lstL);
+                request.setAttribute(HASH_ATTR, HASH_ATTRIBUTE_PREF);
             }
         }
     }
@@ -856,8 +899,88 @@ public class PreferencesAction extends Action {
         } 
         
         // Course Prefs
-        lst = frm.getCoursePrefs();
-        lstL = frm.getCoursePrefLevels();
+        if (pg instanceof DepartmentalInstructor) {
+            lst = frm.getCoursePrefs();
+            lstL = frm.getCoursePrefLevels();
+            
+            for(int i=0; i<lst.size(); i++) {
+                String id = (String)lst.get(i);
+                if (id==null || id.equals(Preference.BLANK_PREF_VALUE))
+                    continue;
+                
+                String pref = (String) lstL.get(i);
+                Debug.debug("Course: " + id + ": " + pref);
+
+                CourseOfferingDAO cdao = new CourseOfferingDAO();
+                CourseOffering course = cdao.get(new Long(id));
+                
+                InstructorCoursePref cp = new InstructorCoursePref();
+                cp.setOwner(pg);
+                cp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
+                cp.setCourse(course);
+
+                s.add(cp);
+            }
+        }
+        
+        // Attribute Prefs
+        lst = frm.getAttributePrefs();
+        lstL = frm.getAttributePrefLevels();
+        Set parentAttributePrefs = pg.effectivePreferences(InstructorAttributePref.class);
+        for (int i=0; i<lst.size(); i++) {
+            String id = (String)lst.get(i);
+            if (id==null || id.equals(Preference.BLANK_PREF_VALUE))
+                continue;
+            
+            String pref = (String) lstL.get(i);
+            Debug.debug("Attribute: " + id + ": " + pref);
+
+            InstructorAttributeDAO adao = new InstructorAttributeDAO();
+            InstructorAttribute attribute = adao.get(new Long(id));
+            
+            InstructorAttributePref ap = new InstructorAttributePref();
+            ap.setOwner(pg);
+            ap.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
+            ap.setAttribute(attribute);
+
+            InstructorAttributePref sameParentAp = null;
+            for (Iterator j=parentAttributePrefs.iterator();j.hasNext();) {
+            	InstructorAttributePref p = (InstructorAttributePref)j.next();
+            	if (p.isSame(ap)) {
+            		if (p.getPrefLevel().equals(ap.getPrefLevel()))
+            			sameParentAp = p;
+            		j.remove();
+            		break;
+            	}
+            }
+
+            if (sameParentAp==null)
+            	s.add(ap);
+        }
+        
+        if (parentAttributePrefs!=null && !parentAttributePrefs.isEmpty()) {
+        	for (Iterator i=parentAttributePrefs.iterator();i.hasNext();) {
+        		InstructorAttributePref ap = (InstructorAttributePref)((InstructorAttributePref)i.next()).clone();
+        		ap.setOwner(pg);
+        		ap.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
+        		s.add(ap);
+        	}
+        }
+        
+        // Set values in subpart
+        pg.setPreferences(s);
+    }
+    
+    protected void updateInstructorCoursePreferences(org.hibernate.Session hibSession, PreferencesForm frm, PreferenceGroup pg, CourseOffering course) {
+    	Map<Long, InstructorCoursePref> prefs = new HashMap<Long, InstructorCoursePref>();
+    	for (InstructorCoursePref pref: (List<InstructorCoursePref>)hibSession.createQuery(
+				"from InstructorCoursePref where course.uniqueId = :courseId")
+    			.setLong("courseId", course.getUniqueId()).setCacheable(true).list()) {
+    		prefs.put(pref.getOwner().getUniqueId(), pref);
+    	}
+    	
+    	List lst = frm.getCoursePrefs();
+        List lstL = frm.getCoursePrefLevels();
         
         for(int i=0; i<lst.size(); i++) {
             String id = (String)lst.get(i);
@@ -866,20 +989,27 @@ public class PreferencesAction extends Action {
             
             String pref = (String) lstL.get(i);
             Debug.debug("Course: " + id + ": " + pref);
-
-            CourseOfferingDAO cdao = new CourseOfferingDAO();
-            CourseOffering course = cdao.get(new Long(id));
-            
-            InstructorCoursePref cp = new InstructorCoursePref();
-            cp.setOwner(pg);
-            cp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
-            cp.setCourse(course);
-
-            s.add(cp);
-        }        
+            InstructorCoursePref cp = prefs.remove(Long.valueOf(id));
+            if (cp == null) {
+                DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(Long.valueOf(id), hibSession);
+                
+                cp = new InstructorCoursePref();
+                cp.setOwner(instructor);
+                cp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
+                cp.setCourse(course);
+                instructor.getPreferences().add(cp);
+                
+                hibSession.saveOrUpdate(instructor);
+            } else if (!cp.getPrefLevel().getPrefId().equals(Integer.valueOf(pref))) {
+            	cp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
+            	hibSession.saveOrUpdate(cp);
+            }
+        }
         
-        // Set values in subpart
-        pg.setPreferences(s);
+        for (InstructorCoursePref cp: prefs.values()) {
+        	cp.getOwner().getPreferences().remove(cp);
+        	hibSession.saveOrUpdate(cp.getOwner());
+        }
     }
     
     
@@ -1254,9 +1384,27 @@ public class PreferencesAction extends Action {
         while (iter.hasNext()){
         	InstructorCoursePref cp = (InstructorCoursePref) iter.next();
             Debug.debug("Adding course pref ... " + cp.getCourse().getCourseName());
-            frm.addToCoursePrefs(
+            if (pg instanceof DepartmentalInstructor)
+            	frm.addToCoursePrefs(
                     cp.getCourse().getUniqueId().toString(), 
                     cp.getPrefLevel().getUniqueId().toString() );
+            else
+            	frm.addToCoursePrefs(
+                        cp.getOwner().getUniqueId().toString(), 
+                        cp.getPrefLevel().getUniqueId().toString() );
+        }
+        
+        // Attribute Prefs
+    	frm.getAttributePrefs().clear();
+    	frm.getAttributePrefLevels().clear();
+        Set attributePrefs = pg.effectivePreferences(InstructorAttributePref.class, leadInstructors);
+        iter = attributePrefs.iterator();
+        while (iter.hasNext()){
+        	InstructorAttributePref ap = (InstructorAttributePref) iter.next();
+            Debug.debug("Adding instructor pref ... " + ap.getAttribute().getName());
+            frm.addToAttributePrefs(
+            		ap.getAttribute().getUniqueId().toString(), 
+                    ap.getPrefLevel().getUniqueId().toString() );
         }
 
         if (addBlankRows) frm.addBlankPrefRows();

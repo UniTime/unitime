@@ -2199,6 +2199,7 @@ public class SessionRollForward {
 									toClassInstr.setClassInstructing(toClass);
 									toClassInstr.setInstructor(toDeptInstr);
 									toClassInstr.setLead(fromClassInstr.isLead());
+									toClassInstr.setTentative(fromClassInstr.isTentative());
 									toClassInstr.setPercentShare(fromClassInstr.getPercentShare());
 									
 									toClassInstr.setUniqueId(null);

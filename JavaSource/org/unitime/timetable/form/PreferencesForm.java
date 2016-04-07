@@ -76,6 +76,8 @@ public class PreferencesForm extends ActionForm {
     protected List datePatternPrefLevels;
     protected List coursePrefs;
     protected List coursePrefLevels;
+    protected List attributePrefs;
+    protected List attributePrefLevels;
     protected String availability;
     
     private String nextId;
@@ -218,6 +220,22 @@ public class PreferencesForm extends ActionForm {
                             "errors.generic",
                             MSG.errorInvalidCoursePreferenceLevel()) );
         }
+        
+        lst = getAttributePrefs();
+        if(!checkPrefs(lst)) {
+            errors.add("attributePrefs", 
+                    new ActionMessage(
+                            "errors.generic", 
+                            MSG.errorInvalidAttributePreference()) );
+        }
+
+        if(!checkPrefLevels(getAttributePrefLevels(), lst))
+        {
+            errors.add("attributePrefs", 
+                    new ActionMessage(
+                            "errors.generic",
+                            MSG.errorInvalidAttributePreferenceLevel()) );
+        }
 
 
         for (int i=0;i<getTimePatterns().size();i++) {
@@ -284,6 +302,8 @@ public class PreferencesForm extends ActionForm {
         datePatternPrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
         coursePrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
         coursePrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
+        attributePrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
+        attributePrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
         nextId = previousId = null;
         allowHardPrefs = true;
         hasNotAvailable = false;
@@ -516,7 +536,31 @@ public class PreferencesForm extends ActionForm {
     public void setCoursePrefs(List coursePrefs) {
         this.coursePrefs = coursePrefs;
     }
-
+    
+	/**
+     * @return Returns the attributePrefs.
+     */
+    public List getAttributePrefs() {
+        return attributePrefs;
+    }
+    /**
+     * @return Returns the attributePrefs.
+     */
+    public String getAttributePrefs(int key) {
+        return attributePrefs.get(key).toString();
+    }
+    /**
+     * @param attributePrefs The attributePrefs to set.
+     */
+    public void setAttributePrefs(int key, Object value) {
+        this.attributePrefs.set(key, value);
+    }
+    /**
+     * @param attributePrefs The attributePrefs to set.
+     */
+    public void setAttributePrefs(List attributePrefs) {
+        this.attributePrefs = attributePrefs;
+    }
 
     /**
      * @return Returns the roomPrefs.
@@ -668,8 +712,33 @@ public class PreferencesForm extends ActionForm {
      */
     public void setCoursePrefLevels(List coursePrefLevels) {
         this.coursePrefLevels = coursePrefLevels;
-    }    
+    }
 
+    /**
+     * @return Returns the attributePrefLevels.
+     */
+    public List getAttributePrefLevels() {
+        return attributePrefLevels;
+    }
+    /**
+     * @return Returns the attributePrefLevels.
+     */
+    public String getAttributePrefLevels(int key) {
+        return attributePrefLevels.get(key).toString();
+    }
+    /**
+     * @param attributePrefs The attributePrefLevels to set.
+     */
+    public void setAttributePrefLevels(int key, Object value) {
+        this.attributePrefLevels.set(key, value);
+    }
+    /**
+     * @param attributePrefs The attributePrefLevels to set.
+     */
+    public void setAttributePrefLevels(List attributePrefLevels) {
+        this.attributePrefLevels = attributePrefLevels;
+    }
+    
     /**
      * @return Returns the roomFeaturePrefLevels.
      */
@@ -788,6 +857,16 @@ public class PreferencesForm extends ActionForm {
     }
     
     /**
+     * Add a attribute preference to the existing list
+     * @param attributePref Attribute pref Id
+     * @param level Preference Level
+     */
+    public void addToAttributePrefs(String attributePref, String level) {
+        this.attributePrefs.add(attributePref);
+        this.attributePrefLevels.add(level);
+    }
+    
+    /**
      * Add a date pattern preference to the existing list
      * @param datePatternPref Date pattern pref Id
      * @param level Preference Level
@@ -828,6 +907,7 @@ public class PreferencesForm extends ActionForm {
 	        addToRoomGroups(Preference.BLANK_PREF_VALUE, Preference.BLANK_PREF_VALUE);
 	        addToDistPrefs(Preference.BLANK_PREF_VALUE, Preference.BLANK_PREF_VALUE);
 	        addToCoursePrefs(Preference.BLANK_PREF_VALUE, Preference.BLANK_PREF_VALUE);
+	        addToAttributePrefs(Preference.BLANK_PREF_VALUE, Preference.BLANK_PREF_VALUE);
         }
     }
     
@@ -849,6 +929,8 @@ public class PreferencesForm extends ActionForm {
         this.datePatternPrefLevels.clear();
         this.coursePrefs.clear();
         this.coursePrefLevels.clear();
+        this.attributePrefs.clear();
+        this.attributePrefLevels.clear();
     }
     
     public String getNextId() { return nextId; }

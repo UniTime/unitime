@@ -1040,6 +1040,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
         	HashMap<String, String> acadTitles = new HashMap<String, String>();
         	HashMap<String, Integer> shares = new HashMap<String, Integer>();
         	HashMap<String, Boolean> leads = new HashMap<String, Boolean>();
+        	HashMap<String, Boolean> tentatives = new HashMap<String, Boolean>();
         	for (Iterator<?> it = element.elementIterator(elementName); it.hasNext();){
 				Element instructorElement = (Element) it.next();
 				String id = getRequiredStringAttribute(instructorElement, "id", elementName);
@@ -1066,6 +1067,11 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					lead = new Boolean(true);
 				}
 				leads.put(id, lead);
+				Boolean tentative = getOptionalBooleanAttribute(instructorElement, "tentative");
+				if (tentative == null){
+					tentative = new Boolean(false);
+				}
+				tentatives.put(id, tentative);
         	}
         	for(Iterator<String> it = ids.iterator(); it.hasNext(); ){
 				boolean addNew = false;
@@ -1117,6 +1123,11 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				Boolean lead = leads.get(id);
 				if (ci.isLead() == null || !ci.isLead().equals(lead)){
 					ci.setLead(lead);
+					changed = true;
+				}
+				Boolean tentative = tentatives.get(id);
+				if (ci.isTentative() == null || !ci.isTentative().equals(tentative)){
+					ci.setTentative(tentative);
 					changed = true;
 				}
 				

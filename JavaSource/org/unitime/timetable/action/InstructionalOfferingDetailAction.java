@@ -66,6 +66,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
+import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -157,6 +158,13 @@ public class InstructionalOfferingDetailAction extends Action {
 		    							: request.getParameter("io");
 		    if (instrOfferingId==null && frm.getInstrOfferingId()!=null)
 		    	instrOfferingId=frm.getInstrOfferingId().toString();
+		    
+		    if (instrOfferingId == null && request.getParameter("co") != null) {
+		    	try {
+		    		instrOfferingId = CourseOfferingDAO.getInstance().get(Long.valueOf(request.getParameter("co"))).getInstructionalOffering().getUniqueId().toString();
+		    	} catch (Exception e) {}
+		    }
+		    
 			if(instrOfferingId==null || instrOfferingId.trim().length()==0)
 			    throw new Exception (MSG.exceptionIODataNotCorrect() + instrOfferingId);
 			else  {

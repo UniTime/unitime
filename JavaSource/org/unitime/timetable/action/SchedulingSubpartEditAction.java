@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.action;
 
+import java.text.ParseException;
 import java.util.List;
 import java.util.Set;
 
@@ -59,6 +60,7 @@ import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 
@@ -123,6 +125,8 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
                 || op.equals(MSG.actionAddRoomGroupPreference())
                 || op.equals(MSG.actionUpdatePreferences())
                 || op.equals(MSG.actionAddDatePatternPreference())
+                || op.equals(MSG.actionAddInstructorAttributePreference())
+                || op.equals(MSG.actionAddCoursePreference())
                // || op.equals(rsc.getMessage("button.cancel"))
                 || op.equals(MSG.actionClearSubpartPreferences())
                 || op.equals(MSG.actionRemoveBuildingPreference())
@@ -131,11 +135,14 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         		|| op.equals(MSG.actionRemoveRoomGroupPreference())
         		|| op.equals(MSG.actionRemoveRoomPreference())
         		|| op.equals(MSG.actionRemoveTimePattern())
+        		|| op.equals(MSG.actionRemoveInstructorAttributePreference())
+        		|| op.equals(MSG.actionRemoveCoursePreference())
                 || op.equals(MSG.actionBackToDetail())
                // || op.equals(rsc.getMessage("button.addClass_"))
                 || op.equals(MSG.actionNextSubpart())
                 || op.equals(MSG.actionPreviousSubpart())
-                 || op.equals("updateDatePattern")) {
+                 || op.equals("updateDatePattern")
+                 || op.equals("updateInstructorAssignment")) {
             subpartId = frm.getSchedulingSubpartId();
         }
 
@@ -204,6 +211,8 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
             frm.reset(mapping, request);
             frm.setAutoSpreadInTime(ss.isAutoSpreadInTime());
             frm.setStudentAllowOverlap(ss.isStudentAllowOverlap());
+	        frm.setInstructorAssignment(ss.getTeachingLoad() != null);
+	        frm.setTeachingLoad(ss.getTeachingLoad() == null ? "" : Formats.getNumberFormat("0.##").format(ss.getTeachingLoad()));
         }
 
         // Load form attributes that are constant
@@ -286,6 +295,10 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
 				}
 			}
 		}
+        
+        if (op.equals("updateInstructorAssignment")) {
+        	initPrefs(frm, ss, null, true);
+        }
 
 		// Process Preferences Action
 		processPrefAction(request, frm, errors);
@@ -303,9 +316,11 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         LookupTables.setupBldgs(request, ss);		 // Building Prefs
         LookupTables.setupRoomFeatures(request, ss); // Preference Levels
         LookupTables.setupRoomGroups(request, ss);   // Room Groups
+        LookupTables.setupInstructorAttributes(request, ss);   // Instructor Attributes
         LookupTables.setupCourseCreditFormats(request); // Course Credit Formats
         LookupTables.setupCourseCreditTypes(request); //Course Credit Types
         LookupTables.setupCourseCreditUnitTypes(request); //Course Credit Unit Types
+        LookupTables.setupInstructors(request, sessionContext, ss.getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getSubjectArea().getDepartment().getUniqueId());
 
         frm.setAllowHardPrefs(sessionContext.hasPermission(ss, Right.CanUseHardRoomPrefs));
 
@@ -425,6 +440,14 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
 
         ss.setAutoSpreadInTime(frm.getAutoSpreadInTime());
         ss.setStudentAllowOverlap(frm.getStudentAllowOverlap());
+        try {
+        	if (frm.getInstructorAssignment() && frm.getTeachingLoad() != null)
+        		ss.setTeachingLoad(Formats.getNumberFormat("0.##").parse(frm.getTeachingLoad()).floatValue());
+        	else
+        		ss.setTeachingLoad(null);
+        } catch (ParseException e) {
+        	ss.setTeachingLoad(null);
+        }
 
         if (frm.getDatePattern()==null || frm.getDatePattern().intValue()<0)
         	ss.setDatePattern(null);
@@ -500,6 +523,8 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         if (ss.getCredit() != null){
         	sdao.getSession().saveOrUpdate(ss.getCredit());
         }
+        if (ss.getTeachingLoad() != null)
+        	updateInstructorCoursePreferences(sdao.getSession(), frm, ss, ss.getControllingCourseOffering());
         sdao.update(ss);
  
         String className = ApplicationProperty.ExternalActionSchedulingSubpartEdit.value();

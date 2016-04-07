@@ -52,6 +52,7 @@ import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.DistributionPrefsTableBuilder;
@@ -228,6 +229,8 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        LookupTables.setupBldgs(request, ss);		 // Building Prefs
 	        LookupTables.setupRoomFeatures(request, ss); // Preference Levels
 	        LookupTables.setupRoomGroups(request, ss);   // Room Groups
+	        LookupTables.setupInstructorAttributes(request, ss);   // Instructor Attributes
+	        LookupTables.setupInstructors(request, sessionContext, ss.getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getSubjectArea().getDepartment().getUniqueId());
 
 	        BackTracker.markForBack(request,
 	        		"schedulingSubpartDetail.do?ssuid="+frm.getSchedulingSubpartId(),
@@ -281,6 +284,8 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        frm.setAutoSpreadInTime(ss.isAutoSpreadInTime());
 	        frm.setStudentAllowOverlap(ss.isStudentAllowOverlap());
 	        frm.setDatePattern(ss.getDatePattern()==null?new Long(-1):ss.getDatePattern().getUniqueId());
+	        frm.setInstructorAssignment(ss.getTeachingLoad() != null);
+	        frm.setTeachingLoad(ss.getTeachingLoad() == null ? "" : Formats.getNumberFormat("0.##").format(ss.getTeachingLoad()));
 	        if (frm.getCreditText() == null || frm.getCreditText().length() == 0){
 		        if (ss.getCredit() != null){
 		        	CourseCreditUnitConfig credit = ss.getCredit();

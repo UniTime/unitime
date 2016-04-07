@@ -102,6 +102,7 @@ public class ClassEditForm extends PreferencesForm {
     private Boolean isCrosslisted;
     private String accommodation;
     private Boolean isCancelled;
+    private Boolean instructorAssignment;
     
     // --------------------------------------------------------- Classes
 
@@ -268,6 +269,7 @@ public class ClassEditForm extends PreferencesForm {
         unlimitedEnroll = null;
         isCrosslisted = null;
         isCancelled = null;
+        instructorAssignment = null;
 
         instructors = DynamicList.getInstance(new ArrayList(), factoryInstructors);
         instrPctShare= DynamicList.getInstance(new ArrayList(), factoryInstructors);
@@ -623,6 +625,9 @@ public class ClassEditForm extends PreferencesForm {
     public void setIsCancelled(Boolean isCancelled) {
         this.isCancelled = isCancelled;
     }
+    
+    public Boolean getInstructorAssignment() { return instructorAssignment; }
+    public void setInstructorAssignment(Boolean instructorAssignment) { this.instructorAssignment = instructorAssignment; }
 
     /**
      * @param date

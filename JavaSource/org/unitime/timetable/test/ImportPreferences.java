@@ -414,6 +414,7 @@ public class ImportPreferences {
 			ci.setInstructor(instructor);
 			ci.setLead(new Boolean(el.attributeValue("isLead")));
 			ci.setPercentShare(Integer.valueOf(el.attributeValue("percentShare")));
+			ci.setLead(new Boolean(el.attributeValue("isTentative", "false")));
 			ci.setInstructor(instructor);
 			ci.setClassInstructing(clazz);
 			hibSession.save(ci);

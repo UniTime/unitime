@@ -238,6 +238,8 @@ public class ClassDetailAction extends PreferencesAction {
 	        LookupTables.setupBldgs(request, c);		 // Building Prefs
 	        LookupTables.setupRoomFeatures(request, c); // Preference Levels
 	        LookupTables.setupRoomGroups(request, c);   // Room Groups
+	        LookupTables.setupInstructorAttributes(request, c);   // Instructor Attributes
+	        LookupTables.setupInstructors(request, sessionContext, c.getDepartmentForSubjectArea().getUniqueId());
 	        
 	        try {
 	            if (RoomAvailability.getInstance()!=null && !(RoomAvailability.getInstance() instanceof DefaultRoomAvailabilityService)) {
@@ -438,6 +440,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        frm.setIsCrosslisted(new Boolean(cco.getInstructionalOffering().getCourseOfferings().size()>1));
 	        frm.setAccommodation(StudentAccomodation.toHtml(StudentAccomodation.getAccommodations(c)));
 	        frm.setIsCancelled(c.isCancelled());
+	        frm.setInstructorAssignment(c.getSchedulingSubpart().getTeachingLoad() != null);
 
 	        // Load from class
 		    frm.setExpectedCapacity(c.getExpectedCapacity());

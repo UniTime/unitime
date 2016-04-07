@@ -286,6 +286,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 	                classInstr.setClassInstructing(c);
 	                classInstr.setInstructor(deptInstr);
 	                classInstr.setLead(lead);
+	                classInstr.setTentative(false);
 	                classInstr.setPercentShare(new Integer(pctShare));
 	                
 	                deptInstr.getClasses().add(classInstr);

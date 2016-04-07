@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.hibernate.FlushMode;
@@ -433,18 +434,18 @@ public class Department extends BaseDepartment implements Comparable<Department>
 	@Override
 	public Department getDepartment() { return this; }
 	
-	public List<InstructorAttributeType> getAvailableAttributeTypes() {
-		return (List<InstructorAttributeType>)DepartmentDAO.getInstance().getSession().createQuery(
+	public Set<InstructorAttributeType> getAvailableAttributeTypes() {
+		return new TreeSet<InstructorAttributeType>(DepartmentDAO.getInstance().getSession().createQuery(
         		"select distinct t from InstructorAttribute a inner join a.type t " +
-        		"where a.session.uniqueId = :sessionId and (a.department is null or a.department.uniqueId = :departmentId) " +
-        		"order by t.label").setLong("sessionId", getSessionId()).setLong("departmentId", getUniqueId()).setCacheable(true).list();
+        		"where a.session.uniqueId = :sessionId and (a.department is null or a.department.uniqueId = :departmentId)")
+				.setLong("sessionId", getSessionId()).setLong("departmentId", getUniqueId()).setCacheable(true).list());
 	}
 
-	public List<InstructorAttribute> getAvailableAttributes() {
-		return (List<InstructorAttribute>)DepartmentDAO.getInstance().getSession().createQuery(
+	public Set<InstructorAttribute> getAvailableAttributes() {
+		return new TreeSet<InstructorAttribute>(DepartmentDAO.getInstance().getSession().createQuery(
         		"select a from InstructorAttribute a " +
-        		"where a.session.uniqueId = :sessionId and (a.department is null or a.department.uniqueId = :departmentId) " +
-        		"order by a.name").setLong("sessionId", getSessionId()).setLong("departmentId", getUniqueId()).setCacheable(true).list();
+        		"where a.session.uniqueId = :sessionId and (a.department is null or a.department.uniqueId = :departmentId)")
+				.setLong("sessionId", getSessionId()).setLong("departmentId", getUniqueId()).setCacheable(true).list());
 	}
 
 }

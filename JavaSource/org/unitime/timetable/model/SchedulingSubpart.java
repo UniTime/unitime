@@ -34,6 +34,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseSchedulingSubpart;
 import org.unitime.timetable.model.comparators.NavigationComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
+import org.unitime.timetable.model.dao.InstructorCoursePrefDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -448,6 +449,11 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	if (DistributionPref.class.equals(type)) {
     		return effectiveDistributionPreferences(getManagingDept());
     	}
+    	if (InstructorCoursePref.class.equals(type)) {
+    		return new TreeSet<InstructorCoursePref>(InstructorCoursePrefDAO.getInstance().getSession().createQuery(
+    				"from InstructorCoursePref where course.uniqueId = :courseId")
+    		.setLong("courseId", getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getUniqueId()).setCacheable(true).list());
+    	}
     	
     	Set subpartPrefs = getPreferences(type, this);
     	
@@ -522,6 +528,14 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	if (dept!=null)
     		groups.addAll(RoomGroup.getAllDepartmentRoomGroups(dept));
     	return groups;
+    }
+    
+	public Set getAvailableAttributeTypes() {
+		return getManagingDept().getAvailableAttributeTypes();
+    }
+
+	public Set getAvailableAttributes() {
+		return getManagingDept().getAvailableAttributes();
     }
     
     public SchedulingSubpart getNextSchedulingSubpart(SessionContext context, Right right) {

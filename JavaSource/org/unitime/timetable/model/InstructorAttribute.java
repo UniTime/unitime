@@ -36,7 +36,9 @@ public class InstructorAttribute extends BaseInstructorAttribute implements Comp
 
 	@Override
 	public int compareTo(InstructorAttribute s) {
-		int cmp = getName().compareTo(s.getName());
+		int cmp = (getType() == null ? "" : getType().getLabel()).compareTo(s.getType() == null ? "" : s.getType().getLabel());
+		if (cmp != 0) return cmp;
+		cmp = getName().compareTo(s.getName());
 		if (cmp != 0) return cmp;
 		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(s.getUniqueId() == null ? -1 : s.getUniqueId());
 	}
@@ -59,6 +61,10 @@ public class InstructorAttribute extends BaseInstructorAttribute implements Comp
 			attribute = attribute.getParentAttribute();
 		}
 		return false;
+	}
+	
+	public String getNameWithType() {
+		return getName() + (getType() == null ? "" : " (" + getType().getLabel() + ")");
 	}
 
 }

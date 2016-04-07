@@ -136,6 +136,8 @@ public class ClassEditAction extends PreferencesAction {
                 || op.equals(MSG.actionAddInstructor())
                 || op.equals(MSG.actionUpdatePreferences())
                 || op.equals(MSG.actionAddDatePatternPreference())
+                || op.equals(MSG.actionAddInstructorAttributePreference())
+                || op.equals(MSG.actionAddCoursePreference())
                 || op.equals(rsc.getMessage("button.cancel"))
                 || op.equals(MSG.actionClearClassPreferences())
                 || op.equals(MSG.actionRemoveBuildingPreference())
@@ -146,6 +148,8 @@ public class ClassEditAction extends PreferencesAction {
         		|| op.equals(MSG.actionRemoveDatePatternPreference())
         		|| op.equals(MSG.actionRemoveTimePattern())
         		|| op.equals(MSG.actionRemoveInstructor())
+        		|| op.equals(MSG.actionRemoveInstructorAttributePreference())
+        		|| op.equals(MSG.actionRemoveCoursePreference())
                 || op.equals(rsc.getMessage("button.changeOwner"))
                 || op.equals(MSG.actionAddRoomGroupPreference())
                 || op.equals(MSG.actionBackToDetail())
@@ -279,6 +283,9 @@ public class ClassEditAction extends PreferencesAction {
 
                     // Save Prefs
                     super.doUpdate(request, frm, c, s, timeVertical);
+                    
+                    //if (c.getSchedulingSubpart().getTeachingLoad() != null)
+                    //	updateInstructorCoursePreferences(hibSession, frm, c, c.getSchedulingSubpart().getControllingCourseOffering());
 
                     hibSession.saveOrUpdate(c);
 
@@ -401,6 +408,7 @@ public class ClassEditAction extends PreferencesAction {
         LookupTables.setupBldgs(request, c);		 // Buildings
         LookupTables.setupRoomFeatures(request, c); // Room Features
         LookupTables.setupRoomGroups(request, c);   // Room Groups
+        LookupTables.setupInstructorAttributes(request, c);   // Instructor Attributes
 
         frm.setAllowHardPrefs(sessionContext.hasPermission(c, Right.CanUseHardRoomPrefs));
 
@@ -463,6 +471,7 @@ public class ClassEditAction extends PreferencesAction {
         frm.setManagingDeptLabel(managingDept.getManagingDeptLabel());
         frm.setUnlimitedEnroll(c.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment());
         frm.setAccommodation(StudentAccomodation.toHtml(StudentAccomodation.getAccommodations(c)));
+        frm.setInstructorAssignment(c.getSchedulingSubpart().getTeachingLoad() != null);
 
         Class_ next = c.getNextClass(sessionContext, Right.ClassEdit);
         frm.setNextId(next==null?null:next.getUniqueId().toString());
@@ -560,6 +569,7 @@ public class ClassEditAction extends PreferencesAction {
             classInstr.setClassInstructing(c);
             classInstr.setInstructor(deptInstr);
             classInstr.setLead(new Boolean(lead));
+            classInstr.setTentative(false);
             try {
             	classInstr.setPercentShare(new Integer(pctShare));
             } catch (NumberFormatException e) {

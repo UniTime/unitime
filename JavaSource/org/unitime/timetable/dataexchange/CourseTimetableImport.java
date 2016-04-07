@@ -749,6 +749,7 @@ public class CourseTimetableImport extends BaseImport {
 			instructor.setClassInstructing(clazz);
 			instructor.setInstructor(di);
 			instructor.setLead("true".equals(instructorElement.attributeValue("lead", "true")));
+			instructor.setTentative("true".equals(instructorElement.attributeValue("tentative", "false")));
 			instructor.setPercentShare(Integer.valueOf(instructorElement.attributeValue("share", "100")));				
 			clazz.addToclassInstructors(instructor);
 			di.addToclasses(instructor);

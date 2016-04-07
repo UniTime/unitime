@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
 import org.unitime.timetable.defaults.ApplicationProperty;
 
 
@@ -70,6 +71,8 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
     private Boolean subpartCreditEditAllowed;
     private boolean itypeBasic;
     private Boolean studentAllowOverlap;
+    private Boolean instructorAssignment;
+    private String teachingLoad;
     
     // --------------------------------------------------------- Methods
 
@@ -82,7 +85,11 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
     public ActionErrors validate(
         ActionMapping mapping,
         HttpServletRequest request) {
-        return super.validate(mapping, request);
+    	ActionErrors errors = super.validate(mapping, request);
+    	if (instructorAssignment && (teachingLoad == null || teachingLoad.isEmpty())) {
+    		errors.add("teachingLoad", new ActionMessage("errors.generic", MSG.errorNoTeachingLoad()));
+    	}
+    	return errors;
     }
 
     /** 
@@ -101,6 +108,8 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
         subpartCreditEditAllowed = ApplicationProperty.SubpartCreditEditable.isTrue();
         itypeBasic = false;
         instructionalType = null; instructionalTypeLabel = null;
+        instructorAssignment = Boolean.FALSE;
+        teachingLoad = null;
         super.reset(mapping, request);
     }
 
@@ -317,4 +326,10 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
 	
 	public boolean getStudentAllowOverlap() { return studentAllowOverlap; }
 	public void setStudentAllowOverlap(boolean studentAllowOverlap) { this.studentAllowOverlap = studentAllowOverlap; }
+	
+	public boolean getInstructorAssignment() { return instructorAssignment; }
+	public void setInstructorAssignment(boolean instructorAssignment) { this.instructorAssignment = instructorAssignment; }
+	
+	public String getTeachingLoad() { return teachingLoad; }
+	public void setTeachingLoad(String teachingLoad) { this.teachingLoad = teachingLoad; }
 }

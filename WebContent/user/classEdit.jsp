@@ -469,7 +469,7 @@
 				<jsp:param name="bldgPref" value="false"/>
 				<jsp:param name="roomFeaturePref" value="false"/>
 				<jsp:param name="roomGroupPref" value="false"/>
-				
+				<jsp:param name="attributePref" value="${ClassEditForm.instructorAssignment}"/>
 			</jsp:include>
 		</logic:equal>
 		<logic:notEqual value="0" name="<%=frmName%>" property="nbrRooms">
@@ -481,7 +481,7 @@
 					<jsp:param name="bldgPref" value="false"/>
 					<jsp:param name="roomFeaturePref" value="false"/>
 					<jsp:param name="roomGroupPref" value="false"/>
-					
+					<jsp:param name="attributePref" value="${ClassEditForm.instructorAssignment}"/>
 				</jsp:include>
 			</logic:equal>
 			<logic:notEqual value="true" name="<%=frmName%>" property="unlimitedEnroll">
@@ -489,7 +489,7 @@
 					<jsp:param name="frmName" value="<%=frmName%>"/>
 					<jsp:param name="distPref" value="false"/>
 					<jsp:param name="periodPref" value="false"/>
-					
+					<jsp:param name="attributePref" value="${ClassEditForm.instructorAssignment}"/>
 				</jsp:include>
 			</logic:notEqual>
 		</logic:notEqual>

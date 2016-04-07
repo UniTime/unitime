@@ -52,6 +52,7 @@ import org.unitime.timetable.model.comparators.NavigationComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.model.dao.InstructorCoursePrefDAO;
 import org.unitime.timetable.model.dao.SectioningInfoDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -211,6 +212,10 @@ public class Class_ extends BaseClass_ {
     		} else if (pref instanceof RoomGroupPref) {
     			RoomGroup rg = ((RoomGroupPref)pref).getRoomGroup();
     			if (rg.isGlobal() || getManagingDept().equals(rg.getDepartment()))
+    				ret.add(pref);
+    		} else if (pref instanceof InstructorAttributePref) {
+    			InstructorAttribute at = ((InstructorAttributePref)pref).getAttribute();
+    			if (at.getDepartment() == null || getManagingDept().equals(at.getDepartment()))
     				ret.add(pref);
     		} else {
     			ret.add(pref);
@@ -411,6 +416,11 @@ public class Class_ extends BaseClass_ {
     	Department mngDept = getManagingDept();
     	if (DistributionPref.class.equals(type)) {
     		return effectiveDistributionPreferences(mngDept);
+    	}
+    	if (InstructorCoursePref.class.equals(type)) {
+    		return new TreeSet<InstructorCoursePref>(InstructorCoursePrefDAO.getInstance().getSession().createQuery(
+    				"from InstructorCoursePref where course.uniqueId = :courseId")
+    		.setLong("courseId", getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getUniqueId()).setCacheable(true).list());
     	}
 
     	if (leadInstructors==null || leadInstructors.isEmpty()) return effectivePreferences(type, fixDurationInTimePreferences);
@@ -789,6 +799,14 @@ public class Class_ extends BaseClass_ {
     	if (dept!=null)
     		groups.addAll(RoomGroup.getAllDepartmentRoomGroups(dept));
     	return groups;
+    }
+    
+	public Set getAvailableAttributeTypes() {
+		return getManagingDept().getAvailableAttributeTypes();
+    }
+
+	public Set getAvailableAttributes() {
+		return getManagingDept().getAvailableAttributes();
     }
 
     public Class_ getNextClass(SessionContext context, Right right) {

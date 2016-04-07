@@ -198,7 +198,7 @@
 			<TR>
 				<TD><loc:message name="propertyAutomaticSpreadInTime"/></TD>
 				<TD>
-					<font color='red'><B>DISABLED</B></font><i> -- Classes of this subpart may be timetabled during overlapping times.</i>
+					<loc:message name="classDetailNoSpread"/>
 				</TD>
 			</TR>
 		</logic:equal>
@@ -206,22 +206,38 @@
 		<TR>
 			<TD><loc:message name="propertyStudentOverlaps"/></TD>
 			<TD>
-				<font color='red'><B>ENABLED</B></font><i> -- Students are allowed to take classes from this subpart even when they overlap with other classes.</i>
+				<loc:message name="classDetailAllowOverlap"/>
 			</TD>
 		</TR>
 		</logic:equal>
 		<logic:equal name="<%=frmName%>" property="sameItypeAsParent" value="false">
-		<TR>
-			<TD><loc:message name="propertySubpartCredit"/></TD>
-			<TD>
-				<bean:write name="<%=frmName%>" property="creditText" />
-			</TD>
-		</TR>
+			<logic:notEmpty name="<%=frmName%>" property="creditText">
+				<TR>
+					<TD><loc:message name="propertySubpartCredit"/></TD>
+					<TD>
+						<bean:write name="<%=frmName%>" property="creditText" />
+					</TD>
+				</TR>
+			</logic:notEmpty>
+		</logic:equal>
+		<logic:equal name="<%=frmName%>" property="instructorAssignment" value="true">
+			<TR>
+				<TD><loc:message name="propertyNeedInstructorAssignment"/></TD>
+				<TD>
+					<loc:message name="classDetailNeedInstructorAssignment"/>
+				</TD>
+			</TR>
+			<TR>
+				<TD><loc:message name="propertyTeachingLoad"/></TD>
+				<TD>
+					<bean:write name="<%=frmName%>" property="teachingLoad" /> <loc:message name="teachingLoadUnits"/>
+				</TD>
+			</TR>
 		</logic:equal>
 		
 		<tt:last-change type='SchedulingSubpart'>
 			<bean:write name="<%=frmName%>" property="schedulingSubpartId"/>
-		</tt:last-change>		
+		</tt:last-change>
 
 <!-- Preferences -->
 		<TR>
@@ -236,11 +252,15 @@
 				<jsp:param name="bldgPref" value="false"/>
 				<jsp:param name="roomFeaturePref" value="false"/>
 				<jsp:param name="roomGroupPref" value="false"/>
+				<jsp:param name="attributePref" value="${SchedulingSubpartEditForm.instructorAssignment}"/>
+				<jsp:param name="instructorPref" value="${SchedulingSubpartEditForm.instructorAssignment}"/>
 			</jsp:include>
 		</logic:equal>
 		<logic:notEqual value="true" name="<%=frmName%>" property="unlimitedEnroll">
 			<jsp:include page="preferencesDetail.jspf">
 				<jsp:param name="frmName" value="<%=frmName%>"/>
+				<jsp:param name="attributePref" value="${SchedulingSubpartEditForm.instructorAssignment}"/>
+				<jsp:param name="instructorPref" value="${SchedulingSubpartEditForm.instructorAssignment}"/>
 			</jsp:include>
 		</logic:notEqual>
 

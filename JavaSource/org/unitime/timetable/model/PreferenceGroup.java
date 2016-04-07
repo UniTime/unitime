@@ -343,6 +343,14 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	return new TreeSet();
     }
     
+    public Set getAvailableAttributeTypes() {
+    	return new TreeSet();
+    }
+    
+    public Set getAvailableAttributes() {
+    	return new TreeSet();
+    }
+    
     public Set getExamPeriodPreferences(){
         return getPreferences(ExamPeriodPref.class);
     }

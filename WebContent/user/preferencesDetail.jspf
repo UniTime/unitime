@@ -17,6 +17,9 @@
  * limitations under the License.
  * 
 --%>
+<%@page import="org.unitime.timetable.util.ComboBoxLookup"%>
+<%@page import="org.unitime.timetable.model.DepartmentalInstructor"%>
+<%@page import="org.unitime.timetable.model.InstructorAttribute"%>
 <%@page import="org.unitime.timetable.model.CourseOffering"%>
 <%@page import="org.unitime.timetable.util.IdValue"%>
 <%@ page language="java" autoFlush="true"%>
@@ -245,6 +248,30 @@
 	   	</logic:empty>
 	</logic:notEqual>
 	
+<!-- Instructor Preferences -->
+	<logic:equal value="true" parameter="attributePref">
+		<logic:notEmpty name="<%=frmName%>" property="attributePrefs">
+		<TR>
+			<TD valign="top"><loc:message name="propertyInstructorAttribute"/> </TD>
+			<TD>
+				<logic:iterate name="<%=frmName%>" property="attributePrefs" id="attributePref" indexId="ctr">
+					<% PreferenceLevel preference = null; %>
+					<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
+						<logic:equal name="<%=frmName%>" property='<%="attributePrefLevels["+ctr+"]"%>' value="<%=((PreferenceLevel)prLevel).getUniqueId().toString()%>">
+							<% preference = (PreferenceLevel)prLevel; %>
+						</logic:equal>
+					</logic:iterate>
+					<logic:iterate scope="request" name="<%=InstructorAttribute.ATTRIBUTES_LIST_ATTR_NAME%>" id="at">
+						<logic:equal name="at" property="uniqueId" value="<%=(String)attributePref%>">
+							<div style='color:<%=preference.prefcolor()%>' title='<%=preference.getPrefName()%>: <%=((InstructorAttribute)at).getNameWithType()%>'><B><%=((InstructorAttribute)at).getName()%></B></div>
+						</logic:equal>
+					</logic:iterate>
+	   			</logic:iterate>
+		   	</TD>
+	   	</TR>
+	   	</logic:notEmpty>
+	</logic:equal>
+	
 <!-- Course Preferences -->
 	<logic:equal value="true" parameter="coursePref">
 		<logic:notEmpty name="<%=frmName%>" property="coursePrefs">
@@ -260,7 +287,10 @@
 					</logic:iterate>
 					<logic:iterate scope="request" name="<%=CourseOffering.CRS_OFFERING_LIST_ATTR_NAME%>" id="co">
 						<logic:equal name="co" property="uniqueId" value="<%=(String)coursePref%>">
-							<div style='color:<%=preference.prefcolor()%>' title='<%=preference.getPrefName()%>: <%=((CourseOffering)co).getCourseNameWithTitle()%>'><B><%=((CourseOffering)co).getCourseName()%></B></div>
+							<div style='color:<%=preference.prefcolor()%>' title='<%=preference.getPrefName()%>: <%=((CourseOffering)co).getCourseNameWithTitle()%>'
+								onclick="document.location='instructionalOfferingDetail.do?co=<%=(String)coursePref%>';"
+								onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
+							><B><%=((CourseOffering)co).getCourseName()%></B></div>
 						</logic:equal>
 					</logic:iterate>
 	   			</logic:iterate>
@@ -268,6 +298,32 @@
 	   	</TR>
 	   	</logic:notEmpty>
 	</logic:equal>
+	
+<!-- Course Preferences (of a class or subpart) -->
+	<logic:equal value="true" parameter="instructorPref">
+		<logic:notEmpty name="<%=frmName%>" property="coursePrefs">
+		<TR>
+			<TD valign="top"><loc:message name="propertyCourse"/> </TD>
+			<TD>
+				<logic:iterate name="<%=frmName%>" property="coursePrefs" id="coursePref" indexId="ctr">
+					<% PreferenceLevel preference = null; %>
+					<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
+						<logic:equal name="<%=frmName%>" property='<%="coursePrefLevels["+ctr+"]"%>' value="<%=((PreferenceLevel)prLevel).getUniqueId().toString()%>">
+							<% preference = (PreferenceLevel)prLevel; %>
+						</logic:equal>
+					</logic:iterate>
+					<logic:iterate scope="request" name="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME%>" id="in">
+						<logic:equal name="in" property="value" value="<%=(String)coursePref%>">
+							<div style='color:<%=preference.prefcolor()%>' title='<%=preference.getPrefName()%>: <%=((ComboBoxLookup)in).getLabel()%>'
+								onclick="document.location='instructorDetail.do?instructorId=<%=(String)coursePref%>';"
+								onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"><B><bean:write name="in" property="label"/></B></div>
+						</logic:equal>
+					</logic:iterate>
+	   			</logic:iterate>
+		   	</TD>
+	   	</TR>
+	   	</logic:notEmpty>
+	</logic:equal>	
 	
 	<logic:notEmpty name="<%=Location.AVAILABLE_LOCATIONS_ATTR%>" scope="request">
 		<TR>

@@ -201,9 +201,12 @@ public class LookupTables {
         request.setAttribute(CourseOffering.CRS_OFFERING_LIST_ATTR_NAME, pg.getAvailableCourses());
     }
     
-    public static void setupInstructorAttributes(HttpServletRequest request, Department dept) {
-        request.setAttribute(InstructorAttributeType.ATTRIBUTE_TYPES_LIST_ATTR_NAME, dept.getAvailableAttributeTypes());
-        request.setAttribute(InstructorAttribute.ATTRIBUTES_LIST_ATTR_NAME, dept.getAvailableAttributes());
+    public static void setupInstructorAttributes(HttpServletRequest request, PreferenceGroup pg) {
+    	request.setAttribute(InstructorAttribute.ATTRIBUTES_LIST_ATTR_NAME, pg.getAvailableAttributes());
+    }
+    
+    public static void setupInstructorAttributeTypes(HttpServletRequest request, PreferenceGroup pg) {
+        request.setAttribute(InstructorAttributeType.ATTRIBUTE_TYPES_LIST_ATTR_NAME, pg.getAvailableAttributeTypes());
     }
 
     public static void setupDatePatterns(HttpServletRequest request, UserContext user, String inheritString, DatePattern inheritedDatePattern, Department department, DatePattern currentDatePattern) {

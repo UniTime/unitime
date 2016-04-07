@@ -465,7 +465,8 @@ public class InstructorDetailAction extends PreferencesAction {
 	        frm.clearAttributes();
 	        for (InstructorAttribute attribute: inst.getAttributes())
 	        	frm.setAttribute(attribute.getUniqueId(), true);
-	        LookupTables.setupInstructorAttributes(request, inst.getDepartment());
+	        LookupTables.setupInstructorAttributeTypes(request, inst);
+	        LookupTables.setupInstructorAttributes(request, inst);
 			
 			DepartmentalInstructor previous = inst.getPreviousDepartmentalInstructor(sessionContext, Right.InstructorDetail);
 			frm.setPreviousId(previous==null?null:previous.getUniqueId().toString());
