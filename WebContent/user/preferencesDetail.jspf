@@ -263,7 +263,7 @@
 					</logic:iterate>
 					<logic:iterate scope="request" name="<%=InstructorAttribute.ATTRIBUTES_LIST_ATTR_NAME%>" id="at">
 						<logic:equal name="at" property="uniqueId" value="<%=(String)attributePref%>">
-							<div style='color:<%=preference.prefcolor()%>' title='<%=preference.getPrefName()%>: <%=((InstructorAttribute)at).getNameWithType()%>'><B><%=((InstructorAttribute)at).getName()%></B></div>
+							<div style='color:<%=preference.prefcolor()%>' title='<%=preference.getPrefName()%>: <%=((InstructorAttribute)at).getNameWithType()%>'><B><%=((InstructorAttribute)at).getNameWithType()%></B></div>
 						</logic:equal>
 					</logic:iterate>
 	   			</logic:iterate>
