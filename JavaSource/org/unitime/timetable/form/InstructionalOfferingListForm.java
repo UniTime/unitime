@@ -107,6 +107,8 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	
 	private String sortBy;
 	
+	private Boolean instructorAssignment;
+	
 
 	/**
 	 * @return Returns the ctrlInstrOfferingId.
@@ -231,6 +233,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 		title = new Boolean(false);
 		consent = new Boolean(false);
 		exams = new Boolean(false);
+		instructorAssignment = new Boolean(false);
 		sortBy = ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME);
 	}
 
@@ -448,6 +451,14 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
     public void setExams(Boolean exams) {
         this.exams = exams;
     }
+    
+    public Boolean getInstructorAssignment() {
+    	return instructorAssignment;
+    }
+    
+    public void setInstructorAssignment(Boolean instructorAssignment) {
+    	this.instructorAssignment = instructorAssignment;
+    }
 
     protected void finalize() throws Throwable {
         Debug.debug("!!! Finalizing InstructionalOfferingListForm ... ");
@@ -478,6 +489,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
         note=null;
         title=null;
         consent=null;
+        instructorAssignment = null;
         super.finalize();
     }
 

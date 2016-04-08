@@ -420,4 +420,8 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 	public boolean getIncludeCancelledClasses() {
 		return false;
 	}
+	@Override
+	public Boolean getInstructorAssignment() {
+		return false;
+	}
 }

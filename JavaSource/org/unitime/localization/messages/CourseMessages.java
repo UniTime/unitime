@@ -292,11 +292,14 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Maximal Teaching Load:")
 	String propertyMaxLoad();
 	
-	@DefaultMessage("Course:")
-	String propertyCourse();
+	@DefaultMessage("Courses:")
+	String propertyCoursePrefs();
+
+	@DefaultMessage("Instructors:")
+	String propertyInstructorPrefs();
 	
-	@DefaultMessage("Instructor:")
-	String propertyInstructorAttribute();
+	@DefaultMessage("Attributes:")
+	String propertyAttributePrefs();
 	
 	@DefaultMessage("Need Instructor Assignment:")
 	String propertyNeedInstructorAssignment();
@@ -391,6 +394,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Instructor")
 	String columnInstructor();
 	
+	@DefaultMessage("Instructor Scheduling")
+	String includeInstructorScheduling();
+	
 	@DefaultMessage("Timetable")
 	String columnTimetable();
 	
@@ -459,6 +465,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Distribution")
 	String columnDistributionPref();
+	
+	@DefaultMessage("Attribute")
+	String columnInstructorAttributePref();
 	
 	@DefaultMessage("Course")
 	String columnCoursePref();
@@ -705,7 +714,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Maximal\nLoad")
 	String columnMaxTeachingLoadPDF();
-
+	
 	@DefaultMessage("Total")
 	String rowCrossListsTotal();
 	
@@ -981,10 +990,16 @@ public interface CourseMessages extends Messages {
 	String actionRemoveCoursePreference();
 	
 	@DefaultMessage("Add Instructor Preference")
-	String actionAddInstructorAttributePreference();
+	String actionAddInstructorPreference();
 	
 	@DefaultMessage("Delete")
-	String actionRemoveInstructorAttributePreference();
+	String actionRemoveInstructorPreference();
+
+	@DefaultMessage("Add Attribute Preference")
+	String actionAddAttributePreference();
+	
+	@DefaultMessage("Delete")
+	String actionRemoveAttributePreference();
 
 	@DefaultMessage("Delete")
 	String actionDeleteConfiguration();
@@ -1358,9 +1373,12 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("C")
 	String accessAddCoursePreference();
 	
-	@DefaultMessage("I")
-	String accessAddInstructorAttributePreference();
+	@DefaultMessage("A")
+	String accessAddAttributePreference();
 	
+	@DefaultMessage("I")
+	String accessAddInstructorPreference();
+
 	@DefaultMessage("Search/Display Offerings (Alt+{0})")
 	String titleSearchInstructionalOfferings(String accessKey);
 	
@@ -1748,14 +1766,20 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Add Course Preference (Alt+{0})")
 	String titleAddCoursePreference(String accessKey);
 	
-	@DefaultMessage("Add Instructor Preference (Alt+{0})")
-	String titleAddInstructorAttributePreference(String accessKey);
+	@DefaultMessage("Add Attribute Preference (Alt+{0})")
+	String titleAddAttributePreference(String accessKey);
 	
+	@DefaultMessage("Add Instructor Preference (Alt+{0})")
+	String titleAddInstructorPreference(String accessKey);
+
 	@DefaultMessage("Remove Course Preference")
 	String titleRemoveCoursePreference();
 	
+	@DefaultMessage("Remove Attribute Preference")
+	String titleRemoveAttributePreference();
+	
 	@DefaultMessage("Remove Instructor Preference")
-	String titleRemoveInstructorAttributePreference();
+	String titleRemoveInstructorPreference();
 	
 	@DefaultMessage("Course numbers can be specified using wildcard (*). E.g. 2*")
 	String tooltipCourseNumber();
@@ -2243,8 +2267,11 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Course Preferences")
 	String sectionTitleCoursePreferences();
 
+	@DefaultMessage("Attribute Preferences")
+	String sectionTitleAttributePreferences();
+
 	@DefaultMessage("Instructor Preferences")
-	String sectionTitleInstructorAttributePreferences();
+	String sectionTitleInstructorPreferences();
 
 	@DefaultMessage("Instructor Displayed")
 	String titleInstructorDisplayed();

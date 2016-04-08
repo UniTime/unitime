@@ -112,6 +112,13 @@
 							<loc:message name="columnInstructor"/>
 						</TD>
 					</TR>
+					<TR>
+						<TD></TD>
+						<TD>
+							<html:checkbox property="instructorAssignment" />
+							<loc:message name="includeInstructorScheduling"/>
+						</TD>
+					</TR>
 					<logic:notEmpty name="classListForm" property="timetable">
 						<TR>
 							<TD></TD>

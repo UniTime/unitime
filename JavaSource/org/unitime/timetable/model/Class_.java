@@ -112,6 +112,11 @@ public class Class_ extends BaseClass_ {
     	if (super.getManagingDept()==null) return getControllingDept();
         return super.getManagingDept();
     }
+    
+    public Department getControllingDept() {
+    	if (super.getControllingDept() == null) return getSchedulingSubpart().getControllingDept();
+    	return super.getControllingDept();
+    }
 
     public void setManagingDept(Department dept) {
         Department oldDept = getManagingDept();
@@ -477,6 +482,11 @@ public class Class_ extends BaseClass_ {
     		}
     		return prefs;
     	}
+    	if (InstructorCoursePref.class.equals(type)) {
+    		return new TreeSet<InstructorCoursePref>(InstructorCoursePrefDAO.getInstance().getSession().createQuery(
+    				"from InstructorCoursePref where course.uniqueId = :courseId")
+    		.setLong("courseId", getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getUniqueId()).setCacheable(true).list());
+    	}
 
     	Set classPrefs = getPreferences(type, this);
 
@@ -802,11 +812,11 @@ public class Class_ extends BaseClass_ {
     }
     
 	public Set getAvailableAttributeTypes() {
-		return getManagingDept().getAvailableAttributeTypes();
+		return getControllingDept().getAvailableAttributeTypes();
     }
 
 	public Set getAvailableAttributes() {
-		return getManagingDept().getAvailableAttributes();
+		return getControllingDept().getAvailableAttributes();
     }
 
     public Class_ getNextClass(SessionContext context, Right right) {

@@ -531,11 +531,11 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     }
     
 	public Set getAvailableAttributeTypes() {
-		return getManagingDept().getAvailableAttributeTypes();
+		return getControllingDept().getAvailableAttributeTypes();
     }
 
 	public Set getAvailableAttributes() {
-		return getManagingDept().getAvailableAttributes();
+		return getControllingDept().getAvailableAttributes();
     }
     
     public SchedulingSubpart getNextSchedulingSubpart(SessionContext context, Right right) {

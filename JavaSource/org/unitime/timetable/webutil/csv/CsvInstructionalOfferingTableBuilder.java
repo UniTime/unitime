@@ -46,12 +46,15 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DatePatternPref;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.InstructorAttributePref;
+import org.unitime.timetable.model.InstructorCoursePref;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
@@ -78,6 +81,7 @@ import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.duration.DurationModel;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 import org.unitime.timetable.webutil.WebInstructionalOfferingTableBuilder;
@@ -133,9 +137,9 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowDatePattern()) ret+=1;
     	if (isShowMinPerWk()) ret+=1;
     	if (isShowTimePattern()) ret+=1;
-    	if (isShowPreferences()) ret+=PREFERENCE_COLUMN_ORDER.length+(getDisplayDistributionPrefs()?0:-1);
+    	if (isShowPreferences()) ret+=getPreferenceColumns();
     	if (isShowInstructor()) ret+=1;
-    	if (getDisplayTimetable() && isShowTimetable()) ret+=TIMETABLE_COLUMN_ORDER.length;
+    	if (getDisplayTimetable() && isShowTimetable()) ret+=3;
     	if (isShowTitle()) ret+=1;
     	if (isShowCredit()) ret+=1;
     	if (isShowSubpartCredit()) ret+=1;
@@ -191,17 +195,22 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		line.add(createCell(MSG.columnTimePattern()));
     	}
     	if (isShowPreferences()) {
-	    	for (int j = 0; j < PREFERENCE_COLUMN_ORDER.length + (getDisplayDistributionPrefs() ? 0 : -1); j++) {
-	    		line.add(createCell(PREFERENCE_COLUMN_ORDER[j] + LINE_SEPARATOR + MSG.columnPreferences()));
-	    	}
+    		line.add(createCell(MSG.columnTimePref() + LINE_SEPARATOR + MSG.columnPreferences()));
+    		line.add(createCell(MSG.columnAllRoomPref() + LINE_SEPARATOR + MSG.columnPreferences()));
+    		if (getDisplayDistributionPrefs()) {
+    			line.add(createCell(MSG.columnDistributionPref() + LINE_SEPARATOR + MSG.columnPreferences()));
+    		}
+    		if (getDisplayInstructorPrefs()) {
+    			line.add(createCell(MSG.columnInstructorAttributePref() + LINE_SEPARATOR + MSG.columnPreferences()));
+    		}
     	}
     	if (isShowInstructor()) {
     		line.add(createCell(MSG.columnInstructor()));
     	}
     	if (getDisplayTimetable() && isShowTimetable()) {
-	    	for(int j = 0; j < TIMETABLE_COLUMN_ORDER.length; j++) {
-	    		line.add(createCell(TIMETABLE_COLUMN_ORDER[j]));
-	    	}
+    		line.add(createCell(MSG.columnAssignedTime()));
+    		line.add(createCell(MSG.columnAssignedRoom()));
+    		line.add(createCell(MSG.columnAssignedRoomCapacity()));
     	}
     	if (isShowTitle()) {
     		line.add(createCell(MSG.columnTitle()));
@@ -495,6 +504,15 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     			ClassInstructor ci = (ClassInstructor)i.next();
         		String label = ci.getInstructor().getName(getInstructorNameFormat());
         		addText(cell, label, true);
+    		}
+    	} else if (prefGroup instanceof SchedulingSubpart && isShowInstructorAssignment() && ((SchedulingSubpart)prefGroup).getTeachingLoad() != null) {
+    		SchedulingSubpart ss = (SchedulingSubpart)prefGroup;
+    		addText(cell, Formats.getNumberFormat("0.##").format(ss.getTeachingLoad()) + " " + MSG.teachingLoadUnits());
+    		if (isShowPreferences()) {
+        		for (Iterator i = prefGroup.effectivePreferences(InstructorCoursePref.class).iterator(); i.hasNext(); ) {
+        			InstructorCoursePref p = (InstructorCoursePref)i.next();
+        			addText(cell, p.getPrefLevel().getAbbreviation() + " " + ((DepartmentalInstructor)p.getOwner()).getName(getInstructorNameFormat()), true);
+        		}
     		}
     	}
     	
@@ -814,37 +832,22 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		line.add(csvBuildTimePatternCell(prefGroup, isEditable));
     	} 
     	if (isShowPreferences()){
-	        for (int j = 0; j < PREFERENCE_COLUMN_ORDER.length; j++) {
-	        	if (PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnTimePref())) {
-	        		line.add(csvBuildPreferenceCell(classAssignment,prefGroup, TimePref.class, isEditable));
-	        	} else if (sAggregateRoomPrefs && PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnAllRoomPref())) {
-	        		line.add(csvBuildPreferenceCell(classAssignment,prefGroup, new Class[] {RoomPref.class, BuildingPref.class, RoomFeaturePref.class, RoomGroupPref.class} , isEditable));
-	        	} else if (PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnRoomPref())) {
-	        		line.add(csvBuildPreferenceCell(classAssignment,prefGroup, RoomPref.class, isEditable));
-	        	} else if (PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnBuildingPref())) {
-	        		line.add(csvBuildPreferenceCell(classAssignment,prefGroup, BuildingPref.class, isEditable));
-	        	} else if (PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnRoomFeaturePref())) {
-	        		line.add(csvBuildPreferenceCell(classAssignment,prefGroup, RoomFeaturePref.class, isEditable));
-	        	} else if (getDisplayDistributionPrefs() && PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnDistributionPref())) {
-	        		line.add(csvBuildPreferenceCell(classAssignment,prefGroup, DistributionPref.class, isEditable));
-	        	} else if (PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnRoomGroupPref())) {
-	        		line.add(csvBuildPreferenceCell(classAssignment,prefGroup, RoomGroupPref.class, isEditable));
-	        	}
-	        }
+    		line.add(csvBuildPreferenceCell(classAssignment,prefGroup, TimePref.class, isEditable));
+    		line.add(csvBuildPreferenceCell(classAssignment,prefGroup, new Class[] {RoomPref.class, BuildingPref.class, RoomFeaturePref.class, RoomGroupPref.class} , isEditable));
+    		if (getDisplayDistributionPrefs()) {
+    			line.add(csvBuildPreferenceCell(classAssignment,prefGroup, DistributionPref.class, isEditable));
+    		}
+    		if (getDisplayInstructorPrefs()) {
+    			line.add(csvBuildPreferenceCell(classAssignment,prefGroup, InstructorAttributePref.class, isEditable));
+    		}
     	} 
     	if (isShowInstructor()){
     		line.add(csvBuildInstructor(prefGroup, isEditable));
     	}
     	if (getDisplayTimetable() && isShowTimetable()){
-	        for (int j = 0; j < TIMETABLE_COLUMN_ORDER.length; j++) {
-	        	if (TIMETABLE_COLUMN_ORDER[j].equals(MSG.columnAssignedTime())){
-	        		line.add(csvBuildAssignedTime(classAssignment, prefGroup, isEditable));
-	        	} else if (TIMETABLE_COLUMN_ORDER[j].equals(MSG.columnAssignedRoom())){
-	        		line.add(csvBuildAssignedRoom(classAssignment, prefGroup, isEditable));
-	        	} else if (TIMETABLE_COLUMN_ORDER[j].equals(MSG.columnAssignedRoomCapacity())){
-	        		line.add(csvBuildAssignedRoomCapacity(classAssignment, prefGroup, isEditable));
-	        	}
-	        }
+    		line.add(csvBuildAssignedTime(classAssignment, prefGroup, isEditable));
+    		line.add(csvBuildAssignedRoom(classAssignment, prefGroup, isEditable));
+    		line.add(csvBuildAssignedRoomCapacity(classAssignment, prefGroup, isEditable));
     	} 
     	if (isShowTitle()) {
     		line.add(createCell());
@@ -978,7 +981,7 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         	    line.add(createCell());
         	} 
         	if (isShowPreferences()){
-		        for (int j = 0; j < PREFERENCE_COLUMN_ORDER.length + (getDisplayDistributionPrefs()?0:-1); j++) {
+		        for (int j = 0; j < getPreferenceColumns(); j++) {
 	        	    line.add(createCell());
 		        }
         	} 
@@ -986,9 +989,9 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         	    line.add(createCell());
         	} 
         	if (getDisplayTimetable() && isShowTimetable()){
-        		for (int j = 0; j < TIMETABLE_COLUMN_ORDER.length; j++){
-            	    line.add(createCell());
-        		}
+        		line.add(createCell());
+        		line.add(createCell());
+        		line.add(createCell());
         	} 
         	if (isShowTitle()) {
         		line.add(createCell());
@@ -1118,13 +1121,13 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		emptyCels ++;
     	}
     	if (isShowPreferences()){
-    		emptyCels += PREFERENCE_COLUMN_ORDER.length + (getDisplayDistributionPrefs()?0:-1);
+    		emptyCels += getPreferenceColumns();
     	}
     	if (isShowInstructor()){
     		emptyCels ++;
     	}
     	if (getDisplayTimetable() && isShowTimetable()){
-    		emptyCels += TIMETABLE_COLUMN_ORDER.length;
+    		emptyCels += 3;
     	} 
     	if (emptyCels > 0) {
             for (int i = 0; i < emptyCels; i++)

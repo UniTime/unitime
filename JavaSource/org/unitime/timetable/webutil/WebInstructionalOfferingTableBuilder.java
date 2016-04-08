@@ -55,6 +55,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DatePatternPref;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
@@ -62,6 +63,8 @@ import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.InstructorAttributePref;
+import org.unitime.timetable.model.InstructorCoursePref;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
@@ -131,30 +134,11 @@ public class WebInstructionalOfferingTableBuilder {
     										MSG.columnSchedulePrintNote(),
     										MSG.columnNote(),
     										MSG.columnExam()};
-    
-    //set to false for old behaviour
-    protected static boolean sAggregateRoomPrefs = true;
-    
-    protected String[] PREFERENCE_COLUMN_ORDER = ( sAggregateRoomPrefs ?
-    		 												new String[] {
-    															MSG.columnTimePref(),
-    															MSG.columnAllRoomPref(),
-    															MSG.columnDistributionPref()
-    														}
-    													:
-    														new String[] {
-    															MSG.columnTimePref(),
-    															MSG.columnRoomGroupPref(),
-    															MSG.columnBuildingPref(),
-    															MSG.columnRoomPref(),
-    															MSG.columnRoomFeaturePref(),
-    															MSG.columnDistributionPref()
-    														}
-    		 											);
-    
-    protected String[] TIMETABLE_COLUMN_ORDER = {MSG.columnAssignedTime(),
-														MSG.columnAssignedRoom(),
-														MSG.columnAssignedRoomCapacity()};
+    @Deprecated
+    protected String[] TIMETABLE_COLUMN_ORDER = {
+    		MSG.columnAssignedTime(),
+			MSG.columnAssignedRoom(),
+			MSG.columnAssignedRoomCapacity()};
     
     private boolean showLabel;
     private boolean showDivSec;
@@ -178,10 +162,12 @@ public class WebInstructionalOfferingTableBuilder {
     private boolean showExam;
     private boolean showExamName=true;
     private boolean showExamTimetable;
+    private boolean showInstructorAssignment;
     
     private boolean iDisplayDistributionPrefs = true;
     private boolean iDisplayTimetable = true;
     private boolean iDisplayConflicts = false;
+    private boolean iDisplayInstructorPrefs = true;
     
     private String iBackType = null;
     private String iBackId = null;
@@ -202,6 +188,10 @@ public class WebInstructionalOfferingTableBuilder {
     	iDisplayDistributionPrefs = displayDistributionPrefs;
     }
     public boolean getDisplayDistributionPrefs() { return iDisplayDistributionPrefs; }
+    public void setDisplayInstructorPrefs(boolean displayInstructorPrefs) {
+    	iDisplayInstructorPrefs = displayInstructorPrefs;
+    }
+    public boolean getDisplayInstructorPrefs() { return iDisplayInstructorPrefs && isShowInstructorAssignment(); }
     public void setDisplayTimetable(boolean displayTimetable) {
     	iDisplayTimetable = displayTimetable;
     }
@@ -239,6 +229,9 @@ public class WebInstructionalOfferingTableBuilder {
     }
     public String getDefaultTimeGridSize() {
     	return iDefaultTimeGridSize;
+    }
+    public int getPreferenceColumns() {
+    	return 2 + (getDisplayDistributionPrefs() ? 1 : 0) + (getDisplayInstructorPrefs() ? 1 : 0);
     }
      
     public void setUserSettings(UserContext user) {
@@ -281,6 +274,9 @@ public class WebInstructionalOfferingTableBuilder {
     public void setShowExamTimetable(boolean showExamTimetable) {
         this.showExamTimetable = showExamTimetable;
     }
+    
+    public boolean isShowInstructorAssignment() { return showInstructorAssignment; }
+    public void setShowInstructorAssignment(boolean showInstructorAssignment) { this.showInstructorAssignment = showInstructorAssignment; }
 
     /**
      * 
@@ -424,31 +420,48 @@ public class WebInstructionalOfferingTableBuilder {
     		row.addContent(cell);
     	}
     	if (isShowPreferences()){
-    		cell = headerCell("----" + MSG.columnPreferences() + "----", 1, PREFERENCE_COLUMN_ORDER.length + (iDisplayDistributionPrefs?0:-1));
+    		cell = headerCell("----" + MSG.columnPreferences() + "----", 1, getPreferenceColumns());
     		cell.setStyleClass("WebTableHeaderFirstRow");
     		cell.setAlign("center");
 	    	row.addContent(cell);
-	    	for(int j = 0; j < PREFERENCE_COLUMN_ORDER.length+(iDisplayDistributionPrefs?0:-1); j++){
-	    		cell = headerCell(PREFERENCE_COLUMN_ORDER[j], 1, 1);
-	    		cell.setStyleClass("WebTableHeaderSecondRow");
-	    		row2.addContent(cell);     
-	    	}
+	    	cell = headerCell(MSG.columnTimePref(), 1, 1);
+    		cell.setStyleClass("WebTableHeaderSecondRow");
+    		row2.addContent(cell);
+    		cell = headerCell(MSG.columnAllRoomPref(), 1, 1);
+    		cell.setStyleClass("WebTableHeaderSecondRow");
+    		row2.addContent(cell);
+    		if (getDisplayDistributionPrefs()) {
+    			cell = headerCell(MSG.columnDistributionPref(), 1, 1);
+        		cell.setStyleClass("WebTableHeaderSecondRow");
+        		row2.addContent(cell);
+    		}
+    		if (getDisplayInstructorPrefs()) {
+    			cell = headerCell(MSG.columnInstructorAttributePref(), 1, 1);
+        		cell.setStyleClass("WebTableHeaderSecondRow");
+        		row2.addContent(cell);
+    		}
     	}
     	if (isShowInstructor()){
     		cell = this.headerCell(MSG.columnInstructor(), 2, 1);
     		row.addContent(cell);    		
     	}
     	if (getDisplayTimetable() && isShowTimetable()){
-	    	cell = headerCell("--------" + MSG.columnTimetable() + "--------", 1, TIMETABLE_COLUMN_ORDER.length);
+	    	cell = headerCell("--------" + MSG.columnTimetable() + "--------", 1, 3);
 	    	cell.setStyleClass("WebTableHeaderFirstRow");
     		cell.setAlign("center");
     		row.addContent(cell);
-	    	for(int j = 0; j < TIMETABLE_COLUMN_ORDER.length; j++){
-	    		cell = headerCell(TIMETABLE_COLUMN_ORDER[j], 1, 1);
-	    		cell.setNoWrap(true);
-	    		cell.setStyleClass("WebTableHeaderSecondRow");
-	    		row2.addContent(cell);     
-	    	}   		
+    		cell = headerCell(MSG.columnAssignedTime(), 1, 1);
+    		cell.setNoWrap(true);
+    		cell.setStyleClass("WebTableHeaderSecondRow");
+    		row2.addContent(cell);
+    		cell = headerCell(MSG.columnAssignedRoom(), 1, 1);
+    		cell.setNoWrap(true);
+    		cell.setStyleClass("WebTableHeaderSecondRow");
+    		row2.addContent(cell);
+    		cell = headerCell(MSG.columnAssignedRoomCapacity(), 1, 1);
+    		cell.setNoWrap(true);
+    		cell.setStyleClass("WebTableHeaderSecondRow");
+    		row2.addContent(cell);
     	}
     	if (isShowTitle()){
     		cell = this.headerCell(MSG.columnTitle(), 2, 1);
@@ -662,6 +675,24 @@ public class WebInstructionalOfferingTableBuilder {
     	if (!isEditable) return initNormalCell("",false);
     	if (TimePref.class.equals(prefType)) {
     		return(buildTimePrefCell(classAssignment,prefGroup, isEditable));
+    	} else if (InstructorCoursePref.class.equals(prefType)) {
+    		StringBuffer sb = new StringBuffer();
+    		for (Iterator i = prefGroup.effectivePreferences(InstructorCoursePref.class).iterator(); i.hasNext(); ) {
+    			InstructorCoursePref p = (InstructorCoursePref)i.next();
+    			sb.append("<span ");
+    	    	String style = "font-weight:bold;";
+    			if (p.getPrefLevel().getPrefId().intValue() != 4) {
+    				style += "color:" + p.getPrefLevel().prefcolor() + ";";
+    			}
+    			sb.append("style='" + style + "' ");
+    			sb.append("onmouseover=\"showGwtHint(this, '" + p.preferenceText() + " (" + MSG.prefOwnerInstructor() + ")');\" onmouseout=\"hideGwtHint();\">");
+    			sb.append(((DepartmentalInstructor)p.getOwner()).getName(getInstructorNameFormat()));
+    			sb.append("</span>");
+    			if (i.hasNext()) sb.append("<br>");
+    		}
+    		TableCell cell = this.initNormalCell(sb.toString(),isEditable);
+    		cell.setNoWrap(true);
+    		return(cell);
     	} else {
     		TableCell cell = this.initNormalCell(prefGroup.getEffectivePrefHtmlForPrefType(prefType),isEditable);
     		cell.setNoWrap(true);
@@ -828,7 +859,26 @@ public class WebInstructionalOfferingTableBuilder {
     			label = "<span style=\"color:gray;\">" + label + "</span>";
     		}
     		cell.addContent(label);
-            cell.setAlign("left");	
+            cell.setAlign("left");
+    	} else if (prefGroup instanceof SchedulingSubpart && isShowInstructorAssignment() && ((SchedulingSubpart)prefGroup).getTeachingLoad() != null) {
+    		SchedulingSubpart ss = (SchedulingSubpart)prefGroup;
+    		StringBuffer sb = new StringBuffer(Formats.getNumberFormat("0.##").format(ss.getTeachingLoad()) + " " + MSG.teachingLoadUnits());
+    		if (isShowPreferences()) {
+        		for (Iterator i = prefGroup.effectivePreferences(InstructorCoursePref.class).iterator(); i.hasNext(); ) {
+        			InstructorCoursePref p = (InstructorCoursePref)i.next();
+        			sb.append("<br><span ");
+        	    	String style = "font-weight:bold;";
+        			if (p.getPrefLevel().getPrefId().intValue() != 4) {
+        				style += "color:" + p.getPrefLevel().prefcolor() + ";";
+        			}
+        			sb.append("style='" + style + "' ");
+        			sb.append("onmouseover=\"showGwtHint(this, '" + p.preferenceText() + " (" + MSG.prefOwnerInstructor() + ")');\" onmouseout=\"hideGwtHint();\">");
+        			sb.append(((DepartmentalInstructor)p.getOwner()).getName(getInstructorNameFormat()));
+        			sb.append("</span>");
+        		}
+    		}
+    		cell.setNoWrap(true);
+    		cell.addContent(sb.toString());
     	} else {
     		cell.addContent(" &nbsp; ");
     	}
@@ -1220,37 +1270,22 @@ public class WebInstructionalOfferingTableBuilder {
     		row.addContent(this.buildTimePatternCell(prefGroup, isEditable));
     	} 
     	if (isShowPreferences()){
-	        for (int j = 0; j < PREFERENCE_COLUMN_ORDER.length; j++) {
-	        	if (PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnTimePref())) {
-	        		row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, TimePref.class, isEditable));
-	        	} else if (sAggregateRoomPrefs && PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnAllRoomPref())) {
-	        		row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, new Class[] {RoomPref.class, BuildingPref.class, RoomFeaturePref.class, RoomGroupPref.class} , isEditable));
-	        	} else if (PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnRoomPref())) {
-	        		row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, RoomPref.class, isEditable));
-	        	} else if (PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnBuildingPref())) {
-	        		row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, BuildingPref.class, isEditable));
-	        	} else if (PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnRoomFeaturePref())) {
-	        		row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, RoomFeaturePref.class, isEditable));
-	        	} else if (iDisplayDistributionPrefs && PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnDistributionPref())) {
-	        		row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, DistributionPref.class, isEditable));
-	        	} else if (PREFERENCE_COLUMN_ORDER[j].equals(MSG.columnRoomGroupPref())) {
-	        		row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, RoomGroupPref.class, isEditable));
-	        	}
-	        }
-    	} 
+    		row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, TimePref.class, isEditable));
+    		row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, new Class[] {RoomPref.class, BuildingPref.class, RoomFeaturePref.class, RoomGroupPref.class} , isEditable));
+    		if (getDisplayDistributionPrefs()) {
+    			row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, DistributionPref.class, isEditable));
+    		}
+    		if (getDisplayInstructorPrefs()) {
+    			row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, InstructorAttributePref.class, isEditable));
+    		}
+    	}
     	if (isShowInstructor()){
     		row.addContent(this.buildInstructor(prefGroup, isEditable));
     	}
     	if (getDisplayTimetable() && isShowTimetable()){
-	        for (int j = 0; j < TIMETABLE_COLUMN_ORDER.length; j++) {
-	        	if (TIMETABLE_COLUMN_ORDER[j].equals(MSG.columnAssignedTime())){
-	        		row.addContent(this.buildAssignedTime(classAssignment, prefGroup, isEditable));
-	        	} else if (TIMETABLE_COLUMN_ORDER[j].equals(MSG.columnAssignedRoom())){
-	        		row.addContent(this.buildAssignedRoom(classAssignment, prefGroup, isEditable));
-	        	} else if (TIMETABLE_COLUMN_ORDER[j].equals(MSG.columnAssignedRoomCapacity())){
-	        		row.addContent(this.buildAssignedRoomCapacity(classAssignment, prefGroup, isEditable));
-	        	}
-	        }
+    		row.addContent(this.buildAssignedTime(classAssignment, prefGroup, isEditable));
+    		row.addContent(this.buildAssignedRoom(classAssignment, prefGroup, isEditable));
+    		row.addContent(this.buildAssignedRoomCapacity(classAssignment, prefGroup, isEditable));
     	} 
     	if (isShowTitle()){
     		row.addContent(this.initNormalCell("&nbsp;", isEditable));
@@ -1472,7 +1507,7 @@ public class WebInstructionalOfferingTableBuilder {
 	       		row.addContent(initNormalCell("", isEditable));
         	} 
         	if (isShowPreferences()){
-		        for (int j = 0; j < PREFERENCE_COLUMN_ORDER.length + (iDisplayDistributionPrefs?0:-1); j++) {
+		        for (int j = 0; j < getPreferenceColumns(); j++) {
 		            row.addContent(initNormalCell("", isEditable));
 		        }
         	} 
@@ -1480,9 +1515,9 @@ public class WebInstructionalOfferingTableBuilder {
                 row.addContent(initNormalCell("", isEditable));
         	} 
         	if (getDisplayTimetable() && isShowTimetable()){
-        		for (int j = 0; j < TIMETABLE_COLUMN_ORDER.length; j++){
-        			row.addContent(initNormalCell("", isEditable));
-        		}
+        		row.addContent(initNormalCell("", isEditable));
+        		row.addContent(initNormalCell("", isEditable));
+        		row.addContent(initNormalCell("", isEditable));
         	} 
         	if (isShowTitle()){
         		row.addContent(this.initNormalCell("", isEditable));
@@ -1636,13 +1671,13 @@ public class WebInstructionalOfferingTableBuilder {
     		emptyCells ++;
     	}
     	if (isShowPreferences()) {
-    		emptyCells += PREFERENCE_COLUMN_ORDER.length + (iDisplayDistributionPrefs?0:-1);
+    		emptyCells += getPreferenceColumns();
     	}
     	if (isShowInstructor()){
     		emptyCells ++;
     	}
     	if (getDisplayTimetable() && isShowTimetable()) {
-    		emptyCells += TIMETABLE_COLUMN_ORDER.length;
+    		emptyCells += 3;
     	}
     	if (emptyCells>0) {
             if (isManagedAs) {
@@ -2036,6 +2071,11 @@ public class WebInstructionalOfferingTableBuilder {
 		    setShowExam(form.getExams());
 		} else {
 		    setShowExam(false);
+		}
+		if (form.getInstructorAssignment() != null) {
+			setShowInstructorAssignment(form.getInstructorAssignment());
+		} else {
+			setShowInstructorAssignment(false);
 		}
 	}
 	

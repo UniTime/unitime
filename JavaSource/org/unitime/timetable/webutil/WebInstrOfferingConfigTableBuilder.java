@@ -218,6 +218,11 @@ public class WebInstrOfferingConfigTableBuilder extends
 	        } else {
 		        setVisibleColumns(COLUMNS);	        	
 	        }
+	        boolean hasInstructorAssignments = false;
+	        for (SchedulingSubpart ss: ioc.getSchedulingSubparts()) {
+	        	if (ss.getTeachingLoad() != null) { hasInstructorAssignments = true; break; }
+	        }
+	        setShowInstructorAssignment(hasInstructorAssignments);
 	        ClassDurationType dtype = ioc.getEffectiveDurationType();
         	TableStream configTable = this.initTable(outputStream, context.getUser().getCurrentAcademicSessionId(), dtype == null ? MSG.columnMinPerWk() : dtype.getLabel());
         	this.buildConfigRow(subpartIds, classAssignment, examAssignment,  configTable, ioc.getInstructionalOffering().getControllingCourseOffering(), ioc, context, !getDisplayConfigOpButtons(), true);

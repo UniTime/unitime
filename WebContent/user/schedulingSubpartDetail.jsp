@@ -288,6 +288,7 @@
 		WebClassListTableBuilder subpartClsTableBuilder = new WebClassListTableBuilder();
 		subpartClsTableBuilder.setDisplayDistributionPrefs(false);
 		subpartClsTableBuilder.setDisplayConflicts(true);
+		subpartClsTableBuilder.setShowInstructorAssignment(frm.getInstructorAssignment());
 		subpartClsTableBuilder.htmlTableForSubpartClasses(
 									sessionContext,
 				    		        WebSolver.getClassAssignmentProxy(session),

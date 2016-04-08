@@ -488,12 +488,12 @@
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<A name='AttributePref'/>
-				<tt:section-header title="<%=MSG.sectionTitleInstructorAttributePreferences() %>">
+				<tt:section-header title="<%=MSG.sectionTitleAttributePreferences() %>">
 					<html:submit property="op" 
 						styleClass="btn" 
-						accesskey="<%=MSG.accessAddInstructorAttributePreference() %>"
-						title="<%=MSG.titleAddInstructorAttributePreference(MSG.accessAddInstructorAttributePreference()) %>">
-						<loc:message name="actionAddInstructorAttributePreference" />
+						accesskey="<%=MSG.accessAddAttributePreference() %>"
+						title="<%=MSG.titleAddAttributePreference(MSG.accessAddAttributePreference()) %>">
+						<loc:message name="actionAddAttributePreference" />
 					</html:submit>
 				</tt:section-header>
 			</TD>
@@ -532,9 +532,9 @@
 					</html:select> &nbsp;
 					<html:submit property="op" 
 						styleClass="btn" 
-						title="<%=MSG.titleRemoveInstructorAttributePreference() %>"
+						title="<%=MSG.titleRemoveAttributePreference() %>"
 						onclick="<%= \"javascript: doDel('attributePref', '\" + ctr + \"');\"%>">
-						<loc:message name="actionRemoveInstructorAttributePreference" />
+						<loc:message name="actionRemoveAttributePreference" />
 					</html:submit> 			
 				</TD>
 			</TR>
@@ -608,12 +608,12 @@
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<A name='CoursePref'/>
-				<tt:section-header title="<%=MSG.sectionTitleCoursePreferences() %>">
+				<tt:section-header title="<%=MSG.sectionTitleInstructorPreferences() %>">
 					<html:submit property="op" 
 						styleClass="btn" 
-						accesskey="<%=MSG.accessAddCoursePreference() %>"
-						title="<%=MSG.titleAddCoursePreference(MSG.accessAddCoursePreference()) %>">
-						<loc:message name="actionAddCoursePreference" />
+						accesskey="<%=MSG.accessAddInstructorPreference() %>"
+						title="<%=MSG.titleAddInstructorPreference(MSG.accessAddInstructorPreference()) %>">
+						<loc:message name="actionAddInstructorPreference" />
 					</html:submit>
 				</tt:section-header>
 			</TD>
@@ -652,9 +652,9 @@
 					</html:select> &nbsp;
 					<html:submit property="op" 
 						styleClass="btn" 
-						title="<%=MSG.titleRemoveCoursePreference() %>"
+						title="<%=MSG.titleRemoveInstructorPreference() %>"
 						onclick="<%= \"javascript: doDel('coursePref', '\" + ctr + \"');\"%>">
-						<loc:message name="actionRemoveCoursePreference" />
+						<loc:message name="actionRemoveInstructorPreference" />
 					</html:submit> 			
 				</TD>
 			</TR>

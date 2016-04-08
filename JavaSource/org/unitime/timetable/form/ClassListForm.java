@@ -65,6 +65,7 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	private Boolean schedulePrintNote;
 	private Boolean note;
 	private Boolean exams;
+	private Boolean instructorAssignment;
 	
 	private String sortBy;
 	private String filterAssignedRoom;
@@ -175,6 +176,7 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 		schedulePrintNote = new Boolean(false);
 		note = new Boolean(false);
 		exams = new Boolean(false);
+		instructorAssignment = new Boolean(false);
 		
 		sortBy = ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME);
 		filterInstructor = "";
@@ -544,4 +546,10 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	public boolean getIncludeCancelledClasses() {
 		return true;
 	}
+    public Boolean getInstructorAssignment() {
+    	return instructorAssignment;
+    }
+    public void setInstructorAssignment(Boolean instructorAssignment) {
+    	this.instructorAssignment = instructorAssignment;
+    }	
 }

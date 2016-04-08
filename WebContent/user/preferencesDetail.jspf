@@ -252,7 +252,7 @@
 	<logic:equal value="true" parameter="attributePref">
 		<logic:notEmpty name="<%=frmName%>" property="attributePrefs">
 		<TR>
-			<TD valign="top"><loc:message name="propertyInstructorAttribute"/> </TD>
+			<TD valign="top"><loc:message name="propertyAttributePrefs"/> </TD>
 			<TD>
 				<logic:iterate name="<%=frmName%>" property="attributePrefs" id="attributePref" indexId="ctr">
 					<% PreferenceLevel preference = null; %>
@@ -276,7 +276,7 @@
 	<logic:equal value="true" parameter="coursePref">
 		<logic:notEmpty name="<%=frmName%>" property="coursePrefs">
 		<TR>
-			<TD valign="top"><loc:message name="propertyCourse"/> </TD>
+			<TD valign="top"><loc:message name="propertyCoursePrefs"/> </TD>
 			<TD>
 				<logic:iterate name="<%=frmName%>" property="coursePrefs" id="coursePref" indexId="ctr">
 					<% PreferenceLevel preference = null; %>
@@ -303,7 +303,7 @@
 	<logic:equal value="true" parameter="instructorPref">
 		<logic:notEmpty name="<%=frmName%>" property="coursePrefs">
 		<TR>
-			<TD valign="top"><loc:message name="propertyCourse"/> </TD>
+			<TD valign="top"><loc:message name="propertyInstructorPrefs"/> </TD>
 			<TD>
 				<logic:iterate name="<%=frmName%>" property="coursePrefs" id="coursePref" indexId="ctr">
 					<% PreferenceLevel preference = null; %>

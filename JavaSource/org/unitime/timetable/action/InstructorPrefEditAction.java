@@ -117,6 +117,8 @@ public class InstructorPrefEditAction extends PreferencesAction {
                     || op.equals(MSG.actionAddRoomFeaturePreference())
                     || op.equals(MSG.actionAddDistributionPreference()) 
                     || op.equals(MSG.actionAddRoomGroupPreference())
+                    || op.equals(MSG.actionAddCoursePreference())
+                    || op.equals(MSG.actionAddAttributePreference())
                     || op.equals(MSG.actionUpdatePreferences()) 
                   //  || op.equals(rsc.getMessage("button.cancel")) -- not used???
                     || op.equals(MSG.actionClearInstructorPreferences())                 

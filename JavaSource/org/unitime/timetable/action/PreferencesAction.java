@@ -206,7 +206,10 @@ public class PreferencesAction extends Action {
         if(op.equals(MSG.actionAddCoursePreference())) 
             addCoursePref(request, frm, errors);
 
-        if(op.equals(MSG.actionAddInstructorAttributePreference())) 
+        if(op.equals(MSG.actionAddInstructorPreference())) 
+            addCoursePref(request, frm, errors);
+
+        if(op.equals(MSG.actionAddAttributePreference())) 
             addAttributePref(request, frm, errors);
 
         // Delete single preference
@@ -218,7 +221,8 @@ public class PreferencesAction extends Action {
         		|| op.equals(MSG.actionRemoveTimePattern())
         		|| op.equals(MSG.actionRemoveInstructor())
         		|| op.equals(MSG.actionRemoveCoursePreference())
-        		|| op.equals(MSG.actionRemoveInstructorAttributePreference())
+        		|| op.equals(MSG.actionRemoveAttributePreference())
+        		|| op.equals(MSG.actionRemoveInstructorPreference())
         		)
             doDelete(request, frm);
         
@@ -553,8 +557,8 @@ public class PreferencesAction extends Action {
                 List lstL = frm.getAttributePrefLevels();
                 lst.remove(deleteId);
                 lstL.remove(deleteId);
-                frm.setCoursePrefs(lst);
-                frm.setCoursePrefLevels(lstL);
+                frm.setAttributePrefs(lst);
+                frm.setAttributePrefLevels(lstL);
                 request.setAttribute(HASH_ATTR, HASH_ATTRIBUTE_PREF);
             }
         }
