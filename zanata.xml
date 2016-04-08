@@ -2,7 +2,7 @@
 <config xmlns="http://zanata.org/namespace/config/">
     <url>https://translate.zanata.org/zanata/</url>
     <project>unitime</project>
-    <project-version>4.1</project-version>
+    <project-version>4.2</project-version>
     <project-type>utf8properties</project-type>
     <src-dir>.</src-dir>
     <trans-dir>.</trans-dir>
