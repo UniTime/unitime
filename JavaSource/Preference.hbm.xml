@@ -254,5 +254,22 @@
                 foreign-key="fk_course_pref_course"/>
 
         </union-subclass>
+
+        <union-subclass
+            name="InstructorPref"
+            table="instructor_pref"
+            abstract="false">
+            <many-to-one
+                name="instructor"
+                class="DepartmentalInstructor"
+                column="instructor_id"
+                not-null="true"
+                insert="true"
+                update="true"
+                lazy="false"
+                fetch="join"
+                foreign-key="fk_instructor_pref_instructor"/>
+
+        </union-subclass>
     </class>
 </hibernate-mapping>

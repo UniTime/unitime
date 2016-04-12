@@ -209,7 +209,7 @@ public class InstructorPrefEditAction extends PreferencesAction {
                     // Clear all old prefs
                     s.clear();                
                     
-            		super.doUpdate(request, frm, inst, s, timeVertical);
+            		super.doUpdate(request, frm, inst, s, timeVertical, true);
                     
                     ChangeLog.addChange(
                             null, 

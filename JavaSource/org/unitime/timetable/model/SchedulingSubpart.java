@@ -449,12 +449,6 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	if (DistributionPref.class.equals(type)) {
     		return effectiveDistributionPreferences(getManagingDept());
     	}
-    	if (InstructorCoursePref.class.equals(type)) {
-    		return new TreeSet<InstructorCoursePref>(InstructorCoursePrefDAO.getInstance().getSession().createQuery(
-    				"from InstructorCoursePref where course.uniqueId = :courseId")
-    		.setLong("courseId", getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getUniqueId()).setCacheable(true).list());
-    	}
-    	
     	Set subpartPrefs = getPreferences(type, this);
     	
     	if (canInheritParentPreferences()) {
@@ -479,6 +473,23 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     		Set ret = removeNeutralPreferences(combinePreferences(type, subpartPrefs, parentPrefs));
     		return fixDurationInTimePreferences ? fixDurationInTimePreferences(ret) : ret;
     	}
+    	
+    	if (InstructorPref.class.equals(type)) {
+    		Set parentPrefs = new HashSet();
+    		for (InstructorCoursePref icp: (List<InstructorCoursePref>)InstructorCoursePrefDAO.getInstance().getSession().createQuery(
+    				"from InstructorCoursePref where course.instructionalOffering.uniqueId = :offeringId")
+    				.setLong("offeringId", getInstrOfferingConfig().getInstructionalOffering().getUniqueId()).setCacheable(true).list()) {
+    			InstructorPref ip = new InstructorPref();
+    			ip.setInstructor((DepartmentalInstructor)icp.getOwner());
+    			ip.setPrefLevel(icp.getPrefLevel());
+    			ip.setOwner(icp.getOwner());
+    			parentPrefs.add(ip);
+    		}
+    		
+    		Set ret = removeNeutralPreferences(combinePreferences(type, subpartPrefs, parentPrefs));
+    		return fixDurationInTimePreferences ? fixDurationInTimePreferences(ret) : ret;
+    	}
+
     	
     	return fixDurationInTimePreferences ? fixDurationInTimePreferences(subpartPrefs) : subpartPrefs;
     }
@@ -757,6 +768,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	newSchedulingSubpart.setMinutesPerWk(getMinutesPerWk());
     	newSchedulingSubpart.setStudentAllowOverlap(isStudentAllowOverlap());
     	newSchedulingSubpart.setTeachingLoad(getTeachingLoad());
+    	newSchedulingSubpart.setNbrInstructors(getNbrInstructors());
     	return(newSchedulingSubpart);
     }
 
@@ -872,5 +884,9 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 	 */
 	public List<Date> getDates(DatePattern datePattern, int dayCode, int minutesPerMeeting) {
 		return getInstrOfferingConfig().getDurationModel().getDates(getMinutesPerWk(), datePattern, dayCode, minutesPerMeeting);
+	}
+	
+	public boolean isInstructorAssignmentNeeded() {
+		return getTeachingLoad() != null && getNbrInstructors() != null && getNbrInstructors() > 0;
 	}
 }

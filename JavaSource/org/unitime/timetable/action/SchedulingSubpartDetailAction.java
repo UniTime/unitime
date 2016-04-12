@@ -284,8 +284,9 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        frm.setAutoSpreadInTime(ss.isAutoSpreadInTime());
 	        frm.setStudentAllowOverlap(ss.isStudentAllowOverlap());
 	        frm.setDatePattern(ss.getDatePattern()==null?new Long(-1):ss.getDatePattern().getUniqueId());
-	        frm.setInstructorAssignment(ss.getTeachingLoad() != null);
+	        frm.setInstructorAssignment(ss.isInstructorAssignmentNeeded());
 	        frm.setTeachingLoad(ss.getTeachingLoad() == null ? "" : Formats.getNumberFormat("0.##").format(ss.getTeachingLoad()));
+	        frm.setNbrInstructors(ss.isInstructorAssignmentNeeded() ? ss.getNbrInstructors().intValue() : 1);
 	        if (frm.getCreditText() == null || frm.getCreditText().length() == 0){
 		        if (ss.getCredit() != null){
 		        	CourseCreditUnitConfig credit = ss.getCredit();

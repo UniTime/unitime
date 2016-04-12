@@ -55,7 +55,6 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DatePatternPref;
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
@@ -64,7 +63,7 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.InstructorAttributePref;
-import org.unitime.timetable.model.InstructorCoursePref;
+import org.unitime.timetable.model.InstructorPref;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
@@ -127,6 +126,7 @@ public class WebInstructionalOfferingTableBuilder {
     										MSG.columnDatePattern(),
     										MSG.columnTimePattern(),
     										MSG.columnPreferences(),
+    										MSG.columnTeachingLoad(),
     										MSG.columnInstructor(),
     										MSG.columnTimetable(),
     										MSG.columnOfferingCredit(),
@@ -231,7 +231,7 @@ public class WebInstructionalOfferingTableBuilder {
     	return iDefaultTimeGridSize;
     }
     public int getPreferenceColumns() {
-    	return 2 + (getDisplayDistributionPrefs() ? 1 : 0) + (getDisplayInstructorPrefs() ? 1 : 0);
+    	return 2 + (getDisplayDistributionPrefs() ? 1 : 0) + (getDisplayInstructorPrefs() ? 2 : 0);
     }
      
     public void setUserSettings(UserContext user) {
@@ -439,7 +439,14 @@ public class WebInstructionalOfferingTableBuilder {
     			cell = headerCell(MSG.columnInstructorAttributePref(), 1, 1);
         		cell.setStyleClass("WebTableHeaderSecondRow");
         		row2.addContent(cell);
+    			cell = headerCell(MSG.columnInstructorPref(), 1, 1);
+        		cell.setStyleClass("WebTableHeaderSecondRow");
+        		row2.addContent(cell);
     		}
+    	}
+    	if (isShowInstructorAssignment()) {
+    		cell = this.headerCell(MSG.columnTeachingLoad(), 2, 1);
+    		row.addContent(cell);
     	}
     	if (isShowInstructor()){
     		cell = this.headerCell(MSG.columnInstructor(), 2, 1);
@@ -636,7 +643,7 @@ public class WebInstructionalOfferingTableBuilder {
 					hasReq = true; text = "";
 				}
 				if (!hasReq || PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog())) {
-					text +=  (text.isEmpty() ? "" : "<br>") + pref.preferenceHtml();
+					text +=  (text.isEmpty() ? "" : "<br>") + pref.preferenceHtml(getInstructorNameFormat());
 				}
 			}
     		cell = initNormalCell("<div>"+dp.getName()+"</div>" + text, isEditable);
@@ -671,30 +678,13 @@ public class WebInstructionalOfferingTableBuilder {
     	return (cell);
     	
     }
+    
     private TableCell buildPreferenceCell(ClassAssignmentProxy classAssignment, PreferenceGroup prefGroup, Class prefType, boolean isEditable){
     	if (!isEditable) return initNormalCell("",false);
     	if (TimePref.class.equals(prefType)) {
     		return(buildTimePrefCell(classAssignment,prefGroup, isEditable));
-    	} else if (InstructorCoursePref.class.equals(prefType)) {
-    		StringBuffer sb = new StringBuffer();
-    		for (Iterator i = prefGroup.effectivePreferences(InstructorCoursePref.class).iterator(); i.hasNext(); ) {
-    			InstructorCoursePref p = (InstructorCoursePref)i.next();
-    			sb.append("<span ");
-    	    	String style = "font-weight:bold;";
-    			if (p.getPrefLevel().getPrefId().intValue() != 4) {
-    				style += "color:" + p.getPrefLevel().prefcolor() + ";";
-    			}
-    			sb.append("style='" + style + "' ");
-    			sb.append("onmouseover=\"showGwtHint(this, '" + p.preferenceText() + " (" + MSG.prefOwnerInstructor() + ")');\" onmouseout=\"hideGwtHint();\">");
-    			sb.append(((DepartmentalInstructor)p.getOwner()).getName(getInstructorNameFormat()));
-    			sb.append("</span>");
-    			if (i.hasNext()) sb.append("<br>");
-    		}
-    		TableCell cell = this.initNormalCell(sb.toString(),isEditable);
-    		cell.setNoWrap(true);
-    		return(cell);
     	} else {
-    		TableCell cell = this.initNormalCell(prefGroup.getEffectivePrefHtmlForPrefType(prefType),isEditable);
+    		TableCell cell = this.initNormalCell(prefGroup.getEffectivePrefHtmlForPrefType(prefType, getInstructorNameFormat()),isEditable);
     		cell.setNoWrap(true);
     		return(cell);
     	}
@@ -846,6 +836,34 @@ public class WebInstructionalOfferingTableBuilder {
     	cell.setNoWrap(true);
         return(cell);
     }
+    
+    protected TableCell buildInstructorAssignment(PreferenceGroup prefGroup, boolean isEditable){
+    	TableCell cell = this.initNormalCell("" ,isEditable);
+    	if (prefGroup instanceof Class_) {
+    		Class_ c = (Class_) prefGroup;
+    		if (c.isInstructorAssignmentNeeded()) {
+    			cell.addContent(
+    					(c.effectiveNbrInstructors() > 1 ? c.effectiveNbrInstructors() + " &times; " : "") +
+    					Formats.getNumberFormat("0.##").format(c.effectiveTeachingLoad()) + " " + MSG.teachingLoadUnits());
+    			cell.setAlign("right");
+    			cell.setNoWrap(true);
+    		} else if (c.getSchedulingSubpart().isInstructorAssignmentNeeded()) {
+    			cell.addContent(MSG.cellNoInstructorAssignment());
+    			cell.setAlign("right");
+    		}
+    	} else if (prefGroup instanceof SchedulingSubpart) {
+    		SchedulingSubpart ss = (SchedulingSubpart)prefGroup;
+    		if (ss.isInstructorAssignmentNeeded()) {
+    			cell.addContent((ss.getNbrInstructors() != null && ss.getNbrInstructors() > 1 ? ss.getNbrInstructors() + " &times; " : "") +
+    					Formats.getNumberFormat("0.##").format(ss.getTeachingLoad()) + " " + MSG.teachingLoadUnits());
+    			cell.setAlign("right");
+    			cell.setNoWrap(true);
+    		}
+    	} else {
+    		cell.addContent(" &nbsp; ");
+    	}
+        return(cell);
+    }
 
     protected TableCell buildInstructor(PreferenceGroup prefGroup, boolean isEditable){
     	TableCell cell = this.initNormalCell("" ,isEditable);
@@ -860,25 +878,6 @@ public class WebInstructionalOfferingTableBuilder {
     		}
     		cell.addContent(label);
             cell.setAlign("left");
-    	} else if (prefGroup instanceof SchedulingSubpart && isShowInstructorAssignment() && ((SchedulingSubpart)prefGroup).getTeachingLoad() != null) {
-    		SchedulingSubpart ss = (SchedulingSubpart)prefGroup;
-    		StringBuffer sb = new StringBuffer(Formats.getNumberFormat("0.##").format(ss.getTeachingLoad()) + " " + MSG.teachingLoadUnits());
-    		if (isShowPreferences()) {
-        		for (Iterator i = prefGroup.effectivePreferences(InstructorCoursePref.class).iterator(); i.hasNext(); ) {
-        			InstructorCoursePref p = (InstructorCoursePref)i.next();
-        			sb.append("<br><span ");
-        	    	String style = "font-weight:bold;";
-        			if (p.getPrefLevel().getPrefId().intValue() != 4) {
-        				style += "color:" + p.getPrefLevel().prefcolor() + ";";
-        			}
-        			sb.append("style='" + style + "' ");
-        			sb.append("onmouseover=\"showGwtHint(this, '" + p.preferenceText() + " (" + MSG.prefOwnerInstructor() + ")');\" onmouseout=\"hideGwtHint();\">");
-        			sb.append(((DepartmentalInstructor)p.getOwner()).getName(getInstructorNameFormat()));
-        			sb.append("</span>");
-        		}
-    		}
-    		cell.setNoWrap(true);
-    		cell.addContent(sb.toString());
     	} else {
     		cell.addContent(" &nbsp; ");
     	}
@@ -1277,7 +1276,11 @@ public class WebInstructionalOfferingTableBuilder {
     		}
     		if (getDisplayInstructorPrefs()) {
     			row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, InstructorAttributePref.class, isEditable));
+    			row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, InstructorPref.class, isEditable));
     		}
+    	}
+    	if (isShowInstructorAssignment()) {
+    		row.addContent(this.buildInstructorAssignment(prefGroup, isEditable));
     	}
     	if (isShowInstructor()){
     		row.addContent(this.buildInstructor(prefGroup, isEditable));
@@ -1511,6 +1514,9 @@ public class WebInstructionalOfferingTableBuilder {
 		            row.addContent(initNormalCell("", isEditable));
 		        }
         	} 
+        	if (isShowInstructorAssignment()) {
+        		row.addContent(initNormalCell("", isEditable));
+        	}
         	if (isShowInstructor()){
                 row.addContent(initNormalCell("", isEditable));
         	} 
@@ -1672,6 +1678,9 @@ public class WebInstructionalOfferingTableBuilder {
     	}
     	if (isShowPreferences()) {
     		emptyCells += getPreferenceColumns();
+    	}
+    	if (isShowInstructorAssignment()) {
+    		emptyCells ++;
     	}
     	if (isShowInstructor()){
     		emptyCells ++;

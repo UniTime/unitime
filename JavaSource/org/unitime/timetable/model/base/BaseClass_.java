@@ -53,6 +53,8 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	private String iExternalUniqueId;
 	private Integer iEnrollment;
 	private Boolean iCancelled;
+	private Float iTeachingLoad;
+	private Integer iNbrInstructors;
 
 	private Department iControllingDept;
 	private Department iManagingDept;
@@ -78,6 +80,8 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
 	public static String PROP_EXTERNAL_UID = "externalUniqueId";
 	public static String PROP_CANCELLED = "cancelled";
+	public static String PROP_TEACHING_LOAD = "teachingLoad";
+	public static String PROP_NBR_INSTRUCTORS = "nbrInstructors";
 
 	public BaseClass_() {
 		initialize();
@@ -134,6 +138,12 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	public Boolean isCancelled() { return iCancelled; }
 	public Boolean getCancelled() { return iCancelled; }
 	public void setCancelled(Boolean cancelled) { iCancelled = cancelled; }
+
+	public Float getTeachingLoad() { return iTeachingLoad; }
+	public void setTeachingLoad(Float teachingLoad) { iTeachingLoad = teachingLoad; }
+
+	public Integer getNbrInstructors() { return iNbrInstructors; }
+	public void setNbrInstructors(Integer nbrInstructors) { iNbrInstructors = nbrInstructors; }
 
 	public Department getControllingDept() { return iControllingDept; }
 	public void setControllingDept(Department controllingDept) { iControllingDept = controllingDept; }
@@ -207,6 +217,7 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +
 			"\n	ManagingDept: " + getManagingDept() +
 			"\n	MaxExpectedCapacity: " + getMaxExpectedCapacity() +
+			"\n	NbrInstructors: " + getNbrInstructors() +
 			"\n	NbrRooms: " + getNbrRooms() +
 			"\n	Notes: " + getNotes() +
 			"\n	ParentClass: " + getParentClass() +
@@ -214,6 +225,7 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 			"\n	SchedulePrintNote: " + getSchedulePrintNote() +
 			"\n	SchedulingSubpart: " + getSchedulingSubpart() +
 			"\n	SectionNumberCache: " + getSectionNumberCache() +
+			"\n	TeachingLoad: " + getTeachingLoad() +
 			"\n	UniqueId: " + getUniqueId() +
 			"\n	UniqueIdRolledForwardFrom: " + getUniqueIdRolledForwardFrom() +
 			"]";

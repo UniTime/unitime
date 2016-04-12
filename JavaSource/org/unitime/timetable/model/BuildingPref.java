@@ -72,7 +72,7 @@ public class BuildingPref extends BaseBuildingPref {
     }
     
     @Override
-    public String preferenceHtml() {
+    public String preferenceHtml(String nameFormat) {
     	StringBuffer sb = new StringBuffer("<span ");
     	String style = "font-weight:bold;";
 		if (this.getPrefLevel().getPrefId().intValue() != 4) {

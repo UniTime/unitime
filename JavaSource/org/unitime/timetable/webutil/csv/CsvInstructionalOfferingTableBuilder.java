@@ -46,7 +46,6 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DatePatternPref;
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
@@ -54,7 +53,7 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.InstructorAttributePref;
-import org.unitime.timetable.model.InstructorCoursePref;
+import org.unitime.timetable.model.InstructorPref;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
@@ -138,6 +137,7 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowMinPerWk()) ret+=1;
     	if (isShowTimePattern()) ret+=1;
     	if (isShowPreferences()) ret+=getPreferenceColumns();
+    	if (isShowInstructorAssignment()) ret+=1;
     	if (isShowInstructor()) ret+=1;
     	if (getDisplayTimetable() && isShowTimetable()) ret+=3;
     	if (isShowTitle()) ret+=1;
@@ -202,7 +202,11 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		}
     		if (getDisplayInstructorPrefs()) {
     			line.add(createCell(MSG.columnInstructorAttributePref() + LINE_SEPARATOR + MSG.columnPreferences()));
+    			line.add(createCell(MSG.columnInstructorPref() + LINE_SEPARATOR + MSG.columnPreferences()));
     		}
+    	}
+    	if (isShowInstructorAssignment()) {
+    		line.add(createCell(MSG.columnTeachingLoad()));
     	}
     	if (isShowInstructor()) {
     		line.add(createCell(MSG.columnInstructor()));
@@ -493,6 +497,26 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	}
         return cell;
     }
+    
+    protected CSVField csvBuildInstructorAssignment(PreferenceGroup prefGroup, boolean isEditable){
+    	CSVField cell = createCell();
+    	if (prefGroup instanceof Class_) {
+    		Class_ c = (Class_) prefGroup;
+    		if (c.isInstructorAssignmentNeeded()) {
+    			addText(cell, (c.effectiveNbrInstructors() > 1 ? c.effectiveNbrInstructors() + " \u00d7 " : "") +
+    					Formats.getNumberFormat("0.##").format(c.effectiveTeachingLoad()) + " " + MSG.teachingLoadUnits(), false);
+    		} else if (c.getSchedulingSubpart().isInstructorAssignmentNeeded()) {
+    			addText(cell, MSG.cellNoInstructorAssignment(), false);
+    		}
+    	} else if (prefGroup instanceof SchedulingSubpart) {
+    		SchedulingSubpart ss = (SchedulingSubpart)prefGroup;
+    		if (ss.isInstructorAssignmentNeeded()) {
+    			addText(cell, (ss.getNbrInstructors() != null && ss.getNbrInstructors() > 1 ? ss.getNbrInstructors() + " \u00d7 " : "") +
+    					Formats.getNumberFormat("0.##").format(ss.getTeachingLoad()) + " " + MSG.teachingLoadUnits(), false);
+    		}
+    	}
+    	return cell;
+    }
 
     protected CSVField csvBuildInstructor(PreferenceGroup prefGroup, boolean isEditable){
     	CSVField cell = createCell();
@@ -504,15 +528,6 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     			ClassInstructor ci = (ClassInstructor)i.next();
         		String label = ci.getInstructor().getName(getInstructorNameFormat());
         		addText(cell, label, true);
-    		}
-    	} else if (prefGroup instanceof SchedulingSubpart && isShowInstructorAssignment() && ((SchedulingSubpart)prefGroup).getTeachingLoad() != null) {
-    		SchedulingSubpart ss = (SchedulingSubpart)prefGroup;
-    		addText(cell, Formats.getNumberFormat("0.##").format(ss.getTeachingLoad()) + " " + MSG.teachingLoadUnits());
-    		if (isShowPreferences()) {
-        		for (Iterator i = prefGroup.effectivePreferences(InstructorCoursePref.class).iterator(); i.hasNext(); ) {
-        			InstructorCoursePref p = (InstructorCoursePref)i.next();
-        			addText(cell, p.getPrefLevel().getAbbreviation() + " " + ((DepartmentalInstructor)p.getOwner()).getName(getInstructorNameFormat()), true);
-        		}
     		}
     	}
     	
@@ -839,8 +854,12 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		}
     		if (getDisplayInstructorPrefs()) {
     			line.add(csvBuildPreferenceCell(classAssignment,prefGroup, InstructorAttributePref.class, isEditable));
+    			line.add(csvBuildPreferenceCell(classAssignment,prefGroup, InstructorPref.class, isEditable));
     		}
-    	} 
+    	}
+    	if (isShowInstructorAssignment()){
+    		line.add(csvBuildInstructorAssignment(prefGroup, isEditable));
+    	}
     	if (isShowInstructor()){
     		line.add(csvBuildInstructor(prefGroup, isEditable));
     	}
@@ -984,7 +1003,10 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 		        for (int j = 0; j < getPreferenceColumns(); j++) {
 	        	    line.add(createCell());
 		        }
-        	} 
+        	}
+        	if (isShowInstructorAssignment()) {
+        		line.add(createCell());
+        	}
         	if (isShowInstructor()){
         	    line.add(createCell());
         	} 
@@ -1122,6 +1144,9 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	}
     	if (isShowPreferences()){
     		emptyCels += getPreferenceColumns();
+    	}
+    	if (isShowInstructorAssignment()) {
+    		emptyCels ++;
     	}
     	if (isShowInstructor()){
     		emptyCels ++;

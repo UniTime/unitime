@@ -107,9 +107,6 @@ public class ClassDetailAction extends PreferencesAction {
 	
     // --------------------------------------------------------- Class Constants
 
-    /** Anchor names **/
-    public final String HASH_INSTR_PREF = "InstructorPref";
-
 	// --------------------------------------------------------- Methods
 
 	/**
@@ -440,7 +437,11 @@ public class ClassDetailAction extends PreferencesAction {
 	        frm.setIsCrosslisted(new Boolean(cco.getInstructionalOffering().getCourseOfferings().size()>1));
 	        frm.setAccommodation(StudentAccomodation.toHtml(StudentAccomodation.getAccommodations(c)));
 	        frm.setIsCancelled(c.isCancelled());
-	        frm.setInstructorAssignment(c.getSchedulingSubpart().getTeachingLoad() != null);
+	        
+	        frm.setInstructorAssignmentDefault(c.getSchedulingSubpart().isInstructorAssignmentNeeded());
+	        frm.setInstructorAssignment(c.isInstructorAssignmentNeeded());
+	        frm.setTeachingLoad(c.effectiveTeachingLoad() == null ? "" : Formats.getNumberFormat("0.##").format(c.effectiveTeachingLoad()));
+	        frm.setNbrInstructors(c.isInstructorAssignmentNeeded() ? String.valueOf(c.effectiveNbrInstructors()) : "");
 
 	        // Load from class
 		    frm.setExpectedCapacity(c.getExpectedCapacity());

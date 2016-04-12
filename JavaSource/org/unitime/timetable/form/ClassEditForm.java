@@ -103,6 +103,11 @@ public class ClassEditForm extends PreferencesForm {
     private String accommodation;
     private Boolean isCancelled;
     private Boolean instructorAssignment;
+    private String nbrInstructors;
+    private String teachingLoad;
+    private Boolean instructorAssignmentDefault;
+    private Integer nbrInstructorsDefault;
+    private String teachingLoadDefault;
     
     // --------------------------------------------------------- Classes
 
@@ -168,10 +173,10 @@ public class ClassEditForm extends PreferencesForm {
             
 	        // Check no duplicates or blank instructors
             if(!super.checkPrefs(instructors))
-                errors.add("instrPrefs", 
+                errors.add("instructors", 
                         new ActionMessage(
                                 "errors.generic", 
-                                MSG.errorInvalidInstructorPreference()) );
+                                MSG.errorInvalidInstructors()) );
 
             /* -- 1 lead instructor not required
             // Check Lead Instructor is set
@@ -270,13 +275,18 @@ public class ClassEditForm extends PreferencesForm {
         isCrosslisted = null;
         isCancelled = null;
         instructorAssignment = null;
+        teachingLoad = null;
+        nbrInstructors = null;
+        instructorAssignmentDefault = null;
+        teachingLoadDefault = null;
+        nbrInstructorsDefault = 1;
 
         instructors = DynamicList.getInstance(new ArrayList(), factoryInstructors);
         instrPctShare= DynamicList.getInstance(new ArrayList(), factoryInstructors);
         assignments = null;
         enrollment = null;
         accommodation = null;
-        
+
         super.reset(mapping, request);
     }
 
@@ -628,6 +638,8 @@ public class ClassEditForm extends PreferencesForm {
     
     public Boolean getInstructorAssignment() { return instructorAssignment; }
     public void setInstructorAssignment(Boolean instructorAssignment) { this.instructorAssignment = instructorAssignment; }
+    public Boolean getInstructorAssignmentDefault() { return instructorAssignmentDefault; }
+    public void setInstructorAssignmentDefault(Boolean instructorAssignmentDefault) { this.instructorAssignmentDefault = instructorAssignmentDefault; }
 
     /**
      * @param date
@@ -724,4 +736,16 @@ public class ClassEditForm extends PreferencesForm {
 	
     public String getAccommodation() { return accommodation; }
     public void setAccommodation(String accommodation) { this.accommodation = accommodation; }
+    
+	public String getNbrInstructors() { return nbrInstructors; }
+	public void setNbrInstructors(String nbrInstructors) { this.nbrInstructors = nbrInstructors; }
+
+	public String getTeachingLoad() { return teachingLoad; }
+	public void setTeachingLoad(String teachingLoad) { this.teachingLoad = teachingLoad; }
+
+	public Integer getNbrInstructorsDefault() { return nbrInstructorsDefault; }
+	public void setNbrInstructorsDefault(Integer nbrInstructorsDefault) { this.nbrInstructorsDefault = nbrInstructorsDefault; }
+
+	public String getTeachingLoadDefault() { return teachingLoadDefault; }
+	public void setTeachingLoadDefault(String teachingLoadDefault) { this.teachingLoadDefault = teachingLoadDefault; }
 }

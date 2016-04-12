@@ -43,7 +43,6 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DatePatternPref;
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
@@ -51,7 +50,7 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.InstructorAttributePref;
-import org.unitime.timetable.model.InstructorCoursePref;
+import org.unitime.timetable.model.InstructorPref;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
@@ -175,6 +174,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowMinPerWk()) ret+=1;
     	if (isShowTimePattern()) ret+=1;
     	if (isShowPreferences()) ret+=getPreferenceColumns();
+    	if (isShowInstructorAssignment()) ret+=1;
     	if (isShowInstructor()) ret+=1;
     	if (getDisplayTimetable() && isShowTimetable()) ret+=3;
     	if (isShowTitle()) ret+=1;
@@ -215,8 +215,10 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 			}
 			if (getDisplayInstructorPrefs()) {
 				width[idx++] = 150f;
+				width[idx++] = 150f;
 			}
     	}
+    	if (isShowInstructorAssignment()) width[idx++] = 100f;
     	if (isShowInstructor()) width[idx++] = 200f;
     	if (getDisplayTimetable() && isShowTimetable()) {
     		width[idx++] = 130f;
@@ -302,6 +304,11 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		PdfPCell c = createCell();
     		c.setColspan(getPreferenceColumns());
     		addText(c, "----" + MSG.columnPreferences() + "----", true, Element.ALIGN_CENTER);
+    		iPdfTable.addCell(c);
+    	}
+    	if (isShowInstructorAssignment()){
+    		PdfPCell c = createCell();
+    		addText(c, MSG.columnTeachingLoad(), true, Element.ALIGN_LEFT);
     		iPdfTable.addCell(c);
     	}
     	if (isShowInstructor()){
@@ -423,7 +430,16 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         		c4.setBorderWidthBottom(1);
         		addText(c4, MSG.columnInstructorAttributePref(), true, Element.ALIGN_LEFT);
         		iPdfTable.addCell(c4);
+        		PdfPCell c5 = createCell();
+        		c5.setBorderWidthBottom(1);
+        		addText(c5, MSG.columnInstructorPref(), true, Element.ALIGN_LEFT);
+        		iPdfTable.addCell(c5);
     		}
+    	}
+    	if (isShowInstructorAssignment()){
+    		PdfPCell c = createCell();
+    		c.setBorderWidthBottom(1);
+    		iPdfTable.addCell(c);
     	}
     	if (isShowInstructor()){
     		PdfPCell c = createCell();
@@ -773,6 +789,31 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	
         return cell;
     }
+    
+    protected PdfPCell pdfBuildInstructorAssignment(PreferenceGroup prefGroup, boolean isEditable){
+    	Color color = (isEditable?sEnableColor:sDisableColor);
+    	PdfPCell cell = createCell();
+    	
+    	if (prefGroup instanceof Class_) {
+    		Class_ c = (Class_) prefGroup;
+    		if (c.isInstructorAssignmentNeeded()) {
+    			addText(cell, (c.effectiveNbrInstructors() > 1 ? c.effectiveNbrInstructors() + " \u00d7 " : "") +
+    					Formats.getNumberFormat("0.##").format(c.effectiveTeachingLoad()) + " " + MSG.teachingLoadUnits(),
+    					false, false, Element.ALIGN_RIGHT, color, false);
+    		} else if (c.getSchedulingSubpart().isInstructorAssignmentNeeded()) {
+    			addText(cell, MSG.cellNoInstructorAssignment(), false, false, Element.ALIGN_RIGHT, color, false);
+    		}
+    	} else if (prefGroup instanceof SchedulingSubpart) {
+    		SchedulingSubpart ss = (SchedulingSubpart)prefGroup;
+    		if (ss.isInstructorAssignmentNeeded()) {
+    			addText(cell, (ss.getNbrInstructors() != null && ss.getNbrInstructors() > 1 ? ss.getNbrInstructors() + " \u00d7 " : "") +
+    					Formats.getNumberFormat("0.##").format(ss.getTeachingLoad()) + " " + MSG.teachingLoadUnits(),
+    					false, false, Element.ALIGN_RIGHT, color, false);
+    		}
+    	}
+    	
+        return cell;
+    }
 
     protected PdfPCell pdfBuildInstructor(PreferenceGroup prefGroup, boolean isEditable){
     	Color color = (isEditable?sEnableColor:sDisableColor);
@@ -788,16 +829,6 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         		boolean italic = !aClass.isDisplayInstructor().booleanValue();
         		boolean bold = ci.isLead().booleanValue();
         		addText(cell, label, bold, italic, Element.ALIGN_LEFT, color, true);
-    		}
-    	} else if (prefGroup instanceof SchedulingSubpart && isShowInstructorAssignment() && ((SchedulingSubpart)prefGroup).getTeachingLoad() != null) {
-    		SchedulingSubpart ss = (SchedulingSubpart)prefGroup;
-    		addText(cell, Formats.getNumberFormat("0.##").format(ss.getTeachingLoad()) + " " + MSG.teachingLoadUnits());
-    		if (isShowPreferences()) {
-        		for (Iterator i = prefGroup.effectivePreferences(InstructorCoursePref.class).iterator(); i.hasNext(); ) {
-        			InstructorCoursePref p = (InstructorCoursePref)i.next();
-        			addText(cell, p.getPrefLevel().getAbbreviation() + " " + ((DepartmentalInstructor)p.getOwner()).getName(getInstructorNameFormat()),
-        					false, false, Element.ALIGN_LEFT, (!isEditable ? color : p.getPrefLevel().awtPrefcolor()), true);
-        		}
     		}
     	}
     	
@@ -1147,7 +1178,11 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		}
     		if (getDisplayInstructorPrefs()) {
     			iPdfTable.addCell(pdfBuildPreferenceCell(classAssignment,prefGroup, InstructorAttributePref.class, isEditable));
+    			iPdfTable.addCell(pdfBuildPreferenceCell(classAssignment,prefGroup, InstructorPref.class, isEditable));
     		}
+    	}
+    	if (isShowInstructorAssignment()){
+    		iPdfTable.addCell(pdfBuildInstructorAssignment(prefGroup, isEditable));
     	}
     	if (isShowInstructor()){
     		iPdfTable.addCell(pdfBuildInstructor(prefGroup, isEditable));
@@ -1296,7 +1331,10 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 		        for (int j = 0; j < getPreferenceColumns(); j++) {
 	        	    iPdfTable.addCell(createCell());
 		        }
-        	} 
+        	}
+        	if (isShowInstructorAssignment()){
+        	    iPdfTable.addCell(createCell());
+        	}
         	if (isShowInstructor()){
         	    iPdfTable.addCell(createCell());
         	} 
@@ -1436,6 +1474,9 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	}
     	if (isShowPreferences()){
     		emptyCels += getPreferenceColumns();
+    	}
+    	if (isShowInstructorAssignment()){
+    		emptyCels ++;
     	}
     	if (isShowInstructor()){
     		emptyCels ++;

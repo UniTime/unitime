@@ -276,6 +276,12 @@
 		</TR>
 		<logic:equal name="<%=frmName%>" property="instructorAssignment" value="true">
 		<TR>
+			<TD><loc:message name="propertyNbrInstructors"/></TD>
+			<TD>
+				<html:text property="nbrInstructors" size="10" style="text-align: right;"/>
+			</TD>
+		</TR>
+		<TR>
 			<TD><loc:message name="propertyTeachingLoad"/></TD>
 			<TD>
 				<html:text property="teachingLoad" size="10" style="text-align: right;"/> <loc:message name="teachingLoadUnits"/>

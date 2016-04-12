@@ -301,28 +301,28 @@
 	
 <!-- Course Preferences (of a class or subpart) -->
 	<logic:equal value="true" parameter="instructorPref">
-		<logic:notEmpty name="<%=frmName%>" property="coursePrefs">
+		<logic:notEmpty name="<%=frmName%>" property="instructorPrefs">
 		<TR>
 			<TD valign="top"><loc:message name="propertyInstructorPrefs"/> </TD>
 			<TD>
-				<logic:iterate name="<%=frmName%>" property="coursePrefs" id="coursePref" indexId="ctr">
+				<logic:iterate name="<%=frmName%>" property="instructorPrefs" id="instructorPref" indexId="ctr">
 					<% PreferenceLevel preference = null; %>
 					<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
-						<logic:equal name="<%=frmName%>" property='<%="coursePrefLevels["+ctr+"]"%>' value="<%=((PreferenceLevel)prLevel).getUniqueId().toString()%>">
+						<logic:equal name="<%=frmName%>" property='<%="instructorPrefLevels["+ctr+"]"%>' value="<%=((PreferenceLevel)prLevel).getUniqueId().toString()%>">
 							<% preference = (PreferenceLevel)prLevel; %>
 						</logic:equal>
 					</logic:iterate>
 					<logic:iterate scope="request" name="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME%>" id="in">
-						<logic:equal name="in" property="value" value="<%=(String)coursePref%>">
+						<logic:equal name="in" property="value" value="<%=(String)instructorPref%>">
 							<div style='color:<%=preference.prefcolor()%>' title='<%=preference.getPrefName()%>: <%=((ComboBoxLookup)in).getLabel()%>'
-								onclick="document.location='instructorDetail.do?instructorId=<%=(String)coursePref%>';"
+								onclick="document.location='instructorDetail.do?instructorId=<%=(String)instructorPref%>';"
 								onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"><B><bean:write name="in" property="label"/></B></div>
 						</logic:equal>
 					</logic:iterate>
 	   			</logic:iterate>
 		   	</TD>
 	   	</TR>
-	   	</logic:notEmpty>
+	   	</logic:notEmpty>	   	
 	</logic:equal>	
 	
 	<logic:notEmpty name="<%=Location.AVAILABLE_LOCATIONS_ATTR%>" scope="request">

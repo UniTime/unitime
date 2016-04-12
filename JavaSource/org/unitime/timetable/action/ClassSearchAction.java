@@ -143,6 +143,7 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 		   	sessionContext.getUser().setProperty("ClassList.datePattern",classListForm.getDatePattern() ? "1" : "0");
 	    	sessionContext.getUser().setProperty("ClassList.timePattern",classListForm.getTimePattern() ? "1" : "0");
 	    	sessionContext.getUser().setProperty("ClassList.instructor",classListForm.getInstructor() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.instructorAssignment",classListForm.getInstructorAssignment() ? "1" : "0");
 	    	sessionContext.getUser().setProperty("ClassList.preferences",classListForm.getPreferences() ? "1" : "0");
 	    	if (classListForm.getTimetable() != null)
 	    		sessionContext.getUser().setProperty("ClassList.timetable",classListForm.getTimetable() ? "1" : "0");
@@ -250,6 +251,7 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 		form.setDatePattern("1".equals(sessionContext.getUser().getProperty("ClassList.datePattern", "1")));
 		form.setTimePattern("1".equals(sessionContext.getUser().getProperty("ClassList.timePattern", "1")));
 		form.setInstructor("1".equals(sessionContext.getUser().getProperty("ClassList.instructor", "1")));
+		form.setInstructorAssignment("1".equals(sessionContext.getUser().getProperty("ClassList.instructorAssignment", "1")));
 		form.setPreferences("1".equals(sessionContext.getUser().getProperty("ClassList.preferences", "1")));
 		form.setTimetable("1".equals(sessionContext.getUser().getProperty("ClassList.timetable", "1")));	
 		form.setFilterInstructor(sessionContext.getUser().getProperty("ClassList.filterInstructor", ""));

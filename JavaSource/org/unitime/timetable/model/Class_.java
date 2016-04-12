@@ -422,11 +422,6 @@ public class Class_ extends BaseClass_ {
     	if (DistributionPref.class.equals(type)) {
     		return effectiveDistributionPreferences(mngDept);
     	}
-    	if (InstructorCoursePref.class.equals(type)) {
-    		return new TreeSet<InstructorCoursePref>(InstructorCoursePrefDAO.getInstance().getSession().createQuery(
-    				"from InstructorCoursePref where course.uniqueId = :courseId")
-    		.setLong("courseId", getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getUniqueId()).setCacheable(true).list());
-    	}
 
     	if (leadInstructors==null || leadInstructors.isEmpty()) return effectivePreferences(type, fixDurationInTimePreferences);
 
@@ -451,7 +446,7 @@ public class Class_ extends BaseClass_ {
 		}
 		
 		// take subpart preferences
-		Set subpartPrefs = (getSchedulingSubpart().canInheritParentPreferences() ? getSchedulingSubpart().effectivePreferences(type, this) : getSchedulingSubpart().getPreferences(type, this));
+		Set subpartPrefs = getSchedulingSubpart().effectivePreferences(type, this);
 		if (subpartPrefs != null && !subpartPrefs.isEmpty() && !mngDept.equals(getSchedulingSubpart().getManagingDept())) {
 			// different managers -> weaken preferences, if needed
 			if (TimePref.class.equals(type)) {
@@ -523,7 +518,7 @@ public class Class_ extends BaseClass_ {
 		}
 		
 		// take subpart preferences
-		Set subpartPrefs = (hasExactTimePattern ? null : getSchedulingSubpart().canInheritParentPreferences() ? getSchedulingSubpart().effectivePreferences(type, this) : getSchedulingSubpart().getPreferences(type, this));
+		Set subpartPrefs = (hasExactTimePattern ? null : getSchedulingSubpart().effectivePreferences(type, this));
 		if (subpartPrefs != null && !subpartPrefs.isEmpty() && !mngDept.equals(getSchedulingSubpart().getManagingDept())) {
 			// different managers -> weaken preferences, if needed
 			if (TimePref.class.equals(type)) {
@@ -1133,6 +1128,8 @@ public class Class_ extends BaseClass_ {
 		newClass.setSchedulePrintNote(getSchedulePrintNote());
 		newClass.setSchedulingSubpart(getSchedulingSubpart());
 		newClass.setCancelled(isCancelled());
+		newClass.setTeachingLoad(getTeachingLoad());
+		newClass.setNbrInstructors(getNbrInstructors());
 		return(newClass);
 	}
 	
@@ -1762,4 +1759,19 @@ public class Class_ extends BaseClass_ {
         
         return available;
     }
+	
+	public boolean isInstructorAssignmentNeeded() {
+		return effectiveTeachingLoad() != null && effectiveNbrInstructors() > 0;
+	}
+	
+	public Float effectiveTeachingLoad() {
+		if (getTeachingLoad() != null) return getTeachingLoad();
+		return getSchedulingSubpart().getTeachingLoad();
+	}
+	
+	public int effectiveNbrInstructors() {
+		if (getNbrInstructors() != null) return getNbrInstructors();
+		if (getSchedulingSubpart().getNbrInstructors() != null) return getSchedulingSubpart().getNbrInstructors();
+		return 1;
+	}
 }

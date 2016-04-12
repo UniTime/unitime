@@ -174,7 +174,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      * @return - a String of HTML to display the Preference
      */
     
-    private String htmlForPrefs(Assignment assignment, Set prefList, boolean timeVertical, boolean gridAsText, String timeGridSize){
+    private String htmlForPrefs(Assignment assignment, Set prefList, boolean timeVertical, boolean gridAsText, String timeGridSize, String nameFormat){
        	StringBuffer sb = new StringBuffer();
        	if (prefList != null && !prefList.isEmpty()) {
        		if (prefList.toArray()[0] instanceof TimePref){
@@ -190,7 +190,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
 		    			notFirst = true;
 		    		}
 		    		aPref = (Preference) it.next();
-		    		sb.append(aPref.preferenceHtml());
+		    		sb.append(aPref.preferenceHtml(nameFormat));
 		    	}
        		}
        	}
@@ -251,15 +251,19 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     }
     
     public String getEffectivePrefHtmlForPrefType(Class type){
-    	return (htmlForPrefs(null, effectivePreferences(type), false, false, null));
+    	return (htmlForPrefs(null, effectivePreferences(type), false, false, null, null));
     }
     
     public String getEffectivePrefHtmlForPrefType(Class type, boolean timeVertical, boolean gridAsText, String timeGridSize){
-    	return (htmlForPrefs(null, effectivePreferences(type), timeVertical, gridAsText, timeGridSize));
+    	return (htmlForPrefs(null, effectivePreferences(type), timeVertical, gridAsText, timeGridSize, null));
+    }
+    
+    public String getEffectivePrefHtmlForPrefType(Class type, String nameFormat){
+    	return (htmlForPrefs(null, effectivePreferences(type), false, false, null, nameFormat));
     }
 
     public String getEffectivePrefHtmlForPrefType(Assignment assignment, Class type, boolean timeVertical, boolean gridAsText, String timeGridSize){
-    	return (htmlForPrefs(assignment, effectivePreferences(type), timeVertical, gridAsText, timeGridSize));
+    	return (htmlForPrefs(assignment, effectivePreferences(type), timeVertical, gridAsText, timeGridSize, null));
     }
 
     public Class getInstanceOf() {

@@ -307,8 +307,14 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Teaching Load:")
 	String propertyTeachingLoad();
 	
+	@DefaultMessage("Number of Instructors:")
+	String propertyNbrInstructors();
+	
 	@DefaultMessage("units")
 	String teachingLoadUnits();
+	
+	@DefaultMessage("N/A")
+	String cellNoInstructorAssignment();
 	
 	@DefaultMessage("this one")
 	String messageThisOne(); //used in getAssignmentTable - if the initial assignment is "this one"
@@ -468,6 +474,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Attribute")
 	String columnInstructorAttributePref();
+	
+	@DefaultMessage("Instructor")
+	String columnInstructorPref();
 	
 	@DefaultMessage("Course")
 	String columnCoursePref();
@@ -714,6 +723,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Maximal\nLoad")
 	String columnMaxTeachingLoadPDF();
+	
+	@DefaultMessage("Teaching Load")
+	String columnTeachingLoad();
 	
 	@DefaultMessage("Total")
 	String rowCrossListsTotal();
@@ -1883,8 +1895,8 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Invalid room feature preference level.")
 	String errorInvalidRoomFeaturePreferenceLevel();
 
-	@DefaultMessage("Invalid instructor preference: Check for duplicate / blank selection.")
-	String errorInvalidInstructorPreference();
+	@DefaultMessage("Invalid instructors: Check for duplicate / blank selection.")
+	String errorInvalidInstructors();
 	
 	@DefaultMessage("Time pattern not selected.")
 	String errorTimePatternNotSelected();
@@ -1901,11 +1913,18 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Invalid course preference level.")
 	String errorInvalidCoursePreferenceLevel();
 	
-	@DefaultMessage("Invalid instructor preference: Check for duplicate / blank selection.")
+	@DefaultMessage("Invalid attribute preference: Check for duplicate / blank selection.")
 	String errorInvalidAttributePreference();
 	
-	@DefaultMessage("Invalid instructor preference level.")
+	@DefaultMessage("Invalid attribute preference level.")
 	String errorInvalidAttributePreferenceLevel();
+	
+	@DefaultMessage("Invalid instructor preference: Check for duplicate / blank selection.")
+	String errorInvalidInstructorPreference();
+	
+	@DefaultMessage("Invalid instructor preference level.")
+	String errorInvalidInstructorPreferenceLevel();
+
 
 	@DefaultMessage("Null Operation not supported.")
 	String errorNullOperationNotSupported();
@@ -2065,6 +2084,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("<b>Teaching Load</b> is required.")
 	String errorNoTeachingLoad();
+	
+	@DefaultMessage("<b>Number of Instructors</b> is required.")
+	String errorNoNbrInstructors();
 	
 	@DefaultMessage("This instructor is allowed to teach two back-to-back classes that are too far away.")
 	String descriptionInstructorIgnoreTooFar();
@@ -2654,6 +2676,18 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("<font color='red'><B>ENABLED</B></font><i> -- Students are allowed to take classes from this subpart even when they overlap with other classes.</i>")
 	String classDetailAllowOverlap();
 	
-	@DefaultMessage("<font color='red'><B>ENABLED</B></font><i> -- Classes from this subpart will be included in the Instructor Scheduling problem.</i>")
+	@DefaultMessage("<font color='green'><B>ENABLED</B></font><i> -- Classes from this subpart will be included in the Instructor Scheduling problem.</i>")
+	String subpartDetailNeedInstructorAssignment();
+	
+	@DefaultMessage("<font color='green'><B>ENABLED</B></font><i> -- This class will be included in the Instructor Scheduling problem.</i>")
 	String classDetailNeedInstructorAssignment();
+	
+	@DefaultMessage("<font color='red'><B>DISABLED</B></font><i> -- This class will NOT be included in the Instructor Scheduling problem.</i>")
+	String classDetailNoInstructorAssignment();
+
+	@DefaultMessage("(defaults to {0} when blank)")
+	String classEditNbrRoomsDefault(String defaultValue);
+	
+	@DefaultMessage("(defaults to {0} when blank)")
+	String classEditTeachingLoadDefault(String defaultValue);
 }

@@ -65,6 +65,7 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.InstructorAttribute;
 import org.unitime.timetable.model.InstructorAttributePref;
 import org.unitime.timetable.model.InstructorCoursePref;
+import org.unitime.timetable.model.InstructorPref;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
 import org.unitime.timetable.model.PeriodPreferenceModel;
@@ -105,6 +106,7 @@ import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
+import org.unitime.timetable.util.NameFormat;
 import org.unitime.timetable.util.duration.DurationModel;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
@@ -141,6 +143,7 @@ public class PreferencesAction extends Action {
     public final String HASH_PERIOD_PREF = "PeriodPref";
     public final String HASH_DATE_PATTERN_PREF = "DatePatternPref";
     public final String HASH_COURSE_PREF = "CoursePref";
+    public final String HASH_INSTRUCTOR_PREF = "InstructorPref";
     public final String HASH_ATTRIBUTE_PREF = "AttributePref";
     
     // --------------------------------------------------------- Methods
@@ -207,7 +210,7 @@ public class PreferencesAction extends Action {
             addCoursePref(request, frm, errors);
 
         if(op.equals(MSG.actionAddInstructorPreference())) 
-            addCoursePref(request, frm, errors);
+            addInstructorPref(request, frm, errors);
 
         if(op.equals(MSG.actionAddAttributePreference())) 
             addAttributePref(request, frm, errors);
@@ -320,6 +323,29 @@ public class PreferencesAction extends Action {
                        new ActionMessage(
                                "errors.generic", 
                                MSG.errorInvalidCoursePreference()) );
+            saveErrors(request, errors);
+        }
+    }
+    
+    protected void addInstructorPref(
+            HttpServletRequest request, 
+            PreferencesForm frm,
+            ActionMessages errors ) {
+ 
+        List lst = frm.getInstructorPrefs();
+        if(frm.checkPrefs(lst)) {
+            for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
+	            frm.addToInstructorPrefs(
+	                    Preference.BLANK_PREF_VALUE, 
+	                    Preference.BLANK_PREF_VALUE );
+            }
+            request.setAttribute(HASH_ATTR, HASH_INSTRUCTOR_PREF);
+        }
+        else {
+            errors.add("instructorPrefs", 
+                       new ActionMessage(
+                               "errors.generic", 
+                               MSG.errorInvalidAttributePreference()) );
             saveErrors(request, errors);
         }
     }
@@ -561,6 +587,15 @@ public class PreferencesAction extends Action {
                 frm.setAttributePrefLevels(lstL);
                 request.setAttribute(HASH_ATTR, HASH_ATTRIBUTE_PREF);
             }
+            if(deleteType.equals("instructorPref")) {
+                List lst = frm.getInstructorPrefs();
+                List lstL = frm.getInstructorPrefLevels();
+                lst.remove(deleteId);
+                lstL.remove(deleteId);
+                frm.setInstructorPrefs(lst);
+                frm.setInstructorPrefLevels(lstL);
+                request.setAttribute(HASH_ATTR, HASH_INSTRUCTOR_PREF);
+            }
         }
     }
     
@@ -577,7 +612,8 @@ public class PreferencesAction extends Action {
             PreferencesForm frm,
             PreferenceGroup pg,
             Set s,
-            boolean timeVertical) throws Exception {
+            boolean timeVertical,
+            boolean instructorPreferences) throws Exception {
         
     	pg.setPreferences(s);
     	
@@ -902,73 +938,119 @@ public class PreferencesAction extends Action {
         	}
         } 
         
-        // Course Prefs
-        if (pg instanceof DepartmentalInstructor) {
-            lst = frm.getCoursePrefs();
-            lstL = frm.getCoursePrefLevels();
+        if (instructorPreferences) {
+            // Course Prefs
+        	if (pg instanceof DepartmentalInstructor) {
+                lst = frm.getCoursePrefs();
+                lstL = frm.getCoursePrefLevels();
+                
+                for(int i=0; i<lst.size(); i++) {
+                    String id = (String)lst.get(i);
+                    if (id==null || id.equals(Preference.BLANK_PREF_VALUE))
+                        continue;
+                    
+                    String pref = (String) lstL.get(i);
+                    Debug.debug("Course: " + id + ": " + pref);
+
+                    CourseOfferingDAO cdao = new CourseOfferingDAO();
+                    CourseOffering course = cdao.get(new Long(id));
+                    
+                    InstructorCoursePref cp = new InstructorCoursePref();
+                    cp.setOwner(pg);
+                    cp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
+                    cp.setCourse(course);
+
+                    s.add(cp);
+                }
+            }
             
-            for(int i=0; i<lst.size(); i++) {
+            // Attribute Prefs
+            lst = frm.getAttributePrefs();
+            lstL = frm.getAttributePrefLevels();
+            Set parentAttributePrefs = pg.effectivePreferences(InstructorAttributePref.class);
+            for (int i=0; i<lst.size(); i++) {
                 String id = (String)lst.get(i);
                 if (id==null || id.equals(Preference.BLANK_PREF_VALUE))
                     continue;
                 
                 String pref = (String) lstL.get(i);
-                Debug.debug("Course: " + id + ": " + pref);
+                Debug.debug("Attribute: " + id + ": " + pref);
 
-                CourseOfferingDAO cdao = new CourseOfferingDAO();
-                CourseOffering course = cdao.get(new Long(id));
+                InstructorAttributeDAO adao = new InstructorAttributeDAO();
+                InstructorAttribute attribute = adao.get(new Long(id));
                 
-                InstructorCoursePref cp = new InstructorCoursePref();
-                cp.setOwner(pg);
-                cp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
-                cp.setCourse(course);
+                InstructorAttributePref ap = new InstructorAttributePref();
+                ap.setOwner(pg);
+                ap.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
+                ap.setAttribute(attribute);
 
-                s.add(cp);
+                InstructorAttributePref sameParentAp = null;
+                for (Iterator j=parentAttributePrefs.iterator();j.hasNext();) {
+                	InstructorAttributePref p = (InstructorAttributePref)j.next();
+                	if (p.isSame(ap)) {
+                		if (p.getPrefLevel().equals(ap.getPrefLevel()))
+                			sameParentAp = p;
+                		j.remove();
+                		break;
+                	}
+                }
+
+                if (sameParentAp==null)
+                	s.add(ap);
             }
-        }
-        
-        // Attribute Prefs
-        lst = frm.getAttributePrefs();
-        lstL = frm.getAttributePrefLevels();
-        Set parentAttributePrefs = pg.effectivePreferences(InstructorAttributePref.class);
-        for (int i=0; i<lst.size(); i++) {
-            String id = (String)lst.get(i);
-            if (id==null || id.equals(Preference.BLANK_PREF_VALUE))
-                continue;
             
-            String pref = (String) lstL.get(i);
-            Debug.debug("Attribute: " + id + ": " + pref);
-
-            InstructorAttributeDAO adao = new InstructorAttributeDAO();
-            InstructorAttribute attribute = adao.get(new Long(id));
-            
-            InstructorAttributePref ap = new InstructorAttributePref();
-            ap.setOwner(pg);
-            ap.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
-            ap.setAttribute(attribute);
-
-            InstructorAttributePref sameParentAp = null;
-            for (Iterator j=parentAttributePrefs.iterator();j.hasNext();) {
-            	InstructorAttributePref p = (InstructorAttributePref)j.next();
-            	if (p.isSame(ap)) {
-            		if (p.getPrefLevel().equals(ap.getPrefLevel()))
-            			sameParentAp = p;
-            		j.remove();
-            		break;
+            if (parentAttributePrefs!=null && !parentAttributePrefs.isEmpty()) {
+            	for (Iterator i=parentAttributePrefs.iterator();i.hasNext();) {
+            		InstructorAttributePref ap = (InstructorAttributePref)((InstructorAttributePref)i.next()).clone();
+            		ap.setOwner(pg);
+            		ap.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
+            		s.add(ap);
             	}
             }
+            
+            // Instructor Prefs
+            lst = frm.getInstructorPrefs();
+            lstL = frm.getInstructorPrefLevels();
+            Set parentInstructorPrefs = pg.effectivePreferences(InstructorPref.class);
+            for (int i=0; i<lst.size(); i++) {
+                String id = (String)lst.get(i);
+                if (id==null || id.equals(Preference.BLANK_PREF_VALUE))
+                    continue;
+                
+                String pref = (String) lstL.get(i);
+                Debug.debug("Instructor: " + id + ": " + pref);
 
-            if (sameParentAp==null)
-            	s.add(ap);
-        }
-        
-        if (parentAttributePrefs!=null && !parentAttributePrefs.isEmpty()) {
-        	for (Iterator i=parentAttributePrefs.iterator();i.hasNext();) {
-        		InstructorAttributePref ap = (InstructorAttributePref)((InstructorAttributePref)i.next()).clone();
-        		ap.setOwner(pg);
-        		ap.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
-        		s.add(ap);
-        	}
+                DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
+                DepartmentalInstructor instructor = idao.get(new Long(id));
+                
+                InstructorPref ip = new InstructorPref();
+                ip.setOwner(pg);
+                ip.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
+                ip.setInstructor(instructor);
+
+                InstructorPref sameParentAp = null;
+                for (Iterator j=parentInstructorPrefs.iterator();j.hasNext();) {
+                	InstructorPref p = (InstructorPref)j.next();
+                	if (p.isSame(ip)) {
+                		if (p.getPrefLevel().equals(ip.getPrefLevel()))
+                			sameParentAp = p;
+                		j.remove();
+                		break;
+                	}
+                }
+
+                if (sameParentAp==null)
+                	s.add(ip);
+            }
+            
+            if (parentInstructorPrefs!=null && !parentInstructorPrefs.isEmpty()) {
+            	for (Iterator i=parentInstructorPrefs.iterator();i.hasNext();) {
+            		InstructorPref ap = (InstructorPref)((InstructorPref)i.next()).clone();
+            		ap.setOwner(pg);
+            		ap.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
+            		s.add(ap);
+            	}
+            }
         }
         
         // Set values in subpart
@@ -1405,9 +1487,22 @@ public class PreferencesAction extends Action {
         iter = attributePrefs.iterator();
         while (iter.hasNext()){
         	InstructorAttributePref ap = (InstructorAttributePref) iter.next();
-            Debug.debug("Adding instructor pref ... " + ap.getAttribute().getName());
+            Debug.debug("Adding attribute pref ... " + ap.getAttribute().getName());
             frm.addToAttributePrefs(
             		ap.getAttribute().getUniqueId().toString(), 
+                    ap.getPrefLevel().getUniqueId().toString() );
+        }
+        
+        // Instructor Prefs
+    	frm.getInstructorPrefs().clear();
+    	frm.getInstructorPrefLevels().clear();
+        Set instructorPrefs = pg.effectivePreferences(InstructorPref.class, leadInstructors);
+        iter = instructorPrefs.iterator();
+        while (iter.hasNext()){
+        	InstructorPref ap = (InstructorPref) iter.next();
+            Debug.debug("Adding instructor pref ... " + ap.getInstructor().getName(NameFormat.LAST_FIRST_MIDDLE.reference()));
+            frm.addToInstructorPrefs(
+            		ap.getInstructor().getUniqueId().toString(), 
                     ap.getPrefLevel().getUniqueId().toString() );
         }
 

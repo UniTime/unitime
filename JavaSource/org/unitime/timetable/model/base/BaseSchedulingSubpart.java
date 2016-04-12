@@ -47,6 +47,7 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 	private Integer iLimit;
 	private Long iUniqueIdRolledForwardFrom;
 	private Float iTeachingLoad;
+	private Integer iNbrInstructors;
 
 	private Session iSession;
 	private ItypeDesc iItype;
@@ -63,6 +64,7 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 	public static String PROP_SUBPART_SUFFIX = "schedulingSubpartSuffixCache";
 	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
 	public static String PROP_TEACHING_LOAD = "teachingLoad";
+	public static String PROP_NBR_INSTRUCTORS = "nbrInstructors";
 
 	public BaseSchedulingSubpart() {
 		initialize();
@@ -100,6 +102,9 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 
 	public Float getTeachingLoad() { return iTeachingLoad; }
 	public void setTeachingLoad(Float teachingLoad) { iTeachingLoad = teachingLoad; }
+
+	public Integer getNbrInstructors() { return iNbrInstructors; }
+	public void setNbrInstructors(Integer nbrInstructors) { iNbrInstructors = nbrInstructors; }
 
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
@@ -159,6 +164,7 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 			"\n	InstrOfferingConfig: " + getInstrOfferingConfig() +
 			"\n	Itype: " + getItype() +
 			"\n	MinutesPerWk: " + getMinutesPerWk() +
+			"\n	NbrInstructors: " + getNbrInstructors() +
 			"\n	ParentSubpart: " + getParentSubpart() +
 			"\n	SchedulingSubpartSuffixCache: " + getSchedulingSubpartSuffixCache() +
 			"\n	StudentAllowOverlap: " + getStudentAllowOverlap() +

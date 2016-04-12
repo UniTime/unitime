@@ -219,8 +219,10 @@ public class WebInstrOfferingConfigTableBuilder extends
 		        setVisibleColumns(COLUMNS);	        	
 	        }
 	        boolean hasInstructorAssignments = false;
-	        for (SchedulingSubpart ss: ioc.getSchedulingSubparts()) {
-	        	if (ss.getTeachingLoad() != null) { hasInstructorAssignments = true; break; }
+	        ss: for (SchedulingSubpart ss: ioc.getSchedulingSubparts()) {
+	        	if (ss.isInstructorAssignmentNeeded()) { hasInstructorAssignments = true; break; }
+	        	for (Class_ c: ss.getClasses())
+	        		if (c.isInstructorAssignmentNeeded()) { hasInstructorAssignments = true; break ss; }
 	        }
 	        setShowInstructorAssignment(hasInstructorAssignments);
 	        ClassDurationType dtype = ioc.getEffectiveDurationType();

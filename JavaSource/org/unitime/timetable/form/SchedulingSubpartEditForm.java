@@ -72,6 +72,7 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
     private boolean itypeBasic;
     private Boolean studentAllowOverlap;
     private Boolean instructorAssignment;
+    private Integer nbrInstructors;
     private String teachingLoad;
     
     // --------------------------------------------------------- Methods
@@ -88,6 +89,9 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
     	ActionErrors errors = super.validate(mapping, request);
     	if (instructorAssignment && (teachingLoad == null || teachingLoad.isEmpty())) {
     		errors.add("teachingLoad", new ActionMessage("errors.generic", MSG.errorNoTeachingLoad()));
+    	}
+    	if (instructorAssignment && (nbrInstructors == null || nbrInstructors <= 0)) {
+    		errors.add("nbrInstructors", new ActionMessage("errors.generic", MSG.errorNoNbrInstructors()));
     	}
     	return errors;
     }
@@ -110,6 +114,7 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
         instructionalType = null; instructionalTypeLabel = null;
         instructorAssignment = Boolean.FALSE;
         teachingLoad = null;
+        nbrInstructors = 1;
         super.reset(mapping, request);
     }
 
@@ -330,6 +335,9 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
 	public boolean getInstructorAssignment() { return instructorAssignment; }
 	public void setInstructorAssignment(boolean instructorAssignment) { this.instructorAssignment = instructorAssignment; }
 	
+	public Integer getNbrInstructors() { return nbrInstructors; }
+	public void setNbrInstructors(Integer nbrInstructors) { this.nbrInstructors = nbrInstructors; }
+
 	public String getTeachingLoad() { return teachingLoad; }
 	public void setTeachingLoad(String teachingLoad) { this.teachingLoad = teachingLoad; }
 }

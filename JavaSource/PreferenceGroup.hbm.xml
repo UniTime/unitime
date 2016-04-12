@@ -195,6 +195,12 @@
                 column="teaching_load"
                 type="java.lang.Float"
                 not-null="false"/>
+
+            <property
+                name="nbrInstructors"
+                column="nbr_instructors"
+                type="java.lang.Integer"
+                not-null="false"/>
         </union-subclass>
 
         <union-subclass
@@ -402,6 +408,17 @@
                 column="cancelled"
                 not-null="true"/>
 
+            <property
+                name="teachingLoad"
+                column="teaching_load"
+                type="java.lang.Float"
+                not-null="false"/>
+
+            <property
+                name="nbrInstructors"
+                column="nbr_instructors"
+                type="java.lang.Integer"
+                not-null="false"/>
         </union-subclass>
 
         <union-subclass

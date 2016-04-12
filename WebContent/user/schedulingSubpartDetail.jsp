@@ -224,9 +224,17 @@
 			<TR>
 				<TD><loc:message name="propertyNeedInstructorAssignment"/></TD>
 				<TD>
-					<loc:message name="classDetailNeedInstructorAssignment"/>
+					<loc:message name="subpartDetailNeedInstructorAssignment"/>
 				</TD>
 			</TR>
+			<logic:notEqual name="<%=frmName%>" property="nbrInstructors" value="1">
+				<TR>
+					<TD><loc:message name="propertyNbrInstructors"/></TD>
+					<TD>
+						<bean:write name="<%=frmName%>" property="nbrInstructors" />
+					</TD>
+				</TR>
+			</logic:notEqual>
 			<TR>
 				<TD><loc:message name="propertyTeachingLoad"/></TD>
 				<TD>

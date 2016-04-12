@@ -50,11 +50,15 @@ public abstract class Preference extends BasePreference implements Comparable {
 
 /*[CONSTRUCTOR MARKER END]*/
 	
+	public String preferenceTitle(String nameFormat) {
+		return getPrefLevel().getPrefName()+" "+preferenceText();
+	}
+	
 	public String preferenceTitle() {
 		return getPrefLevel().getPrefName()+" "+preferenceText();
 	}
-
-    public String preferenceHtml() {
+	
+	public String preferenceHtml(String nameFormat) {
     	StringBuffer sb = new StringBuffer("<span ");
     	String style = "font-weight:bold;";
 		if (this.getPrefLevel().getPrefId().intValue() != 4) {
@@ -78,16 +82,23 @@ public abstract class Preference extends BasePreference implements Comparable {
 		} else if (getOwner() != null && getOwner() instanceof Session) {
 			owner = " (" + MSG.prefOwnerSession() + ")";
 		}
-		sb.append("onmouseover=\"showGwtHint(this, '" + preferenceTitle() + owner + "');\" onmouseout=\"hideGwtHint();\">");
+		sb.append("onmouseover=\"showGwtHint(this, '" + preferenceTitle(nameFormat) + owner + "');\" onmouseout=\"hideGwtHint();\">");
 		
-		sb.append(this.preferenceAbbv());
+		sb.append(this.preferenceAbbv(nameFormat));
 		sb.append("</span>");
 		return (sb.toString());
+	}
+    
+    public String preferenceText(String nameFormat) {
+    	return preferenceText();
     }
     
     public abstract String preferenceText();
     public String preferenceAbbv() {
         return preferenceText();
+    }
+    public String preferenceAbbv(String nameFormat) {
+        return preferenceAbbv();
     }
     
 	/* (non-Javadoc)

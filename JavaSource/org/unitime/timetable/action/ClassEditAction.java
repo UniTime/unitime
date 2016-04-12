@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.action;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -66,6 +67,7 @@ import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 
@@ -89,7 +91,7 @@ public class ClassEditAction extends PreferencesAction {
     // --------------------------------------------------------- Class Constants
 
     /** Anchor names **/
-    public final String HASH_INSTR_PREF = "InstructorPref";
+    public final String HASH_INSTRUCTORS = "Instructors";
 
     // --------------------------------------------------------- Methods
 
@@ -156,7 +158,8 @@ public class ClassEditAction extends PreferencesAction {
                 || op.equals(MSG.actionNextClass())
                 || op.equals(MSG.actionPreviousClass())
                 || op.equals("updateDatePattern")
-                || op.equals("updatePref")) {
+                || op.equals("updatePref")
+                || op.equals("updateInstructorAssignment")) {
             classId = frm.getClassId().toString();
         }
 
@@ -282,7 +285,7 @@ public class ClassEditAction extends PreferencesAction {
                     doUpdate(request, frm, c, hibSession);
 
                     // Save Prefs
-                    super.doUpdate(request, frm, c, s, timeVertical);
+                    super.doUpdate(request, frm, c, s, timeVertical, c.isInstructorAssignmentNeeded());
                     
                     //if (c.getSchedulingSubpart().getTeachingLoad() != null)
                     //	updateInstructorCoursePreferences(hibSession, frm, c, c.getSchedulingSubpart().getControllingCourseOffering());
@@ -362,6 +365,9 @@ public class ClassEditAction extends PreferencesAction {
 			}
 		}
         
+        if (op.equals("updateInstructorAssignment")) {
+        	initPrefs(frm, c, leadInstructors, true);
+        }
         
         // Initialize Preferences for initial load
         frm.setAvailableTimePatterns(TimePattern.findApplicable(
@@ -471,8 +477,10 @@ public class ClassEditAction extends PreferencesAction {
         frm.setManagingDeptLabel(managingDept.getManagingDeptLabel());
         frm.setUnlimitedEnroll(c.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment());
         frm.setAccommodation(StudentAccomodation.toHtml(StudentAccomodation.getAccommodations(c)));
-        frm.setInstructorAssignment(c.getSchedulingSubpart().getTeachingLoad() != null);
-
+        frm.setInstructorAssignmentDefault(c.getSchedulingSubpart().isInstructorAssignmentNeeded());
+        frm.setTeachingLoadDefault(c.getSchedulingSubpart().getTeachingLoad() == null ? "" : Formats.getNumberFormat("0.##").format(c.getSchedulingSubpart().getTeachingLoad()));
+        frm.setNbrInstructorsDefault(c.getSchedulingSubpart().isInstructorAssignmentNeeded() ? c.getSchedulingSubpart().getNbrInstructors() : 1);
+        
         Class_ next = c.getNextClass(sessionContext, Right.ClassEdit);
         frm.setNextId(next==null?null:next.getUniqueId().toString());
         Class_ previous = c.getPreviousClass(sessionContext, Right.ClassEdit);
@@ -493,6 +501,10 @@ public class ClassEditAction extends PreferencesAction {
 		    frm.setRoomRatio(c.getRoomRatio());
 		    frm.setEnabledForStudentScheduling(c.isEnabledForStudentScheduling());
 		    frm.setDisplayInstructor(c.isDisplayInstructor());
+		    
+	        frm.setInstructorAssignment(c.isInstructorAssignmentNeeded());
+	        frm.setTeachingLoad(c.getTeachingLoad() == null ? "" : Formats.getNumberFormat("0.##").format(c.getTeachingLoad()));
+	        frm.setNbrInstructors(c.isInstructorAssignmentNeeded() && c.getNbrInstructors() != null? c.getNbrInstructors().toString() : "");
 
 		    List instructors = new ArrayList(c.getClassInstructors());
 		    InstructorComparator ic = new InstructorComparator();
@@ -531,6 +543,28 @@ public class ClassEditAction extends PreferencesAction {
 	    //c.setClassSuffix(frm.getClassSuffix());
 	    c.setMaxExpectedCapacity(frm.getMaxExpectedCapacity());
 	    c.setRoomRatio(frm.getRoomRatio());
+	    
+	    if (frm.getInstructorAssignment() != null && frm.getInstructorAssignment().booleanValue()) {
+	        try {
+	        	if (frm.getInstructorAssignment() && frm.getTeachingLoad() != null)
+	        		c.setTeachingLoad(Formats.getNumberFormat("0.##").parse(frm.getTeachingLoad()).floatValue());
+	        	else
+	        		c.setTeachingLoad(null);
+	        } catch (ParseException e) {
+	        	c.setTeachingLoad(null);
+	        }
+	        try {
+	        	if (frm.getInstructorAssignment() && frm.getNbrInstructors() != null)
+	        		c.setNbrInstructors(Integer.parseInt(frm.getNbrInstructors()));
+	        	else
+	        		c.setNbrInstructors(null);
+	        } catch (NumberFormatException e) {
+	        	c.setNbrInstructors(null);
+	        }
+	    } else {
+	    	c.setTeachingLoad(null);
+	    	c.setNbrInstructors(c.getSchedulingSubpart().getNbrInstructors() != null && c.getSchedulingSubpart().getNbrInstructors() > 0 ? new Integer(0) : null);
+	    }
 
 	    Boolean disb = frm.getEnabledForStudentScheduling();
 	    c.setEnabledForStudentScheduling(disb==null ? new Boolean(false) : disb);
@@ -637,13 +671,13 @@ public class ClassEditAction extends PreferencesAction {
         List lst = frm.getInstructors();
         if(frm.checkPrefs(lst)) {
             frm.addToInstructors(null);
-            request.setAttribute(HASH_ATTR, HASH_INSTR_PREF);
+            request.setAttribute(HASH_ATTR, HASH_INSTRUCTORS);
         }
         else {
             errors.add("instrPrefs",
                        new ActionMessage(
                                "errors.generic",
-                               MSG.errorInvalidInstructorPreference()) );
+                               MSG.errorInvalidInstructors()) );
             saveErrors(request, errors);
         }
     }
@@ -668,7 +702,7 @@ public class ClassEditAction extends PreferencesAction {
 
         if(deleteId>=0) {
             frm.removeInstructor(deleteId);
-            request.setAttribute(HASH_ATTR, HASH_INSTR_PREF);
+            request.setAttribute(HASH_ATTR, HASH_INSTRUCTORS);
         }
     }
     

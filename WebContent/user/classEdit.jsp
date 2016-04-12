@@ -96,6 +96,14 @@
 				document.forms[0].submit();
 			}			
 		}
+		
+		function instructorAssignmentChanged(){			
+			var op2Obj = document.getElementById('op2');
+			if (op2Obj!=null) {
+				op2Obj.value='updateInstructorAssignment';
+				document.forms[0].submit();
+			}			
+		}
 	// -->
 </SCRIPT>
 
@@ -359,6 +367,32 @@
 				<html:textarea property="schedulePrintNote" cols="70" rows="4"  />
 			</TD>
 		</TR>
+		
+		<TR>
+			<TD><loc:message name="propertyNeedInstructorAssignment"/></TD>
+			<TD>
+				<html:checkbox property="instructorAssignment" onchange="instructorAssignmentChanged();"/> <i><loc:message name="descriptionNeedInstructorAssignment"/></i>
+			</TD>
+		</TR>
+		<logic:equal name="<%=frmName%>" property="instructorAssignment" value="true">
+		<TR>
+			<TD><loc:message name="propertyNbrInstructors"/></TD>
+			<TD>
+				<html:text property="nbrInstructors" size="10" style="text-align: right;"/>
+				<logic:equal name="<%=frmName%>" property="instructorAssignmentDefault" value="true">
+					<loc:message name="classEditNbrRoomsDefault"><bean:write name="<%=frmName%>" property="nbrInstructorsDefault"/></loc:message>
+				</logic:equal>
+			</TD>
+		</TR>
+		<TR>
+			<TD><loc:message name="propertyTeachingLoad"/></TD>
+			<TD>
+				<html:text property="teachingLoad" size="10" style="text-align: right;"/> <loc:message name="teachingLoadUnits"/>
+				<logic:equal name="<%=frmName%>" property="instructorAssignmentDefault" value="true">
+					<loc:message name="classEditTeachingLoadDefault"><bean:write name="<%=frmName%>" property="teachingLoadDefault"/></loc:message>
+				</logic:equal>
+			</TD>
+		</TR>
 
 		<logic:notEmpty name="<%=frmName%>" property="accommodation">
 			<TR>
@@ -395,12 +429,12 @@
 			<html:textarea property="notes" rows="3" cols="80"></html:textarea>
 			</TD>
 		</TR>
-
+		</logic:equal>
 <!-- Instructors -->
 		<TR><TD colspan='2'>&nbsp;</TD></TR>
 		<TR>
 			<TD valign="middle" colspan='2'>
-			<A name='InstructorPref'></A>
+			<A name='Instructors'></A>
 				<tt:section-header title="<%=MSG.sectionTitleInstructors() %>">
 					<html:submit property="op" 
 						styleId="addInstructor" 
@@ -470,6 +504,7 @@
 				<jsp:param name="roomFeaturePref" value="false"/>
 				<jsp:param name="roomGroupPref" value="false"/>
 				<jsp:param name="attributePref" value="${ClassEditForm.instructorAssignment}"/>
+				<jsp:param name="instructorPref" value="${ClassEditForm.instructorAssignment}"/>
 			</jsp:include>
 		</logic:equal>
 		<logic:notEqual value="0" name="<%=frmName%>" property="nbrRooms">
@@ -482,6 +517,7 @@
 					<jsp:param name="roomFeaturePref" value="false"/>
 					<jsp:param name="roomGroupPref" value="false"/>
 					<jsp:param name="attributePref" value="${ClassEditForm.instructorAssignment}"/>
+					<jsp:param name="instructorPref" value="${ClassEditForm.instructorAssignment}"/>
 				</jsp:include>
 			</logic:equal>
 			<logic:notEqual value="true" name="<%=frmName%>" property="unlimitedEnroll">
@@ -490,6 +526,7 @@
 					<jsp:param name="distPref" value="false"/>
 					<jsp:param name="periodPref" value="false"/>
 					<jsp:param name="attributePref" value="${ClassEditForm.instructorAssignment}"/>
+					<jsp:param name="instructorPref" value="${ClassEditForm.instructorAssignment}"/>
 				</jsp:include>
 			</logic:notEqual>
 		</logic:notEqual>

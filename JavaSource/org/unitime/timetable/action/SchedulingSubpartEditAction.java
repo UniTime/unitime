@@ -211,8 +211,9 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
             frm.reset(mapping, request);
             frm.setAutoSpreadInTime(ss.isAutoSpreadInTime());
             frm.setStudentAllowOverlap(ss.isStudentAllowOverlap());
-	        frm.setInstructorAssignment(ss.getTeachingLoad() != null);
+            frm.setInstructorAssignment(ss.isInstructorAssignmentNeeded());
 	        frm.setTeachingLoad(ss.getTeachingLoad() == null ? "" : Formats.getNumberFormat("0.##").format(ss.getTeachingLoad()));
+	        frm.setNbrInstructors(ss.isInstructorAssignmentNeeded() ? ss.getNbrInstructors().intValue() : 1);
         }
 
         // Load form attributes that are constant
@@ -436,7 +437,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         // Clear all old prefs
         s.clear();
 
-        super.doUpdate(request, frm, ss, s, timeVertical);
+        super.doUpdate(request, frm, ss, s, timeVertical, ss.isInstructorAssignmentNeeded());
 
         ss.setAutoSpreadInTime(frm.getAutoSpreadInTime());
         ss.setStudentAllowOverlap(frm.getStudentAllowOverlap());
@@ -448,6 +449,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         } catch (ParseException e) {
         	ss.setTeachingLoad(null);
         }
+        ss.setNbrInstructors(frm.getInstructorAssignment() ? frm.getNbrInstructors() : 0);
 
         if (frm.getDatePattern()==null || frm.getDatePattern().intValue()<0)
         	ss.setDatePattern(null);
@@ -523,8 +525,10 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         if (ss.getCredit() != null){
         	sdao.getSession().saveOrUpdate(ss.getCredit());
         }
+        /*
         if (ss.getTeachingLoad() != null)
         	updateInstructorCoursePreferences(sdao.getSession(), frm, ss, ss.getControllingCourseOffering());
+        	*/
         sdao.update(ss);
  
         String className = ApplicationProperty.ExternalActionSchedulingSubpartEdit.value();

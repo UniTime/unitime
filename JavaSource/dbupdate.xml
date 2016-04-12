@@ -10971,4 +10971,55 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'GlobalRoomFeatureEdit'
 		</sql>
 	</update>
+	<update version="162" date="12-Apr-2016" comment="Instructor preferences">
+		<!-- CoursePref -->
+		<plsql>
+			create table %SCHEMA%.instructor_pref (
+				uniqueid number(20,0) constraint nn_instructor_pref_uniqueid not null,
+				owner_id number(20,0) constraint nn_instructor_pref_owner not null,
+				pref_level_id number(20,0) constraint nn_instructor_pref_pref not null,
+				instructor_id number(20,0) constraint nn_instructor_pref_instructor not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.instructor_pref add constraint pk_instructor_pref primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.instructor_pref (
+				uniqueid decimal(20,0) primary key not null,
+				owner_id decimal(20,0) not null,
+				pref_level_id decimal(20,0) not null,
+				instructor_id decimal(20,0) not null
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.instructor_pref add constraint fk_instructor_pref_pref foreign key (pref_level_id)
+			references %SCHEMA%.preference_level (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.instructor_pref add constraint fk_instructor_pref_instructor foreign key (instructor_id)
+			references %SCHEMA%.departmental_instructor (uniqueid) on delete cascade
+		</sql>
+		<!-- SchedulingSubpart -->
+		<mysql>
+			alter table %SCHEMA%.scheduling_subpart add nbr_instructors int(4)
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.scheduling_subpart add nbr_instructors number(4)
+		</plsql>
+		<!-- Class_ -->
+		<mysql>
+			alter table %SCHEMA%.class_ add nbr_instructors int(4)
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.class_ add nbr_instructors number(4)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.class_ add teaching_load float
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.class_ add teaching_load float
+		</plsql>
+		<sql>
+			update %SCHEMA%.scheduling_subpart set nbr_instructors = 1 where teaching_load is not null
+		</sql>
+	</update>
 </dbupdate>
