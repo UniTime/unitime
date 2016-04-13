@@ -60,6 +60,7 @@ public class DatePatternEditForm extends ActionForm {
     private Long iParentId;
     private Long iSessionId;
     private String iNumberOfWeeks;
+    private Long iPreviousId, iNextId;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
@@ -113,7 +114,8 @@ public class DatePatternEditForm extends ActionForm {
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 		iOp = null; iUniqueId = new Long(-1); iType = DatePattern.sTypes[0]; 
 		iIsUsed = false; iVisible = false; iName = ""; iIsDefault = false; iNumberOfWeeks = null;
-		iDepartmentId = null; iDepartmentIds.clear(); iParentId = null; iParentIds.clear(); 
+		iDepartmentId = null; iDepartmentIds.clear(); iParentId = null; iParentIds.clear();
+		iPreviousId = null; iNextId = null;
 	}
 	
 	public void load(DatePattern dp) {
@@ -312,6 +314,13 @@ public class DatePatternEditForm extends ActionForm {
 	
 	public Long getSessionId() { return iSessionId; }
 	public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+	
+	public Long getNextId() { return iNextId; }
+	public void setNextId(Long nextId) { iNextId = nextId; }
+	public boolean getHasNext() { return iNextId != null && iNextId >= 0; }
+	public Long getPreviousId() { return iPreviousId; }
+	public void setPreviousId(Long previousId) { iPreviousId = previousId; }
+	public boolean getHasPrevious() { return iPreviousId != null && iPreviousId >= 0; }
 	
 	public DatePattern getDatePattern(HttpServletRequest request) throws Exception {
 		DatePattern dp = null;

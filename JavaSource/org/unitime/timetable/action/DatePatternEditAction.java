@@ -27,6 +27,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -53,6 +54,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
+import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.DatePatternEditForm;
@@ -70,6 +72,7 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.util.Formats;
+import org.unitime.timetable.webutil.Navigation;
 
 
 /** 
@@ -229,7 +232,7 @@ public class DatePatternEditAction extends Action {
 	        }
 
 	        // Add / Update
-	        if ("Update".equals(op) || "Save".equals(op) || "Make Default".equals(op)) {
+	        if ("Update".equals(op) || "Save".equals(op) || "Make Default".equals(op) || "Previous".equals(op) || "Next".equals(op)) {
 	            // Validate input
 	            ActionMessages errors = myForm.validate(mapping, request);
 	            if(errors.size()>0) {
@@ -265,15 +268,22 @@ public class DatePatternEditAction extends Action {
 	        	    	throw e;
 	        	    }
 
-	                myForm.setOp("List");
-	                if (myForm.getUniqueId()!=null)
-	                    request.setAttribute("hash", myForm.getUniqueId());
+	                if ("Next".equals(op) && myForm.getNextId() != null) {
+	                	response.sendRedirect(response.encodeURL("datePatternEdit.do?op=Edit&id="+myForm.getNextId()));
+	                } else if ("Previous".equals(op) && myForm.getPreviousId() != null) {
+	                	response.sendRedirect(response.encodeURL("datePatternEdit.do?op=Edit&id="+myForm.getPreviousId()));
+	                } else {
+	                	myForm.setOp("List");
+	                	if (myForm.getUniqueId() != null)
+	                		request.setAttribute("hash", myForm.getUniqueId());
+	                }
 	            }
 	        }
 
 	        // Edit
 	        if("Edit".equals(op)) {
 	            String id = request.getParameter("id");
+	            if (id == null && myForm.getUniqueId() != null) id = myForm.getUniqueId().toString();
 	            ActionMessages errors = new ActionMessages();
 	            if(id==null || id.trim().length()==0) {
 	                errors.add("key", new ActionMessage("errors.invalid", "Unique Id : " + id));
@@ -282,6 +292,8 @@ public class DatePatternEditAction extends Action {
 	                return mapping.findForward("list");
 	            } else {
 	            	DatePattern pattern = (new DatePatternDAO()).get(new Long(id));
+	            	myForm.setPreviousId(Navigation.getPrevious(sessionContext, Navigation.sInstructionalOfferingLevel, new Long(id)));
+	            	myForm.setNextId(Navigation.getNext(sessionContext, Navigation.sInstructionalOfferingLevel, new Long(id)));
 	            	
 	                if(pattern==null) {
 	                    errors.add("name", new ActionMessage("errors.invalid", "Unique Id : " + id));
@@ -842,7 +854,7 @@ public class DatePatternEditAction extends Action {
         
         List<DatePattern> patterns = DatePattern.findAll(sessionContext.getUser(), null, null);
 		if(patterns.isEmpty()) {
-		    webTable.addLine(null, new String[] {"No date pattern defined for this session."}, null, null);			    
+		    webTable.addLine(null, new String[] {"No date pattern defined for this session."}, null, null);
 		}
 		
 		DecimalFormat df = new DecimalFormat("0.##", new DecimalFormatSymbols(Localization.getJavaLocale()));
@@ -914,7 +926,7 @@ public class DatePatternEditAction extends Action {
         	boolean isUsed = used.contains(pattern) || pattern.isDefault();
         	if (hasSet)
             	webTable.addLine(onClick, new String[] {
-            	        (pattern.isDefault()?"<B>":"")+(pattern.isVisible()?"":"<font color='gray'>")+"<a name='"+pattern.getUniqueId()+"'>"+pattern.getName().replaceAll(" ","&nbsp;")+      	        "</a>"+
+            	        (pattern.isDefault()?"<B>":"")+(pattern.isVisible()?"":"<font color='gray'>")+pattern.getName().replaceAll(" ","&nbsp;")+
             	        (pattern.isVisible()?"":"</font>")+(pattern.isDefault()?"</B>":""),
             	        (pattern.isVisible()?"":"<font color='gray'>")+DatePattern.sTypes[pattern.getType().intValue()].replaceAll(" ","&nbsp;")+(pattern.isVisible()?"":"</font>"),
             			(isUsed?"<IMG border='0' title='This date pattern is being used.' alt='Default' align='absmiddle' src='images/accept.png'>":""),
@@ -930,10 +942,10 @@ public class DatePatternEditAction extends Action {
             			pattStr,
             			datePatternStr,
             			deptCmp,
-            		});
+            		},pattern.getUniqueId().toString());
         	else
             	webTable.addLine(onClick, new String[] {
-            	        (pattern.isDefault()?"<B>":"")+(pattern.isVisible()?"":"<font color='gray'>")+"<a name='"+pattern.getUniqueId()+"'>"+pattern.getName().replaceAll(" ","&nbsp;")+      	        "</a>"+
+            	        (pattern.isDefault()?"<B>":"")+(pattern.isVisible()?"":"<font color='gray'>")+pattern.getName().replaceAll(" ","&nbsp;")+
             	        (pattern.isVisible()?"":"</font>")+(pattern.isDefault()?"</B>":""),
             	        (pattern.isVisible()?"":"<font color='gray'>")+DatePattern.sTypes[pattern.getType().intValue()].replaceAll(" ","&nbsp;")+(pattern.isVisible()?"":"</font>"),
             			(isUsed?"<IMG border='0' title='This date pattern is being used.' alt='Default' align='absmiddle' src='images/accept.png'>":""),
@@ -947,10 +959,19 @@ public class DatePatternEditAction extends Action {
             			pattern.getEffectiveNumberOfWeeks(),
             			pattStr,
             			deptCmp,
-            		});
+            		}, pattern.getUniqueId().toString());
         }
         
 	    request.setAttribute("DatePatterns.table", webTable.printTable(WebTable.getOrder(sessionContext,"datePatterns.ord")));
+	    
+	    List<Long> ids = new ArrayList<Long>();
+	    for (Enumeration<WebTableLine> e = webTable.getLines().elements(); e.hasMoreElements(); ) {
+	    	WebTableLine line = e.nextElement();
+	    	if (line.getUniqueId() != null)
+	    		ids.add(Long.parseLong(line.getUniqueId()));
+	    }
+	    Navigation.set(sessionContext, Navigation.sInstructionalOfferingLevel, ids);
+		
     }	
 }
 

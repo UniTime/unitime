@@ -143,6 +143,12 @@
 				<line>Changed the importer to import both versions of the XML (flag elements are under report or under flags element).</line>
 			</description>
 		</item>
+		<item>
+			<name>Edit Date Pattern: Navigation</name>
+			<description>
+				<line>Added Previous and Next buttons on the Edit Date Pattern page.</line>
+			</description>
+		</item>
 	</category>
 </release>
 

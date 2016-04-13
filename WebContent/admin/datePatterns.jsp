@@ -34,6 +34,8 @@
 	<html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
 	<html:hidden property="isUsed"/><html:errors property="isUsed"/>
 	<html:hidden property="sessionId"/>
+	<html:hidden property="nextId"/>
+	<html:hidden property="previousId"/>
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
@@ -49,7 +51,13 @@
 					</tt:section-title>
 					<html:submit property="op">
 						<bean:write name="datePatternEditForm" property="op" />
-					</html:submit> 
+					</html:submit>
+					<logic:equal name="datePatternEditForm" property="hasPrevious" value="true">
+						<html:submit property="op" value="Previous"/>
+					</logic:equal>
+					<logic:equal name="datePatternEditForm" property="hasNext" value="true">
+						<html:submit property="op" value="Next"/>
+					</logic:equal>
 					<logic:notEqual name="datePatternEditForm" property="op" value="Save">
 						<logic:equal name="datePatternEditForm" property="isUsed" value="false">
 							<logic:equal name="datePatternEditForm" property="isDefault" value="false">
@@ -181,6 +189,12 @@
 				<html:submit property="op">
 					<bean:write name="datePatternEditForm" property="op" />
 				</html:submit> 
+				<logic:equal name="datePatternEditForm" property="hasPrevious" value="true">
+					<html:submit property="op" value="Previous"/>
+				</logic:equal>
+				<logic:equal name="datePatternEditForm" property="hasNext" value="true">
+					<html:submit property="op" value="Next"/>
+				</logic:equal>
 				<logic:notEqual name="datePatternEditForm" property="op" value="Save">
 					<logic:equal name="datePatternEditForm" property="isUsed" value="false">
 						<logic:equal name="datePatternEditForm" property="isDefault" value="false">
