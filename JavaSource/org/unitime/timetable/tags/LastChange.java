@@ -242,6 +242,9 @@ public class LastChange extends BodyTagSupport {
         
         nrChanges += printLastChangeTableRow(webTable, 
                 ChangeLog.findLastChange(inst, ChangeLog.Source.INSTRUCTOR_PREF_EDIT));
+        
+        nrChanges += printLastChangeTableRow(webTable, 
+                ChangeLog.findLastChange(inst, ChangeLog.Source.INSTRUCTOR_ASSIGNMENT_PREF_EDIT));
 
         if (nrChanges>0) {
             pageContext.getOut().println(
