@@ -31,6 +31,8 @@
 <html:form action="/timePatternEdit">
 <html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
 <html:hidden property="editable"/><html:errors property="editable"/>
+<html:hidden property="nextId"/>
+<html:hidden property="previousId"/>
 
 <logic:notEqual name="timePatternEditForm" property="op" value="List">
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
@@ -49,6 +51,12 @@
 					<html:submit property="op">
 						<bean:write name="timePatternEditForm" property="op" />
 					</html:submit> 
+					<logic:equal name="timePatternEditForm" property="hasPrevious" value="true">
+						<html:submit property="op" value="Previous"/>
+					</logic:equal>
+					<logic:equal name="timePatternEditForm" property="hasNext" value="true">
+						<html:submit property="op" value="Next"/>
+					</logic:equal>
 					<logic:notEqual name="timePatternEditForm" property="op" value="Save">
 					<logic:equal name="timePatternEditForm" property="editable" value="true">
 						<html:submit property="op" value="Delete"/> 
@@ -209,6 +217,12 @@
 				<html:submit property="op">
 					<bean:write name="timePatternEditForm" property="op" />
 				</html:submit> 
+				<logic:equal name="timePatternEditForm" property="hasPrevious" value="true">
+					<html:submit property="op" value="Previous"/>
+				</logic:equal>
+				<logic:equal name="timePatternEditForm" property="hasNext" value="true">
+					<html:submit property="op" value="Next"/>
+				</logic:equal>
 				<logic:notEqual name="timePatternEditForm" property="op" value="Save">
 				<logic:equal name="timePatternEditForm" property="editable" value="true">
 					<html:submit property="op" value="Delete"/> 

@@ -149,6 +149,12 @@
 				<line>Added Previous and Next buttons on the Edit Date Pattern page.</line>
 			</description>
 		</item>
+		<item>
+			<name>Edit Time Pattern: Navigation</name>
+			<description>
+				<line>Added Previous and Next buttons on the Edit Time Pattern page.</line>
+			</description>
+		</item>
 	</category>
 </release>
 

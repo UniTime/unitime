@@ -72,6 +72,7 @@ public class TimePatternEditForm extends ActionForm {
     private Vector iDepartmentIds = new Vector();
     private Long iDepartmentId;
     private String iBreakTime;
+    private Long iPreviousId, iNextId;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
@@ -140,6 +141,7 @@ public class TimePatternEditForm extends ActionForm {
 		iOp = null; iUniqueId = new Long(-1); iType = TimePattern.sTypes[0]; iNrMtgs = ""; iMinPerMtg = ""; iSlotsPerMtg = "";
 		iDayCodes = ""; iStartTimes = ""; iEditable = false; iVisible = false; iName = ""; iBreakTime = "";
 		iDepartmentId = null; iDepartmentIds.clear();
+		iPreviousId = null; iNextId = null;
 	}
 	
 	public void load(TimePattern tp, Long sessionId) {
@@ -349,6 +351,13 @@ public class TimePatternEditForm extends ActionForm {
 	public void setDepartmentIds(Vector departmentIds) { iDepartmentIds = departmentIds; }
 	public Long getDepartmentId() { return iDepartmentId; }
 	public void setDepartmentId(Long deptId) { iDepartmentId = deptId; }
+	
+	public Long getNextId() { return iNextId; }
+	public void setNextId(Long nextId) { iNextId = nextId; }
+	public boolean getHasNext() { return iNextId != null && iNextId >= 0; }
+	public Long getPreviousId() { return iPreviousId; }
+	public void setPreviousId(Long previousId) { iPreviousId = previousId; }
+	public boolean getHasPrevious() { return iPreviousId != null && iPreviousId >= 0; }
 
 	public static String dayCodes2str(Collection dayCodes, String delim) {
 		StringBuffer sb = new StringBuffer();

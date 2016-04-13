@@ -22,6 +22,8 @@ package org.unitime.timetable.action;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -48,6 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
+import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.TimePatternEditForm;
@@ -66,6 +69,7 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.util.duration.DurationModel;
+import org.unitime.timetable.webutil.Navigation;
 
 
 /** 
@@ -156,7 +160,7 @@ public class TimePatternEditAction extends Action {
         
 
         // Add / Update
-        if ("Update".equals(op) || "Save".equals(op)) {
+        if ("Update".equals(op) || "Save".equals(op) || "Previous".equals(op) || "Next".equals(op)) {
             // Validate input
             ActionMessages errors = myForm.validate(mapping, request);
             if(errors.size()>0) {
@@ -177,9 +181,15 @@ public class TimePatternEditAction extends Action {
         	    	throw e;
         	    }
 
-                if (myForm.getUniqueId()!=null)
-                    request.setAttribute("hash", myForm.getUniqueId());
-                myForm.setOp("List");
+                if ("Next".equals(op) && myForm.getNextId() != null) {
+                	response.sendRedirect(response.encodeURL("timePatternEdit.do?op=Edit&id="+myForm.getNextId()));
+                } else if ("Previous".equals(op) && myForm.getPreviousId() != null) {
+                	response.sendRedirect(response.encodeURL("timePatternEdit.do?op=Edit&id="+myForm.getPreviousId()));
+                } else {
+                	if (myForm.getUniqueId()!=null)
+                		request.setAttribute("hash", myForm.getUniqueId());
+                	myForm.setOp("List");
+                }
             }
         }
 
@@ -193,7 +203,8 @@ public class TimePatternEditAction extends Action {
                 return mapping.findForward("list");
             } else {
             	TimePattern pattern = (new TimePatternDAO()).get(new Long(id));
-            	
+            	myForm.setPreviousId(Navigation.getPrevious(sessionContext, Navigation.sInstructionalOfferingLevel, new Long(id)));
+            	myForm.setNextId(Navigation.getNext(sessionContext, Navigation.sInstructionalOfferingLevel, new Long(id)));
                 if(pattern==null) {
                     errors.add("name", new ActionMessage("errors.invalid", "Unique Id : " + id));
                     saveErrors(request, errors);
@@ -668,9 +679,7 @@ public class TimePatternEditAction extends Action {
         	boolean isUsed = used.contains(pattern);
         	webTable.addLine(onClick, new String[] {
         	        (pattern.isVisible()?"":"<font color='grey'>")+
-        	            "<a name='"+pattern.getUniqueId()+"'>"+
-        	                pattern.getName().replaceAll(" ","&nbsp;")+
-        	            "</a>"+
+        	            pattern.getName().replaceAll(" ","&nbsp;")+
         	        (pattern.isVisible()?"":"</font>"),
         	        (pattern.isVisible()?"":"<font color='gray'>")+
         	            TimePattern.sTypes[pattern.getType().intValue()].replaceAll(" ","&nbsp;")+
@@ -694,10 +703,18 @@ public class TimePatternEditAction extends Action {
         			TimePatternEditForm.dayCodes2str(pattern.getDays(),", "),
         			TimePatternEditForm.startSlots2str(pattern.getTimes(),", "),
         			deptCmp
-        		});
+        		}, pattern.getUniqueId().toString());
         }
         
 	    request.setAttribute("TimePatterns.table", webTable.printTable(WebTable.getOrder(sessionContext,"timePatterns.ord")));
+	    
+	    List<Long> ids = new ArrayList<Long>();
+	    for (Enumeration<WebTableLine> e = webTable.getLines().elements(); e.hasMoreElements(); ) {
+	    	WebTableLine line = e.nextElement();
+	    	if (line.getUniqueId() != null)
+	    		ids.add(Long.parseLong(line.getUniqueId()));
+	    }
+	    Navigation.set(sessionContext, Navigation.sInstructionalOfferingLevel, ids);
     }	
 }
 
