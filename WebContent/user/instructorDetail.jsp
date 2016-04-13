@@ -64,6 +64,14 @@
 							<loc:message name="actionEditInstructor" />
 					</html:submit>
 				</sec:authorize>
+				<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorAssignmentPreferences')">
+					<html:submit property="op" 
+							styleClass="btn" 
+							accesskey="<%=MSG.accessEditInstructorAssignmentPreferences() %>" 
+							title="<%=MSG.titleEditInstructorAssignmentPreferences(MSG.accessEditInstructorAssignmentPreferences()) %>" >
+							<loc:message name="actionEditInstructorAssignmentPreferences" />
+					</html:submit>
+				</sec:authorize> 
 				<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorPreferences')">
 					<html:submit property="op" 
 							styleClass="btn" 
@@ -150,6 +158,7 @@
 				</i></TD>
 			</TR>
 		</logic:equal>
+		<logic:notEmpty name="<%=frmName%>" property="teachingPreference">
 		<TR>
 			<TD><loc:message name="propertyTeachingPreference"/></TD>
 			<TD>
@@ -165,6 +174,7 @@
 				</logic:iterate>
 			</TD>
 		</TR>
+		</logic:notEmpty>
 		<logic:notEmpty name="<%=frmName%>" property="maxLoad">
 			<TR>
 				<TD><loc:message name="propertyMaxLoad"/></TD>
@@ -335,6 +345,14 @@
 							<loc:message name="actionEditInstructor" />
 					</html:submit>
 				</sec:authorize>
+				<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorAssignmentPreferences')">
+					<html:submit property="op" 
+							styleClass="btn" 
+							accesskey="<%=MSG.accessEditInstructorAssignmentPreferences() %>" 
+							title="<%=MSG.titleEditInstructorAssignmentPreferences(MSG.accessEditInstructorAssignmentPreferences()) %>" >
+							<loc:message name="actionEditInstructorAssignmentPreferences" />
+					</html:submit>
+				</sec:authorize> 
 				<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorPreferences')">
 					<html:submit property="op" 
 							styleClass="btn" 

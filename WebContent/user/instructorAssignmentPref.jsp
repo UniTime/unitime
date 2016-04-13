@@ -17,8 +17,8 @@
  * limitations under the License.
  * 
 --%>
+<%@ page import="org.unitime.timetable.action.InstructorAssignmentPrefAction"%>
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp"%>
-<%@ page import="org.unitime.timetable.action.InstructorPrefEditAction" %>
 <%@ page import="org.unitime.timetable.form.InstructorEditForm" %>
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
@@ -42,12 +42,11 @@
 	// -->
 </SCRIPT>
 
-<html:form action="instructorPrefEdit">
+<html:form action="instructorAssignmentPref">
 	<html:hidden property="instructorId"/>
+	<html:hidden property="name"/>
 	<html:hidden property="nextId"/>
 	<html:hidden property="previousId"/>
-	<html:hidden property="deptCode"/>
-	<bean:define name='<%=frmName%>' property="instructorId" id="instructorId"/>
 	
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
@@ -64,16 +63,6 @@
 						<loc:message name="actionUpdatePreferences" />
 					</html:submit> 
 					
-					<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorEditClearPreferences')">
-					&nbsp;
-					<html:submit property="op" 
-						styleClass="btn" 
-						accesskey="<%=MSG.accessClearInstructorPreferences() %>" 
-						title="<%=MSG.titleClearInstructorPreferences(MSG.accessClearInstructorPreferences()) %>">
-						<loc:message name="actionClearInstructorPreferences" />
-					</html:submit> 
-					</sec:authorize>
-									
 					<logic:notEmpty name="<%=frmName%>" property="previousId">
 						&nbsp;
 						<html:submit property="op" 
@@ -102,7 +91,7 @@
 				</tt:section-header>
 			</TD>
 		</TR>
-		
+
 		<logic:messagesPresent>
 		<TR>
 			<TD colspan="2" align="left" class="errorCell">
@@ -120,6 +109,52 @@
 		</TR>
 		</logic:messagesPresent>
 
+		<TR>
+			<TD><loc:message name="propertyTeachingPreference"/></TD>
+			<TD>
+				<html:select property="teachingPreference" size="1">
+					<logic:iterate scope="request" name="<%=org.unitime.timetable.model.PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="pr" type="org.unitime.timetable.model.PreferenceLevel" >
+						<logic:notEqual name="pr" property="prefProlog" value="R">
+							<html:option
+								style='<%="background-color:" + pr.prefcolor() + ";"%>'
+								value="<%=pr.getPrefProlog()%>" >
+								<bean:write name="pr" property="prefName"/>
+							</html:option>
+						</logic:notEqual>
+					</logic:iterate>
+				</html:select>
+				<i><loc:message name="descriptionTeachingPreference"/></i>
+			</TD>
+		</TR>
+		<TR>
+			<TD><loc:message name="propertyMaxLoad"/></TD>
+			<TD>
+				<html:text property="maxLoad" size="10" style="text-align: right;"/> <loc:message name="teachingLoadUnits"/>
+			</TD>
+		</TR>
+		
+		<logic:notEmpty scope="request" name="<%=org.unitime.timetable.model.InstructorAttributeType.ATTRIBUTE_TYPES_LIST_ATTR_NAME%>">
+		<TR><TD colspan='2'>&nbsp;</TD></TR>
+		<TR>
+			<TD valign="middle" colspan='2' class='WelcomeRowHead'>
+				<loc:message name="sectionAttributes"/>
+			</TD>
+		</TR>
+		<logic:iterate scope="request" name="<%=org.unitime.timetable.model.InstructorAttributeType.ATTRIBUTE_TYPES_LIST_ATTR_NAME%>" id="type" type="org.unitime.timetable.model.InstructorAttributeType" >
+			<TR><TD style="vertical-align: top;"><bean:write name="type" property="label"/>:</TD><TD>
+			<div class='unitime-InstructorAttributes'>
+			<logic:iterate scope="request" name="<%=org.unitime.timetable.model.InstructorAttribute.ATTRIBUTES_LIST_ATTR_NAME%>" id="attribute" type="org.unitime.timetable.model.InstructorAttribute" >
+				<logic:equal name="attribute" property="type.uniqueId" value="<%=type.getUniqueId().toString()%>">
+					<span class="attribute">
+					<html:checkbox property='<%="attribute(" + attribute.getUniqueId() + ")"%>'><bean:write name="attribute" property="name"/></html:checkbox>
+					</span>
+				</logic:equal>
+			</logic:iterate>
+			</TD></TR>
+			</div>
+		</logic:iterate>
+		</logic:notEmpty>
+		
 <!-- Preferences -->
 		<jsp:include page="preferencesEdit.jspf">
 			<jsp:param name="frmName" value="<%=frmName%>"/>
@@ -127,6 +162,11 @@
 			<jsp:param name="datePatternPref" value="false"/>
 			<jsp:param name="timePref" value="false"/>
 			<jsp:param name="timeAvail" value="true"/>
+			<jsp:param name="roomPref" value="false"/>
+			<jsp:param name="roomGroupPref" value="false"/>
+			<jsp:param name="roomFeaturePref" value="false"/>
+			<jsp:param name="bldgPref" value="false"/>
+			<jsp:param name="coursePref" value="true"/>
 		</jsp:include>
 		
 <!-- buttons -->
@@ -144,16 +184,6 @@
 						<loc:message name="actionUpdatePreferences" />
 					</html:submit> 
 					
-					<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorEditClearPreferences')">
-					&nbsp;
-					<html:submit property="op" 
-						styleClass="btn" 
-						accesskey="<%=MSG.accessClearInstructorPreferences() %>" 
-						title="<%=MSG.titleClearInstructorPreferences(MSG.accessClearInstructorPreferences()) %>">
-						<loc:message name="actionClearInstructorPreferences" />
-					</html:submit> 
-					</sec:authorize>
-									
 					<logic:notEmpty name="<%=frmName%>" property="previousId">
 						&nbsp;
 						<html:submit property="op" 
@@ -183,14 +213,12 @@
 		</TR>
 
 	</TABLE>
-	
-	
 </html:form>
 
 <SCRIPT type="text/javascript" language="javascript">
 	function jumpToAnchor() {
-    <% if (request.getAttribute(InstructorPrefEditAction.HASH_ATTR) != null) { %>
-  		location.hash = "<%=request.getAttribute(InstructorPrefEditAction.HASH_ATTR)%>";
+    <% if (request.getAttribute(InstructorAssignmentPrefAction.HASH_ATTR) != null) { %>
+  		location.hash = "<%=request.getAttribute(InstructorAssignmentPrefAction.HASH_ATTR)%>";
 	<% } %>
 		self.focus();
   	}

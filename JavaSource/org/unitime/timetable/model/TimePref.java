@@ -139,4 +139,6 @@ public class TimePref extends BaseTimePref implements Comparable {
     		return getTimePatternModel().getPreferences();
     	} else return super.getPreference();
     }
+    
+    public Type getType() { return Type.TIME; }
 }

@@ -1136,6 +1136,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Back")
 	String actionBackToInstructors();
 	
+	@DefaultMessage("Edit Assignment Preferences")
+	String actionEditInstructorAssignmentPreferences();
+	
 	@DefaultMessage("S")
 	String accessSearchInstructionalOfferings();
 	
@@ -1390,6 +1393,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("I")
 	String accessAddInstructorPreference();
+	
+	@DefaultMessage("A")
+	String accessEditInstructorAssignmentPreferences();
 
 	@DefaultMessage("Search/Display Offerings (Alt+{0})")
 	String titleSearchInstructionalOfferings(String accessKey);
@@ -1792,6 +1798,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Remove Instructor Preference")
 	String titleRemoveInstructorPreference();
+	
+	@DefaultMessage("Edit Instructor Assignment Preferences (Alt+{0})")
+	String titleEditInstructorAssignmentPreferences(String accessKey);
 	
 	@DefaultMessage("Course numbers can be specified using wildcard (*). E.g. 2*")
 	String tooltipCourseNumber();
@@ -2300,6 +2309,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Instructor Not Displayed")
 	String titleInstructorNotDisplayed();	
+	
+	@DefaultMessage("Attributes")
+	String sectionAttributes();
 
 	@DefaultMessage("Hide Instructor Preferences (Alt+{0})")
 	String titleHideInstructorPreferences(String accessKey);	
@@ -2375,6 +2387,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("If checked, classes from this subpart will be included in the Instructor Scheduling problem.")
 	String descriptionNeedInstructorAssignment();
+	
+	@DefaultMessage("Set to Prohibited when disabled for Instructor Scheduling.")
+	String descriptionTeachingPreference();
 	
 	@DefaultMessage("Yes")
 	String yes();

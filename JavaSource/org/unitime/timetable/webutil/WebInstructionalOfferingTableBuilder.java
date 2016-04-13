@@ -684,6 +684,9 @@ public class WebInstructionalOfferingTableBuilder {
     	if (TimePref.class.equals(prefType)) {
     		return(buildTimePrefCell(classAssignment,prefGroup, isEditable));
     	} else {
+    		if (!prefGroup.isInstructorAssignmentNeeded() && (InstructorPref.class.equals(prefType) || InstructorAttributePref.class.equals(prefType))) {
+    			return initNormalCell("",false);
+    		}
     		TableCell cell = this.initNormalCell(prefGroup.getEffectivePrefHtmlForPrefType(prefType, getInstructorNameFormat()),isEditable);
     		cell.setNoWrap(true);
     		return(cell);

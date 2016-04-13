@@ -115,7 +115,7 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  * Superclass for implementing Preferences
  * @author Heston Fernandes, Tomas Muller, Zuzana Mullerova
  */
-public class PreferencesAction extends Action {
+public abstract class PreferencesAction extends Action {
 	
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
@@ -599,6 +599,14 @@ public class PreferencesAction extends Action {
         }
     }
     
+    protected void doClear(Set s, Preference.Type... typesArray) {
+    	int types = Preference.Type.toInt(typesArray);
+    	for (Iterator i = s.iterator(); i.hasNext(); ) {
+    		Preference p = (Preference)i.next();
+    		if (p.getType().in(types)) i.remove();
+    	}
+    }
+
     /**
      * Updates the scheduling subpart
      * @param request 
@@ -613,360 +621,380 @@ public class PreferencesAction extends Action {
             PreferenceGroup pg,
             Set s,
             boolean timeVertical,
-            boolean instructorPreferences) throws Exception {
-        
+            Preference.Type... typesArray) throws Exception {
     	pg.setPreferences(s);
     	
+    	int types = Preference.Type.toInt(typesArray);
+    	for (Iterator i = s.iterator(); i.hasNext(); ) {
+    		Preference p = (Preference)i.next();
+    		if (p.getType().in(types)) i.remove();
+    	}
+
         // Time Prefs
-        if (pg instanceof DepartmentalInstructor) {
-        	if (frm.getAvailability() != null && (frm.getAvailability().length() == 336 || frm.getAvailability().length() == 2016)) {
-        		TimePref tp = new TimePref();
-        		tp.setOwner(pg);
-        		tp.setPreference(frm.getAvailability());
-        		tp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
-        		tp.setTimePattern(null);
-        		s.add(tp);
-        	}
-        } else {
-        	Set parentTimePrefs = pg.effectivePreferences(TimePref.class, false);
-            List lst = frm.getTimePatterns();
-            for(int i=0; i<lst.size(); i++) {
-            	String id = (String)lst.get(i);
-            	addToTimePref(request, pg, id, s, i, timeVertical, parentTimePrefs);
-            }
-            if (parentTimePrefs!=null && !parentTimePrefs.isEmpty()) {
-            	for (Iterator i=parentTimePrefs.iterator();i.hasNext();) {
-            		TimePref tp = (TimePref)((TimePref)i.next()).clone();
+    	if (Preference.Type.TIME.in(types)) {
+            if (pg instanceof DepartmentalInstructor) {
+            	if (frm.getAvailability() != null && (frm.getAvailability().length() == 336 || frm.getAvailability().length() == 2016)) {
+            		TimePref tp = new TimePref();
             		tp.setOwner(pg);
-            		tp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
+            		tp.setPreference(frm.getAvailability());
+            		tp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
+            		tp.setTimePattern(null);
             		s.add(tp);
             	}
+            } else {
+            	Set parentTimePrefs = pg.effectivePreferences(TimePref.class, false);
+                List lst = frm.getTimePatterns();
+                for(int i=0; i<lst.size(); i++) {
+                	String id = (String)lst.get(i);
+                	addToTimePref(request, pg, id, s, i, timeVertical, parentTimePrefs);
+                }
+                if (parentTimePrefs!=null && !parentTimePrefs.isEmpty()) {
+                	for (Iterator i=parentTimePrefs.iterator();i.hasNext();) {
+                		TimePref tp = (TimePref)((TimePref)i.next()).clone();
+                		tp.setOwner(pg);
+                		tp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
+                		s.add(tp);
+                	}
+                }
             }
-        }
+    	}
             
         // Room Prefs
-        List lst = frm.getRoomPrefs();
-        List lstL = frm.getRoomPrefLevels();
-        Set parentRoomPrefs = pg.effectivePreferences(RoomPref.class);
-        
-        for(int i=0; i<lst.size(); i++) {
-            String id = (String)lst.get(i);            
-            if (id==null || id.equals(Preference.BLANK_PREF_VALUE))
-                continue;
+    	if (Preference.Type.ROOM.in(types)) {
+            List lst = frm.getRoomPrefs();
+            List lstL = frm.getRoomPrefLevels();
+            Set parentRoomPrefs = pg.effectivePreferences(RoomPref.class);
             
-            String pref = (String) lstL.get(i);
-            Debug.debug("Room: " + id + ": " + pref);
+            for(int i=0; i<lst.size(); i++) {
+                String id = (String)lst.get(i);            
+                if (id==null || id.equals(Preference.BLANK_PREF_VALUE))
+                    continue;
+                
+                String pref = (String) lstL.get(i);
+                Debug.debug("Room: " + id + ": " + pref);
 
-    		LocationDAO rdao = new LocationDAO();
-    	    Location room = rdao.get(new Long(id));
-            
-            RoomPref rp = new RoomPref();
-            rp.setOwner(pg);
-            rp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
-            rp.setRoom(room);
-            
-            RoomPref sameParentRp = null;
-            for (Iterator j=parentRoomPrefs.iterator();j.hasNext();) {
-            	RoomPref p = (RoomPref)j.next();
-            	if (p.isSame(rp)) {
-            		if (p.getPrefLevel().equals(rp.getPrefLevel()))
-            			sameParentRp = rp;
-            		j.remove();
-            		break;
+        		LocationDAO rdao = new LocationDAO();
+        	    Location room = rdao.get(new Long(id));
+                
+                RoomPref rp = new RoomPref();
+                rp.setOwner(pg);
+                rp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
+                rp.setRoom(room);
+                
+                RoomPref sameParentRp = null;
+                for (Iterator j=parentRoomPrefs.iterator();j.hasNext();) {
+                	RoomPref p = (RoomPref)j.next();
+                	if (p.isSame(rp)) {
+                		if (p.getPrefLevel().equals(rp.getPrefLevel()))
+                			sameParentRp = rp;
+                		j.remove();
+                		break;
+                	}
+                }
+
+                if (sameParentRp==null)
+                	s.add(rp);
+            }
+            if (parentRoomPrefs!=null && !parentRoomPrefs.isEmpty()) {
+            	for (Iterator i=parentRoomPrefs.iterator();i.hasNext();) {
+            		RoomPref rp = (RoomPref)((RoomPref)i.next()).clone();
+            		rp.setOwner(pg);
+            		rp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
+            		s.add(rp);
             	}
             }
-
-            if (sameParentRp==null)
-            	s.add(rp);
-        }
-        if (parentRoomPrefs!=null && !parentRoomPrefs.isEmpty()) {
-        	for (Iterator i=parentRoomPrefs.iterator();i.hasNext();) {
-        		RoomPref rp = (RoomPref)((RoomPref)i.next()).clone();
-        		rp.setOwner(pg);
-        		rp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
-        		s.add(rp);
-        	}
-        }
-        
+    	}
         
         // Bldg Prefs
-        lst = frm.getBldgPrefs();
-        lstL = frm.getBldgPrefLevels();
-        Set parentBuildingPrefs = pg.effectivePreferences(BuildingPref.class);
-        
-        for(int i=0; i<lst.size(); i++) {
-            String id = (String)lst.get(i);
-            if (id==null || id.equals(Preference.BLANK_PREF_VALUE))
-                continue;
+    	if (Preference.Type.BUILDING.in(types)) {
+            List lst = frm.getBldgPrefs();
+            List lstL = frm.getBldgPrefLevels();
+            Set parentBuildingPrefs = pg.effectivePreferences(BuildingPref.class);
             
-            String pref = (String) lstL.get(i);
-            Debug.debug("Bldg: " + id + ": " + pref);
+            for(int i=0; i<lst.size(); i++) {
+                String id = (String)lst.get(i);
+                if (id==null || id.equals(Preference.BLANK_PREF_VALUE))
+                    continue;
+                
+                String pref = (String) lstL.get(i);
+                Debug.debug("Bldg: " + id + ": " + pref);
 
-            BuildingDAO bdao = new BuildingDAO();
-    	    Building bldg = bdao.get(new Long(id));
-            
-            BuildingPref bp = new BuildingPref();
-            bp.setOwner(pg);
-            bp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
-            bp.setBuilding(bldg);
+                BuildingDAO bdao = new BuildingDAO();
+        	    Building bldg = bdao.get(new Long(id));
+                
+                BuildingPref bp = new BuildingPref();
+                bp.setOwner(pg);
+                bp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
+                bp.setBuilding(bldg);
 
-            BuildingPref sameParentBp = null;
-            for (Iterator j=parentBuildingPrefs.iterator();j.hasNext();) {
-            	BuildingPref p = (BuildingPref)j.next();
-            	if (p.isSame(bp)) {
-            		if (p.getPrefLevel().equals(bp.getPrefLevel()))
-            			sameParentBp = bp;
-            		j.remove();
-            		break;
+                BuildingPref sameParentBp = null;
+                for (Iterator j=parentBuildingPrefs.iterator();j.hasNext();) {
+                	BuildingPref p = (BuildingPref)j.next();
+                	if (p.isSame(bp)) {
+                		if (p.getPrefLevel().equals(bp.getPrefLevel()))
+                			sameParentBp = bp;
+                		j.remove();
+                		break;
+                	}
+                }
+
+                if (sameParentBp==null)
+                	s.add(bp);
+            }
+            if (parentBuildingPrefs!=null && !parentBuildingPrefs.isEmpty()) {
+            	for (Iterator i=parentBuildingPrefs.iterator();i.hasNext();) {
+            		BuildingPref bp = (BuildingPref)((BuildingPref)i.next()).clone();
+            		bp.setOwner(pg);
+            		bp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
+            		s.add(bp);
             	}
             }
-
-            if (sameParentBp==null)
-            	s.add(bp);
-        }
-        if (parentBuildingPrefs!=null && !parentBuildingPrefs.isEmpty()) {
-        	for (Iterator i=parentBuildingPrefs.iterator();i.hasNext();) {
-        		BuildingPref bp = (BuildingPref)((BuildingPref)i.next()).clone();
-        		bp.setOwner(pg);
-        		bp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
-        		s.add(bp);
-        	}
-        }
+    	}
         
         // Dist Prefs
-        lst = frm.getDistPrefs();
-        lstL = frm.getDistPrefLevels();
-        
-        for(int i=0; i<lst.size(); i++) {
-            String id = (String)lst.get(i);
-            if (id==null || id.equals(Preference.BLANK_PREF_VALUE))
-                continue;
+    	if (Preference.Type.DISTRIBUTION.in(types)) {
+            List lst = frm.getDistPrefs();
+            List lstL = frm.getDistPrefLevels();
             
-            String pref = (String) lstL.get(i);
-            Debug.debug("Dist: " + id + ": " + pref);
+            for(int i=0; i<lst.size(); i++) {
+                String id = (String)lst.get(i);
+                if (id==null || id.equals(Preference.BLANK_PREF_VALUE))
+                    continue;
+                
+                String pref = (String) lstL.get(i);
+                Debug.debug("Dist: " + id + ": " + pref);
 
-            DistributionTypeDAO ddao = new DistributionTypeDAO();
-            DistributionType dist = ddao.get(new Long(id));
-            
-            DistributionPref dp = new DistributionPref();
-            dp.setOwner(pg);
-            dp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
-            dp.setDistributionType(dist);
-            dp.setStructure(DistributionPref.Structure.AllClasses);
+                DistributionTypeDAO ddao = new DistributionTypeDAO();
+                DistributionType dist = ddao.get(new Long(id));
+                
+                DistributionPref dp = new DistributionPref();
+                dp.setOwner(pg);
+                dp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
+                dp.setDistributionType(dist);
+                dp.setStructure(DistributionPref.Structure.AllClasses);
 
-            s.add(dp);
-        }
+                s.add(dp);
+            }
+    	}
 
         // Period Prefs
-        if (pg instanceof Exam) {
-            Exam exam = (Exam)pg;
-            if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
-                ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
-                ExamAssignment assignment = null;
-                if (solver!=null && exam!=null && exam.getUniqueId()!=null)
-                    assignment = solver.getAssignment(exam.getUniqueId());
-                else if (exam.getAssignedPeriod()!=null)
-                    assignment = new ExamAssignment(exam);
-                if (ExamType.sExamTypeMidterm==exam.getExamType().getType()) {
-                	MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), exam.getExamType(), assignment);
-                    epx.load(exam);
-                    epx.load(request);
-                    epx.save(s, exam);
+    	if (Preference.Type.PERIOD.in(types)) {
+            if (pg instanceof Exam) {
+                Exam exam = (Exam)pg;
+                if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
+                    ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
+                    ExamAssignment assignment = null;
+                    if (solver!=null && exam!=null && exam.getUniqueId()!=null)
+                        assignment = solver.getAssignment(exam.getUniqueId());
+                    else if (exam.getAssignedPeriod()!=null)
+                        assignment = new ExamAssignment(exam);
+                    if (ExamType.sExamTypeMidterm==exam.getExamType().getType()) {
+                    	MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), exam.getExamType(), assignment);
+                        epx.load(exam);
+                        epx.load(request);
+                        epx.save(s, exam);
+                    } else {
+                    	PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), assignment, exam.getExamType().getUniqueId());
+                    	px.load(exam);
+                    	RequiredTimeTable rtt = new RequiredTimeTable(px);
+                    	rtt.setName("PeriodPref");
+                    	rtt.update(request);
+                    	px.save(s, exam);
+                    }
                 } else {
-                	PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), assignment, exam.getExamType().getUniqueId());
-                	px.load(exam);
-                	RequiredTimeTable rtt = new RequiredTimeTable(px);
-                	rtt.setName("PeriodPref");
-                	rtt.update(request);
-                	px.save(s, exam);
+                    String pattern = request.getParameter("periodPrefs");
+                    if (pattern.indexOf(':') >= 0)
+                    	pattern = pattern.substring(pattern.lastIndexOf(':') + 1);
+                    int idx = 0;
+                    String defaultPref = (exam.getExamType().getType() == ExamType.sExamTypeMidterm ? PreferenceLevel.sProhibited : PreferenceLevel.sNeutral);
+            		for (ExamPeriod period: ExamPeriod.findAll(exam.getSession().getUniqueId(), exam.getExamType().getUniqueId())) {
+            			char ch = (exam.getExamType().getType() == ExamType.sExamTypeMidterm ? 'P' : '2');
+            			try {
+        					ch = pattern.charAt(idx++);
+        				} catch (IndexOutOfBoundsException e) {}
+            			String pref = PreferenceLevel.char2prolog(ch);
+            			if (!defaultPref.equals(pref)) {
+                			ExamPeriodPref p = new ExamPeriodPref();
+                            p.setOwner(pg);
+                            p.setExamPeriod(period);
+                            p.setPrefLevel(PreferenceLevel.getPreferenceLevel(pref));
+                            s.add(p);
+            			}
+            		}            	
                 }
-            } else {
-                String pattern = request.getParameter("periodPrefs");
-                if (pattern.indexOf(':') >= 0)
-                	pattern = pattern.substring(pattern.lastIndexOf(':') + 1);
-                int idx = 0;
-                String defaultPref = (exam.getExamType().getType() == ExamType.sExamTypeMidterm ? PreferenceLevel.sProhibited : PreferenceLevel.sNeutral);
-        		for (ExamPeriod period: ExamPeriod.findAll(exam.getSession().getUniqueId(), exam.getExamType().getUniqueId())) {
-        			char ch = (exam.getExamType().getType() == ExamType.sExamTypeMidterm ? 'P' : '2');
-        			try {
-    					ch = pattern.charAt(idx++);
-    				} catch (IndexOutOfBoundsException e) {}
-        			String pref = PreferenceLevel.char2prolog(ch);
-        			if (!defaultPref.equals(pref)) {
-            			ExamPeriodPref p = new ExamPeriodPref();
-                        p.setOwner(pg);
-                        p.setExamPeriod(period);
-                        p.setPrefLevel(PreferenceLevel.getPreferenceLevel(pref));
-                        s.add(p);
-        			}
-        		}            	
             }
-        }
+    	}
         
         // Room Feature Prefs
-        lst = frm.getRoomFeaturePrefs();
-        lstL = frm.getRoomFeaturePrefLevels();
-        Set parentRoomFeaturePrefs = pg.effectivePreferences(RoomFeaturePref.class);
-        
-        for(int i=0; i<lst.size(); i++) {
-            String id = (String)lst.get(i);
-            if (id==null || id.equals(Preference.BLANK_PREF_VALUE))
-                continue;
+    	if (Preference.Type.ROOM_FEATURE.in(types)) {
+            List lst = frm.getRoomFeaturePrefs();
+            List lstL = frm.getRoomFeaturePrefLevels();
+            Set parentRoomFeaturePrefs = pg.effectivePreferences(RoomFeaturePref.class);
             
-            String pref = (String) lstL.get(i);
-            Debug.debug("Room Feat: " + id + ": " + pref);
+            for(int i=0; i<lst.size(); i++) {
+                String id = (String)lst.get(i);
+                if (id==null || id.equals(Preference.BLANK_PREF_VALUE))
+                    continue;
+                
+                String pref = (String) lstL.get(i);
+                Debug.debug("Room Feat: " + id + ": " + pref);
 
-            RoomFeatureDAO rfdao = new RoomFeatureDAO();
-    	    RoomFeature rf = rfdao.get(new Long(id));
-            
-            RoomFeaturePref rfp = new RoomFeaturePref();
-            rfp.setOwner(pg);
-            rfp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
-            rfp.setRoomFeature(rf);
+                RoomFeatureDAO rfdao = new RoomFeatureDAO();
+        	    RoomFeature rf = rfdao.get(new Long(id));
+                
+                RoomFeaturePref rfp = new RoomFeaturePref();
+                rfp.setOwner(pg);
+                rfp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
+                rfp.setRoomFeature(rf);
 
-            RoomFeaturePref sameParentRfp = null;
-            for (Iterator j=parentRoomFeaturePrefs.iterator();j.hasNext();) {
-            	RoomFeaturePref p = (RoomFeaturePref)j.next();
-            	if (p.isSame(rfp)) {
-            		if (p.getPrefLevel().equals(rfp.getPrefLevel()))
-            			sameParentRfp = rfp;
-            		j.remove();
-            		break;
+                RoomFeaturePref sameParentRfp = null;
+                for (Iterator j=parentRoomFeaturePrefs.iterator();j.hasNext();) {
+                	RoomFeaturePref p = (RoomFeaturePref)j.next();
+                	if (p.isSame(rfp)) {
+                		if (p.getPrefLevel().equals(rfp.getPrefLevel()))
+                			sameParentRfp = rfp;
+                		j.remove();
+                		break;
+                	}
+                }
+
+                if (sameParentRfp==null)
+                	s.add(rfp);
+            }
+            if (parentRoomFeaturePrefs!=null && !parentRoomFeaturePrefs.isEmpty()) {
+            	for (Iterator i=parentRoomFeaturePrefs.iterator();i.hasNext();) {
+            		RoomFeaturePref rp = (RoomFeaturePref)((RoomFeaturePref)i.next()).clone();
+            		rp.setOwner(pg);
+            		rp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
+            		s.add(rp);
             	}
             }
-
-            if (sameParentRfp==null)
-            	s.add(rfp);
-        }
-        if (parentRoomFeaturePrefs!=null && !parentRoomFeaturePrefs.isEmpty()) {
-        	for (Iterator i=parentRoomFeaturePrefs.iterator();i.hasNext();) {
-        		RoomFeaturePref rp = (RoomFeaturePref)((RoomFeaturePref)i.next()).clone();
-        		rp.setOwner(pg);
-        		rp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
-        		s.add(rp);
-        	}
-        }
+    	}
         
         // Room Group Prefs
-        lst = frm.getRoomGroups();
-        lstL = frm.getRoomGroupLevels();
-        Set parentRoomGroupPrefs = pg.effectivePreferences(RoomGroupPref.class);
-        
-        for(int i=0; i<lst.size(); i++) {
-            String id = (String)lst.get(i);
-            if (id==null || id.equals(Preference.BLANK_PREF_VALUE))
-                continue;
+    	if (Preference.Type.ROOM_GROUP.in(types)) {
+    		List lst = frm.getRoomGroups();
+            List lstL = frm.getRoomGroupLevels();
+            Set parentRoomGroupPrefs = pg.effectivePreferences(RoomGroupPref.class);
             
-            String pref = (String) lstL.get(i);
-            Debug.debug("Roomgr: " + id + ": " + pref);
-
-            RoomGroupDAO gdao = new RoomGroupDAO();
-            RoomGroup gr = gdao.get(new Long(id));
-            
-            RoomGroupPref gp = new RoomGroupPref();
-            gp.setOwner(pg);
-            gp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
-            gp.setRoomGroup(gr);
-
-            RoomGroupPref sameParentGp = null;
-            for (Iterator j=parentRoomGroupPrefs.iterator();j.hasNext();) {
-            	RoomGroupPref p = (RoomGroupPref)j.next();
-            	if (p.isSame(gp)) {
-            		if (p.getPrefLevel().equals(gp.getPrefLevel()))
-            			sameParentGp = gp;
-            		j.remove();
-            		break;
-            	}
-            }
-
-            if (sameParentGp==null)
-            	s.add(gp);
-        }
-        if (parentRoomGroupPrefs!=null && !parentRoomGroupPrefs.isEmpty()) {
-        	for (Iterator i=parentRoomGroupPrefs.iterator();i.hasNext();) {
-        		RoomGroupPref gp = (RoomGroupPref)((RoomGroupPref)i.next()).clone();
-        		gp.setOwner(pg);
-        		gp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
-        		s.add(gp);
-        	}
-        }        
-
-        // Date pattern Prefs
-        lst = frm.getDatePatternPrefs();
-        lstL = frm.getDatePatternPrefLevels();        
-        Set parentDatePatternPrefs = pg.effectivePreferences(DatePatternPref.class);
-        
-        for(int i=0; i<lst.size(); i++) {
-            String id = (String)lst.get(i);
-            if (id==null || id.equals(Preference.BLANK_PREF_VALUE) || lstL.get(i).equals(PreferenceLevel.PREF_LEVEL_NEUTRAL))
-                continue;
-            
-            String pref = (String) lstL.get(i);
-            Debug.debug("Datepattern: " + id + ": " + pref);
-
-            DatePatternDAO dpdao = new DatePatternDAO();
-            DatePattern dp = dpdao.get(new Long(id));           
-            
-           DatePatternPref dpp = new DatePatternPref();
-           dpp.setOwner(pg);
-           dpp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
-           dpp.setDatePattern(dp);          
-				           
-            DatePatternPref sameParentDp = null;
-            for (Iterator j=parentDatePatternPrefs.iterator();j.hasNext();) {
-            	DatePatternPref p = (DatePatternPref)j.next();
-            	if (p.isSame(dpp)) {
-            		if (p.getPrefLevel().equals(dpp.getPrefLevel()))
-            			sameParentDp = dpp;
-            		j.remove();
-            		break;
-            	}
-            }
-
-            if (sameParentDp==null)
-            	s.add(dpp);
-        }
-        if (parentDatePatternPrefs!=null && !parentDatePatternPrefs.isEmpty()) {
-        	for (Iterator i=parentDatePatternPrefs.iterator();i.hasNext();) {
-        		DatePatternPref gp = (DatePatternPref)((DatePatternPref)i.next()).clone();        		
-        		if(!pg.effectiveDatePattern().findChildren().contains(gp.getDatePattern())){
-              	   continue;
-                 }
-        		gp.setOwner(pg);
-        		gp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
-        		s.add(gp);
-        	}
-        } 
-        
-        if (instructorPreferences) {
-            // Course Prefs
-        	if (pg instanceof DepartmentalInstructor) {
-                lst = frm.getCoursePrefs();
-                lstL = frm.getCoursePrefLevels();
+            for(int i=0; i<lst.size(); i++) {
+                String id = (String)lst.get(i);
+                if (id==null || id.equals(Preference.BLANK_PREF_VALUE))
+                    continue;
                 
-                for(int i=0; i<lst.size(); i++) {
-                    String id = (String)lst.get(i);
-                    if (id==null || id.equals(Preference.BLANK_PREF_VALUE))
-                        continue;
-                    
-                    String pref = (String) lstL.get(i);
-                    Debug.debug("Course: " + id + ": " + pref);
+                String pref = (String) lstL.get(i);
+                Debug.debug("Roomgr: " + id + ": " + pref);
 
-                    CourseOfferingDAO cdao = new CourseOfferingDAO();
-                    CourseOffering course = cdao.get(new Long(id));
-                    
-                    InstructorCoursePref cp = new InstructorCoursePref();
-                    cp.setOwner(pg);
-                    cp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
-                    cp.setCourse(course);
+                RoomGroupDAO gdao = new RoomGroupDAO();
+                RoomGroup gr = gdao.get(new Long(id));
+                
+                RoomGroupPref gp = new RoomGroupPref();
+                gp.setOwner(pg);
+                gp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
+                gp.setRoomGroup(gr);
 
-                    s.add(cp);
+                RoomGroupPref sameParentGp = null;
+                for (Iterator j=parentRoomGroupPrefs.iterator();j.hasNext();) {
+                	RoomGroupPref p = (RoomGroupPref)j.next();
+                	if (p.isSame(gp)) {
+                		if (p.getPrefLevel().equals(gp.getPrefLevel()))
+                			sameParentGp = gp;
+                		j.remove();
+                		break;
+                	}
                 }
+
+                if (sameParentGp==null)
+                	s.add(gp);
             }
+            if (parentRoomGroupPrefs!=null && !parentRoomGroupPrefs.isEmpty()) {
+            	for (Iterator i=parentRoomGroupPrefs.iterator();i.hasNext();) {
+            		RoomGroupPref gp = (RoomGroupPref)((RoomGroupPref)i.next()).clone();
+            		gp.setOwner(pg);
+            		gp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
+            		s.add(gp);
+            	}
+            }
+    	}
+  
+        // Date pattern Prefs
+    	if (Preference.Type.DATE.in(types)) {
+            List lst = frm.getDatePatternPrefs();
+            List lstL = frm.getDatePatternPrefLevels();        
+            Set parentDatePatternPrefs = pg.effectivePreferences(DatePatternPref.class);
             
-            // Attribute Prefs
-            lst = frm.getAttributePrefs();
-            lstL = frm.getAttributePrefLevels();
+            for(int i=0; i<lst.size(); i++) {
+                String id = (String)lst.get(i);
+                if (id==null || id.equals(Preference.BLANK_PREF_VALUE) || lstL.get(i).equals(PreferenceLevel.PREF_LEVEL_NEUTRAL))
+                    continue;
+                
+                String pref = (String) lstL.get(i);
+                Debug.debug("Datepattern: " + id + ": " + pref);
+
+                DatePatternDAO dpdao = new DatePatternDAO();
+                DatePattern dp = dpdao.get(new Long(id));           
+                
+               DatePatternPref dpp = new DatePatternPref();
+               dpp.setOwner(pg);
+               dpp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
+               dpp.setDatePattern(dp);          
+    				           
+                DatePatternPref sameParentDp = null;
+                for (Iterator j=parentDatePatternPrefs.iterator();j.hasNext();) {
+                	DatePatternPref p = (DatePatternPref)j.next();
+                	if (p.isSame(dpp)) {
+                		if (p.getPrefLevel().equals(dpp.getPrefLevel()))
+                			sameParentDp = dpp;
+                		j.remove();
+                		break;
+                	}
+                }
+
+                if (sameParentDp==null)
+                	s.add(dpp);
+            }
+            if (parentDatePatternPrefs!=null && !parentDatePatternPrefs.isEmpty()) {
+            	for (Iterator i=parentDatePatternPrefs.iterator();i.hasNext();) {
+            		DatePatternPref gp = (DatePatternPref)((DatePatternPref)i.next()).clone();        		
+            		if(!pg.effectiveDatePattern().findChildren().contains(gp.getDatePattern())){
+                  	   continue;
+                     }
+            		gp.setOwner(pg);
+            		gp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
+            		s.add(gp);
+            	}
+            }    		
+    	}
+        
+        // Course Prefs
+    	if (Preference.Type.COURSE.in(types) && pg.isInstructorAssignmentNeeded()) {
+            List lst = frm.getCoursePrefs();
+            List lstL = frm.getCoursePrefLevels();
+            
+            for(int i=0; i<lst.size(); i++) {
+                String id = (String)lst.get(i);
+                if (id==null || id.equals(Preference.BLANK_PREF_VALUE))
+                    continue;
+                
+                String pref = (String) lstL.get(i);
+                Debug.debug("Course: " + id + ": " + pref);
+
+                CourseOfferingDAO cdao = new CourseOfferingDAO();
+                CourseOffering course = cdao.get(new Long(id));
+                
+                InstructorCoursePref cp = new InstructorCoursePref();
+                cp.setOwner(pg);
+                cp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
+                cp.setCourse(course);
+
+                s.add(cp);
+            }
+        }
+        
+        // Attribute Prefs
+    	if (Preference.Type.ATTRIBUTE.in(types) && pg.isInstructorAssignmentNeeded()) {
+            List lst = frm.getAttributePrefs();
+            List lstL = frm.getAttributePrefLevels();
             Set parentAttributePrefs = pg.effectivePreferences(InstructorAttributePref.class);
             for (int i=0; i<lst.size(); i++) {
                 String id = (String)lst.get(i);
@@ -1007,10 +1035,12 @@ public class PreferencesAction extends Action {
             		s.add(ap);
             	}
             }
-            
-            // Instructor Prefs
-            lst = frm.getInstructorPrefs();
-            lstL = frm.getInstructorPrefLevels();
+        }
+        
+        // Instructor Prefs
+    	if (Preference.Type.INSTRUCTOR.in(types) && pg.isInstructorAssignmentNeeded()) {
+            List lst = frm.getInstructorPrefs();
+            List lstL = frm.getInstructorPrefLevels();
             Set parentInstructorPrefs = pg.effectivePreferences(InstructorPref.class);
             for (int i=0; i<lst.size(); i++) {
                 String id = (String)lst.get(i);

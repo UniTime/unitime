@@ -75,4 +75,6 @@ public class ExamPeriodPref extends BaseExamPeriodPref {
 	    if (cmp!=0) return cmp;
 	    return super.compareTo(o);
 	}
+	
+	public Type getType() { return Type.PERIOD; }
 }

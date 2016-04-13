@@ -52,7 +52,6 @@ import org.unitime.timetable.model.comparators.NavigationComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
-import org.unitime.timetable.model.dao.InstructorCoursePrefDAO;
 import org.unitime.timetable.model.dao.SectioningInfoDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -476,11 +475,6 @@ public class Class_ extends BaseClass_ {
     			if (instPref!=null) prefs.addAll(instPref);
     		}
     		return prefs;
-    	}
-    	if (InstructorCoursePref.class.equals(type)) {
-    		return new TreeSet<InstructorCoursePref>(InstructorCoursePrefDAO.getInstance().getSession().createQuery(
-    				"from InstructorCoursePref where course.uniqueId = :courseId")
-    		.setLong("courseId", getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getUniqueId()).setCacheable(true).list());
     	}
 
     	Set classPrefs = getPreferences(type, this);
@@ -1760,6 +1754,7 @@ public class Class_ extends BaseClass_ {
         return available;
     }
 	
+	@Override
 	public boolean isInstructorAssignmentNeeded() {
 		return effectiveTeachingLoad() != null && effectiveNbrInstructors() > 0;
 	}

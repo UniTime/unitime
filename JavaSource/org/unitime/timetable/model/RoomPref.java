@@ -104,4 +104,6 @@ public class RoomPref extends BaseRoomPref {
 	public String preferenceTitle() {
     	return MSG.prefTitleRoom(getPrefLevel().getPrefName(), getRoom().getLabel());
 	}
+	
+	public Type getType() { return Type.ROOM; }
 }

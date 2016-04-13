@@ -364,4 +364,6 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     }
     
     public abstract Department getDepartment();
+    
+    public boolean isInstructorAssignmentNeeded() { return false; }
 }

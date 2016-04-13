@@ -886,6 +886,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 		return getInstrOfferingConfig().getDurationModel().getDates(getMinutesPerWk(), datePattern, dayCode, minutesPerMeeting);
 	}
 	
+	@Override
 	public boolean isInstructorAssignmentNeeded() {
 		return getTeachingLoad() != null && getNbrInstructors() != null && getNbrInstructors() > 0;
 	}

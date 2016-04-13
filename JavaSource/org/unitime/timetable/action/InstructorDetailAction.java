@@ -152,6 +152,7 @@ public class InstructorDetailAction extends PreferencesAction {
 	        // Read instructor id from form
 	        if(op.equals(MSG.actionEditInstructor())
 	                || op.equals(MSG.actionEditInstructorPreferences())
+	                || op.equals(MSG.actionEditInstructorAssignmentPreferences())
 	                || op.equals(MSG.actionBackToInstructors())
 	                || op.equals(MSG.actionDisplayInstructorPreferences())
 	                || op.equals(MSG.actionNextInstructor())
@@ -201,7 +202,15 @@ public class InstructorDetailAction extends PreferencesAction {
 	        	return null;
 	        }
 	        	        
-            if (op.equals(MSG.actionNextInstructor())) {
+	        if(op.equals(MSG.actionEditInstructorAssignmentPreferences()) && instructorId!=null && !instructorId.trim().isEmpty()) {
+	        	
+			    sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorAssignmentPreferences);
+
+	        	response.sendRedirect( response.encodeURL("instructorAssignmentPref.do?instructorId="+instructorId) );
+	        	return null;
+	        }
+
+	        if (op.equals(MSG.actionNextInstructor())) {
             	response.sendRedirect(response.encodeURL("instructorDetail.do?instructorId="+frm.getNextId()));
             	return null;
             }
@@ -462,6 +471,8 @@ public class InstructorDetailAction extends PreferencesAction {
 			
 	        frm.setMaxLoad(inst.getMaxLoad() == null ? null : Formats.getNumberFormat("0.##").format(inst.getMaxLoad()));
 	        frm.setTeachingPreference(inst.getTeachingPreference() == null ? PreferenceLevel.sProhibited : inst.getTeachingPreference().getPrefProlog());
+	        if (inst.getMaxLoad() == null && (inst.getTeachingPreference() == null || inst.getTeachingPreference().getPrefProlog().equals(PreferenceLevel.sProhibited)))
+	        	frm.setTeachingPreference(null);
 	        frm.clearAttributes();
 	        for (InstructorAttribute attribute: inst.getAttributes())
 	        	frm.setAttribute(attribute.getUniqueId(), true);

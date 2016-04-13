@@ -482,4 +482,6 @@ public class DistributionPref extends BaseDistributionPref {
     	String abbv = getDistributionType().getAbbreviation();
     	return getStructure() == null ? abbv : getStructure().getAbbreviation(abbv);
     }
+    
+    public Type getType() { return Type.DISTRIBUTION; }
 }

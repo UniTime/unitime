@@ -67,4 +67,5 @@ public class DatePatternPref extends BaseDatePatternPref {
 		return super.compareTo(o);
 	}
 
+	public Type getType() { return Type.DATE; }
 }

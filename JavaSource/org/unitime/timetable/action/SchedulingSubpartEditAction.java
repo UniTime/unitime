@@ -49,6 +49,7 @@ import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.ItypeDesc;
+import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.TimePattern;
@@ -437,7 +438,9 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         // Clear all old prefs
         s.clear();
 
-        super.doUpdate(request, frm, ss, s, timeVertical, ss.isInstructorAssignmentNeeded());
+        super.doUpdate(request, frm, ss, s, timeVertical,
+        		Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING,
+        		Preference.Type.ATTRIBUTE, Preference.Type.INSTRUCTOR);
 
         ss.setAutoSpreadInTime(frm.getAutoSpreadInTime());
         ss.setStudentAllowOverlap(frm.getStudentAllowOverlap());

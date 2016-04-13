@@ -66,5 +66,7 @@ public class InstructorCoursePref extends BaseInstructorCoursePref {
 	    if (cmp!=0) return cmp;
 	    return super.compareTo(o);
 	}
+	
+	public Type getType() { return Type.COURSE; }
 
 }

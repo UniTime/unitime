@@ -1391,6 +1391,17 @@
       <forward name="showEdit" path="instructorPrefsEditTile" />
       <forward name="showDetail" path="/instructorDetail.do" />
     </action>
+    <action
+      attribute="instructorEditForm"
+      input="/user//instructorAssignmentPref.jsp"
+      name="instructorEditForm"
+      path="/instructorAssignmentPref"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false">
+      <forward name="showEdit" path="instructorAssignmentPrefTile" />
+      <forward name="showDetail" path="/instructorDetail.do" />
+    </action>    
     
     <action
        path="/courseOfferingEdit"

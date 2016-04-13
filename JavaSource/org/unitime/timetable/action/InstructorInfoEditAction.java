@@ -21,7 +21,6 @@ package org.unitime.timetable.action;
 
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -49,14 +48,10 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
-import org.unitime.timetable.model.InstructorAttribute;
-import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.util.Formats;
-import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 
 
@@ -187,14 +182,7 @@ public class InstructorInfoEditAction extends InstructorAction {
         
         //Load form 
         doLoad(request, frm);
-        
-		Vector<PreferenceLevel> prefs = new Vector<PreferenceLevel>();
-    	for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList()) {
-    		if (!pref.getPrefProlog().equalsIgnoreCase(PreferenceLevel.sRequired))
-    			prefs.addElement(pref);
-    	}
-    	request.setAttribute(PreferenceLevel.PREF_LEVEL_ATTR_NAME, prefs);
-        
+                
         BackTracker.markForBack(
         		request,
         		"instructorDetail.do?instructorId="+frm.getInstructorId(),
@@ -349,15 +337,7 @@ public class InstructorInfoEditAction extends InstructorAction {
 		}
         
         frm.setIgnoreDist(inst.isIgnoreToFar()==null?false:inst.isIgnoreToFar().booleanValue());
-        
-        frm.setMaxLoad(inst.getMaxLoad() == null ? null : Formats.getNumberFormat("0.##").format(inst.getMaxLoad()));
-        frm.setTeachingPreference(inst.getTeachingPreference() == null ? PreferenceLevel.sProhibited : inst.getTeachingPreference().getPrefProlog());
-        frm.clearAttributes();
-        for (InstructorAttribute attribute: inst.getAttributes())
-        	frm.setAttribute(attribute.getUniqueId(), true);
-        LookupTables.setupInstructorAttributeTypes(request, inst);
-        LookupTables.setupInstructorAttributes(request, inst);
-        
+                
         try {
 			DepartmentalInstructor previous = inst.getPreviousDepartmentalInstructor(sessionContext, Right.InstructorEdit);
 			frm.setPreviousId(previous==null?null:previous.getUniqueId().toString());

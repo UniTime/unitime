@@ -66,4 +66,6 @@ public class InstructorAttributePref extends BaseInstructorAttributePref {
 	    if (cmp!=0) return cmp;
 	    return super.compareTo(o);
 	}
+	
+	public Type getType() { return Type.ATTRIBUTE; }
 }

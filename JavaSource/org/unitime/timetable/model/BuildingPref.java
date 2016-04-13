@@ -105,4 +105,6 @@ public class BuildingPref extends BaseBuildingPref {
 	public String preferenceTitle() {
     	return MSG.prefTitleBuilding(getPrefLevel().getPrefName(), getBuilding().getName());
 	}
+	
+	public Type getType() { return Type.BUILDING; }
 }

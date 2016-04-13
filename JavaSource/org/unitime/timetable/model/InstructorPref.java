@@ -94,4 +94,6 @@ public class InstructorPref extends BaseInstructorPref {
 	public boolean weakenHardPreferences() {
 		return true;
 	}
+	
+	public Type getType() { return Type.INSTRUCTOR; }
 }

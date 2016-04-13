@@ -462,7 +462,8 @@ public class ExamEditAction extends PreferencesAction {
                 i.remove();
         }
 
-        super.doUpdate(request, frm, exam, s, false, false);
+        super.doUpdate(request, frm, exam, s, false,
+        		Preference.Type.PERIOD, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING);
         
         exam.setNote(frm.getNote());
         exam.setSeatingType(frm.getSeatingTypeIdx());

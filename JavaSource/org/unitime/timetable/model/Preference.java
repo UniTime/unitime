@@ -35,6 +35,42 @@ public abstract class Preference extends BasePreference implements Comparable {
 
     /** Blank Pref Value **/
     public static final String BLANK_PREF_VALUE = "-";
+    
+    public static enum Type {
+    	TIME(TimePref.class),
+    	ROOM(RoomPref.class),
+    	ROOM_GROUP(RoomGroupPref.class),
+    	ROOM_FEATURE(RoomFeaturePref.class),
+    	BUILDING(BuildingPref.class),
+    	DISTRIBUTION(DistributionPref.class),
+    	PERIOD(ExamPeriodPref.class),
+    	DATE(DatePatternPref.class),
+    	ATTRIBUTE(InstructorAttributePref.class),
+    	COURSE(InstructorCoursePref.class),
+    	INSTRUCTOR(InstructorPref.class)
+    	;
+    	
+    	Class<? extends Preference> iClazz;
+    	Type(Class<? extends Preference> clazz) { iClazz = clazz; }
+    	public Class<? extends Preference> getImplementation() { return iClazz; }
+    	
+    	int flag() { return 1 << ordinal(); }
+		public boolean in(int flags) {
+			return (flags & flag()) != 0;
+		}
+		public int set(int flags) {
+			return (in(flags) ? flags : flags + flag());
+		}
+		public int clear(int flags) {
+			return (in(flags) ? flags - flag() : flags);
+		}
+		public static int toInt(Type... types) {
+			int ret = 0;
+			for (Type t: types)
+				ret += t.flag();
+			return ret;
+		}
+    }
 
     /*[CONSTRUCTOR MARKER BEGIN]*/
 	public Preference () {
@@ -131,4 +167,5 @@ public abstract class Preference extends BasePreference implements Comparable {
     
     public abstract Object clone();
     public abstract boolean isSame(Preference other);
+    public abstract Type getType();
 }

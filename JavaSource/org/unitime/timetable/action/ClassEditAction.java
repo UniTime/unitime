@@ -285,7 +285,9 @@ public class ClassEditAction extends PreferencesAction {
                     doUpdate(request, frm, c, hibSession);
 
                     // Save Prefs
-                    super.doUpdate(request, frm, c, s, timeVertical, c.isInstructorAssignmentNeeded());
+                    super.doUpdate(request, frm, c, s, timeVertical,
+                    		Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING,
+                    		Preference.Type.ATTRIBUTE, Preference.Type.INSTRUCTOR);
                     
                     //if (c.getSchedulingSubpart().getTeachingLoad() != null)
                     //	updateInstructorCoursePreferences(hibSession, frm, c, c.getSchedulingSubpart().getControllingCourseOffering());

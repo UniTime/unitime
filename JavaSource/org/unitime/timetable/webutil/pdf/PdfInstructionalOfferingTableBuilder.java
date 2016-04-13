@@ -659,6 +659,9 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		return cell ;
     	} else {
         	PdfPCell cell = createCell();
+    		if (!prefGroup.isInstructorAssignmentNeeded() && (InstructorPref.class.equals(prefType) || InstructorAttributePref.class.equals(prefType))) {
+    			return cell;
+    		}
         	for (Iterator i=prefGroup.effectivePreferences(prefType).iterator();i.hasNext();) {
         		Preference pref = (Preference)i.next();
         		addText(cell, pref.getPrefLevel().getAbbreviation()+" "+pref.preferenceText(), false, false, Element.ALIGN_LEFT, (!isEditable ? color : pref.getPrefLevel().awtPrefcolor()), true);
