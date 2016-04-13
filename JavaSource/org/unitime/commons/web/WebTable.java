@@ -354,9 +354,6 @@ public class WebTable {
                     + (!suppressRowHighlight ? "onmouseout=\"this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';\"" : "")
                     + (title == null ? "" : " title='" + title + "'")
                     + ">");
-			if (wtline.getUniqueId()!=null) {
-				sb.append("<A name=\""+wtline.iUniqueId+"\" ></A>");
-			}
             boolean blank = iBlankWhenSame;
             for (int i = 0; i < line.length; i++) {
                 if (!isFiltered(i)) {
@@ -372,6 +369,7 @@ public class WebTable {
                                         ? " colspan=" + last + " "
                                         : "")
                                 + ">"
+                                + (i == 0 && wtline.getUniqueId() != null ? "<A name=\""+wtline.iUniqueId+"\" ></A>" : "")
                                 + line[i]
                                 + "</td>");
                     } else {
