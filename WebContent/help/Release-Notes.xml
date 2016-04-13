@@ -113,6 +113,15 @@
 		</item>
 	</category>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Solution Commit / Uncommit</name>
+			<description>
+				<line>When a solution is committed or uncommitted, force solution refresh along the cluster.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Other</title>
 		<item>
 			<name>Roll Forward: Room Preferences on Departments</name>

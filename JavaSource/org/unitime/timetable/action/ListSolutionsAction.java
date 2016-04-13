@@ -176,6 +176,7 @@ public class ListSolutionsAction extends Action {
                 mapping.findForward("showSolutions");
             } else {
             	SolutionBean solutionBean = myForm.getSolutionBean();
+            	List<Long> ids = new ArrayList<Long>();
             	if (solutionBean!=null) {
                 	Transaction tx = null;
                 	try {
@@ -187,7 +188,7 @@ public class ListSolutionsAction extends Action {
                 		Solution solution = dao.get(solutionBean.getUniqueId(), hibSession);
                 		
                 		sessionContext.checkPermission(solution.getOwner(), Right.TimetablesSolutionCommit);
-                		
+                		ids.add(solution.getUniqueId());
                 		if ("Commit".equals(op)) {
                 			List solutions = hibSession.createCriteria(Solution.class).add(Restrictions.eq("owner",solution.getOwner())).list();
                    			HashSet<Solution> touchedSolutionSet = new HashSet<Solution>();
@@ -195,7 +196,7 @@ public class ListSolutionsAction extends Action {
                 				Solution s = (Solution)i.next();
                 				if (s.equals(solution)) continue;
                 				if (s.isCommited().booleanValue()) {
-                 					touchedSolutionSet.add(s);
+                 					touchedSolutionSet.add(s); ids.add(s.getUniqueId());
                 				}
                 			}
                 			touchedSolutionSet.add(solution);
@@ -217,6 +218,7 @@ public class ListSolutionsAction extends Action {
                 	    		solutions.add(solution);
                 	    		commitAction.performExternalSolutionCommitAction(solutions, hibSession);
                 	    	}
+                	    	
                 			solutionBean.setCommited(null);
                 		}
                 		
@@ -232,6 +234,7 @@ public class ListSolutionsAction extends Action {
             	    	if (tx!=null) tx.rollback();
             			Debug.error(e);
             	    }
+                	solverServerService.getLocalServer().refreshCourseSolution(ids.toArray(new Long[ids.size()]));
             	}
             }        	
         }
