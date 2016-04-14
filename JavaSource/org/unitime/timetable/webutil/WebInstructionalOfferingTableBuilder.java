@@ -231,7 +231,10 @@ public class WebInstructionalOfferingTableBuilder {
     	return iDefaultTimeGridSize;
     }
     public int getPreferenceColumns() {
-    	return 2 + (getDisplayDistributionPrefs() ? 1 : 0) + (getDisplayInstructorPrefs() ? 2 : 0);
+    	if (isShowPreferences())
+    		return 2 + (getDisplayDistributionPrefs() ? 1 : 0) + (getDisplayInstructorPrefs() ? 2 : 0);
+    	else
+    		return (getDisplayInstructorPrefs() ? 2 : 0);
     }
      
     public void setUserSettings(UserContext user) {
@@ -443,6 +446,17 @@ public class WebInstructionalOfferingTableBuilder {
         		cell.setStyleClass("WebTableHeaderSecondRow");
         		row2.addContent(cell);
     		}
+    	} else if (getDisplayInstructorPrefs()) {
+    		cell = headerCell("----" + MSG.columnPreferences() + "----", 1, getPreferenceColumns());
+    		cell.setStyleClass("WebTableHeaderFirstRow");
+    		cell.setAlign("center");
+	    	row.addContent(cell);
+			cell = headerCell(MSG.columnInstructorAttributePref(), 1, 1);
+    		cell.setStyleClass("WebTableHeaderSecondRow");
+    		row2.addContent(cell);
+			cell = headerCell(MSG.columnInstructorPref(), 1, 1);
+    		cell.setStyleClass("WebTableHeaderSecondRow");
+    		row2.addContent(cell);    		
     	}
     	if (isShowInstructorAssignment()) {
     		cell = this.headerCell(MSG.columnTeachingLoad(), 2, 1);
@@ -1277,10 +1291,10 @@ public class WebInstructionalOfferingTableBuilder {
     		if (getDisplayDistributionPrefs()) {
     			row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, DistributionPref.class, isEditable));
     		}
-    		if (getDisplayInstructorPrefs()) {
-    			row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, InstructorAttributePref.class, isEditable));
-    			row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, InstructorPref.class, isEditable));
-    		}
+    	}
+    	if (getDisplayInstructorPrefs()) {
+			row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, InstructorAttributePref.class, isEditable));
+			row.addContent(this.buildPreferenceCell(classAssignment,prefGroup, InstructorPref.class, isEditable));
     	}
     	if (isShowInstructorAssignment()) {
     		row.addContent(this.buildInstructorAssignment(prefGroup, isEditable));
@@ -1512,7 +1526,7 @@ public class WebInstructionalOfferingTableBuilder {
         	if (isShowTimePattern()){
 	       		row.addContent(initNormalCell("", isEditable));
         	} 
-        	if (isShowPreferences()){
+        	if (isShowPreferences() || getDisplayInstructorPrefs()){
 		        for (int j = 0; j < getPreferenceColumns(); j++) {
 		            row.addContent(initNormalCell("", isEditable));
 		        }
@@ -1679,7 +1693,7 @@ public class WebInstructionalOfferingTableBuilder {
     	if (isShowTimePattern()) {
     		emptyCells ++;
     	}
-    	if (isShowPreferences()) {
+    	if (isShowPreferences() || getDisplayInstructorPrefs()) {
     		emptyCells += getPreferenceColumns();
     	}
     	if (isShowInstructorAssignment()) {

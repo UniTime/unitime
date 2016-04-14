@@ -173,7 +173,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowDatePattern()) ret+=1;
     	if (isShowMinPerWk()) ret+=1;
     	if (isShowTimePattern()) ret+=1;
-    	if (isShowPreferences()) ret+=getPreferenceColumns();
+    	if (isShowPreferences() || getDisplayInstructorPrefs()) ret+=getPreferenceColumns();
     	if (isShowInstructorAssignment()) ret+=1;
     	if (isShowInstructor()) ret+=1;
     	if (getDisplayTimetable() && isShowTimetable()) ret+=3;
@@ -217,6 +217,9 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 				width[idx++] = 150f;
 				width[idx++] = 150f;
 			}
+    	} else if (getDisplayInstructorPrefs()) {
+			width[idx++] = 150f;
+			width[idx++] = 150f;
     	}
     	if (isShowInstructorAssignment()) width[idx++] = 100f;
     	if (isShowInstructor()) width[idx++] = 200f;
@@ -300,7 +303,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		addText(c, MSG.columnTimePattern(), true, Element.ALIGN_LEFT);
     		iPdfTable.addCell(c);
     	}
-    	if (isShowPreferences()){
+    	if (isShowPreferences() || getDisplayInstructorPrefs()){
     		PdfPCell c = createCell();
     		c.setColspan(getPreferenceColumns());
     		addText(c, "----" + MSG.columnPreferences() + "----", true, Element.ALIGN_CENTER);
@@ -425,16 +428,16 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         		addText(c3, MSG.columnDistributionPref(), true, Element.ALIGN_LEFT);
         		iPdfTable.addCell(c3);
     		}
-    		if (getDisplayInstructorPrefs()) {
-        		PdfPCell c4 = createCell();
-        		c4.setBorderWidthBottom(1);
-        		addText(c4, MSG.columnInstructorAttributePref(), true, Element.ALIGN_LEFT);
-        		iPdfTable.addCell(c4);
-        		PdfPCell c5 = createCell();
-        		c5.setBorderWidthBottom(1);
-        		addText(c5, MSG.columnInstructorPref(), true, Element.ALIGN_LEFT);
-        		iPdfTable.addCell(c5);
-    		}
+    	}
+    	if (getDisplayInstructorPrefs()) {
+    		PdfPCell c4 = createCell();
+    		c4.setBorderWidthBottom(1);
+    		addText(c4, MSG.columnInstructorAttributePref(), true, Element.ALIGN_LEFT);
+    		iPdfTable.addCell(c4);
+    		PdfPCell c5 = createCell();
+    		c5.setBorderWidthBottom(1);
+    		addText(c5, MSG.columnInstructorPref(), true, Element.ALIGN_LEFT);
+    		iPdfTable.addCell(c5);
     	}
     	if (isShowInstructorAssignment()){
     		PdfPCell c = createCell();
@@ -1179,10 +1182,10 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		if (getDisplayDistributionPrefs()) {
     			iPdfTable.addCell(pdfBuildPreferenceCell(classAssignment,prefGroup, DistributionPref.class, isEditable));
     		}
-    		if (getDisplayInstructorPrefs()) {
-    			iPdfTable.addCell(pdfBuildPreferenceCell(classAssignment,prefGroup, InstructorAttributePref.class, isEditable));
-    			iPdfTable.addCell(pdfBuildPreferenceCell(classAssignment,prefGroup, InstructorPref.class, isEditable));
-    		}
+    	}
+    	if (getDisplayInstructorPrefs()) {
+			iPdfTable.addCell(pdfBuildPreferenceCell(classAssignment,prefGroup, InstructorAttributePref.class, isEditable));
+			iPdfTable.addCell(pdfBuildPreferenceCell(classAssignment,prefGroup, InstructorPref.class, isEditable));
     	}
     	if (isShowInstructorAssignment()){
     		iPdfTable.addCell(pdfBuildInstructorAssignment(prefGroup, isEditable));
@@ -1330,7 +1333,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         	if (isShowTimePattern()){
         	    iPdfTable.addCell(createCell());
         	} 
-        	if (isShowPreferences()){
+        	if (isShowPreferences() || getDisplayInstructorPrefs()){
 		        for (int j = 0; j < getPreferenceColumns(); j++) {
 	        	    iPdfTable.addCell(createCell());
 		        }
@@ -1475,7 +1478,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowTimePattern()){
     		emptyCels ++;
     	}
-    	if (isShowPreferences()){
+    	if (isShowPreferences() || getDisplayInstructorPrefs()){
     		emptyCels += getPreferenceColumns();
     	}
     	if (isShowInstructorAssignment()){

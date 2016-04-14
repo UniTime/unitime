@@ -108,15 +108,15 @@
 					<TR>
 						<TD></TD>
 						<TD>
-							<html:checkbox property="instructor" />
-							<loc:message name="columnInstructor"/>
+							<html:checkbox property="instructorAssignment" />
+							<loc:message name="includeInstructorScheduling"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD>
-							<html:checkbox property="instructorAssignment" />
-							<loc:message name="includeInstructorScheduling"/>
+							<html:checkbox property="instructor" />
+							<loc:message name="columnInstructor"/>
 						</TD>
 					</TR>
 					<logic:notEmpty name="classListForm" property="timetable">

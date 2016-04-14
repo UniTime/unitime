@@ -136,7 +136,7 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowDatePattern()) ret+=1;
     	if (isShowMinPerWk()) ret+=1;
     	if (isShowTimePattern()) ret+=1;
-    	if (isShowPreferences()) ret+=getPreferenceColumns();
+    	if (isShowPreferences() || getDisplayInstructorPrefs()) ret+=getPreferenceColumns();
     	if (isShowInstructorAssignment()) ret+=1;
     	if (isShowInstructor()) ret+=1;
     	if (getDisplayTimetable() && isShowTimetable()) ret+=3;
@@ -200,10 +200,10 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		if (getDisplayDistributionPrefs()) {
     			line.add(createCell(MSG.columnDistributionPref() + LINE_SEPARATOR + MSG.columnPreferences()));
     		}
-    		if (getDisplayInstructorPrefs()) {
-    			line.add(createCell(MSG.columnInstructorAttributePref() + LINE_SEPARATOR + MSG.columnPreferences()));
-    			line.add(createCell(MSG.columnInstructorPref() + LINE_SEPARATOR + MSG.columnPreferences()));
-    		}
+    	}
+    	if (getDisplayInstructorPrefs()) {
+    		line.add(createCell(MSG.columnInstructorAttributePref() + LINE_SEPARATOR + MSG.columnPreferences()));
+			line.add(createCell(MSG.columnInstructorPref() + LINE_SEPARATOR + MSG.columnPreferences()));
     	}
     	if (isShowInstructorAssignment()) {
     		line.add(createCell(MSG.columnTeachingLoad()));
@@ -855,10 +855,10 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		if (getDisplayDistributionPrefs()) {
     			line.add(csvBuildPreferenceCell(classAssignment,prefGroup, DistributionPref.class, isEditable));
     		}
-    		if (getDisplayInstructorPrefs()) {
-    			line.add(csvBuildPreferenceCell(classAssignment,prefGroup, InstructorAttributePref.class, isEditable));
-    			line.add(csvBuildPreferenceCell(classAssignment,prefGroup, InstructorPref.class, isEditable));
-    		}
+    	}
+    	if (getDisplayInstructorPrefs()) {
+			line.add(csvBuildPreferenceCell(classAssignment,prefGroup, InstructorAttributePref.class, isEditable));
+			line.add(csvBuildPreferenceCell(classAssignment,prefGroup, InstructorPref.class, isEditable));
     	}
     	if (isShowInstructorAssignment()){
     		line.add(csvBuildInstructorAssignment(prefGroup, isEditable));
@@ -1002,7 +1002,7 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         	if (isShowTimePattern()){
         	    line.add(createCell());
         	} 
-        	if (isShowPreferences()){
+        	if (isShowPreferences() || getDisplayInstructorPrefs()){
 		        for (int j = 0; j < getPreferenceColumns(); j++) {
 	        	    line.add(createCell());
 		        }
@@ -1145,7 +1145,7 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowTimePattern()){
     		emptyCels ++;
     	}
-    	if (isShowPreferences()){
+    	if (isShowPreferences() || getDisplayInstructorPrefs()){
     		emptyCels += getPreferenceColumns();
     	}
     	if (isShowInstructorAssignment()) {
