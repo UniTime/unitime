@@ -51,13 +51,16 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.StudentAccomodation;
+import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.permissions.Permission;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
@@ -75,6 +78,8 @@ public class ClassInstrAssgnEditAction extends PreferencesAction {
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
 	@Autowired SessionContext sessionContext;
+	
+	@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
 	
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
     	try {
@@ -442,5 +447,9 @@ public class ClassInstrAssgnEditAction extends PreferencesAction {
                 ChangeLog.Operation.UPDATE,
                 c.getSchedulingSubpart().getInstrOfferingConfig().getControllingCourseOffering().getSubjectArea(),
                 c.getManagingDept());
+        
+        if (permissionOfferingLockNeeded.check(sessionContext.getUser(), c.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering())) {
+    		StudentSectioningQueue.classAssignmentChanged(hibSession, sessionContext.getUser(), c.getControllingDept().getSessionId(), c.getUniqueId());
+    	}
     }
 }
