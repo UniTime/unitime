@@ -79,6 +79,15 @@
 							<loc:message name="actionEditClass" />
 						</html:submit> 
 					</sec:authorize>
+					
+					<sec:authorize access="hasPermission(#ClassEditForm.controllingDept, 'Department', 'InstructorAssignmentPreferences')">
+						&nbsp;
+						<html:submit property="op" styleClass="btn" 
+							accesskey="<%=MSG.accessEditInstructorAssignmentPreferences()%>" 
+							title="<%=MSG.titleEditInstructorAssignmentPreferences(MSG.accessEditInstructorAssignmentPreferences()) %>" >
+							<loc:message name="actionEditClassInstructorAssignmentPreferences" />
+						</html:submit> 
+					</sec:authorize>
 				
 					<sec:authorize access="hasPermission(#ClassEditForm.classId, 'Class_', 'DistributionPreferenceClass')">
 						&nbsp;
@@ -272,12 +281,14 @@
 			</TD>
 		</TR>
 
+		<logic:notEmpty name="<%=frmName%>" property="schedulePrintNote">
 		<TR>
 			<TD valign="top"><loc:message name="propertyStudentScheduleNote"/></TD>
 			<TD>
 				<bean:write name="<%=frmName%>" property="schedulePrintNote" />
 			</TD>
 		</TR>
+		</logic:notEmpty>
 
 		<logic:notEmpty name="<%=frmName%>" property="notes">
 			<TR>
@@ -479,6 +490,15 @@
 							title="<%=MSG.titleEditClass(MSG.accessEditClass()) %>" >
 							<loc:message name="actionEditClass" />
 						</html:submit>
+					</sec:authorize>
+					
+					<sec:authorize access="hasPermission(#ClassEditForm.controllingDept, 'Department', 'InstructorAssignmentPreferences')">
+						&nbsp;
+						<html:submit property="op" styleClass="btn" 
+							accesskey="<%=MSG.accessEditInstructorAssignmentPreferences()%>" 
+							title="<%=MSG.titleEditInstructorAssignmentPreferences(MSG.accessEditInstructorAssignmentPreferences()) %>" >
+							<loc:message name="actionEditClassInstructorAssignmentPreferences" />
+						</html:submit> 
 					</sec:authorize>
 					
 					<sec:authorize access="hasPermission(#ClassEditForm.classId, 'Class_', 'DistributionPreferenceClass')">

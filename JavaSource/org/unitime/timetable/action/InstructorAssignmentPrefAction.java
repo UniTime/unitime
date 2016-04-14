@@ -120,8 +120,6 @@ public class InstructorAssignmentPrefAction extends PreferencesAction {
             if (instructorId==null || instructorId.isEmpty()) 
                 throw new Exception (MSG.exceptionInstructorInfoNotSupplied());
             
-            sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorAssignmentPreferences);
-            
             // Set screen name
             frm.setScreenName("instructorPref");
             
@@ -129,6 +127,9 @@ public class InstructorAssignmentPrefAction extends PreferencesAction {
             DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
             DepartmentalInstructor inst = idao.get(new Long(instructorId));
             LookupTables.setupInstructorDistribTypes(request, sessionContext, inst);
+            
+            // Check permissions
+            sessionContext.checkPermission(inst.getDepartment(), Right.InstructorAssignmentPreferences);
             
             // Cancel - Go back to Instructors Detail Screen
             if (op.equals(MSG.actionBackToDetail())  && instructorId != null && !instructorId.trim().isEmpty()) {

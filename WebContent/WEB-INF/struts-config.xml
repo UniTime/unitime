@@ -761,6 +761,23 @@
         	path="/classDetail.do" />
      </action>
      
+    <action
+         path="/classInstrAssgnEdit"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         attribute="ClassEditForm"
+         input="classInstrAssgnEditTile"
+         name="classEditForm"
+         scope="request"
+         validate="false"> 
+        
+        <forward 
+        	name="editClass" 
+        	path="classInstrAssgnEditTile" />
+        <forward 
+        	name="displayClassDetail" 
+        	path="/classDetail.do" />
+     </action>
+     
      <action
          path="/classSearch"
          attribute="classListForm"

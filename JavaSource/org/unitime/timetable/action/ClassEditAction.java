@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -158,8 +157,7 @@ public class ClassEditAction extends PreferencesAction {
                 || op.equals(MSG.actionNextClass())
                 || op.equals(MSG.actionPreviousClass())
                 || op.equals("updateDatePattern")
-                || op.equals("updatePref")
-                || op.equals("updateInstructorAssignment")) {
+                || op.equals("updatePref")) {
             classId = frm.getClassId().toString();
         }
 
@@ -238,7 +236,7 @@ public class ClassEditAction extends PreferencesAction {
         	sessionContext.checkPermission(c, Right.ClassEditClearPreferences);
 
             Set s = c.getPreferences();
-            s.clear();
+            doClear(s, Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING);
             c.setPreferences(s);
             cdao.update(c);
             op = "init";
@@ -279,19 +277,15 @@ public class ClassEditAction extends PreferencesAction {
             	try {
                     // Clear all old prefs
                     Set s = c.getPreferences();
-                    s.clear();
+                    doClear(s, Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING);
 
                     // Save class data
                     doUpdate(request, frm, c, hibSession);
 
                     // Save Prefs
                     super.doUpdate(request, frm, c, s, timeVertical,
-                    		Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING,
-                    		Preference.Type.ATTRIBUTE, Preference.Type.INSTRUCTOR);
+                    		Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING);
                     
-                    //if (c.getSchedulingSubpart().getTeachingLoad() != null)
-                    //	updateInstructorCoursePreferences(hibSession, frm, c, c.getSchedulingSubpart().getControllingCourseOffering());
-
                     hibSession.saveOrUpdate(c);
 
     	            tx.commit();
@@ -367,10 +361,6 @@ public class ClassEditAction extends PreferencesAction {
 			}
 		}
         
-        if (op.equals("updateInstructorAssignment")) {
-        	initPrefs(frm, c, leadInstructors, true);
-        }
-        
         // Initialize Preferences for initial load
         frm.setAvailableTimePatterns(TimePattern.findApplicable(
         		sessionContext.getUser(),
@@ -416,7 +406,6 @@ public class ClassEditAction extends PreferencesAction {
         LookupTables.setupBldgs(request, c);		 // Buildings
         LookupTables.setupRoomFeatures(request, c); // Room Features
         LookupTables.setupRoomGroups(request, c);   // Room Groups
-        LookupTables.setupInstructorAttributes(request, c);   // Instructor Attributes
 
         frm.setAllowHardPrefs(sessionContext.hasPermission(c, Right.CanUseHardRoomPrefs));
 
@@ -476,6 +465,7 @@ public class ClassEditAction extends PreferencesAction {
         frm.setCourseName(cco.getInstructionalOffering().getCourseName());
         frm.setCourseTitle(cco.getTitle());
         frm.setManagingDept(managingDept.getUniqueId());
+        frm.setControllingDept(c.getControllingDept().getUniqueId());
         frm.setManagingDeptLabel(managingDept.getManagingDeptLabel());
         frm.setUnlimitedEnroll(c.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment());
         frm.setAccommodation(StudentAccomodation.toHtml(StudentAccomodation.getAccommodations(c)));
@@ -489,6 +479,9 @@ public class ClassEditAction extends PreferencesAction {
         frm.setPreviousId(previous==null?null:previous.getUniqueId().toString());
         frm.setMinRoomLimit(c.getMinRoomLimit());
         frm.setEnrollment(c.getEnrollment());
+        frm.setInstructorAssignment(c.isInstructorAssignmentNeeded());
+        frm.setTeachingLoad(c.effectiveTeachingLoad() == null ? "" : Formats.getNumberFormat("0.##").format(c.effectiveTeachingLoad()));
+        frm.setNbrInstructors(c.isInstructorAssignmentNeeded() ? String.valueOf(c.effectiveNbrInstructors()) : "");
 
         // Load from class only for initial load or reload
         if(op.equals("init")) {
@@ -503,10 +496,6 @@ public class ClassEditAction extends PreferencesAction {
 		    frm.setRoomRatio(c.getRoomRatio());
 		    frm.setEnabledForStudentScheduling(c.isEnabledForStudentScheduling());
 		    frm.setDisplayInstructor(c.isDisplayInstructor());
-		    
-	        frm.setInstructorAssignment(c.isInstructorAssignmentNeeded());
-	        frm.setTeachingLoad(c.getTeachingLoad() == null ? "" : Formats.getNumberFormat("0.##").format(c.getTeachingLoad()));
-	        frm.setNbrInstructors(c.isInstructorAssignmentNeeded() && c.getNbrInstructors() != null? c.getNbrInstructors().toString() : "");
 
 		    List instructors = new ArrayList(c.getClassInstructors());
 		    InstructorComparator ic = new InstructorComparator();
@@ -546,28 +535,6 @@ public class ClassEditAction extends PreferencesAction {
 	    c.setMaxExpectedCapacity(frm.getMaxExpectedCapacity());
 	    c.setRoomRatio(frm.getRoomRatio());
 	    
-	    if (frm.getInstructorAssignment() != null && frm.getInstructorAssignment().booleanValue()) {
-	        try {
-	        	if (frm.getInstructorAssignment() && frm.getTeachingLoad() != null)
-	        		c.setTeachingLoad(Formats.getNumberFormat("0.##").parse(frm.getTeachingLoad()).floatValue());
-	        	else
-	        		c.setTeachingLoad(null);
-	        } catch (ParseException e) {
-	        	c.setTeachingLoad(null);
-	        }
-	        try {
-	        	if (frm.getInstructorAssignment() && frm.getNbrInstructors() != null)
-	        		c.setNbrInstructors(Integer.parseInt(frm.getNbrInstructors()));
-	        	else
-	        		c.setNbrInstructors(null);
-	        } catch (NumberFormatException e) {
-	        	c.setNbrInstructors(null);
-	        }
-	    } else {
-	    	c.setTeachingLoad(null);
-	    	c.setNbrInstructors(c.getSchedulingSubpart().getNbrInstructors() != null && c.getSchedulingSubpart().getNbrInstructors() > 0 ? new Integer(0) : null);
-	    }
-
 	    Boolean disb = frm.getEnabledForStudentScheduling();
 	    c.setEnabledForStudentScheduling(disb==null ? new Boolean(false) : disb);
 

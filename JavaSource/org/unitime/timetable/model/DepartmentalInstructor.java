@@ -360,7 +360,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     	DepartmentalInstructor next = null;
     	for (Iterator i=instructors.iterator();i.hasNext();) {
     		DepartmentalInstructor di = (DepartmentalInstructor)i.next();
-    		if (right != null && !context.hasPermission(di, right)) continue;
+    		if (right != null && !context.hasPermission(Department.class.equals(right.type()) ? di.getDepartment() : di, right)) continue;
     		if (this.compareTo(di)>=0) continue;
     		if (next==null || next.compareTo(di)>0)
     			next = di;
@@ -373,7 +373,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     	DepartmentalInstructor prev = null;
     	for (Iterator i=instructors.iterator();i.hasNext();) {
     		DepartmentalInstructor di = (DepartmentalInstructor)i.next();
-    		if (right != null && !context.hasPermission(di, right)) continue;
+    		if (right != null && !context.hasPermission(Department.class.equals(right.type()) ? di.getDepartment() : di, right)) continue;
     		if (this.compareTo(di)<=0) continue;
     		if (prev==null || prev.compareTo(di)<0)
     			prev = di;

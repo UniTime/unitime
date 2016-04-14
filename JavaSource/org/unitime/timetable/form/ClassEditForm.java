@@ -75,6 +75,7 @@ public class ClassEditForm extends PreferencesForm {
     private Long parentClassId;
     private String section;
     private Long managingDept;
+    private Long controllingDept;
     private Long subpart;
     private String className;
     private String parentClassName;
@@ -255,6 +256,7 @@ public class ClassEditForm extends PreferencesForm {
         classId = null;
         section = null;
         managingDept = null;
+        controllingDept = null;
         subpart = null;
         className = "";
         courseName = "";
@@ -748,4 +750,7 @@ public class ClassEditForm extends PreferencesForm {
 
 	public String getTeachingLoadDefault() { return teachingLoadDefault; }
 	public void setTeachingLoadDefault(String teachingLoadDefault) { this.teachingLoadDefault = teachingLoadDefault; }
+	
+    public Long getControllingDept() { return controllingDept; }
+    public void setControllingDept(Long deptId) { controllingDept = deptId; }
 }

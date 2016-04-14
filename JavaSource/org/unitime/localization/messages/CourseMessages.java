@@ -1151,6 +1151,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Edit Assignment Preferences")
 	String actionEditInstructorAssignmentPreferences();
 	
+	@DefaultMessage("Instructor Assignment Preferences")
+	String actionEditClassInstructorAssignmentPreferences();
+	
 	@DefaultMessage("S")
 	String accessSearchInstructionalOfferings();
 	
@@ -1561,6 +1564,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Delete all Class Preferences. Preferences will be inherited from the subpart (Alt+{0})")
 	String titleClearClassPreferences(String accessKey);
+	
+	@DefaultMessage("Delete all attribute and instructor preferences that are set directly on this class. Instructor assignment preferences will be inherited from the subpart (Alt+{0})")
+	String titleClearClassInstructorAssignmentPreferences(String accessKey);
 	
 	@DefaultMessage("Delete all Subpart Preferences (Alt+{0})")
 	String titleClearSubpartPreferences(String accessKey);

@@ -169,8 +169,8 @@ public enum Right {
     InstructorEditClearPreferences(DepartmentalInstructor.class),
     InstructorDelete(DepartmentalInstructor.class),
     InstructorPreferences(DepartmentalInstructor.class),
-    InstructorAssignmentPreferences(DepartmentalInstructor.class),
-    InstructorClearAssignmentPreferences(DepartmentalInstructor.class),
+    InstructorAssignmentPreferences(Department.class),
+    InstructorClearAssignmentPreferences(Department.class),
     
     InstructorAttributes(Department.class),
     InstructorAttributeAdd(Department.class),

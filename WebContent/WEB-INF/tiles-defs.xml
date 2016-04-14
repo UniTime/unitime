@@ -496,6 +496,13 @@
 		<put name="showNavigation" value="true" />
   	</definition>
   	
+  	<definition	name="classInstrAssgnEditTile" extends="pageLayoutDef">
+		<put name="onLoadFunction" type="string" value="onLoad='jumpToAnchor()'"/>
+		<put name="title" type="string" value="Class Instructor Assignment Preferences"/>
+		<put name="body" value="/user/classInstrAssgnEdit.jsp" />
+		<put name="showNavigation" value="true" />
+  	</definition>
+
   	<definition	name="classSearchTile" extends="pageLayoutDef">
 	  	<put name="onLoadFunction" type="string" value="onLoad='jumpToAnchor()'" />
 		<put name="title" type="string" value="Classes"/>

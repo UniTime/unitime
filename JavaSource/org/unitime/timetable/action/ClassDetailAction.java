@@ -143,6 +143,7 @@ public class ClassDetailAction extends PreferencesAction {
 	                // || op.equals(rsc.getMessage("button.backToInstrOffrDet")) for deletion
 	                || op.equals(MSG.actionNextClass())
 	                || op.equals(MSG.actionPreviousClass())
+	                || op.equals(MSG.actionEditClassInstructorAssignmentPreferences())
 	                ) {
 	            classId = frm.getClassId().toString();
 	        } else {
@@ -168,6 +169,11 @@ public class ClassDetailAction extends PreferencesAction {
 	        if(op.equals(MSG.actionEditClass())
 	                && classId!=null && classId.trim()!="") {
 	        	response.sendRedirect( response.encodeURL("classEdit.do?cid=" + c.getUniqueId().toString() + "&sec=" + c.getSectionNumberString() ));
+	        	return null;
+	        }
+	        
+	        if (op.equals(MSG.actionEditClassInstructorAssignmentPreferences()) && classId!=null && !classId.isEmpty()) {
+	        	response.sendRedirect( response.encodeURL("classInstrAssgnEdit.do?cid=" + c.getUniqueId().toString() + "&sec=" + c.getSectionNumberString() ));
 	        	return null;
 	        }
 
@@ -453,6 +459,7 @@ public class ClassDetailAction extends PreferencesAction {
 		    else
 		    	frm.setNotes(c.getNotes().replaceAll("\n","<BR>"));
 		    frm.setManagingDept(c.getManagingDept().getUniqueId());
+		    frm.setControllingDept(c.getControllingDept().getUniqueId());
 		    frm.setManagingDeptLabel(c.getManagingDept().getManagingDeptLabel());
 		    frm.setSchedulePrintNote(c.getSchedulePrintNote());
 		    frm.setClassSuffix(c.getDivSecNumber());

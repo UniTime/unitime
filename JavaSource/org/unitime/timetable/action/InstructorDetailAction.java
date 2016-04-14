@@ -204,7 +204,7 @@ public class InstructorDetailAction extends PreferencesAction {
 	        	        
 	        if(op.equals(MSG.actionEditInstructorAssignmentPreferences()) && instructorId!=null && !instructorId.trim().isEmpty()) {
 	        	
-			    sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorAssignmentPreferences);
+			    sessionContext.checkPermission(inst.getDepartment(), Right.InstructorAssignmentPreferences);
 
 	        	response.sendRedirect( response.encodeURL("instructorAssignmentPref.do?instructorId="+instructorId) );
 	        	return null;

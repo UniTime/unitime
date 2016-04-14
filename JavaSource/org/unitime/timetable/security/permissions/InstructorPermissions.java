@@ -185,10 +185,22 @@ public class InstructorPermissions {
 
 
 	@PermissionForRight(Right.InstructorAssignmentPreferences)
-	public static class InstructorAssignmentPreferences extends InstructorPreferences {}
+	public static class InstructorAssignmentPreferences implements Permission<Department> {
+		
+		@Autowired PermissionDepartment permissionDepartment;
+		
+		@Override
+		public boolean check(UserContext user, Department source) {
+			return permissionDepartment.check(user, source, DepartmentStatusType.Status.OwnerLimitedEdit);
+		}
+
+		@Override
+		public Class<Department> type() { return Department.class; }
+		
+	}
 	
 	@PermissionForRight(Right.InstructorClearAssignmentPreferences)
-	public static class InstructorClearAssignmentPreferences extends InstructorEditClearPreferences {}
+	public static class InstructorClearAssignmentPreferences extends InstructorAssignmentPreferences {}
 
 	@PermissionForRight(Right.InstructorAttributes)
 	public static class InstructorAttributes extends Instructors {}

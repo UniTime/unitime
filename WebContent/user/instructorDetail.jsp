@@ -64,7 +64,7 @@
 							<loc:message name="actionEditInstructor" />
 					</html:submit>
 				</sec:authorize>
-				<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorAssignmentPreferences')">
+				<sec:authorize access="hasPermission(#deptCode, 'Department', 'InstructorAssignmentPreferences')">
 					<html:submit property="op" 
 							styleClass="btn" 
 							accesskey="<%=MSG.accessEditInstructorAssignmentPreferences() %>" 
@@ -345,7 +345,7 @@
 							<loc:message name="actionEditInstructor" />
 					</html:submit>
 				</sec:authorize>
-				<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorAssignmentPreferences')">
+				<sec:authorize access="hasPermission(#deptCode, 'Department', 'InstructorAssignmentPreferences')">
 					<html:submit property="op" 
 							styleClass="btn" 
 							accesskey="<%=MSG.accessEditInstructorAssignmentPreferences() %>" 

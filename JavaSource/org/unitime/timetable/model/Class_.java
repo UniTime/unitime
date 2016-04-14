@@ -822,7 +822,7 @@ public class Class_ extends BaseClass_ {
     		if (nextId.longValue()<0) return null;
     		Class_ next = (new Class_DAO()).get(nextId);
     		if (next==null) return null;
-    		if (right != null && !context.hasPermission(next, right)) return next.getNextClass(context, cmp, right);
+    		if (right != null && !context.hasPermission(Department.class.equals(right.type()) ? next.getControllingDept() : next, right)) return next.getNextClass(context, cmp, right);
     		return next;
     	}
     	Class_ next = null;
@@ -831,7 +831,7 @@ public class Class_ extends BaseClass_ {
     		if (subpart==null) break;
         	for (Iterator i=subpart.getClasses().iterator();i.hasNext();) {
         		Class_ c = (Class_)i.next();
-        		if (right != null && !context.hasPermission(c, right)) continue;
+        		if (right != null && !context.hasPermission(Department.class.equals(right.type()) ? c.getControllingDept() : c, right)) continue;
         		if (subpart.equals(getSchedulingSubpart()) && cmp.compare(this, c)>=0) continue;
         		if (next==null || cmp.compare(next,c)>0)
         			next = c;
@@ -847,7 +847,7 @@ public class Class_ extends BaseClass_ {
     		if (previosId.longValue()<0) return null;
     		Class_ previos = (new Class_DAO()).get(previosId);
     		if (previos==null) return null;
-    		if (right != null && !context.hasPermission(previos, right)) return previos.getPreviousClass(context, cmp, right);
+    		if (right != null && !context.hasPermission(Department.class.equals(right.type()) ? previos.getControllingDept() : previos, right)) return previos.getPreviousClass(context, cmp, right);
     		return previos;
     	}
     	Class_ previous = null;
@@ -856,7 +856,7 @@ public class Class_ extends BaseClass_ {
     		if (subpart==null) break;
         	for (Iterator i=subpart.getClasses().iterator();i.hasNext();) {
         		Class_ c = (Class_)i.next();
-        		if (right != null && !context.hasPermission(c, right)) continue;
+        		if (right != null && !context.hasPermission(Department.class.equals(right.type()) ? c.getControllingDept() : c, right)) continue;
         		if (subpart.equals(getSchedulingSubpart()) && cmp.compare(this, c)<=0) continue;
         		if (previous==null || cmp.compare(previous,c)<0)
         			previous = c;

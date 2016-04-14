@@ -17,6 +17,8 @@
  * limitations under the License.
  * 
 --%>
+<%@page import="org.unitime.timetable.model.DatePattern"%>
+<%@page import="org.unitime.timetable.util.IdValue"%>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.form.ClassEditForm" %>
 <%@ page import="org.unitime.timetable.model.DepartmentalInstructor" %>
@@ -39,60 +41,10 @@
 	<!--
 		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
 		
-		function confirmRoomSizeChange() {
-			if (jsConfirm!=null && !jsConfirm)
-				return true;
-
-			return ( confirm('<%=MSG.confirmRoomSizeDifferentFromCapacity()%>'));
-		}
-		
-		function instructorChanged(idx, source) {
-			var hadPreferences = false;
-			var instrHasPrefObj = document.getElementById('instrHasPref'+idx);
-			if (instrHasPrefObj!=null && instrHasPrefObj.value=='true')
-				hadPreferences = true;
-			var instructorId = '-';
-			var instructorsObj = document.getElementById('instructors'+idx);
-			if (instructorsObj!=null && instructorsObj.selectedIndex>=0)
-				instructorId = instructorsObj.options[instructorsObj.selectedIndex].value;
-			var hasPreferences = false;
-			<%
-				Vector instIdWithPrefs = (Vector)request.getAttribute(DepartmentalInstructor.INSTR_HAS_PREF_ATTR_NAME);
-				if (instIdWithPrefs!=null)
-					for (Enumeration e=instIdWithPrefs.elements();e.hasMoreElements();) {
-						Long instrId = (Long)e.nextElement();
-						out.println("if (instructorId=='"+instrId+"') hasPreferences=true;");
-					}
-			%>
-			var instrLeadObj = document.getElementById('instrLead'+idx);
-			var op2Obj = document.getElementById('op2');
-			var isLead = false;
-			if (instrLeadObj!=null)
-				isLead = instrLeadObj.checked;
-			if (instructorId=='-' && instrLeadObj!=null) {
-				instrLeadObj.checked=false; isLead=false;
-				if (source.id=='instrLead'+idx) {
-					alert('<%=MSG.alertSelectAnInstructor()%>');
-					if (instructorsObj!=null) instructorsObj.focus();
-				}
-			}
-			if (isLead && hasPreferences) {
-				if (op2Obj!=null && <%=JavascriptFunctions.getInheritInstructorPreferencesCondition(sessionContext)%>) {
-					op2Obj.value='updatePref';
-					document.forms[0].submit();
-				}
-			} else if (hadPreferences) {
-				if (op2Obj!=null && <%=JavascriptFunctions.getCancelInheritInstructorPreferencesCondition(sessionContext)%>) {
-					op2Obj.value='updatePref';
-					document.forms[0].submit();
-				}
-			}
-		}
-		
-		function datePatternChanged(){			
+		function instructorAssignmentChanged(){			
 			var op2Obj = document.getElementById('op2');
 			if (op2Obj!=null) {
-				op2Obj.value='updateDatePattern';
+				op2Obj.value='updateInstructorAssignment';
 				document.forms[0].submit();
 			}			
 		}
@@ -107,8 +59,9 @@
 	String crsNbr = (String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);
 %>		
 <tiles:importAttribute />
-<html:form action="/classEdit" focus="expectedCapacity">
-	<html:hidden property="classId"/>	
+<html:form action="/classInstrAssgnEdit" focus="instructorAssignment">
+	<html:hidden property="classId"/>
+	<html:hidden property="op2" value="" styleId="op2"/>	
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD valign="middle" colspan='2'>
@@ -127,7 +80,7 @@
 						<html:submit property="op" 
 							styleClass="btn" 
 							accesskey='<%=MSG.accessClearClassPreferences() %>' 
-							title='<%=MSG.titleClearClassPreferences(MSG.accessClearClassPreferences()) %>'>
+							title='<%=MSG.titleClearClassInstructorAssignmentPreferences(MSG.accessClearClassPreferences()) %>'>
 							<loc:message name="actionClearClassPreferences" />
 						</html:submit>
 					</sec:authorize> 
@@ -194,14 +147,6 @@
 			</TR>
 		</logic:notEqual>
 
-		<%--
-		<TR>
-			<TD>Class Division-Secion:</TD>
-			<TD>
-				<html:text property="classSuffix" maxlength="6" size="6" />
-			<TD>
-		</TR>
-		--%>
 		<html:hidden property="classSuffix"/>
 		<logic:notEmpty name="<%=frmName%>" property="classSuffix">
 			<TR>
@@ -212,74 +157,6 @@
 			</TR>
 		</logic:notEmpty>
 
-		<%--
-		<TR>
-			<TD>Minimum Class Limit:</TD>
-			<TD>
-				<html:text styleId="expectedCapacity" property="expectedCapacity" maxlength="4" size="4" onchange="getMinRoomLimit();"/>
-			<TD>
-		</TR>
-
-		<TR>
-			<TD>Maximum Class Limit:</TD>
-			<TD>
-				<html:text property="maxExpectedCapacity" maxlength="4" size="4" />
-			<TD>
-		</TR>
-
-		<TR>
-			<TD>Number of Rooms:</TD>
-			<TD>
-				<html:text styleId="nbrRooms" property="nbrRooms" maxlength="4" size="4" />
-			<TD>
-		</TR>
-
-		<TR>
-			<TD>Room Ratio:</TD>
-			<TD>
-				<script language="javascript" type="text/javascript">
-					function isNumeric(sText) {
-					   	var validChars = "0123456789.";
-					   	var c;
-					
-					   	for (i = 0; i < sText.length; i++) { 
-					      c = sText.charAt(i); 
-					      if (validChars.indexOf(c) == -1) 
-					      	return false;
-				      	}
-					   	return true;				   
-				   	}
-				   	
-					function getMinRoomLimit() {
-						var rr = document.getElementById('roomRatio').value;
-						var nr = document.getElementById('nbrRooms').value;
-						var mec = document.getElementById('expectedCapacity').value;
-						var mrl = document.getElementById('minRoomLimit');
-						
-						if (nr!=null && isNumeric(nr) && nr>0 &&
-							mec!=null && isNumeric(mec) && mec>=0 &&
-							rr!=null && isNumeric(rr) && rr>0 ) {
-							if (mec==0)
-								mrl.value = Math.ceil(rr);
-							else
-								mrl.value = Math.ceil(mec*rr);
-						} else {
-							mrl.value = '0';
-						}
-					}
-					
-				</script>
-				<html:text styleId="roomRatio" property="roomRatio" maxlength="4" size="4" onchange="getMinRoomLimit();" />
-				&nbsp;&nbsp;&nbsp;&nbsp; Minimum Room Capacity: <html:text readonly="true" tabindex="500" styleId="minRoomLimit" property="minRoomLimit" maxlength="4" size="4" disabled="true"/>
-			<TD>
-		</TR>
-		--%>
-		
-		<html:hidden property="nbrRooms"/>
-		<html:hidden property="enrollment"/>
-		<html:hidden property="expectedCapacity"/>
-		<html:hidden property="maxExpectedCapacity"/>
-		<html:hidden property="roomRatio"/>
 		<TR>
 			<TD><loc:message name="propertyEnrollment"/></TD>
 			<TD>
@@ -287,112 +164,71 @@
 			</TD>
 		</TR>
 		
-		<logic:notEqual name="<%=frmName%>" property="nbrRooms" value="0">
-			<% if (frm.getExpectedCapacity().intValue()==frm.getMaxExpectedCapacity().intValue()) { %>
-				<TR>
-					<TD><loc:message name="propertyClassLimit"/></TD>
-					<TD>
-						<bean:write name="<%=frmName%>" property="expectedCapacity" />
-					</TD>
-				</TR>
-			<% } else { %>
-				<TR>
-					<TD><loc:message name="propertyMinimumClassLimit"/></TD>
-					<TD>
-						<bean:write name="<%=frmName%>" property="expectedCapacity" />
-					</TD>
-				</TR>
-				<TR>
-					<TD><loc:message name="propertyMaximumClassLimit"/></TD>
-					<TD>
-						<bean:write name="<%=frmName%>" property="maxExpectedCapacity" />
-					</TD>
-				</TR>
-			<% } %>
-		</logic:notEqual>
-
-		<TR>
-			<TD><loc:message name="propertyNumberOfRooms"/></TD>
-			<TD>
-				<bean:write name="<%=frmName%>" property="nbrRooms" />
-			</TD>
-		</TR>
-		
-		<logic:notEqual name="<%=frmName%>" property="nbrRooms" value="0">
-			<TR>
-				<TD><loc:message name="propertyRoomRatio"/></TD>
-				<TD>
-					<bean:write name="<%=frmName%>" property="roomRatio" />
-					&nbsp;&nbsp;&nbsp;&nbsp; ( <loc:message name="propertyMinimumRoomCapacity"/> <bean:write name="<%=frmName%>" property="minRoomLimit" /> )
-				</TD>
-			</TR>
-		</logic:notEqual>
-		
-
 		<TR>
 			<TD><loc:message name="propertyDatePattern"/></TD>
 			<TD>
-				<html:select style="width:200px;" property="datePattern" onchange='<%= "datePatternChanged();"%>'>
-					<html:options collection="<%=org.unitime.timetable.model.DatePattern.DATE_PATTERN_LIST_ATTR%>" property="id" labelProperty="value" />
-				</html:select>
-				<img style="cursor: pointer;" src="images/calendar.png" border="0" onclick="showGwtDialog('Preview of '+ClassEditForm.datePattern.options[ClassEditForm.datePattern.selectedIndex].text, 'user/dispDatePattern.jsp?id='+ClassEditForm.datePattern.value+'&class='+ClassEditForm.classId.value,'840','520');">
+				<logic:iterate scope="request" name="<%=DatePattern.DATE_PATTERN_LIST_ATTR%>" id="dp">
+					<logic:equal name="<%=frmName%>" property="datePattern" value="<%=((IdValue)dp).getId().toString()%>">
+						<bean:write name="dp" property="value" />
+						<img style="cursor: pointer;" src="images/calendar.png" border="0" onclick="showGwtDialog('Preview of <%=((IdValue)dp).getValue()%>', 'user/dispDatePattern.jsp?id=<%=((IdValue)dp).getId()%>&class='+ClassEditForm.classId.value,'840','520');">
+					</logic:equal>
+				</logic:iterate>
 			</TD>
 		</TR>
-
+		
 		<TR>
 			<TD><loc:message name="propertyDisplayInstructors"/></TD>
 			<TD>
 				<html:checkbox property="displayInstructor" />
 			</TD>
 		</TR>
-
-		<TR>
-			<TD><loc:message name="propertyEnabledForStudentScheduling"/></TD>
-			<TD>
-				<html:checkbox property="enabledForStudentScheduling" />
-			</TD>
-		</TR>
-
+		
+		<logic:notEmpty name="<%=frmName%>" property="schedulePrintNote">
 		<TR>
 			<TD valign="top"><loc:message name="propertyStudentScheduleNote"/></TD>
 			<TD>
-				<html:textarea property="schedulePrintNote" cols="70" rows="4"  />
+				<bean:write name="<%=frmName%>" property="schedulePrintNote" />
 			</TD>
 		</TR>
+		</logic:notEmpty>
+
+		<logic:notEmpty name="<%=frmName%>" property="notes">
+			<TR>
+				<TD valign="top"><loc:message name="propertyRequestsNotes"/></TD>
+				<TD>
+					<bean:write name="<%=frmName%>" property="notes" filter="false"/>
+				</TD>
+			</TR>
+		</logic:notEmpty>
+
 		
+		<TR>
+			<TD><loc:message name="propertyNeedInstructorAssignment"/></TD>
+			<TD>
+				<html:checkbox property="instructorAssignment" onchange="instructorAssignmentChanged();"/> <i><loc:message name="descriptionNeedInstructorAssignment"/></i>
+			</TD>
+		</TR>
 		<logic:equal name="<%=frmName%>" property="instructorAssignment" value="true">
-			<TR>
-				<TD><loc:message name="propertyNeedInstructorAssignment"/></TD>
-				<TD>
-					<loc:message name="classDetailNeedInstructorAssignment"/>
-				</TD>
-			</TR>
-			<logic:notEqual name="<%=frmName%>" property="nbrInstructors" value="1">
-				<TR>
-					<TD><loc:message name="propertyNbrInstructors"/></TD>
-					<TD>
-						<bean:write name="<%=frmName%>" property="nbrInstructors" />
-					</TD>
-				</TR>
-			</logic:notEqual>
-			<TR>
-				<TD><loc:message name="propertyTeachingLoad"/></TD>
-				<TD>
-					<bean:write name="<%=frmName%>" property="teachingLoad" /> <loc:message name="teachingLoadUnits"/>
-				</TD>
-			</TR>
+		<TR>
+			<TD><loc:message name="propertyNbrInstructors"/></TD>
+			<TD>
+				<html:text property="nbrInstructors" size="10" style="text-align: right;"/>
+				<logic:equal name="<%=frmName%>" property="instructorAssignmentDefault" value="true">
+					<loc:message name="classEditNbrRoomsDefault"><bean:write name="<%=frmName%>" property="nbrInstructorsDefault"/></loc:message>
+				</logic:equal>
+			</TD>
+		</TR>
+		<TR>
+			<TD><loc:message name="propertyTeachingLoad"/></TD>
+			<TD>
+				<html:text property="teachingLoad" size="10" style="text-align: right;"/> <loc:message name="teachingLoadUnits"/>
+				<logic:equal name="<%=frmName%>" property="instructorAssignmentDefault" value="true">
+					<loc:message name="classEditTeachingLoadDefault"><bean:write name="<%=frmName%>" property="teachingLoadDefault"/></loc:message>
+				</logic:equal>
+			</TD>
+		</TR>
 		</logic:equal>
-		<logic:equal name="<%=frmName%>" property="instructorAssignment" value="false">
-			<logic:equal name="<%=frmName%>" property="instructorAssignmentDefault" value="true">
-				<TR>
-					<TD><loc:message name="propertyNeedInstructorAssignment"/></TD>
-					<TD>
-						<loc:message name="classDetailNoInstructorAssignment"/>
-					</TD>
-				</TR>
-			</logic:equal>
-		</logic:equal>
-		
+
 		<logic:notEmpty name="<%=frmName%>" property="accommodation">
 			<TR>
 				<TD valign="top"><loc:message name="propertyAccommodations"/></TD>
@@ -415,21 +251,9 @@
 <%
 	}
 %>
-<!-- Requests / Notes -->
-		<TR>
-			<TD colspan="2" align="left">
-				&nbsp;<BR>
-				<tt:section-title><loc:message name="sectionTitleNotesToScheduleManager"/></tt:section-title>
-			</TD>
-		</TR>
-
-		<TR>
-			<TD colspan="2" align="left">
-			<html:textarea property="notes" rows="3" cols="80"></html:textarea>
-			</TD>
-		</TR>
 
 <!-- Instructors -->
+	<sec:authorize access="hasPermission(#ClassEditForm.classId, 'Class_', 'AssignInstructorsClass')">
 		<TR><TD colspan='2'>&nbsp;</TD></TR>
 		<TR>
 			<TD valign="middle" colspan='2'>
@@ -465,7 +289,7 @@
 									property='<%= "instructors[" + ctr + "]" %>'
 									onchange='<%= "instructorChanged("+ctr+", this);"%>'>														
 									<html:option value="-">-</html:option>
-									<html:options collection="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME + ctr%>" property="value" labelProperty="label" />
+									<html:options collection="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME%>" property="value" labelProperty="label" />
 								</html:select>
 							</TD>
 							<html:hidden property='<%="instrHasPref["+ctr+"]" %>' styleId='<%="instrHasPref"+ctr%>'/>
@@ -473,10 +297,7 @@
 								<html:text property='<%= "instrPctShare[" + ctr + "]" %>' size="3" maxlength="3" />
 							</TD>
 							<TD nowrap align="center">
-								<html:checkbox property='<%="instrLead[" + ctr + "]"%>' 
-									styleId='<%= "instrLead" + ctr %>' 
-									onclick='<%= "instructorChanged("+ctr+", this);"%>'
-								/>
+								<html:checkbox property='<%="instrLead[" + ctr + "]"%>'/>
 							</TD>
 							<TD nowrap>
 								<html:submit property="op" 
@@ -488,41 +309,79 @@
 							</TD>
 						</TR>
 				   	</logic:iterate>
-					
 				</TABLE>
 			</TD>
 		</TR>
+	</sec:authorize>
+	<sec:authorize access="not hasPermission(#ClassEditForm.classId, 'Class_', 'AssignInstructorsClass')">
+		<logic:notEmpty name="<%=frmName%>" property="instructors">
+			<TR>
+				<TD colspan="2" align="left">
+					&nbsp;<BR><DIV class="WelcomeRowHead"><loc:message name="sectionTitleInstructors"/></DIV>
+				</TD>
+			</TR>
+			<TR>
+				<TD colspan="2">
+					<table cellspacing="0" cellpadding="3">
+						<tr><td width='250'><i><loc:message name="columnInstructorName"/></i></td><td width='80'><i><loc:message name="columnInstructorShare"/></i></td><td width='100'><i><loc:message name="columnInstructorCheckConflicts"/></i></td></tr>
+						<logic:iterate name="<%=frmName%>" property="instructors" id="instructor" indexId="ctr">
+							<tr onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';" 
+								onmouseout="this.style.backgroundColor='transparent';"
+								onClick="document.location='instructorDetail.do?instructorId=<%=instructor%>';"
+							>
+								<td>
+								<logic:iterate scope="request" name="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME%>" id="instr">
+									<logic:equal name="instr" property="value" value="<%=(String)instructor%>">
+										<bean:write name="instr" property="label"/>
+									</logic:equal>
+								</logic:iterate>
+								</td>
+								<td>
+									<bean:write name="<%=frmName%>" property='<%= "instrPctShare[" + ctr + "]" %>' />%
+								</td>
+								<td>
+									<logic:equal name="<%=frmName%>" property='<%="instrLead[" + ctr + "]"%>' value="true"> 
+										<IMG border='0' alt='true' align="middle" src='images/accept.png'>
+										<%-- <input type='checkbox' checked disabled> --%>
+									</logic:equal>
+									<%-- 
+									<logic:notEqual name="<%=frmName%>" property='<%="instrLead[" + ctr + "]"%>' value="false"> 
+										<input type='checkbox' disabled>
+									</logic:notEqual>
+									--%>
+								</td>
+								
+							</tr>
+						</logic:iterate>
+					</table>
+				</TD>
+			</TR>
+		</logic:notEmpty>
+	</sec:authorize>
+
+		<logic:notEmpty name="<%=frmName%>" property="accommodation">
+			<TR>
+				<TD valign="top"><loc:message name="propertyAccommodations"/></TD>
+				<TD>
+					<bean:write name="<%=frmName%>" property="accommodation" filter="false"/>
+				</TD>
+			</TR>
+		</logic:notEmpty>
 
 <!-- Preferences -->
-		<logic:equal value="0" name="<%=frmName%>" property="nbrRooms">
-			<jsp:include page="preferencesEdit.jspf">
-				<jsp:param name="frmName" value="<%=frmName%>"/>
-				<jsp:param name="distPref" value="false"/>
-				<jsp:param name="periodPref" value="false"/>
-				<jsp:param name="bldgPref" value="false"/>
-				<jsp:param name="roomFeaturePref" value="false"/>
-				<jsp:param name="roomGroupPref" value="false"/>
-			</jsp:include>
-		</logic:equal>
-		<logic:notEqual value="0" name="<%=frmName%>" property="nbrRooms">
-			<logic:equal value="true" name="<%=frmName%>" property="unlimitedEnroll">
-				<jsp:include page="preferencesEdit.jspf">
-					<jsp:param name="frmName" value="<%=frmName%>"/>
-					<jsp:param name="distPref" value="false"/>
-					<jsp:param name="periodPref" value="false"/>
-					<jsp:param name="bldgPref" value="false"/>
-					<jsp:param name="roomFeaturePref" value="false"/>
-					<jsp:param name="roomGroupPref" value="false"/>
-				</jsp:include>
-			</logic:equal>
-			<logic:notEqual value="true" name="<%=frmName%>" property="unlimitedEnroll">
-				<jsp:include page="preferencesEdit.jspf">
-					<jsp:param name="frmName" value="<%=frmName%>"/>
-					<jsp:param name="distPref" value="false"/>
-					<jsp:param name="periodPref" value="false"/>
-				</jsp:include>
-			</logic:notEqual>
-		</logic:notEqual>
+		<jsp:include page="preferencesEdit.jspf">
+			<jsp:param name="frmName" value="<%=frmName%>"/>
+			<jsp:param name="periodPref" value="false"/>
+			<jsp:param name="datePatternPref" value="false"/>
+			<jsp:param name="timePref" value="false"/>
+			<jsp:param name="roomPref" value="false"/>
+			<jsp:param name="roomGroupPref" value="false"/>
+			<jsp:param name="roomFeaturePref" value="false"/>
+			<jsp:param name="bldgPref" value="false"/>
+			<jsp:param name="distPref" value="false"/>
+			<jsp:param name="attributePref" value="${ClassEditForm.instructorAssignment}"/>
+			<jsp:param name="instructorPref" value="${ClassEditForm.instructorAssignment}"/>
+		</jsp:include>
 		
 <!-- buttons -->
 		<TR>
@@ -543,7 +402,7 @@
 						<html:submit property="op" 
 							styleClass="btn" 
 							accesskey='<%=MSG.accessClearClassPreferences() %>' 
-							title='<%=MSG.titleClearClassPreferences(MSG.accessClearClassPreferences()) %>'>
+							title='<%=MSG.titleClearClassInstructorAssignmentPreferences(MSG.accessClearClassPreferences()) %>'>
 							<loc:message name="actionClearClassPreferences" />
 						</html:submit>
 					</sec:authorize> 
