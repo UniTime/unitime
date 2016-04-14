@@ -205,7 +205,7 @@
 		<TR>
 			<TD><loc:message name="propertyNeedInstructorAssignment"/></TD>
 			<TD>
-				<html:checkbox property="instructorAssignment" onchange="instructorAssignmentChanged();"/> <i><loc:message name="descriptionNeedInstructorAssignment"/></i>
+				<html:checkbox property="instructorAssignment" onchange="instructorAssignmentChanged();"/> <i><loc:message name="descriptionClassNeedInstructorAssignment"/></i>
 			</TD>
 		</TR>
 		<logic:equal name="<%=frmName%>" property="instructorAssignment" value="true">

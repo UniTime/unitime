@@ -2422,7 +2422,10 @@ public interface CourseMessages extends Messages {
 	String descriptionByReservationOnly2();
 	
 	@DefaultMessage("If checked, classes from this subpart will be included in the Instructor Scheduling problem.")
-	String descriptionNeedInstructorAssignment();
+	String descriptionSubpartNeedInstructorAssignment();
+	
+	@DefaultMessage("If checked, this class will be included in the Instructor Scheduling problem.")
+	String descriptionClassNeedInstructorAssignment();
 	
 	@DefaultMessage("Set to Prohibited when disabled for Instructor Scheduling.")
 	String descriptionTeachingPreference();
