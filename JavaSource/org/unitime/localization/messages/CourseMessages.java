@@ -799,6 +799,18 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Show cross-listed classes")
 	String showCrossListedClasses();
 	
+	@DefaultMessage("Cancelled Classes:")
+	String filterCancelledClasses();
+	
+	@DefaultMessage("Show cancelled classes")
+	String showCancelledClasses();
+	
+	@DefaultMessage("Need Instructor Assignment:")
+	String filterNeedInstructorAssignment();
+	
+	@DefaultMessage("Show only classes that need instructor assignent")
+	String showNeedInstructorClasses();
+	
 	@DefaultMessage("Subject:")
 	String filterSubject();
 

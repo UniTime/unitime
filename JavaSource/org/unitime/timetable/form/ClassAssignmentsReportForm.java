@@ -424,4 +424,8 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 	public Boolean getInstructorAssignment() {
 		return false;
 	}
+	@Override
+	public boolean getFilterNeedInstructor() {
+		return false;
+	}
 }

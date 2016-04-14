@@ -258,6 +258,24 @@
 						</TD>
 					</TR>
 					<TR>
+						<TD>
+							<B><loc:message name="filterCancelledClasses"/></B>
+						</TD>
+						<TD>
+							<html:checkbox property="includeCancelledClasses"/>
+							<loc:message name="showCancelledClasses"/>
+						</TD>
+					</TR>
+					<TR>
+						<TD>
+							<B><loc:message name="filterNeedInstructorAssignment"/></B>
+						</TD>
+						<TD>
+							<html:checkbox property="filterNeedInstructor"/>
+							<loc:message name="showNeedInstructorClasses"/>
+						</TD>
+					</TR>
+					<TR>
 						<TD colspan='2' align='right'>
 							<br>
 						</TD>

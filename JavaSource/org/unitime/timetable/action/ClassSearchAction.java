@@ -161,6 +161,8 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 	    	sessionContext.getUser().setProperty("ClassList.filterLength", String.valueOf(classListForm.getFilterLength()));
 	    	sessionContext.getUser().setProperty("ClassList.sortByKeepSubparts", String.valueOf(classListForm.getSortByKeepSubparts()));
 	    	sessionContext.getUser().setProperty("ClassList.showCrossListedClasses", String.valueOf(classListForm.getShowCrossListedClasses()));
+	    	sessionContext.getUser().setProperty("ClassList.filterNeedInstructor",classListForm.getFilterNeedInstructor() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.includeCancelledClasses",classListForm.getIncludeCancelledClasses() ? "1" : "0");
 	    }
     	    	
     	if (!sessionContext.hasPermission(Right.Examinations))
@@ -265,7 +267,8 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 		    form.setDemandIsVisible(false);
 			form.setDemand(false);
 	    }
-	    
+		form.setFilterNeedInstructor("1".equals(sessionContext.getUser().getProperty("ClassList.filterNeedInstructor", "0")));
+		form.setIncludeCancelledClasses("1".equals(sessionContext.getUser().getProperty("ClassList.includeCancelledClasses", "1")));
 	}
 	
     public static Set getClasses(ClassListFormInterface form, ClassAssignmentProxy classAssignmentProxy) {
@@ -353,8 +356,12 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 	        if (!form.getShowCrossListedClasses()) {
 	        	query.append(" and co.isControl = true ");
 	        }
-	        if (!form.getIncludeCancelledClasses()) {
+	        if (!form.getIncludeCancelledClasses() || form.getFilterNeedInstructor()) {
 	        	query.append(" and c.cancelled = false");
+	        }
+	        if (form.getFilterNeedInstructor()) {
+	        	query.append(" and (c.teachingLoad is not null or c.schedulingSubpart.teachingLoad is not null)");
+	        	query.append(" and ((c.nbrInstructors is null and c.schedulingSubpart.nbrInstructors > 0) or c.nbrInstructors > 0)");
 	        }
 			Query q = hibSession.createQuery(query.toString());
 			q.setFetchSize(1000);

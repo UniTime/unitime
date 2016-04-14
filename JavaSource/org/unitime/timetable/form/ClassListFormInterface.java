@@ -48,4 +48,5 @@ public interface ClassListFormInterface extends InstructionalOfferingListFormInt
 	public void setSortByKeepSubparts(boolean sortByKeepSubparts);
 	public void setShowCrossListedClasses(boolean showCrossListedClasses);
 	public boolean getIncludeCancelledClasses();
+	public boolean getFilterNeedInstructor();
 }

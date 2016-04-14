@@ -66,6 +66,8 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	private Boolean note;
 	private Boolean exams;
 	private Boolean instructorAssignment;
+	private boolean includeCancelledClasses;
+	private boolean filterNeedInstructor;
 	
 	private String sortBy;
 	private String filterAssignedRoom;
@@ -177,6 +179,8 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 		note = new Boolean(false);
 		exams = new Boolean(false);
 		instructorAssignment = new Boolean(false);
+		includeCancelledClasses = false;
+		filterNeedInstructor = false;
 		
 		sortBy = ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME);
 		filterInstructor = "";
@@ -542,14 +546,24 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	public void setShowCrossListedClasses(boolean showCrossListedClasses) {
 		this.showCrossListedClasses = showCrossListedClasses;
 	}
-	@Override
-	public boolean getIncludeCancelledClasses() {
-		return true;
-	}
+    @Override
+    public boolean getIncludeCancelledClasses() {
+    	return includeCancelledClasses;
+    }
+    public void setIncludeCancelledClasses(boolean includeCancelledClasses) {
+    	this.includeCancelledClasses = includeCancelledClasses;
+    }	
     public Boolean getInstructorAssignment() {
     	return instructorAssignment;
     }
     public void setInstructorAssignment(Boolean instructorAssignment) {
     	this.instructorAssignment = instructorAssignment;
-    }	
+    }
+    @Override
+    public boolean getFilterNeedInstructor() {
+    	return filterNeedInstructor;
+    }
+    public void setFilterNeedInstructor(boolean filterNeedInstructor) {
+    	this.filterNeedInstructor = filterNeedInstructor;
+    }
 }
