@@ -564,7 +564,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     		if (nextId.longValue()<0) return null;
     		SchedulingSubpart next = (new SchedulingSubpartDAO()).get(nextId);
     		if (next==null) return null;
-    		if (right != null && !context.hasPermission(next, right)) return next.getNextSchedulingSubpart(context, cmp, right); 
+    		if (right != null && !context.hasPermission(Department.class.equals(right.type()) ? next.getControllingDept() : next, right)) return next.getNextSchedulingSubpart(context, cmp, right); 
     		return next;
     	}
     	SchedulingSubpart next = null;
@@ -575,7 +575,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     			InstrOfferingConfig c = (InstrOfferingConfig)i.next();
     			for (Iterator j=c.getSchedulingSubparts().iterator();j.hasNext();) {
     				SchedulingSubpart s = (SchedulingSubpart)j.next();
-    				if (right != null && !context.hasPermission(s, right)) continue;
+    				if (right != null && !context.hasPermission(Department.class.equals(right.type()) ? s.getControllingDept() : s, right)) continue;
     				if (offering.equals(getInstrOfferingConfig().getInstructionalOffering()) && cmp.compare(this, s)>=0) continue;
     				if (next==null || cmp.compare(next,s)>0)
     					next = s;
@@ -592,7 +592,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     		if (previousId.longValue()<0) return null;
     		SchedulingSubpart previous = (new SchedulingSubpartDAO()).get(previousId);
     		if (previous==null) return null;
-    		if (right != null && !context.hasPermission(previous, right)) return previous.getPreviousSchedulingSubpart(context, cmp, right); 
+    		if (right != null && !context.hasPermission(Department.class.equals(right.type()) ? previous.getControllingDept() : previous, right)) return previous.getPreviousSchedulingSubpart(context, cmp, right); 
     		return previous;
     	}
     	SchedulingSubpart previous = null;
@@ -603,7 +603,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     			InstrOfferingConfig c = (InstrOfferingConfig)i.next();
     			for (Iterator j=c.getSchedulingSubparts().iterator();j.hasNext();) {
     				SchedulingSubpart s = (SchedulingSubpart)j.next();
-    				if (right != null && !context.hasPermission(s, right)) continue;
+    				if (right != null && !context.hasPermission(Department.class.equals(right.type()) ? s.getControllingDept() : s, right)) continue;
     				if (offering.equals(getInstrOfferingConfig().getInstructionalOffering()) && cmp.compare(this, s)<=0) continue;
     				if (previous==null || cmp.compare(previous,s)<0)
     					previous = s;

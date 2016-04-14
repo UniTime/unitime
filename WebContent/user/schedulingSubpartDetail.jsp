@@ -86,6 +86,15 @@
 						</html:submit>
 					</sec:authorize> 
 				
+					<sec:authorize access="hasPermission(#SchedulingSubpartEditForm.controllingDept, 'Department', 'InstructorAssignmentPreferences')">
+						&nbsp;
+						<html:submit property="op" styleClass="btn" 
+							accesskey="<%=MSG.accessEditSubpartInstructorAssignmentPreferences()%>" 
+							title="<%=MSG.titleEditSubpartInstructorAssignmentPreferences(MSG.accessEditSubpartInstructorAssignmentPreferences()) %>" >
+							<loc:message name="actionEditSubpartInstructorAssignmentPreferences" />
+						</html:submit> 
+					</sec:authorize>
+				
 					<sec:authorize access="hasPermission(#SchedulingSubpartEditForm.schedulingSubpartId, 'SchedulingSubpart', 'DistributionPreferenceSubpart')">
 						&nbsp;
 						<html:submit property="op" styleClass="btn" 
@@ -336,6 +345,15 @@
 							title="<%=MSG.titleEditSubpart(MSG.accessEditSubpart()) %>" >
 							<loc:message name="actionEditSubpart" />
 						</html:submit> 
+				</sec:authorize>
+				
+				<sec:authorize access="hasPermission(#SchedulingSubpartEditForm.controllingDept, 'Department', 'InstructorAssignmentPreferences')">
+					&nbsp;
+					<html:submit property="op" styleClass="btn" 
+						accesskey="<%=MSG.accessEditSubpartInstructorAssignmentPreferences()%>" 
+						title="<%=MSG.titleEditSubpartInstructorAssignmentPreferences(MSG.accessEditSubpartInstructorAssignmentPreferences()) %>" >
+						<loc:message name="actionEditSubpartInstructorAssignmentPreferences" />
+					</html:submit> 
 				</sec:authorize>
 				
 				<sec:authorize access="hasPermission(#SchedulingSubpartEditForm.schedulingSubpartId, 'SchedulingSubpart', 'DistributionPreferenceSubpart')">

@@ -109,10 +109,6 @@ public class ClassInstrAssgnEditAction extends PreferencesAction {
     		// Determine if initial load
     		if (op == null || op.trim().isEmpty()) op = "init";
     		
-    		// Check op exists
-    		if (op == null || op.trim().isEmpty())
-    			throw new Exception (MSG.errorNullOperationNotSupported());
-    		
     		// Check class exists
     		if (classId == null || classId.trim().isEmpty()) {
     			if (BackTracker.doBack(request, response))
@@ -156,7 +152,7 @@ public class ClassInstrAssgnEditAction extends PreferencesAction {
             
     		// Restore all inherited preferences
     		if (op.equals(MSG.actionClearClassPreferences())) {
-    			sessionContext.checkPermission(c.getControllingDept(), Right.InstructorAssignmentPreferences);
+    			sessionContext.checkPermission(c.getControllingDept(), Right.InstructorClearAssignmentPreferences);
     			doClear(c.getPreferences(), Preference.Type.ATTRIBUTE, Preference.Type.INSTRUCTOR);
     			cdao.update(c);
     			op = "init";

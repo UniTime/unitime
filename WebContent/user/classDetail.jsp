@@ -83,8 +83,8 @@
 					<sec:authorize access="hasPermission(#ClassEditForm.controllingDept, 'Department', 'InstructorAssignmentPreferences')">
 						&nbsp;
 						<html:submit property="op" styleClass="btn" 
-							accesskey="<%=MSG.accessEditInstructorAssignmentPreferences()%>" 
-							title="<%=MSG.titleEditInstructorAssignmentPreferences(MSG.accessEditInstructorAssignmentPreferences()) %>" >
+							accesskey="<%=MSG.accessEditClassInstructorAssignmentPreferences()%>" 
+							title="<%=MSG.titleEditClassInstructorAssignmentPreferences(MSG.accessEditClassInstructorAssignmentPreferences()) %>" >
 							<loc:message name="actionEditClassInstructorAssignmentPreferences" />
 						</html:submit> 
 					</sec:authorize>
@@ -495,8 +495,8 @@
 					<sec:authorize access="hasPermission(#ClassEditForm.controllingDept, 'Department', 'InstructorAssignmentPreferences')">
 						&nbsp;
 						<html:submit property="op" styleClass="btn" 
-							accesskey="<%=MSG.accessEditInstructorAssignmentPreferences()%>" 
-							title="<%=MSG.titleEditInstructorAssignmentPreferences(MSG.accessEditInstructorAssignmentPreferences()) %>" >
+							accesskey="<%=MSG.accessEditClassInstructorAssignmentPreferences()%>" 
+							title="<%=MSG.titleEditClassInstructorAssignmentPreferences(MSG.accessEditClassInstructorAssignmentPreferences()) %>" >
 							<loc:message name="actionEditClassInstructorAssignmentPreferences" />
 						</html:submit> 
 					</sec:authorize>

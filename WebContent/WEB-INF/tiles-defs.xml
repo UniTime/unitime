@@ -349,6 +349,13 @@
 		<put name="showNavigation" value="true" />
   	</definition>
   	
+  	<definition	name="schedulingSubpartInstrAssgnEditTile" extends="pageLayoutDef">
+		<put name="onLoadFunction" type="string" value="onLoad='jumpToAnchor()'" />
+		<put name="title" type="string" value="Scheduling Subpart Instructor Assignment Preferences"/>
+		<put name="body" value="/user/schedulingSubpartInstrAssgnEdit.jsp" />
+		<put name="showNavigation" value="true" />
+  	</definition>
+
   	<definition	name="schedulingSubpartDetailTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Scheduling Subpart Detail"/>
 		<put name="body" value="/user/schedulingSubpartDetail.jsp" />

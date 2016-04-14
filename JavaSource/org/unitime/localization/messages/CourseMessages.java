@@ -1154,6 +1154,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Instructor Assignment Preferences")
 	String actionEditClassInstructorAssignmentPreferences();
 	
+	@DefaultMessage("Instructor Assignment Preferences")
+	String actionEditSubpartInstructorAssignmentPreferences();
+	
 	@DefaultMessage("S")
 	String accessSearchInstructionalOfferings();
 	
@@ -1412,6 +1415,12 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("A")
 	String accessEditInstructorAssignmentPreferences();
 
+	@DefaultMessage("I")
+	String accessEditClassInstructorAssignmentPreferences();
+
+	@DefaultMessage("I")
+	String accessEditSubpartInstructorAssignmentPreferences();
+
 	@DefaultMessage("Search/Display Offerings (Alt+{0})")
 	String titleSearchInstructionalOfferings(String accessKey);
 	
@@ -1570,6 +1579,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Delete all Subpart Preferences (Alt+{0})")
 	String titleClearSubpartPreferences(String accessKey);
+	
+	@DefaultMessage("Delete all attribute and instructor preferences that are on this scheduling subpart (Alt+{0})")
+	String titleClearSubpartInstructorAssignmentPreferences(String accessKey);
 	
 	@DefaultMessage("Delete all Instructor Preferences (Alt+{0})")
 	String titleClearInstructorPreferences(String accessKey);
@@ -1819,6 +1831,12 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Edit Instructor Assignment Preferences (Alt+{0})")
 	String titleEditInstructorAssignmentPreferences(String accessKey);
+	
+	@DefaultMessage("Edit Instructor Assignment Preferences (Alt+{0})")
+	String titleEditClassInstructorAssignmentPreferences(String accessKey);
+	
+	@DefaultMessage("Edit Instructor Assignment Preferences (Alt+{0})")
+	String titleEditSubpartInstructorAssignmentPreferences(String accessKey);
 	
 	@DefaultMessage("Course numbers can be specified using wildcard (*). E.g. 2*")
 	String tooltipCourseNumber();

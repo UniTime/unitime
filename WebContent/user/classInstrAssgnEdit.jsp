@@ -61,7 +61,7 @@
 <tiles:importAttribute />
 <html:form action="/classInstrAssgnEdit" focus="instructorAssignment">
 	<html:hidden property="classId"/>
-	<html:hidden property="op2" value="" styleId="op2"/>	
+	<html:hidden property="op2" value="" styleId="op2"/>
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD valign="middle" colspan='2'>
@@ -75,7 +75,7 @@
 						title='<%=MSG.titleUpdatePreferences(MSG.accessUpdatePreferences()) %>' >
 						<loc:message name="actionUpdatePreferences"/>
 					</html:submit>
-					<sec:authorize access="hasPermission(#ClassEditForm.classId, 'Class_', 'ClassEditClearPreferences')"> 
+					<sec:authorize access="hasPermission(#ClassEditForm.controllingDept, 'Department', 'InstructorClearAssignmentPreferences')"> 
 						&nbsp;
 						<html:submit property="op" 
 							styleClass="btn" 
@@ -397,7 +397,7 @@
 						title='<%=MSG.titleUpdatePreferences(MSG.accessUpdatePreferences()) %>' >
 						<loc:message name="actionUpdatePreferences"/>
 					</html:submit>
-					<sec:authorize access="hasPermission(#ClassEditForm.classId, 'Class_', 'ClassEditClearPreferences')"> 
+					<sec:authorize access="hasPermission(#ClassEditForm.controllingDept, 'Department', 'InstructorClearAssignmentPreferences')"> 
 						&nbsp;
 						<html:submit property="op" 
 							styleClass="btn" 

@@ -56,15 +56,6 @@
 			document.forms[0].submit();
 		}			
 	}
-
-	function instructorAssignmentChanged(){			
-		var op2Obj = document.getElementById('op2');
-		if (op2Obj!=null) {
-			op2Obj.value='updateInstructorAssignment';
-			document.forms[0].submit();
-		}			
-	}
-
 	// -->
 </SCRIPT>
 		
@@ -268,25 +259,27 @@
 			<html:hidden property="fractionalIncrementsAllowed"/>				
 		</logic:equal>
 		</logic:equal>
-		<TR>
-			<TD><loc:message name="propertyNeedInstructorAssignment"/></TD>
-			<TD>
-				<html:checkbox property="instructorAssignment" onchange="instructorAssignmentChanged();"/> <i><loc:message name="descriptionNeedInstructorAssignment"/></i>
-			</TD>
-		</TR>
 		<logic:equal name="<%=frmName%>" property="instructorAssignment" value="true">
-		<TR>
-			<TD><loc:message name="propertyNbrInstructors"/></TD>
-			<TD>
-				<html:text property="nbrInstructors" size="10" style="text-align: right;"/>
-			</TD>
-		</TR>
-		<TR>
-			<TD><loc:message name="propertyTeachingLoad"/></TD>
-			<TD>
-				<html:text property="teachingLoad" size="10" style="text-align: right;"/> <loc:message name="teachingLoadUnits"/>
-			</TD>
-		</TR>
+			<TR>
+				<TD><loc:message name="propertyNeedInstructorAssignment"/></TD>
+				<TD>
+					<loc:message name="subpartDetailNeedInstructorAssignment"/>
+				</TD>
+			</TR>
+			<logic:notEqual name="<%=frmName%>" property="nbrInstructors" value="1">
+				<TR>
+					<TD><loc:message name="propertyNbrInstructors"/></TD>
+					<TD>
+						<bean:write name="<%=frmName%>" property="nbrInstructors" />
+					</TD>
+				</TR>
+			</logic:notEqual>
+			<TR>
+				<TD><loc:message name="propertyTeachingLoad"/></TD>
+				<TD>
+					<bean:write name="<%=frmName%>" property="teachingLoad" /> <loc:message name="teachingLoadUnits"/>
+				</TD>
+			</TR>
 		</logic:equal>
 <!-- Preferences -->
 		<logic:equal value="true" name="<%=frmName%>" property="unlimitedEnroll">
@@ -297,8 +290,6 @@
 				<jsp:param name="bldgPref" value="false"/>
 				<jsp:param name="roomFeaturePref" value="false"/>
 				<jsp:param name="roomGroupPref" value="false"/>
-				<jsp:param name="attributePref" value="${SchedulingSubpartEditForm.instructorAssignment}"/>
-				<jsp:param name="instructorPref" value="${SchedulingSubpartEditForm.instructorAssignment}"/>
 			</jsp:include>
 		</logic:equal>
 		<logic:notEqual value="true" name="<%=frmName%>" property="unlimitedEnroll">
@@ -306,8 +297,6 @@
 				<jsp:param name="frmName" value="<%=frmName%>"/>
 				<jsp:param name="distPref" value="false"/>
 				<jsp:param name="periodPref" value="false"/>
-				<jsp:param name="attributePref" value="${SchedulingSubpartEditForm.instructorAssignment}"/>
-				<jsp:param name="instructorPref" value="${SchedulingSubpartEditForm.instructorAssignment}"/>
 			</jsp:include>
 		</logic:notEqual>
 

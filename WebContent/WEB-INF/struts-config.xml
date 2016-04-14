@@ -489,6 +489,23 @@
         	path="/schedulingSubpartDetail.do" 
         	/>
       </action>
+      
+      <action
+         path="/schedulingSubpartInstrAssgnEdit"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         attribute="SchedulingSubpartEditForm"
+         input="schedulingSubpartInstrAssgnEditTile"
+         name="schedulingSubpartEditForm"
+         scope="request"
+         validate="false"> 
+        <forward 
+        	name="editSchedulingSubpart" 
+        	path="schedulingSubpartInstrAssgnEditTile" />
+        <forward 
+        	name="displaySubpartDetail" 
+        	path="/schedulingSubpartDetail.do" 
+        	/>
+      </action>      
   
       <action 
       	path="/itypeDescList" 

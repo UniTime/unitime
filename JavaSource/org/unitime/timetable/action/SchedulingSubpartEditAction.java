@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.text.ParseException;
 import java.util.List;
 import java.util.Set;
 
@@ -142,8 +141,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
                // || op.equals(rsc.getMessage("button.addClass_"))
                 || op.equals(MSG.actionNextSubpart())
                 || op.equals(MSG.actionPreviousSubpart())
-                 || op.equals("updateDatePattern")
-                 || op.equals("updateInstructorAssignment")) {
+                 || op.equals("updateDatePattern")) {
             subpartId = frm.getSchedulingSubpartId();
         }
 
@@ -189,7 +187,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         	sessionContext.checkPermission(ss, Right.SchedulingSubpartEditClearPreferences);
 
             Set s = ss.getPreferences();
-            s.clear();
+            super.doClear(s, Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING);
             ss.setPreferences(s);
             sdao.update(ss);
 
@@ -212,9 +210,6 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
             frm.reset(mapping, request);
             frm.setAutoSpreadInTime(ss.isAutoSpreadInTime());
             frm.setStudentAllowOverlap(ss.isStudentAllowOverlap());
-            frm.setInstructorAssignment(ss.isInstructorAssignmentNeeded());
-	        frm.setTeachingLoad(ss.getTeachingLoad() == null ? "" : Formats.getNumberFormat("0.##").format(ss.getTeachingLoad()));
-	        frm.setNbrInstructors(ss.isInstructorAssignmentNeeded() ? ss.getNbrInstructors().intValue() : 1);
         }
 
         // Load form attributes that are constant
@@ -298,10 +293,6 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
 			}
 		}
         
-        if (op.equals("updateInstructorAssignment")) {
-        	initPrefs(frm, ss, null, true);
-        }
-
 		// Process Preferences Action
 		processPrefAction(request, frm, errors);
 
@@ -373,6 +364,9 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         frm.setSubjectAreaId(co.getSubjectArea().getUniqueId().toString());
         frm.setCourseNbr(co.getCourseNbr());
         frm.setCourseTitle(co.getTitle());
+        frm.setInstructorAssignment(ss.isInstructorAssignmentNeeded());
+        frm.setTeachingLoad(ss.getTeachingLoad() == null ? "" : Formats.getNumberFormat("0.##").format(ss.getTeachingLoad()));
+        frm.setNbrInstructors(ss.isInstructorAssignmentNeeded() ? ss.getNbrInstructors().intValue() : 1);
 
     	if (ss.getParentSubpart() != null && ss.getItype().equals(ss.getParentSubpart().getItype())){
     		frm.setSameItypeAsParent(new Boolean(true));
@@ -417,6 +411,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         frm.setParentSubpart(parentSubpart);
 
         frm.setManagingDeptName(ss.getManagingDept()==null?null:ss.getManagingDept().getManagingDeptLabel());
+        frm.setControllingDept(ss.getControllingDept().getUniqueId());
     }
     /**
      * Loads the non-editable scheduling subpart info into the form
@@ -436,23 +431,13 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         Set s = ss.getPreferences();
 
         // Clear all old prefs
-        s.clear();
+        super.doClear(s, Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING);
 
         super.doUpdate(request, frm, ss, s, timeVertical,
-        		Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING,
-        		Preference.Type.ATTRIBUTE, Preference.Type.INSTRUCTOR);
+        		Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING);
 
         ss.setAutoSpreadInTime(frm.getAutoSpreadInTime());
         ss.setStudentAllowOverlap(frm.getStudentAllowOverlap());
-        try {
-        	if (frm.getInstructorAssignment() && frm.getTeachingLoad() != null)
-        		ss.setTeachingLoad(Formats.getNumberFormat("0.##").parse(frm.getTeachingLoad()).floatValue());
-        	else
-        		ss.setTeachingLoad(null);
-        } catch (ParseException e) {
-        	ss.setTeachingLoad(null);
-        }
-        ss.setNbrInstructors(frm.getInstructorAssignment() ? frm.getNbrInstructors() : 0);
 
         if (frm.getDatePattern()==null || frm.getDatePattern().intValue()<0)
         	ss.setDatePattern(null);

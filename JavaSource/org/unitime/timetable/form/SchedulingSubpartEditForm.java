@@ -74,6 +74,7 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
     private Boolean instructorAssignment;
     private Integer nbrInstructors;
     private String teachingLoad;
+    private Long controllingDept;
     
     // --------------------------------------------------------- Methods
 
@@ -115,6 +116,7 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
         instructorAssignment = Boolean.FALSE;
         teachingLoad = null;
         nbrInstructors = 1;
+        controllingDept = null;
         super.reset(mapping, request);
     }
 
@@ -340,4 +342,7 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
 
 	public String getTeachingLoad() { return teachingLoad; }
 	public void setTeachingLoad(String teachingLoad) { this.teachingLoad = teachingLoad; }
+	
+    public Long getControllingDept() { return controllingDept; }
+    public void setControllingDept(Long deptId) { controllingDept = deptId; }
 }

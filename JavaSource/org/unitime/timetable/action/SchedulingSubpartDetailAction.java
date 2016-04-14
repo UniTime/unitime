@@ -119,7 +119,8 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	                // || op.equals(rsc.getMessage("button.backToInstrOffrDet")) for deletion
 	                || op.equals(MSG.actionNextSubpart())
 	                || op.equals(MSG.actionPreviousSubpart())
-	                || op.equals(MSG.actionClearClassPreferencesOnSubpart())) {
+	                || op.equals(MSG.actionClearClassPreferencesOnSubpart())
+	                || op.equals(MSG.actionEditSubpartInstructorAssignmentPreferences())) {
 	            subpartId = frm.getSchedulingSubpartId();
 	        } else {
 	        	frm.reset(mapping, request);
@@ -144,6 +145,11 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        if(op.equals(MSG.actionEditSubpart())
 	                && subpartId!=null && subpartId.trim()!="") {
 	        	response.sendRedirect( response.encodeURL("schedulingSubpartEdit.do?ssuid="+ss.getUniqueId().toString()) );
+	        	return null;
+	        }
+
+	        if(op.equals(MSG.actionEditSubpartInstructorAssignmentPreferences()) && subpartId!=null && subpartId.trim()!="") {
+	        	response.sendRedirect( response.encodeURL("schedulingSubpartInstrAssgnEdit.do?ssuid="+ss.getUniqueId().toString()) );
 	        	return null;
 	        }
 
@@ -317,6 +323,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        frm.setParentSubpart(parentSubpart);
 
 	        frm.setManagingDeptName(ss.getManagingDept()==null?null:ss.getManagingDept().getManagingDeptLabel());
+	        frm.setControllingDept(ss.getControllingDept().getUniqueId());
 	    }
 	    
 	    private void setupDatePatterns(HttpServletRequest request, SchedulingSubpartEditForm frm, SchedulingSubpart ss) throws Exception {
