@@ -95,6 +95,12 @@
 				<line>When a room is being shared among all departments (and there are more than three departments), display All instead of listing all the departments in the Departments column.</line>
 			</description>
 		</item>
+		<item>
+			<name>Room Features: Create/Update Room Feature</name>
+			<description>
+				<line>Fixed an issue causing the page not to work when there are no room fetaure types defined in the system.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Localization</title>

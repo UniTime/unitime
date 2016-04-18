@@ -327,7 +327,7 @@ public class RoomFeatureEdit extends Composite {
 			iDepartment.getWidget().clear();
 			iGlobal.setValue(true, true);
 			iGlobal.setEnabled(true);
-			if (iType != null) iType.setSelectedIndex(0);
+			if (iType != null && iType.getItemCount() > 0) iType.setSelectedIndex(0);
 			if (iProperties.isCanAddDepartmentalRoomFeature()) {
 				iDepartment.getWidget().addItem(MESSAGES.itemSelect(), "-1");
 				iDepartment.getWidget().setSelectedIndex(0);
@@ -352,7 +352,7 @@ public class RoomFeatureEdit extends Composite {
 			iHeader.setEnabled("delete", feature.canDelete());
 			iName.getWidget().setText(feature.getLabel() == null ? "" : feature.getLabel());
 			iAbbreviation.getWidget().setText(feature.getAbbreviation() == null ? "" : feature.getAbbreviation());
-			if (iType != null) {
+			if (iType != null && iType.getItemCount() > 0) {
 				if (feature.getType() == null) {
 					iType.setSelectedIndex(0);
 				} else {
@@ -419,7 +419,7 @@ public class RoomFeatureEdit extends Composite {
 			iAbbreviation.setErrorHint(MESSAGES.errorAbbreviationIsEmpty());
 			result = false;
 		}
-		if (iType != null) {
+		if (iType != null && iType.getItemCount() > 0) {
 			iFeature.setType(iProperties.getFeatureType(Long.valueOf(iType.getValue(iType.getSelectedIndex()))));
 		} else {
 			iFeature.setType(null);
