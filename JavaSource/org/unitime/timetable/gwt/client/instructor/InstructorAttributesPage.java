@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -47,6 +48,7 @@ import org.unitime.timetable.gwt.shared.InstructorInterface.GetInstructorAttribu
 import org.unitime.timetable.gwt.shared.InstructorInterface.GetInstructorsRequest;
 import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorAttributePropertiesInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorAttributePropertiesRequest;
+import org.unitime.timetable.gwt.shared.InstructorInterface.SetLastDepartmentRequest;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -277,8 +279,15 @@ public class InstructorAttributesPage extends Composite {
 		hideResults();
 		final DepartmentInterface dept = getDepartment();
 		GetInstructorAttributesRequest request = new GetInstructorAttributesRequest();
-		if (dept != null)
+		if (dept != null) {
 			request.setDepartmentId(dept.getId());
+			RPC.execute(new SetLastDepartmentRequest(dept.getId()), new AsyncCallback<GwtRpcResponseNull>() {
+				@Override
+				public void onFailure(Throwable caught) {}
+				@Override
+				public void onSuccess(GwtRpcResponseNull result) {}
+			});
+		}
 		LoadingWidget.execute(request, new AsyncCallback<GwtRpcResponseList<AttributeInterface>>() {
 			@Override
 			public void onFailure(Throwable caught) {

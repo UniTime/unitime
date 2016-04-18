@@ -26,6 +26,7 @@ import java.util.TreeSet;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -508,5 +509,20 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 					(iTypeId == null ? "" : iTypeId.toString()) + "," +
 					(iAttributeId == null ? "" : iAttributeId.toString());
 		}
+	}
+	
+	public static class SetLastDepartmentRequest implements GwtRpcRequest<GwtRpcResponseNull> {
+		public Long iDepartmentId;
+		
+		public SetLastDepartmentRequest() {}
+		public SetLastDepartmentRequest(Long departmentId) {
+			setDepartmentId(departmentId);
+		}
+		
+		public void setDepartmentId(Long departmentId) { iDepartmentId = departmentId; }
+		public Long getDepartmentId() { return iDepartmentId; }
+		
+		@Override
+		public String toString() { return iDepartmentId == null ? "" : iDepartmentId.toString(); }
 	}
 }
