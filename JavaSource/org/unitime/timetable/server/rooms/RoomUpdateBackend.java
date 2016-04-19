@@ -156,7 +156,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 	    			types,
 	    			context.hasPermission(Right.InstructionalOfferings) || context.hasPermission(Right.Classes),
 	    			context.hasPermission(Right.Examinations),
-	    			context.hasPermission(Right.Events),
+	    			context.hasPermission(Right.Events) || context.hasPermission(location, Right.RoomEditChangeEventProperties),
 	    			true);
 	    	
 	    	RoomSharingBackend rsb = new RoomSharingBackend();

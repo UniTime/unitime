@@ -101,6 +101,15 @@
 				<line>Fixed an issue causing the page not to work when there are no room fetaure types defined in the system.</line>
 			</description>
 		</item>
+		<item>
+			<name>Rooms: Permission Fixes</name>
+			<description>
+				<line>Rooms, Room Detail: do not check for Events permission.
+					<line>This fixes the "Failed to load rooms: Access denied for Events" exception when the user is not allowed to see the events for the selected term.</line>
+				</line>
+				<line>Room Detail: show event properties after a room update if the uses has the RoomEditChangeEventProperties permission (when Events permission is not given).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Localization</title>

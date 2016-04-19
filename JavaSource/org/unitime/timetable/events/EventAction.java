@@ -56,10 +56,14 @@ public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpc
 	@Override
 	public R execute(T request, SessionContext context) {
 		// Check basic permissions
-		context.checkPermissionAnyAuthority(Right.Events, new SimpleQualifier("Session", request.getSessionId()));
+		checkPermission(request, context);
 		
 		// Execute action
 		return execute(request, new EventContext(context, request.getSessionId()));
+	}
+	
+	protected void checkPermission(T request, SessionContext context) {
+		context.checkPermissionAnyAuthority(Right.Events, new SimpleQualifier("Session", request.getSessionId()));
 	}
 
 	public abstract R execute(T request, EventContext context);

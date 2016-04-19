@@ -64,6 +64,7 @@ import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomTypeOption;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 
 /**
@@ -76,9 +77,12 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 	
 	@Override
 	public FilterRpcResponse execute(org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest request, EventContext context) {
-		context.checkPermission(Right.Rooms);
-		
 		return super.execute(request, context);
+	}
+	
+	@Override
+	protected void checkPermission(org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest request, SessionContext context) {
+		context.checkPermissionAnyAuthority(Right.Rooms, new SimpleQualifier("Session", request.getSessionId()));
 	}
 
 	@Override
