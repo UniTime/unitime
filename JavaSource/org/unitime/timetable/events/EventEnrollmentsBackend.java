@@ -63,6 +63,11 @@ import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamEventDAO;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.exam.ui.ExamAssignment;
+import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
+import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.BackToBackConflict;
+import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.DirectConflict;
+import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.MoreThanTwoADayConflict;
 
 /**
  * @author Tomas Muller
@@ -112,7 +117,77 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
 	    	if (Event.sEventTypeClass == event.getEventType()) {
 	    		return convert(enrollments, computeConflicts(event instanceof ClassEvent ? (ClassEvent)event : ClassEventDAO.getInstance().get(event.getUniqueId(), hibSession)), context.hasPermission(Right.EnrollmentsShowExternalId), context.hasPermission(Right.CourseRequests), context.hasPermission(Right.SchedulingAssistant));
 	    	} else if (Event.sEventTypeFinalExam == event.getEventType() || Event.sEventTypeMidtermExam == event.getEventType()) {
-	    		return convert(enrollments, computeConflicts(event instanceof ExamEvent ? (ExamEvent)event : ExamEventDAO.getInstance().get(event.getUniqueId(), hibSession)), context.hasPermission(Right.EnrollmentsShowExternalId), context.hasPermission(Right.CourseRequests), context.hasPermission(Right.SchedulingAssistant));
+	    		ExamEvent examEvent = (event instanceof ExamEvent ? (ExamEvent)event : ExamEventDAO.getInstance().get(event.getUniqueId(), hibSession));
+	    		GwtRpcResponseList<Enrollment> ret = convert(enrollments, computeConflicts(examEvent), context.hasPermission(Right.EnrollmentsShowExternalId), context.hasPermission(Right.CourseRequests), context.hasPermission(Right.SchedulingAssistant));
+	    		ExamAssignmentInfo assignment = new ExamAssignmentInfo(examEvent.getExam(), false);
+				for (DirectConflict conflict: assignment.getDirectConflicts()) {
+		    		ExamAssignment other = conflict.getOtherExam();
+		    		if (other == null) continue;
+		    		
+		    		Conflict conf = new Conflict();
+		    		conf.setName(other.getExamName());
+	    			conf.setType("Direct");
+	    			conf.setDate(getDateFormat().format(other.getPeriod().getStartDate()));
+	    			conf.setTime(other.getTime(false));
+	    			conf.setRoom(other.getRoomsName(false, ", "));
+	    			conf.setStyle("dc");
+					
+					for (Long studentId: conflict.getStudents()) {
+		    			for (ClassAssignmentInterface.Enrollment enrollment: ret) {
+		    				if (enrollment.getStudent().getId() == studentId)
+		    					enrollment.addConflict(conf);
+		    			}
+		    		}
+		    	}
+				if (ApplicationProperty.ExaminationReportsStudentBackToBacks.isTrue())
+			    	for (BackToBackConflict conflict: assignment.getBackToBackConflicts()) {
+			    		ExamAssignment other = conflict.getOtherExam();
+			    		Conflict conf = new Conflict();
+			    		conf.setName(other.getExamName());
+						conf.setType("Back-To-Back");
+						conf.setDate(getDateFormat().format(other.getPeriod().getStartDate()));
+						conf.setTime(other.getTime(false));
+						conf.setRoom(other.getRoomsName(false, ", "));
+						conf.setStyle("b2b");
+						
+						for (Long studentId: conflict.getStudents()) {
+			    			for (ClassAssignmentInterface.Enrollment enrollment: ret) {
+			    				if (enrollment.getStudent().getId() == studentId)
+			    					enrollment.addConflict(conf);
+			    			}
+			    		}
+			    	}
+		    	for (MoreThanTwoADayConflict conflict: assignment.getMoreThanTwoADaysConflicts()) {
+		    		String name = null, date = null, time = null, room = null;
+		    		for (ExamAssignment other: conflict.getOtherExams()) {
+		    			if (name == null) {
+		    				name = other.getExamName();
+		    				date = getDateFormat().format(other.getPeriod().getStartDate());
+		    				time = other.getTime(false);
+		    				room = other.getRoomsName(false, ", ");
+		    			} else {
+		    				name += "<br>" + other.getExamName();
+		    				date += "<br>" + getDateFormat().format(other.getPeriod().getStartDate());
+		    				time += "<br>" + other.getTime(false);
+		    				room += "<br>" + other.getRoomsName(false, ", ");
+		    			}
+		    		}
+		    		
+		    		Conflict conf = new Conflict();
+		    		conf.setName(name);
+					conf.setType("&gt;2 A Day");
+					conf.setDate(date);
+					conf.setTime(time);
+					conf.setRoom(room);
+					conf.setStyle("m2d");
+					for (Long studentId: conflict.getStudents()) {
+		    			for (ClassAssignmentInterface.Enrollment enrollment: ret) {
+		    				if (enrollment.getStudent().getId() == studentId)
+		    					enrollment.addConflict(conf);
+		    			}
+		    		}
+		    	}
+		    	return ret;
 	    	} else  if (Event.sEventTypeCourse == event.getEventType()) {
 	    		return convert(enrollments, computeConflicts(event instanceof CourseEvent ? (CourseEvent)event : CourseEventDAO.getInstance().get(event.getUniqueId(), hibSession)), context.hasPermission(Right.EnrollmentsShowExternalId), context.hasPermission(Right.CourseRequests), context.hasPermission(Right.SchedulingAssistant));
 	    	}
@@ -680,7 +755,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
             	for (Object[] o: (List<Object[]>)hibSession.createQuery(
             			"select s1.student.uniqueId, m1" +
             			" from StudentClassEnrollment s1, ExamEvent e1 inner join e1.meetings m1 inner join e1.exam.owners o1, ExamEvent e2 inner join e2.meetings m2 inner join e2.exam.owners o2, StudentClassEnrollment s2" +
-            			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and s1.student = s2.student" +
+            			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and s1.student = s2.student and e1.exam.examType != e2.exam.examType" +
             			where(t1, 1) + where(t2, 2) +
             			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod")
             			.setLong("eventId", event.getUniqueId()).list()) {

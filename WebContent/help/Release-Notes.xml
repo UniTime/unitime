@@ -46,6 +46,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Event Detail: Examination Conflicts</name>
+			<description>
+				<line>Enrollments table of an examination event: include more than two exams on a day and back-to-back student conflicts.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>
