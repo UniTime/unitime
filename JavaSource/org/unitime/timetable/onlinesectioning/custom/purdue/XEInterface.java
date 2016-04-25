@@ -164,6 +164,11 @@ public class XEInterface {
 	public static class CourseReferenceNumber {
 		public String courseReferenceNumber;
 		public String courseRegistrationStatus;
+		/**
+		 * The administrator is allowed to submit the Course Registration Status and a Permit Override code.
+		 * The course override must be a valid code on the permit override table (STVROVR) with valid rules for the term (SFAROVR).
+		 */
+		public String courseOverride;
 		
 		public CourseReferenceNumber() {}
 		public CourseReferenceNumber(String crn) {
@@ -191,12 +196,41 @@ public class XEInterface {
 	}
 	
 	public static class RegisterRequest {
+		/** Identification number used to access a person */
 		public String bannerId;
+		/** Code value to identify the term */
 		public String term;
+		/** Students alternate Personal Identification Number */
 		public String altPin;
+		/** Registration persona value, SB is administrator, WA is the default for student.	*/
 		public String systemIn;
+		/**
+		 * Administrator back date registration.
+		 * Must be in format YYYYMMDD, 20150201 for Feb 1, 2015.
+		 **/
+		public String registrationDate;
+		/**
+		 * Indicator (Y/N) to conditionally process registration add and drops if errors exists.
+		 * Default is N and will process successes but not errors.
+		 * Value of Y will conditionally process successes if there are no errors.
+		 **/
+		public String conditionalAddDrop;
+		/**
+		 * Course Reference Numbers to add new classes to existing registration.
+		 * This parameter includes the list of CRN that needs to be added to existing registrations.
+		 * Any invalid CRN will be returned back in the failedRegistration object.
+		 **/
 		public List<CourseReferenceNumber> courseReferenceNumbers;
+		/**
+		 * List by course reference number for action changes and updates.
+		 * This parameter list includes selected inputs including drop actions.
+		 * The selectedAction is the field within the map for status actions and must be set to the valid drop code within the registrationActions for dropping the registration.
+		 **/
 		public List<RegisterAction> actionsAndOptions;
+		/**
+		 * The administrator is allowed to override the hold eligibility by submitting with the hold password.
+		 */
+		public String holdPassword;
 		
 		public RegisterRequest(String term, String bannerId, String pin, boolean admin) {
 			this.term = term; this.bannerId = bannerId; this.altPin = pin; this.systemIn = (admin ? "SB" : "WA");
@@ -237,6 +271,14 @@ public class XEInterface {
 		
 		public boolean isEmpty() {
 			return (actionsAndOptions == null || actionsAndOptions.isEmpty()) && (courseReferenceNumbers == null || courseReferenceNumbers.isEmpty());
+		}
+		
+		public void setConditionalAddDrop(boolean cond) {
+			conditionalAddDrop = (cond ? "Y" : "N"); 
+		}
+		
+		public void setRegistrationDate(DateTime date) {
+			registrationDate = date.toString("yyyyMMdd");
 		}
 	}
 	

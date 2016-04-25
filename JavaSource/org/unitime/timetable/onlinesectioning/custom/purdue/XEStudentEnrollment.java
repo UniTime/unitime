@@ -148,6 +148,14 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		}
 		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.xe.checkMaxHours", "false"));
 	}
+	
+	protected boolean useConditionalAddDrop(boolean admin) {
+		if (admin) {
+			String conditionalAddDrop = ApplicationProperties.getProperty("banner.xe.admin.conditionalAddDrop");
+			if (conditionalAddDrop != null) return "true".equalsIgnoreCase(conditionalAddDrop);
+		}
+		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.xe.conditionalAddDrop", "false"));
+	}
 
 	protected float getMaxHoursDefault() {
 		return Float.parseFloat(ApplicationProperties.getProperty("banner.xe.maxHoursDefault", "18"));
@@ -484,7 +492,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			}
 			
 			// Next, try to enroll student into the given courses
-			boolean changed = false;
+			boolean changed = false, hasDrop = false;
 			Map<String, List<XSection>> id2section = new HashMap<String, List<XSection>>();
 			Map<String, XCourse> id2course = new HashMap<String, XCourse>();
 			Set<String> added = new HashSet<String>();
@@ -588,10 +596,14 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				} else  if (drop) {
 					changed = true;
 					req.drop(id);
+					hasDrop = true;
 				} else {
 					if (added.add(id)) req.keep(id);
 				}
 			}
+			
+			if (hasDrop && useConditionalAddDrop(admin))
+				req.setConditionalAddDrop(true);
 			
 			if (helper.isDebugEnabled())
 				helper.debug("Request: " + gson.toJson(req));
@@ -870,6 +882,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			}
 			
 			XEInterface.RegisterRequest req = new XEInterface.RegisterRequest(term, getBannerId(student), null, true);
+			if (useConditionalAddDrop(true)) req.setConditionalAddDrop(true);
 			boolean changed = false;
 			if (original.registrations != null)
 				for (XEInterface.Registration reg: original.registrations) {
