@@ -24,10 +24,23 @@
 <release-history>
 
 <doc-title>UniTime 4.1 Release Notes</doc-title>
-
 <release>
 	<version>4.1.${build.number}</version>
 	<release-date>${build.date}</release-date>
+	<category>
+		<title>Other</title>
+		<item>
+			<name>Data Exchange: Academic Session Restore</name>
+			<description>
+				<line>Fixed an IndexOutOfBoundsException when Class_.managingDept is not set in the imported file.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.1.175</version>
+	<release-date>Wed, 20 Apr 2016</release-date>
 	<category>
 		<title>Event Management</title>
 		<item>

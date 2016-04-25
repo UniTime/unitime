@@ -575,7 +575,7 @@ public class SessionRestore implements SessionRestoreInterface {
 				Type type = getMetaData().getPropertyType(property);
 				if (type instanceof EntityType) {
 					TableData.Element element = getElement(property);
-					if (element == null) continue;
+					if (element == null || element.getValueCount() == 0) continue;
 					Object value = get(type.getReturnedClass(), element.getValue(0));
 					if (value != null) {
 						if (!iHibSession.contains(value))
