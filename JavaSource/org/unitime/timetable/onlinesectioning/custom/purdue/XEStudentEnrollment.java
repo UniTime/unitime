@@ -160,6 +160,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 	protected float getMaxHoursDefault() {
 		return Float.parseFloat(ApplicationProperties.getProperty("banner.xe.maxHoursDefault", "18"));
 	}
+	
+	protected String getAdminParameter() {
+		return ApplicationProperties.getProperty("banner.xe.adminParameter", "persona");
+	}
 
 	protected String getBannerId(XStudent student) {
 		String id = student.getExternalId();
@@ -221,8 +225,9 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			helper.getAction().addOptionBuilder().setKey("term").setValue(term);
 			helper.getAction().addOptionBuilder().setKey("bannerId").setValue(getBannerId(student));
 			if (admin) {
-				resource.addQueryParameter("persona", "SB");
-				helper.getAction().addOptionBuilder().setKey("persona").setValue("SB");
+				String param = getAdminParameter();
+				resource.addQueryParameter(param, "SB");
+				helper.getAction().addOptionBuilder().setKey(param).setValue("SB");
 			} else if (pin != null && !pin.isEmpty()) {
 				resource.addQueryParameter("altPin", pin);
 				helper.getAction().addOptionBuilder().setKey("pin").setValue(pin);
@@ -410,8 +415,9 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			helper.getAction().addOptionBuilder().setKey("term").setValue(term);
 			helper.getAction().addOptionBuilder().setKey("bannerId").setValue(getBannerId(student));
 			if (admin) {
-				resource.addQueryParameter("persona", "SB");
-				helper.getAction().addOptionBuilder().setKey("persona").setValue("SB");
+				String param = getAdminParameter();
+				resource.addQueryParameter(param, "SB");
+				helper.getAction().addOptionBuilder().setKey(param).setValue("SB");
 			} else if (pin != null && !pin.isEmpty()) {
 				resource.addQueryParameter("altPin", pin);
 				helper.getAction().addOptionBuilder().setKey("pin").setValue(pin);
@@ -833,7 +839,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 
 			resource.addQueryParameter("term", term);
 			resource.addQueryParameter("bannerId", getBannerId(student));
-			resource.addQueryParameter("persona", "SB");
+			resource.addQueryParameter(getAdminParameter(), "SB");
 			sectioningRequest.getAction().addOptionBuilder().setKey("term").setValue(term);
 			sectioningRequest.getAction().addOptionBuilder().setKey("bannerId").setValue(getBannerId(student));
 			Gson gson = getGson(helper);

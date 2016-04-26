@@ -278,7 +278,7 @@ public class XEInterface {
 		}
 		
 		public void setRegistrationDate(DateTime date) {
-			registrationDate = date.toString("yyyyMMdd");
+			registrationDate = date.toString("yyyy-MM-dd");
 		}
 	}
 	
