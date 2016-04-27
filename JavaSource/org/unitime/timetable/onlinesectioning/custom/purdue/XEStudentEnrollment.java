@@ -101,6 +101,29 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		}
 	}
 	
+	public static enum ConditionalDropType {
+		/** do not use conditional add drop */
+		NEVER,
+		/** only use conditional add drop when there is a drop action */
+		HAS_DROP,
+		/** use conditional add drop when the student is already registered in at least one section */
+		IS_REGISTERED,
+		/** only use conditional add drop during re-sectioning (automated wait-listing) */
+		RESECTION,
+		/** always use conditional add drop */
+		ALWAYS,
+		;
+		
+		public static ConditionalDropType parseType(String value) {
+			if (value == null) return ConditionalDropType.NEVER;
+			try {
+				return ConditionalDropType.valueOf(value);
+			} catch (Exception e) {
+				return ("true".equalsIgnoreCase(value) ? ConditionalDropType.HAS_DROP : ConditionalDropType.NEVER);
+			}
+		}
+	}
+	
 	protected String getBannerSite() {
 		return ApplicationProperties.getProperty("banner.xe.site");
 	}
@@ -149,12 +172,20 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.xe.checkMaxHours", "false"));
 	}
 	
-	protected boolean useConditionalAddDrop(boolean admin) {
+	protected ConditionalDropType getConditionalAddDrop(boolean admin) {
 		if (admin) {
 			String conditionalAddDrop = ApplicationProperties.getProperty("banner.xe.admin.conditionalAddDrop");
+			if (conditionalAddDrop != null) return ConditionalDropType.parseType(conditionalAddDrop);
+		}
+		return ConditionalDropType.parseType(ApplicationProperties.getProperty("banner.xe.conditionalAddDrop"));
+	}
+	
+	protected boolean throwExceptionWhenNoChange(boolean admin) {
+		if (admin) {
+			String conditionalAddDrop = ApplicationProperties.getProperty("banner.xe.admin.errorWhenNoChange");
 			if (conditionalAddDrop != null) return "true".equalsIgnoreCase(conditionalAddDrop);
 		}
-		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.xe.conditionalAddDrop", "false"));
+		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.xe.errorWhenNoChange", "false"));
 	}
 
 	protected float getMaxHoursDefault() {
@@ -608,8 +639,19 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				}
 			}
 			
-			if (hasDrop && useConditionalAddDrop(admin))
+			switch (getConditionalAddDrop(admin)) {
+			case ALWAYS:
 				req.setConditionalAddDrop(true);
+				break;
+			case HAS_DROP:
+				if (hasDrop) req.setConditionalAddDrop(true);
+				break;
+			case IS_REGISTERED:
+				if (!registered.isEmpty()) req.setConditionalAddDrop(true);
+				break;
+			default:
+				break;
+			}
 			
 			if (helper.isDebugEnabled())
 				helper.debug("Request: " + gson.toJson(req));
@@ -661,7 +703,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				throw new SectioningException(reason == null ? "Failed to enroll student." : reason);
 			}
 			
-			
+			Set<String> outcome = new HashSet<String>();
 			if (response.registrations != null) {
 				OnlineSectioningLog.Enrollment.Builder external = OnlineSectioningLog.Enrollment.newBuilder();
 				external.setType(OnlineSectioningLog.Enrollment.EnrollmentType.EXTERNAL);
@@ -683,6 +725,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 							.setClazz(OnlineSectioningLog.Entity.newBuilder().setName(reg.courseReferenceNumber))
 							.setCourse(OnlineSectioningLog.Entity.newBuilder().setName(reg.subject + " " + reg.courseNumber))
 							.setSubpart(OnlineSectioningLog.Entity.newBuilder().setName(reg.scheduleType));
+						outcome.add(reg.courseReferenceNumber);
 						if (added.contains(id)) {
 							// skip successfully registered enrollments
 							if (error != null) {
@@ -749,6 +792,19 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						}
 					}
 				}
+			}
+			
+			if (outcome.equals(registered.keySet()) && !fails.isEmpty() && throwExceptionWhenNoChange(admin)) {
+				String message = "";
+				for (EnrollmentFailure f: fails) {
+					if (!"Unable to make requested changes so your schedule was not changed.".equals(f.getMessage()))
+						message += (message.isEmpty() ? "" : "<br>") + f;
+				}
+				SectioningException e = new SectioningException(message);
+				for (EnrollmentFailure f: fails)
+					if (f.getSection() != null && !"Unable to make requested changes so your schedule was not changed.".equals(f.getMessage()))
+						e.setSectionMessage(f.getSection().getSectionId(), f.getMessage());
+				throw e;
 			}
 			
 			if (helper.isDebugEnabled())
@@ -888,7 +944,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			}
 			
 			XEInterface.RegisterRequest req = new XEInterface.RegisterRequest(term, getBannerId(student), null, true);
-			if (useConditionalAddDrop(true)) req.setConditionalAddDrop(true);
+			if (getConditionalAddDrop(true) != ConditionalDropType.NEVER)
+				req.setConditionalAddDrop(true);
 			boolean changed = false;
 			if (original.registrations != null)
 				for (XEInterface.Registration reg: original.registrations) {

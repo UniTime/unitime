@@ -717,7 +717,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								iStatus.error(MESSAGES.enrollFailed(caught.getMessage()), caught);
 								updateHistory();
 								if (caught instanceof SectioningException) {
-									EligibilityCheck check = ((SectioningException)caught).getEligibilityCheck();
+									SectioningException se = (SectioningException) caught;
+									EligibilityCheck check = se.getEligibilityCheck();
 									if (check != null) {
 										setElibibilityCheckDuringEnrollment(check);
 										if (check.hasFlag(EligibilityFlag.PIN_REQUIRED)) {
@@ -746,6 +747,15 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 											};
 											iPinDialog.checkEligibility(iOnline, iSessionSelector.getAcademicSessionId(), null, callback);
 										}
+									}
+									if (se.hasSectionMessages()) {
+										for (CourseAssignment ca: iLastAssignment.getCourseAssignments()) {
+											for (ClassAssignment c: ca.getClassAssignments()) {
+												c.setError(se.getSectionMessage(c.getClassId()));
+											}
+										}
+										fillIn(iLastAssignment);
+										iStatus.error(caught.getMessage() , false);
 									}
 								}
 							}

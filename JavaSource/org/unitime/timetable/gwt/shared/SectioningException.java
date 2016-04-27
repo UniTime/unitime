@@ -19,6 +19,9 @@
 */
 package org.unitime.timetable.gwt.shared;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 
@@ -32,6 +35,7 @@ public class SectioningException extends GwtRpcException implements IsSerializab
 	private EligibilityCheck iCheck = null;
 	public static enum Type { INFO, WARNING, ERROR };
 	private Type iType = null;
+	private Map<Long, String> iSectionMessages = null;
 	
 	public SectioningException() {
 		super();
@@ -56,6 +60,22 @@ public class SectioningException extends GwtRpcException implements IsSerializab
 	public boolean isInfo() { return iType != null && iType == Type.INFO; }
 	public boolean isWarning() { return iType != null && iType == Type.WARNING; }
 	public boolean isError() { return iType != null && iType == Type.ERROR; }
+	
+	public boolean hasSectionMessages() { return iSectionMessages != null && !iSectionMessages.isEmpty(); }
+	public void setSectionMessage(Long classId, String message) {
+		if (iSectionMessages == null) iSectionMessages = new HashMap<Long, String>();
+		if (classId != null)
+			iSectionMessages.put(classId, message);
+	}
+	public boolean hasSectionMessage(Long classId) {
+		if (classId == null || iSectionMessages == null) return false;
+		String message = iSectionMessages.get(classId);
+		return message != null && !message.isEmpty();
+	}
+	public String getSectionMessage(Long classId) {
+		if (classId == null || iSectionMessages == null) return null;
+		return iSectionMessages.get(classId);
+	}
 	
 	@Override
 	public String toString() {
