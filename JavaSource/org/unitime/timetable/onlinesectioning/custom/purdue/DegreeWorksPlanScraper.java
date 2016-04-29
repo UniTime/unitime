@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.onlinesectioning.custom.purdue;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -28,7 +30,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -74,12 +78,14 @@ public class DegreeWorksPlanScraper extends OnlineSectioningTestFwk {
 	
 	private Client iClient;
 	private ExternalTermProvider iExternalTermProvider;
+	private Set<String> iFilter;
 	
-	public DegreeWorksPlanScraper() {
+	public DegreeWorksPlanScraper(Set<String> filter) {
 		List<Protocol> protocols = new ArrayList<Protocol>();
 		protocols.add(Protocol.HTTP);
 		protocols.add(Protocol.HTTPS);
 		iClient = new Client(protocols);
+		iFilter = filter;
 		try {
 			String clazz = ApplicationProperty.CustomizationExternalTerm.value();
 			if (clazz == null || clazz.isEmpty())
@@ -182,7 +188,8 @@ public class DegreeWorksPlanScraper extends OnlineSectioningTestFwk {
 		try {
 			resource = new ClientResource(getDegreeWorksApiSite());
 			resource.setNext(iClient);
-			// resource.addQueryParameter("terms", getBannerTerm(server.getAcademicSession()));
+			if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("setTerms", "false")))
+				resource.addQueryParameter("terms", getBannerTerm(server.getAcademicSession()));
 			resource.addQueryParameter("studentId", getBannerId(student));
 			String effectiveOnly = getDegreeWorksApiEffectiveOnly();
 			if (effectiveOnly != null)
@@ -241,6 +248,7 @@ public class DegreeWorksPlanScraper extends OnlineSectioningTestFwk {
                 setLong("sessionId", getServer().getAcademicSession().getUniqueId()).list();
 		
 		for (final Student s: students) {
+			if (iFilter != null && !iFilter.contains(s.getExternalUniqueId())) continue;
 			final XStudent student = new XStudent(s, helper, getServer().getAcademicSession().getFreeTimePattern());
 			
 			if (student != null)
@@ -337,9 +345,23 @@ public class DegreeWorksPlanScraper extends OnlineSectioningTestFwk {
 		return operations;
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		new File("plans").mkdir();
-		new DegreeWorksPlanScraper().test(-1, 10);
+		String[] nc = System.getProperty("nrConcurrent", "10").split(",");
+		int[] nrConcurrent = new int[nc.length];
+		for (int i = 0; i < nc.length; i++)
+			nrConcurrent[i] = Integer.valueOf(nc[i].trim());
+		Set<String> filter = null;
+		if (System.getProperty("studentFilter") != null) {
+			filter = new HashSet<String>();
+			BufferedReader br = new BufferedReader(new FileReader(System.getProperty("studentFilter")));
+			String line = null;
+			while ((line = br.readLine()) != null) {
+				filter.add(line.trim());
+			}
+			br.close();
+		}
+		new DegreeWorksPlanScraper(filter).test(Integer.valueOf(System.getProperty("nrTasks", "-1")), nrConcurrent);
 	}
 
 }
