@@ -279,6 +279,7 @@ public abstract class OnlineSectioningTestFwk {
 
 	public synchronized void run(List<Operation> operations, int nrConcurrent) {
 		sLog.info("Running " + operations.size() + " tasks...");
+		iCounters.clear();
 		iRunners = new ArrayList<Runner>();
 		iTasks = new Pool(operations);
 		iFinished.clear(); iExec.clear(); iQuality.clear();
