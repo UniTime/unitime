@@ -140,6 +140,10 @@ public class DegreeWorksPlanScraper extends OnlineSectioningTestFwk {
 		return ApplicationProperties.getProperty("banner.dgw.errorPattern", "<div class=\"exceptionMessage\">\n(.*)\n\n</div>");
 	}
 	
+	protected int getDegreeWorksNrAttempts() {
+		return Integer.parseInt(ApplicationProperties.getProperty("banner.dgw.nrAttempts", "3"));
+	}
+	
 	protected String getBannerId(XStudent student) {
 		String id = student.getExternalId();
 		while (id.length() < 9) id = "0" + id;
@@ -183,28 +187,32 @@ public class DegreeWorksPlanScraper extends OnlineSectioningTestFwk {
 	    		.setPrettyPrinting().create();
 	}
 	
-	public String getDegreePlans(OnlineSectioningServer server, XStudent student) throws SectioningException {
+	protected String getDegreePlans(String term, String studentId, String effectiveOnly) throws SectioningException {
 		ClientResource resource = null;
 		try {
 			resource = new ClientResource(getDegreeWorksApiSite());
 			resource.setNext(iClient);
-			if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("setTerms", "false")))
-				resource.addQueryParameter("terms", getBannerTerm(server.getAcademicSession()));
-			resource.addQueryParameter("studentId", getBannerId(student));
-			String effectiveOnly = getDegreeWorksApiEffectiveOnly();
+			if (term != null)
+				resource.addQueryParameter("terms", term);
+			resource.addQueryParameter("studentId", studentId);
 			if (effectiveOnly != null)
 				resource.addQueryParameter("effectiveOnly", effectiveOnly);
-
 			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getDegreeWorksApiUser(), getDegreeWorksApiPassword());
+
 			try {
 				resource.get(MediaType.APPLICATION_JSON);
 			} catch (ResourceException exception) {
 				try {
 					String response = IOUtils.toString(resource.getResponseEntity().getReader());
+					try {
+						Writer out = new FileWriter(new File(new File("plans"), studentId + ".html"));
+						out.write(response);
+						out.flush(); out.close();
+					} catch (IOException e) {}
 					Pattern pattern = Pattern.compile(getDegreeWorksErrorPattern(), Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.UNIX_LINES);
 					Matcher match = pattern.matcher(response);
 					if (match.find())
-						throw new SectioningException(match.group(1));
+						throw new SectioningException("Failed to retrieve degree plans: " + match.group(1));
 				} catch (SectioningException e) {
 					throw e;
 				} catch (Throwable t) {
@@ -217,13 +225,27 @@ public class DegreeWorksPlanScraper extends OnlineSectioningTestFwk {
 		} catch (SectioningException e) {
 			throw e;
 		} catch (Exception e) {
-			throw new SectioningException(e.getMessage());
+			throw new SectioningException("Failed to retrieve degree plans: " + e.getMessage(), e);
 		} finally {
 			if (resource != null) {
 				if (resource.getResponse() != null) resource.getResponse().release();
 				resource.release();
 			}
 		}
+	}
+	
+	protected String getDegreePlans(String term, String studentId, String effectiveOnly, int nrAttempts) throws SectioningException {
+		SectioningException exception = null;
+		for (int i = 0; i < nrAttempts; i++) {
+			try {
+				return getDegreePlans(term, studentId, effectiveOnly);
+			} catch (SectioningException e) {
+				sLog.error(studentId + "[" + (1 + i) + "]: " + e.getMessage());
+				exception = e;
+			}
+		}
+		if (exception != null) throw exception;
+		return null;
 	}
 	
 	public List<Operation> operations() {
@@ -259,7 +281,9 @@ public class DegreeWorksPlanScraper extends OnlineSectioningTestFwk {
 							String plans = null;
 							long t0 = System.currentTimeMillis();
 							try {
-								plans = getDegreePlans(s, student);
+								String terms = ("true".equalsIgnoreCase(ApplicationProperties.getProperty("setTerms", "false")) ? getBannerTerm(s.getAcademicSession()) : null);
+								String studentId = getBannerId(student);
+								plans = getDegreePlans(terms, studentId, getDegreeWorksApiEffectiveOnly(), getDegreeWorksNrAttempts());
 								inc("Request Succeeded [s]", (System.currentTimeMillis() - t0) / 1000.0);
 								if (plans == null || plans.isEmpty() || "[]".equals(plans)) {
 									inc("Request Succeeded with no plans", (System.currentTimeMillis() - t0) / 1000.0);
