@@ -123,7 +123,10 @@ public class OnlineSectioningHelper {
 				.setTimeStamp(System.currentTimeMillis());
         	if (m.getThrowable() != null)
         		l.setException(m.getThrowable().getClass().getName() + ": " + m.getThrowable().getMessage());
-        	iLog.addMessage(l);
+        	if (iLog.getActionCount() > 0)
+        		iLog.getActionBuilder(iLog.getActionCount() - 1).addMessage(l);
+        	else
+        		iLog.addMessage(l);
     	}
     	for (MessageHandler h: iMessageHandlers)
     		h.onMessage(m);
