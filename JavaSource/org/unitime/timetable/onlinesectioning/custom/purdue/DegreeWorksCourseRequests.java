@@ -109,6 +109,10 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 	protected String getDegreeWorksNoPlansMessage() {
 		return ApplicationProperties.getProperty("banner.dgw.noPlansMessage", "No active degree plan is available.");
 	}
+	
+	protected int getDegreeWorksNrAttempts() {
+		return Integer.parseInt(ApplicationProperties.getProperty("banner.dgw.nrAttempts", "3"));
+	}
 
 	protected String getBannerId(XStudent student) {
 		String id = student.getExternalId();
@@ -242,47 +246,21 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 	
 	@Override
 	public CourseRequestInterface getCourseRequests(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) throws SectioningException {
-		ClientResource resource = null;
 		try {
 			AcademicSessionInfo session = server.getAcademicSession();
 			String term = getBannerTerm(session);
+			String studentId = getBannerId(student);
 			if (helper.isDebugEnabled())
-				helper.debug("Retrieving student plan for " + student.getName() + " (term: " + term + ", id:" + getBannerId(student) + ")");
-			
-			resource = new ClientResource(getDegreeWorksApiSite());
-			resource.setNext(iClient);
-			resource.addQueryParameter("terms", term);
-			resource.addQueryParameter("studentId", getBannerId(student));
-			helper.getAction().addOptionBuilder().setKey("terms").setValue(term);
-			helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
+				helper.debug("Retrieving student plan for " + student.getName() + " (term: " + term + ", id:" + studentId + ")");
+
 			String effectiveOnly = getDegreeWorksApiEffectiveOnly();
-			if (effectiveOnly != null) {
-				resource.addQueryParameter("effectiveOnly", effectiveOnly);
+			if (effectiveOnly != null)
 				helper.getAction().addOptionBuilder().setKey("effectiveOnly").setValue(effectiveOnly);
-			}
-			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getDegreeWorksApiUser(), getDegreeWorksApiPassword());
-			Gson gson = getGson(helper);
 			
-			try {
-				resource.get(MediaType.APPLICATION_JSON);
-			} catch (ResourceException exception) {
-				try {
-					String response = toString(resource.getResponseEntity().getReader());
-					Pattern pattern = Pattern.compile(getDegreeWorksErrorPattern(), Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.UNIX_LINES);
-					Matcher match = pattern.matcher(response);
-					if (match.find())
-						throw new SectioningException(match.group(1));
-				} catch (SectioningException e) {
-					throw e;
-				} catch (Throwable t) {
-					throw exception;
-				}
-				throw exception;
-			}
-			
-			List<XEInterface.DegreePlan> current = new GsonRepresentation<List<XEInterface.DegreePlan>>(resource.getResponseEntity(), XEInterface.DegreePlan.TYPE_LIST).getObject();
-			
+			List<XEInterface.DegreePlan> current = getDegreePlans(term, studentId, effectiveOnly, getDegreeWorksNrAttempts());
+
 			if (current != null && !current.isEmpty()) {
+				Gson gson = getGson(helper);
 				helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(current));
 				for (XEInterface.DegreePlan plan: current) {
 					// skip in-active plans
@@ -320,16 +298,9 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 			if (helper.isDebugEnabled()) helper.debug("No degree plan has been returned.");
 			return null;
 		} catch (SectioningException e) {
-			helper.info("Failed to retrieve degree plan: " + e.getMessage());
 			throw e;
 		} catch (Exception e) {
-			helper.warn("Failed to retrieve degree plan: " + e.getMessage(), e);
 			throw new SectioningException(e.getMessage());
-		} finally {
-			if (resource != null) {
-				if (resource.getResponse() != null) resource.getResponse().release();
-				resource.release();
-			}
 		}
 	}
 	
@@ -413,30 +384,18 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 			}
 		return group;
 	}
-
-	@Override
-	public List<DegreePlanInterface> getDegreePlans(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) throws SectioningException {
+	
+	protected List<XEInterface.DegreePlan> getDegreePlans(String term, String studentId, String effectiveOnly) throws SectioningException {
 		ClientResource resource = null;
 		try {
-			AcademicSessionInfo session = server.getAcademicSession();
-			String term = getBannerTerm(session);
-			if (helper.isDebugEnabled())
-				helper.debug("Retrieving degree plans for " + student.getName() + " (term: " + term + ", id:" + getBannerId(student) + ")");
-			
 			resource = new ClientResource(getDegreeWorksApiSite());
 			resource.setNext(iClient);
 			resource.addQueryParameter("terms", term);
-			resource.addQueryParameter("studentId", getBannerId(student));
-			helper.getAction().addOptionBuilder().setKey("terms").setValue(term);
-			helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
-			String effectiveOnly = getDegreeWorksApiEffectiveOnly();
-			if (effectiveOnly != null) {
+			resource.addQueryParameter("studentId", studentId);
+			if (effectiveOnly != null)
 				resource.addQueryParameter("effectiveOnly", effectiveOnly);
-				helper.getAction().addOptionBuilder().setKey("effectiveOnly").setValue(effectiveOnly);
-			}
 			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getDegreeWorksApiUser(), getDegreeWorksApiPassword());
-			Gson gson = getGson(helper);
-			
+
 			try {
 				resource.get(MediaType.APPLICATION_JSON);
 			} catch (ResourceException exception) {
@@ -454,7 +413,57 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				throw exception;
 			}
 			
-			List<XEInterface.DegreePlan> current = new GsonRepresentation<List<XEInterface.DegreePlan>>(resource.getResponseEntity(), XEInterface.DegreePlan.TYPE_LIST).getObject();
+			return new GsonRepresentation<List<XEInterface.DegreePlan>>(resource.getResponseEntity(), XEInterface.DegreePlan.TYPE_LIST).getObject();
+		} catch (SectioningException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new SectioningException(e.getMessage());
+		} finally {
+			if (resource != null) {
+				if (resource.getResponse() != null) resource.getResponse().release();
+				resource.release();
+			}
+		}
+	}
+	
+	protected List<XEInterface.DegreePlan> getDegreePlans(String term, String studentId, String effectiveOnly, int nrAttempts) throws SectioningException {
+		SectioningException exception = null;
+		if (nrAttempts > 1) {
+			for (int i = 0; i < nrAttempts; i++) {
+				try {
+					return getDegreePlans(term, studentId, effectiveOnly);
+				} catch (SectioningException e) {
+					sLog.warn("Failed to retrieve degree plans for " + studentId + " [" + (1 + i) + ". attempt]: " + e.getMessage());
+					exception = e;
+				}
+			}
+			if (exception != null) throw exception;
+			return null;
+		} else {
+			return getDegreePlans(term, studentId, effectiveOnly);
+		}
+	}
+
+	@Override
+	public List<DegreePlanInterface> getDegreePlans(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) throws SectioningException {
+		try {
+			AcademicSessionInfo session = server.getAcademicSession();
+			String term = getBannerTerm(session);
+			String studentId = getBannerId(student);
+			if (helper.isDebugEnabled())
+				helper.debug("Retrieving degree plans for " + student.getName() + " (term: " + term + ", id:" + studentId + ")");
+			String effectiveOnly = getDegreeWorksApiEffectiveOnly();
+			
+			helper.getAction().addOptionBuilder().setKey("terms").setValue(term);
+			helper.getAction().addOptionBuilder().setKey("studentId").setValue(studentId);
+			if (effectiveOnly != null)
+				helper.getAction().addOptionBuilder().setKey("effectiveOnly").setValue(effectiveOnly);
+
+			List<XEInterface.DegreePlan> current = getDegreePlans(term, studentId, effectiveOnly, getDegreeWorksNrAttempts());
+			if (current == null)
+				throw new SectioningException(getDegreeWorksNoPlansMessage()).withTypeInfo();
+			
+			Gson gson = getGson(helper);
 			helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(current));
 			if (helper.isDebugEnabled())
 				helper.debug("Current degree plans: " + gson.toJson(current));
@@ -493,17 +502,9 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 
 			return plans;
 		} catch (SectioningException e) {
-			if (!e.hasType())
-				helper.info("Failed to retrieve degree plans: " + e.getMessage());
 			throw e;
 		} catch (Exception e) {
-			helper.warn("Failed to retrieve degree plans: " + e.getMessage(), e);
 			throw new SectioningException(e.getMessage());
-		} finally {
-			if (resource != null) {
-				if (resource.getResponse() != null) resource.getResponse().release();
-				resource.release();
-			}
 		}
 	}
 }
