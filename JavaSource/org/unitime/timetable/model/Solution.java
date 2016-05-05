@@ -93,7 +93,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 
 /*[CONSTRUCTOR MARKER END]*/
 	
-	public SolutionInfo getSolutionInfo(String name) throws Exception {
+	public SolutionInfo getSolutionInfo(String name) {
 		if ("GlobalInfo".equals(name)) return getGlobalInfo();
 		return (SolutionInfo)
 			(new SolutionInfoDAO()).
@@ -110,18 +110,18 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		*/
 	}
 
-	public TimetableInfo getInfo(String name) throws Exception {
+	public TimetableInfo getInfo(String name) {
 		SolutionInfo sinfo = getSolutionInfo(name);
 		if (sinfo==null) return null;
 		return sinfo.getInfo();
 	}
 	
 	
-	public void uncommitSolution(org.hibernate.Session hibSession) throws Exception {
+	public void uncommitSolution(org.hibernate.Session hibSession) {
 		uncommitSolution(hibSession, null);
 	}
 	
-	public void uncommitSolution(org.hibernate.Session hibSession, String sendNotificationPuid) throws Exception {
+	public void uncommitSolution(org.hibernate.Session hibSession, String sendNotificationPuid) {
 		if (DEBUG) sLog.debug("uncommit["+getUniqueId()+","+getOwner().getName()+"] -------------------------------------------------------");
 		setCommitDate(null);
 		setCommited(Boolean.FALSE);
@@ -188,7 +188,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 			a.getClazz().setCommittedAssignment(null);
 	}
 	
-	public boolean commitSolution(Vector messages, org.hibernate.Session hibSession) throws Exception {
+	public boolean commitSolution(Vector messages, org.hibernate.Session hibSession) {
 		return commitSolution(messages, hibSession, null);
 	}
 
@@ -237,7 +237,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         return false;
     }
 
-	public boolean commitSolution(List<String> messages, org.hibernate.Session hibSession, String sendNotificationPuid) throws Exception {
+	public boolean commitSolution(List<String> messages, org.hibernate.Session hibSession, String sendNotificationPuid) {
 		List solutions = hibSession.createCriteria(Solution.class).add(Restrictions.eq("owner",getOwner())).list();
 		Solution uncommittedSolution = null;
 		for (Iterator i=solutions.iterator();i.hasNext();) {
@@ -1278,7 +1278,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
     
     private transient Hashtable iAssignmentTable = null; 
     
-	public Assignment getAssignment(Long classId) throws Exception {
+	public Assignment getAssignment(Long classId) {
 		if (iAssignmentTable==null) {
 			iAssignmentTable = new Hashtable();
 			for (Iterator i=getAssignments().iterator();i.hasNext();) {
@@ -1289,22 +1289,22 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		return (Assignment)iAssignmentTable.get(classId);
 	}
 	
-	public Assignment getAssignment(Class_ clazz) throws Exception {
+	public Assignment getAssignment(Class_ clazz) {
         if (!getOwner().getDepartments().contains(clazz.getManagingDept()))
             return clazz.getCommittedAssignment();
 		return getAssignment(clazz.getUniqueId());
 	}
 	
-	public AssignmentPreferenceInfo getAssignmentInfo(Class_ clazz) throws Exception {
+	public AssignmentPreferenceInfo getAssignmentInfo(Class_ clazz) {
 		return getAssignmentInfo(clazz.getUniqueId());
 	}
 	
-	public AssignmentPreferenceInfo getAssignmentInfo(Long classId) throws Exception {
+	public AssignmentPreferenceInfo getAssignmentInfo(Long classId) {
 		Assignment a = getAssignment(classId);
-    	return (a==null?null:(AssignmentPreferenceInfo)a.getAssignmentInfo("AssignmentInfo"));
+		return (a==null?null:(AssignmentPreferenceInfo)a.getAssignmentInfo("AssignmentInfo"));
 	}
 	
-	public Hashtable getAssignmentTable(Collection classesOrClassIds) throws Exception {
+	public Hashtable getAssignmentTable(Collection classesOrClassIds) {
 		Hashtable assignments = new Hashtable();
 		for (Iterator i=classesOrClassIds.iterator();i.hasNext();) {
 			Object classOrClassId = i.next();
@@ -1316,7 +1316,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		return assignments;
 	}
 	
-	public Hashtable getAssignmentInfoTable(Collection classesOrClassIds) throws Exception {
+	public Hashtable getAssignmentInfoTable(Collection classesOrClassIds) {
 		Hashtable infos = new Hashtable();
 		for (Iterator i=classesOrClassIds.iterator();i.hasNext();) {
 			Object classOrClassId = i.next();
@@ -1368,7 +1368,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
     }
     
 	@Override
-	public boolean hasConflicts(Long offeringId) throws Exception {
+	public boolean hasConflicts(Long offeringId) {
 		InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(offeringId);
 		if (offering == null || offering.isNotOffered()) return false;
 		
@@ -1424,7 +1424,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 	}
     
 	@Override
-	public Set<Assignment> getConflicts(Long classId) throws Exception {
+	public Set<Assignment> getConflicts(Long classId) {
 		if (classId == null) return null;
 		Class_ clazz = Class_DAO.getInstance().get(classId);
 		if (clazz == null || clazz.isCancelled()) return null;
@@ -1486,7 +1486,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 	}
 	
 	@Override
-	public Set<TimeBlock> getConflictingTimeBlocks(Long classId) throws Exception {
+	public Set<TimeBlock> getConflictingTimeBlocks(Long classId) {
 		return null;
 	}
 }

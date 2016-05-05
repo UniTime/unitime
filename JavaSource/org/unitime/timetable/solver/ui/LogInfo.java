@@ -69,7 +69,7 @@ public class LogInfo implements TimetableInfo, Serializable {
     	return sb.toString();
     }
 
-	public void load(Element root) throws Exception {
+	public void load(Element root) {
 		/*
 		XMLWriter writer = new XMLWriter(System.out, OutputFormat.createPrettyPrint());
 		writer.write(root.getDocument());
@@ -82,7 +82,7 @@ public class LogInfo implements TimetableInfo, Serializable {
 				iLog.add(new Progress.Message((Element)i.next()));
 		}		
 	}
-	public void save(Element root) throws Exception {
+	public void save(Element root) {
 		root.addAttribute("version", String.valueOf(sVersion));
     	for (Progress.Message msg: iLog) {
 			if (msg.getLevel()<=sNoSaveThreshold) continue;

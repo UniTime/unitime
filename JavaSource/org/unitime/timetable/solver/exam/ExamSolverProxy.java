@@ -20,12 +20,13 @@
 package org.unitime.timetable.solver.exam;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Map;
 import java.util.Vector;
 
 import org.cpsolver.ifs.util.DataProperties;
+import org.unitime.timetable.solver.CommonSolverInterface;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamConflictStatisticsInfo;
@@ -38,7 +39,7 @@ import org.unitime.timetable.solver.exam.ui.ExamSuggestionsInfo;
 /**
  * @author Tomas Muller
  */
-public interface ExamSolverProxy extends ExamAssignmentProxy {
+public interface ExamSolverProxy extends ExamAssignmentProxy, CommonSolverInterface {
 
     public String getHost();
     public String getUser();
@@ -49,28 +50,9 @@ public interface ExamSolverProxy extends ExamAssignmentProxy {
     public Date getLoadedDate();
     public void save();
     
-    public void start();
-    public boolean isRunning();
-    public void stopSolver();
-    public void restoreBest();
-    public void saveBest();
-    public void clear();
-    public Map<String,String> currentSolutionInfo();
-    public Map<String,String> bestSolutionInfo();
-    public Map<String,String> statusSolutionInfo() throws Exception;
-    public boolean isWorking();
-
-    public DataProperties getProperties();
-    public void setProperties(DataProperties properties);
-
     public int getDebugLevel();
     public void setDebugLevel(int level);
 
-    public Map getProgress();
-    public String getLog();
-    public String getLog(int level, boolean includeDate);
-    public String getLog(int level, boolean includeDate, String fromStage);
-    
     public boolean backup(File folder, String ownerId);
     public boolean restore(File folder, String ownerId);
     public boolean restore(File folder, String ownerId, boolean removeFiles);
@@ -105,5 +87,5 @@ public interface ExamSolverProxy extends ExamAssignmentProxy {
     
     public void interrupt();
     
-    public byte[] exportXml() throws Exception;
+    public byte[] exportXml() throws IOException;
 }

@@ -25,7 +25,7 @@ import org.dom4j.Element;
  * @author Tomas Muller
  */
 public interface TimetableInfo {
-	public void load(Element root) throws Exception;
-	public void save(Element root) throws Exception;
+	public void load(Element root);
+	public void save(Element root);
 	public boolean saveToFile(); 
 }

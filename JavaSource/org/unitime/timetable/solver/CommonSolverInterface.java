@@ -17,32 +17,39 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.solver.service;
+package org.unitime.timetable.solver;
 
+import java.io.IOException;
+import java.util.Date;
 import java.util.Map;
 
 import org.cpsolver.ifs.util.DataProperties;
-import org.unitime.timetable.solver.CommonSolverInterface;
-
 
 /**
  * @author Tomas Muller
  */
-public interface SolverService<T extends CommonSolverInterface> {
+public interface CommonSolverInterface {
+	public Date getLoadedDate();
+
+	public void start();
+	public boolean isRunning();
+	public void stopSolver();
+	public void restoreBest();
+	public void saveBest();
+	public Map<String,String> currentSolutionInfo();
+	public Map<String,String> bestSolutionInfo();
+    public Map<String,String> statusSolutionInfo();
+	public boolean isWorking();
+	public void clear();
+
+    public Map getProgress();
+	public String getLog();
+	public String getLog(int level, boolean includeDate);
+	public String getLog(int level, boolean includeDate, String fromStage); 
 	
-	public DataProperties createConfig(Long settingsId, Map<Long, String> options);
-	
-	public T createSolver(DataProperties config);
-	
-	public T getSolver();
-	
-	public T getSolverNoSessionCheck();
-	
-	public void removeSolver();
-	
-	public T reload(DataProperties config);
-	
-	public Map<String, T> getSolvers();
-	
-	public Map<String, T> getLocalSolvers();
+    public DataProperties getProperties();
+    public void setProperties(DataProperties config);
+    
+    public void save();
+    public byte[] exportXml() throws IOException;
 }

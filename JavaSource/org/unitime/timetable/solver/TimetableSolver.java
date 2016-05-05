@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
@@ -1044,7 +1045,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     	return iDepartmentIds;
     }
     
-	public Assignment getAssignment(Class_ clazz) throws Exception {
+	public Assignment getAssignment(Class_ clazz) {
 		Department dept = clazz.getManagingDept();
 		if (dept!=null && getDepartmentIds().contains(dept.getUniqueId()))
 			return getAssignment(clazz.getUniqueId());
@@ -1102,7 +1103,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     	}
     }
 
-    public AssignmentPreferenceInfo getAssignmentInfo(Class_ clazz) throws Exception {
+    public AssignmentPreferenceInfo getAssignmentInfo(Class_ clazz) {
 		Department dept = clazz.getManagingDept();
 		if (dept!=null && getDepartmentIds().contains(dept.getUniqueId()))
 				return getAssignmentInfo(clazz.getUniqueId());
@@ -1128,7 +1129,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     	}
     }
 
-	public Hashtable getAssignmentTable(Collection classesOrClassIds) throws Exception {
+	public Hashtable getAssignmentTable(Collection classesOrClassIds) {
 		Hashtable assignments = new Hashtable();
 		for (Iterator i=classesOrClassIds.iterator();i.hasNext();) {
 			Object classOrClassId = i.next();
@@ -1139,11 +1140,11 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 		}
 		return assignments;
 	}
-    public Hashtable getAssignmentTable2(Collection classesOrClassIds) throws Exception {
+    public Hashtable getAssignmentTable2(Collection classesOrClassIds) {
         return getAssignmentTable(classesOrClassIds);
     }
 	
-	public Hashtable getAssignmentInfoTable(Collection classesOrClassIds) throws Exception {
+	public Hashtable getAssignmentInfoTable(Collection classesOrClassIds) {
 		Hashtable infos = new Hashtable();
 		for (Iterator i=classesOrClassIds.iterator();i.hasNext();) {
 			Object classOrClassId = i.next();
@@ -1154,7 +1155,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 		}
 		return infos;
 	}
-    public Hashtable getAssignmentInfoTable2(Collection classesOrClassIds) throws Exception {
+    public Hashtable getAssignmentInfoTable2(Collection classesOrClassIds) {
         return getAssignmentInfoTable(classesOrClassIds);
     }
 
@@ -1238,11 +1239,11 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 		return ret;
 	}
 	
-	public Vector getChangesToSolution(Long solutionId) throws Exception {
+	public Vector getChangesToSolution(Long solutionId) {
 		return getChangesToSolution(solutionId, false);
 	}
 	
-	public Vector getChangesToSolution(Long solutionId, boolean closeSession) throws Exception {
+	public Vector getChangesToSolution(Long solutionId, boolean closeSession) {
 		Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
 		try {
@@ -1295,7 +1296,6 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 				if (tx!=null) tx.commit();
 			} catch (Exception e) {
 				if (tx!=null) tx.rollback();
-				throw e;
 			} finally {
 				//here we still need to close the session since it can be called by the remote solver as well
 				if (closeSession && hibSession!=null && hibSession.isOpen())
@@ -1334,7 +1334,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 		public String toString() {
 			return "Record{TS="+iTimeStamp+", before="+iBefore+", after="+iAfter+", assignments="+iAssignments.size()+"}";
 		}
-		public void toXml(Element element) throws Exception {
+		public void toXml(Element element) {
 			if (iTimeStamp!=null)
 				element.addAttribute("timeStamp", String.valueOf(iTimeStamp.getTime()));
 			if (iBefore!=null)
@@ -1348,7 +1348,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 				}
 			}
 		}
-		public static AssignmentRecord fromXml(Element element) throws Exception {
+		public static AssignmentRecord fromXml(Element element) {
 			AssignmentRecord r = new AssignmentRecord();
 			if (element.attributeValue("timeStamp")!=null)
 				r.iTimeStamp = new Date(Long.parseLong(element.attributeValue("timeStamp")));
@@ -1629,7 +1629,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 		return new Date(iLastTimeStamp);
 	}
     
-    public byte[] exportXml() throws Exception {
+    public byte[] exportXml() throws IOException {
 		Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
 		try {
@@ -1719,7 +1719,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     	public void onDispose();
     }
     
-	public Object exec(Object[] cmd) throws Exception {
+	public Object exec(Object[] cmd) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 		Class[] types = new Class[(cmd.length-2)/2];
 		Object[] args = new Object[(cmd.length-2)/2];
 		for (int i=0;i<types.length;i++) {
@@ -1744,17 +1744,35 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 	}
 	
 	@Override
-	public boolean hasConflicts(Long offeringId) throws Exception {
+	public boolean hasConflicts(Long offeringId) {
 		return false;
 	}
 
 	@Override
-	public Set<Assignment> getConflicts(Long classId) throws Exception {
+	public Set<Assignment> getConflicts(Long classId) {
 		return null;
 	}
 	
 	@Override
-	public Set<TimeBlock> getConflictingTimeBlocks(Long classId) throws Exception {
+	public Set<TimeBlock> getConflictingTimeBlocks(Long classId) {
 		return null;
 	}
+
+	@Override
+	public void save() {
+		save(false, false);
+	}
+	
+    public void clear() {
+        Lock lock = currentSolution().getLock().writeLock();
+        lock.lock();
+        try {
+            for (Lecture lecture: currentSolution().getModel().variables()) {
+            	currentSolution().getAssignment().unassign(0, lecture);
+            }
+            currentSolution().clearBest();
+        } finally {
+        	lock.unlock();
+        }
+    }
 }

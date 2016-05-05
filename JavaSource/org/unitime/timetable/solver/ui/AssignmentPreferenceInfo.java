@@ -260,7 +260,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 	public int getDatePatternPref() { return iDatePatternPref; }
 	public void setDatePatternPref(int datePatternPref) { iDatePatternPref = datePatternPref; }
 	
-	public void load(Element root) throws Exception {
+	public void load(Element root) {
 		int version = Integer.parseInt(root.attributeValue("version"));
 		if (version==sVersion) {
 			iNormalizedTimePreference = Double.parseDouble(root.elementText("normTimePref"));
@@ -306,7 +306,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 		}
 	}
 	
-	public void save(Element root) throws Exception {
+	public void save(Element root) {
 		root.addAttribute("version", String.valueOf(sVersion));
 		root.addElement("normTimePref").setText(String.valueOf(iNormalizedTimePreference));
 		root.addElement("bestNormTimePref").setText(String.valueOf(iBestNormalizedTimePreference));

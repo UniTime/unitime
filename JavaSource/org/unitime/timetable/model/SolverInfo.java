@@ -70,41 +70,46 @@ public class SolverInfo extends BaseSolverInfo {
 		setValue(value);
 	}
 
-	public TimetableInfo getInfo() throws Exception {
+	public TimetableInfo getInfo() {
 		return getInfo(TimetableInfoUtil.getInstance());
 	}
 	
-	public TimetableInfo getInfo(TimetableInfoFileProxy proxy) throws Exception {
-		TimetableInfo info = getCached(getUniqueId());
-		if (info!=null) return info;
-		
-		if (getData()==null) return null;
-		Element root = getValue().getRootElement();
-        Class infoClass = null;
-        try {
-            infoClass = Class.forName(root.getName());
-        } catch (ClassNotFoundException ex) {
-            infoClass = Class.forName(getDefinition().getImplementation());
-        }
-		info = (TimetableInfo)infoClass.getConstructor(new Class[] {}).newInstance(new Object[] {});
-		info.load(root);
-		if (info instanceof FileInfo) {
-			info = ((FileInfo)info).loadInfo(proxy);
+	public TimetableInfo getInfo(TimetableInfoFileProxy proxy) {
+		try {
+			TimetableInfo info = getCached(getUniqueId());
+			if (info!=null) return info;
+			
+			if (getData()==null) return null;
+			Element root = getValue().getRootElement();
+	        Class infoClass = null;
+	        try {
+	            infoClass = Class.forName(root.getName());
+	        } catch (ClassNotFoundException ex) {
+	            infoClass = Class.forName(getDefinition().getImplementation());
+	        }
+			info = (TimetableInfo)infoClass.getConstructor(new Class[] {}).newInstance(new Object[] {});
+			info.load(root);
+			if (info instanceof FileInfo) {
+				info = ((FileInfo)info).loadInfo(proxy);
+			}
+			
+			if (info!=null) setCached(getUniqueId(),info);
+			return info;
+		} catch (Exception e) {
+			Debug.warning("Failed to retrieve info: " + e.getMessage());
+			return null;
 		}
-		
-		if (info!=null) setCached(getUniqueId(),info);
-		return info;
 	}
 	
 	public String generateId() {
 		throw new RuntimeException("This should never happen.");
 	}
 	
-	public void setInfo(TimetableInfo info) throws Exception {
+	public void setInfo(TimetableInfo info) {
 		setInfo(info, TimetableInfoUtil.getInstance());
 	}
 
-	public void setInfo(TimetableInfo info, TimetableInfoFileProxy proxy) throws Exception {
+	public void setInfo(TimetableInfo info, TimetableInfoFileProxy proxy) {
 		if (info.saveToFile()) {
 			FileInfo fInfo = new FileInfo();
 			String defName = null;

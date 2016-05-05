@@ -36,7 +36,7 @@ public class PropertiesInfo extends Properties implements TimetableInfo, Seriali
 	public PropertiesInfo() {
 		super();
 	}
-	public PropertiesInfo(Map info) {
+	public PropertiesInfo(Map<String, String> info) {
 		super();
 		for (Iterator i1=info.entrySet().iterator();i1.hasNext();) {
 			Map.Entry entry = (Map.Entry)i1.next();
@@ -46,7 +46,7 @@ public class PropertiesInfo extends Properties implements TimetableInfo, Seriali
 		}
 	}
 	
-	public void load(Element root) throws Exception {
+	public void load(Element root) {
 		clear();
 		int version = Integer.parseInt(root.attributeValue("version"));
 		if (version==1) {
@@ -57,7 +57,7 @@ public class PropertiesInfo extends Properties implements TimetableInfo, Seriali
 		}
 	}
 	
-	public void save(Element root) throws Exception {
+	public void save(Element root) {
 		root.addAttribute("version", String.valueOf(sVersion));
 		for (Iterator i=entrySet().iterator();i.hasNext();) {
 			Map.Entry entry = (Map.Entry)i.next();

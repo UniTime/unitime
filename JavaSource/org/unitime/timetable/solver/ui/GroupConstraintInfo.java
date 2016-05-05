@@ -65,7 +65,7 @@ public class GroupConstraintInfo implements TimetableInfo, Serializable {
     public String getType() { return iType; }
     public void setType(String type) { iType = type; }
 	
-	public void load(Element root) throws Exception {
+	public void load(Element root) {
 		int version = Integer.parseInt(root.attributeValue("version"));
 		if (version==1) {
 			if (root.element("name")!=null)
@@ -76,7 +76,7 @@ public class GroupConstraintInfo implements TimetableInfo, Serializable {
 		}
 	}
 	
-	public void save(Element root) throws Exception {
+	public void save(Element root) {
 		root.addAttribute("version", String.valueOf(sVersion));
 		if (iName!=null)
 			root.addElement("name").setText(iName);

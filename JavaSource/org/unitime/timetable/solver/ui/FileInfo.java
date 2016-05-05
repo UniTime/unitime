@@ -36,24 +36,24 @@ public class FileInfo implements TimetableInfo, Serializable {
 	
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
-	public TimetableInfo loadInfo(TimetableInfoFileProxy proxy) throws Exception {
+	public TimetableInfo loadInfo(TimetableInfoFileProxy proxy) {
 		return proxy.loadFromFile(iName);
 	}
-	public void saveInfo(TimetableInfo info, TimetableInfoFileProxy proxy) throws Exception {
+	public void saveInfo(TimetableInfo info, TimetableInfoFileProxy proxy) {
 		proxy.saveToFile(iName, info);
 	}
-	public void deleteFile(TimetableInfoFileProxy proxy) throws Exception {
+	public void deleteFile(TimetableInfoFileProxy proxy) {
 		proxy.deleteFile(iName);
 	}
 
-	public void load(Element root) throws Exception {
+	public void load(Element root) {
 		int version = Integer.parseInt(root.attributeValue("version"));
 		if (version==1) {
 			iName = root.attributeValue("name");
 		}
 	}
 	
-	public void save(Element root) throws Exception {
+	public void save(Element root) {
 		root.addAttribute("version", String.valueOf(sVersion));
 		root.addAttribute("name", iName);
 	}

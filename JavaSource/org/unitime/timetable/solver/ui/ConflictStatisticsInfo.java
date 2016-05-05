@@ -198,7 +198,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 	}
 	
 
-	public void load(Element root) throws Exception {
+	public void load(Element root) {
 		int version = Integer.parseInt(root.attributeValue("version"));
 		if (version==sVersion) {
 			iVariables.clear();
@@ -209,7 +209,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		}
 	}
 	
-	public void save(Element root) throws Exception {
+	public void save(Element root) {
 		root.addAttribute("version", String.valueOf(sVersion));
 		for (Iterator i1=iVariables.values().iterator();i1.hasNext();) {
 			((CBSVariable)i1.next()).save(root.addElement("var"));

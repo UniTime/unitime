@@ -141,14 +141,14 @@ public class Hint implements Serializable {
 	}
 	public int hashCode() { return iClassId.hashCode(); }
 	
-	public ClassAssignmentDetails getDetails(SessionContext context, SolverProxy solver, boolean includeConstraints) throws Exception {
+	public ClassAssignmentDetails getDetails(SessionContext context, SolverProxy solver, boolean includeConstraints) {
 		if (iDetails!=null) return iDetails;
 		if (iInfo==null && solver != null) iInfo = solver.getInfo(this);
 		iDetails = ClassAssignmentDetails.createClassAssignmentDetails(context, solver, iClassId, includeConstraints);
 		if (iDetails!=null) iDetails.setAssigned(iInfo, iRoomIds,iDays,iStartSlot,iPatternId,iDatePatternId);
 		return iDetails;
 	}
-	public ClassAssignmentDetails getDetailsUnassign(SessionContext context, SolverProxy solver, boolean includeConstraints) throws Exception {
+	public ClassAssignmentDetails getDetailsUnassign(SessionContext context, SolverProxy solver, boolean includeConstraints) {
 		if (iDetails!=null) return iDetails;
 		iDetails = ClassAssignmentDetails.createClassAssignmentDetails(context, solver, iClassId, includeConstraints);
 		return iDetails;

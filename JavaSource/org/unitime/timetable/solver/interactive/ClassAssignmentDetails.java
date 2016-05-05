@@ -264,7 +264,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		}
 	}
 	
-	public ClassAssignmentDetails(Solution solution, Assignment assignment, boolean includeConstraints, Session hibSession, String instructorNameFormat) throws Exception {
+	public ClassAssignmentDetails(Solution solution, Assignment assignment, boolean includeConstraints, Session hibSession, String instructorNameFormat) {
 		if (assignment!=null) {
 			iAssignmentInfo = (AssignmentPreferenceInfo)assignment.getAssignmentInfo("AssignmentInfo");
 			if (iAssignmentInfo==null) iAssignmentInfo = new AssignmentPreferenceInfo();
@@ -351,7 +351,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		iClass = new ClassInfo(assignment.getClassName(), assignment.getClassId(), assignment.getRooms().size(), SolutionGridModel.hardConflicts2pref(iAssignmentInfo), -1, assignment.getClazz());
 	}
 	
-	public static ClassAssignmentDetails createClassAssignmentDetailsFromAssignment(SessionContext context, Long assignmentId, boolean includeConstraints) throws Exception {
+	public static ClassAssignmentDetails createClassAssignmentDetailsFromAssignment(SessionContext context, Long assignmentId, boolean includeConstraints) {
 		AssignmentDAO dao = new AssignmentDAO();
 		org.hibernate.Session hibSession = dao.getSession();
 		Assignment assignment = dao.get(assignmentId, hibSession);
@@ -362,7 +362,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		return ret;
 	}
 	
-	public static ClassAssignmentDetails createClassAssignmentDetails(SessionContext context, SolverProxy solver, Long classId, boolean includeConstraints) throws Exception {
+	public static ClassAssignmentDetails createClassAssignmentDetails(SessionContext context, SolverProxy solver, Long classId, boolean includeConstraints) {
 		String instructorNameFormat = context.getUser().getProperty(UserProperty.NameFormat);
 		if (solver != null) {
 			ClassAssignmentDetails details = solver.getClassAssignmentDetails(classId, includeConstraints);
@@ -681,7 +681,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			}
 		}
 		public Long getOtherClassId() { return iOtherClassId; }
-		public void createOther(SessionContext context, SolverProxy solver) throws Exception {
+		public void createOther(SessionContext context, SolverProxy solver) {
 			if (iOtherAssignmentId!=null) {
 				iOther = ClassAssignmentDetails.createClassAssignmentDetailsFromAssignment(context, iOtherAssignmentId, false);
 			} else {

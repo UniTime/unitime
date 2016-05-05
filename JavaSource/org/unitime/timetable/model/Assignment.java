@@ -88,7 +88,7 @@ public class Assignment extends BaseAssignment {
 	
 	public transient Hashtable iAssignmentInfoCache = new Hashtable();
 
-	public TimetableInfo getAssignmentInfo(String name) throws Exception {
+	public TimetableInfo getAssignmentInfo(String name) {
 		TimetableInfo tInfo = (TimetableInfo)iAssignmentInfoCache.get(name);
 		if (tInfo==null) {
 			try {
@@ -116,13 +116,13 @@ public class Assignment extends BaseAssignment {
 	
 	public transient Hashtable iConstraintInfoCache = new Hashtable();
 
-	public TimetableInfo getConstraintInfo(String name) throws Exception {
+	public TimetableInfo getConstraintInfo(String name) {
 		Vector infos = getConstraintInfos(name);
 		if (infos==null || infos.isEmpty()) return null;
 		return (TimetableInfo)infos.firstElement();
 	}
 
-	public Vector getConstraintInfos(String name) throws Exception {
+	public Vector getConstraintInfos(String name) {
 		Vector tInfos = (Vector)iConstraintInfoCache.get(name);
 		if (tInfos==null) {
 			try {
@@ -154,7 +154,7 @@ public class Assignment extends BaseAssignment {
 		return tInfos;
 	}
 	
-	public Hashtable getConstraintInfoTable(String name) throws Exception {
+	public Hashtable getConstraintInfoTable(String name) {
 		Hashtable ret = new Hashtable();
 		try {
 			for (Iterator i=getConstraintInfo().iterator();i.hasNext();) {

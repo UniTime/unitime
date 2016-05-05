@@ -43,7 +43,7 @@ public class BtbInstructorConstraintInfo implements TimetableInfo, Serializable 
 	public Long getInstructorId() { return iInstructorId; }
 	public void setInstructorId(Long instructorId) { iInstructorId = instructorId; }
 	
-	public void load(Element root) throws Exception {
+	public void load(Element root) {
 		int version = Integer.parseInt(root.attributeValue("version"));
 		if (version==sVersion) {
 			iInstructorId = Long.valueOf(root.elementText("instructor"));
@@ -51,7 +51,7 @@ public class BtbInstructorConstraintInfo implements TimetableInfo, Serializable 
 		}
 	}
 	
-	public void save(Element root) throws Exception {
+	public void save(Element root) {
 		root.addAttribute("version", String.valueOf(sVersion));
 		root.addElement("pref").setText(String.valueOf(iPreference));
 		root.addElement("instructor").setText(String.valueOf(iInstructorId));

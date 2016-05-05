@@ -24,7 +24,6 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
@@ -51,70 +50,52 @@ import org.unitime.timetable.webutil.timegrid.TimetableGridContext;
 /**
  * @author Tomas Muller
  */
-public interface SolverProxy extends ClassAssignmentProxy {
+public interface SolverProxy extends ClassAssignmentProxy, CommonSolverInterface {
 	
     public String getHost();
     public String getUser();
 
-	public void load(DataProperties properties) throws Exception;
-	public void reload(DataProperties properties) throws Exception;
-	public Date getLoadedDate() throws Exception;
-	public void save(boolean createNewSolution, boolean commitSolution) throws Exception;
-	public void finalSectioning() throws Exception;
+	public void load(DataProperties properties);
+	public void reload(DataProperties properties);
+	public void save(boolean createNewSolution, boolean commitSolution);
+	public void finalSectioning();
 
-	public void start() throws Exception;
-	public boolean isRunning() throws Exception;
-	public void stopSolver() throws Exception;
-	public void restoreBest() throws Exception;
-	public void saveBest() throws Exception;
-	public Map<String,String> currentSolutionInfo() throws Exception;
-	public Map<String,String> bestSolutionInfo() throws Exception;
-    public Map<String,String> statusSolutionInfo() throws Exception;
-	public boolean isWorking() throws Exception;
+	public String getNote();
+	public void setNote(String note);
+	public int getDebugLevel();
+	public void setDebugLevel(int level);
 
-	public DataProperties getProperties();
-	public void setProperties(DataProperties properties) throws Exception;
-
-	public String getNote() throws Exception;
-	public void setNote(String note) throws Exception;
-	public int getDebugLevel() throws Exception;
-	public void setDebugLevel(int level) throws Exception;
-
-	public Map getProgress();
-	public String getLog() throws Exception;
-	public String getLog(int level, boolean includeDate) throws Exception;
-	public String getLog(int level, boolean includeDate, String fromStage) throws Exception;
-	public SolverUnassignedClassesModel getUnassignedClassesModel(String prefix) throws Exception;
-	public Vector getTimetableGridTables(TimetableGridContext context) throws Exception;
-	public ClassAssignmentDetails getClassAssignmentDetails(Long classId, boolean includeConstraints) throws Exception;
-	public Suggestions getSuggestions(SuggestionsModel model) throws Exception;
-	public void assign(Collection hints) throws Exception;
-	public Hashtable conflictInfo(Collection hints) throws Exception;
-	public PropertiesInfo getGlobalInfo() throws Exception;
-	public ConflictStatisticsInfo getCbsInfo() throws Exception;
-	public ConflictStatisticsInfo getCbsInfo(Long classId) throws Exception;
+	public SolverUnassignedClassesModel getUnassignedClassesModel(String prefix);
+	public Vector getTimetableGridTables(TimetableGridContext context);
+	public ClassAssignmentDetails getClassAssignmentDetails(Long classId, boolean includeConstraints);
+	public Suggestions getSuggestions(SuggestionsModel model);
+	public void assign(Collection hints);
+	public Hashtable conflictInfo(Collection hints);
+	public PropertiesInfo getGlobalInfo();
+	public ConflictStatisticsInfo getCbsInfo();
+	public ConflictStatisticsInfo getCbsInfo(Long classId);
 	
-	public AssignmentPreferenceInfo getInfo(Hint hint) throws Exception;
-	public String getNotValidReason(Hint hint) throws Exception;
-	public Vector getAssignmentRecords() throws Exception;
-	public Vector getChangesToInitial() throws Exception;
-	public Vector getChangesToBest() throws Exception;
-	public Vector getChangesToSolution(Long solutionId) throws Exception;
-	public Vector getAssignedClasses() throws Exception;
-	public Vector getAssignedClasses(String prefix) throws Exception;
+	public AssignmentPreferenceInfo getInfo(Hint hint);
+	public String getNotValidReason(Hint hint);
+	public Vector getAssignmentRecords();
+	public Vector getChangesToInitial();
+	public Vector getChangesToBest();
+	public Vector getChangesToSolution(Long solutionId);
+	public Vector getAssignedClasses();
+	public Vector getAssignedClasses(String prefix);
 	
-	public void dispose() throws Exception;
+	public void dispose();
 	
-	public RoomReport getRoomReport(BitSet sessionDays, int startDayDayOfWeek, Long roomType, Float nrWeeks) throws Exception;
-	public DeptBalancingReport getDeptBalancingReport() throws Exception;
-	public ViolatedDistrPreferencesReport getViolatedDistrPreferencesReport() throws Exception;
-	public DiscouragedInstructorBtbReport getDiscouragedInstructorBtbReport() throws Exception;
-	public StudentConflictsReport getStudentConflictsReport() throws Exception;
-	public SameSubpartBalancingReport getSameSubpartBalancingReport() throws Exception;
-	public PerturbationReport getPerturbationReport() throws Exception;
-	public CSVFile export(boolean useAmPm) throws Exception;
+	public RoomReport getRoomReport(BitSet sessionDays, int startDayDayOfWeek, Long roomType, Float nrWeeks);
+	public DeptBalancingReport getDeptBalancingReport();
+	public ViolatedDistrPreferencesReport getViolatedDistrPreferencesReport();
+	public DiscouragedInstructorBtbReport getDiscouragedInstructorBtbReport();
+	public StudentConflictsReport getStudentConflictsReport();
+	public SameSubpartBalancingReport getSameSubpartBalancingReport();
+	public PerturbationReport getPerturbationReport();
+	public CSVFile export(boolean useAmPm);
 	
-	public Set getDepartmentIds() throws Exception;
+	public Set getDepartmentIds();
 
 	public long timeFromLastUsed();
 	public boolean isPassivated();
@@ -123,12 +104,10 @@ public interface SolverProxy extends ClassAssignmentProxy {
 	public boolean passivateIfNeeded(File folder, String puid);
 	public Date getLastUsed();
     
-    public Hashtable getAssignmentTable2(Collection classesOrClassIds) throws Exception;
-    public Hashtable getAssignmentInfoTable2(Collection classesOrClassIds) throws Exception;
+    public Hashtable getAssignmentTable2(Collection classesOrClassIds);
+    public Hashtable getAssignmentInfoTable2(Collection classesOrClassIds);
     
     public void interrupt();
-    
-    public byte[] exportXml() throws Exception;
     
     public boolean backup(File folder, String puid);
     public boolean restore(File folder, String puid);

@@ -352,10 +352,10 @@ public class Suggestion implements Serializable, Comparable {
     public void setHint(Hint hint) { iHint = hint; }
     public Hint getHint() { return iHint; }
     public Vector getDifferentAssignments() { return iDifferentAssignments; }
-    public void assign(SolverProxy solver) throws Exception {
+    public void assign(SolverProxy solver) {
     	if (solver != null) solver.assign(iDifferentAssignments);
     }
-    public Hashtable conflictInfo(SolverProxy solver) throws Exception {
+    public Hashtable conflictInfo(SolverProxy solver) {
     	return solver.conflictInfo(iDifferentAssignments);
     }
     public int compareTo(Object o) {
@@ -452,7 +452,7 @@ public class Suggestion implements Serializable, Comparable {
 			iFirst = first; iSecond = second;
 			iPref = pref; iInsturctor = instructor;
 		}
-		public void createInfo(SessionContext context, SolverProxy solver) throws Exception {
+		public void createInfo(SessionContext context, SolverProxy solver) {
 			if (iFirstInfo==null)
 				iFirstInfo = iFirst.getDetails(context, solver, false);
 			if (iSecondInfo==null)
@@ -514,7 +514,7 @@ public class Suggestion implements Serializable, Comparable {
 				return "<font color='red'>ERROR:"+e.getMessage()+"</font>";
 			}
 		}    	
-		public void toXml(Element element) throws Exception {
+		public void toXml(Element element) {
 			if (iFirst!=null)
 				iFirst.toXml(element.addElement("first"));
 			if (iSecond!=null)
@@ -568,7 +568,7 @@ public class Suggestion implements Serializable, Comparable {
 			iInfo = info; iFirst = first; iSecond = second;
 		}
 		public JenrlInfo getInfo() { return iInfo; }
-		public void createInfo(SessionContext context, SolverProxy solver) throws Exception {
+		public void createInfo(SessionContext context, SolverProxy solver) {
 			if (iFirstInfo==null)
 				iFirstInfo = iFirst.getDetails(context, solver, false);
 			if (iSecondInfo==null && iSecond!=null)
@@ -636,7 +636,7 @@ public class Suggestion implements Serializable, Comparable {
 			}
 		}
 		
-		public void toXml(Element element) throws Exception {
+		public void toXml(Element element) {
 			if (iInfo!=null)
 				iInfo.save(element.addElement("jenrl"));
 			if (iFirst!=null)
@@ -645,7 +645,7 @@ public class Suggestion implements Serializable, Comparable {
 				iSecond.toXml(element.addElement("second"));
 		}
 		
-		public static StudentConflictInfo fromXml(Element element) throws Exception {
+		public static StudentConflictInfo fromXml(Element element) {
 			StudentConflictInfo s = new StudentConflictInfo();
 			if (element.element("first")!=null)
 				s.iFirst = Hint.fromXml(element.element("first"));
@@ -727,7 +727,7 @@ public class Suggestion implements Serializable, Comparable {
 			sb.append("</td></tr></table>");
 			return sb.toString();
 		}
-		public void toXml(Element element) throws Exception {
+		public void toXml(Element element) {
 			if (iInfo!=null)
 				iInfo.save(element.addElement("groupConstraintInfo"));
 			if (iClassIds!=null) {
@@ -737,7 +737,7 @@ public class Suggestion implements Serializable, Comparable {
 				}
 			}
 		}
-		public static DistributionInfo fromXml(Element element) throws Exception {
+		public static DistributionInfo fromXml(Element element) {
 			DistributionInfo s = new DistributionInfo();
 			s.iClassIds = new Vector();
 			for (Iterator i=element.elementIterator("class");i.hasNext();) {
@@ -752,7 +752,7 @@ public class Suggestion implements Serializable, Comparable {
 		
 	}
 	
-	public void toXml(Element element) throws Exception {
+	public void toXml(Element element) {
 		element.addAttribute("value", String.valueOf(iValue));
 		element.addAttribute("tooBigRooms", String.valueOf(iTooBigRooms));
 		element.addAttribute("uselessSlots", String.valueOf(iUselessSlots));
@@ -802,7 +802,7 @@ public class Suggestion implements Serializable, Comparable {
 		}
 	}
 	
-	public static Suggestion fromXml(Element element) throws Exception {
+	public static Suggestion fromXml(Element element) {
 		Suggestion s = new Suggestion();
 		s.iValue = Double.parseDouble(element.attributeValue("value"));
 		s.iTooBigRooms = Integer.parseInt(element.attributeValue("tooBigRooms"));

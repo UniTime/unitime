@@ -67,23 +67,23 @@ public class CommitedClassAssignmentProxy implements ClassAssignmentProxy {
 	
 	public CommitedClassAssignmentProxy() {}
 	
-	public Assignment getAssignment(Long classId) throws Exception {
+	public Assignment getAssignment(Long classId) {
 		return getAssignment((new Class_DAO()).get(classId));
 	}
 	
-	public Assignment getAssignment(Class_ clazz) throws Exception {
+	public Assignment getAssignment(Class_ clazz) {
 		return clazz.getCommittedAssignment();
 	}
 	
-	public AssignmentPreferenceInfo getAssignmentInfo(Long classId) throws Exception {
+	public AssignmentPreferenceInfo getAssignmentInfo(Long classId) {
 		return sCommitedAssignmentPreferenceInfo;
 	}
     
-    public AssignmentPreferenceInfo getAssignmentInfo(Class_ clazz) throws Exception {
+    public AssignmentPreferenceInfo getAssignmentInfo(Class_ clazz) {
     	return sCommitedAssignmentPreferenceInfo;
     }	
     
-	public Hashtable getAssignmentTable(Collection classesOrClassIds) throws Exception {
+	public Hashtable getAssignmentTable(Collection classesOrClassIds) {
 		Hashtable assignments = new Hashtable();
 		for (Iterator i=classesOrClassIds.iterator();i.hasNext();) {
 			Object classOrClassId = i.next();
@@ -95,7 +95,7 @@ public class CommitedClassAssignmentProxy implements ClassAssignmentProxy {
 		return assignments;
 	}
 	
-	public Hashtable getAssignmentInfoTable(Collection classesOrClassIds) throws Exception {
+	public Hashtable getAssignmentInfoTable(Collection classesOrClassIds) {
 		Hashtable infos = new Hashtable();
 		for (Iterator i=classesOrClassIds.iterator();i.hasNext();) {
 			Object classOrClassId = i.next();
@@ -108,7 +108,7 @@ public class CommitedClassAssignmentProxy implements ClassAssignmentProxy {
 	}
 	
 	@Override
-	public boolean hasConflicts(Long offeringId) throws Exception {
+	public boolean hasConflicts(Long offeringId) {
 		InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(offeringId);
 		if (offering == null || offering.isNotOffered()) return false;
 		
@@ -231,7 +231,7 @@ public class CommitedClassAssignmentProxy implements ClassAssignmentProxy {
 	}
 
 	@Override
-	public Set<Assignment> getConflicts(Long classId) throws Exception {
+	public Set<Assignment> getConflicts(Long classId) {
 		if (classId == null) return null;
 		Class_ clazz = Class_DAO.getInstance().get(classId);
 		if (clazz == null || clazz.isCancelled()) return null;
@@ -293,7 +293,7 @@ public class CommitedClassAssignmentProxy implements ClassAssignmentProxy {
 	}
 	
 	@Override
-	public Set<TimeBlock> getConflictingTimeBlocks(Long classId) throws Exception {
+	public Set<TimeBlock> getConflictingTimeBlocks(Long classId) {
 		if (classId == null) return null;
 		Class_ clazz = Class_DAO.getInstance().get(classId);
 		if (clazz == null || clazz.isCancelled()) return null;

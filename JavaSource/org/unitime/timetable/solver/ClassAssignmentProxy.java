@@ -33,15 +33,15 @@ import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
  * @author Tomas Muller
  */
 public interface ClassAssignmentProxy {
-	public Assignment getAssignment(Long classId) throws Exception;
-	public Assignment getAssignment(Class_ clazz) throws Exception;
-	public AssignmentPreferenceInfo getAssignmentInfo(Long classId) throws Exception;
-	public AssignmentPreferenceInfo getAssignmentInfo(Class_ clazz) throws Exception;
+	public Assignment getAssignment(Long classId);
+	public Assignment getAssignment(Class_ clazz);
+	public AssignmentPreferenceInfo getAssignmentInfo(Long classId);
+	public AssignmentPreferenceInfo getAssignmentInfo(Class_ clazz);
 	
-	public Hashtable getAssignmentTable(Collection classesOrClassIds) throws Exception;
-	public Hashtable getAssignmentInfoTable(Collection classesOrClassIds) throws Exception;
+	public Hashtable getAssignmentTable(Collection classesOrClassIds);
+	public Hashtable getAssignmentInfoTable(Collection classesOrClassIds);
 	
-	public boolean hasConflicts(Long offeringId) throws Exception;
-	public Set<Assignment> getConflicts(Long classId) throws Exception;
-	public Set<TimeBlock> getConflictingTimeBlocks(Long classId) throws Exception;
+	public boolean hasConflicts(Long offeringId);
+	public Set<Assignment> getConflicts(Long classId);
+	public Set<TimeBlock> getConflictingTimeBlocks(Long classId);
 }

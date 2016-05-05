@@ -211,7 +211,7 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 		return ret;
 	}
 	
-	public void load(Element root) throws Exception {
+	public void load(Element root) {
 		int version = Integer.parseInt(root.attributeValue("version"));
 		if (version==1) {
 			iJenrl = Double.parseDouble(root.elementText("jenrl"));
@@ -239,7 +239,7 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 		}
 	}
 	
-	public void save(Element root) throws Exception {
+	public void save(Element root) {
 		root.addAttribute("version", String.valueOf(sVersion));
 		root.addElement("jenrl").setText(String.valueOf(iJenrl));
 		root.addElement("satisfied").setText(String.valueOf(iIsSatisfied));

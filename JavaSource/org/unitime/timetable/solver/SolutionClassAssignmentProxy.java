@@ -88,7 +88,7 @@ public class SolutionClassAssignmentProxy extends CommitedClassAssignmentProxy {
 		return (Long)iDepartmentIds.get(department.getUniqueId());
 	}
 	
-    public Assignment getAssignment(Class_ clazz) throws Exception {
+    public Assignment getAssignment(Class_ clazz) {
         Long solutionId = getSolutionId(clazz);
 		if (solutionId==null) return super.getAssignment(clazz);
         Iterator i = null;
@@ -105,7 +105,7 @@ public class SolutionClassAssignmentProxy extends CommitedClassAssignmentProxy {
 		return null;
     }
  
-    public AssignmentPreferenceInfo getAssignmentInfo(Class_ clazz) throws Exception {
+    public AssignmentPreferenceInfo getAssignmentInfo(Class_ clazz) {
         Long solutionId = getSolutionId(clazz);
 		if (solutionId==null) return super.getAssignmentInfo(clazz);
     	Assignment a = getAssignment(clazz);
@@ -126,7 +126,7 @@ public class SolutionClassAssignmentProxy extends CommitedClassAssignmentProxy {
     }
     
 	@Override
-	public boolean hasConflicts(Long offeringId) throws Exception {
+	public boolean hasConflicts(Long offeringId) {
 		InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(offeringId);
 		if (offering == null || offering.isNotOffered()) return false;
 		
@@ -224,7 +224,7 @@ public class SolutionClassAssignmentProxy extends CommitedClassAssignmentProxy {
 	}
     
 	@Override
-	public Set<Assignment> getConflicts(Long classId) throws Exception {
+	public Set<Assignment> getConflicts(Long classId) {
 		if (classId == null) return null;
 		Class_ clazz = Class_DAO.getInstance().get(classId);
 		if (clazz == null || clazz.isCancelled()) return null;
@@ -286,7 +286,7 @@ public class SolutionClassAssignmentProxy extends CommitedClassAssignmentProxy {
 	}
 	
 	@Override
-	public Set<TimeBlock> getConflictingTimeBlocks(Long classId) throws Exception {
+	public Set<TimeBlock> getConflictingTimeBlocks(Long classId) {
 		if (classId == null) return null;
 		Class_ clazz = Class_DAO.getInstance().get(classId);
 		if (clazz == null || clazz.isCancelled()) return null;

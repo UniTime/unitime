@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
@@ -206,7 +207,7 @@ public class StudentSolver extends ParallelSolver<Request, Enrollment> implement
     	return getProperties().getProperty("General.OwnerPuid");
     }
  
-    public Object exec(Object[] cmd) throws Exception {
+    public Object exec(Object[] cmd) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
         Class[] types = new Class[(cmd.length-3)/2];
         Object[] args = new Object[(cmd.length-3)/2];
         for (int i=0;i<types.length;i++) {
@@ -1005,7 +1006,7 @@ public class StudentSolver extends ParallelSolver<Request, Enrollment> implement
 		return false;
 	}
 	
-	public byte[] exportXml() throws Exception {
+	public byte[] exportXml() throws IOException {
         java.util.concurrent.locks.Lock lock = currentSolution().getLock().readLock();
         lock.lock();
         try {
