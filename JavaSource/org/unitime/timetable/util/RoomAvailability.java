@@ -24,7 +24,9 @@ import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 
 import org.unitime.commons.Debug;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.ExamPeriod;
@@ -39,6 +41,7 @@ import org.unitime.timetable.solver.exam.ExamSolverProxy;
  * @author Tomas Muller
  */
 public class RoomAvailability {
+	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
     private static RoomAvailabilityInterface sInstance = null;
     
     public static RoomAvailabilityInterface getInstance() {
@@ -62,9 +65,9 @@ public class RoomAvailability {
                 ExamType type = ExamTypeDAO.getInstance().get(examType);
                 if (type == null) return;
                 if (ts==null)
-                    request.setAttribute(Constants.REQUEST_WARN,"Room availability is not available for "+type.getLabel().toLowerCase()+" examinations.");
+                    request.setAttribute(Constants.REQUEST_WARN, MESSAGES.warnExamSolverNoRoomAvailability(type.getLabel().toLowerCase()));
                 else
-                    request.setAttribute(Constants.REQUEST_MSSG,"Room availability for "+type.getLabel().toLowerCase()+" examination solver was updated on "+ts+".");
+                    request.setAttribute(Constants.REQUEST_MSSG, MESSAGES.infoExamSolverRoomAvailabilityLastUpdated(type.getLabel().toLowerCase(), ts));
                 return;
             }
         }
@@ -75,9 +78,9 @@ public class RoomAvailability {
             String exclude = (type.getType() == ExamType.sExamTypeFinal ? RoomAvailabilityInterface.sFinalExamType : RoomAvailabilityInterface.sMidtermExamType);
             String ts = getInstance().getTimeStamp(bounds[0], bounds[1], exclude);
             if (ts==null)
-                request.setAttribute(Constants.REQUEST_WARN,"Room availability is not available for "+type.getLabel().toLowerCase()+" examinations.");
+                request.setAttribute(Constants.REQUEST_WARN, MESSAGES.warnExamSolverNoRoomAvailability(type.getLabel().toLowerCase()));
             else
-                request.setAttribute(Constants.REQUEST_MSSG,"Room availability for "+type.getLabel().toLowerCase()+" examinations was updated on "+ts+".");
+                request.setAttribute(Constants.REQUEST_MSSG, MESSAGES.infoExamSolverRoomAvailabilityLastUpdated(type.getLabel().toLowerCase(), ts));
         }
     }
 
@@ -91,9 +94,9 @@ public class RoomAvailability {
             		ts = solver.getProperties().getProperty("RoomAvailability.TimeStamp");
             	} catch (Exception e) {}
                 if (ts==null)
-                    request.setAttribute(Constants.REQUEST_WARN,"Room availability is not available for classes.");
+                    request.setAttribute(Constants.REQUEST_WARN, MESSAGES.warnCourseSolverNoRoomAvailability());
                 else
-                    request.setAttribute(Constants.REQUEST_MSSG,"Room availability for course timetabling solver was updated on "+ts+".");
+                    request.setAttribute(Constants.REQUEST_MSSG, MESSAGES.infoCourseSolverRoomAvailabilityLastUpdated(ts));
                 return;
             }
         }
@@ -101,9 +104,9 @@ public class RoomAvailability {
             Date[] bounds = DatePattern.getBounds(acadSession.getUniqueId());
             String ts = getInstance().getTimeStamp(bounds[0], bounds[1], RoomAvailabilityInterface.sClassType);
             if (ts==null)
-                request.setAttribute(Constants.REQUEST_WARN,"Room availability is not available for classes.");
+                request.setAttribute(Constants.REQUEST_WARN, MESSAGES.warnCourseSolverNoRoomAvailability());
             else
-                request.setAttribute(Constants.REQUEST_MSSG,"Room availability for classes was updated on "+ts+".");
+                request.setAttribute(Constants.REQUEST_MSSG, MESSAGES.infoCourseSolverRoomAvailabilityLastUpdated(ts));
         }
     }
 }

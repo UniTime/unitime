@@ -1506,6 +1506,10 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	border: 1px solid #9CB0CE;
 }
 
+.gwt-ListBox {
+	border: 1px solid #9CB0CE;
+}
+
 .unitime-MenuHeaderLabel {
 	color: #6991CE;
 	margin-left: 5px;
@@ -3497,6 +3501,15 @@ unitime-RoomSharingWidget .legend .blank {
 	border-bottom: 1px solid black;
 }
 
+.unitime-ClickablePageMessage {
+	cursor: pointer;
+	cursor: hand;	
+}
+
+.unitime-ClickablePageMessage:hover {
+	background: #bbcdd0;
+}
+
 .unitime-PageHeader {
 	display: table;
 	width: 100%;
@@ -4249,4 +4262,28 @@ unitime-RoomSharingWidget .legend .blank {
 	white-space: nowrap;
     overflow:hidden !important;
     text-overflow: ellipsis;
+}
+
+.unitime-SolverStatus {
+	display: block;
+}
+
+.unitime-SolverStatus .status-label {
+	float: left;
+}
+
+.unitime-SolverStatus .status-icon {
+	float: left;
+	vertical-align: top;
+	margin-left: 5px;
+	cursor: pointer;
+	cursor: hand;	
+}
+
+.unitime-SolverPage .parameter-text {
+	width: 300px;
+}
+
+.unitime-SolverPage .parameter-number {
+	width: 100px;
 }

@@ -383,7 +383,55 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Horizontal")
 	String opOrientationHorizontal();
-		
+	
+	@DefaultMessage("Load")
+	String opSolverLoad();
+	
+	@DefaultMessage("Start")
+	String opSolverStart();
+	
+	@DefaultMessage("Stop")
+	String opSolverStop();
+	
+	@DefaultMessage("Student Sectioning")
+	String opSolverStudentSectioning();
+	
+	@DefaultMessage("Reload Input Data")
+	String opSolverReload();
+	
+	@DefaultMessage("Clear")
+	String opSolverClear();
+	
+	@DefaultMessage("Export Solution")
+	String opSolverExportCSV();
+	
+	@DefaultMessage("Unload")
+	String opSolverUnload();
+	
+	@DefaultMessage("Refresh")
+	String opSolverRefresh();
+	
+	@DefaultMessage("Save")
+	String opSolverSave();
+
+	@DefaultMessage("Save As New")
+	String opSolverSaveAsNew();
+
+	@DefaultMessage("Save & Commit")
+	String opSolverSaveCommit();
+
+	@DefaultMessage("Save As New & Commit")
+	String opSolverSaveAsNewCommit();
+	
+	@DefaultMessage("Export XML")
+	String opSolverExportXML();
+	
+	@DefaultMessage("Save To Best")
+	String opSolverSaveBest();
+	
+	@DefaultMessage("Restore From Best")
+	String opSolverRestorBest();
+ 
 	@DefaultMessage("Press Ctrl + C to copy the selected URL, and Escape to hide this dialog.")
 	String hintCtrlCToCopy();
 
@@ -1043,6 +1091,27 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Display Name:")
 	String propDisplayName();
+	
+	@DefaultMessage("Input Data Loaded:")
+	String propSolverLoadDate();
+	
+	@DefaultMessage("Status:")
+	String propSolverStatus();
+	
+	@DefaultMessage("Progress:")
+	String propSolverProgress();
+	
+	@DefaultMessage("Solver Configuration:")
+	String propSolverConfiguration();
+	
+	@DefaultMessage("Owner:")
+	String propSolverOwner();
+	
+	@DefaultMessage("Examination Problem:")
+	String propExamSolverOwner();
+	
+	@DefaultMessage("Host:")
+	String propSolverHost();
 
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
@@ -1278,6 +1347,27 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Log of {0}")
 	String sectScriptLog(String name);
 	
+	@DefaultMessage("Current Timetable")
+	String sectSolverCurrentSolution();
+	
+	@DefaultMessage("Current Student Schedule")
+	String sectStudentSolverCurrentSolution();
+	
+	@DefaultMessage("Best Timetable")
+	String sectSolverBestSolution();
+	
+	@DefaultMessage("Best Student Schedule Found So Far")
+	String sectStudentSolverBestSolution();
+	
+	@DefaultMessage("Selected Timetable - {0}")
+	String sectSolverSelectedSolution(String name);
+	
+	@DefaultMessage("Problems - {0}")
+	String sectSolverSelectedWarnings(String name);
+	
+	@DefaultMessage("Problems")
+	String sectSolverWarnings();
+	
 	@DefaultMessage("Loading {0}...")
 	String waitLoading(String name);
 	
@@ -1469,6 +1559,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Loading instructors...")
 	String waitLoadingInstructors();
+	
+	@DefaultMessage("Please wait ...")
+	String waitSolverExecution();
 
 	@DefaultMessage("Failed to load {0}: {1}")
 	String failedLoad(String name, String reason);
@@ -2003,6 +2096,48 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Instructor attribute {0} already exists in {1}.")
 	String errorInstructorAttributeAlreadyExists(String name, String session);
+	
+	@DefaultMessage("At least one owner must be selected.")
+	String errorSolverNoOwnerSelected();
+	
+	@DefaultMessage("Invalid solver type {0}")
+	String errorSolverInvalidType(String type);
+	
+	@DefaultMessage("Solver is not started.")
+	String warnSolverNotStarted();
+	
+	@DefaultMessage("Solver is working, stop it first.")
+	String warnSolverIsWorking();
+	
+	@DefaultMessage("Room availability is not available for {0} examinations.")
+	String warnExamSolverNoRoomAvailability(String examType); 
+	
+	@DefaultMessage("Room availability for {0} examination solver was updated on {1}.")
+	String infoExamSolverRoomAvailabilityLastUpdated(String examType, String timeStamp);
+
+	@DefaultMessage("Room availability is not available for classes.")
+	String warnCourseSolverNoRoomAvailability(); 
+	
+	@DefaultMessage("Room availability for course timetabling solver was updated on {0}.")
+	String infoCourseSolverRoomAvailabilityLastUpdated(String timeStamp);
+	
+	@DefaultMessage("Showing an in-memory solution for {0} Examinations.")
+	String infoExamSolverShowingSolution(String examType);
+	
+	@DefaultMessage("Showing an in-memory solution for {0}.")
+	String infoSolverShowingSolution(String owners);
+	
+	@DefaultMessage("Showing a selected solution for {0}.")
+	String infoSolverShowingSelectedSolution(String owner);
+
+	@DefaultMessage("Showing selected solutions for {0}.")
+	String infoSolverShowingSelectedSolutions(String owners);
+	
+	@DefaultMessage("There is no {0} solution committed, {1} classes are not considered.")
+	String warnSolverNoCommittedSolutionExternal(String owner, String ext);
+	
+	@DefaultMessage("There is no {0} solution committed, {1} departmental classes are not considered.")
+	String warnSolverNoCommittedSolutionDepartmental(String owner, String subjects);
 
 	@DefaultMessage("Success (no row returned)")
 	String infoTestSucceededNoResults();
@@ -2621,7 +2756,27 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Instructor Attributes")
 	@DoNotTranslate
 	String pageInstructorAttributes();
+	
+	@DefaultMessage("Solver")
+	@DoNotTranslate
+	String pageSolver();
+	
+	@DefaultMessage("Course Timetabling Solver")
+	@DoNotTranslate
+	String pageCourseTimetablingSolver();
 
+	@DefaultMessage("Examination Timetabling Solver")
+	@DoNotTranslate
+	String pageExaminationTimetablingSolver();
+
+	@DefaultMessage("Student Scheduling Solver")
+	@DoNotTranslate
+	String pageStudentSchedulingSolver();
+
+	@DefaultMessage("Instructor Scheduling Solver")
+	@DoNotTranslate
+	String pageInstructorSchedulingSolver();
+ 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	
@@ -3653,6 +3808,36 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Do you realy want to delete this reservation?")
 	String confirmDeleteReservation();
 	
+	@DefaultMessage("Do you really want to unload your current timetable? You may lose this timetable if you did not save it.")
+	String confirmSolverUnload();
+	
+	@DefaultMessage("Do you really want to unload your current student schedule? You may lose this student schedule if you did not save it.")
+	String confirmStudentSolverUnload();
+	
+	@DefaultMessage("Do you really want to clear your current timetable? You may lose this timetable if you did not save it.")
+	String confirmSolverClear();
+	
+	@DefaultMessage("Do you really want to clear your current student schedule? You may lose this student schedule if you did not save it.")
+	String confirmStudentSolverClear();
+	
+	@DefaultMessage("Do you really want to save your current timetable?")
+	String confirmSolverSaveAsNew();
+	
+	@DefaultMessage("Do you really want to save your current student schedule?")
+	String confirmStudentSolverSaveAsNew();
+	
+	@DefaultMessage("Do you really want to save your current timetable? This will overwrite your previous solution.")
+	String confirmSolverSave();
+	
+	@DefaultMessage("Do you really want to save your current student schedule? This will overwrite your previous student schedule.")
+	String confirmStudentSolverSave();
+	
+	@DefaultMessage("Do you really want to save and commit your current timetable? This will overwrite your previous solution. It may also uncommit your currently committed solution.")
+	String confirmSolverSaveCommit();
+	
+	@DefaultMessage("Do you really want to save and commit your current timetable? This may uncommit your currently committed solution.")
+	String confirmSolverSaveAsNewCommit();
+	
 	@DefaultMessage("&nbsp;(of&nbsp;{0})")
 	String curriculumProjectionRulesOfTotal(int total);
 	
@@ -4267,4 +4452,7 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("All Departments")
 	String departmentsAllTitle();
+	
+	@DefaultMessage("Solver not started.")
+	String solverStatusNotStarted();
 }

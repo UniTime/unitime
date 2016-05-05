@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.solver.service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,6 +49,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.SolverParameter;
@@ -58,6 +60,7 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.server.solver.SolverPageBackend;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.jgroups.RemoteSolver;
 import org.unitime.timetable.solver.jgroups.SolverContainer;
@@ -69,6 +72,7 @@ import org.unitime.timetable.solver.jgroups.SolverContainer;
 public class CourseTimetablingSolverService implements SolverService<SolverProxy> {
 	protected static Log sLog = LogFactory.getLog(CourseTimetablingSolverService.class);
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	
 	@Autowired SessionContext sessionContext;
 	
@@ -277,19 +281,22 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
 			if (solverGroups.contains(sg)) continue;
 			if (sg.getMinDistributionPriority() < maxDistPriority && sg.getCommittedSolution() == null) {
 				if (nrWarns>0) warn += "<BR>";
-				warn += "There is no "+sg.getAbbv()+" solution committed";
+				List<String> subjects = new ArrayList<String>();
 				boolean dept = false;
 				for (Department d: sg.getDepartments()) {
 					if (d.isExternalManager().booleanValue()) {
-						warn += ", " + d.getExternalMgrAbbv();
+						subjects.add(d.getExternalMgrAbbv());
 					} else {
 						dept = true;
 						for (SubjectArea sa: d.getSubjectAreas()) {
-							warn += ", " + sa.getSubjectAreaAbbreviation();
+							subjects.add(sa.getSubjectAreaAbbreviation());
 						}
 					}
 				}
-				warn += (dept?", departmental":"") +" classes are not considered.";
+				if (dept)
+					warn += MESSAGES.warnSolverNoCommittedSolutionDepartmental(sg.getAbbv(), SolverPageBackend.toString(subjects));
+				else
+					warn += MESSAGES.warnSolverNoCommittedSolutionExternal(sg.getAbbv(), SolverPageBackend.toString(subjects));
 				nrWarns++;
 			}
 			if (nrWarns >= 3) {

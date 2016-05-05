@@ -143,6 +143,14 @@
 			<item name="Solver" page="solver.do">
 				<condition>
 					<hasPermission name="Solver"/>
+					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="true"/>
+				</condition>
+			</item>
+			<item name="Solver" page="solver" type="gwt">
+				<parameter name="type">course</parameter>
+				<condition>
+					<hasPermission name="Solver"/>
+					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="true"/>
 				</condition>
 			</item>
 			<item name="Timetable Grid" page="timetable.do">
@@ -256,6 +264,29 @@
 		<menu name="Batch Solver" page="studentSolver.do">
 			<condition>
 				<hasPermission name="StudentSectioningSolver"/>
+				<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="true"/>
+			</condition>
+			<item name="Solver Log" page="studentSolverLog.do">
+				<condition>
+					<hasPermission name="StudentSectioningSolverLog"/>
+				</condition>
+			</item>
+			<item name="Solver Dashboard" page="batchsctdash" type="gwt">
+				<condition>
+					<hasPermission name="StudentSectioningSolverDashboard"/>
+				</condition>
+			</item>
+			<item name="Solver Reports" page="sctreport" type="gwt">
+				<condition>
+					<hasPermission name="StudentSectioningSolver"/>
+				</condition>
+			</item>
+		</menu>
+		<menu name="Batch Solver" page="solver" type="gwt">
+			<parameter name="type">student</parameter>
+			<condition>
+				<hasPermission name="StudentSectioningSolver"/>
+				<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="true"/>
 			</condition>
 			<item name="Solver Log" page="studentSolverLog.do">
 				<condition>
@@ -395,6 +426,14 @@
 			<item name="Examination Solver" page="examSolver.do">
 				<condition>
 					<hasPermission name="ExaminationSolver"/>
+					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="true"/>
+				</condition>
+			</item>
+			<item name="Examination Solver" page="solver" type="gwt">
+				<parameter name="type">exam</parameter>
+				<condition>
+					<hasPermission name="ExaminationSolver"/>
+					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="true"/>
 				</condition>
 			</item>
 			<item name="Timetable Grid" page="examGrid.do">

@@ -68,6 +68,7 @@
 	<tt:page-warning prefix="tmtbl.page.warn." style="unitime-PageWarn"/>
 	<tt:page-warning prefix="tmtbl.page.info." style="unitime-PageMessage"/>
 	<tt:page-warning prefix="tmtbl.page.error." style="unitime-PageError"/>
+	<span id='UniTimeGWT:CustomPageMessages'></span>
 	<tt:offering-locks/>
   	
 <tt:form-factor value="mobile">

@@ -26,6 +26,7 @@ import java.util.TreeSet;
 import org.cpsolver.ifs.util.DataProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ListSolutionsForm;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -103,7 +104,10 @@ public class SolverInfoBackend implements GwtRpcImplementation<SolverInfoRpcRequ
 
 			ret.setType(studentSolver != null ? MESSAGES.solverStudent() : examSolver != null ? MESSAGES.solverExamination() : MESSAGES.solverCourse());
 			ret.addPair(MESSAGES.fieldType(), ret.getType());
-			ret.setUrl(studentSolver != null ? "studentSolver.do" : examSolver != null ? "examSolver.do": "solver.do");
+			if (ApplicationProperty.LegacySolver.isTrue())
+				ret.setUrl(studentSolver != null ? "studentSolver.do" : examSolver != null ? "examSolver.do": "solver.do");
+			else
+				ret.setUrl("gwt.jsp?page=solver&type=" + (studentSolver != null ? "student" : examSolver != null ? "exam": "course"));
 			ret.addPair(MESSAGES.fieldSolver(), progressStatus);
 			ret.setSolver(progressStatus);
 			ret.addPair(MESSAGES.fieldPhase(), progressPhase);

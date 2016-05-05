@@ -39,6 +39,7 @@ import org.unitime.timetable.gwt.client.rooms.TravelTimes;
 import org.unitime.timetable.gwt.client.sectioning.SectioningReports;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusPage;
 import org.unitime.timetable.gwt.client.sectioning.StudentSectioningPage;
+import org.unitime.timetable.gwt.client.solver.SolverPage;
 import org.unitime.timetable.gwt.client.test.OnlineSectioningTest;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 
@@ -165,6 +166,10 @@ public enum Pages {
 	instructorattributes(new PageFactory() {
 		public Widget create() { return new InstructorAttributesPage(); }
 		public String name(GwtMessages messages) { return messages.pageInstructorAttributes(); }
+		}),
+	solver(new PageFactory() {
+		public Widget create() { return new SolverPage(); }
+		public String name(GwtMessages messages) { return messages.pageSolver(); }
 		}),
 	;
 	

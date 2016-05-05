@@ -20,13 +20,18 @@
 package org.unitime.timetable.tags;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
 import org.unitime.commons.Debug;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Solution;
@@ -39,6 +44,7 @@ import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.server.solver.SolverPageBackend;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
@@ -49,6 +55,7 @@ import org.unitime.timetable.solver.exam.ExamSolverProxy;
  */
 public class SolverWarnings extends BodyTagSupport {
 	private static final long serialVersionUID = 7947787141769725429L;
+	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 
     public SessionContext getSessionContext() {
     	return HttpSessionContext.getSessionContext(pageContext.getServletContext());
@@ -94,18 +101,21 @@ public class SolverWarnings extends BodyTagSupport {
 			if (solverGroups.contains(sg)) continue;
 			if (sg.getMinDistributionPriority() < maxDistPriority && sg.getCommittedSolution() == null) {
 				if (nrWarns > 0) warn += "<br>";
-				warn += "There is no "+sg.getAbbv()+" solution committed";
+				List<String> subjects = new ArrayList<String>();
 				boolean dept = false;
 				for (Department d: sg.getDepartments()) {
 					if (d.isExternalManager().booleanValue()) {
-						warn += ", " + d.getExternalMgrAbbv();
+						subjects.add(d.getExternalMgrAbbv());
 					} else {
 						dept = true;
 						for (SubjectArea sa: d.getSubjectAreas())
-							warn += ", " + sa.getSubjectAreaAbbreviation();
+							subjects.add(sa.getSubjectAreaAbbreviation());
 					}
 				}
-				warn += (dept ? ", departmental" : "") + " classes are not considered.";
+				if (dept)
+					warn += MESSAGES.warnSolverNoCommittedSolutionDepartmental(sg.getAbbv(), SolverPageBackend.toString(subjects));
+				else
+					warn += MESSAGES.warnSolverNoCommittedSolutionExternal(sg.getAbbv(), SolverPageBackend.toString(subjects));
 				nrWarns++;
 				if (nrWarns >= 3) {
 					warn += "<br>...";
@@ -125,22 +135,18 @@ public class SolverWarnings extends BodyTagSupport {
 			SolverProxy proxy = WebSolver.getSolver(pageContext.getSession());
 			if (proxy != null) {
 				Long[] solverGroupId = proxy.getProperties().getPropertyLongArry("General.SolverGroupId", null);
-				String names = "";
+				List<String> names = new ArrayList<String>();
 				boolean interactive = proxy.getProperties().getPropertyBoolean("General.InteractiveMode", false);
 				if (solverGroupId != null) {
 					for (int i = 0; i < solverGroupId.length; i++) {
 						SolverGroup sg = SolverGroupDAO.getInstance().get(solverGroupId[i]);
-						if (i > 0 && i + 1 == solverGroupId.length)
-							names += (solverGroupId.length == 2 ? " and " : ", and ");
-						else if (i > 0)
-							names += ", ";
-						names += (sg == null ? "N/A" : solverGroupId.length <= 3 ? sg.getName() : sg.getAbbv());
+						names.add(sg == null ? MESSAGES.notApplicable() : solverGroupId.length <= 3 ? sg.getName() : sg.getAbbv());
 				   }
 				}
-				if (names == null || names.isEmpty()) names = "N/A";
+				if (names == null || names.isEmpty()) names.add(MESSAGES.notApplicable());
 				return new String[] {
-						interactive ? "listSolutions.do" : "solver.do",
-						"Showing an in-memory solution for " + names + "."
+						interactive ? "listSolutions.do" : ApplicationProperty.LegacySolver.isTrue() ? "solver.do" : "gwt.jsp?page=solver&type=course",
+						MESSAGES.infoSolverShowingSolution(SolverPageBackend.toString(names))
 					};
 			}
 		} catch (Exception e) {}
@@ -148,19 +154,15 @@ public class SolverWarnings extends BodyTagSupport {
 		// Return warning of the selected solution (warning that was present when the solution was saved, if there is a solution loaded in memory)
 		String id = (String)pageContext.getSession().getAttribute("Solver.selectedSolutionId");
 		if (id != null && !id.isEmpty()) {
-			String names = "";
+			List<String> names = new ArrayList<String>();
 			String[] solutionIds = id.split(",");
 			for (int i = 0; i < solutionIds.length; i++) {
 				Solution solution = SolutionDAO.getInstance().get(Long.valueOf(solutionIds[i]));
-				if (i > 0 && i + 1 == solutionIds.length)
-					names += (solutionIds.length == 2 ? " and " : ", and ");
-				else if (i > 0)
-					names += ", ";
-				names += (solutionIds.length <= 3 ? solution.getOwner().getName() : solution.getOwner().getAbbv());
+				names.add(solutionIds.length <= 3 ? solution.getOwner().getName() : solution.getOwner().getAbbv());
 			}
 			return new String[] {
 					"listSolutions.do",
-					names.isEmpty() ? null : solutionIds.length == 1 ? "Showing a selected solution for " + names + "." : "Showing selected solutions for " + names + "."
+					names.isEmpty() ? null : names.size() == 1 ? MESSAGES.infoSolverShowingSelectedSolution(names.get(0)) : MESSAGES.infoSolverShowingSelectedSolutions(SolverPageBackend.toString(names))
 				};
 		}
 
@@ -181,8 +183,8 @@ public class SolverWarnings extends BodyTagSupport {
 						if (selectedExamTypeId != null && !selectedExamTypeId.equals(type.getUniqueId())) return null;
 					}
 					return new String[] {
-						"examSolver.do",
-						"Showing an in-memory solution for " + type.getLabel() + " Examinations."
+						ApplicationProperty.LegacySolver.isTrue() ? "examSolver.do" : "gwt.jsp?page=solver&type=exam",
+						MESSAGES.infoExamSolverShowingSolution(type.getLabel())
 					};
 				}
 			}

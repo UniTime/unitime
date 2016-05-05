@@ -2085,6 +2085,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Rooms: switch the user interface back to the old (Struts-based) rooms pages")
 	LegacyRooms("unitime.legacy.rooms"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Solver: switch the user interface back to the old (Struts-based) solver pages")
+	LegacySolver("unitime.legacy.solver"),
 		
 	@Type(Boolean.class)
 	@DefaultValue("false")
