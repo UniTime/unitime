@@ -35,6 +35,13 @@
 				<line>Fixed an IndexOutOfBoundsException when Class_.managingDept is not set in the imported file.</line>
 			</description>
 		</item>
+		<item>
+			<name>UniTime Dialog Box: Enter To Submit</name>
+			<description>
+				<line>When ENTER is clicked, stop propagation of the event before executing the submit handler.</line>
+				<line>This is to prevent the confirmation to be clicked two times when ENTER is pressed and focus is on the Yes button.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
