@@ -136,11 +136,13 @@
 			boolean groupVisible = false;
 			boolean correctType = true;
 			if (frm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_STUDENT_SOLVER) {
-				if (group.getType()!=SolverParameterGroup.sTypeStudent) correctType=false;
+				if (group.getSolverType()!=SolverParameterGroup.SolverType.STUDENT) correctType=false;
 			} else if (frm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_EXAM_SOLVER) {
-				if (group.getType()!=SolverParameterGroup.sTypeExam) correctType=false;
+				if (group.getSolverType()!=SolverParameterGroup.SolverType.EXAM) correctType=false;
+			} else if (frm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_INSTRUCTOR_SOLVER) {
+				if (group.getSolverType()!=SolverParameterGroup.SolverType.INSTRUCTOR) correctType=false;
 			} else {
-				if (group.getType()!=SolverParameterGroup.sTypeCourse) correctType=false;
+				if (group.getSolverType()!=SolverParameterGroup.SolverType.COURSE) correctType=false;
 			}
 			List defs = SolverParameterDef.findByGroup(group);
 			for (Iterator j=defs.iterator();j.hasNext();) {

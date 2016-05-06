@@ -31,9 +31,9 @@ import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.util.DataProperties;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.SolverParameterGroup;
+import org.unitime.timetable.solver.SolverDisposeListener;
 import org.unitime.timetable.solver.exam.ExamSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
-import org.unitime.timetable.solver.exam.ExamSolver.ExamSolverDisposeListener;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.util.MemoryCounter;
 
@@ -101,7 +101,7 @@ public class ExaminationSolverContainer implements SolverContainer<ExamSolverPro
 		File folder = ApplicationProperties.getRestoreFolder();
 		if (!folder.exists() || !folder.isDirectory()) return;
 		
-		BackupFileFilter filter = new BackupFileFilter(true, false, SolverParameterGroup.sTypeExam);
+		BackupFileFilter filter = new BackupFileFilter(SolverParameterGroup.SolverType.EXAM);
 		File[] files = folder.listFiles(filter);
 		for (int i=0;i<files.length;i++) {
 			File file = files[i];
@@ -122,7 +122,7 @@ public class ExaminationSolverContainer implements SolverContainer<ExamSolverPro
 		if (folder.exists() && !folder.isDirectory()) return;
 		
 		folder.mkdirs();
-		File[] old = folder.listFiles(new BackupFileFilter(true, true, SolverParameterGroup.sTypeExam));
+		File[] old = folder.listFiles(new BackupFileFilter(SolverParameterGroup.SolverType.EXAM));
 		for (int i = 0; i < old.length; i++)
 			old[i].delete();
 		
@@ -132,7 +132,7 @@ public class ExaminationSolverContainer implements SolverContainer<ExamSolverPro
 		iPassivation.destroy();
 	}
 	
-    protected class SolverOnDispose implements ExamSolverDisposeListener {
+    protected class SolverOnDispose implements SolverDisposeListener {
         String iUser = null;
         public SolverOnDispose(String user) {
         	iUser = user;

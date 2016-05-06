@@ -72,6 +72,9 @@ public abstract class BaseSolverParameterGroup implements Serializable {
 
 	public Integer getType() { return iType; }
 	public void setType(Integer type) { iType = type; }
+	
+	public SolverParameterGroup.SolverType getSolverType() { return iType == null ? null : SolverParameterGroup.SolverType.values()[iType]; }
+	public void setSolverType(SolverParameterGroup.SolverType type) { iType = (type == null ? null : new Integer(type.ordinal())); }
 
 	public Set<SolverParameterDef> getParameters() { return iParameters; }
 	public void setParameters(Set<SolverParameterDef> parameters) { iParameters = parameters; }

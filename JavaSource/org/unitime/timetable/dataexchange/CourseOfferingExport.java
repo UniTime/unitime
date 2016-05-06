@@ -98,7 +98,7 @@ public class CourseOfferingExport extends BaseExport {
             
             document.addDocType(examsOnly?"exams":"offerings", "-//UniTime//DTD University Course Timetabling/EN", "http://www.unitime.org/interface/CourseOfferingExport.dtd");
             
-            SolverParameterDef maxRoomsParam = SolverParameterDef.findByNameType(getHibSession(), "Exams.MaxRooms", SolverParameterGroup.sTypeExam);
+            SolverParameterDef maxRoomsParam = SolverParameterDef.findByNameType(getHibSession(), "Exams.MaxRooms", SolverParameterGroup.SolverType.EXAM);
             if (maxRoomsParam != null && maxRoomsParam.getDefault() != null) 
             	iDefaultMaxNbrRooms = Integer.valueOf(maxRoomsParam.getDefault());
             

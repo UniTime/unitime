@@ -351,7 +351,7 @@ public class ExamEditAction extends PreferencesAction {
                 TreeSet periods = ExamPeriod.findAll(sessionContext.getUser().getCurrentAcademicSessionId(), frm.getExamType());
                 if (!periods.isEmpty())
                     frm.setLength(Constants.SLOT_LENGTH_MIN*((ExamPeriod)periods.first()).getLength());
-                SolverParameterDef maxRoomsParam = SolverParameterDef.findByNameType("Exams.MaxRooms", SolverParameterGroup.sTypeExam);
+                SolverParameterDef maxRoomsParam = SolverParameterDef.findByNameType("Exams.MaxRooms", SolverParameterGroup.SolverType.EXAM);
                 if (maxRoomsParam!=null && maxRoomsParam.getDefault()!=null) 
                     frm.setMaxNbrRooms(Integer.valueOf(maxRoomsParam.getDefault()));
             } catch (Exception e) {}

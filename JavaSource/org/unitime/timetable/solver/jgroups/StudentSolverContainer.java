@@ -31,9 +31,9 @@ import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.util.DataProperties;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.SolverParameterGroup;
+import org.unitime.timetable.solver.SolverDisposeListener;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.solver.studentsct.StudentSolver;
-import org.unitime.timetable.solver.studentsct.StudentSolver.StudentSolverDisposeListener;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.util.MemoryCounter;
 
@@ -101,7 +101,7 @@ public class StudentSolverContainer implements SolverContainer<StudentSolverProx
 		File folder = ApplicationProperties.getRestoreFolder();
 		if (!folder.exists() || !folder.isDirectory()) return;
 
-		BackupFileFilter filter = new BackupFileFilter(true, false, SolverParameterGroup.sTypeStudent);
+		BackupFileFilter filter = new BackupFileFilter(SolverParameterGroup.SolverType.STUDENT);
 		File[] files = folder.listFiles(filter);
 		for (int i=0;i<files.length;i++) {
 			File file = files[i];
@@ -121,7 +121,7 @@ public class StudentSolverContainer implements SolverContainer<StudentSolverProx
 		if (folder.exists() && !folder.isDirectory()) return;
 		
 		folder.mkdirs();
-		File[] old = folder.listFiles(new BackupFileFilter(true, true, SolverParameterGroup.sTypeStudent));
+		File[] old = folder.listFiles(new BackupFileFilter(SolverParameterGroup.SolverType.STUDENT));
 		for (int i = 0; i < old.length; i++)
 			old[i].delete();
 		
@@ -131,7 +131,7 @@ public class StudentSolverContainer implements SolverContainer<StudentSolverProx
 		iPassivation.destroy();
 	}
 	
-    protected class SolverOnDispose implements StudentSolverDisposeListener {
+    protected class SolverOnDispose implements SolverDisposeListener {
         String iUser = null;
         public SolverOnDispose(String user) {
         	iUser = user;

@@ -17,17 +17,11 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.solver.studentsct;
-
-import org.cpsolver.ifs.util.CSVFile;
-import org.cpsolver.ifs.util.DataProperties;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.solver.CommonSolverInterface;
-
+package org.unitime.timetable.solver;
 
 /**
  * @author Tomas Muller
  */
-public interface StudentSolverProxy extends OnlineSectioningServer, CommonSolverInterface {
-    public CSVFile getReport(DataProperties parameters);
+public interface SolverDisposeListener {
+	public void onDispose();
 }

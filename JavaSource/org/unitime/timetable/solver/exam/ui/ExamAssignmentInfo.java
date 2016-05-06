@@ -1513,11 +1513,11 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         public Parameters(Long sessionId, Long examTypeId) {
             iPeriods = ExamPeriod.findAll(sessionId, examTypeId); 
             
-            SolverParameterDef btbDistDef = SolverParameterDef.findByNameType("Exams.BackToBackDistance", SolverParameterGroup.sTypeExam);
+            SolverParameterDef btbDistDef = SolverParameterDef.findByNameType("Exams.BackToBackDistance", SolverParameterGroup.SolverType.EXAM);
             if (btbDistDef!=null && btbDistDef.getDefault()!=null)
                 iBtbDistance = Integer.parseInt(btbDistDef.getDefault());
         
-            SolverParameterDef btbDayBreakDef = SolverParameterDef.findByNameType("Exams.IsDayBreakBackToBack", SolverParameterGroup.sTypeExam);
+            SolverParameterDef btbDayBreakDef = SolverParameterDef.findByNameType("Exams.IsDayBreakBackToBack", SolverParameterGroup.SolverType.EXAM);
             if (btbDayBreakDef!=null && btbDayBreakDef.getDefault()!=null)
                 iBtbDayBreak = "true".equals(btbDayBreakDef.getDefault());
         }

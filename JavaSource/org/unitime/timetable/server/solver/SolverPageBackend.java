@@ -145,7 +145,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 				solver.save();
 				break;
 			case STUDENT:
-	        	SolverParameterDef statusToSet = SolverParameterDef.findByNameType("Save.StudentSectioningStatusToSet", SolverParameterGroup.sTypeStudent);
+	        	SolverParameterDef statusToSet = SolverParameterDef.findByNameType("Save.StudentSectioningStatusToSet", SolverParameterGroup.SolverType.STUDENT);
 	        	if (statusToSet != null) {
 	        		DataProperties config = solver.getProperties();
 	        		config.setProperty("Save.StudentSectioningStatusToSet", request.getParameter(statusToSet.getUniqueId()));
@@ -257,31 +257,31 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 	}
 	
 	protected void fillParameters(SessionContext context, SolverPageRequest request, SolverPageResponse response) {
-		int type = 0;
+		SolverParameterGroup.SolverType type = null;
 		String group = null;
 		int appearance = 0;
 		String defaultConfig = null;
 		switch (request.getType()) {
 		case COURSE:
-			type = SolverParameterGroup.sTypeCourse;
+			type = SolverParameterGroup.SolverType.COURSE;
 			group = "Basic";
 			appearance = SolverPredefinedSetting.APPEARANCE_SOLVER;
 			defaultConfig = "Default.Solver";
 			break;
 		case EXAM:
-			type = SolverParameterGroup.sTypeExam;
+			type = SolverParameterGroup.SolverType.EXAM;
 			group = "ExamBasic";
 			appearance = SolverPredefinedSetting.APPEARANCE_EXAM_SOLVER;
 			defaultConfig = "Exam.Default";
 			break;
 		case STUDENT:
-			type = SolverParameterGroup.sTypeStudent;
+			type = SolverParameterGroup.SolverType.STUDENT;
 			group = "StudentSctBasic";
 			appearance = SolverPredefinedSetting.APPEARANCE_STUDENT_SOLVER;
 			defaultConfig = "StudentSct.Default";
 			break;
 		case INSTRUCTOR:
-			type = SolverParameterGroup.sTypeInstructor;
+			type = SolverParameterGroup.SolverType.INSTRUCTOR;
 			group = "InstrSchdBasic";
 			appearance = SolverPredefinedSetting.APPEARANCE_INSTRUCTOR_SOLVER;
 			defaultConfig = "InstrSchd.Default";
@@ -291,7 +291,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 		}
 		List<SolverParameterDef> parameters = (List<SolverParameterDef>)SolverParameterDefDAO.getInstance().getSession().createQuery(
 				"from SolverParameterDef d where d.visible = true and d.group.type = :type and d.group.name = :group order by d.order")
-				.setInteger("type", type).setString("group", group).setCacheable(true).list();
+				.setInteger("type", type.ordinal()).setString("group", group).setCacheable(true).list();
 		for (SolverParameterDef def: parameters) {
 			SolverParameter p = new SolverParameter();
 			p.setId(def.getUniqueId());
@@ -313,7 +313,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 			c.setId(config.getUniqueId());
 			c.setName(config.getDescription());
 			for (org.unitime.timetable.model.SolverParameter p: config.getParameters()) {
-				if (p.getDefinition().isVisible() && p.getDefinition().getGroup().getType() == type && group.equals(p.getDefinition().getGroup().getName())) {
+				if (p.getDefinition().isVisible() && p.getDefinition().getGroup().getType() == type.ordinal() && group.equals(p.getDefinition().getGroup().getName())) {
 					c.addParameter(p.getDefinition().getUniqueId(), p.getValue());
 				}
 			}
@@ -321,7 +321,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 			if (request.getConfigurationId() == null && defaultConfig.equals(config.getName())) {
 				response.setConfigurationId(c.getId());
 				for (org.unitime.timetable.model.SolverParameter p: config.getParameters()) {
-					if (p.getDefinition().isVisible() && p.getDefinition().getGroup().getType() == type && group.equals(p.getDefinition().getGroup().getName())) {
+					if (p.getDefinition().isVisible() && p.getDefinition().getGroup().getType() == type.ordinal() && group.equals(p.getDefinition().getGroup().getName())) {
 						response.getParameter(p.getDefinition().getUniqueId()).setValue(p.getValue());
 					}
 				}
@@ -437,6 +437,12 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 					response.setSolverProgress(progress);
 				}
 			} catch (Exception e) {}
+			DataProperties config = solver.getProperties();
+			response.setConfigurationId(config.getPropertyLong("General.SettingsId", null));
+			if (response.hasParameters()) {
+				for (SolverParameter p :response.getParameters())
+					p.setValue(config.getProperty(p.getKey()));
+			}
 		} else {
 			response.setSolverStatus(MESSAGES.solverStatusNotStarted());
 		}

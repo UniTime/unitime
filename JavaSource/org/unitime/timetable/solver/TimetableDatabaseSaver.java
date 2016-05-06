@@ -325,7 +325,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
         			Map.Entry entry = (Map.Entry)i1.next();
         			String name = (String)entry.getKey();
         			String value = (String)entry.getValue();
-        			SolverParameterDef def = SolverParameterDef.findByNameType(hibSession, name, SolverParameterGroup.sTypeCourse);
+        			SolverParameterDef def = SolverParameterDef.findByNameType(hibSession, name, SolverParameterGroup.SolverType.COURSE);
         			if (def!=null) {
         				iProgress.trace("save "+name+"="+value);
         				SolverParameter param = new SolverParameter();

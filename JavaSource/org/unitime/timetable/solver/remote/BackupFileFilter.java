@@ -22,49 +22,29 @@ package org.unitime.timetable.solver.remote;
 import java.io.File;
 import java.io.FileFilter;
 
-import org.unitime.timetable.model.SolverParameterGroup;
+import org.unitime.timetable.model.SolverParameterGroup.SolverType;
 
 /**
  * @author Tomas Muller
  */
 public class BackupFileFilter implements FileFilter {
 	public static String sXmlExtension = ".backup.xml";
-	public static String sPropertiesExtension = ".backup.properties";
-	private boolean iAcceptXml = false;
-	private boolean iAcceptProperties = false;
-	private int iType = 0;
-	public BackupFileFilter(boolean acceptXml, boolean acceptProperties, int type) {
-		iAcceptXml = acceptXml;
-		iAcceptProperties = acceptProperties;
+	private SolverType iType;
+	
+	public BackupFileFilter(SolverType type) {
 		iType = type;
 	}
-	public BackupFileFilter(boolean acceptXml, boolean acceptProperties) {
-		this(acceptXml, acceptProperties, -1);
-	}
+
 	public boolean accept(File file) {
-		switch (iType) {
-		case SolverParameterGroup.sTypeCourse:
-			if (file.getName().startsWith("exam_") || file.getName().startsWith("sct_")) return false;
-			break;
-		case SolverParameterGroup.sTypeExam:
-			if (!file.getName().startsWith("exam_")) return false;
-			break;
-		case SolverParameterGroup.sTypeStudent:
-			if (!file.getName().startsWith("sct_")) return false;
-			break;
-		}
-		return ((iAcceptXml && file.getName().endsWith(sXmlExtension)) || (iAcceptProperties && file.getName().endsWith(sPropertiesExtension)));
+		if (iType != null && !file.getName().startsWith(iType.getPrefix())) return false;
+		return file.getName().endsWith(sXmlExtension);
 	}
 
 	public String getUser(File file) {
 		if (accept(file)) {
 			String name = file.getName();
-			if (iType == SolverParameterGroup.sTypeExam) name = name.substring("exam_".length());
-			else if (iType == SolverParameterGroup.sTypeStudent) name = name.substring("sct_".length());
-			if (iAcceptXml && name.endsWith(sXmlExtension))
-				name = name.substring(0, name.length() - sXmlExtension.length());
-			else if (iAcceptProperties && name.endsWith(sPropertiesExtension))
-				name = name.substring(0, name.length() - sPropertiesExtension.length());
+			if (iType != null) name = name.substring(iType.getPrefix().length());
+			if (name.endsWith(sXmlExtension)) name = name.substring(0, name.length() - sXmlExtension.length());
 			return name;
 		} else {
 			return null;

@@ -29,6 +29,7 @@ import org.cpsolver.exam.model.Exam;
 import org.cpsolver.exam.model.ExamPlacement;
 import org.cpsolver.exam.model.ExamRoomPlacement;
 import org.cpsolver.ifs.solver.Solver;
+import org.cpsolver.ifs.util.ProblemSaver;
 import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.CacheMode;
@@ -58,7 +59,7 @@ import org.unitime.timetable.solver.jgroups.SolverServerImplementation;
 /**
  * @author Tomas Muller
  */
-public class ExamDatabaseSaver extends ExamSaver {
+public class ExamDatabaseSaver extends ProblemSaver<Exam, ExamPlacement, ExamModel> {
     private Long iSessionId;
     private Long iExamTypeId;
     private Progress iProgress = null;
@@ -70,6 +71,7 @@ public class ExamDatabaseSaver extends ExamSaver {
         iExamTypeId = getModel().getProperties().getPropertyLong("Exam.Type", null);
     }
     
+    @Override
     public void save() {
         iProgress.setStatus("Saving solution ...");
         org.hibernate.Session hibSession = new ExamDAO().getSession();

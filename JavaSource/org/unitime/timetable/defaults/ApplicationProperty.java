@@ -1527,6 +1527,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Solver: serialize unique ids in the XML Export")
 	SolverXMLExportConvertIds("unitime.solution.export.id-conv"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Solver: include solver configuration in the XML Export")
+	SolverXMLExportConfiguration("unitime.solution.export.configuration"),
 
 	/**
 	 * Solution passivation time.

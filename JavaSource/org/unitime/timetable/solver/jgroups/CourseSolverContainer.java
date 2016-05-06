@@ -30,9 +30,9 @@ import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.util.DataProperties;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.SolverParameterGroup;
+import org.unitime.timetable.solver.SolverDisposeListener;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.TimetableSolver;
-import org.unitime.timetable.solver.TimetableSolver.SolverDisposeListener;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.solver.ui.TimetableInfoFileProxy;
 import org.unitime.timetable.solver.ui.TimetableInfoUtil;
@@ -103,7 +103,7 @@ public class CourseSolverContainer implements SolverContainer<SolverProxy> {
 		sLog.info("Restore folder: " + folder);
 		if (!folder.exists() || !folder.isDirectory()) return;
 		
-		BackupFileFilter filter = new BackupFileFilter(true, false, SolverParameterGroup.sTypeCourse);
+		BackupFileFilter filter = new BackupFileFilter(SolverParameterGroup.SolverType.COURSE);
 		File[] files = folder.listFiles(filter);
 		for (int i=0;i<files.length;i++) {
 			File file = files[i];
@@ -123,7 +123,7 @@ public class CourseSolverContainer implements SolverContainer<SolverProxy> {
 		if (folder.exists() && !folder.isDirectory()) return;
 		
 		folder.mkdirs();
-		File[] old = folder.listFiles(new BackupFileFilter(true, true, SolverParameterGroup.sTypeCourse));
+		File[] old = folder.listFiles(new BackupFileFilter(SolverParameterGroup.SolverType.COURSE));
 		for (int i = 0; i < old.length; i++)
 			old[i].delete();
 		

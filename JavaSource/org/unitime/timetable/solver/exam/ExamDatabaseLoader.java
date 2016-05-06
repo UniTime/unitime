@@ -49,6 +49,7 @@ import org.cpsolver.exam.model.ExamStudent;
 import org.cpsolver.exam.model.PredefinedExamRoomSharing;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.model.Constraint;
+import org.cpsolver.ifs.util.ProblemLoader;
 import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.CacheMode;
@@ -85,7 +86,7 @@ import org.unitime.timetable.util.RoomAvailability;
 /**
  * @author Tomas Muller
  */
-public class ExamDatabaseLoader extends ExamLoader {
+public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamModel> {
     private static Log sLog = LogFactory.getLog(ExamDatabaseLoader.class);
     private Long iSessionId;
     private Long iExamTypeId;

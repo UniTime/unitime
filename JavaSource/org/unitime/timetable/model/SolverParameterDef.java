@@ -26,6 +26,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.Debug;
+import org.unitime.timetable.model.SolverParameterGroup.SolverType;
 import org.unitime.timetable.model.base.BaseSolverParameterDef;
 import org.unitime.timetable.model.dao.SolverParameterDefDAO;
 
@@ -119,15 +120,15 @@ public class SolverParameterDef extends BaseSolverParameterDef implements Compar
 		return list.isEmpty() ? null : list.get(0);
 	}
 	
-	public static SolverParameterDef findByNameType(String name, int type) {
+	public static SolverParameterDef findByNameType(String name, SolverType type) {
 		return findByNameType(SolverParameterDefDAO.getInstance().getSession(), name, type);
 	}
 	
-	public static SolverParameterDef findByNameType(org.hibernate.Session hibSession, String name, int type) {
+	public static SolverParameterDef findByNameType(org.hibernate.Session hibSession, String name, SolverType type) {
 		List<SolverParameterDef> list = (List<SolverParameterDef>)hibSession.createQuery(
 				"from SolverParameterDef where name = :name and group.type = :type")
 				.setString("name", name)
-				.setInteger("type", type)
+				.setInteger("type", type.ordinal())
 				.setCacheable(true).list();
 		return list.isEmpty() ? null : list.get(0);
 	}	

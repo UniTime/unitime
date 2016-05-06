@@ -19,13 +19,9 @@
 */
 package org.unitime.timetable.solver.exam;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Vector;
 
-import org.cpsolver.ifs.util.DataProperties;
 import org.unitime.timetable.solver.CommonSolverInterface;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
@@ -40,23 +36,6 @@ import org.unitime.timetable.solver.exam.ui.ExamSuggestionsInfo;
  * @author Tomas Muller
  */
 public interface ExamSolverProxy extends ExamAssignmentProxy, CommonSolverInterface {
-
-    public String getHost();
-    public String getUser();
-    public void dispose();
-    
-    public void load(DataProperties properties);
-    public void reload(DataProperties properties);
-    public Date getLoadedDate();
-    public void save();
-    
-    public int getDebugLevel();
-    public void setDebugLevel(int level);
-
-    public boolean backup(File folder, String ownerId);
-    public boolean restore(File folder, String ownerId);
-    public boolean restore(File folder, String ownerId, boolean removeFiles);
-    
     public Collection<ExamAssignmentInfo> getAssignedExams();
     public Collection<ExamInfo> getUnassignedExams();
     public Collection<ExamAssignmentInfo> getAssignedExams(Long subjectAreaId);
@@ -77,15 +56,4 @@ public interface ExamSolverProxy extends ExamAssignmentProxy, CommonSolverInterf
     
     public ExamConflictStatisticsInfo getCbsInfo();
     public ExamConflictStatisticsInfo getCbsInfo(Long examId);
-    
-    public long timeFromLastUsed();
-    public boolean isPassivated();
-    public boolean activateIfNeeded();
-    public boolean passivate(File folder, String puid);
-    public boolean passivateIfNeeded(File folder, String puid);
-    public Date getLastUsed();
-    
-    public void interrupt();
-    
-    public byte[] exportXml() throws IOException;
 }

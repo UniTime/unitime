@@ -41,6 +41,7 @@ import org.cpsolver.ifs.util.ToolBox;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.web.WebTable;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ManageSolversForm;
 import org.unitime.timetable.model.ExamType;
@@ -63,7 +64,6 @@ import org.unitime.timetable.solver.jgroups.SolverServer;
 import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
-import org.unitime.timetable.solver.ui.PropertiesInfo;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
 
@@ -95,7 +95,12 @@ public class ManageSolversAction extends Action {
         	String puid = request.getParameter("puid");
         	sessionContext.setAttribute(SessionAttribute.CourseTimetablingUser, puid);
         	sessionContext.removeAttribute(SessionAttribute.CourseTimetablingSolver);
-        	return mapping.findForward("showSolver");
+        	if (ApplicationProperty.LegacySolver.isTrue()) {
+        		return mapping.findForward("showSolver");
+        	} else {
+        		response.sendRedirect("gwt.jsp?page=solver&type=course");
+        		return null;
+        	}
         }
         
         if ("Unload".equals(op) && request.getParameter("puid")!=null) {
@@ -110,7 +115,13 @@ public class ManageSolversAction extends Action {
             sessionContext.setAttribute(SessionAttribute.ExaminationUser, puid);
             sessionContext.removeAttribute(SessionAttribute.ExaminationSolver);
             LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
-            return mapping.findForward("showExamSolver");
+        	if (ApplicationProperty.LegacySolver.isTrue()) {
+        		return mapping.findForward("showExamSolver");
+        	} else {
+        		response.sendRedirect("gwt.jsp?page=solver&type=exam");
+        		return null;
+        	}
+
         }
 
         if ("Unload".equals(op) && request.getParameter("examPuid")!=null) {
@@ -124,7 +135,12 @@ public class ManageSolversAction extends Action {
             String puid = request.getParameter("sectionPuid");
             sessionContext.setAttribute(SessionAttribute.StudentSectioningUser, puid);
             sessionContext.removeAttribute(SessionAttribute.StudentSectioningSolver);
-            return mapping.findForward("showStudentSolver");
+            if (ApplicationProperty.LegacySolver.isTrue()) {
+        		return mapping.findForward("showStudentSolver");
+        	} else {
+        		response.sendRedirect("gwt.jsp?page=solver&type=student");
+        		return null;
+        	}
         }
 
         if ("Unload".equals(op) && request.getParameter("sectionPuid")!=null) {
@@ -288,31 +304,31 @@ public class ManageSolversAction extends Action {
 					note = solver.getNote();
 				} catch (Exception e) {}
 				if (note!=null) note = note.replaceAll("\n","<br>");
-				PropertiesInfo globalInfo = null;
-				try {
-					globalInfo = solver.getGlobalInfo();
-				} catch (Exception e) {}
-				String assigned = (globalInfo==null?"?":globalInfo.getProperty("Assigned variables","N/A"));
-				String totVal = (globalInfo==null?"?":globalInfo.getProperty("Overall solution value","N/A"));
-				String timePr = (globalInfo==null?"?":globalInfo.getProperty("Time preferences","N/A"));
-				String studConf = (globalInfo==null?"?":globalInfo.getProperty("Student conflicts","N/A"));
-				String roomPr = (globalInfo==null?"?":globalInfo.getProperty("Room preferences","N/A"));
-				String distPr = (globalInfo==null?"?":globalInfo.getProperty("Distribution preferences","N/A"));
-				String instrPr = (globalInfo==null?"?":globalInfo.getProperty("Back-to-back instructor preferences","N/A"));
-				String tooBig = (globalInfo==null?"?":globalInfo.getProperty("Too big rooms","N/A"));
-				String useless = (globalInfo==null?"?":globalInfo.getProperty("Useless half-hours","N/A"));
-				String pertPen = (globalInfo==null?"?":globalInfo.getProperty("Perturbations: Total penalty","N/A"));
-				assigned = assigned.replaceAll(" of ","/");
-				if (!"N/A".equals(timePr) && timePr.indexOf('/')>=0) timePr=timePr.substring(0,timePr.indexOf('/')).trim();
-				if (!"N/A".equals(roomPr) && roomPr.indexOf('/')>=0) roomPr=roomPr.substring(0,roomPr.indexOf('/')).trim();
-				if (!"N/A".equals(instrPr) && instrPr.indexOf('/')>=0) instrPr=instrPr.substring(0,instrPr.indexOf('/')).trim();
-				if (!"N/A".equals(assigned) && assigned.indexOf(' ')>=0) assigned=assigned.substring(0,assigned.indexOf(' ')).trim();
-				if (!"N/A".equals(timePr) && timePr.indexOf(' ')>=0) timePr=timePr.substring(0,timePr.indexOf(' ')).trim();
-				if (!"N/A".equals(roomPr) && roomPr.indexOf(' ')>=0) roomPr=roomPr.substring(0,roomPr.indexOf(' ')).trim();
-				if (!"N/A".equals(instrPr) && instrPr.indexOf(' ')>=0) instrPr=instrPr.substring(0,instrPr.indexOf(' ')).trim();
-				if (!"N/A".equals(distPr) && distPr.indexOf(' ')>=0) distPr=distPr.substring(0,distPr.indexOf(' ')).trim();
-				if (!"N/A".equals(tooBig) && tooBig.indexOf(' ')>=0) tooBig=tooBig.substring(0,tooBig.indexOf(' ')).trim();
-				if (!"N/A".equals(useless) && useless.indexOf(' ')>=0) useless=useless.substring(0,useless.indexOf(' ')).trim();
+				Map<String,String> info = null;
+                try {
+                	info = solver.currentSolutionInfo();
+                } catch (Exception e) {}
+				String assigned = info.get("Assigned variables");
+				String totVal = info.get("Overall solution value");
+				String timePr = info.get("Time preferences");
+				String studConf = info.get("Student conflicts");
+				String roomPr = info.get("Room preferences");
+				String distPr = info.get("Distribution preferences");
+				String instrPr = info.get("Back-to-back instructor preferences");
+				String tooBig = info.get("Too big rooms");
+				String useless = info.get("Useless half-hours");
+				String pertPen = info.get("Perturbations: Total penalty");
+				if (assigned != null) assigned = assigned.replaceAll(" of ","/");
+				if (timePr!=null && timePr.indexOf('/')>=0) timePr=timePr.substring(0,timePr.indexOf('/')).trim();
+				if (roomPr!=null && roomPr.indexOf('/')>=0) roomPr=roomPr.substring(0,roomPr.indexOf('/')).trim();
+				if (instrPr!=null && instrPr.indexOf('/')>=0) instrPr=instrPr.substring(0,instrPr.indexOf('/')).trim();
+				if (assigned!=null && assigned.indexOf(' ')>=0) assigned=assigned.substring(0,assigned.indexOf(' ')).trim();
+				if (timePr!=null && timePr.indexOf(' ')>=0) timePr=timePr.substring(0,timePr.indexOf(' ')).trim();
+				if (roomPr!=null && roomPr.indexOf(' ')>=0) roomPr=roomPr.substring(0,roomPr.indexOf(' ')).trim();
+				if (instrPr!=null && instrPr.indexOf(' ')>=0) instrPr=instrPr.substring(0,instrPr.indexOf(' ')).trim();
+				if (distPr!=null && distPr.indexOf(' ')>=0) distPr=distPr.substring(0,distPr.indexOf(' ')).trim();
+				if (tooBig!=null && tooBig.indexOf(' ')>=0) tooBig=tooBig.substring(0,tooBig.indexOf(' ')).trim();
+				if (useless!=null && useless.indexOf(' ')>=0) useless=useless.substring(0,useless.indexOf(' ')).trim();
 				studConf = studConf.replaceAll(" \\[","(").replaceAll("\\]",")").replaceAll(", ",",").replaceAll("hard:","h").replaceAll("distance:","d").replaceAll("commited:","c").replaceAll("committed:","c");
 				Date loaded = solver.getLoadedDate();
 				Date lastUsed = solver.getLastUsed(); 
@@ -340,17 +356,17 @@ public class ManageSolversAction extends Action {
 							ownerName,
 							"<span name='UniTimeGWT:SolverAllocatedMem' style='display: none;'>C" + solver.getUser() + "</span>",
 							String.valueOf(nrCores),
-							assigned,
-							totVal,
-							timePr,
-							studConf,
-							roomPr,
-							distPr,
-							instrPr,
-							tooBig,
-							useless,
-							pertPen,
-							note,
+							(assigned == null ? "N/A" : assigned),
+							(totVal == null ? "N/A" : totVal),
+							(timePr == null ? "N/A" : timePr),
+							(studConf == null ? "N/A" : studConf),
+							(roomPr == null ? "N/A" : roomPr),
+							(distPr == null ? "N/A" : distPr),
+							(instrPr == null ? "N/A" : instrPr),
+							(tooBig == null ? "N/A" : tooBig),
+							(useless == null ? "N/A" : useless),
+							(pertPen == null ? "N/A" : pertPen),
+							(note == null ? "N/A" : note),
 							op},
 						new Comparable[] {
 							(loaded==null?new Date():loaded),
@@ -362,17 +378,17 @@ public class ManageSolversAction extends Action {
 							ownerName,
 							null,
 							nrCores,
-							assigned,
-							totVal,
-							timePr,
-							studConf,
-							roomPr,
-							distPr,
-							instrPr,
-							tooBig,
-							useless,
-							pertPen,
-							(solver.getNote()==null?"":solver.getNote()),
+							(assigned == null ? "" : assigned),
+							(totVal == null ? "" : totVal),
+							(timePr == null ? "" : timePr),
+							(studConf == null ? "" : studConf),
+							(roomPr == null ? "" : roomPr),
+							(distPr == null ? "" : distPr),
+							(instrPr == null ? "" : instrPr),
+							(tooBig == null ? "" : tooBig),
+							(useless == null ? "" : useless),
+							(pertPen == null ? "" : pertPen),
+							(note == null ? "" : note),
 							null}).setBgColor(bgColor);
 					nrLines++;
 			}

@@ -138,7 +138,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	        if (!"none".equals(includeExams))
 	        	info("Includes " + includeExams + " exams.");
 	        
-	        SolverParameterDef maxRoomsParam = SolverParameterDef.findByNameType(getHibSession(), "Exams.MaxRooms", SolverParameterGroup.sTypeExam);
+	        SolverParameterDef maxRoomsParam = SolverParameterDef.findByNameType(getHibSession(), "Exams.MaxRooms", SolverParameterGroup.SolverType.EXAM);
 	        if (maxRoomsParam != null && maxRoomsParam.getDefault() != null) 
 	        	defaultMaxNbrRooms = Integer.valueOf(maxRoomsParam.getDefault());
 

@@ -19,27 +19,17 @@
 */
 package org.unitime.timetable.solver.exam;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
-import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 import java.util.concurrent.locks.Lock;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.cpsolver.exam.heuristics.ExamNeighbourSelection;
 import org.cpsolver.exam.model.Exam;
 import org.cpsolver.exam.model.ExamInstructor;
@@ -50,23 +40,23 @@ import org.cpsolver.exam.model.ExamPlacement;
 import org.cpsolver.exam.model.ExamRoom;
 import org.cpsolver.exam.model.ExamRoomPlacement;
 import org.cpsolver.exam.model.ExamRoomSharing;
+import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.extension.ConflictStatistics;
 import org.cpsolver.ifs.extension.Extension;
 import org.cpsolver.ifs.model.Constraint;
-import org.cpsolver.ifs.solution.Solution;
-import org.cpsolver.ifs.solver.ParallelSolver;
+import org.cpsolver.ifs.solver.Solver;
 import org.cpsolver.ifs.util.Callback;
 import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.ProblemLoader;
+import org.cpsolver.ifs.util.ProblemSaver;
 import org.cpsolver.ifs.util.Progress;
-import org.cpsolver.ifs.util.ProgressWriter;
 import org.cpsolver.ifs.util.ToolBox;
 import org.dom4j.Document;
 import org.dom4j.Element;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.SAXReader;
-import org.dom4j.io.XMLWriter;
-import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.model.SolverParameterGroup.SolverType;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
+import org.unitime.timetable.solver.AbstractSolver;
+import org.unitime.timetable.solver.SolverDisposeListener;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamConflictStatisticsInfo;
@@ -75,125 +65,83 @@ import org.unitime.timetable.solver.exam.ui.ExamInfoModel;
 import org.unitime.timetable.solver.exam.ui.ExamProposedChange;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
 import org.unitime.timetable.solver.exam.ui.ExamSuggestionsInfo;
-import org.unitime.timetable.solver.remote.BackupFileFilter;
-import org.unitime.timetable.util.Constants;
 
 
 /**
  * @author Tomas Muller
  */
-public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements ExamSolverProxy {
-    private static Log sLog = LogFactory.getLog(ExamSolver.class);
-    private int iDebugLevel = Progress.MSGLEVEL_INFO;
-    private boolean iWorking = false;
-    private Date iLoadedDate = null;
-    private ExamSolverDisposeListener iDisposeListener = null;
+public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> implements ExamSolverProxy {
     private ExamConflictStatisticsInfo iCbsInfo = null;
     
-    private long iLastTimeStamp = System.currentTimeMillis();
-    private boolean iIsPassivated = false;
-    private Map iProgressBeforePassivation = null;
-    private Map<String,String> iCurrentSolutionInfoBeforePassivation = null;
-    private Map<String,String> iBestSolutionInfoBeforePassivation = null;
-    private File iPassivationFolder = null;
-    private String iPassivationPuid = null;
-    private Thread iWorkThread = null;
-
-    
-    public ExamSolver(DataProperties properties, ExamSolverDisposeListener disposeListener) {
-        super(properties);
-        iDisposeListener = disposeListener;
+    public ExamSolver(DataProperties properties, SolverDisposeListener disposeListener) {
+        super(properties, disposeListener);
     }
     
-    public Date getLoadedDate() {
-        if (iLoadedDate==null && !isPassivated()) {
-            List<Progress.Message> log = Progress.getInstance(currentSolution().getModel()).getLog();
-            if (log!=null && !log.isEmpty()) {
-                iLoadedDate = log.get(0).getDate();
-            }
-        }
-        return iLoadedDate;
-    }
-    
-    public String getLog() {
-        return Progress.getInstance(currentSolution().getModel()).getHtmlLog(iDebugLevel, true);
-    }
-    public String getLog(int level, boolean includeDate) {
-        return Progress.getInstance(currentSolution().getModel()).getHtmlLog(level, includeDate);
-    }
-    public String getLog(int level, boolean includeDate, String fromStage) {
-        return Progress.getInstance(currentSolution().getModel()).getHtmlLog(level, includeDate, fromStage);
-    }
-    public void setDebugLevel(int level) { iDebugLevel = level; }
-    public int getDebugLevel() { return iDebugLevel; }
-    
-    public boolean isWorking() {
-        if (isRunning()) return true;
-        return iWorking;
-    }
-    
-    public void restoreBest() {
-        currentSolution().restoreBest();
-    }
-    
-    public void saveBest() {
-        currentSolution().saveBest();
-    }
-    
-    public Map getProgress() {
-        if (isPassivated()) return iProgressBeforePassivation;
-        try {
-            Hashtable ret = new Hashtable(); 
-            Progress p = Progress.getInstance(super.currentSolution().getModel());
-            ret.put("STATUS",p.getStatus());
-            ret.put("PHASE",p.getPhase());
-            ret.put("PROGRESS",new Long(p.getProgress()));
-            ret.put("MAX_PROGRESS",new Long(p.getProgressMax()));
-            ret.put("VERSION", Constants.getVersion());
-            return ret;
-        } catch (Exception e) {
-            sLog.error(e.getMessage(),e);
-            return null;
-        }
-    }
-    
-    public void setProperties(DataProperties properties) {
-        activateIfNeeded();
-        this.getProperties().putAll(properties);
-    }
-    
-    public void dispose() {
-        disposeNoInherit(true);
-    }
-    
-    private void disposeNoInherit(boolean unregister) {
-        super.dispose();
-        if (currentSolution()!=null && currentSolution().getModel()!=null)
-            Progress.removeInstance(currentSolution().getModel());
-        setInitalSolution((org.cpsolver.ifs.solution.Solution)null);
-        if (unregister && iDisposeListener!=null) iDisposeListener.onDispose();
+    @Override
+    protected void disposeNoInherit(boolean unregister) {
+    	super.disposeNoInherit(unregister);
         iCbsInfo = null;
     }
     
-    public String getHost() {
-        return "local";
-    }
-    
-    public String getUser() {
-    	return getProperties().getProperty("General.OwnerPuid");
-    }
-    
-    public Object exec(Object[] cmd) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
-        Class[] types = new Class[(cmd.length-3)/2];
-        Object[] args = new Object[(cmd.length-3)/2];
-        for (int i=0;i<types.length;i++) {
-            types[i]=(Class)cmd[2*i+3];
-            args[i]=cmd[2*i+4];
+	@Override
+	protected ProblemSaver<Exam, ExamPlacement, ExamModel> getDatabaseSaver(Solver<Exam, ExamPlacement> solver) {
+		return new ExamDatabaseSaver(solver);
+	}
+
+	@Override
+	protected ProblemLoader<Exam, ExamPlacement, ExamModel> getDatabaseLoader(ExamModel model, Assignment<Exam, ExamPlacement> assignment) {
+		return new ExamDatabaseLoader(model, assignment);
+	}
+
+	@Override
+	protected ExamModel createModel(DataProperties properties) {
+		return new ExamModel(properties);
+	}
+
+	@Override
+	protected Document createCurrentSolutionBackup(boolean anonymize, boolean idconv) {
+		getProperties().setProperty("Xml.SaveConflictTable", "false");
+        if (anonymize) {
+            getProperties().setProperty("Xml.Anonymize", "true");
+            getProperties().setProperty("Xml.ShowNames", "false");
+            getProperties().setProperty("Xml.ConvertIds", idconv ? "true" : "false");
+            getProperties().setProperty("Xml.Anonymize", "true");
+            getProperties().setProperty("Xml.SaveInitial", "false");
+            getProperties().setProperty("Xml.SaveBest", "false");
+            getProperties().setProperty("Xml.SaveSolution", "true");
+    	}
+        Document document = ((ExamModel)currentSolution().getModel()).save(currentSolution().getAssignment());
+        ExamConflictStatisticsInfo cbsInfo = getCbsInfo();
+        if (cbsInfo!=null)
+            cbsInfo.save(document.getRootElement().addElement("cbsInfo"));
+        if (anonymize) {
+        	Element log = document.getRootElement().element("log");
+        	if (log != null)
+        		document.getRootElement().remove(log);
+        	Element notavailable = document.getRootElement().element("notavailable");
+        	if (notavailable != null)
+        		document.getRootElement().remove(notavailable);
+            getProperties().setProperty("Xml.Anonymize", "false");
+            getProperties().setProperty("Xml.ConvertIds", "false");
+            getProperties().setProperty("Xml.ShowNames", "true");
+            getProperties().remove("Xml.SaveInitial");
+            getProperties().remove("Xml.SaveBest");
+            getProperties().remove("Xml.SaveSolution");
         }
-        
-        return getClass().getMethod((String)cmd[0],types).invoke(this, args);
-    }
-    
+		return document;
+	}
+
+	@Override
+	protected void restureCurrentSolutionFromBackup(Document document) {
+		ExamModel model = (ExamModel)currentSolution().getModel();
+		
+        model.load(document, currentSolution().getAssignment());
+        if (document.getRootElement().element("cbsInfo")!=null) {
+            iCbsInfo = new ExamConflictStatisticsInfo();
+            iCbsInfo.load(document.getRootElement().element("cbsInfo"));
+        }
+	}
+
     public Exam getExam(long examId) {
         Lock lock = currentSolution().getLock().readLock();
         lock.lock();
@@ -207,6 +155,7 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
         }
     }
 
+    @Override
     public ExamInfo getInfo(long examId) {
         Lock lock = currentSolution().getLock().readLock();
         lock.lock();
@@ -218,6 +167,7 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
         }
     }
     
+    @Override
     public ExamAssignment getAssignment(long examId) {
         Lock lock = currentSolution().getLock().readLock();
         lock.lock();
@@ -230,6 +180,7 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
         }
     }
     
+    @Override
     public ExamAssignmentInfo getAssignmentInfo(long examId) {
         Lock lock = currentSolution().getLock().readLock();
         lock.lock();
@@ -241,7 +192,6 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
         	lock.unlock();
         }
     }
-    
     
     public ExamPlacement getPlacement(ExamAssignment assignment) {
         Lock lock = currentSolution().getLock().readLock();
@@ -269,6 +219,7 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
         }
     }
     
+    @Override
     public ExamAssignmentInfo getAssignment(Long examId, Long periodId, Collection<Long> roomIds) {
         Lock lock = currentSolution().getLock().readLock();
         lock.lock();
@@ -294,6 +245,7 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
         }
     }
     
+    @Override
     public String assign(ExamAssignment assignment) {
     	Lock lock = currentSolution().getLock().writeLock();
     	lock.lock();
@@ -332,6 +284,7 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
         }
     }
     
+    @Override
     public String unassign(ExamInfo examInfo) {
         Lock lock = currentSolution().getLock().writeLock();
         lock.lock();
@@ -348,127 +301,15 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
         }
     }
 
-    
-    public Map<String,String> currentSolutionInfo() {
-        if (isPassivated()) return iCurrentSolutionInfoBeforePassivation;
-        Lock lock = currentSolution().getLock().readLock();
-        lock.lock();
-        try {
-            return super.currentSolution().getInfo();
-        } finally {
-        	lock.unlock();
-        }
-    }
-
-    public Map<String,String> bestSolutionInfo() {
-        if (isPassivated()) return iBestSolutionInfoBeforePassivation;
-        Lock lock = currentSolution().getLock().readLock();
-        lock.lock();
-        try {
-            return super.currentSolution().getBestInfo();
-        } finally {
-        	lock.unlock();
-        }
-    }
-
-    protected void onFinish() {
-        super.onFinish();
-        try {
-            iWorking = true;
-            if (currentSolution().getBestInfo()!=null)
-                currentSolution().restoreBest();
-            if (currentSolution().getBestInfo()!=null && getProperties().getPropertyBoolean("General.Save",false)) {
-                ExamDatabaseSaver saver = new ExamDatabaseSaver(this);
-                Lock lock = currentSolution().getLock().readLock();
-                lock.lock();
-                try {
-                    saver.save();
-                } finally {
-                	lock.unlock();
-                }
-            }
-            if (getProperties().getPropertyBoolean("General.Unload",false)) {
-                dispose();
-            } else {
-                Progress.getInstance(currentSolution().getModel()).setStatus("Awaiting commands ...");
-            }
-        } finally {
-            iWorking = false;
-        }
-    }
-    
-    protected void onStop() {
-        super.onStop();
-        if (currentSolution().getBestInfo()!=null)
-            currentSolution().restoreBest();
-    }
-
-    public void save() {
-        iWorking = true;
-        ExamDatabaseSaver saver = new ExamDatabaseSaver(this);
-        saver.setCallback(getSavingDoneCallback());
-        iWorkThread = new Thread(saver);
-        iWorkThread.setPriority(THREAD_PRIORITY);
-        iWorkThread.start();
-    }
-    
+    @Override
     public void load(DataProperties properties) {
         iCbsInfo = null;
-        setProperties(properties);
-        ExamModel model = new ExamModel(getProperties());
-        Progress.getInstance(model).addProgressListener(new ProgressWriter(System.out));
-        
-        iWorking = true;
-        setInitalSolution(model);
-        initSolver();
-        
-        ExamDatabaseLoader loader = new ExamDatabaseLoader(model, currentSolution().getAssignment());
-        loader.setCallback(getLoadingDoneCallback());
-        iWorkThread = new Thread(loader);
-        iWorkThread.setPriority(THREAD_PRIORITY);
-        iWorkThread.start();
+        super.load(properties);
     }
     
-    public void reload(DataProperties properties) {
-        if (currentSolution()==null || currentSolution().getModel()==null) {
-            load(properties);
-            return;
-        }
-        
-        Callback callBack = getReloadingDoneCallback();
-        setProperties(properties);
-        ExamModel model = new ExamModel(getProperties());
-        
-        iWorking = true;
-        Progress.changeInstance(currentSolution().getModel(),model);
-        setInitalSolution(model);
-        initSolver();
-        
-        ExamDatabaseLoader loader = new ExamDatabaseLoader(model, currentSolution().getAssignment());
-        loader.setCallback(callBack);
-        iWorkThread = new Thread(loader);
-        iWorkThread.start();
-    }
-    
-    public Callback getLoadingDoneCallback() {
-        return new LoadingDoneCallback();
-    }
-    
+    @Override
     public Callback getReloadingDoneCallback() {
         return new ReloadingDoneCallback();
-    }
-
-    public Callback getSavingDoneCallback() {
-        return new SavingDoneCallback();
-    }
-    
-    protected void afterSave() {
-    }
-    
-    protected void afterLoad() {
-    }
-
-    protected void afterFinalSectioning() {
     }
 
     public class ReloadingDoneCallback implements Callback {
@@ -594,150 +435,8 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
             Progress.getInstance(currentSolution().getModel()).setStatus("Awaiting commands ...");
         }
     }
-    public class LoadingDoneCallback implements Callback {
-        public void execute() {
-            iLoadedDate = new Date();
-            iWorking = false;
-            afterLoad();
-            Progress.getInstance(currentSolution().getModel()).setStatus("Awaiting commands ...");
-            if (getProperties().getPropertyBoolean("General.StartSolver",false))
-                start();
-        }
-    }
-    public class SavingDoneCallback implements Callback {
-        public void execute() {
-            iWorking = false;
-            afterSave();
-            Progress.getInstance(currentSolution().getModel()).setStatus("Awaiting commands ...");
-        }
-    }
-    
-    public static interface ExamSolverDisposeListener {
-        public void onDispose();
-    }
-    
-    public boolean backup(File folder, String puid) {
-        folder.mkdirs();
-        if (currentSolution()==null) return false;
-        Lock lock = currentSolution().getLock().readLock();
-        lock.lock();
-        try {
-            File outXmlFile = new File(folder,"exam_"+puid+BackupFileFilter.sXmlExtension);
-            File outPropertiesFile = new File(folder,"exam_"+puid+BackupFileFilter.sPropertiesExtension);
-            try {
-                getProperties().setProperty("Xml.SaveConflictTable", "false");
-                FileOutputStream fos = null;
-                try {
-                    fos = new FileOutputStream(outXmlFile);
-                    Document document = ((ExamModel)currentSolution().getModel()).save(currentSolution().getAssignment());
-                    ExamConflictStatisticsInfo cbsInfo = getCbsInfo();
-                    if (cbsInfo!=null)
-                        cbsInfo.save(document.getRootElement().addElement("cbsInfo"));
-                    (new XMLWriter(fos,OutputFormat.createPrettyPrint())).write(document);
-                    fos.flush(); fos.close(); fos=null;
-                } finally {
-                    try {
-                        if (fos!=null) fos.close();
-                    } catch (IOException e) {}
-                }
-                for (Iterator i=getProperties().entrySet().iterator();i.hasNext();) {
-                    Map.Entry entry = (Map.Entry)i.next();
-                    if (!(entry.getKey() instanceof String)) {
-                        sLog.error("Configuration key "+entry.getKey()+" is not of type String ("+entry.getKey().getClass()+")");
-                        i.remove();
-                    } else if (!(entry.getValue() instanceof String)) {
-                        sLog.error("Value of configuration key "+entry.getKey()+" is not of type String ("+entry.getValue()+" is of type "+entry.getValue().getClass()+")");
-                        i.remove();
-                    }
-                }
-                try {
-                    fos = new FileOutputStream(outPropertiesFile);
-                    getProperties().store(fos,"Backup file");
-                    fos.flush(); fos.close(); fos=null;
-                } finally {
-                    try {
-                        if (fos!=null) fos.close();
-                    } catch (IOException e) {}
-                }
-                return true;
-            } catch (Exception e) {
-                sLog.error(e.getMessage(),e);
-                if (outXmlFile.exists()) outXmlFile.delete();
-                if (outPropertiesFile.exists()) outPropertiesFile.delete();
-            }
-        } finally {
-        	lock.unlock();
-        }
-        return false;
-    }
-    
-    public boolean restore(File folder, String puid) {
-        return restore(folder, puid, false);
-    }
-    
-    public boolean restore(File folder, String puid, boolean removeFiles) {
-        sLog.debug("restore(folder="+folder+","+puid+",exam)");
-        iCbsInfo = null;
-        File inXmlFile = new File(folder,"exam_"+puid+BackupFileFilter.sXmlExtension);
-        File inPropertiesFile = new File(folder,"exam_"+puid+BackupFileFilter.sPropertiesExtension);
-        
-        ExamModel model = null;
-        try {
-            if (isRunning()) stopSolver();
-            disposeNoInherit(false);
-            FileInputStream fis = null;
-            try {
-                fis = new FileInputStream(inPropertiesFile);
-                getProperties().load(fis);
-            } finally {
-                if (fis!=null) fis.close();
-            }
-            
-            model = new ExamModel(getProperties());
-            Progress.getInstance(model).addProgressListener(new ProgressWriter(System.out));
-            setInitalSolution(model);
-            initSolver();
 
-            Document document = (new SAXReader()).read(inXmlFile); 
-            model.load(document, currentSolution().getAssignment(), new Callback() {
-                public void execute() {
-                    saveBest();
-                }
-            });
-            if (document.getRootElement().element("cbsInfo")!=null) {
-                iCbsInfo = new ExamConflictStatisticsInfo();
-                iCbsInfo.load(document.getRootElement().element("cbsInfo"));
-            }
-            
-            Progress.getInstance(model).setStatus("Awaiting commands ...");
-            
-            if (removeFiles) {
-                inXmlFile.delete();
-                inPropertiesFile.delete();
-            }
-            
-            return true;
-        } catch (Exception e) {
-            sLog.error(e.getMessage(),e);
-            if (model!=null) Progress.removeInstance(model);
-        }
-        
-        return false;
-    }
-    
-    public void clear() {
-        Lock lock = currentSolution().getLock().writeLock();
-        lock.lock();
-        try {
-            for (Exam exam: currentSolution().getModel().variables()) {
-            	currentSolution().getAssignment().unassign(0, exam);
-            }
-            currentSolution().clearBest();
-        } finally {
-        	lock.unlock();
-        }
-    }
-    
+    @Override
     public Collection<ExamAssignmentInfo> getAssignedExams() {
         Lock lock = currentSolution().getLock().readLock();
         lock.lock();
@@ -753,6 +452,8 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
         	lock.unlock();
         }
     }
+    
+    @Override
     public Collection<ExamInfo> getUnassignedExams() {
         Lock lock = currentSolution().getLock().readLock();
         lock.lock();
@@ -769,6 +470,7 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
         }
     }
 
+    @Override
     public Collection<ExamAssignmentInfo> getAssignedExams(Long subjectAreaId) {
         if (subjectAreaId==null || subjectAreaId<0) return getAssignedExams();
         String sa = new SubjectAreaDAO().get(subjectAreaId).getSubjectAreaAbbreviation()+" ";
@@ -793,6 +495,8 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
         	lock.unlock();
         }
     }
+    
+    @Override
     public Collection<ExamInfo> getUnassignedExams(Long subjectAreaId) {
         if (subjectAreaId==null || subjectAreaId<0) return getUnassignedExams();
         String sa = new SubjectAreaDAO().get(subjectAreaId).getSubjectAreaAbbreviation()+" ";
@@ -818,6 +522,7 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
         }
     }
     
+    @Override
     public Collection<ExamAssignmentInfo> getAssignedExamsOfRoom(Long roomId) {
         Lock lock = currentSolution().getLock().readLock();
         lock.lock();
@@ -841,6 +546,7 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
         }
     }
 
+    @Override
     public Collection<ExamAssignmentInfo> getAssignedExamsOfInstructor(Long instructorId) {
         Lock lock = currentSolution().getLock().readLock();
         lock.lock();
@@ -867,10 +573,12 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
         }
     }
     
+    @Override
     public Long getExamTypeId() {
     	return getProperties().getPropertyLong("Exam.Type", null);
     }
     
+    @Override
     public Collection<ExamAssignmentInfo[]> getChangesToInitial(Long subjectAreaId) {
         String sa = (subjectAreaId!=null && subjectAreaId>=0 ? new SubjectAreaDAO().get(subjectAreaId).getSubjectAreaAbbreviation()+" ":null);
         Vector<ExamAssignmentInfo[]> changes = new Vector<ExamAssignmentInfo[]>();
@@ -898,6 +606,7 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
         return changes;
     }
     
+    @Override
     public Collection<ExamAssignmentInfo[]> getChangesToBest(Long subjectAreaId) {
         String sa = (subjectAreaId!=null && subjectAreaId>=0 ? new SubjectAreaDAO().get(subjectAreaId).getSubjectAreaAbbreviation()+" ":null);
         Vector<ExamAssignmentInfo[]> changes = new Vector<ExamAssignmentInfo[]>();
@@ -925,10 +634,8 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
         return changes;
     }
     
-    public Long getSessionId() {
-        return getProperties().getPropertyLong("General.SessionId",null);
-    }
-    
+
+    @Override
     public ExamConflictStatisticsInfo getCbsInfo() {
         ConflictStatistics cbs = null;
         for (Extension ext: getExtensions()) {
@@ -952,6 +659,7 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
         return info; 
     }
     
+    @Override
     public ExamConflictStatisticsInfo getCbsInfo(Long examId) {
         ConflictStatistics cbs = null;
         for (Extension ext: getExtensions()) {
@@ -975,6 +683,7 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
         return info; 
     }
     
+    @Override
     public ExamProposedChange update(ExamProposedChange change) {
         Lock lock = currentSolution().getLock().writeLock();
         lock.lock();
@@ -1035,6 +744,7 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
         }
     }
     
+    @Override
     public Vector<ExamRoomInfo> getRooms(long examId, long periodId, ExamProposedChange change, int minRoomSize, int maxRoomSize, String filter, boolean allowConflicts) {
         Lock lock = currentSolution().getLock().readLock();
         lock.lock();
@@ -1118,6 +828,7 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
         }
     }
     
+    @Override
     public Collection<ExamAssignmentInfo> getPeriods(long examId, ExamProposedChange change) {
         Lock lock = currentSolution().getLock().readLock();
         lock.lock();
@@ -1179,6 +890,7 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
         }
     }
     
+    @Override
     public ExamSuggestionsInfo getSuggestions(long examId, ExamProposedChange change, String filter, int depth, int limit, long timeOut) {
     	Lock lock = currentSolution().getLock().writeLock();
     	lock.lock();
@@ -1210,11 +922,13 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
         }
     }
     
+    @Override
     protected void autoConfigure() {
         super.autoConfigure();
         setPerturbationsCounter(null);
     }
     
+    @Override
     public TreeSet<ExamAssignment> getExamsOfRoom(long locationId) {
         Lock lock = currentSolution().getLock().readLock();
         lock.lock();
@@ -1240,6 +954,7 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
         super.stopSolver();
     }
     
+    @Override
     public void stopSolver() {
         if (getNeighbourSelection() instanceof ExamNeighbourSelection) {
             ExamNeighbourSelection xn = (ExamNeighbourSelection)getNeighbourSelection();
@@ -1250,154 +965,13 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
         } else stopSolverImmediately();
     }
     
-    public Solution<Exam, ExamPlacement> currentSolution() {
-        activateIfNeeded();
-        return super.currentSolution();
-    }
-    
-    public void start() {
-        activateIfNeeded();
-        iCbsInfo = null;
-        super.start();
-    }
-    
-    public synchronized boolean isPassivated() {
-        return iIsPassivated;
-    }
-    
-    public synchronized long timeFromLastUsed() {
-        return System.currentTimeMillis()-iLastTimeStamp;
-    }
-    
-    public synchronized boolean activateIfNeeded() {
-        iLastTimeStamp = System.currentTimeMillis();
-        if (!isPassivated()) return false;
-        sLog.debug("<activate "+iPassivationPuid+">");
-
-        iIsPassivated = false;
-
-        System.gc();
-        sLog.debug(" -- memory usage before activation:"+org.unitime.commons.Debug.getMem());
-        restore(iPassivationFolder, iPassivationPuid, true);
-        System.gc();
-        sLog.debug(" -- memory usage after activation:"+org.unitime.commons.Debug.getMem());
-        
-        return true;
-    }
-    
-    public synchronized boolean passivate(File folder, String puid) {
-        if (isPassivated() || super.currentSolution()==null || super.currentSolution().getModel()==null) return false;
-        sLog.debug("<passivate "+puid+">");
-        System.gc();
-        sLog.debug(" -- memory usage before passivation:"+org.unitime.commons.Debug.getMem());
-        iProgressBeforePassivation = getProgress();
-        if (iProgressBeforePassivation!=null)
-            iProgressBeforePassivation.put("STATUS","Pasivated");
-        iCurrentSolutionInfoBeforePassivation = currentSolutionInfo();
-        iBestSolutionInfoBeforePassivation = bestSolutionInfo();
-        
-        iPassivationFolder = folder;
-        iPassivationPuid = puid;
-        backup(iPassivationFolder, iPassivationPuid);
-
-        disposeNoInherit(false);
-        
-        System.gc();
-        sLog.debug(" -- memory usage after passivation:"+org.unitime.commons.Debug.getMem());
-        
-        iIsPassivated = true;
-        return true;
+    @Override
+    protected void beforeStart() {
+    	iCbsInfo = null;
     }
 
-    public synchronized boolean passivateIfNeeded(File folder, String puid) {
-		long inactiveTimeToPassivate = 60000l * ApplicationProperty.SolverPasivationTime.intValue();
-		if (isPassivated() || inactiveTimeToPassivate <= 0 || timeFromLastUsed() < inactiveTimeToPassivate || isWorking()) return false;
-        return passivate(folder, puid);
-    }
-    
-    public Date getLastUsed() {
-        return new Date(iLastTimeStamp);
-    }
-    
-    public void interrupt() {
-    	try {
-            if (iSolverThread != null) {
-                iStop = true;
-                if (iSolverThread.isAlive() && !iSolverThread.isInterrupted())
-                	iSolverThread.interrupt();
-            }
-			if (iWorkThread != null && iWorkThread.isAlive() && !iWorkThread.isInterrupted()) {
-				iWorkThread.interrupt();
-			}
-    	} catch (Exception e) {
-    		sLog.error("Unable to interrupt the solver, reason: " + e.getMessage(), e);
-    	}
-    }
-
-    public Map<String,String> statusSolutionInfo() {
-    	if (isPassivated())
-    		return (iBestSolutionInfoBeforePassivation == null ? iCurrentSolutionInfoBeforePassivation : iBestSolutionInfoBeforePassivation);
-        Lock lock = currentSolution().getLock().readLock();
-        lock.lock();
-        try {
-    		Map<String,String> info = super.currentSolution().getBestInfo();
-    		try {
-    			Solution<Exam, ExamPlacement> solution = getWorkingSolution();
-    			if (info == null || getSolutionComparator().isBetterThanBestSolution(solution))
-    				info = solution.getModel().getInfo(solution.getAssignment());
-    		} catch (ConcurrentModificationException e) {}
-    		return info;
-        } finally {
-        	lock.unlock();
-    	}
-    }
-    
-    public byte[] exportXml() throws IOException {
-        Lock lock = currentSolution().getLock().readLock();
-        lock.lock();
-        try {
-            boolean anonymize = ApplicationProperty.SolverXMLExportNames.isFalse();
-            boolean idconv = ApplicationProperty.SolverXMLExportConvertIds.isTrue();
-
-            if (anonymize) {
-                getProperties().setProperty("Xml.Anonymize", "true");
-                getProperties().setProperty("Xml.ShowNames", "false");
-                getProperties().setProperty("Xml.ConvertIds", idconv ? "true" : "false");
-                getProperties().setProperty("Xml.Anonymize", "true");
-                getProperties().setProperty("Xml.SaveInitial", "false");
-                getProperties().setProperty("Xml.SaveBest", "false");
-                getProperties().setProperty("Xml.SaveSolution", "true");
-        	}
-
-            ByteArrayOutputStream ret = new ByteArrayOutputStream();
-            
-            Document document = ((ExamModel)currentSolution().getModel()).save(currentSolution().getAssignment());
-            
-            if (anonymize) {
-            	Element log = document.getRootElement().element("log");
-            	if (log != null)
-            		document.getRootElement().remove(log);
-            	Element notavailable = document.getRootElement().element("notavailable");
-            	if (notavailable != null)
-            		document.getRootElement().remove(notavailable);
-            }
-            
-            (new XMLWriter(ret, OutputFormat.createPrettyPrint())).write(document);
-            
-            ret.flush(); ret.close();
-            
-            if (anonymize) {
-                getProperties().setProperty("Xml.Anonymize", "false");
-                getProperties().setProperty("Xml.ConvertIds", "false");
-                getProperties().setProperty("Xml.ShowNames", "true");
-                getProperties().remove("Xml.SaveInitial");
-                getProperties().remove("Xml.SaveBest");
-                getProperties().remove("Xml.SaveSolution");
-            }
-
-            return ret.toByteArray();
-        } finally {
-        	lock.unlock();
-        }
-    }
+	@Override
+	public SolverType getType() {
+		return SolverType.EXAM;
+	}
 }

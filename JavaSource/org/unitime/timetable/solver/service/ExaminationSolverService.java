@@ -65,7 +65,7 @@ public class ExaminationSolverService implements SolverService<ExamSolverProxy> 
 		
 		// Load properties
 		for (SolverParameterDef def: (List<SolverParameterDef>)SolverPredefinedSettingDAO.getInstance().getSession().createQuery(
-				"from SolverParameterDef where group.type = :type").setInteger("type", SolverParameterGroup.sTypeExam).list()) {
+				"from SolverParameterDef where group.type = :type").setInteger("type", SolverParameterGroup.SolverType.EXAM.ordinal()).list()) {
 			if (def.getDefault() != null) properties.put(def.getName(), def.getDefault());
 			if (options != null && options.containsKey(def.getUniqueId()))
 				properties.put(def.getName(), options.get(def.getUniqueId()));
@@ -73,7 +73,7 @@ public class ExaminationSolverService implements SolverService<ExamSolverProxy> 
 		
 		SolverPredefinedSetting settings = SolverPredefinedSettingDAO.getInstance().get(settingsId);
 		for (SolverParameter param: settings.getParameters()) {
-			if (!param.getDefinition().isVisible() || param.getDefinition().getGroup().getType() != SolverParameterGroup.sTypeExam) continue;
+			if (!param.getDefinition().isVisible() || param.getDefinition().getGroup().getSolverType() != SolverParameterGroup.SolverType.EXAM) continue;
 			properties.put(param.getDefinition().getName(),param.getValue());
 			if (options != null && options.containsKey(param.getDefinition().getUniqueId()))
 				properties.put(param.getDefinition().getName(), options.get(param.getDefinition().getUniqueId()));

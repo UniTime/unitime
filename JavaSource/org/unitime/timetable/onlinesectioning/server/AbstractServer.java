@@ -606,7 +606,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 			try {
 				for (SolverParameterDef def: (List<SolverParameterDef>)hibSession.createQuery(
 						"from SolverParameterDef x where x.group.type = :type and x.default is not null")
-						.setInteger("type", SolverParameterGroup.sTypeStudent).list()) {
+						.setInteger("type", SolverParameterGroup.SolverType.STUDENT.ordinal()).list()) {
 					setProperty(def.getName(), def.getDefault());
 				}
 				SolverPredefinedSetting settings = (SolverPredefinedSetting)hibSession.createQuery(
@@ -615,7 +615,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 				if (settings != null) {
 					for (SolverParameter param: settings.getParameters()) {
 						if (!param.getDefinition().isVisible().booleanValue()) continue;
-						if (param.getDefinition().getGroup().getType() != SolverParameterGroup.sTypeStudent) continue;
+						if (param.getDefinition().getGroup().getSolverType() != SolverParameterGroup.SolverType.STUDENT) continue;
 						setProperty(param.getDefinition().getName(), param.getValue());
 					}
 					setProperty("General.SettingsId", settings.getUniqueId().toString());

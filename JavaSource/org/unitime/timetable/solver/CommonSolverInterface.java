@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.solver;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 
 import org.cpsolver.ifs.util.DataProperties;
+import org.unitime.timetable.model.SolverParameterGroup.SolverType;
 
 /**
  * @author Tomas Muller
  */
 public interface CommonSolverInterface {
-	public Date getLoadedDate();
-
+	public SolverType getType();
+    public String getHost();
+    public String getUser();
+    public void dispose();
+    
 	public void start();
 	public boolean isRunning();
 	public void stopSolver();
@@ -41,6 +46,8 @@ public interface CommonSolverInterface {
     public Map<String,String> statusSolutionInfo();
 	public boolean isWorking();
 	public void clear();
+    public void save();
+    public byte[] exportXml() throws IOException;
 
     public Map getProgress();
 	public String getLog();
@@ -50,6 +57,24 @@ public interface CommonSolverInterface {
     public DataProperties getProperties();
     public void setProperties(DataProperties config);
     
-    public void save();
-    public byte[] exportXml() throws IOException;
+    public void load(DataProperties properties);
+    public void reload(DataProperties properties);
+    public Date getLoadedDate();
+    public Long getSessionId();
+    
+    public int getDebugLevel();
+    public void setDebugLevel(int level);
+
+    public boolean backup(File folder, String ownerId);
+    public boolean restore(File folder, String ownerId);
+    public boolean restore(File folder, String ownerId, boolean removeFiles);
+    
+    public long timeFromLastUsed();
+    public boolean isPassivated();
+    public boolean activateIfNeeded();
+    public boolean passivate(File folder, String puid);
+    public boolean passivateIfNeeded(File folder, String puid);
+    public Date getLastUsed();
+    
+    public void interrupt();
 }

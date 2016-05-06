@@ -19,18 +19,11 @@
 */
 package org.unitime.timetable.solver;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -43,8 +36,6 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.concurrent.locks.Lock;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.cpsolver.coursett.TimetableXMLLoader;
 import org.cpsolver.coursett.TimetableXMLSaver;
 import org.cpsolver.coursett.constraint.ClassLimitConstraint;
@@ -62,23 +53,19 @@ import org.cpsolver.coursett.model.TimetableModel;
 import org.cpsolver.ifs.extension.ConflictStatistics;
 import org.cpsolver.ifs.extension.Extension;
 import org.cpsolver.ifs.model.Constraint;
-import org.cpsolver.ifs.solver.ParallelSolver;
 import org.cpsolver.ifs.solver.Solver;
 import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.Callback;
 import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.ProblemLoader;
+import org.cpsolver.ifs.util.ProblemSaver;
 import org.cpsolver.ifs.util.Progress;
-import org.cpsolver.ifs.util.ProgressWriter;
 import org.cpsolver.ifs.util.ToolBox;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.dom4j.Document;
-import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
@@ -91,6 +78,7 @@ import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.TimePattern;
+import org.unitime.timetable.model.SolverParameterGroup.SolverType;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
@@ -103,19 +91,16 @@ import org.unitime.timetable.solver.interactive.Hint;
 import org.unitime.timetable.solver.interactive.Suggestion;
 import org.unitime.timetable.solver.interactive.Suggestions;
 import org.unitime.timetable.solver.interactive.SuggestionsModel;
-import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.solver.ui.ConflictStatisticsInfo;
 import org.unitime.timetable.solver.ui.DeptBalancingReport;
 import org.unitime.timetable.solver.ui.DiscouragedInstructorBtbReport;
 import org.unitime.timetable.solver.ui.PerturbationReport;
-import org.unitime.timetable.solver.ui.PropertiesInfo;
 import org.unitime.timetable.solver.ui.RoomReport;
 import org.unitime.timetable.solver.ui.SameSubpartBalancingReport;
 import org.unitime.timetable.solver.ui.SolverUnassignedClassesModel;
 import org.unitime.timetable.solver.ui.StudentConflictsReport;
 import org.unitime.timetable.solver.ui.ViolatedDistrPreferencesReport;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.timegrid.SolverGridModel;
 import org.unitime.timetable.webutil.timegrid.TimetableGridContext;
 import org.unitime.timetable.webutil.timegrid.TimetableGridModel;
@@ -124,78 +109,110 @@ import org.unitime.timetable.webutil.timegrid.TimetableGridModel;
 /**
  * @author Tomas Muller
  */
-public class TimetableSolver extends ParallelSolver<Lecture, Placement> implements SolverProxy {
-	private static Log sLog = LogFactory.getLog(TimetableSolver.class);
-	private boolean iWorking = false;
-	private Date iLoadedDate = null;
-	private int iDebugLevel = Progress.MSGLEVEL_INFO;
+public class TimetableSolver extends AbstractSolver<Lecture, Placement, TimetableModel> implements SolverProxy {
 	private Vector iAssignmentRecords = new Vector();
 	private Vector iBestAssignmentRecords = new Vector();
 	private ConflictStatisticsInfo iCbsInfo = null;
-	private CommitedClassAssignmentProxy iCommitedClassAssignmentProxy = null;
-	
-	private long iLastTimeStamp = System.currentTimeMillis();
-	private boolean iIsPassivated = false;
-	private Map iProgressBeforePassivation = null;
-	private PropertiesInfo iGlobalInfoBeforePassivation = null;
-	private Map<String,String> iCurrentSolutionInfoBeforePassivation = null;
-	private Map<String,String> iBestSolutionInfoBeforePassivation = null;
-	private File iPassivationFolder = null;
-	private String iPassivationPuid = null;
-	private Thread iWorkThread = null;
-	
-	private SolverDisposeListener iSolverDisposeListener;
+	private CommitedClassAssignmentProxy iCommitedClassAssignmentProxy;
 
 	public TimetableSolver(DataProperties properties, SolverDisposeListener solverDisposeListener) {
-		super(properties);
+		super(properties, solverDisposeListener);
 		iCommitedClassAssignmentProxy = new CommitedClassAssignmentProxy();
-		iSolverDisposeListener = solverDisposeListener;
 	}
 	
-	public Date getLoadedDate() {
-		if (iLoadedDate==null && !isPassivated()) {
-			List<Progress.Message> log = Progress.getInstance(currentSolution().getModel()).getLog();
-			if (log!=null && !log.isEmpty()) {
-				iLoadedDate = log.get(0).getDate();
+	@Override
+	protected ProblemSaver<Lecture, Placement, TimetableModel> getDatabaseSaver(Solver<Lecture, Placement> solver) {
+		return new TimetableDatabaseSaver(solver);
+	}
+
+	@Override
+	protected ProblemLoader<Lecture, Placement, TimetableModel> getDatabaseLoader(TimetableModel model, org.cpsolver.ifs.assignment.Assignment<Lecture, Placement> assignment) {
+		return new TimetableDatabaseLoader(model, assignment);
+	}
+
+	@Override
+	protected TimetableModel createModel(DataProperties properties) {
+		return new TimetableModel(properties);
+	}
+
+	@Override
+	protected Document createCurrentSolutionBackup(boolean anonymize, boolean idconv) {
+		
+        if (anonymize) {
+            getProperties().setProperty("Xml.ConvertIds", idconv ? "true" : "false");
+            getProperties().setProperty("Xml.ShowNames", "false");
+        }
+
+        TimetableXMLSaver saver = new TimetableXMLSaver(this);
+		Document document = saver.saveDocument();
+		if (!anonymize) {
+			Progress.getInstance(saver.getModel()).save(document.getRootElement());
+			if (!iAssignmentRecords.isEmpty()) {
+				Element assignmentRecords = document.getRootElement().addElement("assignmentRecords");
+				for (Enumeration e=iAssignmentRecords.elements();e.hasMoreElements();) {
+					AssignmentRecord r = (AssignmentRecord)e.nextElement();
+					r.toXml(assignmentRecords.addElement("record"));
+				}
+			}
+			if (!iBestAssignmentRecords.isEmpty()) {
+				Element bestAssignmentRecords = document.getRootElement().addElement("bestAssignmentRecords");
+				for (Enumeration e=iBestAssignmentRecords.elements();e.hasMoreElements();) {
+					AssignmentRecord r = (AssignmentRecord)e.nextElement();
+					r.toXml(bestAssignmentRecords.addElement("record"));
+				}
+			}
+			ConflictStatisticsInfo cbsInfo = getCbsInfo();
+			if (cbsInfo!=null)
+				cbsInfo.save(document.getRootElement().addElement("cbsInfo"));
+		}
+
+		if (anonymize) {
+			getProperties().setProperty("Xml.ConvertIds", "false");
+			getProperties().setProperty("Xml.ShowNames", "true");
+		}
+
+		return document;
+	}
+
+	@Override
+	protected void restureCurrentSolutionFromBackup(Document document) {
+		TimetableXMLLoader loader = new TimetableXMLLoader((TimetableModel)currentSolution().getModel(), currentSolution().getAssignment());
+		loader.load(currentSolution(), document);
+		iAssignmentRecords.clear(); iBestAssignmentRecords.clear();
+		Element assignmentRecords = document.getRootElement().element("assignmentRecords");
+		if (assignmentRecords!=null) {
+			for (Iterator i=assignmentRecords.elementIterator("record");i.hasNext();) {
+				iAssignmentRecords.add(AssignmentRecord.fromXml((Element)i.next()));
 			}
 		}
-		return iLoadedDate;
+		Element bestAssignmentRecords = document.getRootElement().element("bestAssignmentRecords");
+		if (bestAssignmentRecords!=null) {
+			for (Iterator i=bestAssignmentRecords.elementIterator("record");i.hasNext();) {
+				iBestAssignmentRecords.add(AssignmentRecord.fromXml((Element)i.next()));
+			}
+		}
+		if (document.getRootElement().element("cbsInfo")!=null) {
+			iCbsInfo = new ConflictStatisticsInfo();
+			iCbsInfo.load(document.getRootElement().element("cbsInfo"));
+		}
 	}
 	
-	public org.cpsolver.ifs.solution.Solution<Lecture, Placement> currentSolution() {
-		activateIfNeeded();
-		return super.currentSolution();
-	}
-	
-	public void start() {
-		activateIfNeeded();
+	@Override
+	protected void beforeStart() {
 		iCbsInfo = null;
-		super.start();
 	}
-	
-	public String getLog() {
-		return Progress.getInstance(currentSolution().getModel()).getHtmlLog(iDebugLevel, true);
-	}
-	public String getLog(int level, boolean includeDate) {
-		return Progress.getInstance(currentSolution().getModel()).getHtmlLog(level, includeDate);
-	}
-	public String getLog(int level, boolean includeDate, String fromStage) {
-		return Progress.getInstance(currentSolution().getModel()).getHtmlLog(level, includeDate, fromStage);
-	}
+
+	@Override
 	public String getNote() {
 		return getProperties().getProperty("General.Note");
 	}
+	
+	@Override
 	public void setNote(String note) {
 		getProperties().setProperty("General.Note",note);
 	}
-	public void setDebugLevel(int level) { iDebugLevel = level; }
-	public int getDebugLevel() { return iDebugLevel; }
 	
-	public boolean isWorking() {
-		if (isRunning()) return true;
-		return iWorking;
-	}
-	
+	@Override
 	public void restoreBest() {
 		iAssignmentRecords = new Vector(iBestAssignmentRecords);
 		currentSolution().restoreBest();
@@ -205,28 +222,14 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 		iBestAssignmentRecords = new Vector(iAssignmentRecords);
 		currentSolution().saveBest();
 	}
-	
-	public Map getProgress() {
-		if (isPassivated()) return iProgressBeforePassivation;
-    	try {
-    		Hashtable ret = new Hashtable(); 
-    		Progress p = Progress.getInstance(super.currentSolution().getModel());
-    		ret.put("STATUS",p.getStatus());
-    		ret.put("PHASE",p.getPhase());
-    		ret.put("PROGRESS",new Long(p.getProgress()));
-    		ret.put("MAX_PROGRESS",new Long(p.getProgressMax()));
-    		ret.put("VERSION", Constants.getVersion());
-    		return ret;
-    	} catch (Exception e) {
-    		sLog.error(e.getMessage(),e);
-    		return null;
-    	}
-    }
-    
+
+	@Override
 	public void finalSectioning() {
 		iWorkThread = new FinalSectioning();
 		iWorkThread.start();
 	}
+	
+	protected void afterFinalSectioning() {}
     
     public class FinalSectioning extends Thread {
     	public void run() {
@@ -234,7 +237,6 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     		iWorking = true;
     		try {
     			((TimetableModel)currentSolution().getModel()).switchStudents(currentSolution().getAssignment());
-   	    		//new EnrollmentCheck((TimetableModel)currentSolution().getModel()).checkStudentEnrollments(Progress.getInstance(currentSolution().getModel()));
     		} finally {
     			iWorking = false;
     			Progress.getInstance(currentSolution().getModel()).setStatus("Awaiting commands ...");
@@ -243,135 +245,40 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     	}
     }
     
-    public void dispose() {
-    	disposeNoInherit(true);
+    @Override
+    protected void disposeNoInherit(boolean unregister) {
+    	iAssignmentRecords.clear(); iBestAssignmentRecords.clear(); iCbsInfo = null;
+    	super.disposeNoInherit(unregister);
     }
     
-    private void disposeNoInherit(boolean unregister) {
-    	super.dispose();
-   		iAssignmentRecords.clear(); iBestAssignmentRecords.clear(); iCbsInfo = null;
-    	if (currentSolution()!=null && currentSolution().getModel()!=null)
-    		Progress.removeInstance(currentSolution().getModel());
-    	setInitalSolution((org.cpsolver.ifs.solution.Solution)null);
-    	if (unregister && iSolverDisposeListener != null) iSolverDisposeListener.onDispose(); 
-    }
-    
-    protected void onFinish() {
-		super.onFinish();
-		try {
-			iWorking = true;
-			if (currentSolution().getBestInfo()!=null)
-				currentSolution().restoreBest();
-			if (getProperties().getPropertyBoolean("General.SwitchStudents",true)) {
-				((TimetableModel)currentSolution().getModel()).switchStudents(currentSolution().getAssignment());
-				currentSolution().saveBest();
-			}
-			if (currentSolution().getBestInfo()!=null && getProperties().getPropertyBoolean("General.Save",false)) {
-				TimetableDatabaseSaver saver = new TimetableDatabaseSaver(this);
-				Lock lock = currentSolution().getLock().readLock();
-				lock.lock();
-				try {
-					saver.save();
-				} finally {
-					lock.unlock();
-				}
-			}
-			int repeat = getProperties().getPropertyInt("Test.Repeat",0);
-			if (repeat>0) {
-				getProperties().setProperty("Test.Repeat", String.valueOf(repeat-1));
-				getProperties().remove("General.SolutionId");
-				load(getProperties());
-				return;
-			}
-			if (getProperties().getPropertyBoolean("General.Unload",false)) {
-				dispose();
-			} else {
-				Progress.getInstance(currentSolution().getModel()).setStatus("Awaiting commands ...");
-			}
-		} finally {
-			iWorking = false;
+    @Override
+    protected void finishBeforeSave() {
+		if (getProperties().getPropertyBoolean("General.SwitchStudents",true)) {
+			((TimetableModel)currentSolution().getModel()).switchStudents(currentSolution().getAssignment());
+			currentSolution().saveBest();
 		}
-	}
-    
-    protected void onStop() {
-    	super.onStop();
-		if (currentSolution().getBestInfo()!=null)
-			currentSolution().restoreBest();
     }
     
+    @Override
     public void save(boolean createNewSolution, boolean commitSolution) {
-		iWorking = true;
-		getProperties().setProperty("General.CreateNewSolution",(createNewSolution?"true":"false"));
+		getProperties().setProperty("General.CreateNewSolution", (createNewSolution ? "true" : "false"));
 		if (createNewSolution)
 			getProperties().remove("General.SolutionId");
-		getProperties().setProperty("General.CommitSolution",(commitSolution?"true":"false"));
-		TimetableDatabaseSaver saver = new TimetableDatabaseSaver(this);
-		saver.setCallback(getSavingDoneCallback());
-		iWorkThread = new Thread(saver);
-		iWorkThread.setPriority(THREAD_PRIORITY);
-		iWorkThread.start();
+		getProperties().setProperty("General.CommitSolution", (commitSolution ? "true" : "false"));
+		super.save();
     }
-    
+
+    @Override
     public void load(DataProperties properties) {
     	iAssignmentRecords.clear(); iBestAssignmentRecords.clear(); iCbsInfo = null;
-    	sLog.debug("History cleared");
-    	setProperties(properties);
-    	TimetableModel model = new TimetableModel(getProperties());
-    	Progress.getInstance(model).addProgressListener(new ProgressWriter(System.out));
-    	
-		iWorking = true;
-		setInitalSolution(model);
-		initSolver();
-		
-		TimetableDatabaseLoader loader = new TimetableDatabaseLoader(model, currentSolution().getAssignment());
-		loader.setCallback(getLoadingDoneCallback());
-		iWorkThread = new Thread(loader);
-		iWorkThread.setPriority(THREAD_PRIORITY);
-		iWorkThread.start();
+    	super.load(properties);
     }
     
-    public void reload(DataProperties properties) {
-    	if (currentSolution()==null || currentSolution().getModel()==null) {
-    		load(properties);
-    		return;
-    	}
-    	
-    	Callback callBack = getReloadingDoneCallback();
-    	setProperties(properties);
-    	TimetableModel model = new TimetableModel(getProperties());
-    	
-		iWorking = true;
-    	Progress.changeInstance(currentSolution().getModel(),model);
-		setInitalSolution(model);
-		initSolver();
-		
-		TimetableDatabaseLoader loader = new TimetableDatabaseLoader(model, currentSolution().getAssignment());
-		loader.setCallback(callBack);
-		iWorkThread = new Thread(loader);
-		iWorkThread.start();
-    }
-    
-    public Callback getLoadingDoneCallback() {
-    	return new LoadingDoneCallback();
-    }
-    
+    @Override
     public Callback getReloadingDoneCallback() {
     	return new ReloadingDoneCallback();
     }
 
-    public Callback getSavingDoneCallback() {
-    	return new SavingDoneCallback();
-    }
-    
-    protected void afterSave() {
-    }
-    
-    protected void afterLoad() {
-    }
-
-    protected void afterFinalSectioning() {
-    }
-    
     protected boolean useAmPm() {
     	return getProperties().getPropertyBoolean("General.UseAmPm", true);
     }
@@ -537,46 +444,8 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     		Progress.getInstance(currentSolution().getModel()).setStatus("Awaiting commands ...");
     	}
     }
-    public class LoadingDoneCallback implements Callback {
-    	public void execute() {
-    		iLoadedDate = new Date();
-    		iWorking = false;
-    		afterLoad();
-    		Progress.getInstance(currentSolution().getModel()).setStatus("Awaiting commands ...");
-    		if (getProperties().getPropertyBoolean("General.StartSolver",false))
-    			start();
-    	}
-    }
-    public class SavingDoneCallback implements Callback {
-    	public void execute() {
-    		iWorking = false;
-    		afterSave();
-    		Progress.getInstance(currentSolution().getModel()).setStatus("Awaiting commands ...");
-    	}
-    }
 
-    public PropertiesInfo getGlobalInfo() {
-    	if (isPassivated()) return iGlobalInfoBeforePassivation;
-    	Map<String,String> info = null;
-		Lock lock = currentSolution().getLock().readLock();
-		lock.lock();
-		try {
-    		info = super.currentSolution().getBestInfo();
-			if (info==null)
-				info = super.currentSolution().getInfo();
-		} finally {
-			lock.unlock();
-		}
-		PropertiesInfo globalInfo = new PropertiesInfo(); 
-		for (Iterator i1=info.entrySet().iterator();i1.hasNext();) {
-			Map.Entry entry = (Map.Entry)i1.next();
-			String key = (String)entry.getKey();
-			String value = entry.getValue().toString();
-			globalInfo.setProperty(key, value);
-		}
-		return globalInfo;
-    }
-    
+    @Override
     public ConflictStatisticsInfo getCbsInfo() {
     	ConflictStatistics cbs = null;
     	for (Extension ext: getExtensions()) {
@@ -600,6 +469,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     	return info; 
     }
     
+    @Override
     public ConflictStatisticsInfo getCbsInfo(Long classId) {
     	ConflictStatistics cbs = null;
         for (Extension ext: getExtensions()) {
@@ -623,6 +493,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     	return info; 
     }    
     
+    @Override
     public SolverUnassignedClassesModel getUnassignedClassesModel(String prefix) {
     	Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
@@ -712,6 +583,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 		});
 	}
     
+    @Override
     public Vector getTimetableGridTables(TimetableGridContext context) {
     	Vector models = new Vector();
     	Query q = (context.getFilter() == null ? null : new Query(context.getFilter()));
@@ -779,6 +651,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 		return models;
     }
     
+    @Override
     public ClassAssignmentDetails getClassAssignmentDetails(Long classId, boolean includeConstraints) {
     	Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
@@ -794,6 +667,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     	}
     }
     
+    @Override
     public Suggestions getSuggestions(SuggestionsModel model) {
     	if (iWorking) return null;
     	Lock lock = currentSolution().getLock().writeLock();
@@ -805,6 +679,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     	}
     }
     
+    @Override
     public AssignmentPreferenceInfo getInfo(Hint hint) {
     	Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
@@ -815,6 +690,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     	}
     }
     
+    @Override
     public String getNotValidReason(Hint hint) {
     	Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
@@ -825,6 +701,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     	}
     }
 
+    @Override
     public void assign(Collection hints) {
     	Lock lock = currentSolution().getLock().writeLock();
 		lock.lock();
@@ -871,6 +748,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 		}
     }
     
+    @Override
     public Hashtable conflictInfo(Collection hints) {
     	Hashtable conflictTable = new Hashtable();
     	Lock lock = currentSolution().getLock().readLock();
@@ -916,122 +794,13 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 		}
 		return conflictTable;
     }
-    
-    public Map<String,String> currentSolutionInfo() {
-    	if (isPassivated()) return iCurrentSolutionInfoBeforePassivation;
-    	Lock lock = currentSolution().getLock().readLock();
-		lock.lock();
-		try {
-    		return super.currentSolution().getExtendedInfo();
-    	} finally {
-    		lock.unlock();
-    	}
-    }
 
-    public Map<String,String> bestSolutionInfo() {
-    	if (isPassivated()) return iBestSolutionInfoBeforePassivation;
-    	Lock lock = currentSolution().getLock().readLock();
-		lock.lock();
-		try {
-    		return super.currentSolution().getBestInfo();
-    	} finally {
-    		lock.unlock();
-    	}
-    }
-    
-    public void setProperties(DataProperties properties) {
-    	activateIfNeeded();
-    	this.getProperties().putAll(properties);
-    }
-    
-    public boolean backup(File folder, String puid) {
-    	folder.mkdirs();
-    	if (currentSolution()==null) return false;
-    	Lock lock = currentSolution().getLock().readLock();
-		lock.lock();
-		try {
-    		TimetableXMLSaver saver = new TimetableXMLSaver(this);
-    		File outXmlFile = new File(folder,puid+BackupFileFilter.sXmlExtension);
-    		File outPropertiesFile = new File(folder,puid+BackupFileFilter.sPropertiesExtension);
-    		try {
-    			saver.save(outXmlFile);
-    			FileOutputStream fos = null;
-    			try {
-    				fos = new FileOutputStream(outPropertiesFile);
-    				getProperties().store(fos,"Backup file");
-    				fos.flush(); fos.close(); fos=null;
-    			} finally {
-            		try {
-            			if (fos!=null) fos.close();
-            		} catch (IOException e) {}
-    			}
-    			return true;
-    		} catch (Exception e) {
-    			sLog.error(e.getMessage(),e);
-    			if (outXmlFile.exists()) outXmlFile.delete();
-    			if (outPropertiesFile.exists()) outPropertiesFile.delete();
-    		}
-    	} finally {
-    		lock.unlock();
-    	}
-		return false;
-    }
-    
-    public boolean restore(File folder, String puid) {
-    	return restore(folder, puid, false);
-    }
-    
-    public boolean restore(File folder, String puid, boolean removeFiles) {
-   		iAssignmentRecords.clear(); iBestAssignmentRecords.clear(); iCbsInfo = null;
-    	sLog.debug("restore(folder="+folder+",puid="+puid+")");
-		File inXmlFile = new File(folder,puid+BackupFileFilter.sXmlExtension);
-		File inPropertiesFile = new File(folder,puid+BackupFileFilter.sPropertiesExtension);
-		
-		TimetableModel model = null;
-		try {
-			if (isRunning()) stopSolver();
-			this.disposeNoInherit(false);
-			FileInputStream fis = null;
-			try {
-				fis = new FileInputStream(inPropertiesFile);
-				getProperties().load(fis);
-			} finally {
-				if (fis!=null) fis.close();
-			}
-			
-			model = new TimetableModel(getProperties());
-	    	Progress.getInstance(model).addProgressListener(new ProgressWriter(System.out));
-	    	
-	    	setInitalSolution(model);
-	    	initSolver();
-			
-			TimetableXMLLoader loader = new TimetableXMLLoader(model, currentSolution().getAssignment());
-			loader.setSolver(this);
-			loader.setInputFile(inXmlFile);
-			loader.load(currentSolution());
-			loader.setSolver(null);
-			
-			Progress.getInstance(model).setStatus("Awaiting commands ...");
-			
-			if (removeFiles) {
-				inXmlFile.delete();
-				inPropertiesFile.delete();
-			}
-			
-			return true;
-		} catch (Exception e) {
-			sLog.error(e.getMessage(),e);
-			if (model!=null) Progress.removeInstance(model);
-		}
-		
-		return false;
-    }
-    
     public Long[] getOwnerId() {
     	return getProperties().getPropertyLongArry("General.SolverGroupId", null);
     }
     
     private HashSet iDepartmentIds = null;
+    @Override
     public Set getDepartmentIds() {
     	if (iDepartmentIds!=null) return iDepartmentIds;
     	iDepartmentIds = new HashSet();
@@ -1045,6 +814,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     	return iDepartmentIds;
     }
     
+    @Override
 	public Assignment getAssignment(Class_ clazz) {
 		Department dept = clazz.getManagingDept();
 		if (dept!=null && getDepartmentIds().contains(dept.getUniqueId()))
@@ -1052,6 +822,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
         return iCommitedClassAssignmentProxy.getAssignment(clazz);
     }
     
+    @Override
     public Assignment getAssignment(Long classId) {
     	Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
@@ -1103,6 +874,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     	}
     }
 
+    @Override
     public AssignmentPreferenceInfo getAssignmentInfo(Class_ clazz) {
 		Department dept = clazz.getManagingDept();
 		if (dept!=null && getDepartmentIds().contains(dept.getUniqueId()))
@@ -1110,6 +882,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 		return iCommitedClassAssignmentProxy.getAssignmentInfo(clazz);
     }
     
+    @Override
     public AssignmentPreferenceInfo getAssignmentInfo(Long classId) {
     	Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
@@ -1129,6 +902,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     	}
     }
 
+    @Override
 	public Hashtable getAssignmentTable(Collection classesOrClassIds) {
 		Hashtable assignments = new Hashtable();
 		for (Iterator i=classesOrClassIds.iterator();i.hasNext();) {
@@ -1140,10 +914,13 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 		}
 		return assignments;
 	}
+    
+    @Override
     public Hashtable getAssignmentTable2(Collection classesOrClassIds) {
         return getAssignmentTable(classesOrClassIds);
     }
 	
+    @Override
 	public Hashtable getAssignmentInfoTable(Collection classesOrClassIds) {
 		Hashtable infos = new Hashtable();
 		for (Iterator i=classesOrClassIds.iterator();i.hasNext();) {
@@ -1155,14 +932,18 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 		}
 		return infos;
 	}
+    
+    @Override
     public Hashtable getAssignmentInfoTable2(Collection classesOrClassIds) {
         return getAssignmentInfoTable(classesOrClassIds);
     }
 
+    @Override
 	public Vector getAssignmentRecords() {
 		return iAssignmentRecords;
 	}
 	
+    @Override
 	public Vector getChangesToInitial() {
 		Vector ret = new Vector();
 		Lock lock = currentSolution().getLock().readLock();
@@ -1186,6 +967,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 		return ret;
 	}
 	
+    @Override
 	public Vector getAssignedClasses() {
 		Vector ret = new Vector();
 		Lock lock = currentSolution().getLock().readLock();
@@ -1200,6 +982,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 		return ret;
 	}
 	
+    @Override
 	public Vector getAssignedClasses(String prefix) {
 		Vector ret = new Vector();
 		Lock lock = currentSolution().getLock().readLock();
@@ -1215,6 +998,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 		return ret;
 	}
 
+    @Override
 	public Vector getChangesToBest() {
 		Vector ret = new Vector();
 		Lock lock = currentSolution().getLock().readLock();
@@ -1239,6 +1023,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 		return ret;
 	}
 	
+    @Override
 	public Vector getChangesToSolution(Long solutionId) {
 		return getChangesToSolution(solutionId, false);
 	}
@@ -1395,6 +1180,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 		}
 	}
 	
+	@Override
 	public RoomReport getRoomReport(BitSet sessionDays, int startDayDayOfWeek, Long roomType, Float nrWeeks) {
 		Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
@@ -1404,6 +1190,8 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 			lock.unlock();
 		}
 	}
+	
+	@Override
 	public DeptBalancingReport getDeptBalancingReport() {
 		Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
@@ -1413,6 +1201,8 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 			lock.unlock();
 		}
 	}
+	
+	@Override
 	public ViolatedDistrPreferencesReport getViolatedDistrPreferencesReport() {
 		Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
@@ -1422,6 +1212,8 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 			lock.unlock();
 		}
 	}
+	
+	@Override
 	public DiscouragedInstructorBtbReport getDiscouragedInstructorBtbReport() {
 		Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
@@ -1431,6 +1223,8 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 			lock.unlock();
 		}
 	}
+	
+	@Override
 	public StudentConflictsReport getStudentConflictsReport() {
 		Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
@@ -1440,6 +1234,8 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 			lock.unlock();
 		}
 	}
+	
+	@Override
 	public SameSubpartBalancingReport getSameSubpartBalancingReport() {
 		Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
@@ -1449,6 +1245,8 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 			lock.unlock();
 		}
 	}
+	
+	@Override
 	public PerturbationReport getPerturbationReport() {
 		Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
@@ -1459,54 +1257,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 		}
 	}
 	
-	public void load(Element element) {
-		try {
-			iAssignmentRecords.clear(); iBestAssignmentRecords.clear();
-			Element assignmentRecords = element.element("assignmentRecords");
-			if (assignmentRecords!=null) {
-				for (Iterator i=assignmentRecords.elementIterator("record");i.hasNext();) {
-					iAssignmentRecords.add(AssignmentRecord.fromXml((Element)i.next()));
-				}
-			}
-			Element bestAssignmentRecords = element.element("bestAssignmentRecords");
-			if (bestAssignmentRecords!=null) {
-				for (Iterator i=bestAssignmentRecords.elementIterator("record");i.hasNext();) {
-					iBestAssignmentRecords.add(AssignmentRecord.fromXml((Element)i.next()));
-				}
-			}
-			if (element.element("cbsInfo")!=null) {
-				iCbsInfo = new ConflictStatisticsInfo();
-				iCbsInfo.load(element.element("cbsInfo"));
-			}
-		} catch (Exception e) {
-			sLog.error("Unable to load solver-related data, reson:"+e.getMessage(),e);
-		}
-	}
-	
-	public void save(Element element) {
-		try {
-			if (!iAssignmentRecords.isEmpty()) {
-				Element assignmentRecords = element.addElement("assignmentRecords");
-				for (Enumeration e=iAssignmentRecords.elements();e.hasMoreElements();) {
-					AssignmentRecord r = (AssignmentRecord)e.nextElement();
-					r.toXml(assignmentRecords.addElement("record"));
-				}
-			}
-			if (!iBestAssignmentRecords.isEmpty()) {
-				Element bestAssignmentRecords = element.addElement("bestAssignmentRecords");
-				for (Enumeration e=iBestAssignmentRecords.elements();e.hasMoreElements();) {
-					AssignmentRecord r = (AssignmentRecord)e.nextElement();
-					r.toXml(bestAssignmentRecords.addElement("record"));
-				}
-			}
-			ConflictStatisticsInfo cbsInfo = getCbsInfo();
-			if (cbsInfo!=null)
-				cbsInfo.save(element.addElement("cbsInfo"));
-		} catch (Exception e) {
-			sLog.error("Unable to save solver-related data, reson:"+e.getMessage(),e);
-		}
-	}
-	
+	@Override
 	public CSVFile export(boolean useAmPm) {
 		Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
@@ -1570,174 +1321,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 			lock.unlock();
 		}
 	}
-	
-	public synchronized boolean isPassivated() {
-		return iIsPassivated;
-	}
-	
-	public synchronized long timeFromLastUsed() {
-		return System.currentTimeMillis()-iLastTimeStamp;
-	}
-	
-	public synchronized boolean activateIfNeeded() {
-		iLastTimeStamp = System.currentTimeMillis();
-		if (!isPassivated()) return false;
-		sLog.debug("<activate "+iPassivationPuid+">");
-
-		iIsPassivated = false;
-
-		System.gc();
-		sLog.debug(" -- memory usage before activation:"+org.unitime.commons.Debug.getMem());
-		restore(iPassivationFolder, iPassivationPuid, true);
-        System.gc();
-        sLog.debug(" -- memory usage after activation:"+org.unitime.commons.Debug.getMem());
-		
-		return true;
-	}
-	
-	public synchronized boolean passivate(File folder, String puid) {
-		if (isPassivated() || super.currentSolution()==null || super.currentSolution().getModel()==null) return false;
-		sLog.debug("<passivate "+puid+">");
-        System.gc();
-        sLog.debug(" -- memory usage before passivation:"+org.unitime.commons.Debug.getMem());
-		iProgressBeforePassivation = getProgress();
-		if (iProgressBeforePassivation!=null)
-			iProgressBeforePassivation.put("STATUS","Pasivated");
-		iGlobalInfoBeforePassivation = getGlobalInfo();
-		iCurrentSolutionInfoBeforePassivation = currentSolutionInfo();
-		iBestSolutionInfoBeforePassivation = bestSolutionInfo();
-		
-		iPassivationFolder = folder;
-		iPassivationPuid = puid;
-		backup(iPassivationFolder, iPassivationPuid);
-
-   		disposeNoInherit(false);
-        System.gc();
-        sLog.debug(" -- memory usage after passivation:"+org.unitime.commons.Debug.getMem());
-		
-		iIsPassivated = true;
-		return true;
-	}
-
-	public synchronized boolean passivateIfNeeded(File folder, String puid) {
-		long inactiveTimeToPassivate = 60000l * ApplicationProperty.SolverPasivationTime.intValue();
-		if (isPassivated() || inactiveTimeToPassivate <= 0 || timeFromLastUsed() < inactiveTimeToPassivate || isWorking()) return false;
-		return passivate(folder, puid);
-	}
-	
-	public Date getLastUsed() {
-		return new Date(iLastTimeStamp);
-	}
     
-    public byte[] exportXml() throws IOException {
-		Lock lock = currentSolution().getLock().readLock();
-		lock.lock();
-		try {
-        	File temp = File.createTempFile("course-" + getProperties().getProperty("General.SolverGroupId","").replace(',', '-'), ".xml");
-            File conv = null;
-            
-            boolean anonymize = ApplicationProperty.SolverXMLExportNames.isFalse(); 
-            boolean idconv = ApplicationProperty.SolverXMLExportConvertIds.isTrue();
-            if (anonymize) {
-                getProperties().setProperty("Xml.ConvertIds", idconv ? "true" : "false");
-                getProperties().setProperty("Xml.ShowNames", "false");
-                
-                if (idconv) {
-                	conv = File.createTempFile("idconv-" + getProperties().getProperty("General.SolverGroupId","").replace(',', '-'), ".xml");
-                	getProperties().setProperty("Xml.IdConv", conv.getPath());
-                	Document document = DocumentHelper.createDocument();
-                	document.addElement("id-convertor");
-                	FileOutputStream cos = new FileOutputStream(conv);
-                	(new XMLWriter(cos, OutputFormat.createPrettyPrint())).write(document);
-                	cos.flush(); cos.close();
-                }
-            }
-            
-            TimetableXMLSaver saver = new TimetableXMLSaver(this);
-            ByteArrayOutputStream ret = new ByteArrayOutputStream();
-            try {
-                saver.save(temp);
-                FileInputStream fis = new FileInputStream(temp);
-                byte[] buf = new byte[16*1024]; int read = 0;
-                while ((read=fis.read(buf, 0, buf.length))>0)
-                    ret.write(buf,0,read);
-                ret.flush();ret.close();
-                fis.close();
-            } catch (Exception e) {
-                sLog.error(e.getMessage(),e);
-            }
-            
-            temp.delete();
-            if (conv != null) conv.delete();
-            
-            if (anonymize) {
-                getProperties().setProperty("Xml.ConvertIds", "false");
-                getProperties().setProperty("Xml.ShowNames", "true");
-                getProperties().remove("Xml.IdConv");
-            }
-            
-            return ret.toByteArray();
-        } finally {
-        	lock.unlock();
-        }
-    }
-    
-    public void interrupt() {
-    	try {
-            if (iSolverThread != null) {
-                iStop = true;
-                if (iSolverThread.isAlive() && !iSolverThread.isInterrupted())
-                	iSolverThread.interrupt();
-            }
-			if (iWorkThread != null && iWorkThread.isAlive() && !iWorkThread.isInterrupted()) {
-				iWorkThread.interrupt();
-			}
-    	} catch (Exception e) {
-    		sLog.error("Unable to interrupt the solver, reason: " + e.getMessage(), e);
-    	}
-    }
-    
-    public Map<String,String> statusSolutionInfo() {
-    	if (isPassivated())
-    		return (iBestSolutionInfoBeforePassivation == null ? iCurrentSolutionInfoBeforePassivation : iBestSolutionInfoBeforePassivation);
-		Lock lock = currentSolution().getLock().readLock();
-		lock.lock();
-		try {
-    		Map<String,String> info = super.currentSolution().getBestInfo();
-    		try {
-    			org.cpsolver.ifs.solution.Solution<Lecture, Placement> solution = getWorkingSolution();
-    			if (info == null || getSolutionComparator().isBetterThanBestSolution(solution))
-    				info = solution.getModel().getInfo(solution.getAssignment());
-    		} catch (ConcurrentModificationException e) {}
-    		return info;
-    	} finally {
-    		lock.unlock();
-    	}
-    }
-    
-    public static interface SolverDisposeListener {
-    	public void onDispose();
-    }
-    
-	public Object exec(Object[] cmd) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
-		Class[] types = new Class[(cmd.length-2)/2];
-		Object[] args = new Object[(cmd.length-2)/2];
-		for (int i=0;i<types.length;i++) {
-			types[i]=(Class)cmd[2*i+2];
-			args[i]=cmd[2*i+3];
-		}
-		
-		return getClass().getMethod((String)cmd[0],types).invoke(this, args);
-	}
-    
-    public String getHost() {
-        return "local";
-    }
-    
-    public String getUser() {
-        return getProperties().getProperty("General.OwnerPuid");
-    }
-
 	@Override
 	public boolean hasFinalSectioning() {
 		return ((TimetableModel)currentSolution().getModel()).getStudentSectioning().hasFinalSectioning();
@@ -1763,16 +1347,8 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 		save(false, false);
 	}
 	
-    public void clear() {
-        Lock lock = currentSolution().getLock().writeLock();
-        lock.lock();
-        try {
-            for (Lecture lecture: currentSolution().getModel().variables()) {
-            	currentSolution().getAssignment().unassign(0, lecture);
-            }
-            currentSolution().clearBest();
-        } finally {
-        	lock.unlock();
-        }
-    }
+	@Override
+	public SolverType getType() {
+		return SolverType.COURSE;
+	}
 }

@@ -36,10 +36,18 @@ import org.unitime.timetable.model.dao.SolverParameterGroupDAO;
 public class SolverParameterGroup extends BaseSolverParameterGroup {
 	private static final long serialVersionUID = 1L;
 	
-	public static final int sTypeCourse = 0;
-	public static final int sTypeExam = 1;
-	public static final int sTypeStudent = 2;
-	public static final int sTypeInstructor = 3;
+	public static enum SolverType {
+		COURSE("crs_"),
+		EXAM("exm_"),
+		STUDENT("std_"),
+		INSTRUCTOR("ins_"),
+		;
+		
+		private String iPrefix;
+		SolverType(String prefix) { iPrefix = prefix; }
+		
+		public String getPrefix() { return iPrefix; }
+	}
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
 	public SolverParameterGroup () {

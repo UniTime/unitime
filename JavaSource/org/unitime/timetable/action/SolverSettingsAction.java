@@ -267,11 +267,13 @@ public class SolverSettingsAction extends Action {
                     for (Iterator i=hibSession.createQuery("select g from SolverParameterGroup g order by g.order").iterate();i.hasNext();) {
                         SolverParameterGroup g = (SolverParameterGroup)i.next();
                         if (myForm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_STUDENT_SOLVER) {
-                            if (g.getType()!=SolverParameterGroup.sTypeStudent) continue;
+                            if (g.getSolverType() != SolverParameterGroup.SolverType.STUDENT) continue;
                         } else if (myForm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_EXAM_SOLVER) {
-                            if (g.getType()!=SolverParameterGroup.sTypeExam) continue;
+                        	if (g.getSolverType() != SolverParameterGroup.SolverType.EXAM) continue;
+                        } else if (myForm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_INSTRUCTOR_SOLVER) {
+                        	if (g.getSolverType() != SolverParameterGroup.SolverType.INSTRUCTOR) continue;
                         } else {
-                            if (g.getType()!=SolverParameterGroup.sTypeCourse) continue;
+                        	if (g.getSolverType() != SolverParameterGroup.SolverType.COURSE) continue;
                         }
                         pw.println();
                         pw.println("## "+g.getDescription().replaceAll("<br>", "\n#"));

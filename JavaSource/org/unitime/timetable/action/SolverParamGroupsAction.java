@@ -247,7 +247,7 @@ public class SolverParamGroupsAction extends Action {
 		                        "onclick=\"solverParamGroupsForm.op2.value='Move Down';solverParamGroupsForm.uniqueId.value='"+group.getUniqueId()+"';solverParamGroupsForm.submit(); event.cancelBubble=true;\">";
 		            } else
 		                ops += "<img src='images/blank.png' border='0' align='absmiddle'>";
-					webTable.addLine(onClick, new String[] {ops, group.getName(), (group.getType()==SolverParameterGroup.sTypeStudent?"student":group.getType()==SolverParameterGroup.sTypeCourse?"course":"exam"), group.getDescription()},
+					webTable.addLine(onClick, new String[] {ops, group.getName(), group.getSolverType().name().toLowerCase(), group.getDescription()},
 							new Comparable[] {group.getOrder(), group.getName(), group.getType(), group.getDescription()});
 				}
 			}

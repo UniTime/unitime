@@ -85,10 +85,11 @@ public class SolverParamGroupsForm extends ActionForm {
     public int getType() { return this.type; }
     public void setType(int type) { this.type = type; }
     public Vector getTypes() {
-        Vector ret = new Vector(3);
-        ret.add(new IdValue(new Long(SolverParameterGroup.sTypeCourse), "Course Timetabling"));
-        ret.add(new IdValue(new Long(SolverParameterGroup.sTypeExam), "Examination Timetabling"));
-        ret.add(new IdValue(new Long(SolverParameterGroup.sTypeStudent), "Student Sectioning"));
+        Vector ret = new Vector(4);
+        ret.add(new IdValue(new Long(SolverParameterGroup.SolverType.COURSE.ordinal()), "Course Timetabling"));
+        ret.add(new IdValue(new Long(SolverParameterGroup.SolverType.EXAM.ordinal()), "Examination Timetabling"));
+        ret.add(new IdValue(new Long(SolverParameterGroup.SolverType.STUDENT.ordinal()), "Student Sectioning"));
+        ret.add(new IdValue(new Long(SolverParameterGroup.SolverType.INSTRUCTOR.ordinal()), "Instructor Scheduling"));
         return ret;
     }
 }
