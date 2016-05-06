@@ -540,7 +540,7 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 				}
 				if (iIncludeOtherCourses) {
 					// include courses of the student that are not in the curriculum 
-					for (CourseOffering co: iStudents.get(iStudentIds.get(student.getStudentId()))) {
+					for (CourseOffering co: iStudents.get(iStudentIds.get(s.getStudentId()))) {
 						CurCourse curCourse = iModel.getCourse(co.getUniqueId());
 						if (curCourse == null) {
 							Set<WeightedStudentId> courseStudents = iDemands.get(co.getUniqueId());

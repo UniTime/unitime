@@ -28,6 +28,15 @@
 	<version>4.1.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Curricula Last-Like Course Demands, Curricula Requests Course Demands</name>
+			<description>
+				<line>Fixed a null exception when there are made up students (and include other students is enabled).</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Other</title>
 		<item>
 			<name>Data Exchange: Academic Session Restore</name>
