@@ -62,6 +62,7 @@ import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
 import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.spring.SpringApplicationContextHolder;
@@ -81,6 +82,7 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 	private CourseSolverContainerRemote iCourseSolverContainer;
 	private ExaminationSolverContainerRemote iExamSolverContainer;
 	private StudentSolverContainerRemote iStudentSolverContainer;
+	private InstructorSchedulingContainerRemote iInstructorSchedulingContainer;
 	private OnlineStudentSchedulingContainerRemote iOnlineStudentSchedulingContainer;
 	private RemoteRoomAvailability iRemoteRoomAvailability;
 	private OnlineStudentSchedulingGenericUpdater iUpdater;
@@ -99,6 +101,7 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 		iCourseSolverContainer = new CourseSolverContainerRemote(channel, SCOPE_COURSE, local);
 		iExamSolverContainer = new ExaminationSolverContainerRemote(channel, SCOPE_EXAM);
 		iStudentSolverContainer = new StudentSolverContainerRemote(channel, SCOPE_STUDENT);
+		iInstructorSchedulingContainer = new InstructorSchedulingContainerRemote(channel, SCOPE_INSTRUCTOR);
 		iOnlineStudentSchedulingContainer = new OnlineStudentSchedulingContainerRemote(channel, SCOPE_ONLINE);
 		iRemoteRoomAvailability = new RemoteRoomAvailability(channel, SCOPE_AVAILABILITY);
 		iUpdater = new OnlineStudentSchedulingGenericUpdater(iDispatcher, iOnlineStudentSchedulingContainer);
@@ -113,6 +116,7 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 		iCourseSolverContainer.start();
 		iExamSolverContainer.start();
 		iStudentSolverContainer.start();
+		iInstructorSchedulingContainer.start();
 		iOnlineStudentSchedulingContainer.start();
 		iUpdater.start();
 
@@ -126,6 +130,7 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 		iCourseSolverContainer.stop();
 		iExamSolverContainer.stop();
 		iStudentSolverContainer.stop();
+		iInstructorSchedulingContainer.stop();
 		iOnlineStudentSchedulingContainer.stop();
 		iUpdater.stopUpdating();
 	}
@@ -167,6 +172,7 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 		ret += iCourseSolverContainer.getUsage();
 		ret += iExamSolverContainer.getUsage();
 		ret += iStudentSolverContainer.getUsage();
+		ret += iInstructorSchedulingContainer.getUsage();
 		ret += iOnlineStudentSchedulingContainer.getUsage();
 		return ret;
 	}
@@ -216,6 +222,21 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 	public SolverContainer<ExamSolverProxy> createExamSolverContainerProxy(Address address) {
 		ContainerInvocationHandler<RemoteSolverContainer<ExamSolverProxy>> handler = new ContainerInvocationHandler<RemoteSolverContainer<ExamSolverProxy>>(address, iExamSolverContainer);
 		SolverContainer<ExamSolverProxy> px = (SolverContainer<ExamSolverProxy>)Proxy.newProxyInstance(
+				SolverServerImplementation.class.getClassLoader(),
+				new Class[] {SolverContainer.class},
+				handler
+				);
+		return px;
+	}
+	
+	@Override
+	public SolverContainer<InstructorSchedulingProxy> getInstructorSchedulingContainer() {
+		return iInstructorSchedulingContainer;
+	}
+	
+	public SolverContainer<InstructorSchedulingProxy> createInstructorSchedulingContainerProxy(Address address) {
+		ContainerInvocationHandler<RemoteSolverContainer<InstructorSchedulingProxy>> handler = new ContainerInvocationHandler<RemoteSolverContainer<InstructorSchedulingProxy>>(address, iInstructorSchedulingContainer);
+		SolverContainer<InstructorSchedulingProxy> px = (SolverContainer<InstructorSchedulingProxy>)Proxy.newProxyInstance(
 				SolverServerImplementation.class.getClassLoader(),
 				new Class[] {SolverContainer.class},
 				handler
@@ -370,6 +391,10 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 		
 		public SolverContainer<StudentSolverProxy> getStudentSolverContainer() {
 			return createStudentSolverContainerProxy(iAddress);
+		}
+		
+		public SolverContainer<InstructorSchedulingProxy> getInstructorSchedulingContainer() {
+			return createInstructorSchedulingContainerProxy(iAddress);
 		}
 		
 		public SolverContainer<OnlineSectioningServer> getOnlineStudentSchedulingContainer() {

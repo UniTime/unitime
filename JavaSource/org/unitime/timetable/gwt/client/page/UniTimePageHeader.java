@@ -43,6 +43,7 @@ public class UniTimePageHeader implements PageHeaderDisplay {
 
 	private PageHeader iHeader;
 	private static UniTimePageHeader sInstance = null;
+	private Timer iTimer;
 	
 	private UniTimePageHeader() {
 		iHeader = new PageHeader();
@@ -56,7 +57,13 @@ public class UniTimePageHeader implements PageHeaderDisplay {
 
 		reloadSessionInfo();
 		reloadUserInfo();
-		reloadSolverInfo(false, null);
+		iTimer = new Timer() {
+			@Override
+			public void run() {
+				reloadSolverInfo(getLeft().isPopupShowing(), null);
+			}
+		};
+		iTimer.schedule(1000);
 	}
 	
 	public void insert(final RootPanel panel) {
@@ -122,6 +129,10 @@ public class UniTimePageHeader implements PageHeaderDisplay {
 		});
 	}
 	
+	public void reloadSolverInfo() {
+		reloadSolverInfo(getLeft().isPopupShowing(), null);
+	}
+	
 	public void reloadSolverInfo(boolean includeSolutionInfo, final Callback callback) {
 		if (getLeft().isPreventDefault()) return;
 		RPC.execute(new MenuInterface.SolverInfoRpcRequest(includeSolutionInfo), new AsyncCallback<SolverInfoInterface>() {
@@ -139,26 +150,14 @@ public class UniTimePageHeader implements PageHeaderDisplay {
 						getLeft().setVisible(false);
 					}
 				} catch (Exception e) {}
-				Timer t = new Timer() {
-					@Override
-					public void run() {
-						reloadSolverInfo(getLeft().isPopupShowing(), null);
-					}
-				};
-				t.schedule(result != null ? 1000 : 60000);
+				iTimer.schedule(result != null ? 1000 : 60000);
 				if (callback != null) 
 					callback.execute(null);
 			}
 			@Override
 			public void onFailure(Throwable caught) {
 				if (getLeft().isPreventDefault()) return;
-				Timer t = new Timer() {
-					@Override
-					public void run() {
-						reloadSolverInfo(getLeft().isPopupShowing(), null);
-					}
-				};
-				t.schedule(5000);
+				iTimer.schedule(5000);
 				if (callback != null) 
 					callback.execute(null);
 			}

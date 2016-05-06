@@ -32,6 +32,7 @@ import java.util.Set;
 import org.cpsolver.coursett.Constants;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.util.ProblemLoader;
 import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.instructor.constraints.SameInstructorConstraint;
 import org.cpsolver.instructor.model.Attribute;
@@ -68,7 +69,7 @@ import org.unitime.timetable.util.NameFormat;
 /**
  * @author Tomas Muller
  */
-public class InstructorSchedulingDatabaseLoader extends InstructorSchedulingLoader {
+public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRequest, TeachingAssignment, InstructorSchedulingModel> {
 	private Progress iProgress = null;
 	private Long iSessionId;
 	private Set<Long> iSolverGroupId = new HashSet<Long>();
@@ -117,6 +118,7 @@ public class InstructorSchedulingDatabaseLoader extends InstructorSchedulingLoad
     }
     
     protected void load(org.hibernate.Session hibSession) throws Exception {
+    	iProgress.setStatus("Loading input data ...");
     	List<Department> departments = (List<Department>)hibSession.createQuery(
     			"from Department d where d.solverGroup.uniqueId in :solverGroupId"
     			).setParameterList("solverGroupId", iSolverGroupId).list();
@@ -341,7 +343,7 @@ public class InstructorSchedulingDatabaseLoader extends InstructorSchedulingLoad
     	}
     	List<TeachingRequest> requests = new ArrayList<TeachingRequest>();
     	for (int i = 0; i < nrInstructors; i++) {
-    		TeachingRequest request = new TeachingRequest(clazz.getUniqueId(), course, load, sections);
+    		TeachingRequest request = new TeachingRequest(clazz.getUniqueId(), i, course, load, sections);
     		getModel().addVariable(request);
     		for (Iterator it = clazz.effectivePreferences(InstructorPref.class).iterator(); it.hasNext(); ) {
     			InstructorPref p = (InstructorPref)it.next();

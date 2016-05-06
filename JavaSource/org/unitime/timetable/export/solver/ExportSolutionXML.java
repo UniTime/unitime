@@ -31,6 +31,7 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.CommonSolverInterface;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 
@@ -70,6 +71,9 @@ public class ExportSolutionXML implements Exporter {
         case STUDENT:
         	helper.getSessionContext().checkPermission(Right.StudentSectioningSolutionExportXml);
         	break;
+        case INSTRUCTOR:
+        	helper.getSessionContext().checkPermission(Right.InstructorSchedulingSolutionExportXml);
+        	break;
 		}
         
         byte[] buf = solver.exportXml();
@@ -82,6 +86,7 @@ public class ExportSolutionXML implements Exporter {
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
 	@Autowired SolverService<StudentSolverProxy> studentSectioningSolverService;
+	@Autowired SolverService<InstructorSchedulingProxy> instructorSchedulingSolverService;
 
 	protected CommonSolverInterface getSolver(SolverType type) {
 		switch (type) {
@@ -91,6 +96,8 @@ public class ExportSolutionXML implements Exporter {
 			return examinationSolverService.getSolver();
 		case STUDENT:
 			return studentSectioningSolverService.getSolver();
+		case INSTRUCTOR:
+			return instructorSchedulingSolverService.getSolver();
 		default:
 			throw new IllegalArgumentException("Invalid solver type " + type);
 		}

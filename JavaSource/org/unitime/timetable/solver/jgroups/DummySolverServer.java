@@ -55,6 +55,7 @@ import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 
 /**
@@ -73,6 +74,7 @@ public class DummySolverServer extends AbstractSolverServer implements MessageLi
 	private DummyContainer<SolverProxy> iCourseSolverContainer;
 	private DummyContainer<ExamSolverProxy> iExamSolverContainer;
 	private DummyContainer<StudentSolverProxy> iStudentSolverContainer;
+	private DummyContainer<InstructorSchedulingProxy> iInstructorSchedulingContainer;
 	private DummyContainer<OnlineSectioningServer> iOnlineStudentSchedulingContainer;
 
 	private SolverContainerWrapper<SolverProxy> iCourseSolverContainerWrapper;
@@ -86,6 +88,7 @@ public class DummySolverServer extends AbstractSolverServer implements MessageLi
 		iCourseSolverContainer = new DummyContainer<SolverProxy>(channel, SCOPE_COURSE, SolverProxy.class);
 		iExamSolverContainer = new DummyContainer<ExamSolverProxy>(channel, SCOPE_EXAM, ExamSolverProxy.class);
 		iStudentSolverContainer = new DummyContainer<StudentSolverProxy>(channel, SCOPE_STUDENT, StudentSolverProxy.class);
+		iInstructorSchedulingContainer = new DummyContainer<InstructorSchedulingProxy>(channel, SCOPE_INSTRUCTOR, InstructorSchedulingProxy.class);
 		iOnlineStudentSchedulingContainer = new ReplicatedDummyContainer<OnlineSectioningServer>(channel, SCOPE_ONLINE, OnlineSectioningServer.class);
 		iRoomAvailabilityDispatcher = new MuxRpcDispatcher(SCOPE_AVAILABILITY, channel, null, null, this);
 		
@@ -169,6 +172,11 @@ public class DummySolverServer extends AbstractSolverServer implements MessageLi
 	@Override
 	public SolverContainer<StudentSolverProxy> getStudentSolverContainer() {
 		return iStudentSolverContainerWrapper;
+	}
+	
+	@Override
+	public SolverContainer<InstructorSchedulingProxy> getInstructorSchedulingContainer() {
+		return iInstructorSchedulingContainer;
 	}
 	
 	@Override

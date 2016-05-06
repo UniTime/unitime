@@ -1,3 +1,22 @@
+/*
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+*/
 package org.unitime.timetable.solver;
 
 import java.io.ByteArrayOutputStream;
@@ -10,11 +29,13 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.model.Constraint;
 import org.cpsolver.ifs.model.Model;
 import org.cpsolver.ifs.model.Value;
 import org.cpsolver.ifs.model.Variable;
@@ -36,6 +57,9 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.util.Constants;
 
+/**
+ * @author Tomas Muller
+ */
 public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V, T>, M extends Model<V, T>> extends ParallelSolver<V, T> implements CommonSolverInterface{
     protected Log sLog = null;
     private int iDebugLevel = Progress.MSGLEVEL_INFO;
@@ -159,7 +183,7 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
         Lock lock = currentSolution().getLock().readLock();
         lock.lock();
         try {
-            return super.currentSolution().getInfo();
+            return super.currentSolution().getExtendedInfo();
         } finally {
         	lock.unlock();
         }
@@ -271,13 +295,15 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
     }
     
     public Callback getLoadingDoneCallback() {
-        return new DefaultLoadingDoneCallback();
+        return new DefaultLoadingDoneCallback<V, T, M>(this);
     }
     
-    public abstract Callback getReloadingDoneCallback();
+    public Callback getReloadingDoneCallback() {
+    	return new DefaultReloadingDoneCallback<V, T, M>(this);
+    }
 
     public Callback getSavingDoneCallback() {
-        return new DefaultSavingDoneCallback();
+        return new DefaultSavingDoneCallback<V, T, M>(this);
     }
     
     protected void afterSave() {
@@ -286,22 +312,34 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
     protected void afterLoad() {
     }
 
-    public class DefaultLoadingDoneCallback implements Callback {
+    protected static class DefaultLoadingDoneCallback<V extends Variable<V, T>, T extends Value<V, T>, M extends Model<V, T>> implements Callback {
+        AbstractSolver<V, T, M> iSolver;
+        
+        protected DefaultLoadingDoneCallback(AbstractSolver<V, T, M> solver) {
+        	iSolver = solver;
+        }
+
         public void execute() {
-            iLoadedDate = new Date();
-            iWorking = false;
-            afterLoad();
-            Progress.getInstance(currentSolution().getModel()).setStatus("Awaiting commands ...");
-            if (getProperties().getPropertyBoolean("General.StartSolver",false))
-                start();
+        	iSolver.iLoadedDate = new Date();
+        	iSolver.iWorking = false;
+        	iSolver.afterLoad();
+            Progress.getInstance(iSolver.currentSolution().getModel()).setStatus("Awaiting commands ...");
+            if (iSolver.getProperties().getPropertyBoolean("General.StartSolver",false))
+            	iSolver.start();
         }
     }
     
-    public class DefaultSavingDoneCallback implements Callback {
+    protected static class DefaultSavingDoneCallback<V extends Variable<V, T>, T extends Value<V, T>, M extends Model<V, T>> implements Callback {
+        AbstractSolver<V, T, M> iSolver;
+        
+        protected DefaultSavingDoneCallback(AbstractSolver<V, T, M> solver) {
+        	iSolver = solver;
+        }
+        
         public void execute() {
-            iWorking = false;
-            afterSave();
-            Progress.getInstance(currentSolution().getModel()).setStatus("Awaiting commands ...");
+        	iSolver.iWorking = false;
+        	iSolver.afterSave();
+            Progress.getInstance(iSolver.currentSolution().getModel()).setStatus("Awaiting commands ...");
         }
     }
     
@@ -551,6 +589,128 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
             return ret.toByteArray();
         } finally {
         	lock.unlock();
+        }
+    }
+    
+    public static class DefaultReloadingDoneCallback<V extends Variable<V, T>, T extends Value<V, T>, M extends Model<V, T>> implements Callback {
+        Map<V, T> iCurrentAssignmentTable = new Hashtable();
+        Map<V, T> iBestAssignmentTable = new Hashtable();
+        Map<V, T> iInitialAssignmentTable = new Hashtable();
+        String iSolutionId = null;
+        Progress iProgress = null;
+        AbstractSolver<V, T, M> iSolver;
+        
+        public DefaultReloadingDoneCallback(AbstractSolver<V, T, M> solver) {
+        	iSolver = solver;
+        	iSolutionId = solver.getProperties().getProperty("General.SolutionId");
+        	Solution<V, T> solution = solver.currentSolution();
+            for (V v: solution.getModel().variables()) {
+            	T t = solution.getAssignment().getValue(v);
+                if (t != null)
+                    iCurrentAssignmentTable.put(v, t);
+                if (v.getBestAssignment() != null)
+                    iBestAssignmentTable.put(v, v.getBestAssignment());
+                if (v.getInitialAssignment() != null)
+                    iInitialAssignmentTable.put(v, v.getInitialAssignment());
+            }
+        }
+
+        protected V getVariable(V old) {
+            for (V v: iSolver.currentSolution().getModel().variables()) {
+            	if (v.equals(old)) return v;
+            }
+            return null;
+        }
+
+        protected T getValue(V v, T old) {
+        	for (T t: v.values(iSolver.currentSolution().getAssignment())) {
+        		if (t.equals(old)) return t;
+        	}
+        	iProgress.warn("WARNING: Assignment " + old.getName() + " is not available for " + v.getName());
+            return null;
+        }
+        
+        protected void assign(T t) {
+        	Solution<V, T> solution = iSolver.currentSolution();
+            Map<Constraint<V, T>, Set<T>> conflictConstraints = solution.getModel().conflictConstraints(solution.getAssignment(), t);
+            if (conflictConstraints.isEmpty()) {
+            	solution.getAssignment().assign(0, t);
+            } else {
+                iProgress.warn("Unable to assign " + t.variable().getName() + " := " + t.getName());
+                iProgress.warn("&nbsp;&nbsp;Reason:");
+                for (Constraint<V, T> c: conflictConstraints.keySet()) {
+                	Set<T> vals = conflictConstraints.get(c);
+                    for (T v: vals) {
+                        iProgress.warn("&nbsp;&nbsp;&nbsp;&nbsp;" + v.variable().getName() + " = " + v.getName());
+                    }
+                    iProgress.debug("&nbsp;&nbsp;&nbsp;&nbsp;in constraint " + c);
+                }
+            }
+        }
+        
+        private void unassignAll() {
+        	Solution<V, T> solution = iSolver.currentSolution();
+            for (V v: solution.getModel().variables()) {
+            	solution.getAssignment().unassign(0, v);
+            }
+        }
+        
+        public void execute() {
+        	try {
+            	Solution<V, T> solution = iSolver.currentSolution();
+                iProgress = Progress.getInstance(solution.getModel());
+                
+                if (!iBestAssignmentTable.isEmpty()) {
+                    iProgress.setPhase("Creating best assignment ...", iBestAssignmentTable.size());
+                    unassignAll();
+                    for (Map.Entry<V, T> e: iBestAssignmentTable.entrySet()) {
+                        iProgress.incProgress();
+                        V v = getVariable(e.getKey());
+                        if (v == null) continue;
+                        T t = getValue(v, e.getValue());
+                        if (t != null) assign(t);
+                    }
+                    solution.saveBest();
+                }
+
+                if (!iInitialAssignmentTable.isEmpty()) {
+                    iProgress.setPhase("Creating initial assignment ...", iInitialAssignmentTable.size());
+                    for (Map.Entry<V, T> e: iInitialAssignmentTable.entrySet()) {
+                        iProgress.incProgress();
+                        V v = getVariable(e.getKey());
+                        if (v == null) continue;
+                        T t = getValue(v, e.getValue());
+                        if (t != null) v.setInitialAssignment(t);
+                    }
+                }
+                
+                if (!iCurrentAssignmentTable.isEmpty()) {
+                    iProgress.setPhase("Creating current assignment ...", iCurrentAssignmentTable.size());
+                    unassignAll();
+                    for (Map.Entry<V, T> e: iCurrentAssignmentTable.entrySet()) {
+                        iProgress.incProgress();
+                        V v = getVariable(e.getKey());
+                        if (v == null) continue;
+                        T t = getValue(v, e.getValue());
+                        if (t != null) assign(t);
+                    }
+                }
+                
+                iCurrentAssignmentTable.clear();
+                iBestAssignmentTable.clear();
+                iInitialAssignmentTable.clear();
+                iProgress = null;
+                
+                if (iSolutionId != null)
+                    iSolver.getProperties().setProperty("General.SolutionId",iSolutionId);
+        	} catch (Exception e) {
+        		Progress.getInstance(iSolver.currentSolution().getModel()).fatal("Failed to restore previous assignments: " + e.getMessage(), e);
+        	} finally {
+                iSolver.iLoadedDate = new Date();
+                iSolver.iWorking = false;
+                iSolver.afterLoad();
+                Progress.getInstance(iSolver.currentSolution().getModel()).setStatus("Awaiting commands ...");
+        	}
         }
     }
 

@@ -55,6 +55,7 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 		TestSession,
 		AllowNoRole,
 		AllowRollForward,
+		InstructorScheduling,
 		;
 		
 		public int toInt() { return 1 << ordinal(); }
@@ -253,6 +254,10 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 	
 	public boolean isAllowRollForward() {
 		return can(Status.AllowRollForward);
+	}
+	
+	public boolean isAllowInstructorScheduling() {
+		return can(Status.InstructorScheduling);
 	}
 	
 	/** Status is active when someone can edit, timetable or commit*/

@@ -316,6 +316,12 @@ public enum Right {
 	ExaminationPdfReports(Session.class),
 	ExaminationSolutionExportXml(Session.class),
 	
+    /** Individual page rights: Instructor Scheduling */
+	InstructorScheduling(SolverGroup.class),
+    InstructorSchedulingSolver(SolverGroup.class),
+    InstructorSchedulingSolverLog(SolverGroup.class),
+    InstructorSchedulingSolutionExportXml(SolverGroup.class),
+
 	/** Individual page rights: Students Scheduling */
 	
     StudentScheduling(Session.class),
@@ -343,7 +349,7 @@ public enum Right {
     OfferingEnrollments(InstructionalOffering.class),
     StudentEnrollments(Student.class),
     EnrollmentsShowExternalId,
-
+    
     /** Individual page rights: Events */
     
     Events(Session.class),

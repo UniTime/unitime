@@ -32,6 +32,8 @@ public enum SessionAttribute {
 	ExaminationUser("ManageSolver.examPuid", "User id of the solver I am looking at (if different from user id, admin only)"),
 	StudentSectioningSolver("StudentSolverProxy", "Last used student sectioning solver."),
 	StudentSectioningUser("ManageSolver.sectionPuid", "User id of the solver I am looking at (if different from user id, admin only)"),
+	InstructorSchedulingSolver("InstructorSchedulingProxy", "Last used instructor scheduling solver."),
+	InstructorSchedulingUser("ManageSolver.instrPuid", "User id of the solver I am looking at (if different from user id, admin only)"),
 
 	OfferingsSubjectArea("subjectAreaId", "Last used subject area or areas (String containing a comma separated list of ids)"),
 	OfferingsCourseNumber("courseNbr", "Last used course number (String containing course number)"),

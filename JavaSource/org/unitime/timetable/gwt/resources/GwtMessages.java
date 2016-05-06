@@ -4142,6 +4142,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Course Timetabling Solver")
 	String solverCourse();
 	
+	@DefaultMessage("Instructor Scheduling Solver")
+	String solverInstructor();
+	
 	@DefaultMessage("Navigation")
 	String navigation();
 	

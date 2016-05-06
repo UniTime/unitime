@@ -27,13 +27,14 @@ import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 
 /**
  * @author Tomas Muller
  */
 public interface SolverServer {
-	public static final short SCOPE_SERVER = 0, SCOPE_COURSE = 1, SCOPE_EXAM = 2, SCOPE_STUDENT = 3, SCOPE_AVAILABILITY = 4, SCOPE_ONLINE = 5;
+	public static final short SCOPE_SERVER = 0, SCOPE_COURSE = 1, SCOPE_EXAM = 2, SCOPE_STUDENT = 3, SCOPE_AVAILABILITY = 4, SCOPE_ONLINE = 5, SCOPE_INSTRUCTOR = 6;
 	
 	public void start();
 	
@@ -74,6 +75,8 @@ public interface SolverServer {
 	public SolverContainer<ExamSolverProxy> getExamSolverContainer();
 	
 	public SolverContainer<StudentSolverProxy> getStudentSolverContainer();
+	
+	public SolverContainer<InstructorSchedulingProxy> getInstructorSchedulingContainer();
 	
 	public SolverContainer<OnlineSectioningServer> getOnlineStudentSchedulingContainer();
 	

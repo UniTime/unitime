@@ -39,6 +39,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
 import org.unitime.timetable.solver.jgroups.LocalSolverServer;
 import org.unitime.timetable.solver.jgroups.RemoteSolverContainer;
 import org.unitime.timetable.solver.jgroups.SolverContainer;
@@ -60,6 +61,7 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 	private SolverContainer<SolverProxy> iCourseSolverContainer;
 	private SolverContainer<ExamSolverProxy> iExamSolverContainer;
 	private SolverContainer<StudentSolverProxy> iStudentSolverContainer;
+	private SolverContainer<InstructorSchedulingProxy> iInstructorSchedulingContainer;
 	private SolverContainer<OnlineSectioningServer> iOnlineStudentSchedulingContainer;
 	
 	@Override
@@ -73,6 +75,7 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 				iCourseSolverContainer = iServer.getCourseSolverContainer();
 				iExamSolverContainer = iServer.getExamSolverContainer();
 				iStudentSolverContainer = iServer.getStudentSolverContainer();
+				iInstructorSchedulingContainer = iServer.getInstructorSchedulingContainer();
 				iOnlineStudentSchedulingContainer = iServer.getOnlineStudentSchedulingContainer();
 			} else {
 				iChannel = (JChannel) new UniTimeChannelLookup().getJGroupsChannel(null);
@@ -92,6 +95,9 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 				iStudentSolverContainer = new SolverContainerWrapper<StudentSolverProxy>(
 						((SolverServerImplementation)iServer).getDispatcher(),
 						(RemoteSolverContainer<StudentSolverProxy>) iServer.getStudentSolverContainer(), true);
+				iInstructorSchedulingContainer = new SolverContainerWrapper<InstructorSchedulingProxy>(
+						((SolverServerImplementation)iServer).getDispatcher(),
+						(RemoteSolverContainer<InstructorSchedulingProxy>) iServer.getInstructorSchedulingContainer(), true);
 				iOnlineStudentSchedulingContainer = new SolverContainerWrapper<OnlineSectioningServer>(
 						((SolverServerImplementation)iServer).getDispatcher(),
 						(RemoteSolverContainer<OnlineSectioningServer>) iServer.getOnlineStudentSchedulingContainer(), false);
@@ -195,6 +201,27 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 	    	}
 	    }
 	    StudentSolverProxy solver = iStudentSolverContainer.createSolver(user, properties);
+	    return solver;
+	}
+	
+	public SolverContainer<InstructorSchedulingProxy> getInstructorSchedulingContainer() {
+		return iInstructorSchedulingContainer;
+	}
+	
+	public InstructorSchedulingProxy createInstructorScheduling(String host, String user, DataProperties properties) {
+	    if (host != null) {
+	    	if ("local".equals(host)) {
+	    		InstructorSchedulingProxy solver = iServer.getInstructorSchedulingContainer().createSolver(user, properties);
+    			return solver;
+	    	}	
+	    	for (SolverServer server: iServer.getServers(true)) {
+	    		if (server.getHost().equals(host)) {
+	    			InstructorSchedulingProxy solver = server.getInstructorSchedulingContainer().createSolver(user, properties);
+	    			return solver;
+	    		}
+	    	}
+	    }
+	    InstructorSchedulingProxy solver = iInstructorSchedulingContainer.createSolver(user, properties);
 	    return solver;
 	}
 	

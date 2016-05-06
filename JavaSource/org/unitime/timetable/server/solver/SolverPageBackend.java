@@ -52,6 +52,7 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.CommonSolverInterface;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
 import org.unitime.timetable.solver.jgroups.SolverServer;
 import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.service.SolverService;
@@ -67,6 +68,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
 	@Autowired SolverService<StudentSolverProxy> studentSectioningSolverService;
+	@Autowired SolverService<InstructorSchedulingProxy> instructorSchedulingSolverService;
 
 	@Override
 	public SolverPageResponse execute(SolverPageRequest request, SessionContext context) {
@@ -79,6 +81,9 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 			break;
 		case STUDENT:
 			context.checkPermission(Right.StudentSectioningSolver);
+			break;
+		case INSTRUCTOR:
+			context.checkPermission(Right.InstructorSchedulingSolver);
 			break;
 		}
 		
@@ -192,6 +197,8 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 					ownerIds += (ownerIds.isEmpty() ? "" : ",") + ownerId;
 				if (request.getType() == SolverType.COURSE)
 					config.setProperty("General.SolverGroupId", ownerIds);	
+				else if (request.getType() == SolverType.INSTRUCTOR)
+					config.setProperty("General.SolverGroupId", ownerIds);
 				else if (request.getType() == SolverType.EXAM)
 					config.setProperty("Exam.Type", ownerIds);
 			}
@@ -253,6 +260,12 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 				response.addSolverOwner(new SolverOwner(type.getUniqueId(), type.getLabel()));
 			}
 			break;
+		case INSTRUCTOR:
+			for (SolverGroup owner: SolverGroup.getUserSolverGroups(context.getUser())) {
+				if (context.hasPermission(owner, Right.InstructorScheduling))
+					response.addSolverOwner(new SolverOwner(owner.getUniqueId(), owner.getName()));
+			}
+			break;			
 		}
 	}
 	
@@ -337,6 +350,8 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 			return examinationSolverService;
 		case STUDENT:
 			return studentSectioningSolverService;
+		case INSTRUCTOR:
+			return instructorSchedulingSolverService;
 		default:
 			throw new IllegalArgumentException(MESSAGES.errorSolverInvalidType(type.name()));
 		}
@@ -350,6 +365,8 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 			return examinationSolverService.getSolver();
 		case STUDENT:
 			return studentSectioningSolverService.getSolver();
+		case INSTRUCTOR:
+			return instructorSchedulingSolverService.getSolver();
 		default:
 			throw new IllegalArgumentException(MESSAGES.errorSolverInvalidType(type.name()));
 		}
@@ -385,6 +402,11 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 				break;
 			case EXAM:
 				Long owner = solver.getProperties().getPropertyLong("Exam.Type", null);
+				if (owner != null)
+					response.addOwnerId(owner);
+				break;
+			case INSTRUCTOR:
+				owner = solver.getProperties().getPropertyLong("General.SolverGroupId", null);
 				if (owner != null)
 					response.addOwnerId(owner);
 				break;
@@ -503,6 +525,11 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 					hasSolution = Session.hasStudentSchedule(context.getUser().getCurrentAcademicSessionId());
 					response.setCanExecute(hasSolution ? SolverOperation.SAVE : SolverOperation.SAVE_AS_NEW);
 					break;
+				case INSTRUCTOR:
+					response.setCanExecute(SolverOperation.CLEAR);
+					if (context.hasPermission(Right.InstructorSchedulingSolutionExportXml))
+						response.setCanExecute(SolverOperation.EXPORT_XML);
+					//response.setCanExecute(SolverOperation.SAVE);
 				}
 			}
 		}

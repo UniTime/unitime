@@ -220,6 +220,17 @@
 				</condition>
 			</item>
 		</menu>
+		<menu name="Instructor Scheduling">
+			<condition>
+				<hasPermission name="InstructorScheduling"/>
+			</condition>
+			<item name="Instructor Scheduling Solver" page="solver" type="gwt">
+				<parameter name="type">instructor</parameter>
+				<condition>
+					<hasPermission name="InstructorSchedulingSolver"/>
+				</condition>
+			</item>
+		</menu>
 		<item name="Reports" page="hql" type="gwt">
 			<parameter name="appearance">courses</parameter>
 			<condition>

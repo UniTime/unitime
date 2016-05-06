@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
@@ -225,6 +226,7 @@ public class SolverPage extends SimpleForm {
 						LoadingWidget.hideLoading();
 						iSolverHeader.clearMessage();
 						populate(result);
+						UniTimePageHeader.getInstance().reloadSolverInfo();
 					}
 				});
 			}

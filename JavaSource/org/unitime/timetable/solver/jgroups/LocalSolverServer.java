@@ -36,6 +36,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.server.InMemoryServer;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
 import org.unitime.timetable.solver.jgroups.AbstractSolverServer;
 import org.unitime.timetable.solver.jgroups.CourseSolverContainer;
 import org.unitime.timetable.solver.jgroups.ExaminationSolverContainer;
@@ -52,6 +53,7 @@ public class LocalSolverServer extends AbstractSolverServer {
 	private CourseSolverContainer iCourseSolverContainer;
 	private ExaminationSolverContainer iExamSolverContainer;
 	private StudentSolverContainer iStudentSolverContainer;
+	private InstructorSchedulingContainer iInstructorSchedulingContainer;
 	private OnlineStudentSchedulingContainer iOnlineStudentSchedulingContainer;
 	private Updater iUpdater;
 	
@@ -61,6 +63,7 @@ public class LocalSolverServer extends AbstractSolverServer {
 		iCourseSolverContainer = new CourseSolverContainer();
 		iExamSolverContainer = new ExaminationSolverContainer();
 		iStudentSolverContainer = new StudentSolverContainer();
+		iInstructorSchedulingContainer = new InstructorSchedulingContainer();
 		iOnlineStudentSchedulingContainer = new OnlineStudentSchedulingContainer();
 		iUpdater = new Updater();
 	}
@@ -70,6 +73,7 @@ public class LocalSolverServer extends AbstractSolverServer {
 		iCourseSolverContainer.start();
 		iExamSolverContainer.start();
 		iStudentSolverContainer.start();
+		iInstructorSchedulingContainer.start();
 		iOnlineStudentSchedulingContainer.start();
 		iUpdater.start();
 		
@@ -83,6 +87,7 @@ public class LocalSolverServer extends AbstractSolverServer {
 		iCourseSolverContainer.stop();
 		iExamSolverContainer.stop();
 		iStudentSolverContainer.stop();
+		iInstructorSchedulingContainer.stop();
 		iOnlineStudentSchedulingContainer.stop();
 		iUpdater.stopUpdating();
 	}
@@ -98,6 +103,7 @@ public class LocalSolverServer extends AbstractSolverServer {
 		ret += iCourseSolverContainer.getUsage();
 		ret += iExamSolverContainer.getUsage();
 		ret += iStudentSolverContainer.getUsage();
+		ret += iInstructorSchedulingContainer.getUsage();
 		ret += iOnlineStudentSchedulingContainer.getUsage();
 		return ret;
 	}
@@ -127,6 +133,11 @@ public class LocalSolverServer extends AbstractSolverServer {
 	@Override
 	public SolverContainer<StudentSolverProxy> getStudentSolverContainer() {
 		return iStudentSolverContainer;
+	}
+	
+	@Override
+	public SolverContainer<InstructorSchedulingProxy> getInstructorSchedulingContainer() {
+		return iInstructorSchedulingContainer;
 	}
 	
 	@Override
