@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.solver.jgroups;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -85,6 +86,8 @@ public interface SolverServer {
 	public void refreshCourseSolution(Long... solutionId);
 	
 	public void refreshExamSolution(Long sessionId, Long examTypeId);
+	
+	public void refreshInstructorSolution(Collection<Long> solverGroupIds);
 	
 	public void setApplicationProperty(Long sessionId, String key, String value);
 	

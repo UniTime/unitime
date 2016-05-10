@@ -121,6 +121,8 @@ public class SolverPage extends SimpleForm {
 		iSolverButtons.addButton("reload", MESSAGES.opSolverReload(), createClickHandler(SolverOperation.RELOAD));
 		iSolverButtons.addButton("save", MESSAGES.opSolverSave(), createClickHandler(SolverOperation.SAVE));
 		iSolverButtons.addButton("save new", MESSAGES.opSolverSaveAsNew(), createClickHandler(SolverOperation.SAVE_AS_NEW));
+		iSolverButtons.addButton("commit", MESSAGES.opSolverSaveCommit(), createClickHandler(SolverOperation.SAVE_COMMIT));
+		iSolverButtons.addButton("uncommit", MESSAGES.opSolverSaveUncommit(), createClickHandler(SolverOperation.SAVE_UNCOMMIT));
 		iSolverButtons.addButton("clear", MESSAGES.opSolverClear(), createClickHandler(SolverOperation.CLEAR));
 		iSolverButtons.addButton("csv", MESSAGES.opSolverExportCSV(), createClickHandler(SolverOperation.EXPORT_CSV));
 		iSolverButtons.addButton("unload", MESSAGES.opSolverUnload(), createClickHandler(SolverOperation.UNLOAD));
@@ -204,6 +206,9 @@ public class SolverPage extends SimpleForm {
 			break;
 		case SAVE_AS_NEW_COMMIT:
 			confirmation = MESSAGES.confirmSolverSaveAsNewCommit();
+			break;
+		case SAVE_UNCOMMIT:
+			confirmation = MESSAGES.confirmSolverSaveUncommit();
 			break;
 		}
 		final Command command = new Command() {
@@ -385,6 +390,8 @@ public class SolverPage extends SimpleForm {
 		iSolverButtons.setEnabled("reload", response.canExecute(SolverOperation.RELOAD));
 		iSolverButtons.setEnabled("save", iType != SolverType.COURSE && response.canExecute(SolverOperation.SAVE));
 		iSolverButtons.setEnabled("save new", iType != SolverType.COURSE && response.canExecute(SolverOperation.SAVE_AS_NEW));
+		iSolverButtons.setEnabled("commit", iType != SolverType.COURSE && response.canExecute(SolverOperation.SAVE_COMMIT));
+		iSolverButtons.setEnabled("uncommit", iType != SolverType.COURSE && response.canExecute(SolverOperation.SAVE_UNCOMMIT));
 		iSolverButtons.setEnabled("clear", response.canExecute(SolverOperation.CLEAR));
 		iSolverButtons.setEnabled("csv", response.canExecute(SolverOperation.EXPORT_CSV));
 		iSolverButtons.setEnabled("unload", response.canExecute(SolverOperation.UNLOAD));
@@ -405,6 +412,8 @@ public class SolverPage extends SimpleForm {
 					buttons.addButton("commit", MESSAGES.opSolverSaveCommit(), createClickHandler(SolverOperation.SAVE_COMMIT));
 				if (response.canExecute(SolverOperation.SAVE_AS_NEW_COMMIT))
 					buttons.addButton("new commit", MESSAGES.opSolverSaveAsNewCommit(), createClickHandler(SolverOperation.SAVE_AS_NEW_COMMIT));
+				if (response.canExecute(SolverOperation.SAVE_UNCOMMIT))
+					buttons.addButton("uncommit", MESSAGES.opSolverSaveUncommit(), createClickHandler(SolverOperation.SAVE_UNCOMMIT));
 				addBottomRow(buttons);
 			}
 		}

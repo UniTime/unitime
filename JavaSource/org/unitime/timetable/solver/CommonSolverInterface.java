@@ -56,6 +56,7 @@ public interface CommonSolverInterface {
 	
     public DataProperties getProperties();
     public void setProperties(DataProperties config);
+    public void setProperty(String name, String value);
     
     public void load(DataProperties properties);
     public void reload(DataProperties properties);

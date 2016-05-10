@@ -25,6 +25,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -312,6 +313,20 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 	public void refreshExamSolution(Long sessionId, Long examTypeId) {
 		try {
 			iDispatcher.callRemoteMethods(null, "refreshExamSolutionLocal", new Object[] { sessionId, examTypeId }, new Class[] { Long.class, Long.class }, sAllResponses);
+		} catch (Exception e) {
+			sLog.error("Failed to refresh solution: " + e.getMessage(), e);
+		}
+	}
+	
+	public void refreshInstructorSolutionLocal(Collection<Long> solverGroupIds) {
+		if (isLocal())
+			super.refreshInstructorSolution(solverGroupIds);
+	}
+	
+	@Override
+	public void refreshInstructorSolution(Collection<Long> solverGroupIds) {
+		try {
+			iDispatcher.callRemoteMethods(null, "refreshInstructorSolutionLocal", new Object[] { solverGroupIds }, new Class[] { Collection.class }, sAllResponses);
 		} catch (Exception e) {
 			sLog.error("Failed to refresh solution: " + e.getMessage(), e);
 		}

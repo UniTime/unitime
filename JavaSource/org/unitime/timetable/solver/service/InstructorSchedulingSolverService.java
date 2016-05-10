@@ -131,7 +131,7 @@ public class InstructorSchedulingSolverService implements SolverService<Instruct
             properties.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty(ApplicationProperty.DistanceEllipsoid));
         
         if (properties.getProperty("Parallel.NrSolvers") == null) {
-        	properties.setProperty("Parallel.NrSolvers", String.valueOf(Math.max(1, Runtime.getRuntime().availableProcessors() / 2)));
+        	properties.setProperty("Parallel.NrSolvers", "1"); // String.valueOf(Math.max(1, Runtime.getRuntime().availableProcessors() / 2))
         }
         
         properties.setProperty("General.UseAmPm", CONSTANTS.useAmPm() ? "true" : "false");

@@ -19,17 +19,22 @@
 */
 package org.unitime.timetable.solver.jgroups;
 
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.hibernate.SessionFactory;
 import org.jgroups.Address;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.dao._RootDAO;
@@ -157,6 +162,34 @@ public abstract class AbstractSolverServer implements SolverServer {
 			_RootDAO.closeCurrentThreadSessions();
 		}
 	}
+	
+	@Override
+	public void refreshInstructorSolution(Collection<Long> solverGroupIds) {
+		org.hibernate.Session hibSession = new _RootDAO().createNewSession();
+		try {
+			SessionFactory hibSessionFactory = hibSession.getSessionFactory();
+	    	List<Long> classIds = (List<Long>)hibSession.createQuery(
+	    			"select c.uniqueId from Class_ c where c.controllingDept.solverGroup.uniqueId in :solverGroupId and c.cancelled = false and " +
+	    			"(c.teachingLoad is not null or c.schedulingSubpart.teachingLoad is not null) and " +
+	    			"((c.nbrInstructors is null and c.schedulingSubpart.nbrInstructors > 0) or c.nbrInstructors > 0)")
+	    			.setParameterList("solverGroupId", solverGroupIds).list();
+	    	for (Long classId: classIds) {
+	            hibSessionFactory.getCache().evictEntity(Class_.class, classId);
+	            hibSessionFactory.getCache().evictCollection(Class_.class.getName()+".classInstructors", classId);
+	    	}
+	    	List<Long> instructorIds = (List<Long>)hibSession.createQuery(
+	    			"select i.uniqueId from DepartmentalInstructor i, SolverGroup g inner join g.departments d where " +
+	    			"g.uniqueId in :solverGroupId and i.department = d"
+	    			).setParameterList("solverGroupId", solverGroupIds).list();
+	    	for (Long instructorId: instructorIds) {
+	            hibSessionFactory.getCache().evictEntity(DepartmentalInstructor.class, instructorId);
+	            hibSessionFactory.getCache().evictCollection(DepartmentalInstructor.class.getName()+".classes", instructorId);
+	    	}
+		} finally {
+			hibSession.close();
+		}
+	}
+
 
 	@Override
 	public void setApplicationProperty(Long sessionId, String key, String value) {

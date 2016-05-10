@@ -32,6 +32,7 @@ import java.util.Set;
 import org.cpsolver.coursett.Constants;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.model.Constraint;
 import org.cpsolver.ifs.util.ProblemLoader;
 import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.instructor.constraints.SameInstructorConstraint;
@@ -81,6 +82,7 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
 	private Map<Long, Attribute> iDepartmentAttribute = new HashMap<Long, Attribute>();
 	private Map<Long, Section> iSections = new HashMap<Long, Section>();
 	private Map<Long, Instructor> iInstructors = new HashMap<Long, Instructor>();
+	private boolean iHasTentative = false, iHasCommitted = false;
 	
     public InstructorSchedulingDatabaseLoader(InstructorSchedulingModel model, Assignment<TeachingRequest, TeachingAssignment> assignment) {
     	super(model, assignment);
@@ -132,13 +134,10 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     	loadInstructors(hibSession);
     	
     	loadRequests(hibSession);
-    	
-        for (Instructor instructor: iInstructors.values()) {
-            for (TeachingRequest clazz : getModel().variables()) {
-                if (instructor.canTeach(clazz) && !clazz.getAttributePreference(instructor).isProhibited())
-                    instructor.getConstraint().addVariable(clazz);
-            }
-        }
+        
+    	createAssignment();
+        
+        getModel().getProperties().setProperty("Save.Commit", iHasTentative || !iHasCommitted ? "false" : "true");
     }
     
     protected Attribute getAttribute(InstructorAttribute a) {
@@ -275,7 +274,7 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     			}
     		}
     		loadUnavailability(hibSession, i, instructor);
-    		getModel().addConstraint(instructor.getConstraint());
+    		getModel().addInstructor(instructor);
     		iInstructors.put(i.getUniqueId(), instructor);
     		iProgress.incProgress();
     	}
@@ -318,6 +317,49 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     	return Math.max(0, (clazz.isInstructorAssignmentNeeded() ? clazz.effectiveNbrInstructors() : 0) - nrChildInstructors);
     }
     
+    protected String toHtml(Class_ clazz) {
+    	return "<A href='classDetail.do?cid="+clazz.getUniqueId()+"'>"+clazz.getClassLabel()+"</A>";
+    }
+    
+    protected String toHtml(DepartmentalInstructor instructor) {
+    	return "<a href='instructorDetail.do?instructorId=" + instructor.getUniqueId() + "&deptId=" + instructor.getDepartment().getUniqueId() + "'>" + instructor.getName(iInstructorFormat) + "</a>";
+    }
+    
+    protected String toHtml(TeachingAssignment assignment) {
+    	return "<a href='instructorDetail.do?instructorId=" + assignment.getInstructor().getInstructorId() + "'>" + assignment.getInstructor().getName() + "</a>";
+    }
+    
+    protected String toHtml(TeachingRequest request) {
+    	return "<a href='classDetail.do?cid=" + request.getSections().get(0).getSectionId() + "'>" + request.getName() + "</a>";
+    }
+    
+    protected boolean isToBeIgnored(ClassInstructor ci) {
+    	if (ci.isTentative()) return false;
+    	if (!ci.isLead()) return true;
+    	Instructor instructor = iInstructors.get(ci.getInstructor().getUniqueId());
+    	if (instructor == null) {
+    		iProgress.warn("Instructor " + toHtml(ci.getInstructor()) + " is assigned to " + toHtml(ci.getClassInstructing()) + ", but not allowed for automatic assignment.");
+    		return true;
+    	}
+    	return false;
+    }
+    
+    protected List<DepartmentalInstructor> getInstructors(Class_ clazz) {
+    	List<DepartmentalInstructor> instructors = new ArrayList<DepartmentalInstructor>();
+    	for (ClassInstructor ci: clazz.getClassInstructors()) {
+    		if (!isToBeIgnored(ci)) {
+    			if (ci.isTentative()) iHasTentative = true; else iHasCommitted = true;
+    			instructors.add(ci.getInstructor());
+    		}
+    	}
+    	for (Class_ child: clazz.getChildClasses()) {
+    		if (child.isCancelled() || !child.isInstructorAssignmentNeeded()) continue;
+    		for (ClassInstructor ci: child.getClassInstructors())
+        		if (!isToBeIgnored(ci)) instructors.remove(ci.getInstructor());
+    	}
+    	return instructors;
+    }
+    
     protected void loadRequest(org.hibernate.Session hibSession, Class_ clazz) {
     	int nrInstructors = nrInstructorsNeeded(clazz);
     	if (nrInstructors <= 0) return;
@@ -342,9 +384,11 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     		}
     	}
     	List<TeachingRequest> requests = new ArrayList<TeachingRequest>();
+    	List<DepartmentalInstructor> instructors = getInstructors(clazz);
+    	if (instructors.size() > nrInstructors)
+    		iProgress.warn("There are more instructors are assigned to " + toHtml(clazz) + " than requested.");
     	for (int i = 0; i < nrInstructors; i++) {
     		TeachingRequest request = new TeachingRequest(clazz.getUniqueId(), i, course, load, sections);
-    		getModel().addVariable(request);
     		for (Iterator it = clazz.effectivePreferences(InstructorPref.class).iterator(); it.hasNext(); ) {
     			InstructorPref p = (InstructorPref)it.next();
     			Instructor instructor = iInstructors.get(p.getInstructor().getUniqueId());
@@ -358,6 +402,18 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     		}
     		if (!iDepartmentAttribute.isEmpty()) {
     			request.addAttributePreference(new Preference<Attribute>(iDepartmentAttribute.get(clazz.getControllingDept().getUniqueId()), Constants.sPreferenceLevelRequired));
+    		}
+    		getModel().addVariable(request);
+    		for (Iterator<DepartmentalInstructor> j = instructors.iterator(); j.hasNext(); ) {
+    			DepartmentalInstructor di = j.next();
+    			Instructor instructor = iInstructors.get(di.getUniqueId());
+    			if (instructor != null) {
+    				request.setInitialAssignment(new TeachingAssignment(request, instructor));
+    				j.remove();
+    			} else {
+    				iProgress.warn("Instructor " + toHtml(di) + " is assigned to " + toHtml(clazz) + ", but not allowed for automatic assignment.");
+    				j.remove();
+    			}
     		}
     		requests.add(request);
     	}
@@ -381,6 +437,54 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     		iProgress.incProgress();
     		if (!clazz.isInstructorAssignmentNeeded()) continue;
     		loadRequest(hibSession, clazz);
+    	}
+    }
+    
+    protected void createAssignment() {
+    	iProgress.setPhase("Creating initial assignment...", getModel().variables().size());
+    	requests: for (TeachingRequest request: getModel().variables()) {
+    		iProgress.incProgress();
+    		TeachingAssignment assignment = request.getInitialAssignment();
+    		if (assignment == null) continue;
+			if (assignment.getInstructor().getTimePreference(request).isProhibited()) {
+				iProgress.warn("Unable to assign " + toHtml(request) +" &larr; " + toHtml(assignment) + ": instructor is not available.");
+				continue;
+			}
+			if (assignment.getInstructor().getCoursePreference(request.getCourse()).isProhibited()) {
+				iProgress.warn("Unable to assign " + toHtml(request) +" &larr; " + toHtml(assignment) + ": course " + request.getCourse().getCourseName() + " is prohibited.");
+				continue;
+			}
+			if (request.getInstructorPreference(assignment.getInstructor()).isProhibited()) {
+				iProgress.warn("Unable to assign " + toHtml(request) +" &larr; " + toHtml(assignment) + ": instructor " + assignment.getInstructor().getName() + " is prohibited.");
+				continue;
+			}
+			for (Attribute.Type type: getModel().getAttributeTypes()) {
+				int pref = request.getAttributePreference(assignment.getInstructor(), type);
+				if (Constants.sPreferenceProhibited.equals(Constants.preferenceLevel2preference(pref))) {
+					iProgress.warn("Unable to assign " + toHtml(request) +" &larr; " + toHtml(assignment) + ": probibited by attribute type " + type.getTypeName() + ".");
+					continue requests;
+				}
+			}
+			if (!assignment.getInstructor().canTeach(request) || request.getAttributePreference(assignment.getInstructor()).isProhibited()) {
+				iProgress.warn("Unable to assign " + toHtml(request) +" &larr; " + toHtml(assignment) + ": assignment not valid.");
+				continue;
+			}
+			getModel().weaken(getAssignment(), assignment);
+			Map<Constraint<TeachingRequest, TeachingAssignment>, Set<TeachingAssignment>> conflictConstraints = getModel().conflictConstraints(getAssignment(), assignment);
+        	if (conflictConstraints.isEmpty()) {
+        		getAssignment().assign(0, assignment);
+	        } else {
+                String warn = "Unable to assign " + toHtml(request) +" &larr; " + toHtml(assignment);
+                warn += "<br>&nbsp;&nbsp;Reason:";
+                for (Constraint<TeachingRequest, TeachingAssignment> c: conflictConstraints.keySet()) {
+                	Set<TeachingAssignment> vals = conflictConstraints.get(c);
+                	for (TeachingAssignment v: vals) {
+                        warn += "<br>&nbsp;&nbsp;&nbsp;&nbsp;" + toHtml(v.variable()) + " = " + toHtml(v);
+            	    }
+                    warn += "<br>&nbsp;&nbsp;&nbsp;&nbsp;    in constraint " + c;
+                    iProgress.warn(warn);
+    	        }
+	        }
     	}
     }
 }

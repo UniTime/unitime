@@ -155,6 +155,12 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
     }
     
     @Override
+    public void setProperty(String name, String value) {
+    	activateIfNeeded();
+        this.getProperties().setProperty(name, value);
+    }
+    
+    @Override
     public void dispose() {
         disposeNoInherit(true);
     }
@@ -299,7 +305,7 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
     }
     
     public Callback getReloadingDoneCallback() {
-    	return new DefaultReloadingDoneCallback<V, T, M>(this);
+    	return new DefaultReloadingDoneCallback<V, T, M>(this, false);
     }
 
     public Callback getSavingDoneCallback() {
@@ -596,11 +602,12 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
         Map<V, T> iCurrentAssignmentTable = new Hashtable();
         Map<V, T> iBestAssignmentTable = new Hashtable();
         Map<V, T> iInitialAssignmentTable = new Hashtable();
+        boolean iRestoreInitial = false;
         String iSolutionId = null;
         Progress iProgress = null;
         AbstractSolver<V, T, M> iSolver;
         
-        public DefaultReloadingDoneCallback(AbstractSolver<V, T, M> solver) {
+        public DefaultReloadingDoneCallback(AbstractSolver<V, T, M> solver, boolean restoreInitial) {
         	iSolver = solver;
         	iSolutionId = solver.getProperties().getProperty("General.SolutionId");
         	Solution<V, T> solution = solver.currentSolution();
@@ -626,7 +633,7 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
         	for (T t: v.values(iSolver.currentSolution().getAssignment())) {
         		if (t.equals(old)) return t;
         	}
-        	iProgress.warn("WARNING: Assignment " + old.getName() + " is not available for " + v.getName());
+        	iProgress.warn("Assignment " + old.getName() + " is not available for " + v.getName() + ".");
             return null;
         }
         
@@ -673,7 +680,7 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
                     solution.saveBest();
                 }
 
-                if (!iInitialAssignmentTable.isEmpty()) {
+                if (iRestoreInitial && !iInitialAssignmentTable.isEmpty()) {
                     iProgress.setPhase("Creating initial assignment ...", iInitialAssignmentTable.size());
                     for (Map.Entry<V, T> e: iInitialAssignmentTable.entrySet()) {
                         iProgress.incProgress();

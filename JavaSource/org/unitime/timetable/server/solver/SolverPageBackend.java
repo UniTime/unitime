@@ -132,6 +132,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 		case SAVE_AS_NEW:
 		case SAVE_AS_NEW_COMMIT:
 		case SAVE_COMMIT:
+		case SAVE_UNCOMMIT:
         	if (solver == null) throw new GwtRpcException(MESSAGES.warnSolverNotStarted());
         	if (solver.isWorking()) throw new GwtRpcException(MESSAGES.warnSolverIsWorking());
         	switch (request.getType()) {
@@ -147,17 +148,21 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 	        			);
 				break;
 			case EXAM:
+				solver.restoreBest();
 				solver.save();
 				break;
 			case STUDENT:
 	        	SolverParameterDef statusToSet = SolverParameterDef.findByNameType("Save.StudentSectioningStatusToSet", SolverParameterGroup.SolverType.STUDENT);
 	        	if (statusToSet != null) {
-	        		DataProperties config = solver.getProperties();
-	        		config.setProperty("Save.StudentSectioningStatusToSet", request.getParameter(statusToSet.getUniqueId()));
-	        		solver.setProperties(config);
+	        		solver.setProperty("Save.StudentSectioningStatusToSet", request.getParameter(statusToSet.getUniqueId()));
 	        	}
+	        	solver.restoreBest();
 				solver.save();
 				break;
+			case INSTRUCTOR:
+				solver.setProperty("Save.Commit", (request.getOperation() == SolverOperation.SAVE_AS_NEW_COMMIT || request.getOperation() == SolverOperation.SAVE_COMMIT) ? "true" : "false");
+				solver.restoreBest();
+				solver.save();
         	}
         	break;
         	
@@ -529,7 +534,11 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 					response.setCanExecute(SolverOperation.CLEAR);
 					if (context.hasPermission(Right.InstructorSchedulingSolutionExportXml))
 						response.setCanExecute(SolverOperation.EXPORT_XML);
-					//response.setCanExecute(SolverOperation.SAVE);
+					if (solver.getProperties().getPropertyBoolean("Save.Commit", false))
+						response.setCanExecute(SolverOperation.SAVE_UNCOMMIT);
+					else
+						response.setCanExecute(SolverOperation.SAVE);
+					response.setCanExecute(SolverOperation.SAVE_COMMIT);
 				}
 			}
 		}

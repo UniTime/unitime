@@ -49,8 +49,7 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest, 
 
 	@Override
 	protected ProblemSaver<TeachingRequest, TeachingAssignment, InstructorSchedulingModel> getDatabaseSaver( Solver<TeachingRequest, TeachingAssignment> solver) {
-		// FIXME: Write database saver
-		return null;
+		return new InstructorSchedulingDatabaseSaver(solver);
 	}
 
 	@Override

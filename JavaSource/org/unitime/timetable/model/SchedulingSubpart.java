@@ -34,7 +34,6 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseSchedulingSubpart;
 import org.unitime.timetable.model.comparators.NavigationComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
-import org.unitime.timetable.model.dao.InstructorCoursePrefDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -474,6 +473,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     		return fixDurationInTimePreferences ? fixDurationInTimePreferences(ret) : ret;
     	}
     	
+    	/*
     	if (InstructorPref.class.equals(type)) {
     		Set parentPrefs = new HashSet();
     		for (InstructorCoursePref icp: (List<InstructorCoursePref>)InstructorCoursePrefDAO.getInstance().getSession().createQuery(
@@ -489,7 +489,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     		Set ret = removeNeutralPreferences(combinePreferences(type, subpartPrefs, parentPrefs));
     		return fixDurationInTimePreferences ? fixDurationInTimePreferences(ret) : ret;
     	}
-
+		*/
     	
     	return fixDurationInTimePreferences ? fixDurationInTimePreferences(subpartPrefs) : subpartPrefs;
     }

@@ -423,6 +423,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Save As New & Commit")
 	String opSolverSaveAsNewCommit();
 	
+	@DefaultMessage("Save & Uncommit")
+	String opSolverSaveUncommit();
+	
 	@DefaultMessage("Export XML")
 	String opSolverExportXML();
 	
@@ -3834,6 +3837,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Do you really want to save and commit your current timetable? This will overwrite your previous solution. It may also uncommit your currently committed solution.")
 	String confirmSolverSaveCommit();
+	
+	@DefaultMessage("Do you really want to save and uncommit your current timetable? This will uncommit and overwrite your previous solution.")
+	String confirmSolverSaveUncommit();
 	
 	@DefaultMessage("Do you really want to save and commit your current timetable? This may uncommit your currently committed solution.")
 	String confirmSolverSaveAsNewCommit();
