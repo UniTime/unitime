@@ -82,6 +82,24 @@ public class XTime implements Serializable, Externalizable {
 		iWeeks = assignment.getDatePattern().getPatternBitSet();
 	}
 	
+	public XTime(DatePattern pattern, String datePatternFormat) {
+		iDays = 0;
+		iSlot = 0;
+		iLength = 0;
+		iBreakTime = 0;
+		iDatePatternId = pattern.getUniqueId();
+    	if ("never".equals(datePatternFormat)) iDatePatternName = pattern.getName();
+    	else if ("extended".equals(datePatternFormat) && pattern.getType() != DatePattern.sTypeExtended) iDatePatternName = pattern.getName();
+    	else if ("alternate".equals(datePatternFormat) && pattern.getType() == DatePattern.sTypeAlternate) iDatePatternName = pattern.getName();
+    	else {
+    		Formats.Format<Date> dpf = Formats.getDateFormat(Formats.Pattern.DATE_PATTERN);
+    		Date first = pattern.getStartDate();
+    		Date last = pattern.getEndDate();
+    		iDatePatternName = dpf.format(first) + (first.equals(last) ? "" : " - " + dpf.format(last));
+    	}
+		iWeeks = pattern.getPatternBitSet();
+	}
+	
 	public XTime(FreeTime free, BitSet freeTimePattern) {
 		iSlot = free.getStartSlot();
 		iLength = free.getLength();

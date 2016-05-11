@@ -27,6 +27,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +45,10 @@ import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
 /**
@@ -120,6 +124,16 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
         	iTime = new XTime(assignment, helper.getExactTimeConversion(), helper.getDatePatternFormat());
         	for (Location room: assignment.getRooms())
         		iRooms.add(new XRoom(room));
+        } else {
+        	for (Iterator<?> i = clazz.effectivePreferences(RoomPref.class).iterator(); i.hasNext(); ) {
+        		RoomPref p = (RoomPref)i.next();
+        		if (PreferenceLevel.sRequired.equals(p.getPrefLevel().getPrefProlog())) {
+        			iRooms.add(new XRoom(p.getRoom()));
+        		}
+        	}
+        	DatePattern dp = clazz.effectiveDatePattern();
+        	if (dp != null)
+        		iTime = new XTime(dp, helper.getDatePatternFormat());
         }
         
         if (clazz.isDisplayInstructor())
@@ -390,7 +404,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     }
     
     public Placement toPlacement() {
-    	if (getTime() == null) return null;
+    	if (getTime() == null || getTime().getDays() == 0) return null;
         List<RoomLocation> rooms = new ArrayList<RoomLocation>();
         for (XRoom r: getRooms())
         	rooms.add(new RoomLocation(r.getUniqueId(), r.getName(), null, 0, 0, r.getX(), r.getY(), r.getIgnoreTooFar(), null));
