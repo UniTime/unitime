@@ -652,8 +652,8 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 					boolean globalUnavailability = event != null && event.getId() != null && event.getId() < 0 && event.getType() == EventType.Unavailabile;
 					for (MultiMeetingInterface m: EventInterface.getMultiMeetings(data.getMeetings(getMeetingFilter()), true, globalUnavailability ? null : iPropertiesProvider, event == null ? null : event.getType())) {
 						String[] mtg = new String[] {
-								m.isArrangeHours() ? CONSTANTS.arrangeHours() : (m.getDays(CONSTANTS) + " " + (m.getNrMeetings() == 1 ? sDateFormatLong.format(m.getFirstMeetingDate()) : sDateFormatShort.format(m.getFirstMeetingDate()) + " - " + sDateFormatLong.format(m.getLastMeetingDate()))),
-								m.getMeetings().first().getMeetingTime(CONSTANTS),
+								m.isArrangeHours() ? event.hasMessage() ? event.getMessage() : CONSTANTS.arrangeHours() : (m.getDays(CONSTANTS) + " " + (m.getNrMeetings() == 1 ? sDateFormatLong.format(m.getFirstMeetingDate()) : sDateFormatShort.format(m.getFirstMeetingDate()) + " - " + sDateFormatLong.format(m.getLastMeetingDate()))),
+								m.isArrangeHours() && event.hasMessage() ? CONSTANTS.arrangeHours() : m.getMeetings().first().getMeetingTime(CONSTANTS),
 								m.getMeetings().first().getAllocatedTime(CONSTANTS),
 								String.valueOf(m.getMeetings().first().getStartOffset()),
 								String.valueOf(- m.getMeetings().first().getEndOffset()),
@@ -978,9 +978,12 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 					row.add(new HTML(conflict.getType() == EventType.Unavailabile || conflict.getType() == EventType.Message ? conflict.getName() : MESSAGES.conflictWith(conflict.getName()), false));
 					row.get(row.size() - 1).addStyleName("indent");
 				} else {
-					if (meeting.isArrangeHours())
-						row.add(new Label(CONSTANTS.arrangeHours()));
-					else {
+					if (meeting.isArrangeHours()) {
+						if (event.hasMessage())
+							row.add(new Label(event.getMessage()));
+						else
+							row.add(new Label(CONSTANTS.arrangeHours()));
+					} else {
 						Label meetingDate = new Label(sDateFormatMeeting.format(meeting.getMeetingDate()), false);
 						SessionMonth.Flag dateFlag = (iPropertiesProvider == null ? null : iPropertiesProvider.getDateFlag(event == null ? null : event.getType(), meeting.getMeetingDate()));
 						if (dateFlag != null) {
@@ -1018,6 +1021,9 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 					allocatedTime.setTitle(MESSAGES.hintTooEarly());
 					allocatedTime.addStyleName("early");
 				}
+				if (meeting.isArrangeHours() && event.hasMessage()) {
+					meetingTime = new Label(CONSTANTS.arrangeHours(), false);
+				}
 				row.add(meetingTime);
 				row.add(allocatedTime);
 				row.add(new NumberCell(meeting.getStartOffset()));
@@ -1047,8 +1053,8 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			boolean globalUnavailability = event != null && event.getId() != null && event.getId() < 0 && event.getType() == EventType.Unavailabile;
 			for (MultiMeetingInterface m: EventInterface.getMultiMeetings(data.getMeetings(getMeetingFilter()), true, globalUnavailability ? null : iPropertiesProvider, event == null ? null : event.getType())) {
 				String[] mtg = new String[] {
-						m.isArrangeHours() ? CONSTANTS.arrangeHours() : (m.getDays(CONSTANTS) + " " + (m.getNrMeetings() == 1 ? sDateFormatLong.format(m.getFirstMeetingDate()) : sDateFormatShort.format(m.getFirstMeetingDate()) + " - " + sDateFormatLong.format(m.getLastMeetingDate()))),
-						m.getMeetings().first().getMeetingTime(CONSTANTS),
+						m.isArrangeHours() ? (event.hasMessage() ? event.getMessage() : CONSTANTS.arrangeHours()) : (m.getDays(CONSTANTS) + " " + (m.getNrMeetings() == 1 ? sDateFormatLong.format(m.getFirstMeetingDate()) : sDateFormatShort.format(m.getFirstMeetingDate()) + " - " + sDateFormatLong.format(m.getLastMeetingDate()))),
+						m.isArrangeHours() && event.hasMessage() ? CONSTANTS.arrangeHours() : m.getMeetings().first().getMeetingTime(CONSTANTS),
 						m.getMeetings().first().getAllocatedTime(CONSTANTS),
 						String.valueOf(m.getMeetings().first().getStartOffset()),
 						String.valueOf(- m.getMeetings().first().getEndOffset()),
