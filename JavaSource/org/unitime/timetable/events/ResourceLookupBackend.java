@@ -219,7 +219,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 					throw new GwtRpcException("Unable to find a " + type.getLabel() + " named " + name + ".");
 				case PERSON:
 					List<Student> students = hibSession.createQuery("select s from Student s where s.session.uniqueId = :sessionId and " +
-							"s.externalUniqueId = :name or lower(s.email) = lower(:name)")
+							"s.externalUniqueId = :name")
 							.setString("name", name).setLong("sessionId", academicSession.getUniqueId()).list();
 					if (!students.isEmpty()) {
 						Student student = students.get(0);
@@ -232,7 +232,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 						return ret;
 					}
 					List<DepartmentalInstructor> instructors = hibSession.createQuery("select i from DepartmentalInstructor i where i.department.session.uniqueId = :sessionId and " +
-							"i.externalUniqueId = :name or lower(i.careerAcct) = lower(:name) or lower(i.email) = lower(:name)")
+							"i.externalUniqueId = :name")
 							.setString("name", name).setLong("sessionId", academicSession.getUniqueId()).list();
 					if (!instructors.isEmpty()) {
 						DepartmentalInstructor instructor = instructors.get(0);
@@ -245,7 +245,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 						return ret;
 					}
 					List<EventContact> contacts = hibSession.createQuery("select c from EventContact c where " +
-							"c.externalUniqueId = :name or lower(c.emailAddress) = lower(:name)")
+							"c.externalUniqueId = :name")
 							.setString("name", name).list();
 					if (!contacts.isEmpty()) {
 						EventContact contact = contacts.get(0);

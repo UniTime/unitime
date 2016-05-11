@@ -28,6 +28,16 @@
 	<version>4.1.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Event Management</title>
+		<item>
+			<name>Resource Lookup (Personal Timetable)</name>
+			<description>
+				<line>Lookup people only be external id (People Lookup is configured to only return people with an external id anyway).</line>
+				<line>This fixes an issue on the Personal Timetable: no schedule is displayed due to an instructor record with matching email or career account but no external id.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Course Timetabling</title>
 		<item>
 			<name>Curricula Last-Like Course Demands, Curricula Requests Course Demands</name>
