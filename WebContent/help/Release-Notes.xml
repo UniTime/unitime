@@ -64,6 +64,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Scheduling Assistant: Alternatives</name>
+			<description>
+				<line>To avoid confusion, show No Dates (in the Date column) and/or No Room (in the Room column) for a class with no date pattern and/or no room respectively.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>
