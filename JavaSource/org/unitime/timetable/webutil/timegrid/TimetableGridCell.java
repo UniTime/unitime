@@ -191,7 +191,7 @@ public class TimetableGridCell implements Serializable, Comparable {
     	if (dp == null || dp.isDefault()) return null;
     	String format = ApplicationProperty.DatePatternFormatUseDates.value();
     	if ("never".equals(format)) return dp.getName();
-    	if ("external".equals(format) && dp.getType() != DatePattern.sTypeExtended) return dp.getName();
+    	if ("extended".equals(format) && dp.getType() != DatePattern.sTypeExtended) return dp.getName();
     	if ("alternate".equals(format) && dp.getType() == DatePattern.sTypeAlternate) return dp.getName();
     	BitSet weekCode = dp.getPatternBitSet();
     	if (weekCode.isEmpty()) return dp.getName();

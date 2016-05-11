@@ -1410,7 +1410,7 @@ public enum ApplicationProperty {
 	@DefaultValue("alternate")
 	@Description("Date Pattern Display Format: display the start and end date of a class instead of the date pattern name when:\n" +
 			" never ... always use date pattern name,\n" +
-			" external ... when the date pattern is of the external type,\n" +
+			" extended ... when the date pattern is of the extended type,\n" +
 			" alternate ... when the date pattern is NOT of alternative weeks type,\n" +
 			" always ... always use first date - last date format instead of the date pattern name"
 			)
