@@ -22,6 +22,7 @@ package org.unitime.timetable.events;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -53,6 +54,7 @@ import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
@@ -63,6 +65,7 @@ import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
@@ -81,6 +84,7 @@ import org.unitime.timetable.model.dao.StudentGroupDAO;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 
 /**
  * @author Tomas Muller
@@ -2140,6 +2144,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					!request.getEventFilter().hasOptions("from") && !request.getEventFilter().hasOptions("to") && !request.getEventFilter().hasOptions("requested") &&
 					!request.getEventFilter().hasOptions("day") && !request.getEventFilter().hasOptions("after") && !request.getEventFilter().hasOptions("before") &&
 					(context.hasPermission(Right.HasRole) || session.canNoRoleReportClass()) && Solution.hasTimetable(session.getUniqueId())) {
+					String datePatternFormat = ApplicationProperty.DatePatternFormatUseDates.value();
 					List<Class_> arrageHourClasses = null; 
 					switch (request.getResourceType()) {
 					case SUBJECT:
@@ -2276,7 +2281,19 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    		if (clazz.getClassSuffix(co) != null)
 						    			event.addExternalId(clazz.getClassSuffix(co));
 				    			}
+				    			DatePattern pattern = clazz.effectiveDatePattern();
+				    			if (pattern != null && !pattern.isDefault()) {
+				    		    	if ("never".equals(datePatternFormat)) event.setMessage(pattern.getName());
+				    		    	else if ("extended".equals(datePatternFormat) && pattern.getType() != DatePattern.sTypeExtended) event.setMessage(pattern.getName());
+				    		    	else if ("alternate".equals(datePatternFormat) && pattern.getType() == DatePattern.sTypeAlternate) event.setMessage(pattern.getName());
+				    		    	else {
+				    		    		Date first = pattern.getStartDate();
+				    		    		Date last = pattern.getEndDate();
+				    		    		event.setMessage((first.equals(last) ? Formats.getDateFormat(Formats.Pattern.DATE_EVENT_LONG).format(first) : Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT).format(first) + " - " + Formats.getDateFormat(Formats.Pattern.DATE_EVENT_LONG).format(last)));
+				    		    	}
+				    			}
 				    			for (RoomPref rp: (Set<RoomPref>)clazz.effectivePreferences(RoomPref.class)) {
+				    				if (!PreferenceLevel.sRequired.equals(rp.getPrefLevel().getPrefProlog())) continue;
 				    				if (request.getEventFilter().hasOptions("room") && !request.getEventFilter().getOptions("room").contains(rp.getRoom().getUniqueId().toString())) continue;
 				    				MeetingInterface meeting = new MeetingInterface();
 									meeting.setPast(true);

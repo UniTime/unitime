@@ -36,6 +36,16 @@
 				<line>This fixes an issue on the Personal Timetable: no schedule is displayed due to an instructor record with matching email or career account but no external id.</line>
 			</description>
 		</item>
+		<item>
+			<name>Display of Arrange Hours Classes</name>
+			<description>
+				<line>Improved event display of arrange hours classes:
+					<line>Only display required rooms as assigned room (Location column).</line>
+					<line>Include effective date pattern in the display (Date column).</line>
+					<line>Arrange Hours message moved to Published Time column when Date column shows the date pattern.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>
