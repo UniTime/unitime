@@ -1189,7 +1189,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	
     private String datePatternName(DatePattern dp, TimeLocation time) {
     	if ("never".equals(iDatePatternFormat)) return dp.getName();
-    	if ("external".equals(iDatePatternFormat) && dp.getType() != DatePattern.sTypeExtended) return dp.getName();
+    	if ("extended".equals(iDatePatternFormat) && dp.getType() != DatePattern.sTypeExtended) return dp.getName();
     	if ("alternate".equals(iDatePatternFormat) && dp.getType() == DatePattern.sTypeAlternate) return dp.getName();
     	if (time.getWeekCode().isEmpty()) return time.getDatePatternName();
     	Calendar cal = Calendar.getInstance(Locale.US); cal.setLenient(true);

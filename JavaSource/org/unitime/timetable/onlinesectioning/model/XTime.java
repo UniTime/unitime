@@ -174,7 +174,7 @@ public class XTime implements Serializable, Externalizable {
 	
     public static String datePatternName(Assignment assignment, String format) {
     	if ("never".equals(format)) return assignment.getDatePattern().getName();
-    	if ("external".equals(format) && assignment.getDatePattern().getType() != DatePattern.sTypeExtended) return assignment.getDatePattern().getName();
+    	if ("extended".equals(format) && assignment.getDatePattern().getType() != DatePattern.sTypeExtended) return assignment.getDatePattern().getName();
     	if ("alternate".equals(format) && assignment.getDatePattern().getType() == DatePattern.sTypeAlternate) return assignment.getDatePattern().getName();
     	BitSet weekCode = assignment.getDatePattern().getPatternBitSet();
     	if (weekCode.isEmpty()) return assignment.getDatePattern().getName();

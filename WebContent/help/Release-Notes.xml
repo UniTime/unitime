@@ -70,6 +70,12 @@
 				<line>This is to prevent the confirmation to be clicked two times when ENTER is pressed and focus is on the Yes button.</line>
 			</description>
 		</item>
+		<item>
+			<name>Application Configuration: Date Pattern Format</name>
+			<description>
+				<line>Corrected extended variant of the unitime.pattern.format.useDates property (using extended instead of external).</line>
+			</description>
+		</item>
 	</category>
 </release>
 
