@@ -79,6 +79,16 @@
 				<line>Fixed a null exception when there are made up students (and include other students is enabled).</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructional Offering Detail: Permissions</name>
+			<description>
+				<line>Class Delete No Enrollment Check split into the following permissions:
+					<line>Class Delete No Enrollment Check (only applies to classes -- allows to delete a class which has students enrolled in it).</line>
+					<line>Offering Make Not Offered No Enrollment Check (allows to make an offering not offered when there are students enrolled in it).</line>
+					<line>Course Offering Delete From Cross List No Enrollment Check (allows to remove a course from a cross-list when it has students enrolled in it).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other</title>

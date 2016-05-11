@@ -108,11 +108,13 @@ public enum Right {
 	OfferingCanLock(InstructionalOffering.class),
 	OfferingCanUnlock(InstructionalOffering.class),
 	OfferingMakeNotOffered(InstructionalOffering.class),
+	OfferingMakeNotOfferedNoEnrollmentCheck(InstructionalOffering.class),
 	OfferingMakeOffered(InstructionalOffering.class),
 	OfferingDelete(InstructionalOffering.class),
 	
 	InstructionalOfferingCrossLists(InstructionalOffering.class),
 	CourseOfferingDeleteFromCrossList(CourseOffering.class),
+	CourseOfferingDeleteFromCrossListNoEnrollmentCheck(CourseOffering.class),
 
 	InstrOfferingConfigAdd(InstructionalOffering.class),
 	InstrOfferingConfigEdit(InstrOfferingConfig.class),

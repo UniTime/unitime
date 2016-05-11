@@ -462,20 +462,12 @@ public class CoursePermissions {
 		
 	}
 	
-	@PermissionForRight(Right.CourseOfferingDeleteFromCrossList)
-	public static class CourseOfferingDeleteFromCrossList implements Permission<CourseOffering> {
+	@PermissionForRight(Right.CourseOfferingDeleteFromCrossListNoEnrollmentCheck)
+	public static class CourseOfferingDeleteFromCrossListNoEnrollmentCheck implements Permission<CourseOffering> {
 		@Autowired PermissionDepartment permissionDepartment;
-		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
 
 		@Override
 		public boolean check(UserContext user, CourseOffering source) {
-			if (!user.getCurrentAuthority().hasRight(Right.ClassDeleteNoEnrollmentCheck)) {
-				// There is a committed solution -> course with enrollment cannot be edited
-				if (source.getDepartment() != null && source.getDepartment().getSolverGroup() != null && source.getDepartment().getSolverGroup().getCommittedSolution() != null) {
-					if (source.getEnrollment() > 0) return false;
-				}
-			}
-			
 			if (permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerEdit)) return true;
 			
 			return false;
@@ -484,6 +476,20 @@ public class CoursePermissions {
 		@Override
 		public Class<CourseOffering> type() { return CourseOffering.class; }
 		
+	}
+	
+	@PermissionForRight(Right.CourseOfferingDeleteFromCrossList)
+	public static class CourseOfferingDeleteFromCrossList extends CourseOfferingDeleteFromCrossListNoEnrollmentCheck {
+		@Override
+		public boolean check(UserContext user, CourseOffering source) {
+			if (!user.getCurrentAuthority().hasRight(Right.CourseOfferingDeleteFromCrossListNoEnrollmentCheck)) {
+				// There is a committed solution -> course with enrollment cannot be edited
+				if (source.getDepartment() != null && source.getDepartment().getSolverGroup() != null && source.getDepartment().getSolverGroup().getCommittedSolution() != null) {
+					if (source.getEnrollment() > 0) return false;
+				}
+			}
+			return super.check(user, source);
+		}
 	}
 	
 	@PermissionForRight(Right.MultipleClassSetupDepartment)
@@ -510,20 +516,13 @@ public class CoursePermissions {
 		
 	}
 	
-	@PermissionForRight(Right.OfferingMakeNotOffered)
-	public static class OfferingMakeNotOffered implements Permission<InstructionalOffering> {
+	@PermissionForRight(Right.OfferingMakeNotOfferedNoEnrollmentCheck)
+	public static class OfferingMakeNotOfferedNoEnrollmentCheck implements Permission<InstructionalOffering> {
 		@Autowired PermissionDepartment permissionDepartment;
 		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
 
 		@Override
 		public boolean check(UserContext user, InstructionalOffering source) {
-			if (!user.getCurrentAuthority().hasRight(Right.ClassDeleteNoEnrollmentCheck)) {
-				// There is a committed solution -> course with enrollment cannot be edited
-				if (source.getDepartment() != null && source.getDepartment().getSolverGroup() != null && source.getDepartment().getSolverGroup().getCommittedSolution() != null) {
-					if (source.getEnrollment() > 0) return false;
-				}
-			}
-
 			if (permissionOfferingLockNeeded.check(user, source)) return false;
 			
 			if (source.isNotOffered()) return false;
@@ -536,6 +535,24 @@ public class CoursePermissions {
 		@Override
 		public Class<InstructionalOffering> type() { return InstructionalOffering.class; }
 		
+	}
+	
+	@PermissionForRight(Right.OfferingMakeNotOffered)
+	public static class OfferingMakeNotOffered extends OfferingMakeNotOfferedNoEnrollmentCheck {
+		@Autowired PermissionDepartment permissionDepartment;
+		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
+
+		@Override
+		public boolean check(UserContext user, InstructionalOffering source) {
+			if (!user.getCurrentAuthority().hasRight(Right.OfferingMakeNotOfferedNoEnrollmentCheck)) {
+				// There is a committed solution -> course with enrollment cannot be edited
+				if (source.getDepartment() != null && source.getDepartment().getSolverGroup() != null && source.getDepartment().getSolverGroup().getCommittedSolution() != null) {
+					if (source.getEnrollment() > 0) return false;
+				}
+			}
+			
+			return super.check(user, source);
+		}
 	}
 	
 	@PermissionForRight(Right.OfferingDelete)
