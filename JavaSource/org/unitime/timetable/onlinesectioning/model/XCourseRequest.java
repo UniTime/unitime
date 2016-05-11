@@ -222,7 +222,7 @@ public class XCourseRequest extends XRequest {
     			Course course = request.getCourse(entry.getKey().getCourseId());
     			if (course != null)
     				for (XSection section: entry.getValue())
-                        request.getSelectedChoices().add(new Choice(course.getOffering(), section.getInstructionalType(), section.getTime() == null ? null : section.getTime().toTimeLocation(), section.getInstructorIds(), section.getInstructorNames()));
+                        request.getSelectedChoices().add(new Choice(course.getOffering(), section.getInstructionalType(), section.getTime() == null || section.getTime().getDays() == 0 ? null : section.getTime().toTimeLocation(), section.getInstructorIds(), section.getInstructorNames()));
     		}
     }
     

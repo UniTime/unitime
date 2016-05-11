@@ -391,7 +391,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
                     List<RoomLocation> rooms = new ArrayList<RoomLocation>();
                     for (XRoom r: section.getRooms())
                     	rooms.add(new RoomLocation(r.getUniqueId(), r.getName(), null, 0, 0, r.getX(), r.getY(), r.getIgnoreTooFar(), null));
-                    Placement placement = section.getTime() == null ? null : new Placement(
+                    Placement placement = section.getTime() == null || section.getTime().getDays() == 0 ? null : new Placement(
                     		new Lecture(section.getSectionId(), null, section.getSubpartId(), section.getName(), new ArrayList<TimeLocation>(), new ArrayList<RoomLocation>(), section.getNrRooms(), null, section.getLimit(), section.getLimit(), 1.0),
                     		new TimeLocation(section.getTime().getDays(), section.getTime().getSlot(), section.getTime().getLength(), 0, 0.0,
                     				section.getTime().getDatePatternId(), section.getTime().getDatePatternName(), section.getTime().getWeeks(),
@@ -690,11 +690,23 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 						a.setLength(section.getTime().getLength());
 						a.setBreakTime(section.getTime().getBreakTime());
 						a.setDatePattern(section.getTime().getDatePatternName());
+					} else {
+						XSection x = offering.getSection(section.getId());
+						if (x != null && x.getTime() != null) {
+							a.setDatePattern(x.getTime().getDatePatternName());
+						}
 					}
 					if (section.getRooms() != null) {
 						for (Iterator<RoomLocation> e = section.getRooms().iterator(); e.hasNext(); ) {
 							RoomLocation rm = e.next();
 							a.addRoom(rm.getName());
+						}
+					} else {
+						XSection x = offering.getSection(section.getId());
+						if (x != null) {
+							for (XRoom rm: x.getRooms()) {
+								a.addRoom(rm.getName());
+							}
 						}
 					}
 					if (section.getChoice().getInstructorNames() != null && !section.getChoice().getInstructorNames().isEmpty()) {
