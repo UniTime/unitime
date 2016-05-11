@@ -65,14 +65,10 @@
           ip_ttl="${jgroups.udp.ip_ttl:2}"
           num_initial_members="3"/>
     -->
+   <TCPPING initial_hosts="${unitime.enrollment.initial_hosts:localhost[7866]}" port_range="3"/>
    <!-- 
-   <TCPPING
-            timeout="3000"
-            initial_hosts="${unitime.enrollment.initial_hosts:localhost[7866]}"
-            port_range="3"
-            num_initial_members="10"/>
-    -->
    <org.unitime.commons.jgroups.UniTimeClusterDiscovery initial_hosts="${unitime.enrollment.initial_hosts:127.0.0.1[7866]}" port_range="3" />
+   -->
    <MERGE2 max_interval="30000" min_interval="10000"/>
    <FD_SOCK bind_addr="${jgroups.tcp.address:127.0.0.1}"/>
    <FD timeout="5000" max_tries="5" />
