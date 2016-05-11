@@ -36,8 +36,10 @@ import java.util.regex.Pattern;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -55,6 +57,8 @@ import freemarker.template.TemplateException;
 public class DefaultCourseDetailsProvider implements CourseDetailsProvider, CourseUrlProvider {
 	private static Logger sLog = Logger.getLogger(DefaultCourseDetailsProvider.class);
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
+	private static CourseMessages CMSG = Localization.create(CourseMessages.class);
+	private static GwtMessages GMSG = Localization.create(GwtMessages.class);
 	private static StudentSectioningConstants CONST = Localization.create(StudentSectioningConstants.class);
 	private static final long serialVersionUID = 1L;
 	private transient ExternalTermProvider iExternalTermProvider = null;
@@ -118,8 +122,13 @@ public class DefaultCourseDetailsProvider implements CourseDetailsProvider, Cour
 			Map<String, Object> input = new HashMap<String, Object>();
 			input.put("msg", MSG);
 			input.put("const", CONST);
+			input.put("cmsg", CMSG);
+			input.put("gmsg", GMSG);
 			input.put("session", session);
 			input.put("course", course);
+			URL url = getCourseUrl(session, subject, courseNbr);
+			if (url != null)
+				input.put("url", url);
 			
 			StringWriter s = new StringWriter();
 			template.process(input, new PrintWriter(s));

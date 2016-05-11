@@ -50,4 +50,9 @@
 			</td>
 		</tr>
 	</#if>
+	<#if url??>
+		<tr>
+			<td>${cmsg.propertyCourseCatalog()}</td><td><a href='${url}' target='_blank'>${gmsg.courseCatalogLink()}</a></td>
+		</tr>
+	</#if>
 </table>

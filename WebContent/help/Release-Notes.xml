@@ -38,6 +38,15 @@
 		</item>
 	</category>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Course Finder: Details</name>
+			<description>
+				<line>Default Course Detail Provider: added ability to include course catalog link in the course details.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Course Timetabling</title>
 		<item>
 			<name>Curricula Last-Like Course Demands, Curricula Requests Course Demands</name>
