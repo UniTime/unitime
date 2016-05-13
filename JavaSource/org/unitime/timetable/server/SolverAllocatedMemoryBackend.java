@@ -50,6 +50,9 @@ public class SolverAllocatedMemoryBackend implements GwtRpcImplementation<Solver
 		case 'S':
 			memUsage = solverServerService.getStudentSolverContainer().getMemUsage(request.getSolverId().substring(1));
 			break;
+		case 'I':
+			memUsage = solverServerService.getInstructorSchedulingContainer().getMemUsage(request.getSolverId().substring(1));
+			break;
 		case 'O':
 			if (request.getSolverId().indexOf(':') >= 0) {
 				String[] idHost = request.getSolverId().substring(1).split(":");

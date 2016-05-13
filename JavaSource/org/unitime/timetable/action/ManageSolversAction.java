@@ -20,9 +20,8 @@
 package org.unitime.timetable.action;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,16 +36,18 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.cpsolver.ifs.util.DataProperties;
-import org.cpsolver.ifs.util.ToolBox;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ManageSolversForm;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverGroup;
+import org.unitime.timetable.model.SolverParameterGroup.SolverType;
 import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.ExamTypeDAO;
@@ -58,12 +59,15 @@ import org.unitime.timetable.onlinesectioning.basic.GetInfo;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.CommonSolverInterface;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
 import org.unitime.timetable.solver.jgroups.SolverServer;
 import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
 
@@ -73,6 +77,7 @@ import org.unitime.timetable.util.LookupTables;
  */
 @Service("/manageSolvers")
 public class ManageSolversAction extends Action {
+	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	private static Formats.Format<Date> sDF = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
 	
 	@Autowired SessionContext sessionContext;
@@ -80,7 +85,23 @@ public class ManageSolversAction extends Action {
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
 	@Autowired SolverService<StudentSolverProxy> studentSectioningSolverService;
+	@Autowired SolverService<InstructorSchedulingProxy> instructorSchedulingSolverService;
 	@Autowired SolverServerService solverServerService;
+	
+	protected SolverService<? extends CommonSolverInterface> getSolverService(SolverType type) {
+		switch (type) {
+		case COURSE:
+			return courseTimetablingSolverService;
+		case EXAM:
+			return examinationSolverService;
+		case STUDENT:
+			return studentSectioningSolverService;
+		case INSTRUCTOR:
+			return instructorSchedulingSolverService;
+		default:
+			throw new IllegalArgumentException(MESSAGES.errorSolverInvalidType(type.name()));
+		}
+	}
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		ManageSolversForm myForm = (ManageSolversForm) form;
@@ -91,63 +112,71 @@ public class ManageSolversAction extends Action {
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
         
-        if ("Select".equals(op) && request.getParameter("puid")!=null) {
-        	String puid = request.getParameter("puid");
-        	sessionContext.setAttribute(SessionAttribute.CourseTimetablingUser, puid);
-        	sessionContext.removeAttribute(SessionAttribute.CourseTimetablingSolver);
-        	if (ApplicationProperty.LegacySolver.isTrue()) {
-        		return mapping.findForward("showSolver");
-        	} else {
-        		response.sendRedirect("gwt.jsp?page=solver&type=course");
-        		return null;
+        if ("Select".equals(op) && request.getParameter("owner") != null && request.getParameter("type") != null) {
+        	SolverType type = SolverType.valueOf(request.getParameter("type"));
+        	String puid = request.getParameter("owner");
+        	switch(type) {
+        	case COURSE:
+            	sessionContext.setAttribute(SessionAttribute.CourseTimetablingUser, puid);
+            	sessionContext.removeAttribute(SessionAttribute.CourseTimetablingSolver);
+            	if (ApplicationProperty.LegacySolver.isTrue()) {
+            		return mapping.findForward("showSolver");
+            	} else {
+            		response.sendRedirect("gwt.jsp?page=solver&type=course");
+            		return null;
+            	}
+        	case EXAM:
+                sessionContext.setAttribute(SessionAttribute.ExaminationUser, puid);
+                sessionContext.removeAttribute(SessionAttribute.ExaminationSolver);
+                LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
+            	if (ApplicationProperty.LegacySolver.isTrue()) {
+            		return mapping.findForward("showExamSolver");
+            	} else {
+            		response.sendRedirect("gwt.jsp?page=solver&type=exam");
+            		return null;
+            	}
+        	case STUDENT:
+                sessionContext.setAttribute(SessionAttribute.StudentSectioningUser, puid);
+                sessionContext.removeAttribute(SessionAttribute.StudentSectioningSolver);
+                if (ApplicationProperty.LegacySolver.isTrue()) {
+            		return mapping.findForward("showStudentSolver");
+            	} else {
+            		response.sendRedirect("gwt.jsp?page=solver&type=student");
+            		return null;
+            	}
+        	case INSTRUCTOR:
+                sessionContext.setAttribute(SessionAttribute.InstructorSchedulingUser, puid);
+                sessionContext.removeAttribute(SessionAttribute.InstructorSchedulingSolver);
+                response.sendRedirect("gwt.jsp?page=solver&type=instructor");
+                return null;
         	}
         }
         
-        if ("Unload".equals(op) && request.getParameter("puid")!=null) {
-        	String puid = request.getParameter("puid");
-        	sessionContext.setAttribute(SessionAttribute.CourseTimetablingUser, puid);
-        	sessionContext.removeAttribute(SessionAttribute.CourseTimetablingSolver);
-        	courseTimetablingSolverService.removeSolver();
-        }
-
-        if ("Select".equals(op) && request.getParameter("examPuid")!=null) {
-            String puid = request.getParameter("examPuid");
-            sessionContext.setAttribute(SessionAttribute.ExaminationUser, puid);
-            sessionContext.removeAttribute(SessionAttribute.ExaminationSolver);
-            LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
-        	if (ApplicationProperty.LegacySolver.isTrue()) {
-        		return mapping.findForward("showExamSolver");
-        	} else {
-        		response.sendRedirect("gwt.jsp?page=solver&type=exam");
-        		return null;
+        if ("Unload".equals(op) && request.getParameter("owner") != null && request.getParameter("type") != null) {
+        	SolverType type = SolverType.valueOf(request.getParameter("type"));
+        	String puid = request.getParameter("owner");
+        	switch(type) {
+        	case COURSE:
+            	sessionContext.setAttribute(SessionAttribute.CourseTimetablingUser, puid);
+            	sessionContext.removeAttribute(SessionAttribute.CourseTimetablingSolver);
+            	courseTimetablingSolverService.removeSolver();
+            	break;
+        	case EXAM:
+                sessionContext.setAttribute(SessionAttribute.ExaminationUser, puid);
+                sessionContext.removeAttribute(SessionAttribute.ExaminationSolver);
+                examinationSolverService.removeSolver();
+                break;
+        	case STUDENT:
+                sessionContext.setAttribute(SessionAttribute.StudentSectioningUser, puid);
+                sessionContext.removeAttribute(SessionAttribute.StudentSectioningSolver);
+                studentSectioningSolverService.removeSolver();
+                break;
+        	case INSTRUCTOR:
+        		sessionContext.setAttribute(SessionAttribute.InstructorSchedulingUser, puid);
+                sessionContext.removeAttribute(SessionAttribute.InstructorSchedulingSolver);
+                instructorSchedulingSolverService.removeSolver();
+                break;
         	}
-
-        }
-
-        if ("Unload".equals(op) && request.getParameter("examPuid")!=null) {
-            String puid = request.getParameter("examPuid");
-            sessionContext.setAttribute(SessionAttribute.ExaminationUser, puid);
-            sessionContext.removeAttribute(SessionAttribute.ExaminationSolver);
-            examinationSolverService.removeSolver();
-        }
-
-        if ("Select".equals(op) && request.getParameter("sectionPuid")!=null) {
-            String puid = request.getParameter("sectionPuid");
-            sessionContext.setAttribute(SessionAttribute.StudentSectioningUser, puid);
-            sessionContext.removeAttribute(SessionAttribute.StudentSectioningSolver);
-            if (ApplicationProperty.LegacySolver.isTrue()) {
-        		return mapping.findForward("showStudentSolver");
-        	} else {
-        		response.sendRedirect("gwt.jsp?page=solver&type=student");
-        		return null;
-        	}
-        }
-
-        if ("Unload".equals(op) && request.getParameter("sectionPuid")!=null) {
-            String puid = request.getParameter("sectionPuid");
-            sessionContext.setAttribute(SessionAttribute.StudentSectioningUser, puid);
-            sessionContext.removeAttribute(SessionAttribute.StudentSectioningSolver);
-            studentSectioningSolverService.removeSolver();
         }
         
         if ("Unload".equals(op) && request.getParameter("onlineId")!=null) {
@@ -195,6 +224,8 @@ public class ManageSolversAction extends Action {
             sessionContext.removeAttribute(SessionAttribute.ExaminationSolver);
             sessionContext.removeAttribute(SessionAttribute.StudentSectioningUser);
             sessionContext.removeAttribute(SessionAttribute.StudentSectioningSolver);
+            sessionContext.removeAttribute(SessionAttribute.InstructorSchedulingUser);
+            sessionContext.removeAttribute(SessionAttribute.InstructorSchedulingSolver);
         }
         
         if ("Shutdown".equals(op)) {
@@ -221,192 +252,368 @@ public class ManageSolversAction extends Action {
         		server.setUsageBase(1000);
         }
 
-        getSolvers(request);
+        for (SolverType type: SolverType.values())
+        	createSolverTable(request, type);
         if (sessionContext.hasPermission(Right.SessionIndependent))
         	getServers(request);
-        getExamSolvers(request);
-        getStudentSolvers(request);
         getOnlineSolvers(request);
         return mapping.findForward("showSolvers");
 	}
 	
-	public static String getName(String puid) {
-		TimetableManager mgr = TimetableManager.findByExternalId(puid);
-	    return (mgr == null ? puid : mgr.getShortName());
-	}
-
-	public static String getName(SolverGroup sg) {
-		if (sg==null) return null;
-	    return sg.getAbbv();
-	}
-
-	private void getSolvers(HttpServletRequest request) throws Exception {
-		try {
-			WebTable.setOrder(sessionContext,"manageSolvers.ord",request.getParameter("ord"),1);
-			
-			WebTable webTable = new WebTable( 21,
-					"Manage Course Solvers", "manageSolvers.do?ord=%%",
-					new String[] {"Created", "Last Used", "Session", "Host", "Config", "Status", "Owner", "Mem", "Cores", "Assign", "Total", "Time", "Stud", "Room", "Distr", "Instr", "TooBig", "Useless", "Pert", "Note", "Operation(s)"},
-					new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
-					null );
-			webTable.setRowStyle("white-space:nowrap");
-			
-			int nrLines = 0;
-			Long currentSessionId = sessionContext.getUser().getCurrentAcademicSessionId();
-			
-            SolverProxy x = courseTimetablingSolverService.getSolverNoSessionCheck();
-            String xId = (x==null?null:x.getProperties().getProperty("General.OwnerPuid"));
-            
-			HashSet solvers = new HashSet(courseTimetablingSolverService.getSolvers().values());
-			for (Iterator i=solvers.iterator();i.hasNext();) {
-				SolverProxy solver = (SolverProxy)i.next();
-				if (solver==null) continue;
-				DataProperties properties = solver.getProperties();
-				if (properties==null) continue;
-				String runnerName = getName(properties.getProperty("General.OwnerPuid","N/A"));
-			   Long[] solverGroupId = properties.getPropertyLongArry("General.SolverGroupId",null);
-			   String ownerName = "";
-			   if (solverGroupId!=null) {
-				   for (int j=0;j<solverGroupId.length;j++) {
-					   if (j>0) ownerName += " & ";
-					   ownerName += getName((new SolverGroupDAO()).get(solverGroupId[j]));
-				   }
-			   }
-			   if (ownerName==null || ownerName.length()==0)
-					ownerName = "N/A";
-				if (runnerName==null)
-					runnerName = "N/A";
-				if (ownerName.equals("N/A"))
-					ownerName = runnerName;
-				if (runnerName.equals("N/A"))
-					runnerName = ownerName;
-				if (!ownerName.equals(runnerName))
-					ownerName = runnerName+" as "+ownerName;
-				Session session = (new SessionDAO()).get(properties.getPropertyLong("General.SessionId",new Long(-1)));
-				if (session == null || sessionContext.getUser().getAuthorities(sessionContext.getUser().getCurrentAuthority().getRole(), session).isEmpty()) continue;
-				String sessionLabel = "N/A";
-				if (session!=null)
-					sessionLabel = session.getLabel();
-				SolverPredefinedSetting setting = (new SolverPredefinedSettingDAO()).get(properties.getPropertyLong("General.SettingsId",new Long(-1)));
-				String settingLabel = properties.getProperty("Basic.Mode","N/A");
-				if (setting!=null)
-					settingLabel = setting.getDescription();
-				String onClick = null;
-				if (session!=null && session.getUniqueId().equals(currentSessionId) && properties.getProperty("General.OwnerPuid")!=null)
-					onClick = "onClick=\"document.location='manageSolvers.do?op=Select&puid=" + properties.getProperty("General.OwnerPuid") + "';\"";
-				String status = "N/A";
-				try {
-					status = (String)solver.getProgress().get("STATUS");
-				} catch (Exception e) {}
-				
-				String note = null;
-				try {
-					note = solver.getNote();
-				} catch (Exception e) {}
-				if (note!=null) note = note.replaceAll("\n","<br>");
-				Map<String,String> info = null;
-                try {
-                	info = solver.currentSolutionInfo();
-                } catch (Exception e) {}
-				String assigned = info.get("Assigned variables");
-				String totVal = info.get("Overall solution value");
-				String timePr = info.get("Time preferences");
-				String studConf = info.get("Student conflicts");
-				String roomPr = info.get("Room preferences");
-				String distPr = info.get("Distribution preferences");
-				String instrPr = info.get("Back-to-back instructor preferences");
-				String tooBig = info.get("Too big rooms");
-				String useless = info.get("Useless half-hours");
-				String pertPen = info.get("Perturbations: Total penalty");
-				if (assigned != null) assigned = assigned.replaceAll(" of ","/");
-				if (timePr!=null && timePr.indexOf('/')>=0) timePr=timePr.substring(0,timePr.indexOf('/')).trim();
-				if (roomPr!=null && roomPr.indexOf('/')>=0) roomPr=roomPr.substring(0,roomPr.indexOf('/')).trim();
-				if (instrPr!=null && instrPr.indexOf('/')>=0) instrPr=instrPr.substring(0,instrPr.indexOf('/')).trim();
-				if (assigned!=null && assigned.indexOf(' ')>=0) assigned=assigned.substring(0,assigned.indexOf(' ')).trim();
-				if (timePr!=null && timePr.indexOf(' ')>=0) timePr=timePr.substring(0,timePr.indexOf(' ')).trim();
-				if (roomPr!=null && roomPr.indexOf(' ')>=0) roomPr=roomPr.substring(0,roomPr.indexOf(' ')).trim();
-				if (instrPr!=null && instrPr.indexOf(' ')>=0) instrPr=instrPr.substring(0,instrPr.indexOf(' ')).trim();
-				if (distPr!=null && distPr.indexOf(' ')>=0) distPr=distPr.substring(0,distPr.indexOf(' ')).trim();
-				if (tooBig!=null && tooBig.indexOf(' ')>=0) tooBig=tooBig.substring(0,tooBig.indexOf(' ')).trim();
-				if (useless!=null && useless.indexOf(' ')>=0) useless=useless.substring(0,useless.indexOf(' ')).trim();
-				studConf = studConf.replaceAll(" \\[","(").replaceAll("\\]",")").replaceAll(", ",",").replaceAll("hard:","h").replaceAll("distance:","d").replaceAll("commited:","c").replaceAll("committed:","c");
-				Date loaded = solver.getLoadedDate();
-				Date lastUsed = solver.getLastUsed(); 
-				
-                String bgColor = null;
-            	if (x!=null && ToolBox.equals(properties.getProperty("General.OwnerPuid"), xId))
-            		bgColor = "rgb(168,187,225)";
-                
-                String op = "";
-                op += 
-                	"<input type=\"button\" value=\"Unload\" onClick=\"" +
-                	"if (confirm('Do you really want to unload this solver?')) " +
-                	"document.location='manageSolvers.do?op=Unload&puid=" + properties.getProperty("General.OwnerPuid")+ "';" +
-                	" event.cancelBubble=true;\">";
-                
-                int nrCores = Math.abs(properties.getPropertyInt("Parallel.NrSolvers", 4));
-                
-				webTable.addLine(onClick, new String[] {
-							(loaded==null?"N/A":sDF.format(loaded)),
-							(lastUsed==null?"N/A":sDF.format(lastUsed)),
-							sessionLabel,
-							solver.getHost(),
-							settingLabel,
-							status,
-							ownerName,
-							"<span name='UniTimeGWT:SolverAllocatedMem' style='display: none;'>C" + solver.getUser() + "</span>",
-							String.valueOf(nrCores),
-							(assigned == null ? "N/A" : assigned),
-							(totVal == null ? "N/A" : totVal),
-							(timePr == null ? "N/A" : timePr),
-							(studConf == null ? "N/A" : studConf),
-							(roomPr == null ? "N/A" : roomPr),
-							(distPr == null ? "N/A" : distPr),
-							(instrPr == null ? "N/A" : instrPr),
-							(tooBig == null ? "N/A" : tooBig),
-							(useless == null ? "N/A" : useless),
-							(pertPen == null ? "N/A" : pertPen),
-							(note == null ? "N/A" : note),
-							op},
-						new Comparable[] {
-							(loaded==null?new Date():loaded),
-							(lastUsed==null?new Date():lastUsed),
-							sessionLabel,
-							solver.getHost(),
-							settingLabel, 
-							status,
-							ownerName,
-							null,
-							nrCores,
-							(assigned == null ? "" : assigned),
-							(totVal == null ? "" : totVal),
-							(timePr == null ? "" : timePr),
-							(studConf == null ? "" : studConf),
-							(roomPr == null ? "" : roomPr),
-							(distPr == null ? "" : distPr),
-							(instrPr == null ? "" : instrPr),
-							(tooBig == null ? "" : tooBig),
-							(useless == null ? "" : useless),
-							(pertPen == null ? "" : pertPen),
-							(note == null ? "" : note),
-							null}).setBgColor(bgColor);
-					nrLines++;
+	public static String getSolverOwner(DataProperties solverProperties) {
+    	String owner = solverProperties.getProperty("General.OwnerPuid", null);
+    	if (owner != null) {
+    		TimetableManager mgr = TimetableManager.findByExternalId(owner);
+    		if (mgr != null)
+    			owner = mgr.getShortName();
+    	} else {
+    		owner = "N/A";
+    	}
+    	Long[] solverGroupId = solverProperties.getPropertyLongArry("General.SolverGroupId",null);
+		String problem = null;
+		if (solverGroupId != null) {
+			problem = "";
+			for (int i = 0; i < solverGroupId.length; i++) {
+				SolverGroup g = SolverGroupDAO.getInstance().get(solverGroupId[i]);
+				if (g != null)
+					problem += (i == 0 ? "" : " & ") + g.getAbbv();
 			}
-			if (nrLines==0)
-				webTable.addLine(null, new String[] {"<i>No solver is running.</i>"}, null, null );
-			request.setAttribute("ManageSolvers.table",webTable.printTable(WebTable.getOrder(sessionContext,"manageSolvers.ord")));
-			
-	    } catch (Exception e) {
-	        throw new Exception(e);
-	    }
+		} else {
+			Long examTypeId = solverProperties.getPropertyLong("Exam.Type", null);
+			if (examTypeId != null) {
+				ExamType type = ExamTypeDAO.getInstance().get(examTypeId);
+				if (type != null) problem = type.getLabel();
+			}
+		}
+		if (problem == null || problem.isEmpty()) problem = "N/A";
+		if ("N/A".equals(problem)) return owner;
+		if ("N/A".equals(owner)) return problem;
+		if (!owner.equals(problem)) return owner + " as " + problem;
+		return owner;
+    }
+	
+	public static String getSolverSession(DataProperties solverProperties) {
+		Long sessionId = solverProperties.getPropertyLong("General.SessionId", null);
+		if (sessionId != null) {
+			Session session = SessionDAO.getInstance().get(sessionId);
+			if (session != null) return session.getLabel();
+		}
+		return "N/A";
 	}
+	
+	public static String getSolverConfiguration(DataProperties solverProperties) {
+		Long settingsId = solverProperties.getPropertyLong("General.SettingsId", null);
+		if (settingsId != null) {
+			SolverPredefinedSetting setting = SolverPredefinedSettingDAO.getInstance().get(settingsId);
+			if (settingsId != null) return setting.getDescription();
+		}
+		return solverProperties.getProperty("Basic.Mode","N/A");
+	}
+	
+	public String getOnClick(DataProperties solverProperties, SolverType type) {
+		Long sessionId = solverProperties.getPropertyLong("General.SessionId", null);
+		String ownerId = solverProperties.getProperty("General.OwnerPuid");
+		if (sessionId != null && sessionId.equals(sessionContext.getUser().getCurrentAcademicSessionId()) && ownerId != null)
+			return "onClick=\"document.location='manageSolvers.do?op=Select&type=" + type.name() + "&owner=" + ownerId + "';\"";
+		return null;
+	}
+	
+	public static String getSolverStatus(CommonSolverInterface solver) {
+		String status = "N/A";
+		try {
+			status = (String)solver.getProgress().get("STATUS");
+		} catch (Exception e) {}
+		return status;
+	}
+	
+	public static String getSolverOperations(DataProperties solverProperties, SolverType type) {
+		String operations = "";
+		String ownerId = solverProperties.getProperty("General.OwnerPuid");
+		if (ownerId != null) {
+			operations += "<input type=\"button\" value=\"Unload\" onClick=\"" +
+            	"if (confirm('Do you really want to unload this solver?')) " +
+            	"document.location='manageSolvers.do?op=Unload&type=" + type.name() + "&owner=" + ownerId+ "';" +
+            	" event.cancelBubble=true;\">";
+		}
+		return operations;
+	}
+	
+	public static String getSolverMemory(DataProperties solverProperties, SolverType type) {
+		String ownerId = solverProperties.getProperty("General.OwnerPuid");
+		if (ownerId != null) {
+			switch (type) {
+			case COURSE:
+				return "<span name='UniTimeGWT:SolverAllocatedMem' style='display: none;'>C" + ownerId + "</span>";
+			case STUDENT:
+				return "<span name='UniTimeGWT:SolverAllocatedMem' style='display: none;'>S" + ownerId + "</span>";
+			case EXAM:
+				return "<span name='UniTimeGWT:SolverAllocatedMem' style='display: none;'>X" + ownerId + "</span>";
+			case INSTRUCTOR:
+				return "<span name='UniTimeGWT:SolverAllocatedMem' style='display: none;'>I" + ownerId + "</span>";
+			}
+		}
+		return "N/A";
+	}
+	
+	public static interface SolverProperty<T> {
+		public T getValue(CommonSolverInterface solver, SolverType type, DataProperties properties, Map<String,String> info);
+		public String getText(T value);
+		public Comparable getComparable(T value);
+	}
+	
+	public static abstract class DateSolverProperty implements SolverProperty<Date> {
+		@Override
+		public String getText(Date value) { return value == null ? "N/A" : sDF.format(value); }
+		public Comparable getComparable(Date value) { return value == null ? new Date() : value; }
+	}
+	
+	public static abstract class StringSolverProperty implements SolverProperty<String> {
+		@Override
+		public String getText(String value) { return value == null ? "N/A" : value; }
+		public Comparable getComparable(String value) { return value == null ? "" : value; }
+	}
+	
+	public static abstract class IntegerSolverProperty implements SolverProperty<Integer> {
+		@Override
+		public String getText(Integer value) { return value == null ? "N/A" : String.valueOf(value); }
+		public Comparable getComparable(Integer value) { return value == null ? 0 : value; }
+	}
+	
+	public static class InfoSolverProperty extends StringSolverProperty {
+		private String iName;
+		private boolean iStrip;
+		public InfoSolverProperty(String name, boolean strip) { iName = name; iStrip = strip; }
+		@Override
+		public String getValue(CommonSolverInterface solver, SolverType type, DataProperties properties, Map<String, String> info) {
+			if (info == null) return null;
+			String ret = info.get(iName);
+			if (ret != null && iStrip && ret.indexOf(' ') > 0)
+				ret = ret.substring(0, ret.indexOf(' '));
+			return ret;
+		}		
+	}
+	
+	public static enum SolverProperties {
+		CREATED("Created", new DateSolverProperty() {
+			@Override
+			public Date getValue(CommonSolverInterface solver, SolverType type, DataProperties properties, Map<String, String> info) {
+				return solver.getLoadedDate();
+			}
+		}),
+		LAST_USED("Last Used", new DateSolverProperty() {
+			@Override
+			public Date getValue(CommonSolverInterface solver, SolverType type, DataProperties properties, Map<String, String> info) {
+				return solver.getLastUsed();
+			}
+		}),
+		SESSION("Session", new StringSolverProperty() {
+			@Override
+			public String getValue(CommonSolverInterface solver, SolverType type, DataProperties properties, Map<String, String> info) {
+				return getSolverSession(properties);
+			}
+		}),
+		HOST("Host", new StringSolverProperty() {
+			@Override
+			public String getValue(CommonSolverInterface solver, SolverType type, DataProperties properties, Map<String, String> info) {
+				return solver.getHost();
+			}
+		}),
+		CONFIG("Config", new StringSolverProperty() {
+			@Override
+			public String getValue(CommonSolverInterface solver, SolverType type, DataProperties properties, Map<String, String> info) {
+				return getSolverConfiguration(properties);
+			}
+		}),
+		STATUS("Status", new StringSolverProperty() {
+			@Override
+			public String getValue(CommonSolverInterface solver, SolverType type, DataProperties properties, Map<String, String> info) {
+				return getSolverStatus(solver);
+			}
+		}),
+		OWNER("Owner", new StringSolverProperty() {
+			@Override
+			public String getValue(CommonSolverInterface solver, SolverType type, DataProperties properties, Map<String, String> info) {
+				return getSolverOwner(properties);
+			}
+		}),
+		MEMORY("Mem", new StringSolverProperty() {
+			@Override
+			public String getValue(CommonSolverInterface solver, SolverType type, DataProperties properties, Map<String, String> info) {
+				return getSolverMemory(properties, type);
+			}
+			@Override
+			public Comparable getComparable(String value) { return null; }
+		}),
+		NR_CORES("Cores",  new IntegerSolverProperty() {
+			@Override
+			public Integer getValue(CommonSolverInterface solver, SolverType type, DataProperties properties, Map<String, String> info) {
+				return Math.abs(properties.getPropertyInt("Parallel.NrSolvers", 4));
+			}
+		}),
+		ASSIGNED_VAR("Assign", new InfoSolverProperty("Assigned variables", true)),
+		TOTAL("Total", new InfoSolverProperty("Overall solution value", true)),
+		COURSE_TIME_PREF(SolverType.COURSE, "Time", new InfoSolverProperty("Time preferences", true)),
+		COURSE_STUDENT_CONF(SolverType.COURSE, "Stud", new StringSolverProperty() {
+			@Override
+			public String getValue(CommonSolverInterface solver, SolverType type, DataProperties properties, Map<String, String> info) {
+				String studConf = (info == null ? null : info.get("Student conflicts"));
+				if (studConf != null)
+					return studConf.replaceAll(" \\[","(").replaceAll("\\]",")").replaceAll(", ",",").replaceAll("hard:","h").replaceAll("distance:","d").replaceAll("commited:","c").replaceAll("committed:","c");
+				else
+					return null;
+			}
+		}),
+		COURSE_ROOM_PREF(SolverType.COURSE, "Room", new InfoSolverProperty("Room preferences", true)),
+		COURSE_DIST_PREF(SolverType.COURSE, "Distr", new InfoSolverProperty("Distribution preferences", true)),
+		COURSE_BTB_INSTR_PREF(SolverType.COURSE, "Instr", new InfoSolverProperty("Back-to-back instructor preferences", true)),
+		// COURSE_TOO_BIG(SolverType.COURSE, "TooBig", new InfoSolverProperty("Too big rooms", true)),
+		// COURSE_USELESS(SolverType.COURSE, "Useless", new InfoSolverProperty("Useless half-hours", true)),
+		COURSE_PERTURBATIONS(SolverType.COURSE, "Pert", new InfoSolverProperty("Perturbations: Total penalty", false)),
+		COURSE_NOTE(SolverType.COURSE, "Note", new StringSolverProperty() {
+			@Override
+			public String getValue(CommonSolverInterface solver, SolverType type, DataProperties properties, Map<String, String> info) {
+				return properties.getProperty("General.Note", "").replaceAll("\n","<br>");
+			}
+		}),
+		EXAM_STUD_CONF(SolverType.EXAM, "StudConf", new StringSolverProperty() {
+			@Override
+			public String getValue(CommonSolverInterface solver, SolverType type, DataProperties properties, Map<String, String> info) {
+				if (info == null) return null;
+				String dc = info.get("Direct Conflicts");
+                String m2d = info.get("More Than 2 A Day Conflicts");
+                String btb = (String)info.get("Back-To-Back Conflicts");
+                return (dc == null ? "0" : dc) + ", " + (m2d == null ? "0" : m2d) + ", " + (btb == null ? "0" : btb);
+			}
+		}),
+		EXAM_INSTR_CONF(SolverType.EXAM, "InstConf", new StringSolverProperty() {
+			@Override
+			public String getValue(CommonSolverInterface solver, SolverType type, DataProperties properties, Map<String, String> info) {
+				if (info == null) return null;
+				String dc = info.get("Instructor Direct Conflicts");
+                String m2d = info.get("Instructor More Than 2 A Day Conflicts");
+                String btb = (String)info.get("Instructor Back-To-Back Conflicts");
+                return (dc == null ? "0" : dc) + ", " + (m2d == null ? "0" : m2d) + ", " + (btb == null ? "0" : btb);
+			}
+		}),
+		EXAM_PERIOD_PREF(SolverType.EXAM, "Period", new InfoSolverProperty("Period Penalty", true)),
+		EXAM_ROOM_PREF(SolverType.EXAM, "Room", new InfoSolverProperty("Room Penalty", true)),
+		EXAM_ROOM_SPLIT(SolverType.EXAM, "RoomSplit", new InfoSolverProperty("Room Split Penalty", true)),
+		EXAM_ROOM_SIZE(SolverType.EXAM, "RoomSize", new InfoSolverProperty("Room Size Penalty", true)),
+		EXAM_DIST_PREF(SolverType.EXAM, "Distr", new InfoSolverProperty("Distribution Penalty", true)),
+		EXAM_ROTATION(SolverType.EXAM, "Rot", new InfoSolverProperty("Exam Rotation Penalty", true)),
+		EXAM_PERTURBATIONS(SolverType.EXAM, "Pert", new InfoSolverProperty("Perturbation Penalty", true)),
+		STUDENT_COMPLETE(SolverType.STUDENT, "CompSched", new InfoSolverProperty("Students with complete schedule", true)),
+		STUDENT_DIST_CONF(SolverType.STUDENT, "DistConf", new InfoSolverProperty("Student distance conflicts", true)),
+		STUDENT_TIME_OVERLAPS(SolverType.STUDENT, "TimeConf", new InfoSolverProperty("Time overlapping conflicts", true)),
+		//STUDENT_FREE_OVERLAPS(SolverType.STUDENT, "FreeConf", new InfoSolverProperty("Free time overlapping conflicts", true)),
+		//STUDENT_DISBALANCE_AVG(SolverType.STUDENT, "AvgDisb", new InfoSolverProperty("Average disbalance", true)),
+		//STUDENT_DISBALANCE_10P(SolverType.STUDENT, "Disb[>=10%]", new InfoSolverProperty("Sections disbalanced by 10% or more", true)),
+		STUDENT_PERTURBATIONS(SolverType.STUDENT, "Pert", new InfoSolverProperty("Perturbation Penalty", true)),
+		INSTRUCTOR_ATTR_PREF(SolverType.INSTRUCTOR, "Attribute", new InfoSolverProperty("Attribute Preferences", true)),
+		INSTRUCTOR_COURSE_PREF(SolverType.INSTRUCTOR, "Course", new InfoSolverProperty("Course Preferences", true)),
+		INSTRUCTOR_INSTR_PREF(SolverType.INSTRUCTOR, "Instructor", new InfoSolverProperty("Instructor Preferences", true)),
+		INSTRUCTOR_TEACH_PREF(SolverType.INSTRUCTOR, "Teaching", new InfoSolverProperty("Teaching Preferences", true)),
+		INSTRUCTOR_TIME_PREF(SolverType.INSTRUCTOR, "Time", new InfoSolverProperty("Time Preferences", true)),
+		INSTRUCTOR_SAME_INSTRUCTOR(SolverType.INSTRUCTOR, "SameInstr", new InfoSolverProperty("Same Instructor", true)),
+		INSTRUCTOR_SAME_LECTURE(SolverType.INSTRUCTOR, "SameLect", new InfoSolverProperty("Same Lecture", true)),
+		INSTRUCTOR_BTB(SolverType.INSTRUCTOR, "BTB", new InfoSolverProperty("Back To Back", true)),
+		INSTRUCTOR_PERTURBATIONS(SolverType.INSTRUCTOR, "Original", new InfoSolverProperty("Original Instructor", true)),
+		OPERATIONS("Operation(s)", new StringSolverProperty() {
+			@Override
+			public String getValue(CommonSolverInterface solver, SolverType type, DataProperties properties, Map<String, String> info) {
+				return getSolverOperations(properties, type);
+			}
+			@Override
+			public Comparable getComparable(String value) { return null; }
+		}),
+		;
+		
+		private String iName;
+		private SolverProperty<?> iProperty;
+		private SolverType iType;
+		SolverProperties(SolverType type, String name, SolverProperty<?> property) {
+			iType = type; iName = name; iProperty = property;
+		}
+		SolverProperties(String name, SolverProperty<?> property) { this(null, name, property); }
+		public String getName() { return iName; }
+		public String getAlignment() { return "left"; }
+		public boolean getDefaultOrder() { return true; }
+		public SolverProperty<?> getProperty() { return iProperty; }
+		public SolverType getType() { return iType; }
+		public static List<SolverProperties> applicable(SolverType type) {
+			List<SolverProperties> ret = new ArrayList<SolverProperties>();
+			for (SolverProperties p: values()) {
+				if (p.getType() == null || p.getType() == type) ret.add(p);
+			}
+			return ret;
+		}
+	}
+	
+	protected static String getTableName(SolverType type) {
+		switch (type) {
+		case COURSE: return "Manage Course Timetabling Solvers";
+		case EXAM: return "Manage Examination Timetabling Solvers";
+		case STUDENT: return "Manage Batch Student Scheduling Solvers";
+		case INSTRUCTOR: return "Manage Instructor Scheduling Solvers";
+		}
+		return "Manage " + Constants.toInitialCase(type.name()) + " Solvers";
+	}
+	
+	private void createSolverTable(HttpServletRequest request, SolverType type) {
+		WebTable.setOrder(sessionContext,"manageSolvers.ord[" + type + "]", request.getParameter("ord" + type.ordinal()), 1);
+		List<SolverProperties> props = SolverProperties.applicable(type);
+		
+		String[] names = new String[props.size()];
+		String[] align = new String[props.size()];
+		boolean[] ord = new boolean[props.size()];
+		for (int i = 0; i < props.size(); i++) {
+			SolverProperties p = props.get(i);
+			names[i] = p.getName();
+			align[i] = p.getAlignment();
+			ord[i] = p.getDefaultOrder();
+		}
+		WebTable webTable = new WebTable(props.size(), getTableName(type), "manageSolvers.do?ord" + type.ordinal() + "=%%", names, align, ord);
+		webTable.setRowStyle("white-space:nowrap");
+		int nrLines = 0;
+		
+		SolverService<? extends CommonSolverInterface> service = getSolverService(type);
+		CommonSolverInterface selected = service.getSolverNoSessionCheck();
+		String selectedId = (selected == null ? null : selected.getUser());
+		
+		List<CommonSolverInterface> solvers = new ArrayList<CommonSolverInterface>(service.getSolvers().values());
+		for (CommonSolverInterface solver: solvers) {
+			if (solver == null) continue;
+			DataProperties properties = solver.getProperties();
+			if (properties == null) continue;
+			Map<String,String> info = solver.statusSolutionInfo();
+			
+            String bgColor = null;
+        	if (selectedId != null && selectedId.equals(solver.getUser()))
+        		bgColor = "rgb(168,187,225)";
+        	
+        	String[] line = new String[props.size()];
+        	Comparable[] cmp = new Comparable[props.size()];
+        	for (int i = 0; i < props.size(); i++) {
+    			SolverProperty<Object> p = (SolverProperty<Object>)props.get(i).getProperty();
+    			Object o = p.getValue(solver, type, properties, info);
+    			line[i] = p.getText(o);
+    			cmp[i] = p.getComparable(o);
+        	}
+        	webTable.addLine(getOnClick(properties, type), line, cmp).setBgColor(bgColor);
+        	nrLines ++;
+		}
+		if (nrLines==0)
+			webTable.addLine(null, new String[] {"<i>No solver is running.</i>"}, null, null );
+		request.setAttribute("ManageSolvers.table[" + type + "]", webTable.printTable(WebTable.getOrder(sessionContext, "manageSolvers.ord[" + type + "]")));
+	}
+	
 
 	private void getServers(HttpServletRequest request) throws Exception {
 		try {
-			WebTable.setOrder(sessionContext,"manageSolvers.ord2",request.getParameter("ord2"),1);
+			WebTable.setOrder(sessionContext,"manageSolvers.ord[SERVERS]", request.getParameter("ords"),1);
 			
 			WebTable webTable = new WebTable( 12,
-					"Available Servers", "manageSolvers.do?ord2=%%",
+					"Available Servers", "manageSolvers.do?ords=%%",
 					new String[] {"Host", "Version", "Started", "Available Memory", "NrCores", "Ping", "Usage", "NrInstances", "Active", "Working", "Passivated", "Operation(s)"},
 					new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left","left","left","left"},
 					null );
@@ -418,7 +625,6 @@ public class ManageSolversAction extends Action {
 			
 			for (SolverServer server: solverServerService.getServers(false)) {
                     if (!server.isActive()) {
-                        // String op="<input type=\"button\" value=\"Disconnect\" onClick=\"if (confirm('Do you really want to disconnect server "+server.getHost()+"?')) document.location='manageSolvers.do?op=Disconnect&solver="+server.getHost()+"';\">";
                         webTable.addLine(null, new String[] {
                                 server.getHost(),
                                 "<i>inactive</i>",
@@ -531,257 +737,19 @@ public class ManageSolversAction extends Action {
 			if (nrLines==0)
 				webTable.addLine(null, new String[] {"<i>No solver server is running.</i>"}, null, null );
 
-			request.setAttribute("ManageSolvers.table2",webTable.printTable(WebTable.getOrder(sessionContext,"manageSolvers.ord2")));
+			request.setAttribute("ManageSolvers.table[SERVERS]",webTable.printTable(WebTable.getOrder(sessionContext,"manageSolvers.ord[SERVERS]")));
 			
 	    } catch (Exception e) {
 	        throw new Exception(e);
 	    }
 	}
-	
-	   private void getExamSolvers(HttpServletRequest request) throws Exception {
-	        try {
-	            WebTable.setOrder(sessionContext,"manageSolvers.ord3",request.getParameter("ord3"),1);
-	            
-	            WebTable webTable = new WebTable( 22,
-	                    "Manage Examination Solvers", "manageSolvers.do?ord3=%%",
-	                    new String[] {"Created", "Last Used", "Session", "Host", "Config", "Status", "Owner", "Mem", "Cores", "Type", "Assign", "Total", "StudConf", "InstConf", "Period", "Room", "RoomSplit", "RoomSize", "Distr", "Rot", "Pert", "Operation(s)"},
-	                    new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
-	                    null );
-	            webTable.setRowStyle("white-space:nowrap");
-	            
-	            int nrLines = 0;
-	            Long currentSessionId = sessionContext.getUser().getCurrentAcademicSessionId();
-	            
-	            ExamSolverProxy x = examinationSolverService.getSolver();
-	            String xId = (x==null?null:x.getProperties().getProperty("General.OwnerPuid"));
-	            
-	            for (ExamSolverProxy solver : examinationSolverService.getSolvers().values()) {
-	            	if (solver==null) continue;
-					DataProperties properties = solver.getProperties();
-					if (properties==null) continue;
-	                String runnerName = getName(properties.getProperty("General.OwnerPuid","N/A"));
-	                Long examTypeId = solver.getExamTypeId();
-	                if (runnerName==null)
-	                    runnerName = "N/A";
-	                Session session = (new SessionDAO()).get(properties.getPropertyLong("General.SessionId",new Long(-1)));
-	                if (session == null || sessionContext.getUser().getAuthorities(sessionContext.getUser().getCurrentAuthority().getRole(), session).isEmpty()) continue;
-	                String sessionLabel = "N/A";
-	                if (session!=null)
-	                    sessionLabel = session.getLabel();
-	                SolverPredefinedSetting setting = (new SolverPredefinedSettingDAO()).get(properties.getPropertyLong("General.SettingsId",new Long(-1)));
-	                String settingLabel = properties.getProperty("Basic.Mode","N/A");
-	                if (setting!=null)
-	                    settingLabel = setting.getDescription();
-	                String onClick = null;
-	                if (session.getUniqueId().equals(currentSessionId) && properties.getProperty("General.OwnerPuid")!=null)
-	                    onClick = "onClick=\"document.location='manageSolvers.do?op=Select&examPuid=" + properties.getProperty("General.OwnerPuid") + "';\"";
-	                String status = (String)solver.getProgress().get("STATUS");
-	                
-	                Map<String,String> info = null;
-	                try {
-	                	info = solver.currentSolutionInfo();
-	                } catch (Exception e) {}
-	                String assigned = (String)info.get("Assigned variables");
-	                String totVal = (String)info.get("Overall solution value");
-	                String dc = (String)info.get("Direct Conflicts");
-	                String m2d = (String)info.get("More Than 2 A Day Conflicts");
-	                String btb = (String)info.get("Back-To-Back Conflicts");
-	                String conf = (dc==null?"0":dc)+", "+(m2d==null?"0":m2d)+", "+(btb==null?"0":btb);
-                    String idc = (String)info.get("Instructor Direct Conflicts");
-                    String im2d = (String)info.get("Instructor More Than 2 A Day Conflicts");
-                    String ibtb = (String)info.get("Instructor Back-To-Back Conflicts");
-                    String iconf = (idc==null?"0":idc)+", "+(im2d==null?"0":im2d)+", "+(ibtb==null?"0":ibtb);
-	                String pp = (String)info.get("Period Penalty");
-	                String rp = (String)info.get("Room Penalty");
-	                String rsp = (String)info.get("Room Split Penalty");
-	                String rsz = (String)info.get("Room Size Penalty");
-	                String dp = (String)info.get("Distribution Penalty");
-	                String erp = (String)info.get("Exam Rotation Penalty");
-	                String pert = (String)info.get("Perturbation Penalty");
-	                Date loaded = solver.getLoadedDate();
-	                Date lastUsed = solver.getLastUsed(); 
-	                
-                    String bgColor = null;
-                    if (x!=null && ToolBox.equals(properties.getProperty("General.OwnerPuid"), xId))
-                        bgColor = "rgb(168,187,225)";
-                    
-                    String op = "";
-                    op += 
-                    	"<input type=\"button\" value=\"Unload\" onClick=\"" +
-                    	"if (confirm('Do you really want to unload this solver?')) " +
-                    	"document.location='manageSolvers.do?op=Unload&examPuid=" + properties.getProperty("General.OwnerPuid")+ "';" +
-                    	" event.cancelBubble=true;\">";
-                    
-                    ExamType examType = (examTypeId == null ? null : ExamTypeDAO.getInstance().get(examTypeId));
-                    int nrCores = Math.abs(properties.getPropertyInt("Parallel.NrSolvers", 4));
-                    
-	                webTable.addLine(onClick, new String[] {
-	                            (loaded==null?"N/A":sDF.format(loaded)),
-	                            (lastUsed==null?"N/A":sDF.format(lastUsed)),
-	                            sessionLabel,
-	                            solver.getHost(),
-	                            settingLabel,
-	                            status,
-	                            runnerName, 
-	                            "<span name='UniTimeGWT:SolverAllocatedMem' style='display: none;'>X" + solver.getUser() + "</span>",
-	                            String.valueOf(nrCores),
-	                            (examType==null?"N/A?":examType.getLabel()),
-	                            (assigned==null?"N/A":assigned.indexOf(' ')>=0?assigned.substring(0,assigned.indexOf(' ')):assigned),
-	                            (totVal==null?"N/A":totVal),
-	                            (conf==null?"N/A":conf), 
-	                            (iconf==null?"N/A":iconf),
-	                            (pp==null?"N/A":pp.indexOf(' ')>=0?pp.substring(0,pp.indexOf(' ')):pp),
-	                            (rp==null?"N/A":rp.indexOf(' ')>=0?rp.substring(0,rp.indexOf(' ')):rp),
-	                            (rsp==null?"N/A":rsp.indexOf(' ')>=0?rsp.substring(0,rsp.indexOf(' ')):rsp), 
-	                            (rsz==null?"N/A":rsz.indexOf(' ')>=0?rsz.substring(0,rsz.indexOf(' ')):rsz),
-	                            (dp==null?"N/A":dp.indexOf(' ')>=0?dp.substring(0,dp.indexOf(' ')):dp),
-	                            (erp==null?"N/A":erp.indexOf(' ')>=0?erp.substring(0,erp.indexOf(' ')):erp),
-	                            (pert==null?"N/A":pert.indexOf(' ')>=0?pert.substring(0,pert.indexOf(' ')):pert),
-	                            op},
-	                        new Comparable[] {
-	                            (loaded==null?new Date():loaded),
-	                            (lastUsed==null?new Date():lastUsed),
-	                            sessionLabel,
-	                            solver.getHost(),
-	                            settingLabel, 
-	                            status,
-	                            runnerName,
-	                            null,
-	                            nrCores,
-	                            examTypeId,
-	                            (assigned==null?"":assigned),
-                                (totVal==null?"":totVal),
-                                (conf==null?"":conf), 
-                                (iconf==null?"":iconf),
-                                (pp==null?"":pp), 
-                                (rp==null?"":rp),
-                                (rsp==null?"":rsp), 
-                                (rsz==null?"":rsz),
-                                (dp==null?"":dp), 
-                                (erp==null?"":erp), 
-                                (pert==null?"":pert),
-                                null}).setBgColor(bgColor);
-	                    nrLines++;
-	            }
-	            if (nrLines==0)
-	                webTable.addLine(null, new String[] {"<i>No solver is running.</i>"}, null, null );
-	            request.setAttribute("ManageSolvers.xtable",webTable.printTable(WebTable.getOrder(sessionContext,"manageSolvers.ord3")));
-	            
-	        } catch (Exception e) {
-	            throw new Exception(e);
-	        }
-	    }
-
-       private void getStudentSolvers(HttpServletRequest request) throws Exception {
-           try {
-               WebTable.setOrder(sessionContext,"manageSolvers.ord4",request.getParameter("ord4"),1);
-               
-               WebTable webTable = new WebTable( 15,
-                       "Manage Student Sectioning Solvers", "manageSolvers.do?ord4=%%",
-                       new String[] {"Created", "Last Used", "Session", "Host", "Config", "Status", "Owner", "Mem", "Cores", "Assign", "Total", "CompSched", "DistConf", "Pert", "Operation(s)"},
-                       new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
-                       null );
-               webTable.setRowStyle("white-space:nowrap");
-               
-               int nrLines = 0;
-               Long currentSessionId = sessionContext.getUser().getCurrentAcademicSessionId();
-               
-               StudentSolverProxy x = studentSectioningSolverService.getSolver();
-               String xId = (x==null?null:x.getProperties().getProperty("General.OwnerPuid"));
-               
-               for (StudentSolverProxy solver : studentSectioningSolverService.getSolvers().values()) {
-      				if (solver==null) continue;
-    				DataProperties properties = solver.getProperties();
-    				if (properties==null) continue;
-                   String runnerName = getName(properties.getProperty("General.OwnerPuid","N/A"));
-                   if (runnerName==null)
-                       runnerName = "N/A";
-                   Session session = (new SessionDAO()).get(properties.getPropertyLong("General.SessionId",new Long(-1)));
-                   if (session == null || sessionContext.getUser().getAuthorities(sessionContext.getUser().getCurrentAuthority().getRole(), session).isEmpty()) continue;
-                   String sessionLabel = session.getLabel();
-                   SolverPredefinedSetting setting = (new SolverPredefinedSettingDAO()).get(properties.getPropertyLong("General.SettingsId",new Long(-1)));
-                   String settingLabel = properties.getProperty("Basic.Mode","N/A");
-                   if (setting!=null)
-                       settingLabel = setting.getDescription();
-                   String onClick = null;
-                   if (session.getUniqueId().equals(currentSessionId) && properties.getProperty("General.OwnerPuid")!=null)
-                       onClick = "onClick=\"document.location='manageSolvers.do?op=Select&sectionPuid=" + properties.getProperty("General.OwnerPuid") + "';\"";
-                   String status = (String)solver.getProgress().get("STATUS");
-                   
-                   Map<String,String> info = null;
-                   try {
-                	   info = solver.currentSolutionInfo();
-                   } catch (Exception e) {}
-                   String assigned = (String)info.get("Assigned variables");
-                   String totVal = (String)info.get("Overall solution value");
-                   String compSch = (String)info.get("Students with complete schedule");
-                   String distConf = (String)info.get("Student distance conflicts");
-                   String pert = (String)info.get("Perturbation Penalty");
-                   Date loaded = solver.getLoadedDate();
-                   Date lastUsed = solver.getLastUsed(); 
-                   
-                   String bgColor = null;
-                   if (x!=null && ToolBox.equals(properties.getProperty("General.OwnerPuid"), xId))
-                       bgColor = "rgb(168,187,225)";
-                   
-                   String op = "";
-                   op += 
-                   	"<input type=\"button\" value=\"Unload\" onClick=\"" +
-                   	"if (confirm('Do you really want to unload this solver?')) " +
-                   	"document.location='manageSolvers.do?op=Unload&sectionPuid=" + properties.getProperty("General.OwnerPuid")+ "';" +
-                   	" event.cancelBubble=true;\">";
-                   
-                   int nrCores = Math.abs(properties.getPropertyInt("Parallel.NrSolvers", 4));
-                   
-                   webTable.addLine(onClick, new String[] {
-                               (loaded==null?"N/A":sDF.format(loaded)),
-                               (lastUsed==null?"N/A":sDF.format(lastUsed)),
-                               sessionLabel,
-                               solver.getHost(),
-                               settingLabel,
-                               status,
-                               runnerName, 
-                               "<span name='UniTimeGWT:SolverAllocatedMem' style='display: none;'>S" + solver.getUser() + "</span>",
-                               String.valueOf(nrCores),
-                               (assigned==null?"N/A":assigned.indexOf(' ')>=0?assigned.substring(0,assigned.indexOf(' ')):assigned),
-                               (totVal==null?"N/A":totVal),
-                               (compSch==null?"N/A":compSch), 
-                               (distConf==null?"N/A":distConf),
-                               (pert==null?"N/A":pert.indexOf(' ')>=0?pert.substring(0,pert.indexOf(' ')):pert),
-                               op},
-                           new Comparable[] {
-                               (loaded==null?new Date():loaded),
-                               (lastUsed==null?new Date():lastUsed),
-                               sessionLabel,
-                               solver.getHost(),
-                               settingLabel, 
-                               status,
-                               runnerName,
-                               null,
-                               nrCores,
-                               (assigned==null?"":assigned),
-                               (totVal==null?"":totVal),
-                               (compSch==null?"":compSch), 
-                               (distConf==null?"":distConf),
-                               (pert==null?"":pert),
-                               null}).setBgColor(bgColor);
-                       nrLines++;
-               }
-               if (nrLines==0)
-                   webTable.addLine(null, new String[] {"<i>No solver is running.</i>"}, null, null );
-               request.setAttribute("ManageSolvers.stable",webTable.printTable(WebTable.getOrder(sessionContext,"manageSolvers.ord4")));
-               
-           } catch (Exception e) {
-               throw new Exception(e);
-           }
-       }
        
        private void getOnlineSolvers(HttpServletRequest request) throws Exception {
            try {
-               WebTable.setOrder(sessionContext,"manageSolvers.ord5",request.getParameter("ord5"),1);
+               WebTable.setOrder(sessionContext,"manageSolvers.ord[ONLINE]",request.getParameter("ordo"),1);
                
-               WebTable webTable = new WebTable( 15,
-                       "Manage Online Scheduling Servers", "manageSolvers.do?ord5=%%",
+               WebTable webTable = new WebTable( 14,
+                       "Manage Online Scheduling Servers", "manageSolvers.do?ordo=%%",
                        new String[] {"Created", "Session", "Host", "Mode", "Mem", "Assign", "Total", "CompSched", "DistConf", "TimeConf", "FreeConf", "AvgDisb", "Disb[>=10%]", "Operation(s)"},
                        new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
                        null );
@@ -868,12 +836,11 @@ public class ManageSolversAction extends Action {
                }
                if (nrLines==0)
                    webTable.addLine(null, new String[] {"<i>There is no online student scheduling server running at the moment.</i>"}, null, null );
-               request.setAttribute("ManageSolvers.otable",webTable.printTable(WebTable.getOrder(sessionContext,"manageSolvers.ord5")));
+               request.setAttribute("ManageSolvers.table[ONLINE]",webTable.printTable(WebTable.getOrder(sessionContext,"manageSolvers.ord[ONLINE]")));
                
            } catch (Exception e) {
                throw new Exception(e);
            }
        }
-
 }
 

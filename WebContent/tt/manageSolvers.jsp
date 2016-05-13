@@ -27,35 +27,41 @@
 
 <html:form action="/manageSolvers">
 
-<logic:notEmpty name="ManageSolvers.table" scope="request">
+<logic:notEmpty name="ManageSolvers.table[COURSE]" scope="request">
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-		<bean:write name="ManageSolvers.table" scope="request" filter="false"/> 
+		<bean:write name="ManageSolvers.table[COURSE]" scope="request" filter="false"/> 
 	</TABLE>
 	<BR>
 </logic:notEmpty>
-<logic:notEmpty name="ManageSolvers.xtable" scope="request">
+<logic:notEmpty name="ManageSolvers.table[INSTRUCTOR]" scope="request">
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-		<bean:write name="ManageSolvers.xtable" scope="request" filter="false"/>
+		<bean:write name="ManageSolvers.table[INSTRUCTOR]" scope="request" filter="false"/> 
 	</TABLE>
 	<BR>
 </logic:notEmpty>
-<logic:notEmpty name="ManageSolvers.stable" scope="request">
+<logic:notEmpty name="ManageSolvers.table[EXAM]" scope="request">
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-		<bean:write name="ManageSolvers.stable" scope="request" filter="false"/>
+		<bean:write name="ManageSolvers.table[EXAM]" scope="request" filter="false"/> 
 	</TABLE>
 	<BR>
 </logic:notEmpty>
-<logic:notEmpty name="ManageSolvers.otable" scope="request">
+<logic:notEmpty name="ManageSolvers.table[STUDENT]" scope="request">
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-		<bean:write name="ManageSolvers.otable" scope="request" filter="false"/>
+		<bean:write name="ManageSolvers.table[STUDENT]" scope="request" filter="false"/> 
 	</TABLE>
 	<BR>
 </logic:notEmpty>
-<logic:notEmpty name="ManageSolvers.table2" scope="request">
+<logic:notEmpty name="ManageSolvers.table[ONLINE]" scope="request">
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-		<bean:write name="ManageSolvers.table2" scope="request" filter="false"/>
+		<bean:write name="ManageSolvers.table[ONLINE]" scope="request" filter="false"/> 
 	</TABLE>
-<BR>
+	<BR>
+</logic:notEmpty>
+<logic:notEmpty name="ManageSolvers.table[SERVERS]" scope="request">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+		<bean:write name="ManageSolvers.table[SERVERS]" scope="request" filter="false"/> 
+	</TABLE>
+	<BR>
 </logic:notEmpty>
 <TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
@@ -63,7 +69,7 @@
 	</TR>
 	<TR>
 		<TD align='right'>
-			<% if (session.getAttribute("ManageSolver.puid")!=null || session.getAttribute("ManageSolver.examPuid")!=null || session.getAttribute("ManageSolver.sectionPuid")!=null) { %>
+			<% if (session.getAttribute("ManageSolver.puid")!=null || session.getAttribute("ManageSolver.examPuid")!=null || session.getAttribute("ManageSolver.sectionPuid")!=null || session.getAttribute("ManageSolver.instrPuid") != null) { %>
 				<html:submit onclick="displayLoading();" property="op" value="Deselect"/>
 			<% } %>
 			<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh"/>

@@ -26,6 +26,7 @@ import java.util.TreeSet;
 import org.cpsolver.ifs.util.DataProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.action.ManageSolversAction;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ListSolutionsForm;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
@@ -36,12 +37,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.MenuInterface.InfoPairInterface;
 import org.unitime.timetable.gwt.shared.MenuInterface.SolverInfoInterface;
 import org.unitime.timetable.gwt.shared.MenuInterface.SolverInfoRpcRequest;
-import org.unitime.timetable.model.ExamType;
-import org.unitime.timetable.model.SolverGroup;
-import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.solver.CommonSolverInterface;
 import org.unitime.timetable.solver.SolverProxy;
@@ -86,29 +82,7 @@ public class SolverInfoBackend implements GwtRpcImplementation<SolverInfoRpcRequ
 		String version = (String)progress.get("VERSION");
 		if (version==null || "-1".equals(version)) version = "N/A";
 		double progressPercent = 100.0*((double)(progressCur<progressMax?progressCur:progressMax))/((double)progressMax);
-		String runnerName = getName(properties.getProperty("General.OwnerPuid","N/A"));
-		Long[] solverGroupId = properties.getPropertyLongArry("General.SolverGroupId",null);
-		String ownerName = "";
-		if (solverGroupId!=null) {
-			for (int i=0;i<solverGroupId.length;i++) {
-				if (i>0) ownerName += " & ";
-				ownerName += getName((new SolverGroupDAO()).get(solverGroupId[i]));
-			}
-		} else {
-			Long examTypeId = properties.getPropertyLong("Exam.Type", null);
-			if (examTypeId != null) {
-				ExamType type = ExamTypeDAO.getInstance().get(examTypeId);
-				if (type != null) ownerName = type.getLabel();
-			}
-		}
-		if (ownerName==null || ownerName.length()==0)
-			ownerName = "N/A";
-		if (ownerName.equals("N/A"))
-			ownerName = runnerName;
-		if (runnerName.equals("N/A"))
-			runnerName = ownerName;
-		if (!ownerName.equals(runnerName))
-			ownerName = runnerName+" as "+ownerName;
+		String ownerName = ManageSolversAction.getSolverOwner(properties);
 		if (ownerName.length() > 50)
 			ownerName = ownerName.substring(0,47) + "...";
 
@@ -157,19 +131,4 @@ public class SolverInfoBackend implements GwtRpcImplementation<SolverInfoRpcRequ
 	return ret;
 		
 	}
-	
-	private String getName(String puid) {
-		return getName(TimetableManager.findByExternalId(puid));
-	}
-
-	private String getName(TimetableManager mgr) {
-		if (mgr==null) return null;
-		return mgr.getShortName();
-	}
-
-	private String getName(SolverGroup gr) {
-		if (gr==null) return null;
-		return gr.getAbbv();
-	}
-
 }

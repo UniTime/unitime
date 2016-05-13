@@ -720,5 +720,4 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
         	}
         }
     }
-
 }
