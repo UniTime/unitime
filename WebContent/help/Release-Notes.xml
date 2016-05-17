@@ -91,6 +91,17 @@
 		</item>
 	</category>
 	<category>
+		<title>Examination Timetabling</title>
+		<item>
+			<name>Examination Reports</name>
+			<description>
+				<line>Room Splits: fixed PDF/CSV version of the Room Splits report.
+					<line>If an exam is split into 4 rooms, 3rd room is printed two times (as 3rd and 4th room) instead of printing the 4th room.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Other</title>
 		<item>
 			<name>Data Exchange: Academic Session Restore</name>

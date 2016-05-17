@@ -1016,7 +1016,7 @@ public class ExamAssignmentReportAction extends Action {
                                 (rooms[1]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[1].getPreference())+"'>"+rooms[1].getCapacity(exam)+"</font>":String.valueOf(rooms[1].getCapacity(exam))),
                                 (rooms[2]==null?"":html?rooms[2].toString():rooms[2].getName()),
                                 (rooms[2]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[2].getPreference())+"'>"+rooms[2].getCapacity(exam)+"</font>":String.valueOf(rooms[2].getCapacity(exam))),
-                                (rooms[3]==null?"":html?rooms[3].toString():rooms[2].getName()),
+                                (rooms[3]==null?"":html?rooms[3].toString():rooms[3].getName()),
                                 (rooms[3]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[3].getPreference())+"'>"+rooms[3].getCapacity(exam)+"</font>":String.valueOf(rooms[3].getCapacity(exam)))
                             },
                             new Comparable[] {
