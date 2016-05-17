@@ -2282,7 +2282,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    			event.addExternalId(clazz.getClassSuffix(co));
 				    			}
 				    			DatePattern pattern = clazz.effectiveDatePattern();
-				    			if (pattern != null && !pattern.isDefault()) {
+				    			if (pattern != null) {
 				    		    	if ("never".equals(datePatternFormat)) event.setMessage(pattern.getName());
 				    		    	else if ("extended".equals(datePatternFormat) && pattern.getType() != DatePattern.sTypeExtended) event.setMessage(pattern.getName());
 				    		    	else if ("alternate".equals(datePatternFormat) && pattern.getType() == DatePattern.sTypeAlternate) event.setMessage(pattern.getName());
