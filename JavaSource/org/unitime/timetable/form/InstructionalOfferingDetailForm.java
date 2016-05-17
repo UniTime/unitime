@@ -30,6 +30,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
@@ -365,4 +366,13 @@ public class InstructionalOfferingDetailForm extends ActionForm {
 	public boolean isHasConflict() { return hasConflict; }
 	public void setHasConflict(boolean hasConflict) { this.hasConflict = hasConflict; }
 
+    public boolean getHasCourseExternalId() {
+    	if (!ApplicationProperty.CourseOfferingShowExternalIds.isTrue()) return false;
+    	if (courseOfferings==null || courseOfferings.isEmpty()) return false;
+    	for (Iterator i=courseOfferings.iterator();i.hasNext();) {
+    		CourseOffering co = (CourseOffering)i.next();
+    		if (co.getExternalUniqueId() != null && !co.getExternalUniqueId().isEmpty()) return true;
+    	}
+    	return false;
+    }
 }

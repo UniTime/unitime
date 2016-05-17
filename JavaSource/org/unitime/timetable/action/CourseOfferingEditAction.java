@@ -400,6 +400,9 @@ public class CourseOfferingEditAction extends Action {
 
 			        hibSession.update(io);
 		        }
+		        
+		        if (ApplicationProperty.CourseOfferingEditExternalIds.isTrue())
+		        	co.setExternalUniqueId(frm.getExternalId() == null || frm.getExternalId().isEmpty() ? null : frm.getExternalId());
 	        }
 
 	        hibSession.saveOrUpdate(co);
@@ -521,6 +524,9 @@ public class CourseOfferingEditAction extends Action {
 	        	io.setLastWeekToDrop(null);
 	        }
 
+	        if (ApplicationProperty.CourseOfferingEditExternalIds.isTrue())
+	        	co.setExternalUniqueId(frm.getExternalId() == null || frm.getExternalId().isEmpty() ? null : frm.getExternalId());
+
 	        frm.setInstrOfferingId((Long)hibSession.save(io));
 	        
 	        frm.setCourseOfferingId((Long)hibSession.save(co));
@@ -532,7 +538,7 @@ public class CourseOfferingEditAction extends Action {
 
 	        if (co.getCredit() != null)
 	        	hibSession.saveOrUpdate(co.getCredit());
-
+	        
             ChangeLog.addChange(
                     hibSession,
                     sessionContext,
@@ -621,6 +627,8 @@ public class CourseOfferingEditAction extends Action {
         frm.setWkDropDefault(io.getSession().getLastWeekToDrop());
         frm.setWeekStartDayOfWeek(Localization.getDateFormat("EEEE").format(io.getSession().getSessionBeginDateTime()));
         frm.setCourseTypeId(co.getCourseType() == null ? "" : co.getCourseType().getUniqueId().toString());
+        if (ApplicationProperty.CourseOfferingShowExternalIds.isTrue() || ApplicationProperty.CourseOfferingEditExternalIds.isTrue())
+        	frm.setExternalId(co.getExternalUniqueId());
 
         if (co.getConsentType()!=null)
             frm.setConsent(co.getConsentType().getUniqueId());

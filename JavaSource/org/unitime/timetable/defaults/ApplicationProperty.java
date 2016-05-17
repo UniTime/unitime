@@ -462,6 +462,16 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Class Setup: show enabled for student scheduling toggle")
 	ClassSetupEnabledForStudentScheduling("tmtbl.class_setup.show_enabled_for_student_scheduling"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Course Offering: show external ids")
+	CourseOfferingShowExternalIds("unitime.course.showExternalIds"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Course Offering: edit external ids")
+	CourseOfferingEditExternalIds("unitime.course.editExternalIds"),
 
 	@Type(Boolean.class)
 	@DefaultValue("true")
