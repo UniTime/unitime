@@ -67,6 +67,9 @@ public interface GwtConstants extends Constants {
 	@DefaultStringValue("MM/dd hh:mmaa")
 	String timeStampFormatShort();
 	
+	@DefaultStringValue("MM/dd/yyyy HH:mm:ss.SSS")
+	String timeStampFormatSolverLog();
+	
 	@DefaultIntValue(3)
 	@DoNotTranslate
 	int eventSlotIncrement();
@@ -347,4 +350,9 @@ public interface GwtConstants extends Constants {
 		"Instructor Scheduling Solver"
 	})
 	String[] solverType();
+	
+	@DefaultStringArrayValue({
+		"Trace", "Debug", "Progress", "Info", "Stage", "Warn", "Error", "Fatal"
+	})
+	String[] progressLogLevel();
 }

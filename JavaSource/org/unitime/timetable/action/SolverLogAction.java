@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.action;
 
+import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,6 +29,8 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.cpsolver.ifs.util.Progress;
+import org.cpsolver.ifs.util.Progress.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.defaults.SessionAttribute;
@@ -73,8 +76,7 @@ public class SolverLogAction extends Action {
 
         SolverProxy solver = courseTimetablingSolverService.getSolver();
         if (solver!=null) {
-        	solver.setDebugLevel(myForm.getLevelInt());
-        	request.setAttribute("log", solver.getLog());
+        	request.setAttribute("log", solver.getLog(myForm.getLevelInt(), true, null));
         } else {
 			String solutionIdsStr = (String)sessionContext.getAttribute(SessionAttribute.SelectedSolution);
 			if (solutionIdsStr!=null && !solutionIdsStr.isEmpty()) {
@@ -95,6 +97,5 @@ public class SolverLogAction extends Action {
                 
         return mapping.findForward("showLog");
 	}
-
 }
 

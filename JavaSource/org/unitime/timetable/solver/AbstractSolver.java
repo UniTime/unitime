@@ -23,6 +23,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.Hashtable;
@@ -62,7 +63,6 @@ import org.unitime.timetable.util.Constants;
  */
 public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V, T>, M extends Model<V, T>> extends ParallelSolver<V, T> implements CommonSolverInterface{
     protected Log sLog = null;
-    private int iDebugLevel = Progress.MSGLEVEL_INFO;
     protected boolean iWorking = false;
     protected Date iLoadedDate = null;
     private SolverDisposeListener iDisposeListener = null;
@@ -92,27 +92,31 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
         }
         return iLoadedDate;
     }
-
+    
     @Override
-    public String getLog() {
-        return Progress.getInstance(currentSolution().getModel()).getHtmlLog(iDebugLevel, true);
+    public List<Progress.Message> getProgressLog(Integer level, String fromStage, Date since) {
+    	Progress p = Progress.getInstance(currentSolution().getModel());
+    	synchronized (p.getLog()) {
+			ArrayList<Progress.Message> log = new ArrayList<Progress.Message>();
+			for (Progress.Message m: p.getLog()) {
+				if (fromStage != null && m.getLevel() == Progress.MSGLEVEL_STAGE && m.getMessage().equals(fromStage)) {
+					log.clear();
+				}
+				if (level != null && m.getLevel() < level) continue;
+				if (since != null && !m.getDate().after(since)) continue;
+				log.add(m);
+			}
+			return log;
+		}
     }
-
-    @Override
-    public String getLog(int level, boolean includeDate) {
-        return Progress.getInstance(currentSolution().getModel()).getHtmlLog(level, includeDate);
-    }
-
+    
     @Override
     public String getLog(int level, boolean includeDate, String fromStage) {
-        return Progress.getInstance(currentSolution().getModel()).getHtmlLog(level, includeDate, fromStage);
+    	if (fromStage == null)
+    		return Progress.getInstance(currentSolution().getModel()).getHtmlLog(level, includeDate);
+    	else
+    		return Progress.getInstance(currentSolution().getModel()).getHtmlLog(level, includeDate, fromStage);
     }
-
-    @Override
-    public void setDebugLevel(int level) { iDebugLevel = level; }
-
-    @Override
-    public int getDebugLevel() { return iDebugLevel; }
     
     @Override
     public boolean isWorking() {

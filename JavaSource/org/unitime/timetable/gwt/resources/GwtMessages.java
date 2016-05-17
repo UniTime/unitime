@@ -408,7 +408,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Unload")
 	String opSolverUnload();
 	
-	@DefaultMessage("Refresh")
+	@DefaultMessage("<u>R</u>efresh")
 	String opSolverRefresh();
 	
 	@DefaultMessage("Save")
@@ -434,6 +434,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Restore From Best")
 	String opSolverRestorBest();
+	
+	@DefaultMessage("<u>R</u>efresh")
+	String opSolverLogRefresh();
  
 	@DefaultMessage("Press Ctrl + C to copy the selected URL, and Escape to hide this dialog.")
 	String hintCtrlCToCopy();
@@ -1115,6 +1118,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Host:")
 	String propSolverHost();
+	
+	@DefaultMessage("Message Level:")
+	String propSolverLogLevel();
 
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
@@ -1370,6 +1376,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Problems")
 	String sectSolverWarnings();
+	
+	@DefaultMessage("Solver Log")
+	String sectSolverLog();
 	
 	@DefaultMessage("Loading {0}...")
 	String waitLoading(String name);
@@ -2109,6 +2118,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Solver is not started.")
 	String warnSolverNotStarted();
 	
+	@DefaultMessage("Neither a solver is started nor solution is selected.")
+	String warnSolverNotStartedSolutionNotSelected();
+	
 	@DefaultMessage("Solver is working, stop it first.")
 	String warnSolverIsWorking();
 	
@@ -2764,6 +2776,10 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageSolver();
 	
+	@DefaultMessage("Solver Log")
+	@DoNotTranslate
+	String pageSolverLog();
+	
 	@DefaultMessage("Course Timetabling Solver")
 	@DoNotTranslate
 	String pageCourseTimetablingSolver();
@@ -2779,6 +2795,22 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Instructor Scheduling Solver")
 	@DoNotTranslate
 	String pageInstructorSchedulingSolver();
+	
+	@DefaultMessage("Course Timetabling Solver Log")
+	@DoNotTranslate
+	String pageCourseTimetablingSolverLog();
+
+	@DefaultMessage("Examination Timetabling Solver Log")
+	@DoNotTranslate
+	String pageExaminationTimetablingSolverLog();
+
+	@DefaultMessage("Student Scheduling Solver Log")
+	@DoNotTranslate
+	String pageStudentSchedulingSolverLog();
+
+	@DefaultMessage("Instructor Scheduling Solver Log")
+	@DoNotTranslate
+	String pageInstructorSchedulingSolverLog();
  
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

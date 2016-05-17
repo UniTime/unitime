@@ -162,7 +162,7 @@ public class SolverInterface implements IsSerializable {
 	public static class SolutionInfo implements IsSerializable {
 		private List<InfoPair> iPairs = new ArrayList<InfoPair>();
 		private String iName = null;
-		private String iLog = null;
+		private List<ProgressMessage> iLog = null;
 		
 		public SolutionInfo() {}
 		
@@ -178,8 +178,11 @@ public class SolverInterface implements IsSerializable {
 		public void setName(String name) { iName = name; }
 		
 		public boolean hasLog() { return iLog != null && !iLog.isEmpty(); }
-		public void setLog(String html) { iLog = html; }
-		public String getLog() { return iLog; }
+		public void addMessage(int level, Date date, String message, String[] trace) {
+			if (iLog == null) iLog = new ArrayList<ProgressMessage>();
+			iLog.add(new ProgressMessage(level, date, message, trace));
+		}
+		public List<ProgressMessage> getLog() { return iLog; }
 		
 		@Override
 		public String toString() { return iPairs.toString(); }
@@ -233,7 +236,7 @@ public class SolverInterface implements IsSerializable {
 		private List<String> iHosts;
 		private SolutionInfo iCurrentSolution, iBestSolution;
 		private List<SolutionInfo> iSelectedSolutions;
-		private String iLog;
+		private List<ProgressMessage> iLog;
 		private int iOperations = 0;
 		private boolean iAllowMultipleOwners = false;
 		private boolean iWorking = false, iRefresh = false;
@@ -328,8 +331,11 @@ public class SolverInterface implements IsSerializable {
 		public List<SolutionInfo> getSelectedSolutions() { return iSelectedSolutions; }
 		
 		public boolean hasLog() { return iLog != null && !iLog.isEmpty(); }
-		public void setLog(String html) { iLog = html; }
-		public String getLog() { return iLog; }
+		public void addMessage(int level, Date date, String message, String[] trace) {
+			if (iLog == null) iLog = new ArrayList<ProgressMessage>();
+			iLog.add(new ProgressMessage(level, date, message, trace));
+		}
+		public List<ProgressMessage> getLog() { return iLog; }
 		
 		public boolean canExecute(SolverOperation operation) {
 			return operation.in(iOperations);
@@ -413,6 +419,110 @@ public class SolverInterface implements IsSerializable {
 		public String toString() {
 			return getType() + ": " + getOperation();
 		}
+	}
+	
+	public static enum ProgressLogLevel {
+		TRACE,
+		DEBUG,
+		PROGRESS,
+		INFO,
+		STAGE,
+		WARN,
+		ERROR,
+		FATAL,
+		;		
+	}
+	
+	public static class ProgressMessage implements IsSerializable {
+		private ProgressLogLevel iLevel;
+		private Date iDate;
+		private String iMessage;
+		private String[] iStackTrace;
+		
+		public ProgressMessage() {}
+		public ProgressMessage(int level, Date date, String message, String[] trace) {
+			iLevel = ProgressLogLevel.values()[level];
+			iDate = date;
+			iMessage = message;
+			iStackTrace = trace;
+		}
+		
+		public ProgressLogLevel getLevel() { return iLevel; }
+		public Date getDate() { return iDate; }
+		public String getMessage() { return iMessage; }
+		public boolean hasStackTrace() { return iStackTrace != null && iStackTrace.length > 0; }
+		public String[] getStackTrace() { return iStackTrace; }
+	}
+	
+	public static class SolutionLog implements GwtRpcResponse {
+		private List<ProgressMessage> iLog = null;
+		private String iOwner;
+		
+		public SolutionLog() {}
+		public SolutionLog(String owner) { iOwner = owner; }
+		
+		public String getOwner() { return iOwner; }
+		
+		public void addMessage(int level, Date date, String message, String[] trace) {
+			if (iLog == null) iLog = new ArrayList<ProgressMessage>();
+			iLog.add(new ProgressMessage(level, date, message, trace));
+		}
+		public boolean hasLog() { return iLog != null && !iLog.isEmpty(); }
+		public List<ProgressMessage> getLog() { return iLog; }
+	}
+	
+	public static class SolverLogPageResponse implements GwtRpcResponse {
+		private List<ProgressMessage> iLog = null;
+		private List<SolutionLog> iSolutionLogs = null;
+		private ProgressLogLevel iLevel;
+		
+		public SolverLogPageResponse() {}
+		public SolverLogPageResponse(int level) {
+			iLevel = ProgressLogLevel.values()[level];
+		}
+		public SolverLogPageResponse(ProgressLogLevel level) {
+			iLevel = level;
+		}
+		
+		public ProgressLogLevel getLevel() { return iLevel; }
+		public void addMessage(int level, Date date, String message, String[] trace) {
+			if (iLog == null) iLog = new ArrayList<ProgressMessage>();
+			iLog.add(new ProgressMessage(level, date, message, trace));
+		}
+		public boolean hasLog() { return iLog != null && !iLog.isEmpty(); }
+		public List<ProgressMessage> getLog() { return iLog; }
+		
+		public boolean hasSolutionLogs() { return iSolutionLogs != null && !iSolutionLogs.isEmpty(); }
+		public List<SolutionLog> getSolutionLogs() { return iSolutionLogs; }
+		public void addSolutionLog(SolutionLog log) {
+			if (iSolutionLogs == null) iSolutionLogs = new ArrayList<SolutionLog>();
+			iSolutionLogs.add(log);
+		}
+	}
+	
+	public static class SolverLogPageRequest implements GwtRpcRequest<SolverLogPageResponse> {
+		private ProgressLogLevel iLevel;
+		private SolverType iType;
+		private Date iLast;
+		
+		public SolverLogPageRequest() {}
+		public SolverLogPageRequest(SolverType type, ProgressLogLevel level, Date last) {
+			iType = type;
+			iLevel = level;
+			iLast = last;
+		}
+
+		public SolverType getType() { return iType; }
+		public void setType(SolverType type) { iType = type; }
+		
+		public void setLevel(ProgressLogLevel level) { iLevel = level; }
+		public boolean hasLevel() { return iLevel != null; }
+		public ProgressLogLevel getLevel() { return iLevel; }
+		
+		public Date getLastDate() { return iLast; }
+		
+		@Override
+		public String toString() { return getType() + ": " + getLevel(); }
 	}
 
 }

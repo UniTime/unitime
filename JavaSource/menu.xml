@@ -187,6 +187,14 @@
 			<item name="Solver Log" page="solverLog.do">
 				<condition>
 					<hasPermission name="SolverLog"/>
+					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="true"/>
+				</condition>
+			</item>
+			<item name="Solver Log" page="solverlog" type="gwt">
+				<parameter name="type">course</parameter>
+				<condition>
+					<hasPermission name="SolverLog"/>
+					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="true"/>
 				</condition>
 			</item>
 			<item name="Reports" page="solutionReport.do">
@@ -228,6 +236,12 @@
 				<parameter name="type">instructor</parameter>
 				<condition>
 					<hasPermission name="InstructorSchedulingSolver"/>
+				</condition>
+			</item>
+			<item name="Solver Log" page="solverlog" type="gwt">
+				<parameter name="type">instructor</parameter>
+				<condition>
+					<hasPermission name="InstructorSchedulingSolverLog"/>
 				</condition>
 			</item>
 		</menu>
@@ -299,7 +313,8 @@
 				<hasPermission name="StudentSectioningSolver"/>
 				<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="true"/>
 			</condition>
-			<item name="Solver Log" page="studentSolverLog.do">
+			<item name="Solver Log" page="solverlog" type="gwt">
+			<parameter name="type">student</parameter>
 				<condition>
 					<hasPermission name="StudentSectioningSolverLog"/>
 				</condition>
@@ -476,6 +491,14 @@
 			<item name="Solver Log" page="examSolverLog.do">
 				<condition>
 					<hasPermission name="ExaminationSolverLog"/>
+					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="true"/>
+				</condition>
+			</item>
+			<item name="Solver Log" page="solverlog" type="gwt">
+				<parameter name="type">exam</parameter>
+				<condition>
+					<hasPermission name="ExaminationSolverLog"/>
+					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="true"/>
 				</condition>
 			</item>
 			<separator>

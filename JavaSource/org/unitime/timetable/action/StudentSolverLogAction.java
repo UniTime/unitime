@@ -67,8 +67,7 @@ public class StudentSolverLogAction extends Action {
         // Change log level
         StudentSolverProxy solver = studentSectioningSolverService.getSolver();
         if (solver != null) {
-        	solver.setDebugLevel(myForm.getLevelInt());
-        	request.setAttribute("log", solver.getLog());
+        	request.setAttribute("log", solver.getLog(myForm.getLevelInt(), true, null));
         }
         
         return mapping.findForward("showLog");

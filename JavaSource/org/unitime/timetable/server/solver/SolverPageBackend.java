@@ -1,3 +1,22 @@
+/*
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+*/
 package org.unitime.timetable.server.solver;
 
 import java.text.DecimalFormat;
@@ -23,6 +42,7 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SolverInterface.PageMessage;
 import org.unitime.timetable.gwt.shared.SolverInterface.PageMessageType;
+import org.unitime.timetable.gwt.shared.SolverInterface.ProgressLogLevel;
 import org.unitime.timetable.gwt.shared.SolverInterface.SolutionInfo;
 import org.unitime.timetable.gwt.shared.SolverInterface.SolverConfiguration;
 import org.unitime.timetable.gwt.shared.SolverInterface.SolverOperation;
@@ -60,6 +80,9 @@ import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.solver.ui.LogInfo;
 import org.unitime.timetable.solver.ui.PropertiesInfo;
 
+/**
+ * @author Tomas Muller
+ */
 @GwtRpcImplements(SolverPageRequest.class)
 public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest, SolverPageResponse> {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
@@ -427,7 +450,12 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 	 				si.setName(solution.getOwner().getName());
 					LogInfo logInfo = (LogInfo)solution.getInfo("LogInfo");
 					if (logInfo != null)
-						si.setLog(logInfo.getHtmlLog(Progress.MSGLEVEL_WARN, false, "Loading input data ..."));
+						for (Progress.Message m: logInfo.getLog()) {
+							if (m.getLevel() == ProgressLogLevel.STAGE.ordinal() && "Loading input data ...".equals(m.getMessage()) && si.hasLog())
+								si.getLog().clear();
+							if (m.getLevel() >= ProgressLogLevel.WARN.ordinal())
+								si.addMessage(m.getLevel(), m.getDate(), m.getMessage(), m.getTrace());
+						}
 	 				PropertiesInfo propInfo = (PropertiesInfo)solution.getInfo("GlobalInfo");
 	 				if (propInfo != null) {
 	 					TreeSet<String> keys = new TreeSet<String>(new ListSolutionsForm.InfoComparator());
@@ -444,7 +472,10 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 	
 	protected void fillSolverLog(SessionContext context, CommonSolverInterface solver, SolverPageRequest request, SolverPageResponse response) {
 		if (solver != null) {
-			response.setLog(solver.getLog(Progress.MSGLEVEL_WARN, false, "Loading input data ..."));
+			List<Progress.Message> log = solver.getProgressLog(ProgressLogLevel.WARN.ordinal(), "Loading input data ...", null);
+			if (log != null)
+				for (Progress.Message m: log)
+					response.addMessage(m.getLevel(), m.getDate(), m.getMessage(), m.getTrace());
 		}
 	}
 	

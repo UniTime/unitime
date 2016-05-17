@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
+import org.unitime.timetable.gwt.client.solver.SolverLogPage.ProgressLog;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.P;
@@ -434,7 +435,7 @@ public class SolverPage extends SimpleForm {
 		}
 		if (response.hasLog()) {
 			addHeaderRow(MESSAGES.sectSolverWarnings());
-			addRow(new HTML(response.getLog()));
+			addRow(new ProgressLog(response.getLog()));
 		}
 		if (response.hasSelectedSolutions()) {
 			for (SolutionInfo selected: response.getSelectedSolutions()) {
@@ -443,7 +444,7 @@ public class SolverPage extends SimpleForm {
 					addRow(new HTML(pair.getName()), new HTML(pair.getValue()));
 				if (selected.hasLog()) {
 					addHeaderRow(MESSAGES.sectSolverSelectedWarnings(selected.getName()));
-					addRow(new HTML(selected.getLog()));
+					addRow(new ProgressLog(selected.getLog()));
 				}
 			}
 		}
@@ -686,5 +687,4 @@ public class SolverPage extends SimpleForm {
 			return iParameter.getDefaultValue();
 		}
 	}
-	
 }

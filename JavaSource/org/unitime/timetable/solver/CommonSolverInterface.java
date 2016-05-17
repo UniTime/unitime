@@ -22,9 +22,11 @@ package org.unitime.timetable.solver;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.Progress;
 import org.unitime.timetable.model.SolverParameterGroup.SolverType;
 
 /**
@@ -50,9 +52,9 @@ public interface CommonSolverInterface {
     public byte[] exportXml() throws IOException;
 
     public Map getProgress();
-	public String getLog();
-	public String getLog(int level, boolean includeDate);
-	public String getLog(int level, boolean includeDate, String fromStage); 
+    public List<Progress.Message> getProgressLog(Integer level, String fromStage, Date since);
+    @Deprecated
+    public String getLog(int level, boolean includeDate, String fromStage);
 	
     public DataProperties getProperties();
     public void setProperties(DataProperties config);
@@ -63,9 +65,6 @@ public interface CommonSolverInterface {
     public Date getLoadedDate();
     public Long getSessionId();
     
-    public int getDebugLevel();
-    public void setDebugLevel(int level);
-
     public boolean backup(File folder, String ownerId);
     public boolean restore(File folder, String ownerId);
     public boolean restore(File folder, String ownerId, boolean removeFiles);
