@@ -165,6 +165,25 @@
 				<html:text property="title" size="60" maxlength="90" />
 			</TD>
 		</TR>
+		<tt:propertyEquals name="unitime.course.editExternalIds" value="true">
+			<TR>
+				<TD><loc:message name="propertyExternalId"/> </TD>
+				<TD>
+					<html:text property="externalId" maxlength="40" size="20"/>
+				</TD>
+			</TR>
+		</tt:propertyEquals>
+		<tt:propertyNotEquals name="unitime.course.editExternalIds" value="true">
+			<logic:notEmpty name="courseOfferingEditForm" property="externalId">
+				<TR>
+					<TD><loc:message name="propertyExternalId"/> </TD>
+					<TD>
+						<bean:write name="courseOfferingEditForm" property="externalId"/>
+					</TD>
+				</TR>
+			</logic:notEmpty>
+			<html:hidden property="externalId"/>
+		</tt:propertyNotEquals>
 	</sec:authorize>
 	<sec:authorize access="!(not #courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) and
 							!(#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
@@ -178,6 +197,15 @@
 			</TR>
 		</logic:notEmpty>
 		<html:hidden property="title"/>
+		<logic:notEmpty name="courseOfferingEditForm" property="externalId">
+			<TR>
+				<TD><loc:message name="propertyExternalId"/> </TD>
+				<TD>
+					<bean:write name="courseOfferingEditForm" property="externalId"/>
+				</TD>
+			</TR>
+		</logic:notEmpty>
+		<html:hidden property="externalId"/>
 	</sec:authorize>
 	
 	<logic:notEmpty scope="request" name="courseTypes">

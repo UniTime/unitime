@@ -89,6 +89,17 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Offering: Show/Edit External Id</name>
+			<description>
+				<line>Instructional Offering Detail: Added ability to show external ids of a course.
+					<line>Course external ids are shown when unitime.course.showExternalIds is set to true (defaults to false).</line>
+				</line>
+				<line>Add/Edit Course Offering: Added ability to edit external id of a course.
+					<line>Course external id is editable when unitime.course.editExternalIds is set to true (defaults to false).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>

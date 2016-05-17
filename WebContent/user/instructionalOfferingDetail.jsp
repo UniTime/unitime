@@ -232,6 +232,9 @@
 							<TD align="left" class="WebTableHeader"><loc:message name="columnCourseType"/></TD>
 						</logic:equal>
 						<TD align="left" class="WebTableHeader"><loc:message name="columnTitle"/></TD>
+						<logic:equal name="instructionalOfferingDetailForm" property="hasCourseExternalId" value="true">
+							<TD align="left" class="WebTableHeader"><loc:message name="columnExternalId"/></TD>
+						</logic:equal>
 						<logic:equal name="instructionalOfferingDetailForm" property="hasCourseReservation" value="true">
 							<TD align="left" class="WebTableHeader"><loc:message name="columnReserved"/></TD>
 						</logic:equal>
@@ -267,6 +270,13 @@
 							</TD>
 						</logic:equal>
 						<TD class="BottomBorderGray"><bean:write name="co" property="courseNameWithTitle"/></TD>
+						<logic:equal name="instructionalOfferingDetailForm" property="hasCourseExternalId" value="true">
+							<TD class="BottomBorderGray">
+								<logic:notEmpty name="co" property="externalUniqueId">
+									<bean:write name="co" property="externalUniqueId"/>
+								</logic:notEmpty>
+							</TD>
+						</logic:equal>
 						<logic:equal name="instructionalOfferingDetailForm" property="hasCourseReservation" value="true">
 							<TD class="BottomBorderGray">
 								<logic:notEmpty name="co" property="reservation">
