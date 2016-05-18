@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <?xml-stylesheet type="text/css" href="Release-Notes.css"?>
 <!DOCTYPE release-history PUBLIC "-//UniTime//UniTime Release Notes DTD/EN" "Release-Notes.dtd">
-<!-- 
+<!--
  * Licensed to The Apereo Foundation under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
  * additional information regarding copyright ownership.
@@ -18,7 +18,7 @@
  *
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  -->
 
 <release-history>
@@ -118,6 +118,7 @@
 			<name>Data Exchange: Academic Session Restore</name>
 			<description>
 				<line>Fixed an IndexOutOfBoundsException when Class_.managingDept is not set in the imported file.</line>
+				<line>Fixed an NullPointerException when Class_.managingDept is not set in the imported file.</line>
 			</description>
 		</item>
 		<item>
@@ -299,7 +300,7 @@
 	</category>
 </release>
 
-	
+
 <release>
 	<version>4.1.164</version>
 	<release-date>Fri, 18 Mar 2016</release-date>
