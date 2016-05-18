@@ -322,7 +322,7 @@ public class RoomDetailsBackend extends RoomFilterBackend {
     				else
     					response.setPeriodPreference(location.getExamPreferencesAbbreviation(xt));
         		}
-        		response.addExamRype(new ExamTypeInterface(xt.getUniqueId(), xt.getReference(), xt.getLabel(), xt.getType() == ExamType.sExamTypeFinal));
+        		response.addExamType(new ExamTypeInterface(xt.getUniqueId(), xt.getReference(), xt.getLabel(), xt.getType() == ExamType.sExamTypeFinal));
         	}
     	}
     	

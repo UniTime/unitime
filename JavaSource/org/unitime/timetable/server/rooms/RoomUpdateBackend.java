@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.server.rooms;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -118,13 +119,14 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				break;
 			case UPDATE:
 				futureLocations = (request.hasFutureFlags() ? Location.getFutureLocations(request.getRoom().getUniqueId()) : null);
-				location = update(request.getRoom(), context, false, request.getFutureFlag(0l, FutureOperation.getFlagAllEnabled()));
+				List<ExamType> examTypes = ExamType.findAllApplicable(context.getUser(), DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable);
+				location = update(request.getRoom(), context, false, request.getFutureFlag(0l, FutureOperation.getFlagAllEnabled()), examTypes);
 				if (futureLocations != null) {
 					for (Location loc: futureLocations) {
 						Integer flags = request.getFutureFlag(loc.getUniqueId());
 						if (flags != null) {
 							request.getRoom().setUniqueId(loc.getUniqueId());
-							update(request.getRoom(), new EventContext(context, context.getUser(), loc.getSession().getUniqueId()), true, flags);
+							update(request.getRoom(), new EventContext(context, context.getUser(), loc.getSession().getUniqueId()), true, flags, examTypes);
 						}
 					}
 				}
@@ -246,7 +248,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 		}
 	}
 	
-	protected Location update(RoomDetailInterface room, SessionContext context, boolean future, int flags) {
+	protected Location update(RoomDetailInterface room, SessionContext context, boolean future, int flags, List<ExamType> examTypes) {
 		Transaction tx = null;
 		String roomName = null, sessionLabel = null;
 		org.hibernate.Session hibSession = LocationDAO.getInstance().getSession();
@@ -328,7 +330,14 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			if (canEdit && context.hasPermission(location, Right.RoomEditChangeExaminationStatus) && FutureOperation.EXAM_PROPERTIES.in(flags)) {
 				location.setExamCapacity(room.getExamCapacity());
 				boolean examTypesChanged = false;
-				List<ExamType> types = ExamType.findAll(hibSession);
+				List<ExamType> types = null;
+				if (future) {
+					types = ExamType.findAllApplicable(context.getUser(), DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable);
+					for (Iterator<ExamType> i = types.iterator(); i.hasNext(); )
+						if (!examTypes.contains(i.next())) i.remove();
+				} else {
+					types = examTypes;
+				}
 				for (ExamType type: types) {
 					if ((room.getExamType(type.getUniqueId(), type.getReference()) != null) != location.getExamTypes().contains(type)) {
 						examTypesChanged = true;
@@ -336,6 +345,10 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 					}
 				}
 				if (examTypesChanged) {
+					List<ExamType> readOnlyTypes = new ArrayList<ExamType>();
+            		for (ExamType t: location.getExamTypes()) {
+            			if (!types.contains(t)) readOnlyTypes.add(t);
+            		}
 	        		// Examination types has changed -- apply brute force to avoid unique constraint (PK_ROOM_EXAM_TYPE) violation
 	            	if (!location.getExamTypes().isEmpty()) {
 	            		location.getExamTypes().clear();
@@ -345,13 +358,15 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 	            		if (room.getExamType(type.getUniqueId(), type.getReference()) != null)
 	            			location.getExamTypes().add(type);
 	            	}
+	            	for (ExamType type: readOnlyTypes)
+	            		location.getExamTypes().add(type);
 	            }
 			}
 			
 			if (context.hasPermission(Right.EditRoomDepartmentsExams) && FutureOperation.EXAM_PREFS.in(flags)) {
 				for (ExamType type: location.getExamTypes()) {
 					PeriodPreferenceModel model = room.getPeriodPreferenceModel(type.getUniqueId());
-					if (model != null) {
+					if (model != null && examTypes.contains(type)) {
 						location.clearExamPreferences(type.getUniqueId());
 						for (ExamPeriod period: (List<ExamPeriod>)hibSession.createQuery(
 								"from ExamPeriod ep where ep.session.uniqueId=:sessionId and ep.examType.uniqueId=:typeId"

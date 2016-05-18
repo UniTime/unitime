@@ -47,6 +47,7 @@ import org.unitime.timetable.model.AttachmentType;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -126,9 +127,10 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		for (RoomFeatureType type: new TreeSet<RoomFeatureType>(RoomFeatureTypeDAO.getInstance().findAll()))
 			response.addFeatureType(new FeatureTypeInterface(type.getUniqueId(), type.getReference(), type.getLabel(), type.isShowInEventManagement()));
 		
-		if (context.getUser() != null)
-			for (ExamType type: ExamType.findAllUsed(context.getUser().getCurrentAcademicSessionId()))
+		if (context.getUser() != null) {
+			for (ExamType type: ExamType.findAllApplicable(context.getUser(), DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable))
 				response.addExamType(new ExamTypeInterface(type.getUniqueId(), type.getReference(), type.getLabel(), type.getType() == ExamType.sExamTypeFinal));
+		}
 		
 		for (Department d: Department.getUserDepartments(context.getUser())) {
 			DepartmentInterface department = new DepartmentInterface();

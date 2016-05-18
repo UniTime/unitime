@@ -64,7 +64,7 @@ public class PeriodPreferencesHint {
 			
 			@Override
 			public void onSuccess(RoomInterface.PeriodPreferenceModel result) {
-				if (locationId.equals(sLastLocationId) && sShowHint && result != null)
+				if (locationId.equals(sLastLocationId) && sShowHint && result != null && !result.getPeriods().isEmpty())
 					GwtHint.showHint(relativeObject, content(result));
 			}
 		});
