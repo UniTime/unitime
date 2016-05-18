@@ -79,6 +79,7 @@ import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ChangeLog;
+import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Curriculum;
@@ -565,6 +566,10 @@ public class SessionRestore implements SessionRestoreInterface {
 			if (getObject() instanceof Department) {
 				Department dept = (Department)getObject();
 				if (dept.isAllowStudentScheduling() == null) dept.setAllowStudentScheduling(true);
+			}
+			if (getObject() instanceof ClassInstructor) {
+				ClassInstructor ci = (ClassInstructor)getObject();
+				if (ci.isTentative() == null) ci.setTentative(false);
 			}
 		}
 		
