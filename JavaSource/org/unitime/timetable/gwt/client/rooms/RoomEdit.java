@@ -540,11 +540,18 @@ public class RoomEdit extends Composite {
 				@Override
 				public void onValueChange(ValueChangeEvent<Boolean> event) {
 					Integer row = iPeriodPreferencesRow.get(type.getId());
-					if (row != null)
-						iForm.getRowFormatter().setVisible(row, event.getValue());
+					if (row != null) {
+						PeriodPreferencesWidget pref = iPeriodPreferences.get(type.getId());
+						iForm.getRowFormatter().setVisible(row, event.getValue() && pref != null && pref.getModel() != null && !pref.getModel().getPeriods().isEmpty());
+					}
 					boolean prefVisible = false;
 					for (ExamTypeInterface t: iProperties.getExamTypes()) {
-						if (iExaminationRooms.get(t.getId()).getValue()) { prefVisible = true; break; }
+						if (iExaminationRooms.get(t.getId()).getValue()) {
+							PeriodPreferencesWidget pref = iPeriodPreferences.get(t.getId());
+							if (pref != null && pref.getModel() != null && !pref.getModel().getPeriods().isEmpty()) {
+								prefVisible = true; break;
+							}
+						}
 					}
 					if (iPeriodPreferencesHeaderRow > 0)
 						iForm.getRowFormatter().setVisible(iPeriodPreferencesHeaderRow, prefVisible);
@@ -1014,8 +1021,9 @@ public class RoomEdit extends Composite {
 				if (iRoom.hasPeriodPreferenceModel(type.getId())) {
 					pref.setEditable(iProperties.isCanEditRoomExams());
 					pref.setModel(iRoom.getPeriodPreferenceModel(type.getId()));
-					iForm.getRowFormatter().setVisible(iPeriodPreferencesRow.get(type.getId()), iExaminationRooms.get(type.getId()).getValue());
-					if (iExaminationRooms.get(type.getId()).getValue())
+					boolean visible = iExaminationRooms.get(type.getId()).getValue() && !pref.getModel().getPeriods().isEmpty();
+					iForm.getRowFormatter().setVisible(iPeriodPreferencesRow.get(type.getId()), visible);
+					if (visible)
 						iForm.getRowFormatter().setVisible(iPeriodPreferencesHeaderRow, true);
 				} else if ((iRoom.getUniqueId() == null && iProperties.isCanChangeExamStatus()) || iRoom.isCanChangeExamStatus()) {
 					iPeriodPreferencesHeader.showLoading();
@@ -1031,7 +1039,10 @@ public class RoomEdit extends Composite {
 							iPeriodPreferencesHeader.clearMessage();
 							pref.setEditable(iProperties.isCanEditRoomExams());
 							pref.setModel(result);
-							iForm.getRowFormatter().setVisible(iPeriodPreferencesRow.get(type.getId()), iExaminationRooms.get(type.getId()).getValue());
+							boolean visible = iExaminationRooms.get(type.getId()).getValue() && !pref.getModel().getPeriods().isEmpty();
+							iForm.getRowFormatter().setVisible(iPeriodPreferencesRow.get(type.getId()), visible);
+							if (visible)
+								iForm.getRowFormatter().setVisible(iPeriodPreferencesHeaderRow, true);
 						}
 					});
 				} else {

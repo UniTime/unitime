@@ -288,7 +288,8 @@ public class RoomDetail extends Composite {
 					public void onSuccess(PeriodPreferenceModel result) {
 						header.clearMessage();
 						pref.setModel(result);
-						iForm.getRowFormatter().setVisible(row, true);
+						if (!result.getPeriods().isEmpty())
+							iForm.getRowFormatter().setVisible(row, true);
 					}
 				});
 			}

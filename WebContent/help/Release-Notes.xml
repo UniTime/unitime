@@ -111,6 +111,14 @@
 				</line>
 			</description>
 		</item>
+		<item>
+				<name>Examination Rooms</name>
+				<description>
+						<line>Fixed a JavaScript exception thrown when trying to edit an examination room for a problem with no periods.</line>
+						<line>Do not show period preferences table for an examination problem with no periods.</line>
+						<line>Make sure user cannot change examination types that are not visible to him/her.</line>
+				</description>
+		</item>
 	</category>
 	<category>
 		<title>Other</title>

@@ -1312,7 +1312,7 @@ public class RoomInterface implements IsSerializable {
 		
 		public boolean hasExamTypes() { return iExamTypes != null && !iExamTypes.isEmpty(); }
 		public List<ExamTypeInterface> getExamTypes() { return iExamTypes; }
-		public void addExamRype(ExamTypeInterface type) { iExamTypes.add(type); }
+		public void addExamType(ExamTypeInterface type) { iExamTypes.add(type); }
 		public ExamTypeInterface getExamType(Long typeId, String typeRef) {
 			if (iExamTypes == null || typeId == null) return null;
 			for (ExamTypeInterface type: iExamTypes) {
