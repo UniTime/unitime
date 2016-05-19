@@ -100,6 +100,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetabling: N Hour Work Day</name>
+			<description>
+				<line>Corrected the constraint check in the N Hour Work Day constraint.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>
