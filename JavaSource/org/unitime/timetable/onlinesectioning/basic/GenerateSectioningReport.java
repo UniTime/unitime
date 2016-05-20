@@ -105,6 +105,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 			OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig(), server.getOverExpectedCriterion());
 			model.setDistanceConflict(new DistanceConflict(server.getDistanceMetric(), model.getProperties()));
 			model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
+			boolean linkedClassesMustBeUsed = server.getConfig().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
 
 			Map<Long, Offering> offerings = new HashMap<Long, Offering>();
     		Hashtable<Long, Course> courses = new Hashtable<Long, Course>();
@@ -267,7 +268,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 						linked.add(section);
 				}
 				if (linked.size() > 1)
-					model.addLinkedSections(linked);
+					model.addLinkedSections(linkedClassesMustBeUsed, linked);
 			}
 
 			String name = iParameters.getProperty("report", SectionConflictTable.class.getName());

@@ -130,6 +130,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	public List<ClassAssignmentInterface> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		long t0 = System.currentTimeMillis();
 		OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig(), server.getOverExpectedCriterion());
+		boolean linkedClassesMustBeUsed = server.getConfig().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
 		Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 		
 		OnlineSectioningLog.Action.Builder action = helper.getAction();
@@ -185,7 +186,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 						if (x != null) sections.add(x);
 					}
 					if (sections.size() >= 2)
-						model.addLinkedSections(sections);
+						model.addLinkedSections(linkedClassesMustBeUsed, sections);
 				}
 			}
 		} finally {

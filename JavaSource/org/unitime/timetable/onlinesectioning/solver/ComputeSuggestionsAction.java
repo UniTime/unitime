@@ -110,6 +110,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		long t0 = System.currentTimeMillis();
 		OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig(), server.getOverExpectedCriterion());
 		Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
+		boolean linkedClassesMustBeUsed = server.getConfig().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
 
 		OnlineSectioningLog.Action.Builder action = helper.getAction();
 
@@ -164,7 +165,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 						if (x != null) sections.add(x);
 					}
 					if (sections.size() >= 2)
-						model.addLinkedSections(sections);
+						model.addLinkedSections(linkedClassesMustBeUsed, sections);
 				}
 			}
 		} finally {
