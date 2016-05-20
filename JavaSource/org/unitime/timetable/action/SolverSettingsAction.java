@@ -361,7 +361,7 @@ public class SolverSettingsAction extends Action {
 				for (Iterator i=list.iterator();i.hasNext();) {
 					SolverPredefinedSetting setting = (SolverPredefinedSetting)i.next();
 					String onClick = "onClick=\"document.location='solverSettings.do?op=Edit&id=" + setting.getUniqueId() + "';\"";
-					
+					if (setting.getAppearance().intValue() >= SolverPredefinedSetting.sAppearances.length) continue;
 					webTable.addLine(onClick, new String[] {
 							setting.getName(), 
 							setting.getDescription(), 
