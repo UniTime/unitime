@@ -70,6 +70,16 @@
 				<line>To avoid confusion, show No Dates (in the Date column) and/or No Room (in the Room column) for a class with no date pattern and/or no room respectively.</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling: Distributions</name>
+			<description>
+				<line>Do not skip same time sections when there is a Linked Classes constraint involved or when the section is involved in an Ignore Student Conflicts constraint.</line>
+				<line>Linked Classes: Added ability to force students to use the linked classes when they are requesting both courses.
+					<line>There is a new solver parameter for this, named LinkedClasses.mustBeUsed, defaults to false.</line>
+				</line>
+				<line>Batch Scheduling: In the database load, assign students only after the distribution constraints has been loaded in.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>
