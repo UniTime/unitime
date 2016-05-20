@@ -1483,7 +1483,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 } else {
                 	if (iLoadRequestGroups) loadRequestGroups(student, s);
                     getModel().addStudent(student);
-                    assignStudent(student);
+                    // assignStudent(student);
                 }
             }
         }
@@ -1516,6 +1516,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         			}
         		}
         	}
+        }
+        
+        iProgress.setPhase("Assigning students...", getModel().getStudents().size());
+        for (Student student: getModel().getStudents()) {
+        	iProgress.incProgress();
+        	assignStudent(student);
         }
         
         iProgress.setPhase("Checking for student conflicts...", getModel().getStudents().size());
