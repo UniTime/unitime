@@ -371,7 +371,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 			        }
 				}
 			}
-			String overlapMessage = null;
+			TreeSet<String> overlapMessages = new TreeSet<String>();
 			for (Iterator<Enrollment> i = overlap.iterator(); i.hasNext();) {
 				Enrollment q = i.next();
 				String ov = null;
@@ -385,17 +385,22 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 						for (Iterator<Section> j = overlapingSections.get(cr).iterator(); j.hasNext();) {
 							Section s = j.next();
 							ov += " " + s.getSubpart().getName();
-							if (i.hasNext()) ov += ",";
 						}
 				}
-				if (overlapMessage == null)
-					overlapMessage = ov;
-				else if (i.hasNext())
-					overlapMessage += MSG.conflictWithMiddle(ov);
-				else
-					overlapMessage += MSG.conflictWithLast(ov);
+				overlapMessages.add(ov);
 			}
-			if (overlapMessage != null) {
+			if (!overlapMessages.isEmpty()) {
+				String overlapMessage = null;
+				for (Iterator<String> i = overlapMessages.iterator(); i.hasNext(); ) {
+					String ov = i.next();
+					if (overlapMessage == null)
+						overlapMessage = ov;
+					else if (i.hasNext()) {
+						overlapMessage += MSG.conflictWithMiddle(ov);
+					} else {
+						overlapMessage += MSG.conflictWithLast(ov);
+					}
+				}
 				messages.addMessage(MSG.suggestionsNoChoicesCourseIsConflicting(MSG.course(course.getSubjectArea(), course.getCourseNumber()), overlapMessage));
 			} else if (course.getLimit() == 0) {
 				messages.addMessage(MSG.suggestionsNoChoicesCourseIsFull(MSG.course(course.getSubjectArea(), course.getCourseNumber())));
