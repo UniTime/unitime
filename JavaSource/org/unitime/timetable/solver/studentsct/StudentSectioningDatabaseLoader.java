@@ -151,6 +151,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private boolean iLoadRequestGroups = false;
 	private Query iStudentQuery = null;
 	private boolean iNoUnlimitedGroupReservations = false;
+	private boolean iLinkedClassesMustBeUsed = false;
     
     private Progress iProgress = null;
     
@@ -177,6 +178,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iLoadRequestGroups = model.getProperties().getPropertyBoolean("Load.RequestGroups", iLoadRequestGroups);
         iDatePatternFormat = ApplicationProperty.DatePatternFormatUseDates.value();
         iNoUnlimitedGroupReservations = model.getProperties().getPropertyBoolean("Load.NoUnlimitedGroupReservations", iNoUnlimitedGroupReservations);
+        iLinkedClassesMustBeUsed = model.getProperties().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
         
         try {
         	String studentCourseDemandsClassName = getModel().getProperties().getProperty("StudentSct.ProjectedCourseDemadsClass", LastLikeStudentCourseDemands.class.getName());
@@ -1506,7 +1508,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		iProgress.incProgress();
         		for (Collection<Section> sections: getSections(pref, p)) {
         			if (GroupConstraint.ConstraintType.LINKED_SECTIONS.reference().equals(pref.getDistributionType().getReference())) {
-        				getModel().addLinkedSections(sections);        				
+        				getModel().addLinkedSections(iLinkedClassesMustBeUsed, sections);
         			} else {
         				for (Section s1: sections)
                 			for (Section s2: sections)
