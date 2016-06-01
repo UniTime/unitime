@@ -689,8 +689,8 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 					query.addFrom("department", "left outer join l.examTypes x left outer join l.roomDepts rd left outer join rd.department rdd left outer join l.eventDepartment ed");
 					query.addWhere("department", "rdd.deptCode = :Xd or ed.deptCode = :Xd or x.reference = :Xd");
 				} else {
-					query.addFrom("department", "left outer join l.examTypes x left outer join l.roomDepts rd");
-					query.addWhere("department", "rd.department.deptCode = :Xd or x.reference = :Xd");
+					query.addFrom("department", "left outer join l.examTypes x left outer join l.roomDepts rd left outer join rd.department rdd");
+					query.addWhere("department", "rdd.deptCode = :Xd or x.reference = :Xd");
 				}
 				query.addParameter("department", "Xd", department);
 			}
