@@ -394,7 +394,7 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
         Set roomPrefs = exam.getPreferences(RoomPref.class);
         Set bldgPrefs = exam.getPreferences(BuildingPref.class);
         Set featurePrefs = exam.getPreferences(RoomFeaturePref.class);
-            
+        
         for (Iterator i1=iAllRooms.iterator();i1.hasNext();) {
             Location room = (Location)i1.next();
             ExamRoom roomEx = iRooms.get(room.getUniqueId());
@@ -503,6 +503,9 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
                     if (roomEx.getPenalty(period)==4) hasStrongDisc = true;
                     else allStrongDisc = false;
             }
+            //has strongly discouraged, no room preference, but a room is in a required group -> can use the room
+            if (hasStrongDisc && reqGroup && roomPref == null) roomPref = PreferenceLevel.sNeutral;
+            
             //all strongly discouraged and not overridden by room preference -> do not use this room
             if (allStrongDisc && roomPref==null) continue;
             
