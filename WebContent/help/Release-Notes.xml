@@ -136,6 +136,12 @@
 						<line>Make sure user cannot change examination types that are not visible to him/her.</line>
 				</description>
 		</item>
+		<item>
+			<name>Room Filter</name>
+			<description>
+				<line>When showing examination rooms, make sure that rooms which have no room sharing (no room departments) are also present in the list.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other</title>
