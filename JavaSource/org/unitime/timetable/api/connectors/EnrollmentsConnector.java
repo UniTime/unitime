@@ -22,6 +22,7 @@ package org.unitime.timetable.api.connectors;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -155,6 +156,7 @@ public class EnrollmentsConnector extends ApiConnector {
 		String iSectionNumber;
 		String iClassSuffix;
 		String iClassExternalId;
+		Date iRequestDate, iEnrollmentDate;
 		
 		ClassEnrollmentInfo(StudentClassEnrollment enrollment) {
 			iStudentId = enrollment.getStudent().getUniqueId();
@@ -196,6 +198,9 @@ public class EnrollmentsConnector extends ApiConnector {
 			iSubpart = enrollment.getClazz().getSchedulingSubpart().getItypeDesc().trim();
 			iClassSuffix = enrollment.getClazz().getClassSuffix(enrollment.getCourseOffering());
 			iClassExternalId = enrollment.getClazz().getExternalId(enrollment.getCourseOffering());
+			iEnrollmentDate = enrollment.getTimestamp();
+			if (enrollment.getCourseRequest() != null && enrollment.getCourseRequest().getCourseDemand() != null)
+				iRequestDate = enrollment.getCourseRequest().getCourseDemand().getTimestamp();
 		}
 		
 	}
