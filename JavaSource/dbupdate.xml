@@ -3316,7 +3316,7 @@
 				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='StudentSctWeights')
 		</plsql>
 		<mysql into="GID">select uniqueid from %SCHEMA%.solver_parameter_group where name='StudentSctWeights'</mysql>
-		<mysql into="ORD">select max(ord)+1 from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GID%;</mysql>
+		<mysql into="ORD">select max(ord)+1 from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GID%</mysql>
 		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
 		<mysql>
 			insert into %SCHEMA%.solver_parameter_def
@@ -11032,6 +11032,415 @@
 		<sql>
 			alter table %SCHEMA%.course_offering add constraint fk_course_offering_alternative_offr foreign key (alternative_offering_id)
 			references %SCHEMA%.course_offering (uniqueid) on delete set null
+		</sql>
+	</update>
+	<update version="164" date="6-Jun-2016" comment="Instructor Scheduling Solver Parameters">
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql into="ORD">select max(ord)+1 from %SCHEMA%.solver_parameter_group</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_group (uniqueid, name, description, ord, param_type) values
+			(%ID% + 0, 'InstrSchd.Basic', 'Instructor Scheduling: Basic', %ORD% + 0, 3),
+			(%ID% + 1, 'InstrSchd.General', 'Instructor Scheduling: General', %ORD% + 1, 3),
+			(%ID% + 2, 'InstrSchd.Weight', 'Instructor Scheduling: Weights', %ORD% + 2, 3),
+			(%ID% + 3, 'InstrSchd.Implementation', 'Instructor Scheduling: Implementation', %ORD% + 3, 3)
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_def
+			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+			(%ID% +  4, 'Basic.Mode', 'Initial', 'Solver Mode', 'enum(Initial,MPP)', 0, 1, %ID%),
+			(%ID% +  5, 'Basic.WhenFinished', 'No Action', 'When Finished', 'enum(No Action,Save,Save as New,Save and Unload,Save as New and Unload)', 1, 1, %ID%),
+			(%ID% +  6, 'General.CBS', 'true', 'Use conflict-based statistics', 'boolean', 0, 1, %ID% + 1),
+			(%ID% +  7, 'General.CommonItypes', 'lec', 'Common Instructional Types (comma separated)', 'text', 1, 1, %ID% + 1),
+			(%ID% +  8, 'General.IgnoreOtherInstructors', 'false', 'Ignore Other Instructors', 'boolean', 2, 1, %ID% + 1),
+			(%ID% +  9, 'General.SaveBestUnassigned', '-1', 'Minimal number of unassigned variables to save best solution found (-1 always save)', 'integer', 3, 0, %ID% + 1),
+			(%ID% + 10, 'Termination.StopWhenComplete', 'false', 'Stop computation when a complete solution is found', 'boolean', 4, 1, %ID% + 1),
+			(%ID% + 11, 'Termination.TimeOut', '300', 'Maximal solver time (in sec)', 'integer', 5, 1, %ID% + 1),
+			(%ID% + 12, 'Value.RandomWalkProb', '0.02', 'Randon Walk Probability', 'double', 6, 1, %ID% + 1),
+			(%ID% + 13, 'Value.WeightConflicts', '1000.0', 'Conflict Weight', 'double', 0, 1, %ID% + 2),
+			(%ID% + 14, 'Weight.TeachingPreferences', '10.0', 'Teaching Preference Weight', 'double', 1, 1, %ID% + 2),
+			(%ID% + 15, 'Weight.AttributePreferences', '1000.0', 'Attribute Preference Weight', 'double', 2, 1, %ID% + 2),
+			(%ID% + 16, 'Weight.CoursePreferences', '1.0', 'Course Preference Weight', 'double', 3, 1, %ID% + 2),
+			(%ID% + 17, 'Weight.TimePreferences', '1.0', 'Time Preference Weight', 'double', 4, 1, %ID% + 2),
+			(%ID% + 18, 'Weight.InstructorPreferences', '1.0', 'Instructor Preference Weight', 'double', 5, 1, %ID% + 2),
+			(%ID% + 19, 'Weight.BackToBack', '1.0', 'Back-to-Back Weight', 'double', 6, 1, %ID% + 2),
+			(%ID% + 20, 'BackToBack.DifferentRoomWeight', '0.8', 'Back-to-Back Different Room', 'double', 7, 1, %ID% + 2),
+			(%ID% + 21, 'BackToBack.DifferentTypeWeight', '0.6', 'Back-to-Back Different Type', 'double', 8, 1, %ID% + 2),
+			(%ID% + 22, 'Weight.DifferentLecture', '1000.0', 'Different Lecture Weight', 'double', 9, 1, %ID% + 2),
+			(%ID% + 23, 'Weight.SameInstructor', '10.0', 'Same Instructor Weight', 'double', 10, 1, %ID% + 2),
+			(%ID% + 24, 'Weight.SameLink', '100.0', 'Same Link Weight', 'double', 11, 1, %ID% + 2),
+			(%ID% + 25, 'Weight.TimeOverlaps', '1000.0', 'Allowed Time Overlap Weight', 'double', 12, 1, %ID% + 2),
+			(%ID% + 26, 'Weight.OriginalInstructor', '100.0', 'Original Instructor Weight (MPP)', 'double', 13, 1, %ID% + 2),
+			(%ID% + 27, 'Termination.Class', 'org.cpsolver.ifs.termination.GeneralTerminationCondition', 'Termination Class', 'text', 0, 0, %ID% + 3),
+			(%ID% + 28, 'Comparator.Class', 'org.cpsolver.ifs.solution.GeneralSolutionComparator', 'Comparator Class', 'text', 1, 0, %ID% + 3),
+			(%ID% + 29, 'Value.Class', 'org.cpsolver.ifs.heuristics.GeneralValueSelection', 'Value Selection Class', 'text', 2, 0, %ID% + 3),
+			(%ID% + 30, 'Variable.Class', 'org.cpsolver.ifs.heuristics.GeneralVariableSelection', 'Variable Selection Class', 'text', 3, 0, %ID% + 3),
+			(%ID% + 31, 'Neighbour.Class', 'org.cpsolver.ifs.algorithms.SimpleSearch', 'Neighbour Selection Class', 'text', 4, 0, %ID% + 3)
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_predef_setting
+			(uniqueid, name, description, appearance) values
+			(%ID% + 32, 'InstrSchd.Default', 'Default', 4)
+		</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_group (uniqueid, name, description, condition, ord, param_type) values
+			(%SCHEMA%.solver_parameter_group_seq.nextval, 'InstrSchd.Basic', 'Instructor Scheduling: Basic', '', -1, 3)
+		</plsql>
+		<plsql>
+			update %SCHEMA%.solver_parameter_group g set g.ord = ( select max(x.ord)+1 from %SCHEMA%.solver_parameter_group x ) where g.name='InstrSchd.Basic'
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_group (uniqueid, name, description, condition, ord, param_type) values
+			(%SCHEMA%.solver_parameter_group_seq.nextval, 'InstrSchd.General', 'Instructor Scheduling: General', '', -1, 3)
+		</plsql>
+		<plsql>
+			update %SCHEMA%.solver_parameter_group g set g.ord = ( select max(x.ord)+1 from %SCHEMA%.solver_parameter_group x ) where g.name='InstrSchd.General'
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_group (uniqueid, name, description, condition, ord, param_type) values
+			(%SCHEMA%.solver_parameter_group_seq.nextval, 'InstrSchd.Weight', 'Instructor Scheduling: Weights', '', -1, 3)
+		</plsql>
+		<plsql>
+			update %SCHEMA%.solver_parameter_group g set g.ord = ( select max(x.ord)+1 from %SCHEMA%.solver_parameter_group x ) where g.name='InstrSchd.Weight'
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_group (uniqueid, name, description, condition, ord, param_type) values
+			(%SCHEMA%.solver_parameter_group_seq.nextval, 'InstrSchd.Implementation', 'Instructor Scheduling: Implementation', '', -1, 3)
+		</plsql>
+		<plsql>
+			update %SCHEMA%.solver_parameter_group g set g.ord = ( select max(x.ord)+1 from %SCHEMA%.solver_parameter_group x ) where g.name='InstrSchd.Implementation'
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Basic.Mode' as name,
+				'Initial' as default_value,
+				'Solver Mode' as description,
+				'enum(Initial,MPP)' as type,
+				0 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.Basic')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Basic.WhenFinished' as name,
+				'No Action' as default_value,
+				'When Finished' as description,
+				'enum(No Action,Save,Save as New,Save and Unload,Save as New and Unload)' as type,
+				1 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.Basic')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'General.CBS' as name,
+				'true' as default_value,
+				'Use conflict-based statistics' as description,
+				'boolean' as type,
+				0 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'General.CommonItypes' as name,
+				'lec' as default_value,
+				'Common Instructional Types (comma separated)' as description,
+				'text' as type,
+				1 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'General.IgnoreOtherInstructors' as name,
+				'false' as default_value,
+				'Ignore Other Instructors' as description,
+				'boolean' as type,
+				2 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'General.SaveBestUnassigned' as name,
+				'-1' as default_value,
+				'Minimal number of unassigned variables to save best solution found (-1 always save)' as description,
+				'integer' as type,
+				3 as ord,
+				0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Termination.StopWhenComplete' as name,
+				'false' as default_value,
+				'Stop computation when a complete solution is found' as description,
+				'boolean' as type,
+				4 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Termination.TimeOut' as name,
+				'300' as default_value,
+				'Maximal solver time (in sec)' as description,
+				'integer' as type,
+				5 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Value.RandomWalkProb' as name,
+				'0.02' as default_value,
+				'Randon Walk Probability' as description,
+				'double' as type,
+				6 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Value.WeightConflicts' as name,
+				'1000.0' as default_value,
+				'Conflict Weight' as description,
+				'double' as type,
+				0 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.Weight')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Weight.TeachingPreferences' as name,
+				'10.0' as default_value,
+				'Teaching Preference Weight' as description,
+				'double' as type,
+				1 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.Weight')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Weight.AttributePreferences' as name,
+				'1000.0' as default_value,
+				'Attribute Preference Weight' as description,
+				'double' as type,
+				2 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.Weight')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Weight.CoursePreferences' as name,
+				'1.0' as default_value,
+				'Course Preference Weight' as description,
+				'double' as type,
+				3 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.Weight')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Weight.TimePreferences' as name,
+				'1.0' as default_value,
+				'Time Preference Weight' as description,
+				'double' as type,
+				4 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.Weight')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Weight.InstructorPreferences' as name,
+				'1.0' as default_value,
+				'Instructor Preference Weight' as description,
+				'double' as type,
+				5 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.Weight')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Weight.BackToBack' as name,
+				'1.0' as default_value,
+				'Back-to-Back Weight' as description,
+				'double' as type,
+				6 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.Weight')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'BackToBack.DifferentRoomWeight' as name,
+				'0.8' as default_value,
+				'Back-to-Back Different Room' as description,
+				'double' as type,
+				7 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.Weight')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'BackToBack.DifferentTypeWeight' as name,
+				'0.6' as default_value,
+				'Back-to-Back Different Type' as description,
+				'double' as type,
+				8 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.Weight')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Weight.DifferentLecture' as name,
+				'1000.0' as default_value,
+				'Different Lecture Weight' as description,
+				'double' as type,
+				9 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.Weight')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Weight.SameInstructor' as name,
+				'10.0' as default_value,
+				'Same Instructor Weight' as description,
+				'double' as type,
+				0 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.Weight')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Weight.SameLink' as name,
+				'100.0' as default_value,
+				'Same Link Weight' as description,
+				'double' as type,
+				1 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.Weight')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Weight.TimeOverlaps' as name,
+				'1000.0' as default_value,
+				'Allowed Time Overlap Weight' as description,
+				'double' as type,
+				2 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.Weight')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Weight.OriginalInstructor' as name,
+				'100.0' as default_value,
+				'Original Instructor Weight (MPP)' as description,
+				'double' as type,
+				3 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.Weight')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Termination.Class' as name,
+				'org.cpsolver.ifs.termination.GeneralTerminationCondition' as default_value,
+				'Termination Class' as description,
+				'text' as type,
+				0 as ord,
+				0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.Implementation')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Comparator.Class' as name,
+				'org.cpsolver.ifs.solution.GeneralSolutionComparator' as default_value,
+				'Comparator Class' as description,
+				'text' as type,
+				1 as ord,
+				0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.Implementation')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Value.Class' as name,
+				'org.cpsolver.ifs.heuristics.GeneralValueSelection' as default_value,
+				'Value Selection Class' as description,
+				'text' as type,
+				2 as ord,
+				0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.Implementation')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Variable.Class' as name,
+				'org.cpsolver.ifs.heuristics.GeneralVariableSelection' as default_value,
+				'Variable Selection Class' as description,
+				'text' as type,
+				3 as ord,
+				0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.Implementation')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Neighbour.Class' as name,
+				'org.cpsolver.ifs.algorithms.SimpleSearch' as default_value,
+				'Neighbour Selection Class' as description,
+				'text' as type,
+				4 as ord,
+				0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstrSchd.Implementation')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_predef_setting (uniqueid, name, description, appearance) values
+				(%SCHEMA%.solver_predef_setting_seq.nextval, 'InstrSchd.Default', 'Default', 4)
+		</plsql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'InstructorScheduling'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'CourseTimetabling'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'InstructorSchedulingSolver'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'Solver'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'InstructorSchedulingSolverLog'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'SolverLog'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'InstructorSchedulingSolutionExportXml'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'SolverSolutionExportXml'
 		</sql>
 	</update>
 </dbupdate>
