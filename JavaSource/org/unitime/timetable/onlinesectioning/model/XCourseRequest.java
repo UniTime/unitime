@@ -99,6 +99,26 @@ public class XCourseRequest extends XRequest {
         		}
         	}
         }
+        if (helper.isAlternativeCourseEnabled() && crs.size() == 1 && !demand.isAlternative()) {
+        	CourseOffering co = crs.first().getCourseOffering();
+        	CourseOffering alternative = co.getAlternativeOffering();
+        	if (alternative != null) {
+        		// Make sure that the alternative course is not already requested
+            	for (CourseDemand d: demand.getStudent().getCourseDemands()) {
+            		for (CourseRequest r: d.getCourseRequests()) {
+            			if (alternative.equals(r.getCourseOffering())) { alternative = null; break; }
+            			if (!d.isAlternative() && d.getPriority() < demand.getPriority() && d.getCourseRequests().size() == 1 && alternative.equals(r.getCourseOffering().getAlternativeOffering())) { alternative = null; break; }
+            		}
+            		if (alternative == null) break;
+            	}
+        	}
+    		if (alternative != null) {
+            	iCourseIds.add(new XCourseId(alternative));
+            	List<StudentClassEnrollment> enrl = alternative.getClassEnrollments(demand.getStudent());
+            	if (!enrl.isEmpty())
+            		iEnrollment = new XEnrollment(demand.getStudent(), alternative, helper, enrl);
+    		}
+        }
         iWaitlist = (demand.isWaitlist() != null && demand.isWaitlist());
         iTimeStamp = (demand.getTimestamp() == null ? new Date() : demand.getTimestamp());
         for (CourseRequest cr: crs) {

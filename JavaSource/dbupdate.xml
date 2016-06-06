@@ -11022,4 +11022,16 @@
 			update %SCHEMA%.scheduling_subpart set nbr_instructors = 1 where teaching_load is not null
 		</sql>
 	</update>
+	<update version="163" date="5-Jun-2016" comment="Alternative Course Offering">
+		<mysql onFail="done">
+			alter table %SCHEMA%.course_offering add alternative_offering_id decimal(20,0) null
+		</mysql>
+		<plsql onFail="done">
+			alter table %SCHEMA%.course_offering add alternative_offering_id number(20)
+		</plsql>
+		<sql>
+			alter table %SCHEMA%.course_offering add constraint fk_course_offering_alternative_offr foreign key (alternative_offering_id)
+			references %SCHEMA%.course_offering (uniqueid) on delete set null
+		</sql>
+	</update>
 </dbupdate>

@@ -47,6 +47,7 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.FreeTime;
@@ -230,6 +231,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				int priority = 0;
 				Date ts = new Date();
 				Map<Long, CourseRequest> course2request = new HashMap<Long, CourseRequest>();
+				Map<Long, CourseDemand> alt2demand = new HashMap<Long, CourseDemand>();
 				for (CourseRequestInterface.Request r: getRequest().getCourses()) {
 					if (r.hasRequestedFreeTime() && r.hasRequestedCourse() && server.getCourse(r.getRequestedCourse()) != null)
 						r.getRequestedFreeTime().clear();
@@ -384,6 +386,11 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							helper.getHibSession().delete(cr);
 						}
 						helper.getHibSession().saveOrUpdate(cd);
+						
+						if (helper.isAlternativeCourseEnabled() && cd.getCourseRequests().size() == 1) {
+							CourseOffering alt = cd.getCourseRequests().iterator().next().getCourseOffering().getAlternativeOffering();
+							if (alt != null) alt2demand.put(alt.getUniqueId(), cd);
+						}
 					}
 					priority++;
 				}
@@ -550,26 +557,28 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					if (ca == null || ca.isFreeTime() || ca.getClassId() == null || ca.isDummy()) continue;
 					CourseRequest cr = course2request.get(ca.getCourseId());
 					if (cr == null) {
-						CourseDemand cd = null;
-						adepts: for (Iterator<CourseDemand> i = remaining.iterator(); i.hasNext(); ) {
-							CourseDemand adept = i.next();
-							if (adept.getFreeTime() != null) continue;
-							for (CourseRequest r: adept.getCourseRequests())
-								if (r.getCourseOffering().getUniqueId().equals(ca.getCourseId())) {
-									cd = adept; i.remove();  break adepts;
-								}
-						}
+						CourseDemand cd = alt2demand.get(ca.getCourseId());
 						if (cd == null) {
-							cd = new CourseDemand();
-							cd.setTimestamp(ts);
-							cd.setChangedBy(helper.getUser() == null ? null : helper.getUser().getExternalId());
-							cd.setCourseRequests(new HashSet<CourseRequest>());
-							cd.setStudent(student);
-							student.getCourseDemands().add(cd);
-						}						
-						cd.setAlternative(false);
-						cd.setPriority(priority++);
-						cd.setWaitlist(false);
+							adepts: for (Iterator<CourseDemand> i = remaining.iterator(); i.hasNext(); ) {
+								CourseDemand adept = i.next();
+								if (adept.getFreeTime() != null) continue;
+								for (CourseRequest r: adept.getCourseRequests())
+									if (r.getCourseOffering().getUniqueId().equals(ca.getCourseId())) {
+										cd = adept; i.remove();  break adepts;
+									}
+							}
+							if (cd == null) {
+								cd = new CourseDemand();
+								cd.setTimestamp(ts);
+								cd.setChangedBy(helper.getUser() == null ? null : helper.getUser().getExternalId());
+								cd.setCourseRequests(new HashSet<CourseRequest>());
+								cd.setStudent(student);
+								student.getCourseDemands().add(cd);
+							}						
+							cd.setAlternative(false);
+							cd.setPriority(priority++);
+							cd.setWaitlist(false);
+						}
 						cr = new CourseRequest();
 						cd.getCourseRequests().add(cr);
 						cr.setCourseDemand(cd);
@@ -583,7 +592,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						}
 						cr.setAllowOverlap(false);
 						cr.setCredit(0);
-						cr.setOrder(0);
+						cr.setOrder(cd.getCourseRequests().size());
 						cr.setCourseOffering(CourseOfferingDAO.getInstance().get(ca.getCourseId(), helper.getHibSession()));
 						course2request.put(ca.getCourseId(), cr);
 						helper.getHibSession().saveOrUpdate(cd);
@@ -804,6 +813,8 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				includeRequestInTheReturnMessage = true;
 			else if (helper.getUser() != null && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER &&
 				ApplicationProperty.OnlineSchedulingMakeAssignedRequestReadOnlyIfAdmin.isTrue())
+				includeRequestInTheReturnMessage = true;
+			else if (ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue())
 				includeRequestInTheReturnMessage = true;
 		}
 		

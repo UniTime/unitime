@@ -595,6 +595,12 @@ public enum ApplicationProperty {
 	@Description("Online Student Scheduling: override for the solver parameter %")
 	@Parameter("solver parameter")
 	OnlineSchedulingParameter("unitime.sectioning.config.%"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Student Scheduling: provide default alternatice course when there is no alternative provided by student")
+	@Since(4.2)
+	StudentSchedulingAlternativeCourse("unitime.sectioning.alternativeCourse"),
 
 	/**
 	 * Room availability. By default, use the included event management system.

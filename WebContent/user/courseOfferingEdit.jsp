@@ -349,6 +349,22 @@
 			</TR>
 			</logic:notEmpty>
 		</logic:equal>
+
+		<logic:equal name="courseOfferingEditForm" property="allowAlternativeCourseOfferings" value="true">
+			<logic:notEmpty name="altOfferingList" scope="request">
+			<TR>
+				<TD><loc:message name="propertyAlternativeCourseOffering"/> </TD>
+				<TD>
+					<html:select
+						name="courseOfferingEditForm"
+						property="alternativeCourseOfferingId">
+						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"> </html:option>
+						<html:options collection="altOfferingList" property="uniqueId" labelProperty="courseNameWithTitle" />
+					</html:select>
+				</TD>
+			</TR>
+			</logic:notEmpty>
+		</logic:equal>		
 	</sec:authorize>
 	
 	<sec:authorize access="!(not #courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) and

@@ -367,6 +367,10 @@ public class OnlineSectioningHelper {
     	return ApplicationProperty.DatePatternFormatUseDates.value();
     }
     
+    public boolean isAlternativeCourseEnabled() {
+    	return ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue();
+    }
+    
     public String getApproverName(String externalId, Long sessionId) {
     	if (externalId == null) return null;
     	TimetableManager mgr = (TimetableManager)getHibSession().createQuery( "from TimetableManager where externalUniqueId = :externalId")

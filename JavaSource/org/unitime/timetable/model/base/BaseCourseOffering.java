@@ -59,6 +59,7 @@ public abstract class BaseCourseOffering implements Serializable {
 	private DemandOfferingType iDemandOfferingType;
 	private CourseType iCourseType;
 	private OfferingConsentType iConsentType;
+	private CourseOffering iAlternativeOffering;
 	private Set<CourseCreditUnitConfig> iCreditConfigs;
 
 	public static String PROP_UNIQUEID = "uniqueId";
@@ -146,6 +147,9 @@ public abstract class BaseCourseOffering implements Serializable {
 	public OfferingConsentType getConsentType() { return iConsentType; }
 	public void setConsentType(OfferingConsentType consentType) { iConsentType = consentType; }
 
+	public CourseOffering getAlternativeOffering() { return iAlternativeOffering; }
+	public void setAlternativeOffering(CourseOffering alternativeOffering) { iAlternativeOffering = alternativeOffering; }
+
 	public Set<CourseCreditUnitConfig> getCreditConfigs() { return iCreditConfigs; }
 	public void setCreditConfigs(Set<CourseCreditUnitConfig> creditConfigs) { iCreditConfigs = creditConfigs; }
 	public void addTocreditConfigs(CourseCreditUnitConfig courseCreditUnitConfig) {
@@ -170,6 +174,7 @@ public abstract class BaseCourseOffering implements Serializable {
 
 	public String toDebugString() {
 		return "CourseOffering[" +
+			"\n	AlternativeOffering: " + getAlternativeOffering() +
 			"\n	ConsentType: " + getConsentType() +
 			"\n	CourseNbr: " + getCourseNbr() +
 			"\n	CourseType: " + getCourseType() +

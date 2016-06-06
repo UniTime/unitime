@@ -292,6 +292,12 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     		if (((CourseOffering)i.next()).getDemandOffering()!=null) return true;
     	return false;
     }
+    public boolean getHasAlternativeCourse() {
+    	if (courseOfferings==null || courseOfferings.isEmpty() || ApplicationProperty.StudentSchedulingAlternativeCourse.isFalse()) return false;
+    	for (Iterator i=courseOfferings.iterator();i.hasNext();)
+    		if (((CourseOffering)i.next()).getAlternativeOffering()!=null) return true;
+    	return false;
+    }
 
 	public Integer getEnrollment() {
 		return enrollment;

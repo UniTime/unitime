@@ -86,6 +86,8 @@ public class CourseOfferingEditForm extends ActionForm {
     private String weekStartDayOfWeek;
     private String courseTypeId;
     private String externalId;
+    private Long alternativeCourseOfferingId;
+    private boolean allowAlternativeCourseOfferings;
 
     // --------------------------------------------------------- Methods
 
@@ -182,6 +184,7 @@ public class CourseOfferingEditForm extends ActionForm {
         courseTypeId = null;
         add = false;
         externalId = null;
+        alternativeCourseOfferingId = null;
     }
     
     public boolean isAdd() { return add; }
@@ -380,4 +383,10 @@ public class CourseOfferingEditForm extends ActionForm {
     
     public String getExternalId() { return externalId; }
     public void setExternalId(String externalId) { this.externalId = externalId; }
+    
+    public Long getAlternativeCourseOfferingId() { return alternativeCourseOfferingId; }
+    public void setAlternativeCourseOfferingId(Long alternativeCourseOfferingId) { this.alternativeCourseOfferingId = alternativeCourseOfferingId; }
+    
+    public boolean getAllowAlternativeCourseOfferings() { return allowAlternativeCourseOfferings; }
+    public void setAllowAlternativeCourseOfferings(boolean allowAlternativeCourseOfferings) { this.allowAlternativeCourseOfferings = allowAlternativeCourseOfferings; }
 }

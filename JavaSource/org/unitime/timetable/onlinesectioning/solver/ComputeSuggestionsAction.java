@@ -62,6 +62,8 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.model.XCourse;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XDistribution;
 import org.unitime.timetable.onlinesectioning.model.XDistributionType;
@@ -154,6 +156,33 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 			if (student.getRequests().isEmpty()) throw new SectioningException(MSG.exceptionNoCourse());
 			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
 				addRequest(server, model, assignment, student, original, c, true, true, classTable, distributions);
+			if (helper.isAlternativeCourseEnabled()) {
+				for (Request r: student.getRequests()) {
+					if (r.isAlternative() || !(r instanceof CourseRequest)) continue;
+					CourseRequest cr = (CourseRequest)r;
+					if (cr.getCourses().size() == 1) {
+						XCourse course = server.getCourse(cr.getCourses().get(0).getId());
+						Long altCourseId = (course == null ? null : course.getAlternativeCourseId());
+						if (altCourseId != null) {
+							boolean hasCourse = false;
+							for (Request x: student.getRequests())
+								if (x instanceof CourseRequest)
+									for (Course c: ((CourseRequest)x).getCourses())
+										if (c.getId() == altCourseId) { hasCourse = true; break; }
+							if (!hasCourse) {
+								XCourseId ci = server.getCourse(altCourseId);
+								if (ci != null) {
+									XOffering x = server.getOffering(ci.getOfferingId());
+									if (x != null) {
+										cr.getCourses().add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getCourseId(), student.getId(), original, classTable, server, model));
+										distributions.addAll(x.getDistributions());
+									}
+								}
+							}
+						}
+					}
+				}
+			}
 			model.addStudent(student);
 			model.setDistanceConflict(new DistanceConflict(server.getDistanceMetric(), model.getProperties()));
 			model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));

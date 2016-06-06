@@ -71,4 +71,9 @@ public abstract class BaseCourseOfferingDAO extends _RootDAO<CourseOffering,Long
 	public List<CourseOffering> findByConsentType(org.hibernate.Session hibSession, Long consentTypeId) {
 		return hibSession.createQuery("from CourseOffering x where x.consentType.uniqueId = :consentTypeId").setLong("consentTypeId", consentTypeId).list();
 	}
+
+	@SuppressWarnings("unchecked")
+	public List<CourseOffering> findByAlternativeOffering(org.hibernate.Session hibSession, Long alternativeOfferingId) {
+		return hibSession.createQuery("from CourseOffering x where x.alternativeOffering.uniqueId = :alternativeOfferingId").setLong("alternativeOfferingId", alternativeOfferingId).list();
+	}
 }

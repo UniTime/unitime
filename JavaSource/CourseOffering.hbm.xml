@@ -204,5 +204,12 @@
             <key column="course_id" foreign-key="fk_crs_crdt_unit_cfg_crs_own"/>
             <one-to-many class="CourseCreditUnitConfig"/>
         </set>
+
+        <many-to-one
+            name="alternativeOffering"
+            class="CourseOffering"
+            column="alternative_offering_id"
+            not-null="false"
+            foreign-key="fk_course_offering_alternative_offr"/>
     </class>
 </hibernate-mapping>

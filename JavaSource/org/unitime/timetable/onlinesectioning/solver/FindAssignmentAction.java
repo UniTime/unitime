@@ -175,6 +175,33 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			if (student.getRequests().isEmpty() && !CONSTANTS.allowEmptySchedule()) throw new SectioningException(MSG.exceptionNoCourse());
 			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
 				addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions);
+			if (helper.isAlternativeCourseEnabled()) {
+				for (Request r: student.getRequests()) {
+					if (r.isAlternative() || !(r instanceof CourseRequest)) continue;
+					CourseRequest cr = (CourseRequest)r;
+					if (cr.getCourses().size() == 1) {
+						XCourse course = server.getCourse(cr.getCourses().get(0).getId());
+						Long altCourseId = (course == null ? null : course.getAlternativeCourseId());
+						if (altCourseId != null) {
+							boolean hasCourse = false;
+							for (Request x: student.getRequests())
+								if (x instanceof CourseRequest)
+									for (Course c: ((CourseRequest)x).getCourses())
+										if (c.getId() == altCourseId) { hasCourse = true; break; }
+							if (!hasCourse) {
+								XCourseId ci = server.getCourse(altCourseId);
+								if (ci != null) {
+									XOffering x = server.getOffering(ci.getOfferingId());
+									if (x != null) {
+										cr.getCourses().add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getCourseId(), student.getId(), original, classTable, server, model));
+										distributions.addAll(x.getDistributions());
+									}
+								}
+							}
+						}
+					}
+				}
+			}
 			model.addStudent(student);
 			model.setDistanceConflict(new DistanceConflict(server.getDistanceMetric(), model.getProperties()));
 			model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));

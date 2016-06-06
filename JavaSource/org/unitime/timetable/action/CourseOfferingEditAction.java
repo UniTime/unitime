@@ -173,6 +173,7 @@ public class CourseOfferingEditAction extends Action {
 	        frm.setWkChangeDefault(session.getLastWeekToChange());
 	        frm.setWkDropDefault(session.getLastWeekToDrop());
 	        frm.setWeekStartDayOfWeek(Localization.getDateFormat("EEEE").format(session.getSessionBeginDateTime()));
+	        frm.setAllowAlternativeCourseOfferings(ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue());
 			doReload(request, frm);
 		}
 
@@ -303,6 +304,14 @@ public class CourseOfferingEditAction extends Action {
 		        } else {
 		        	CourseOffering dco = cdao.get(frm.getDemandCourseOfferingId(),hibSession);
 		        	co.setDemandOffering(dco==null?null:dco);
+		        }
+		        
+		        if (ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue()) {
+			        if (frm.getAlternativeCourseOfferingId() == null)
+			        	co.setAlternativeOffering(null);
+			        else {
+			        	co.setAlternativeOffering(CourseOfferingDAO.getInstance().get(frm.getAlternativeCourseOfferingId(),hibSession));
+			        }	
 		        }
 		        
 		        if (frm.getCourseTypeId() == null || frm.getCourseTypeId().isEmpty()) {
@@ -499,6 +508,9 @@ public class CourseOfferingEditAction extends Action {
 	        
 	        if (frm.getDemandCourseOfferingId()!=null)
 	        	co.setDemandOffering(CourseOfferingDAO.getInstance().get(frm.getDemandCourseOfferingId(),hibSession));
+	        
+	        if (frm.getAlternativeCourseOfferingId() != null && ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue())
+	        	co.setAlternativeOffering(CourseOfferingDAO.getInstance().get(frm.getAlternativeCourseOfferingId(),hibSession));
 
 	        if (frm.getCourseTypeId() != null && !frm.getCourseTypeId().isEmpty()) 
 	        	co.setCourseType(CourseTypeDAO.getInstance().get(Long.valueOf(frm.getCourseTypeId()), hibSession));
@@ -602,7 +614,7 @@ public class CourseOfferingEditAction extends Action {
         Long courseOfferingId = new Long(crsOfferingId);
 
         CourseOfferingDAO cdao = new CourseOfferingDAO();
-        CourseOffering co = cdao.get(courseOfferingId);
+        final CourseOffering co = cdao.get(courseOfferingId);
 
         InstructionalOffering io = co.getInstructionalOffering();
         Long subjectAreaId = co.getSubjectArea().getUniqueId();//io.getControllingCourseOffering().getSubjectArea().getUniqueId();
@@ -627,6 +639,8 @@ public class CourseOfferingEditAction extends Action {
         frm.setWkDropDefault(io.getSession().getLastWeekToDrop());
         frm.setWeekStartDayOfWeek(Localization.getDateFormat("EEEE").format(io.getSession().getSessionBeginDateTime()));
         frm.setCourseTypeId(co.getCourseType() == null ? "" : co.getCourseType().getUniqueId().toString());
+        frm.setAlternativeCourseOfferingId(co.getAlternativeOffering() == null ? null : co.getAlternativeOffering().getUniqueId());
+        frm.setAllowAlternativeCourseOfferings(ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue());
         if (ApplicationProperty.CourseOfferingShowExternalIds.isTrue() || ApplicationProperty.CourseOfferingEditExternalIds.isTrue())
         	frm.setExternalId(co.getExternalUniqueId());
 
@@ -705,6 +719,14 @@ public class CourseOfferingEditAction extends Action {
 			}
 		});
         
+        if (ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue())
+            LookupTables.setupCourseOfferings(request, sessionContext, new LookupTables.CourseFilter() {
+    			@Override
+    			public boolean accept(CourseOffering course) {
+    				return !course.getInstructionalOffering().isNotOffered() && !course.equals(co);
+    			}
+    		}, "altOfferingList");
+        
         LookupTables.setupCourseTypes(request);
     }
 
@@ -732,6 +754,13 @@ public class CourseOfferingEditAction extends Action {
     				return course.getDemand() != null && course.getDemand() > 0;
     			}
     		});
+            if (ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue())
+                LookupTables.setupCourseOfferings(request, sessionContext, new LookupTables.CourseFilter() {
+        			@Override
+        			public boolean accept(CourseOffering course) {
+        				return !course.getInstructionalOffering().isNotOffered();
+        			}
+        		}, "altOfferingList");
             LookupTables.setupCourseTypes(request);
             List<SubjectArea> subjects = new ArrayList<SubjectArea>();
             boolean found = false;
@@ -756,19 +785,27 @@ public class CourseOfferingEditAction extends Action {
     		sessionContext.checkPermission(frm.getCourseOfferingId(), "CourseOffering", Right.EditCourseOffering);
 
     	frm.setAllowDemandCourseOfferings(true);
+    	frm.setAllowAlternativeCourseOfferings(ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue());
 
         LookupTables.setupConsentType(request);
         LookupTables.setupCourseCreditFormats(request); // Course Credit Formats
         LookupTables.setupCourseCreditTypes(request); //Course Credit Types
         LookupTables.setupCourseCreditUnitTypes(request); //Course Credit Unit Types
 
-        CourseOffering co = new CourseOfferingDAO().get(frm.getCourseOfferingId());
+        final CourseOffering co = new CourseOfferingDAO().get(frm.getCourseOfferingId());
         LookupTables.setupCourseOfferings(request, sessionContext, new LookupTables.CourseFilter() {
 			@Override
 			public boolean accept(CourseOffering course) {
 				return course.getDemand() != null && course.getDemand() > 0;
 			}
 		});
+        if (ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue())
+            LookupTables.setupCourseOfferings(request, sessionContext, new LookupTables.CourseFilter() {
+    			@Override
+    			public boolean accept(CourseOffering course) {
+    				return !course.getInstructionalOffering().isNotOffered() && !course.equals(co);
+    			}
+    		}, "altOfferingList");
         
         if (co.isIsControl()) {
             // Setup instructors

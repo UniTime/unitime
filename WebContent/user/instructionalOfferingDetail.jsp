@@ -247,6 +247,9 @@
 						<logic:equal name="instructionalOfferingDetailForm" property="hasDemandOfferings" value="true">
 							<TD align="left" class="WebTableHeader"><loc:message name="columnDemandsFrom"/></TD>
 						</logic:equal>
+						<logic:equal name="instructionalOfferingDetailForm" property="hasAlternativeCourse" value="true">
+							<TD align="left" class="WebTableHeader"><loc:message name="columnAlternativeCourse"/></TD>
+						</logic:equal>
 						<TD align="left" class="WebTableHeader"><loc:message name="columnConsent"/></TD>
 						<tt:hasProperty name="unitime.custom.CourseUrlProvider">
 						<TD align="left" class="WebTableHeader"><loc:message name="columnCourseCatalog"/></TD>
@@ -298,6 +301,14 @@
 							<TD class="BottomBorderGray">&nbsp;
 							<%
 								CourseOffering cod = ((CourseOffering)co).getDemandOffering();
+								if (cod!=null) out.write(cod.getCourseName()); 
+							 %>
+							</TD>
+						</logic:equal>
+						<logic:equal name="instructionalOfferingDetailForm" property="hasAlternativeCourse" value="true">
+							<TD class="BottomBorderGray">&nbsp;
+							<%
+								CourseOffering cod = ((CourseOffering)co).getAlternativeOffering();
 								if (cod!=null) out.write(cod.getCourseName()); 
 							 %>
 							</TD>

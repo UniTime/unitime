@@ -152,6 +152,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private Query iStudentQuery = null;
 	private boolean iNoUnlimitedGroupReservations = false;
 	private boolean iLinkedClassesMustBeUsed = false;
+	private boolean iAllowDefaultCourseAlternatives = false;
     
     private Progress iProgress = null;
     
@@ -179,6 +180,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iDatePatternFormat = ApplicationProperty.DatePatternFormatUseDates.value();
         iNoUnlimitedGroupReservations = model.getProperties().getPropertyBoolean("Load.NoUnlimitedGroupReservations", iNoUnlimitedGroupReservations);
         iLinkedClassesMustBeUsed = model.getProperties().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
+        iAllowDefaultCourseAlternatives = ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue();
         
         try {
         	String studentCourseDemandsClassName = getModel().getProperties().getProperty("StudentSct.ProjectedCourseDemadsClass", LastLikeStudentCourseDemands.class.getName());
@@ -682,6 +684,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 				return d1.getUniqueId().compareTo(d2.getUniqueId());
 			}
 		});
+		Set<CourseOffering> alternatives = new HashSet<CourseOffering>();
 		demands.addAll(s.getCourseDemands());
         for (CourseDemand cd: demands) {
             if (cd.getFreeTime()!=null) {
@@ -746,6 +749,45 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     }
                     courses.addElement(course);
                 }
+                if (iAllowDefaultCourseAlternatives && crs.size() == 1 && !cd.isAlternative()) {
+                	CourseOffering co = crs.first().getCourseOffering();
+                	CourseOffering alt = co.getAlternativeOffering();
+                	if (alt != null) {
+                		// there is an alternative, but it is already requested -> do nothing
+                    	for (CourseDemand d: demands)
+                    		for (org.unitime.timetable.model.CourseRequest r: d.getCourseRequests())
+                    			if (alt.equals(r.getCourseOffering())) { alt = null; break; } 
+                	}
+                	if (alt != null && alternatives.add(alt)) {
+                		// there is an alternative, not requested -> add the alternative
+                		Course course = courseTable.get(alt.getUniqueId());
+                        if (course == null) {
+                            iProgress.warn("Course " + co.getCourseName() + "has an alternative course " + alt.getCourseName() + " that is not loaded (" + s.getExternalUniqueId() + ").");
+                        } else {
+                        	if (assignedConfig==null) {
+                                HashSet<Long> subparts = new HashSet<Long>();
+                                for (StudentClassEnrollment enrl: alt.getClassEnrollments(s)) {
+                                	Section section = course.getOffering().getSection(enrl.getClazz().getUniqueId());
+                                    if (section != null) {
+                                    	if (getModel().isMPP())
+                                    		selChoices.add(section.getChoice());
+                                        assignedSections.add(section);
+                                        if (assignedConfig != null && assignedConfig.getId() != section.getSubpart().getConfig().getId()) {
+                                        	iProgress.error("There is a problem assigning " + course.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): classes from different configurations.");
+                                        }
+                                        assignedConfig = section.getSubpart().getConfig();
+                                        if (!subparts.add(section.getSubpart().getId())) {
+                                        	iProgress.error("There is a problem assigning " + course.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): two or more classes of the same subpart.");
+                                        }
+                                    } else {
+                                    	iProgress.error("There is a problem assigning " + course.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel() + " not known.");
+                                    }
+                                }
+                            }
+                        	courses.addElement(course);
+                        }
+                	}
+                }
                 if (courses.isEmpty()) continue;
                 CourseRequest request = new CourseRequest(
                         cd.getUniqueId(),
@@ -776,7 +818,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	});
         	Map<Long, Long> timeStamp = new Hashtable<Long, Long>();
         	for (StudentClassEnrollment enrl: s.getClassEnrollments()) {
-        		if (enrl.getCourseRequest() != null) continue; // already loaded
+        		if (enrl.getCourseRequest() != null || alternatives.contains(enrl.getCourseOffering())) continue; // already loaded
         		Course course = courseTable.get(enrl.getCourseOffering().getUniqueId());
                 if (course==null) {
                     iProgress.warn("Student " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + ") requests course " + enrl.getCourseOffering().getCourseName()+" that is not loaded.");

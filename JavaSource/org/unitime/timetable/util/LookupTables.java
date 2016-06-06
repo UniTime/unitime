@@ -341,6 +341,14 @@ public class LookupTables {
             HttpServletRequest request, 
             SessionContext context,
             CourseFilter filter) throws Exception {
+    	setupCourseOfferings(request, context, filter, CourseOffering.CRS_OFFERING_LIST_ATTR_NAME);
+    }
+    
+    public static void setupCourseOfferings(
+            HttpServletRequest request, 
+            SessionContext context,
+            CourseFilter filter,
+            String attribute) throws Exception {
     	
 		List<CourseOffering> list = new ArrayList<CourseOffering>();
 		for (SubjectArea subject: SubjectArea.getUserSubjectAreas(context.getUser())) {
@@ -350,7 +358,7 @@ public class LookupTables {
 			}
 		}
 	    Collections.sort(list, new CourseOfferingComparator());
-	    request.setAttribute(CourseOffering.CRS_OFFERING_LIST_ATTR_NAME, list);
+	    request.setAttribute(attribute, list);
     }
     
     public static interface CourseFilter {

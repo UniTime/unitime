@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -399,5 +400,13 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
     
     public boolean isAllowStudentScheduling() {
     	return getSubjectArea().getDepartment().isAllowStudentScheduling();
+    }
+    
+    public List<StudentClassEnrollment> getClassEnrollments(Student s) {
+    	List<StudentClassEnrollment> ret = new ArrayList<StudentClassEnrollment>();
+    	for (StudentClassEnrollment e: s.getClassEnrollments()) {
+    		if (this.equals(e.getCourseOffering())) ret.add(e);
+    	}
+    	return ret;
     }
 }

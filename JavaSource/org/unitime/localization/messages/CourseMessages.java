@@ -227,7 +227,10 @@ public interface CourseMessages extends Messages {
 	String propertyCoordinators();
 	
 	@DefaultMessage("Take Course Demands from Offering:")
-	String propertyTakeCourseDemandsFromOffering();	
+	String propertyTakeCourseDemandsFromOffering();
+	
+	@DefaultMessage("Default Alternative Course Offering:")
+	String propertyAlternativeCourseOffering();
 	
 	@DefaultMessage("Instructional Offering Limit:")
 	String propertyIOLimit();
@@ -687,6 +690,9 @@ public interface CourseMessages extends Messages {
 		
 	@DefaultMessage("Demands From")
 	String columnDemandsFrom();
+	
+	@DefaultMessage("Alternative")
+	String columnAlternativeCourse();
 	
 	@DefaultMessage("Login")
 	String columnLogin();
