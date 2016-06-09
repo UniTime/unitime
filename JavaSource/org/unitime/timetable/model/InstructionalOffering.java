@@ -233,19 +233,12 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 		query.append(" where io.session.uniqueId=:sessionId ");
 
 		if (courseNbr != null && courseNbr.length() > 0){
-		    query.append(" and co.courseNbr ");
-		    if (courseNbr.indexOf('*')>=0) {
-	            query.append(" like '");
-	            courseNbr = courseNbr.replace('*', '%');
-		    }
-		    else {
-	            query.append(" = '");
-		    }
-            if (ApplicationProperty.CourseOfferingNumberUpperCase.isTrue())
-            	courseNbr = courseNbr.toUpperCase();
-            query.append(courseNbr);
-            query.append("'  ");
-        }
+			if (courseNbr.indexOf('*') >= 0) {
+				query.append(" and co.courseNbr like :courseNbr ");
+			} else {
+				query.append(" and co.courseNbr = :courseNbr ");
+			}
+		}
 
 		query.append(" and co.subjectArea.uniqueId = :subjectAreaId ");
 
@@ -253,6 +246,11 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 		q.setFetchSize(1000);
 		q.setLong("subjectAreaId", subjectAreaId);
 		q.setLong("sessionId", acadSessionId.longValue());
+		if (courseNbr != null && courseNbr.length() > 0) {
+			if (ApplicationProperty.CourseOfferingNumberUpperCase.isTrue())
+            	courseNbr = courseNbr.toUpperCase();
+			q.setString("courseNbr", courseNbr.replace('*', '%'));
+		}
 		q.setCacheable(true);
 
 

@@ -65,17 +65,12 @@ public class Staff extends BaseStaff implements Comparable, NameInterface {
 			return(null);
 		}
 		
-		StaffDAO sdao = new StaffDAO();
-		String sql = "select distinct s " +
-					 "from Staff s " +
-					 "where s.dept='" + deptCode + "'" +
-					 "  and ( " +
-						 "select di.externalUniqueId " +
-						 "from DepartmentalInstructor di " +
-						 "where di.department.deptCode='" + deptCode + "' " + 
-						 "  and di.department.session.uniqueId=" + acadSessionId.toString() +
-						 "  and di.externalUniqueId = s.externalUniqueId ) is null";
-		Query q = sdao.getSession().createQuery(sql);
+		Query q = StaffDAO.getInstance().getSession().createQuery(
+				"select distinct s from Staff s where s.dept=:deptCode and " +
+				"(select di.externalUniqueId from DepartmentalInstructor di " +
+				"where di.department.deptCode=:deptCode and di.department.session.uniqueId=:sessionId and di.externalUniqueId = s.externalUniqueId ) is null");
+		q.setString("deptCode", deptCode);
+		q.setLong("sessionId", acadSessionId);
 		q.setCacheable(true);
 		return (q.list());
 	}

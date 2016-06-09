@@ -38,6 +38,7 @@ import java.util.Vector;
 
 import org.cpsolver.coursett.model.RoomLocation;
 import org.cpsolver.coursett.model.TimeLocation;
+import org.hibernate.Query;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
@@ -168,18 +169,22 @@ public class PdfWorksheet {
                 return co1.getUniqueId().compareTo(co2.getUniqueId());
             }
         });
-        String subjectIds = "";
+        List<Long> subjectIds = new ArrayList<Long>();
         for (SubjectArea sa: subjectAreas)
-        	subjectIds += (subjectIds.isEmpty() ? "" : ",") + sa.getUniqueId();
-        String query = "select co from CourseOffering co where  co.subjectArea.uniqueId in (" + subjectIds + ")";
-        if (courseNumber!=null && !courseNumber.trim().isEmpty()) {
-            query += " and co.courseNbr ";
-            if (courseNumber.indexOf('*')>=0)
-                query += " like '"+courseNumber.trim().replace('*', '%').toUpperCase()+"'";
-            else 
-                query += " = '"+courseNumber.trim().toUpperCase()+"'";
+        	subjectIds.add(sa.getUniqueId());
+        String query = "select co from CourseOffering co where  co.subjectArea.uniqueId in :subjectIds";
+        if (courseNumber != null && !courseNumber.trim().isEmpty()) {
+			if (courseNumber.indexOf('*') >= 0) {
+				query += " and co.courseNbr like :courseNbr ";
+			} else {
+				query += " and co.courseNbr = :courseNbr ";
+			}
         }
-        courses.addAll(new SessionDAO().getSession().createQuery(query).list());
+        Query q = new SessionDAO().getSession().createQuery(query);
+        q.setParameterList("subjectIds", subjectIds);
+        if (courseNumber != null && !courseNumber.trim().isEmpty())
+        	q.setParameter("courseNbr", ApplicationProperty.CourseOfferingNumberUpperCase.isTrue()? courseNumber.trim().replace('*', '%').toUpperCase() : courseNumber.trim().replace('*', '%'));
+        courses.addAll(q.list());
         if (courses.isEmpty()) return false;
         PdfWorksheet w = new PdfWorksheet(out, subjectAreas, courseNumber);
         for (Iterator i=courses.iterator();i.hasNext();) {
