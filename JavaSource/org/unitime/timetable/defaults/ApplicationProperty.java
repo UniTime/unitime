@@ -2081,6 +2081,12 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
+	@Description("Reservations: show class suffix (external id) next to the class section number")
+	@Since(4.1)
+	ReservationsShowClassSufix("unitime.reservations.showClassSuffixes"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
 	@Description("API: allow API tokens to be used for user authentication")
 	ApiCanUseAPIToken("unitime.api.canUseToken"),
 	

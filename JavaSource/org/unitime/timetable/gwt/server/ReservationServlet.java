@@ -503,6 +503,7 @@ public class ReservationServlet implements ReservationService {
 		offering.setOffered(!reservation.getInstructionalOffering().isNotOffered());
 		offering.setUnlockNeeded(permissionOfferingLockNeeded != null && permissionOfferingLockNeeded.check(sessionContext.getUser(), reservation.getInstructionalOffering()));
 		r.setOffering(offering);
+		boolean showClassSuffixes = ApplicationProperty.ReservationsShowClassSufix.isTrue();
 		for (CourseOffering co: reservation.getInstructionalOffering().getCourseOfferings()) {
 			ReservationInterface.Course course = new ReservationInterface.Course();
 			course.setId(co.getUniqueId());
@@ -528,7 +529,7 @@ public class ReservationServlet implements ReservationService {
 			ReservationInterface.Clazz clazz = new ReservationInterface.Clazz();
 			clazz.setId(c.getUniqueId());
 			clazz.setAbbv(c.getSchedulingSubpart().getItypeDesc() + " " + c.getSectionNumberString(hibSession));
-			clazz.setName(c.getClassLabel(hibSession));
+			clazz.setName(c.getClassLabel(showClassSuffixes));
 			clazz.setLimit(c.getClassLimit());
 			r.getClasses().add(clazz);
 		}
