@@ -28,6 +28,24 @@
 	<version>4.1.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Other</title>
+		<item>
+			<name>Security: Possible SQL Injection Fixed</name>
+			<description>
+				<line>Following features were corrected:
+					<line>Instructional Offerings: Search, Worksheet PDF (course number)</line>
+					<line>Instructors: Manage Instructors List (department code)</line>
+					<line>Buildings: Update Rooms (room classifications)</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+		
+<release>
+	<version>4.1.186</version>
+	<release-date>Sat, 4 Jun 2016</release-date>
+	<category>
 		<title>Event Management</title>
 		<item>
 			<name>Resource Lookup (Personal Timetable)</name>

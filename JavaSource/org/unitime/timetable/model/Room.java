@@ -27,7 +27,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.type.StringType;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseRoom;
 import org.unitime.timetable.model.dao.ExternalRoomDAO;
@@ -161,18 +163,15 @@ public class Room extends BaseRoom {
 		boolean resetRoomFeatures = ApplicationProperty.BuildingsExternalUpdateExistingRoomFeatures.isTrue();
 		boolean resetRoomDepartments = ApplicationProperty.BuildingsExternalUpdateExistingRoomDepartments.isTrue();
 		String classifications = ApplicationProperty.BuildingsExternalUpdateClassification.value();
-		if (classifications != null) {
-			String classificationsQuery = "";
-			for (String c: classifications.split(",")) {
-				if (c.trim().isEmpty()) continue;
-				if (!classificationsQuery.isEmpty()) classificationsQuery += ", ";
-				classificationsQuery += "'" + c.trim() + "'";
-			}
-			if (!classificationsQuery.isEmpty())
-				query += " and er.classification in (" + classificationsQuery + ")";
+		if (classifications != null && !classifications.isEmpty()) {
+			query += " and er.classification in :classifications";
 		}
 		org.hibernate.Session hibSession = ExternalRoomDAO.getInstance().getSession();
-		for (ExternalRoom er: (List<ExternalRoom>)hibSession.createQuery(query).setLong("sessionId", session.getUniqueId()).list()) {
+		Query q = hibSession.createQuery(query).setLong("sessionId", session.getUniqueId());
+		if (classifications != null && !classifications.isEmpty()) {
+			q.setParameterList("classifications", classifications.split(","), new StringType());
+		}
+		for (ExternalRoom er: (List<ExternalRoom>)q.list()) {
 			Building b = Building.findByExternalIdAndSession(er.getBuilding().getExternalUniqueId(), session);
 			if (b == null) {
 				b = new Building();
