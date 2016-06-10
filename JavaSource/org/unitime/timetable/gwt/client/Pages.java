@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.client.events.EventResourceTimetable;
 import org.unitime.timetable.gwt.client.events.EventRoomAvailability;
 import org.unitime.timetable.gwt.client.hql.SavedHQLPage;
 import org.unitime.timetable.gwt.client.instructor.InstructorAttributesPage;
+import org.unitime.timetable.gwt.client.instructor.TeachingRequestsPage;
 import org.unitime.timetable.gwt.client.reservations.ReservationEdit;
 import org.unitime.timetable.gwt.client.reservations.ReservationsPage;
 import org.unitime.timetable.gwt.client.rooms.RoomFeaturesPage;
@@ -175,6 +176,10 @@ public enum Pages {
 	solverlog(new PageFactory() {
 		public Widget create() { return new SolverLogPage(); }
 		public String name(GwtMessages messages) { return messages.pageSolverLog(); }
+		}),
+	teachingRequests(new PageFactory() {
+		public Widget create() { return new TeachingRequestsPage(); }
+		public String name(GwtMessages messages) { return messages.pageAssignedTeachingRequests(); }
 		}),
 	;
 	

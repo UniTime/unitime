@@ -104,6 +104,9 @@ public class PatternServlet extends HttpServlet {
 		} else {
 			rtt = new RequiredTimeTable(new TimePattern().getTimePatternModel());
 		}
+		if (request.getParameter("pref") != null) {
+			rtt.getModel().setPreferences(request.getParameter("pref"));
+		}
 		if (rtt != null) {
 			if (request.getParameter("s") != null) {
 				try {

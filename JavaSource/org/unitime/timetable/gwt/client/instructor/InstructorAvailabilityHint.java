@@ -53,14 +53,20 @@ public class InstructorAvailabilityHint {
 	}
 	
 	public static void showHint(final Element relativeObject, final String instructorId) {
+		showHint(relativeObject, instructorId, false, null);
+	}
+	
+	public static void showHint(final Element relativeObject, final String instructorId, boolean includeNotAvailable, final String pattern) {
 		sLastInstructorId = instructorId;
-		RPC.execute(InstructorAvailabilityRequest.load(instructorId), new AsyncCallback<InstructorAvailabilityModel>() {
+		RPC.execute(InstructorAvailabilityRequest.load(instructorId, includeNotAvailable), new AsyncCallback<InstructorAvailabilityModel>() {
 			@Override
 			public void onFailure(Throwable caught) {
 			}
-			
+
 			@Override
 			public void onSuccess(InstructorAvailabilityModel result) {
+				if (pattern != null)
+					result.setPattern(pattern);
 				if (instructorId.equals(sLastInstructorId) && result != null)
 					GwtHint.showHint(relativeObject, content(result));
 			}

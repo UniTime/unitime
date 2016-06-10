@@ -230,19 +230,23 @@
 		</menu>
 		<menu name="Instructor Scheduling">
 			<condition>
-				<hasPermission name="InstructorScheduling"/>
+				<hasPermission name="InstructorSchedulingSolver"/>
 			</condition>
 			<item name="Instructor Scheduling Solver" page="solver" type="gwt">
 				<parameter name="type">instructor</parameter>
-				<condition>
-					<hasPermission name="InstructorSchedulingSolver"/>
-				</condition>
 			</item>
 			<item name="Solver Log" page="solverlog" type="gwt">
 				<parameter name="type">instructor</parameter>
 				<condition>
 					<hasPermission name="InstructorSchedulingSolverLog"/>
 				</condition>
+			</item>
+			<separator/>
+			<item name="Assigned Teaching Requests" page="teachingRequests" type="gwt">
+				<parameter name="assigned">true</parameter>
+			</item>
+			<item name="Not-Assigned Teaching Requests" page="teachingRequests" type="gwt">
+				<parameter name="assigned">false</parameter>
 			</item>
 		</menu>
 		<item name="Reports" page="hql" type="gwt">

@@ -20,13 +20,17 @@
 package org.unitime.timetable.gwt.shared;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingDisplayMode;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -524,5 +528,344 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		
 		@Override
 		public String toString() { return iDepartmentId == null ? "" : iDepartmentId.toString(); }
+	}
+	
+	public static class CourseInfo implements Comparable<CourseInfo>, IsSerializable {
+		private Long iCourseId;
+		private String iCourseName;
+		
+		public CourseInfo() {}
+
+		public void setCourseId(Long courseId) { iCourseId = courseId; }
+		public Long getCourseId() { return iCourseId; }
+		
+		public void setCourseName(String courseName) { iCourseName = courseName; }
+		public String getCourseName() { return iCourseName; }
+		
+		public int hashCode() { return getCourseId().hashCode(); }
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof CourseInfo)) return false;
+			return getCourseId().equals(((CourseInfo)o).getCourseId());
+		}
+		public int compareTo(CourseInfo course) {
+			return getCourseName().compareTo(course.getCourseName());
+		}
+	}
+	
+	public static class SectionInfo implements Comparable<SectionInfo>, IsSerializable {
+		private Long iSectionId;
+		private String iSectionName;
+		private String iExternalId;
+		private String iType;
+		private boolean iCommon;
+		private String iTime;
+		private String iDate;
+		private String iRoom;
+		
+		public SectionInfo() {}
+		
+		public void setSectionId(Long sectionId) { iSectionId = sectionId; }
+		public Long getSectionId() { return iSectionId; }
+		
+		public void setSectionName(String sectionName) { iSectionName = sectionName; }
+		public String getSectionName() { return iSectionName; }
+		
+		public void setExternalId(String externalId) { iExternalId = externalId; }
+		public String getExternalId() { return iExternalId; }
+		
+		public void setSectionType(String type) { iType = type; }
+		public String getSectionType() { return iType; }
+		
+		public void setCommon(boolean common) { iCommon = common; }
+		public boolean isCommon() { return iCommon; }
+		
+		public void setTime(String time) { iTime = time; }
+		public String getTime() { return iTime; }
+		
+		public void setDate(String date) { iDate = date; }
+		public String getDate() { return iDate; }
+
+		public void setRoom(String room) { iRoom = room; }
+		public String getRoom() { return iRoom; }
+		
+		public int hashCode() { return getSectionId().hashCode(); }
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof SectionInfo)) return false;
+			return getSectionId().equals(((SectionInfo)o).getSectionId());
+		}
+		public int compareTo(SectionInfo section) {
+			int cmp = (getExternalId() == null ? "" : getExternalId()).compareTo(section.getExternalId() == null ? "" : section.getExternalId());
+			if (cmp != 0) return cmp;
+			return getSectionName().compareTo(section.getSectionName());
+		}
+	}
+	
+	public static class PreferenceInfo implements Comparable<PreferenceInfo>, IsSerializable {
+		private Long iOwnerId;
+		private String iName;
+		private String iPreference;
+		private String iComparable;
+		
+		public PreferenceInfo() {}
+		public PreferenceInfo(Long id, String name, String pref) {
+			iOwnerId = id; iName = name; iPreference = pref;
+		}
+		
+		public void setOwnerId(Long ownerId) { iOwnerId = ownerId; }
+	    public Long getOwnerId() { return iOwnerId; }
+
+	    public void setOwnerName(String name) { iName = name; }
+	    public String getOwnerName() { return iName; }
+	    
+	    public void setPreference(String preference) { iPreference = preference; }
+	    public String getPreference() { return iPreference; }
+	    
+	    public void setComparable(String comparable) { iComparable = comparable; }
+	    public String getComparable() { return iComparable == null ? iName : iComparable; }
+	    
+	    public int hashCode() { return getOwnerId().hashCode(); }
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof PreferenceInfo)) return false;
+			return getOwnerId().equals(((PreferenceInfo)o).getOwnerId());
+		}
+		public int compareTo(PreferenceInfo pref) {
+			int cmp = getComparable().compareTo(pref.getComparable());
+			if (cmp != 0) return cmp;
+			return getPreference().compareTo(pref.getPreference());
+		}
+		
+	}
+	
+	public static class InstructorInfo implements Comparable<InstructorInfo>, IsSerializable {
+	    private Long iInstructorId;
+	    private String iExternalId;
+	    private String iName;
+	    private float iAssignedLoad, iMaxLoad;
+	    private String iTeachingPreference;
+	    private List<PreferenceInfo> iTimePreferences = new ArrayList<PreferenceInfo>();
+	    private List<PreferenceInfo> iCoursePreferences = new ArrayList<PreferenceInfo>();
+	    private List<PreferenceInfo> iDistributionPreferences = new ArrayList<PreferenceInfo>();
+	    private List<AttributeInterface> iAttributes = new ArrayList<AttributeInterface>();
+	    private Map<String,Double> iValues = new HashMap<String, Double>();
+	    private String iAvailability;
+
+		public InstructorInfo() {}
+		
+		public void setInstructorId(Long instructorId) { iInstructorId = instructorId; }
+	    public Long getInstructorId() { return iInstructorId; }
+	    
+	    public void setExternalId(String externalId) { iExternalId = externalId; }
+	    public String getExternalId() { return iExternalId; }
+	    
+	    public void setInstructorName(String name) { iName = name; }
+	    public String getInstructorName() { return iName; }
+	    
+	    public void setAssignedLoad(float assignedLoad) { iAssignedLoad = assignedLoad; }
+	    public float getAssignedLoad() { return iAssignedLoad; }
+	    
+	    public void setMaxLoad(float maxLoad) { iMaxLoad = maxLoad; }
+	    public float getMaxLoad() { return iMaxLoad; }
+	    
+	    public void setTeachingPreference(String teachinPreference) { iTeachingPreference = teachinPreference; }
+	    public String getTeachingPreference() { return iTeachingPreference; }
+	    
+	    public void addTimePreference(PreferenceInfo preference) { iTimePreferences.add(preference); }
+	    public List<PreferenceInfo> getTimePreferences() { return iTimePreferences; }
+	    
+	    public void addCoursePreference(PreferenceInfo preference) { iCoursePreferences.add(preference); }
+	    public List<PreferenceInfo> getCoursePreferences() { return iCoursePreferences; }
+
+	    public void addDistributionPreference(PreferenceInfo preference) { iDistributionPreferences.add(preference); }
+	    public List<PreferenceInfo> getDistributionPreferences() { return iDistributionPreferences; }
+	    
+	    public void addAttribute(AttributeInterface attribute) { iAttributes.add(attribute); }
+	    public List<AttributeInterface> getAttributes() { return iAttributes; }
+	    public boolean hasAttribute(String attribute) { 
+	    	for (AttributeInterface a: iAttributes)
+	    		if (attribute.equals(a.getName())) return true;
+	    	return false;
+	    }
+	    
+	    public void setValue(String criterion, double value) {
+	    	iValues.put(criterion, value);
+	    }
+	    public Map<String,Double> getValues() { return iValues; }
+	    public Double getValue(String criterion) { return iValues.get(criterion); }
+	    
+	    public void setAvailability(String availability) { iAvailability = availability; }
+	    public String getAvailability() { return iAvailability; }
+	    public boolean hetAvailability() { return iAvailability != null && !iAvailability.isEmpty(); }
+		
+	    public int hashCode() { return getInstructorId().hashCode(); }
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof InstructorInfo)) return false;
+			return getInstructorId().equals(((InstructorInfo)o).getInstructorId());
+		}
+		public int compareTo(InstructorInfo course) {
+			return getInstructorName().compareTo(course.getInstructorName());
+		}
+	}
+	
+	public static class TeachingRequestInfo implements Comparable<TeachingRequestInfo>, IsSerializable {
+		private CourseInfo iCourse;
+		private Long iRequestId;
+		private int iIndex;
+		private float iLoad;
+		private List<SectionInfo> iSections = new ArrayList<SectionInfo>();
+		private InstructorInfo iInstructor;
+	    private List<PreferenceInfo> iInstructorPreferences = new ArrayList<PreferenceInfo>();
+	    private List<PreferenceInfo> iAttributePreferences = new ArrayList<PreferenceInfo>();
+
+		public TeachingRequestInfo() {}
+		
+		public void setCourse(CourseInfo course) { iCourse = course; }
+		public CourseInfo getCourse() { return iCourse; }
+		
+		public void setRequestId(Long requestId) { iRequestId = requestId; }
+		public Long getRequestId() { return iRequestId; }
+		
+		public void setInstructorIndex(int index) { iIndex = index; }
+		public int getInstructorIndex() { return iIndex; }
+		
+		public void setLoad(float load) { iLoad = load; }
+		public float getLoad() { return iLoad; }
+
+		public void addSection(SectionInfo section) { iSections.add(section); }
+		public List<SectionInfo> getSections() { return iSections; }
+		
+		public void setInstructor(InstructorInfo instructor) { iInstructor = instructor; }
+		public InstructorInfo getInstructor() { return iInstructor; }
+		
+	    public void addInstructorPreference(PreferenceInfo preference) { iInstructorPreferences.add(preference); }
+	    public List<PreferenceInfo> getInstructorPreferences() { return iInstructorPreferences; }
+
+	    public void addAttributePreference(PreferenceInfo preference) { iAttributePreferences.add(preference); }
+	    public List<PreferenceInfo> getAttributePreferences() { return iAttributePreferences; }
+		
+	    @Override
+	    public int hashCode() {
+	        return new Long(iRequestId << 8 + iIndex).hashCode();
+	    }
+	    
+	    @Override
+	    public boolean equals(Object o) {
+	        if (o == null || !(o instanceof TeachingRequestInfo)) return false;
+	        TeachingRequestInfo tr = (TeachingRequestInfo)o;
+	        return getRequestId() == tr.getRequestId() && getInstructorIndex() == tr.getInstructorIndex();
+	    }
+
+		@Override
+		public int compareTo(TeachingRequestInfo r) {
+			int cmp = getCourse().compareTo(r.getCourse());
+			if (cmp != 0) return cmp;
+			if (getInstructorIndex() < r.getInstructorIndex()) return -1;
+			if (getInstructorIndex() > r.getInstructorIndex()) return -1;
+			Iterator<SectionInfo> i1 = getSections().iterator();
+			Iterator<SectionInfo> i2 = r.getSections().iterator();
+			while (i1.hasNext() && i2.hasNext()) {
+				cmp = i1.next().compareTo(i2.next());
+				if (cmp != 0) return cmp;
+			}
+			if (i2.hasNext()) return -1;
+			if (i1.hasNext()) return 1;
+			return getRequestId().compareTo(r.getRequestId());
+		}
+	}
+	
+	public static class TeachingRequestsPageRequest implements GwtRpcRequest<GwtRpcResponseList<TeachingRequestInfo>> {
+		private boolean iAssigned = true;
+		private Long iSubjectAreaId = null;
+		
+		public TeachingRequestsPageRequest() {}
+		
+		public TeachingRequestsPageRequest(Long subjectAreaId, boolean assigned) {
+			iAssigned = assigned;
+			iSubjectAreaId = subjectAreaId;
+		}
+		
+		public boolean isAssigned() { return iAssigned; }
+		public Long getSubjectAreaId() { return iSubjectAreaId; }
+		
+		@Override
+		public String toString() {
+			return (isAssigned() ? "ASSIGNED" : "UNASSIGNED") + (getSubjectAreaId() == null ? "(all)" : "(" + getSubjectAreaId() + ")");
+		}
+	}
+	
+	public static class SubjectAreaInterface implements IsSerializable {
+		private Long iId;
+		private String iAbbv;
+		private String iLabel;
+		
+		public SubjectAreaInterface() {
+		}
+		
+		public Long getId() { return iId; }
+		public void setId(Long id) { iId = id; }
+		
+		public String getAbbreviation() { return iAbbv; }
+		public void setAbbreviation(String abbv) { iAbbv = abbv; }
+		
+		public String getLabel() { return iLabel; }
+		public void setLabel(String label) { iLabel = label; }
+
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof DepartmentInterface)) return false;
+			return getId().equals(((DepartmentInterface)o).getId());
+		}
+		
+		@Override
+		public int hashCode() {
+			return getId().hashCode();
+		}
+	}
+	
+	public static class TeachingRequestsPagePropertiesRequest implements GwtRpcRequest<TeachingRequestsPagePropertiesResponse> {
+		public TeachingRequestsPagePropertiesRequest() {}
+	}
+	
+	public static class TeachingRequestsPagePropertiesResponse implements GwtRpcResponse {
+		private List<SubjectAreaInterface> iSubjecAreas = new ArrayList<SubjectAreaInterface>();
+		private List<PreferenceInterface> iPreferences = new ArrayList<PreferenceInterface>();
+		private Long iLastSubjectAreaId = null;
+		private List<AttributeTypeInterface> iAttributeTypes = new ArrayList<AttributeTypeInterface>();
+		private List<RoomSharingDisplayMode> iModes;
+		
+		public TeachingRequestsPagePropertiesResponse() {}
+		
+		public void addSubjectArea(SubjectAreaInterface subjectArea) { iSubjecAreas.add(subjectArea); }
+		public List<SubjectAreaInterface> getSubjectAreas() { return iSubjecAreas; }
+		
+		public void addPreference(PreferenceInterface preference) { iPreferences.add(preference); }
+		public List<PreferenceInterface> getPreferences() { return iPreferences; }
+		public PreferenceInterface getPreference(String p) {
+			for (PreferenceInterface preference: iPreferences)
+				if (p.equals(preference.getCode())) return preference;
+			return null;
+		}
+		
+		public void setLastSubjectAreaId(Long lastSubjectAreaId) { iLastSubjectAreaId = lastSubjectAreaId; }
+		public Long getLastSubjectAreaId() { return iLastSubjectAreaId; }
+		
+		public boolean hasAttributeTypes() { return iAttributeTypes != null && !iAttributeTypes.isEmpty(); }
+		public void addAttributeType(AttributeTypeInterface type) { iAttributeTypes.add(type); }
+		public List<AttributeTypeInterface> getAttributeTypes() { return iAttributeTypes; }
+		public AttributeTypeInterface getAttributeType(Long typeId) {
+			for (AttributeTypeInterface type: iAttributeTypes)
+				if (type.getId().equals(typeId)) return type;
+			return null;
+		}
+		
+		public void addMode(RoomSharingDisplayMode mode) {
+			if (iModes == null) iModes = new ArrayList<RoomSharingDisplayMode>();
+			iModes.add(mode);
+		}
+		
+		public List<RoomSharingDisplayMode> getModes() {
+			return iModes;
+		}
+		
+		public boolean hasModes() { return iModes != null && !iModes.isEmpty(); }
 	}
 }

@@ -19,11 +19,14 @@
 */
 package org.unitime.timetable.solver.instructor;
 
+import java.util.List;
+
+import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestInfo;
 import org.unitime.timetable.solver.CommonSolverInterface;
 
 /**
  * @author Tomas Muller
  */
 public interface InstructorSchedulingProxy extends CommonSolverInterface {
-
+	public List<TeachingRequestInfo> getTeachingRequests(Long subjectAreaId, boolean assigned);
 }

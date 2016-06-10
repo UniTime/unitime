@@ -30,6 +30,8 @@ public class InstructorCookie {
 	private static InstructorCookie sInstance = null;
 	private int iSortAttributesBy = 0;
 	private int iSortInstructorsBy = 0;
+	private int[] iSortTeachingRequestsBy = new int[] {0, 0};
+	private int[] iTeachingRequestsColumns = new int[] {0xff, 0xff};
 
 	private InstructorCookie() {
 		try {
@@ -39,6 +41,8 @@ public class InstructorCookie {
 				int idx = 0;
 				iSortAttributesBy = Integer.valueOf(params[idx++]);
 				iSortInstructorsBy = Integer.valueOf(params[idx++]);
+				iSortTeachingRequestsBy = new int[] {Integer.valueOf(params[idx++]), Integer.valueOf(params[idx++])};
+				iTeachingRequestsColumns = new int[] {Integer.valueOf(params[idx++]), Integer.valueOf(params[idx++])};
 			}
 		} catch (Exception e) {
 		}
@@ -51,7 +55,9 @@ public class InstructorCookie {
 	}
 
 	private void save() {
-		String cookie = iSortAttributesBy + "|" + iSortInstructorsBy;
+		String cookie = iSortAttributesBy + "|" + iSortInstructorsBy +
+				"|" + iSortTeachingRequestsBy[0] + "|" + iSortTeachingRequestsBy[1] +
+				"|" + iTeachingRequestsColumns[0] + "|" + iTeachingRequestsColumns[1];
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:Instructor", cookie, expires);
 	}
@@ -71,6 +77,30 @@ public class InstructorCookie {
 	
 	public void setSortInstructorsBy(int sortInstructorsBy) {
 		iSortInstructorsBy = sortInstructorsBy;
+		save();
+	}
+	
+	public int getSortTeachingRequestsBy(boolean assigned) {
+		return iSortTeachingRequestsBy[assigned ? 0 : 1];
+	}
+	
+	public void setSortTeachingRequestsBy(boolean assigned, int sortTeachingRequestsBy) {
+		iSortTeachingRequestsBy[assigned ? 0 : 1] = sortTeachingRequestsBy;
+		save();
+	}
+	
+	public boolean isTeachingRequestsColumnVisible(boolean assigned, int ordinal) {
+		return (iTeachingRequestsColumns[assigned ? 0 : 1] & (1 << ordinal)) != 0;
+	}
+	
+	public void setTeachingRequestsColumnVisible(boolean assigned, int ordinal, boolean visible) {
+		boolean old = (iTeachingRequestsColumns[assigned ? 0 : 1] & (1 << ordinal)) != 0;
+		if (old != visible) {
+			if (visible)
+				iTeachingRequestsColumns[assigned ? 0 : 1] += (1 << ordinal);
+			else
+				iTeachingRequestsColumns[assigned ? 0 : 1] -= (1 << ordinal);
+		}
 		save();
 	}
 }

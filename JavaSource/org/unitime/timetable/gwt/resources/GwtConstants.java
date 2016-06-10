@@ -355,4 +355,7 @@ public interface GwtConstants extends Constants {
 		"Trace", "Debug", "Progress", "Info", "Stage", "Warn", "Error", "Fatal"
 	})
 	String[] progressLogLevel();
+	
+	@DefaultStringValue("Back-to-Back")
+	String instructorBackToBack();
 }

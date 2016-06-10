@@ -21,6 +21,7 @@ package org.unitime.timetable.solver.instructor;
 
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,6 +51,7 @@ import org.hibernate.Transaction;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
@@ -227,7 +229,18 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     		for (StudentClassEnrollment enrollment: enrollments) {
     			org.unitime.timetable.model.Assignment assignment = enrollment.getClazz().getCommittedAssignment();
     			if (assignment != null) {
-    				instructor.addTimePreference(new Preference<TimeLocation>(assignment.getTimeLocation(), Constants.sPreferenceLevelProhibited));
+    				DatePattern datePattern = assignment.getDatePattern();
+    				TimeLocation time = new TimeLocation(
+    						assignment.getDays().intValue(),
+    						assignment.getStartSlot().intValue(),
+    						assignment.getSlotPerMtg(),
+    						0,0,
+    						enrollment.getClazz().getUniqueId(),
+    						enrollment.getClazz().getClassLabel(enrollment.getCourseOffering(), true),
+    						(datePattern == null ? new BitSet() : datePattern.getPatternBitSet()),
+    						assignment.getBreakTime()
+    						);
+    				instructor.addTimePreference(new Preference<TimeLocation>(time, Constants.sPreferenceLevelProhibited));
     			}
     		}
     		List<ClassInstructor> classInstructors = (List<ClassInstructor>)hibSession.createQuery(
@@ -237,7 +250,18 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     		for (ClassInstructor ci: classInstructors) {
         		org.unitime.timetable.model.Assignment assignment = ci.getClassInstructing().getCommittedAssignment();
         		if (assignment != null) {
-    				instructor.addTimePreference(new Preference<TimeLocation>(assignment.getTimeLocation(), Constants.sPreferenceLevelProhibited));
+        			DatePattern datePattern = assignment.getDatePattern();
+    				TimeLocation time = new TimeLocation(
+    						assignment.getDays().intValue(),
+    						assignment.getStartSlot().intValue(),
+    						assignment.getSlotPerMtg(),
+    						0,0,
+    						ci.getClassInstructing().getUniqueId(),
+    						ci.getClassInstructing().getClassLabel(true),
+    						(datePattern == null ? new BitSet() : datePattern.getPatternBitSet()),
+    						assignment.getBreakTime()
+    						);
+    				instructor.addTimePreference(new Preference<TimeLocation>(time, Constants.sPreferenceLevelProhibited));
     			}
     		}
     	}

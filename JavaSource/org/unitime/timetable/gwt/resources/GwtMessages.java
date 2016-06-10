@@ -833,7 +833,34 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Parent")
 	String colParentAttribute();
-
+	
+	@DefaultMessage("Load")
+	String colTeachingLoad();
+	
+	@DefaultMessage("Attributes")
+	String colAttributes();
+		
+	@DefaultMessage("Instructor<br>Preferences")
+	String colInstructorPreferences();
+	
+	@DefaultMessage("Attribute<br>Preferences")
+	String colAttributePreferences();
+	
+	@DefaultMessage("Time<br>Preferences")
+	String colTimePreferences();
+	
+	@DefaultMessage("Course<br>Preferences")
+	String colCoursePreferences();
+	
+	@DefaultMessage("Distribution<br>Preferences")
+	String colDistributionPreferences();
+	
+	@DefaultMessage("Assigned<br>Load")
+	String colAssignedLoad();
+	
+	@DefaultMessage("Objectives")
+	String colObjectives();
+	
 	@DefaultMessage("pending")
 	String approvalNotApproved();
 	
@@ -1121,6 +1148,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Message Level:")
 	String propSolverLogLevel();
+	
+	@DefaultMessage("Subject Area:")
+	String propSubjectArea();
 
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
@@ -1574,6 +1604,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Please wait ...")
 	String waitSolverExecution();
+	
+	@DefaultMessage("Loading teaching requests ...")
+	String waitLoadingTeachingRequests();
 
 	@DefaultMessage("Failed to load {0}: {1}")
 	String failedLoad(String name, String reason);
@@ -1805,6 +1838,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Failed to load instructor attributes: {0}")
 	String failedToLoadInstructorAttributes(String reason);
+	
+	@DefaultMessage("Failed to load teaching requests: {0}")
+	String failedToLoadTeachingRequests(String reason);
 
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
@@ -2811,6 +2847,14 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Instructor Scheduling Solver Log")
 	@DoNotTranslate
 	String pageInstructorSchedulingSolverLog();
+	
+	@DefaultMessage("Assigned Teaching Requests")
+	@DoNotTranslate
+	String pageAssignedTeachingRequests();
+	
+	@DefaultMessage("Not-Assigned Teaching Requests")
+	@DoNotTranslate
+	String pageUnassignedTeachingRequests();
  
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

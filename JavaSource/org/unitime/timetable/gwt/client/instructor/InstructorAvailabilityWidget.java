@@ -83,15 +83,24 @@ public class InstructorAvailabilityWidget extends RoomSharingWidget {
 	
 	public static class InstructorAvailabilityRequest implements GwtRpcRequest<InstructorAvailabilityModel> {
 		private String iInstructorId;
+		private boolean iNotAvailable = false;
 		
 		public InstructorAvailabilityRequest() {}
 		
 		public String getInstructorId() { return iInstructorId; }
 		public void setInstructorId(String instructorId) { iInstructorId = instructorId; }
+		
+		public boolean isIncludeNotAvailable() { return iNotAvailable; }
+		public void setIncludeNotAvailable(boolean notAvailable) { iNotAvailable = notAvailable; }
 
 		public static InstructorAvailabilityRequest load(String instructorId) {
+			return load(instructorId, false);
+		}
+		
+		public static InstructorAvailabilityRequest load(String instructorId, boolean includeNotAvailable) {
 			InstructorAvailabilityRequest request = new InstructorAvailabilityRequest();
 			request.setInstructorId(instructorId);
+			request.setIncludeNotAvailable(includeNotAvailable);
 			return request;
 		}
 		

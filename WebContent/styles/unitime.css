@@ -4287,3 +4287,11 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-SolverPage .parameter-number {
 	width: 100px;
 }
+
+.unitime-TeachingRequests {
+	width: 100%;
+}
+
+.unitime-TeachingRequests .common {
+	font-style: italic;
+}
