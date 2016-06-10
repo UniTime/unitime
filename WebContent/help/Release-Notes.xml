@@ -28,6 +28,16 @@
 	<version>4.1.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Reservations: Show Class Suffixes</name>
+			<description>
+				<line>Added ability to show class suffixes (external ids) on the Reservations page and in the Reservations table.</line>
+				<line>Enable by setting unitime.reservations.showClassSuffixes to true (defaults to false).</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Other</title>
 		<item>
 			<name>Security: Possible SQL Injection Fixed</name>
