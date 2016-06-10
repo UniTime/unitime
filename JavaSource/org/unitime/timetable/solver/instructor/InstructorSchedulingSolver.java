@@ -21,7 +21,9 @@ package org.unitime.timetable.solver.instructor;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
 import org.cpsolver.coursett.Constants;
@@ -227,6 +229,117 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest, 
             	if ((assigned && placement != null) || (!assigned && placement == null))
                     ret.add(toInfo(request, placement));
             }
+            return ret;
+        } finally {
+        	lock.unlock();
+        }
+	}
+	
+	@Override
+	public List<InstructorInfo> getInstructors(Long departmentId) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
+        	boolean useAmPm = getProperties().getPropertyBoolean("General.UseAmPm", true);
+        	List<InstructorInfo> ret = new ArrayList<InstructorInfo>();
+        	Set<Long> instructorIds = null;
+        	if (departmentId != null) {
+        		instructorIds = new HashSet<Long>(
+        				CourseOfferingDAO.getInstance().getSession().createQuery(
+        						"select i.uniqueId from DepartmentalInstructor i where i.department.uniqueId = :departmentId"
+        						).setLong("departmentId", departmentId).list()
+        				);
+        	}
+        	InstructorSchedulingModel model = (InstructorSchedulingModel)currentSolution().getModel();
+        	for (Instructor instructor: model.getInstructors()) {
+        		if (instructorIds != null && !instructorIds.contains(instructor.getInstructorId())) continue;
+        		Instructor.Context context = instructor.getContext(currentSolution().getAssignment());
+        		
+        		InstructorInfo info = new InstructorInfo();
+        		info.setInstructorId(instructor.getInstructorId());
+        		info.setInstructorName(instructor.getName());
+        		info.setExternalId(instructor.getExternalId());
+        		info.setAssignedLoad(context.getLoad());
+        		info.setMaxLoad(instructor.getMaxLoad());
+    			for (Preference<Course> p: instructor.getCoursePreferences())
+    				info.addCoursePreference(new PreferenceInfo(p.getTarget().getCourseId(), p.getTarget().getCourseName(), Constants.preferenceLevel2preference(p.getPreference())));
+    			int[][] slot2pref = new int[Constants.NR_DAYS * Constants.SLOTS_PER_DAY][];
+    			for (int i = 0; i < slot2pref.length; i++)
+    				slot2pref[i] = new int[] {0, 0, 0};
+    			for (Preference<TimeLocation> p: instructor.getTimePreferences()) {
+    				PreferenceInfo pi = new PreferenceInfo(new Long(p.getTarget().hashCode()), p.getTarget().getLongName(useAmPm), Constants.preferenceLevel2preference(p.getPreference()));
+    				pi.setComparable(String.format("%03d:%05d", p.getTarget().getDayCode(), p.getTarget().getStartSlot()));
+    				info.addTimePreference(pi);
+    				for (Enumeration<Integer> i = p.getTarget().getSlots(); i.hasMoreElements(); ) {
+    					int slot = i.nextElement();
+    					slot2pref[slot][0] = Math.min(slot2pref[slot][0], p.getPreference());
+    					slot2pref[slot][1] = Math.max(slot2pref[slot][1], p.getPreference());
+    					if (p.isProhibited() && p.getTarget().getTimePatternId() != null) slot2pref[slot][2] = 1;
+    				}
+    			}
+    			StringBuffer pattern = new StringBuffer(slot2pref.length);
+    			for (int i = 0; i < slot2pref.length; i++) {
+    				int min = slot2pref[i][0];
+    				int max = slot2pref[i][1];
+    				int pref = (max > -min ? max : -min > max ? min : max);
+    				if (slot2pref[i][2] == 1)
+    					pattern.append(PreferenceLevel.prolog2char(PreferenceLevel.sNotAvailable));
+    				else
+    					pattern.append(PreferenceLevel.prolog2char(Constants.preferenceLevel2preference(pref)));
+    			}
+    			info.setAvailability(pattern.toString());
+    			for (Attribute a: instructor.getAttributes()) {
+    				AttributeInterface attribute = new AttributeInterface();
+    				attribute.setId(a.getAttributeId());
+    				attribute.setName(a.getAttributeName());
+    				AttributeTypeInterface type = new AttributeTypeInterface();
+    				type.setId(a.getType().getTypeId());
+    				type.setLabel(a.getType().getTypeName());
+    				type.setConjunctive(a.getType().isConjunctive());
+    				type.setRequired(a.getType().isRequired());
+    				attribute.setType(type);
+    				info.addAttribute(attribute);
+    			}
+    			if (instructor.getPreference() != 0)
+    				info.setTeachingPreference(Constants.preferenceLevel2preference(instructor.getPreference()));
+    			if (instructor.getBackToBackPreference() != 0)
+    				info.addDistributionPreference(new PreferenceInfo(1l, CONSTANTS.instructorBackToBack(), Constants.preferenceLevel2preference(instructor.getBackToBackPreference())));
+    			for (TeachingAssignment assignment: context.getAssignments()) {
+    				TeachingRequestInfo request = new TeachingRequestInfo();
+    				request.setRequestId(assignment.variable().getRequestId());
+    				request.setInstructorIndex(assignment.variable().getInstructorIndex());
+    				request.setLoad(assignment.variable().getLoad());
+    				for (Preference<Attribute> p: assignment.variable().getAttributePreferences())
+    					request.addAttributePreference(new PreferenceInfo(p.getTarget().getAttributeId(), p.getTarget().getAttributeName(), Constants.preferenceLevel2preference(p.getPreference())));
+    				for (Preference<Instructor> p: assignment.variable().getInstructorPreferences())
+    					request.addInstructorPreference(new PreferenceInfo(p.getTarget().getInstructorId(), p.getTarget().getName(), Constants.preferenceLevel2preference(p.getPreference())));
+    				CourseInfo course = new CourseInfo();
+    				course.setCourseId(assignment.variable().getCourse().getCourseId());
+    				course.setCourseName(assignment.variable().getCourse().getCourseName());
+    				request.setCourse(course);
+    				for (Section section: assignment.variable().getSections()) {
+    					SectionInfo si = new SectionInfo();
+    					si.setSectionId(section.getSectionId());
+    					si.setExternalId(section.getExternalId());
+    					si.setSectionName(section.getSectionName());
+    					si.setSectionType(section.getSectionType());
+    					si.setCommon(section.isCommon());
+    					si.setTime(section.hasTime() ? section.getTimeName(useAmPm) : null);
+    					si.setDate(section.hasTime() ? section.getTime().getDatePatternName() : null);
+    					si.setRoom(section.getRoom());
+    					request.addSection(si);
+    				}
+        			for (Criterion<TeachingRequest, TeachingAssignment> c: model.getCriteria()) {
+        				double value = c.getValue(currentSolution().getAssignment(), assignment, null);
+        				if (value != 0) {
+        					request.setValue(c.getName(), value);
+        					info.addValue(c.getName(), value);
+        				}
+        			}
+        			info.addAssignedRequest(request);
+    			}
+        		ret.add(info);
+        	}
             return ret;
         } finally {
         	lock.unlock();

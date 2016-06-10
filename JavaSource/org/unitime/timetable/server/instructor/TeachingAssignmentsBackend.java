@@ -23,11 +23,9 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.cpsolver.coursett.Constants;
@@ -42,7 +40,6 @@ import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
-import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestsPageRequest;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -61,7 +58,6 @@ import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.SolverParameterGroup.SolverType;
-import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeTypeInterface;
@@ -69,6 +65,7 @@ import org.unitime.timetable.gwt.shared.InstructorInterface.CourseInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.PreferenceInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.SectionInfo;
+import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingAssignmentsPageRequest;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestInfo;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -78,19 +75,19 @@ import org.unitime.timetable.solver.service.SolverService;
 /**
  * @author Tomas Muller
  */
-@GwtRpcImplements(TeachingRequestsPageRequest.class)
-public class TeachingRequestsPageBackend implements GwtRpcImplementation<TeachingRequestsPageRequest, GwtRpcResponseList<TeachingRequestInfo>> {
+@GwtRpcImplements(TeachingAssignmentsPageRequest.class)
+public class TeachingAssignmentsBackend implements GwtRpcImplementation<TeachingAssignmentsPageRequest, GwtRpcResponseList<InstructorInfo>> {
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	
 	@Autowired SolverService<InstructorSchedulingProxy> instructorSchedulingSolverService;
 	
 	@Override
-	public GwtRpcResponseList<TeachingRequestInfo> execute(TeachingRequestsPageRequest request, SessionContext context) {
+	public GwtRpcResponseList<InstructorInfo> execute(TeachingAssignmentsPageRequest request, SessionContext context) {
 		context.checkPermission(Right.InstructorSchedulingSolver);
-		context.setAttribute(SessionAttribute.OfferingsSubjectArea, request.getSubjectAreaId() == null ? "-1" : String.valueOf(request.getSubjectAreaId()));
+		context.setAttribute(SessionAttribute.DepartmentId, request.getDepartmentId() == null ? "-1" : String.valueOf(request.getDepartmentId()));
 		InstructorSchedulingProxy solver = instructorSchedulingSolverService.getSolver();
 		if (solver != null)
-			return new GwtRpcResponseList<TeachingRequestInfo>(solver.getTeachingRequests(request.getSubjectAreaId(), request.isAssigned()));
+			return new GwtRpcResponseList<InstructorInfo>(solver.getInstructors(request.getDepartmentId()));
 		else {
 			Set<String> commonItypes = new HashSet<String>();
 			SolverParameterDef param = SolverParameterDef.findByNameType("General.CommonItypes", SolverType.INSTRUCTOR);
@@ -104,29 +101,22 @@ public class TeachingRequestsPageBackend implements GwtRpcImplementation<Teachin
 			}
 			String nameFormat = UserProperty.NameFormat.get(context.getUser());
 			
-			GwtRpcResponseList<TeachingRequestInfo> ret = new GwtRpcResponseList<TeachingRequestInfo>();
+			GwtRpcResponseList<InstructorInfo> ret = new GwtRpcResponseList<InstructorInfo>();
 			org.hibernate.Session hibSession = Class_DAO.getInstance().getSession();
-			List<Class_> classes = null;
-			if (request.getSubjectAreaId() == null) {
-				classes = (List<Class_>)hibSession.createQuery(
-						"from Class_ c where c.cancelled = false and c.controllingDept.session.uniqueId = :sessionId " +
-						"(c.teachingLoad is not null or c.schedulingSubpart.teachingLoad is not null) and " +
-						"((c.nbrInstructors is null and c.schedulingSubpart.nbrInstructors > 0) or c.nbrInstructors > 0)")
-						.setLong("sessionId", context.getUser().getCurrentAcademicSessionId()).setCacheable(true).list();
+			List<DepartmentalInstructor> instructors = null;
+			if (request.getDepartmentId() == null) {
+				instructors = (List<DepartmentalInstructor>)hibSession.createQuery(
+						"select distinct i from DepartmentalInstructor i where " +
+				    	"i.department.session.uniqueId = :sessionId and i.teachingPreference.prefProlog != :prohibited and i.maxLoad > 0.0"
+						).setLong("sessionId", context.getUser().getCurrentAcademicSessionId()).setString("prohibited", PreferenceLevel.sProhibited).list();
 			} else {
-				classes = (List<Class_>)hibSession.createQuery(
-						"select c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co " +
-						"where co.subjectArea.uniqueId = :subjectAreaId and co.isControl = true and c.cancelled = false and " +
-		    			"(c.teachingLoad is not null or c.schedulingSubpart.teachingLoad is not null) and " +
-		    			"((c.nbrInstructors is null and c.schedulingSubpart.nbrInstructors > 0) or c.nbrInstructors > 0)")
-		    			.setLong("subjectAreaId", request.getSubjectAreaId()).setCacheable(true).list();
+				instructors = (List<DepartmentalInstructor>)hibSession.createQuery(
+						"select distinct i from DepartmentalInstructor i where " +
+				    	"i.department.uniqueId = :departmentId and i.teachingPreference.prefProlog != :prohibited and i.maxLoad > 0.0"
+						).setLong("departmentId", request.getDepartmentId()).setString("prohibited", PreferenceLevel.sProhibited).list();
 			}
-	    	Collections.sort(classes, new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
-	    	Map<Long, Float> loads = new HashMap<Long, Float>();
-	    	for (Class_ clazz: classes) {
-	    		if (!clazz.isInstructorAssignmentNeeded()) continue;
-	    		for (TeachingRequestInfo info: getRequestForClass(clazz, commonItypes, nameFormat, request.isAssigned(), loads))
-	    			ret.add(info);
+	    	for (DepartmentalInstructor instructor: instructors) {
+	    		ret.add(getInstructorInfo(instructor, nameFormat, commonItypes));
 	    	}
 	    	Collections.sort(ret);
 	    	return ret;
@@ -188,7 +178,7 @@ public class TeachingRequestsPageBackend implements GwtRpcImplementation<Teachin
     protected List<DepartmentalInstructor> getInstructors(Class_ clazz) {
     	List<DepartmentalInstructor> instructors = new ArrayList<DepartmentalInstructor>();
     	for (ClassInstructor ci: clazz.getClassInstructors()) {
-    		if (!isToBeIgnored(ci) && (ci.getInstructor().getTeachingPreference() != null && !ci.getInstructor().getTeachingPreference().getPrefProlog().equals(PreferenceLevel.sProhibited))) {
+    		if (!isToBeIgnored(ci)) {
     			instructors.add(ci.getInstructor());
     		}
     	}
@@ -200,20 +190,12 @@ public class TeachingRequestsPageBackend implements GwtRpcImplementation<Teachin
     	return instructors;
     }
     
-    protected InstructorInfo getInstructor(TeachingRequestInfo request, DepartmentalInstructor instructor, String nameFormat) {
+    protected InstructorInfo getInstructorInfo(DepartmentalInstructor instructor, String nameFormat, Set<String> commonItypes) {
 		InstructorInfo info = new InstructorInfo();
 		info.setInstructorId(instructor.getUniqueId());
 		info.setInstructorName(instructor.getName(nameFormat));
 		info.setExternalId(instructor.getExternalUniqueId());
 		info.setMaxLoad(instructor.getMaxLoad() == null ? 0f : instructor.getMaxLoad());
-		if (instructor.getTeachingPreference() == null) {
-			info.setTeachingPreference(PreferenceLevel.sProhibited);
-			info.setValue("Teaching Preferences", Constants.preference2preferenceLevel(PreferenceLevel.sProhibited));
-		} else {
-			info.setTeachingPreference(instructor.getTeachingPreference().getPrefProlog());
-			if (!PreferenceLevel.sNeutral.equals(info.getTeachingPreference()))
-				info.setValue("Teaching Preferences", Constants.preference2preferenceLevel(info.getTeachingPreference()));
-		}
 		for (InstructorAttribute a: instructor.getAttributes()) {
 			AttributeInterface attribute = new AttributeInterface();
 			attribute.setId(a.getUniqueId());
@@ -233,8 +215,6 @@ public class TeachingRequestsPageBackend implements GwtRpcImplementation<Teachin
 			if (p instanceof InstructorCoursePref) {
 				InstructorCoursePref cp = (InstructorCoursePref)p;
 				info.addCoursePreference(new PreferenceInfo(cp.getCourse().getUniqueId(), cp.getCourse().getCourseName(), cp.getPrefLevel().getPrefProlog()));
-				if (cp.getCourse().getUniqueId().equals(request.getCourse().getCourseId()))
-					info.setValue("Course Preferences", Constants.preference2preferenceLevel(p.getPrefLevel().getPrefProlog()));
 			} else if (p instanceof DistributionPref) {
 				DistributionPref dp = (DistributionPref)p;
 				info.addDistributionPreference(new PreferenceInfo(dp.getDistributionType().getUniqueId(), dp.getDistributionType().getLabel(), dp.getPrefLevel().getPrefProlog()));
@@ -275,6 +255,38 @@ public class TeachingRequestsPageBackend implements GwtRpcImplementation<Teachin
 				pattern.append(PreferenceLevel.prolog2char(Constants.preferenceLevel2preference(pref)));
 		}
 		info.setAvailability(pattern.toString());
+		ci: for (ClassInstructor ci: instructor.getClasses()) {
+			if (isToBeIgnored(ci) || !ci.getClassInstructing().isInstructorAssignmentNeeded()) continue;
+			Class_ clazz = ci.getClassInstructing();
+			for (Class_ child: clazz.getChildClasses()) {
+	    		if (child.isCancelled() || !child.isInstructorAssignmentNeeded()) continue;
+	    		for (ClassInstructor x: child.getClassInstructors())
+	        		if (!isToBeIgnored(x) && x.getInstructor().equals(instructor)) continue ci;
+	    	}
+			TeachingRequestInfo request = getRequestForClass(clazz, info, commonItypes, nameFormat);
+			if (request == null) continue;
+			if (instructor.getTeachingPreference() == null) {
+				info.setTeachingPreference(PreferenceLevel.sProhibited);
+				request.setValue("Teaching Preferences", Constants.preference2preferenceLevel(PreferenceLevel.sProhibited));
+				info.addValue("Teaching Preferences", Constants.preference2preferenceLevel(PreferenceLevel.sProhibited));
+			} else {
+				info.setTeachingPreference(instructor.getTeachingPreference().getPrefProlog());
+				if (!PreferenceLevel.sNeutral.equals(info.getTeachingPreference())) {
+					request.setValue("Teaching Preferences", Constants.preference2preferenceLevel(info.getTeachingPreference()));
+					info.addValue("Teaching Preferences", Constants.preference2preferenceLevel(info.getTeachingPreference()));
+				}
+			}
+			for (org.unitime.timetable.model.Preference p: instructor.getPreferences()) {
+				if (p instanceof InstructorCoursePref) {
+					InstructorCoursePref cp = (InstructorCoursePref)p;
+					if (cp.getCourse().getUniqueId().equals(request.getCourse().getCourseId())) {
+						info.addValue("Course Preferences", Constants.preference2preferenceLevel(p.getPrefLevel().getPrefProlog()));
+						request.setValue("Course Preferences", Constants.preference2preferenceLevel(p.getPrefLevel().getPrefProlog()));
+					}
+				}
+			}
+			info.addAssignedRequest(request);
+		}
 		return info;
     }
     
@@ -382,68 +394,54 @@ public class TeachingRequestsPageBackend implements GwtRpcImplementation<Teachin
     	}
     	return ret;
     }
-    	
-	protected List<TeachingRequestInfo> getRequestForClass(Class_ clazz, Set<String> commonItypes, String nameFormat, boolean assigned, Map<Long, Float> loads) {
-		List<TeachingRequestInfo> ret = new ArrayList<TeachingRequestInfo>();
-    	int nrInstructors = nrInstructorsNeeded(clazz);
-    	if (nrInstructors <= 0) return ret;
-    	List<DepartmentalInstructor> instructors = getInstructors(clazz);
-    	if (instructors.size() > nrInstructors) nrInstructors = instructors.size();
-    	for (int i = (assigned ? 0: instructors.size()); i < (assigned ? instructors.size() : nrInstructors); i++) {
-    		DepartmentalInstructor instructor = null;
-    		if (i < instructors.size()) instructor = instructors.get(i);
-        	TeachingRequestInfo request = new TeachingRequestInfo();
-        	request.setRequestId(clazz.getUniqueId());
-        	request.setInstructorIndex(i);
-        	request.setCourse(getCourse(clazz.getSchedulingSubpart().getControllingCourseOffering()));
-        	request.addSection(getSection(clazz));
-        	request.setLoad(clazz.effectiveTeachingLoad());
-        	Set<SchedulingSubpart> checked = new HashSet<SchedulingSubpart>();
-        	checked.add(clazz.getSchedulingSubpart());
-        	for (Class_ parent = clazz.getParentClass(); parent != null; parent = parent.getParentClass()) {
-        		checked.add(parent.getSchedulingSubpart());
-        		if (isToBeIncluded(parent, commonItypes)) {
-        			request.addSection(getSection(parent));
-        			if (parent.isInstructorAssignmentNeeded()) request.setLoad(request.getLoad() + parent.effectiveTeachingLoad());
-        		}
-        	}
-        	for (SchedulingSubpart other: clazz.getSchedulingSubpart().getInstrOfferingConfig().getSchedulingSubparts()) {
-        		if (checked.contains(other)) continue;
-        		if (commonItypes.contains(other.getItype().getSis_ref()) && !other.isInstructorAssignmentNeeded()) {
-        			for (Class_ c: other.getClasses())
-        				request.addSection(getSection(c));
-        		}
-        	}
-    		for (Iterator it = clazz.effectivePreferences(InstructorPref.class).iterator(); it.hasNext(); ) {
-    			InstructorPref p = (InstructorPref)it.next();
-    			request.addInstructorPreference(new PreferenceInfo(p.getInstructor().getUniqueId(), p.getInstructor().getName(nameFormat), p.getPrefLevel().getPrefProlog()));
+	
+	protected TeachingRequestInfo getRequestForClass(Class_ clazz, InstructorInfo instructor, Set<String> commonItypes, String nameFormat) {
+    	// int nrInstructors = nrInstructorsNeeded(clazz);
+    	// if (nrInstructors <= 0) return null;
+    	TeachingRequestInfo request = new TeachingRequestInfo();
+    	request.setRequestId(clazz.getUniqueId());
+    	request.setInstructorIndex(0);
+    	request.setCourse(getCourse(clazz.getSchedulingSubpart().getControllingCourseOffering()));
+    	request.addSection(getSection(clazz));
+    	if (clazz.isInstructorAssignmentNeeded())
+    		request.setLoad(clazz.effectiveTeachingLoad());
+    	Set<SchedulingSubpart> checked = new HashSet<SchedulingSubpart>();
+    	checked.add(clazz.getSchedulingSubpart());
+    	for (Class_ parent = clazz.getParentClass(); parent != null; parent = parent.getParentClass()) {
+    		checked.add(parent.getSchedulingSubpart());
+    		if (isToBeIncluded(parent, commonItypes)) {
+    			request.addSection(getSection(parent));
+    			if (parent.isInstructorAssignmentNeeded()) request.setLoad(request.getLoad() + parent.effectiveTeachingLoad());
     		}
-    		for (Iterator it = clazz.effectivePreferences(InstructorAttributePref.class).iterator(); it.hasNext(); ) {
-    			InstructorAttributePref p = (InstructorAttributePref)it.next();
-    			request.addAttributePreference(new PreferenceInfo(p.getAttribute().getUniqueId(), p.getAttribute().getName(), p.getPrefLevel().getPrefProlog()));
-    		}
-        	if (instructor != null) {
-        		InstructorInfo info = getInstructor(request, instructor, nameFormat);
-        		Float l = loads.get(info.getInstructorId());
-        		info.setAssignedLoad(request.getLoad() + (l == null ? 0f : l));
-        		loads.put(info.getInstructorId(), info.getAssignedLoad());
-        		request.setInstructor(info);
-        		for (Iterator it = clazz.effectivePreferences(InstructorPref.class).iterator(); it.hasNext(); ) {
-        			InstructorPref p = (InstructorPref)it.next();
-        			if (p.getInstructor().equals(instructor))
-        				info.setValue("Instructor Preferences", Constants.preference2preferenceLevel(p.getPrefLevel().getPrefProlog()));
-        		}
-        		MinMaxPreferenceCombination attr = new MinMaxPreferenceCombination();
-        		for (Iterator it = clazz.effectivePreferences(InstructorAttributePref.class).iterator(); it.hasNext(); ) {
-        			InstructorAttributePref p = (InstructorAttributePref)it.next();
-        			if (instructor.getAttributes().contains(p.getAttribute()))
-        				attr.addPreferenceProlog(p.getPrefLevel().getPrefProlog());
-        		}
-        		info.setValue("Attribute Preferences", attr.getPreferenceInt());
-        	}
-    		ret.add(request);
     	}
-		return ret;
+    	for (SchedulingSubpart other: clazz.getSchedulingSubpart().getInstrOfferingConfig().getSchedulingSubparts()) {
+    		if (checked.contains(other)) continue;
+    		if (commonItypes.contains(other.getItype().getSis_ref()) && !other.isInstructorAssignmentNeeded()) {
+    			for (Class_ c: other.getClasses())
+    				request.addSection(getSection(c));
+    		}
+    	}
+		for (Iterator it = clazz.effectivePreferences(InstructorPref.class).iterator(); it.hasNext(); ) {
+			InstructorPref p = (InstructorPref)it.next();
+			request.addInstructorPreference(new PreferenceInfo(p.getInstructor().getUniqueId(), p.getInstructor().getName(nameFormat), p.getPrefLevel().getPrefProlog()));
+			if (p.getInstructor().getUniqueId().equals(instructor.getInstructorId())) {
+				request.setValue("Instructor Preferences", Constants.preference2preferenceLevel(p.getPrefLevel().getPrefProlog()));
+				instructor.addValue("Instructor Preferences", Constants.preference2preferenceLevel(p.getPrefLevel().getPrefProlog()));
+			}
+		}
+		MinMaxPreferenceCombination attr = new MinMaxPreferenceCombination();
+		for (Iterator it = clazz.effectivePreferences(InstructorAttributePref.class).iterator(); it.hasNext(); ) {
+			InstructorAttributePref p = (InstructorAttributePref)it.next();
+			request.addAttributePreference(new PreferenceInfo(p.getAttribute().getUniqueId(), p.getAttribute().getName(), p.getPrefLevel().getPrefProlog()));
+			for (AttributeInterface a: instructor.getAttributes())
+				if (a.getId().equals(p.getAttribute().getUniqueId())) {
+					attr.addPreferenceProlog(p.getPrefLevel().getPrefProlog());			
+				}
+		}
+		request.setValue("Attribute Preferences", attr.getPreferenceInt());
+		instructor.addValue("Attribute Preferences", attr.getPreferenceInt());
+		instructor.setAssignedLoad(instructor.getAssignedLoad() + request.getLoad());
+		return request;
 	}
 
 }

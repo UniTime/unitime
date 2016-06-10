@@ -31,7 +31,9 @@ public class InstructorCookie {
 	private int iSortAttributesBy = 0;
 	private int iSortInstructorsBy = 0;
 	private int[] iSortTeachingRequestsBy = new int[] {0, 0};
-	private int[] iTeachingRequestsColumns = new int[] {0xff, 0xff};
+	private int[] iTeachingRequestsColumns = new int[] {0xffff, 0xffff};
+	private int iSortTeachingAssignmentsBy = 0;
+	private int iTeachingAssignmentsColumns = 0xffff;
 
 	private InstructorCookie() {
 		try {
@@ -43,6 +45,8 @@ public class InstructorCookie {
 				iSortInstructorsBy = Integer.valueOf(params[idx++]);
 				iSortTeachingRequestsBy = new int[] {Integer.valueOf(params[idx++]), Integer.valueOf(params[idx++])};
 				iTeachingRequestsColumns = new int[] {Integer.valueOf(params[idx++]), Integer.valueOf(params[idx++])};
+				iSortTeachingAssignmentsBy = Integer.valueOf(params[idx++]);
+				iTeachingAssignmentsColumns = Integer.valueOf(params[idx++]);
 			}
 		} catch (Exception e) {
 		}
@@ -57,7 +61,8 @@ public class InstructorCookie {
 	private void save() {
 		String cookie = iSortAttributesBy + "|" + iSortInstructorsBy +
 				"|" + iSortTeachingRequestsBy[0] + "|" + iSortTeachingRequestsBy[1] +
-				"|" + iTeachingRequestsColumns[0] + "|" + iTeachingRequestsColumns[1];
+				"|" + iTeachingRequestsColumns[0] + "|" + iTeachingRequestsColumns[1] +
+				"|" + iSortTeachingAssignmentsBy + "|" + iTeachingAssignmentsColumns;
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:Instructor", cookie, expires);
 	}
@@ -100,6 +105,30 @@ public class InstructorCookie {
 				iTeachingRequestsColumns[assigned ? 0 : 1] += (1 << ordinal);
 			else
 				iTeachingRequestsColumns[assigned ? 0 : 1] -= (1 << ordinal);
+		}
+		save();
+	}
+	
+	public int getSortTeachingAssignmentsBy() {
+		return iSortTeachingAssignmentsBy;
+	}
+	
+	public void setSortTeachingAssignmentsBy(int sortTeachingAssignmentsBy) {
+		iSortTeachingAssignmentsBy = sortTeachingAssignmentsBy;
+		save();
+	}
+	
+	public boolean isTeachingAssignmentsColumnVisible(int ordinal) {
+		return (iTeachingAssignmentsColumns & (1 << ordinal)) != 0;
+	}
+	
+	public void setTeachingAssignmentsColumnVisible(int ordinal, boolean visible) {
+		boolean old = (iTeachingAssignmentsColumns & (1 << ordinal)) != 0;
+		if (old != visible) {
+			if (visible)
+				iTeachingAssignmentsColumns += (1 << ordinal);
+			else
+				iTeachingAssignmentsColumns -= (1 << ordinal);
 		}
 		save();
 	}

@@ -4295,3 +4295,15 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-TeachingRequests .common {
 	font-style: italic;
 }
+
+.unitime-TeachingAssignments {
+	width: 100%;
+}
+
+.unitime-TeachingAssignments .common {
+	font-style: italic;
+}
+
+.unitime-TeachingAssignments .first-line {
+	border-top: 1px dashed #9CB0CE;
+}

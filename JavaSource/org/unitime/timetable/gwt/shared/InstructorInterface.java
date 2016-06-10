@@ -648,6 +648,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    private List<AttributeInterface> iAttributes = new ArrayList<AttributeInterface>();
 	    private Map<String,Double> iValues = new HashMap<String, Double>();
 	    private String iAvailability;
+	    private List<TeachingRequestInfo> iAssignedRequests = new ArrayList<TeachingRequestInfo>();
 
 		public InstructorInfo() {}
 		
@@ -689,12 +690,19 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    public void setValue(String criterion, double value) {
 	    	iValues.put(criterion, value);
 	    }
+	    public void addValue(String criterion, double value) {
+	    	Double old = iValues.get(criterion);
+	    	iValues.put(criterion, value + (old == null ? 0.0 : old.doubleValue()));
+	    }
 	    public Map<String,Double> getValues() { return iValues; }
 	    public Double getValue(String criterion) { return iValues.get(criterion); }
 	    
 	    public void setAvailability(String availability) { iAvailability = availability; }
 	    public String getAvailability() { return iAvailability; }
 	    public boolean hetAvailability() { return iAvailability != null && !iAvailability.isEmpty(); }
+	    
+	    public List<TeachingRequestInfo> getAssignedRequests() { return iAssignedRequests; }
+	    public void addAssignedRequest(TeachingRequestInfo request) { iAssignedRequests.add(request); }
 		
 	    public int hashCode() { return getInstructorId().hashCode(); }
 		public boolean equals(Object o) {
@@ -715,6 +723,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		private InstructorInfo iInstructor;
 	    private List<PreferenceInfo> iInstructorPreferences = new ArrayList<PreferenceInfo>();
 	    private List<PreferenceInfo> iAttributePreferences = new ArrayList<PreferenceInfo>();
+	    private Map<String,Double> iValues = new HashMap<String, Double>();
 
 		public TeachingRequestInfo() {}
 		
@@ -741,6 +750,12 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 
 	    public void addAttributePreference(PreferenceInfo preference) { iAttributePreferences.add(preference); }
 	    public List<PreferenceInfo> getAttributePreferences() { return iAttributePreferences; }
+	    
+	    public void setValue(String criterion, double value) {
+	    	iValues.put(criterion, value);
+	    }
+	    public Map<String,Double> getValues() { return iValues; }
+	    public Double getValue(String criterion) { return iValues.get(criterion); }
 		
 	    @Override
 	    public int hashCode() {
@@ -792,6 +807,23 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		}
 	}
 	
+	public static class TeachingAssignmentsPageRequest implements GwtRpcRequest<GwtRpcResponseList<InstructorInfo>> {
+		private Long iDepartmentId = null;
+		
+		public TeachingAssignmentsPageRequest() {}
+		
+		public TeachingAssignmentsPageRequest(Long departmentId) {
+			iDepartmentId = departmentId;
+		}
+		
+		public Long getDepartmentId() { return iDepartmentId; }
+		
+		@Override
+		public String toString() {
+			return (getDepartmentId() == null ? "(all)" : "(" + getDepartmentId() + ")");
+		}
+	}
+	
 	public static class SubjectAreaInterface implements IsSerializable {
 		private Long iId;
 		private String iAbbv;
@@ -827,8 +859,9 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	
 	public static class TeachingRequestsPagePropertiesResponse implements GwtRpcResponse {
 		private List<SubjectAreaInterface> iSubjecAreas = new ArrayList<SubjectAreaInterface>();
+		private List<DepartmentInterface> iDepartments = new ArrayList<DepartmentInterface>();
 		private List<PreferenceInterface> iPreferences = new ArrayList<PreferenceInterface>();
-		private Long iLastSubjectAreaId = null;
+		private Long iLastSubjectAreaId = null, iLastDepartmentId = null;
 		private List<AttributeTypeInterface> iAttributeTypes = new ArrayList<AttributeTypeInterface>();
 		private List<RoomSharingDisplayMode> iModes;
 		
@@ -837,6 +870,9 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		public void addSubjectArea(SubjectAreaInterface subjectArea) { iSubjecAreas.add(subjectArea); }
 		public List<SubjectAreaInterface> getSubjectAreas() { return iSubjecAreas; }
 		
+		public void addDepartment(DepartmentInterface department) { iDepartments.add(department); }
+		public List<DepartmentInterface> getDepartments() { return iDepartments; }
+
 		public void addPreference(PreferenceInterface preference) { iPreferences.add(preference); }
 		public List<PreferenceInterface> getPreferences() { return iPreferences; }
 		public PreferenceInterface getPreference(String p) {
@@ -848,6 +884,9 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		public void setLastSubjectAreaId(Long lastSubjectAreaId) { iLastSubjectAreaId = lastSubjectAreaId; }
 		public Long getLastSubjectAreaId() { return iLastSubjectAreaId; }
 		
+		public void setLastDepartmentId(Long lastDepartmentId) { iLastDepartmentId = lastDepartmentId; }
+		public Long getLastDepartmentId() { return iLastDepartmentId; }
+
 		public boolean hasAttributeTypes() { return iAttributeTypes != null && !iAttributeTypes.isEmpty(); }
 		public void addAttributeType(AttributeTypeInterface type) { iAttributeTypes.add(type); }
 		public List<AttributeTypeInterface> getAttributeTypes() { return iAttributeTypes; }

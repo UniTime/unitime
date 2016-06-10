@@ -1607,6 +1607,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Loading teaching requests ...")
 	String waitLoadingTeachingRequests();
+	
+	@DefaultMessage("Loading teaching assignments ...")
+	String waitLoadingTeachingAssignments();
 
 	@DefaultMessage("Failed to load {0}: {1}")
 	String failedLoad(String name, String reason);
@@ -1841,6 +1844,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Failed to load teaching requests: {0}")
 	String failedToLoadTeachingRequests(String reason);
+	
+	@DefaultMessage("Failed to load teaching assignments: {0}")
+	String failedToLoadTeachingAssignments(String reason);
 
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
@@ -2855,6 +2861,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Not-Assigned Teaching Requests")
 	@DoNotTranslate
 	String pageUnassignedTeachingRequests();
+	
+	@DefaultMessage("Teaching Assignments")
+	@DoNotTranslate
+	String pageTeachingAssignments();
  
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

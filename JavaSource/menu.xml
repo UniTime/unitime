@@ -248,6 +248,7 @@
 			<item name="Not-Assigned Teaching Requests" page="teachingRequests" type="gwt">
 				<parameter name="assigned">false</parameter>
 			</item>
+			<item name="Teaching Assignments" page="teachingAssignments" type="gwt"/>
 		</menu>
 		<item name="Reports" page="hql" type="gwt">
 			<parameter name="appearance">courses</parameter>

@@ -30,10 +30,12 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.RoomInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeTypeInterface;
+import org.unitime.timetable.gwt.shared.InstructorInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.PreferenceInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.SubjectAreaInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestsPagePropertiesRequest;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestsPagePropertiesResponse;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstructorAttributeType;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -78,6 +80,24 @@ public class TeachingRequestsPagePropertiesBackend implements GwtRpcImplementati
 			subject.setLabel(sa.getTitle());
 			ret.addSubjectArea(subject);
 		}
+		for (Department d: Department.getUserDepartments(context.getUser())) {
+			if (ownerId != null && (d.getSolverGroup() == null || !ownerId.equals(d.getSolverGroup().getUniqueId())))
+				continue;
+			boolean hasTeachingPreference = false;
+			for (DepartmentalInstructor di: d.getInstructors())
+				if (di.getTeachingPreference() != null && !PreferenceLevel.sProhibited.equals(di.getTeachingPreference().getPrefProlog())) {
+					hasTeachingPreference = true;
+					break;
+				}
+			if (!hasTeachingPreference) continue;
+			DepartmentInterface department = new DepartmentInterface();
+			department.setId(d.getUniqueId());
+			department.setDeptCode(d.getDeptCode());
+			department.setLabel(d.getName());
+			department.setTitle(d.getLabel());
+			department.setAbbreviation(d.getAbbreviation());
+			ret.addDepartment(department);
+		}
 		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList()) {
 			ret.addPreference(new PreferenceInterface(pref.getUniqueId(), PreferenceLevel.prolog2bgColor(pref.getPrefProlog()), pref.getPrefProlog(), pref.getPrefName(), pref.getAbbreviation(), true));
 		}
@@ -87,6 +107,12 @@ public class TeachingRequestsPagePropertiesBackend implements GwtRpcImplementati
 		else if (sa != null) {
 			if (sa.indexOf(',') >= 0) sa = sa.substring(0, sa.indexOf(','));
 			ret.setLastSubjectAreaId(Long.valueOf(sa));
+		}
+		String deptId = (String)context.getAttribute(SessionAttribute.DepartmentId);
+		if (deptId != null) {
+			try {
+				ret.setLastDepartmentId(Long.valueOf(deptId));
+			} catch (NumberFormatException e) {}
 		}
 		for (InstructorAttributeType type: (List<InstructorAttributeType>)InstructorAttributeTypeDAO.getInstance().getSession().createQuery(
 				"from InstructorAttributeType order by label").setCacheable(true).list()) {
