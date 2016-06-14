@@ -31,4 +31,5 @@ import org.unitime.timetable.solver.CommonSolverInterface;
 public interface InstructorSchedulingProxy extends CommonSolverInterface {
 	public List<TeachingRequestInfo> getTeachingRequests(Long subjectAreaId, boolean assigned);
 	public List<InstructorInfo> getInstructors(Long departmentId);
+	public TeachingRequestInfo getTeachingRequestInfo(Long requestId);
 }

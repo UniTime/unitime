@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsPage.SingleTeachingAssingment;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.rooms.RoomCookie;
@@ -88,7 +89,7 @@ public class TeachingRequestsPage extends SimpleForm {
 	private UniTimeHeaderPanel iFilterPanel;
 	private ListBox iFilter;
 	private TeachingRequestsPagePropertiesResponse iProperties;
-	private UniTimeTable<TeachingRequestInfo> iTable;
+	private UniTimeTable<SingleTeachingAssingment> iTable;
 	
 	public TeachingRequestsPage() {
 		iAssigned = "true".equalsIgnoreCase(Location.getParameter("assigned"));
@@ -134,7 +135,7 @@ public class TeachingRequestsPage extends SimpleForm {
 		iFilterPanel.setEnabled("search", false);
 		addRow(iFilterPanel);
 		
-		iTable = new UniTimeTable<TeachingRequestInfo>();
+		iTable = new UniTimeTable<SingleTeachingAssingment>();
 		iTable.setVisible(false);
 		iTable.addStyleName("unitime-TeachingRequests");
 		addRow(iTable);
@@ -180,6 +181,7 @@ public class TeachingRequestsPage extends SimpleForm {
 					public void execute() {
 						iTable.sort(h, new TableComparator(column));
 						InstructorCookie.getInstance().setSortTeachingRequestsBy(iAssigned, h.getOrder() ? 1 + column.ordinal() : -1 - column.ordinal());
+						hideDuplicateRequests();
 					}
 					@Override
 					public boolean isApplicable() {
@@ -201,15 +203,29 @@ public class TeachingRequestsPage extends SimpleForm {
 			}
 		iTable.addRow(null, header);
 		for (TeachingRequestInfo request: results) {
-			List<Widget> line = new ArrayList<Widget>();
-			for (COLUMN column: COLUMN.values()) {
-				if (column.isVisible(iAssigned)) {
-					Widget cell = getCell(column, request);
-					if (cell == null) cell = new Label();
-					line.add(cell);
+			if (iAssigned && request.hasInstructors())
+				for (InstructorInfo instructor: request.getInstructors()) {
+					List<Widget> line = new ArrayList<Widget>();
+					for (COLUMN column: COLUMN.values()) {
+						if (column.isVisible(iAssigned)) {
+							Widget cell = getCell(column, request, instructor);
+							if (cell == null) cell = new Label();
+							line.add(cell);
+						}
+					}
+					iTable.addRow(new SingleTeachingAssingment(instructor, request), line);
 				}
+			else if (!iAssigned && request.getNrAssignedInstructors() < request.getNrInstructors()) {
+				List<Widget> line = new ArrayList<Widget>();
+				for (COLUMN column: COLUMN.values()) {
+					if (column.isVisible(iAssigned)) {
+						Widget cell = getCell(column, request, null);
+						if (cell == null) cell = new Label();
+						line.add(cell);
+					}
+				}
+				iTable.addRow(new SingleTeachingAssingment(null, request), line);
 			}
-			iTable.addRow(request, line);
 		}
 		if (sortHeader != null)
 			iTable.sort(sortHeader, new TableComparator(sortColumn), asc);
@@ -284,6 +300,32 @@ public class TeachingRequestsPage extends SimpleForm {
 				iTable.setColumnVisible(col, !column.isCanHide() || InstructorCookie.getInstance().isTeachingRequestsColumnVisible(iAssigned, column.ordinal()));
 				col ++;
 			}
+		hideDuplicateRequests();
+	}
+	
+	public void hideDuplicateRequests() {
+		if (!iAssigned) return;
+		TeachingRequestInfo last = null;
+		for (int i = 0; i < iTable.getRowCount(); i++) {
+			SingleTeachingAssingment ta = iTable.getData(i);
+			if (ta == null) {
+				last = null; continue;
+			}
+			if (ta.getRequest().equals(last)) {
+				for (final COLUMN column: COLUMN.values()) {
+					iTable.getCellFormatter().setStyleName(i, column.ordinal(), null);
+					if (!column.isHasInstructor())
+						iTable.getWidget(i, column.ordinal()).setVisible(false);
+				}
+			} else {
+				for (final COLUMN column: COLUMN.values()) {
+					iTable.getCellFormatter().setStyleName(i, column.ordinal(), "first-line");
+					if (!column.isHasInstructor())
+						iTable.getWidget(i, column.ordinal()).setVisible(true);
+				}
+			}
+			last = ta.getRequest();
+		}
 	}
 	
 	public UniTimeTableHeader getHeader(COLUMN column) {
@@ -392,12 +434,14 @@ public class TeachingRequestsPage extends SimpleForm {
 			return new UniTimeTableHeader(MESSAGES.colAssignedLoad());
 		case OBJECTIVES:
 			return new UniTimeTableHeader(MESSAGES.colObjectives());
+		case ASSIGNED_INSTRUCTORS:
+			return new UniTimeTableHeader(MESSAGES.colAssignedInstructors());
 		default:
 			return new UniTimeTableHeader(column.name());
 		}
 	}
 	
-	public Widget getCell(COLUMN column, final TeachingRequestInfo request) {
+	public Widget getCell(COLUMN column, final TeachingRequestInfo request, final InstructorInfo instructor) {
 		switch (column) {
 		case COURSE:
 			return new Label(request.getCourse().getCourseName());
@@ -440,23 +484,23 @@ public class TeachingRequestsPage extends SimpleForm {
 		case LOAD:
 			return new Label(sTeachingLoadFormat.format(request.getLoad()));
 		case EXTERNAL_ID:
-			if (request.getInstructor() == null || request.getInstructor().getExternalId() == null) return null;
-			Label extId = new Label(request.getInstructor().getExternalId());
-			if (request.getInstructor().getTeachingPreference() != null && !"0".equals(request.getInstructor().getTeachingPreference())) {
-				PreferenceInterface pref = iProperties.getPreference(request.getInstructor().getTeachingPreference());
+			if (instructor == null || instructor.getExternalId() == null) return null;
+			Label extId = new Label(instructor.getExternalId());
+			if (instructor.getTeachingPreference() != null && !"0".equals(instructor.getTeachingPreference())) {
+				PreferenceInterface pref = iProperties.getPreference(instructor.getTeachingPreference());
 				if (pref != null) {
-					extId.setTitle(pref.getName() + " " + request.getInstructor().getExternalId());
+					extId.setTitle(pref.getName() + " " + instructor.getExternalId());
 					extId.getElement().getStyle().setColor(pref.getColor());
 				}
 			}
 			return extId;
 		case NAME:
-			if (request.getInstructor() == null || request.getInstructor().getInstructorName() == null) return null;
-			Label name = new Label(request.getInstructor().getInstructorName());
-			if (request.getInstructor().getTeachingPreference() != null && !"0".equals(request.getInstructor().getTeachingPreference())) {
-				PreferenceInterface pref = iProperties.getPreference(request.getInstructor().getTeachingPreference());
+			if (instructor == null || instructor.getInstructorName() == null) return null;
+			Label name = new Label(instructor.getInstructorName());
+			if (instructor.getTeachingPreference() != null && !"0".equals(instructor.getTeachingPreference())) {
+				PreferenceInterface pref = iProperties.getPreference(instructor.getTeachingPreference());
 				if (pref != null) {
-					name.setTitle(pref.getName() + " " + request.getInstructor().getInstructorName());
+					name.setTitle(pref.getName() + " " + instructor.getInstructorName());
 					name.getElement().getStyle().setColor(pref.getColor());
 				}
 			}
@@ -466,18 +510,18 @@ public class TeachingRequestsPage extends SimpleForm {
 		case INSTRUCTOR_PREFS:
 			return new Pref(request.getInstructorPreferences());
 		case COURSE_PREF:
-			if (request.getInstructor() == null) return null;
-			return new Pref(request.getInstructor().getCoursePreferences());
+			if (instructor == null) return null;
+			return new Pref(instructor.getCoursePreferences());
 		case DISTRIBUTION_PREF:
-			if (request.getInstructor() == null) return null;
-			return new Pref(request.getInstructor().getDistributionPreferences());
+			if (instructor == null) return null;
+			return new Pref(instructor.getDistributionPreferences());
 		case TIME_PREF:
-			if (request.getInstructor() == null) return null;
-			return new TimePreferences(request.getInstructor());
+			if (instructor == null) return null;
+			return new TimePreferences(instructor);
 		case ATTRIBUTES:
-			if (request.getInstructor() == null) return null;
+			if (instructor == null) return null;
 			p = new P("attributes");
-			for (AttributeInterface a: request.getInstructor().getAttributes()) {
+			for (AttributeInterface a: instructor.getAttributes()) {
 				P i = new P("attribute");
 				i.setText(a.getName());
 				i.setTitle(a.getName() + " (" + a.getType().getLabel() + ")");
@@ -485,11 +529,13 @@ public class TeachingRequestsPage extends SimpleForm {
 			}
 			return p;
 		case ASSIGNED_LOAD:
-			if (request.getInstructor() == null) return null;
-			return new Label(sTeachingLoadFormat.format(request.getInstructor().getAssignedLoad()) + " / " + sTeachingLoadFormat.format(request.getInstructor().getMaxLoad()));
+			if (instructor == null) return null;
+			return new Label(sTeachingLoadFormat.format(instructor.getAssignedLoad()) + " / " + sTeachingLoadFormat.format(instructor.getMaxLoad()));
 		case OBJECTIVES:
-			if (request.getInstructor() == null) return null;
-			return new Objectives(request.getInstructor().getValues());
+			if (instructor == null) return null;
+			return new Objectives(instructor.getValues());
+		case ASSIGNED_INSTRUCTORS:
+			return new Label(request.getNrAssignedInstructors() + " / " + request.getNrInstructors());
 		default:
 			return null;
 		}
@@ -502,6 +548,7 @@ public class TeachingRequestsPage extends SimpleForm {
 		DATE(true),
 		ROOM(true),
 		LOAD(true),
+		ASSIGNED_INSTRUCTORS(true),
 		ATTRIBUTE_PREFS(true),
 		INSTRUCTOR_PREFS(true),
 		EXTERNAL_ID(true, true),
@@ -515,18 +562,15 @@ public class TeachingRequestsPage extends SimpleForm {
 		;
 		
 		private boolean iCanHide;
-		private Boolean iAssigned;
+		private boolean iHasInstructor;
 		
-		COLUMN(boolean canHide, Boolean assigned) { iCanHide = canHide; iAssigned = assigned; }
-		COLUMN(boolean canHide) { this(canHide, null); }
+		COLUMN(boolean canHide, boolean hasInstructor) { iCanHide = canHide; iHasInstructor = hasInstructor; }
+		COLUMN(boolean canHide) { this(canHide, false); }
 		
 		public boolean isVisible(boolean assigned) {
-			return iAssigned == null || iAssigned.equals(assigned);
+			return (assigned || !iHasInstructor);
 		}
-		public boolean isAssigned() { return iAssigned == null || iAssigned; }
-		public boolean isNotAssigned() { return iAssigned == null || !iAssigned; }
-		public boolean isOnlyAssigned() { return iAssigned != null && iAssigned; }
-		public boolean isOnlyNotAssigned() { return iAssigned != null && !iAssigned; }
+		public boolean isHasInstructor() { return iHasInstructor; }
 		public boolean isCanHide() { return iCanHide; }
 		public int flag() { return 1 << ordinal(); }
 	}
@@ -640,7 +684,7 @@ public class TeachingRequestsPage extends SimpleForm {
 		}
 	}
 	
-	public static class TableComparator implements Comparator<TeachingRequestInfo> {
+	public static class TableComparator implements Comparator<SingleTeachingAssingment> {
 		private COLUMN iColumn;
 		
 		public TableComparator(COLUMN column) {
@@ -674,9 +718,11 @@ public class TeachingRequestsPage extends SimpleForm {
 			return (i1.hasNext() ? 1 : i2.hasNext() ? -1 : 0);
 		}
 		
-		private int compareByColumn(COLUMN column, TeachingRequestInfo r1, TeachingRequestInfo r2) {
-			if (column.isOnlyAssigned() && r1.getInstructor() == null || r2.getInstructor() == null)
-				return compareBooleans(r1.getInstructor() == null, r2.getInstructor() == null);
+		private int compareByColumn(COLUMN column, SingleTeachingAssingment a1, SingleTeachingAssingment a2) {
+			TeachingRequestInfo r1 = a1.getRequest(), r2 = a2.getRequest();
+			InstructorInfo i1 = a1.getInstructor(), i2 = a2.getInstructor();
+			if (column.isHasInstructor() && i1 == null || i2 == null)
+				return compareBooleans(i1 == null, i2 == null);
 			switch (column) {
 			case COURSE:
 				return compareOthers(r1.getCourse(), r2.getCourse());
@@ -684,64 +730,68 @@ public class TeachingRequestsPage extends SimpleForm {
 			case TIME:
 			case DATE:
 			case ROOM:
-				Iterator<SectionInfo> i1 = r1.getSections().iterator();
-				Iterator<SectionInfo> i2 = r2.getSections().iterator();
-				while (i1.hasNext() && i2.hasNext()) {
-					int cmp = compareSections(column, i1.next(), i2.next());
+				Iterator<SectionInfo> it1 = r1.getSections().iterator();
+				Iterator<SectionInfo> it2 = r2.getSections().iterator();
+				while (it1.hasNext() && it2.hasNext()) {
+					int cmp = compareSections(column, it1.next(), it2.next());
 					if (cmp != 0) return cmp;
 				}
-				if (i2.hasNext()) return -1;
-				if (i1.hasNext()) return 1;
-				return (i1.hasNext() ? 1 : i2.hasNext() ? -1 : 0);
+				if (it2.hasNext()) return -1;
+				if (it1.hasNext()) return 1;
+				return (it1.hasNext() ? 1 : it2.hasNext() ? -1 : 0);
 			case ASSIGNED_LOAD:
-				int cmp = compareNumbers(r1.getInstructor().getAssignedLoad(), r2.getInstructor().getAssignedLoad());
+				int cmp = compareNumbers(i1.getAssignedLoad(), i2.getAssignedLoad());
 				if (cmp != 0) return cmp;
-				return compareNumbers(r1.getInstructor().getMaxLoad(), r2.getInstructor().getMaxLoad());
+				return compareNumbers(i1.getMaxLoad(), i2.getMaxLoad());
 			case NAME:
-				return compareStrings(r1.getInstructor().getInstructorName(), r2.getInstructor().getInstructorName());
+				return compareStrings(i1.getInstructorName(), i2.getInstructorName());
 			case EXTERNAL_ID:
-				return compareStrings(r1.getInstructor().getExternalId(), r2.getInstructor().getExternalId());
+				return compareStrings(i1.getExternalId(), i2.getExternalId());
 			case LOAD:
 				return compareNumbers(r1.getLoad(), r2.getLoad());
 			case OBJECTIVES:
-				TreeSet<String> keys = new TreeSet<String>(r1.getInstructor().getValues().keySet());
-				keys.addAll(r2.getInstructor().getValues().keySet());
+				TreeSet<String> keys = new TreeSet<String>(i1.getValues().keySet());
+				keys.addAll(i2.getValues().keySet());
 				for (String key: keys) {
-					Double d1 = r1.getInstructor().getValues().get(key);
-					Double d2 = r2.getInstructor().getValues().get(key);
+					Double d1 = i1.getValues().get(key);
+					Double d2 = i2.getValues().get(key);
 					cmp = compareNumbers(d1, d2);
 					if (cmp != 0) return cmp;
 				}
 				return 0;
 			case ATTRIBUTES:
 				TreeSet<String> attributes = new TreeSet<String>();
-				for (AttributeInterface a: r1.getInstructor().getAttributes()) attributes.add(a.getName());
-				for (AttributeInterface a: r2.getInstructor().getAttributes()) attributes.add(a.getName());
+				for (AttributeInterface a: i1.getAttributes()) attributes.add(a.getName());
+				for (AttributeInterface a: i2.getAttributes()) attributes.add(a.getName());
 				for (String a: attributes) {
-					cmp = compareBooleans(r1.getInstructor().hasAttribute(a), r2.getInstructor().hasAttribute(a));
+					cmp = compareBooleans(i1.hasAttribute(a), i2.hasAttribute(a));
 					if (cmp != 0) return cmp;
 				}
 				return 0;
 			case ATTRIBUTE_PREFS:
 				return comparePreferences(r1.getAttributePreferences(), r2.getAttributePreferences());
 			case COURSE_PREF:
-				return comparePreferences(r1.getInstructor().getCoursePreferences(), r2.getInstructor().getCoursePreferences());
+				return comparePreferences(i1.getCoursePreferences(), i2.getCoursePreferences());
 			case INSTRUCTOR_PREFS:
 				return comparePreferences(r1.getInstructorPreferences(), r2.getInstructorPreferences());
 			case DISTRIBUTION_PREF:
-				return comparePreferences(r1.getInstructor().getDistributionPreferences(), r2.getInstructor().getDistributionPreferences());
+				return comparePreferences(i1.getDistributionPreferences(), i2.getDistributionPreferences());
 			case TIME_PREF:
-				return comparePreferences(r1.getInstructor().getTimePreferences(), r2.getInstructor().getTimePreferences());
+				return comparePreferences(i1.getTimePreferences(), i2.getTimePreferences());
+			case ASSIGNED_INSTRUCTORS:
+				cmp = compareNumbers(r1.getNrAssignedInstructors(), r2.getNrAssignedInstructors());
+				if (cmp != 0) return cmp;
+				return -compareNumbers(r1.getNrInstructors(), r2.getNrInstructors());
 			default:
 				return 0;
 			}
 		}
 		
 		@Override
-		public int compare(TeachingRequestInfo r1, TeachingRequestInfo r2) {
-			int cmp = compareByColumn(iColumn, r1, r2);
+		public int compare(SingleTeachingAssingment a1, SingleTeachingAssingment a2) {
+			int cmp = compareByColumn(iColumn, a1, a2);
 			if (cmp != 0) return cmp;
-			return r1.compareTo(r2);
+			return a1.getRequest().compareTo(a2.getRequest());
 		}
 
 		protected int compareStrings(String s1, String s2) {

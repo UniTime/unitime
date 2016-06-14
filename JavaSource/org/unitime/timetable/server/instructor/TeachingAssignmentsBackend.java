@@ -400,7 +400,7 @@ public class TeachingAssignmentsBackend implements GwtRpcImplementation<Teaching
     	// if (nrInstructors <= 0) return null;
     	TeachingRequestInfo request = new TeachingRequestInfo();
     	request.setRequestId(clazz.getUniqueId());
-    	request.setInstructorIndex(0);
+    	request.setNrInstructors(nrInstructorsNeeded(clazz));
     	request.setCourse(getCourse(clazz.getSchedulingSubpart().getControllingCourseOffering()));
     	request.addSection(getSection(clazz));
     	if (clazz.isInstructorAssignmentNeeded())

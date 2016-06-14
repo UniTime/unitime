@@ -861,6 +861,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Objectives")
 	String colObjectives();
 	
+	@DefaultMessage("Assigned<br>Instructors")
+	String colAssignedInstructors();
+	
 	@DefaultMessage("pending")
 	String approvalNotApproved();
 	

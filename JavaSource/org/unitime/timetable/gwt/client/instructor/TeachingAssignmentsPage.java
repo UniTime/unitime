@@ -806,6 +806,7 @@ public class TeachingAssignmentsPage extends SimpleForm {
 			iInstructor = instructor; iRequest = request;
 		}
 		
+		public boolean hasInstructor() { return iInstructor != null; }
 		public InstructorInfo getInstructor() { return iInstructor; }
 		public boolean hasRequest() { return iRequest != null; }
 		public TeachingRequestInfo getRequest() { return iRequest; }

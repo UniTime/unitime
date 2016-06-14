@@ -49,7 +49,7 @@ import org.unitime.timetable.util.NameFormat;
 /**
  * @author Tomas Muller
  */
-public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequest, TeachingAssignment, InstructorSchedulingModel> {
+public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequest.Variable, TeachingAssignment, InstructorSchedulingModel> {
     private String iInstructorFormat;
     private Set<Long> iSolverGroupId = new HashSet<Long>();
     private Set<InstrOfferingConfig> iUpdatedConfigs = new HashSet<InstrOfferingConfig>();
@@ -120,7 +120,7 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
     }
     
     protected String toHtml(TeachingRequest request) {
-    	return "<a href='classDetail.do?cid=" + request.getSections().get(0).getSectionId() + "'>" + request.getName() + "</a>";
+    	return "<a href='classDetail.do?cid=" + request.getSections().get(0).getSectionId() + "'>" + request.getCourse().getCourseName() + " " + request.getSections() + "</a>";
     }	
 	
     protected boolean isToBeIgnored(ClassInstructor ci) {
@@ -175,7 +175,7 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
     	iProgress.incProgress();
     	
     	iProgress.setPhase("Saving instructor assignments ...", getModel().variables().size());
-    	for (TeachingRequest request: getModel().variables()) {
+    	for (TeachingRequest.Variable request: getModel().variables()) {
     		iProgress.incProgress();
     		TeachingAssignment assignment = getAssignment().getValue(request);
     		if (assignment == null) continue;

@@ -4296,6 +4296,10 @@ unitime-RoomSharingWidget .legend .blank {
 	font-style: italic;
 }
 
+.unitime-TeachingRequests .first-line {
+	border-top: 1px dashed #9CB0CE;
+}
+
 .unitime-TeachingAssignments {
 	width: 100%;
 }

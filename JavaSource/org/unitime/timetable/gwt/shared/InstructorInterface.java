@@ -649,6 +649,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    private Map<String,Double> iValues = new HashMap<String, Double>();
 	    private String iAvailability;
 	    private List<TeachingRequestInfo> iAssignedRequests = new ArrayList<TeachingRequestInfo>();
+	    private List<TeachingRequestInfo> iConflicts = null;
 
 		public InstructorInfo() {}
 		
@@ -703,6 +704,19 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    
 	    public List<TeachingRequestInfo> getAssignedRequests() { return iAssignedRequests; }
 	    public void addAssignedRequest(TeachingRequestInfo request) { iAssignedRequests.add(request); }
+	    
+	    public void addConflict(TeachingRequestInfo conflict) {
+	    	if (iConflicts == null) iConflicts = new ArrayList<TeachingRequestInfo>();
+	    	iConflicts.add(conflict);
+	    }
+	    public boolean hasConflicts() { return iConflicts != null && !iConflicts.isEmpty(); }
+	    public TeachingRequestInfo getConflict(Long requestId) {
+	    	if (iConflicts == null) return null;
+	    	for (TeachingRequestInfo r: iConflicts)
+	    		if (r.getRequestId().equals(requestId)) return r;
+	    	return null;
+	    }
+	    public List<TeachingRequestInfo> getConflicts() { return iConflicts; }
 		
 	    public int hashCode() { return getInstructorId().hashCode(); }
 		public boolean equals(Object o) {
@@ -717,14 +731,16 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	public static class TeachingRequestInfo implements Comparable<TeachingRequestInfo>, IsSerializable {
 		private CourseInfo iCourse;
 		private Long iRequestId;
-		private int iIndex;
 		private float iLoad;
 		private List<SectionInfo> iSections = new ArrayList<SectionInfo>();
-		private InstructorInfo iInstructor;
+		private List<InstructorInfo> iInstructors;
 	    private List<PreferenceInfo> iInstructorPreferences = new ArrayList<PreferenceInfo>();
 	    private List<PreferenceInfo> iAttributePreferences = new ArrayList<PreferenceInfo>();
 	    private Map<String,Double> iValues = new HashMap<String, Double>();
-
+	    private List<InstructorInfo> iDomain = null;
+	    private int iNrInstructors = 0;
+		private String iConflict;
+		
 		public TeachingRequestInfo() {}
 		
 		public void setCourse(CourseInfo course) { iCourse = course; }
@@ -733,17 +749,25 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		public void setRequestId(Long requestId) { iRequestId = requestId; }
 		public Long getRequestId() { return iRequestId; }
 		
-		public void setInstructorIndex(int index) { iIndex = index; }
-		public int getInstructorIndex() { return iIndex; }
-		
 		public void setLoad(float load) { iLoad = load; }
 		public float getLoad() { return iLoad; }
 
 		public void addSection(SectionInfo section) { iSections.add(section); }
 		public List<SectionInfo> getSections() { return iSections; }
 		
-		public void setInstructor(InstructorInfo instructor) { iInstructor = instructor; }
-		public InstructorInfo getInstructor() { return iInstructor; }
+		public void addInstructor(InstructorInfo instructor) {
+			if (iInstructors == null) iInstructors = new ArrayList<InstructorInfo>();
+			iInstructors.add(instructor);
+		}
+		public boolean hasInstructors() { return iInstructors != null && !iInstructors.isEmpty(); }
+		public int getNrAssignedInstructors() { return iInstructors == null ? 0 : iInstructors.size(); }
+		public List<InstructorInfo> getInstructors() { return iInstructors; }
+		public InstructorInfo getInstructor(Long instructorId) {
+			if (iInstructors == null) return null;
+			for (InstructorInfo instructor: iInstructors)
+				if (instructor.getInstructorId().equals(instructorId)) return instructor;
+			return null;
+		}
 		
 	    public void addInstructorPreference(PreferenceInfo preference) { iInstructorPreferences.add(preference); }
 	    public List<PreferenceInfo> getInstructorPreferences() { return iInstructorPreferences; }
@@ -756,25 +780,37 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    }
 	    public Map<String,Double> getValues() { return iValues; }
 	    public Double getValue(String criterion) { return iValues.get(criterion); }
+	    
+	    public void addDomainValue(InstructorInfo instructor) {
+	    	if (iDomain == null) iDomain = new ArrayList<InstructorInfo>();
+	    	iDomain.add(instructor);
+	    }
+	    public boolean hasDomainValues() { return iDomain != null && !iDomain.isEmpty(); }
+	    public List<InstructorInfo> getDomainValues() { return iDomain; }
+	    
+	    public int getNrInstructors() { return iNrInstructors; }
+	    public void setNrInstructors(int nrInstructors) { iNrInstructors = nrInstructors; }
+	    
+		public String getConflict() { return iConflict; }
+		public boolean hasConflict() { return iConflict != null && !iConflict.isEmpty(); }
+		public void setConflict(String conflict) { iConflict = conflict; }
 		
 	    @Override
 	    public int hashCode() {
-	        return new Long(iRequestId << 8 + iIndex).hashCode();
+	        return iRequestId.hashCode();
 	    }
 	    
 	    @Override
 	    public boolean equals(Object o) {
 	        if (o == null || !(o instanceof TeachingRequestInfo)) return false;
 	        TeachingRequestInfo tr = (TeachingRequestInfo)o;
-	        return getRequestId() == tr.getRequestId() && getInstructorIndex() == tr.getInstructorIndex();
+	        return getRequestId() == tr.getRequestId();
 	    }
 
 		@Override
 		public int compareTo(TeachingRequestInfo r) {
 			int cmp = getCourse().compareTo(r.getCourse());
 			if (cmp != 0) return cmp;
-			if (getInstructorIndex() < r.getInstructorIndex()) return -1;
-			if (getInstructorIndex() > r.getInstructorIndex()) return -1;
 			Iterator<SectionInfo> i1 = getSections().iterator();
 			Iterator<SectionInfo> i2 = r.getSections().iterator();
 			while (i1.hasNext() && i2.hasNext()) {

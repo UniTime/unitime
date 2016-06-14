@@ -125,8 +125,13 @@ public class TeachingRequestsPageBackend implements GwtRpcImplementation<Teachin
 	    	Map<Long, Float> loads = new HashMap<Long, Float>();
 	    	for (Class_ clazz: classes) {
 	    		if (!clazz.isInstructorAssignmentNeeded()) continue;
-	    		for (TeachingRequestInfo info: getRequestForClass(clazz, commonItypes, nameFormat, request.isAssigned(), loads))
-	    			ret.add(info);
+	    		TeachingRequestInfo info = getRequestForClass(clazz, commonItypes, nameFormat, loads);
+	    		if (info != null) {
+	    			if (request.isAssigned() && info.getNrAssignedInstructors() > 0)
+	    				ret.add(info);
+	    			else if (!request.isAssigned() && info.getNrAssignedInstructors() < info.getNrInstructors())
+	    				ret.add(info);
+	    		}
 	    	}
 	    	Collections.sort(ret);
 	    	return ret;
@@ -383,51 +388,49 @@ public class TeachingRequestsPageBackend implements GwtRpcImplementation<Teachin
     	return ret;
     }
     	
-	protected List<TeachingRequestInfo> getRequestForClass(Class_ clazz, Set<String> commonItypes, String nameFormat, boolean assigned, Map<Long, Float> loads) {
-		List<TeachingRequestInfo> ret = new ArrayList<TeachingRequestInfo>();
+	protected TeachingRequestInfo getRequestForClass(Class_ clazz, Set<String> commonItypes, String nameFormat, Map<Long, Float> loads) {
     	int nrInstructors = nrInstructorsNeeded(clazz);
-    	if (nrInstructors <= 0) return ret;
+    	if (nrInstructors <= 0) return null;
     	List<DepartmentalInstructor> instructors = getInstructors(clazz);
     	if (instructors.size() > nrInstructors) nrInstructors = instructors.size();
-    	for (int i = (assigned ? 0: instructors.size()); i < (assigned ? instructors.size() : nrInstructors); i++) {
-    		DepartmentalInstructor instructor = null;
-    		if (i < instructors.size()) instructor = instructors.get(i);
-        	TeachingRequestInfo request = new TeachingRequestInfo();
-        	request.setRequestId(clazz.getUniqueId());
-        	request.setInstructorIndex(i);
-        	request.setCourse(getCourse(clazz.getSchedulingSubpart().getControllingCourseOffering()));
-        	request.addSection(getSection(clazz));
-        	request.setLoad(clazz.effectiveTeachingLoad());
-        	Set<SchedulingSubpart> checked = new HashSet<SchedulingSubpart>();
-        	checked.add(clazz.getSchedulingSubpart());
-        	for (Class_ parent = clazz.getParentClass(); parent != null; parent = parent.getParentClass()) {
-        		checked.add(parent.getSchedulingSubpart());
-        		if (isToBeIncluded(parent, commonItypes)) {
-        			request.addSection(getSection(parent));
-        			if (parent.isInstructorAssignmentNeeded()) request.setLoad(request.getLoad() + parent.effectiveTeachingLoad());
-        		}
-        	}
-        	for (SchedulingSubpart other: clazz.getSchedulingSubpart().getInstrOfferingConfig().getSchedulingSubparts()) {
-        		if (checked.contains(other)) continue;
-        		if (commonItypes.contains(other.getItype().getSis_ref()) && !other.isInstructorAssignmentNeeded()) {
-        			for (Class_ c: other.getClasses())
-        				request.addSection(getSection(c));
-        		}
-        	}
-    		for (Iterator it = clazz.effectivePreferences(InstructorPref.class).iterator(); it.hasNext(); ) {
-    			InstructorPref p = (InstructorPref)it.next();
-    			request.addInstructorPreference(new PreferenceInfo(p.getInstructor().getUniqueId(), p.getInstructor().getName(nameFormat), p.getPrefLevel().getPrefProlog()));
+    	TeachingRequestInfo request = new TeachingRequestInfo();
+    	request.setRequestId(clazz.getUniqueId());
+    	request.setNrInstructors(nrInstructors);
+    	request.setCourse(getCourse(clazz.getSchedulingSubpart().getControllingCourseOffering()));
+    	request.addSection(getSection(clazz));
+    	request.setLoad(clazz.effectiveTeachingLoad());
+    	Set<SchedulingSubpart> checked = new HashSet<SchedulingSubpart>();
+    	checked.add(clazz.getSchedulingSubpart());
+    	for (Class_ parent = clazz.getParentClass(); parent != null; parent = parent.getParentClass()) {
+    		checked.add(parent.getSchedulingSubpart());
+    		if (isToBeIncluded(parent, commonItypes)) {
+    			request.addSection(getSection(parent));
+    			if (parent.isInstructorAssignmentNeeded()) request.setLoad(request.getLoad() + parent.effectiveTeachingLoad());
     		}
-    		for (Iterator it = clazz.effectivePreferences(InstructorAttributePref.class).iterator(); it.hasNext(); ) {
-    			InstructorAttributePref p = (InstructorAttributePref)it.next();
-    			request.addAttributePreference(new PreferenceInfo(p.getAttribute().getUniqueId(), p.getAttribute().getName(), p.getPrefLevel().getPrefProlog()));
+    	}
+    	for (SchedulingSubpart other: clazz.getSchedulingSubpart().getInstrOfferingConfig().getSchedulingSubparts()) {
+    		if (checked.contains(other)) continue;
+    		if (commonItypes.contains(other.getItype().getSis_ref()) && !other.isInstructorAssignmentNeeded()) {
+    			for (Class_ c: other.getClasses())
+    				request.addSection(getSection(c));
     		}
+    	}
+		for (Iterator it = clazz.effectivePreferences(InstructorPref.class).iterator(); it.hasNext(); ) {
+			InstructorPref p = (InstructorPref)it.next();
+			request.addInstructorPreference(new PreferenceInfo(p.getInstructor().getUniqueId(), p.getInstructor().getName(nameFormat), p.getPrefLevel().getPrefProlog()));
+		}
+		for (Iterator it = clazz.effectivePreferences(InstructorAttributePref.class).iterator(); it.hasNext(); ) {
+			InstructorAttributePref p = (InstructorAttributePref)it.next();
+			request.addAttributePreference(new PreferenceInfo(p.getAttribute().getUniqueId(), p.getAttribute().getName(), p.getPrefLevel().getPrefProlog()));
+		}
+    	for (int i = 0; i < instructors.size(); i++) {
+    		DepartmentalInstructor instructor = instructors.get(i);
         	if (instructor != null) {
         		InstructorInfo info = getInstructor(request, instructor, nameFormat);
         		Float l = loads.get(info.getInstructorId());
         		info.setAssignedLoad(request.getLoad() + (l == null ? 0f : l));
         		loads.put(info.getInstructorId(), info.getAssignedLoad());
-        		request.setInstructor(info);
+        		request.addInstructor(info);
         		for (Iterator it = clazz.effectivePreferences(InstructorPref.class).iterator(); it.hasNext(); ) {
         			InstructorPref p = (InstructorPref)it.next();
         			if (p.getInstructor().equals(instructor))
@@ -441,9 +444,8 @@ public class TeachingRequestsPageBackend implements GwtRpcImplementation<Teachin
         		}
         		info.setValue("Attribute Preferences", attr.getPreferenceInt());
         	}
-    		ret.add(request);
     	}
-		return ret;
+		return request;
 	}
 
 }

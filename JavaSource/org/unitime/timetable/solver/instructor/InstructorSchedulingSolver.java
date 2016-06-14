@@ -21,8 +21,10 @@ package org.unitime.timetable.solver.instructor;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
@@ -30,6 +32,7 @@ import org.cpsolver.coursett.Constants;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.criteria.Criterion;
+import org.cpsolver.ifs.model.Constraint;
 import org.cpsolver.ifs.solver.Solver;
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.ProblemLoader;
@@ -63,7 +66,7 @@ import org.unitime.timetable.solver.SolverDisposeListener;
 /**
  * @author Tomas Muller
  */
-public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest, TeachingAssignment, InstructorSchedulingModel> implements InstructorSchedulingProxy {
+public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.Variable, TeachingAssignment, InstructorSchedulingModel> implements InstructorSchedulingProxy {
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class); 
 	
 	public InstructorSchedulingSolver(DataProperties properties, SolverDisposeListener disposeListener) {
@@ -76,12 +79,12 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest, 
 	}
 
 	@Override
-	protected ProblemSaver<TeachingRequest, TeachingAssignment, InstructorSchedulingModel> getDatabaseSaver( Solver<TeachingRequest, TeachingAssignment> solver) {
+	protected ProblemSaver<TeachingRequest.Variable, TeachingAssignment, InstructorSchedulingModel> getDatabaseSaver( Solver<TeachingRequest.Variable, TeachingAssignment> solver) {
 		return new InstructorSchedulingDatabaseSaver(solver);
 	}
 
 	@Override
-	protected ProblemLoader<TeachingRequest, TeachingAssignment, InstructorSchedulingModel> getDatabaseLoader(InstructorSchedulingModel model, Assignment<TeachingRequest, TeachingAssignment> assignment) {
+	protected ProblemLoader<TeachingRequest.Variable, TeachingAssignment, InstructorSchedulingModel> getDatabaseLoader(InstructorSchedulingModel model, Assignment<TeachingRequest.Variable, TeachingAssignment> assignment) {
 		return new InstructorSchedulingDatabaseLoader(model, assignment);
 	}
 
@@ -129,11 +132,11 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest, 
         }
 	}
 	
-	protected TeachingRequestInfo toInfo(TeachingRequest request, TeachingAssignment assignment) {
+	protected TeachingRequestInfo toRequestInfo(TeachingRequest request) {
 		TeachingRequestInfo info = new TeachingRequestInfo();
 		info.setRequestId(request.getRequestId());
-		info.setInstructorIndex(request.getInstructorIndex());
 		info.setLoad(request.getLoad());
+		info.setNrInstructors(request.getNrInstructors());
 		for (Preference<Attribute> p: request.getAttributePreferences())
 			info.addAttributePreference(new PreferenceInfo(p.getTarget().getAttributeId(), p.getTarget().getAttributeName(), Constants.preferenceLevel2preference(p.getPreference())));
 		for (Preference<Instructor> p: request.getInstructorPreferences())
@@ -155,61 +158,70 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest, 
 			si.setRoom(section.getRoom());
 			info.addSection(si);
 		}
-		if (assignment != null) {
-			InstructorInfo instructor = new InstructorInfo();
-			instructor.setInstructorId(assignment.getInstructor().getInstructorId());
-			instructor.setInstructorName(assignment.getInstructor().getName());
-			instructor.setExternalId(assignment.getInstructor().getExternalId());
-			instructor.setAssignedLoad(assignment.getInstructor().getContext(currentSolution().getAssignment()).getLoad());
-			instructor.setMaxLoad(assignment.getInstructor().getMaxLoad());
-			for (Preference<Course> p: assignment.getInstructor().getCoursePreferences())
-				instructor.addCoursePreference(new PreferenceInfo(p.getTarget().getCourseId(), p.getTarget().getCourseName(), Constants.preferenceLevel2preference(p.getPreference())));
-			int[][] slot2pref = new int[Constants.NR_DAYS * Constants.SLOTS_PER_DAY][];
-			for (int i = 0; i < slot2pref.length; i++)
-				slot2pref[i] = new int[] {0, 0, 0};
-			for (Preference<TimeLocation> p: assignment.getInstructor().getTimePreferences()) {
-				PreferenceInfo pi = new PreferenceInfo(new Long(p.getTarget().hashCode()), p.getTarget().getLongName(useAmPm), Constants.preferenceLevel2preference(p.getPreference()));
-				pi.setComparable(String.format("%03d:%05d", p.getTarget().getDayCode(), p.getTarget().getStartSlot()));
-				instructor.addTimePreference(pi);
-				for (Enumeration<Integer> i = p.getTarget().getSlots(); i.hasMoreElements(); ) {
-					int slot = i.nextElement();
-					slot2pref[slot][0] = Math.min(slot2pref[slot][0], p.getPreference());
-					slot2pref[slot][1] = Math.max(slot2pref[slot][1], p.getPreference());
-					if (p.isProhibited() && p.getTarget().getTimePatternId() != null) slot2pref[slot][2] = 1;
-				}
+		return info;
+	}
+	
+	protected InstructorInfo toInstructorInfo(Instructor instructor) {
+		boolean useAmPm = getProperties().getPropertyBoolean("General.UseAmPm", true);
+		InstructorInfo info = new InstructorInfo();
+		info.setInstructorId(instructor.getInstructorId());
+		info.setInstructorName(instructor.getName());
+		info.setExternalId(instructor.getExternalId());
+		info.setMaxLoad(instructor.getMaxLoad());
+		for (Preference<Course> p: instructor.getCoursePreferences())
+			info.addCoursePreference(new PreferenceInfo(p.getTarget().getCourseId(), p.getTarget().getCourseName(), Constants.preferenceLevel2preference(p.getPreference())));
+		int[][] slot2pref = new int[Constants.NR_DAYS * Constants.SLOTS_PER_DAY][];
+		for (int i = 0; i < slot2pref.length; i++)
+			slot2pref[i] = new int[] {0, 0, 0};
+		for (Preference<TimeLocation> p: instructor.getTimePreferences()) {
+			PreferenceInfo pi = new PreferenceInfo(new Long(p.getTarget().hashCode()), p.getTarget().getLongName(useAmPm), Constants.preferenceLevel2preference(p.getPreference()));
+			pi.setComparable(String.format("%03d:%05d", p.getTarget().getDayCode(), p.getTarget().getStartSlot()));
+			info.addTimePreference(pi);
+			for (Enumeration<Integer> i = p.getTarget().getSlots(); i.hasMoreElements(); ) {
+				int slot = i.nextElement();
+				slot2pref[slot][0] = Math.min(slot2pref[slot][0], p.getPreference());
+				slot2pref[slot][1] = Math.max(slot2pref[slot][1], p.getPreference());
+				if (p.isProhibited() && p.getTarget().getTimePatternId() != null) slot2pref[slot][2] = 1;
 			}
-			StringBuffer pattern = new StringBuffer(slot2pref.length);
-			for (int i = 0; i < slot2pref.length; i++) {
-				int min = slot2pref[i][0];
-				int max = slot2pref[i][1];
-				int pref = (max > -min ? max : -min > max ? min : max);
-				if (slot2pref[i][2] == 1)
-					pattern.append(PreferenceLevel.prolog2char(PreferenceLevel.sNotAvailable));
-				else
-					pattern.append(PreferenceLevel.prolog2char(Constants.preferenceLevel2preference(pref)));
-			}
-			instructor.setAvailability(pattern.toString());
-			for (Attribute a: assignment.getInstructor().getAttributes()) {
-				AttributeInterface attribute = new AttributeInterface();
-				attribute.setId(a.getAttributeId());
-				attribute.setName(a.getAttributeName());
-				AttributeTypeInterface type = new AttributeTypeInterface();
-				type.setId(a.getType().getTypeId());
-				type.setLabel(a.getType().getTypeName());
-				type.setConjunctive(a.getType().isConjunctive());
-				type.setRequired(a.getType().isRequired());
-				attribute.setType(type);
-				instructor.addAttribute(attribute);
-			}
-			if (assignment.getInstructor().getPreference() != 0)
-				instructor.setTeachingPreference(Constants.preferenceLevel2preference(assignment.getInstructor().getPreference()));
-			if (assignment.getInstructor().getBackToBackPreference() != 0)
-				instructor.addDistributionPreference(new PreferenceInfo(1l, CONSTANTS.instructorBackToBack(), Constants.preferenceLevel2preference(assignment.getInstructor().getBackToBackPreference())));
-			for (Criterion<TeachingRequest, TeachingAssignment> c: request.getModel().getCriteria()) {
-				double value = c.getValue(currentSolution().getAssignment(), assignment, null);
-				if (value != 0) instructor.setValue(c.getName(), value);
-			}
-			info.setInstructor(instructor);
+		}
+		StringBuffer pattern = new StringBuffer(slot2pref.length);
+		for (int i = 0; i < slot2pref.length; i++) {
+			int min = slot2pref[i][0];
+			int max = slot2pref[i][1];
+			int pref = (max > -min ? max : -min > max ? min : max);
+			if (slot2pref[i][2] == 1)
+				pattern.append(PreferenceLevel.prolog2char(PreferenceLevel.sNotAvailable));
+			else
+				pattern.append(PreferenceLevel.prolog2char(Constants.preferenceLevel2preference(pref)));
+		}
+		info.setAvailability(pattern.toString());
+		for (Attribute a: instructor.getAttributes()) {
+			AttributeInterface attribute = new AttributeInterface();
+			attribute.setId(a.getAttributeId());
+			attribute.setName(a.getAttributeName());
+			AttributeTypeInterface type = new AttributeTypeInterface();
+			type.setId(a.getType().getTypeId());
+			type.setLabel(a.getType().getTypeName());
+			type.setConjunctive(a.getType().isConjunctive());
+			type.setRequired(a.getType().isRequired());
+			attribute.setType(type);
+			info.addAttribute(attribute);
+		}
+		if (instructor.getPreference() != 0)
+			info.setTeachingPreference(Constants.preferenceLevel2preference(instructor.getPreference()));
+		if (instructor.getBackToBackPreference() != 0)
+			info.addDistributionPreference(new PreferenceInfo(1l, CONSTANTS.instructorBackToBack(), Constants.preferenceLevel2preference(instructor.getBackToBackPreference())));
+		return info;
+	}
+	
+	protected InstructorInfo toInstructorInfo(TeachingAssignment assignment) {
+		InstructorInfo info = toInstructorInfo(assignment.getInstructor());
+		Instructor.Context context = assignment.getInstructor().getContext(currentSolution().getAssignment());
+		if (context != null)
+			info.setAssignedLoad(context.getLoad());
+		for (Criterion<TeachingRequest.Variable, TeachingAssignment> c: assignment.variable().getModel().getCriteria()) {
+			double value = c.getValue(currentSolution().getAssignment(), assignment, null);
+			if (value != 0) info.setValue(c.getName(), value);
 		}
 		return info;
 	}
@@ -220,14 +232,21 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest, 
         lock.lock();
         try {
             List<TeachingRequestInfo> ret = new ArrayList<TeachingRequestInfo>();
-            for (TeachingRequest request: currentSolution().getModel().variables()) {
+            for (TeachingRequest request: ((InstructorSchedulingModel)currentSolution().getModel()).getRequests()) {
             	if (subjectAreaId != null) {
             		CourseOffering course = CourseOfferingDAO.getInstance().get(request.getCourse().getCourseId());
             		if (course == null || !subjectAreaId.equals(course.getSubjectArea().getUniqueId())) continue;
             	}
-            	TeachingAssignment placement = currentSolution().getAssignment().getValue(request);
-            	if ((assigned && placement != null) || (!assigned && placement == null))
-                    ret.add(toInfo(request, placement));
+            	TeachingRequestInfo info = toRequestInfo(request);
+            	for (TeachingRequest.Variable var: request.getVariables()) {
+            		TeachingAssignment placement = currentSolution().getAssignment().getValue(var);
+            		if (placement != null)
+            			info.addInstructor(toInstructorInfo(placement));
+            	}
+            	if (assigned && info.hasInstructors())
+            		ret.add(info);
+            	if (!assigned && info.getNrAssignedInstructors() < info.getNrInstructors())
+            		ret.add(info);
             }
             return ret;
         } finally {
@@ -240,7 +259,6 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest, 
         Lock lock = currentSolution().getLock().readLock();
         lock.lock();
         try {
-        	boolean useAmPm = getProperties().getPropertyBoolean("General.UseAmPm", true);
         	List<InstructorInfo> ret = new ArrayList<InstructorInfo>();
         	Set<Long> instructorIds = null;
         	if (departmentId != null) {
@@ -255,92 +273,71 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest, 
         		if (instructorIds != null && !instructorIds.contains(instructor.getInstructorId())) continue;
         		Instructor.Context context = instructor.getContext(currentSolution().getAssignment());
         		
-        		InstructorInfo info = new InstructorInfo();
-        		info.setInstructorId(instructor.getInstructorId());
-        		info.setInstructorName(instructor.getName());
-        		info.setExternalId(instructor.getExternalId());
+        		InstructorInfo info = toInstructorInfo(instructor);
         		info.setAssignedLoad(context.getLoad());
-        		info.setMaxLoad(instructor.getMaxLoad());
-    			for (Preference<Course> p: instructor.getCoursePreferences())
-    				info.addCoursePreference(new PreferenceInfo(p.getTarget().getCourseId(), p.getTarget().getCourseName(), Constants.preferenceLevel2preference(p.getPreference())));
-    			int[][] slot2pref = new int[Constants.NR_DAYS * Constants.SLOTS_PER_DAY][];
-    			for (int i = 0; i < slot2pref.length; i++)
-    				slot2pref[i] = new int[] {0, 0, 0};
-    			for (Preference<TimeLocation> p: instructor.getTimePreferences()) {
-    				PreferenceInfo pi = new PreferenceInfo(new Long(p.getTarget().hashCode()), p.getTarget().getLongName(useAmPm), Constants.preferenceLevel2preference(p.getPreference()));
-    				pi.setComparable(String.format("%03d:%05d", p.getTarget().getDayCode(), p.getTarget().getStartSlot()));
-    				info.addTimePreference(pi);
-    				for (Enumeration<Integer> i = p.getTarget().getSlots(); i.hasMoreElements(); ) {
-    					int slot = i.nextElement();
-    					slot2pref[slot][0] = Math.min(slot2pref[slot][0], p.getPreference());
-    					slot2pref[slot][1] = Math.max(slot2pref[slot][1], p.getPreference());
-    					if (p.isProhibited() && p.getTarget().getTimePatternId() != null) slot2pref[slot][2] = 1;
-    				}
-    			}
-    			StringBuffer pattern = new StringBuffer(slot2pref.length);
-    			for (int i = 0; i < slot2pref.length; i++) {
-    				int min = slot2pref[i][0];
-    				int max = slot2pref[i][1];
-    				int pref = (max > -min ? max : -min > max ? min : max);
-    				if (slot2pref[i][2] == 1)
-    					pattern.append(PreferenceLevel.prolog2char(PreferenceLevel.sNotAvailable));
-    				else
-    					pattern.append(PreferenceLevel.prolog2char(Constants.preferenceLevel2preference(pref)));
-    			}
-    			info.setAvailability(pattern.toString());
-    			for (Attribute a: instructor.getAttributes()) {
-    				AttributeInterface attribute = new AttributeInterface();
-    				attribute.setId(a.getAttributeId());
-    				attribute.setName(a.getAttributeName());
-    				AttributeTypeInterface type = new AttributeTypeInterface();
-    				type.setId(a.getType().getTypeId());
-    				type.setLabel(a.getType().getTypeName());
-    				type.setConjunctive(a.getType().isConjunctive());
-    				type.setRequired(a.getType().isRequired());
-    				attribute.setType(type);
-    				info.addAttribute(attribute);
-    			}
-    			if (instructor.getPreference() != 0)
-    				info.setTeachingPreference(Constants.preferenceLevel2preference(instructor.getPreference()));
-    			if (instructor.getBackToBackPreference() != 0)
-    				info.addDistributionPreference(new PreferenceInfo(1l, CONSTANTS.instructorBackToBack(), Constants.preferenceLevel2preference(instructor.getBackToBackPreference())));
     			for (TeachingAssignment assignment: context.getAssignments()) {
-    				TeachingRequestInfo request = new TeachingRequestInfo();
-    				request.setRequestId(assignment.variable().getRequestId());
-    				request.setInstructorIndex(assignment.variable().getInstructorIndex());
-    				request.setLoad(assignment.variable().getLoad());
-    				for (Preference<Attribute> p: assignment.variable().getAttributePreferences())
-    					request.addAttributePreference(new PreferenceInfo(p.getTarget().getAttributeId(), p.getTarget().getAttributeName(), Constants.preferenceLevel2preference(p.getPreference())));
-    				for (Preference<Instructor> p: assignment.variable().getInstructorPreferences())
-    					request.addInstructorPreference(new PreferenceInfo(p.getTarget().getInstructorId(), p.getTarget().getName(), Constants.preferenceLevel2preference(p.getPreference())));
-    				CourseInfo course = new CourseInfo();
-    				course.setCourseId(assignment.variable().getCourse().getCourseId());
-    				course.setCourseName(assignment.variable().getCourse().getCourseName());
-    				request.setCourse(course);
-    				for (Section section: assignment.variable().getSections()) {
-    					SectionInfo si = new SectionInfo();
-    					si.setSectionId(section.getSectionId());
-    					si.setExternalId(section.getExternalId());
-    					si.setSectionName(section.getSectionName());
-    					si.setSectionType(section.getSectionType());
-    					si.setCommon(section.isCommon());
-    					si.setTime(section.hasTime() ? section.getTimeName(useAmPm) : null);
-    					si.setDate(section.hasTime() ? section.getTime().getDatePatternName() : null);
-    					si.setRoom(section.getRoom());
-    					request.addSection(si);
+    				TeachingRequestInfo request = toRequestInfo(assignment.variable().getRequest());
+    				for (Criterion<TeachingRequest.Variable, TeachingAssignment> c: model.getCriteria()) {
+    					double value = c.getValue(currentSolution().getAssignment(), assignment, null);
+    					if (value != 0) {
+    						request.setValue(c.getName(), value);
+    						info.addValue(c.getName(), value);
+    					}
     				}
-        			for (Criterion<TeachingRequest, TeachingAssignment> c: model.getCriteria()) {
-        				double value = c.getValue(currentSolution().getAssignment(), assignment, null);
-        				if (value != 0) {
-        					request.setValue(c.getName(), value);
-        					info.addValue(c.getName(), value);
-        				}
-        			}
         			info.addAssignedRequest(request);
     			}
         		ret.add(info);
         	}
             return ret;
+        } finally {
+        	lock.unlock();
+        }
+	}
+
+	@Override
+	public TeachingRequestInfo getTeachingRequestInfo(Long requestId) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
+        	for (TeachingRequest request: ((InstructorSchedulingModel)currentSolution().getModel()).getRequests()) {
+        		Map<Long, InstructorInfo> values = new HashMap<Long, InstructorInfo>();
+        		if (request.getRequestId() == requestId) {
+        			TeachingRequestInfo info = toRequestInfo(request);
+                	for (TeachingRequest.Variable var: request.getVariables()) {
+                		TeachingAssignment placement = currentSolution().getAssignment().getValue(var);
+                		if (placement != null)
+                			info.addInstructor(toInstructorInfo(placement));
+                	}
+                	for (TeachingRequest.Variable var: request.getVariables()) {
+                		for (TeachingAssignment assignment: var.values(currentSolution().getAssignment())) {
+                			InstructorInfo value = values.get(assignment.getInstructor().getInstructorId());
+                			if (value == null) {
+                				value = toInstructorInfo(assignment);
+                				values.put(assignment.getInstructor().getInstructorId(), value);
+                    			info.addDomainValue(value);
+                			}
+                			Map<Constraint<TeachingRequest.Variable, TeachingAssignment>, Set<TeachingAssignment>> conflicts = currentSolution().getModel().conflictConstraints(currentSolution().getAssignment(), assignment);
+                			if (conflicts != null) {
+                				for (Map.Entry<Constraint<TeachingRequest.Variable, TeachingAssignment>, Set<TeachingAssignment>> entry: conflicts.entrySet()) {
+                					for (TeachingAssignment conflict: entry.getValue()) {
+                						if (conflict.variable().getRequest().equals(request)) continue;
+                						TeachingRequestInfo c = value.getConflict(conflict.variable().getRequest().getRequestId());
+                						if (c == null) {
+                							c = toRequestInfo(conflict.variable().getRequest());
+                							c.addInstructor(toInstructorInfo(conflict));
+                							value.addConflict(c);
+                						} else if (c.getInstructor(conflict.getInstructor().getInstructorId()) == null) {
+                							c.addInstructor(toInstructorInfo(conflict));
+                						}
+                					}
+            					}
+            				}
+            			}
+            		}
+            		return info;
+            	}
+            }
+            return null;
         } finally {
         	lock.unlock();
         }
