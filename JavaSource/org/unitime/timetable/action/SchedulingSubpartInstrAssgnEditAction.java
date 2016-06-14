@@ -147,12 +147,12 @@ public class SchedulingSubpartInstrAssgnEditAction extends PreferencesAction {
                     doUpdate(request, frm, ss, sdao);
 
     	            if (op.equals(MSG.actionNextSubpart())) {
-    	            	response.sendRedirect(response.encodeURL("schedulingSubpartEdit.do?ssuid="+frm.getNextId()));
+    	            	response.sendRedirect(response.encodeURL("schedulingSubpartInstrAssgnEdit.do?ssuid="+frm.getNextId()));
     	            	return null;
     	            }
 
     	            if (op.equals(MSG.actionPreviousSubpart())) {
-    	            	response.sendRedirect(response.encodeURL("schedulingSubpartEdit.do?ssuid="+frm.getPreviousId()));
+    	            	response.sendRedirect(response.encodeURL("schedulingSubpartInstrAssgnEdit.do?ssuid="+frm.getPreviousId()));
     	            	return null;
     	            }
 
