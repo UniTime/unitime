@@ -40,9 +40,10 @@
 	<category>
 		<title>Student Scheduling</title>
 		<item>
-			<name>Linked Classes</name>
+			<name>Distributions</name>
 			<description>
-				<line>Fixed computation of the Linked Classes constraint when it contains classes of two or more configurations of a course.</line>
+				<line>Linked Classes: Fixed computation of the Linked Classes constraint when it contains classes of two or more configurations of a course.</line>
+				<line>Add / Edit / Delete Distribution Preference: Notify the online student scheduling about the change, if needed.</line>
 			</description>
 		</item>
 		<item>
