@@ -38,6 +38,15 @@
 		</item>
 	</category>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Linked Classes</name>
+			<description>
+				<line>Fixed computation of the Linked Classes constraint when it contains classes of two or more configurations of a course.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Other</title>
 		<item>
 			<name>Security: Possible SQL Injection Fixed</name>
