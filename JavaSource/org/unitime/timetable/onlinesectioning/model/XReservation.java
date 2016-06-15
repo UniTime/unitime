@@ -94,29 +94,6 @@ public abstract class XReservation extends XReservationId implements Comparable<
                 }
         	}
     	}
-        if (!iConfigs.isEmpty()) {
-        	// config cap
-        	int cap = 0;
-        	for (XConfig config: offering.getConfigs()) {
-        		if (iConfigs.contains(config.getConfigId()))
-        			cap = add(cap, config.getLimit());
-        	}
-        	for (XConfig config: offering.getConfigs()) {
-        		for (XSubpart subpart: config.getSubparts()) {
-        			Set<Long> sections = iSections.get(subpart.getSubpartId());
-        			if (sections == null) continue;
-        			// subpart cap
-        			int subpartCap = 0;
-        			for (XSection section: subpart.getSections())
-        				if (sections.contains(section.getSectionId()))
-        					subpartCap = add(subpartCap, section.getLimit());
-            		// minimize
-            		cap = min(cap, subpartCap);
-        		}
-        	}
-        	iLimitCap = cap;
-        }
-        iRestrictivity = computeRestrictivity(offering);
         switch (type) {
         case Individual:
         	setPriority(ApplicationProperty.ReservationPriorityIndividual.intValue());
@@ -149,6 +126,29 @@ public abstract class XReservation extends XReservationId implements Comparable<
         	setPriority(ApplicationProperty.ReservationPriorityDummy.intValue());
         	break;
         }
+        if (!iConfigs.isEmpty() && !canAssignOverLimit()) {
+        	// config cap
+        	int cap = 0;
+        	for (XConfig config: offering.getConfigs()) {
+        		if (iConfigs.contains(config.getConfigId()))
+        			cap = add(cap, config.getLimit());
+        	}
+        	for (XConfig config: offering.getConfigs()) {
+        		for (XSubpart subpart: config.getSubparts()) {
+        			Set<Long> sections = iSections.get(subpart.getSubpartId());
+        			if (sections == null) continue;
+        			// subpart cap
+        			int subpartCap = 0;
+        			for (XSection section: subpart.getSections())
+        				if (sections.contains(section.getSectionId()))
+        					subpartCap = add(subpartCap, section.getLimit());
+            		// minimize
+            		cap = min(cap, subpartCap);
+        		}
+        	}
+        	iLimitCap = cap;
+        }
+        iRestrictivity = computeRestrictivity(offering);
     }
     
     public XReservation(XReservationType type, org.cpsolver.studentsct.reservation.Reservation reservation) {

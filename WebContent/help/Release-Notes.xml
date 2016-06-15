@@ -45,6 +45,12 @@
 				<line>Fixed computation of the Linked Classes constraint when it contains classes of two or more configurations of a course.</line>
 			</description>
 		</item>
+		<item>
+			<name>Reservations (Online)</name>
+			<description>
+				<line>Reservation Limit: Do not cap the reservation limit (by the size of its classes / configurations) when the reservation allows for over the limit assignments.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other</title>
