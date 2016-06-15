@@ -420,6 +420,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				}
 			}
 		}
+		boolean hasMustUse = false;
 		for (XReservation reservation: offering.getReservations()) {
 			int reservationLimit = (int)Math.round(reservation.getLimit());
 			if (reservationLimit >= 0) {
@@ -438,6 +439,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				for (XEnrollment enrollment: enrollments.getEnrollmentsForCourse(courseId))
 					if (enrollment.getStudentId().equals(studentId)) { applicable = true; break; }
 			}
+			if (applicable && reservation.mustBeUsed()) hasMustUse = true;
 			Reservation clonedReservation = new OnlineReservation(reservation.getType().ordinal(), reservation.getReservationId(), clonedOffering,
 					reservation.getPriority(), reservation.canAssignOverLimit(), reservationLimit, 
 					applicable, reservation.mustBeUsed(), reservation.isAllowOverlap(), reservation.isExpired());
@@ -450,6 +452,24 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				clonedReservation.getSections().put(subparts.get(entry.getKey()), clonedSections);
 			}
 		}
+		// There are reservations >> allow user to keep the current enrollment by providing a dummy reservation for it
+		if (!offering.getReservations().isEmpty())
+			for (XEnrollment enrollment: enrollments.getEnrollmentsForCourse(courseId))
+				if (enrollment.getStudentId().equals(studentId)) {
+					Reservation clonedReservation = null;
+					if (hasMustUse) {
+						clonedReservation = new OnlineReservation(XReservationType.Dummy.ordinal(), -2l, clonedOffering, 0, false, 1, true, true, false, true) {
+							@Override
+							public boolean mustBeUsed() { return true; }
+						};
+					} else {
+						clonedReservation = new OnlineReservation(XReservationType.Dummy.ordinal(), -2l, clonedOffering, 0, false, 1, true, false, false, true);
+					}
+					clonedReservation.addConfig(configs.get(enrollment.getConfigId()));
+					for (Long sectionId: enrollment.getSectionIds())
+						clonedReservation.addSection(sections.get(sectionId));
+					break;
+				}
 		return clonedCourse;
 	}
 	

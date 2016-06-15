@@ -50,6 +50,9 @@
 			<description>
 				<line>Reservation Limit: Do not cap the reservation limit (by the size of its classes / configurations) when the reservation allows for over the limit assignments.</line>
 				<line>Guess Reservation: Do not consider reservation limit when the reservation must be used.</line>
+				<line>Improve server's capability to keep the student's current enrollment (e.g., when there is a new reservation which the already enrolled students do not follow).
+					<line>If there are reservations: allow user to keep the current enrollment by providing a dummy reservation for it.</line>
+				</line>
 			</description>
 		</item>
 	</category>
