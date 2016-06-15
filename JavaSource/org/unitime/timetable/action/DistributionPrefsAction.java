@@ -60,6 +60,7 @@ import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
@@ -69,6 +70,7 @@ import org.unitime.timetable.model.dao.DistributionTypeDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.permissions.Permission;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.Constants;
@@ -93,6 +95,8 @@ public class DistributionPrefsAction extends Action {
 	public static GwtConstants CONST = Localization.create(GwtConstants.class);
 	
 	@Autowired SessionContext sessionContext;
+	
+	@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
 
     // --------------------------------------------------------- Instance Variables
 
@@ -777,6 +781,7 @@ public class DistributionPrefsAction extends Action {
 	        // Save
     	    hibSession.saveOrUpdate(dp);
             
+    	    List<Long> changedOfferingIds = new ArrayList<Long>();
             for (Iterator i=relatedInstructionalOfferings.iterator();i.hasNext();) {
                 InstructionalOffering io = (InstructionalOffering)i.next();
                 ChangeLog.addChange(
@@ -787,7 +792,11 @@ public class DistributionPrefsAction extends Action {
                         (distPrefId!=null && distPrefId.trim().length()>0?ChangeLog.Operation.UPDATE:ChangeLog.Operation.CREATE),
                         io.getControllingCourseOffering().getSubjectArea(), 
                         null);
+                if (permissionOfferingLockNeeded.check(sessionContext.getUser(), io))
+                	changedOfferingIds.add(io.getUniqueId());
             }
+            if (!changedOfferingIds.isEmpty())
+            	StudentSectioningQueue.offeringChanged(hibSession, sessionContext.getUser(), sessionContext.getUser().getCurrentAcademicSessionId(), changedOfferingIds);
             
 	       	tx.commit();
 	       	hibSession.flush();
@@ -843,6 +852,7 @@ public class DistributionPrefsAction extends Action {
 	        hibSession.delete(dp);
 	        hibSession.saveOrUpdate(dept);
 	        
+	        List<Long> changedOfferingIds = new ArrayList<Long>();
             for (Iterator i=relatedInstructionalOfferings.iterator();i.hasNext();) {
                 InstructionalOffering io = (InstructionalOffering)i.next();
                 ChangeLog.addChange(
@@ -853,7 +863,11 @@ public class DistributionPrefsAction extends Action {
                         ChangeLog.Operation.DELETE,
                         io.getControllingCourseOffering().getSubjectArea(), 
                         null);
+                if (permissionOfferingLockNeeded.check(sessionContext.getUser(), io))
+                	changedOfferingIds.add(io.getUniqueId());
             }
+            if (!changedOfferingIds.isEmpty())
+            	StudentSectioningQueue.offeringChanged(hibSession, sessionContext.getUser(), sessionContext.getUser().getCurrentAcademicSessionId(), changedOfferingIds);
 
             if (tx!=null && tx.isActive()) 
 	            tx.commit();
