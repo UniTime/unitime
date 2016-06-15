@@ -451,7 +451,7 @@ public class XOffering implements Serializable, Externalizable {
     	List<XSection> sections = getSections(enrollment);
     	for (XReservation reservation: reservations) {
     		if (reservation.isIncluded(enrollment.getConfigId(), sections)) {
-    			if (reservation.getLimit() < 0.0 || other == null)
+    			if (reservation.getLimit() < 0.0 || other == null || mustBeUsed)
     				return new XReservationId(reservation.getType(), getOfferingId(), reservation.getReservationId());
     			int used = 0;
     			for (XCourseRequest r: other)
