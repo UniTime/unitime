@@ -305,7 +305,7 @@ public class ManageSolversAction extends Action {
 		Long settingsId = solverProperties.getPropertyLong("General.SettingsId", null);
 		if (settingsId != null) {
 			SolverPredefinedSetting setting = SolverPredefinedSettingDAO.getInstance().get(settingsId);
-			if (settingsId != null) return setting.getDescription();
+			if (setting != null) return setting.getDescription();
 		}
 		return solverProperties.getProperty("Basic.Mode","N/A");
 	}
