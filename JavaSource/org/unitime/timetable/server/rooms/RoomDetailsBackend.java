@@ -231,6 +231,7 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 			Building b = room.getBuilding(); 
 			BuildingInterface building = new BuildingInterface(b.getUniqueId(), b.getAbbreviation(), b.getName());
 			building.setX(b.getCoordinateX()); building.setY(b.getCoordinateY());
+			building.setExternalId(b.getExternalUniqueId());
 			response.setBuilding(building);
 			response.setName(room.getRoomNumber());
 		}

@@ -121,6 +121,7 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		for (Building b: Building.findAll(response.getAcademicSessionId())) {
 			BuildingInterface building = new BuildingInterface(b.getUniqueId(), b.getAbbreviation(), b.getName());
 			building.setX(b.getCoordinateX()); building.setY(b.getCoordinateY());
+			building.setExternalId(b.getExternalUniqueId());
 			response.addBuilding(building);
 		}
 		
