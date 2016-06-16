@@ -116,7 +116,7 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
         if (!anonymize) {
             Progress p = Progress.getInstance(model);
             if (p != null)
-            	Progress.getInstance(this).save(document.getRootElement());
+            	p.save(document.getRootElement());
         }
         return document;
 	}

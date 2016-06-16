@@ -121,7 +121,7 @@ public class InstructorSchedulingContainer implements SolverContainer<Instructor
 		if (folder.exists() && !folder.isDirectory()) return;
 		
 		folder.mkdirs();
-		File[] old = folder.listFiles(new BackupFileFilter(SolverParameterGroup.SolverType.EXAM));
+		File[] old = folder.listFiles(new BackupFileFilter(SolverParameterGroup.SolverType.INSTRUCTOR));
 		for (int i = 0; i < old.length; i++)
 			old[i].delete();
 		
