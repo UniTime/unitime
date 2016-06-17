@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.shared;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -37,7 +38,8 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 /**
  * @author Tomas Muller
  */
-public class InstructorInterface implements IsSerializable, Comparable<InstructorInterface> {
+public class InstructorInterface implements IsSerializable, Comparable<InstructorInterface>, Serializable {
+	private static final long serialVersionUID = 1L;
 	private Long iId;
 	private String iExternalId;
 	private String iFirstName, iMiddleName, iLastName, iFormattedName, iOrderName;
@@ -120,7 +122,8 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		return getId().equals(((InstructorInterface)object).getId());
 	}	
 
-	public static class AttributeTypeInterface implements GwtRpcResponse {
+	public static class AttributeTypeInterface implements GwtRpcResponse, Serializable {
+		private static final long serialVersionUID = 1L;
 		private Long iId;
 		private String iAbbv;
 		private String iLabel;
@@ -158,7 +161,8 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		}
 	}
 	
-	public static class PositionInterface implements GwtRpcResponse {
+	public static class PositionInterface implements GwtRpcResponse, Serializable {
+		private static final long serialVersionUID = 1L;
 		private Long iId;
 		private String iAbbv;
 		private String iLabel;
@@ -192,7 +196,8 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		}
 	}
 	
-	public static class DepartmentInterface implements IsSerializable {
+	public static class DepartmentInterface implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
 		private Long iId;
 		private String iAbbv;
 		private String iCode;
@@ -239,7 +244,8 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		}
 	}
 	
-	public static class PreferenceInterface implements IsSerializable {
+	public static class PreferenceInterface implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
 		private String iCode, iName, iAbbv;
 		private String iColor;
 		private Long iId;
@@ -280,7 +286,8 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		}
 	}
 	
-	public static class AttributeInterface implements GwtRpcResponse {
+	public static class AttributeInterface implements GwtRpcResponse, Serializable {
+		private static final long serialVersionUID = 1L;
 		private Long iId, iParentId;
 		private String iCode;
 		private String iName;
@@ -391,7 +398,8 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		;
 	}
 	
-	public static class InstructorAttributePropertiesInterface implements GwtRpcResponse {
+	public static class InstructorAttributePropertiesInterface implements GwtRpcResponse, Serializable {
+		private static final long serialVersionUID = 1L;
 		private List<DepartmentInterface> iDepartments = new ArrayList<DepartmentInterface>();
 		private List<AttributeTypeInterface> iAttributeTypes = new ArrayList<AttributeTypeInterface>();
 		private boolean iCanAddGlobalAttribute = false;
@@ -424,11 +432,13 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		public void setLastDepartmentId(Long departmentId) { iLastDepartmentId = departmentId; }
 	}
 	
-	public static class InstructorAttributePropertiesRequest implements GwtRpcRequest<InstructorAttributePropertiesInterface> {
+	public static class InstructorAttributePropertiesRequest implements GwtRpcRequest<InstructorAttributePropertiesInterface>, Serializable {
+		private static final long serialVersionUID = 1L;
 		public InstructorAttributePropertiesRequest() {}
 	}
 	
-	public static class GetInstructorAttributesRequest implements GwtRpcRequest<GwtRpcResponseList<AttributeInterface>> {
+	public static class GetInstructorAttributesRequest implements GwtRpcRequest<GwtRpcResponseList<AttributeInterface>>, Serializable {
+		private static final long serialVersionUID = 1L;
 		public Long iDepartmentId;
 		
 		public GetInstructorAttributesRequest() {}
@@ -440,7 +450,8 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		public String toString() { return iDepartmentId == null ? "" : iDepartmentId.toString(); }
 	}
 	
-	public static class GetInstructorsRequest implements GwtRpcRequest<GwtRpcResponseList<InstructorInterface>> {
+	public static class GetInstructorsRequest implements GwtRpcRequest<GwtRpcResponseList<InstructorInterface>>, Serializable {
+		private static final long serialVersionUID = 1L;
 		public Long iDepartmentId;
 		
 		public GetInstructorsRequest() {}
@@ -452,7 +463,8 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		public String toString() { return iDepartmentId == null ? "" : iDepartmentId.toString(); }
 	}
 
-	public static class UpdateInstructorAttributeRequest implements GwtRpcRequest<AttributeInterface> {
+	public static class UpdateInstructorAttributeRequest implements GwtRpcRequest<AttributeInterface>, Serializable {
+		private static final long serialVersionUID = 1L;
 		private Long iDeleteAttributeId = null;
 		private AttributeInterface iAttribute = null;
 		private List<Long> iAddInstructors = new ArrayList<Long>();
@@ -487,7 +499,8 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		}		
 	}
 	
-	public static class GetInstructorAttributeParentsRequest implements GwtRpcRequest<GwtRpcResponseList<AttributeInterface>> {
+	public static class GetInstructorAttributeParentsRequest implements GwtRpcRequest<GwtRpcResponseList<AttributeInterface>>, Serializable {
+		private static final long serialVersionUID = 1L;
 		public Long iDepartmentId, iTypeId, iAttributeId;
 		
 		public GetInstructorAttributeParentsRequest() {}
@@ -515,7 +528,8 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		}
 	}
 	
-	public static class SetLastDepartmentRequest implements GwtRpcRequest<GwtRpcResponseNull> {
+	public static class SetLastDepartmentRequest implements GwtRpcRequest<GwtRpcResponseNull>, Serializable {
+		private static final long serialVersionUID = 1L;
 		public Long iDepartmentId;
 		
 		public SetLastDepartmentRequest() {}
@@ -530,7 +544,8 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		public String toString() { return iDepartmentId == null ? "" : iDepartmentId.toString(); }
 	}
 	
-	public static class CourseInfo implements Comparable<CourseInfo>, IsSerializable {
+	public static class CourseInfo implements Comparable<CourseInfo>, IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
 		private Long iCourseId;
 		private String iCourseName;
 		
@@ -552,7 +567,8 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		}
 	}
 	
-	public static class SectionInfo implements Comparable<SectionInfo>, IsSerializable {
+	public static class SectionInfo implements Comparable<SectionInfo>, IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
 		private Long iSectionId;
 		private String iSectionName;
 		private String iExternalId;
@@ -600,7 +616,8 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		}
 	}
 	
-	public static class PreferenceInfo implements Comparable<PreferenceInfo>, IsSerializable {
+	public static class PreferenceInfo implements Comparable<PreferenceInfo>, IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
 		private Long iOwnerId;
 		private String iName;
 		private String iPreference;
@@ -636,7 +653,8 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		
 	}
 	
-	public static class InstructorInfo implements Comparable<InstructorInfo>, IsSerializable {
+	public static class InstructorInfo implements Comparable<InstructorInfo>, IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
 	    private Long iInstructorId;
 	    private String iExternalId;
 	    private String iName;
@@ -732,7 +750,8 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		}
 	}
 	
-	public static class TeachingRequestInfo implements Comparable<TeachingRequestInfo>, GwtRpcResponse {
+	public static class TeachingRequestInfo implements Comparable<TeachingRequestInfo>, GwtRpcResponse, Serializable {
+		private static final long serialVersionUID = 1L;
 		private CourseInfo iCourse;
 		private Long iRequestId;
 		private float iLoad;
@@ -827,7 +846,8 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		}
 	}
 	
-	public static class ClassInfo implements Comparable<ClassInfo>, IsSerializable {
+	public static class ClassInfo implements Comparable<ClassInfo>, IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
 	    private Long iCourseId;
 	    private Long iClassId;
 	    private String iCourse;
@@ -883,7 +903,8 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    
 	}
 	
-	public static class TeachingRequestsPageRequest implements GwtRpcRequest<GwtRpcResponseList<TeachingRequestInfo>> {
+	public static class TeachingRequestsPageRequest implements GwtRpcRequest<GwtRpcResponseList<TeachingRequestInfo>>, Serializable {
+		private static final long serialVersionUID = 1L;
 		private boolean iAssigned = true;
 		private Long iSubjectAreaId = null;
 		
@@ -903,7 +924,8 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		}
 	}
 	
-	public static class TeachingAssignmentsPageRequest implements GwtRpcRequest<GwtRpcResponseList<InstructorInfo>> {
+	public static class TeachingAssignmentsPageRequest implements GwtRpcRequest<GwtRpcResponseList<InstructorInfo>>, Serializable {
+		private static final long serialVersionUID = 1L;
 		private Long iDepartmentId = null;
 		
 		public TeachingAssignmentsPageRequest() {}
@@ -920,7 +942,8 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		}
 	}
 	
-	public static class SubjectAreaInterface implements IsSerializable {
+	public static class SubjectAreaInterface implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
 		private Long iId;
 		private String iAbbv;
 		private String iLabel;
@@ -949,11 +972,13 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		}
 	}
 	
-	public static class TeachingRequestsPagePropertiesRequest implements GwtRpcRequest<TeachingRequestsPagePropertiesResponse> {
+	public static class TeachingRequestsPagePropertiesRequest implements GwtRpcRequest<TeachingRequestsPagePropertiesResponse>, Serializable {
+		private static final long serialVersionUID = 1L;
 		public TeachingRequestsPagePropertiesRequest() {}
 	}
 	
-	public static class TeachingRequestsPagePropertiesResponse implements GwtRpcResponse {
+	public static class TeachingRequestsPagePropertiesResponse implements GwtRpcResponse, Serializable {
+		private static final long serialVersionUID = 1L;
 		private List<SubjectAreaInterface> iSubjecAreas = new ArrayList<SubjectAreaInterface>();
 		private List<DepartmentInterface> iDepartments = new ArrayList<DepartmentInterface>();
 		private List<PreferenceInterface> iPreferences = new ArrayList<PreferenceInterface>();
@@ -1004,7 +1029,8 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		public boolean hasModes() { return iModes != null && !iModes.isEmpty(); }
 	}
 	
-	public static class TeachingRequestDetailRequest implements GwtRpcRequest<TeachingRequestInfo> {
+	public static class TeachingRequestDetailRequest implements GwtRpcRequest<TeachingRequestInfo>, Serializable {
+		private static final long serialVersionUID = 1L;
 		private Long iRequestId;
 		
 		public TeachingRequestDetailRequest() {}
