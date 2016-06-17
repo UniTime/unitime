@@ -36,6 +36,8 @@ import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
@@ -66,6 +68,8 @@ import com.google.gwt.event.dom.client.MouseOutEvent;
 import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.event.dom.client.MouseOverEvent;
 import com.google.gwt.event.dom.client.MouseOverHandler;
+import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -73,6 +77,7 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -90,6 +95,7 @@ public class TeachingRequestsPage extends SimpleForm {
 	private ListBox iFilter;
 	private TeachingRequestsPagePropertiesResponse iProperties;
 	private UniTimeTable<SingleTeachingAssingment> iTable;
+	private TeachingRequestDetailPage iDetail = null;
 	
 	public TeachingRequestsPage() {
 		iAssigned = "true".equalsIgnoreCase(Location.getParameter("assigned"));
@@ -139,6 +145,24 @@ public class TeachingRequestsPage extends SimpleForm {
 		iTable.setVisible(false);
 		iTable.addStyleName("unitime-TeachingRequests");
 		addRow(iTable);
+		
+		iTable.addMouseClickListener(new MouseClickListener<SingleTeachingAssingment>() {
+			@Override
+			public void onMouseClick(TableEvent<SingleTeachingAssingment> event) {
+				if (event.getData() != null) {
+					if (iDetail == null) {
+						iDetail = new TeachingRequestDetailPage(iProperties);
+						iDetail.addCloseHandler(new CloseHandler<PopupPanel>() {
+							@Override
+							public void onClose(CloseEvent<PopupPanel> event) {
+								iTable.clearHover();
+							}
+						});
+					}
+					iDetail.showDetail(event.getData().getRequest().getRequestId());
+				}
+			}
+		});
 		
 		LoadingWidget.getInstance().show(MESSAGES.waitLoadingPage());
 		RPC.execute(new TeachingRequestsPagePropertiesRequest(), new AsyncCallback<TeachingRequestsPagePropertiesResponse>() {

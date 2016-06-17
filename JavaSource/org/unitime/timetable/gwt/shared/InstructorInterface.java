@@ -650,6 +650,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    private String iAvailability;
 	    private List<TeachingRequestInfo> iAssignedRequests = new ArrayList<TeachingRequestInfo>();
 	    private List<TeachingRequestInfo> iConflicts = null;
+	    private List<ClassInfo> iEnrollments = new ArrayList<ClassInfo>();
 
 		public InstructorInfo() {}
 		
@@ -705,6 +706,9 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    public List<TeachingRequestInfo> getAssignedRequests() { return iAssignedRequests; }
 	    public void addAssignedRequest(TeachingRequestInfo request) { iAssignedRequests.add(request); }
 	    
+	    public List<ClassInfo> getEnrollments() { return iEnrollments; }
+	    public void addEnrollment(ClassInfo enrollment) { iEnrollments.add(enrollment); }
+	    
 	    public void addConflict(TeachingRequestInfo conflict) {
 	    	if (iConflicts == null) iConflicts = new ArrayList<TeachingRequestInfo>();
 	    	iConflicts.add(conflict);
@@ -728,7 +732,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		}
 	}
 	
-	public static class TeachingRequestInfo implements Comparable<TeachingRequestInfo>, IsSerializable {
+	public static class TeachingRequestInfo implements Comparable<TeachingRequestInfo>, GwtRpcResponse {
 		private CourseInfo iCourse;
 		private Long iRequestId;
 		private float iLoad;
@@ -821,6 +825,62 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 			if (i1.hasNext()) return 1;
 			return getRequestId().compareTo(r.getRequestId());
 		}
+	}
+	
+	public static class ClassInfo implements Comparable<ClassInfo>, IsSerializable {
+	    private Long iCourseId;
+	    private Long iClassId;
+	    private String iCourse;
+	    private String iSection;
+	    private String iType;
+	    private String iExternalId;
+	    private String iRoom;
+	    private boolean iInstructor;
+	    private String iTime;
+	    private String iDate;
+	    
+	    public ClassInfo() {}
+
+	    public Long getCourseId() { return iCourseId; }
+	    public void setCourseId(Long courseId) { iCourseId = courseId; }
+	    public Long getClassId() { return iClassId; }
+	    public void setClassId(Long classId) { iClassId = classId; }
+	    
+	    public String getCourse() { return iCourse; }
+	    public void setCourse(String course) { iCourse = course; }
+	    public String getSection() { return iSection; }
+	    public void setSection(String section) { iSection = section; }
+	    public String getType() { return iType; }
+	    public void setType(String type) { iType = type; }
+	    public String getExternalId() { return iExternalId; }
+	    public void setExternalId(String externalId) { iExternalId = externalId; }
+	    public String getRoom() { return iRoom; }
+	    public void setRoom(String room) { iRoom = room; }
+	    public String getTime() { return iTime; }
+	    public void setTime(String time) { iTime = time; }
+	    public String getDate() { return iDate; }
+	    public void setDate(String date) { iDate = date; }
+	    public boolean isInstructor() { return iInstructor; }
+	    public void setInstructor(boolean instructor) { iInstructor = instructor; }
+	    
+	    @Override
+	    public int hashCode() { return getClassId().hashCode(); }
+	    
+	    @Override
+	    public boolean equals(Object o) {
+	    	if (o == null || !(o instanceof ClassInfo)) return false;
+	    	return getClassId().equals(((ClassInfo)o).getClassId());
+	    }
+
+		@Override
+		public int compareTo(ClassInfo o) {
+			int cmp = getCourse().compareTo(o.getCourse());
+			if (cmp != 0) return cmp;
+			cmp = getSection().compareTo(o.getSection());
+			if (cmp != 0) return cmp;
+			return getClassId().compareTo(o.getClassId());
+		}
+	    
 	}
 	
 	public static class TeachingRequestsPageRequest implements GwtRpcRequest<GwtRpcResponseList<TeachingRequestInfo>> {
@@ -943,4 +1003,20 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		
 		public boolean hasModes() { return iModes != null && !iModes.isEmpty(); }
 	}
+	
+	public static class TeachingRequestDetailRequest implements GwtRpcRequest<TeachingRequestInfo> {
+		private Long iRequestId;
+		
+		public TeachingRequestDetailRequest() {}
+		public TeachingRequestDetailRequest(Long requestId) { iRequestId = requestId; }
+		
+		public Long getRequestId() { return iRequestId; }
+		public void setRequestId(Long requestId) { iRequestId = requestId; }
+		
+		@Override
+		public String toString() {
+			return getRequestId().toString();
+		}
+	}
+
 }

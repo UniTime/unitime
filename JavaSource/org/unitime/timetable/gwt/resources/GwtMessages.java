@@ -861,8 +861,14 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Objectives")
 	String colObjectives();
 	
+	@DefaultMessage("Idx")
+	String colIndex();
+	
 	@DefaultMessage("Assigned<br>Instructors")
 	String colAssignedInstructors();
+	
+	@DefaultMessage("Conflicts")
+	String colConflictingRequests();
 	
 	@DefaultMessage("pending")
 	String approvalNotApproved();
@@ -1154,6 +1160,24 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Subject Area:")
 	String propSubjectArea();
+	
+	@DefaultMessage("Sections:")
+	String propSections();
+	
+	@DefaultMessage("Load:")
+	String propRequestLoad();
+	
+	@DefaultMessage("Attribute Preferences:")
+	String propAttributePrefs();
+	
+	@DefaultMessage("Instructor Pregerences:")
+	String propInstructorPrefs();
+	
+	@DefaultMessage("Assigned Instructors:")
+	String propAssignedInstructors();
+	
+	@DefaultMessage("Objectives:")
+	String propObjectives();
 
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
@@ -1613,6 +1637,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Loading teaching assignments ...")
 	String waitLoadingTeachingAssignments();
+	
+	@DefaultMessage("Loading teaching request detail ...")
+	String waitLoadTeachingRequestDetail();
 
 	@DefaultMessage("Failed to load {0}: {1}")
 	String failedLoad(String name, String reason);
@@ -1850,6 +1877,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Failed to load teaching assignments: {0}")
 	String failedToLoadTeachingAssignments(String reason);
+	
+	@DefaultMessage("Failed to load teaching request: {0}")
+	String failedToLoadTeachingRequestDetaul(String reason);
 
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
@@ -2868,7 +2898,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Teaching Assignments")
 	@DoNotTranslate
 	String pageTeachingAssignments();
- 
+	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	
@@ -2928,6 +2958,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Details of {0}")
 	String dialogDetailsOf(String item);
+	
+	@DefaultMessage("Details of {0} {1}")
+	String dialogTeachingRequestDetail(String course, String section);
 
 	@DefaultMessage("{0}<br>{1}<br>{2} seats")
 	String singleRoomSelection(String name, String type, String capacity);
@@ -3786,6 +3819,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Instructors")
 	String headerInstructors();
 	
+	@DefaultMessage("Teaching Request")
+	String headerTeachingRequest();
+	
+	@DefaultMessage("Available Instructors")
+	String headerAvailableInstructors();
+	
 	@DefaultMessage("The selected offering has no curricula.")
 	String offeringHasNoCurricula();
 	
@@ -4553,4 +4592,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Solver not started.")
 	String solverStatusNotStarted();
+	
+	@DefaultMessage("No instructor assigned.")
+	String notAssignedInstructor();
 }

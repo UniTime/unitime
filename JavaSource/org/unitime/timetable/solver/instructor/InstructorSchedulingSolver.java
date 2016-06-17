@@ -40,6 +40,7 @@ import org.cpsolver.ifs.util.ProblemSaver;
 import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.instructor.model.Attribute;
 import org.cpsolver.instructor.model.Course;
+import org.cpsolver.instructor.model.EnrolledClass;
 import org.cpsolver.instructor.model.Instructor;
 import org.cpsolver.instructor.model.InstructorSchedulingModel;
 import org.cpsolver.instructor.model.Preference;
@@ -51,6 +52,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeTypeInterface;
+import org.unitime.timetable.gwt.shared.InstructorInterface.ClassInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.CourseInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.PreferenceInfo;
@@ -177,11 +179,29 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
 			PreferenceInfo pi = new PreferenceInfo(new Long(p.getTarget().hashCode()), p.getTarget().getLongName(useAmPm), Constants.preferenceLevel2preference(p.getPreference()));
 			pi.setComparable(String.format("%03d:%05d", p.getTarget().getDayCode(), p.getTarget().getStartSlot()));
 			info.addTimePreference(pi);
-			for (Enumeration<Integer> i = p.getTarget().getSlots(); i.hasMoreElements(); ) {
-				int slot = i.nextElement();
-				slot2pref[slot][0] = Math.min(slot2pref[slot][0], p.getPreference());
-				slot2pref[slot][1] = Math.max(slot2pref[slot][1], p.getPreference());
-				if (p.isProhibited() && p.getTarget().getTimePatternId() != null) slot2pref[slot][2] = 1;
+			if (p.getTarget() instanceof EnrolledClass) {
+				EnrolledClass ec = (EnrolledClass)p.getTarget();
+				ClassInfo ci = new ClassInfo();
+				ci.setCourseId(ec.getCourseId()); ci.setCourse(ec.getCourse());
+				ci.setClassId(ec.getClassId()); ci.setSection(ec.getSection());
+				ci.setExternalId(ec.getExternalId()); ci.setType(ec.getType());
+				ci.setInstructor(ec.isInstructor()); ci.setRoom(ec.getRoom());
+				ci.setTime(ec.getDayHeader() + " " + ec.getStartTimeHeader(useAmPm) + " - " + ec.getEndTimeHeader(useAmPm));
+				ci.setDate(ec.getDatePatternName());
+				info.addEnrollment(ci);
+				for (Enumeration<Integer> i = p.getTarget().getSlots(); i.hasMoreElements(); ) {
+					int slot = i.nextElement();
+					slot2pref[slot][0] = Math.min(slot2pref[slot][0], p.getPreference());
+					slot2pref[slot][1] = Math.max(slot2pref[slot][1], p.getPreference());
+					slot2pref[slot][2] = 1;
+				}
+			} else {
+				for (Enumeration<Integer> i = p.getTarget().getSlots(); i.hasMoreElements(); ) {
+					int slot = i.nextElement();
+					slot2pref[slot][0] = Math.min(slot2pref[slot][0], p.getPreference());
+					slot2pref[slot][1] = Math.max(slot2pref[slot][1], p.getPreference());
+					slot2pref[slot][2] = 0;
+				}
 			}
 		}
 		StringBuffer pattern = new StringBuffer(slot2pref.length);
@@ -324,6 +344,7 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
                 						TeachingRequestInfo c = value.getConflict(conflict.variable().getRequest().getRequestId());
                 						if (c == null) {
                 							c = toRequestInfo(conflict.variable().getRequest());
+                							c.setConflict(entry.getKey().getClass().getSimpleName());
                 							c.addInstructor(toInstructorInfo(conflict));
                 							value.addConflict(c);
                 						} else if (c.getInstructor(conflict.getInstructor().getInstructorId()) == null) {

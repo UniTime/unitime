@@ -4311,3 +4311,31 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-TeachingAssignments .first-line {
 	border-top: 1px dashed #9CB0CE;
 }
+
+.unitime-TeachingRequestDetail {
+}
+
+.unitime-TeachingRequestDetail .scroll {
+}
+
+.unitime-TeachingRequestDetail .sections {
+	width: 100%;
+}
+
+.unitime-TeachingRequestDetail .sections .common {
+	font-style: italic;
+}
+
+.unitime-TeachingRequestDetail .instructors {
+	width: 100%;
+}
+
+.unitime-TeachingRequestDetail .instructors .conflict {
+	color: red;
+}
+
+.unitime-TeachingRequestDetail .instructors .not-assigned {
+	color: red;
+	font-style: italic;
+	padding-left: 50px;
+}

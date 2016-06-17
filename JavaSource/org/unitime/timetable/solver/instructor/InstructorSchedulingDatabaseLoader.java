@@ -39,6 +39,7 @@ import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.instructor.constraints.SameInstructorConstraint;
 import org.cpsolver.instructor.model.Attribute;
 import org.cpsolver.instructor.model.Course;
+import org.cpsolver.instructor.model.EnrolledClass;
 import org.cpsolver.instructor.model.Instructor;
 import org.cpsolver.instructor.model.InstructorSchedulingModel;
 import org.cpsolver.instructor.model.Preference;
@@ -74,7 +75,6 @@ import org.unitime.timetable.util.NameFormat;
  */
 public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRequest.Variable, TeachingAssignment, InstructorSchedulingModel> {
 	private Progress iProgress = null;
-	private Long iSessionId;
 	private Set<Long> iSolverGroupId = new HashSet<Long>();
 	private String iInstructorFormat;
 	private Set<String> iCommonItypes = new HashSet<String>();
@@ -89,7 +89,7 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     public InstructorSchedulingDatabaseLoader(InstructorSchedulingModel model, Assignment<TeachingRequest.Variable, TeachingAssignment> assignment) {
     	super(model, assignment);
     	iProgress = Progress.getInstance(model);
-    	iSessionId = model.getProperties().getPropertyLong("General.SessionId", (Long)null);
+    	// iSessionId = model.getProperties().getPropertyLong("General.SessionId", (Long)null);
     	for (Long id: model.getProperties().getPropertyLongArry("General.SolverGroupId", null))
     		iSolverGroupId.add(id);
     	iInstructorFormat = getModel().getProperties().getProperty("General.InstructorFormat", NameFormat.LAST_FIRST.reference());
@@ -221,47 +221,80 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
             }
     }
     
-    protected void loadUnavailability(org.hibernate.Session hibSession, DepartmentalInstructor di, Instructor instructor) {
-    	if (instructor.getExternalId() != null) {
+    public static String getClassExternalId(CourseOffering course, Class_ clazz) {
+    	String section = clazz.getClassSuffix(course == null ? clazz.getSchedulingSubpart().getControllingCourseOffering() : course);
+    	if (section != null && !section.isEmpty()) return section;
+    	String extId = clazz.getExternalId(course == null ? clazz.getSchedulingSubpart().getControllingCourseOffering() : course);
+    	if (extId != null && !extId.isEmpty()) return extId;
+    	return clazz.getSectionNumberString();
+    }
+    
+    public static List<EnrolledClass> loadUnavailability(org.hibernate.Session hibSession, DepartmentalInstructor di) {
+    	List<EnrolledClass> ret = new ArrayList<EnrolledClass>();
+    	if (di.getExternalUniqueId() != null) {
     		List<StudentClassEnrollment> enrollments = (List<StudentClassEnrollment>)hibSession.createQuery(
     				"from StudentClassEnrollment e where e.student.session.uniqueId = :sessionId and e.student.externalUniqueId = :externalId and e.clazz.cancelled = false"
-    				).setLong("sessionId", iSessionId).setString("externalId", instructor.getExternalId()).list();
+    				).setLong("sessionId", di.getDepartment().getSessionId()).setString("externalId", di.getExternalUniqueId()).setCacheable(true).list();
     		for (StudentClassEnrollment enrollment: enrollments) {
     			org.unitime.timetable.model.Assignment assignment = enrollment.getClazz().getCommittedAssignment();
     			if (assignment != null) {
+    				String rooms = null;
+    				for (Location loc: assignment.getRooms()) {
+    					if (rooms == null) rooms = loc.getLabel();
+    					else rooms += ", " + loc.getLabel();
+    				}
     				DatePattern datePattern = assignment.getDatePattern();
-    				TimeLocation time = new TimeLocation(
+    				ret.add(new EnrolledClass(
+    						enrollment.getCourseOffering().getUniqueId(),
+    						enrollment.getClazz().getUniqueId(),
+    						enrollment.getCourseOffering().getCourseName(),
+    						enrollment.getClazz().getSchedulingSubpart().getItypeDesc().trim(),
+    						enrollment.getClazz().getClassLabel(enrollment.getCourseOffering()),
+    						getClassExternalId(enrollment.getCourseOffering(), enrollment.getClazz()),
     						assignment.getDays().intValue(),
     						assignment.getStartSlot().intValue(),
     						assignment.getSlotPerMtg(),
-    						0,0,
     						enrollment.getClazz().getUniqueId(),
     						enrollment.getClazz().getClassLabel(enrollment.getCourseOffering(), true),
     						(datePattern == null ? new BitSet() : datePattern.getPatternBitSet()),
-    						assignment.getBreakTime()
-    						);
-    				instructor.addTimePreference(new Preference<TimeLocation>(time, Constants.sPreferenceLevelProhibited));
+    						assignment.getBreakTime(),
+    						rooms,
+    						false
+    						));
     			}
     		}
     		List<ClassInstructor> classInstructors = (List<ClassInstructor>)hibSession.createQuery(
     				"from ClassInstructor ci where ci.instructor.externalUniqueId = :externalId and ci.instructor.department.session.uniqueId = :sessionId and " +
     				"ci.instructor.department.uniqueId != :departmentId and ci.tentative = false and ci.lead = true and ci.classInstructing.cancelled = false"
-    				).setLong("sessionId", iSessionId).setString("externalId", instructor.getExternalId()).setLong("departmentId", di.getDepartment().getUniqueId()).list();
+    				).setLong("sessionId", di.getDepartment().getSessionId()).setString("externalId", di.getExternalUniqueId()).setLong("departmentId", di.getDepartment().getUniqueId()).setCacheable(true).list();
     		for (ClassInstructor ci: classInstructors) {
         		org.unitime.timetable.model.Assignment assignment = ci.getClassInstructing().getCommittedAssignment();
         		if (assignment != null) {
+        			String rooms = null;
+    				for (Location loc: assignment.getRooms()) {
+    					if (rooms == null) rooms = loc.getLabel();
+    					else rooms += ", " + loc.getLabel();
+    				}
         			DatePattern datePattern = assignment.getDatePattern();
-    				TimeLocation time = new TimeLocation(
+        			Class_ clazz = ci.getClassInstructing();
+        			CourseOffering course = clazz.getSchedulingSubpart().getControllingCourseOffering();
+        			ret.add(new EnrolledClass(
+        					course.getUniqueId(),
+    						clazz.getUniqueId(),
+    						course.getCourseName(),
+    						clazz.getSchedulingSubpart().getItypeDesc().trim(),
+    						clazz.getClassLabel(course),
+    						getClassExternalId(course, clazz),
     						assignment.getDays().intValue(),
     						assignment.getStartSlot().intValue(),
     						assignment.getSlotPerMtg(),
-    						0,0,
     						ci.getClassInstructing().getUniqueId(),
     						ci.getClassInstructing().getClassLabel(true),
     						(datePattern == null ? new BitSet() : datePattern.getPatternBitSet()),
-    						assignment.getBreakTime()
-    						);
-    				instructor.addTimePreference(new Preference<TimeLocation>(time, Constants.sPreferenceLevelProhibited));
+    						assignment.getBreakTime(),
+    						rooms,
+    						true
+    						));
     			}
     		}
     	}
@@ -269,9 +302,34 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     		if (ci.isTentative() || !ci.isLead() || ci.getClassInstructing().isCancelled() || ci.getClassInstructing().isInstructorAssignmentNeeded()) continue;
     		org.unitime.timetable.model.Assignment assignment = ci.getClassInstructing().getCommittedAssignment();
     		if (assignment != null) {
-				instructor.addTimePreference(new Preference<TimeLocation>(assignment.getTimeLocation(), Constants.sPreferenceLevelProhibited));
+    			String rooms = null;
+				for (Location loc: assignment.getRooms()) {
+					if (rooms == null) rooms = loc.getLabel();
+					else rooms += ", " + loc.getLabel();
+				}
+    			DatePattern datePattern = assignment.getDatePattern();
+    			Class_ clazz = ci.getClassInstructing();
+    			CourseOffering course = clazz.getSchedulingSubpart().getControllingCourseOffering();
+    			ret.add(new EnrolledClass(
+    					course.getUniqueId(),
+						clazz.getUniqueId(),
+						course.getCourseName(),
+						clazz.getSchedulingSubpart().getItypeDesc().trim(),
+						clazz.getClassLabel(course),
+						getClassExternalId(course, clazz),
+						assignment.getDays().intValue(),
+						assignment.getStartSlot().intValue(),
+						assignment.getSlotPerMtg(),
+						ci.getClassInstructing().getUniqueId(),
+						ci.getClassInstructing().getClassLabel(true),
+						(datePattern == null ? new BitSet() : datePattern.getPatternBitSet()),
+						assignment.getBreakTime(),
+						rooms,
+						true
+						));
 			}
     	}
+    	return ret;
     }
     
     protected void loadInstructors(org.hibernate.Session hibSession) throws Exception {
@@ -297,7 +355,8 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     				loadTimePreferences(instructor, (TimePref)p);
     			}
     		}
-    		loadUnavailability(hibSession, i, instructor);
+    		for (EnrolledClass ec: loadUnavailability(hibSession, i))
+    			instructor.addTimePreference(new Preference<TimeLocation>(ec, Constants.sPreferenceLevelProhibited));
     		getModel().addInstructor(instructor);
     		iInstructors.put(i.getUniqueId(), instructor);
     		iProgress.incProgress();
@@ -318,7 +377,7 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     				else room += ", " + location.getLabel();
     			}
     		}
-    		section = new Section(clazz.getUniqueId(), clazz.getExternalId(course),
+    		section = new Section(clazz.getUniqueId(), getClassExternalId(course, clazz),
     				clazz.getSchedulingSubpart().getItypeDesc().trim(), clazz.getClassLabel(course),
     				time, room, overlap, !clazz.isInstructorAssignmentNeeded());
     		iSections.put(clazz.getUniqueId(), section);
