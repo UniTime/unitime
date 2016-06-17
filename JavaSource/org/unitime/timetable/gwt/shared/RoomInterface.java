@@ -796,6 +796,7 @@ public class RoomInterface implements IsSerializable {
 		private String iAbbreviation;
 		private String iName;
 		private Double iX, iY;
+		private String iExternalId;
 		
 		public BuildingInterface() {}
 		
@@ -818,6 +819,10 @@ public class RoomInterface implements IsSerializable {
 		
 		public Double getY() { return iY; }
 		public void setY(Double y) { iY = y; }
+		
+		public boolean hasExternalId() { return iExternalId != null && !iExternalId.isEmpty(); }
+		public String getExternalId() { return iExternalId; }
+		public void setExternalId(String externalId) { iExternalId = externalId; }
 		
 		@Override
 		public int hashCode() { return getId().hashCode(); }

@@ -98,7 +98,7 @@ public class Building extends BaseBuilding implements Comparable {
      * @return
      * @throws Exception
      */
-	public static Building findByBldgAbbv(String bldgAbbv, Long sessionId) throws Exception {
+	public static Building findByBldgAbbv(String bldgAbbv, Long sessionId) {
 		List bldgs = (new BuildingDAO()).getQuery(
 				"SELECT distinct b FROM Building b "+ 
 				"WHERE b.session.uniqueId=:sessionId AND b.abbreviation=:bldgAbbv").
@@ -111,7 +111,7 @@ public class Building extends BaseBuilding implements Comparable {
 		return null;
 	}
 	
-    public static Building findByName(String name, Long sessionId) throws Exception {
+    public static Building findByName(String name, Long sessionId) {
         return (Building)(new BuildingDAO()).getSession().createQuery(
                 "select b from Building b where b.session.uniqueId=:sessionId and b.name=:name").
                 setLong("sessionId", sessionId.longValue()).

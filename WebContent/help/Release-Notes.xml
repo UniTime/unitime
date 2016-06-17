@@ -69,6 +69,20 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>API: Buildings</name>
+			<description>
+				<line>Added buildings API that can
+					<line>return list of buildings for an academic session (GET api/buildings?term=&lt;TERM&gt; or GET api/buildings?sessionId=&lt;TERM ID&gt;)</line>
+					<line>creature or update a building (using POST request with the building as a payload)</line>
+					<line>delete a building (DELETE api/buildings?id=&lt;BUILDING ID&gt; or DELETE api/buildings?term=&lt;TERM&gt;&amp;externalId=&lt;EXTID&gt; or DELETE api/buildings?term=&lt;TERM&gt;&amp;building=&lt;ABBV&gt;)</line>
+				</line>
+				<line>Permissions:
+					<line>ApiRetrieveRooms to retrieve list of buildings (GET request)</line>
+					<line>ApiRoomEdit to create, update, and delete a room, together with the appropriate BuildingAdd, BuildingEdit and BuildingDelete permission (POST and DELETE requests)</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 		
