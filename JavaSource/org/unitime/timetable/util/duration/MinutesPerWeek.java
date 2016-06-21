@@ -44,6 +44,7 @@ public class MinutesPerWeek implements DurationModel {
 	 */
 	@Override
 	public boolean isValidCombination(int minsPerWeek, DatePattern datePattern, TimePattern timePattern) {
+		if (datePattern == null) return false;
 		return minsPerWeek == timePattern.getNrMeetings() * timePattern.getMinPerMtg();
 	}
 	
@@ -79,6 +80,7 @@ public class MinutesPerWeek implements DurationModel {
 	}
 	
 	protected boolean hasDates(DatePattern datePattern, int dayCode) {
+		if (datePattern == null) return false;
 		Calendar cal = Calendar.getInstance(Locale.US);
 		cal.setTime(datePattern.getStartDate()); cal.setLenient(true);
         String pattern = datePattern.getPattern();
@@ -107,6 +109,7 @@ public class MinutesPerWeek implements DurationModel {
 	@Override
 	public List<Date> getDates(int minsPerWeek, DatePattern datePattern, int dayCode, int minutesPerMeeting) {
 		List<Date> ret = new ArrayList<Date>();
+		if (datePattern == null) return ret;
 		Calendar cal = Calendar.getInstance(Locale.US);
 		cal.setTime(datePattern.getStartDate()); cal.setLenient(true);
         EventDateMapping.Class2EventDateMap class2eventDates = EventDateMapping.getMapping(datePattern.getSession().getUniqueId());

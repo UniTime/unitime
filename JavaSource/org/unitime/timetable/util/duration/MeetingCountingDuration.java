@@ -40,6 +40,7 @@ public abstract class MeetingCountingDuration implements DurationModel {
 
 	@Override
 	public boolean isValidCombination(int minutes, DatePattern datePattern, TimePattern timePattern) {
+		if (datePattern == null) return false;
 		if (timePattern.getType() != null && timePattern.getType() == TimePattern.sTypeExactTime)
 			return true;
 		if (datePattern.getType() != null && datePattern.getType() == DatePattern.sTypePatternSet) {
@@ -54,6 +55,7 @@ public abstract class MeetingCountingDuration implements DurationModel {
 	}
 	
 	protected int nbrMeetings(DatePattern datePattern, int dayCode) {
+		if (datePattern == null) return 0;
 		Calendar cal = Calendar.getInstance(Locale.US);
 		cal.setTime(datePattern.getStartDate()); cal.setLenient(true);
         String pattern = datePattern.getPattern();
@@ -101,6 +103,7 @@ public abstract class MeetingCountingDuration implements DurationModel {
 	@Override
 	public List<Date> getDates(int minutes, DatePattern datePattern, int dayCode, int minutesPerMeeting) {
 		List<Date> ret = new ArrayList<Date>();
+		if (datePattern == null) return ret;
 		Calendar cal = Calendar.getInstance(Locale.US);
 		cal.setTime(datePattern.getStartDate()); cal.setLenient(true);
         EventDateMapping.Class2EventDateMap class2eventDates = EventDateMapping.getMapping(datePattern.getSession().getUniqueId());

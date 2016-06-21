@@ -45,6 +45,7 @@ public class SemesterHours extends SemesterMinutes {
 	 */
 	@Override
 	public boolean isValidCombination(int semesterHours, DatePattern datePattern, TimePattern timePattern) {
+		if (datePattern == null) return false;
 		if (timePattern.getType() != null && timePattern.getType() == TimePattern.sTypeExactTime)
 			return true;
 		if (datePattern.getType() != null && datePattern.getType() == DatePattern.sTypePatternSet) {
@@ -63,6 +64,7 @@ public class SemesterHours extends SemesterMinutes {
 	
 	@Override
 	public int getExactTimeMinutesPerMeeting(int semesterHours, DatePattern datePattern, int dayCode) {
+		if (datePattern == null) return 0;
 		if (datePattern.getType() != null && datePattern.getType() == DatePattern.sTypePatternSet) {
 			for (DatePattern child: datePattern.findChildren())
 				return Math.round((iMinutesPerHour * semesterHours) / (DayCode.nrDays(dayCode) * child.getEffectiveNumberOfWeeks()));
@@ -72,7 +74,7 @@ public class SemesterHours extends SemesterMinutes {
 	
 	@Override
 	public Integer getArrangedHours(int semesterHours, DatePattern datePattern) {
-		if (semesterHours <= 0) return null;
+		if (semesterHours <= 0 || datePattern == null) return null;
 		if (datePattern.getType() != null && datePattern.getType() == DatePattern.sTypePatternSet) {
 			for (DatePattern child: datePattern.findChildren())
 				return new Integer(Math.round(semesterHours / child.getEffectiveNumberOfWeeks()));

@@ -55,12 +55,13 @@ public class MeetingMinutes extends MeetingCountingDuration {
 	
 	@Override
 	public int getExactTimeMinutesPerMeeting(int minutes, DatePattern datePattern, int dayCode) {
-		return minutes / nbrMeetings(datePattern, dayCode);
+		int meetings = nbrMeetings(datePattern, dayCode);
+		return (meetings <= 0 ? 0 : minutes / meetings);
 	}
 	
 	@Override
 	public Integer getArrangedHours(int minutes, DatePattern datePattern) {
-		if (minutes <= 0) return null;
+		if (minutes <= 0 || datePattern == null) return null;
 		if (datePattern.getType() != null && datePattern.getType() == DatePattern.sTypePatternSet) {
 			for (DatePattern child: datePattern.findChildren())
 				return new Integer(Math.round(minutes / (50f * child.getEffectiveNumberOfWeeks())));
