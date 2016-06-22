@@ -36,6 +36,12 @@
 				<line>Enable by setting unitime.reservations.showClassSuffixes to true (defaults to false).</line>
 			</description>
 		</item>
+		<item>
+			<name>Class Duration Model</name>
+			<description>
+				<line>Avoid NullPointerException when there is no date pattern (i.e., there is no default date pattern defined for the term).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>

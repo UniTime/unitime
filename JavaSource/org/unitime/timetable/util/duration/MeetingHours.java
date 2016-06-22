@@ -57,6 +57,7 @@ public class MeetingHours extends MeetingCountingDuration {
 	
 	@Override
 	public int getExactTimeMinutesPerMeeting(int hours, DatePattern datePattern, int dayCode) {
+		if (datePattern == null) return 0;
 		if (datePattern.getType() != null && datePattern.getType() == DatePattern.sTypePatternSet) {
 			for (DatePattern child: datePattern.findChildren())
 				return (iMinutesPerHour * hours) / nbrMeetings(child, dayCode);
@@ -66,7 +67,7 @@ public class MeetingHours extends MeetingCountingDuration {
 	
 	@Override
 	public Integer getArrangedHours(int hours, DatePattern datePattern) {
-		if (hours <= 0) return null;
+		if (hours <= 0 || datePattern == null) return null;
 		if (datePattern.getType() != null && datePattern.getType() == DatePattern.sTypePatternSet) {
 			for (DatePattern child: datePattern.findChildren())
 				return new Integer(Math.round(((float)hours) / child.getEffectiveNumberOfWeeks()));
