@@ -343,6 +343,9 @@ public interface GwtConstants extends Constants {
 	@DefaultStringValue("#0.###")
 	String teachingLoadFormat();
 	
+	@DefaultStringValue("+#,##0.00;-#,##0.00")
+	String suggestionScoreFormat();
+	
 	@DefaultStringArrayValue({
 		"Course Timetabling Solver",
 		"Examination Solver",

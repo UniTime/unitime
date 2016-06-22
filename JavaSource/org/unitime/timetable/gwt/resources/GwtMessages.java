@@ -870,6 +870,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Conflicts")
 	String colConflictingRequests();
 	
+	@DefaultMessage("Score")
+	String colScore();
+	
 	@DefaultMessage("pending")
 	String approvalNotApproved();
 	
@@ -1361,6 +1364,12 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("No")
 	String buttonConfirmNo();
+	
+	@DefaultMessage("Search <u>D</u>eeper")
+	String buttonSearchDeeper();
+	
+	@DefaultMessage("Search <u>L</u>onger")
+	String buttonSearchLonger();
 
 	@DefaultMessage("Filter")
 	String sectFilter();
@@ -1880,6 +1889,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Failed to load teaching request: {0}")
 	String failedToLoadTeachingRequestDetaul(String reason);
+	
+	@DefaultMessage("Failed to compute suggestions: {0}")
+	String failedToComputeSuggestions(String reason);
 
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
@@ -3825,6 +3837,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Available Instructors")
 	String headerAvailableInstructors();
 	
+	@DefaultMessage("Suggestions")
+	String headerSuggestions();
+	
 	@DefaultMessage("The selected offering has no curricula.")
 	String offeringHasNoCurricula();
 	
@@ -4595,4 +4610,34 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("No instructor assigned.")
 	String notAssignedInstructor();
+	
+	@DefaultMessage("No suggestions found.")
+	String noSuggestions();
+	
+	@DefaultMessage("Not Assigned")
+	String notAssigned();
+	
+	@DefaultMessage("No External Id")
+	String noExternalId();
+	
+	@DefaultMessage("&rarr;")
+	String assignmentArrow();
+	
+	@DefaultMessage("(all {0} possibilities up to {1} changes were considered, no suggestion found)")
+	String suggestionsNoteNoTimeoutNoResults(int nrCombinations, int depth);
+	
+	@DefaultMessage("({0}s timeout reached, {1} possibilities up to {2} changes were considered, no suggestion found)")
+	String suggestionsNoteTimeoutNoResults(int timeout, int nrCombinations, int depth);
+
+	@DefaultMessage("(all {0} possibilities of up to {1} changes were considered, top {2} of {3} suggestions displayed)")
+	String suggestionsNoteNoTimeoutNResults(int nrCombinations, int depth, int nrResults, int nrSolutions);
+	
+	@DefaultMessage("({0}s timeout reached, {1} possibilities of up to {2} changes were considered, top {3} of {4} suggestions displayed)")
+	String suggestionsNoteTimeoutNResults(int timeout, int nrCombinations, int depth, int nrResults, int nrSolutions);
+	
+	@DefaultMessage("(all {0} possibilities of up to {1} changes were considered, {2} suggestions displayed)")
+	String suggestionsNoteNoTimeoutAllResults(int nrCombinations, int depth, int nrResults);
+	
+	@DefaultMessage("({0}s timeout reached, {1} possibilities of up to {2} changes were considered, {3} suggestions displayed)")
+	String suggestionsNoteTimeoutAllResults(int timeout, int nrCombinations, int depth, int nrResults);
 }

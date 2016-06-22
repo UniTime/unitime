@@ -42,11 +42,16 @@ import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.shared.InstructorInterface;
+import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeInterface;
+import org.unitime.timetable.gwt.shared.InstructorInterface.ComputeSuggestionsRequest;
 import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.PreferenceInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.PreferenceInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.SectionInfo;
+import org.unitime.timetable.gwt.shared.InstructorInterface.SuggestionInfo;
+import org.unitime.timetable.gwt.shared.InstructorInterface.SuggestionsResponse;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestDetailRequest;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestsPagePropertiesResponse;
@@ -84,10 +89,27 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 	protected static final StudentSectioningMessages SECTMSG = GWT.create(StudentSectioningMessages.class);
 	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	protected static NumberFormat sTeachingLoadFormat = NumberFormat.getFormat(CONSTANTS.teachingLoadFormat());
+	protected static NumberFormat sSuggestionScoreFormat = NumberFormat.getFormat(CONSTANTS.suggestionScoreFormat());
 	private TeachingRequestsPagePropertiesResponse iProperties;
 
 	private SimpleForm iForm;
 	private ScrollPanel iScroll;
+	
+	private Label iCourseLabel, iRequestLoad;
+	private Pref iAttributePrefs, iInstructorPrefs;
+	private Objectives iObjectives;
+	private int iAttributePrefsRow, iInstructorPrefsRow, iObjectivesRow, iAvailableInstructorsRow, iSuggestionsRow, iAssignmentRow;
+	private UniTimeTable<SectionInfo> iSectionsTable;
+	private UniTimeTable<InstructorInfo> iInstructorsTable;
+	private UniTimeTable<InstructorInfo> iAvailableInstructorsTable;
+	private UniTimeHeaderPanel iSuggestionsHeader;
+	
+	private TeachingRequestInfo iRequest;
+	private SuggestionInfo iSuggestion;
+	private ComputeSuggestionsRequest iSuggestionsRequest;
+	private AsyncCallback<SuggestionsResponse> iSuggestionsCallback;
+	private UniTimeTable<SuggestionInfo> iSuggestionsTable;
+	private UniTimeTable<AssignmentInfo> iAssignmentTable;
 	
 	public TeachingRequestDetailPage(TeachingRequestsPagePropertiesResponse properties) {
 		super(true, true);
@@ -105,6 +127,229 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 				RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
 			}
 		});
+		
+		iForm.addHeaderRow(MESSAGES.headerTeachingRequest());
+		iCourseLabel = new Label();
+		iForm.addRow(MESSAGES.propCourse(), iCourseLabel);
+		iSectionsTable = new UniTimeTable<SectionInfo>();
+		iSectionsTable.addStyleName("sections");
+		List<UniTimeTableHeader> sectionHeader = new ArrayList<UniTimeTableHeader>();
+		sectionHeader.add(new UniTimeTableHeader(MESSAGES.colSection()));
+		sectionHeader.add(new UniTimeTableHeader(MESSAGES.colTime()));
+		sectionHeader.add(new UniTimeTableHeader(MESSAGES.colDate()));
+		sectionHeader.add(new UniTimeTableHeader(MESSAGES.colRoom()));
+		iSectionsTable.addRow(null, sectionHeader);		
+		iForm.addRow(MESSAGES.propSections(), iSectionsTable);
+		iRequestLoad = new Label();
+		iForm.addRow(MESSAGES.propRequestLoad(), iRequestLoad);
+		iAttributePrefs = new Pref();
+		iAttributePrefsRow = iForm.addRow(MESSAGES.propAttributePrefs(), iAttributePrefs);
+		iInstructorPrefs = new Pref();
+		iInstructorPrefsRow = iForm.addRow(MESSAGES.propInstructorPrefs(), iInstructorPrefs);
+		iObjectives = new Objectives();
+		iObjectivesRow = iForm.addRow(MESSAGES.propObjectives(), iObjectives);
+		iInstructorsTable = new UniTimeTable<InstructorInfo>();
+		iInstructorsTable.addStyleName("instructors");
+		List<UniTimeTableHeader> instructorsHeader = new ArrayList<UniTimeTableHeader>();
+		instructorsHeader.add(new UniTimeTableHeader(MESSAGES.colIndex()));
+		instructorsHeader.add(new UniTimeTableHeader(MESSAGES.colExternalId()));
+		instructorsHeader.add(new UniTimeTableHeader(MESSAGES.colNamePerson()));
+		instructorsHeader.add(new UniTimeTableHeader(MESSAGES.colAssignedLoad()));
+		instructorsHeader.add(new UniTimeTableHeader(MESSAGES.colAttributes()));
+		instructorsHeader.add(new UniTimeTableHeader(MESSAGES.colCoursePreferences()));
+		instructorsHeader.add(new UniTimeTableHeader(MESSAGES.colTimePreferences()));
+		instructorsHeader.add(new UniTimeTableHeader(MESSAGES.colDistributionPreferences()));
+		instructorsHeader.add(new UniTimeTableHeader(MESSAGES.colObjectives()));
+		iInstructorsTable.addRow(null, instructorsHeader);
+		iForm.addRow(MESSAGES.propAssignedInstructors(), iInstructorsTable);
+		iInstructorsTable.setAllowSelection(true);
+		iInstructorsTable.setAllowMultiSelect(false);
+		
+		iAvailableInstructorsRow = iForm.addHeaderRow(MESSAGES.headerAvailableInstructors());
+		iAvailableInstructorsTable = new UniTimeTable<InstructorInfo>();
+		iAvailableInstructorsTable.addStyleName("instructors");
+		List<UniTimeTableHeader> avInstrHeader = new ArrayList<UniTimeTableHeader>();
+		avInstrHeader.add(new UniTimeTableHeader(MESSAGES.colExternalId()));
+		avInstrHeader.add(new UniTimeTableHeader(MESSAGES.colNamePerson()));
+		avInstrHeader.add(new UniTimeTableHeader(MESSAGES.colAssignedLoad()));
+		avInstrHeader.add(new UniTimeTableHeader(MESSAGES.colAttributes()));
+		avInstrHeader.add(new UniTimeTableHeader(MESSAGES.colCoursePreferences()));
+		avInstrHeader.add(new UniTimeTableHeader(MESSAGES.colTimePreferences()));
+		avInstrHeader.add(new UniTimeTableHeader(MESSAGES.colDistributionPreferences()));
+		avInstrHeader.add(new UniTimeTableHeader(MESSAGES.colConflictingRequests()));
+		avInstrHeader.add(new UniTimeTableHeader("&nbsp;"));
+		avInstrHeader.add(new UniTimeTableHeader("&nbsp;"));
+		avInstrHeader.add(new UniTimeTableHeader(MESSAGES.colObjectives()));
+		iAvailableInstructorsTable.addRow(null, avInstrHeader);
+		iForm.addRow(iAvailableInstructorsTable);
+		
+		iSuggestionsHeader = new UniTimeHeaderPanel(MESSAGES.headerSuggestions());
+		iSuggestionsRow = iForm.addHeaderRow(iSuggestionsHeader);
+		iSuggestionsTable = new UniTimeTable<SuggestionInfo>();
+		iSuggestionsTable.setVisible(false);
+		iSuggestionsTable.addStyleName("suggestions");
+		List<UniTimeTableHeader> sgHeader = new ArrayList<UniTimeTableHeader>();
+		sgHeader.add(new UniTimeTableHeader(MESSAGES.colScore()));
+		sgHeader.add(new UniTimeTableHeader(MESSAGES.colCourse()));
+		sgHeader.add(new UniTimeTableHeader(MESSAGES.colSection()));
+		sgHeader.add(new UniTimeTableHeader(MESSAGES.colExternalId(), 3));
+		sgHeader.add(new UniTimeTableHeader(MESSAGES.colNamePerson(), 3));
+		sgHeader.add(new UniTimeTableHeader(MESSAGES.colObjectives()));
+		iSuggestionsTable.addRow(null, sgHeader);
+		iForm.addRow(iSuggestionsTable);
+
+		iSuggestionsHeader.addButton("longer", MESSAGES.buttonSearchLonger(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				if (iSuggestionsRequest != null)
+					iSuggestionsRequest.setTimeout(2 * iSuggestionsRequest.getTimeout());
+				computeSuggestions(true);
+			}
+		});
+		iSuggestionsHeader.addButton("deeper", MESSAGES.buttonSearchDeeper(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				if (iSuggestionsRequest != null)
+					iSuggestionsRequest.setMaxDept(1 + iSuggestionsRequest.getMaxDept());
+				computeSuggestions(true);
+			}
+		});
+		iSuggestionsHeader.setEnabled("longer", false);
+		iSuggestionsHeader.setEnabled("deeper", false);
+		
+		UniTimeHeaderPanel footer = new UniTimeHeaderPanel();
+		footer.addButton("close", MESSAGES.buttonClose(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				hide();
+			}
+		});
+		iForm.addBottomRow(footer);
+		
+		iInstructorsTable.addMouseClickListener(new UniTimeTable.MouseClickListener<InstructorInterface.InstructorInfo>() {
+			@Override
+			public void onMouseClick(UniTimeTable.TableEvent<InstructorInterface.InstructorInfo> event) {
+				if (event.getRow() > 1) {
+					iInstructorsTable.setSelected(event.getRow(), true);
+					if (iAvailableInstructorsTable.getRowCount() > 1) {
+						iForm.getRowFormatter().setVisible(iAvailableInstructorsRow, true);
+						iForm.getRowFormatter().setVisible(iAvailableInstructorsRow + 1, true);
+						
+					}
+				}
+			}
+		});
+		
+		iSuggestionsCallback = new AsyncCallback<SuggestionsResponse>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				iSuggestionsHeader.setErrorMessage(MESSAGES.failedToComputeSuggestions(caught.getMessage()));
+				iSuggestionsTable.setVisible(false);
+			}
+
+			@Override
+			public void onSuccess(SuggestionsResponse result) {
+				iSuggestionsHeader.clearMessage();
+				if (result.hasSuggestions()) {
+					iSuggestionsTable.clearTable(1);
+					for (SuggestionInfo suggestion: result.getSuggestions()) {
+						boolean first = true;
+						for (AssignmentInfo assignment: suggestion.getAssignments()) {
+							List<Widget> line = new ArrayList<Widget>();
+							if (first) {
+								Label score = new Label(sSuggestionScoreFormat.format(suggestion.getValue()));
+								if (suggestion.getValue() > 0) score.getElement().getStyle().setColor("red");
+								if (suggestion.getValue() < 0) score.getElement().getStyle().setColor("green");
+								line.add(score);
+							} else {
+								line.add(new Label());
+							}
+							line.add(new Label(assignment.getRequest().getCourse().getCourseName()));
+							P p = new P("sections");
+							for (SectionInfo s: assignment.getRequest().getSections()) {
+								P i = new P("section");
+								i.setText(s.getSectionType() + (s.getExternalId() == null ? "" : " " + s.getExternalId()));
+								if (s.isCommon()) i.addStyleName("common");
+								p.add(i);
+							}
+							line.add(p);
+							InstructorInfo initial = (assignment.getRequest().hasInstructors() ? assignment.getRequest().getInstructors().get(0) : null);
+							InstructorInfo current = assignment.getInstructor();
+							if (initial == null) {
+								Label na = new Label(MESSAGES.notAssigned()); na.addStyleName("not-assigned");
+								na.addStyleName("initial");
+								line.add(na);
+							} else {
+								Label extId = new Label(initial.hasExternalId() ? initial.getExternalId() : MESSAGES.noExternalId());
+								if (!initial.hasExternalId()) extId.addStyleName("no-extid");
+								extId.addStyleName("initial");
+								line.add(extId);
+							}
+							line.add(new HTML(MESSAGES.assignmentArrow()));
+							if (current == null) {
+								Label na = new Label(MESSAGES.notAssigned()); na.addStyleName("not-assigned");
+								na.addStyleName("current");
+								line.add(na);
+							} else {
+								Label extId = new Label(current.hasExternalId() ? current.getExternalId() : MESSAGES.noExternalId());
+								if (!current.hasExternalId()) extId.addStyleName("no-extid");
+								extId.addStyleName("current");
+								line.add(extId);
+							}
+							if (initial == null) {
+								Label na = new Label(MESSAGES.notAssigned()); na.addStyleName("not-assigned");
+								na.addStyleName("initial");
+								line.add(na);
+							} else {
+								Label name = new Label(initial.getInstructorName());
+								name.addStyleName("initial");
+								line.add(name);
+							}
+							line.add(new HTML(MESSAGES.assignmentArrow()));
+							if (current == null) {
+								Label na = new Label(MESSAGES.notAssigned()); na.addStyleName("not-assigned");
+								na.addStyleName("current");
+								line.add(na);
+							} else {
+								Label name = new Label(current.getInstructorName());
+								name.addStyleName("current");
+								line.add(name);
+							}
+							if (first) {
+								line.add(new Objectives(suggestion.getValues()));
+							}
+							int row = iSuggestionsTable.addRow(suggestion, line);
+							if (first) {
+								for (int i = 0; i < iSuggestionsTable.getCellCount(row); i++)
+									iSuggestionsTable.getCellFormatter().addStyleName(row, i, "first-line");
+								iSuggestionsTable.getFlexCellFormatter().setRowSpan(row, line.size() - 1, suggestion.getAssignments().size());
+								iSuggestionsTable.getFlexCellFormatter().getElement(row, line.size() - 1).getStyle().setBackgroundColor("white");
+							}
+							first = false;
+						}
+					}
+					if (result.getSuggestions().size() < result.getNrSolutions()) {
+						if (result.isTimeoutReached())
+							iSuggestionsTable.addRow(null, new Note(9, MESSAGES.suggestionsNoteTimeoutNResults(iSuggestionsRequest.getTimeout() / 1000, result.getNrCombinationsConsidered(), iSuggestionsRequest.getMaxDept(), result.getSuggestions().size(), result.getNrSolutions())));
+						else
+							iSuggestionsTable.addRow(null, new Note(9, MESSAGES.suggestionsNoteNoTimeoutNResults(result.getNrCombinationsConsidered(), iSuggestionsRequest.getMaxDept(), result.getSuggestions().size(), result.getNrSolutions())));
+					} else {
+						if (result.isTimeoutReached())
+							iSuggestionsTable.addRow(null, new Note(9, MESSAGES.suggestionsNoteTimeoutAllResults(iSuggestionsRequest.getTimeout() / 1000, result.getNrCombinationsConsidered(), iSuggestionsRequest.getMaxDept(), result.getSuggestions().size())));
+						else
+							iSuggestionsTable.addRow(null, new Note(9, MESSAGES.suggestionsNoteNoTimeoutAllResults(result.getNrCombinationsConsidered(), iSuggestionsRequest.getMaxDept(), result.getSuggestions().size())));						
+					}
+				} else {
+					if (result.isTimeoutReached())
+						iSuggestionsTable.addRow(null, new Note(9, MESSAGES.suggestionsNoteTimeoutNoResults(iSuggestionsRequest.getTimeout() / 1000, result.getNrCombinationsConsidered(), iSuggestionsRequest.getMaxDept())));
+					else
+						iSuggestionsTable.addRow(null, new Note(9, MESSAGES.suggestionsNoteNoTimeoutNoResults(result.getNrCombinationsConsidered(), iSuggestionsRequest.getMaxDept())));
+				}
+				iSuggestionsTable.setVisible(true);
+				iSuggestionsHeader.setEnabled("longer", result.isTimeoutReached());
+				iSuggestionsHeader.setEnabled("deeper", true);
+			}
+		};
 	}
 	
 	public void showDetail(Long id) {
@@ -128,19 +373,32 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 		});
 	}
 	
+	protected void computeSuggestions(boolean recompute) {
+		if (!recompute || iSuggestionsRequest == null) {
+			AssignmentInfo assignment = new AssignmentInfo();
+			int row = iInstructorsTable.getSelectedRow();
+			assignment.setRequest(iRequest); assignment.setIndex(row <= 0 ? 0 : row - 1); assignment.setInstructor(null);
+			SuggestionInfo suggestion = new SuggestionInfo();
+			suggestion.addAssignment(assignment);
+			iSuggestionsRequest = new ComputeSuggestionsRequest();
+			iSuggestionsRequest.setSuggestion(suggestion);
+		}
+		iForm.getRowFormatter().setVisible(iSuggestionsRow, true);
+		iForm.getRowFormatter().setVisible(iSuggestionsRow + 1, true);
+		iSuggestionsHeader.showLoading();
+		iSuggestionsHeader.setEnabled("longer", false);
+		iSuggestionsHeader.setEnabled("deeper", false);
+		iSuggestionsTable.setVisible(false);
+		RPC.execute(iSuggestionsRequest, iSuggestionsCallback);
+	}
+	
 	protected void populate(TeachingRequestInfo request) {
+		iRequest = request;
 		setText(MESSAGES.dialogTeachingRequestDetail(request.getCourse().getCourseName(), request.getSections().get(0).getSectionType() + (request.getSections().get(0).getExternalId() == null ? "" : " " + request.getSections().get(0).getExternalId())));
-		iForm.clear();
-		iForm.addHeaderRow(MESSAGES.headerTeachingRequest());
-		iForm.addRow(MESSAGES.propCourse(), new Label(request.getCourse().getCourseName()));
-		UniTimeTable<SectionInfo> sections = new UniTimeTable<SectionInfo>();
-		sections.addStyleName("sections");
-		List<UniTimeTableHeader> sectionHeader = new ArrayList<UniTimeTableHeader>();
-		sectionHeader.add(new UniTimeTableHeader(MESSAGES.colSection()));
-		sectionHeader.add(new UniTimeTableHeader(MESSAGES.colTime()));
-		sectionHeader.add(new UniTimeTableHeader(MESSAGES.colDate()));
-		sectionHeader.add(new UniTimeTableHeader(MESSAGES.colRoom()));
-		sections.addRow(null, sectionHeader);
+		
+		iCourseLabel.setText(request.getCourse().getCourseName());
+		iRequestLoad.setText(sTeachingLoadFormat.format(request.getLoad()));
+		iSectionsTable.clearTable(1);
 		for (SectionInfo s: request.getSections()) {
 			List<Widget> sectionLine = new ArrayList<Widget>();
 			sectionLine.add(new Label(s.getSectionType() + (s.getExternalId() == null ? "" : " " + s.getExternalId())));
@@ -149,30 +407,16 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 			sectionLine.add(new HTML(s.getRoom() == null ? SECTMSG.noRoom() : s.getRoom()));
 			if (s.isCommon())
 				for (Widget w: sectionLine) w.addStyleName("common");
-			sections.addRow(s, sectionLine);
+			iSectionsTable.addRow(s, sectionLine);
 		}
-		iForm.addRow(MESSAGES.propSections(), sections);
-		iForm.addRow(MESSAGES.propRequestLoad(), new Label(sTeachingLoadFormat.format(request.getLoad())));
-		if (!request.getAttributePreferences().isEmpty())
-			iForm.addRow(MESSAGES.propAttributePrefs(), new Pref(request.getAttributePreferences()));
-		if (!request.getInstructorPreferences().isEmpty())
-			iForm.addRow(MESSAGES.propInstructorPrefs(), new Pref(request.getInstructorPreferences()));
-		if (!request.getValues().isEmpty()) {
-			iForm.addRow(MESSAGES.propObjectives(), new Objectives(request.getValues()));
-		}
-		UniTimeTable<InstructorInfo> instructors = new UniTimeTable<InstructorInfo>();
-		instructors.addStyleName("instructors");
-		List<UniTimeTableHeader> instructorsHeader = new ArrayList<UniTimeTableHeader>();
-		instructorsHeader.add(new UniTimeTableHeader(MESSAGES.colIndex()));
-		instructorsHeader.add(new UniTimeTableHeader(MESSAGES.colExternalId()));
-		instructorsHeader.add(new UniTimeTableHeader(MESSAGES.colNamePerson()));
-		instructorsHeader.add(new UniTimeTableHeader(MESSAGES.colAssignedLoad()));
-		instructorsHeader.add(new UniTimeTableHeader(MESSAGES.colAttributes()));
-		instructorsHeader.add(new UniTimeTableHeader(MESSAGES.colCoursePreferences()));
-		instructorsHeader.add(new UniTimeTableHeader(MESSAGES.colTimePreferences()));
-		instructorsHeader.add(new UniTimeTableHeader(MESSAGES.colDistributionPreferences()));
-		instructorsHeader.add(new UniTimeTableHeader(MESSAGES.colObjectives()));
-		instructors.addRow(null, instructorsHeader);
+		iAttributePrefs.setValue(request.getAttributePreferences());
+		iForm.getRowFormatter().setVisible(iAttributePrefsRow, !request.getAttributePreferences().isEmpty());
+		iInstructorPrefs.setValue(request.getInstructorPreferences());
+		iForm.getRowFormatter().setVisible(iInstructorPrefsRow, !request.getInstructorPreferences().isEmpty());
+		iObjectives.setValue(request.getValues());
+		iForm.getRowFormatter().setVisible(iObjectivesRow, !request.getValues().isEmpty());
+		
+		iInstructorsTable.clearTable(1);
 		int instrIndex = 1;
 		if (request.hasInstructors()) {
 			for (InstructorInfo instructor: request.getInstructors()) {
@@ -209,37 +453,25 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 				instructorLine.add(new TimePreferences(instructor));
 				instructorLine.add(new Pref(instructor.getDistributionPreferences()));
 				instructorLine.add(new Objectives(instructor.getValues()));
-				instructors.addRow(instructor, instructorLine);
+				iInstructorsTable.addRow(instructor, instructorLine);
 			}
 		}
 		for (int i = request.getNrAssignedInstructors(); i < request.getNrInstructors(); i++) {
 			List<Widget> instructorLine = new ArrayList<Widget>();
 			instructorLine.add(new Label((instrIndex++) + "."));
-			instructorLine.add(new NotAssignedInstructor());
-			instructors.addRow(null, instructorLine);
+			instructorLine.add(new NotAssignedInstructor(8));
+			iInstructorsTable.addRow(null, instructorLine);
 		}
 		if (request.getNrInstructors() <= 1)
-			instructors.setColumnVisible(0, false);
-		iForm.addRow(MESSAGES.propAssignedInstructors(), instructors);
+			iInstructorsTable.setColumnVisible(0, false);
+		if (request.getNrInstructors() == 1) {
+			iInstructorsTable.setSelected(1, true);
+		}
+
+		iAvailableInstructorsTable.clearTable(1);
 		if (request.hasDomainValues()) {
-			iForm.addHeaderRow(MESSAGES.headerAvailableInstructors());
-			UniTimeTable<InstructorInfo> domain = new UniTimeTable<InstructorInfo>();
-			domain.addStyleName("instructors");
-			List<UniTimeTableHeader> domainHeader = new ArrayList<UniTimeTableHeader>();
-			domainHeader.add(new UniTimeTableHeader(MESSAGES.colExternalId()));
-			domainHeader.add(new UniTimeTableHeader(MESSAGES.colNamePerson()));
-			domainHeader.add(new UniTimeTableHeader(MESSAGES.colAssignedLoad()));
-			domainHeader.add(new UniTimeTableHeader(MESSAGES.colAttributes()));
-			domainHeader.add(new UniTimeTableHeader(MESSAGES.colCoursePreferences()));
-			domainHeader.add(new UniTimeTableHeader(MESSAGES.colTimePreferences()));
-			domainHeader.add(new UniTimeTableHeader(MESSAGES.colDistributionPreferences()));
-			domainHeader.add(new UniTimeTableHeader(MESSAGES.colConflictingRequests()));
-			domainHeader.add(new UniTimeTableHeader("&nbsp;"));
-			domainHeader.add(new UniTimeTableHeader("&nbsp;"));
-			domainHeader.add(new UniTimeTableHeader(MESSAGES.colObjectives()));
-			domain.addRow(null, domainHeader);
 			for (InstructorInfo instructor: request.getDomainValues()) {
-				List<Widget> domainLine = new ArrayList<Widget>();
+				List<Widget> line = new ArrayList<Widget>();
 				Label extId = new Label(instructor.getExternalId());
 				if (instructor.getTeachingPreference() != null && !"0".equals(instructor.getTeachingPreference())) {
 					PreferenceInterface pref = iProperties.getPreference(instructor.getTeachingPreference());
@@ -248,7 +480,7 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 						extId.getElement().getStyle().setColor(pref.getColor());
 					}
 				}
-				domainLine.add(extId);
+				line.add(extId);
 				Label name = new Label(instructor.getInstructorName());
 				if (instructor.getTeachingPreference() != null && !"0".equals(instructor.getTeachingPreference())) {
 					PreferenceInterface pref = iProperties.getPreference(instructor.getTeachingPreference());
@@ -257,8 +489,8 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 						name.getElement().getStyle().setColor(pref.getColor());
 					}
 				}
-				domainLine.add(name);
-				domainLine.add(new Label(sTeachingLoadFormat.format(instructor.getAssignedLoad()) + " / " + sTeachingLoadFormat.format(instructor.getMaxLoad())));
+				line.add(name);
+				line.add(new Label(sTeachingLoadFormat.format(instructor.getAssignedLoad()) + " / " + sTeachingLoadFormat.format(instructor.getMaxLoad())));
 				P p = new P("attributes");
 				for (AttributeInterface a: instructor.getAttributes()) {
 					P i = new P("attribute");
@@ -266,34 +498,44 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 					i.setTitle(a.getName() + " (" + a.getType().getLabel() + ")");
 					p.add(i);
 				}
-				domainLine.add(p);
-				domainLine.add(new Pref(instructor.getCoursePreferences()));
-				domainLine.add(new TimePreferences(instructor));
-				domainLine.add(new Pref(instructor.getDistributionPreferences()));
+				line.add(p);
+				line.add(new Pref(instructor.getCoursePreferences()));
+				line.add(new TimePreferences(instructor));
+				line.add(new Pref(instructor.getDistributionPreferences()));
 				for (int i = 0; i < 3; i++)
 					if (instructor.hasConflicts()) {
-						domainLine.add(new Conflicts(instructor.getConflicts(), i));
+						line.add(new Conflicts(instructor.getConflicts(), i));
 					} else {
-						domainLine.add(new Label());
+						line.add(new Label());
 					}
-				domainLine.add(new Objectives(instructor.getValues()));
-				domain.addRow(instructor, domainLine);
+				line.add(new Objectives(instructor.getValues()));
+				iAvailableInstructorsTable.addRow(instructor, line);
 			}
-			iForm.addRow(domain);
+			iForm.getRowFormatter().setVisible(iAvailableInstructorsRow, iInstructorsTable.getSelectedRow() > 0);
+			iForm.getRowFormatter().setVisible(iAvailableInstructorsRow + 1, iInstructorsTable.getSelectedRow() > 0);
+		} else {
+			iForm.getRowFormatter().setVisible(iAvailableInstructorsRow, false);
+			iForm.getRowFormatter().setVisible(iAvailableInstructorsRow + 1, false);
 		}
-		UniTimeHeaderPanel footer = new UniTimeHeaderPanel();
-		footer.addButton("close", MESSAGES.buttonClose(), new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				hide();
-			}
-		});
-		iForm.addBottomRow(footer);
+		
+		iSuggestionsRequest = null;
+		if (request.getNrInstructors() == 1) {
+			computeSuggestions(false);
+		}
 	}
 	
 	public class Pref extends P {
-		public Pref(List<PreferenceInfo> prefs) {
+		public Pref() {
 			super("preferences");
+		}
+		
+		public Pref(List<PreferenceInfo> prefs) {
+			this();
+			setValue(prefs);
+		}
+		
+		public void setValue(List<PreferenceInfo> prefs) {
+			clear();
 			for (PreferenceInfo p: prefs) {
 				P prf = new P("prf");
 				prf.setText(p.getOwnerName());
@@ -356,10 +598,20 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 	}
 	
 	public class Objectives extends P {
+		public Objectives() {
+			super("objectives");
+		}
+			
 		public Objectives(Map<String, Double> values) {
-			super("objective");
+			this();
+			setValue(values);
+		}
+		
+		public void setValue(Map<String, Double> values) {
+			clear();
 			for (String key: new TreeSet<String>(values.keySet())) {
 				Double value = values.get(key);
+				if (value == null || Math.abs(value) < 0.001) continue;
 				P obj = new P("objective");
 				obj.setText(key + ": " + (value > 0.0 ? "+": "") + sTeachingLoadFormat.format(value));
 				if (key.endsWith(" Preferences")) {
@@ -424,14 +676,32 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 	}
 	
 	public class NotAssignedInstructor extends P implements HasColSpan {
-		NotAssignedInstructor() {
+		int iColSpan;
+
+		NotAssignedInstructor(int colspan) {
 			super("not-assigned");
+			iColSpan = colspan;
 			setText(MESSAGES.notAssignedInstructor());
 		}
 
 		@Override
 		public int getColSpan() {
-			return 8;
+			return iColSpan;
+		}
+	}
+	
+	public class Note extends P implements HasColSpan {
+		int iColSpan;
+		
+		Note(int colspan, String message) {
+			super("note");
+			iColSpan = colspan;
+			setText(message);
+		}
+
+		@Override
+		public int getColSpan() {
+			return iColSpan;
 		}
 	}
 }

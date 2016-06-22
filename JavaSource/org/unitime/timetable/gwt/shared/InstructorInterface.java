@@ -120,7 +120,12 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	public boolean equals(Object object) {
 		if (object == null || !(object instanceof InstructorInterface)) return false;
 		return getId().equals(((InstructorInterface)object).getId());
-	}	
+	}
+	
+	@Override
+	public String toString() {
+		return (getFormattedName() == null ? getLastName() + ", " + getFirstName() : getFormattedName()) + (getExternalId() == null ? "" : " (" + getExternalId() + ")");
+	}
 
 	public static class AttributeTypeInterface implements GwtRpcResponse, Serializable {
 		private static final long serialVersionUID = 1L;
@@ -159,6 +164,11 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 			if (object == null || !(object instanceof AttributeTypeInterface)) return false;
 			return getId().equals(((AttributeTypeInterface)object).getId());
 		}
+		
+		@Override
+		public String toString() {
+			return getLabel();
+		}
 	}
 	
 	public static class PositionInterface implements GwtRpcResponse, Serializable {
@@ -193,6 +203,11 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		public boolean equals(Object object) {
 			if (object == null || !(object instanceof PositionInterface)) return false;
 			return getId().equals(((PositionInterface)object).getId());
+		}
+		
+		@Override
+		public String toString() {
+			return getLabel();
 		}
 	}
 	
@@ -242,6 +257,11 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		public int hashCode() {
 			return getId().hashCode();
 		}
+		
+		@Override
+		public String toString() {
+			return getDeptCode() + " - " + getLabel();
+		}
 	}
 	
 	public static class PreferenceInterface implements IsSerializable, Serializable {
@@ -283,6 +303,11 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		@Override
 		public int hashCode() {
 			return getId().hashCode();
+		}
+		
+		@Override
+		public String toString() {
+			return getName();
 		}
 	}
 	
@@ -375,6 +400,11 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		@Override
 		public int hashCode() {
 			return getId().hashCode();
+		}
+		
+		@Override
+		public String toString() {
+			return getName() + (getType() == null ? "" : " (" + getType() + ")");
 		}
 	}
 	
@@ -565,6 +595,11 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		public int compareTo(CourseInfo course) {
 			return getCourseName().compareTo(course.getCourseName());
 		}
+		
+		@Override
+		public String toString() {
+			return getCourseName();
+		}
 	}
 	
 	public static class SectionInfo implements Comparable<SectionInfo>, IsSerializable, Serializable {
@@ -614,6 +649,11 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 			if (cmp != 0) return cmp;
 			return getSectionName().compareTo(section.getSectionName());
 		}
+		
+		@Override
+		public String toString() {
+			return (getExternalId() == null ? getSectionName() : getSectionType() + " " + getExternalId());
+		}
 	}
 	
 	public static class PreferenceInfo implements Comparable<PreferenceInfo>, IsSerializable, Serializable {
@@ -651,6 +691,10 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 			return getPreference().compareTo(pref.getPreference());
 		}
 		
+		@Override
+		public String toString() {
+			return getPreference() + " " + getOwnerName();
+		}
 	}
 	
 	public static class InstructorInfo implements Comparable<InstructorInfo>, IsSerializable, Serializable {
@@ -677,6 +721,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    
 	    public void setExternalId(String externalId) { iExternalId = externalId; }
 	    public String getExternalId() { return iExternalId; }
+	    public boolean hasExternalId() { return iExternalId != null && !iExternalId.isEmpty(); }
 	    
 	    public void setInstructorName(String name) { iName = name; }
 	    public String getInstructorName() { return iName; }
@@ -747,6 +792,11 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		}
 		public int compareTo(InstructorInfo course) {
 			return getInstructorName().compareTo(course.getInstructorName());
+		}
+		
+		@Override
+		public String toString() {
+			return getInstructorName() + (getExternalId() == null ? "" : " (" + getExternalId() + ")");
 		}
 	}
 	
@@ -844,6 +894,11 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 			if (i1.hasNext()) return 1;
 			return getRequestId().compareTo(r.getRequestId());
 		}
+		
+		@Override
+		public String toString() {
+			return getCourse() + " " + getSections();
+		}
 	}
 	
 	public static class ClassInfo implements Comparable<ClassInfo>, IsSerializable, Serializable {
@@ -901,6 +956,10 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 			return getClassId().compareTo(o.getClassId());
 		}
 	    
+		@Override
+		public String toString() {
+			return getCourse() + " " + getType() + " " + getExternalId();
+		}
 	}
 	
 	public static class TeachingRequestsPageRequest implements GwtRpcRequest<GwtRpcResponseList<TeachingRequestInfo>>, Serializable {
@@ -969,6 +1028,11 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		@Override
 		public int hashCode() {
 			return getId().hashCode();
+		}
+		
+		@Override
+		public String toString() {
+			return getAbbreviation();
 		}
 	}
 	
@@ -1042,6 +1106,148 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		@Override
 		public String toString() {
 			return getRequestId().toString();
+		}
+	}
+	
+	public static class AssignmentInfo implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		private TeachingRequestInfo iRequest;
+		private int iIndex;
+		private InstructorInfo iInstructor;
+		
+		public AssignmentInfo() {}
+		
+		public TeachingRequestInfo getRequest() { return iRequest; }
+		public void setRequest(TeachingRequestInfo request) { iRequest = request; }
+		
+		public int getIndex() { return iIndex; }
+		public void setIndex(int index) { iIndex = index; }
+		
+		public InstructorInfo getInstructor() { return iInstructor; }
+		public void setInstructor(InstructorInfo instructor) { iInstructor = instructor; }
+		
+		@Override
+		public String toString() {
+			StringBuffer sb = new StringBuffer();
+			for (SectionInfo section: getRequest().getSections()) {
+				if (section.isCommon()) continue;
+				if (sb.length() > 0) sb.append(", ");
+				sb.append(section.toString());
+			}
+			return getRequest().getCourse() + " " + sb + (getRequest().getNrInstructors() > 1 ? "[" + getIndex() + "]" : "") + ": " + (getInstructor() == null ? "NULL" : getInstructor());
+		}
+	}
+	
+	public static class SuggestionInfo implements IsSerializable, Serializable, Comparable<SuggestionInfo> {
+		private static final long serialVersionUID = 1L;
+		private Long iId;
+		private List<AssignmentInfo> iAssignments = new ArrayList<AssignmentInfo>();
+		private double iValue;
+		private Map<String,Double> iValues = new HashMap<String, Double>();	
+		
+		public SuggestionInfo() {}
+		
+		public Long getId() { return iId; }
+		public void setId(Long id) { iId = id; }
+		
+		public void addAssignment(AssignmentInfo assignment) { iAssignments.add(assignment); }
+		public List<AssignmentInfo> getAssignments() { return iAssignments; }
+
+	    public void setValue(String criterion, double value) {
+	    	iValues.put(criterion, value);
+	    }
+	    public void addValue(String criterion, double value) {
+	    	Double old = iValues.get(criterion);
+	    	iValues.put(criterion, value + (old == null ? 0.0 : old.doubleValue()));
+	    }
+	    public Map<String,Double> getValues() { return iValues; }
+	    public Double getValue(String criterion) { return iValues.get(criterion); }
+
+	    public double getValue() { return iValue; }
+	    public void setValue(double value) { iValue = value; }
+
+		@Override
+		public int compareTo(SuggestionInfo s) {
+			if (getValue() < s.getValue()) return -1;
+			if (getValue() > s.getValue()) return 1;
+			return getId().compareTo(s.getId());
+		}
+		
+		@Override
+		public String toString() {
+			StringBuffer sb = new StringBuffer();
+			for (AssignmentInfo a: getAssignments()) {
+				if (sb.length() > 0) sb.append("\n\t");
+				sb.append(a);
+			}
+			return "[" + sb + "]";
+		}
+	}
+	
+	public static class SuggestionsResponse implements GwtRpcResponse, Serializable {
+		private static final long serialVersionUID = 1L;
+		private List<SuggestionInfo> iSuggestions = null;
+		private boolean iTimeoutReached = false;
+		private int iNrCombinationsConsidered = 0, iNrSolutions = 0;
+		
+		public SuggestionsResponse() {}
+		
+		public boolean hasSuggestions() { return iSuggestions != null && !iSuggestions.isEmpty(); }
+		public void addSuggestion(SuggestionInfo suggestion) {
+			if (iSuggestions == null) iSuggestions = new ArrayList<SuggestionInfo>();
+			iSuggestions.add(suggestion);
+		}
+		public List<SuggestionInfo> getSuggestions() { return iSuggestions; }
+		
+		public boolean isTimeoutReached() { return iTimeoutReached; }
+		public void setTimeoutReached(boolean timeoutReached) { iTimeoutReached = timeoutReached; }
+		
+		public int getNrCombinationsConsidered() { return iNrCombinationsConsidered; }
+		public void setNrCombinationsConsidered(int nrCombinationsConsidered) { iNrCombinationsConsidered = nrCombinationsConsidered; }
+
+		public int getNrSolutions() { return iNrSolutions; }
+		public void setNrSolutions(int nrSolutions) { iNrSolutions = nrSolutions; }
+}
+	
+	public static class ComputeSuggestionsRequest implements GwtRpcRequest<SuggestionsResponse>, Serializable {
+		private static final long serialVersionUID = 1L;
+		private SuggestionInfo iSuggestion;
+		private int iMaxDepth = 2;
+		private int iTimeout = 5000;
+		private int iMaxResults = 20;
+		
+		public ComputeSuggestionsRequest() {}
+		
+		public SuggestionInfo getSuggestion() { return iSuggestion; }
+		public void setSuggestion(SuggestionInfo suggestion) { iSuggestion = suggestion; }
+		
+		public void setMaxDept(int maxDept) { iMaxDepth = maxDept; }
+		public int getMaxDept() { return iMaxDepth; }
+		
+		public void setTimeout(int timeout) { iTimeout = timeout; }
+		public int getTimeout() { return iTimeout; }
+		
+		public void setMaxResults(int maxResults) { iMaxResults = maxResults; }
+		public int getMaxResults() { return iMaxResults; }
+		
+		@Override
+		public String toString() {
+			return getMaxDept() + "," + getTimeout() + "," + getMaxResults();
+		}
+	}
+	
+	public static class InstructorAssignmentRequest implements GwtRpcRequest<GwtRpcResponseNull>, Serializable {
+		private static final long serialVersionUID = 1L;
+		private SuggestionInfo iSuggestion;
+		
+		public InstructorAssignmentRequest() {}
+		
+		public SuggestionInfo getSuggestion() { return iSuggestion; }
+		public void setSuggestion(SuggestionInfo suggestion) { iSuggestion = suggestion; }
+		
+		@Override
+		public String toString() {
+			return (getSuggestion() == null ? "" : getSuggestion().toString());
 		}
 	}
 

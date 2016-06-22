@@ -4339,3 +4339,37 @@ unitime-RoomSharingWidget .legend .blank {
 	font-style: italic;
 	padding-left: 50px;
 }
+
+.unitime-TeachingRequestDetail .suggestions {
+	width: 100%;
+}
+
+.unitime-TeachingRequestDetail .suggestions .common {
+	font-style: italic;
+}
+
+.unitime-TeachingRequestDetail .suggestions .not-assigned {
+	color: red;
+	font-style: italic;
+}
+
+.unitime-TeachingRequestDetail .suggestions .no-extid {
+	font-style: italic;
+}
+
+.unitime-TeachingRequestDetail .suggestions .first-line {
+	border-top: 1px dashed #9CB0CE;
+}
+
+.unitime-TeachingRequestDetail .suggestions .initial {
+	text-align: right;
+}
+
+.unitime-TeachingRequestDetail .suggestions .current {
+
+}
+
+.unitime-TeachingRequestDetail .suggestions .note {
+	font-style: italic;
+	text-align: center;
+}

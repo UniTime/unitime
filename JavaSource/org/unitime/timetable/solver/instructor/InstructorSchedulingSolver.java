@@ -50,6 +50,7 @@ import org.cpsolver.instructor.model.TeachingRequest;
 import org.dom4j.Document;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeTypeInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.ClassInfo;
@@ -57,6 +58,8 @@ import org.unitime.timetable.gwt.shared.InstructorInterface.CourseInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.PreferenceInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.SectionInfo;
+import org.unitime.timetable.gwt.shared.InstructorInterface.SuggestionInfo;
+import org.unitime.timetable.gwt.shared.InstructorInterface.SuggestionsResponse;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestInfo;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -252,7 +255,7 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
         lock.lock();
         try {
             List<TeachingRequestInfo> ret = new ArrayList<TeachingRequestInfo>();
-            for (TeachingRequest request: ((InstructorSchedulingModel)currentSolution().getModel()).getRequests()) {
+            for (TeachingRequest request: getModel().getRequests()) {
             	if (subjectAreaId != null) {
             		CourseOffering course = CourseOfferingDAO.getInstance().get(request.getCourse().getCourseId());
             		if (course == null || !subjectAreaId.equals(course.getSubjectArea().getUniqueId())) continue;
@@ -319,7 +322,7 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
         Lock lock = currentSolution().getLock().readLock();
         lock.lock();
         try {
-        	for (TeachingRequest request: ((InstructorSchedulingModel)currentSolution().getModel()).getRequests()) {
+        	for (TeachingRequest request: getModel().getRequests()) {
         		Map<Long, InstructorInfo> values = new HashMap<Long, InstructorInfo>();
         		if (request.getRequestId() == requestId) {
         			TeachingRequestInfo info = toRequestInfo(request);
@@ -359,6 +362,77 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
             	}
             }
             return null;
+        } finally {
+        	lock.unlock();
+        }
+	}
+	
+    protected String toHtml(TeachingAssignment assignment) {
+    	return "<a href='instructorDetail.do?instructorId=" + assignment.getInstructor().getInstructorId() + "'>" + assignment.getInstructor().getName() + "</a>";
+    }
+    
+    protected String toHtml(TeachingRequest request) {
+    	return "<a href='classDetail.do?cid=" + request.getSections().get(0).getSectionId() + "'>" + request.getCourse().getCourseName() + " " + request.getSections() + "</a>";
+    }
+    
+    protected String toHtml(TeachingRequest.Variable variable) {
+    	return "<a href='classDetail.do?cid=" + variable.getRequest().getSections().get(0).getSectionId() + "'>" + variable.getRequest().getCourse().getCourseName() +
+    			(variable.getRequest().getNrInstructors() != 1 ? "[" + variable.getInstructorIndex() + "]" : "") + " " + variable.getRequest().getSections() + "</a>";
+    }
+
+	@Override
+	public void assign(SuggestionInfo suggestion) {
+        Lock lock = currentSolution().getLock().writeLock();
+        lock.lock();
+        try {
+        	Progress p = Progress.getInstance(getModel());
+        	List<TeachingRequest.Variable> variables = new ArrayList<TeachingRequest.Variable>();
+        	List<TeachingAssignment> values = new ArrayList<TeachingAssignment>();        	
+        	assignments: for (AssignmentInfo assignment: suggestion.getAssignments()) {
+        		for (TeachingRequest request: getModel().getRequests()) {
+        			if (request.getRequestId() == assignment.getRequest().getRequestId()) {
+        				TeachingRequest.Variable var = request.getVariable(assignment.getIndex());
+        				TeachingAssignment cur = currentSolution().getAssignment().getValue(var);
+        				variables.add(var);
+        				if (assignment.getInstructor() != null) {
+        					for (TeachingAssignment val: var.values(currentSolution().getAssignment())) {
+        						if (val.getInstructor().getInstructorId() == assignment.getInstructor().getInstructorId()) {
+        							values.add(val);
+        							p.info(toHtml(var) + ": " + (cur == null ? "not assigned" : toHtml(cur)) + " &rarr; " + toHtml(val));
+        							continue assignments;
+        						}
+        					}
+        					p.info(toHtml(var) + ": " + (cur == null ? "not assigned" : toHtml(cur)) + " &rarr; not assigned");
+        				}
+        			}
+        		}
+        		for (TeachingRequest.Variable var: variables)
+        			currentSolution().getAssignment().unassign(0l, var);
+        		for (TeachingAssignment val: values)
+        			currentSolution().getAssignment().assign(0l, val);
+        	}
+        } finally {
+        	lock.unlock();
+        }
+	}
+
+	@Override
+	public SuggestionsResponse computeSuggestions(SuggestionInfo suggestion, int maxDepth, int timeout, int maxResults) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
+        	InstructorSchedulingSuggestions suggestions = new InstructorSchedulingSuggestions(this);
+        	suggestions.setDepth(maxDepth);
+        	suggestions.setLimit(maxResults);
+        	suggestions.setTimeOut(timeout);
+        	SuggestionsResponse response = new SuggestionsResponse();
+        	for (SuggestionInfo s: suggestions.computeSuggestions(suggestion)) {
+        		response.addSuggestion(s);
+        	}
+        	response.setTimeoutReached(suggestions.wasTimeoutReached());
+        	response.setNrCombinationsConsidered(suggestions.getNrCombinationsConsidered());
+        	response.setNrSolutions(suggestions.getNrSolutions());
+        	return response;
         } finally {
         	lock.unlock();
         }
