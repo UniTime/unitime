@@ -387,7 +387,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                                 students.add(studentId); break;
                             }
                     }
-                    iDirects.add(new DirectConflict(meeting, students));
+                    if (!students.isEmpty()) iDirects.add(new DirectConflict(meeting, students));
                 }
             }
         }
