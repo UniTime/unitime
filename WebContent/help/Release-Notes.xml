@@ -64,6 +64,18 @@
 		</item>
 	</category>
 	<category>
+		<title>Examination Timetabling</title>
+		<item>
+			<name>Examination Reports</name>
+			<description>
+				<line>Unavailability Conflicts: When counting conflicts from the database, do not create conflicts with no students.</line>
+				<line>This fixes the Direct Student Conflicts report (Examination Reports page).
+					<line>Zero conflicts lines shown when the report is computed from the database and the "Show classes/courses" toggle is unchecked.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Other</title>
 		<item>
 			<name>Security: Possible SQL Injection Fixed</name>
