@@ -940,7 +940,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	    public String getLocationCapacity() {
 	    	return (iMeetings.first().getLocation() == null ? "" : iMeetings.first().getLocation().getSize() == null ? "" : iMeetings.first().getLocation().getSize().toString());
 	    }
-
+	    
+	    public String getLocationMessage() {
+	    	ResourceInterface location = iMeetings.first().getLocation();
+	    	return location == null || !location.hasMessage() ? null : location.getMessage();
+	    }
 	    
 	    public Date getApprovalDate() {
 	    	Date date = null;
