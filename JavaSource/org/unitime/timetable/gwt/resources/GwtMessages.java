@@ -1179,6 +1179,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Assigned Instructors:")
 	String propAssignedInstructors();
 	
+	@DefaultMessage("Score:")
+	String propSuggestionScore();
+	
+	@DefaultMessage("Objectives:")
+	String propSuggestionObjectives();
+	
 	@DefaultMessage("Objectives:")
 	String propObjectives();
 
@@ -1370,6 +1376,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Search <u>L</u>onger")
 	String buttonSearchLonger();
+	
+	@DefaultMessage("<u>A</u>ssign")
+	String buttonAssign();
 
 	@DefaultMessage("Filter")
 	String sectFilter();
@@ -3839,6 +3848,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Suggestions")
 	String headerSuggestions();
+	
+	@DefaultMessage("Selected Assignment")
+	String headerSelectedAssignment();
 	
 	@DefaultMessage("The selected offering has no curricula.")
 	String offeringHasNoCurricula();

@@ -21,10 +21,8 @@ package org.unitime.timetable.solver.instructor;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
@@ -32,7 +30,6 @@ import org.cpsolver.coursett.Constants;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.criteria.Criterion;
-import org.cpsolver.ifs.model.Constraint;
 import org.cpsolver.ifs.solver.Solver;
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.ProblemLoader;
@@ -54,11 +51,11 @@ import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeTypeInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.ClassInfo;
+import org.unitime.timetable.gwt.shared.InstructorInterface.ComputeSuggestionsRequest;
 import org.unitime.timetable.gwt.shared.InstructorInterface.CourseInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.PreferenceInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.SectionInfo;
-import org.unitime.timetable.gwt.shared.InstructorInterface.SuggestionInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.SuggestionsResponse;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestInfo;
 import org.unitime.timetable.model.CourseOffering;
@@ -239,6 +236,7 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
 	
 	protected InstructorInfo toInstructorInfo(TeachingAssignment assignment) {
 		InstructorInfo info = toInstructorInfo(assignment.getInstructor());
+		info.setAssignmentIndex(assignment.variable().getInstructorIndex());
 		Instructor.Context context = assignment.getInstructor().getContext(currentSolution().getAssignment());
 		if (context != null)
 			info.setAssignedLoad(context.getLoad());
@@ -323,7 +321,6 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
         lock.lock();
         try {
         	for (TeachingRequest request: getModel().getRequests()) {
-        		Map<Long, InstructorInfo> values = new HashMap<Long, InstructorInfo>();
         		if (request.getRequestId() == requestId) {
         			TeachingRequestInfo info = toRequestInfo(request);
                 	for (TeachingRequest.Variable var: request.getVariables()) {
@@ -331,33 +328,6 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
                 		if (placement != null)
                 			info.addInstructor(toInstructorInfo(placement));
                 	}
-                	for (TeachingRequest.Variable var: request.getVariables()) {
-                		for (TeachingAssignment assignment: var.values(currentSolution().getAssignment())) {
-                			InstructorInfo value = values.get(assignment.getInstructor().getInstructorId());
-                			if (value == null) {
-                				value = toInstructorInfo(assignment);
-                				values.put(assignment.getInstructor().getInstructorId(), value);
-                    			info.addDomainValue(value);
-                			}
-                			Map<Constraint<TeachingRequest.Variable, TeachingAssignment>, Set<TeachingAssignment>> conflicts = currentSolution().getModel().conflictConstraints(currentSolution().getAssignment(), assignment);
-                			if (conflicts != null) {
-                				for (Map.Entry<Constraint<TeachingRequest.Variable, TeachingAssignment>, Set<TeachingAssignment>> entry: conflicts.entrySet()) {
-                					for (TeachingAssignment conflict: entry.getValue()) {
-                						if (conflict.variable().getRequest().equals(request)) continue;
-                						TeachingRequestInfo c = value.getConflict(conflict.variable().getRequest().getRequestId());
-                						if (c == null) {
-                							c = toRequestInfo(conflict.variable().getRequest());
-                							c.setConflict(entry.getKey().getClass().getSimpleName());
-                							c.addInstructor(toInstructorInfo(conflict));
-                							value.addConflict(c);
-                						} else if (c.getInstructor(conflict.getInstructor().getInstructorId()) == null) {
-                							c.addInstructor(toInstructorInfo(conflict));
-                						}
-                					}
-            					}
-            				}
-            			}
-            		}
             		return info;
             	}
             }
@@ -381,14 +351,14 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
     }
 
 	@Override
-	public void assign(SuggestionInfo suggestion) {
+	public void assign(List<AssignmentInfo> assignments) {
         Lock lock = currentSolution().getLock().writeLock();
         lock.lock();
         try {
         	Progress p = Progress.getInstance(getModel());
         	List<TeachingRequest.Variable> variables = new ArrayList<TeachingRequest.Variable>();
         	List<TeachingAssignment> values = new ArrayList<TeachingAssignment>();        	
-        	assignments: for (AssignmentInfo assignment: suggestion.getAssignments()) {
+        	assignments: for (AssignmentInfo assignment: assignments) {
         		for (TeachingRequest request: getModel().getRequests()) {
         			if (request.getRequestId() == assignment.getRequest().getRequestId()) {
         				TeachingRequest.Variable var = request.getVariable(assignment.getIndex());
@@ -406,33 +376,22 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
         				}
         			}
         		}
-        		for (TeachingRequest.Variable var: variables)
-        			currentSolution().getAssignment().unassign(0l, var);
-        		for (TeachingAssignment val: values)
-        			currentSolution().getAssignment().assign(0l, val);
         	}
+    		for (TeachingRequest.Variable var: variables)
+    			currentSolution().getAssignment().unassign(0l, var);
+    		for (TeachingAssignment val: values)
+    			currentSolution().getAssignment().assign(0l, val);
         } finally {
         	lock.unlock();
         }
 	}
 
 	@Override
-	public SuggestionsResponse computeSuggestions(SuggestionInfo suggestion, int maxDepth, int timeout, int maxResults) {
+	public SuggestionsResponse computeSuggestions(ComputeSuggestionsRequest request) {
         Lock lock = currentSolution().getLock().readLock();
         lock.lock();
         try {
-        	InstructorSchedulingSuggestions suggestions = new InstructorSchedulingSuggestions(this);
-        	suggestions.setDepth(maxDepth);
-        	suggestions.setLimit(maxResults);
-        	suggestions.setTimeOut(timeout);
-        	SuggestionsResponse response = new SuggestionsResponse();
-        	for (SuggestionInfo s: suggestions.computeSuggestions(suggestion)) {
-        		response.addSuggestion(s);
-        	}
-        	response.setTimeoutReached(suggestions.wasTimeoutReached());
-        	response.setNrCombinationsConsidered(suggestions.getNrCombinationsConsidered());
-        	response.setNrSolutions(suggestions.getNrSolutions());
-        	return response;
+        	return new InstructorSchedulingSuggestions(this).computeSuggestions(request);
         } finally {
         	lock.unlock();
         }

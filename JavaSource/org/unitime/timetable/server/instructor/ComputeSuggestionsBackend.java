@@ -46,7 +46,7 @@ public class ComputeSuggestionsBackend implements GwtRpcImplementation<ComputeSu
 		context.checkPermission(Right.InstructorSchedulingSolver);
 		InstructorSchedulingProxy solver = instructorSchedulingSolverService.getSolver();
 		if (solver != null)
-			return solver.computeSuggestions(request.getSuggestion(), request.getMaxDept(), request.getTimeout(), request.getMaxResults());
+			return solver.computeSuggestions(request);
 		throw new GwtRpcException(MESSAGES.warnSolverNotStarted());
 	}
 

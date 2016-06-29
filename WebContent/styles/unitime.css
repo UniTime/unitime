@@ -4340,6 +4340,10 @@ unitime-RoomSharingWidget .legend .blank {
 	padding-left: 50px;
 }
 
+.unitime-TeachingRequestDetail .instructors td {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
 .unitime-TeachingRequestDetail .suggestions {
 	width: 100%;
 }
@@ -4351,25 +4355,80 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-TeachingRequestDetail .suggestions .not-assigned {
 	color: red;
 	font-style: italic;
+	padding-right: 2px;
 }
 
 .unitime-TeachingRequestDetail .suggestions .no-extid {
 	font-style: italic;
+	padding-right: 2px;
 }
 
-.unitime-TeachingRequestDetail .suggestions .first-line {
+.unitime-TeachingRequestDetail .suggestions td {
 	border-top: 1px dashed #9CB0CE;
+}
+
+.unitime-TeachingRequestDetail .suggestions .unitime-TableHeader {
+	border-top: none;
 }
 
 .unitime-TeachingRequestDetail .suggestions .initial {
 	text-align: right;
 }
 
-.unitime-TeachingRequestDetail .suggestions .current {
-
-}
-
 .unitime-TeachingRequestDetail .suggestions .note {
 	font-style: italic;
 	text-align: center;
+}
+
+.unitime-TeachingRequestDetail .suggestions .sections {
+	display: block;
+	height: 18px;
+}
+
+.unitime-TeachingRequestDetail .suggestions .section {
+	white-space: nowrap;
+	display: inline-block;
+	padding-right: 5px;
+}
+
+.unitime-TeachingRequestDetail .assignments {
+	width: 100%;
+}
+
+.unitime-TeachingRequestDetail .assignments .common {
+	font-style: italic;
+}
+
+.unitime-TeachingRequestDetail .assignments .not-assigned {
+	color: red;
+	font-style: italic;
+	padding-right: 2px;
+}
+
+.unitime-TeachingRequestDetail .assignments .no-extid {
+	font-style: italic;
+	padding-right: 2px;
+}
+
+.unitime-TeachingRequestDetail .assignments td {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-TeachingRequestDetail .assignments .initial {
+	text-align: right;
+}
+
+.unitime-TeachingRequestDetail .assignments .sections {
+	display: block;
+	height: 18px;
+}
+
+.unitime-TeachingRequestDetail .assignments .section {
+	white-space: nowrap;
+	display: inline-block;
+	padding-right: 5px;
+}
+
+.unitime-TeachingRequestDetail .assignments .conflict {
+	color:red;
 }

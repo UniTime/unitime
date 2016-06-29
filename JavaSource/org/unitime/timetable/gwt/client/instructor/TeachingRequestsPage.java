@@ -46,6 +46,7 @@ import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.PreferenceInfo;
@@ -120,22 +121,7 @@ public class TeachingRequestsPage extends SimpleForm {
 		iFilterPanel.addButton("search", MESSAGES.buttonSearch(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				LoadingWidget.getInstance().show(MESSAGES.waitLoadingTeachingRequests());
-				RPC.execute(new TeachingRequestsPageRequest(iFilter.getSelectedIndex() <= 1 ? null : Long.valueOf(iFilter.getSelectedValue()), iAssigned), new AsyncCallback<GwtRpcResponseList<TeachingRequestInfo>>() {
-					@Override
-					public void onFailure(Throwable caught) {
-						LoadingWidget.getInstance().hide();
-						iFilterPanel.setErrorMessage(MESSAGES.failedToLoadTeachingRequests(caught.getMessage()));
-						UniTimeNotifications.error(MESSAGES.failedToLoadTeachingRequests(caught.getMessage()), caught);
-					}
-
-					@Override
-					public void onSuccess(GwtRpcResponseList<TeachingRequestInfo> result) {
-						LoadingWidget.getInstance().hide();
-						populate(result);
-						iTable.setVisible(true);
-					}
-				});
+				search();
 			}
 		});
 		iFilterPanel.setEnabled("search", false);
@@ -151,7 +137,12 @@ public class TeachingRequestsPage extends SimpleForm {
 			public void onMouseClick(TableEvent<SingleTeachingAssingment> event) {
 				if (event.getData() != null) {
 					if (iDetail == null) {
-						iDetail = new TeachingRequestDetailPage(iProperties);
+						iDetail = new TeachingRequestDetailPage(iProperties) {
+							@Override
+							protected void onAssignmentChanged(List<AssignmentInfo> assignments) {
+								if (iTable.isVisible()) search();
+							}
+						};
 						iDetail.addCloseHandler(new CloseHandler<PopupPanel>() {
 							@Override
 							public void onClose(CloseEvent<PopupPanel> event) {
@@ -188,6 +179,25 @@ public class TeachingRequestsPage extends SimpleForm {
 						iFilter.setSelectedIndex(iFilter.getItemCount() - 1);
 				}
 				iFilterPanel.setEnabled("search", iFilter.getSelectedIndex() > 0);
+			}
+		});
+	}
+	
+	void search() {
+		LoadingWidget.getInstance().show(MESSAGES.waitLoadingTeachingRequests());
+		RPC.execute(new TeachingRequestsPageRequest(iFilter.getSelectedIndex() <= 1 ? null : Long.valueOf(iFilter.getSelectedValue()), iAssigned), new AsyncCallback<GwtRpcResponseList<TeachingRequestInfo>>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				LoadingWidget.getInstance().hide();
+				iFilterPanel.setErrorMessage(MESSAGES.failedToLoadTeachingRequests(caught.getMessage()));
+				UniTimeNotifications.error(MESSAGES.failedToLoadTeachingRequests(caught.getMessage()), caught);
+			}
+
+			@Override
+			public void onSuccess(GwtRpcResponseList<TeachingRequestInfo> result) {
+				LoadingWidget.getInstance().hide();
+				populate(result);
+				iTable.setVisible(true);
 			}
 		});
 	}
@@ -661,19 +671,17 @@ public class TeachingRequestsPage extends SimpleForm {
 	}
 	
 	public class TimePreferences extends P implements HasRefresh {
-		private String iInstructorId = null;
 		private String iPattern = null;
 		private List<PreferenceInfo> iPreferences = null;
 		
 		public TimePreferences(InstructorInfo instructor) {
 			super("preferences");
-			iInstructorId = String.valueOf(instructor.getInstructorId());
 			iPattern = instructor.getAvailability();
 			iPreferences = instructor.getTimePreferences();
 			addMouseOverHandler(new MouseOverHandler() {
 				@Override
 				public void onMouseOver(MouseOverEvent event) {
-					InstructorAvailabilityHint.showHint(getElement(), iInstructorId, true, iPattern);
+					InstructorAvailabilityHint.showHint(getElement(), iPattern, true, null);
 				}
 			});
 			addMouseOutHandler(new MouseOutHandler() {

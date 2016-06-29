@@ -20,8 +20,10 @@
 package org.unitime.timetable.gwt.client.instructor;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
@@ -35,7 +37,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
-import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasColSpan;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -46,6 +48,7 @@ import org.unitime.timetable.gwt.shared.InstructorInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.ComputeSuggestionsRequest;
+import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorAssignmentRequest;
 import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.PreferenceInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.PreferenceInterface;
@@ -57,6 +60,7 @@ import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestsPagePropertiesResponse;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.FontStyle;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -101,15 +105,16 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 	private int iAttributePrefsRow, iInstructorPrefsRow, iObjectivesRow, iAvailableInstructorsRow, iSuggestionsRow, iAssignmentRow;
 	private UniTimeTable<SectionInfo> iSectionsTable;
 	private UniTimeTable<InstructorInfo> iInstructorsTable;
-	private UniTimeTable<InstructorInfo> iAvailableInstructorsTable;
+	private UniTimeTable<SuggestionInfo> iAvailableInstructorsTable;
 	private UniTimeHeaderPanel iSuggestionsHeader;
+	private UniTimeHeaderPanel iAssignmentHeader;
 	
 	private TeachingRequestInfo iRequest;
-	private SuggestionInfo iSuggestion;
 	private ComputeSuggestionsRequest iSuggestionsRequest;
-	private AsyncCallback<SuggestionsResponse> iSuggestionsCallback;
 	private UniTimeTable<SuggestionInfo> iSuggestionsTable;
 	private UniTimeTable<AssignmentInfo> iAssignmentTable;
+	private Objectives iAssignmentObjectives;
+	private Label iAssignmentScore;
 	
 	public TeachingRequestDetailPage(TeachingRequestsPagePropertiesResponse properties) {
 		super(true, true);
@@ -165,8 +170,54 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 		iInstructorsTable.setAllowSelection(true);
 		iInstructorsTable.setAllowMultiSelect(false);
 		
+		iAssignmentHeader = new UniTimeHeaderPanel(MESSAGES.headerSelectedAssignment());
+		iAssignmentRow = iForm.addHeaderRow(iAssignmentHeader);
+		iAssignmentTable = new UniTimeTable<AssignmentInfo>();
+		iAssignmentTable.addStyleName("assignments");
+		List<UniTimeTableHeader> asgHeader = new ArrayList<UniTimeTableHeader>();
+		asgHeader.add(new UniTimeTableHeader("&nbsp;"));
+		asgHeader.add(new UniTimeTableHeader(MESSAGES.colCourse()));
+		asgHeader.add(new UniTimeTableHeader(MESSAGES.colSection()));
+		asgHeader.add(new UniTimeTableHeader(MESSAGES.colExternalId(), 3));
+		asgHeader.add(new UniTimeTableHeader(MESSAGES.colNamePerson(), 3));
+		asgHeader.add(new UniTimeTableHeader(MESSAGES.colAttributes()));
+		asgHeader.add(new UniTimeTableHeader(MESSAGES.colCoursePreferences()));
+		asgHeader.add(new UniTimeTableHeader(MESSAGES.colTimePreferences()));
+		asgHeader.add(new UniTimeTableHeader(MESSAGES.colDistributionPreferences()));
+		asgHeader.add(new UniTimeTableHeader(MESSAGES.colObjectives()));
+		iAssignmentTable.addRow(null, asgHeader);
+		iForm.addRow(iAssignmentTable);
+		iAssignmentHeader.addButton("assign", MESSAGES.buttonAssign(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				iAssignmentHeader.showLoading();
+				iAssignmentHeader.setEnabled("assign", false);
+				final InstructorAssignmentRequest request = new InstructorAssignmentRequest();
+				for (AssignmentInfo assignment: iAssignmentTable.getData())
+					request.addAssignment(assignment);
+				RPC.execute(request, new AsyncCallback<GwtRpcResponseNull>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						iAssignmentHeader.setErrorMessage(caught.getMessage());
+					}
+
+					@Override
+					public void onSuccess(GwtRpcResponseNull result) {
+						iAssignmentHeader.clearMessage();
+						hide();
+						onAssignmentChanged(request.getAssignments());
+					}
+				});
+			}
+		});
+		iAssignmentHeader.setEnabled("assign", false);
+		iAssignmentScore = new Label();
+		iForm.addRow(MESSAGES.propSuggestionScore(), iAssignmentScore);
+		iAssignmentObjectives = new Objectives();
+		iForm.addRow(MESSAGES.propSuggestionObjectives(), iAssignmentObjectives);
+		
 		iAvailableInstructorsRow = iForm.addHeaderRow(MESSAGES.headerAvailableInstructors());
-		iAvailableInstructorsTable = new UniTimeTable<InstructorInfo>();
+		iAvailableInstructorsTable = new UniTimeTable<SuggestionInfo>();
 		iAvailableInstructorsTable.addStyleName("instructors");
 		List<UniTimeTableHeader> avInstrHeader = new ArrayList<UniTimeTableHeader>();
 		avInstrHeader.add(new UniTimeTableHeader(MESSAGES.colExternalId()));
@@ -201,17 +252,19 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 		iSuggestionsHeader.addButton("longer", MESSAGES.buttonSearchLonger(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				if (iSuggestionsRequest != null)
+				if (iSuggestionsRequest != null) {
 					iSuggestionsRequest.setTimeout(2 * iSuggestionsRequest.getTimeout());
-				computeSuggestions(true);
+					computeSuggestions(iSuggestionsRequest, true);
+				}
 			}
 		});
 		iSuggestionsHeader.addButton("deeper", MESSAGES.buttonSearchDeeper(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				if (iSuggestionsRequest != null)
+				if (iSuggestionsRequest != null) {
 					iSuggestionsRequest.setMaxDept(1 + iSuggestionsRequest.getMaxDept());
-				computeSuggestions(true);
+					computeSuggestions(iSuggestionsRequest, true);
+				}
 			}
 		});
 		iSuggestionsHeader.setEnabled("longer", false);
@@ -229,130 +282,59 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 		iInstructorsTable.addMouseClickListener(new UniTimeTable.MouseClickListener<InstructorInterface.InstructorInfo>() {
 			@Override
 			public void onMouseClick(UniTimeTable.TableEvent<InstructorInterface.InstructorInfo> event) {
-				if (event.getRow() > 1) {
+				if (event.getRow() > 0) {
 					iInstructorsTable.setSelected(event.getRow(), true);
-					if (iAvailableInstructorsTable.getRowCount() > 1) {
+					if (iAssignmentTable.getRowCount() <= 1) {
+						SuggestionInfo suggestion = new SuggestionInfo();
+						AssignmentInfo assignment = new AssignmentInfo();
+						int row = iInstructorsTable.getSelectedRow();
+						assignment.setRequest(iRequest); assignment.setIndex(row <= 0 ? 0 : row - 1);
+						assignment.setInstructor(row <= 0 ? null : iInstructorsTable.getData(row));
+						suggestion.addAssignment(assignment);
+						showAssignment(suggestion);
 						iForm.getRowFormatter().setVisible(iAvailableInstructorsRow, true);
 						iForm.getRowFormatter().setVisible(iAvailableInstructorsRow + 1, true);
-						
+						center();
 					}
+					computeSuggestions();
 				}
 			}
 		});
 		
-		iSuggestionsCallback = new AsyncCallback<SuggestionsResponse>() {
+		iAssignmentTable.addMouseClickListener(new UniTimeTable.MouseClickListener<AssignmentInfo>() {
 			@Override
-			public void onFailure(Throwable caught) {
-				iSuggestionsHeader.setErrorMessage(MESSAGES.failedToComputeSuggestions(caught.getMessage()));
-				iSuggestionsTable.setVisible(false);
+			public void onMouseClick(UniTimeTable.TableEvent<AssignmentInfo> event) {
+				if (event.getData() != null)
+					populate(event.getData().getRequest(), event.getData().getIndex());
 			}
-
+		});
+		
+		iSuggestionsTable.addMouseClickListener(new UniTimeTable.MouseClickListener<SuggestionInfo>() {
 			@Override
-			public void onSuccess(SuggestionsResponse result) {
-				iSuggestionsHeader.clearMessage();
-				if (result.hasSuggestions()) {
-					iSuggestionsTable.clearTable(1);
-					for (SuggestionInfo suggestion: result.getSuggestions()) {
-						boolean first = true;
-						for (AssignmentInfo assignment: suggestion.getAssignments()) {
-							List<Widget> line = new ArrayList<Widget>();
-							if (first) {
-								Label score = new Label(sSuggestionScoreFormat.format(suggestion.getValue()));
-								if (suggestion.getValue() > 0) score.getElement().getStyle().setColor("red");
-								if (suggestion.getValue() < 0) score.getElement().getStyle().setColor("green");
-								line.add(score);
-							} else {
-								line.add(new Label());
-							}
-							line.add(new Label(assignment.getRequest().getCourse().getCourseName()));
-							P p = new P("sections");
-							for (SectionInfo s: assignment.getRequest().getSections()) {
-								P i = new P("section");
-								i.setText(s.getSectionType() + (s.getExternalId() == null ? "" : " " + s.getExternalId()));
-								if (s.isCommon()) i.addStyleName("common");
-								p.add(i);
-							}
-							line.add(p);
-							InstructorInfo initial = (assignment.getRequest().hasInstructors() ? assignment.getRequest().getInstructors().get(0) : null);
-							InstructorInfo current = assignment.getInstructor();
-							if (initial == null) {
-								Label na = new Label(MESSAGES.notAssigned()); na.addStyleName("not-assigned");
-								na.addStyleName("initial");
-								line.add(na);
-							} else {
-								Label extId = new Label(initial.hasExternalId() ? initial.getExternalId() : MESSAGES.noExternalId());
-								if (!initial.hasExternalId()) extId.addStyleName("no-extid");
-								extId.addStyleName("initial");
-								line.add(extId);
-							}
-							line.add(new HTML(MESSAGES.assignmentArrow()));
-							if (current == null) {
-								Label na = new Label(MESSAGES.notAssigned()); na.addStyleName("not-assigned");
-								na.addStyleName("current");
-								line.add(na);
-							} else {
-								Label extId = new Label(current.hasExternalId() ? current.getExternalId() : MESSAGES.noExternalId());
-								if (!current.hasExternalId()) extId.addStyleName("no-extid");
-								extId.addStyleName("current");
-								line.add(extId);
-							}
-							if (initial == null) {
-								Label na = new Label(MESSAGES.notAssigned()); na.addStyleName("not-assigned");
-								na.addStyleName("initial");
-								line.add(na);
-							} else {
-								Label name = new Label(initial.getInstructorName());
-								name.addStyleName("initial");
-								line.add(name);
-							}
-							line.add(new HTML(MESSAGES.assignmentArrow()));
-							if (current == null) {
-								Label na = new Label(MESSAGES.notAssigned()); na.addStyleName("not-assigned");
-								na.addStyleName("current");
-								line.add(na);
-							} else {
-								Label name = new Label(current.getInstructorName());
-								name.addStyleName("current");
-								line.add(name);
-							}
-							if (first) {
-								line.add(new Objectives(suggestion.getValues()));
-							}
-							int row = iSuggestionsTable.addRow(suggestion, line);
-							if (first) {
-								for (int i = 0; i < iSuggestionsTable.getCellCount(row); i++)
-									iSuggestionsTable.getCellFormatter().addStyleName(row, i, "first-line");
-								iSuggestionsTable.getFlexCellFormatter().setRowSpan(row, line.size() - 1, suggestion.getAssignments().size());
-								iSuggestionsTable.getFlexCellFormatter().getElement(row, line.size() - 1).getStyle().setBackgroundColor("white");
-							}
-							first = false;
-						}
-					}
-					if (result.getSuggestions().size() < result.getNrSolutions()) {
-						if (result.isTimeoutReached())
-							iSuggestionsTable.addRow(null, new Note(9, MESSAGES.suggestionsNoteTimeoutNResults(iSuggestionsRequest.getTimeout() / 1000, result.getNrCombinationsConsidered(), iSuggestionsRequest.getMaxDept(), result.getSuggestions().size(), result.getNrSolutions())));
-						else
-							iSuggestionsTable.addRow(null, new Note(9, MESSAGES.suggestionsNoteNoTimeoutNResults(result.getNrCombinationsConsidered(), iSuggestionsRequest.getMaxDept(), result.getSuggestions().size(), result.getNrSolutions())));
-					} else {
-						if (result.isTimeoutReached())
-							iSuggestionsTable.addRow(null, new Note(9, MESSAGES.suggestionsNoteTimeoutAllResults(iSuggestionsRequest.getTimeout() / 1000, result.getNrCombinationsConsidered(), iSuggestionsRequest.getMaxDept(), result.getSuggestions().size())));
-						else
-							iSuggestionsTable.addRow(null, new Note(9, MESSAGES.suggestionsNoteNoTimeoutAllResults(result.getNrCombinationsConsidered(), iSuggestionsRequest.getMaxDept(), result.getSuggestions().size())));						
-					}
-				} else {
-					if (result.isTimeoutReached())
-						iSuggestionsTable.addRow(null, new Note(9, MESSAGES.suggestionsNoteTimeoutNoResults(iSuggestionsRequest.getTimeout() / 1000, result.getNrCombinationsConsidered(), iSuggestionsRequest.getMaxDept())));
-					else
-						iSuggestionsTable.addRow(null, new Note(9, MESSAGES.suggestionsNoteNoTimeoutNoResults(result.getNrCombinationsConsidered(), iSuggestionsRequest.getMaxDept())));
+			public void onMouseClick(UniTimeTable.TableEvent<SuggestionInfo> event) {
+				if (event.getData() != null) {
+					showAssignment(event.getData());
+					iScroll.scrollToTop();
 				}
-				iSuggestionsTable.setVisible(true);
-				iSuggestionsHeader.setEnabled("longer", result.isTimeoutReached());
-				iSuggestionsHeader.setEnabled("deeper", true);
 			}
-		};
+		});
+		
+		iAvailableInstructorsTable.addMouseClickListener(new UniTimeTable.MouseClickListener<SuggestionInfo>() {
+			@Override
+			public void onMouseClick(UniTimeTable.TableEvent<SuggestionInfo> event) {
+				if (event.getData() != null) {
+					showAssignment(event.getData());
+					computeSuggestions();
+					iScroll.scrollToTop();
+				}
+			}
+		});
 	}
 	
+	protected void onAssignmentChanged(List<AssignmentInfo> assignments) {}
+	
 	public void showDetail(Long id) {
+		iAssignmentTable.clearTable(1);
 		LoadingWidget.getInstance().show(MESSAGES.waitLoadTeachingRequestDetail());
 		ToolBox.setMaxHeight(iScroll.getElement().getStyle(), Math.round(0.9 * Window.getClientHeight()) + "px");
 		RPC.execute(new TeachingRequestDetailRequest(id), new AsyncCallback<TeachingRequestInfo>() {
@@ -366,35 +348,367 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 			@Override
 			public void onSuccess(TeachingRequestInfo result) {
 				LoadingWidget.getInstance().hide();
-				populate(result);
+				populate(result, null);
 				center();
 				RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
 			}
 		});
 	}
 	
-	protected void computeSuggestions(boolean recompute) {
-		if (!recompute || iSuggestionsRequest == null) {
-			AssignmentInfo assignment = new AssignmentInfo();
-			int row = iInstructorsTable.getSelectedRow();
-			assignment.setRequest(iRequest); assignment.setIndex(row <= 0 ? 0 : row - 1); assignment.setInstructor(null);
-			SuggestionInfo suggestion = new SuggestionInfo();
-			suggestion.addAssignment(assignment);
-			iSuggestionsRequest = new ComputeSuggestionsRequest();
-			iSuggestionsRequest.setSuggestion(suggestion);
+	protected void computeSuggestions() {
+		ComputeSuggestionsRequest request = new ComputeSuggestionsRequest();
+		for (AssignmentInfo assignment: iAssignmentTable.getData()) {
+			if (assignment.getInstructor() != null) {
+				request.addAssignment(assignment);
+			}
 		}
+		computeSuggestions(request, false);
+	}
+	
+	protected void computeSuggestions(ComputeSuggestionsRequest request, final boolean scrollToSuggestions) {
+		iSuggestionsRequest = request;
+		iSuggestionsRequest.setSelectedRequestId(iRequest.getRequestId());
+		iSuggestionsRequest.setSelectedIndex(iInstructorsTable.getSelectedRow() - 1);
 		iForm.getRowFormatter().setVisible(iSuggestionsRow, true);
 		iForm.getRowFormatter().setVisible(iSuggestionsRow + 1, true);
 		iSuggestionsHeader.showLoading();
 		iSuggestionsHeader.setEnabled("longer", false);
 		iSuggestionsHeader.setEnabled("deeper", false);
 		iSuggestionsTable.setVisible(false);
-		RPC.execute(iSuggestionsRequest, iSuggestionsCallback);
+		if (iAssignmentTable.getRowCount() > 1) {
+			iAssignmentHeader.setEnabled("assign", false);
+			iAssignmentHeader.showLoading();
+		}
+		iForm.getRowFormatter().setVisible(iAvailableInstructorsRow, false);
+		iForm.getRowFormatter().setVisible(iAvailableInstructorsRow + 1, false);
+		RPC.execute(iSuggestionsRequest, new AsyncCallback<SuggestionsResponse>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				iSuggestionsHeader.setErrorMessage(MESSAGES.failedToComputeSuggestions(caught.getMessage()));
+				iSuggestionsTable.setVisible(false);
+			}
+
+			@Override
+			public void onSuccess(SuggestionsResponse result) {
+				iSuggestionsHeader.clearMessage();
+				iAssignmentHeader.clearMessage();
+				showAssignment(result.getCurrentAssignment());
+				showSuggestions(result);
+				showAvailableInstructors(result.getDomainValues());
+				center();
+				if (scrollToSuggestions) {
+					Element scroll = iScroll.getElement();
+					Element item = iForm.getRowFormatter().getElement(iSuggestionsRow);
+					int realOffset = 0;
+					while (item !=null && !item.equals(scroll)) {
+						realOffset += item.getOffsetTop();
+						item = item.getOffsetParent();
+					}
+					scroll.setScrollTop(realOffset - scroll.getOffsetHeight() / 2);
+				}
+			}
+		});		
 	}
 	
-	protected void populate(TeachingRequestInfo request) {
+	protected void showSuggestions(SuggestionsResponse result) {
+		iSuggestionsTable.clearTable(1);
+		if (result.hasSuggestions()) {
+			for (SuggestionInfo suggestion: result.getSuggestions()) {
+				List<Widget> line = new ArrayList<Widget>();
+				Label score = new Label(sSuggestionScoreFormat.format(suggestion.getValue()));
+				if (suggestion.getValue() > 0) score.getElement().getStyle().setColor("red");
+				if (suggestion.getValue() < 0) score.getElement().getStyle().setColor("green");
+				line.add(score);
+				
+				P courses = new P();
+				P sections = new P();
+				P extIdOld = new P("initial");
+				P extIdArrows = new P("arrow");
+				P extIdNew = new P("current");
+				P nameOld = new P("initial");
+				P nameArrows = new P("arrow");
+				P nameNew = new P("current");
+				for (AssignmentInfo assignment: suggestion.getAssignments()) {
+					P course = new P("course"); course.setText(assignment.getRequest().getCourse().getCourseName());
+					courses.add(course);
+					P section = new P("sections");
+					for (Iterator<SectionInfo> i = assignment.getRequest().getSections().iterator(); i.hasNext(); ) {
+						SectionInfo s = i.next();
+						P p = new P("section");
+						p.setText(s.getSectionType() + (s.getExternalId() == null ? "" : " " + s.getExternalId()) + (i.hasNext() ? "," : ""));
+						if (s.isCommon()) p.addStyleName("common");
+						section.add(p);
+					}
+					sections.add(section);
+					InstructorInfo initial = assignment.getRequest().getInstructor(assignment.getIndex());
+					InstructorInfo current = assignment.getInstructor();
+					if (initial == null) {
+						P na = new P("not-assigned"); na.setText(MESSAGES.notAssigned());
+						extIdOld.add(na);
+					} else {
+						P extId = new P(initial.hasExternalId() ? "extid" : "no-extid");
+						extId.setText(initial.hasExternalId() ? initial.getExternalId() : MESSAGES.noExternalId());
+						extIdOld.add(extId);
+					}
+					P extIdArrow = new P(); extIdArrow.setHTML(MESSAGES.assignmentArrow());
+					extIdArrows.add(extIdArrow);
+					if (current == null) {
+						P na = new P("not-assigned"); na.setText(MESSAGES.notAssigned());
+						extIdNew.add(na);
+					} else {
+						P extId = new P(current.hasExternalId() ? "extid" : "no-extid");
+						extId.setText(current.hasExternalId() ? current.getExternalId() : MESSAGES.noExternalId());
+						extIdNew.add(extId);
+					}
+					if (initial == null) {
+						P na = new P("not-assigned"); na.setText(MESSAGES.notAssigned());
+						nameOld.add(na);
+					} else {
+						P name = new P(); name.setText(initial.getInstructorName());
+						nameOld.add(name);
+					}
+					P nameArrow = new P(); nameArrow.setHTML(MESSAGES.assignmentArrow());
+					nameArrows.add(nameArrow);
+					if (current == null) {
+						P na = new P("not-assigned"); na.setText(MESSAGES.notAssigned());
+						nameNew.add(na);
+					} else {
+						P name = new P(); name.setText(current.getInstructorName());
+						nameNew.add(name);
+					}
+				}
+				
+				line.add(courses);
+				line.add(sections);
+				line.add(extIdOld);
+				line.add(extIdArrows);
+				line.add(extIdNew);
+				line.add(nameOld);
+				line.add(nameArrows);
+				line.add(nameNew);
+				line.add(new Objectives(suggestion.getValues()));
+				iSuggestionsTable.addRow(suggestion, line);
+			}
+			if (result.getSuggestions().size() < result.getNrSolutions()) {
+				if (result.isTimeoutReached())
+					iSuggestionsTable.addRow(null, new Note(10, MESSAGES.suggestionsNoteTimeoutNResults(iSuggestionsRequest.getTimeout() / 1000, result.getNrCombinationsConsidered(), iSuggestionsRequest.getMaxDept(), result.getSuggestions().size(), result.getNrSolutions())));
+				else
+					iSuggestionsTable.addRow(null, new Note(10, MESSAGES.suggestionsNoteNoTimeoutNResults(result.getNrCombinationsConsidered(), iSuggestionsRequest.getMaxDept(), result.getSuggestions().size(), result.getNrSolutions())));
+			} else {
+				if (result.isTimeoutReached())
+					iSuggestionsTable.addRow(null, new Note(10, MESSAGES.suggestionsNoteTimeoutAllResults(iSuggestionsRequest.getTimeout() / 1000, result.getNrCombinationsConsidered(), iSuggestionsRequest.getMaxDept(), result.getSuggestions().size())));
+				else
+					iSuggestionsTable.addRow(null, new Note(10, MESSAGES.suggestionsNoteNoTimeoutAllResults(result.getNrCombinationsConsidered(), iSuggestionsRequest.getMaxDept(), result.getSuggestions().size())));						
+			}
+		} else {
+			if (result.isTimeoutReached())
+				iSuggestionsTable.addRow(null, new Note(10, MESSAGES.suggestionsNoteTimeoutNoResults(iSuggestionsRequest.getTimeout() / 1000, result.getNrCombinationsConsidered(), iSuggestionsRequest.getMaxDept())));
+			else
+				iSuggestionsTable.addRow(null, new Note(10, MESSAGES.suggestionsNoteNoTimeoutNoResults(result.getNrCombinationsConsidered(), iSuggestionsRequest.getMaxDept())));
+		}
+		iSuggestionsTable.setVisible(true);
+		iSuggestionsHeader.setEnabled("longer", result.isTimeoutReached());
+		iSuggestionsHeader.setEnabled("deeper", true);
+	}
+	
+	protected void showAssignment(SuggestionInfo suggestion) {
+		iAssignmentTable.clearTable(1);
+		if (suggestion != null) {
+			for (final AssignmentInfo assignment: suggestion.getAssignments()) {
+				List<Widget> line = new ArrayList<Widget>();
+				P buttons = new P("buttons");
+				line.add(buttons);
+				P course = new P("course"); course.setText(assignment.getRequest().getCourse().getCourseName());
+				line.add(course);
+				P section = new P("sections");
+				for (Iterator<SectionInfo> i = assignment.getRequest().getSections().iterator(); i.hasNext(); ) {
+					SectionInfo s = i.next();
+					P p = new P("section");
+					p.setText(s.getSectionType() + (s.getExternalId() == null ? "" : " " + s.getExternalId()) + (i.hasNext() ? "," : ""));
+					if (s.isCommon()) p.addStyleName("common");
+					section.add(p);
+				}
+				line.add(section);
+				InstructorInfo initial = assignment.getRequest().getInstructor(assignment.getIndex());
+				InstructorInfo current = assignment.getInstructor();
+				if ((initial == null && current == null) || (initial != null && initial.equals(current))) {
+					line.add(new P());
+					line.add(new P());
+				} else {
+					if (initial == null) {
+						P na = new P("not-assigned"); na.setText(MESSAGES.notAssigned());
+						line.add(na);
+					} else {
+						P extId = new P(initial.hasExternalId() ? "extid" : "no-extid");
+						extId.setText(initial.hasExternalId() ? initial.getExternalId() : MESSAGES.noExternalId());
+						line.add(extId);
+					}
+					P extIdArrow = new P(); extIdArrow.setHTML(MESSAGES.assignmentArrow());
+					line.add(extIdArrow);
+				}
+				if (current == null) {
+					P na = new P("not-assigned"); na.setText(MESSAGES.notAssigned());
+					line.add(na);
+				} else {
+					P extId = new P(current.hasExternalId() ? "extid" : "no-extid");
+					extId.setText(current.hasExternalId() ? current.getExternalId() : MESSAGES.noExternalId());
+					line.add(extId);
+				}
+				if ((initial == null && current == null) || (initial != null && initial.equals(current))) {
+					line.add(new P());
+					line.add(new P());
+				} else {
+					if (initial == null) {
+						P na = new P("not-assigned"); na.setText(MESSAGES.notAssigned());
+						line.add(na);
+					} else {
+						P name = new P(); name.setText(initial.getInstructorName());
+						line.add(name);
+					}
+					P nameArrow = new P(); nameArrow.setHTML(MESSAGES.assignmentArrow());
+					line.add(nameArrow);
+				}
+				if (current == null) {
+					P na = new P("not-assigned"); na.setText(MESSAGES.notAssigned());
+					line.add(na);
+				} else {
+					P name = new P(); name.setText(current.getInstructorName());
+					line.add(name);
+				}
+				if (current != null) {
+					P p = new P("attributes");
+					for (AttributeInterface a: current.getAttributes()) {
+						P i = new P("attribute");
+						i.setText(a.getName());
+						i.setTitle(a.getName() + " (" + a.getType().getLabel() + ")");
+						p.add(i);
+					}
+					line.add(p);
+					line.add(new Pref(current.getCoursePreferences()));
+					line.add(new TimePreferences(current));
+					line.add(new Pref(current.getDistributionPreferences()));
+				} else if (initial != null) {
+					P p = new P("attributes");
+					for (AttributeInterface a: initial.getAttributes()) {
+						P i = new P("attribute");
+						i.setText(a.getName());
+						i.setTitle(a.getName() + " (" + a.getType().getLabel() + ")");
+						p.add(i);
+					}
+					line.add(p);
+					line.add(new Pref(initial.getCoursePreferences()));
+					line.add(new TimePreferences(initial));
+					line.add(new Pref(initial.getDistributionPreferences()));
+				} else {
+					line.add(new P());
+					line.add(new P());
+					line.add(new P());
+					line.add(new P());
+				}
+				Objectives obj = new Objectives(initial == null ? null : initial.getValues(), current == null ? null : current.getValues());
+				if (assignment.hasConflicts()) {
+					P confs = new P("conflicts");
+					for (String text: assignment.getConflicts()) {
+						P conf = new P("conflict"); conf.setText(text);
+						confs.add(conf);
+					}
+					obj.add(confs);
+				}
+				line.add(obj);
+				if (current != null) {
+					Image delete = new Image(RESOURCES.delete());
+					delete.addStyleName("delete");
+					delete.setTitle(MESSAGES.titleDeleteRow());
+					delete.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							event.preventDefault(); event.stopPropagation();
+							ComputeSuggestionsRequest request = new ComputeSuggestionsRequest();
+							for (AssignmentInfo a: iAssignmentTable.getData()) {
+								if (a.getInstructor() != null && !a.equals(assignment)) {
+									request.addAssignment(a);
+								}
+							}
+							computeSuggestions(request, false);
+						}
+					});
+					buttons.add(delete);
+				}
+				iAssignmentTable.addRow(assignment, line);
+			}
+			iAssignmentScore.setText(sSuggestionScoreFormat.format(suggestion.getValue()));
+			if (suggestion.getValue() > 0) iAssignmentScore.getElement().getStyle().setColor("red");
+			if (suggestion.getValue() < 0) iAssignmentScore.getElement().getStyle().setColor("green");
+			iAssignmentObjectives.setValue(suggestion.getValues());
+		}
+		for (int row = iAssignmentRow; row < iAvailableInstructorsRow; row ++)
+			iForm.getRowFormatter().setVisible(row, iAssignmentTable.getRowCount() > 1);
+		iAssignmentHeader.setEnabled("assign", iAssignmentTable.getRowCount() > 1);
+	}
+	
+	protected void showAvailableInstructors(List<SuggestionInfo> suggestions) {
+		iAvailableInstructorsTable.clearTable(1);
+		int index = iInstructorsTable.getSelectedRow() - 1;
+		if (suggestions != null) {
+			for (SuggestionInfo suggestion: suggestions) {
+				InstructorInfo instructor = null;
+				List<AssignmentInfo> conflicts = new ArrayList<AssignmentInfo>();
+				for (AssignmentInfo assignment: suggestion.getAssignments()) {
+					if (assignment.getRequest().equals(iRequest) && assignment.getIndex() == index)
+						instructor = assignment.getInstructor();
+					if (assignment.getInstructor() == null)
+						conflicts.add(assignment);
+				}
+				if (instructor == null) continue;
+				List<Widget> line = new ArrayList<Widget>();
+				Label extId = new Label(instructor.getExternalId());
+				if (instructor.getTeachingPreference() != null && !"0".equals(instructor.getTeachingPreference())) {
+					PreferenceInterface pref = iProperties.getPreference(instructor.getTeachingPreference());
+					if (pref != null) {
+						extId.setTitle(pref.getName() + " " + instructor.getExternalId());
+						extId.getElement().getStyle().setColor(pref.getColor());
+					}
+				}
+				line.add(extId);
+				Label name = new Label(instructor.getInstructorName());
+				if (instructor.getTeachingPreference() != null && !"0".equals(instructor.getTeachingPreference())) {
+					PreferenceInterface pref = iProperties.getPreference(instructor.getTeachingPreference());
+					if (pref != null) {
+						name.setTitle(pref.getName() + " " + instructor.getInstructorName());
+						name.getElement().getStyle().setColor(pref.getColor());
+					}
+				}
+				line.add(name);
+				line.add(new Label(sTeachingLoadFormat.format(instructor.getAssignedLoad()) + " / " + sTeachingLoadFormat.format(instructor.getMaxLoad())));
+				P p = new P("attributes");
+				for (AttributeInterface a: instructor.getAttributes()) {
+					P i = new P("attribute");
+					i.setText(a.getName());
+					i.setTitle(a.getName() + " (" + a.getType().getLabel() + ")");
+					p.add(i);
+				}
+				line.add(p);
+				line.add(new Pref(instructor.getCoursePreferences()));
+				line.add(new TimePreferences(instructor));
+				line.add(new Pref(instructor.getDistributionPreferences()));
+				for (int i = 0; i < 3; i++)
+					if (!conflicts.isEmpty()) {
+						line.add(new Conflicts(conflicts, i));
+					} else {
+						line.add(new Label());
+					}
+				line.add(new Objectives(suggestion.getValues()));
+				iAvailableInstructorsTable.addRow(suggestion, line);
+			}
+		}
+		iForm.getRowFormatter().setVisible(iAvailableInstructorsRow, iAvailableInstructorsTable.getRowCount() > 1 && iInstructorsTable.getSelectedRow() > 0);
+		iForm.getRowFormatter().setVisible(iAvailableInstructorsRow + 1, iAvailableInstructorsTable.getRowCount() > 1 && iInstructorsTable.getSelectedRow() > 0);
+	}
+	
+	protected void populate(TeachingRequestInfo request, Integer index) {
 		iRequest = request;
 		setText(MESSAGES.dialogTeachingRequestDetail(request.getCourse().getCourseName(), request.getSections().get(0).getSectionType() + (request.getSections().get(0).getExternalId() == null ? "" : " " + request.getSections().get(0).getExternalId())));
+		iAssignmentHeader.clearMessage();
 		
 		iCourseLabel.setText(request.getCourse().getCourseName());
 		iRequestLoad.setText(sTeachingLoadFormat.format(request.getLoad()));
@@ -466,62 +780,20 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 			iInstructorsTable.setColumnVisible(0, false);
 		if (request.getNrInstructors() == 1) {
 			iInstructorsTable.setSelected(1, true);
-		}
-
-		iAvailableInstructorsTable.clearTable(1);
-		if (request.hasDomainValues()) {
-			for (InstructorInfo instructor: request.getDomainValues()) {
-				List<Widget> line = new ArrayList<Widget>();
-				Label extId = new Label(instructor.getExternalId());
-				if (instructor.getTeachingPreference() != null && !"0".equals(instructor.getTeachingPreference())) {
-					PreferenceInterface pref = iProperties.getPreference(instructor.getTeachingPreference());
-					if (pref != null) {
-						extId.setTitle(pref.getName() + " " + instructor.getExternalId());
-						extId.getElement().getStyle().setColor(pref.getColor());
-					}
-				}
-				line.add(extId);
-				Label name = new Label(instructor.getInstructorName());
-				if (instructor.getTeachingPreference() != null && !"0".equals(instructor.getTeachingPreference())) {
-					PreferenceInterface pref = iProperties.getPreference(instructor.getTeachingPreference());
-					if (pref != null) {
-						name.setTitle(pref.getName() + " " + instructor.getInstructorName());
-						name.getElement().getStyle().setColor(pref.getColor());
-					}
-				}
-				line.add(name);
-				line.add(new Label(sTeachingLoadFormat.format(instructor.getAssignedLoad()) + " / " + sTeachingLoadFormat.format(instructor.getMaxLoad())));
-				P p = new P("attributes");
-				for (AttributeInterface a: instructor.getAttributes()) {
-					P i = new P("attribute");
-					i.setText(a.getName());
-					i.setTitle(a.getName() + " (" + a.getType().getLabel() + ")");
-					p.add(i);
-				}
-				line.add(p);
-				line.add(new Pref(instructor.getCoursePreferences()));
-				line.add(new TimePreferences(instructor));
-				line.add(new Pref(instructor.getDistributionPreferences()));
-				for (int i = 0; i < 3; i++)
-					if (instructor.hasConflicts()) {
-						line.add(new Conflicts(instructor.getConflicts(), i));
-					} else {
-						line.add(new Label());
-					}
-				line.add(new Objectives(instructor.getValues()));
-				iAvailableInstructorsTable.addRow(instructor, line);
-			}
-			iForm.getRowFormatter().setVisible(iAvailableInstructorsRow, iInstructorsTable.getSelectedRow() > 0);
-			iForm.getRowFormatter().setVisible(iAvailableInstructorsRow + 1, iInstructorsTable.getSelectedRow() > 0);
-		} else {
-			iForm.getRowFormatter().setVisible(iAvailableInstructorsRow, false);
-			iForm.getRowFormatter().setVisible(iAvailableInstructorsRow + 1, false);
+		} else if (index != null) {
+			iInstructorsTable.setSelected(1 + index, true);
 		}
 		
+		for (int row = iAssignmentRow; row < iAvailableInstructorsRow; row ++)
+			iForm.getRowFormatter().setVisible(row, iAssignmentTable.getRowCount() > 1);
+		
+		showAvailableInstructors(null);
+		
 		iSuggestionsRequest = null;
-		if (request.getNrInstructors() == 1) {
-			computeSuggestions(false);
-		}
+		iSuggestionsTable.clearTable(1);
+		iForm.getRowFormatter().setVisible(iSuggestionsRow, false);
+		iForm.getRowFormatter().setVisible(iSuggestionsRow + 1, false);
+		if (iInstructorsTable.getSelectedRow() > 0) computeSuggestions();
 	}
 	
 	public class Pref extends P {
@@ -550,19 +822,17 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 	}
 	
 	public class TimePreferences extends P implements HasRefresh {
-		private String iInstructorId = null;
 		private String iPattern = null;
 		private List<PreferenceInfo> iPreferences = null;
 		
 		public TimePreferences(InstructorInfo instructor) {
 			super("preferences");
-			iInstructorId = String.valueOf(instructor.getInstructorId());
 			iPattern = instructor.getAvailability();
 			iPreferences = instructor.getTimePreferences();
 			addMouseOverHandler(new MouseOverHandler() {
 				@Override
 				public void onMouseOver(MouseOverEvent event) {
-					InstructorAvailabilityHint.showHint(getElement(), iInstructorId, true, iPattern);
+					InstructorAvailabilityHint.showHint(getElement(), iPattern, true, null);
 				}
 			});
 			addMouseOutHandler(new MouseOutHandler() {
@@ -607,6 +877,11 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 			setValue(values);
 		}
 		
+		public Objectives(Map<String, Double> initial, Map<String, Double> current) {
+			this();
+			setValue(initial, current);
+		}
+		
 		public void setValue(Map<String, Double> values) {
 			clear();
 			for (String key: new TreeSet<String>(values.keySet())) {
@@ -636,18 +911,54 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 				add(obj);
 			}
 		}
+		
+		public void setValue(Map<String, Double> initial, Map<String, Double> current) {
+			clear();
+			Set<String> keys = new TreeSet<String>();
+			if (initial != null) keys.addAll(initial.keySet());
+			if (current != null) keys.addAll(current.keySet());
+			for (String key: keys) {
+				Double base = (initial == null ? null : initial.get(key));
+				Double value = (current == null ? null : current.get(key));
+				if (value == null) value = -base;
+				else if (base != null) value -= base;
+				if (Math.abs(value) < 0.001) continue;
+				P obj = new P("objective");
+				obj.setText(key + ": " + (value > 0.0 ? "+": "") + sTeachingLoadFormat.format(value));
+				if (key.endsWith(" Preferences")) {
+					if (value <= -50.0) {
+						obj.getElement().getStyle().setColor(iProperties.getPreference("R").getColor());
+					} else if (value <= -2.0) {
+						obj.getElement().getStyle().setColor(iProperties.getPreference("-2").getColor());
+					} else if (value < 0.0) {
+						obj.getElement().getStyle().setColor(iProperties.getPreference("-1").getColor());
+					} else if (value >= 50.0) {
+						obj.getElement().getStyle().setColor(iProperties.getPreference("P").getColor());
+					} else if (value >= 2.0) {
+						obj.getElement().getStyle().setColor(iProperties.getPreference("2").getColor());
+					} else if (value > 0.0) {
+						obj.getElement().getStyle().setColor(iProperties.getPreference("1").getColor());
+					}
+				} else if (value < 0.0) {
+					obj.getElement().getStyle().setColor("green");
+				} else if (value > 0.0) {
+					obj.getElement().getStyle().setColor("red");
+				}
+				add(obj);
+			}			
+		}
 	}
 	
 	public class Conflicts extends P {
-		public Conflicts(List<TeachingRequestInfo> conflicts, int column) {
+		public Conflicts(List<AssignmentInfo> conflicts, int column) {
 			super("conflicts");
-			for (TeachingRequestInfo conflict: conflicts) {
+			for (AssignmentInfo conflict: conflicts) {
 				int idx = 0;
-				for (SectionInfo section: conflict.getSections()) {
+				for (SectionInfo section: conflict.getRequest().getSections()) {
 					P conf = new P("conflict");
 					switch (column) {
 					case 0:
-						if (idx == 0) conf.setText(conflict.getCourse().getCourseName());
+						if (idx == 0) conf.setText(conflict.getRequest().getCourse().getCourseName());
 						else conf.setHTML("<br>");
 						break;
 					case 1:
@@ -663,7 +974,7 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 						conf.setHTML(section.getRoom() == null ? SECTMSG.noRoom() : section.getRoom());
 						break;
 					case 5:
-						if (idx == 0 && conflict.hasConflict()) conf.setText(conflict.getConflict());
+						if (idx == 0 && conflict.hasConflicts()) conf.setText(conflict.getConflicts(", "));
 						else conf.setHTML("<br>");
 						break;
 					}
@@ -675,7 +986,7 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 		}
 	}
 	
-	public class NotAssignedInstructor extends P implements HasColSpan {
+	public class NotAssignedInstructor extends P implements UniTimeTable.HasColSpan {
 		int iColSpan;
 
 		NotAssignedInstructor(int colspan) {
@@ -690,7 +1001,7 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 		}
 	}
 	
-	public class Note extends P implements HasColSpan {
+	public class Note extends P implements UniTimeTable.HasColSpan {
 		int iColSpan;
 		
 		Note(int colspan, String message) {

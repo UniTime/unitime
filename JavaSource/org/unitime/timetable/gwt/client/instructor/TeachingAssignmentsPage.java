@@ -618,19 +618,17 @@ public class TeachingAssignmentsPage extends SimpleForm {
 	}
 	
 	public class TimePreferences extends P implements HasRefresh {
-		private String iInstructorId = null;
 		private String iPattern = null;
 		private List<PreferenceInfo> iPreferences = null;
 		
 		public TimePreferences(InstructorInfo instructor) {
 			super("preferences");
-			iInstructorId = String.valueOf(instructor.getInstructorId());
 			iPattern = instructor.getAvailability();
 			iPreferences = instructor.getTimePreferences();
 			addMouseOverHandler(new MouseOverHandler() {
 				@Override
 				public void onMouseOver(MouseOverEvent event) {
-					InstructorAvailabilityHint.showHint(getElement(), iInstructorId, true, iPattern);
+					InstructorAvailabilityHint.showHint(getElement(), iPattern, true, null);
 				}
 			});
 			addMouseOutHandler(new MouseOutHandler() {

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
+import org.cpsolver.studentsct.extension.DistanceConflict.Conflict;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
@@ -711,8 +712,8 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    private Map<String,Double> iValues = new HashMap<String, Double>();
 	    private String iAvailability;
 	    private List<TeachingRequestInfo> iAssignedRequests = new ArrayList<TeachingRequestInfo>();
-	    private List<TeachingRequestInfo> iConflicts = null;
 	    private List<ClassInfo> iEnrollments = new ArrayList<ClassInfo>();
+	    private int iAssignmentIndex = -1;
 
 		public InstructorInfo() {}
 		
@@ -744,6 +745,10 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    public void addDistributionPreference(PreferenceInfo preference) { iDistributionPreferences.add(preference); }
 	    public List<PreferenceInfo> getDistributionPreferences() { return iDistributionPreferences; }
 	    
+	    public boolean hasAssignmentIndex() { return iAssignmentIndex >= 0; }
+	    public int getAssignmentIndex() { return iAssignmentIndex; }
+	    public void setAssignmentIndex(int index) { iAssignmentIndex = index; }
+	    
 	    public void addAttribute(AttributeInterface attribute) { iAttributes.add(attribute); }
 	    public List<AttributeInterface> getAttributes() { return iAttributes; }
 	    public boolean hasAttribute(String attribute) { 
@@ -772,19 +777,6 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    public List<ClassInfo> getEnrollments() { return iEnrollments; }
 	    public void addEnrollment(ClassInfo enrollment) { iEnrollments.add(enrollment); }
 	    
-	    public void addConflict(TeachingRequestInfo conflict) {
-	    	if (iConflicts == null) iConflicts = new ArrayList<TeachingRequestInfo>();
-	    	iConflicts.add(conflict);
-	    }
-	    public boolean hasConflicts() { return iConflicts != null && !iConflicts.isEmpty(); }
-	    public TeachingRequestInfo getConflict(Long requestId) {
-	    	if (iConflicts == null) return null;
-	    	for (TeachingRequestInfo r: iConflicts)
-	    		if (r.getRequestId().equals(requestId)) return r;
-	    	return null;
-	    }
-	    public List<TeachingRequestInfo> getConflicts() { return iConflicts; }
-		
 	    public int hashCode() { return getInstructorId().hashCode(); }
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof InstructorInfo)) return false;
@@ -810,7 +802,6 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    private List<PreferenceInfo> iInstructorPreferences = new ArrayList<PreferenceInfo>();
 	    private List<PreferenceInfo> iAttributePreferences = new ArrayList<PreferenceInfo>();
 	    private Map<String,Double> iValues = new HashMap<String, Double>();
-	    private List<InstructorInfo> iDomain = null;
 	    private int iNrInstructors = 0;
 		private String iConflict;
 		
@@ -833,6 +824,16 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 			iInstructors.add(instructor);
 		}
 		public boolean hasInstructors() { return iInstructors != null && !iInstructors.isEmpty(); }
+		public InstructorInfo getInstructor(int index) {
+			if (iInstructors == null || iInstructors.isEmpty()) return null;
+			if (index < 0) return null;
+			for (int i = 0; i < iInstructors.size(); i++) {
+				InstructorInfo instructor = iInstructors.get(i);
+				if (instructor.hasAssignmentIndex() && index == instructor.getAssignmentIndex()) return instructor;
+				if (!instructor.hasAssignmentIndex() && index == i) return instructor;
+			}
+			return null;
+		}
 		public int getNrAssignedInstructors() { return iInstructors == null ? 0 : iInstructors.size(); }
 		public List<InstructorInfo> getInstructors() { return iInstructors; }
 		public InstructorInfo getInstructor(Long instructorId) {
@@ -854,13 +855,6 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    public Map<String,Double> getValues() { return iValues; }
 	    public Double getValue(String criterion) { return iValues.get(criterion); }
 	    
-	    public void addDomainValue(InstructorInfo instructor) {
-	    	if (iDomain == null) iDomain = new ArrayList<InstructorInfo>();
-	    	iDomain.add(instructor);
-	    }
-	    public boolean hasDomainValues() { return iDomain != null && !iDomain.isEmpty(); }
-	    public List<InstructorInfo> getDomainValues() { return iDomain; }
-	    
 	    public int getNrInstructors() { return iNrInstructors; }
 	    public void setNrInstructors(int nrInstructors) { iNrInstructors = nrInstructors; }
 	    
@@ -877,7 +871,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    public boolean equals(Object o) {
 	        if (o == null || !(o instanceof TeachingRequestInfo)) return false;
 	        TeachingRequestInfo tr = (TeachingRequestInfo)o;
-	        return getRequestId() == tr.getRequestId();
+	        return getRequestId().equals(tr.getRequestId());
 	    }
 
 		@Override
@@ -1114,6 +1108,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		private TeachingRequestInfo iRequest;
 		private int iIndex;
 		private InstructorInfo iInstructor;
+		private List<String> iConflicts;
 		
 		public AssignmentInfo() {}
 		
@@ -1126,6 +1121,20 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		public InstructorInfo getInstructor() { return iInstructor; }
 		public void setInstructor(InstructorInfo instructor) { iInstructor = instructor; }
 		
+		public boolean hasConflicts() { return iConflicts != null && !iConflicts.isEmpty(); }
+		public List<String> getConflicts() { return iConflicts; }
+		public String getConflicts(String separator) {
+			if (iConflicts == null || iConflicts.isEmpty()) return null;
+			String ret = "";
+			for (String conflict: iConflicts)
+				ret += (ret.isEmpty() ? "" : separator) + conflict;
+			return ret;
+		}
+		public void addConflict(String conflict) {
+			if (iConflicts == null) iConflicts = new ArrayList<String>();
+			iConflicts.add(conflict);
+		}
+		
 		@Override
 		public String toString() {
 			StringBuffer sb = new StringBuffer();
@@ -1135,6 +1144,16 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 				sb.append(section.toString());
 			}
 			return getRequest().getCourse() + " " + sb + (getRequest().getNrInstructors() > 1 ? "[" + getIndex() + "]" : "") + ": " + (getInstructor() == null ? "NULL" : getInstructor());
+		}
+		
+		@Override
+		public int hashCode() { return getRequest().hashCode(); }
+		
+		@Override
+		public boolean equals(Object object) {
+			if (object == null || !(object instanceof AssignmentInfo)) return false;
+			AssignmentInfo assignment = (AssignmentInfo)object;
+			return getRequest().equals(assignment.getRequest()) && getIndex() == assignment.getIndex();
 		}
 	}
 	
@@ -1186,10 +1205,12 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	
 	public static class SuggestionsResponse implements GwtRpcResponse, Serializable {
 		private static final long serialVersionUID = 1L;
+		private SuggestionInfo iAssignment = null;
 		private List<SuggestionInfo> iSuggestions = null;
 		private boolean iTimeoutReached = false;
 		private int iNrCombinationsConsidered = 0, iNrSolutions = 0;
-		
+	    private List<SuggestionInfo> iDomain = null;
+	    
 		public SuggestionsResponse() {}
 		
 		public boolean hasSuggestions() { return iSuggestions != null && !iSuggestions.isEmpty(); }
@@ -1207,19 +1228,31 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 
 		public int getNrSolutions() { return iNrSolutions; }
 		public void setNrSolutions(int nrSolutions) { iNrSolutions = nrSolutions; }
-}
+		
+	    public void addDomainValue(SuggestionInfo suggestion) {
+	    	if (iDomain == null) iDomain = new ArrayList<SuggestionInfo>();
+	    	iDomain.add(suggestion);
+	    }
+	    public boolean hasDomainValues() { return iDomain != null && !iDomain.isEmpty(); }
+	    public List<SuggestionInfo> getDomainValues() { return iDomain; }
+	    
+	    public SuggestionInfo getCurrentAssignment() { return iAssignment; }
+	    public void setCurrentAssignment(SuggestionInfo assignment) { iAssignment = assignment; }
+	}
 	
 	public static class ComputeSuggestionsRequest implements GwtRpcRequest<SuggestionsResponse>, Serializable {
 		private static final long serialVersionUID = 1L;
-		private SuggestionInfo iSuggestion;
+		private List<AssignmentInfo> iAssignments = new ArrayList<AssignmentInfo>();
+		private Long iSelectedRequestId;
+		private int iSelectedIndex;
 		private int iMaxDepth = 2;
 		private int iTimeout = 5000;
 		private int iMaxResults = 20;
 		
 		public ComputeSuggestionsRequest() {}
 		
-		public SuggestionInfo getSuggestion() { return iSuggestion; }
-		public void setSuggestion(SuggestionInfo suggestion) { iSuggestion = suggestion; }
+		public void addAssignment(AssignmentInfo assignment) { iAssignments.add(assignment); }
+		public List<AssignmentInfo> getAssignments() { return iAssignments; }
 		
 		public void setMaxDept(int maxDept) { iMaxDepth = maxDept; }
 		public int getMaxDept() { return iMaxDepth; }
@@ -1230,6 +1263,12 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		public void setMaxResults(int maxResults) { iMaxResults = maxResults; }
 		public int getMaxResults() { return iMaxResults; }
 		
+		public Long getSelectedRequestId() { return iSelectedRequestId; }
+		public void setSelectedRequestId(Long requestId) { iSelectedRequestId = requestId; }
+		
+		public int getSelectedIndex() { return iSelectedIndex; }
+		public void setSelectedIndex(int idx) { iSelectedIndex = idx; }
+		
 		@Override
 		public String toString() {
 			return getMaxDept() + "," + getTimeout() + "," + getMaxResults();
@@ -1238,16 +1277,16 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	
 	public static class InstructorAssignmentRequest implements GwtRpcRequest<GwtRpcResponseNull>, Serializable {
 		private static final long serialVersionUID = 1L;
-		private SuggestionInfo iSuggestion;
+		private List<AssignmentInfo> iAssignments = new ArrayList<AssignmentInfo>();
 		
 		public InstructorAssignmentRequest() {}
 		
-		public SuggestionInfo getSuggestion() { return iSuggestion; }
-		public void setSuggestion(SuggestionInfo suggestion) { iSuggestion = suggestion; }
+		public void addAssignment(AssignmentInfo assignment) { iAssignments.add(assignment); }
+		public List<AssignmentInfo> getAssignments() { return iAssignments; }
 		
 		@Override
 		public String toString() {
-			return (getSuggestion() == null ? "" : getSuggestion().toString());
+			return (getAssignments() == null ? "" : getAssignments().toString());
 		}
 	}
 

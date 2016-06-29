@@ -46,7 +46,7 @@ public class InstructorAssignmentBackend implements GwtRpcImplementation<Instruc
 		context.checkPermission(Right.InstructorSchedulingSolver);
 		InstructorSchedulingProxy solver = instructorSchedulingSolverService.getSolver();
 		if (solver != null) {
-			solver.assign(request.getSuggestion());
+			solver.assign(request.getAssignments());
 			return new GwtRpcResponseNull();
 		}
 		throw new GwtRpcException(MESSAGES.warnSolverNotStarted());
