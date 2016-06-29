@@ -76,6 +76,15 @@
 		</item>
 	</category>
 	<category>
+		<title>Event Management</title>
+		<item>
+			<name>Email Notifications</name>
+			<description>
+				<line>Event room messages are now included in the confirmation email.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Other</title>
 		<item>
 			<name>Security: Possible SQL Injection Fixed</name>

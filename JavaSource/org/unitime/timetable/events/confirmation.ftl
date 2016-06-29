@@ -142,8 +142,9 @@
 								<#case "Deleted">
 									<td style='color: gray; font-style: italic;'>${msg.approvalDeleted()}</td>
 									<#break>
-							</#switch>		
-						<tr>
+							</#switch>
+						</tr>
+						<#if meeting.locationMessage??><tr style="background-color: #FFF0A5; font-style: italic;"><td colspan='5' style="padding-left:5px;">${meeting.getLocationMessage()}</td></tr></#if>
 					</#list>
 					</table>
 				</td></tr>
@@ -168,7 +169,8 @@
 							<td>${meeting.getAllocatedTime(const)}</td>
 							</#if>
 							<td>${meeting.getLocationName()}</td>
-						<tr>
+						</tr>
+						<#if meeting.locationMessage??><tr style="background-color: #FFF0A5; font-style: italic;"><td colspan='5' style="padding-left:5px;">${meeting.getLocationMessage()}</td></tr></#if>
 					</#list>
 					</table>
 				</td></tr>
@@ -193,7 +195,8 @@
 							<td>${meeting.getAllocatedTime(const)}</td>
 							</#if>
 							<td>${meeting.getLocationName()}</td>
-						<tr>
+						</tr>
+						<#if meeting.locationMessage??><tr style="background-color: #FFF0A5; font-style: italic;"><td colspan='5' style="padding-left:5px;">${meeting.getLocationMessage()}</td></tr></#if>
 					</#list>
 					</table>
 				</td></tr>
@@ -271,7 +274,8 @@
 									<td style='color: gray; font-style: italic;'>${msg.approvalDeleted()}</td>
 									<#break>
 							</#switch>		
-						<tr>
+						</tr>
+						<#if meeting.locationMessage??><tr style="background-color: #FFF0A5; font-style: italic;"><td colspan='5' style="padding-left:5px;">${meeting.getLocationMessage()}</td></tr></#if>
 					</#list>
 					</table>
 				</td></tr>
@@ -342,7 +346,8 @@
 										</#if>
 										<#break>
 									</#switch>		
-								<tr>							
+								</tr>
+								<#if meeting.locationMessage??><tr style="background-color: #FFF0A5; font-style: italic;"><td colspan='5' style="padding-left:5px;">${meeting.getLocationMessage()}</td></tr></#if>
 							</#switch>
 						</#list>
 						<#if empty>
