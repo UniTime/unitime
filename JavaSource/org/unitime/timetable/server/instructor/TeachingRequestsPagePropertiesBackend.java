@@ -24,7 +24,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.SessionAttribute;
+import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.gwt.client.instructor.InstructorAvailabilityWidget.InstructorAvailabilityModel;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -35,6 +38,7 @@ import org.unitime.timetable.gwt.shared.InstructorInterface.PreferenceInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.SubjectAreaInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestsPagePropertiesRequest;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestsPagePropertiesResponse;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingOption;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstructorAttributeType;
@@ -46,6 +50,7 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.webutil.RequiredTimeTable;
 
 /**
  * @author Tomas Muller
@@ -130,6 +135,33 @@ public class TeachingRequestsPagePropertiesBackend implements GwtRpcImplementati
 			if (mode == null || mode.isEmpty()) break;
 			ret.addMode(new RoomInterface.RoomSharingDisplayMode(mode));
 		}
+		
+		ret.setHasSolver(solver != null);
+		
+		InstructorAvailabilityModel model = new InstructorAvailabilityModel();
+		for (int i = 0; true; i++) {
+			String mode = ApplicationProperty.RoomSharingMode.value(String.valueOf(1 + i), i < CONSTANTS.roomSharingModes().length ? CONSTANTS.roomSharingModes()[i] : null);
+			if (mode == null || mode.isEmpty()) break;
+			model.addMode(new RoomInterface.RoomSharingDisplayMode(mode));
+		}
+		model.setDefaultEditable(true);
+		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(true)) {
+			if (PreferenceLevel.sRequired.equals(pref.getPrefProlog())) continue;
+			RoomSharingOption option = new RoomSharingOption(model.char2id(PreferenceLevel.prolog2char(pref.getPrefProlog())), pref.prefcolor(), "", pref.getPrefName(), true); 
+			model.addOption(option);
+			if (PreferenceLevel.sNeutral.equals(pref.getPrefProlog()))
+				model.setDefaultOption(option);		
+		}
+		String defaultGridSize = RequiredTimeTable.getTimeGridSize(context.getUser());
+		if (defaultGridSize != null)
+			for (int i = 0; i < model.getModes().size(); i++) {
+				if (model.getModes().get(i).getName().equals(defaultGridSize)) {
+					model.setDefaultMode(i); break;
+				}
+			}
+		model.setDefaultHorizontal(CommonValues.HorizontalGrid.eq(context.getUser().getProperty(UserProperty.GridOrientation)));
+		model.setNoteEditable(false);
+		ret.setInstructorAvailabilityModel(model);
 		
 		return ret;
 	}

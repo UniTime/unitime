@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
@@ -35,6 +34,8 @@ import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
@@ -42,6 +43,7 @@ import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorInfo;
@@ -60,16 +62,14 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.MouseOutEvent;
-import com.google.gwt.event.dom.client.MouseOutHandler;
-import com.google.gwt.event.dom.client.MouseOverEvent;
-import com.google.gwt.event.dom.client.MouseOverHandler;
+import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -86,6 +86,7 @@ public class TeachingAssignmentsPage extends SimpleForm {
 	private ListBox iFilter;
 	private TeachingRequestsPagePropertiesResponse iProperties;
 	private UniTimeTable<SingleTeachingAssingment> iTable;
+	private TeachingRequestDetailPage iDetail = null;
 	
 	public TeachingAssignmentsPage() {
 		iFilterPanel = new UniTimeHeaderPanel(MESSAGES.propDepartment());
@@ -104,22 +105,7 @@ public class TeachingAssignmentsPage extends SimpleForm {
 		iFilterPanel.addButton("search", MESSAGES.buttonSearch(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				LoadingWidget.getInstance().show(MESSAGES.waitLoadingTeachingAssignments());
-				RPC.execute(new TeachingAssignmentsPageRequest(iFilter.getSelectedIndex() <= 1 ? null : Long.valueOf(iFilter.getSelectedValue())), new AsyncCallback<GwtRpcResponseList<InstructorInfo>>() {
-					@Override
-					public void onFailure(Throwable caught) {
-						LoadingWidget.getInstance().hide();
-						iFilterPanel.setErrorMessage(MESSAGES.failedToLoadTeachingAssignments(caught.getMessage()));
-						UniTimeNotifications.error(MESSAGES.failedToLoadTeachingAssignments(caught.getMessage()), caught);
-					}
-
-					@Override
-					public void onSuccess(GwtRpcResponseList<InstructorInfo> result) {
-						LoadingWidget.getInstance().hide();
-						populate(result);
-						iTable.setVisible(true);
-					}
-				});
+				search();
 			}
 		});
 		iFilterPanel.setEnabled("search", false);
@@ -129,6 +115,29 @@ public class TeachingAssignmentsPage extends SimpleForm {
 		iTable.setVisible(false);
 		iTable.addStyleName("unitime-TeachingAssignments");
 		addRow(iTable);
+		
+		iTable.addMouseClickListener(new MouseClickListener<SingleTeachingAssingment>() {
+			@Override
+			public void onMouseClick(TableEvent<SingleTeachingAssingment> event) {
+				if (event.getData() != null) {
+					if (iDetail == null) {
+						iDetail = new TeachingRequestDetailPage(iProperties) {
+							@Override
+							protected void onAssignmentChanged(List<AssignmentInfo> assignments) {
+								if (iTable.isVisible()) search();
+							}
+						};
+						iDetail.addCloseHandler(new CloseHandler<PopupPanel>() {
+							@Override
+							public void onClose(CloseEvent<PopupPanel> event) {
+								iTable.clearHover();
+							}
+						});
+					}
+					iDetail.showInstructorDetail(event.getData().getInstructor().getInstructorId());
+				}
+			}
+		});
 		
 		LoadingWidget.getInstance().show(MESSAGES.waitLoadingPage());
 		RPC.execute(new TeachingRequestsPagePropertiesRequest(), new AsyncCallback<TeachingRequestsPagePropertiesResponse>() {
@@ -154,6 +163,25 @@ public class TeachingAssignmentsPage extends SimpleForm {
 						iFilter.setSelectedIndex(iFilter.getItemCount() - 1);
 				}
 				iFilterPanel.setEnabled("search", iFilter.getSelectedIndex() > 0);
+			}
+		});
+	}
+	
+	void search() {
+		LoadingWidget.getInstance().show(MESSAGES.waitLoadingTeachingAssignments());
+		RPC.execute(new TeachingAssignmentsPageRequest(iFilter.getSelectedIndex() <= 1 ? null : Long.valueOf(iFilter.getSelectedValue())), new AsyncCallback<GwtRpcResponseList<InstructorInfo>>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				LoadingWidget.getInstance().hide();
+				iFilterPanel.setErrorMessage(MESSAGES.failedToLoadTeachingAssignments(caught.getMessage()));
+				UniTimeNotifications.error(MESSAGES.failedToLoadTeachingAssignments(caught.getMessage()), caught);
+			}
+
+			@Override
+			public void onSuccess(GwtRpcResponseList<InstructorInfo> result) {
+				LoadingWidget.getInstance().hide();
+				populate(result);
+				iTable.setVisible(true);
 			}
 		});
 	}
@@ -347,7 +375,7 @@ public class TeachingAssignmentsPage extends SimpleForm {
 				@Override
 				public void execute() {
 					RoomCookie.getInstance().setOrientation(true, RoomCookie.getInstance().areRoomsHorizontal());
-					refreshTable();
+					iTable.refreshTable();
 				}
 				@Override
 				public boolean isApplicable() { return !RoomCookie.getInstance().isGridAsText(); }
@@ -360,7 +388,7 @@ public class TeachingAssignmentsPage extends SimpleForm {
 				@Override
 				public void execute() {
 					RoomCookie.getInstance().setOrientation(false, RoomCookie.getInstance().areRoomsHorizontal());
-					refreshTable();
+					iTable.refreshTable();
 				}
 				@Override
 				public boolean isApplicable() { return RoomCookie.getInstance().isGridAsText(); }
@@ -373,7 +401,7 @@ public class TeachingAssignmentsPage extends SimpleForm {
 				@Override
 				public void execute() {
 					RoomCookie.getInstance().setOrientation(false, true);
-					refreshTable();
+					iTable.refreshTable();
 				}
 				@Override
 				public boolean isApplicable() { return !RoomCookie.getInstance().isGridAsText() && !RoomCookie.getInstance().areRoomsHorizontal(); }
@@ -386,7 +414,7 @@ public class TeachingAssignmentsPage extends SimpleForm {
 				@Override
 				public void execute() {
 					RoomCookie.getInstance().setOrientation(false, false);
-					refreshTable();
+					iTable.refreshTable();
 				}
 				@Override
 				public boolean isApplicable() { return !RoomCookie.getInstance().isGridAsText() && RoomCookie.getInstance().areRoomsHorizontal(); }
@@ -403,7 +431,7 @@ public class TeachingAssignmentsPage extends SimpleForm {
 						@Override
 						public void execute() {
 							RoomCookie.getInstance().setMode(RoomCookie.getInstance().areRoomsHorizontal(), mode.toHex());
-							refreshTable();
+							iTable.refreshTable();
 						}
 						@Override
 						public boolean isApplicable() { return !RoomCookie.getInstance().isGridAsText() && !mode.toHex().equals(RoomCookie.getInstance().getMode()); }
@@ -498,30 +526,23 @@ public class TeachingAssignmentsPage extends SimpleForm {
 			return name;
 		case ATTRIBUTE_PREFS:
 			if (request == null) return null;
-			return new Pref(request.getAttributePreferences());
+			return new PreferenceCell(iProperties, request.getAttributePreferences());
 		case INSTRUCTOR_PREFS:
 			if (request == null) return null;
-			return new Pref(request.getInstructorPreferences());
+			return new PreferenceCell(iProperties, request.getInstructorPreferences());
 		case COURSE_PREF:
-			return new Pref(instructor.getCoursePreferences());
+			return new PreferenceCell(iProperties, instructor.getCoursePreferences());
 		case DISTRIBUTION_PREF:
-			return new Pref(instructor.getDistributionPreferences());
+			return new PreferenceCell(iProperties, instructor.getDistributionPreferences());
 		case TIME_PREF:
-			return new TimePreferences(instructor);
+			return new TimePreferenceCell(iProperties, instructor);
 		case ATTRIBUTES:
-			p = new P("attributes");
-			for (AttributeInterface a: instructor.getAttributes()) {
-				P i = new P("attribute");
-				i.setText(a.getName());
-				i.setTitle(a.getName() + " (" + a.getType().getLabel() + ")");
-				p.add(i);
-			}
-			return p;
+			return new AttributesCell(instructor.getAttributes());
 		case ASSIGNED_LOAD:
 			return new Label(sTeachingLoadFormat.format(instructor.getAssignedLoad()) + " / " + sTeachingLoadFormat.format(instructor.getMaxLoad()));
 		case OBJECTIVES:
 			if (request == null) return null;
-			return new Objectives(request.getValues());
+			return new ObjectivesCell(iProperties, request.getValues());
 		default:
 			return null;
 		}
@@ -554,113 +575,6 @@ public class TeachingAssignmentsPage extends SimpleForm {
 		public boolean isCanHide() { return iCanHide; }
 		public boolean isHasRequest() { return iHasRequest; }
 		public int flag() { return 1 << ordinal(); }
-	}
-	
-	public class Pref extends P {
-		public Pref(List<PreferenceInfo> prefs) {
-			super("preferences");
-			for (PreferenceInfo p: prefs) {
-				P prf = new P("prf");
-				prf.setText(p.getOwnerName());
-				PreferenceInterface preference = iProperties.getPreference(p.getPreference());
-				if (preference != null) {
-					prf.getElement().getStyle().setColor(preference.getColor());
-					prf.setTitle(preference.getName() + " " + p.getOwnerName());
-				}
-				add(prf);
-			}
-		}
-	}
-	
-	public class Objectives extends P {
-		public Objectives(Map<String, Double> values) {
-			super("objective");
-			for (String key: new TreeSet<String>(values.keySet())) {
-				Double value = values.get(key);
-				P obj = new P("objective");
-				obj.setText(key + ": " + (value > 0.0 ? "+": "") + sTeachingLoadFormat.format(value));
-				if (key.endsWith(" Preferences")) {
-					if (value <= -50.0) {
-						obj.getElement().getStyle().setColor(iProperties.getPreference("R").getColor());
-					} else if (value <= -2.0) {
-						obj.getElement().getStyle().setColor(iProperties.getPreference("-2").getColor());
-					} else if (value < 0.0) {
-						obj.getElement().getStyle().setColor(iProperties.getPreference("-1").getColor());
-					} else if (value >= 50.0) {
-						obj.getElement().getStyle().setColor(iProperties.getPreference("P").getColor());
-					} else if (value >= 2.0) {
-						obj.getElement().getStyle().setColor(iProperties.getPreference("2").getColor());
-					} else if (value > 0.0) {
-						obj.getElement().getStyle().setColor(iProperties.getPreference("1").getColor());
-					}
-				} else if (value < 0.0) {
-					obj.getElement().getStyle().setColor("green");
-				} else if (value > 0.0) {
-					obj.getElement().getStyle().setColor("red");
-				}
-				add(obj);
-			}
-		}
-	}
-	
-	public static interface HasRefresh {
-		public void refresh();
-	}
-	
-	public void refreshTable() {
-		for (int r = 1; r < iTable.getRowCount(); r++) {
-			for (int c = 0; c < iTable.getCellCount(r); c++) {
-				Widget w = iTable.getWidget(r, c);
-				if (w instanceof HasRefresh)
-					((HasRefresh)w).refresh();
-			}
-		}
-	}
-	
-	public class TimePreferences extends P implements HasRefresh {
-		private String iPattern = null;
-		private List<PreferenceInfo> iPreferences = null;
-		
-		public TimePreferences(InstructorInfo instructor) {
-			super("preferences");
-			iPattern = instructor.getAvailability();
-			iPreferences = instructor.getTimePreferences();
-			addMouseOverHandler(new MouseOverHandler() {
-				@Override
-				public void onMouseOver(MouseOverEvent event) {
-					InstructorAvailabilityHint.showHint(getElement(), iPattern, true, null);
-				}
-			});
-			addMouseOutHandler(new MouseOutHandler() {
-				@Override
-				public void onMouseOut(MouseOutEvent event) {
-					InstructorAvailabilityHint.hideHint();
-				}
-			});
-			refresh();
-		}
-		
-		@Override
-		public void refresh() {
-			clear();
-			RoomCookie cookie = RoomCookie.getInstance();
-			if (iPattern != null && !iPattern.isEmpty() && !cookie.isGridAsText()) {
-				final Image availability = new Image(GWT.getHostPageBaseURL() + "pattern?pref=" + iPattern + "&v=" + (cookie.areRoomsHorizontal() ? "0" : "1") + (cookie.hasMode() ? "&s=" + cookie.getMode() : ""));
-				availability.setStyleName("grid");
-				add(availability);
-			} else {
-				for (PreferenceInfo p: iPreferences) {
-					P prf = new P("prf");
-					prf.setText(p.getOwnerName());
-					PreferenceInterface preference = iProperties.getPreference(p.getPreference());
-					if (preference != null) {
-						prf.getElement().getStyle().setColor(preference.getColor());
-						prf.setTitle(preference.getName() + " " + p.getOwnerName());
-					}
-					add(prf);
-				}
-			}
-		}
 	}
 	
 	public static class TableComparator implements Comparator<SingleTeachingAssingment> {

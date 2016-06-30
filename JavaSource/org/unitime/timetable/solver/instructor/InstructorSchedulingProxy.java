@@ -35,6 +35,7 @@ public interface InstructorSchedulingProxy extends CommonSolverInterface {
 	public List<TeachingRequestInfo> getTeachingRequests(Long subjectAreaId, boolean assigned);
 	public List<InstructorInfo> getInstructors(Long departmentId);
 	public TeachingRequestInfo getTeachingRequestInfo(Long requestId);
+	public InstructorInfo getInstructorInfo(Long instructorId);
 	public void assign(List<AssignmentInfo> assignments);
 	public SuggestionsResponse computeSuggestions(ComputeSuggestionsRequest request);
 }

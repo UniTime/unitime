@@ -937,4 +937,18 @@ public class UniTimeTable<T> extends FlexTable {
 				getRowFormatter().getElement(row).getStyle().setBackgroundColor(color);
 		}
 	}
+	
+	public static interface HasRefresh {
+		public void refresh();
+	}
+	
+	public void refreshTable() {
+		for (int r = 1; r < getRowCount(); r++) {
+			for (int c = 0; c < getCellCount(r); c++) {
+				Widget w = getWidget(r, c);
+				if (w instanceof HasRefresh)
+					((HasRefresh)w).refresh();
+			}
+		}
+	}
 }

@@ -29,9 +29,11 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.cpsolver.coursett.preference.PreferenceCombination;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.criteria.Criterion;
 import org.cpsolver.ifs.model.Constraint;
+import org.cpsolver.instructor.model.Instructor;
 import org.cpsolver.instructor.model.InstructorSchedulingModel;
 import org.cpsolver.instructor.model.TeachingAssignment;
 import org.cpsolver.instructor.model.TeachingRequest;
@@ -56,7 +58,7 @@ public class InstructorSchedulingSuggestions {
 	
     private int iDepth = 2;
     private int iLimit = 20;
-    private int iNrSolutions = 0, iNrCombinationsConsidered = 0;
+    private int iNrSolutions = 0, iNrCombinationsConsidered = 0, iNrDomainValues = 0;;
     private long iTimeOut = 5000;
     private long iStartTime = 0;
     private boolean iTimeoutReached = false;
@@ -64,9 +66,11 @@ public class InstructorSchedulingSuggestions {
     
     private TeachingRequest.Variable iRequest = null;
     private TreeSet<SuggestionInfo> iSuggestions = null;
+    private TreeSet<SuggestionInfo> iDomain = null;
     private List<TeachingRequest.Variable> iResolvedRequests = null;
     private Map<TeachingRequest.Variable, TeachingAssignment> iConflictsToResolve = null;
     private Map<TeachingRequest, TeachingRequestInfo> iRequestInfos = null;
+    private Instructor iInstructor = null;
 	
 	public InstructorSchedulingSuggestions(InstructorSchedulingSolver solver) {
 		iSolver = solver;
@@ -123,18 +127,23 @@ public class InstructorSchedulingSuggestions {
     public synchronized SuggestionsResponse computeSuggestions(ComputeSuggestionsRequest request) {
         SuggestionsResponse response = new SuggestionsResponse();
         iSuggestions = new TreeSet<SuggestionInfo>();
+        iDomain = new TreeSet<SuggestionInfo>();
         
         iResolvedRequests = new ArrayList<TeachingRequest.Variable>();
         iConflictsToResolve = new HashMap<TeachingRequest.Variable, TeachingAssignment>();
         iRequestInfos = new HashMap<TeachingRequest, TeachingRequestInfo>();
-        iNrSolutions = 0;
+        iNrSolutions = -1;
         iNrCombinationsConsidered = 0;
+        iNrDomainValues = 0;
         iTimeoutReached = false;
         iRequest = null;
         iDepth = request.getMaxDept();
         iTimeOut = request.getTimeout();
         iLimit = request.getMaxResults();
         
+        if (request.getSelectedInstructorId() != null)
+        	for (Instructor instructor: iModel.getInstructors())
+        		if (instructor.getInstructorId() == request.getSelectedInstructorId()) { iInstructor = instructor; break; }
         TeachingAssignment requestedAssignment = null;
     	List<TeachingAssignment> givenAssignments = new ArrayList<TeachingAssignment>();
     	if (request.getSelectedRequestId() != null)
@@ -145,7 +154,6 @@ public class InstructorSchedulingSuggestions {
     		for (TeachingRequest tr: iModel.getRequests()) {
     			if (tr.getRequestId() == assignment.getRequest().getRequestId()) {
     				TeachingRequest.Variable var = tr.getVariable(assignment.getIndex());
-    				if (iRequest == null) { iRequest = var; }
     				if (assignment.getInstructor() != null) {
 						for (TeachingAssignment val: var.values(iAssignment)) {
 							if (val.getInstructor().getInstructorId() == assignment.getInstructor().getInstructorId()) {
@@ -174,11 +182,43 @@ public class InstructorSchedulingSuggestions {
     		iResolvedRequests.add(assignment.variable());
     		iAssignment.assign(0, assignment);
     	}
-    	for (TeachingAssignment assignment: iRequest.values(iAssignment)) {
-    		SuggestionInfo suggestion = tryAssignment(assignment);
-    		if (suggestion != null && !suggestion.getAssignments().isEmpty())
-    			response.addDomainValue(suggestion);
-		}
+    	
+    	if (iInstructor != null) {
+    		for (TeachingRequest tr: iModel.getRequests())
+    			if (iInstructor.canTeach(tr)) {
+    				PreferenceCombination attributePref = tr.getAttributePreference(iInstructor);
+                    if (attributePref.isProhibited()) continue;
+                    for (TeachingRequest.Variable var: tr.getVariables()) {
+                    	if (iResolvedRequests.contains(var)) continue;
+                    	SuggestionInfo suggestion = tryAssignment(new TeachingAssignment(var, iInstructor, attributePref.getPreferenceInt()));
+                		if (suggestion != null && !suggestion.getAssignments().isEmpty()) {
+                			if (iDomain.size() == iLimit) {
+                				if (suggestion.compareTo(iDomain.last()) < 0) {
+                					iDomain.add(suggestion);
+                					iDomain.remove(iDomain.last());
+                				}
+                			} else {
+                				iDomain.add(suggestion);
+                			}
+                		}
+    				}
+    			}
+    	} else if (iInstructor == null) {
+        	for (TeachingAssignment assignment: iRequest.values(iAssignment)) {
+        		SuggestionInfo suggestion = tryAssignment(assignment);
+        		if (suggestion != null && !suggestion.getAssignments().isEmpty()) {
+        			if (iDomain.size() == iLimit) {
+        				if (suggestion.compareTo(iDomain.last()) < 0) {
+        					iDomain.add(suggestion);
+        					iDomain.remove(iDomain.last());
+        				}
+        			} else {
+        				iDomain.add(suggestion);
+        			}
+        		}
+    		}
+    	}
+    				
     	if (requestedAssignment != null) {
     		for (TeachingAssignment conflict: iModel.conflictValues(iAssignment, requestedAssignment)) {
     			iConflictsToResolve.put(conflict.variable(), conflict);
@@ -188,11 +228,26 @@ public class InstructorSchedulingSuggestions {
     			iResolvedRequests.add(requestedAssignment.variable());
     		iAssignment.assign(0, requestedAssignment);
     	}
+    	if (iRequest == null && !iResolvedRequests.isEmpty() && iConflictsToResolve.isEmpty()) {
+    		for (TeachingAssignment assignment: givenAssignments)
+    			if (assignment.getInstructor().equals(iInstructor)) {
+    				iRequest = assignment.variable();
+    				iResolvedRequests.remove(iRequest);
+    				break;
+    			}
+    		if (iRequest == null && !iResolvedRequests.isEmpty()) {
+    			iRequest = iResolvedRequests.get(0);
+    			iResolvedRequests.remove(iRequest);
+    		}
+    	}    	
     	
     	response.setCurrentAssignment(createSuggestion(iModel.getTotalValue(iAssignment) - iValue));
 
     	iStartTime = System.currentTimeMillis();
-        backtrack(iDepth);
+    	if (iInstructor != null && iResolvedRequests.isEmpty())
+    		instructorBacktrack();
+    	else
+    		backtrack(iDepth);
         
         for (TeachingRequest.Variable x : iInitialUnassignments)
             if (iAssignment.getValue(x) != null) iAssignment.unassign(0, x);
@@ -201,6 +256,8 @@ public class InstructorSchedulingSuggestions {
         
         for (SuggestionInfo suggestion: iSuggestions)
         	response.addSuggestion(suggestion);
+        for (SuggestionInfo domain: iDomain)
+        	response.addDomainValue(domain);
         
     	response.setTimeoutReached(wasTimeoutReached());
     	response.setNrCombinationsConsidered(getNrCombinationsConsidered());
@@ -259,7 +316,19 @@ public class InstructorSchedulingSuggestions {
     		iAssignment.unassign(0l, conflict.variable());
     	iAssignment.assign(0l, assignment);
     	
-    	SuggestionInfo suggestion = createSuggestion(iModel.getTotalValue(iAssignment) - iValue);
+    	SuggestionInfo suggestion = new SuggestionInfo();
+    	suggestion.setValue(iModel.getTotalValue(iAssignment) - iValue);
+    	suggestion.setId(new Long(iNrDomainValues ++));
+    	for (Criterion<TeachingRequest.Variable, TeachingAssignment> c: iModel.getCriteria()) {
+    		double v = c.getValue(iAssignment);
+    		Double base = iValues.get(c.getName());
+    		suggestion.addValue(c.getName(), base == null ? v : v - base);
+    	}
+    	suggestion.addAssignment(toAssignmentInfo(assignment.variable()));
+    	for (TeachingRequest.Variable var: iResolvedRequests) {
+    		if (var.equals(iRequest) || var.equals(assignment.variable())) continue;
+    		suggestion.addAssignment(toAssignmentInfo(var));
+    	}
     	for (TeachingAssignment conflict: conflicts) {
     		if (conflict.variable().equals(iRequest) || iConflictsToResolve.containsKey(conflict.variable()) || iResolvedRequests.contains(conflict.variable())) continue;
     		suggestion.addAssignment(toAssignmentInfo(conflict.variable()));
@@ -300,11 +369,60 @@ public class InstructorSchedulingSuggestions {
     	}
     	return suggestion;
     }
+    
+    private void instructorBacktrack() {
+    	for (TeachingRequest tr: iModel.getRequests())
+			if (iInstructor.canTeach(tr)) {
+				PreferenceCombination attributePref = tr.getAttributePreference(iInstructor);
+                if (attributePref.isProhibited()) continue;
+                variables: for (TeachingRequest.Variable var: tr.getVariables()) {
+                	if (iResolvedRequests.contains(var)) continue;
+                	TeachingAssignment assignment = new TeachingAssignment(var, iInstructor, attributePref.getPreferenceInt());
+                	
+                	if (assignment.equals(iAssignment.getValue(var))) continue;
+                	if (var.equals(iRequest) && !match(assignment.getInstructor().getExternalId() + " " + assignment.getInstructor().getName())) continue;
+                	
+                	Set<TeachingAssignment> conflicts = iModel.conflictValues(iAssignment, assignment);
+
+                	iNrCombinationsConsidered++;
+                    if (iConflictsToResolve.size() + conflicts.size() > iDepth) continue;
+
+                    for (TeachingAssignment c: conflicts) {
+                        if (iResolvedRequests.contains(c.variable()) && var.equals(c.variable())) {
+                        	continue variables;
+                        }
+                    }
+                    
+                    TeachingAssignment cur = iAssignment.getValue(var);
+                    for (TeachingAssignment c: conflicts) {
+                    	iAssignment.unassign(0, c.variable());
+                    	iConflictsToResolve.put(c.variable(), c);
+                    }
+                    iAssignment.assign(0, assignment);
+                    TeachingAssignment resolvedConf = iConflictsToResolve.remove(var);
+                    
+                	iResolvedRequests.add(var);
+                    backtrack(iDepth - 1);
+                	iResolvedRequests.remove(var);
+                    
+                    if (cur == null)
+                    	iAssignment.unassign(0, var);
+                    else
+                    	iAssignment.assign(0, cur);
+                    for (TeachingAssignment c: conflicts) {
+                    	iAssignment.assign(0, c);
+                        iConflictsToResolve.remove(c.variable());
+                    }
+                    if (resolvedConf != null)
+                        iConflictsToResolve.put(var, resolvedConf);
+                }
+			}
+    }
 	
     private void backtrack(int depth) {
         if (iDepth > depth && iConflictsToResolve.isEmpty()) {
         	double value = (iModel.getTotalValue(iAssignment) - iValue);
-            if (iSuggestions.size() == iLimit && iSuggestions.last().getValue() <= value) return;
+            if (iSuggestions.size() == iLimit && (iSuggestions.last().getValue() < value || (iSuggestions.last().getValue() == value && iSuggestions.last().getAssignments().size() <= iResolvedRequests.size()))) return;
             iSuggestions.add(createSuggestion(value));
             if (iSuggestions.size() > iLimit) iSuggestions.remove(iSuggestions.last());
             return;
@@ -314,11 +432,11 @@ public class InstructorSchedulingSuggestions {
             iTimeoutReached = true;
             return;
         }
-        TeachingRequest.Variable var = (iDepth == depth && !iResolvedRequests.contains(iRequest) ? iRequest : iConflictsToResolve.keySet().iterator().next());
+        TeachingRequest.Variable var = (iDepth == depth && iRequest != null && !iResolvedRequests.contains(iRequest) ? iRequest : iConflictsToResolve.keySet().iterator().next());
         if (iResolvedRequests.contains(var)) return;
         iResolvedRequests.add(var);
         values: for (TeachingAssignment assignment: var.values(iAssignment)) {
-        	if (assignment.equals(iAssignment.getValue(var))) continue;
+        	if (assignment.equals(iInitialAssignments.get(var))) continue;
         	if (var.equals(iRequest) && !match(assignment.getInstructor().getExternalId() + " " + assignment.getInstructor().getName())) continue;
         	Set<TeachingAssignment> conflicts = iModel.conflictValues(iAssignment, assignment);
 

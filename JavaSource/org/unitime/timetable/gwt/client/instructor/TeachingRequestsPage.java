@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
@@ -65,17 +64,12 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.MouseOutEvent;
-import com.google.gwt.event.dom.client.MouseOutHandler;
-import com.google.gwt.event.dom.client.MouseOverEvent;
-import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -150,7 +144,7 @@ public class TeachingRequestsPage extends SimpleForm {
 							}
 						});
 					}
-					iDetail.showDetail(event.getData().getRequest().getRequestId());
+					iDetail.showRequestDetail(event.getData().getRequest().getRequestId());
 				}
 			}
 		});
@@ -396,7 +390,7 @@ public class TeachingRequestsPage extends SimpleForm {
 				@Override
 				public void execute() {
 					RoomCookie.getInstance().setOrientation(true, RoomCookie.getInstance().areRoomsHorizontal());
-					refreshTable();
+					iTable.refreshTable();
 				}
 				@Override
 				public boolean isApplicable() { return !RoomCookie.getInstance().isGridAsText(); }
@@ -409,7 +403,7 @@ public class TeachingRequestsPage extends SimpleForm {
 				@Override
 				public void execute() {
 					RoomCookie.getInstance().setOrientation(false, RoomCookie.getInstance().areRoomsHorizontal());
-					refreshTable();
+					iTable.refreshTable();
 				}
 				@Override
 				public boolean isApplicable() { return RoomCookie.getInstance().isGridAsText(); }
@@ -422,7 +416,7 @@ public class TeachingRequestsPage extends SimpleForm {
 				@Override
 				public void execute() {
 					RoomCookie.getInstance().setOrientation(false, true);
-					refreshTable();
+					iTable.refreshTable();
 				}
 				@Override
 				public boolean isApplicable() { return !RoomCookie.getInstance().isGridAsText() && !RoomCookie.getInstance().areRoomsHorizontal(); }
@@ -435,7 +429,7 @@ public class TeachingRequestsPage extends SimpleForm {
 				@Override
 				public void execute() {
 					RoomCookie.getInstance().setOrientation(false, false);
-					refreshTable();
+					iTable.refreshTable();
 				}
 				@Override
 				public boolean isApplicable() { return !RoomCookie.getInstance().isGridAsText() && RoomCookie.getInstance().areRoomsHorizontal(); }
@@ -452,7 +446,7 @@ public class TeachingRequestsPage extends SimpleForm {
 						@Override
 						public void execute() {
 							RoomCookie.getInstance().setMode(RoomCookie.getInstance().areRoomsHorizontal(), mode.toHex());
-							refreshTable();
+							iTable.refreshTable();
 						}
 						@Override
 						public boolean isApplicable() { return !RoomCookie.getInstance().isGridAsText() && !mode.toHex().equals(RoomCookie.getInstance().getMode()); }
@@ -540,34 +534,27 @@ public class TeachingRequestsPage extends SimpleForm {
 			}
 			return name;
 		case ATTRIBUTE_PREFS:
-			return new Pref(request.getAttributePreferences());
+			return new PreferenceCell(iProperties, request.getAttributePreferences());
 		case INSTRUCTOR_PREFS:
-			return new Pref(request.getInstructorPreferences());
+			return new PreferenceCell(iProperties, request.getInstructorPreferences());
 		case COURSE_PREF:
 			if (instructor == null) return null;
-			return new Pref(instructor.getCoursePreferences());
+			return new PreferenceCell(iProperties, instructor.getCoursePreferences());
 		case DISTRIBUTION_PREF:
 			if (instructor == null) return null;
-			return new Pref(instructor.getDistributionPreferences());
+			return new PreferenceCell(iProperties, instructor.getDistributionPreferences());
 		case TIME_PREF:
 			if (instructor == null) return null;
-			return new TimePreferences(instructor);
+			return new TimePreferenceCell(iProperties, instructor);
 		case ATTRIBUTES:
 			if (instructor == null) return null;
-			p = new P("attributes");
-			for (AttributeInterface a: instructor.getAttributes()) {
-				P i = new P("attribute");
-				i.setText(a.getName());
-				i.setTitle(a.getName() + " (" + a.getType().getLabel() + ")");
-				p.add(i);
-			}
-			return p;
+			return new AttributesCell(instructor.getAttributes());
 		case ASSIGNED_LOAD:
 			if (instructor == null) return null;
 			return new Label(sTeachingLoadFormat.format(instructor.getAssignedLoad()) + " / " + sTeachingLoadFormat.format(instructor.getMaxLoad()));
 		case OBJECTIVES:
 			if (instructor == null) return null;
-			return new Objectives(instructor.getValues());
+			return new ObjectivesCell(iProperties, instructor.getValues());
 		case ASSIGNED_INSTRUCTORS:
 			return new Label(request.getNrAssignedInstructors() + " / " + request.getNrInstructors());
 		default:
@@ -607,113 +594,6 @@ public class TeachingRequestsPage extends SimpleForm {
 		public boolean isHasInstructor() { return iHasInstructor; }
 		public boolean isCanHide() { return iCanHide; }
 		public int flag() { return 1 << ordinal(); }
-	}
-	
-	public class Pref extends P {
-		public Pref(List<PreferenceInfo> prefs) {
-			super("preferences");
-			for (PreferenceInfo p: prefs) {
-				P prf = new P("prf");
-				prf.setText(p.getOwnerName());
-				PreferenceInterface preference = iProperties.getPreference(p.getPreference());
-				if (preference != null) {
-					prf.getElement().getStyle().setColor(preference.getColor());
-					prf.setTitle(preference.getName() + " " + p.getOwnerName());
-				}
-				add(prf);
-			}
-		}
-	}
-	
-	public class Objectives extends P {
-		public Objectives(Map<String, Double> values) {
-			super("objective");
-			for (String key: new TreeSet<String>(values.keySet())) {
-				Double value = values.get(key);
-				P obj = new P("objective");
-				obj.setText(key + ": " + (value > 0.0 ? "+": "") + sTeachingLoadFormat.format(value));
-				if (key.endsWith(" Preferences")) {
-					if (value <= -50.0) {
-						obj.getElement().getStyle().setColor(iProperties.getPreference("R").getColor());
-					} else if (value <= -2.0) {
-						obj.getElement().getStyle().setColor(iProperties.getPreference("-2").getColor());
-					} else if (value < 0.0) {
-						obj.getElement().getStyle().setColor(iProperties.getPreference("-1").getColor());
-					} else if (value >= 50.0) {
-						obj.getElement().getStyle().setColor(iProperties.getPreference("P").getColor());
-					} else if (value >= 2.0) {
-						obj.getElement().getStyle().setColor(iProperties.getPreference("2").getColor());
-					} else if (value > 0.0) {
-						obj.getElement().getStyle().setColor(iProperties.getPreference("1").getColor());
-					}
-				} else if (value < 0.0) {
-					obj.getElement().getStyle().setColor("green");
-				} else if (value > 0.0) {
-					obj.getElement().getStyle().setColor("red");
-				}
-				add(obj);
-			}
-		}
-	}
-	
-	public static interface HasRefresh {
-		public void refresh();
-	}
-	
-	public void refreshTable() {
-		for (int r = 1; r < iTable.getRowCount(); r++) {
-			for (int c = 0; c < iTable.getCellCount(r); c++) {
-				Widget w = iTable.getWidget(r, c);
-				if (w instanceof HasRefresh)
-					((HasRefresh)w).refresh();
-			}
-		}
-	}
-	
-	public class TimePreferences extends P implements HasRefresh {
-		private String iPattern = null;
-		private List<PreferenceInfo> iPreferences = null;
-		
-		public TimePreferences(InstructorInfo instructor) {
-			super("preferences");
-			iPattern = instructor.getAvailability();
-			iPreferences = instructor.getTimePreferences();
-			addMouseOverHandler(new MouseOverHandler() {
-				@Override
-				public void onMouseOver(MouseOverEvent event) {
-					InstructorAvailabilityHint.showHint(getElement(), iPattern, true, null);
-				}
-			});
-			addMouseOutHandler(new MouseOutHandler() {
-				@Override
-				public void onMouseOut(MouseOutEvent event) {
-					InstructorAvailabilityHint.hideHint();
-				}
-			});
-			refresh();
-		}
-		
-		@Override
-		public void refresh() {
-			clear();
-			RoomCookie cookie = RoomCookie.getInstance();
-			if (iPattern != null && !iPattern.isEmpty() && !cookie.isGridAsText()) {
-				final Image availability = new Image(GWT.getHostPageBaseURL() + "pattern?pref=" + iPattern + "&v=" + (cookie.areRoomsHorizontal() ? "0" : "1") + (cookie.hasMode() ? "&s=" + cookie.getMode() : ""));
-				availability.setStyleName("grid");
-				add(availability);
-			} else {
-				for (PreferenceInfo p: iPreferences) {
-					P prf = new P("prf");
-					prf.setText(p.getOwnerName());
-					PreferenceInterface preference = iProperties.getPreference(p.getPreference());
-					if (preference != null) {
-						prf.getElement().getStyle().setColor(preference.getColor());
-						prf.setTitle(preference.getName() + " " + p.getOwnerName());
-					}
-					add(prf);
-				}
-			}
-		}
 	}
 	
 	public static class TableComparator implements Comparator<SingleTeachingAssingment> {

@@ -873,6 +873,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Score")
 	String colScore();
 	
+	@DefaultMessage("Role")
+	String colRole();
+	
 	@DefaultMessage("pending")
 	String approvalNotApproved();
 	
@@ -1187,6 +1190,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Objectives:")
 	String propObjectives();
+	
+	@DefaultMessage("Enrollments:")
+	String propEnrollments();
+	
+	@DefaultMessage("Assignments:")
+	String propAssignments();
 
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
@@ -1897,7 +1906,7 @@ public interface GwtMessages extends Messages {
 	String failedToLoadTeachingAssignments(String reason);
 	
 	@DefaultMessage("Failed to load teaching request: {0}")
-	String failedToLoadTeachingRequestDetaul(String reason);
+	String failedToLoadTeachingRequestDetail(String reason);
 	
 	@DefaultMessage("Failed to compute suggestions: {0}")
 	String failedToComputeSuggestions(String reason);
@@ -3488,6 +3497,24 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Global:")
 	String propGlobalInstructorAttribute();
+	
+	@DefaultMessage("Name:")
+	String propInstructorName();
+	
+	@DefaultMessage("Assigned Load:")
+	String propAssignedLoad();
+	
+	@DefaultMessage("Attributes:")
+	String propInstructorAttributes();
+	
+	@DefaultMessage("Course Preferences:")
+	String propCoursePreferences();
+	
+	@DefaultMessage("Time Preferences:")
+	String propTimePreferences();
+	
+	@DefaultMessage("Distribution Preferences:")
+	String propDistributionPreferences();
 
 	@DefaultMessage("{0} ({1})")
 	String label(String name, String type);
@@ -3851,6 +3878,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Selected Assignment")
 	String headerSelectedAssignment();
+	
+	@DefaultMessage("Instructor")
+	String headerInstructor();
+	
+	@DefaultMessage("Available Assignments")
+	String headerAvailableAssignments();
 	
 	@DefaultMessage("The selected offering has no curricula.")
 	String offeringHasNoCurricula();
@@ -4652,4 +4685,10 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("({0}s timeout reached, {1} possibilities of up to {2} changes were considered, {3} suggestions displayed)")
 	String suggestionsNoteTimeoutAllResults(int timeout, int nrCombinations, int depth, int nrResults);
+	
+	@DefaultMessage("Student")
+	String enrollmentRoleStudent();
+	
+	@DefaultMessage("Instructor")
+	String enrollmentRoleInstructor();
 }

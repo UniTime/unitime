@@ -4391,6 +4391,52 @@ unitime-RoomSharingWidget .legend .blank {
 	padding-right: 5px;
 }
 
+.unitime-TeachingRequestDetail .selected {
+	width: 100%;
+}
+
+.unitime-TeachingRequestDetail .selected .common {
+	font-style: italic;
+}
+
+.unitime-TeachingRequestDetail .selected .not-assigned {
+	color: red;
+	font-style: italic;
+	padding-right: 2px;
+}
+
+.unitime-TeachingRequestDetail .selected .no-extid {
+	font-style: italic;
+	padding-right: 2px;
+}
+
+.unitime-TeachingRequestDetail .selected td {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-TeachingRequestDetail .selected .initial {
+	text-align: right;
+}
+
+.unitime-TeachingRequestDetail .selected .sections {
+	display: block;
+	height: 18px;
+}
+
+.unitime-TeachingRequestDetail .selected .section {
+	white-space: nowrap;
+	display: inline-block;
+	padding-right: 5px;
+}
+
+.unitime-TeachingRequestDetail .selected .conflict {
+	color:red;
+}
+
+.unitime-TeachingRequestDetail .enrollments {
+	width: 100%;
+}
+
 .unitime-TeachingRequestDetail .assignments {
 	width: 100%;
 }
@@ -4399,36 +4445,23 @@ unitime-RoomSharingWidget .legend .blank {
 	font-style: italic;
 }
 
-.unitime-TeachingRequestDetail .assignments .not-assigned {
-	color: red;
-	font-style: italic;
-	padding-right: 2px;
+
+.unitime-TeachingRequestDetail .domain {
+	width: 100%;
 }
 
-.unitime-TeachingRequestDetail .assignments .no-extid {
-	font-style: italic;
-	padding-right: 2px;
-}
-
-.unitime-TeachingRequestDetail .assignments td {
-	border-bottom: 1px dashed #9CB0CE;
-}
-
-.unitime-TeachingRequestDetail .assignments .initial {
-	text-align: right;
-}
-
-.unitime-TeachingRequestDetail .assignments .sections {
+.unitime-TeachingRequestDetail .domain .conflict {
+	color:red;
 	display: block;
 	height: 18px;
 }
 
-.unitime-TeachingRequestDetail .assignments .section {
+.unitime-TeachingRequestDetail .domain .conflict .section {
 	white-space: nowrap;
 	display: inline-block;
 	padding-right: 5px;
 }
 
-.unitime-TeachingRequestDetail .assignments .conflict {
-	color:red;
+.unitime-TeachingRequestDetail .instructors {
+	width: 100%;
 }

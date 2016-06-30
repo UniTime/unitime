@@ -396,4 +396,43 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
         	lock.unlock();
         }
 	}
+
+	@Override
+	public InstructorInfo getInstructorInfo(Long instructorId) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
+        	List<TeachingRequest.Variable> vars = new ArrayList<TeachingRequest.Variable>();
+        	for (Instructor instructor: getModel().getInstructors()) {
+        		if (instructor.getInstructorId() == instructorId) {
+        			InstructorInfo info = toInstructorInfo(instructor);
+        			Instructor.Context context = instructor.getContext(currentSolution().getAssignment());
+        			if (context != null) {
+        				info.setAssignedLoad(context.getLoad());
+        				for (TeachingAssignment assignment: context.getAssignments()) {
+        					vars.add(assignment.variable());
+        					TeachingRequestInfo req = toRequestInfo(assignment.variable().getRequest());
+        					for (Criterion<TeachingRequest.Variable, TeachingAssignment> c: getModel().getCriteria()) {
+        						double value = c.getValue(currentSolution().getAssignment(), assignment, null);
+        						if (value != 0)
+        							req.setValue(c.getName(), value);
+        					}
+        					info.addAssignedRequest(req);
+        				}
+        			}
+        			if (!vars.isEmpty()) {
+        				for (Criterion<TeachingRequest.Variable, TeachingAssignment> c: getModel().getCriteria()) {
+    						double value = c.getValue(currentSolution().getAssignment(), vars);
+    						if (value != 0)
+    							info.setValue(c.getName(), value);
+    					}
+        			}
+        			return info;
+        		}
+        	}
+            return null;
+        } finally {
+        	lock.unlock();
+        }
+	}
 }
