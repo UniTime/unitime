@@ -208,6 +208,12 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 				if (allDept && !context.getUser().getCurrentAuthority().hasQualifier(rd.getDepartment()))
 					allDept = false;
 			}
+			if (!allDept && !control) {
+				for (RoomDept rd: location.getRoomDepts()) {
+					if (!context.getUser().getCurrentAuthority().hasQualifier(rd.getDepartment()))
+						model.getOption(rd.getDepartment().getUniqueId()).setDeletable(false);
+				}
+			}
 			model.setDefaultEditable(control || allDept);
 			model.setNoteEditable(control || allDept);
 			if (!control && !allDept) {

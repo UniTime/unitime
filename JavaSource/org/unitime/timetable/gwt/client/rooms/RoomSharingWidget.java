@@ -164,6 +164,10 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 		return isEditable() && option.isEditable();
 	}
 	
+	public boolean isDeletable(RoomSharingOption option) {
+		return isEditable() && option.isDeletable();
+	}
+	
 	public boolean isEditable(int day, int slot) {
 		return isEditable() && iModel.isEditable(day, slot, iMode.getStep());
 	}
@@ -450,7 +454,7 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 			
 			addPreferenceIfNeeded(line, option);
 			
-			if (option.getId() >= 0 && isEditable(option)) {
+			if (option.getId() >= 0 && isDeletable(option)) {
 				Image remove = new Image(RESOURCES.delete());
 				remove.addStyleName("remove");
 				line.add(remove);
