@@ -85,6 +85,15 @@
 		</item>
 	</category>
 	<category>
+		<title>Room Management</title>
+		<item>
+			<name>Permissions</name>
+			<description>
+				<line>Fixed a JavaScript exception thrown when the user can edit event availability (has Room Edit Event Availability permission) but cannot edit event department (does not have Room Edit Change Event Properties permission).</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Other</title>
 		<item>
 			<name>Security: Possible SQL Injection Fixed</name>
