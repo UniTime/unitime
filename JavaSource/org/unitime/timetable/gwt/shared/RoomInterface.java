@@ -101,6 +101,7 @@ public class RoomInterface implements IsSerializable {
 		private Long iId;
 		private boolean iEditable;
 		private Long iPreferenceId = null;
+		private Boolean iDeletable = null;;
 		
 		public RoomSharingOption() {}
 		public RoomSharingOption(Long id, String color, String code, String name, boolean editable, Long preferenceId) {
@@ -124,6 +125,9 @@ public class RoomInterface implements IsSerializable {
 		
 		public void setEditable(boolean editable) { iEditable = editable; }
 		public boolean isEditable() { return iEditable; }
+		
+		public void setDeletable(Boolean deletable) { iDeletable = deletable; }
+		public boolean isDeletable() { return iDeletable == null ? iEditable : iDeletable.booleanValue(); }
 		
 		public boolean hasPreference() { return iPreferenceId != null;}
 		public void setPreference(Long preferenceId) { iPreferenceId = preferenceId; }
@@ -215,7 +219,7 @@ public class RoomInterface implements IsSerializable {
 			List<RoomSharingOption> options = new ArrayList<RoomSharingOption>();
 			if (iOptions == null) return options;
 			for (RoomSharingOption option: iOptions)
-				if (option.isEditable() && option.getId() >= 0) options.add(option);
+				if (option.isDeletable() && option.getId() >= 0) options.add(option);
 			return options;
 		}
 		

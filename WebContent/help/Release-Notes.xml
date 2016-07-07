@@ -89,7 +89,8 @@
 		<item>
 			<name>Permissions</name>
 			<description>
-				<line>Fixed a JavaScript exception thrown when the user can edit event availability (has Room Edit Event Availability permission) but cannot edit event department (does not have Room Edit Change Event Properties permission).</line>
+				<line>Events: Fixed a JavaScript exception thrown when the user can edit event availability (has Room Edit Event Availability permission) but cannot edit event department (does not have Room Edit Change Event Properties permission).</line>
+				<line>Room Sharing: Do not allow a departmental manager to remove a department from the room sharing table that does not belong to him/her (if the room is not being controlled by a department of the manager).</line>
 			</description>
 		</item>
 	</category>
