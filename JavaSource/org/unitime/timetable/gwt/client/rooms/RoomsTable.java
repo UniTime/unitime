@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.unitime.timetable.gwt.client.GwtHint;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
@@ -1224,13 +1225,42 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 	}
 	
 	public static class PictureCell extends Image {
+		private RoomPictureInterface iPicture;
+		private P iPopupWidget = null;
+		
 		public PictureCell(RoomPictureInterface picture) {
 			super();
+			iPicture = picture;
 			setStyleName("picture");
 			setUrl(GWT.getHostPageBaseURL() + "picture?id=" + picture.getUniqueId());
-			setTitle(picture.getName() + (picture.getPictureType() == null ? "" : " (" + picture.getPictureType().getLabel() + ")"));
 			setAltText(picture.getName() + (picture.getPictureType() == null ? "" : " (" + picture.getPictureType().getAbbreviation() + ")"));
+			addMouseOverHandler(new MouseOverHandler() {
+				@Override
+				public void onMouseOver(MouseOverEvent event) {
+					GwtHint.showHint(getElement(), getPopupWidget());
+				}
+			});
+			addMouseOutHandler(new MouseOutHandler() {
+				@Override
+				public void onMouseOut(MouseOutEvent event) {
+					GwtHint.hideHint();
+				}
+			});
 		}
+		
+		protected P getPopupWidget() {
+			if (iPopupWidget == null) {
+				iPopupWidget = new P("unitime-RoomPictureHint");
+				Image image = new Image(GWT.getHostPageBaseURL() + "picture?id=" + iPicture.getUniqueId());
+				image.setStyleName("picture");
+				iPopupWidget.add(image);
+				P caption = new P("caption");
+				caption.setText(iPicture.getName() + (iPicture.getPictureType() == null ? "" : " (" + iPicture.getPictureType().getAbbreviation() + ")"));
+				iPopupWidget.add(caption);
+			}
+			return iPopupWidget;
+		}
+		
 	}
 	
 	public static class LinkCell extends ImageLink {
