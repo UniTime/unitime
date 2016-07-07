@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client.rooms;
 
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.GwtHint;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.rooms.RoomsTable.DepartmentCell;
@@ -49,6 +50,10 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomsPageMode;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.MouseOutEvent;
+import com.google.gwt.event.dom.client.MouseOutHandler;
+import com.google.gwt.event.dom.client.MouseOverEvent;
+import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -408,13 +413,40 @@ public class RoomDetail extends Composite {
 	}
 	
 	static class PictureCell extends Image {
+		private P iPopupWidget;
+		private RoomPictureInterface iPicture;
+		
 		PictureCell(RoomPictureInterface picture) {
 			super();
+			iPicture = picture;
 			setStyleName("picture");
 			setUrl(GWT.getHostPageBaseURL() + "picture?id=" + picture.getUniqueId());
-			setTitle(picture.getName() + (picture.getPictureType() == null ? "" : " (" + picture.getPictureType().getLabel() + ")"));
 			setAltText(picture.getName() + (picture.getPictureType() == null ? "" : " (" + picture.getPictureType().getAbbreviation() + ")"));
-			
+			addMouseOverHandler(new MouseOverHandler() {
+				@Override
+				public void onMouseOver(MouseOverEvent event) {
+					GwtHint.showHint(getElement(), getPopupWidget());
+				}
+			});
+			addMouseOutHandler(new MouseOutHandler() {
+				@Override
+				public void onMouseOut(MouseOutEvent event) {
+					GwtHint.hideHint();
+				}
+			});
+		}
+		
+		protected P getPopupWidget() {
+			if (iPopupWidget == null) {
+				iPopupWidget = new P("unitime-RoomPictureHint");
+				Image image = new Image(GWT.getHostPageBaseURL() + "picture?id=" + iPicture.getUniqueId());
+				image.setStyleName("picture");
+				iPopupWidget.add(image);
+				P caption = new P("caption");
+				caption.setText(iPicture.getName() + (iPicture.getPictureType() == null ? "" : " (" + iPicture.getPictureType().getAbbreviation() + ")"));
+				iPopupWidget.add(caption);
+			}
+			return iPopupWidget;
 		}
 	}
 	

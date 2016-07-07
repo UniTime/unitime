@@ -1392,15 +1392,12 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	font-size: small;
 	font-family: arial;
 	overflow: hidden;
-	filter: alpha(opacity = 90);
-	opacity: .90;
-    -moz-opacity: .90;
 	-webkit-border-radius: 6px;
 	-moz-border-radius: 6px;
 	padding: 4px;
 	color: #000000;
 	border: 1px solid #AB8B00;
-	background: #FFF0AB;
+	background: rgba(255,240,171,0.9);
 	z-index: 1000000;
 }
 
@@ -3744,6 +3741,17 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-Rooms .link {
 	display: block;
+}
+
+.unitime-RoomPictureHint .picture {
+	max-width: 800px;
+	max-height: 600px;
+	border: 1px solid #9CB0CE;
+}
+
+.unitime-RoomPictureHint .caption {
+	max-width: 800px;
+	white-space: normal;
 }
 
 .unitime-RoomDetail .default {

@@ -105,6 +105,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Room Pictures</name>
+			<description>
+				<line>Rooms, Room Detail: added a mouse-over which shows a bigger picture (limited to 800 x 600 pixels).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other</title>
