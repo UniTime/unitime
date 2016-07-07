@@ -91,6 +91,18 @@
 			<description>
 				<line>Events: Fixed a JavaScript exception thrown when the user can edit event availability (has Room Edit Event Availability permission) but cannot edit event department (does not have Room Edit Change Event Properties permission).</line>
 				<line>Room Sharing: Do not allow a departmental manager to remove a department from the room sharing table that does not belong to him/her (if the room is not being controlled by a department of the manager).</line>
+				<line>Show room related properties (controlling department, room sharing, ignore distance conflicts, etc.):
+					<line>A user that is allowed to edit course related room properties does not need to have Classes or Instructional Offerings permission.</line>
+					<line>That is, a user with RoomEditChangeRoomProperties, RoomEditChangeControll, RoomDetailAvailability, or RoomEditAvailability permission can also see course related room properties.</line>
+				</line>
+				<line>Show examination related properties (examination capacity, examination problems, period preferences):
+					<line>A user that is allowed to edit examination related room properties does not need to have Examinations permission.</line>
+					<line>That is, a user with RoomEditChangeExaminationStatus, or RoomDetailPeriodPreferences permission can also see examination related room properties.</line>
+				</line>
+				<line>Show event related properties (event department, status, note, break time, event availability):
+					<line>a user that is allowed to edit event related room properties does not need to have Events permission.</line>
+					<line>That is, a user with RoomEditChangeEventProperties, or RoomDetailEventAvailability, or RoomEditEventAvailability cam also see event related room properties.</line>
+				</line>
 			</description>
 		</item>
 	</category>

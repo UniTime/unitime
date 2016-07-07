@@ -64,6 +64,7 @@ import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomTypeOption;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 
@@ -121,9 +122,13 @@ public class RoomDetailsBackend extends RoomFilterBackend {
     		html = false;
     	}
     	
-    	boolean courses = context.hasPermission(Right.InstructionalOfferings) || context.hasPermission(Right.Classes);
-    	boolean exams = context.hasPermission(Right.Examinations);
-    	boolean events = context.hasPermission(Right.Events) || context.getUser().getCurrentAuthority().hasRight(Right.RoomEditChangeEventProperties) || context.getUser().getCurrentAuthority().hasRight(Right.RoomEditEventAvailability);
+    	UserAuthority authority = (context.getUser() == null ? null : context.getUser().getCurrentAuthority());
+    	boolean courses = context.hasPermission(Right.InstructionalOfferings) || context.hasPermission(Right.Classes) ||
+    			(authority != null && (authority.hasRight(Right.RoomEditChangeRoomProperties) || authority.hasRight(Right.RoomEditChangeControll) || authority.hasRight(Right.RoomDetailAvailability) || authority.hasRight(Right.RoomEditAvailability)));
+    	boolean exams = context.hasPermission(Right.Examinations) ||
+    			(authority != null && (authority.hasRight(Right.RoomEditChangeExaminationStatus) || authority.hasRight(Right.RoomDetailPeriodPreferences)));
+    	boolean events = context.hasPermission(Right.Events) ||
+    			(authority != null && (authority.hasRight(Right.RoomEditChangeEventProperties) || authority.hasRight(Right.RoomDetailEventAvailability ) || authority.hasRight(Right.RoomEditEventAvailability)));
     	boolean editPermissions = request.hasOption("id");
 
 		Map<Long, Double> distances = new HashMap<Long, Double>();
