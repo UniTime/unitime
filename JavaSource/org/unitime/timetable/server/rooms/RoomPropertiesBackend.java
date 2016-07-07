@@ -59,6 +59,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.RoomFeatureTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.rights.Right;
 
 /**
@@ -76,10 +77,12 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		context.checkPermission(Right.Rooms);
 		
 		RoomPropertiesInterface response = new RoomPropertiesInterface();
+		UserAuthority authority = null;
 		
 		if (context.getUser() != null) {
 			Session session = SessionDAO.getInstance().get(request.hasSessionId() ? request.getSessionId() : context.getUser().getCurrentAcademicSessionId());
 			response.setAcademicSession(new AcademicSessionInterface(session.getUniqueId(), session.getAcademicTerm() + " " + session.getAcademicYear()));
+			authority = context.getUser().getCurrentAuthority();
 		}
 		
 		response.setCanEditDepartments(context.hasPermission(Right.EditRoomDepartments));
@@ -89,9 +92,12 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		response.setCanAddRoom(context.hasPermission(Right.AddRoom));
 		response.setCanAddNonUniversity(context.hasPermission(Right.AddNonUnivLocation));
 		
-		response.setCanSeeCourses(context.hasPermission(Right.InstructionalOfferings) || context.hasPermission(Right.Classes));
-		response.setCanSeeExams(context.hasPermission(Right.Examinations));
-		response.setCanSeeEvents(context.hasPermission(Right.Events));
+		response.setCanSeeCourses(context.hasPermission(Right.InstructionalOfferings) || context.hasPermission(Right.Classes) ||
+				(authority != null && (authority.hasRight(Right.RoomEditChangeRoomProperties) || authority.hasRight(Right.RoomEditChangeControll) || authority.hasRight(Right.RoomDetailAvailability) || authority.hasRight(Right.RoomEditAvailability))));
+		response.setCanSeeExams(context.hasPermission(Right.Examinations) ||
+				(authority != null && (authority.hasRight(Right.RoomEditChangeExaminationStatus) || authority.hasRight(Right.RoomDetailPeriodPreferences))));
+		response.setCanSeeEvents(context.hasPermission(Right.Events) ||
+				(authority != null && (authority.hasRight(Right.RoomEditChangeEventProperties) || authority.hasRight(Right.RoomDetailEventAvailability ) || authority.hasRight(Right.RoomEditEventAvailability))));
 		response.setCanExportRoomGroups(context.hasPermission(Right.RoomGroupsExportPdf));
 		response.setCanExportRoomFeatures(context.hasPermission(Right.RoomFeaturesExportPdf));
 		response.setCanAddGlobalRoomGroup(context.hasPermission(Right.GlobalRoomGroupAdd));
