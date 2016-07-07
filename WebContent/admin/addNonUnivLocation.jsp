@@ -84,7 +84,7 @@
 			<TR>
 				<TD>Name:</TD>
 				<TD width='100%'>
-					<html:text property="name" maxlength="20" size="20" />
+					<html:text property="name" maxlength="40" size="40" />
 				</TD>
 			</TR>
 			

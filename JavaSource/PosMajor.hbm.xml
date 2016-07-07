@@ -44,14 +44,14 @@
             column="code"
             type="java.lang.String"
             not-null="true"
-            length="10"/>
+            length="40"/>
 
         <property
             name="name"
             column="name"
             type="java.lang.String"
             not-null="true"
-            length="50"/>
+            length="100"/>
 
         <many-to-one
             name="session"

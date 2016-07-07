@@ -301,7 +301,7 @@ public class CurriculumEdit extends Composite {
 		
 		iCurriculaTable.addHeaderRow(iTitleAndButtons);
 		
-		iCurriculumAbbv = new UniTimeWidget<TextBox>(new UniTimeTextBox(20, ValueBoxBase.TextAlignment.LEFT));
+		iCurriculumAbbv = new UniTimeWidget<TextBox>(new UniTimeTextBox(40, 300, ValueBoxBase.TextAlignment.LEFT));
 		iCurriculaTable.addRow(MESSAGES.propAbbreviation(), iCurriculumAbbv);
 		iCurriculumAbbv.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
@@ -311,7 +311,7 @@ public class CurriculumEdit extends Composite {
 			}
 		});
 
-		iCurriculumName = new UniTimeWidget<TextBox>(new UniTimeTextBox(60, 500));
+		iCurriculumName = new UniTimeWidget<TextBox>(new UniTimeTextBox(100, 700));
 		iCurriculaTable.addRow(MESSAGES.propName(), iCurriculumName);
 		iCurriculumName.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
@@ -390,8 +390,8 @@ public class CurriculumEdit extends Composite {
 							majors += m.getName();
 						}
 					}
-					if (defaultName.length() > 60) defaultName = defaultName.substring(0, 60);
-					if (defaultAbbv.length() > 20) defaultAbbv = defaultAbbv.substring(0, 20);
+					if (defaultName.length() > 100) defaultName = defaultName.substring(0, 100);
+					if (defaultAbbv.length() > 40) defaultAbbv = defaultAbbv.substring(0, 40);
 					if (iDefaultAbbv) iCurriculumAbbv.getWidget().setText(defaultAbbv);
 					if (iDefaultName) iCurriculumName.getWidget().setText(defaultName);
 					iCurriculumMajors.setPrintText(majors);
@@ -633,8 +633,8 @@ public class CurriculumEdit extends Composite {
 								}
 								idx++;
 							}
-							if (defaultName.length() > 60) defaultName = defaultName.substring(0, 60);
-							if (defaultAbbv.length() > 20) defaultAbbv = defaultAbbv.substring(0, 20);
+							if (defaultName.length() > 100) defaultName = defaultName.substring(0, 100);
+							if (defaultAbbv.length() > 40) defaultAbbv = defaultAbbv.substring(0, 40);
 							iDefaultAbbv = defaultAbbv.equals(iCurriculumAbbv.getWidget().getText());
 							iDefaultName = defaultName.equalsIgnoreCase(iCurriculumName.getWidget().getText());
 							if (!iDefaultAbbv && allSelected && area != null && area.getAbbv().equals(iCurriculumAbbv.getWidget().getText()))

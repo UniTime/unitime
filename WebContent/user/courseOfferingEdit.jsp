@@ -156,13 +156,13 @@
 		<TR>
 			<TD><loc:message name="filterCourseNumber"/> </TD>
 			<TD>
-				<html:text property="courseNbr" size="10" maxlength="10" styleId="course" />
+				<html:text property="courseNbr" size="40" maxlength="40" styleId="course" />
 			</TD>
 		</TR>
 		<TR>
 			<TD><loc:message name="propertyCourseTitle"/> </TD>
 			<TD>
-				<html:text property="title" size="60" maxlength="90" />
+				<html:text property="title" size="100" maxlength="200" />
 			</TD>
 		</TR>
 		<tt:propertyEquals name="unitime.course.editExternalIds" value="true">

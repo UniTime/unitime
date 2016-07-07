@@ -58,7 +58,7 @@ public class AcademicAreas implements AdminTable {
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
 		SimpleEditInterface data = new SimpleEditInterface(
 				new Field(MESSAGES.fieldExternalId(), FieldType.text, 120, 40, Flag.READ_ONLY),
-				new Field(MESSAGES.fieldAbbreviation(), FieldType.text, 80, 10, Flag.UNIQUE),
+				new Field(MESSAGES.fieldAbbreviation(), FieldType.text, 120, 40, Flag.UNIQUE),
 				new Field(MESSAGES.fieldTitle(), FieldType.text, 500, 100, Flag.NOT_EMPTY)
 				);
 		data.setSortBy(1,2,3);

@@ -235,7 +235,7 @@
                 column="room_number"
                 type="java.lang.String"
                 not-null="true"
-                length="10"/>
+                length="40"/>
 
             <many-to-one
                 name="roomType"
@@ -280,7 +280,7 @@
                 column="name"
                 type="java.lang.String"
                 not-null="true"
-                length="20"/>
+                length="40"/>
 
             <many-to-one
                 name="roomType"

@@ -44,7 +44,7 @@
             column="academic_area_abbreviation"
             type="java.lang.String"
             not-null="true"
-            length="10"/>
+            length="40"/>
 
         <property
             name="title"

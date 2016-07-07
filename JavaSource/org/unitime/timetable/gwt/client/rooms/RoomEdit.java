@@ -281,8 +281,8 @@ public class RoomEdit extends Composite {
 		
 		iName = new UniTimeWidget<TextBox>(new TextBox());
 		iName.getWidget().setStyleName("unitime-TextBox");
-		iName.getWidget().setMaxLength(20);
-		iName.getWidget().setWidth("150px");
+		iName.getWidget().setMaxLength(40);
+		iName.getWidget().setWidth("300px");
 		iName.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {

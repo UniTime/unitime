@@ -37,14 +37,14 @@
             column="abbv"
             type="java.lang.String"
             not-null="true"
-            length="20"/>
+            length="40"/>
 
         <property
             name="name"
             column="name"
             type="java.lang.String"
             not-null="true"
-            length="60"/>
+            length="100"/>
 
         <many-to-one
             name="academicArea"

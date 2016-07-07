@@ -97,14 +97,14 @@
             column="course_nbr"
             type="java.lang.String"
             not-null="true"
-            length="10"/>
+            length="40"/>
 
         <property
             name="title"
             column="title"
             type="java.lang.String"
             not-null="false"
-            length="90"/>
+            length="200"/>
 
         <property
             name="scheduleBookNote"

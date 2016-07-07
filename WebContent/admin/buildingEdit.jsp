@@ -95,7 +95,7 @@
 		<TR>
 			<TD>Abbreviation:</TD>
 			<TD>
-				<html:text property="abbreviation" size="10" maxlength="10"/>
+				<html:text property="abbreviation" size="20" maxlength="20"/>
 				&nbsp;<html:errors property="abbreviation"/>
 			</TD>
 		</TR>

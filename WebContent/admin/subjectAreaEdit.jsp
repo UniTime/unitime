@@ -114,7 +114,7 @@
 		<TR>
 			<TD>Abbreviation:</TD>
 			<TD>
-				<html:text property="abbv" size="10" maxlength="10"/>
+				<html:text property="abbv" size="20" maxlength="20"/>
 			</TD>
 		</TR>
 		

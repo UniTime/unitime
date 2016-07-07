@@ -11443,4 +11443,40 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'SolverSolutionExportXml'
 		</sql>
 	</update>
+	<update version="165" date="7-Jul-2016" comment="Column Size Adjustments">
+		<mysql>alter table %SCHEMA%.subject_area modify subject_area_abbreviation varchar(40)</mysql>
+		<mysql>alter table %SCHEMA%.pos_major modify code varchar(40)</mysql>
+		<mysql>alter table %SCHEMA%.pos_minor modify code varchar(40)</mysql>
+		<mysql>alter table %SCHEMA%.course_offering modify course_nbr varchar(40)</mysql>
+		<mysql>alter table %SCHEMA%.course_offering modify title varchar(200)</mysql>
+		<mysql>alter table %SCHEMA%.curriculum modify abbv varchar(40) not null</mysql>
+		<mysql>alter table %SCHEMA%.curriculum modify name varchar(100) not null</mysql>
+		<mysql>alter table %SCHEMA%.academic_area modify academic_area_abbreviation varchar(40)</mysql>
+		<mysql>alter table %SCHEMA%.academic_classification modify code varchar(40)</mysql>
+		<mysql>alter table %SCHEMA%.pos_major modify name varchar(100)</mysql>
+		<mysql>alter table %SCHEMA%.pos_minor modify name varchar(100)</mysql>
+		<mysql>alter table %SCHEMA%.academic_classification modify name varchar(100)</mysql>
+		<mysql>alter table %SCHEMA%.building modify abbreviation varchar(20)</mysql>
+		<mysql>alter table %SCHEMA%.room modify room_number varchar(40)</mysql>
+		<mysql>alter table %SCHEMA%.non_university_location modify name varchar(40)</mysql>
+		<mysql>alter table %SCHEMA%.external_building modify abbreviation varchar(20)</mysql>
+		<mysql>alter table %SCHEMA%.external_room modify room_number varchar(40)</mysql>
+		<plsql>alter table %SCHEMA%.subject_area modify subject_area_abbreviation varchar2(40 char)</plsql>
+		<plsql>alter table %SCHEMA%.pos_major modify code varchar2(40 char)</plsql>
+		<plsql>alter table %SCHEMA%.pos_minor modify code varchar2(40 char)</plsql>
+		<plsql>alter table %SCHEMA%.course_offering modify course_nbr varchar2(40 char)</plsql>
+		<plsql>alter table %SCHEMA%.course_offering modify title varchar2(200 char)</plsql>
+		<plsql>alter table %SCHEMA%.curriculum modify abbv varchar2(40 char)</plsql>
+		<plsql>alter table %SCHEMA%.curriculum modify name varchar2(100 char)</plsql>
+		<plsql>alter table %SCHEMA%.academic_area modify academic_area_abbreviation varchar2(40 char)</plsql>
+		<plsql>alter table %SCHEMA%.academic_classification modify code varchar2(40 char)</plsql>
+		<plsql>alter table %SCHEMA%.pos_major modify name varchar2(100 char)</plsql>
+		<plsql>alter table %SCHEMA%.pos_minor modify name varchar2(100 char)</plsql>
+		<plsql>alter table %SCHEMA%.academic_classification modify name varchar2(100 char)</plsql>
+		<plsql>alter table %SCHEMA%.building modify abbreviation varchar2(20 char)</plsql>
+		<plsql>alter table %SCHEMA%.room modify room_number varchar2(40 char)</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location modify name varchar2(40 char)</plsql>
+		<plsql>alter table %SCHEMA%.external_building modify abbreviation varchar2(20 char)</plsql>
+		<plsql>alter table %SCHEMA%.external_room modify room_number varchar2(40 char)</plsql>
+	</update>
 </dbupdate>

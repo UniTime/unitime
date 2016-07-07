@@ -100,7 +100,7 @@
 			<TR>
 				<TD>Room Number:</TD>
 				<TD>
-					<html:text property="roomNum" maxlength="10" size="6" />
+					<html:text property="roomNum" maxlength="40" size="20" />
 				</TD>
 			</TR>
 			

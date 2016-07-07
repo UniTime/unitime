@@ -51,7 +51,7 @@
             column="name"
             type="java.lang.String"
             not-null="true"
-            length="50"/>
+            length="100"/>
 
         <many-to-one
             name="session"
