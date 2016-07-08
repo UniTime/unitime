@@ -34,6 +34,9 @@ public class InstructorCookie {
 	private int[] iTeachingRequestsColumns = new int[] {0xffff, 0xffff};
 	private int iSortTeachingAssignmentsBy = 0;
 	private int iTeachingAssignmentsColumns = 0xffff;
+	private int iAssignmentChangesBase = 1;
+	private int iSortAssignmentChangesBy = 0;
+	private int iAssignmentChangesColumns = 0xffff;
 
 	private InstructorCookie() {
 		try {
@@ -47,6 +50,9 @@ public class InstructorCookie {
 				iTeachingRequestsColumns = new int[] {Integer.valueOf(params[idx++]), Integer.valueOf(params[idx++])};
 				iSortTeachingAssignmentsBy = Integer.valueOf(params[idx++]);
 				iTeachingAssignmentsColumns = Integer.valueOf(params[idx++]);
+				iAssignmentChangesBase = Integer.valueOf(params[idx++]);
+				iSortAssignmentChangesBy = Integer.valueOf(params[idx++]);
+				iAssignmentChangesColumns = Integer.valueOf(params[idx++]);
 			}
 		} catch (Exception e) {
 		}
@@ -62,7 +68,8 @@ public class InstructorCookie {
 		String cookie = iSortAttributesBy + "|" + iSortInstructorsBy +
 				"|" + iSortTeachingRequestsBy[0] + "|" + iSortTeachingRequestsBy[1] +
 				"|" + iTeachingRequestsColumns[0] + "|" + iTeachingRequestsColumns[1] +
-				"|" + iSortTeachingAssignmentsBy + "|" + iTeachingAssignmentsColumns;
+				"|" + iSortTeachingAssignmentsBy + "|" + iTeachingAssignmentsColumns +
+				"|" + iAssignmentChangesBase + "|" + iSortAssignmentChangesBy + "|" + iAssignmentChangesColumns;
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:Instructor", cookie, expires);
 	}
@@ -129,6 +136,39 @@ public class InstructorCookie {
 				iTeachingAssignmentsColumns += (1 << ordinal);
 			else
 				iTeachingAssignmentsColumns -= (1 << ordinal);
+		}
+		save();
+	}
+	
+	public int getAssignmentChangesBase() {
+		return iAssignmentChangesBase;
+	}
+	
+	public void setAssignmentChangesBase(int assignmentChangesBase) {
+		iAssignmentChangesBase = assignmentChangesBase;
+		save();
+	}
+	
+	public int getSortAssignmentChangesBy() {
+		return iSortAssignmentChangesBy;
+	}
+	
+	public void setSortAssignmentChangesBy(int sortAssignmentChangesBy) {
+		iSortAssignmentChangesBy = sortAssignmentChangesBy;
+		save();
+	}
+	
+	public boolean isAssignmentChangesColumnVisible(int ordinal) {
+		return (iAssignmentChangesColumns & (1 << ordinal)) != 0;
+	}
+	
+	public void setAssignmentChangesColumnVisible(int ordinal, boolean visible) {
+		boolean old = (iAssignmentChangesColumns & (1 << ordinal)) != 0;
+		if (old != visible) {
+			if (visible)
+				iAssignmentChangesColumns += (1 << ordinal);
+			else
+				iAssignmentChangesColumns -= (1 << ordinal);
 		}
 		save();
 	}

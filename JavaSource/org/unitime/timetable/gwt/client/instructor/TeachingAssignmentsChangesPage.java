@@ -26,49 +26,44 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
-import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsPage.SingleTeachingAssingment;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
-import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.rooms.RoomCookie;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
-import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
-import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentChangesRequest;
+import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentChangesResponse;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeInterface;
+import org.unitime.timetable.gwt.shared.InstructorInterface.ChangesType;
 import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.PreferenceInfo;
-import org.unitime.timetable.gwt.shared.InstructorInterface.PreferenceInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.SectionInfo;
-import org.unitime.timetable.gwt.shared.InstructorInterface.SubjectAreaInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestsPagePropertiesRequest;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestsPagePropertiesResponse;
-import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestsPageRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingDisplayMode;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -78,40 +73,29 @@ import com.google.gwt.user.client.ui.Widget;
 /**
  * @author Tomas Muller
  */
-public class TeachingRequestsPage extends SimpleForm {
+public class TeachingAssignmentsChangesPage extends SimpleForm {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static final GwtResources RESOURCES = GWT.create(GwtResources.class);
 	protected static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	protected static final StudentSectioningMessages SECTMSG = GWT.create(StudentSectioningMessages.class);
 	protected static NumberFormat sTeachingLoadFormat = NumberFormat.getFormat(CONSTANTS.teachingLoadFormat());
-	private boolean iAssigned = true;
 	private UniTimeHeaderPanel iFilterPanel;
 	private ListBox iFilter;
 	private TeachingRequestsPagePropertiesResponse iProperties;
 	private UniTimeTable<SingleTeachingAssingment> iTable;
 	private TeachingRequestDetailPage iDetail = null;
 	
-	public TeachingRequestsPage() {
-		iAssigned = "true".equalsIgnoreCase(Location.getParameter("assigned"));
-		if (iAssigned)
-			UniTimePageLabel.getInstance().setPageName(MESSAGES.pageAssignedTeachingRequests());
-		else
-			UniTimePageLabel.getInstance().setPageName(MESSAGES.pageUnassignedTeachingRequests());
-		
-		iFilterPanel = new UniTimeHeaderPanel(MESSAGES.propSubjectArea());
+	public TeachingAssignmentsChangesPage() {
+		iFilterPanel = new UniTimeHeaderPanel(MESSAGES.propAssignmentChangesBase());
 		iFilter = new ListBox();
 		iFilter.setStyleName("unitime-TextBox");
 		iFilterPanel.getPanel().insert(iFilter, 2);
-		iFilter.addChangeHandler(new ChangeHandler() {
-			@Override
-			public void onChange(ChangeEvent event) {
-				iFilterPanel.setEnabled("search", iFilter.getSelectedIndex() > 0);
-			}
-		});
 		iFilterPanel.getPanel().setCellVerticalAlignment(iFilter, HasVerticalAlignment.ALIGN_MIDDLE);
 		iFilter.getElement().getStyle().setMarginLeft(5, Unit.PX);
-		
+		for (String base: CONSTANTS.assignmentChangesBase())
+			iFilter.addItem(base);
+		iFilter.setSelectedIndex(InstructorCookie.getInstance().getAssignmentChangesBase());
 		iFilterPanel.addButton("search", MESSAGES.buttonSearch(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -123,7 +107,7 @@ public class TeachingRequestsPage extends SimpleForm {
 		
 		iTable = new UniTimeTable<SingleTeachingAssingment>();
 		iTable.setVisible(false);
-		iTable.addStyleName("unitime-TeachingRequests");
+		iTable.addStyleName("unitime-TeachingAssignmentChanges");
 		addRow(iTable);
 		
 		iTable.addMouseClickListener(new MouseClickListener<SingleTeachingAssingment>() {
@@ -163,53 +147,133 @@ public class TeachingRequestsPage extends SimpleForm {
 			public void onSuccess(TeachingRequestsPagePropertiesResponse result) {
 				LoadingWidget.getInstance().hide();
 				iProperties = result;
-				iFilter.clear();
-				iFilter.addItem(MESSAGES.itemSelect(), "");
-				iFilter.addItem(MESSAGES.itemAll(), "-1");
-				iFilter.setSelectedIndex(result.getLastSubjectAreaId() != null && result.getLastSubjectAreaId() == -1l ? 1 : 0);
-				for (SubjectAreaInterface s: iProperties.getSubjectAreas()) {
-					iFilter.addItem(s.getAbbreviation(), s.getId().toString());
-					if (s.getId().equals(result.getLastSubjectAreaId()))
-						iFilter.setSelectedIndex(iFilter.getItemCount() - 1);
-				}
-				iFilterPanel.setEnabled("search", iFilter.getSelectedIndex() > 0);
+				iFilterPanel.setEnabled("search", true);
 			}
 		});
 	}
 	
 	void search() {
-		LoadingWidget.getInstance().show(MESSAGES.waitLoadingTeachingRequests());
-		RPC.execute(new TeachingRequestsPageRequest(iFilter.getSelectedIndex() <= 1 ? null : Long.valueOf(iFilter.getSelectedValue()), iAssigned), new AsyncCallback<GwtRpcResponseList<TeachingRequestInfo>>() {
+		LoadingWidget.getInstance().show(MESSAGES.waitLoadingTeachingAssignments());
+		InstructorCookie.getInstance().setAssignmentChangesBase(iFilter.getSelectedIndex());
+		RPC.execute(new AssignmentChangesRequest(ChangesType.values()[iFilter.getSelectedIndex()]), new AsyncCallback<AssignmentChangesResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				LoadingWidget.getInstance().hide();
-				iFilterPanel.setErrorMessage(MESSAGES.failedToLoadTeachingRequests(caught.getMessage()));
-				UniTimeNotifications.error(MESSAGES.failedToLoadTeachingRequests(caught.getMessage()), caught);
+				iFilterPanel.setErrorMessage(MESSAGES.failedToLoadTeachingAssignments(caught.getMessage()));
+				UniTimeNotifications.error(MESSAGES.failedToLoadTeachingAssignments(caught.getMessage()), caught);
 			}
 
 			@Override
-			public void onSuccess(GwtRpcResponseList<TeachingRequestInfo> result) {
+			public void onSuccess(AssignmentChangesResponse result) {
 				LoadingWidget.getInstance().hide();
-				populate(result);
+				populate(result.getChanges());
 				iTable.setVisible(true);
 			}
 		});
 	}
 	
-	void populate(GwtRpcResponseList<TeachingRequestInfo> results) {
+	void populate(List<AssignmentInfo> results) {
 		iTable.clearTable();
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		UniTimeTableHeader sortHeader = null; COLUMN sortColumn = null; boolean asc = true;
-		int sort = InstructorCookie.getInstance().getSortTeachingRequestsBy(iAssigned);
-		for (final COLUMN column: COLUMN.values())
-			if (column.isVisible(iAssigned)) {
-				final UniTimeTableHeader h = getHeader(column);
+		int sort = InstructorCookie.getInstance().getSortAssignmentChangesBy();
+		for (final COLUMN column: COLUMN.values()) {
+			final UniTimeTableHeader h = getHeader(column);
+			h.addOperation(new UniTimeTableHeader.Operation() {
+				@Override
+				public void execute() {
+					iTable.sort(h, new TableComparator(column));
+					InstructorCookie.getInstance().setSortAssignmentChangesBy(h.getOrder() ? 1 + column.ordinal() : -1 - column.ordinal());
+					hideDuplicateRequests();
+				}
+				@Override
+				public boolean isApplicable() {
+					return true;
+				}
+				@Override
+				public boolean hasSeparator() {
+					return true;
+				}
+				@Override
+				public String getName() {
+					return MESSAGES.opSortBy(h.getHTML().replace("<br>", " "));
+				}
+			});
+			header.add(h);
+			if (sort != 0 && Math.abs(sort) - 1 == column.ordinal()) {
+				sortHeader = h; sortColumn = column; asc = sort > 0;
+			}
+			if (column.getColSpan() > 1)
+				for (int i = 1; i < column.getColSpan(); i++)
+					header.add(new UniTimeTableHeader("&nbsp;"));
+		}
+		iTable.addRow(null, header);
+		for (AssignmentInfo assignment: results) {
+			SingleTeachingAssingment sta = new SingleTeachingAssingment(assignment.getRequest(), assignment.getRequest().getInstructor(assignment.getIndex()), assignment.getInstructor());
+			List<Widget> line = new ArrayList<Widget>();
+			for (COLUMN column: COLUMN.values()) {
+				for (int i = 0; i < column.getColSpan(); i++) {
+					Widget cell = getCell(column, i, sta);
+					if (cell == null) cell = new Label();
+					line.add(cell);
+				}
+			}
+			iTable.addRow(sta, line);
+		}
+		if (sortHeader != null)
+			iTable.sort(sortHeader, new TableComparator(sortColumn), asc);
+		for (final COLUMN column: COLUMN.values()) {
+			final UniTimeTableHeader h = header.get(column.getColIndex());
+			if (column.isCanHide()) {
+				header.get(0).getOperations().add(header.get(0).getOperations().size() - 1, new UniTimeTableHeader.Operation() {
+					@Override
+					public void execute() {
+						boolean visible = !InstructorCookie.getInstance().isAssignmentChangesColumnVisible(column.ordinal());
+						InstructorCookie.getInstance().setAssignmentChangesColumnVisible(column.ordinal(), visible);
+						for (int i = 0; i < column.getColSpan(); i++)
+							iTable.setColumnVisible(column.getColIndex() + i, visible);
+						if (COLUMN.NAME == column && !visible) {
+							InstructorCookie.getInstance().setAssignmentChangesColumnVisible(COLUMN.EXTERNAL_ID.ordinal(), true);
+							for (int i = 0; i < column.getColSpan(); i++)
+								iTable.setColumnVisible(COLUMN.EXTERNAL_ID.getColIndex() + i, true);
+						} else if (COLUMN.EXTERNAL_ID == column && !visible) {
+							InstructorCookie.getInstance().setAssignmentChangesColumnVisible(COLUMN.NAME.ordinal(), true);
+							for (int i = 0; i < column.getColSpan(); i++)
+								iTable.setColumnVisible(COLUMN.NAME.getColIndex() + i, true);
+						}
+					}
+					@Override
+					public boolean isApplicable() {
+						return true;
+					}
+					@Override
+					public boolean hasSeparator() {
+						return false;
+					}
+					@Override
+					public String getName() {
+						if (InstructorCookie.getInstance().isAssignmentChangesColumnVisible(column.ordinal()))
+							return MESSAGES.opHide(h.getHTML().replace("<br>", " "));
+						else
+							return MESSAGES.opShow(h.getHTML().replace("<br>", " "));
+					}
+				});
 				h.addOperation(new UniTimeTableHeader.Operation() {
 					@Override
 					public void execute() {
-						iTable.sort(h, new TableComparator(column));
-						InstructorCookie.getInstance().setSortTeachingRequestsBy(iAssigned, h.getOrder() ? 1 + column.ordinal() : -1 - column.ordinal());
-						hideDuplicateRequests();
+						boolean visible = !InstructorCookie.getInstance().isAssignmentChangesColumnVisible(column.ordinal());
+						InstructorCookie.getInstance().setAssignmentChangesColumnVisible(column.ordinal(), visible);
+						for (int i = 0; i < column.getColSpan(); i++)
+							iTable.setColumnVisible(column.getColIndex() + i, visible);
+						if (COLUMN.NAME == column && !visible) {
+							InstructorCookie.getInstance().setAssignmentChangesColumnVisible(COLUMN.EXTERNAL_ID.ordinal(), true);
+							for (int i = 0; i < column.getColSpan(); i++)
+								iTable.setColumnVisible(COLUMN.EXTERNAL_ID.getColIndex() + i, true);
+						} else if (COLUMN.EXTERNAL_ID == column && !visible) {
+							InstructorCookie.getInstance().setAssignmentChangesColumnVisible(COLUMN.NAME.ordinal(), true);
+							for (int i = 0; i < column.getColSpan(); i++)
+								iTable.setColumnVisible(COLUMN.NAME.getColIndex() + i, true);
+						}
 					}
 					@Override
 					public boolean isApplicable() {
@@ -221,118 +285,20 @@ public class TeachingRequestsPage extends SimpleForm {
 					}
 					@Override
 					public String getName() {
-						return MESSAGES.opSortBy(h.getHTML().replace("<br>", " "));
+						if (InstructorCookie.getInstance().isAssignmentChangesColumnVisible(column.ordinal()))
+							return MESSAGES.opHideItem(h.getHTML().replace("<br>", " "));
+						else
+							return MESSAGES.opShowItem(h.getHTML().replace("<br>", " "));
 					}
 				});
-				header.add(h);
-				if (sort != 0 && Math.abs(sort) - 1 == column.ordinal()) {
-					sortHeader = h; sortColumn = column; asc = sort > 0;
-				}
-			}
-		iTable.addRow(null, header);
-		for (TeachingRequestInfo request: results) {
-			if (iAssigned && request.hasInstructors())
-				for (InstructorInfo instructor: request.getInstructors()) {
-					List<Widget> line = new ArrayList<Widget>();
-					for (COLUMN column: COLUMN.values()) {
-						if (column.isVisible(iAssigned)) {
-							Widget cell = getCell(column, request, instructor);
-							if (cell == null) cell = new Label();
-							line.add(cell);
-						}
-					}
-					iTable.addRow(new SingleTeachingAssingment(instructor, request), line);
-				}
-			else if (!iAssigned && request.getNrAssignedInstructors() < request.getNrInstructors()) {
-				List<Widget> line = new ArrayList<Widget>();
-				for (COLUMN column: COLUMN.values()) {
-					if (column.isVisible(iAssigned)) {
-						Widget cell = getCell(column, request, null);
-						if (cell == null) cell = new Label();
-						line.add(cell);
-					}
-				}
-				iTable.addRow(new SingleTeachingAssingment(null, request), line);
+				for (int i = 0; i < column.getColSpan(); i++)
+					iTable.setColumnVisible(column.getColIndex() + i, !column.isCanHide() || InstructorCookie.getInstance().isAssignmentChangesColumnVisible(column.ordinal()));
 			}
 		}
-		if (sortHeader != null)
-			iTable.sort(sortHeader, new TableComparator(sortColumn), asc);
-		int col = 0;
-		for (final COLUMN column: COLUMN.values())
-			if (column.isVisible(iAssigned)) {
-				final UniTimeTableHeader h = header.get(col);
-				final int colIdx = col;
-				if (column.isCanHide()) {
-					header.get(0).getOperations().add(header.get(0).getOperations().size() - 1, new UniTimeTableHeader.Operation() {
-						@Override
-						public void execute() {
-							boolean visible = !InstructorCookie.getInstance().isTeachingRequestsColumnVisible(iAssigned, column.ordinal());
-							InstructorCookie.getInstance().setTeachingRequestsColumnVisible(iAssigned, column.ordinal(), visible);
-							iTable.setColumnVisible(colIdx, visible);
-							if (COLUMN.NAME == column && !visible) {
-								InstructorCookie.getInstance().setTeachingRequestsColumnVisible(iAssigned, COLUMN.EXTERNAL_ID.ordinal(), true);
-								iTable.setColumnVisible(colIdx - 1, true);
-							} else if (COLUMN.EXTERNAL_ID == column && !visible) {
-								InstructorCookie.getInstance().setTeachingRequestsColumnVisible(iAssigned, COLUMN.NAME.ordinal(), true);
-								iTable.setColumnVisible(colIdx + 1, true);
-							}
-						}
-						@Override
-						public boolean isApplicable() {
-							return true;
-						}
-						@Override
-						public boolean hasSeparator() {
-							return false;
-						}
-						@Override
-						public String getName() {
-							if (InstructorCookie.getInstance().isTeachingRequestsColumnVisible(iAssigned, column.ordinal()))
-								return MESSAGES.opHide(h.getHTML().replace("<br>", " "));
-							else
-								return MESSAGES.opShow(h.getHTML().replace("<br>", " "));
-						}
-					});
-					h.addOperation(new UniTimeTableHeader.Operation() {
-						@Override
-						public void execute() {
-							boolean visible = !InstructorCookie.getInstance().isTeachingRequestsColumnVisible(iAssigned, column.ordinal());
-							InstructorCookie.getInstance().setTeachingRequestsColumnVisible(iAssigned, column.ordinal(), visible);
-							iTable.setColumnVisible(colIdx, visible);
-							if (COLUMN.NAME == column && !visible) {
-								InstructorCookie.getInstance().setTeachingRequestsColumnVisible(iAssigned, COLUMN.EXTERNAL_ID.ordinal(), true);
-								iTable.setColumnVisible(colIdx - 1, true);
-							} else if (COLUMN.EXTERNAL_ID == column && !visible) {
-								InstructorCookie.getInstance().setTeachingRequestsColumnVisible(iAssigned, COLUMN.NAME.ordinal(), true);
-								iTable.setColumnVisible(colIdx + 1, true);
-							}
-						}
-						@Override
-						public boolean isApplicable() {
-							return true;
-						}
-						@Override
-						public boolean hasSeparator() {
-							return true;
-						}
-						@Override
-						public String getName() {
-							if (InstructorCookie.getInstance().isTeachingRequestsColumnVisible(iAssigned, column.ordinal()))
-								return MESSAGES.opHideItem(h.getHTML().replace("<br>", " "));
-							else
-								return MESSAGES.opShowItem(h.getHTML().replace("<br>", " "));
-						}
-					});
-							
-				}
-				iTable.setColumnVisible(col, !column.isCanHide() || InstructorCookie.getInstance().isTeachingRequestsColumnVisible(iAssigned, column.ordinal()));
-				col ++;
-			}
 		hideDuplicateRequests();
 	}
 	
 	public void hideDuplicateRequests() {
-		if (!iAssigned) return;
 		TeachingRequestInfo last = null;
 		for (int i = 0; i < iTable.getRowCount(); i++) {
 			SingleTeachingAssingment ta = iTable.getData(i);
@@ -340,16 +306,24 @@ public class TeachingRequestsPage extends SimpleForm {
 				last = null; continue;
 			}
 			if (ta.getRequest().equals(last)) {
+				int col = 0;
 				for (final COLUMN column: COLUMN.values()) {
-					iTable.getCellFormatter().setStyleName(i, column.ordinal(), null);
-					if (!column.isHasInstructor())
-						iTable.getWidget(i, column.ordinal()).setVisible(false);
+					for (int j = 0; j < column.getColSpan(); j++) {
+						iTable.getCellFormatter().setStyleName(i, col, null);
+						if (!column.isHasInstructor())
+							iTable.getWidget(i, col).setVisible(false);
+						col ++;
+					}
 				}
 			} else {
+				int col = 0;
 				for (final COLUMN column: COLUMN.values()) {
-					iTable.getCellFormatter().setStyleName(i, column.ordinal(), "first-line");
-					if (!column.isHasInstructor())
-						iTable.getWidget(i, column.ordinal()).setVisible(true);
+					for (int j = 0; j < column.getColSpan(); j++) {
+						iTable.getCellFormatter().setStyleName(i, col, "first-line");
+						if (!column.isHasInstructor())
+							iTable.getWidget(i, col).setVisible(true);
+						col ++;
+					}
 				}
 			}
 			last = ta.getRequest();
@@ -469,7 +443,10 @@ public class TeachingRequestsPage extends SimpleForm {
 		}
 	}
 	
-	public Widget getCell(COLUMN column, final TeachingRequestInfo request, final InstructorInfo instructor) {
+	public Widget getCell(COLUMN column, int index, SingleTeachingAssingment assignment) {
+		TeachingRequestInfo request = assignment.getRequest();
+		InstructorInfo instructor = assignment.getInstructor();
+		InstructorInfo baseInstructor = assignment.getBaseInstructor();
 		switch (column) {
 		case COURSE:
 			return new Label(request.getCourse().getCourseName());
@@ -512,49 +489,68 @@ public class TeachingRequestsPage extends SimpleForm {
 		case LOAD:
 			return new Label(sTeachingLoadFormat.format(request.getLoad()));
 		case EXTERNAL_ID:
-			if (instructor == null || instructor.getExternalId() == null) return null;
-			Label extId = new Label(instructor.getExternalId());
-			if (instructor.getTeachingPreference() != null && !"0".equals(instructor.getTeachingPreference())) {
-				PreferenceInterface pref = iProperties.getPreference(instructor.getTeachingPreference());
-				if (pref != null) {
-					extId.setTitle(pref.getName() + " " + instructor.getExternalId());
-					extId.getElement().getStyle().setColor(pref.getColor());
-				}
+			switch (index) {
+			case 0:
+				InstructorExternalIdCell cell1 = new InstructorExternalIdCell(iProperties);
+				cell1.setValue(baseInstructor);
+				return cell1;
+			case 1:
+				return new HTML(MESSAGES.assignmentArrow());
+			case 2:
+				InstructorExternalIdCell cell2 = new InstructorExternalIdCell(iProperties);
+				cell2.setValue(instructor);
+				return cell2;
 			}
-			return extId;
 		case NAME:
-			if (instructor == null || instructor.getInstructorName() == null) return null;
-			Label name = new Label(instructor.getInstructorName());
-			if (instructor.getTeachingPreference() != null && !"0".equals(instructor.getTeachingPreference())) {
-				PreferenceInterface pref = iProperties.getPreference(instructor.getTeachingPreference());
-				if (pref != null) {
-					name.setTitle(pref.getName() + " " + instructor.getInstructorName());
-					name.getElement().getStyle().setColor(pref.getColor());
-				}
+			switch (index) {
+			case 0:
+				InstructorNameCell cell1 = new InstructorNameCell(iProperties);
+				cell1.setValue(baseInstructor);
+				return cell1;
+			case 1:
+				return new HTML(MESSAGES.assignmentArrow());
+			case 2:
+				InstructorNameCell cell2 = new InstructorNameCell(iProperties);
+				cell2.setValue(instructor);
+				return cell2;
 			}
-			return name;
 		case ATTRIBUTE_PREFS:
 			return new PreferenceCell(iProperties, request.getAttributePreferences());
 		case INSTRUCTOR_PREFS:
 			return new PreferenceCell(iProperties, request.getInstructorPreferences());
 		case COURSE_PREF:
-			if (instructor == null) return null;
-			return new PreferenceCell(iProperties, instructor.getCoursePreferences());
+			if (instructor != null)
+				return new PreferenceCell(iProperties, instructor.getCoursePreferences());
+			else if (baseInstructor != null)
+				return new PreferenceCell(iProperties, baseInstructor.getCoursePreferences());
+			else
+				return null;
 		case DISTRIBUTION_PREF:
-			if (instructor == null) return null;
-			return new PreferenceCell(iProperties, instructor.getDistributionPreferences());
+			if (instructor != null)
+				return new PreferenceCell(iProperties, instructor.getDistributionPreferences());
+			else if (baseInstructor != null)
+				return new PreferenceCell(iProperties, baseInstructor.getDistributionPreferences());
+			else
+				return null;
 		case TIME_PREF:
-			if (instructor == null) return null;
-			return new TimePreferenceCell(iProperties, instructor);
+			if (instructor != null)
+				return new TimePreferenceCell(iProperties, instructor);
+			else if (baseInstructor != null)
+				return new TimePreferenceCell(iProperties, baseInstructor);
+			else
+				return null;
 		case ATTRIBUTES:
-			if (instructor == null) return null;
-			return new AttributesCell(instructor.getAttributes());
+			if (instructor != null)
+				return new AttributesCell(instructor.getAttributes());
+			else if (baseInstructor != null)
+				return new AttributesCell(baseInstructor.getAttributes());
+			else
+				return null;
 		case ASSIGNED_LOAD:
 			if (instructor == null) return null;
 			return new Label(sTeachingLoadFormat.format(instructor.getAssignedLoad()) + " / " + sTeachingLoadFormat.format(instructor.getMaxLoad()));
 		case OBJECTIVES:
-			if (instructor == null) return null;
-			return new ObjectivesCell(iProperties, instructor.getValues());
+			return new ObjectivesCell(iProperties, baseInstructor == null ? null : baseInstructor.getValues(), instructor == null ? null : instructor.getValues());
 		case ASSIGNED_INSTRUCTORS:
 			return new Label(request.getNrAssignedInstructors() + " / " + request.getNrInstructors());
 		default:
@@ -572,8 +568,8 @@ public class TeachingRequestsPage extends SimpleForm {
 		ASSIGNED_INSTRUCTORS(true),
 		ATTRIBUTE_PREFS(true),
 		INSTRUCTOR_PREFS(true),
-		EXTERNAL_ID(true, true),
-		NAME(true, true),
+		EXTERNAL_ID(true, true, 3),
+		NAME(true, true, 3),
 		ASSIGNED_LOAD(true, true),
 		ATTRIBUTES(true, true),
 		COURSE_PREF(true, true),
@@ -584,9 +580,11 @@ public class TeachingRequestsPage extends SimpleForm {
 		
 		private boolean iCanHide;
 		private boolean iHasInstructor;
+		private int iColSpan;
 		
-		COLUMN(boolean canHide, boolean hasInstructor) { iCanHide = canHide; iHasInstructor = hasInstructor; }
-		COLUMN(boolean canHide) { this(canHide, false); }
+		COLUMN(boolean canHide, boolean hasInstructor, int colSpan) { iCanHide = canHide; iHasInstructor = hasInstructor; iColSpan = colSpan; }
+		COLUMN(boolean canHide, boolean hasInstructor) { this(canHide, hasInstructor, 1); }
+		COLUMN(boolean canHide) { this(canHide, false, 1); }
 		
 		public boolean isVisible(boolean assigned) {
 			return (assigned || !iHasInstructor);
@@ -594,6 +592,13 @@ public class TeachingRequestsPage extends SimpleForm {
 		public boolean isHasInstructor() { return iHasInstructor; }
 		public boolean isCanHide() { return iCanHide; }
 		public int flag() { return 1 << ordinal(); }
+		public int getColSpan() { return iColSpan; }
+		public int getColIndex() {
+			int ret = 0;
+			for (int i = 0; i < ordinal(); i++)
+				ret += values()[i].getColSpan();
+			return ret;
+		}
 	}
 	
 	public static class TableComparator implements Comparator<SingleTeachingAssingment> {
@@ -633,6 +638,9 @@ public class TeachingRequestsPage extends SimpleForm {
 		private int compareByColumn(COLUMN column, SingleTeachingAssingment a1, SingleTeachingAssingment a2) {
 			TeachingRequestInfo r1 = a1.getRequest(), r2 = a2.getRequest();
 			InstructorInfo i1 = a1.getInstructor(), i2 = a2.getInstructor();
+			if (column.isHasInstructor() && i1 == null && i2 == null) {
+				i1 = a1.getBaseInstructor(); i2 = a2.getBaseInstructor();
+			}
 			if (column.isHasInstructor() && (i1 == null || i2 == null))
 				return compareBooleans(i1 == null, i2 == null);
 			switch (column) {
@@ -726,5 +734,21 @@ public class TeachingRequestsPage extends SimpleForm {
 			return (c1 == null ? c2 == null ? 0 : -1 : c2 == null ? 1 : c1.compareTo(c2));
 		}
 	}
-
+	
+	public static class SingleTeachingAssingment {
+		InstructorInfo iBaseInstructor;
+		InstructorInfo iInstructor;
+		TeachingRequestInfo iRequest;
+		
+		public SingleTeachingAssingment(TeachingRequestInfo request, InstructorInfo instructor, InstructorInfo base) {
+			iInstructor = instructor; iRequest = request; iBaseInstructor = base;
+		}
+		
+		public boolean hasInstructor() { return iInstructor != null; }
+		public InstructorInfo getInstructor() { return iInstructor; }
+		public boolean hasBaseInstructor() { return iBaseInstructor != null; }
+		public InstructorInfo getBaseInstructor() { return iBaseInstructor; }
+		public boolean hasRequest() { return iRequest != null; }
+		public TeachingRequestInfo getRequest() { return iRequest; }
+	}
 }

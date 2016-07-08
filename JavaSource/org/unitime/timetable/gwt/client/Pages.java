@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.client.events.EventResourceTimetable;
 import org.unitime.timetable.gwt.client.events.EventRoomAvailability;
 import org.unitime.timetable.gwt.client.hql.SavedHQLPage;
 import org.unitime.timetable.gwt.client.instructor.InstructorAttributesPage;
+import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsChangesPage;
 import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsPage;
 import org.unitime.timetable.gwt.client.instructor.TeachingRequestsPage;
 import org.unitime.timetable.gwt.client.reservations.ReservationEdit;
@@ -185,6 +186,10 @@ public enum Pages {
 	teachingAssignments(new PageFactory() {
 		public Widget create() { return new TeachingAssignmentsPage(); }
 		public String name(GwtMessages messages) { return messages.pageTeachingAssignments(); }
+		}),
+	teachingAssignmentChanges(new PageFactory() {
+		public Widget create() { return new TeachingAssignmentsChangesPage(); }
+		public String name(GwtMessages messages) { return messages.pageTeachingAssignmentChanges(); }
 		}),
 	;
 	

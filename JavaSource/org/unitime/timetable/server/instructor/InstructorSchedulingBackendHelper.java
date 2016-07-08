@@ -118,7 +118,7 @@ public class InstructorSchedulingBackendHelper {
     	return false;
     }
     
-    protected List<DepartmentalInstructor> getInstructors(Class_ clazz) {
+    public List<DepartmentalInstructor> getInstructors(Class_ clazz) {
     	List<DepartmentalInstructor> instructors = new ArrayList<DepartmentalInstructor>();
     	for (ClassInstructor ci: clazz.getClassInstructors()) {
     		if (!isToBeIgnored(ci) && (ci.getInstructor().getTeachingPreference() != null && !ci.getInstructor().getTeachingPreference().getPrefProlog().equals(PreferenceLevel.sProhibited))) {
@@ -347,7 +347,7 @@ public class InstructorSchedulingBackendHelper {
 		return commonItypes;
 	}
 
-	protected InstructorInfo getInstructorInfo(DepartmentalInstructor instructor, String nameFormat, Set<String> commonItypes) {
+	public InstructorInfo getInstructorInfo(DepartmentalInstructor instructor, String nameFormat, Set<String> commonItypes) {
 		InstructorInfo info = new InstructorInfo();
 		info.setInstructorId(instructor.getUniqueId());
 		info.setInstructorName(instructor.getName(nameFormat));

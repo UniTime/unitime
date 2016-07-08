@@ -1327,5 +1327,32 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 			return (getAssignments() == null ? "" : getAssignments().toString());
 		}
 	}
+	
+	public static enum ChangesType {
+		INITIAL, BEST, SAVED;
+	}
+	
+	public static class AssignmentChangesRequest implements GwtRpcRequest<AssignmentChangesResponse>, Serializable {
+		private static final long serialVersionUID = 1L;
+		private ChangesType iType = ChangesType.INITIAL;
+		
+		public AssignmentChangesRequest() {}
+		public AssignmentChangesRequest(ChangesType type) {
+			iType = type;
+		}
+		
+		public void setType(ChangesType type) { iType = type; }
+		public ChangesType getType() { return iType; }
+	}
+	
+	public static class AssignmentChangesResponse implements GwtRpcResponse, Serializable {
+		private static final long serialVersionUID = 1L;
+		private List<AssignmentInfo> iChanges = new ArrayList<AssignmentInfo>();
+		
+		public AssignmentChangesResponse() {}
+		
+		public void addChange(AssignmentInfo change) { iChanges.add(change); }
+		public List<AssignmentInfo> getChanges() { return iChanges; }
+	}
 
 }

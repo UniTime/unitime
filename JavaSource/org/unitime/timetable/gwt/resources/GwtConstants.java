@@ -361,4 +361,9 @@ public interface GwtConstants extends Constants {
 	
 	@DefaultStringValue("Back-to-Back")
 	String instructorBackToBack();
+	
+	@DefaultStringArrayValue({
+		"Initial Solution", "Best Solution", "Saved Assignments"
+	})
+	String[] assignmentChangesBase();
 }

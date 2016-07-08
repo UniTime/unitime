@@ -35,6 +35,7 @@ import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.ProblemLoader;
 import org.cpsolver.ifs.util.ProblemSaver;
 import org.cpsolver.ifs.util.Progress;
+import org.cpsolver.ifs.util.ToolBox;
 import org.cpsolver.instructor.model.Attribute;
 import org.cpsolver.instructor.model.Course;
 import org.cpsolver.instructor.model.EnrolledClass;
@@ -47,9 +48,12 @@ import org.cpsolver.instructor.model.TeachingRequest;
 import org.dom4j.Document;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentChangesRequest;
+import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentChangesResponse;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeTypeInterface;
+import org.unitime.timetable.gwt.shared.InstructorInterface.ChangesType;
 import org.unitime.timetable.gwt.shared.InstructorInterface.ClassInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.ComputeSuggestionsRequest;
 import org.unitime.timetable.gwt.shared.InstructorInterface.CourseInfo;
@@ -58,12 +62,17 @@ import org.unitime.timetable.gwt.shared.InstructorInterface.PreferenceInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.SectionInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.SuggestionsResponse;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestInfo;
+import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SolverParameterGroup.SolverType;
+import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
+import org.unitime.timetable.server.instructor.InstructorSchedulingBackendHelper;
 import org.unitime.timetable.solver.AbstractSolver;
 import org.unitime.timetable.solver.SolverDisposeListener;
+import org.unitime.timetable.util.NameFormat;
 
 /**
  * @author Tomas Muller
@@ -431,6 +440,73 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
         		}
         	}
             return null;
+        } finally {
+        	lock.unlock();
+        }
+	}
+	
+	@Override
+	public AssignmentChangesResponse getAssignmentChanges(AssignmentChangesRequest rq) {
+		Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
+        	AssignmentChangesResponse ret = new AssignmentChangesResponse();
+            for (TeachingRequest request: getModel().getRequests()) {
+            	TeachingRequestInfo info = toRequestInfo(request);
+            	if (rq.getType() == ChangesType.SAVED) {
+                	InstructorSchedulingBackendHelper helper = new InstructorSchedulingBackendHelper();
+                	String nameFormat = getProperties().getProperty("General.InstructorFormat", NameFormat.LAST_FIRST.reference());
+                	Set<String> commonItypes = new HashSet<String>();
+                	for (String itype: getProperties().getProperty("General.CommonItypes", "lec").split(","))
+    	    			if (!itype.isEmpty()) commonItypes.add(itype);
+            		Class_ clazz = Class_DAO.getInstance().get(request.getRequestId());
+					List<DepartmentalInstructor> instructors = (clazz == null ? new ArrayList<DepartmentalInstructor>() : helper.getInstructors(clazz));
+					for (TeachingRequest.Variable var: request.getVariables()) {
+                		TeachingAssignment placement = currentSolution().getAssignment().getValue(var);
+                		if (placement != null)
+                			info.addInstructor(toInstructorInfo(placement));
+                		DepartmentalInstructor instructor = (var.getInstructorIndex() < instructors.size() ? instructors.get(var.getInstructorIndex()) : null);
+                		if (instructor == null) {
+                			if (placement != null) {
+                				AssignmentInfo ai = new AssignmentInfo();
+                    			ai.setRequest(info);
+                    			ai.setIndex(var.getInstructorIndex());
+                    			ret.addChange(ai);
+                			}
+                		} else {
+                			if (placement == null || !instructor.getUniqueId().equals(placement.getInstructor().getInstructorId())) {
+                				AssignmentInfo ai = new AssignmentInfo();
+                    			ai.setRequest(info);
+                    			ai.setIndex(var.getInstructorIndex());
+                    			Instructor instr = null;
+                    			for (Instructor i: getModel().getInstructors())
+                    				if (i.getInstructorId() == instructor.getUniqueId()) { instr = i; break; }
+                    			if (instr != null) {
+                    				ai.setInstructor(toInstructorInfo(new TeachingAssignment(var, instr)));
+                    			} else {
+                    				ai.setInstructor(helper.getInstructorInfo(instructor, nameFormat, commonItypes));
+                    			}
+                    			ret.addChange(ai);
+                			}
+                		}
+					}
+            	} else {
+                	for (TeachingRequest.Variable var: request.getVariables()) {
+                		TeachingAssignment placement = currentSolution().getAssignment().getValue(var);
+                		if (placement != null)
+                			info.addInstructor(toInstructorInfo(placement));
+                		TeachingAssignment other = (rq.getType() == ChangesType.BEST ? var.getBestAssignment() : var.getInitialAssignment());
+                		if (!ToolBox.equals(placement, other)) {
+                			AssignmentInfo ai = new AssignmentInfo();
+                			ai.setRequest(info);
+                			ai.setIndex(var.getInstructorIndex());
+                			ai.setInstructor(other == null ? null : toInstructorInfo(other));
+                			ret.addChange(ai);
+                		}
+                	}
+            	}
+            }
+            return ret;
         } finally {
         	lock.unlock();
         }

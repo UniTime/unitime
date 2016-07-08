@@ -41,6 +41,11 @@ public class AttributesCell extends P implements TakesValue<List<AttributeInterf
 		setValue(attributes);
 	}
 	
+	public AttributesCell(List<AttributeInterface> oldAttributes, List<AttributeInterface> newAttributes) {
+		this();
+		setValue(oldAttributes, newAttributes);
+	}
+	
 	@Override
 	public void setValue(List<AttributeInterface> attributes) {
 		clear();
@@ -51,6 +56,40 @@ public class AttributesCell extends P implements TakesValue<List<AttributeInterf
 				i.setText(a.getName());
 				i.setTitle(a.getName() + " (" + a.getType().getLabel() + ")");
 				add(i);
+			}
+		}
+	}
+	
+	public void setValue(List<AttributeInterface> oldAttributes, List<AttributeInterface> newAttributes) {
+		clear();
+		iAttributes = newAttributes;
+		if (oldAttributes != null) {
+			for (AttributeInterface a: oldAttributes) {
+				if (newAttributes == null || !newAttributes.contains(a)) {
+					P i = new P("attribute", "old");
+					i.setText(a.getName());
+					i.setTitle(a.getName() + " (" + a.getType().getLabel() + ")");
+					add(i);
+				}
+			}
+		}
+		if (newAttributes != null) {
+			if (oldAttributes != null)
+				for (AttributeInterface a: newAttributes) {
+					if (oldAttributes.contains(a)) {
+						P i = new P("attribute", "same");
+						i.setText(a.getName());
+						i.setTitle(a.getName() + " (" + a.getType().getLabel() + ")");
+						add(i);
+					}
+				}
+			for (AttributeInterface a: newAttributes) {
+				if (oldAttributes == null || !oldAttributes.contains(a)) {
+					P i = new P("attribute", "new");
+					i.setText(a.getName());
+					i.setTitle(a.getName() + " (" + a.getType().getLabel() + ")");
+					add(i);
+				}
 			}
 		}
 	}

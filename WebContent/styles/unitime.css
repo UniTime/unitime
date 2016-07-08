@@ -4473,3 +4473,22 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-TeachingRequestDetail .instructors {
 	width: 100%;
 }
+
+.unitime-TeachingAssignmentChanges .not-assigned {
+	color: red;
+	font-style: italic;
+	padding-right: 2px;
+}
+
+.unitime-TeachingAssignmentChanges .no-extid {
+	font-style: italic;
+	padding-right: 2px;
+}
+
+.unitime-TeachingAssignmentChanges .old {
+	text-decoration: line-through;
+}
+
+.unitime-TeachingAssignmentChanges .new {
+	text-decoration: underline;
+}

@@ -21,6 +21,8 @@ package org.unitime.timetable.solver.instructor;
 
 import java.util.List;
 
+import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentChangesRequest;
+import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentChangesResponse;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.ComputeSuggestionsRequest;
 import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorInfo;
@@ -38,4 +40,5 @@ public interface InstructorSchedulingProxy extends CommonSolverInterface {
 	public InstructorInfo getInstructorInfo(Long instructorId);
 	public void assign(List<AssignmentInfo> assignments);
 	public SuggestionsResponse computeSuggestions(ComputeSuggestionsRequest request);
+	public AssignmentChangesResponse getAssignmentChanges(AssignmentChangesRequest request);
 }

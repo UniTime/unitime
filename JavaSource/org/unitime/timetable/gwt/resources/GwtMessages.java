@@ -1196,6 +1196,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Assignments:")
 	String propAssignments();
+	
+	@DefaultMessage("Compare with:")
+	String propAssignmentChangesBase();
 
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
@@ -2928,6 +2931,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Teaching Assignments")
 	@DoNotTranslate
 	String pageTeachingAssignments();
+	
+	@DefaultMessage("Teaching Assignment Changes")
+	@DoNotTranslate
+	String pageTeachingAssignmentChanges();
 	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
