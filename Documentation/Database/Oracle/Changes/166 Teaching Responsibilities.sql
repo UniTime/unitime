@@ -32,13 +32,13 @@ alter table class_instructor add assign_index number(10,0);
 alter table class_instructor add responsibility_id number(20,0);
 
 alter table class_instructor 
-	add constraint fk_class_teaching_responsibility foreign key (responsibility_id)
+	add constraint fk_instr_responsibility foreign key (responsibility_id)
 	references teaching_responsibility (uniqueid) on delete set null;
 
 alter table offering_coordinator add responsibility_id number(20,0);
 
 alter table offering_coordinator 
-	add constraint fk_offering_teaching_responsibility foreign key (responsibility_id)
+	add constraint fk_coord_responsibility foreign key (responsibility_id)
 	references teaching_responsibility (uniqueid) on delete set null;
 
 insert into rights (role_id, value)

@@ -42,7 +42,7 @@
             name="responsibility"
             class="TeachingResponsibility"
             column="responsibility_id"
-            foreign-key="fk_offering_teaching_responsibility"
+            foreign-key="fk_coord_responsibility"
             not-null="false"/>
     </class>
 </hibernate-mapping>
