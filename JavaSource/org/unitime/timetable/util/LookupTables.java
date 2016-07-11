@@ -59,6 +59,7 @@ import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
 import org.unitime.timetable.model.dao.CourseTypeDAO;
@@ -413,5 +414,13 @@ public class LookupTables {
     
     public static void setupCourseTypes(HttpServletRequest request) {
     	request.setAttribute("courseTypes", CourseTypeDAO.getInstance().findAll(Order.asc("reference")));
+    }
+    
+    public static void setupInstructorTeachingResponsibilities(HttpServletRequest request) {
+        request.setAttribute("responsibilities", TeachingResponsibility.getInstructorTeachingResponsibilities());
+    }
+    
+    public static void setupCoordinatorTeachingResponsibilities(HttpServletRequest request) {
+        request.setAttribute("responsibilities", TeachingResponsibility.getCoordinatorTeachingResponsibilities());
     }
 }

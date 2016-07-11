@@ -957,16 +957,13 @@
                 not-null="true"/>
 
             <set
-                name="offerings"
+                name="offeringCoordinators"
                 lazy="true"
                 table="offering_coordinator"
                 inverse="true">
-                <cache include="non-lazy" usage="transactional"/>
-                <key column="instructor_id" foreign-key="fk_offering_coord_instructor"/>
-                <many-to-many
-                    class="InstructionalOffering"
-                    column="offering_id"
-                    foreign-key="fk_offering_coord_offering"/>
+                
+                <key column="instructor_id"/>
+            	<one-to-many class="OfferingCoordinator"/>
             </set>
 
             <many-to-one

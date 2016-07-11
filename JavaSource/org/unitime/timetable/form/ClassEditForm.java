@@ -109,6 +109,7 @@ public class ClassEditForm extends PreferencesForm {
     private Boolean instructorAssignmentDefault;
     private Integer nbrInstructorsDefault;
     private String teachingLoadDefault;
+    private List instrResponsibility;
     
     // --------------------------------------------------------- Classes
 
@@ -288,6 +289,7 @@ public class ClassEditForm extends PreferencesForm {
         assignments = null;
         enrollment = null;
         accommodation = null;
+        instrResponsibility = DynamicList.getInstance(new ArrayList(), factoryInstructors);
 
         super.reset(mapping, request);
     }
@@ -680,12 +682,15 @@ public class ClassEditForm extends PreferencesForm {
         String id = "";
         String pctShare = "0";
         boolean isLead = false;
+        String resp = "";
         
         // Class Instructor Specified
         if(classInstr!=null) {
 	        id = classInstr.getInstructor().getUniqueId().toString();
 	        pctShare = classInstr.getPercentShare().toString();
 	        isLead = classInstr.isLead().booleanValue();
+	        if (classInstr.getResponsibility() != null)
+	        	resp = classInstr.getResponsibility().getUniqueId().toString();
         }
         else {
             // If this is the only record - set 100% share and make lead
@@ -699,6 +704,7 @@ public class ClassEditForm extends PreferencesForm {
         this.instructors.add(id);
         this.instrPctShare.add(pctShare);
         this.instrLead.add(isLead?"true":"false");
+        this.instrResponsibility.add(resp);
     }
 
     /**
@@ -711,6 +717,7 @@ public class ClassEditForm extends PreferencesForm {
         this.instrPctShare.remove(deleteId);
         if (this.instrLead.size()>deleteId)
         	this.instrLead.remove(deleteId);
+        this.instrResponsibility.remove(deleteId);
     }
 
     /**
@@ -720,6 +727,7 @@ public class ClassEditForm extends PreferencesForm {
         this.instructors.clear();
         this.instrPctShare.clear();
         this.instrLead.clear();
+        this.instrResponsibility.clear();
     }
     
     public String getCourseName() { return courseName; }
@@ -753,4 +761,9 @@ public class ClassEditForm extends PreferencesForm {
 	
     public Long getControllingDept() { return controllingDept; }
     public void setControllingDept(Long deptId) { controllingDept = deptId; }
+    
+    public List getInstrResponsibility() { return instrResponsibility; }
+    public String getInstrResponsibility(int key) { return instrResponsibility.get(key).toString(); }
+    public void setInstrResponsibility(int key, Object value) { this.instrResponsibility.set(key, value); }
+    public void setInstrResponsibility(List instrResponsibility) { this.instrResponsibility = instrResponsibility; }
 }

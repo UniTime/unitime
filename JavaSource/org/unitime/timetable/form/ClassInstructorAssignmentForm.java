@@ -41,6 +41,7 @@ import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.model.dao.TeachingResponsibilityDAO;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
@@ -80,6 +81,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 	private List classHasErrors;
 	private List showDisplay;
 	private List externalIds;
+	private List responsibilities;
 	
 	/**
 	 * 
@@ -127,6 +129,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
     	classHasErrors = DynamicList.getInstance(new ArrayList(), factoryClasses);
     	showDisplay = DynamicList.getInstance(new ArrayList(), factoryClasses);
     	externalIds = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	responsibilities = DynamicList.getInstance(new ArrayList(), factoryClasses);
 	}
 
 	public ActionErrors validate(ActionMapping arg0, HttpServletRequest arg1) {
@@ -151,7 +154,8 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 
 	public void addToClasses(Class_ cls, Boolean isReadOnly, String indent){
 		ArrayList instructors = new ArrayList(cls.getClassInstructors());
-		Collections.sort(instructors, new InstructorComparator());
+		InstructorComparator ic = new InstructorComparator(); ic.setCompareBy(ic.COMPARE_BY_INDEX);
+		Collections.sort(instructors, ic);
 		ClassInstructor instructor = null;
 		int i = 0;
 		do {
@@ -183,11 +187,13 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 				this.instructorUids.add(instructor.getInstructor().getUniqueId().toString());
 				this.percentShares.add(instructor.getPercentShare().toString());
 				this.leadFlags.add(instructor.isLead());
+				this.responsibilities.add(instructor.getResponsibility() == null ? "" : instructor.getResponsibility().getUniqueId().toString());
 			}
 			else {
 				this.instructorUids.add("");
 				this.percentShares.add("100");
 				this.leadFlags.add(new Boolean(true));
+				this.responsibilities.add("");
 			}
 			
 			this.allowDeletes.add(new Boolean(instructors.size() > 1));
@@ -210,6 +216,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 		percentShares.remove(index);
 		if (index<leadFlags.size())
 			leadFlags.remove(index);
+		responsibilities.remove(index);
 		times.remove(index==firstIndex?index+1:index);
 		rooms.remove(index==firstIndex?index+1:index);
 		allowDeletes.remove(index);
@@ -240,6 +247,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 		this.allowDeletes.add(pos + 1, Boolean.TRUE);
 		this.externalIds.add(pos + 1, "");
 		this.leadFlags.add(pos + 1, this.leadFlags.get(pos));
+		this.responsibilities.add(pos + 1, "");
 	}
 
 	public void updateClasses() throws Exception {
@@ -271,6 +279,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
             c.setDisplayInstructor(new Boolean("on".equals(getDisplayFlags().get(i))));
 
             // Save instructor data to class
+            int index = 0;
             for ( ; i < classIds.size(); i++) {
             	boolean sameClass = ((String) classIds.get(i)).equals(classId);
             	if (!sameClass)	{
@@ -280,6 +289,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
                 if (instrId.length() > 0  && !("-".equals(instrId))) {
 	                String pctShare = (String) getPercentShares().get(i);
 	                Boolean lead = new Boolean("on".equals(getLeadFlags().get(i)));
+	                String responsibility = (String) getResponsibilities().get(i);
 	                
 	                DepartmentalInstructor deptInstr =  new DepartmentalInstructorDAO().get(new Long(instrId));
 	                ClassInstructor classInstr = new ClassInstructor();
@@ -288,6 +298,12 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 	                classInstr.setLead(lead);
 	                classInstr.setTentative(false);
 	                classInstr.setPercentShare(new Integer(pctShare));
+	                try {
+	                	classInstr.setResponsibility(TeachingResponsibilityDAO.getInstance().get(Long.valueOf(responsibility)));
+	                } catch (NumberFormatException e) {
+	                	classInstr.setResponsibility(null);
+	                }
+	                classInstr.setAssignmentIndex(index ++);
 	                
 	                deptInstr.getClasses().add(classInstr);
 	                hibSession.saveOrUpdate(deptInstr);
@@ -537,5 +553,13 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 
 	public void setDisplayExternalId(Boolean displayExternalId) {
 		this.displayExternalId = displayExternalId;
+	}
+	
+	public List getResponsibilities() {
+		return responsibilities;
+	}
+
+	public void setResponsibilities(List responsibilities) {
+		this.responsibilities = responsibilities;
 	}
 }

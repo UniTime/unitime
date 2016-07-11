@@ -45,11 +45,12 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.InstrOfferingConfig;
-import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
@@ -106,10 +107,10 @@ public class InstructorScheduleConnector extends ApiConnector{
 				for (ClassInstructor ci: instructor.getClasses())
 					if (!ci.getClassInstructing().isCancelled())
 						iClasses.add(new ClassAssignmentInfo(ci));
-				for (InstructionalOffering io: instructor.getOfferings())
-					for (CourseOffering co: io.getCourseOfferings())
+				for (OfferingCoordinator oc: instructor.getOfferingCoordinators())
+					for (CourseOffering co: oc.getOffering().getCourseOfferings())
 						if (!co.getInstructionalOffering().isNotOffered())
-							iCourses.add(new CourseInfo(co, null));
+							iCourses.add(new CourseInfo(co, null, oc.getResponsibility()));
 			}
 			for (Exam exam: instructor.getExams()) {
 				if (!statusCheck || exam.canView())
@@ -176,11 +177,14 @@ public class InstructorScheduleConnector extends ApiConnector{
 	class ClassAssignmentInfo extends ClassInfo {
 		Boolean iLead;
 		Integer iPercentShare;
+		String iResponsibility;
 		
 		ClassAssignmentInfo(ClassInstructor ci) {
 			super(ci.getClassInstructing());
 			iLead = ci.getLead();
 			iPercentShare = ci.getPercentShare();
+			if (ci.getResponsibility() != null)
+				iResponsibility = ci.getResponsibility().getReference();
 		}
 	}
 	
@@ -195,8 +199,9 @@ public class InstructorScheduleConnector extends ApiConnector{
 		String iClassExternalId;
 		String iCredit;
 		String iNote;
+		String iResponsibility;
 		
-		CourseInfo(CourseOffering co, Class_ clazz) {
+		CourseInfo(CourseOffering co, Class_ clazz, TeachingResponsibility responsibility) {
 			iCourseId = co.getUniqueId();
 			iSubjectArea = co.getSubjectAreaAbbv();
 			iCourseNumber = co.getCourseNbr();
@@ -211,6 +216,8 @@ public class InstructorScheduleConnector extends ApiConnector{
 			if (co.getCredit() != null)
 				iCredit = co.getCredit().creditAbbv();
 			iNote = co.getScheduleBookNote();
+			if (responsibility != null)
+				iResponsibility = responsibility.getReference();
 		}
 	}
 	
@@ -229,7 +236,7 @@ public class InstructorScheduleConnector extends ApiConnector{
 			iSubpart = clazz.getSchedulingSubpart().getItypeDesc().trim();
 			iNote = clazz.getSchedulePrintNote();
 			for (CourseOffering course: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings())
-				iCourse.add(new CourseInfo(course, clazz));
+				iCourse.add(new CourseInfo(course, clazz, null));
 			Assignment assignment = clazz.getCommittedAssignment();
 			int minLimit = clazz.getExpectedCapacity();
         	int maxLimit = clazz.getMaxExpectedCapacity();

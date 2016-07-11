@@ -43,6 +43,7 @@ import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomTypeOption;
@@ -230,8 +231,8 @@ public class EventPermissions {
 				if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
 					Class_ clazz = (source instanceof ClassEvent ? (ClassEvent)source : ClassEventDAO.getInstance().get(source.getUniqueId())).getClazz();
 					if (clazz == null) return false;
-					for (DepartmentalInstructor instructor: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCoordinators()) {
-						if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+					for (OfferingCoordinator coordinator: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getOfferingCoordinators()) {
+						if (user.getExternalUserId().equals(coordinator.getInstructor().getExternalUniqueId())) return true;
 					}
 					for (ClassInstructor instructor: clazz.getClassInstructors()) {
 						if (user.getExternalUserId().equals(instructor.getInstructor().getExternalUniqueId())) return true;
@@ -253,8 +254,8 @@ public class EventPermissions {
 						if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
 					}
 					for (ExamOwner owner: exam.getOwners()) {
-						for (DepartmentalInstructor instructor: owner.getCourse().getInstructionalOffering().getCoordinators())
-							if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+						for (OfferingCoordinator coordinator: owner.getCourse().getInstructionalOffering().getOfferingCoordinators())
+							if (user.getExternalUserId().equals(coordinator.getInstructor().getExternalUniqueId())) return true;
 					}
 				}
 				return false;
@@ -263,8 +264,8 @@ public class EventPermissions {
 				if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
 					CourseEvent event = CourseEventDAO.getInstance().get(source.getUniqueId());
 					for (RelatedCourseInfo owner: event.getRelatedCourses()) {
-						for (DepartmentalInstructor instructor: owner.getCourse().getInstructionalOffering().getCoordinators())
-							if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+						for (OfferingCoordinator coordinator: owner.getCourse().getInstructionalOffering().getOfferingCoordinators())
+							if (user.getExternalUserId().equals(coordinator.getInstructor().getExternalUniqueId())) return true;
 					}
 				}
 				// Also event managers can see
@@ -332,8 +333,8 @@ public class EventPermissions {
 
 			// Course coordinators can edit a class
 			if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
-				for (DepartmentalInstructor instructor: source.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCoordinators()) {
-					if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+				for (OfferingCoordinator coordinator: source.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getOfferingCoordinators()) {
+					if (user.getExternalUserId().equals(coordinator.getInstructor().getExternalUniqueId())) return true;
 				}
 			}
 			
@@ -359,8 +360,8 @@ public class EventPermissions {
 			// Course coordinators can edit an exam
 			if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
 				for (ExamOwner owner: source.getExam().getOwners()) {
-					for (DepartmentalInstructor instructor: owner.getCourse().getInstructionalOffering().getCoordinators())
-						if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+					for (OfferingCoordinator coordinator: owner.getCourse().getInstructionalOffering().getOfferingCoordinators())
+						if (user.getExternalUserId().equals(coordinator.getInstructor().getExternalUniqueId())) return true;
 				}
 			}
 			
@@ -571,8 +572,8 @@ public class EventPermissions {
 				if (source.getEvent().getEventType() == Event.sEventTypeCourse && Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
 					CourseEvent event = CourseEventDAO.getInstance().get(source.getEvent().getUniqueId());
 					for (RelatedCourseInfo owner: event.getRelatedCourses()) {
-						for (DepartmentalInstructor instructor: owner.getCourse().getInstructionalOffering().getCoordinators())
-							if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+						for (OfferingCoordinator coordinator: owner.getCourse().getInstructionalOffering().getOfferingCoordinators())
+							if (user.getExternalUserId().equals(coordinator.getInstructor().getExternalUniqueId())) return true;
 					}
 				}
 
@@ -615,8 +616,8 @@ public class EventPermissions {
 			
 			// Course coordinators can cancel a class
 			if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
-				for (DepartmentalInstructor instructor: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCoordinators()) {
-					if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+				for (OfferingCoordinator coordinator: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getOfferingCoordinators()) {
+					if (user.getExternalUserId().equals(coordinator.getInstructor().getExternalUniqueId())) return true;
 				}
 				return false;
 			}
@@ -650,8 +651,8 @@ public class EventPermissions {
 			// Course coordinators can cancel an exam
 			if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
 				for (ExamOwner owner: exam.getOwners()) {
-					for (DepartmentalInstructor instructor: owner.getCourse().getInstructionalOffering().getCoordinators())
-						if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+					for (OfferingCoordinator coordinator: owner.getCourse().getInstructionalOffering().getOfferingCoordinators())
+						if (user.getExternalUserId().equals(coordinator.getInstructor().getExternalUniqueId())) return true;
 				}
 				return false;
 			}
@@ -684,8 +685,8 @@ public class EventPermissions {
 			
 			// Course coordinators can cancel a class
 			if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
-				for (DepartmentalInstructor instructor: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCoordinators()) {
-					if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+				for (OfferingCoordinator coordinator: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getOfferingCoordinators()) {
+					if (user.getExternalUserId().equals(coordinator.getInstructor().getExternalUniqueId())) return true;
 				}
 				return false;
 			}
@@ -722,8 +723,8 @@ public class EventPermissions {
 			// Course coordinators can cancel an exam
 			if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
 				for (ExamOwner owner: exam.getOwners()) {
-					for (DepartmentalInstructor instructor: owner.getCourse().getInstructionalOffering().getCoordinators())
-						if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+					for (OfferingCoordinator coordinator: owner.getCourse().getInstructionalOffering().getOfferingCoordinators())
+						if (user.getExternalUserId().equals(coordinator.getInstructor().getExternalUniqueId())) return true;
 				}
 				return false;
 			}

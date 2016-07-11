@@ -2201,6 +2201,8 @@ public class SessionRollForward {
 									toClassInstr.setLead(fromClassInstr.isLead());
 									toClassInstr.setTentative(fromClassInstr.isTentative());
 									toClassInstr.setPercentShare(fromClassInstr.getPercentShare());
+									toClassInstr.setResponsibility(fromClassInstr.getResponsibility());
+									toClassInstr.setAssignmentIndex(fromClassInstr.getAssignmentIndex());
 									
 									toClassInstr.setUniqueId(null);
 									toClass.addToclassInstructors(toClassInstr);

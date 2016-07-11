@@ -476,7 +476,7 @@ public class ClassDetailAction extends PreferencesAction {
 
 		    List instructors = new ArrayList(c.getClassInstructors());
 		    InstructorComparator ic = new InstructorComparator();
-		    ic.setCompareBy(ic.COMPARE_BY_LEAD);
+		    ic.setCompareBy(ic.COMPARE_BY_INDEX);
 		    Collections.sort(instructors, ic);
 
 		    for(Iterator iter = instructors.iterator(); iter.hasNext(); ) {
@@ -532,6 +532,7 @@ public class ClassDetailAction extends PreferencesAction {
 
 	        // Get dept instructor list
 	        LookupTables.setupInstructors(request, sessionContext, c.getDepartmentForSubjectArea().getUniqueId());
+	        LookupTables.setupInstructorTeachingResponsibilities(request);	        
 	        Vector deptInstrList = (Vector) request.getAttribute(DepartmentalInstructor.INSTR_LIST_ATTR_NAME);
 
 	        // For each instructor set the instructor list

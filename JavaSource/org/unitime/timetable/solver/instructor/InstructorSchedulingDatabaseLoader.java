@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.cpsolver.coursett.Constants;
 import org.cpsolver.coursett.model.TimeLocation;
@@ -67,6 +68,7 @@ import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.ClassComparator;
+import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.NameFormat;
 
@@ -434,7 +436,11 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     
     protected List<DepartmentalInstructor> getInstructors(Class_ clazz) {
     	List<DepartmentalInstructor> instructors = new ArrayList<DepartmentalInstructor>();
-    	for (ClassInstructor ci: clazz.getClassInstructors()) {
+    	
+    	InstructorComparator ic = new InstructorComparator(); ic.setCompareBy(ic.COMPARE_BY_INDEX);
+    	TreeSet<ClassInstructor> sortedInstructors = new TreeSet(ic);
+    	sortedInstructors.addAll(clazz.getClassInstructors());
+    	for (ClassInstructor ci: sortedInstructors) {
     		if (!isToBeIgnored(ci)) {
     			if (ci.isTentative()) iHasTentative = true; else iHasCommitted = true;
     			instructors.add(ci.getInstructor());

@@ -171,6 +171,9 @@
 						<TD align="center" valign="bottom" rowspan="2" class='WebTableHeader'><loc:message name="columnInstructorName"/></TD>
 						<TD align="center" valign="bottom" rowspan="2" class='WebTableHeader'><loc:message name="columnInstructorShare"/></TD>
 						<TD align="center" valign="bottom" rowspan="2" class='WebTableHeader'><loc:message name="columnInstructorCheckConflictsBr"/>&nbsp;&nbsp;</TD>
+						<logic:notEmpty name="responsibilities" scope="request">
+							<TD align="center" valign="bottom" rowspan="2" class='WebTableHeader'><loc:message name="columnTeachingResponsibility"/></TD>
+						</logic:notEmpty>
 						<TD align="center" valign="bottom" class='WebTableHeaderFirstRow'><loc:message name="columnDisplay"/>&nbsp;</TD>
 						<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
 						<TD align="center" valign="bottom" rowspan="2" class='WebTableHeader'><loc:message name="columnAssignedTime"/></TD>
@@ -284,11 +287,32 @@
 									</logic:notEmpty>
 								</logic:equal>
 							</TD>
+							<logic:notEmpty name="responsibilities" scope="request">
+								<TD align="center" valign="top" nowrap>
+									<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
+										<html:select tabindex="<%=java.lang.Integer.toString(8000 + ctr.intValue())%>"
+											property='<%= "responsibilities[" + ctr + "]" %>'>
+											<html:option value="-">-</html:option>
+											<html:options collection="responsibilities" property="uniqueId" labelProperty="label" />
+										</html:select>
+									</logic:equal>
+									<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="true" >
+										<html:hidden property='<%= "responsibilities[" + ctr + "]" %>'/>
+										<bean:define name="<%=frmName%>" property='<%= "responsibilities[" + ctr + "]" %>' id="r" type="java.lang.String"/>
+										<logic:iterate id="responsibility" name="responsibilities" scope="request">
+											<logic:equal name="responsibility" property="uniqueId" value="<%=(String)r%>"><bean:write name="responsibility" property="label"/></logic:equal>
+										</logic:iterate>
+									</logic:equal>
+								</TD>
+							</logic:notEmpty>
+							<logic:empty name="responsibilities" scope="request">
+								<html:hidden property='<%= "responsibilities[" + ctr + "]" %>'/>
+							</logic:empty>
 							<TD align="center" valign="top" nowrap>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
 									<logic:equal name="<%=frmName%>" property='<%= "showDisplay[" + ctr + "]" %>' value="true" >
 										<html:checkbox name="<%=frmName%>" property='<%= "displayFlags[" + ctr + "]" %>' 
-												tabindex="<%=java.lang.Integer.toString(8000 + ctr.intValue())%>"/>
+												tabindex="<%=java.lang.Integer.toString(10000 + ctr.intValue())%>"/>
 									</logic:equal>
 								</logic:equal>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="true" >

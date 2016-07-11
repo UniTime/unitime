@@ -534,7 +534,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Ignore\nToo Far")
 	String columnInstructorIgnoreTooFarPDF();
-	
+		
 	@DefaultMessage("Classes / Courses")
 	String columnExamClassesCourses();
 	
@@ -732,6 +732,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Teaching Load")
 	String columnTeachingLoad();
+	
+	@DefaultMessage("Responsibility")
+	String columnTeachingResponsibility();
 	
 	@DefaultMessage("Total")
 	String rowCrossListsTotal();
@@ -2750,4 +2753,10 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("(defaults to {0} when blank)")
 	String classEditTeachingLoadDefault(String defaultValue);
+	
+	@DefaultMessage("lead")
+	String toolTipInstructorLead();
+	
+	@DefaultMessage(" - Do Not Display Instructor.")
+	String toolTipInstructorDoNotDisplay();
 }

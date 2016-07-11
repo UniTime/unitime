@@ -192,6 +192,7 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
     			ci.setTentative(iTentative);
     			ci.setLead(true);
     			ci.setPercentShare(100 / clazz.effectiveNbrInstructors());
+    			ci.setAssignmentIndex(request.getInstructorIndex());
     			clazz.getClassInstructors().add(ci);
     			instructor.getClasses().add(ci);
 				changed.add(ci.getInstructor());

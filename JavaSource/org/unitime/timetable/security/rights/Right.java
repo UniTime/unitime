@@ -545,6 +545,9 @@ public enum Right {
 	InstructorAttributeTypes,
 	InstructorAttributeTypeEdit,
 	
+	TeachingResponsibilities,
+	TeachingResponsibilityEdit,
+	
 	/** Administration: Defaults */
 	
 	ApplicationConfig,

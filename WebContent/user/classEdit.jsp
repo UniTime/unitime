@@ -453,6 +453,9 @@
 						<TD><I><loc:message name="columnInstructorName"/> </I></TD>
 						<TD>&nbsp;<I><loc:message name="columnInstructorShare"/> </I>&nbsp;</TD>
 						<TD>&nbsp;<I><loc:message name="columnInstructorCheckConflicts"/> </I>&nbsp;</TD>
+						<logic:notEmpty name="responsibilities" scope="request">
+							<TD>&nbsp;<I><loc:message name="columnTeachingResponsibility"/> </I>&nbsp;</TD>
+						</logic:notEmpty>
 						<TD>&nbsp;</TD>
 					</TR>
 					
@@ -478,6 +481,18 @@
 									onclick='<%= "instructorChanged("+ctr+", this);"%>'
 								/>
 							</TD>
+							<logic:notEmpty name="responsibilities" scope="request">
+								<TD>
+									<html:select
+										property='<%= "instrResponsibility[" + ctr + "]" %>'>
+										<html:option value="-">-</html:option>
+										<html:options collection="responsibilities" property="uniqueId" labelProperty="label" />
+									</html:select>
+								</TD>
+							</logic:notEmpty>
+							<logic:empty name="responsibilities" scope="request">
+								<html:hidden property='<%= "instrResponsibility[" + ctr + "]" %>'/>
+							</logic:empty>
 							<TD nowrap>
 								<html:submit property="op" 
 									styleClass="btn"

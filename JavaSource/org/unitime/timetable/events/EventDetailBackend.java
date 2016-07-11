@@ -61,6 +61,7 @@ import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SpecialEvent;
@@ -161,7 +162,8 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 					addedInstructorIds.add(i.getInstructor().getUniqueId());
     			}
     		}
-    		for (DepartmentalInstructor c: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCoordinators()) {
+    		for (OfferingCoordinator oc: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getOfferingCoordinators()) {
+    			DepartmentalInstructor c = oc.getInstructor();
     			if (addedInstructorIds.add(c.getUniqueId())) {
         			ContactInterface coordinator = new ContactInterface();
     				coordinator.setFirstName(c.getFirstName());
@@ -398,7 +400,8 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 					related.setInstruction(MESSAGES.colCourse());
 				}
 				event.addRelatedObject(related);
-	    		for (DepartmentalInstructor c: owner.getCourse().getInstructionalOffering().getCoordinators()) {
+	    		for (OfferingCoordinator oc: owner.getCourse().getInstructionalOffering().getOfferingCoordinators()) {
+	    			DepartmentalInstructor c = oc.getInstructor();
 	    			if (addedInstructorIds.add(c.getUniqueId())) {
 		    			ContactInterface coordinator = new ContactInterface();
 						coordinator.setFirstName(c.getFirstName());
@@ -501,7 +504,8 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				event.addRelatedObject(related);
 				enrl += owner.countStudents();
 				limit += owner.getLimit();
-	    		for (DepartmentalInstructor c: owner.getCourse().getInstructionalOffering().getCoordinators()) {
+	    		for (OfferingCoordinator oc: owner.getCourse().getInstructionalOffering().getOfferingCoordinators()) {
+	    			DepartmentalInstructor c = oc.getInstructor();
 	    			if (addedInstructorIds.add(c.getUniqueId())) {
 		    			ContactInterface coordinator = new ContactInterface();
 						coordinator.setFirstName(c.getFirstName());

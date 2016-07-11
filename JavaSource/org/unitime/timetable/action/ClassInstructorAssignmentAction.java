@@ -61,6 +61,7 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.permissions.Permission;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.util.LookupTables;
 
 /**
  * @author Tomas Muller, Zuzana Mullerova, Stephanie Schluttenhofer
@@ -131,6 +132,7 @@ public class ClassInstructorAssignmentAction extends Action {
         ArrayList instructors = new ArrayList(ioc.getDepartment().getInstructors());
 	    Collections.sort(instructors, new DepartmentalInstructorComparator());
         request.setAttribute(DepartmentalInstructor.INSTR_LIST_ATTR_NAME, instructors);
+        LookupTables.setupInstructorTeachingResponsibilities(request);
 
         // First access to screen
         if(op.equalsIgnoreCase(MSG.actionAssignInstructors())) {

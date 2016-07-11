@@ -24,9 +24,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.Session;
 
@@ -55,7 +55,7 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	private Set<CourseOffering> iCourseOfferings;
 	private Set<InstrOfferingConfig> iInstrOfferingConfigs;
 	private Set<Reservation> iReservations;
-	private Set<DepartmentalInstructor> iCoordinators;
+	private Set<OfferingCoordinator> iOfferingCoordinators;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_INSTR_OFFERING_PERM_ID = "instrOfferingPermId";
@@ -143,11 +143,11 @@ public abstract class BaseInstructionalOffering implements Serializable {
 		iReservations.add(reservation);
 	}
 
-	public Set<DepartmentalInstructor> getCoordinators() { return iCoordinators; }
-	public void setCoordinators(Set<DepartmentalInstructor> coordinators) { iCoordinators = coordinators; }
-	public void addTocoordinators(DepartmentalInstructor departmentalInstructor) {
-		if (iCoordinators == null) iCoordinators = new HashSet<DepartmentalInstructor>();
-		iCoordinators.add(departmentalInstructor);
+	public Set<OfferingCoordinator> getOfferingCoordinators() { return iOfferingCoordinators; }
+	public void setOfferingCoordinators(Set<OfferingCoordinator> offeringCoordinators) { iOfferingCoordinators = offeringCoordinators; }
+	public void addToofferingCoordinators(OfferingCoordinator offeringCoordinator) {
+		if (iOfferingCoordinators == null) iOfferingCoordinators = new HashSet<OfferingCoordinator>();
+		iOfferingCoordinators.add(offeringCoordinator);
 	}
 
 	public boolean equals(Object o) {

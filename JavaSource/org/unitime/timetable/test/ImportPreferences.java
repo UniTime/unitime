@@ -67,6 +67,7 @@ import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.Staff;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePatternDays;
 import org.unitime.timetable.model.TimePatternTime;
@@ -415,6 +416,9 @@ public class ImportPreferences {
 			ci.setLead(new Boolean(el.attributeValue("isLead")));
 			ci.setPercentShare(Integer.valueOf(el.attributeValue("percentShare")));
 			ci.setLead(new Boolean(el.attributeValue("isTentative", "false")));
+			String responsibility = el.attributeValue("responsibility");
+			if (responsibility != null)
+				ci.setResponsibility(TeachingResponsibility.getTeachingResponsibility(responsibility, hibSession));
 			ci.setInstructor(instructor);
 			ci.setClassInstructing(clazz);
 			hibSession.save(ci);

@@ -254,6 +254,8 @@ public class ExportPreferences {
 		el.addAttribute("isLead", classInstructor.isLead().toString());
 		el.addAttribute("percentShare", classInstructor.getPercentShare().toString());
 		el.addAttribute("puid", classInstructor.getInstructor().getExternalUniqueId());
+		if (classInstructor.getResponsibility() != null)
+			el.addAttribute("responsibility", classInstructor.getResponsibility().getReference());
 	}
 	
 	public void exportTimePref(Element parent, TimePref timePref) {

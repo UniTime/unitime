@@ -45,6 +45,7 @@ import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.dao.Class_DAO;
@@ -87,7 +88,7 @@ public class ClassInfoConnector extends ApiConnector {
 		PositionInfo iPosition;
 		String iEmail;
 		DepartmentInfo iDepartment;
-		
+		String iResponsibility;
 		
 		InstructorInfo(DepartmentalInstructor instructor) {
 			iInstructorId = instructor.getUniqueId();
@@ -100,6 +101,11 @@ public class ClassInfoConnector extends ApiConnector {
 				iPosition = new PositionInfo(instructor.getPositionType());
 			iEmail = instructor.getEmail();
 			iDepartment = new DepartmentInfo(instructor.getDepartment());
+		}
+		
+		InstructorInfo(OfferingCoordinator coordinator) {
+			this(coordinator.getInstructor());
+			iResponsibility = (coordinator.getResponsibility() == null ? null : coordinator.getResponsibility().getReference());
 		}
 
 	}
@@ -126,11 +132,14 @@ public class ClassInfoConnector extends ApiConnector {
 	class InstructorAssignmentInfo extends InstructorInfo {
 		Boolean iLead;
 		Integer iPercentShare;
+		String iResponsibility;
 		
 		InstructorAssignmentInfo(ClassInstructor ci) {
 			super(ci.getInstructor());
 			iLead = ci.getLead();
 			iPercentShare = ci.getPercentShare();
+			if (ci.getResponsibility() != null)
+				iResponsibility = ci.getResponsibility().getReference();
 		}
 	}
 	
@@ -211,10 +220,10 @@ public class ClassInfoConnector extends ApiConnector {
             		iInstructors = new ArrayList<InstructorAssignmentInfo>();
 				iInstructors.add(new InstructorAssignmentInfo(ci));
 			}
-			for (DepartmentalInstructor di: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCoordinators()) {
+			for (OfferingCoordinator oc: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getOfferingCoordinators()) {
 				if (iCoordinators == null)
 					iCoordinators = new ArrayList<InstructorInfo>();
-				iCoordinators.add(new InstructorInfo(di));
+				iCoordinators.add(new InstructorInfo(oc));
 			}
 			for (Exam exam: (List<Exam>)Exam.findAllRelated("Class_", clazz.getUniqueId())) {
 				if (iExams == null)

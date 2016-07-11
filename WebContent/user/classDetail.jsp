@@ -337,7 +337,11 @@
 				<TD valign="top"><loc:message name="propertyInstructors"/></TD>
 				<TD>
 					<table cellspacing="0" cellpadding="3">
-						<tr><td width='250'><i><loc:message name="columnInstructorName"/></i></td><td width='80'><i><loc:message name="columnInstructorShare"/></i></td><td width='100'><i><loc:message name="columnInstructorCheckConflicts"/></i></td></tr>
+						<tr><td width='250'><i><loc:message name="columnInstructorName"/></i></td><td width='80'><i><loc:message name="columnInstructorShare"/></i></td><td width='100'><i><loc:message name="columnInstructorCheckConflicts"/></i></td>
+						<logic:notEmpty name="responsibilities" scope="request">
+							<td width='200'><i><loc:message name="columnTeachingResponsibility"/></i></td>
+						</logic:notEmpty>
+						</tr>
 						<logic:iterate name="<%=frmName%>" property="instructors" id="instructor" indexId="ctr">
 							<tr onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';" 
 								onmouseout="this.style.backgroundColor='transparent';"
@@ -364,7 +368,14 @@
 									</logic:notEqual>
 									--%>
 								</td>
-								
+								<logic:notEmpty name="responsibilities" scope="request">
+									<td>
+										<bean:define name="<%=frmName%>" property='<%= "instrResponsibility[" + ctr + "]" %>' id="r" type="java.lang.String"/>
+										<logic:iterate id="responsibility" name="responsibilities" scope="request">
+											<logic:equal name="responsibility" property="uniqueId" value="<%=(String)r%>"><bean:write name="responsibility" property="label"/></logic:equal>
+										</logic:iterate>
+									</td>
+								</logic:notEmpty>
 							</tr>
 						</logic:iterate>
 					</table>

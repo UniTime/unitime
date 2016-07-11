@@ -964,6 +964,12 @@
 					<hasPermission name="PositionTypes"/>
 				</condition>
 			</item>
+			<item name="Teaching Responsibilities" page="admin" type="gwt">
+				<parameter name="type">teachingResponsibility</parameter>
+				<condition>
+					<hasPermission name="TeachingResponsibilities"/>
+				</condition>
+			</item>
 			<item name="Student Status Types" page="admin" type="gwt">
 				<parameter name="type">sectioning</parameter>
 				<condition>

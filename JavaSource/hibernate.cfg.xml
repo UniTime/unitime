@@ -214,5 +214,6 @@
 	<mapping resource="ExamStatus.hbm.xml"/>
 	<mapping resource="HashedQuery.hbm.xml"/>
 	<mapping resource="InstructorAttribute.hbm.xml"/>
+	<mapping resource="OfferingCoordinator.hbm.xml"/>
 </session-factory>
 </hibernate-configuration>

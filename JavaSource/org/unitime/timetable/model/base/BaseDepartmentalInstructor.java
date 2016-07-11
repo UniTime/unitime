@@ -28,8 +28,8 @@ import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
-import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.InstructorAttribute;
+import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -60,7 +60,7 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 	private Set<ClassInstructor> iClasses;
 	private Set<Exam> iExams;
 	private Set<Assignment> iAssignments;
-	private Set<InstructionalOffering> iOfferings;
+	private Set<OfferingCoordinator> iOfferingCoordinators;
 	private Set<InstructorAttribute> iAttributes;
 
 	public static String PROP_EXTERNAL_UID = "externalUniqueId";
@@ -149,11 +149,11 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 		iAssignments.add(assignment);
 	}
 
-	public Set<InstructionalOffering> getOfferings() { return iOfferings; }
-	public void setOfferings(Set<InstructionalOffering> offerings) { iOfferings = offerings; }
-	public void addToofferings(InstructionalOffering instructionalOffering) {
-		if (iOfferings == null) iOfferings = new HashSet<InstructionalOffering>();
-		iOfferings.add(instructionalOffering);
+	public Set<OfferingCoordinator> getOfferingCoordinators() { return iOfferingCoordinators; }
+	public void setOfferingCoordinators(Set<OfferingCoordinator> offeringCoordinators) { iOfferingCoordinators = offeringCoordinators; }
+	public void addToofferingCoordinators(OfferingCoordinator offeringCoordinator) {
+		if (iOfferingCoordinators == null) iOfferingCoordinators = new HashSet<OfferingCoordinator>();
+		iOfferingCoordinators.add(offeringCoordinator);
 	}
 
 	public Set<InstructorAttribute> getAttributes() { return iAttributes; }

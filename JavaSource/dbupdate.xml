@@ -11479,4 +11479,53 @@
 		<plsql>alter table %SCHEMA%.external_building modify abbreviation varchar2(20 char)</plsql>
 		<plsql>alter table %SCHEMA%.external_room modify room_number varchar2(40 char)</plsql>
 	</update>
+	<update version="166" date="11-Jul-2016" comment="Teaching Responsibilities">
+		<plsql>
+			create table %SCHEMA%.teaching_responsibility (
+				uniqueid number(20,0) constraint nn_responsibility_uniqueid not null,
+				reference varchar2(20 char) constraint nn_responsibility_reference not null,
+				label varchar2(60 char) constraint nn_responsibility_label not null,
+				coordinator number(1,0) constraint nn_responsibility_coordinator not null,
+				instructor number(1,0) constraint nn_responsibility_instructor not null,
+				abbreviation varchar2(40 char)
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.teaching_responsibility add constraint pk_teaching_responsibility primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.teaching_responsibility (
+				uniqueid decimal(20,0) primary key not null,
+				reference varchar(20) not null,
+				label varchar(60) not null,
+				coordinator int(1) not null,
+				instructor int(1) not null,
+				abbreviation varchar(40)
+			) engine = INNODB
+		</mysql>
+		<plsql>alter table %SCHEMA%.class_instructor add assign_index number(10,0)</plsql>
+		<mysql>alter table %SCHEMA%.class_instructor add assign_index bigint(10) default null</mysql>
+		<plsql>alter table %SCHEMA%.class_instructor add responsibility_id number(20,0)</plsql>
+		<mysql>alter table %SCHEMA%.class_instructor add responsibility_id decimal(20,0) default null</mysql>
+		<sql>
+			alter table %SCHEMA%.class_instructor 
+			add constraint fk_class_teaching_responsibility foreign key (responsibility_id)
+			references %SCHEMA%.teaching_responsibility (uniqueid) on delete set null
+		</sql>
+		<plsql>alter table %SCHEMA%.offering_coordinator add responsibility_id number(20,0)</plsql>
+		<mysql>alter table %SCHEMA%.offering_coordinator add responsibility_id decimal(20,0) default null</mysql>
+		<sql>
+			alter table %SCHEMA%.offering_coordinator 
+			add constraint fk_offering_teaching_responsibility foreign key (responsibility_id)
+			references %SCHEMA%.teaching_responsibility (uniqueid) on delete set null
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'TeachingResponsibilities'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'PreferenceLevels'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'TeachingResponsibilityEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'PreferenceLevelEdit'
+		</sql>
+	</update>
 </dbupdate>

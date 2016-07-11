@@ -58,10 +58,12 @@ import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.LastLikeCourseDemand;
 import org.unitime.timetable.model.OfferingConsentType;
+import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
@@ -70,6 +72,7 @@ import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.OfferingConsentTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
+import org.unitime.timetable.model.dao.TeachingResponsibilityDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.permissions.Permission;
 import org.unitime.timetable.security.rights.Right;
@@ -209,8 +212,10 @@ public class CourseOfferingEditAction extends Action {
         if (op.equals(MSG.actionRemoveCoordinator()) && request.getParameter("deleteType")!=null && request.getParameter("deleteType").equals("coordinator")) {
             try {
                 int deleteId = Integer.parseInt(request.getParameter("deleteId"));
-                if (deleteId>=0)
+                if (deleteId>=0) {
                     frm.getInstructors().remove(deleteId);
+                    frm.getResponsibilities().remove(deleteId);
+                }
             } catch (Exception e) {}
             doReload(request, frm);
         }
@@ -261,24 +266,39 @@ public class CourseOfferingEditAction extends Action {
 	        if (!limitedEdit || updateNote)
 	        	co.setScheduleBookNote(note);
 
-	        if (!limitedEdit || updateCoordinators || co.isIsControl().booleanValue()) {
-		        if (io.getCoordinators() == null) io.setCoordinators(new HashSet<DepartmentalInstructor>());
-		        for (Iterator<DepartmentalInstructor> i = io.getCoordinators().iterator(); i.hasNext(); ) {
-		            DepartmentalInstructor instructor = i.next();
-		            instructor.getOfferings().remove(io);
-		            i.remove();
-		        }
-		        for (Iterator i=frm.getInstructors().iterator();i.hasNext();) {
+	        if ((!limitedEdit || updateCoordinators) && co.isIsControl().booleanValue()) {
+		        if (io.getOfferingCoordinators() == null) io.setOfferingCoordinators(new HashSet<OfferingCoordinator>());
+		        List<OfferingCoordinator> coordinators = new ArrayList<OfferingCoordinator>(io.getOfferingCoordinators());
+		        int idx = 0;
+		        for (Iterator i = frm.getInstructors().iterator();i.hasNext();) {
 		            String instructorId = (String)i.next();
+		            String responsibilityId = frm.getResponsibilities(idx++);
 		            if (!Constants.BLANK_OPTION_VALUE.equals(instructorId) && !Preference.BLANK_PREF_VALUE.equals(instructorId)) {
 		                DepartmentalInstructor instructor = new DepartmentalInstructorDAO().get(Long.valueOf(instructorId));
-		                if (instructor!=null) {
-		                    io.getCoordinators().add(instructor);
-		                    instructor.getOfferings().add(io);
+		                TeachingResponsibility responsibility = (Constants.BLANK_OPTION_VALUE.equals(responsibilityId) || Preference.BLANK_PREF_VALUE.equals(responsibilityId) ? null : TeachingResponsibilityDAO.getInstance().get(Long.valueOf(responsibilityId)));
+		                if (instructor != null) {
+		                	OfferingCoordinator coordinator = null;
+		                	for (Iterator<OfferingCoordinator> j = coordinators.iterator(); j.hasNext(); ) {
+		                		OfferingCoordinator c = j.next();
+		                		if (instructor.equals(c.getInstructor())) { coordinator = c; j.remove(); break; } 
+		                	}
+		                	if (coordinator == null) {
+		                		coordinator = new OfferingCoordinator();
+		                		coordinator.setInstructor(instructor);
+		                		coordinator.setOffering(io);
+		                	}
+		                	coordinator.setResponsibility(responsibility);
+		                	io.getOfferingCoordinators().add(coordinator);
+		                	instructor.getOfferingCoordinators().add(coordinator);
+		                	hibSession.saveOrUpdate(coordinator);
 		                }
 		           }
 		        }
-
+		        for (OfferingCoordinator coordinator: coordinators) {
+		        	coordinator.getInstructor().getOfferingCoordinators().remove(coordinator);
+		        	io.getOfferingCoordinators().remove(coordinator);
+		        	hibSession.delete(coordinator);
+		        }
 		        if (limitedEdit)
 		        	hibSession.update(io);
 	        }
@@ -492,14 +512,21 @@ public class CourseOfferingEditAction extends Action {
 
             co.setScheduleBookNote(frm.getScheduleBookNote());
 
-            io.setCoordinators(new HashSet<DepartmentalInstructor>());
-	        for (Iterator i=frm.getInstructors().iterator();i.hasNext();) {
+            io.setOfferingCoordinators(new HashSet<OfferingCoordinator>());
+            int idx = 0;
+	        for (Iterator i = frm.getInstructors().iterator();i.hasNext();) {
 	            String instructorId = (String)i.next();
+	            String responsibilityId = frm.getResponsibilities(idx++);
 	            if (!Constants.BLANK_OPTION_VALUE.equals(instructorId) && !Preference.BLANK_PREF_VALUE.equals(instructorId)) {
 	                DepartmentalInstructor instructor = new DepartmentalInstructorDAO().get(Long.valueOf(instructorId));
-	                if (instructor!=null) {
-	                    io.getCoordinators().add(instructor);
-	                    instructor.getOfferings().add(io);
+	                TeachingResponsibility responsibility = (Constants.BLANK_OPTION_VALUE.equals(responsibilityId) || Preference.BLANK_PREF_VALUE.equals(responsibilityId) ? null : TeachingResponsibilityDAO.getInstance().get(Long.valueOf(responsibilityId)));
+	                if (instructor != null) {
+	                	OfferingCoordinator coordinator = new OfferingCoordinator();
+	                	coordinator.setInstructor(instructor);
+	                	coordinator.setOffering(io);
+	                	coordinator.setResponsibility(responsibility);
+	                	io.getOfferingCoordinators().add(coordinator);
+	                	instructor.getOfferingCoordinators().add(coordinator);
 	                }
 	           }
 	        }
@@ -550,6 +577,9 @@ public class CourseOfferingEditAction extends Action {
 
 	        if (co.getCredit() != null)
 	        	hibSession.saveOrUpdate(co.getCredit());
+	        
+	        for (OfferingCoordinator coordinator: io.getOfferingCoordinators())
+	        	hibSession.saveOrUpdate(coordinator);
 	        
             ChangeLog.addChange(
                     hibSession,
@@ -649,9 +679,12 @@ public class CourseOfferingEditAction extends Action {
         else
             frm.setConsent(new Long(-1));
         LookupTables.setupConsentType(request);
+        LookupTables.setupCoordinatorTeachingResponsibilities(request);
 
-        for (DepartmentalInstructor instructor: new TreeSet<DepartmentalInstructor>(io.getCoordinators()))
-            frm.getInstructors().add(instructor.getUniqueId().toString());
+        for (OfferingCoordinator coordinator: new TreeSet<OfferingCoordinator>(io.getOfferingCoordinators())) {
+            frm.getInstructors().add(coordinator.getInstructor().getUniqueId().toString());
+            frm.getResponsibilities().add(coordinator.getResponsibility() == null ? Constants.BLANK_OPTION_VALUE : coordinator.getResponsibility().getUniqueId().toString());
+        }
 
         if (sessionContext.hasPermission(crsOfferingId, "CourseOffering", Right.EditCourseOfferingCoordinators) ||
         	sessionContext.hasPermission(crsOfferingId, "CourseOffering", Right.EditCourseOffering))
@@ -699,8 +732,8 @@ public class CourseOfferingEditAction extends Action {
             // Setup instructors
             Set<Long> deptIds = new HashSet<Long>();
             
-            for (DepartmentalInstructor instructor: co.getInstructionalOffering().getCoordinators())
-                deptIds.add(instructor.getDepartment().getUniqueId());
+            for (OfferingCoordinator coordinator: co.getInstructionalOffering().getOfferingCoordinators())
+                deptIds.add(coordinator.getInstructor().getDepartment().getUniqueId());
 
             for (CourseOffering x: co.getInstructionalOffering().getCourseOfferings())
             	deptIds.add(x.getSubjectArea().getDepartment().getUniqueId());
@@ -745,6 +778,7 @@ public class CourseOfferingEditAction extends Action {
         	if (frm.getCourseOfferingId() != null && frm.getCourseOfferingId() == 0)
         		frm.setCourseOfferingId(null);
 			LookupTables.setupConsentType(request);
+			LookupTables.setupCoordinatorTeachingResponsibilities(request);
 			LookupTables.setupCourseCreditFormats(request); // Course Credit Formats
             LookupTables.setupCourseCreditTypes(request); //Course Credit Types
             LookupTables.setupCourseCreditUnitTypes(request); //Course Credit Unit Types
@@ -788,6 +822,7 @@ public class CourseOfferingEditAction extends Action {
     	frm.setAllowAlternativeCourseOfferings(ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue());
 
         LookupTables.setupConsentType(request);
+        LookupTables.setupCoordinatorTeachingResponsibilities(request);
         LookupTables.setupCourseCreditFormats(request); // Course Credit Formats
         LookupTables.setupCourseCreditTypes(request); //Course Credit Types
         LookupTables.setupCourseCreditUnitTypes(request); //Course Credit Unit Types
@@ -811,8 +846,8 @@ public class CourseOfferingEditAction extends Action {
             // Setup instructors
             Set<Long> deptIds = new HashSet<Long>();
             
-            for (DepartmentalInstructor instructor: co.getInstructionalOffering().getCoordinators())
-                deptIds.add(instructor.getDepartment().getUniqueId());
+            for (OfferingCoordinator coordinator: co.getInstructionalOffering().getOfferingCoordinators())
+                deptIds.add(coordinator.getInstructor().getDepartment().getUniqueId());
 
             for (CourseOffering x: co.getInstructionalOffering().getCourseOfferings())
             	deptIds.add(x.getSubjectArea().getDepartment().getUniqueId());

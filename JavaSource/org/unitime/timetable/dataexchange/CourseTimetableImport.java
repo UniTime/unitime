@@ -56,6 +56,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.Staff;
+import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
@@ -721,6 +722,10 @@ public class CourseTimetableImport extends BaseImport {
 				instructors.remove(instructor);
 				instructor.setLead("true".equals(instructorElement.attributeValue("lead", instructor.isLead() ? "true" : "false")));
 				instructor.setPercentShare(Integer.valueOf(instructorElement.attributeValue("share", instructor.getPercentShare() == null ? "100" : instructor.getPercentShare().toString())));
+				String responsibility = instructorElement.attributeValue("responsibility");
+				if (responsibility != null)
+					instructor.setResponsibility(TeachingResponsibility.getTeachingResponsibility(responsibility, getHibSession()));
+				instructor.setAssignmentIndex(clazz.getClassInstructors() == null ? 0 : clazz.getClassInstructors().size()); 
 				continue;
 			}
 			String id = instructorElement.attributeValue("id");

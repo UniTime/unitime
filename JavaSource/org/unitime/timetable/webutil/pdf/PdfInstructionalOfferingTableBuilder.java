@@ -827,11 +827,14 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	
     	if (prefGroup instanceof Class_) {
     		Class_ aClass = (Class_) prefGroup;
-        	TreeSet sortedInstructors = new TreeSet(new InstructorComparator());
+    		InstructorComparator ic = new InstructorComparator(); ic.setCompareBy(ic.COMPARE_BY_INDEX);
+        	TreeSet sortedInstructors = new TreeSet(ic);
         	sortedInstructors.addAll(aClass.getClassInstructors());
     		for (Iterator i=sortedInstructors.iterator(); i.hasNext();) {
     			ClassInstructor ci = (ClassInstructor)i.next();
         		String label = ci.getInstructor().getName(getInstructorNameFormat());
+        		if (ci.getResponsibility() != null && ci.getResponsibility().getAbbreviation() != null && !ci.getResponsibility().getAbbreviation().isEmpty())
+        			label += " (" + ci.getResponsibility().getAbbreviation() + ")";
         		boolean italic = !aClass.isDisplayInstructor().booleanValue();
         		boolean bold = ci.isLead().booleanValue();
         		addText(cell, label, bold, italic, Element.ALIGN_LEFT, color, true);

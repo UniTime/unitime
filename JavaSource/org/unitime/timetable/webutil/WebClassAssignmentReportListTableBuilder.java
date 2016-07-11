@@ -170,7 +170,8 @@ public class WebClassAssignmentReportListTableBuilder extends WebClassListTableB
     	if (prefGroup instanceof Class_) {
     		Class_ aClass = (Class_) prefGroup;
     		if (aClass.isDisplayInstructor() && !aClass.getClassInstructors().isEmpty()) {
-            	TreeSet sortedInstructors = new TreeSet(new InstructorComparator());
+    			InstructorComparator ic = new InstructorComparator(); ic.setCompareBy(ic.COMPARE_BY_INDEX);
+            	TreeSet sortedInstructors = new TreeSet(ic);
             	sortedInstructors.addAll(aClass.getClassInstructors());
         		for (Iterator i=sortedInstructors.iterator(); i.hasNext();) {
         			ClassInstructor ci = (ClassInstructor)i.next();

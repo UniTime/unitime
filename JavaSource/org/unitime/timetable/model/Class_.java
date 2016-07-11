@@ -535,7 +535,8 @@ public class Class_ extends BaseClass_ {
     public String instructorHtml(String instructorNameFormat){
     	StringBuffer sb = new StringBuffer();
     	if (this.getClassInstructors()==null) return "";
-    	TreeSet sortedInstructors = new TreeSet(new InstructorComparator());
+    	InstructorComparator ic = new InstructorComparator(); ic.setCompareBy(ic.COMPARE_BY_INDEX);
+    	TreeSet sortedInstructors = new TreeSet(ic);
     	sortedInstructors.addAll(this.getClassInstructors());
 
     	Iterator it = sortedInstructors.iterator();
@@ -543,9 +544,10 @@ public class Class_ extends BaseClass_ {
     	while (it.hasNext()){
     		ci = (ClassInstructor) it.next();
     		String title = ci.getInstructor().getNameLastFirst();
-    		title += " ("+ci.getPercentShare()+"%"+(ci.isLead().booleanValue()?", lead":"")+")";
+    		title += " (" + (ci.getResponsibility() == null ? "" : ci.getResponsibility().getLabel() + " ") +
+    				ci.getPercentShare()+"%"+(ci.isLead().booleanValue()?", " + MSG.toolTipInstructorLead():"")+")";
     		if (!isDisplayInstructor().booleanValue()){
-    			title += " - Do Not Display Instructor.";
+    			title += MSG.toolTipInstructorDoNotDisplay();
     		}
     		if (ci.isLead().booleanValue()){
     			sb.append("<span style='font-weight:bold;"+(isDisplayInstructor().booleanValue()?"":"font-style:italic;")+"' title='"+title+"'>");
@@ -553,6 +555,8 @@ public class Class_ extends BaseClass_ {
     			sb.append("<span title='"+title+"'>");
     		}
     		sb.append(ci.getInstructor().getName(instructorNameFormat));
+    		if (ci.getResponsibility() != null && ci.getResponsibility().getAbbreviation() != null && !ci.getResponsibility().getAbbreviation().isEmpty())
+    			sb.append(" (" + ci.getResponsibility().getAbbreviation() + ")");
     		sb.append("</span>");
     		if (it.hasNext()) sb.append("<br>");
     		sb.append("\n");
@@ -563,7 +567,8 @@ public class Class_ extends BaseClass_ {
     public String instructorText(String instructorNameFormat, String separator){
     	if (getClassInstructors() == null) return "";
     	
-    	TreeSet sortedInstructors = new TreeSet(new InstructorComparator());
+    	InstructorComparator ic = new InstructorComparator(); ic.setCompareBy(ic.COMPARE_BY_INDEX);
+    	TreeSet sortedInstructors = new TreeSet(ic);
     	sortedInstructors.addAll(this.getClassInstructors());
 
     	StringBuffer sb = new StringBuffer();
@@ -1152,6 +1157,8 @@ public class Class_ extends BaseClass_ {
 				newCi.setLead(ci.isLead());
 				newCi.setPercentShare(ci.getPercentShare());
 				newCi.setTentative(ci.isTentative());
+				newCi.setResponsibility(ci.getResponsibility());
+				newCi.setAssignmentIndex(ci.getAssignmentIndex());
 				ci.getInstructor().addToclasses(newCi);
 				newClass.addToclassInstructors(newCi);
 			}

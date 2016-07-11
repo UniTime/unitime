@@ -23,8 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentStatusType;
-import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
@@ -118,8 +118,8 @@ public class StudentSchedulingPermissions {
 			if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
 				if (!"IN".equals(source.getConsentType().getReference())) return false;
 				
-				for (DepartmentalInstructor instructor: source.getInstructionalOffering().getCoordinators()) {
-					if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+				for (OfferingCoordinator coordinator: source.getInstructionalOffering().getOfferingCoordinators()) {
+					if (user.getExternalUserId().equals(coordinator.getInstructor().getExternalUniqueId())) return true;
 				}
 
 				return false;
@@ -140,8 +140,8 @@ public class StudentSchedulingPermissions {
 		@Override
 		public boolean check(UserContext user, InstructionalOffering source) {
 			if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
-				for (DepartmentalInstructor instructor: source.getCoordinators()) {
-					if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+				for (OfferingCoordinator coordinator: source.getOfferingCoordinators()) {
+					if (user.getExternalUserId().equals(coordinator.getInstructor().getExternalUniqueId())) return true;
 				}
 				
 				return false;

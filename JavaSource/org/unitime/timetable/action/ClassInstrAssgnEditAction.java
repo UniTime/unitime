@@ -59,6 +59,7 @@ import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.model.dao.TeachingResponsibilityDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.permissions.Permission;
 import org.unitime.timetable.security.rights.Right;
@@ -355,7 +356,7 @@ public class ClassInstrAssgnEditAction extends PreferencesAction {
         if ("init".equals(op) || !sessionContext.hasPermission(c, Right.AssignInstructorsClass)) {
 		    List instructors = new ArrayList(c.getClassInstructors());
 		    InstructorComparator ic = new InstructorComparator();
-		    ic.setCompareBy(ic.COMPARE_BY_LEAD);
+		    ic.setCompareBy(ic.COMPARE_BY_INDEX);
 		    Collections.sort(instructors, ic);
 
 	        for(Iterator iter = instructors.iterator(); iter.hasNext(); ) {
@@ -408,14 +409,17 @@ public class ClassInstrAssgnEditAction extends PreferencesAction {
 	        List instrLead = frm.getInstrLead();
 	        List instructors = frm.getInstructors();
 	        List instrPctShare = frm.getInstrPctShare();
+	        List instrResponsibility = frm.getInstrResponsibility();
 
 	        // Save instructor data to class
+	        int index = 0;
 	        for(int i=0; i<instructors.size(); i++) {
 
 	            String instrId = instructors.get(i).toString();
 	            if (Preference.BLANK_PREF_VALUE.equals(instrId)) continue;
 	            String pctShare = instrPctShare.get(i).toString();
 	            boolean lead = "on".equals(instrLead.get(i));
+	            String resp = instrResponsibility.get(i).toString();
 
 	            DepartmentalInstructor deptInstr = new DepartmentalInstructorDAO().get(new Long(instrId));
 
@@ -429,6 +433,12 @@ public class ClassInstrAssgnEditAction extends PreferencesAction {
 	            } catch (NumberFormatException e) {
 	            	classInstr.setPercentShare(new Integer(0));
 	            }
+	            try {
+	            	classInstr.setResponsibility(TeachingResponsibilityDAO.getInstance().get(Long.valueOf(resp), hibSession));
+	            } catch (NumberFormatException e) {
+	            	classInstr.setResponsibility(null);
+	            }
+	            classInstr.setAssignmentIndex(index++);
 
 	            classInstrs.add(classInstr);
 

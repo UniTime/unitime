@@ -309,6 +309,8 @@ public class CourseOfferingExport extends BaseExport {
         if (instructor.getPercentShare()!=null)
         	instructorElement.addAttribute("share", instructor.getPercentShare().toString());
         instructorElement.addAttribute("lead", instructor.isLead()?"true":"false");
+        if (instructor.getResponsibility() != null)
+        	instructorElement.addAttribute("responsibility", instructor.getResponsibility().getReference());
     }
     
     protected void exportInstructor(Element instructorElement, DepartmentalInstructor instructor, Session session) {

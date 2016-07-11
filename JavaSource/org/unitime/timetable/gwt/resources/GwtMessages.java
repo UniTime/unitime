@@ -2936,6 +2936,14 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageTeachingAssignmentChanges();
 	
+	@DefaultMessage("Teaching Responsibility")
+	@DoNotTranslate
+	String pageTeachingResponsibility();
+	
+	@DefaultMessage("Teaching Responsibilities")
+	@DoNotTranslate
+	String pageTeachingResponsibilities();
+	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	
@@ -3708,6 +3716,9 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Required Attribute")
 	String fieldRequiredAttribute();
+	
+	@DefaultMessage("Coordinator")
+	String fieldCoordinator();
 
 	@DefaultMessage("Access")
 	String toggleAccess();

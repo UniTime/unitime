@@ -352,5 +352,24 @@
                 type="java.lang.Boolean"
                 not-null="true"/>
         </union-subclass>
+        
+        <union-subclass name="TeachingResponsibility" table="teaching_responsibility" abstract="false">
+            <property
+                name="coordinator"
+                column="coordinator"
+                type="java.lang.Boolean"
+                not-null="true"/>
+            <property
+                name="instructor"
+                column="instructor"
+                type="java.lang.Boolean"
+                not-null="true"/>
+			<property
+        		name="abbreviation"
+        		column="abbreviation"
+        		type="string"
+        		not-null="false"
+        		length="40"/>             
+        </union-subclass>
     </class>
 </hibernate-mapping>

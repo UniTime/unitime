@@ -81,6 +81,7 @@ public class CourseOfferingEditForm extends ActionForm {
     private String catalogLinkLocation;
     private Boolean byReservationOnly;
     private List instructors;
+    private List responsibilities;
     private String wkEnroll, wkChange, wkDrop;
     private Integer wkEnrollDefault, wkChangeDefault, wkDropDefault;
     private String weekStartDayOfWeek;
@@ -177,6 +178,7 @@ public class CourseOfferingEditForm extends ActionForm {
         catalogLinkLabel = null;
         catalogLinkLocation = null;
         instructors = DynamicList.getInstance(new ArrayList(), factory);
+        responsibilities = DynamicList.getInstance(new ArrayList(), factory);
         byReservationOnly = false;
         wkEnroll = null; wkChange = null; wkDrop = null;
         wkEnrollDefault = null; wkChangeDefault = null; wkDropDefault = null;
@@ -356,6 +358,11 @@ public class CourseOfferingEditForm extends ActionForm {
     public String getInstructors(int key) { return instructors.get(key).toString(); }
     public void setInstructors(int key, Object value) { this.instructors.set(key, value); }
     public void setInstructors(List instructors) { this.instructors = instructors; }
+    
+    public List getResponsibilities() { return responsibilities; }
+    public String getResponsibilities(int key) { return responsibilities.get(key).toString(); }
+    public void setResponsibilities(int key, Object value) { this.responsibilities.set(key, value); }
+    public void setResponsibilities(List responsibilities) { this.responsibilities = responsibilities; }
 
     public boolean isByReservationOnly() { return byReservationOnly; }
     public void setByReservationOnly(boolean byReservationOnly) { this.byReservationOnly = byReservationOnly; }

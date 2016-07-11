@@ -1459,8 +1459,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (getSessionContext().hasPermission(Right.HasRole)) return null;
 		
 		HashSet<Long> courseIds = new HashSet<Long>(CourseOfferingDAO.getInstance().getSession().createQuery(
-				"select distinct c.uniqueId from CourseOffering c inner join c.instructionalOffering.coordinators i where " +
-				"c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and i.externalUniqueId = :extId")
+				"select distinct c.uniqueId from CourseOffering c inner join c.instructionalOffering.coordinators oc where " +
+				"c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and oc.instructor.externalUniqueId = :extId")
 				.setLong("sessionId", sessionId).setString("extId", user.getExternalUserId()).setCacheable(true).list());
 		
 		return courseIds;
@@ -1472,9 +1472,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			throw new PageAccessException(getSessionContext().isHttpSessionNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
 
 		HashSet<Long> courseIds = new HashSet<Long>(CourseOfferingDAO.getInstance().getSession().createQuery(
-				"select distinct c.uniqueId from CourseOffering c inner join c.instructionalOffering.coordinators i where " +
+				"select distinct c.uniqueId from CourseOffering c inner join c.instructionalOffering.coordinators oc where " +
 				"c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and c.consentType.reference = :reference and " +
-				"i.externalUniqueId = :extId"
+				"oc.instructor.externalUniqueId = :extId"
 				).setLong("sessionId", sessionId).setString("reference", "IN").setString("extId", user.getExternalUserId()).setCacheable(true).list());
 		
 		if (!user.getCurrentAuthority().hasRight(Right.HasRole)) return courseIds;

@@ -70,5 +70,18 @@
             type="java.lang.Boolean"
             column="tentative"
             not-null="true"/>
+            
+        <property
+            name="assignmentIndex"
+            type="java.lang.Integer"
+            column="assign_index"
+            not-null="false"/>
+            
+        <many-to-one
+            name="responsibility"
+            class="TeachingResponsibility"
+            column="responsibility_id"
+            foreign-key="fk_class_teaching_responsibility"
+            not-null="false"/>
     </class>
 </hibernate-mapping>

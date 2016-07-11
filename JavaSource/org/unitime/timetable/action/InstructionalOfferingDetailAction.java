@@ -54,12 +54,12 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
-import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
@@ -403,10 +403,10 @@ public class InstructionalOfferingDetailAction extends Action {
         frm.setHasConflict(hasConflicts(request, io));
         String coordinators = "";
         String instructorNameFormat = sessionContext.getUser().getProperty(UserProperty.NameFormat);
-        for (DepartmentalInstructor instructor: new TreeSet<DepartmentalInstructor>(io.getCoordinators())) {
+        for (OfferingCoordinator coordinator: new TreeSet<OfferingCoordinator>(io.getOfferingCoordinators())) {
         	if (!coordinators.isEmpty()) coordinators += "<br>";
-        	coordinators += "<a href='instructorDetail.do?instructorId=" + instructor.getUniqueId() + "' class='noFancyLinks'>" +
-        			instructor.getName(instructorNameFormat) + 
+        	coordinators += "<a href='instructorDetail.do?instructorId=" + coordinator.getInstructor().getUniqueId() + "' class='noFancyLinks'>" +
+        			coordinator.getInstructor().getName(instructorNameFormat) + (coordinator.getResponsibility() == null ? "" : " (" + coordinator.getResponsibility().getLabel() + ")") + 
         			"</a>";
         }
         frm.setCoordinators(coordinators);

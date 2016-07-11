@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.cpsolver.ifs.util.ToolBox;
 import org.dom4j.Element;
 import org.hibernate.FlushMode;
 import org.hibernate.engine.spi.SessionImplementor;
@@ -73,6 +74,7 @@ import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.SolverParameterGroup;
 import org.unitime.timetable.model.Staff;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePatternDays;
 import org.unitime.timetable.model.TimePatternTime;
@@ -1041,6 +1043,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
         	HashMap<String, Integer> shares = new HashMap<String, Integer>();
         	HashMap<String, Boolean> leads = new HashMap<String, Boolean>();
         	HashMap<String, Boolean> tentatives = new HashMap<String, Boolean>();
+        	HashMap<String, String> responsibilities = new HashMap<String, String>();
         	for (Iterator<?> it = element.elementIterator(elementName); it.hasNext();){
 				Element instructorElement = (Element) it.next();
 				String id = getRequiredStringAttribute(instructorElement, "id", elementName);
@@ -1072,6 +1075,9 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					tentative = new Boolean(false);
 				}
 				tentatives.put(id, tentative);
+				String responsibility = getOptionalStringAttribute(instructorElement, "responsibility");
+				if (responsibility != null && !responsibility.isEmpty())
+					responsibilities.put(id, responsibility);
         	}
         	for(Iterator<String> it = ids.iterator(); it.hasNext(); ){
 				boolean addNew = false;
@@ -1104,6 +1110,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			        	ChangeLog.addChange(getHibSession(), getManager(), session, di, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.CREATE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
 					}
 					ci = new ClassInstructor();
+					ci.setAssignmentIndex(c.getClassInstructors() == null ? 0 : c.getClassInstructors().size());
 					ci.setClassInstructing(c);
 					c.addToclassInstructors(ci);
 					ci.setInstructor(di);
@@ -1128,6 +1135,11 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				Boolean tentative = tentatives.get(id);
 				if (ci.isTentative() == null || !ci.isTentative().equals(tentative)){
 					ci.setTentative(tentative);
+					changed = true;
+				}
+				String responsibility = responsibilities.get(id);
+				if (!ToolBox.equals(ci.getResponsibility() == null ? null : ci.getResponsibility().getReference(), responsibility)) {
+					ci.setResponsibility(TeachingResponsibility.getTeachingResponsibility(responsibility, getHibSession()));
 					changed = true;
 				}
 				

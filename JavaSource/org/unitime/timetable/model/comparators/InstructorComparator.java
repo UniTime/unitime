@@ -36,6 +36,7 @@ public class InstructorComparator implements Comparator {
     public final short COMPARE_BY_NAME = 1;
     public final short COMPARE_BY_LEAD = 2;
     public final short COMPARE_BY_PCT_SHARE = 3;
+    public final short COMPARE_BY_INDEX = 4;
     private short compareBy;
     
     public InstructorComparator() {
@@ -66,6 +67,10 @@ public class InstructorComparator implements Comparator {
         ClassInstructor ci2 = (ClassInstructor) o2;
 
         if (ci1.getUniqueId().equals(ci2.getUniqueId())) return 0;
+        
+        if (compareBy == COMPARE_BY_INDEX && ci1.getAssignmentIndex() != null && ci2.getAssignmentIndex() != null && !ci1.getAssignmentIndex().equals(ci2.getAssignmentIndex())) {
+        	return ci1.getAssignmentIndex().compareTo(ci2.getAssignmentIndex());
+        }
         
        	int cmp = Double.compare(ci1.isLead().booleanValue()?0:1,ci2.isLead().booleanValue()?0:1);
        	if (cmp!=0) return cmp;

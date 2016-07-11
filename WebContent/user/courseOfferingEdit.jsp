@@ -450,6 +450,16 @@
 						<html:option value="-">-</html:option>
 						<html:options collection="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME%>" property="value" labelProperty="label" />
 					</html:select>
+					<logic:notEmpty name="responsibilities" scope="request">
+						<html:select
+							property='<%= "responsibilities[" + ctr + "]" %>'>
+							<html:option value="-">-</html:option>
+							<html:options collection="responsibilities" property="uniqueId" labelProperty="label" />
+						</html:select>
+					</logic:notEmpty>
+					<logic:empty name="responsibilities" scope="request">
+						<html:hidden property='<%= "responsibilities[" + ctr + "]" %>'/>
+					</logic:empty>
 					<html:submit property="op" 
 								styleClass="btn"
 								onclick="<%= \"javascript: doDel('coordinator', '\" + ctr + \"');\"%>">
@@ -476,11 +486,17 @@
 			<logic:notEmpty name="courseOfferingEditForm" property="instructors">
 				<TD valign="top"><loc:message name="propertyCoordinators"/> </TD>
 				<TD nowrap>
+					<bean:define name="courseOfferingEditForm" property="responsibilities" id="r" type="java.util.List"/>
 					<logic:iterate name="courseOfferingEditForm" property="instructors" id="instructor" indexId="ctr">
 						<logic:iterate name="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME%>" scope="request" id="lookup" type="org.unitime.timetable.util.ComboBoxLookup">
 							<logic:equal name="lookup" property="value" value="<%=instructor.toString()%>">
 								<logic:greaterThan name="ctr" value="0"><br></logic:greaterThan>
 								<bean:write name="lookup" property="label"/>
+								<logic:iterate id="responsibility" name="responsibilities" scope="request">
+									<logic:equal name="responsibility" property="uniqueId" value="<%=(String)r.get(ctr)%>">
+										(<bean:write name="responsibility" property="label"/>)
+									</logic:equal>
+								</logic:iterate>
 							</logic:equal>
 						</logic:iterate>
 					</logic:iterate>
@@ -488,6 +504,7 @@
 			</logic:notEmpty>
 			<logic:iterate name="courseOfferingEditForm" property="instructors" id="instructor" indexId="ctr">
 				<html:hidden property='<%= "instructors[" + ctr + "]" %>'/>
+				<html:hidden property='<%= "responsibilities[" + ctr + "]" %>'/>
 			</logic:iterate>
 		</sec:authorize>
 

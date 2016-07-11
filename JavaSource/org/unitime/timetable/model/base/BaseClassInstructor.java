@@ -24,6 +24,7 @@ import java.io.Serializable;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.TeachingResponsibility;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
@@ -36,14 +37,17 @@ public abstract class BaseClassInstructor implements Serializable {
 	private Integer iPercentShare;
 	private Boolean iLead;
 	private Boolean iTentative;
+	private Integer iAssignmentIndex;
 
 	private Class_ iClassInstructing;
 	private DepartmentalInstructor iInstructor;
+	private TeachingResponsibility iResponsibility;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_PERCENT_SHARE = "percentShare";
 	public static String PROP_IS_LEAD = "lead";
 	public static String PROP_TENTATIVE = "tentative";
+	public static String PROP_ASSIGN_INDEX = "assignmentIndex";
 
 	public BaseClassInstructor() {
 		initialize();
@@ -70,11 +74,17 @@ public abstract class BaseClassInstructor implements Serializable {
 	public Boolean getTentative() { return iTentative; }
 	public void setTentative(Boolean tentative) { iTentative = tentative; }
 
+	public Integer getAssignmentIndex() { return iAssignmentIndex; }
+	public void setAssignmentIndex(Integer assignmentIndex) { iAssignmentIndex = assignmentIndex; }
+
 	public Class_ getClassInstructing() { return iClassInstructing; }
 	public void setClassInstructing(Class_ classInstructing) { iClassInstructing = classInstructing; }
 
 	public DepartmentalInstructor getInstructor() { return iInstructor; }
 	public void setInstructor(DepartmentalInstructor instructor) { iInstructor = instructor; }
+
+	public TeachingResponsibility getResponsibility() { return iResponsibility; }
+	public void setResponsibility(TeachingResponsibility responsibility) { iResponsibility = responsibility; }
 
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof ClassInstructor)) return false;
@@ -93,10 +103,12 @@ public abstract class BaseClassInstructor implements Serializable {
 
 	public String toDebugString() {
 		return "ClassInstructor[" +
+			"\n	AssignmentIndex: " + getAssignmentIndex() +
 			"\n	ClassInstructing: " + getClassInstructing() +
 			"\n	Instructor: " + getInstructor() +
 			"\n	Lead: " + getLead() +
 			"\n	PercentShare: " + getPercentShare() +
+			"\n	Responsibility: " + getResponsibility() +
 			"\n	Tentative: " + getTentative() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";

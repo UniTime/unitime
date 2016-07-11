@@ -240,17 +240,17 @@ public class InstructorDetailAction extends PreferencesAction {
 
 				WebTable classTable =
 			    	(hasTimetable? 
-			    			new WebTable( 9,
+			    			new WebTable( 10,
 			    					null,
-			    					new String[] {MSG.columnClass(), MSG.columnInstructorCheckConflicts(), MSG.columnInstructorShare(),
+			    					new String[] {MSG.columnClass(), MSG.columnInstructorCheckConflicts(), MSG.columnInstructorShare(), MSG.columnTeachingResponsibility(),
 			    							MSG.columnLimit(), MSG.columnEnrollment(), MSG.columnManager(), MSG.columnAssignedTime(), 
 			    							MSG.columnAssignedDatePattern(), MSG.columnAssignedRoom()},
-			    					new String[] {"left", "left","left", "left", "left", "left", "left", "left", "left"},
+			    					new String[] {"left", "left","left", "left", "left", "left", "left", "left", "left", "left"},
 			    					null )
 			    	:
-		    			new WebTable( 5,
+		    			new WebTable( 6,
 		    					null,
-		    					new String[] {MSG.columnClass(), MSG.columnInstructorCheckConflicts(), MSG.columnInstructorShare(),
+		    					new String[] {MSG.columnClass(), MSG.columnInstructorCheckConflicts(), MSG.columnInstructorShare(), MSG.columnTeachingResponsibility(),
 		    							MSG.columnLimit(), MSG.columnManager()},
 		    					new String[] {"left", "left","left", "left", "left"},
 		    					null )
@@ -328,6 +328,7 @@ public class InstructorDetailAction extends PreferencesAction {
 		    		}
 		    		
 		    		boolean back = "PreferenceGroup".equals(backType) && c.getUniqueId().toString().equals(backId);
+		    		String responsibility = (ci.getResponsibility() == null ? "" : ci.getResponsibility().getLabel());
 			    	
 		    		WebTableLine line = null;
 					if (hasTimetable) {
@@ -338,6 +339,7 @@ public class InstructorDetailAction extends PreferencesAction {
 									c.getClassLabel(),
 									(ci.isLead().booleanValue()?"<IMG border='0' alt='true' align='absmiddle' src='images/accept.png'>":""),
 									ci.getPercentShare()+"%",
+									responsibility,
 									limitString,
 									enrollmentString,
 									managingDept,
@@ -354,6 +356,7 @@ public class InstructorDetailAction extends PreferencesAction {
 									c.getClassLabel(),
 									(ci.isLead().booleanValue()?"<IMG border='0' alt='true' align='absmiddle' src='images/accept.png'>":""),
 									ci.getPercentShare()+"%",
+									responsibility,
 									limitString,
 									managingDept
 								},

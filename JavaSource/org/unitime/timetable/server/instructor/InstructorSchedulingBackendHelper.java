@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.cpsolver.coursett.Constants;
 import org.cpsolver.coursett.model.TimeLocation;
@@ -57,6 +58,7 @@ import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.SolverParameterGroup.SolverType;
+import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.solver.instructor.InstructorSchedulingDatabaseLoader;
 
@@ -120,7 +122,11 @@ public class InstructorSchedulingBackendHelper {
     
     public List<DepartmentalInstructor> getInstructors(Class_ clazz) {
     	List<DepartmentalInstructor> instructors = new ArrayList<DepartmentalInstructor>();
-    	for (ClassInstructor ci: clazz.getClassInstructors()) {
+    	
+    	InstructorComparator ic = new InstructorComparator(); ic.setCompareBy(ic.COMPARE_BY_INDEX);
+    	TreeSet<ClassInstructor> sortedInstructors = new TreeSet(ic);
+    	sortedInstructors.addAll(clazz.getClassInstructors());
+    	for (ClassInstructor ci: sortedInstructors) {
     		if (!isToBeIgnored(ci) && (ci.getInstructor().getTeachingPreference() != null && !ci.getInstructor().getTeachingPreference().getPrefProlog().equals(PreferenceLevel.sProhibited))) {
     			instructors.add(ci.getInstructor());
     		}

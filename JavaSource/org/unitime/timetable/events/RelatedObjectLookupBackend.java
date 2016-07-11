@@ -31,8 +31,8 @@ import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectLookupRpcReq
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectLookupRpcResponse;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SubjectArea;
@@ -78,8 +78,8 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 						"where co.subjectArea.session.uniqueId = :sessionId and ci.instructor.externalUniqueId = :externalId"
 						).setLong("sessionId", request.getUniqueId()).setString("externalId", context.getUser().getExternalUserId()).setCacheable(true).list());
 				subjects.addAll(hibSession.createQuery(
-						"select distinct co.subjectArea from CourseOffering co inner join co.instructionalOffering.coordinators i " +
-						"where co.subjectArea.session.uniqueId = :sessionId and i.externalUniqueId = :externalId"
+						"select distinct co.subjectArea from CourseOffering co inner join co.instructionalOffering.coordinators oc " +
+						"where co.subjectArea.session.uniqueId = :sessionId and oc.instructor.externalUniqueId = :externalId"
 						).setLong("sessionId", request.getUniqueId()).setString("externalId", context.getUser().getExternalUserId()).setCacheable(true).list());
 						
 				for (SubjectArea subject: subjects) {
@@ -96,8 +96,8 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 						"where co.subjectArea.uniqueId = :subjectAreaId and ci.instructor.externalUniqueId = :externalId"
 						).setLong("subjectAreaId", request.getUniqueId()).setString("externalId", context.getUser().getExternalUserId()).setCacheable(true).list());
 				courses.addAll(hibSession.createQuery(
-						"select distinct co from CourseOffering co inner join co.instructionalOffering.coordinators i " +
-						"where co.subjectArea.uniqueId = :subjectAreaId and i.externalUniqueId = :externalId"
+						"select distinct co from CourseOffering co inner join co.instructionalOffering.coordinators oc " +
+						"where co.subjectArea.uniqueId = :subjectAreaId and oc.instructor.externalUniqueId = :externalId"
 						).setLong("subjectAreaId", request.getUniqueId()).setString("externalId", context.getUser().getExternalUserId()).setCacheable(true).list());
 						
 				for (CourseOffering course: courses) {
@@ -136,8 +136,8 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 				if (course == null) break;
 				
 				boolean coordinator = false;
-				for (DepartmentalInstructor instructor: course.getInstructionalOffering().getCoordinators()) {
-					if (context.getUser().getExternalUserId().equals(instructor.getExternalUniqueId())) { coordinator = true; break; }
+				for (OfferingCoordinator oc: course.getInstructionalOffering().getOfferingCoordinators()) {
+					if (context.getUser().getExternalUserId().equals(oc.getInstructor().getExternalUniqueId())) { coordinator = true; break; }
 				}
 				
 				Set<InstrOfferingConfig> configs = new TreeSet<InstrOfferingConfig>(new InstrOfferingConfigComparator(null));
@@ -251,8 +251,8 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 			case SUBPART:
 				course = CourseOfferingDAO.getInstance().get(request.getCourseId());
 				coordinator = false;
-				for (DepartmentalInstructor instructor: course.getInstructionalOffering().getCoordinators()) {
-					if (context.getUser().getExternalUserId().equals(instructor.getExternalUniqueId())) { coordinator = true; break; }
+				for (OfferingCoordinator oc: course.getInstructionalOffering().getOfferingCoordinators()) {
+					if (context.getUser().getExternalUserId().equals(oc.getInstructor().getExternalUniqueId())) { coordinator = true; break; }
 				}
 				
 				Set<Class_> classes = new TreeSet<Class_>(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
