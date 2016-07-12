@@ -260,7 +260,7 @@ public class CourseOfferingEditAction extends Action {
 	        if (!limitedEdit || updateNote)
 	        	co.setScheduleBookNote(note);
 
-	        if (!limitedEdit || updateCoordinators || co.isIsControl().booleanValue()) {
+	        if ((!limitedEdit || updateCoordinators) && co.isIsControl().booleanValue()) {
 		        if (io.getCoordinators() == null) io.setCoordinators(new HashSet<DepartmentalInstructor>());
 		        for (Iterator<DepartmentalInstructor> i = io.getCoordinators().iterator(); i.hasNext(); ) {
 		            DepartmentalInstructor instructor = i.next();

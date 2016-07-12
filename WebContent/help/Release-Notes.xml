@@ -42,6 +42,12 @@
 				<line>Avoid NullPointerException when there is no date pattern (i.e., there is no default date pattern defined for the term).</line>
 			</description>
 		</item>
+		<item>
+			<name>Edit Course Offering</name>
+			<description>
+				<line>Fixed an issue that was causing a cross-listed offering to loose all coordinators when a not controlling course was edited.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>
