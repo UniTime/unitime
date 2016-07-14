@@ -21,12 +21,16 @@ package org.unitime.timetable.server.instructor;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.ComputeSuggestionsRequest;
 import org.unitime.timetable.gwt.shared.InstructorInterface.SuggestionsResponse;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
@@ -36,7 +40,7 @@ import org.unitime.timetable.solver.service.SolverService;
  * @author Tomas Muller
  */
 @GwtRpcImplements(ComputeSuggestionsRequest.class)
-public class ComputeSuggestionsBackend implements GwtRpcImplementation<ComputeSuggestionsRequest, SuggestionsResponse>{
+public class ComputeSuggestionsBackend extends InstructorSchedulingBackendHelper implements GwtRpcImplementation<ComputeSuggestionsRequest, SuggestionsResponse>{
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	
 	@Autowired SolverService<InstructorSchedulingProxy> instructorSchedulingSolverService;
@@ -47,7 +51,33 @@ public class ComputeSuggestionsBackend implements GwtRpcImplementation<ComputeSu
 		InstructorSchedulingProxy solver = instructorSchedulingSolverService.getSolver();
 		if (solver != null)
 			return solver.computeSuggestions(request);
-		throw new GwtRpcException(MESSAGES.warnSolverNotStarted());
-	}
 
+		SuggestionsResponse response = new SuggestionsResponse();
+		
+		Context cx = new Context(context);
+		Suggestion s = new Suggestion();
+		for (AssignmentInfo ai: request.getAssignments()) {
+			Class_ clazz = Class_DAO.getInstance().get(ai.getRequest().getRequestId());
+			if (clazz == null) continue;
+			DepartmentalInstructor instructor = (ai.getInstructor() == null ? null : DepartmentalInstructorDAO.getInstance().get(ai.getInstructor().getInstructorId()));
+			if (instructor != null)
+				s.set(clazz, ai.getIndex(), instructor);
+		}
+		response.setCurrentAssignment(s.toInfo(cx));
+		
+		if (request.getSelectedInstructorId() != null) {
+			DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(request.getSelectedInstructorId());
+			if (instructor == null) return null;
+			Class_ clazz = null;
+			if (request.getSelectedRequestId() != null)
+				clazz = Class_DAO.getInstance().get(request.getSelectedRequestId());
+			computeDomainForInstructor(response, instructor, clazz, cx);
+		} else if (request.getSelectedRequestId() != null) {
+			Class_ clazz = Class_DAO.getInstance().get(request.getSelectedRequestId());
+			if (clazz == null) return null;
+			cx.setBase(s);
+			computeDomainForClass(response, clazz, request.getSelectedIndex(), cx);
+		}
+		return response;
+	}
 }

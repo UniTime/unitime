@@ -1209,6 +1209,12 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    }
 	    public Map<String,Double> getValues() { return iValues; }
 	    public Double getValue(String criterion) { return iValues.get(criterion); }
+	    public boolean hasValues() {
+	    	if (iValues == null || iValues.isEmpty()) return false;
+	    	for (Double value: iValues.values())
+	    		if (value != 0.0) return true;
+	    	return false;
+	    }
 
 	    public double getValue() { return iValue; }
 	    public void setValue(double value) { iValue = value; }

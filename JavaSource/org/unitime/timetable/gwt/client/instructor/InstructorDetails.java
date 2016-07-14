@@ -30,6 +30,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.shared.InstructorInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.ClassInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.SectionInfo;
@@ -37,15 +38,19 @@ import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestsPagePropertiesResponse;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
  * @author Tomas Muller
  */
-public class InstructorDetails extends SimpleForm {
+public class InstructorDetails extends SimpleForm implements HasValue<Integer>{
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	protected static final StudentSectioningMessages SECTMSG = GWT.create(StudentSectioningMessages.class);
@@ -115,6 +120,18 @@ public class InstructorDetails extends SimpleForm {
 		
 		iObjectives = new ObjectivesCell(properties);
 		iObjectivesRow = addRow(MESSAGES.propObjectives(), iObjectives);
+		iRequestsTable.setAllowSelection(true);
+		iRequestsTable.setAllowMultiSelect(false);
+		
+		iRequestsTable.addMouseClickListener(new UniTimeTable.MouseClickListener<InstructorInterface.TeachingRequestInfo>() {
+			@Override
+			public void onMouseClick(UniTimeTable.TableEvent<InstructorInterface.TeachingRequestInfo> event) {
+				if (event.getRow() > 0) {
+					iRequestsTable.setSelected(event.getRow(), true);
+					ValueChangeEvent.fire(InstructorDetails.this, event.getRow() - 1);
+				}
+			}
+		});
 	}
 	
 	public void setInstructor(InstructorInfo instructor) {
@@ -210,5 +227,33 @@ public class InstructorDetails extends SimpleForm {
 		}
 	}
 	
-	
+
+	@Override
+	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<Integer> handler) {
+		return addHandler(handler, ValueChangeEvent.getType());
+	}
+
+	@Override
+	public Integer getValue() {
+		int row = iRequestsTable.getSelectedRow();
+		if (row < 1) return null;
+		return row - 1;
+	}
+
+	@Override
+	public void setValue(Integer value) {
+		setValue(value, false);
+	}
+
+	@Override
+	public void setValue(Integer value, boolean fireEvents) {
+		if (value == null) {
+			int row = iRequestsTable.getSelectedRow();
+			if (row >= 0) iRequestsTable.setSelected(row, false);
+		} else {
+			iRequestsTable.setSelected(value + 1, true);
+		}
+		if (fireEvents)
+			ValueChangeEvent.fire(this, getValue());
+	}
 }

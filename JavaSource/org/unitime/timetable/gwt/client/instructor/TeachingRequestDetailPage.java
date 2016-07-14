@@ -100,6 +100,7 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 	private Label iAssignmentScore;
 	private ObjectivesCell iAssignmentObjectives;
 	private int iAssignmentRow;
+	private int iAssignmentScoreRow, iAssignmentObjectivesRow;
 	
 	private UniTimeHeaderPanel iDomainHeader;
 	private int iDomainRow;
@@ -194,7 +195,7 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 	}
 	
 	protected void computeSuggestions(final Integer scrollToRow) {
-		if (!iProperties.isHasSolver()) return;
+		// if (!iProperties.isHasSolver()) return;
 		ComputeSuggestionsRequest request = new ComputeSuggestionsRequest();
 		for (AssignmentInfo assignment: iAssignmentTable.getData()) {
 			if (assignment.getInstructor() != null) {
@@ -218,17 +219,26 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 	}
 	
 	protected void computeSuggestions(ComputeSuggestionsRequest request, final Integer scrollToRow) {
-		if (!iProperties.isHasSolver()) return;
+		// if (!iProperties.isHasSolver()) return;
 		iSuggestionsRequest = request;
 		if (iRequest != null) {
 			iSuggestionsRequest.setSelectedRequestId(iRequest.getRequestId());
 			iSuggestionsRequest.setSelectedIndex(iRequestDetails.getValue());
 		} else {
-			iSuggestionsRequest.setSelectedInstructorId(iInstructor.getInstructorId());	
+			iSuggestionsRequest.setSelectedInstructorId(iInstructor.getInstructorId());
+			Integer index = iInstructorDetails.getValue();
+			if (index != null && index < iInstructor.getAssignedRequests().size()) { 
+				iSuggestionsRequest.setSelectedRequestId(iInstructor.getAssignedRequests().get(index).getRequestId());
+			}
 		}
-		showSuggestionsLoading();
+		if (iProperties.isHasSolver()) {
+			showSuggestionsLoading();
+			hideDomain();
+		} else {
+			showDomainLoading();
+			hideSuggestions();
+		}
 		showAssignmentLoading();
-		hideDomain();
 		RPC.execute(iSuggestionsRequest, new AsyncCallback<SuggestionsResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -263,6 +273,10 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 	}
 	
 	protected void showSuggestions(SuggestionsResponse result) {
+		if (!iProperties.isHasSolver()) {
+			hideSuggestions();
+			return;
+		}
 		iSuggestionsHeader.clearMessage();
 		iSuggestionsTable.clearTable(1);
 		if (result.hasSuggestions()) {
@@ -432,8 +446,10 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 			if (suggestion.getValue() < 0) iAssignmentScore.getElement().getStyle().setColor("green");
 			iAssignmentObjectives.setValue(suggestion.getValues());
 		}
-		for (int row = iAssignmentRow; row < iDomainRow; row ++)
-			iForm.getRowFormatter().setVisible(row, iAssignmentTable.getRowCount() > 1);
+		iForm.getRowFormatter().setVisible(iAssignmentRow, iAssignmentTable.getRowCount() > 1);
+		iForm.getRowFormatter().setVisible(iAssignmentRow + 1, iAssignmentTable.getRowCount() > 1);
+		iForm.getRowFormatter().setVisible(iAssignmentScoreRow, iAssignmentTable.getRowCount() > 1 && suggestion != null && suggestion.getValue() != 0.0);
+		iForm.getRowFormatter().setVisible(iAssignmentObjectivesRow, iAssignmentTable.getRowCount() > 1 && suggestion != null && suggestion.hasValues());
 		iAssignmentHeader.setEnabled("assign", iAssignmentTable.getRowCount() > 1);
 	}
 	
@@ -442,7 +458,21 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 		iForm.getRowFormatter().setVisible(iDomainRow + 1, false);
 	}
 	
+	protected void showDomainLoading() {
+		iForm.getRowFormatter().setVisible(iDomainRow, true);
+		iForm.getRowFormatter().setVisible(iDomainRow + 1, true);
+		if (iRequest != null) {
+			iDomainHeader.setHeaderTitle(MESSAGES.headerAvailableInstructors());
+		} else {
+			iDomainHeader.setHeaderTitle(MESSAGES.headerAvailableAssignments());
+		}
+		iDomainHeader.showLoading();
+		iDomainTable.setVisible(false);
+	}
+	
 	protected void showDomain(List<SuggestionInfo> suggestions) {
+		iDomainTable.setVisible(true);
+		iDomainHeader.clearMessage();
 		iDomainTable.clearTable(0);
 		if (iRequest != null) {
 			iDomainHeader.setHeaderTitle(MESSAGES.headerAvailableInstructors());
@@ -700,7 +730,48 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 		iRequestDetails.addValueChangeHandler(new ValueChangeHandler<Integer>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Integer> event) {
-				if (event.getValue() != null) computeSuggestions(iAssignmentRow);
+				if (event.getValue() != null) {
+					if (iSuggestionsRequest != null && iRequest.getRequestId().equals(iSuggestionsRequest.getSelectedRequestId()) && event.getValue() == iSuggestionsRequest.getSelectedIndex()) {
+						InstructorInfo instructor = iRequest.getInstructor(event.getValue());
+						if (instructor != null) {
+							RPC.execute(new TeachingAssignmentsDetailRequest(instructor.getInstructorId()), new AsyncCallback<InstructorInfo>() {
+								@Override
+								public void onFailure(Throwable caught) {
+									computeSuggestions(iAssignmentRow);
+								}
+								@Override
+								public void onSuccess(InstructorInfo result) {
+									populate(null, null, result);
+								}
+							});
+							return;
+						}
+					}
+					computeSuggestions(iAssignmentRow);
+				}
+			}
+		});
+		iInstructorDetails.addValueChangeHandler(new ValueChangeHandler<Integer>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Integer> event) {
+				if (event.getValue() != null && event.getValue() < iInstructor.getAssignedRequests().size()) {
+					TeachingRequestInfo req = iInstructor.getAssignedRequests().get(event.getValue());
+					if (iSuggestionsRequest != null && iInstructor.getInstructorId().equals(iSuggestionsRequest.getSelectedInstructorId()) && req.getRequestId().equals(iSuggestionsRequest.getSelectedRequestId())) {
+						RPC.execute(new TeachingRequestDetailRequest(req.getRequestId()), new AsyncCallback<TeachingRequestInfo>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								computeSuggestions(iAssignmentRow);
+							}
+							@Override
+							public void onSuccess(TeachingRequestInfo result) {
+								InstructorInfo instructor = result.getInstructor(iInstructor.getInstructorId());
+								populate(result, instructor == null ? null : new Integer(instructor.getAssignmentIndex()), null);
+							}
+						});
+						return;
+					}
+					computeSuggestions(iAssignmentRow);
+				}
 			}
 		});
 	}
@@ -748,19 +819,51 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 		});
 		iAssignmentHeader.setEnabled("assign", false);
 		iAssignmentScore = new Label();
-		iForm.addRow(MESSAGES.propSuggestionScore(), iAssignmentScore);
+		iAssignmentScoreRow = iForm.addRow(MESSAGES.propSuggestionScore(), iAssignmentScore);
 		iAssignmentObjectives = new ObjectivesCell(iProperties);
-		iForm.addRow(MESSAGES.propSuggestionObjectives(), iAssignmentObjectives);
+		iAssignmentObjectivesRow = iForm.addRow(MESSAGES.propSuggestionObjectives(), iAssignmentObjectives);
 		iAssignmentTable.addMouseClickListener(new UniTimeTable.MouseClickListener<AssignmentInfo>() {
 			@Override
-			public void onMouseClick(UniTimeTable.TableEvent<AssignmentInfo> event) {
+			public void onMouseClick(final UniTimeTable.TableEvent<AssignmentInfo> event) {
 				if (event.getData() != null) {
-					if (iRequest != null)
-						populate(event.getData().getRequest(), event.getData().getIndex(), null);
-					else if (event.getData().getInstructor() != null) {
-						populate(null, null, event.getData().getInstructor());
+					TeachingRequestInfo request = event.getData().getRequest();
+					Integer index = event.getData().getIndex();
+					InstructorInfo instructor = event.getData().getInstructor();
+					if (instructor == null) instructor = event.getData().getRequest().getInstructor(event.getData().getIndex());
+					if (iRequest != null) {
+						if (request.equals(iRequest) && index.equals(iRequestDetails.getValue()) && instructor != null) {
+							RPC.execute(new TeachingAssignmentsDetailRequest(instructor.getInstructorId()), new AsyncCallback<InstructorInfo>() {
+								@Override
+								public void onFailure(Throwable caught) {
+									populate(event.getData().getRequest(), event.getData().getIndex(), null);
+								}
+								@Override
+								public void onSuccess(InstructorInfo result) {
+									populate(null, null, result);
+								}
+							});
+						} else {
+							populate(event.getData().getRequest(), event.getData().getIndex(), null);
+						}
+					} else if (instructor != null) {
+						if (instructor.equals(iInstructor)) {
+							populate(event.getData().getRequest(), event.getData().getIndex(), null);
+						} else {
+							RPC.execute(new TeachingAssignmentsDetailRequest(instructor.getInstructorId()), new AsyncCallback<InstructorInfo>() {
+								@Override
+								public void onFailure(Throwable caught) {
+									populate(event.getData().getRequest(), event.getData().getIndex(), null);
+								}
+								@Override
+								public void onSuccess(InstructorInfo result) {
+									populate(null, null, result);
+								}
+							});
+						}
+						// populate(null, null, event.getData().getInstructor());
 					} else {
-						populate(null, null, event.getData().getRequest().getInstructor(event.getData().getIndex()));
+						populate(event.getData().getRequest(), event.getData().getIndex(), null);
+						//populate(null, null, event.getData().getRequest().getInstructor(event.getData().getIndex()));
 					}
 				}
 			}

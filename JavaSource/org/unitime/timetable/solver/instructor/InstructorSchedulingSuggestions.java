@@ -154,12 +154,13 @@ public class InstructorSchedulingSuggestions {
     		for (TeachingRequest tr: iModel.getRequests()) {
     			if (tr.getRequestId() == assignment.getRequest().getRequestId()) {
     				TeachingRequest.Variable var = tr.getVariable(assignment.getIndex());
+    				TeachingAssignment original = iAssignment.getValue(var);
     				if (assignment.getInstructor() != null) {
 						for (TeachingAssignment val: var.values(iAssignment)) {
 							if (val.getInstructor().getInstructorId() == assignment.getInstructor().getInstructorId()) {
 								if (var.equals(iRequest))
 									requestedAssignment = val;
-								else
+								else if (original == null || !original.equals(val))
 									givenAssignments.add(val);
 								break;
 							}
@@ -169,7 +170,7 @@ public class InstructorSchedulingSuggestions {
     		}
     	}
     	
-    	if (requestedAssignment != null)
+    	if (iRequest != null) // requestedAssignment != null
     		iAssignment.unassign(0l, iRequest);
     	for (TeachingAssignment assignment: givenAssignments) {
     		iAssignment.unassign(0l, assignment.variable());
@@ -251,8 +252,17 @@ public class InstructorSchedulingSuggestions {
         
         for (TeachingRequest.Variable x : iInitialUnassignments)
             if (iAssignment.getValue(x) != null) iAssignment.unassign(0, x);
-        for (Map.Entry<TeachingRequest.Variable, TeachingAssignment> x : iInitialAssignments.entrySet())
-            if (!x.getValue().equals(iAssignment.getValue(x.getKey()))) iAssignment.assign(0, x.getValue());
+        List<TeachingAssignment> changes = new ArrayList<TeachingAssignment>();
+        for (Map.Entry<TeachingRequest.Variable, TeachingAssignment> x : iInitialAssignments.entrySet()) {
+        	TeachingRequest.Variable var = x.getKey();
+        	TeachingAssignment current = iAssignment.getValue(var);
+        	TeachingAssignment initial = x.getValue();
+            if (!initial.equals(current)) {
+            	if (current != null) iAssignment.unassign(0, var);
+            	changes.add(initial);
+            }
+        }
+        for (TeachingAssignment initial: changes) iAssignment.assign(0, initial);
         
         for (SuggestionInfo suggestion: iSuggestions)
         	response.addSuggestion(suggestion);
@@ -326,11 +336,15 @@ public class InstructorSchedulingSuggestions {
     	}
     	suggestion.addAssignment(toAssignmentInfo(assignment.variable()));
     	for (TeachingRequest.Variable var: iResolvedRequests) {
-    		if (var.equals(iRequest) || var.equals(assignment.variable())) continue;
+    		if (var.equals(iRequest) || var.equals(assignment.variable())) {
+    			continue;
+    		}
     		suggestion.addAssignment(toAssignmentInfo(var));
     	}
     	for (TeachingAssignment conflict: conflicts) {
-    		if (conflict.variable().equals(iRequest) || iConflictsToResolve.containsKey(conflict.variable()) || iResolvedRequests.contains(conflict.variable())) continue;
+    		if (conflict.variable().equals(iRequest) || iConflictsToResolve.containsKey(conflict.variable()) || iResolvedRequests.contains(conflict.variable())) {
+    			continue;
+    		}
     		suggestion.addAssignment(toAssignmentInfo(conflict.variable()));
     	}
     	
@@ -364,7 +378,7 @@ public class InstructorSchedulingSuggestions {
     		suggestion.addAssignment(toAssignmentInfo(var));
     	}
     	for (TeachingRequest.Variable var: iModel.assignedVariables(iAssignment)) {
-    		if (iResolvedRequests.contains(var) || var.equals(iRequest) || iAssignment.getValue(var).equals(iInitialAssignments.get(var))) continue;
+    		if (iResolvedRequests.contains(var) || var.equals(iRequest) || iAssignment.getValue(var).equals(iInitialAssignments.get(var)) || iConflictsToResolve.containsKey(var)) continue;
     		suggestion.addAssignment(toAssignmentInfo(var));
     	}
     	return suggestion;

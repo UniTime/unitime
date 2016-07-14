@@ -77,14 +77,18 @@ public class TeachingAssignmentsBackend extends InstructorSchedulingBackendHelpe
 				}
 				if (departmentIds.isEmpty()) return ret;
 				instructors = (List<DepartmentalInstructor>)hibSession.createQuery(
-						"select distinct i from DepartmentalInstructor i where " +
-						"i.department.uniqueId in :departmentIds and i.teachingPreference.prefProlog != :prohibited and i.maxLoad > 0.0"
-						).setParameterList("departmentIds", departmentIds).setString("prohibited", PreferenceLevel.sProhibited).list();
+						"select distinct i from DepartmentalInstructor i " +
+						"left join fetch i.classes as ci left join fetch ci.classInstructing as c left join fetch c.schedulingSubpart as ss " +
+						"left join fetch c.preferences as cp left join fetch ss.preferences as sp left join fetch i.preferences as ip " +
+						"where i.department.uniqueId in :departmentIds and i.teachingPreference.prefProlog != :prohibited and i.maxLoad > 0.0"
+						).setParameterList("departmentIds", departmentIds).setString("prohibited", PreferenceLevel.sProhibited).setCacheable(true).list();
 			} else {
 				instructors = (List<DepartmentalInstructor>)hibSession.createQuery(
-						"select distinct i from DepartmentalInstructor i where " +
-				    	"i.department.uniqueId = :departmentId and i.teachingPreference.prefProlog != :prohibited and i.maxLoad > 0.0"
-						).setLong("departmentId", request.getDepartmentId()).setString("prohibited", PreferenceLevel.sProhibited).list();
+						"select distinct i from DepartmentalInstructor i " +
+						"left join fetch i.classes as ci left join fetch ci.classInstructing as c left join fetch c.schedulingSubpart as ss " +
+						"left join fetch c.preferences as cp left join fetch ss.preferences as sp left join fetch i.preferences as ip " +
+				    	"where i.department.uniqueId = :departmentId and i.teachingPreference.prefProlog != :prohibited and i.maxLoad > 0.0"
+						).setLong("departmentId", request.getDepartmentId()).setString("prohibited", PreferenceLevel.sProhibited).setCacheable(true).list();
 			}
 	    	for (DepartmentalInstructor instructor: instructors) {
 	    		ret.add(getInstructorInfo(instructor, nameFormat, commonItypes));
