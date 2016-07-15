@@ -1389,6 +1389,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Search <u>L</u>onger")
 	String buttonSearchLonger();
 	
+	@DefaultMessage("Show <u>M</u>ore")
+	String buttonMoreAssignments();
+	
 	@DefaultMessage("<u>A</u>ssign")
 	String buttonAssign();
 
@@ -2315,6 +2318,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Please confirm the change in your contact information.")
 	String checkYourContactChange();
+	
+	@DefaultMessage("Do not unassign conflicting assignments.")
+	String checkIgnoreInstructorAssignmentConflicts();
 	
 	@DefaultMessage("Your contact information will be updated.")
 	String confirmYourContactChange();
@@ -4050,6 +4056,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Do you really want to save and commit your current timetable? This may uncommit your currently committed solution.")
 	String confirmSolverSaveAsNewCommit();
 	
+	@DefaultMessage("The selected assignment will be done directly in the database. Are you sure?")
+	String confirmInstructorAssignmentChangesNoSolver();
+	
 	@DefaultMessage("&nbsp;(of&nbsp;{0})")
 	String curriculumProjectionRulesOfTotal(int total);
 	
@@ -4703,6 +4712,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("({0}s timeout reached, {1} possibilities of up to {2} changes were considered, {3} suggestions displayed)")
 	String suggestionsNoteTimeoutAllResults(int timeout, int nrCombinations, int depth, int nrResults);
+	
+	@DefaultMessage("(best {0} available instructor assignments out of {1} displayed)")
+	String domainNinstructors(int nrResults, int domainSize);
+	
+	@DefaultMessage("(best {0} available teaching assignments out of {1} displayed)")
+	String domainNassignments(int nrResults, int domainSize);
 	
 	@DefaultMessage("Student")
 	String enrollmentRoleStudent();

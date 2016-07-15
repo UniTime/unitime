@@ -1248,7 +1248,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		private SuggestionInfo iAssignment = null;
 		private List<SuggestionInfo> iSuggestions = null;
 		private boolean iTimeoutReached = false;
-		private int iNrCombinationsConsidered = 0, iNrSolutions = 0;
+		private int iNrCombinationsConsidered = 0, iNrSolutions = 0, iDomainSize = 0;
 	    private List<SuggestionInfo> iDomain = null;
 	    
 		public SuggestionsResponse() {}
@@ -1269,6 +1269,9 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		public int getNrSolutions() { return iNrSolutions; }
 		public void setNrSolutions(int nrSolutions) { iNrSolutions = nrSolutions; }
 		
+		public int getDomainSize() { return iDomainSize; }
+		public void setDomainSize(int size) { iDomainSize = size; }
+		
 	    public void addDomainValue(SuggestionInfo suggestion) {
 	    	if (iDomain == null) iDomain = new ArrayList<SuggestionInfo>();
 	    	iDomain.add(suggestion);
@@ -1288,7 +1291,9 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		private Long iSelectedInstructorId;
 		private int iMaxDepth = 2;
 		private int iTimeout = 5000;
+		private int iMaxDomain = 20;
 		private int iMaxResults = 20;
+		private boolean iComputeDomain = true, iComputeSuggestions = true;
 		
 		public ComputeSuggestionsRequest() {}
 		
@@ -1300,6 +1305,9 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		
 		public void setTimeout(int timeout) { iTimeout = timeout; }
 		public int getTimeout() { return iTimeout; }
+		
+		public void setMaxDomain(int maxDomain) { iMaxDomain = maxDomain; }
+		public int getMaxDomain() { return iMaxDomain; }
 		
 		public void setMaxResults(int maxResults) { iMaxResults = maxResults; }
 		public int getMaxResults() { return iMaxResults; }
@@ -1313,6 +1321,15 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		public int getSelectedIndex() { return iSelectedIndex; }
 		public void setSelectedIndex(int idx) { iSelectedIndex = idx; }
 		
+		public boolean isComputeSuggestions() { return iComputeSuggestions; }
+		public boolean isComputeDomain() { return iComputeDomain; }
+		
+		public void setComputeAll() { iComputeDomain = true; iComputeSuggestions = true; }
+		public void setComputeSuggestions() { iComputeDomain = false; iComputeSuggestions = true; }
+		public void setComputeDomain() { iComputeDomain = true; iComputeSuggestions = false; }
+		
+		public void setComputeDomain(boolean compute) { iComputeDomain = compute; }
+		
 		@Override
 		public String toString() {
 			return getMaxDept() + "," + getTimeout() + "," + getMaxResults();
@@ -1322,11 +1339,14 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	public static class InstructorAssignmentRequest implements GwtRpcRequest<GwtRpcResponseNull>, Serializable {
 		private static final long serialVersionUID = 1L;
 		private List<AssignmentInfo> iAssignments = new ArrayList<AssignmentInfo>();
+		private Boolean iIgnoreConflicts = null;
 		
 		public InstructorAssignmentRequest() {}
 		
 		public void addAssignment(AssignmentInfo assignment) { iAssignments.add(assignment); }
 		public List<AssignmentInfo> getAssignments() { return iAssignments; }
+		public void setIgnoreConflicts(Boolean ignoreConflicts) { iIgnoreConflicts = ignoreConflicts; }
+		public boolean isIgnoreConflicts() { return iIgnoreConflicts != null && iIgnoreConflicts.booleanValue(); }
 		
 		@Override
 		public String toString() {

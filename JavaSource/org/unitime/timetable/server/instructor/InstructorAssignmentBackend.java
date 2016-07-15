@@ -81,19 +81,27 @@ public class InstructorAssignmentBackend extends InstructorSchedulingBackendHelp
 				if (instructor != null)
 					s.set(clazz, ai.getIndex(), instructor);
 			}
-			Set<InstructorAssignment> conflicts = new HashSet<InstructorAssignment>();
-			for (InstructorAssignment a: s.getAssignments()) {
-				s.computeConflicts(a, conflicts, cx);
-			}
-			for (InstructorAssignment a: s.getAssignments())
-				if (!conflicts.remove(a)) {
+			if (request.isIgnoreConflicts()) {
+				for (InstructorAssignment a: s.getAssignments()) {
 					assign(hibSession, a, cx, commit);
 					if (commit)
 						updateConfigs.add(a.getClazz().getSchedulingSubpart().getInstrOfferingConfig());
 				}
-			for (InstructorAssignment c: conflicts) {
-				unassign(hibSession, c, cx, commit);
-				if (commit) updateConfigs.add(c.getClazz().getSchedulingSubpart().getInstrOfferingConfig());
+			} else {
+				Set<InstructorAssignment> conflicts = new HashSet<InstructorAssignment>();
+				for (InstructorAssignment a: s.getAssignments()) {
+					s.computeConflicts(a, conflicts, cx);
+				}
+				for (InstructorAssignment a: s.getAssignments())
+					if (!conflicts.remove(a)) {
+						assign(hibSession, a, cx, commit);
+						if (commit)
+							updateConfigs.add(a.getClazz().getSchedulingSubpart().getInstrOfferingConfig());
+					}
+				for (InstructorAssignment c: conflicts) {
+					unassign(hibSession, c, cx, commit);
+					if (commit) updateConfigs.add(c.getClazz().getSchedulingSubpart().getInstrOfferingConfig());
+				}
 			}
 			tx.commit(); tx = null;
 		} catch (Exception e) {

@@ -4470,6 +4470,11 @@ unitime-RoomSharingWidget .legend .blank {
 	padding-right: 5px;
 }
 
+.unitime-TeachingRequestDetail .domain .note {
+	font-style: italic;
+	text-align: center;
+}
+
 .unitime-TeachingRequestDetail .instructors {
 	width: 100%;
 }
@@ -4491,4 +4496,9 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-TeachingAssignmentChanges .new {
 	text-decoration: underline;
+}
+
+
+.unitime-TeachingRequestDetail .ignore-conflicts {
+	font-style: italic;	
 }

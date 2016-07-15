@@ -67,6 +67,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -101,6 +102,8 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 	private ObjectivesCell iAssignmentObjectives;
 	private int iAssignmentRow;
 	private int iAssignmentScoreRow, iAssignmentObjectivesRow;
+	private CheckBox iIgnoreConflicts;
+	private int iIgnoreConflictsRow = -1;
 	
 	private UniTimeHeaderPanel iDomainHeader;
 	private int iDomainRow;
@@ -218,7 +221,7 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 		}
 	}
 	
-	protected void computeSuggestions(ComputeSuggestionsRequest request, final Integer scrollToRow) {
+	protected void computeSuggestions(final ComputeSuggestionsRequest request, final Integer scrollToRow) {
 		// if (!iProperties.isHasSolver()) return;
 		iSuggestionsRequest = request;
 		if (iRequest != null) {
@@ -232,13 +235,14 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 			}
 		}
 		if (iProperties.isHasSolver()) {
-			showSuggestionsLoading();
-			hideDomain();
+			if (request.isComputeSuggestions()) showSuggestionsLoading();
+			if (request.isComputeDomain()) showDomainLoading();
 		} else {
 			showDomainLoading();
 			hideSuggestions();
 		}
-		showAssignmentLoading();
+		if (request.isComputeDomain() && request.isComputeSuggestions())
+			showAssignmentLoading();
 		RPC.execute(iSuggestionsRequest, new AsyncCallback<SuggestionsResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -249,8 +253,12 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 			@Override
 			public void onSuccess(SuggestionsResponse result) {
 				showAssignment(result.getCurrentAssignment());
-				showSuggestions(result);
-				showDomain(result.getDomainValues());
+				if (request.isComputeSuggestions())
+					showSuggestions(result);
+				if (request.isComputeDomain()) {
+					showDomain(result.getDomainValues(), result.getDomainSize());
+					iDomainHeader.setEnabled("more", result.hasDomainValues() && result.getDomainValues().size() < result.getDomainSize());
+				}
 				center();
 				scrollToRow(scrollToRow);
 			}
@@ -450,6 +458,14 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 		iForm.getRowFormatter().setVisible(iAssignmentRow + 1, iAssignmentTable.getRowCount() > 1);
 		iForm.getRowFormatter().setVisible(iAssignmentScoreRow, iAssignmentTable.getRowCount() > 1 && suggestion != null && suggestion.getValue() != 0.0);
 		iForm.getRowFormatter().setVisible(iAssignmentObjectivesRow, iAssignmentTable.getRowCount() > 1 && suggestion != null && suggestion.hasValues());
+		if (iIgnoreConflicts != null) {
+			iForm.getRowFormatter().setVisible(iIgnoreConflictsRow, iAssignmentTable.getRowCount() > 1);
+			if (iIgnoreConflicts.getValue())
+				for (int i = 1; i < iAssignmentTable.getRowCount(); i++) {
+					AssignmentInfo ai = iAssignmentTable.getData(i);
+					if (ai != null && ai.getInstructor() == null) iAssignmentTable.getRowFormatter().setVisible(i, false);
+				}
+		}
 		iAssignmentHeader.setEnabled("assign", iAssignmentTable.getRowCount() > 1);
 	}
 	
@@ -459,6 +475,7 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 	}
 	
 	protected void showDomainLoading() {
+		iDomainHeader.setEnabled("more", false);
 		iForm.getRowFormatter().setVisible(iDomainRow, true);
 		iForm.getRowFormatter().setVisible(iDomainRow + 1, true);
 		if (iRequest != null) {
@@ -470,7 +487,7 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 		iDomainTable.setVisible(false);
 	}
 	
-	protected void showDomain(List<SuggestionInfo> suggestions) {
+	protected void showDomain(List<SuggestionInfo> suggestions, int domainSize) {
 		iDomainTable.setVisible(true);
 		iDomainHeader.clearMessage();
 		iDomainTable.clearTable(0);
@@ -541,6 +558,9 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 					line.add(new ObjectivesCell(iProperties, suggestion.getValues()));
 					iDomainTable.addRow(suggestion, line);
 				}
+				if (suggestions.size() < domainSize) {
+					iDomainTable.addRow(null, new Note(11, MESSAGES.domainNinstructors(suggestions.size(), domainSize)));
+				}
 			}
 		} else {
 			iDomainHeader.setHeaderTitle(MESSAGES.headerAvailableAssignments());
@@ -603,6 +623,9 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 					line.add(new ObjectivesCell(iProperties, suggestion.getValues()));
 					iDomainTable.addRow(suggestion, line);
 				}
+				if (suggestions.size() < domainSize) {
+					iDomainTable.addRow(null, new Note(10, MESSAGES.domainNassignments(suggestions.size(), domainSize)));
+				}
 			}
 		}
 		iForm.getRowFormatter().setVisible(iDomainRow, iDomainTable.getRowCount() > 1);
@@ -624,8 +647,12 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 		}
 		
 		iAssignmentHeader.clearMessage();
-		for (int row = iAssignmentRow; row < iDomainRow; row ++)
-			iForm.getRowFormatter().setVisible(row, iAssignmentTable.getRowCount() > 1);
+		iForm.getRowFormatter().setVisible(iAssignmentRow, iAssignmentTable.getRowCount() > 1);
+		iForm.getRowFormatter().setVisible(iAssignmentRow + 1, iAssignmentTable.getRowCount() > 1);
+		iForm.getRowFormatter().setVisible(iAssignmentScoreRow, iAssignmentTable.getRowCount() > 1 && !iAssignmentScore.getText().isEmpty() && sSuggestionScoreFormat.parse(iAssignmentScore.getText()) != 0.0);
+		iForm.getRowFormatter().setVisible(iAssignmentObjectivesRow, iAssignmentTable.getRowCount() > 1 && iAssignmentObjectives.getValue() != null && !iAssignmentObjectives.getValue().isEmpty());
+		if (iIgnoreConflicts != null)
+			iForm.getRowFormatter().setVisible(iIgnoreConflictsRow, iAssignmentTable.getRowCount() > 1);
 
 		hideDomain();
 		
@@ -797,11 +824,13 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 		iAssignmentHeader.addButton("assign", MESSAGES.buttonAssign(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
+				if (!iProperties.isHasSolver() && !Window.confirm(MESSAGES.confirmInstructorAssignmentChangesNoSolver())) return;
 				iAssignmentHeader.showLoading();
 				iAssignmentHeader.setEnabled("assign", false);
 				final InstructorAssignmentRequest request = new InstructorAssignmentRequest();
 				for (AssignmentInfo assignment: iAssignmentTable.getData())
 					request.addAssignment(assignment);
+				if (iIgnoreConflicts != null) request.setIgnoreConflicts(iIgnoreConflicts.getValue());
 				RPC.execute(request, new AsyncCallback<GwtRpcResponseNull>() {
 					@Override
 					public void onFailure(Throwable caught) {
@@ -868,6 +897,20 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 				}
 			}
 		});
+		if (!iProperties.isHasSolver()) {
+			iIgnoreConflicts = new CheckBox(MESSAGES.checkIgnoreInstructorAssignmentConflicts());
+			iIgnoreConflicts.addStyleName("ignore-conflicts");
+			iIgnoreConflictsRow = iForm.addRow(iIgnoreConflicts);
+			iIgnoreConflicts.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<Boolean> event) {
+					for (int i = 1; i < iAssignmentTable.getRowCount(); i++) {
+						AssignmentInfo ai = iAssignmentTable.getData(i);
+						if (ai != null && ai.getInstructor() == null) iAssignmentTable.getRowFormatter().setVisible(i, !event.getValue());
+					}
+				}
+			});
+		}
 	}
 	
 	protected void setupDomain() {
@@ -886,6 +929,17 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 				}
 			}
 		});
+		iDomainHeader.addButton("more", MESSAGES.buttonMoreAssignments(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				if (iSuggestionsRequest != null) {
+					iSuggestionsRequest.setMaxDomain(2 * iSuggestionsRequest.getMaxDomain());
+					iSuggestionsRequest.setComputeDomain();
+					computeSuggestions(iSuggestionsRequest, iDomainRow);
+				}
+			}
+		});
+		iDomainHeader.setEnabled("more", false);
 	}
 	
 	protected void setupSuggestions() {
@@ -908,6 +962,7 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 			public void onClick(ClickEvent event) {
 				if (iSuggestionsRequest != null) {
 					iSuggestionsRequest.setTimeout(2 * iSuggestionsRequest.getTimeout());
+					iSuggestionsRequest.setComputeSuggestions();
 					computeSuggestions(iSuggestionsRequest, iSuggestionsRow);
 				}
 			}
@@ -917,6 +972,7 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 			public void onClick(ClickEvent event) {
 				if (iSuggestionsRequest != null) {
 					iSuggestionsRequest.setMaxDept(1 + iSuggestionsRequest.getMaxDept());
+					iSuggestionsRequest.setComputeSuggestions();
 					computeSuggestions(iSuggestionsRequest, iSuggestionsRow);
 				}
 			}
