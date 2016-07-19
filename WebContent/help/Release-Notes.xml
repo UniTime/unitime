@@ -89,6 +89,12 @@
 				<line>Event room messages are now included in the confirmation email.</line>
 			</description>
 		</item>
+		<item>
+			<name>Time Selector</name>
+			<description>
+				<line>Fixed an issue showing 12:00 am instead of midnight in the end time of an interval selection (e.g., when adding an event).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Room Management</title>

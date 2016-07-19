@@ -559,7 +559,7 @@ public class TimeSelector extends Composite implements HasValue<Integer>, Focusa
 			if (CONSTANTS.useAmPm()) {
 				if (slot == 0) return CONSTANTS.timeMidnight();
 				if (slot == 144) return CONSTANTS.timeNoon();
-				if (slot == 0) return CONSTANTS.timeMidnightEnd();
+				if (slot == 288) return CONSTANTS.timeMidnightEnd();
 			}
 			int h = slot / 12;
 	        int m = 5 * (slot % 12);
