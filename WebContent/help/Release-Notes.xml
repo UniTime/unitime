@@ -72,12 +72,19 @@
 	<category>
 		<title>Examination Timetabling</title>
 		<item>
-			<name>Examination Reports</name>
+			<name>Examination Reports: Unavailability Conflicts</name>
 			<description>
-				<line>Unavailability Conflicts: When counting conflicts from the database, do not create conflicts with no students.</line>
+				<line>When counting conflicts from the database, do not create conflicts with no students.</line>
 				<line>This fixes the Direct Student Conflicts report (Examination Reports page).
 					<line>Zero conflicts lines shown when the report is computed from the database and the "Show classes/courses" toggle is unchecked.</line>
 				</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination Reports: Room Splits</name>
+			<description>
+				<line>Show all the assigned rooms of an exam that is split between more than four rooms.</line>
+				<line>With this change 3rd, 4th, 5th, ... room columns are added as needed (the report is no longer limited to four rooms).</line>
 			</description>
 		</item>
 	</category>
@@ -152,7 +159,7 @@
 		</item>
 	</category>
 </release>
-		
+
 <release>
 	<version>4.1.186</version>
 	<release-date>Sat, 4 Jun 2016</release-date>
