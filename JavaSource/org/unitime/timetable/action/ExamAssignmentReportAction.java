@@ -20,6 +20,8 @@
 package org.unitime.timetable.action;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -28,6 +30,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -967,25 +970,41 @@ public class ExamAssignmentReportAction extends Action {
 	
 	private PdfWebTable generateRoomSplitReport(boolean html, ExamAssignmentReportForm form, Collection<ExamAssignmentInfo> exams) {
         String nl = (html?"<br>":"\n");
-        PdfWebTable table = new PdfWebTable( 14,
+        List<String> colNames = new ArrayList<String>(
+        		Arrays.asList(new String[] {
+                        (form.getShowSections()?"Class / Course":"Examination"),
+                        "Enrollment",
+                        "Seating"+nl+"Type",
+                        "Date",
+                        "Time",
+                        "Average"+nl+"Distance"}));
+        List<String> colCmp = new ArrayList<String>(
+        		Arrays.asList(new String[] {"left","left","center","left","left","left"}));
+        List<Boolean> colOrd = new ArrayList<Boolean>(
+        		Arrays.asList(new Boolean[] {true, true, true, true, true, true}));
+        int maxSplits = 2;
+        for (ExamAssignmentInfo exam : exams) {
+            if (exam.getRooms() !=null && exam.getRooms().size() > maxSplits)
+            	maxSplits = exam.getRooms().size();
+        }
+        for (int i = 1; i <= maxSplits; i++) {
+        	String pos;
+        	switch (i) {
+        		case 1: pos = "1st"; break;
+        		case 2: pos = "2nd"; break;
+        		case 3: pos = "3rd"; break;
+        		default: pos = i + "th"; break;
+        	}
+        	colNames.add(pos + " Room");
+        	colNames.add(pos + " Room" + nl + "Capacity");
+        	colCmp.add("left"); colCmp.add("left");
+        	colOrd.add(true); colOrd.add(true);
+        }
+        boolean[] ord = new boolean[colOrd.size()];
+        for (int i = 0; i < colOrd.size(); i++) ord[i] = colOrd.get(i);
+        PdfWebTable table = new PdfWebTable( colNames.size(),
                 form.getReport(), "examAssignmentReport.do?ord=%%",
-                new String[] {
-                    (form.getShowSections()?"Class / Course":"Examination"),
-                    "Enrollment",
-                    "Seating"+nl+"Type",
-                    "Date",
-                    "Time",
-                    "Average"+nl+"Distance",
-                    "1st Room",
-                    "1st Room"+nl+"Capacity",
-                    "2nd Room",
-                    "2nd Room"+nl+"Capacity",
-                    "3rd Room",
-                    "3rd Room"+nl+"Capacity",
-                    "4th Room",
-                    "4th Room"+nl+"Capacity"},
-                new String[] {"left","left","center","left","left","left","left","left","left","left","left","left","left","left"},
-                new boolean[] {true, true, true, true, true, true, true, true, true, true, true, true, true, true} );
+                colNames.toArray(new String[colNames.size()]), colCmp.toArray(new String[colCmp.size()]), ord);
         table.setRowStyle("white-space:nowrap");
         for (ExamAssignmentInfo exam : exams) {
             if (exam.getRooms()==null || exam.getRooms().size()<=1) continue;
@@ -993,95 +1012,79 @@ public class ExamAssignmentReportAction extends Action {
                 boolean firstSection = true; 
                 for (ExamSectionInfo section : exam.getSections()) {
                     if (!match(form, section.getName())) continue;
-                    ExamRoomInfo[] rooms = new ExamRoomInfo[Math.max(4,exam.getRooms().size())];
-                    int idx = 0;
-                    for (ExamRoomInfo room : exam.getRooms()) rooms[idx++] = room;
                     double distance = 0;
                     for (ExamRoomInfo r1 : exam.getRooms())
                         for (ExamRoomInfo r2 : exam.getRooms())
                             if (r1.getLocationId().compareTo(r2.getLocationId())<0) distance += r1.getDistance(r2);
                     distance /= exam.getRooms().size() * (exam.getRooms().size() - 1) / 2;
+                    List<String> line = new ArrayList<String>(colNames.size());
+                    line.add((html?"<a name='"+exam.getExamId()+"'>":"")+section.getName()+(html?"</a>":""));
+                    line.add(String.valueOf(section.getNrStudents()));
+                    line.add(exam.getSeatingTypeLabel());
+                    line.add(exam.getDate(html));
+                    line.add(exam.getTime(html));
+                    line.add(((int)(distance*10.0)==0?"":(int)(distance*10.0)+" m"));
+                    List<Comparable> cmp = new ArrayList<Comparable>(colNames.size());
+                    cmp.add(new MultiComparable(section.getName(), exam));
+                    cmp.add(new MultiComparable(exam.getNrStudents(), section.getName(), exam));
+                    cmp.add(new MultiComparable(exam.getSeatingType(), section.getName(), exam));
+                    cmp.add(new MultiComparable(exam.getPeriodOrd(), section.getName(), exam));
+                    cmp.add(new MultiComparable(exam.getPeriod().getStartSlot(), section.getName(), exam));
+                    cmp.add(new MultiComparable(-distance, section.getName(), exam));
+                    for (ExamRoomInfo room: exam.getRooms()) {
+                    	line.add(html?room.toString():room.getName());
+                    	line.add(html?"<font color='"+PreferenceLevel.int2color(room.getPreference())+"'>"+room.getCapacity(exam)+"</font>":String.valueOf(room.getCapacity(exam)));
+                    	cmp.add(new MultiComparable(room.getName(), section.getName(), exam));
+                    	cmp.add(new MultiComparable(room.getCapacity(exam), section.getName(), exam));
+                    }
+                    for (int i = exam.getRooms().size(); i < maxSplits; i++) {
+                    	line.add(""); line.add("");
+                    	cmp.add(new MultiComparable("", section.getName(), exam));
+                    	cmp.add(new MultiComparable(0, section.getName(), exam));
+                    }
                     table.addLine(
                             "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
-                            new String[] {
-                                (html?"<a name='"+exam.getExamId()+"'>":"")+section.getName()+(html?"</a>":""),
-                                String.valueOf(section.getNrStudents()),
-                                exam.getSeatingTypeLabel(),
-                                exam.getDate(html),
-                                exam.getTime(html),
-                                ((int)(distance*10.0)==0?"":(int)(distance*10.0)+" m"),
-                                (rooms[0]==null?"":html?rooms[0].toString():rooms[0].getName()),
-                                (rooms[0]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[0].getPreference())+"'>"+rooms[0].getCapacity(exam)+"</font>":String.valueOf(rooms[0].getCapacity(exam))),
-                                (rooms[1]==null?"":html?rooms[1].toString():rooms[1].getName()),
-                                (rooms[1]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[1].getPreference())+"'>"+rooms[1].getCapacity(exam)+"</font>":String.valueOf(rooms[1].getCapacity(exam))),
-                                (rooms[2]==null?"":html?rooms[2].toString():rooms[2].getName()),
-                                (rooms[2]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[2].getPreference())+"'>"+rooms[2].getCapacity(exam)+"</font>":String.valueOf(rooms[2].getCapacity(exam))),
-                                (rooms[3]==null?"":html?rooms[3].toString():rooms[3].getName()),
-                                (rooms[3]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[3].getPreference())+"'>"+rooms[3].getCapacity(exam)+"</font>":String.valueOf(rooms[3].getCapacity(exam)))
-                            },
-                            new Comparable[] {
-                                new MultiComparable(section.getName(), exam),
-                                new MultiComparable(exam.getNrStudents(), section.getName(), exam),
-                                new MultiComparable(exam.getSeatingType(), section.getName(), exam),
-                                new MultiComparable(exam.getPeriodOrd(), section.getName(), exam),
-                                new MultiComparable(exam.getPeriod().getStartSlot(), section.getName(), exam),
-                                new MultiComparable(-distance, section.getName(), exam),
-                                new MultiComparable((rooms[0]==null?"":rooms[0].getName()), section.getName(), exam),
-                                new MultiComparable((rooms[0]==null?0:rooms[0].getCapacity(exam)), section.getName(), exam),
-                                new MultiComparable((rooms[1]==null?"":rooms[1].getName()), section.getName(), exam),
-                                new MultiComparable((rooms[1]==null?0:rooms[1].getCapacity(exam)), section.getName(), exam),
-                                new MultiComparable((rooms[2]==null?"":rooms[2].getName()), section.getName(), exam),
-                                new MultiComparable((rooms[2]==null?0:rooms[2].getCapacity(exam)), section.getName(), exam),
-                                new MultiComparable((rooms[3]==null?"":rooms[3].getName()), section.getName(), exam),
-                                new MultiComparable((rooms[3]==null?0:rooms[3].getCapacity(exam)), section.getName(), exam)
-                            },
+                            line.toArray(new String[line.size()]),
+                            cmp.toArray(new Comparable[cmp.size()]),
                             (firstSection?exam.getExamId().toString():null));
                     firstSection = false;
                 }
             } else {
                 if (!match(form, exam.getExamName())) continue;
-                ExamRoomInfo[] rooms = new ExamRoomInfo[Math.max(4,exam.getRooms().size())];
-                int idx = 0;
-                for (ExamRoomInfo room : exam.getRooms()) rooms[idx++] = room;
                 double distance = 0;
                 for (ExamRoomInfo r1 : exam.getRooms())
                     for (ExamRoomInfo r2 : exam.getRooms())
                         if (r1.getLocationId().compareTo(r2.getLocationId())<0) distance += r1.getDistance(r2);
                 distance /= exam.getRooms().size() * (exam.getRooms().size() - 1) / 2;
+                List<String> line = new ArrayList<String>(colNames.size());
+                line.add((html?"<a name='"+exam.getExamId()+"'>":"")+exam.getExamName()+(html?"</a>":""));
+                line.add(String.valueOf(exam.getNrStudents()));
+                line.add(exam.getSeatingTypeLabel());
+                line.add(exam.getDate(html));
+                line.add(exam.getTime(html));
+                line.add(((int)(distance*10.0)==0?"":(int)(distance*10.0)+" m"));
+                List<Comparable> cmp = new ArrayList<Comparable>(colNames.size());
+                cmp.add(new MultiComparable(exam));
+                cmp.add(new MultiComparable(exam.getNrStudents(), exam));
+                cmp.add(new MultiComparable(exam.getSeatingType(), exam));
+                cmp.add(new MultiComparable(exam.getPeriodOrd(), exam));
+                cmp.add(new MultiComparable(exam.getPeriod().getStartSlot(), exam));
+                cmp.add(new MultiComparable(-distance, exam));
+                for (ExamRoomInfo room: exam.getRooms()) {
+                	line.add(html?room.toString():room.getName());
+                	line.add(html?"<font color='"+PreferenceLevel.int2color(room.getPreference())+"'>"+room.getCapacity(exam)+"</font>":String.valueOf(room.getCapacity(exam)));
+                	cmp.add(new MultiComparable(room.getName(), exam));
+                	cmp.add(new MultiComparable(room.getCapacity(exam), exam));
+                }
+                for (int i = exam.getRooms().size(); i < maxSplits; i++) {
+                	line.add(""); line.add("");
+                	cmp.add(new MultiComparable("", exam));
+                	cmp.add(new MultiComparable(0, exam));
+                }
                 table.addLine(
                         "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
-                        new String[] {
-                            (html?"<a name='"+exam.getExamId()+"'>":"")+exam.getExamName()+(html?"</a>":""),
-                            String.valueOf(exam.getNrStudents()),
-                            exam.getSeatingTypeLabel(),
-                            exam.getDate(html),
-                            exam.getTime(html),
-                            ((int)(distance*10.0)==0?"":(int)(distance*10.0)+" m"),
-                            (rooms[0]==null?"":html?rooms[0].toString():rooms[0].getName()),
-                            (rooms[0]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[0].getPreference())+"'>"+rooms[0].getCapacity(exam)+"</font>":String.valueOf(rooms[0].getCapacity(exam))),
-                            (rooms[1]==null?"":html?rooms[1].toString():rooms[1].getName()),
-                            (rooms[1]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[1].getPreference())+"'>"+rooms[1].getCapacity(exam)+"</font>":String.valueOf(rooms[1].getCapacity(exam))),
-                            (rooms[2]==null?"":html?rooms[2].toString():rooms[2].getName()),
-                            (rooms[2]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[2].getPreference())+"'>"+rooms[2].getCapacity(exam)+"</font>":String.valueOf(rooms[2].getCapacity(exam))),
-                            (rooms[3]==null?"":html?rooms[3].toString():rooms[2].getName()),
-                            (rooms[3]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[3].getPreference())+"'>"+rooms[3].getCapacity(exam)+"</font>":String.valueOf(rooms[3].getCapacity(exam)))
-                        },
-                        new Comparable[] {
-                            new MultiComparable(exam),
-                            new MultiComparable(exam.getNrStudents(), exam),
-                            new MultiComparable(exam.getSeatingType(), exam),
-                            new MultiComparable(exam.getPeriodOrd(), exam),
-                            new MultiComparable(exam.getPeriod().getStartSlot(), exam),
-                            new MultiComparable(-distance, exam),
-                            new MultiComparable((rooms[0]==null?"":rooms[0].getName()), exam),
-                            new MultiComparable((rooms[0]==null?0:rooms[0].getCapacity(exam)), exam),
-                            new MultiComparable((rooms[1]==null?"":rooms[1].getName()), exam),
-                            new MultiComparable((rooms[1]==null?0:rooms[1].getCapacity(exam)), exam),
-                            new MultiComparable((rooms[2]==null?"":rooms[2].getName()), exam),
-                            new MultiComparable((rooms[2]==null?0:rooms[2].getCapacity(exam)), exam),
-                            new MultiComparable((rooms[3]==null?"":rooms[3].getName()), exam),
-                            new MultiComparable((rooms[3]==null?0:rooms[3].getCapacity(exam)), exam)
-                        },
+                        line.toArray(new String[line.size()]),
+                        cmp.toArray(new Comparable[cmp.size()]),
                         exam.getExamId().toString());
             }
         }
