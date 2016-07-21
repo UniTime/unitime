@@ -87,6 +87,12 @@
 				<line>With this change 3rd, 4th, 5th, ... room columns are added as needed (the report is no longer limited to four rooms).</line>
 			</description>
 		</item>
+		<item>
+			<name>Required Room Group of Strongly Discouraged Rooms</name>
+			<description>
+				<line>Database Load: If an exam is requiring a room group that contains strongly discouraged rooms, allow the exam to use these rooms even if there is no direct preference on such rooms on the exam.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Event Management</title>
