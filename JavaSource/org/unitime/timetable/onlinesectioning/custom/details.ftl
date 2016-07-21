@@ -37,14 +37,14 @@
 			<td>${msg.colCredit()}:</td><td>${course.instructionalOffering.credit.creditText()}</td>
 		</tr>
 	</#if>
-	<#if course.instructionalOffering.coordinators?size != 0>
+	<#if course.instructionalOffering.offeringCoordinators?size != 0>
 		<tr>
 			<td>${msg.colCoordinator()}:</td><td>
-				<#list course.instructionalOffering.coordinators as coordinator>
-					<#if coordinator.email??>
-						<a href='mailto:${coordinator.email}' class='unitime-NoFancyLink'><div>${coordinator.getName('last-first-middle')}</div></a>
+				<#list course.instructionalOffering.offeringCoordinators as coordinator>
+					<#if coordinator.instructor.email??>
+						<a href='mailto:${coordinator.instructor.email}' class='unitime-NoFancyLink'><div>${coordinator.instructor.getName('last-first-middle')}<#if coordinator.responsibility??> (${coordinator.responsibility.abbreviation})</#if></div></a>
 					<#else>
-						<div>${coordinator.getName('last-first-middle')}</div>
+						<div>${coordinator.instructor.getName('last-first-middle')}<#if coordinator.responsibility??> (${coordinator.responsibility.abbreviation})</#if></div>
 					</#if>
 				</#list>
 			</td>
