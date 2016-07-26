@@ -143,6 +143,7 @@
 			<name>Room Pictures</name>
 			<description>
 				<line>Rooms, Room Detail: added a mouse-over which shows a bigger picture (limited to 800 x 600 pixels).</line>
+				<line>Rooms API: fixed an issue with some pictures not being uploaded / deleted when the API is called multiple times in a sequence for a particular room.</line>
 			</description>
 		</item>
 	</category>
