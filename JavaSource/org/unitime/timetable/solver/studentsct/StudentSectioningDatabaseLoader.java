@@ -149,6 +149,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private boolean iCheckForNoBatchStatus = true;
 	private boolean iCheckEnabledForScheduling = true;
 	private boolean iLoadRequestGroups = false;
+	private String iRequestGroupRegExp = null;
 	private Query iStudentQuery = null;
 	private boolean iNoUnlimitedGroupReservations = false;
 	private boolean iLinkedClassesMustBeUsed = false;
@@ -176,6 +177,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iCheckForNoBatchStatus = model.getProperties().getPropertyBoolean("Load.CheckForNoBatchStatus", iCheckForNoBatchStatus);
         iCheckEnabledForScheduling = model.getProperties().getPropertyBoolean("Load.CheckEnabledForScheduling", iCheckEnabledForScheduling);
         iLoadRequestGroups = model.getProperties().getPropertyBoolean("Load.RequestGroups", iLoadRequestGroups);
+        iRequestGroupRegExp = model.getProperties().getProperty("Load.RequestGroupRegExp");
         iDatePatternFormat = ApplicationProperty.DatePatternFormatUseDates.value();
         iNoUnlimitedGroupReservations = model.getProperties().getPropertyBoolean("Load.NoUnlimitedGroupReservations", iNoUnlimitedGroupReservations);
         iLinkedClassesMustBeUsed = model.getProperties().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
@@ -1163,6 +1165,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     
     public void loadRequestGroups(Student student, org.unitime.timetable.model.Student s) {
         for (StudentGroup g: s.getGroups()) {
+        	if (iRequestGroupRegExp != null && !iRequestGroupRegExp.isEmpty() && !g.getGroupName().matches(iRequestGroupRegExp)) continue;
         	for (Request r: student.getRequests()) {
         		if (r instanceof CourseRequest) {
         			CourseRequest cr = (CourseRequest)r;

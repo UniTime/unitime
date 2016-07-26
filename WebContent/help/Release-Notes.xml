@@ -68,6 +68,15 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Request Groups (Batch)</name>
+			<description>
+				<line>Added ability to filter which student groups will be used as request groups by the solver.
+					<line>Students of a "request group" are to be kept together as much as possible.</line>
+					<line>Solver parameter Load.RequestGroupRegExp, containing a regular expression to be matched with student group name (when present).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>
