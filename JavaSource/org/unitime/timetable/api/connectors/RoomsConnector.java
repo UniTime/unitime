@@ -161,6 +161,7 @@ public class RoomsConnector extends ApiConnector {
 			
 			picture.getLocation().getPictures().remove(picture);
 			helper.getHibSession().delete(picture);
+			helper.getHibSession().saveOrUpdate(picture.getLocation());
 			helper.getHibSession().flush();
 			
 			helper.setResponse(new RoomPictureInterface(picture.getUniqueId(), picture.getFileName(), picture.getContentType(), picture.getTimeStamp().getTime(), RoomPicturesBackend.getPictureType(picture.getType())));
@@ -232,6 +233,7 @@ public class RoomsConnector extends ApiConnector {
 		picture.setTimeStamp(new Date());
 		picture.setDataFile(file.getBytes());
 		helper.getHibSession().saveOrUpdate(picture);
+		helper.getHibSession().saveOrUpdate(location);
 		helper.getHibSession().flush();
 		helper.setResponse(new RoomPictureInterface(picture.getUniqueId(), picture.getFileName(), picture.getContentType(), picture.getTimeStamp().getTime(), RoomPicturesBackend.getPictureType(picture.getType())));
 	}
