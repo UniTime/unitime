@@ -35,7 +35,7 @@ import com.google.gwt.user.client.rpc.IsSerializable;
  */
 public class SolverInterface implements IsSerializable {
 	
-	public static enum SolverType {
+	public static enum SolverType implements IsSerializable {
 		COURSE,
 		EXAM,
 		STUDENT,
@@ -43,7 +43,7 @@ public class SolverInterface implements IsSerializable {
 		;
 	}
 	
-	public static enum SolverOperation {
+	public static enum SolverOperation implements IsSerializable {
 		INIT,CHECK,
 		LOAD,
 		START,
@@ -188,7 +188,7 @@ public class SolverInterface implements IsSerializable {
 		public String toString() { return iPairs.toString(); }
 	}
 	
-	public static enum PageMessageType {
+	public static enum PageMessageType implements IsSerializable {
 		INFO,
 		WARNING,
 		ERROR,
@@ -421,7 +421,7 @@ public class SolverInterface implements IsSerializable {
 		}
 	}
 	
-	public static enum ProgressLogLevel {
+	public static enum ProgressLogLevel implements IsSerializable {
 		TRACE,
 		DEBUG,
 		PROGRESS,

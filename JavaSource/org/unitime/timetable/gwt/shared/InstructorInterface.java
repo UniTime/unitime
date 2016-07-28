@@ -409,7 +409,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		}
 	}
 	
-	public static enum InstructorsColumn {
+	public static enum InstructorsColumn implements IsSerializable {
 		SELECTION,
 		ID,
 		NAME,
@@ -420,7 +420,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		;
 	}
 	
-	public static enum AttributesColumn {
+	public static enum AttributesColumn implements IsSerializable {
 		CODE,
 		NAME,
 		TYPE,
@@ -1354,7 +1354,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		}
 	}
 	
-	public static enum ChangesType {
+	public static enum ChangesType implements IsSerializable {
 		INITIAL, BEST, SAVED;
 	}
 	
