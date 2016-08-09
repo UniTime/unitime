@@ -262,7 +262,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			}
 			
 			for (DepartmentalInstructor coordinator: (List<DepartmentalInstructor>)helper.getHibSession().createQuery(
-					"select distinct i from CourseOffering c inner join c.instructionalOffering.coordinators oc inner join oc.instructor i where " +
+					"select distinct i from CourseOffering c inner join c.instructionalOffering.offeringCoordinators oc inner join oc.instructor i where " +
 					"c.subjectArea.session.uniqueId = :sessionId and c.consentType.reference != :reference and " +
 					"(lower(i.externalUniqueId) like :q || '%' or lower(i.email) like :q || '%' or lower(i.lastName) || ' ' || lower(i.firstName) like :q || '%') " +
 					"order by i.lastName, i.firstName, i.middleName"

@@ -78,7 +78,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 						"where co.subjectArea.session.uniqueId = :sessionId and ci.instructor.externalUniqueId = :externalId"
 						).setLong("sessionId", request.getUniqueId()).setString("externalId", context.getUser().getExternalUserId()).setCacheable(true).list());
 				subjects.addAll(hibSession.createQuery(
-						"select distinct co.subjectArea from CourseOffering co inner join co.instructionalOffering.coordinators oc " +
+						"select distinct co.subjectArea from CourseOffering co inner join co.instructionalOffering.offeringCoordinators oc " +
 						"where co.subjectArea.session.uniqueId = :sessionId and oc.instructor.externalUniqueId = :externalId"
 						).setLong("sessionId", request.getUniqueId()).setString("externalId", context.getUser().getExternalUserId()).setCacheable(true).list());
 						
@@ -96,7 +96,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 						"where co.subjectArea.uniqueId = :subjectAreaId and ci.instructor.externalUniqueId = :externalId"
 						).setLong("subjectAreaId", request.getUniqueId()).setString("externalId", context.getUser().getExternalUserId()).setCacheable(true).list());
 				courses.addAll(hibSession.createQuery(
-						"select distinct co from CourseOffering co inner join co.instructionalOffering.coordinators oc " +
+						"select distinct co from CourseOffering co inner join co.instructionalOffering.offeringCoordinators oc " +
 						"where co.subjectArea.uniqueId = :subjectAreaId and oc.instructor.externalUniqueId = :externalId"
 						).setLong("subjectAreaId", request.getUniqueId()).setString("externalId", context.getUser().getExternalUserId()).setCacheable(true).list());
 						
