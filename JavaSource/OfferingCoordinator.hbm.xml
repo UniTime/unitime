@@ -44,5 +44,12 @@
             column="responsibility_id"
             foreign-key="fk_coord_responsibility"
             not-null="false"/>
+
+        <many-to-one
+            name="teachingRequest"
+            class="TeachingRequest"
+            column="request_id"
+            foreign-key="fk_coord_request"
+            not-null="false"/>
     </class>
 </hibernate-mapping>

@@ -576,7 +576,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Class Number")
 	String colClassNumber();
 	
-	@DefaultMessage("Classess")
+	@DefaultMessage("Classes")
 	String colClasses();
 
 	@DefaultMessage("User")
@@ -875,6 +875,27 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Role")
 	String colRole();
+	
+	@DefaultMessage("Class")
+	String colClass();
+	
+	@DefaultMessage("Instructional Type")
+	String colInstructionalType();
+	
+	@DefaultMessage("Assign")
+	String colAssignInstructor();
+	
+	@DefaultMessage("Share")
+	String colPercentShare();
+	
+	@DefaultMessage("Lead")
+	String colInstructorLead();
+	
+	@DefaultMessage("Can Overlap")
+	String colCanOverlap();
+	
+	@DefaultMessage("Common")
+	String colCommonPart();
 	
 	@DefaultMessage("pending")
 	String approvalNotApproved();
@@ -1176,7 +1197,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Attribute Preferences:")
 	String propAttributePrefs();
 	
-	@DefaultMessage("Instructor Pregerences:")
+	@DefaultMessage("{0} Preferences:")
+	String propAttributeOfTypePrefs(String type);
+	
+	@DefaultMessage("Instructor Preferences:")
 	String propInstructorPrefs();
 	
 	@DefaultMessage("Assigned Instructors:")
@@ -1199,6 +1223,39 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Compare with:")
 	String propAssignmentChangesBase();
+	
+	@DefaultMessage("Number of Instructors:")
+	String propNbrInstructors();
+	
+	@DefaultMessage("Teaching Load:")
+	String propTeachingLoad();
+	
+	@DefaultMessage("Simple:")
+	String propSetupTeachingRequestMulti();
+	
+	@DefaultMessage("Scheduling Subpart:")
+	String propSchedulingSubpart();
+	
+	@DefaultMessage("Same Course Preference:")
+	String propSameCoursePreference();
+	
+	@DefaultMessage("Same Common Part:")
+	String propSameCommonPreference();
+	
+	@DefaultMessage("Classes:")
+	String propClasses();
+	
+	@DefaultMessage("Assign Coordinator:")
+	String propAssignCoordinator();
+	
+	@DefaultMessage("Include Subparts:")
+	String propIncludeSubparts();
+	
+	@DefaultMessage("Responsibility:")
+	String propTeachingResponsibility();
+	
+	@DefaultMessage("Assigned Instructor:")
+	String propAssignedInstructor();
 
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
@@ -1394,6 +1451,18 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("<u>A</u>ssign")
 	String buttonAssign();
+	
+	@DefaultMessage("<u>A</u>dd Request")
+	String buttonAddTeachingRequest();
+	
+	@DefaultMessage("<u>R</u>emove Request")
+	String buttonRemoveTeachingRequest();
+	
+	@DefaultMessage("<u>U</u>pdate")
+	String buttonSaveTeachingRequests();
+	
+	@DefaultMessage("Setup Teaching Requests")
+	String buttonSetupTeachingRequests();
 
 	@DefaultMessage("Filter")
 	String sectFilter();
@@ -1469,6 +1538,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Solver Log")
 	String sectSolverLog();
+	
+	@DefaultMessage("{0}. Teaching Request")
+	String sectTeachingRequest(int index);
+	
+	@DefaultMessage("Teaching Requests")
+	String sectTeachingRequests();
 	
 	@DefaultMessage("Loading {0}...")
 	String waitLoading(String name);
@@ -1673,6 +1748,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Loading teaching request detail ...")
 	String waitLoadTeachingRequestDetail();
+	
+	@DefaultMessage("Saving teaching requests for {0} ...")
+	String waitSaveTeachingRequests(String offering);
 
 	@DefaultMessage("Failed to load {0}: {1}")
 	String failedLoad(String name, String reason);
@@ -2949,6 +3027,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Teaching Responsibilities")
 	@DoNotTranslate
 	String pageTeachingResponsibilities();
+	
+	@DefaultMessage("Setup Teaching Requests")
+	@DoNotTranslate
+	String pageSetupTeachingRequests();
 	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -4294,6 +4376,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("A password change request was generated and sent to the user.")
 	String messagePasswordReset();
 	
+	@DefaultMessage("No teaching requests defined for {0}.")
+	String messageNoTeachingRequests(String offering);
+	
 	@DefaultMessage("Authentication failed: username and / or password is wrong.")
 	String errorBadCredentials();
 	
@@ -4724,4 +4809,28 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Instructor")
 	String enrollmentRoleInstructor();
+	
+	@DefaultMessage("No Class Assignments")
+	String teachingRequestNoSubpart();
+	
+	@DefaultMessage("")
+	String noTeachingResponsiblitySelected();
+	
+	@DefaultMessage("{0} (1 parent class)")
+	String subpartNameParent(String subpart);
+	
+	@DefaultMessage("{0} (1 child class)")
+	String subpartNameOneChildClass(String subpart);
+	
+	@DefaultMessage("{0} ({1} children classes)")
+	String subpartNameChildrenClases(String subpart, int children);
+	
+	@DefaultMessage("{0} ({1} - {2} children classes)")
+	String subpartNameChildrenClasesRange(String subpart, int min, int max);
+	
+	@DefaultMessage("{0} (1 class)")
+	String subpartNameNoRelationSingleClass(String subpart);
+	
+	@DefaultMessage("{0} ({1} classes)")
+	String subpartNameNoRelationClasses(String subpart, int classes);
 }

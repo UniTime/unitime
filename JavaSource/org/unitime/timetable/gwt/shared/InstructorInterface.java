@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.instructor.InstructorAvailabilityWidget.InstructorAvailabilityModel;
@@ -312,7 +313,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		}
 	}
 	
-	public static class AttributeInterface implements GwtRpcResponse, Serializable {
+	public static class AttributeInterface implements GwtRpcResponse, Serializable, Comparable<AttributeInterface> {
 		private static final long serialVersionUID = 1L;
 		private Long iId, iParentId;
 		private String iCode;
@@ -406,6 +407,15 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		@Override
 		public String toString() {
 			return getName() + (getType() == null ? "" : " (" + getType() + ")");
+		}
+
+		@Override
+		public int compareTo(AttributeInterface a) {
+			int cmp = (hasType() ? getType().getLabel() : "").compareTo(a.hasType() ? a.getType().getLabel() : "");
+			if (cmp != 0) return cmp;
+			cmp = getName().compareTo(a.getName());
+			if (cmp != 0) return cmp;
+			return (getId() == null ? new Long(0) : getId()).compareTo(a.getId() == null ? new Long(0) : a.getId());
 		}
 	}
 	
@@ -708,7 +718,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    private List<PreferenceInfo> iTimePreferences = new ArrayList<PreferenceInfo>();
 	    private List<PreferenceInfo> iCoursePreferences = new ArrayList<PreferenceInfo>();
 	    private List<PreferenceInfo> iDistributionPreferences = new ArrayList<PreferenceInfo>();
-	    private List<AttributeInterface> iAttributes = new ArrayList<AttributeInterface>();
+	    private Set<AttributeInterface> iAttributes = new TreeSet<AttributeInterface>();
 	    private Map<String,Double> iValues = new HashMap<String, Double>();
 	    private String iAvailability;
 	    private List<TeachingRequestInfo> iAssignedRequests = new ArrayList<TeachingRequestInfo>();
@@ -750,7 +760,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    public void setAssignmentIndex(int index) { iAssignmentIndex = index; }
 	    
 	    public void addAttribute(AttributeInterface attribute) { iAttributes.add(attribute); }
-	    public List<AttributeInterface> getAttributes() { return iAttributes; }
+	    public Set<AttributeInterface> getAttributes() { return iAttributes; }
 	    public boolean hasAttribute(String attribute) { 
 	    	for (AttributeInterface a: iAttributes)
 	    		if (attribute.equals(a.getName())) return true;
@@ -960,6 +970,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		private static final long serialVersionUID = 1L;
 		private boolean iAssigned = true;
 		private Long iSubjectAreaId = null;
+		private Long iOfferingId = null;
 		
 		public TeachingRequestsPageRequest() {}
 		
@@ -968,12 +979,17 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 			iSubjectAreaId = subjectAreaId;
 		}
 		
+		public TeachingRequestsPageRequest(Long offeringId) {
+			iOfferingId = offeringId;
+		}
+		
 		public boolean isAssigned() { return iAssigned; }
 		public Long getSubjectAreaId() { return iSubjectAreaId; }
+		public Long getOfferingId() { return iOfferingId; }
 		
 		@Override
 		public String toString() {
-			return (isAssigned() ? "ASSIGNED" : "UNASSIGNED") + (getSubjectAreaId() == null ? "(all)" : "(" + getSubjectAreaId() + ")");
+			return (getOfferingId() == null ? (isAssigned() ? "ASSIGNED" : "UNASSIGNED") + (getSubjectAreaId() == null ? "(all)" : "(" + getSubjectAreaId() + ")") : "[" + getOfferingId() + "]");
 		}
 	}
 	

@@ -31,6 +31,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.TeachingClassRequest;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
@@ -53,8 +54,6 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	private String iExternalUniqueId;
 	private Integer iEnrollment;
 	private Boolean iCancelled;
-	private Float iTeachingLoad;
-	private Integer iNbrInstructors;
 
 	private Department iControllingDept;
 	private Department iManagingDept;
@@ -66,6 +65,7 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	private Set<ClassInstructor> iClassInstructors;
 	private Set<Assignment> iAssignments;
 	private Set<StudentClassEnrollment> iStudentEnrollments;
+	private Set<TeachingClassRequest> iTeachingRequests;
 
 	public static String PROP_EXPECTED_CAPACITY = "expectedCapacity";
 	public static String PROP_NOTES = "notes";
@@ -80,8 +80,6 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
 	public static String PROP_EXTERNAL_UID = "externalUniqueId";
 	public static String PROP_CANCELLED = "cancelled";
-	public static String PROP_TEACHING_LOAD = "teachingLoad";
-	public static String PROP_NBR_INSTRUCTORS = "nbrInstructors";
 
 	public BaseClass_() {
 		initialize();
@@ -139,12 +137,6 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	public Boolean getCancelled() { return iCancelled; }
 	public void setCancelled(Boolean cancelled) { iCancelled = cancelled; }
 
-	public Float getTeachingLoad() { return iTeachingLoad; }
-	public void setTeachingLoad(Float teachingLoad) { iTeachingLoad = teachingLoad; }
-
-	public Integer getNbrInstructors() { return iNbrInstructors; }
-	public void setNbrInstructors(Integer nbrInstructors) { iNbrInstructors = nbrInstructors; }
-
 	public Department getControllingDept() { return iControllingDept; }
 	public void setControllingDept(Department controllingDept) { iControllingDept = controllingDept; }
 
@@ -191,6 +183,13 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 		iStudentEnrollments.add(studentClassEnrollment);
 	}
 
+	public Set<TeachingClassRequest> getTeachingRequests() { return iTeachingRequests; }
+	public void setTeachingRequests(Set<TeachingClassRequest> teachingRequests) { iTeachingRequests = teachingRequests; }
+	public void addToteachingRequests(TeachingClassRequest teachingClassRequest) {
+		if (iTeachingRequests == null) iTeachingRequests = new HashSet<TeachingClassRequest>();
+		iTeachingRequests.add(teachingClassRequest);
+	}
+
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Class_)) return false;
 		if (getUniqueId() == null || ((Class_)o).getUniqueId() == null) return false;
@@ -217,7 +216,6 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +
 			"\n	ManagingDept: " + getManagingDept() +
 			"\n	MaxExpectedCapacity: " + getMaxExpectedCapacity() +
-			"\n	NbrInstructors: " + getNbrInstructors() +
 			"\n	NbrRooms: " + getNbrRooms() +
 			"\n	Notes: " + getNotes() +
 			"\n	ParentClass: " + getParentClass() +
@@ -225,7 +223,6 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 			"\n	SchedulePrintNote: " + getSchedulePrintNote() +
 			"\n	SchedulingSubpart: " + getSchedulingSubpart() +
 			"\n	SectionNumberCache: " + getSectionNumberCache() +
-			"\n	TeachingLoad: " + getTeachingLoad() +
 			"\n	UniqueId: " + getUniqueId() +
 			"\n	UniqueIdRolledForwardFrom: " + getUniqueIdRolledForwardFrom() +
 			"]";

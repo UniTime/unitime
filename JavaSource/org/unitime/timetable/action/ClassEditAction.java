@@ -67,7 +67,6 @@ import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.TeachingResponsibilityDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 
@@ -470,9 +469,6 @@ public class ClassEditAction extends PreferencesAction {
         frm.setManagingDeptLabel(managingDept.getManagingDeptLabel());
         frm.setUnlimitedEnroll(c.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment());
         frm.setAccommodation(StudentAccomodation.toHtml(StudentAccomodation.getAccommodations(c)));
-        frm.setInstructorAssignmentDefault(c.getSchedulingSubpart().isInstructorAssignmentNeeded());
-        frm.setTeachingLoadDefault(c.getSchedulingSubpart().getTeachingLoad() == null ? "" : Formats.getNumberFormat("0.##").format(c.getSchedulingSubpart().getTeachingLoad()));
-        frm.setNbrInstructorsDefault(c.getSchedulingSubpart().isInstructorAssignmentNeeded() ? c.getSchedulingSubpart().getNbrInstructors() : 1);
         
         Class_ next = c.getNextClass(sessionContext, Right.ClassEdit);
         frm.setNextId(next==null?null:next.getUniqueId().toString());
@@ -480,9 +476,6 @@ public class ClassEditAction extends PreferencesAction {
         frm.setPreviousId(previous==null?null:previous.getUniqueId().toString());
         frm.setMinRoomLimit(c.getMinRoomLimit());
         frm.setEnrollment(c.getEnrollment());
-        frm.setInstructorAssignment(c.isInstructorAssignmentNeeded());
-        frm.setTeachingLoad(c.effectiveTeachingLoad() == null ? "" : Formats.getNumberFormat("0.##").format(c.effectiveTeachingLoad()));
-        frm.setNbrInstructors(c.isInstructorAssignmentNeeded() ? String.valueOf(c.effectiveNbrInstructors()) : "");
 
         // Load from class only for initial load or reload
         if(op.equals("init")) {
@@ -499,9 +492,7 @@ public class ClassEditAction extends PreferencesAction {
 		    frm.setDisplayInstructor(c.isDisplayInstructor());
 
 		    List instructors = new ArrayList(c.getClassInstructors());
-		    InstructorComparator ic = new InstructorComparator();
-		    ic.setCompareBy(ic.COMPARE_BY_INDEX);
-		    Collections.sort(instructors, ic);
+		    Collections.sort(instructors, new InstructorComparator());
 
 	        for(Iterator iter = instructors.iterator(); iter.hasNext(); ) {
 	            ClassInstructor classInstr = (ClassInstructor) iter.next();
@@ -561,7 +552,6 @@ public class ClassEditAction extends PreferencesAction {
         List instrResponsibility = frm.getInstrResponsibility();
 
         // Save instructor data to class
-        int index = 0;
         for(int i=0; i<instructors.size(); i++) {
 
             String instrId = instructors.get(i).toString();
@@ -576,7 +566,6 @@ public class ClassEditAction extends PreferencesAction {
             classInstr.setClassInstructing(c);
             classInstr.setInstructor(deptInstr);
             classInstr.setLead(new Boolean(lead));
-            classInstr.setTentative(false);
             try {
             	classInstr.setPercentShare(new Integer(pctShare));
             } catch (NumberFormatException e) {
@@ -587,8 +576,6 @@ public class ClassEditAction extends PreferencesAction {
             } catch (NumberFormatException e) {
             	classInstr.setResponsibility(null);
             }
-            classInstr.setAssignmentIndex(index++);
-
             classInstrs.add(classInstr);
 
             deptInstr.getClasses().add(classInstr);

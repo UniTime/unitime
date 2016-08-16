@@ -49,7 +49,7 @@ public class TeachingAssignmentsDetailBackend extends InstructorSchedulingBacken
 			DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(request.getInstructorId());
 			if (instructor == null) return null;
 			
-			return getInstructorInfo(instructor, UserProperty.NameFormat.get(context.getUser()), getCommonItypes());
+			return getInstructorInfo(instructor, UserProperty.NameFormat.get(context.getUser()));
 		}
 	}
 }

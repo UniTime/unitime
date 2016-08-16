@@ -20,6 +20,7 @@
 package org.unitime.timetable.solver.instructor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
@@ -62,13 +63,13 @@ import org.unitime.timetable.gwt.shared.InstructorInterface.PreferenceInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.SectionInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.SuggestionsResponse;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestInfo;
-import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestsPageRequest;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SolverParameterGroup.SolverType;
-import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
+import org.unitime.timetable.model.dao.TeachingRequestDAO;
 import org.unitime.timetable.server.instructor.InstructorSchedulingBackendHelper;
 import org.unitime.timetable.solver.AbstractSolver;
 import org.unitime.timetable.solver.SolverDisposeListener;
@@ -257,15 +258,19 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
 	}
 
 	@Override
-	public List<TeachingRequestInfo> getTeachingRequests(Long subjectAreaId, boolean assigned) {
+	public List<TeachingRequestInfo> getTeachingRequests(TeachingRequestsPageRequest r) {
         Lock lock = currentSolution().getLock().readLock();
         lock.lock();
         try {
             List<TeachingRequestInfo> ret = new ArrayList<TeachingRequestInfo>();
             for (TeachingRequest request: getModel().getRequests()) {
-            	if (subjectAreaId != null) {
+            	if (r.getOfferingId() != null) {
             		CourseOffering course = CourseOfferingDAO.getInstance().get(request.getCourse().getCourseId());
-            		if (course == null || !subjectAreaId.equals(course.getSubjectArea().getUniqueId())) continue;
+            		if (course == null || !r.getOfferingId().equals(course.getInstructionalOffering().getUniqueId())) continue;
+            	}
+            	if (r.getSubjectAreaId() != null) {
+            		CourseOffering course = CourseOfferingDAO.getInstance().get(request.getCourse().getCourseId());
+            		if (course == null || !r.getSubjectAreaId().equals(course.getSubjectArea().getUniqueId())) continue;
             	}
             	TeachingRequestInfo info = toRequestInfo(request);
             	for (TeachingRequest.Variable var: request.getVariables()) {
@@ -273,9 +278,11 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
             		if (placement != null)
             			info.addInstructor(toInstructorInfo(placement));
             	}
-            	if (assigned && info.hasInstructors())
+            	if (r.getOfferingId() != null)
             		ret.add(info);
-            	if (!assigned && info.getNrAssignedInstructors() < info.getNrInstructors())
+            	else if (r.isAssigned() && info.hasInstructors())
+            		ret.add(info);
+            	if (!r.isAssigned() && info.getNrAssignedInstructors() < info.getNrInstructors())
             		ret.add(info);
             }
             return ret;
@@ -459,8 +466,9 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
                 	Set<String> commonItypes = new HashSet<String>();
                 	for (String itype: getProperties().getProperty("General.CommonItypes", "lec").split(","))
     	    			if (!itype.isEmpty()) commonItypes.add(itype);
-            		Class_ clazz = Class_DAO.getInstance().get(request.getRequestId());
-					List<DepartmentalInstructor> instructors = (clazz == null ? new ArrayList<DepartmentalInstructor>() : helper.getInstructors(clazz));
+                	org.unitime.timetable.model.TeachingRequest tr = TeachingRequestDAO.getInstance().get(request.getRequestId());
+					List<DepartmentalInstructor> instructors = (tr == null ? null : new ArrayList<DepartmentalInstructor>(tr.getAssignedInstructors()));
+					if (instructors != null) Collections.sort(instructors);
 					for (TeachingRequest.Variable var: request.getVariables()) {
                 		TeachingAssignment placement = currentSolution().getAssignment().getValue(var);
                 		if (placement != null)
@@ -484,7 +492,7 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
                     			if (instr != null) {
                     				ai.setInstructor(toInstructorInfo(new TeachingAssignment(var, instr)));
                     			} else {
-                    				ai.setInstructor(helper.getInstructorInfo(instructor, nameFormat, commonItypes));
+                    				ai.setInstructor(helper.getInstructorInfo(instructor, nameFormat));
                     			}
                     			ret.addChange(ai);
                 			}

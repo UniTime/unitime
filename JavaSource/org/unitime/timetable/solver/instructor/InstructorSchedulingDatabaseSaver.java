@@ -30,18 +30,20 @@ import org.cpsolver.ifs.solver.Solver;
 import org.cpsolver.ifs.util.ProblemSaver;
 import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.instructor.model.InstructorSchedulingModel;
-import org.cpsolver.instructor.model.Section;
 import org.cpsolver.instructor.model.TeachingAssignment;
 import org.cpsolver.instructor.model.TeachingRequest;
 import org.hibernate.CacheMode;
 import org.hibernate.Transaction;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.interfaces.ExternalCourseOfferingEditAction;
 import org.unitime.timetable.interfaces.ExternalInstrOfferingConfigAssignInstructorsAction;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
-import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.OfferingCoordinator;
+import org.unitime.timetable.model.TeachingClassRequest;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.solver.jgroups.SolverServerImplementation;
 import org.unitime.timetable.util.NameFormat;
@@ -53,9 +55,9 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
     private String iInstructorFormat;
     private Set<Long> iSolverGroupId = new HashSet<Long>();
     private Set<InstrOfferingConfig> iUpdatedConfigs = new HashSet<InstrOfferingConfig>();
+    private Set<InstructionalOffering> iUpdatedOfferings = new HashSet<InstructionalOffering>();
     private Progress iProgress = null;
     private boolean iTentative = true;
-    private boolean iIgnoreOtherInstructors = false;
 
     public InstructorSchedulingDatabaseSaver(Solver solver) {
         super(solver);
@@ -64,7 +66,6 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
     		iSolverGroupId.add(id);
     	iTentative = !getModel().getProperties().getPropertyBoolean("Save.Commit", false);
     	iInstructorFormat = getModel().getProperties().getProperty("General.InstructorFormat", NameFormat.LAST_FIRST.reference());
-    	iIgnoreOtherInstructors = getModel().getProperties().getPropertyBoolean("General.IgnoreOtherInstructors", false);
     }
 
 	@Override
@@ -89,6 +90,17 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
                 	}
             	}
         	}
+            if (!iUpdatedOfferings.isEmpty()) {
+            	String className = ApplicationProperty.ExternalActionCourseOfferingEdit.value();
+            	if (className != null && className.trim().length() > 0){
+                	ExternalCourseOfferingEditAction editAction = (ExternalCourseOfferingEditAction) (Class.forName(className).newInstance());
+                	iProgress.setPhase("Performing external actions ...", iUpdatedOfferings.size());
+                	for (InstructionalOffering io: iUpdatedOfferings) {
+                		iProgress.incProgress();
+                		editAction.performExternalCourseOfferingEditAction(io, hibSession);
+                	}
+            	}
+            }
             
             iProgress.setPhase("Refreshing solution ...", 1);
             try {
@@ -123,27 +135,11 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
     	return "<a href='classDetail.do?cid=" + request.getSections().get(0).getSectionId() + "'>" + request.getCourse().getCourseName() + " " + request.getSections() + "</a>";
     }	
 	
-    protected boolean isToBeIgnored(ClassInstructor ci) {
-    	if (ci.isTentative()) return false; // always update tentative relations
-    	if (!ci.isLead()) return true; // ignore instructors without conflict check
-    	if (!ci.getClassInstructing().isInstructorAssignmentNeeded()) return true; // do not need instructor assignments
-    	if (ci.getInstructor().getTeachingPreference() == null || PreferenceLevel.sProhibited.equals(ci.getInstructor().getTeachingPreference().getPrefProlog()) || ci.getInstructor().getMaxLoad() < 0f) {
-    		// instructor not enabled for instructor scheduling -- use General.IgnoreOtherInstructors parameter
-    		if (iIgnoreOtherInstructors) {
-    			iProgress.warn("Instructor " + toHtml(ci.getInstructor()) + " is assigned to " + toHtml(ci.getClassInstructing()) + ", but not allowed for automatic assignment.");
-    			return true;
-    		} else {
-    			iProgress.warn("Instructor " + toHtml(ci.getInstructor()) + " was assigned to " + toHtml(ci.getClassInstructing()) + " that was not allowed for automatic assignment.");
-    			return false;
-    		}
-    	}
-    	return false;
-    }
-	
 	protected void saveSolution(org.hibernate.Session hibSession) {
 		iProgress.setPhase("Loading instructors ...", 1);
 		Map<Long, DepartmentalInstructor> instructors = new HashMap<Long, DepartmentalInstructor>();
-		Set<DepartmentalInstructor> changed = new HashSet<DepartmentalInstructor>();
+		Set<DepartmentalInstructor> changedInstructors = new HashSet<DepartmentalInstructor>();
+		Set<InstructionalOffering> changedOfferings = new HashSet<InstructionalOffering>();
 		for (DepartmentalInstructor instructor: (List<DepartmentalInstructor>)hibSession.createQuery(
     			"select i from DepartmentalInstructor i, SolverGroup g inner join g.departments d where " +
     			"g.uniqueId in :solverGroupId and i.department = d"
@@ -151,10 +147,9 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
 			instructors.put(instructor.getUniqueId(), instructor);
 			for (Iterator<ClassInstructor> i = instructor.getClasses().iterator(); i.hasNext(); ) {
 				ClassInstructor ci = i.next();
-				if (!isToBeIgnored(ci)) {
-					if (!ci.isTentative())
-						iUpdatedConfigs.add(ci.getClassInstructing().getSchedulingSubpart().getInstrOfferingConfig());
-					changed.add(ci.getInstructor());
+				if (ci.getTeachingRequest() != null) {
+					iUpdatedConfigs.add(ci.getClassInstructing().getSchedulingSubpart().getInstrOfferingConfig());
+					changedInstructors.add(ci.getInstructor());
 					ci.getClassInstructing().getClassInstructors().remove(ci);
 					i.remove();
 					hibSession.delete(ci);
@@ -162,15 +157,25 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
 			}
 		}
 		iProgress.incProgress();
+		for (OfferingCoordinator coordinator: (List<OfferingCoordinator>)hibSession.createQuery(
+    			"select c from OfferingCoordinator c inner join c.instructor i, SolverGroup g inner join g.departments d where " +
+    			"g.uniqueId in :solverGroupId and i.department = d"
+    			).setParameterList("solverGroupId", iSolverGroupId).list()) {
+			if (coordinator.getTeachingRequest() != null) {
+				iUpdatedOfferings.add(coordinator.getOffering());
+				changedOfferings.add(coordinator.getOffering());
+				coordinator.getOffering().getOfferingCoordinators().remove(coordinator);
+				hibSession.delete(coordinator);
+			}
+		}
 		
-		iProgress.setPhase("Loading classes ...", 1);
-		Map<Long, Class_> classes = new HashMap<Long, Class_>();
-    	for (Class_ clazz: (List<Class_>)hibSession.createQuery(
-    			"select c from Class_ c where c.controllingDept.solverGroup.uniqueId in :solverGroupId and c.cancelled = false and " +
-    			"(c.teachingLoad is not null or c.schedulingSubpart.teachingLoad is not null) and " +
-    			"((c.nbrInstructors is null and c.schedulingSubpart.nbrInstructors > 0) or c.nbrInstructors > 0)")
+		iProgress.setPhase("Loading requests ...", 1);
+		Map<Long, org.unitime.timetable.model.TeachingRequest> requests = new HashMap<Long, org.unitime.timetable.model.TeachingRequest>();
+    	for (org.unitime.timetable.model.TeachingRequest request: (List<org.unitime.timetable.model.TeachingRequest>)hibSession.createQuery(
+    			"select r from TeachingRequest r inner join r.offering.courseOfferings co where co.isControl = true and co.subjectArea.department.solverGroup.uniqueId in :solverGroupId")
     			.setParameterList("solverGroupId", iSolverGroupId).list()) {
-    		classes.put(clazz.getUniqueId(), clazz);
+    		request.getAssignedInstructors().clear();
+    		requests.put(request.getUniqueId(), request);
     	}
     	iProgress.incProgress();
     	
@@ -181,26 +186,46 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
     		if (assignment == null) continue;
 			DepartmentalInstructor instructor = instructors.get(assignment.getInstructor().getInstructorId());
 			if (instructor == null) continue;
-    		for (Section section: request.getSections()) {
-    			Class_ clazz = classes.get(section.getSectionId());
-    			if (clazz == null || !clazz.isEnabledForStudentScheduling()) continue;
-    			if (!iTentative)
-    				iUpdatedConfigs.add(clazz.getSchedulingSubpart().getInstrOfferingConfig());
-    			ClassInstructor ci = new ClassInstructor();
-    			ci.setClassInstructing(clazz);
-    			ci.setInstructor(instructor);
-    			ci.setTentative(iTentative);
-    			ci.setLead(true);
-    			ci.setPercentShare(100 / clazz.effectiveNbrInstructors());
-    			ci.setAssignmentIndex(request.getInstructorIndex());
-    			clazz.getClassInstructors().add(ci);
-    			instructor.getClasses().add(ci);
-				changed.add(ci.getInstructor());
-    		}
+			org.unitime.timetable.model.TeachingRequest r = requests.get(request.getRequest().getRequestId());
+			if (r == null) continue;
+			r.getAssignedInstructors().add(instructor);
+			if (!iTentative) {
+				if (r.isAssignCoordinator()) {
+					OfferingCoordinator oc = new OfferingCoordinator();
+					oc.setInstructor(instructor);
+					oc.setOffering(r.getOffering());
+					oc.setResponsibility(r.getResponsibility());
+					oc.setTeachingRequest(r);
+					r.getOffering().getOfferingCoordinators().add(oc);
+					changedOfferings.add(r.getOffering());
+					hibSession.save(oc);
+					iUpdatedOfferings.add(r.getOffering());
+				}
+				for (TeachingClassRequest cr: r.getClassRequests()) {
+					if (cr.isAssignInstructor()) {
+						ClassInstructor ci = new ClassInstructor();
+						ci.setClassInstructing(cr.getTeachingClass());
+						ci.setInstructor(instructor);
+						ci.setLead(cr.isLead());
+						ci.setPercentShare(cr.getPercentShare());
+						ci.setResponsibility(r.getResponsibility());
+						ci.setTeachingRequest(r);
+						cr.getTeachingClass().getClassInstructors().add(ci);
+		    			instructor.getClasses().add(ci);
+						changedInstructors.add(ci.getInstructor());
+						hibSession.saveOrUpdate(ci);
+						iUpdatedConfigs.add(cr.getTeachingClass().getSchedulingSubpart().getInstrOfferingConfig());
+					}
+				}
+			}
     	}
 
-    	for (DepartmentalInstructor instructor: changed)
+    	for (org.unitime.timetable.model.TeachingRequest request: requests.values())
+    		hibSession.saveOrUpdate(request);
+    	for (DepartmentalInstructor instructor: changedInstructors)
     		hibSession.saveOrUpdate(instructor);
+    	for (InstructionalOffering offering: changedOfferings)
+    		hibSession.saveOrUpdate(offering);
 	}
 
 }

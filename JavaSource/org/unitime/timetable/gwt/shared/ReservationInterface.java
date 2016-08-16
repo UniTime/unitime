@@ -236,6 +236,60 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		public boolean hasInstructionalMethod() { return iInstructionalMethod != null && !iInstructionalMethod.isEmpty(); }
 		public String getInstructionalMethod() { return iInstructionalMethod; }
 		public void setInstructionalMethod(String instructionalMethod) { iInstructionalMethod = instructionalMethod; }
+		
+		public int getIndent(Subpart subpart) {
+			Subpart parent = getSubpart(subpart.getParentId());
+			return parent == null ? 0 : 1 + getIndent(parent);
+		}
+		
+		public String getIndent(Subpart subpart, String indent) {
+			Subpart parent = getSubpart(subpart.getParentId());
+			return parent == null ? "" : indent + getIndent(parent, indent);
+		}
+		
+		public Subpart getSubpart(Long id) {
+			if (id == null) return null;
+			for (Subpart subpart: iSubparts)
+				if (id.equals(subpart.getId())) return subpart;
+			return null;
+		}
+		
+		public boolean isParent(Subpart a, Subpart b) {
+			Subpart parent = getSubpart(b.getParentId());
+			return parent != null && (a.equals(parent) || isParent(a, parent));
+		}
+		
+		public boolean isParent(Clazz a, Clazz b) {
+			Subpart parentSubpart = getSubpart(b.getSubpart().getParentId());
+			Clazz parent = (parentSubpart == null ? null : parentSubpart.getClazz(b.getParentId()));
+			return parent != null && (a.equals(parent) || isParent(a, parent));
+		}
+		
+		public Clazz getParentClazz(Clazz clazz, Subpart parentSubpart) {
+			Subpart subpart = getSubpart(clazz.getSubpart().getParentId());
+			if (subpart == null) return null;
+			Clazz parent = subpart.getClazz(clazz.getParentId());
+			if (parent == null) return null;
+			if (subpart.equals(parentSubpart)) return parent;
+			return getParentClazz(parent, parentSubpart);
+		}
+		
+		public int[] countChildClasses(Subpart parent, Subpart child) {
+			Map<Long, Integer> counts = new HashMap<Long, Integer>();
+			for (Clazz clazz: child.getClasses()) {
+				Clazz pc = getParentClazz(clazz, parent);
+				if (pc == null) continue;
+				Integer count = counts.get(pc.getId());
+				counts.put(pc.getId(), count == null ? 1 : 1 + count.intValue());
+			}
+			int max = 0, min = Integer.MAX_VALUE;
+			for (Integer count: counts.values()) {
+				if (max < count) max = count;
+				if (min > count) min = count;
+			}
+			if (min <= max) return new int[] {min, max};
+			return null;
+		}
 	}
 
 	public static class Subpart extends IdName {
@@ -250,6 +304,13 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		public List<Clazz> getClasses() { return iClasses; }
 		public Long getParentId() { return iParentId; }
 		public void setParentId(Long parentId) { iParentId = parentId; }
+		
+		public Clazz getClazz(Long id) {
+			if (id == null) return null;
+			for (Clazz clazz: iClasses)
+				if (id.equals(clazz.getId())) return clazz;
+			return null;
+		}
 	}
 
 	public static class Clazz extends IdName {
@@ -261,6 +322,7 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		private String iDate = null;
 		private String iRoom = null;
 		private String iInstructor = null;
+		private Integer iEnrollment = null;
 		
 		public Clazz() { super(); }
 		
@@ -291,6 +353,9 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		public boolean hasInstructor() { return iInstructor != null && !iInstructor.isEmpty(); }
 		public String getInstructor() { return iInstructor; }
 		public void setInstructor(String instructor) { iInstructor = instructor; }
+		
+		public Integer getEnrollment() { return iEnrollment; }
+		public void setEnrollment(Integer enrollment) { iEnrollment = enrollment; }
 
 	}
 

@@ -25,8 +25,8 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestDetailRequest;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestInfo;
-import org.unitime.timetable.model.Class_;
-import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.TeachingRequest;
+import org.unitime.timetable.model.dao.TeachingRequestDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
@@ -46,10 +46,10 @@ public class TeachingRequestDetailBackend extends InstructorSchedulingBackendHel
 		if (solver != null) {
 			return solver.getTeachingRequestInfo(request.getRequestId());
 		} else {
-			Class_ clazz = Class_DAO.getInstance().get(request.getRequestId());
-			if (clazz == null) return null;
+			TeachingRequest tr = TeachingRequestDAO.getInstance().get(request.getRequestId());
+			if (tr == null) return null;
 			
-			return getRequestForClass(clazz, getCommonItypes(), UserProperty.NameFormat.get(context.getUser()));
+			return getRequest(tr, UserProperty.NameFormat.get(context.getUser()), null);
 		}
 	}
 }

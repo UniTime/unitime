@@ -22,7 +22,6 @@ package org.unitime.timetable.server.instructor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.defaults.SessionAttribute;
@@ -31,11 +30,10 @@ import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestsPageRequest;
-import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.comparators.ClassComparator;
+import org.unitime.timetable.model.TeachingRequest;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestInfo;
 import org.unitime.timetable.security.SessionContext;
@@ -55,16 +53,19 @@ public class TeachingRequestsPageBackend extends InstructorSchedulingBackendHelp
 		context.checkPermission(Right.InstructorSchedulingSolver);
 		context.setAttribute(SessionAttribute.OfferingsSubjectArea, request.getSubjectAreaId() == null ? "-1" : String.valueOf(request.getSubjectAreaId()));
 		InstructorSchedulingProxy solver = instructorSchedulingSolverService.getSolver();
-		if (solver != null)
-			return new GwtRpcResponseList<TeachingRequestInfo>(solver.getTeachingRequests(request.getSubjectAreaId(), request.isAssigned()));
+		if (solver != null && request.getOfferingId() == null)
+			return new GwtRpcResponseList<TeachingRequestInfo>(solver.getTeachingRequests(request));
 		else {
-			Set<String> commonItypes = getCommonItypes();
 			String nameFormat = UserProperty.NameFormat.get(context.getUser());
 			
 			GwtRpcResponseList<TeachingRequestInfo> ret = new GwtRpcResponseList<TeachingRequestInfo>();
 			org.hibernate.Session hibSession = Class_DAO.getInstance().getSession();
-			List<Class_> classes = null;
-			if (request.getSubjectAreaId() == null) {
+			List<TeachingRequest> requests = null;
+			if (request.getOfferingId() != null) {
+				requests = (List<TeachingRequest>)hibSession.createQuery(
+						"from TeachingRequest r where r.offering.uniqueId = :offeringId")
+						.setLong("offeringId", request.getOfferingId()).setCacheable(true).list();
+			} else if (request.getSubjectAreaId() == null) {
 				List<Long> subjectAreaIds = new ArrayList<Long>();
 				for (SubjectArea sa: SubjectArea.getUserSubjectAreas(context.getUser(), true)) {
 					for (DepartmentalInstructor di: sa.getDepartment().getInstructors())
@@ -74,30 +75,21 @@ public class TeachingRequestsPageBackend extends InstructorSchedulingBackendHelp
 						}
 				}
 				if (subjectAreaIds.isEmpty()) return ret;
-				classes = (List<Class_>)hibSession.createQuery(
-						"select distinct c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co " +
-						"left join fetch c.schedulingSubpart as ss left join fetch c.classInstructors as ci left join fetch ci.instructor as di " +
-						"left join fetch c.preferences as cp left join fetch ss.preferences as sp left join fetch di.preferences as dip " +
-						"where co.subjectArea.uniqueId in :subjectAreaIds and co.isControl = true and c.cancelled = false and " +
-						"(c.teachingLoad is not null or c.schedulingSubpart.teachingLoad is not null) and " +
-						"((c.nbrInstructors is null and c.schedulingSubpart.nbrInstructors > 0) or c.nbrInstructors > 0)")
+				requests = (List<TeachingRequest>)hibSession.createQuery(
+						"select r from TeachingRequest r inner join r.offering.courseOfferings co where co.isControl = true and co.subjectArea.uniqueId in :subjectAreaIds")
 						.setParameterList("subjectAreaIds", subjectAreaIds).setCacheable(true).list();
 			} else {
-				classes = (List<Class_>)hibSession.createQuery(
-						"select distinct c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co " +
-						"left join fetch c.schedulingSubpart as ss left join fetch c.classInstructors as ci left join fetch ci.instructor as di " +
-						"left join fetch c.preferences as cp left join fetch ss.preferences as sp left join fetch di.preferences as dip " +
-						"where co.subjectArea.uniqueId = :subjectAreaId and co.isControl = true and c.cancelled = false and " +
-		    			"(c.teachingLoad is not null or c.schedulingSubpart.teachingLoad is not null) and " +
-		    			"((c.nbrInstructors is null and c.schedulingSubpart.nbrInstructors > 0) or c.nbrInstructors > 0)")
+				requests = (List<TeachingRequest>)hibSession.createQuery(
+						"select r from TeachingRequest r inner join r.offering.courseOfferings co where co.isControl = true and co.subjectArea.uniqueId = :subjectAreaId")
 		    			.setLong("subjectAreaId", request.getSubjectAreaId()).setCacheable(true).list();
 			}
-	    	Collections.sort(classes, new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
-	    	for (Class_ clazz: classes) {
-	    		if (!clazz.isInstructorAssignmentNeeded()) continue;
-	    		TeachingRequestInfo info = getRequestForClass(clazz, commonItypes, nameFormat);
+	    	// Collections.sort(classes, new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
+	    	for (TeachingRequest tr: requests) {
+	    		TeachingRequestInfo info = getRequest(tr, nameFormat, solver);
 	    		if (info != null) {
-	    			if (request.isAssigned() && info.getNrAssignedInstructors() > 0)
+	    			if (request.getOfferingId() != null)
+	    				ret.add(info);
+	    			else if (request.isAssigned() && info.getNrAssignedInstructors() > 0)
 	    				ret.add(info);
 	    			else if (!request.isAssigned() && info.getNrAssignedInstructors() < info.getNrInstructors())
 	    				ret.add(info);

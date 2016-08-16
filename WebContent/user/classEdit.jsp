@@ -360,39 +360,6 @@
 			</TD>
 		</TR>
 		
-		<logic:equal name="<%=frmName%>" property="instructorAssignment" value="true">
-			<TR>
-				<TD><loc:message name="propertyNeedInstructorAssignment"/></TD>
-				<TD>
-					<loc:message name="classDetailNeedInstructorAssignment"/>
-				</TD>
-			</TR>
-			<logic:notEqual name="<%=frmName%>" property="nbrInstructors" value="1">
-				<TR>
-					<TD><loc:message name="propertyNbrInstructors"/></TD>
-					<TD>
-						<bean:write name="<%=frmName%>" property="nbrInstructors" />
-					</TD>
-				</TR>
-			</logic:notEqual>
-			<TR>
-				<TD><loc:message name="propertyTeachingLoad"/></TD>
-				<TD>
-					<bean:write name="<%=frmName%>" property="teachingLoad" /> <loc:message name="teachingLoadUnits"/>
-				</TD>
-			</TR>
-		</logic:equal>
-		<logic:equal name="<%=frmName%>" property="instructorAssignment" value="false">
-			<logic:equal name="<%=frmName%>" property="instructorAssignmentDefault" value="true">
-				<TR>
-					<TD><loc:message name="propertyNeedInstructorAssignment"/></TD>
-					<TD>
-						<loc:message name="classDetailNoInstructorAssignment"/>
-					</TD>
-				</TR>
-			</logic:equal>
-		</logic:equal>
-		
 		<logic:notEmpty name="<%=frmName%>" property="accommodation">
 			<TR>
 				<TD valign="top"><loc:message name="propertyAccommodations"/></TD>

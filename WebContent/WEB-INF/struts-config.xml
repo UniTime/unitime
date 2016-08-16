@@ -490,23 +490,6 @@
         	/>
       </action>
       
-      <action
-         path="/schedulingSubpartInstrAssgnEdit"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         attribute="SchedulingSubpartEditForm"
-         input="schedulingSubpartInstrAssgnEditTile"
-         name="schedulingSubpartEditForm"
-         scope="request"
-         validate="false"> 
-        <forward 
-        	name="editSchedulingSubpart" 
-        	path="schedulingSubpartInstrAssgnEditTile" />
-        <forward 
-        	name="displaySubpartDetail" 
-        	path="/schedulingSubpartDetail.do" 
-        	/>
-      </action>      
-  
       <action 
       	path="/itypeDescList" 
       	type="org.springframework.web.struts.DelegatingActionProxy" 
@@ -773,23 +756,6 @@
         <forward 
         	name="changeClassOwner" 
         	path="/classOwnerChange.do" />
-        <forward 
-        	name="displayClassDetail" 
-        	path="/classDetail.do" />
-     </action>
-     
-    <action
-         path="/classInstrAssgnEdit"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         attribute="ClassEditForm"
-         input="classInstrAssgnEditTile"
-         name="classEditForm"
-         scope="request"
-         validate="false"> 
-        
-        <forward 
-        	name="editClass" 
-        	path="classInstrAssgnEditTile" />
         <forward 
         	name="displayClassDetail" 
         	path="/classDetail.do" />

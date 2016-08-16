@@ -24,6 +24,7 @@ import java.io.Serializable;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.OfferingCoordinator;
+import org.unitime.timetable.model.TeachingRequest;
 import org.unitime.timetable.model.TeachingResponsibility;
 
 /**
@@ -37,6 +38,7 @@ public abstract class BaseOfferingCoordinator implements Serializable {
 	private InstructionalOffering iOffering;
 
 	private TeachingResponsibility iResponsibility;
+	private TeachingRequest iTeachingRequest;
 
 
 	public BaseOfferingCoordinator() {
@@ -53,6 +55,9 @@ public abstract class BaseOfferingCoordinator implements Serializable {
 
 	public TeachingResponsibility getResponsibility() { return iResponsibility; }
 	public void setResponsibility(TeachingResponsibility responsibility) { iResponsibility = responsibility; }
+
+	public TeachingRequest getTeachingRequest() { return iTeachingRequest; }
+	public void setTeachingRequest(TeachingRequest teachingRequest) { iTeachingRequest = teachingRequest; }
 
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof OfferingCoordinator)) return false;
@@ -76,6 +81,7 @@ public abstract class BaseOfferingCoordinator implements Serializable {
 			"\n	Instructor: " + getInstructor() +
 			"\n	Offering: " + getOffering() +
 			"\n	Responsibility: " + getResponsibility() +
+			"\n	TeachingRequest: " + getTeachingRequest() +
 			"]";
 	}
 }

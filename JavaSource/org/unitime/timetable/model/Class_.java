@@ -421,7 +421,7 @@ public class Class_ extends BaseClass_ {
     	if (DistributionPref.class.equals(type)) {
     		return effectiveDistributionPreferences(mngDept);
     	}
-
+    	
     	if (leadInstructors==null || leadInstructors.isEmpty()) return effectivePreferences(type, fixDurationInTimePreferences);
 
     	Set instrPrefs = null;
@@ -473,6 +473,15 @@ public class Class_ extends BaseClass_ {
     		if (!mngDept.isExternalManager()) {
     			Set instPref = classInstructorPrefsOfType(type);
     			if (instPref!=null) prefs.addAll(instPref);
+    		}
+    		return prefs;
+    	}
+    	
+    	if (InstructorAttributePref.class.equals(type) || InstructorPref.class.equals(type)) {
+    		Set<Preference> prefs = new TreeSet<Preference>();
+    		for (TeachingClassRequest tcr: getTeachingRequests()) {
+    			if (tcr.getAssignInstructor())
+    				prefs.addAll(tcr.getTeachingRequest().getPreferences(type));
     		}
     		return prefs;
     	}
@@ -535,8 +544,7 @@ public class Class_ extends BaseClass_ {
     public String instructorHtml(String instructorNameFormat){
     	StringBuffer sb = new StringBuffer();
     	if (this.getClassInstructors()==null) return "";
-    	InstructorComparator ic = new InstructorComparator(); ic.setCompareBy(ic.COMPARE_BY_INDEX);
-    	TreeSet sortedInstructors = new TreeSet(ic);
+    	TreeSet sortedInstructors = new TreeSet(new InstructorComparator());
     	sortedInstructors.addAll(this.getClassInstructors());
 
     	Iterator it = sortedInstructors.iterator();
@@ -567,8 +575,7 @@ public class Class_ extends BaseClass_ {
     public String instructorText(String instructorNameFormat, String separator){
     	if (getClassInstructors() == null) return "";
     	
-    	InstructorComparator ic = new InstructorComparator(); ic.setCompareBy(ic.COMPARE_BY_INDEX);
-    	TreeSet sortedInstructors = new TreeSet(ic);
+    	TreeSet sortedInstructors = new TreeSet(new InstructorComparator());
     	sortedInstructors.addAll(this.getClassInstructors());
 
     	StringBuffer sb = new StringBuffer();
@@ -1127,8 +1134,6 @@ public class Class_ extends BaseClass_ {
 		newClass.setSchedulePrintNote(getSchedulePrintNote());
 		newClass.setSchedulingSubpart(getSchedulingSubpart());
 		newClass.setCancelled(isCancelled());
-		newClass.setTeachingLoad(getTeachingLoad());
-		newClass.setNbrInstructors(getNbrInstructors());
 		return(newClass);
 	}
 	
@@ -1156,9 +1161,7 @@ public class Class_ extends BaseClass_ {
 				newCi.setInstructor(ci.getInstructor());
 				newCi.setLead(ci.isLead());
 				newCi.setPercentShare(ci.getPercentShare());
-				newCi.setTentative(ci.isTentative());
 				newCi.setResponsibility(ci.getResponsibility());
-				newCi.setAssignmentIndex(ci.getAssignmentIndex());
 				ci.getInstructor().addToclasses(newCi);
 				newClass.addToclassInstructors(newCi);
 			}
@@ -1761,19 +1764,27 @@ public class Class_ extends BaseClass_ {
         return available;
     }
 	
-	@Override
 	public boolean isInstructorAssignmentNeeded() {
-		return effectiveTeachingLoad() != null && effectiveNbrInstructors() > 0;
-	}
-	
-	public Float effectiveTeachingLoad() {
-		if (getTeachingLoad() != null) return getTeachingLoad();
-		return getSchedulingSubpart().getTeachingLoad();
+		for (TeachingClassRequest tcr: getTeachingRequests())
+			if (tcr.isAssignInstructor()) return true;
+		return false;
 	}
 	
 	public int effectiveNbrInstructors() {
-		if (getNbrInstructors() != null) return getNbrInstructors();
-		if (getSchedulingSubpart().getNbrInstructors() != null) return getSchedulingSubpart().getNbrInstructors();
-		return 1;
+		int ret = 0;
+		for (TeachingClassRequest tcr: getTeachingRequests())
+			if (tcr.isAssignInstructor()) ret += tcr.getTeachingRequest().getNbrInstructors();
+		return ret;
+	}
+	
+	public float effectiveTeachingLoad() {
+		int instructors = 0;
+		float totalLoad = 0f;
+		for (TeachingClassRequest tcr: getTeachingRequests())
+			if (tcr.isAssignInstructor()) {
+				instructors += tcr.getTeachingRequest().getNbrInstructors();
+				totalLoad += tcr.getTeachingRequest().getNbrInstructors() * tcr.getTeachingRequest().getTeachingLoad();
+			}
+		return totalLoad / instructors;
 	}
 }

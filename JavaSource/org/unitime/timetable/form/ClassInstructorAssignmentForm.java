@@ -154,8 +154,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 
 	public void addToClasses(Class_ cls, Boolean isReadOnly, String indent){
 		ArrayList instructors = new ArrayList(cls.getClassInstructors());
-		InstructorComparator ic = new InstructorComparator(); ic.setCompareBy(ic.COMPARE_BY_INDEX);
-		Collections.sort(instructors, ic);
+		Collections.sort(instructors, new InstructorComparator());
 		ClassInstructor instructor = null;
 		int i = 0;
 		do {
@@ -279,7 +278,6 @@ public class ClassInstructorAssignmentForm extends ActionForm {
             c.setDisplayInstructor(new Boolean("on".equals(getDisplayFlags().get(i))));
 
             // Save instructor data to class
-            int index = 0;
             for ( ; i < classIds.size(); i++) {
             	boolean sameClass = ((String) classIds.get(i)).equals(classId);
             	if (!sameClass)	{
@@ -296,14 +294,12 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 	                classInstr.setClassInstructing(c);
 	                classInstr.setInstructor(deptInstr);
 	                classInstr.setLead(lead);
-	                classInstr.setTentative(false);
 	                classInstr.setPercentShare(new Integer(pctShare));
 	                try {
 	                	classInstr.setResponsibility(TeachingResponsibilityDAO.getInstance().get(Long.valueOf(responsibility)));
 	                } catch (NumberFormatException e) {
 	                	classInstr.setResponsibility(null);
 	                }
-	                classInstr.setAssignmentIndex(index ++);
 	                
 	                deptInstr.getClasses().add(classInstr);
 	                hibSession.saveOrUpdate(deptInstr);

@@ -169,9 +169,7 @@ public abstract class AbstractSolverServer implements SolverServer {
 		try {
 			SessionFactory hibSessionFactory = hibSession.getSessionFactory();
 	    	List<Long> classIds = (List<Long>)hibSession.createQuery(
-	    			"select c.uniqueId from Class_ c where c.controllingDept.solverGroup.uniqueId in :solverGroupId and c.cancelled = false and " +
-	    			"(c.teachingLoad is not null or c.schedulingSubpart.teachingLoad is not null) and " +
-	    			"((c.nbrInstructors is null and c.schedulingSubpart.nbrInstructors > 0) or c.nbrInstructors > 0)")
+	    			"select distinct c.uniqueId from Class_ c inner join c.teachingRequests r where c.controllingDept.solverGroup.uniqueId in :solverGroupId and c.cancelled = false")
 	    			.setParameterList("solverGroupId", solverGroupIds).list();
 	    	for (Long classId: classIds) {
 	            hibSessionFactory.getCache().evictEntity(Class_.class, classId);

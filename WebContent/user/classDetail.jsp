@@ -80,15 +80,6 @@
 						</html:submit> 
 					</sec:authorize>
 					
-					<sec:authorize access="hasPermission(#ClassEditForm.controllingDept, 'Department', 'InstructorAssignmentPreferences')">
-						&nbsp;
-						<html:submit property="op" styleClass="btn" 
-							accesskey="<%=MSG.accessEditClassInstructorAssignmentPreferences()%>" 
-							title="<%=MSG.titleEditClassInstructorAssignmentPreferences(MSG.accessEditClassInstructorAssignmentPreferences()) %>" >
-							<loc:message name="actionEditClassInstructorAssignmentPreferences" />
-						</html:submit> 
-					</sec:authorize>
-				
 					<sec:authorize access="hasPermission(#ClassEditForm.classId, 'Class_', 'DistributionPreferenceClass')">
 						&nbsp;
 						<html:submit property="op" styleClass="btn" 
@@ -298,39 +289,6 @@
 				</TD>
 			</TR>
 		</logic:notEmpty>
-		
-		<logic:equal name="<%=frmName%>" property="instructorAssignment" value="true">
-			<TR>
-				<TD><loc:message name="propertyNeedInstructorAssignment"/></TD>
-				<TD>
-					<loc:message name="classDetailNeedInstructorAssignment"/>
-				</TD>
-			</TR>
-			<logic:notEqual name="<%=frmName%>" property="nbrInstructors" value="1">
-				<TR>
-					<TD><loc:message name="propertyNbrInstructors"/></TD>
-					<TD>
-						<bean:write name="<%=frmName%>" property="nbrInstructors" />
-					</TD>
-				</TR>
-			</logic:notEqual>
-			<TR>
-				<TD><loc:message name="propertyTeachingLoad"/></TD>
-				<TD>
-					<bean:write name="<%=frmName%>" property="teachingLoad" /> <loc:message name="teachingLoadUnits"/>
-				</TD>
-			</TR>
-		</logic:equal>
-		<logic:equal name="<%=frmName%>" property="instructorAssignment" value="false">
-			<logic:equal name="<%=frmName%>" property="instructorAssignmentDefault" value="true">
-				<TR>
-					<TD><loc:message name="propertyNeedInstructorAssignment"/></TD>
-					<TD>
-						<loc:message name="classDetailNoInstructorAssignment"/>
-					</TD>
-				</TR>
-			</logic:equal>
-		</logic:equal>
 				
 		<logic:notEmpty name="<%=frmName%>" property="instructors">
 			<TR>
@@ -445,8 +403,6 @@
 				<jsp:param name="bldgPref" value="false"/>
 				<jsp:param name="roomFeaturePref" value="false"/>
 				<jsp:param name="roomGroupPref" value="false"/>
-				<jsp:param name="attributePref" value="${ClassEditForm.instructorAssignment}"/>
-				<jsp:param name="instructorPref" value="${ClassEditForm.instructorAssignment}"/>
 			</jsp:include>
 		</logic:equal>
 		<logic:notEqual value="0" name="<%=frmName%>" property="nbrRooms">
@@ -456,15 +412,11 @@
 					<jsp:param name="bldgPref" value="false"/>
 					<jsp:param name="roomFeaturePref" value="false"/>
 					<jsp:param name="roomGroupPref" value="false"/>
-					<jsp:param name="attributePref" value="${ClassEditForm.instructorAssignment}"/>
-					<jsp:param name="instructorPref" value="${ClassEditForm.instructorAssignment}"/>
 				</jsp:include>
 			</logic:equal>
 			<logic:notEqual value="true" name="<%=frmName%>" property="unlimitedEnroll">
 				<jsp:include page="preferencesDetail.jspf">
 					<jsp:param name="frmName" value="<%=frmName%>"/>
-					<jsp:param name="attributePref" value="${ClassEditForm.instructorAssignment}"/>
-					<jsp:param name="instructorPref" value="${ClassEditForm.instructorAssignment}"/>
 				</jsp:include>
 			</logic:notEqual>
 		</logic:notEqual>
@@ -501,15 +453,6 @@
 							title="<%=MSG.titleEditClass(MSG.accessEditClass()) %>" >
 							<loc:message name="actionEditClass" />
 						</html:submit>
-					</sec:authorize>
-					
-					<sec:authorize access="hasPermission(#ClassEditForm.controllingDept, 'Department', 'InstructorAssignmentPreferences')">
-						&nbsp;
-						<html:submit property="op" styleClass="btn" 
-							accesskey="<%=MSG.accessEditClassInstructorAssignmentPreferences()%>" 
-							title="<%=MSG.titleEditClassInstructorAssignmentPreferences(MSG.accessEditClassInstructorAssignmentPreferences()) %>" >
-							<loc:message name="actionEditClassInstructorAssignmentPreferences" />
-						</html:submit> 
 					</sec:authorize>
 					
 					<sec:authorize access="hasPermission(#ClassEditForm.classId, 'Class_', 'DistributionPreferenceClass')">

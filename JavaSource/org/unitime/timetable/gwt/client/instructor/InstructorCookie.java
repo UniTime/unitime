@@ -30,13 +30,14 @@ public class InstructorCookie {
 	private static InstructorCookie sInstance = null;
 	private int iSortAttributesBy = 0;
 	private int iSortInstructorsBy = 0;
-	private int[] iSortTeachingRequestsBy = new int[] {0, 0};
-	private int[] iTeachingRequestsColumns = new int[] {0xffff, 0xffff};
+	private int[] iSortTeachingRequestsBy = new int[] {0, 0, 0};
+	private int[] iTeachingRequestsColumns = new int[] {0xffff, 0xffff, 0xffff};
 	private int iSortTeachingAssignmentsBy = 0;
 	private int iTeachingAssignmentsColumns = 0xffff;
 	private int iAssignmentChangesBase = 1;
 	private int iSortAssignmentChangesBy = 0;
 	private int iAssignmentChangesColumns = 0xffff;
+	private boolean iShowTeachingRequests = false;
 
 	private InstructorCookie() {
 		try {
@@ -46,13 +47,14 @@ public class InstructorCookie {
 				int idx = 0;
 				iSortAttributesBy = Integer.valueOf(params[idx++]);
 				iSortInstructorsBy = Integer.valueOf(params[idx++]);
-				iSortTeachingRequestsBy = new int[] {Integer.valueOf(params[idx++]), Integer.valueOf(params[idx++])};
-				iTeachingRequestsColumns = new int[] {Integer.valueOf(params[idx++]), Integer.valueOf(params[idx++])};
+				iSortTeachingRequestsBy = new int[] {Integer.valueOf(params[idx++]), Integer.valueOf(params[idx++]), Integer.valueOf(params[idx++])};
+				iTeachingRequestsColumns = new int[] {Integer.valueOf(params[idx++]), Integer.valueOf(params[idx++]), Integer.valueOf(params[idx++])};
 				iSortTeachingAssignmentsBy = Integer.valueOf(params[idx++]);
 				iTeachingAssignmentsColumns = Integer.valueOf(params[idx++]);
 				iAssignmentChangesBase = Integer.valueOf(params[idx++]);
 				iSortAssignmentChangesBy = Integer.valueOf(params[idx++]);
 				iAssignmentChangesColumns = Integer.valueOf(params[idx++]);
+				iShowTeachingRequests = "T".equals(params[idx++]);
 			}
 		} catch (Exception e) {
 		}
@@ -66,10 +68,11 @@ public class InstructorCookie {
 
 	private void save() {
 		String cookie = iSortAttributesBy + "|" + iSortInstructorsBy +
-				"|" + iSortTeachingRequestsBy[0] + "|" + iSortTeachingRequestsBy[1] +
-				"|" + iTeachingRequestsColumns[0] + "|" + iTeachingRequestsColumns[1] +
+				"|" + iSortTeachingRequestsBy[0] + "|" + iSortTeachingRequestsBy[1] + "|" + iSortTeachingRequestsBy[2] +
+				"|" + iTeachingRequestsColumns[0] + "|" + iTeachingRequestsColumns[1] + "|" + iTeachingRequestsColumns[2] +
 				"|" + iSortTeachingAssignmentsBy + "|" + iTeachingAssignmentsColumns +
-				"|" + iAssignmentChangesBase + "|" + iSortAssignmentChangesBy + "|" + iAssignmentChangesColumns;
+				"|" + iAssignmentChangesBase + "|" + iSortAssignmentChangesBy + "|" + iAssignmentChangesColumns +
+				"|" + (iShowTeachingRequests ? "T" : "F");
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:Instructor", cookie, expires);
 	}
@@ -92,26 +95,26 @@ public class InstructorCookie {
 		save();
 	}
 	
-	public int getSortTeachingRequestsBy(boolean assigned) {
-		return iSortTeachingRequestsBy[assigned ? 0 : 1];
+	public int getSortTeachingRequestsBy(Boolean assigned) {
+		return iSortTeachingRequestsBy[assigned == null ? 2 : assigned ? 0 : 1];
 	}
 	
-	public void setSortTeachingRequestsBy(boolean assigned, int sortTeachingRequestsBy) {
-		iSortTeachingRequestsBy[assigned ? 0 : 1] = sortTeachingRequestsBy;
+	public void setSortTeachingRequestsBy(Boolean assigned, int sortTeachingRequestsBy) {
+		iSortTeachingRequestsBy[assigned == null ? 2 : assigned ? 0 : 1] = sortTeachingRequestsBy;
 		save();
 	}
 	
-	public boolean isTeachingRequestsColumnVisible(boolean assigned, int ordinal) {
-		return (iTeachingRequestsColumns[assigned ? 0 : 1] & (1 << ordinal)) != 0;
+	public boolean isTeachingRequestsColumnVisible(Boolean assigned, int ordinal) {
+		return (iTeachingRequestsColumns[assigned == null ? 2 : assigned ? 0 : 1] & (1 << ordinal)) != 0;
 	}
 	
-	public void setTeachingRequestsColumnVisible(boolean assigned, int ordinal, boolean visible) {
-		boolean old = (iTeachingRequestsColumns[assigned ? 0 : 1] & (1 << ordinal)) != 0;
+	public void setTeachingRequestsColumnVisible(Boolean assigned, int ordinal, boolean visible) {
+		boolean old = (iTeachingRequestsColumns[assigned == null ? 2 : assigned ? 0 : 1] & (1 << ordinal)) != 0;
 		if (old != visible) {
 			if (visible)
-				iTeachingRequestsColumns[assigned ? 0 : 1] += (1 << ordinal);
+				iTeachingRequestsColumns[assigned == null ? 2 : assigned ? 0 : 1] += (1 << ordinal);
 			else
-				iTeachingRequestsColumns[assigned ? 0 : 1] -= (1 << ordinal);
+				iTeachingRequestsColumns[assigned == null ? 2 : assigned ? 0 : 1] -= (1 << ordinal);
 		}
 		save();
 	}
@@ -170,6 +173,15 @@ public class InstructorCookie {
 			else
 				iAssignmentChangesColumns -= (1 << ordinal);
 		}
+		save();
+	}
+	
+	public boolean isShowTeachingRequests() {
+		return iShowTeachingRequests;
+	}
+	
+	public void setShowTeachingRequests(boolean showTeachingRequests) {
+		iShowTeachingRequests = showTeachingRequests;
 		save();
 	}
 }

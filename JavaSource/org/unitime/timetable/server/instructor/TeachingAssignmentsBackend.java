@@ -22,7 +22,6 @@ package org.unitime.timetable.server.instructor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
@@ -60,7 +59,6 @@ public class TeachingAssignmentsBackend extends InstructorSchedulingBackendHelpe
 		if (solver != null)
 			return new GwtRpcResponseList<InstructorInfo>(solver.getInstructors(request.getDepartmentId()));
 		else {
-			Set<String> commonItypes = getCommonItypes();
 			String nameFormat = UserProperty.NameFormat.get(context.getUser());
 			
 			GwtRpcResponseList<InstructorInfo> ret = new GwtRpcResponseList<InstructorInfo>();
@@ -91,7 +89,7 @@ public class TeachingAssignmentsBackend extends InstructorSchedulingBackendHelpe
 						).setLong("departmentId", request.getDepartmentId()).setString("prohibited", PreferenceLevel.sProhibited).setCacheable(true).list();
 			}
 	    	for (DepartmentalInstructor instructor: instructors) {
-	    		ret.add(getInstructorInfo(instructor, nameFormat, commonItypes));
+	    		ret.add(getInstructorInfo(instructor, nameFormat));
 	    	}
 	    	Collections.sort(ret);
 	    	return ret;

@@ -21,9 +21,7 @@ package org.unitime.timetable.form;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
 import org.unitime.timetable.defaults.ApplicationProperty;
 
 
@@ -71,31 +69,9 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
     private Boolean subpartCreditEditAllowed;
     private boolean itypeBasic;
     private Boolean studentAllowOverlap;
-    private Boolean instructorAssignment;
-    private Integer nbrInstructors;
-    private String teachingLoad;
     private Long controllingDept;
     
     // --------------------------------------------------------- Methods
-
-    /** 
-     * Method validate
-     * @param mapping
-     * @param request
-     * @return ActionErrors
-     */
-    public ActionErrors validate(
-        ActionMapping mapping,
-        HttpServletRequest request) {
-    	ActionErrors errors = super.validate(mapping, request);
-    	if (instructorAssignment && (teachingLoad == null || teachingLoad.isEmpty())) {
-    		errors.add("teachingLoad", new ActionMessage("errors.generic", MSG.errorNoTeachingLoad()));
-    	}
-    	if (instructorAssignment && (nbrInstructors == null || nbrInstructors <= 0)) {
-    		errors.add("nbrInstructors", new ActionMessage("errors.generic", MSG.errorNoNbrInstructors()));
-    	}
-    	return errors;
-    }
 
     /** 
      * Method reset
@@ -113,9 +89,6 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
         subpartCreditEditAllowed = ApplicationProperty.SubpartCreditEditable.isTrue();
         itypeBasic = false;
         instructionalType = null; instructionalTypeLabel = null;
-        instructorAssignment = Boolean.FALSE;
-        teachingLoad = null;
-        nbrInstructors = 1;
         controllingDept = null;
         super.reset(mapping, request);
     }
@@ -333,15 +306,6 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
 	
 	public boolean getStudentAllowOverlap() { return studentAllowOverlap; }
 	public void setStudentAllowOverlap(boolean studentAllowOverlap) { this.studentAllowOverlap = studentAllowOverlap; }
-	
-	public boolean getInstructorAssignment() { return instructorAssignment; }
-	public void setInstructorAssignment(boolean instructorAssignment) { this.instructorAssignment = instructorAssignment; }
-	
-	public Integer getNbrInstructors() { return nbrInstructors; }
-	public void setNbrInstructors(Integer nbrInstructors) { this.nbrInstructors = nbrInstructors; }
-
-	public String getTeachingLoad() { return teachingLoad; }
-	public void setTeachingLoad(String teachingLoad) { this.teachingLoad = teachingLoad; }
 	
     public Long getControllingDept() { return controllingDept; }
     public void setControllingDept(Long deptId) { controllingDept = deptId; }

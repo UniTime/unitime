@@ -56,4 +56,9 @@ public abstract class BaseClassInstructorDAO extends _RootDAO<ClassInstructor,Lo
 	public List<ClassInstructor> findByResponsibility(org.hibernate.Session hibSession, Long responsibilityId) {
 		return hibSession.createQuery("from ClassInstructor x where x.responsibility.uniqueId = :responsibilityId").setLong("responsibilityId", responsibilityId).list();
 	}
+
+	@SuppressWarnings("unchecked")
+	public List<ClassInstructor> findByTeachingRequest(org.hibernate.Session hibSession, Long teachingRequestId) {
+		return hibSession.createQuery("from ClassInstructor x where x.teachingRequest.uniqueId = :teachingRequestId").setLong("teachingRequestId", teachingRequestId).list();
+	}
 }

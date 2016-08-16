@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.rooms.RoomsTable.DepartmentCell;
-import org.unitime.timetable.gwt.client.rooms.RoomsTable.HasRefresh;
 import org.unitime.timetable.gwt.client.rooms.RoomsTable.SortOperation;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;

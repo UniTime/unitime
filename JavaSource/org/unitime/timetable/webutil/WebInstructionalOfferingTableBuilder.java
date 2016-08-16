@@ -697,6 +697,19 @@ public class WebInstructionalOfferingTableBuilder {
     	if (!isEditable) return initNormalCell("",false);
     	if (TimePref.class.equals(prefType)) {
     		return(buildTimePrefCell(classAssignment,prefGroup, isEditable));
+    	/*
+    	} else if (InstructorAttributePref.class.equals(prefType) || InstructorPref.class.equals(prefType)) {
+    		TableCell cell = this.initNormalCell("", isEditable);
+    		if (prefGroup instanceof Class_) {
+    			for (TeachingClassRequest cr: ((Class_)prefGroup).getTeachingRequests()) {
+    				if (!cr.isAssignInstructor()) continue;
+    				cell.addContent(cr.getTeachingRequest().getEffectivePrefHtmlForPrefType(prefType, getInstructorNameFormat()));
+    			}
+    			return cell;
+    		} else {
+    			return initNormalCell("", false);
+    		}
+    	*/
     	} else {
     		if (!prefGroup.isInstructorAssignmentNeeded() && (InstructorPref.class.equals(prefType) || InstructorAttributePref.class.equals(prefType))) {
     			return initNormalCell("",false);
@@ -858,6 +871,13 @@ public class WebInstructionalOfferingTableBuilder {
     	TableCell cell = this.initNormalCell("" ,isEditable);
     	if (prefGroup instanceof Class_) {
     		Class_ c = (Class_) prefGroup;
+    		/*
+    		for (TeachingClassRequest cr: c.getTeachingRequests()) {
+    			if (!cr.isAssignInstructor()) continue;
+    			cell.addContent(Formats.getNumberFormat("0.##").format(cr.getTeachingRequest().getTeachingLoad()) + " " + MSG.teachingLoadUnits()
+    				+ (cr.getTeachingRequest().getResponsibility() == null ? "" : " (" + cr.getTeachingRequest().getResponsibility().getAbbreviation() + ")")
+    				);
+    			*/
     		if (c.isInstructorAssignmentNeeded()) {
     			cell.addContent(
     					(c.effectiveNbrInstructors() > 1 ? c.effectiveNbrInstructors() + " &times; " : "") +
@@ -871,7 +891,7 @@ public class WebInstructionalOfferingTableBuilder {
     	} else if (prefGroup instanceof SchedulingSubpart) {
     		SchedulingSubpart ss = (SchedulingSubpart)prefGroup;
     		if (ss.isInstructorAssignmentNeeded()) {
-    			cell.addContent((ss.getNbrInstructors() != null && ss.getNbrInstructors() > 1 ? ss.getNbrInstructors() + " &times; " : "") +
+    			cell.addContent((ss.getNbrInstructors() > 1 ? ss.getNbrInstructors() + " &times; " : "") +
     					Formats.getNumberFormat("0.##").format(ss.getTeachingLoad()) + " " + MSG.teachingLoadUnits());
     			cell.setAlign("right");
     			cell.setNoWrap(true);

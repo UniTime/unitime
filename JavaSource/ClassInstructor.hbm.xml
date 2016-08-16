@@ -64,24 +64,19 @@
             insert="true"
             update="true"
             foreign-key="fk_class_instr_instr"/>
-
-        <property
-            name="tentative"
-            type="java.lang.Boolean"
-            column="tentative"
-            not-null="true"/>
-            
-        <property
-            name="assignmentIndex"
-            type="java.lang.Integer"
-            column="assign_index"
-            not-null="false"/>
             
         <many-to-one
             name="responsibility"
             class="TeachingResponsibility"
             column="responsibility_id"
             foreign-key="fk_instr_responsibility"
+            not-null="false"/>
+
+        <many-to-one
+            name="teachingRequest"
+            class="TeachingRequest"
+            column="request_id"
+            foreign-key="fk_instr_request"
             not-null="false"/>
     </class>
 </hibernate-mapping>

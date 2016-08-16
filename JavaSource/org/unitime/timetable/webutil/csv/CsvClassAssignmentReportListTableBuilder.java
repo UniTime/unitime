@@ -141,8 +141,7 @@ public class CsvClassAssignmentReportListTableBuilder extends CsvClassListTableB
     	if (prefGroup instanceof Class_) {
     		Class_ aClass = (Class_) prefGroup;
     		if (aClass.isDisplayInstructor()) {
-    			InstructorComparator ic = new InstructorComparator(); ic.setCompareBy(ic.COMPARE_BY_INDEX);
-            	TreeSet sortedInstructors = new TreeSet(ic);
+    			TreeSet sortedInstructors = new TreeSet(new InstructorComparator());
             	sortedInstructors.addAll(aClass.getClassInstructors());
         		for (Iterator i=sortedInstructors.iterator(); i.hasNext();) {
         			ClassInstructor ci = (ClassInstructor)i.next();

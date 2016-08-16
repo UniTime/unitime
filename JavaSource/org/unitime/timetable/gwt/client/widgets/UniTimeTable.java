@@ -951,4 +951,17 @@ public class UniTimeTable<T> extends FlexTable {
 			}
 		}
 	}
+	
+	public int getRowForWidget(Widget w) {
+		for (Element td = w.getElement(); td != null; td = DOM.getParent(td)) {
+			if (td.getPropertyString("tagName").equalsIgnoreCase("td")) {
+				Element tr = DOM.getParent(td);
+				Element body = DOM.getParent(tr);
+				if (body == getBodyElement())
+					return DOM.getChildIndex(body, tr);
+			}
+			if (td == getBodyElement()) { return -1; }
+		}
+		return -1;
+	}
 }

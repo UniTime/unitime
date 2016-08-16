@@ -547,6 +547,14 @@
 			</TR>
 		<% } %>
 		
+		<sec:authorize access="hasPermission(null, 'Department', 'InstructorAssignmentPreferences')">
+		<TR>
+			<TD colspan="2">
+				<a name="instructors"></a>
+				<div id='UniTimeGWT:TeachingRequests' style="display: none;"><bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" /></div>
+			</TD>
+		</TR>
+		</sec:authorize>
 
 		<logic:equal name="instructionalOfferingDetailForm" property="notOffered" value="false">
 		<TR>

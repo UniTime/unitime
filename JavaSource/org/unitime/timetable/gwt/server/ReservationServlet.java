@@ -156,6 +156,13 @@ public class ReservationServlet implements ReservationService {
 	}
 	
 	private ReservationInterface.Offering convert(InstructionalOffering io, org.hibernate.Session hibSession) throws ReservationException, PageAccessException {
+		return convert(io, hibSession, permissionOfferingLockNeeded, sessionContext, classAssignmentService.getAssignment());
+	}
+	
+	public static ReservationInterface.Offering convert(InstructionalOffering io, org.hibernate.Session hibSession,
+			Permission<InstructionalOffering> permissionOfferingLockNeeded, SessionContext sessionContext,
+			ClassAssignmentProxy assignments
+			) {
 		ReservationInterface.Offering offering = new ReservationInterface.Offering();
 		offering.setAbbv(io.getCourseName());
 		offering.setName(io.getControllingCourseOffering().getTitle());
@@ -172,7 +179,6 @@ public class ReservationServlet implements ReservationService {
 			offering.getCourses().add(course);
 		}
 		String nameFormat = UserProperty.NameFormat.get(sessionContext.getUser());
-		ClassAssignmentProxy assignments = classAssignmentService.getAssignment();
 		List<InstrOfferingConfig> configs = new ArrayList<InstrOfferingConfig>(io.getInstrOfferingConfigs());
 		Collections.sort(configs, new InstrOfferingConfigComparator(null));
 		for (InstrOfferingConfig ioc: configs) {
@@ -235,6 +241,7 @@ public class ReservationServlet implements ReservationService {
 					clazz.setLimit(c.getClassLimit());
 					if (c.getParentClass() != null)
 						clazz.setParentId(c.getParentClass().getUniqueId());
+					clazz.setEnrollment(c.getEnrollment());
 				}
 			}
 		}

@@ -637,7 +637,12 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 			iRequest = request;
 			iInstructor = null;
 			iForm.setWidget(iDetailsRow, 0, iRequestDetails);
-			setText(MESSAGES.dialogTeachingRequestDetail(request.getCourse().getCourseName(), request.getSections().get(0).getSectionType() + (request.getSections().get(0).getExternalId() == null ? "" : " " + request.getSections().get(0).getExternalId())));
+			List<String> sections = new ArrayList<String>();
+			for (SectionInfo s: request.getSections()) {
+				if (!s.isCommon())
+					sections.add(s.getSectionType() + (s.getExternalId() == null ? "" : " " + s.getExternalId()));
+			}
+			setText(MESSAGES.dialogTeachingRequestDetail(request.getCourse().getCourseName(), ToolBox.toString(sections)));
 			iRequestDetails.setRequest(request, index);
 		} else {
 			iRequest = null; iInstructor = instructor;

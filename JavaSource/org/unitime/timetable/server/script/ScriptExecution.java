@@ -32,6 +32,7 @@ import javax.script.ScriptEngineManager;
 
 import org.apache.commons.fileupload.FileItem;
 import org.hibernate.Transaction;
+import org.unitime.commons.Debug;
 import org.unitime.timetable.gwt.server.UploadServlet;
 import org.unitime.timetable.gwt.shared.ScriptInterface.ExecuteScriptRpcRequest;
 import org.unitime.timetable.model.Building;
@@ -252,6 +253,7 @@ public class ScriptExecution extends QueueItem {
 		} catch (Exception e) {
 			tx.rollback();
 			error("Execution failed: " + e.getMessage(), e);
+			Debug.error("Execution failed: " + e.getMessage(), e);
 		} finally {
 			hibSession.close();
 		}

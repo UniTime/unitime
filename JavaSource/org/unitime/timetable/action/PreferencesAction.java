@@ -967,7 +967,7 @@ public abstract class PreferencesAction extends Action {
     	}
         
         // Course Prefs
-    	if (Preference.Type.COURSE.in(types) && pg.isInstructorAssignmentNeeded()) {
+    	if (Preference.Type.COURSE.in(types)) {
             List lst = frm.getCoursePrefs();
             List lstL = frm.getCoursePrefLevels();
             
@@ -992,7 +992,7 @@ public abstract class PreferencesAction extends Action {
         }
         
         // Attribute Prefs
-    	if (Preference.Type.ATTRIBUTE.in(types) && pg.isInstructorAssignmentNeeded()) {
+    	if (Preference.Type.ATTRIBUTE.in(types)) {
             List lst = frm.getAttributePrefs();
             List lstL = frm.getAttributePrefLevels();
             Set parentAttributePrefs = pg.effectivePreferences(InstructorAttributePref.class);
@@ -1038,7 +1038,7 @@ public abstract class PreferencesAction extends Action {
         }
         
         // Instructor Prefs
-    	if (Preference.Type.INSTRUCTOR.in(types) && pg.isInstructorAssignmentNeeded()) {
+    	if (Preference.Type.INSTRUCTOR.in(types)) {
             List lst = frm.getInstructorPrefs();
             List lstL = frm.getInstructorPrefLevels();
             Set parentInstructorPrefs = pg.effectivePreferences(InstructorPref.class);

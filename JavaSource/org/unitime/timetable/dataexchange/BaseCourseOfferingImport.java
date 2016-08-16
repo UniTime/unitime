@@ -1042,7 +1042,6 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
         	HashMap<String, String> acadTitles = new HashMap<String, String>();
         	HashMap<String, Integer> shares = new HashMap<String, Integer>();
         	HashMap<String, Boolean> leads = new HashMap<String, Boolean>();
-        	HashMap<String, Boolean> tentatives = new HashMap<String, Boolean>();
         	HashMap<String, String> responsibilities = new HashMap<String, String>();
         	for (Iterator<?> it = element.elementIterator(elementName); it.hasNext();){
 				Element instructorElement = (Element) it.next();
@@ -1070,11 +1069,6 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					lead = new Boolean(true);
 				}
 				leads.put(id, lead);
-				Boolean tentative = getOptionalBooleanAttribute(instructorElement, "tentative");
-				if (tentative == null){
-					tentative = new Boolean(false);
-				}
-				tentatives.put(id, tentative);
 				String responsibility = getOptionalStringAttribute(instructorElement, "responsibility");
 				if (responsibility != null && !responsibility.isEmpty())
 					responsibilities.put(id, responsibility);
@@ -1110,7 +1104,6 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			        	ChangeLog.addChange(getHibSession(), getManager(), session, di, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.CREATE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
 					}
 					ci = new ClassInstructor();
-					ci.setAssignmentIndex(c.getClassInstructors() == null ? 0 : c.getClassInstructors().size());
 					ci.setClassInstructing(c);
 					c.addToclassInstructors(ci);
 					ci.setInstructor(di);
@@ -1130,11 +1123,6 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				Boolean lead = leads.get(id);
 				if (ci.isLead() == null || !ci.isLead().equals(lead)){
 					ci.setLead(lead);
-					changed = true;
-				}
-				Boolean tentative = tentatives.get(id);
-				if (ci.isTentative() == null || !ci.isTentative().equals(tentative)){
-					ci.setTentative(tentative);
 					changed = true;
 				}
 				String responsibility = responsibilities.get(id);

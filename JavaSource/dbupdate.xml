@@ -11528,4 +11528,126 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'PreferenceLevelEdit'
 		</sql>
 	</update>
+	<update version="167" date="16-Aug-2016" comment="Teaching Requests">
+		<mysql>
+			create table %SCHEMA%.teaching_request (
+				uniqueid decimal(20,0) primary key not null,
+				offering_id decimal(20,0) not null,
+				nbr_instructors decimal(10,0) not null,
+				teaching_load float not null,
+				same_course_pref decimal(20,0) null,
+				same_common_pref decimal(20,0) null,
+				responsibility_id decimal(20,0) null,
+				assign_coordinator int(1) not null
+			) engine = INNODB
+		</mysql>
+		<mysql>
+			create table %SCHEMA%.teachreq_class (
+				uniqueid decimal(20,0) primary key not null,
+				percent_share int(3) not null,
+				is_lead int(1) not null,
+				can_overlap int(1) not null,
+				request_id decimal(20,0) not null,
+				class_id decimal(20,0) not null,
+				assign_instructor int(1) not null,
+				common int(1) not null
+			) engine = INNODB
+		</mysql>
+		<mysql>
+			create table %SCHEMA%.teachreq_instructor (
+				request_id decimal(20,0) not null,
+				instructor_id decimal(20,0) not null,
+				primary key(request_id, instructor_id)
+			) engine = INNODB
+		</mysql>
+		<mysql>alter table %SCHEMA%.offering_coordinator add request_id decimal(20,0) default null</mysql>
+		<mysql>alter table %SCHEMA%.class_instructor add request_id decimal(20,0) default null</mysql>
+		<plsql>
+			create table %SCHEMA%.teaching_request (
+				uniqueid number(20,0) constraint nn_teachreq_uniqueid not null,
+				offering_id number(20,0) constraint nn_teachreq_offering not null,
+				nbr_instructors number(10,0) constraint nn_teachreq_nbrinstr not null,
+				teaching_load float constraint nn_teachreq_load not null,
+				same_course_pref number(20,0),
+				same_common_pref number(20,0),
+				responsibility_id number(20,0),
+				assign_coordinator number(1) constraint nn_teachreq_assign not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.teaching_request add constraint pk_teaching_request primary key (uniqueid)</plsql>
+		<plsql>
+			create table %SCHEMA%.teachreq_class (
+				uniqueid number(20,0) constraint nn_clsteachreq_uniqueid not null,
+				percent_share number(3,0) constraint nn_clsteachreq_share not null,
+				is_lead number(1) constraint nn_clsteachreq_lead not null,
+				can_overlap number(1) constraint nn_clsteachreq_overlap not null,
+				request_id number(20,0) constraint nn_clsteachreq_request not null,
+				class_id number(20,0) constraint nn_clsteachreq_class not null,
+				assign_instructor number(1) constraint nn_clsteachreq_assign not null,
+				common number(1) constraint nn_clsteachreq_common not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.teachreq_class add constraint pk_teachreq_class primary key (uniqueid)</plsql>
+		<plsql>
+			create table %SCHEMA%.teachreq_instructor (
+				request_id number(20,0) constraint nn_instrteachreq_request not null,
+				instructor_id number(20,0) constraint nn_instrteachreq_instr not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.teachreq_instructor add constraint pk_teachreq_instructor primary key (request_id, instructor_id)</plsql>
+		<plsql>alter table %SCHEMA%.offering_coordinator add request_id number(20,0)</plsql>
+		<plsql>alter table %SCHEMA%.class_instructor add request_id number(20,0)</plsql>
+		<sql>
+			alter table %SCHEMA%.teaching_request add constraint fk_teachreq_offering foreign key (offering_id)
+			references %SCHEMA%.instructional_offering(uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.teaching_request add constraint fk_teachreq_same_course foreign key (same_course_pref)
+			references %SCHEMA%.preference_level(uniqueid) on delete set null
+		</sql>
+		<sql>
+			alter table %SCHEMA%.teaching_request add constraint fk_teachreq_same_common foreign key (same_common_pref)
+			references %SCHEMA%.preference_level(uniqueid) on delete set null
+		</sql>
+		<sql>
+			alter table %SCHEMA%.teachreq_instructor add constraint fk_teachreq_instructor foreign key (instructor_id)
+			references %SCHEMA%.departmental_instructor(uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.teachreq_instructor add constraint fk_teachreq_request foreign key (request_id)
+			references %SCHEMA%.teaching_request(uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.teaching_request add constraint fk_teachreq_responsibility foreign key (responsibility_id)
+			references %SCHEMA%.teaching_responsibility(uniqueid) on delete set null
+		</sql>
+		<sql>
+			alter table %SCHEMA%.teachreq_class add constraint fk_teachreq_crequest foreign key (request_id)
+			references %SCHEMA%.teaching_request(uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.teachreq_class add constraint fk_teachreq_class foreign key (class_id)
+			references %SCHEMA%.class_(uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.offering_coordinator add constraint fk_coord_request foreign key (request_id)
+			references %SCHEMA%.teaching_request (uniqueid) on delete set null
+		</sql>
+		<sql>
+			alter table %SCHEMA%.class_instructor add constraint fk_instr_request foreign key (request_id)
+			references %SCHEMA%.teaching_request (uniqueid) on delete set null
+		</sql>
+		<mysql>alter table %SCHEMA%.scheduling_subpart drop teaching_load</mysql>
+		<mysql>alter table %SCHEMA%.scheduling_subpart drop nbr_instructors</mysql>
+		<mysql>alter table %SCHEMA%.class_ drop teaching_load</mysql>
+		<mysql>alter table %SCHEMA%.class_ drop nbr_instructors</mysql>
+		<mysql>alter table %SCHEMA%.class_instructor drop tentative</mysql>
+		<mysql>alter table %SCHEMA%.class_instructor drop assign_index</mysql>
+		<plsql>alter table %SCHEMA%.scheduling_subpart drop column teaching_load</plsql>
+		<plsql>alter table %SCHEMA%.scheduling_subpart drop column nbr_instructors</plsql>
+		<plsql>alter table %SCHEMA%.class_ drop column teaching_load</plsql>
+		<plsql>alter table %SCHEMA%.class_ drop column nbr_instructors</plsql>
+		<plsql>alter table %SCHEMA%.class_instructor drop column tentative</plsql>
+		<plsql>alter table %SCHEMA%.class_instructor drop column assign_index</plsql>
+	</update>
 </dbupdate>

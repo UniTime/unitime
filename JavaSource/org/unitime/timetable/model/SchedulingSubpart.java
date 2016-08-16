@@ -448,6 +448,22 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	if (DistributionPref.class.equals(type)) {
     		return effectiveDistributionPreferences(getManagingDept());
     	}
+    	
+    	if (InstructorAttributePref.class.equals(type) || InstructorPref.class.equals(type)) {
+    		Set<Preference> prefs = new TreeSet<Preference>();
+    		List<TeachingRequest> requests = new ArrayList<TeachingRequest>(); 
+    		for (Class_ clazz: getClasses())
+        		tcr: for (TeachingClassRequest tcr: clazz.getTeachingRequests()) {
+        			if (tcr.getAssignInstructor()) {
+            			for (TeachingRequest r: requests)
+            				if (r.equals(tcr.getTeachingRequest()) || r.canCombine(tcr.getTeachingRequest())) continue tcr;
+            			requests.add(tcr.getTeachingRequest());
+        				prefs.addAll(tcr.getTeachingRequest().getPreferences(type));
+        			}
+        		}
+    		return prefs;
+    	}
+
     	Set subpartPrefs = getPreferences(type, this);
     	
     	if (canInheritParentPreferences()) {
@@ -767,8 +783,6 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	newSchedulingSubpart.setItype(getItype());
     	newSchedulingSubpart.setMinutesPerWk(getMinutesPerWk());
     	newSchedulingSubpart.setStudentAllowOverlap(isStudentAllowOverlap());
-    	newSchedulingSubpart.setTeachingLoad(getTeachingLoad());
-    	newSchedulingSubpart.setNbrInstructors(getNbrInstructors());
     	return(newSchedulingSubpart);
     }
 
@@ -886,8 +900,34 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 		return getInstrOfferingConfig().getDurationModel().getDates(getMinutesPerWk(), datePattern, dayCode, minutesPerMeeting);
 	}
 	
-	@Override
+	public boolean isParentOf(SchedulingSubpart subpart) {
+		SchedulingSubpart parent = subpart.getParentSubpart();
+		return parent != null && (this.equals(parent) || isParentOf(parent)); 
+	}
+	
 	public boolean isInstructorAssignmentNeeded() {
-		return getTeachingLoad() != null && getNbrInstructors() != null && getNbrInstructors() > 0;
+		for (Class_ c: getClasses())
+			if (c.isInstructorAssignmentNeeded()) return true;
+		return false;
+	}
+	
+	public int getNbrInstructors() {
+		int instructors = 0;
+		for (Class_ c: getClasses())
+			for (TeachingClassRequest tcr: c.getTeachingRequests())
+				if (tcr.isAssignInstructor())
+					instructors += tcr.getTeachingRequest().getNbrInstructors();
+		return instructors;
+	}
+	
+	public float getTeachingLoad() {
+		int instructors = 0; float totalLoad = 0f;
+		for (Class_ c: getClasses())
+			for (TeachingClassRequest tcr: c.getTeachingRequests())
+				if (tcr.isAssignInstructor()) {
+					instructors += tcr.getTeachingRequest().getNbrInstructors();
+					totalLoad += tcr.getTeachingRequest().getNbrInstructors() * tcr.getTeachingRequest().getTeachingLoad();
+				}
+		return totalLoad / instructors;
 	}
 }

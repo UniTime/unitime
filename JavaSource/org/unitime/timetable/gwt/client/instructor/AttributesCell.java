@@ -19,24 +19,29 @@
 */
 package org.unitime.timetable.gwt.client.instructor;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.widgets.P;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeInterface;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.TakesValue;
 
 /**
  * @author Tomas Muller
  */
-public class AttributesCell extends P implements TakesValue<List<AttributeInterface>> {
-	private List<AttributeInterface> iAttributes = null;
+public class AttributesCell extends P implements TakesValue<Collection<AttributeInterface>> {
+	protected static GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
+	private Collection<AttributeInterface> iAttributes = null;
 	
 	public AttributesCell() {
 		super("attributes");
 	}
 	
-	public AttributesCell(List<AttributeInterface> attributes) {
+	public AttributesCell(Collection<AttributeInterface> attributes) {
 		this();
 		setValue(attributes);
 	}
@@ -47,20 +52,21 @@ public class AttributesCell extends P implements TakesValue<List<AttributeInterf
 	}
 	
 	@Override
-	public void setValue(List<AttributeInterface> attributes) {
+	public void setValue(Collection<AttributeInterface> attributes) {
 		clear();
 		iAttributes = attributes;
 		if (attributes != null) {
-			for (AttributeInterface a: attributes) {
-				P i = new P("attribute");
-				i.setText(a.getName());
-				i.setTitle(a.getName() + " (" + a.getType().getLabel() + ")");
-				add(i);
+			for (Iterator<AttributeInterface> i = attributes.iterator(); i.hasNext(); ) {
+				AttributeInterface a = i.next();
+				P p = new P("attribute");
+				p.setText(a.getName() + (i.hasNext() ? CONSTANTS.itemSeparator() : ""));
+				p.setTitle(a.getName() + " (" + a.getType().getLabel() + ")");
+				add(p);
 			}
 		}
 	}
 	
-	public void setValue(List<AttributeInterface> oldAttributes, List<AttributeInterface> newAttributes) {
+	public void setValue(Collection<AttributeInterface> oldAttributes, Collection<AttributeInterface> newAttributes) {
 		clear();
 		iAttributes = newAttributes;
 		if (oldAttributes != null) {
@@ -95,7 +101,7 @@ public class AttributesCell extends P implements TakesValue<List<AttributeInterf
 	}
 
 	@Override
-	public List<AttributeInterface> getValue() {
+	public Collection<AttributeInterface> getValue() {
 		return iAttributes;
 	}
 }

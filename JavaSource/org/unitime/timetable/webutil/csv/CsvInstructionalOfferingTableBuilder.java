@@ -514,7 +514,7 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	} else if (prefGroup instanceof SchedulingSubpart) {
     		SchedulingSubpart ss = (SchedulingSubpart)prefGroup;
     		if (ss.isInstructorAssignmentNeeded()) {
-    			addText(cell, (ss.getNbrInstructors() != null && ss.getNbrInstructors() > 1 ? ss.getNbrInstructors() + " \u00d7 " : "") +
+    			addText(cell, (ss.getNbrInstructors() > 1 ? ss.getNbrInstructors() + " \u00d7 " : "") +
     					Formats.getNumberFormat("0.##").format(ss.getTeachingLoad()) + " " + MSG.teachingLoadUnits(), false);
     		}
     	}
@@ -525,8 +525,7 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	CSVField cell = createCell();
     	if (prefGroup instanceof Class_) {
     		Class_ aClass = (Class_) prefGroup;
-    		InstructorComparator ic = new InstructorComparator(); ic.setCompareBy(ic.COMPARE_BY_INDEX);
-        	TreeSet sortedInstructors = new TreeSet(ic);
+    		TreeSet sortedInstructors = new TreeSet(new InstructorComparator());
         	sortedInstructors.addAll(aClass.getClassInstructors());
     		for (Iterator i=sortedInstructors.iterator(); i.hasNext();) {
     			ClassInstructor ci = (ClassInstructor)i.next();

@@ -11753,7 +11753,7 @@ insert into `rights` values
 	(1507282,'SchedulingAssistant');
 
 insert into `roles` values
-	(1,'Sysadmin','System Administrator',1,1,0),
+	(1,'Administrator','System Administrator',1,1,0),
 	(21,'Dept Sched Mgr','Department Schedule Manager',1,1,0),
 	(41,'View All','View All User',1,1,0),
 	(61,'Exam Mgr','Examination Timetabling Manager',1,1,0),
@@ -11763,7 +11763,7 @@ insert into `roles` values
 	(1408981,'No Role','No Role',0,1,0),
 	(1408982,'Student','Student',0,1,0),
 	(1408983,'Instructor','Instructor',0,1,0),
-	(1441748,'Administrator','Session Administrator',1,1,0),
+	(1441748,'Session Admin','Session Administrator',1,1,0),
 	(1507282,'Anonymous','Anonymous',0,1,0);
 
 insert into `room` values

@@ -29,6 +29,7 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.TeachingRequest;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
@@ -56,6 +57,7 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	private Set<InstrOfferingConfig> iInstrOfferingConfigs;
 	private Set<Reservation> iReservations;
 	private Set<OfferingCoordinator> iOfferingCoordinators;
+	private Set<TeachingRequest> iTeachingRequests;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_INSTR_OFFERING_PERM_ID = "instrOfferingPermId";
@@ -148,6 +150,13 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	public void addToofferingCoordinators(OfferingCoordinator offeringCoordinator) {
 		if (iOfferingCoordinators == null) iOfferingCoordinators = new HashSet<OfferingCoordinator>();
 		iOfferingCoordinators.add(offeringCoordinator);
+	}
+
+	public Set<TeachingRequest> getTeachingRequests() { return iTeachingRequests; }
+	public void setTeachingRequests(Set<TeachingRequest> teachingRequests) { iTeachingRequests = teachingRequests; }
+	public void addToteachingRequests(TeachingRequest teachingRequest) {
+		if (iTeachingRequests == null) iTeachingRequests = new HashSet<TeachingRequest>();
+		iTeachingRequests.add(teachingRequest);
 	}
 
 	public boolean equals(Object o) {

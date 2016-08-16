@@ -189,18 +189,6 @@
                 type="java.lang.Long"
                 not-null="false"
                 length="20"/>
-
-            <property
-                name="teachingLoad"
-                column="teaching_load"
-                type="java.lang.Float"
-                not-null="false"/>
-
-            <property
-                name="nbrInstructors"
-                column="nbr_instructors"
-                type="java.lang.Integer"
-                not-null="false"/>
         </union-subclass>
 
         <union-subclass
@@ -408,17 +396,16 @@
                 column="cancelled"
                 not-null="true"/>
 
-            <property
-                name="teachingLoad"
-                column="teaching_load"
-                type="java.lang.Float"
-                not-null="false"/>
-
-            <property
-                name="nbrInstructors"
-                column="nbr_instructors"
-                type="java.lang.Integer"
-                not-null="false"/>
+			<set
+                name="teachingRequests"
+                cascade="all"
+                lazy="true"
+                table="teachreq_class"
+                inverse="true">
+                <cache include="non-lazy" usage="transactional"/>
+                <key column="class_id" foreign-key="fk_teachreq_class"/>
+                <one-to-many class="TeachingClassRequest"/>
+            </set>
         </union-subclass>
 
         <union-subclass
@@ -1142,6 +1129,65 @@
                 class="DepartmentStatusType"
                 lazy="proxy"
                 formula=" ( select s.status_id from %SCHEMA%.exam_status s where s.session_id = session_id and s.type_id = exam_type_id ) "/>
+        </union-subclass>
+        <union-subclass name="TeachingRequest" table="teaching_request">
+			<many-to-one
+                name="offering"
+                class="InstructionalOffering"
+                column="offering_id"
+                not-null="true"
+                foreign-key="fk_teachreq_offering"/>
+			<property
+                name="nbrInstructors"
+                column="nbr_instructors"
+                type="java.lang.Integer"
+                not-null="true"/>
+            <property
+                name="teachingLoad"
+                column="teaching_load"
+                type="java.lang.Float"
+                not-null="true"/>
+            <many-to-one
+                name="sameCoursePreference"
+                class="PreferenceLevel"
+                column="same_course_pref"
+                not-null="false"
+                foreign-key="fk_teachreq_same_course"/>
+            <many-to-one
+                name="sameCommonPart"
+                class="PreferenceLevel"
+                column="same_common_pref"
+                not-null="false"
+                foreign-key="fk_teachreq_same_common"/>
+            <set
+                name="assignedInstructors"
+                lazy="true"
+                table="teachreq_instructor">
+                <cache include="non-lazy" usage="transactional"/>
+                <key column="request_id" foreign-key="fk_teachreq_request"/>
+                <many-to-many class="DepartmentalInstructor" column="instructor_id" foreign-key="fk_teachreq_instructor"/>
+            </set>
+            <many-to-one
+            	name="responsibility"
+            	class="TeachingResponsibility"
+            	column="responsibility_id"
+            	foreign-key="fk_teachreq_responsibility"
+            	not-null="false"/>
+	        <property
+    	        name="assignCoordinator"
+        	    type="java.lang.Boolean"
+            	column="assign_coordinator"
+            	not-null="true"/>
+            <set
+                name="classRequests"
+                cascade="all"
+                lazy="true"
+                inverse="true"
+                table="teachreq_class">
+                <cache include="non-lazy" usage="transactional"/>
+                <key column="request_id" foreign-key="fk_teachreq_crequest"/>
+                <one-to-many class="TeachingClassRequest"/>
+            </set>
         </union-subclass>
     </class>
 </hibernate-mapping>

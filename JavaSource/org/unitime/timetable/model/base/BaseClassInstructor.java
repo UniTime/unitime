@@ -24,6 +24,7 @@ import java.io.Serializable;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.TeachingRequest;
 import org.unitime.timetable.model.TeachingResponsibility;
 
 /**
@@ -36,18 +37,15 @@ public abstract class BaseClassInstructor implements Serializable {
 	private Long iUniqueId;
 	private Integer iPercentShare;
 	private Boolean iLead;
-	private Boolean iTentative;
-	private Integer iAssignmentIndex;
 
 	private Class_ iClassInstructing;
 	private DepartmentalInstructor iInstructor;
 	private TeachingResponsibility iResponsibility;
+	private TeachingRequest iTeachingRequest;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_PERCENT_SHARE = "percentShare";
 	public static String PROP_IS_LEAD = "lead";
-	public static String PROP_TENTATIVE = "tentative";
-	public static String PROP_ASSIGN_INDEX = "assignmentIndex";
 
 	public BaseClassInstructor() {
 		initialize();
@@ -70,13 +68,6 @@ public abstract class BaseClassInstructor implements Serializable {
 	public Boolean getLead() { return iLead; }
 	public void setLead(Boolean lead) { iLead = lead; }
 
-	public Boolean isTentative() { return iTentative; }
-	public Boolean getTentative() { return iTentative; }
-	public void setTentative(Boolean tentative) { iTentative = tentative; }
-
-	public Integer getAssignmentIndex() { return iAssignmentIndex; }
-	public void setAssignmentIndex(Integer assignmentIndex) { iAssignmentIndex = assignmentIndex; }
-
 	public Class_ getClassInstructing() { return iClassInstructing; }
 	public void setClassInstructing(Class_ classInstructing) { iClassInstructing = classInstructing; }
 
@@ -85,6 +76,9 @@ public abstract class BaseClassInstructor implements Serializable {
 
 	public TeachingResponsibility getResponsibility() { return iResponsibility; }
 	public void setResponsibility(TeachingResponsibility responsibility) { iResponsibility = responsibility; }
+
+	public TeachingRequest getTeachingRequest() { return iTeachingRequest; }
+	public void setTeachingRequest(TeachingRequest teachingRequest) { iTeachingRequest = teachingRequest; }
 
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof ClassInstructor)) return false;
@@ -103,13 +97,12 @@ public abstract class BaseClassInstructor implements Serializable {
 
 	public String toDebugString() {
 		return "ClassInstructor[" +
-			"\n	AssignmentIndex: " + getAssignmentIndex() +
 			"\n	ClassInstructing: " + getClassInstructing() +
 			"\n	Instructor: " + getInstructor() +
 			"\n	Lead: " + getLead() +
 			"\n	PercentShare: " + getPercentShare() +
 			"\n	Responsibility: " + getResponsibility() +
-			"\n	Tentative: " + getTentative() +
+			"\n	TeachingRequest: " + getTeachingRequest() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

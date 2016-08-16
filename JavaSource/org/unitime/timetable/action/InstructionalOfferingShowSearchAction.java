@@ -111,6 +111,7 @@ public class InstructionalOfferingShowSearchAction extends Action {
 				StringBuffer names = new StringBuffer();
 				StringBuffer subjIds = new StringBuffer();
 				for (String id: sa.toString().split(",")) {
+					if ("-1".equals(id)) continue;
 					if (names.length() > 0) {
 						names.append(","); 
 						subjIds.append(",");

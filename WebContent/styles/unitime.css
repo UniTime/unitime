@@ -4312,6 +4312,38 @@ unitime-RoomSharingWidget .legend .blank {
 	width: 100%;
 }
 
+.unitime-TeachingAssignments .preferences .prf {
+	padding-left: 2px;
+	white-space: nowrap;
+	display: inline-block;
+}
+
+.unitime-TeachingAssignments .attributes .attribute {
+	padding-left: 2px;
+	white-space: nowrap;
+	display: inline-block;
+}
+
+.unitime-TeachingAssignments .sections .section {
+	white-space: nowrap;
+}
+
+.unitime-TeachingAssignments .times .time {
+	white-space: nowrap;
+}
+
+.unitime-TeachingAssignments .dates .date {
+	white-space: nowrap;
+}
+
+.unitime-TeachingAssignments .rooms .room {
+	white-space: nowrap;
+}
+
+.unitime-TeachingAssignments .objectives .objective {
+	white-space: nowrap;
+}
+
 .unitime-TeachingAssignments .common {
 	font-style: italic;
 }
@@ -4320,14 +4352,45 @@ unitime-RoomSharingWidget .legend .blank {
 	border-top: 1px dashed #9CB0CE;
 }
 
+.unitime-TeachingRequests .sections .section {
+	white-space: nowrap;
+}
+
+.unitime-TeachingRequests .times .time {
+	white-space: nowrap;
+}
+
+.unitime-TeachingRequests .dates .date {
+	white-space: nowrap;
+}
+
+.unitime-TeachingRequests .rooms .room {
+	white-space: nowrap;
+}
+
+.unitime-TeachingRequests .preferences .prf {
+	padding-left: 2px;
+	white-space: nowrap;
+	display: inline-block;
+}
+
+.unitime-TeachingRequests .attributes .attribute {
+	white-space: nowrap;
+	display: inline-block;
+}
+
+.unitime-TeachingRequests .objectives .objective {
+	white-space: nowrap;
+}
+
 .unitime-TeachingRequestDetail {
 }
 
 .unitime-TeachingRequestDetail .scroll {
 }
 
-.unitime-TeachingRequestDetail .sections {
-	width: 100%;
+.unitime-TeachingRequests .sections .section {
+	white-space: nowrap;
 }
 
 .unitime-TeachingRequestDetail .sections .common {
@@ -4422,19 +4485,12 @@ unitime-RoomSharingWidget .legend .blank {
 	border-bottom: 1px dashed #9CB0CE;
 }
 
+.unitime-TeachingRequestDetail .course {
+	white-space: nowrap;
+}
+
 .unitime-TeachingRequestDetail .selected .initial {
 	text-align: right;
-}
-
-.unitime-TeachingRequestDetail .selected .sections {
-	display: block;
-	height: 18px;
-}
-
-.unitime-TeachingRequestDetail .selected .section {
-	white-space: nowrap;
-	display: inline-block;
-	padding-right: 5px;
 }
 
 .unitime-TeachingRequestDetail .selected .conflict {
@@ -4460,14 +4516,6 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-TeachingRequestDetail .domain .conflict {
 	color:red;
-	display: block;
-	height: 18px;
-}
-
-.unitime-TeachingRequestDetail .domain .conflict .section {
-	white-space: nowrap;
-	display: inline-block;
-	padding-right: 5px;
 }
 
 .unitime-TeachingRequestDetail .domain .note {
@@ -4477,6 +4525,44 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-TeachingRequestDetail .instructors {
 	width: 100%;
+}
+
+.unitime-TeachingRequestDetail .sections .section {
+	padding-left: 2px;
+	white-space: nowrap;
+	display: inline-block;
+}
+
+.unitime-TeachingRequestDetail .attributes .attribute {
+	padding-left: 2px;
+	white-space: nowrap;
+	display: inline-block;
+}
+
+.unitime-TeachingRequestDetail .conflicts .conflict {
+	white-space: nowrap;
+}
+
+.unitime-TeachingRequestDetail .preferences .prf {
+	padding-left: 2px;
+	white-space: nowrap;
+	display: inline-block;
+}
+
+.unitime-TeachingRequestDetail .objectives .objective {
+	white-space: nowrap;
+}
+
+.unitime-TeachingRequestDetail .times .time {
+	white-space: nowrap;
+}
+
+.unitime-TeachingRequestDetail .dates .date {
+	white-space: nowrap;
+}
+
+.unitime-TeachingRequestDetail .rooms .room {
+	white-space: nowrap;
 }
 
 .unitime-TeachingAssignmentChanges .not-assigned {

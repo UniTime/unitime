@@ -19,19 +19,23 @@
 */
 package org.unitime.timetable.gwt.client.instructor;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.widgets.P;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.InstructorInterface.PreferenceInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.PreferenceInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestsPagePropertiesResponse;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.TakesValue;
 
 /**
  * @author Tomas Muller
  */
 public class PreferenceCell extends P implements TakesValue<List<PreferenceInfo>>{
+	protected static GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private TeachingRequestsPagePropertiesResponse iProperties;
 	private List<PreferenceInfo> iPreferences = null;
 	
@@ -54,9 +58,10 @@ public class PreferenceCell extends P implements TakesValue<List<PreferenceInfo>
 		clear();
 		iPreferences = prefs;
 		if (prefs != null)
-			for (PreferenceInfo p: prefs) {
+			for (Iterator<PreferenceInfo> i = prefs.iterator(); i.hasNext(); ) {
+				PreferenceInfo p = i.next();
 				P prf = new P("prf");
-				prf.setText(p.getOwnerName());
+				prf.setText(p.getOwnerName() + (i.hasNext() ? CONSTANTS.itemSeparator() : ""));
 				PreferenceInterface preference = iProperties.getPreference(p.getPreference());
 				if (preference != null) {
 					prf.setTitle(preference.getName() + " " + p.getOwnerName());

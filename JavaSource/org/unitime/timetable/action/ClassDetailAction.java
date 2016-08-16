@@ -444,11 +444,6 @@ public class ClassDetailAction extends PreferencesAction {
 	        frm.setAccommodation(StudentAccomodation.toHtml(StudentAccomodation.getAccommodations(c)));
 	        frm.setIsCancelled(c.isCancelled());
 	        
-	        frm.setInstructorAssignmentDefault(c.getSchedulingSubpart().isInstructorAssignmentNeeded());
-	        frm.setInstructorAssignment(c.isInstructorAssignmentNeeded());
-	        frm.setTeachingLoad(c.effectiveTeachingLoad() == null ? "" : Formats.getNumberFormat("0.##").format(c.effectiveTeachingLoad()));
-	        frm.setNbrInstructors(c.isInstructorAssignmentNeeded() ? String.valueOf(c.effectiveNbrInstructors()) : "");
-
 	        // Load from class
 		    frm.setExpectedCapacity(c.getExpectedCapacity());
 		    frm.setEnrollment(c.getEnrollment());
@@ -475,9 +470,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        frm.setPreviousId(previous==null?null:previous.getUniqueId().toString());
 
 		    List instructors = new ArrayList(c.getClassInstructors());
-		    InstructorComparator ic = new InstructorComparator();
-		    ic.setCompareBy(ic.COMPARE_BY_INDEX);
-		    Collections.sort(instructors, ic);
+		    Collections.sort(instructors, new InstructorComparator());
 
 		    for(Iterator iter = instructors.iterator(); iter.hasNext(); ) {
 		    	ClassInstructor classInstr = (ClassInstructor) iter.next();

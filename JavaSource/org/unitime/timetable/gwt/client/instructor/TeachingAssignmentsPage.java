@@ -458,7 +458,7 @@ public class TeachingAssignmentsPage extends SimpleForm {
 		switch (column) {
 		case COURSE:
 			if (request == null) return null;
-			return new Label(request.getCourse().getCourseName());
+			return new Label(request.getCourse().getCourseName(), false);
 		case SECTION:
 			if (request == null) return null;
 			P p = new P("sections");

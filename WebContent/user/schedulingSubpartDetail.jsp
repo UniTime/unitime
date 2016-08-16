@@ -86,15 +86,6 @@
 						</html:submit>
 					</sec:authorize> 
 				
-					<sec:authorize access="hasPermission(#SchedulingSubpartEditForm.controllingDept, 'Department', 'InstructorAssignmentPreferences')">
-						&nbsp;
-						<html:submit property="op" styleClass="btn" 
-							accesskey="<%=MSG.accessEditSubpartInstructorAssignmentPreferences()%>" 
-							title="<%=MSG.titleEditSubpartInstructorAssignmentPreferences(MSG.accessEditSubpartInstructorAssignmentPreferences()) %>" >
-							<loc:message name="actionEditSubpartInstructorAssignmentPreferences" />
-						</html:submit> 
-					</sec:authorize>
-				
 					<sec:authorize access="hasPermission(#SchedulingSubpartEditForm.schedulingSubpartId, 'SchedulingSubpart', 'DistributionPreferenceSubpart')">
 						&nbsp;
 						<html:submit property="op" styleClass="btn" 
@@ -229,28 +220,6 @@
 				</TR>
 			</logic:notEmpty>
 		</logic:equal>
-		<logic:equal name="<%=frmName%>" property="instructorAssignment" value="true">
-			<TR>
-				<TD><loc:message name="propertyNeedInstructorAssignment"/></TD>
-				<TD>
-					<loc:message name="subpartDetailNeedInstructorAssignment"/>
-				</TD>
-			</TR>
-			<logic:notEqual name="<%=frmName%>" property="nbrInstructors" value="1">
-				<TR>
-					<TD><loc:message name="propertyNbrInstructors"/></TD>
-					<TD>
-						<bean:write name="<%=frmName%>" property="nbrInstructors" />
-					</TD>
-				</TR>
-			</logic:notEqual>
-			<TR>
-				<TD><loc:message name="propertyTeachingLoad"/></TD>
-				<TD>
-					<bean:write name="<%=frmName%>" property="teachingLoad" /> <loc:message name="teachingLoadUnits"/>
-				</TD>
-			</TR>
-		</logic:equal>
 		
 		<tt:last-change type='SchedulingSubpart'>
 			<bean:write name="<%=frmName%>" property="schedulingSubpartId"/>
@@ -269,15 +238,11 @@
 				<jsp:param name="bldgPref" value="false"/>
 				<jsp:param name="roomFeaturePref" value="false"/>
 				<jsp:param name="roomGroupPref" value="false"/>
-				<jsp:param name="attributePref" value="${SchedulingSubpartEditForm.instructorAssignment}"/>
-				<jsp:param name="instructorPref" value="${SchedulingSubpartEditForm.instructorAssignment}"/>
 			</jsp:include>
 		</logic:equal>
 		<logic:notEqual value="true" name="<%=frmName%>" property="unlimitedEnroll">
 			<jsp:include page="preferencesDetail.jspf">
 				<jsp:param name="frmName" value="<%=frmName%>"/>
-				<jsp:param name="attributePref" value="${SchedulingSubpartEditForm.instructorAssignment}"/>
-				<jsp:param name="instructorPref" value="${SchedulingSubpartEditForm.instructorAssignment}"/>
 			</jsp:include>
 		</logic:notEqual>
 
@@ -305,7 +270,6 @@
 		WebClassListTableBuilder subpartClsTableBuilder = new WebClassListTableBuilder();
 		subpartClsTableBuilder.setDisplayDistributionPrefs(false);
 		subpartClsTableBuilder.setDisplayConflicts(true);
-		subpartClsTableBuilder.setShowInstructorAssignment(frm.getInstructorAssignment());
 		subpartClsTableBuilder.htmlTableForSubpartClasses(
 									sessionContext,
 				    		        WebSolver.getClassAssignmentProxy(session),
@@ -345,15 +309,6 @@
 							title="<%=MSG.titleEditSubpart(MSG.accessEditSubpart()) %>" >
 							<loc:message name="actionEditSubpart" />
 						</html:submit> 
-				</sec:authorize>
-				
-				<sec:authorize access="hasPermission(#SchedulingSubpartEditForm.controllingDept, 'Department', 'InstructorAssignmentPreferences')">
-					&nbsp;
-					<html:submit property="op" styleClass="btn" 
-						accesskey="<%=MSG.accessEditSubpartInstructorAssignmentPreferences()%>" 
-						title="<%=MSG.titleEditSubpartInstructorAssignmentPreferences(MSG.accessEditSubpartInstructorAssignmentPreferences()) %>" >
-						<loc:message name="actionEditSubpartInstructorAssignmentPreferences" />
-					</html:submit> 
 				</sec:authorize>
 				
 				<sec:authorize access="hasPermission(#SchedulingSubpartEditForm.schedulingSubpartId, 'SchedulingSubpart', 'DistributionPreferenceSubpart')">

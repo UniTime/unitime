@@ -28,13 +28,14 @@ import org.unitime.timetable.gwt.shared.InstructorInterface.ComputeSuggestionsRe
 import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.SuggestionsResponse;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestInfo;
+import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestsPageRequest;
 import org.unitime.timetable.solver.CommonSolverInterface;
 
 /**
  * @author Tomas Muller
  */
 public interface InstructorSchedulingProxy extends CommonSolverInterface {
-	public List<TeachingRequestInfo> getTeachingRequests(Long subjectAreaId, boolean assigned);
+	public List<TeachingRequestInfo> getTeachingRequests(TeachingRequestsPageRequest request);
 	public List<InstructorInfo> getInstructors(Long departmentId);
 	public TeachingRequestInfo getTeachingRequestInfo(Long requestId);
 	public InstructorInfo getInstructorInfo(Long instructorId);

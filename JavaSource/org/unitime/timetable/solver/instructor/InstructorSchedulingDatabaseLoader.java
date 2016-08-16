@@ -63,12 +63,10 @@ import org.unitime.timetable.model.InstructorCoursePref;
 import org.unitime.timetable.model.InstructorPref;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.TeachingClassRequest;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
-import org.unitime.timetable.model.comparators.ClassComparator;
-import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.NameFormat;
 
@@ -79,14 +77,12 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
 	private Progress iProgress = null;
 	private Set<Long> iSolverGroupId = new HashSet<Long>();
 	private String iInstructorFormat;
-	private Set<String> iCommonItypes = new HashSet<String>();
 	private Map<Long, Attribute.Type> iAttributeTypes = new HashMap<Long, Attribute.Type>();
 	private Map<Long, Attribute> iAttributes = new HashMap<Long, Attribute>();
-	private Map<Long, Course> iCourses = new HashMap<Long, Course>();
 	private Map<Long, Attribute> iDepartmentAttribute = new HashMap<Long, Attribute>();
-	private Map<Long, Section> iSections = new HashMap<Long, Section>();
 	private Map<Long, Instructor> iInstructors = new HashMap<Long, Instructor>();
-	private boolean iHasTentative = false, iHasCommitted = false;
+	private boolean iHasCommitted = false;
+	private String iDefaultSameCourse = null, iDefaultSameCommon = null;
 	
     public InstructorSchedulingDatabaseLoader(InstructorSchedulingModel model, Assignment<TeachingRequest.Variable, TeachingAssignment> assignment) {
     	super(model, assignment);
@@ -95,10 +91,8 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     	for (Long id: model.getProperties().getPropertyLongArry("General.SolverGroupId", null))
     		iSolverGroupId.add(id);
     	iInstructorFormat = getModel().getProperties().getProperty("General.InstructorFormat", NameFormat.LAST_FIRST.reference());
-    	String commonItypes = getModel().getProperties().getProperty("General.CommonItypes", "lec");
-    	if (commonItypes != null)
-    		for (String itype: commonItypes.split(","))
-    			if (!itype.isEmpty()) iCommonItypes.add(itype);
+    	iDefaultSameCourse = getModel().getProperties().getProperty("Defaults.SameCourse", "R");
+    	iDefaultSameCommon = getModel().getProperties().getProperty("Defaults.SameCommon", "R");
     }
     
     public void load() throws Exception {
@@ -141,7 +135,7 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
         
     	createAssignment();
         
-        getModel().getProperties().setProperty("Save.Commit", iHasTentative || !iHasCommitted ? "false" : "true");
+        getModel().getProperties().setProperty("Save.Commit", !iHasCommitted ? "false" : "true");
     }
     
     protected Attribute getAttribute(InstructorAttribute a) {
@@ -157,15 +151,6 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     		iAttributes.put(a.getUniqueId(), attribute);
     	}
     	return attribute;
-    }
-    
-    protected Course getCourse(CourseOffering co) {
-    	Course course = iCourses.get(co.getUniqueId());
-    	if (course == null) {
-    		course = new Course(co.getUniqueId(), co.getCourseName(), true, true);
-    		iCourses.put(co.getUniqueId(), course);
-    	}
-    	return course;
     }
     
     protected void loadDistributionPreferences(Instructor instructor, DistributionPref dp) {
@@ -267,7 +252,7 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     		}
     		List<ClassInstructor> classInstructors = (List<ClassInstructor>)hibSession.createQuery(
     				"from ClassInstructor ci where ci.instructor.externalUniqueId = :externalId and ci.instructor.department.session.uniqueId = :sessionId and " +
-    				"ci.instructor.department.uniqueId != :departmentId and ci.tentative = false and ci.lead = true and ci.classInstructing.cancelled = false"
+    				"ci.instructor.department.uniqueId != :departmentId and ci.lead = true and ci.classInstructing.cancelled = false"
     				).setLong("sessionId", di.getDepartment().getSessionId()).setString("externalId", di.getExternalUniqueId()).setLong("departmentId", di.getDepartment().getUniqueId()).setCacheable(true).list();
     		for (ClassInstructor ci: classInstructors) {
         		org.unitime.timetable.model.Assignment assignment = ci.getClassInstructing().getCommittedAssignment();
@@ -301,7 +286,8 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     		}
     	}
     	for (ClassInstructor ci: di.getClasses()) {
-    		if (ci.isTentative() || !ci.isLead() || ci.getClassInstructing().isCancelled() || ci.getClassInstructing().isInstructorAssignmentNeeded()) continue;
+    		if (!ci.isLead() || ci.getClassInstructing().isCancelled()) continue;
+    		if (ci.getTeachingRequest() != null) continue;
     		org.unitime.timetable.model.Assignment assignment = ci.getClassInstructing().getCommittedAssignment();
     		if (assignment != null) {
     			String rooms = null;
@@ -350,7 +336,7 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     		for (org.unitime.timetable.model.Preference p: i.getPreferences()) {
     			if (p instanceof InstructorCoursePref) {
     				InstructorCoursePref cp = (InstructorCoursePref)p;
-    				instructor.addCoursePreference(new Preference<Course>(getCourse(cp.getCourse()), Constants.preference2preferenceLevel(cp.getPrefLevel().getPrefProlog())));
+    				instructor.addCoursePreference(new Preference<Course>(new Course(cp.getCourse().getUniqueId(), cp.getCourse().getCourseName()), Constants.preference2preferenceLevel(cp.getPrefLevel().getPrefProlog())));
     			} else if (p instanceof DistributionPref) {
     				loadDistributionPreferences(instructor, (DistributionPref)p);
     			} else if (p instanceof TimePref) {
@@ -365,41 +351,22 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     	}
     }
     
-    protected Section getSection(Class_ clazz, boolean overlap) {
-    	Section section = iSections.get(clazz.getUniqueId());
-    	if (section == null) {
-    		CourseOffering course = clazz.getSchedulingSubpart().getControllingCourseOffering();
-    		String room = null;
-    		TimeLocation time = null;
-    		org.unitime.timetable.model.Assignment assignment = clazz.getCommittedAssignment();
-    		if (assignment != null) {
-    			time = assignment.getTimeLocation();
-    			for (Location location: assignment.getRooms()) {
-    				if (room == null) room = location.getLabel();
-    				else room += ", " + location.getLabel();
-    			}
-    		}
-    		section = new Section(clazz.getUniqueId(), getClassExternalId(course, clazz),
-    				clazz.getSchedulingSubpart().getItypeDesc().trim(), clazz.getClassLabel(course),
-    				time, room, overlap, !clazz.isInstructorAssignmentNeeded());
-    		iSections.put(clazz.getUniqueId(), section);
-    	}
-    	return section;
-    }
-    
-    protected boolean isToBeIncluded(Class_ clazz) {
-    	if (clazz.isCancelled()) return false;
-    	if (clazz.isInstructorAssignmentNeeded()) return true;
-    	if (iCommonItypes.contains(clazz.getSchedulingSubpart().getItype().getSis_ref())) return true;
-    	return false;
-    }
-    
-    protected int nrInstructorsNeeded(Class_ clazz) {
-    	int nrChildInstructors = 0;
-    	for (Class_ child: clazz.getChildClasses()) {
-    		nrChildInstructors += nrInstructorsNeeded(child); 
-    	}
-    	return Math.max(0, (clazz.isInstructorAssignmentNeeded() ? clazz.effectiveNbrInstructors() : 0) - nrChildInstructors);
+    protected Section getSection(TeachingClassRequest req) {
+    	Class_ clazz = req.getTeachingClass();
+		CourseOffering course = clazz.getSchedulingSubpart().getControllingCourseOffering();
+		String room = null;
+		TimeLocation time = null;
+		org.unitime.timetable.model.Assignment assignment = clazz.getCommittedAssignment();
+		if (assignment != null) {
+			time = assignment.getTimeLocation();
+			for (Location location: assignment.getRooms()) {
+				if (room == null) room = location.getLabel();
+				else room += ", " + location.getLabel();
+			}
+		}
+		return new Section(clazz.getUniqueId(), getClassExternalId(course, clazz),
+				clazz.getSchedulingSubpart().getItypeDesc().trim(), clazz.getClassLabel(course),
+				time, room, req.isCanOverlap(), req.isCommon());
     }
     
     protected String toHtml(Class_ clazz) {
@@ -414,6 +381,10 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     	return "<a href='instructorDetail.do?instructorId=" + assignment.getInstructor().getInstructorId() + "'>" + assignment.getInstructor().getName() + "</a>";
     }
     
+    protected String toHtml(org.unitime.timetable.model.TeachingRequest request) {
+    	return request.getOffering().getCourseName();
+    }
+    
     protected String toHtml(TeachingRequest request) {
     	return "<a href='classDetail.do?cid=" + request.getSections().get(0).getSectionId() + "'>" + request.getCourse().getCourseName() + " " + request.getSections() + "</a>";
     }
@@ -423,94 +394,45 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     			(variable.getRequest().getNrInstructors() != 1 ? "[" + variable.getInstructorIndex() + "]" : "") + " " + variable.getRequest().getSections() + "</a>";
     }
     
-    protected boolean isToBeIgnored(ClassInstructor ci) {
-    	if (ci.isTentative()) return false;
-    	if (!ci.isLead()) return true;
-    	Instructor instructor = iInstructors.get(ci.getInstructor().getUniqueId());
-    	if (instructor == null) {
-    		iProgress.warn("Instructor " + toHtml(ci.getInstructor()) + " is assigned to " + toHtml(ci.getClassInstructing()) + ", but not allowed for automatic assignment.");
-    		return true;
-    	}
-    	return false;
-    }
-    
-    protected List<DepartmentalInstructor> getInstructors(Class_ clazz) {
-    	List<DepartmentalInstructor> instructors = new ArrayList<DepartmentalInstructor>();
-    	
-    	InstructorComparator ic = new InstructorComparator(); ic.setCompareBy(ic.COMPARE_BY_INDEX);
-    	TreeSet<ClassInstructor> sortedInstructors = new TreeSet(ic);
-    	sortedInstructors.addAll(clazz.getClassInstructors());
-    	for (ClassInstructor ci: sortedInstructors) {
-    		if (!isToBeIgnored(ci)) {
-    			if (ci.isTentative()) iHasTentative = true; else iHasCommitted = true;
-    			instructors.add(ci.getInstructor());
-    		}
-    	}
-    	for (Class_ child: clazz.getChildClasses()) {
-    		if (child.isCancelled() || !child.isInstructorAssignmentNeeded()) continue;
-    		for (ClassInstructor ci: child.getClassInstructors())
-        		if (!isToBeIgnored(ci)) instructors.remove(ci.getInstructor());
-    	}
-    	return instructors;
-    }
-    
-    protected void loadRequest(org.hibernate.Session hibSession, Class_ clazz) {
-    	int nrInstructors = nrInstructorsNeeded(clazz);
-    	if (nrInstructors <= 0) return;
-    	Course course = getCourse(clazz.getSchedulingSubpart().getControllingCourseOffering());
+    protected void loadRequest(org.hibernate.Session hibSession, org.unitime.timetable.model.TeachingRequest r) {
+    	Course course = new Course(r.getOffering().getControllingCourseOffering().getUniqueId(), r.getOffering().getCourseName());
     	List<Section> sections = new ArrayList<Section>();
-    	sections.add(getSection(clazz, false));
-    	float load = clazz.effectiveTeachingLoad();
-    	Set<SchedulingSubpart> checked = new HashSet<SchedulingSubpart>();
-    	checked.add(clazz.getSchedulingSubpart());
-    	for (Class_ parent = clazz.getParentClass(); parent != null; parent = parent.getParentClass()) {
-    		checked.add(parent.getSchedulingSubpart());
-    		if (isToBeIncluded(parent)) {
-    			sections.add(getSection(parent, false));
-    			if (parent.isInstructorAssignmentNeeded()) load+= parent.effectiveTeachingLoad();
-    		}
+    	for (TeachingClassRequest cr: new TreeSet<TeachingClassRequest>(r.getClassRequests())) {
+    		sections.add(getSection(cr));
     	}
-    	for (SchedulingSubpart other: clazz.getSchedulingSubpart().getInstrOfferingConfig().getSchedulingSubparts()) {
-    		if (checked.contains(other)) continue;
-    		if (iCommonItypes.contains(other.getItype().getSis_ref()) && !other.isInstructorAssignmentNeeded()) {
-    			for (Class_ c: other.getClasses())
-    				sections.add(getSection(c, other.getClasses().size() > 1));
-    		}
-    	}
-    	List<DepartmentalInstructor> instructors = getInstructors(clazz);
-    	if (instructors.size() > nrInstructors)
-    		iProgress.warn("There are more instructors are assigned to " + toHtml(clazz) + " than requested.");
-		TeachingRequest request = new TeachingRequest(clazz.getUniqueId(), nrInstructors, course, load, sections);
-		for (Iterator it = clazz.effectivePreferences(InstructorPref.class).iterator(); it.hasNext(); ) {
+		TeachingRequest request = new TeachingRequest(r.getUniqueId(), r.getNbrInstructors(), course, r.getTeachingLoad(), sections,
+				Constants.preference2preferenceLevel(r.getSameCoursePreference() == null ? iDefaultSameCourse : r.getSameCoursePreference().getPrefProlog()),
+				Constants.preference2preferenceLevel(r.getSameCommonPart() == null ? iDefaultSameCommon : r.getSameCommonPart().getPrefProlog())
+				);
+		for (Iterator it = r.getPreferences(InstructorPref.class).iterator(); it.hasNext(); ) {
 			InstructorPref p = (InstructorPref)it.next();
 			Instructor instructor = iInstructors.get(p.getInstructor().getUniqueId());
 			if (instructor != null) {
 				request.addInstructorPreference(new Preference<Instructor>(instructor, Constants.preference2preferenceLevel(p.getPrefLevel().getPrefProlog())));
 			}
 		}
-		for (Iterator it = clazz.effectivePreferences(InstructorAttributePref.class).iterator(); it.hasNext(); ) {
+		for (Iterator it = r.getPreferences(InstructorAttributePref.class).iterator(); it.hasNext(); ) {
 			InstructorAttributePref p = (InstructorAttributePref)it.next();
 			request.addAttributePreference(new Preference<Attribute>(getAttribute(p.getAttribute()), Constants.preference2preferenceLevel(p.getPrefLevel().getPrefProlog())));
 		}
 		if (!iDepartmentAttribute.isEmpty()) {
-			request.addAttributePreference(new Preference<Attribute>(iDepartmentAttribute.get(clazz.getControllingDept().getUniqueId()), Constants.sPreferenceLevelRequired));
+			request.addAttributePreference(new Preference<Attribute>(iDepartmentAttribute.get(r.getOffering().getControllingCourseOffering().getSubjectArea().getDepartment().getUniqueId()), Constants.sPreferenceLevelRequired));
 		}
 		getModel().addRequest(request);
-		for (int i = 0; i < nrInstructors; i++) {
-    		for (Iterator<DepartmentalInstructor> j = instructors.iterator(); j.hasNext(); ) {
-    			DepartmentalInstructor di = j.next();
-    			Instructor instructor = iInstructors.get(di.getUniqueId());
-    			if (instructor != null) {
-    				request.getVariable(i).setInitialAssignment(new TeachingAssignment(request.getVariable(i), instructor));
-    				j.remove();
-    			} else {
-    				iProgress.warn("Instructor " + toHtml(di) + " is assigned to " + toHtml(clazz) + ", but not allowed for automatic assignment.");
-    				j.remove();
-    			}
-    		}
+		int index = 0;
+		List<DepartmentalInstructor> instructors = new ArrayList<DepartmentalInstructor>(r.getAssignedInstructors());
+		Collections.sort(instructors);
+		for (DepartmentalInstructor di: instructors) {
+			Instructor instructor = iInstructors.get(di.getUniqueId());
+			if (instructor == null || index >= r.getNbrInstructors()) {
+				iProgress.warn("Instructor " + toHtml(di) + " is assigned to " + toHtml(r) + ", but not allowed for automatic assignment.");
+			} else {
+				request.getVariable(index).setInitialAssignment(new TeachingAssignment(request.getVariable(index), instructor));
+				index++;
+			}
     	}
-    	if (request.getNrInstructors() > 1) {
-    		SameInstructorConstraint diffInstructor = new SameInstructorConstraint(clazz.getUniqueId(), clazz.getClassLabel(), Constants.sPreferenceProhibited);
+		if (request.getNrInstructors() > 1) {
+    		SameInstructorConstraint diffInstructor = new SameInstructorConstraint(r.getUniqueId(), r.getOffering().getCourseName(), Constants.sPreferenceProhibited);
     		for (TeachingRequest.Variable var: request.getVariables())
     			diffInstructor.addVariable(var);
     		getModel().addConstraint(diffInstructor);
@@ -518,17 +440,13 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     }
     
     protected void loadRequests(org.hibernate.Session hibSession) throws Exception {
-    	List<Class_> classes = (List<Class_>)hibSession.createQuery(
-    			"from Class_ c where c.controllingDept.solverGroup.uniqueId in :solverGroupId and c.cancelled = false and " +
-    			"(c.teachingLoad is not null or c.schedulingSubpart.teachingLoad is not null) and " +
-    			"((c.nbrInstructors is null and c.schedulingSubpart.nbrInstructors > 0) or c.nbrInstructors > 0)")
+    	List<org.unitime.timetable.model.TeachingRequest> requests = (List<org.unitime.timetable.model.TeachingRequest>)hibSession.createQuery(
+    			"select r from TeachingRequest r inner join r.offering.courseOfferings co where co.isControl = true and co.subjectArea.department.solverGroup.uniqueId in :solverGroupId")
     			.setParameterList("solverGroupId", iSolverGroupId).list();
-    	Collections.sort(classes, new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
-    	iProgress.setPhase("Loading requests...", classes.size());
-    	for (Class_ clazz: classes) {
+    	iProgress.setPhase("Loading requests...", requests.size());
+    	for (org.unitime.timetable.model.TeachingRequest request: requests) {
     		iProgress.incProgress();
-    		if (!clazz.isInstructorAssignmentNeeded()) continue;
-    		loadRequest(hibSession, clazz);
+    		loadRequest(hibSession, request);
     	}
     }
     

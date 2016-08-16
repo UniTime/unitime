@@ -60,7 +60,6 @@ import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 
@@ -364,9 +363,6 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         frm.setSubjectAreaId(co.getSubjectArea().getUniqueId().toString());
         frm.setCourseNbr(co.getCourseNbr());
         frm.setCourseTitle(co.getTitle());
-        frm.setInstructorAssignment(ss.isInstructorAssignmentNeeded());
-        frm.setTeachingLoad(ss.getTeachingLoad() == null ? "" : Formats.getNumberFormat("0.##").format(ss.getTeachingLoad()));
-        frm.setNbrInstructors(ss.isInstructorAssignmentNeeded() ? ss.getNbrInstructors().intValue() : 1);
 
     	if (ss.getParentSubpart() != null && ss.getItype().equals(ss.getParentSubpart().getItype())){
     		frm.setSameItypeAsParent(new Boolean(true));

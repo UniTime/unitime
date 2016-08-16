@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client.widgets;
 
 import com.google.gwt.aria.client.Id;
 import com.google.gwt.aria.client.Roles;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasText;
@@ -48,6 +49,8 @@ public class SimpleForm extends FlexTable {
 	}
 	
 	public void setColSpan(int colSpan) { iColSpan = colSpan; }
+	
+	public int getColSpan() { return iColSpan; }
 	
 	public int addHeaderRow(Widget widget) {
 		int row = getRowCount();
@@ -131,5 +134,17 @@ public class SimpleForm extends FlexTable {
 		for (int row = getRowCount() - 1; row >= 0; row--)
 			removeRow(row);
 	}
-	
+
+	public int getRowForWidget(Widget w) {
+		for (Element td = w.getElement(); td != null; td = DOM.getParent(td)) {
+			if (td.getPropertyString("tagName").equalsIgnoreCase("td")) {
+				Element tr = DOM.getParent(td);
+				Element body = DOM.getParent(tr);
+				if (body == getBodyElement())
+					return DOM.getChildIndex(body, tr);
+			}
+			if (td == getBodyElement()) { return -1; }
+		}
+		return -1;
+	}
 }

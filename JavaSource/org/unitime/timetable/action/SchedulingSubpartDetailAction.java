@@ -52,7 +52,6 @@ import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.DistributionPrefsTableBuilder;
@@ -290,9 +289,6 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        frm.setAutoSpreadInTime(ss.isAutoSpreadInTime());
 	        frm.setStudentAllowOverlap(ss.isStudentAllowOverlap());
 	        frm.setDatePattern(ss.getDatePattern()==null?new Long(-1):ss.getDatePattern().getUniqueId());
-	        frm.setInstructorAssignment(ss.isInstructorAssignmentNeeded());
-	        frm.setTeachingLoad(ss.getTeachingLoad() == null ? "" : Formats.getNumberFormat("0.##").format(ss.getTeachingLoad()));
-	        frm.setNbrInstructors(ss.isInstructorAssignmentNeeded() ? ss.getNbrInstructors().intValue() : 1);
 	        if (frm.getCreditText() == null || frm.getCreditText().length() == 0){
 		        if (ss.getCredit() != null){
 		        	CourseCreditUnitConfig credit = ss.getCredit();

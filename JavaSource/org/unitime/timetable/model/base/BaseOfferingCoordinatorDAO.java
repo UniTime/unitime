@@ -47,4 +47,9 @@ public abstract class BaseOfferingCoordinatorDAO extends _RootDAO<OfferingCoordi
 	public List<OfferingCoordinator> findByResponsibility(org.hibernate.Session hibSession, Long responsibilityId) {
 		return hibSession.createQuery("from OfferingCoordinator x where x.responsibility.uniqueId = :responsibilityId").setLong("responsibilityId", responsibilityId).list();
 	}
+
+	@SuppressWarnings("unchecked")
+	public List<OfferingCoordinator> findByTeachingRequest(org.hibernate.Session hibSession, Long teachingRequestId) {
+		return hibSession.createQuery("from OfferingCoordinator x where x.teachingRequest.uniqueId = :teachingRequestId").setLong("teachingRequestId", teachingRequestId).list();
+	}
 }

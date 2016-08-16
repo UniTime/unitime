@@ -366,4 +366,7 @@ public interface GwtConstants extends Constants {
 		"Initial Solution", "Best Solution", "Saved Assignments"
 	})
 	String[] assignmentChangesBase();
+	
+	@DefaultStringValue(", ")
+	String itemSeparator();
 }

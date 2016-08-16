@@ -725,7 +725,6 @@ public class CourseTimetableImport extends BaseImport {
 				String responsibility = instructorElement.attributeValue("responsibility");
 				if (responsibility != null)
 					instructor.setResponsibility(TeachingResponsibility.getTeachingResponsibility(responsibility, getHibSession()));
-				instructor.setAssignmentIndex(clazz.getClassInstructors() == null ? 0 : clazz.getClassInstructors().size()); 
 				continue;
 			}
 			String id = instructorElement.attributeValue("id");
@@ -754,7 +753,6 @@ public class CourseTimetableImport extends BaseImport {
 			instructor.setClassInstructing(clazz);
 			instructor.setInstructor(di);
 			instructor.setLead("true".equals(instructorElement.attributeValue("lead", "true")));
-			instructor.setTentative("true".equals(instructorElement.attributeValue("tentative", "false")));
 			instructor.setPercentShare(Integer.valueOf(instructorElement.attributeValue("share", "100")));				
 			clazz.addToclassInstructors(instructor);
 			di.addToclasses(instructor);

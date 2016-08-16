@@ -2192,17 +2192,14 @@ public class SessionRollForward {
 							DepartmentalInstructor toDeptInstr = null;
 							for (Iterator ciIt = fromClass.getClassInstructors().iterator(); ciIt.hasNext();){
 								fromClassInstr = (ClassInstructor) ciIt.next();
-								if (fromClassInstr.isTentative()) continue;
 								toDeptInstr = fromClassInstr.getInstructor().findThisInstructorInSession(toSession.getUniqueId(), hibSession);
 								if (toDeptInstr != null){
 									toClassInstr = new ClassInstructor();
 									toClassInstr.setClassInstructing(toClass);
 									toClassInstr.setInstructor(toDeptInstr);
 									toClassInstr.setLead(fromClassInstr.isLead());
-									toClassInstr.setTentative(fromClassInstr.isTentative());
 									toClassInstr.setPercentShare(fromClassInstr.getPercentShare());
 									toClassInstr.setResponsibility(fromClassInstr.getResponsibility());
-									toClassInstr.setAssignmentIndex(fromClassInstr.getAssignmentIndex());
 									
 									toClassInstr.setUniqueId(null);
 									toClass.addToclassInstructors(toClassInstr);

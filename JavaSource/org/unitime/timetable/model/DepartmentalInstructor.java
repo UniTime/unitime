@@ -546,7 +546,4 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	public Set getAvailableAttributes() {
 		return getDepartment().getAvailableAttributes();
     }
-	
-	@Override
-	public boolean isInstructorAssignmentNeeded() { return true; }
 }

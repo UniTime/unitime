@@ -183,6 +183,17 @@
 			type="java.lang.Integer"
 			not-null="false"
 		/>
+		
+		<set
+			name="teachingRequests"
+			cascade="all"
+			lazy="true"
+			table="teaching_request"
+			inverse="true">
+			<cache include="non-lazy" usage="transactional"/>
+			<key column="offering_id" foreign-key="fk_teachreq_offering"/>
+			<one-to-many class="TeachingRequest"/>
+		</set>
 	</class>
 	
 	
