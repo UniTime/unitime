@@ -383,6 +383,7 @@ public class InstructorSchedulingBackendHelper {
 		org.hibernate.Session hibSession = DepartmentalInstructorDAO.getInstance().getSession();
 		for (TeachingRequest tr: (List<TeachingRequest>)hibSession.createQuery("select r from TeachingRequest r inner join r.assignedInstructors i where i.uniqueId = :instructorId")
 				.setLong("instructorId", instructor.getUniqueId()).setCacheable(true).list()) {
+			if (tr.isCancelled()) continue;
 			TeachingRequestInfo request = getRequest(tr, info, nameFormat);
 			if (request == null) continue;
 			if (instructor.getTeachingPreference() == null) {
@@ -545,6 +546,7 @@ public class InstructorSchedulingBackendHelper {
     }
 	
 	protected boolean canTeach(DepartmentalInstructor instructor, TeachingRequest request, Context context) {
+		if (request.isCancelled()) return false;
 		if (request.getTeachingLoad() > instructor.getMaxLoad()) return false;
 		PreferenceCombination timePref = getTimePreference(instructor, request);
 		if (timePref.isProhibited()) return false;
@@ -747,6 +749,7 @@ public class InstructorSchedulingBackendHelper {
 			tr: for (TeachingRequest tr: (List<TeachingRequest>)TeachingRequestDAO.getInstance().getSession().createQuery(
 					"select distinct r from TeachingRequest r inner join r.assignedInstructors i where i.uniqueId = :instructorId")
 					.setLong("instructorId", instructor.getUniqueId()).setCacheable(true).list()) {
+				if (tr.isCancelled()) continue;
 				for (InstructorAssignment a: iAssignments)
 					if (a.getTeachingRequest().equals(tr)) continue tr;
 				List<DepartmentalInstructor> assignments = new ArrayList<DepartmentalInstructor>(tr.getAssignedInstructors());

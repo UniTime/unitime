@@ -93,6 +93,7 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 	private List<RequestPanel> iRequests = new ArrayList<RequestPanel>();
 
 	public SetupTeachingRequestsPage() {
+		addStyleName("unitime-SetupTeachingRequests");
 		iOfferingId = Long.valueOf(Location.getParameter("offeringId"));
 		iHeader = new UniTimeHeaderPanel();
 		iHeader.addButton("add", MESSAGES.buttonAddTeachingRequest(), new ClickHandler() {
@@ -576,6 +577,9 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 			int indent = clazz.getSubpart().getConfig().getIndent(clazz.getSubpart());
 			// select.getElement().getStyle().setPaddingLeft(16 * indent, Unit.PX);
 			line.add(select);
+			if (clazz.isCancelled()) {
+				select.setValue(false); select.setEnabled(false);
+			}
 			Label name = new Label(clazz.getName());
 			name.getElement().getStyle().setPaddingLeft(16 * indent, Unit.PX);
 			line.add(name);
@@ -628,6 +632,9 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 					lead.setVisible(select.getValue() && ass.getValue());
 				}
 			});
+			if (clazz.isCancelled())
+				for (Widget w: line)
+					w.addStyleName("cancelled");
 			iClasses.addRow(clazz, line);
 		}
 		
@@ -670,6 +677,9 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 									ch.setValue(1);
 								else if (rc != null)
 									ch.setValue(rc.getNbrInstructors());
+								if (clazz.isCancelled()) {
+									ch.setValue("0"); ch.setEnabled(false);
+								}
 								if (rc != null && rc.hasInstructors()) {
 									P instructors = new P("instructors");
 									for (Long id: rc.getInstructorIds()) {
@@ -683,6 +693,9 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 								} else {
 									line.add(new Label());
 								}
+								if (clazz.isCancelled())
+									for (Widget w: line)
+										w.addStyleName("cancelled");
 								iClasses.addRow(clazz, line);
 							}
 							iClasses.setColumnVisible(2, hasExternalId);

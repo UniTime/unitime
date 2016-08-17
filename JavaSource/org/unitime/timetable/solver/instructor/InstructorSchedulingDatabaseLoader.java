@@ -382,16 +382,20 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     }
     
     protected String toHtml(org.unitime.timetable.model.TeachingRequest request) {
-    	return request.getOffering().getCourseName();
+    	String sections = "";
+    	for (TeachingClassRequest tcr: new TreeSet<TeachingClassRequest>(request.getClassRequests())) {
+    		sections += (sections.isEmpty() ? "" : ", ") + (tcr.isAssignInstructor() ? "" : "<i>") + toHtml(tcr.getTeachingClass()) + (tcr.isAssignInstructor() ? "" : "</i>");
+    	}
+    	return "<a href='instructionalOfferingDetail.do?io=" + request.getOffering().getUniqueId() + "&op=view#instructors'>" + request.getOffering().getCourseName() + "</a> " + sections;
     }
     
     protected String toHtml(TeachingRequest request) {
-    	return "<a href='classDetail.do?cid=" + request.getSections().get(0).getSectionId() + "'>" + request.getCourse().getCourseName() + " " + request.getSections() + "</a>";
+    	return "<a href='instructionalOfferingDetail.do?co=" + request.getCourse().getCourseId() + "&op=view#instructors'>" + request.getCourse().getCourseName() + (request.getSections().isEmpty() ? "" : " " + request.getSections()) + "</a>";
     }
     
     protected String toHtml(TeachingRequest.Variable variable) {
-    	return "<a href='classDetail.do?cid=" + variable.getRequest().getSections().get(0).getSectionId() + "'>" + variable.getRequest().getCourse().getCourseName() +
-    			(variable.getRequest().getNrInstructors() != 1 ? "[" + variable.getInstructorIndex() + "]" : "") + " " + variable.getRequest().getSections() + "</a>";
+    	return "<a href='instructionalOfferingDetail.do?co=" + variable.getCourse().getCourseId() + "&op=view#instructors'>" + variable.getRequest().getCourse().getCourseName() +
+    			(variable.getRequest().getNrInstructors() != 1 ? "/" + (1 + variable.getInstructorIndex()) : "") + (variable.getRequest().getSections().isEmpty() ? "" : " " + variable.getRequest().getSections()) + "</a>";
     }
     
     protected void loadRequest(org.hibernate.Session hibSession, org.unitime.timetable.model.TeachingRequest r) {
@@ -446,7 +450,7 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     	iProgress.setPhase("Loading requests...", requests.size());
     	for (org.unitime.timetable.model.TeachingRequest request: requests) {
     		iProgress.incProgress();
-    		loadRequest(hibSession, request);
+    		if (!request.isCancelled()) loadRequest(hibSession, request);
     	}
     }
     

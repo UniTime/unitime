@@ -4597,3 +4597,8 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-TeachingRequestDetail .ignore-conflicts {
 	font-style: italic;	
 }
+
+.unitime-SetupTeachingRequests .cancelled {
+	color: gray;
+	font-style: italic;	
+}

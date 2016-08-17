@@ -182,5 +182,13 @@ public class TeachingRequest extends BaseTeachingRequest implements Comparable<T
 		if (i1.hasNext()) return 1;
 		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(r.getUniqueId() == null ? -1 : r.getUniqueId());
 	}
+	
+	public boolean isCancelled() {
+		if (isAssignCoordinator()) return false;
+		for (TeachingClassRequest tcr: getClassRequests()) {
+			if (tcr.isAssignInstructor() && !tcr.getTeachingClass().isCancelled()) return false;
+		}
+		return true;
+	}
 
 }

@@ -85,6 +85,7 @@ public class TeachingRequestsPageBackend extends InstructorSchedulingBackendHelp
 			}
 	    	// Collections.sort(classes, new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
 	    	for (TeachingRequest tr: requests) {
+	    		if (tr.isCancelled()) continue;
 	    		TeachingRequestInfo info = getRequest(tr, nameFormat, solver);
 	    		if (info != null) {
 	    			if (request.getOfferingId() != null)
