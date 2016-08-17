@@ -19,11 +19,8 @@
 */
 package org.unitime.timetable.server.instructor;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.hibernate.Transaction;
@@ -38,6 +35,7 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorAssignmentRequest;
+import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorInfo;
 import org.unitime.timetable.interfaces.ExternalCourseOfferingEditAction;
 import org.unitime.timetable.interfaces.ExternalInstrOfferingConfigAssignInstructorsAction;
 import org.unitime.timetable.model.ChangeLog;
@@ -76,6 +74,7 @@ public class InstructorAssignmentBackend extends InstructorSchedulingBackendHelp
 		}
 		
 		boolean commit = true;
+		Set<DepartmentalInstructor> updateInstructors = new HashSet<DepartmentalInstructor>();
 		Set<InstrOfferingConfig> updateConfigs = new HashSet<InstrOfferingConfig>();
 		Set<InstructionalOffering> updateOfferings = new HashSet<InstructionalOffering>();
 		
@@ -88,52 +87,54 @@ public class InstructorAssignmentBackend extends InstructorSchedulingBackendHelp
 				TeachingRequest tr = TeachingRequestDAO.getInstance().get(ai.getRequest().getRequestId());
 				if (tr == null) continue;
 				DepartmentalInstructor instructor = (ai.getInstructor() == null ? null : DepartmentalInstructorDAO.getInstance().get(ai.getInstructor().getInstructorId()));
-				if (instructor != null)
-					s.set(tr, ai.getIndex(), instructor);
+				if (instructor != null) {
+					InstructorInfo prev = ai.getRequest().getInstructor(ai.getIndex());
+					s.set(tr, ai.getIndex(), instructor, prev == null ? null : DepartmentalInstructorDAO.getInstance().get(prev.getInstructorId()));
+				}
 			}
-			if (request.isIgnoreConflicts()) {
-				for (InstructorAssignment a: s.getAssignments()) {
-					assign(hibSession, a, cx, commit);
-					if (commit) {
-						if (a.getTeachingRequest().isAssignCoordinator())
-							updateOfferings.add(a.getTeachingRequest().getOffering());
-						for (TeachingClassRequest tcr: a.getTeachingRequest().getClassRequests()) {
-							if (tcr.isAssignInstructor()) {
-								updateConfigs.add(tcr.getTeachingClass().getSchedulingSubpart().getInstrOfferingConfig()); break;
-							}
-						}
-					}
-				}
-			} else {
-				Set<InstructorAssignment> conflicts = new HashSet<InstructorAssignment>();
-				for (InstructorAssignment a: s.getAssignments()) {
-					s.computeConflicts(a, conflicts, cx);
-				}
+			Set<InstructorAssignment> conflicts = new HashSet<InstructorAssignment>();
+			if (!request.isIgnoreConflicts()) 
 				for (InstructorAssignment a: s.getAssignments())
-					if (!conflicts.remove(a)) {
-						assign(hibSession, a, cx, commit);
-						if (commit) {
-							if (a.getTeachingRequest().isAssignCoordinator())
-								updateOfferings.add(a.getTeachingRequest().getOffering());
-							for (TeachingClassRequest tcr: a.getTeachingRequest().getClassRequests()) {
-								if (tcr.isAssignInstructor()) {
-									updateConfigs.add(tcr.getTeachingClass().getSchedulingSubpart().getInstrOfferingConfig()); break;
-								}
-							}
-						}					}
-				for (InstructorAssignment c: conflicts) {
-					unassign(hibSession, c, cx, commit);
-					if (commit) {
-						if (c.getTeachingRequest().isAssignCoordinator())
-							updateOfferings.add(c.getTeachingRequest().getOffering());
-						for (TeachingClassRequest tcr: c.getTeachingRequest().getClassRequests()) {
-							if (tcr.isAssignInstructor()) {
-								updateConfigs.add(tcr.getTeachingClass().getSchedulingSubpart().getInstrOfferingConfig()); break;
-							}
+					s.computeConflicts(a, conflicts, cx);
+
+			for (InstructorAssignment a: s.getAssignments())
+				unassign(hibSession, a.getTeachingRequest(), a.getCurrentAssignment(), commit);
+			for (InstructorAssignment c: conflicts) {
+				unassign(hibSession, c.getTeachingRequest(), c.getAssigment(), commit);
+				if (commit && c.getAssigment() != null) {
+					updateInstructors.add(c.getAssigment());
+					if (c.getTeachingRequest().isAssignCoordinator())
+						updateOfferings.add(c.getTeachingRequest().getOffering());
+					for (TeachingClassRequest tcr: c.getTeachingRequest().getClassRequests()) {
+						if (tcr.isAssignInstructor()) {
+							updateConfigs.add(tcr.getTeachingClass().getSchedulingSubpart().getInstrOfferingConfig()); break;
 						}
 					}
 				}
 			}
+			for (InstructorAssignment a: s.getAssignments()) {
+				assign(hibSession, a.getTeachingRequest(), a.getAssigment(), commit);
+				if (commit) {
+					if (a.getCurrentAssignment() != null) updateInstructors.add(a.getCurrentAssignment());
+					if (a.getAssigment() != null) updateInstructors.add(a.getAssigment());
+					if (a.getTeachingRequest().isAssignCoordinator())
+						updateOfferings.add(a.getTeachingRequest().getOffering());
+					for (TeachingClassRequest tcr: a.getTeachingRequest().getClassRequests()) {
+						if (tcr.isAssignInstructor()) {
+							updateConfigs.add(tcr.getTeachingClass().getSchedulingSubpart().getInstrOfferingConfig()); break;
+						}
+					}
+				}
+			}
+			
+			for (DepartmentalInstructor instructor: updateInstructors)
+				hibSession.saveOrUpdate(instructor);
+			
+			for (InstructorAssignment c: conflicts)
+				changelog(hibSession, c.getTeachingRequest(), c.getAssigment(), null, cx);
+			for (InstructorAssignment a: s.getAssignments())
+				changelog(hibSession, a.getTeachingRequest(), a.getCurrentAssignment(), a.getAssigment(), cx);
+			
 			tx.commit(); tx = null;
 		} catch (Exception e) {
 			if (tx != null && tx.isActive()) {
@@ -171,77 +172,69 @@ public class InstructorAssignmentBackend extends InstructorSchedulingBackendHelp
 		return new GwtRpcResponseNull();
 	}
 	
-	public void assign(org.hibernate.Session hibSession, InstructorAssignment assignment, Context context, boolean commit) {
-		List<DepartmentalInstructor> current = new ArrayList<DepartmentalInstructor>(assignment.getTeachingRequest().getAssignedInstructors());
-		Collections.sort(current);
-		DepartmentalInstructor previous = (assignment.getIndex() < current.size() ? current.get(assignment.getIndex()) : null);
-		replaceInstructor(hibSession, assignment.getTeachingRequest(), previous, assignment.getAssigment(), assignment.getIndex(), context, commit);
-		if (previous != null) hibSession.saveOrUpdate(previous);
-		if (assignment.getAssigment() != null) hibSession.saveOrUpdate(assignment.getAssigment());
-	}
-	
-	public void unassign(org.hibernate.Session hibSession, InstructorAssignment assignment, Context context, boolean commit) {
-		replaceInstructor(hibSession, assignment.getTeachingRequest(), assignment.getAssigment(), null, assignment.getIndex(), context, commit);
-		if (assignment.getAssigment() != null) hibSession.saveOrUpdate(assignment.getAssigment());
-	}
-	
-	public void replaceInstructor(org.hibernate.Session hibSession, TeachingRequest tr, DepartmentalInstructor oldInstructor, DepartmentalInstructor newInstructor, int index, Context context, boolean commit) {
-		if (oldInstructor != null) {
-			tr.getAssignedInstructors().remove(oldInstructor);
-		}
-		if (newInstructor != null) {
-			tr.getAssignedInstructors().add(newInstructor);
-		}
-		hibSession.saveOrUpdate(tr);
+	protected void unassign(org.hibernate.Session hibSession, TeachingRequest request, DepartmentalInstructor instructor, boolean commit) {
+		if (instructor == null) return;
+		request.getAssignedInstructors().remove(instructor);
 		if (commit) {
-			if (tr.isAssignCoordinator()) {
-				if (oldInstructor != null) {
-					for (Iterator<OfferingCoordinator> i = tr.getOffering().getOfferingCoordinators().iterator(); i.hasNext(); ) {
-						OfferingCoordinator oc = i.next();
-						if (tr.equals(oc.getTeachingRequest()) && oldInstructor.equals(oc.getInstructor())) {
-							i.remove();
-							hibSession.delete(oc);
-						}
+			if (request.isAssignCoordinator()) {
+				for (Iterator<OfferingCoordinator> i = request.getOffering().getOfferingCoordinators().iterator(); i.hasNext(); ) {
+					OfferingCoordinator oc = i.next();
+					if (request.equals(oc.getTeachingRequest()) && instructor.equals(oc.getInstructor())) {
+						Debug.info(request.getOffering().getCourseName() + ": UNASSIGN " + instructor.getNameLastFirst());
+						i.remove();
+						hibSession.delete(oc);
 					}
-				}
-				if (newInstructor != null) {
-					OfferingCoordinator oc = new OfferingCoordinator();
-					oc.setInstructor(newInstructor);
-					oc.setOffering(tr.getOffering());
-					oc.setResponsibility(tr.getResponsibility());
-					oc.setTeachingRequest(tr);
-					tr.getOffering().getOfferingCoordinators().add(oc);
-					hibSession.save(oc);
 				}
 			}
-			if (oldInstructor != null)
-				for (Iterator<ClassInstructor> i = oldInstructor.getClasses().iterator(); i.hasNext(); ) {
-					ClassInstructor ci = i.next();
-					if (tr.equals(ci.getTeachingRequest())) {
-						ci.getClassInstructing().getClassInstructors().remove(ci);
-						i.remove();
-						hibSession.delete(ci);
-					}
+			for (Iterator<ClassInstructor> i = instructor.getClasses().iterator(); i.hasNext(); ) {
+				ClassInstructor ci = i.next();
+				if (request.equals(ci.getTeachingRequest())) {
+					Debug.info(ci.getClassInstructing().getClassLabel(hibSession) + ": UNASSIGN " + instructor.getNameLastFirst());
+					ci.getClassInstructing().getClassInstructors().remove(ci);
+					i.remove();
+					hibSession.delete(ci);
+					break;
 				}
-			if (newInstructor != null)
-				for (TeachingClassRequest cr: tr.getClassRequests()) {
-					if (cr.isAssignInstructor()) {
-						ClassInstructor ci = new ClassInstructor();
-						ci.setClassInstructing(cr.getTeachingClass());
-						ci.setInstructor(newInstructor);
-						ci.setLead(cr.isLead());
-						ci.setPercentShare(cr.getPercentShare());
-						ci.setResponsibility(tr.getResponsibility());
-						ci.setTeachingRequest(tr);
-						cr.getTeachingClass().getClassInstructors().add(ci);
-						newInstructor.getClasses().add(ci);
-						hibSession.saveOrUpdate(ci);
-					}
-				}
+			}
 		}
+	}
+	
+	protected void assign(org.hibernate.Session hibSession, TeachingRequest request, DepartmentalInstructor instructor, boolean commit) {
+		if (instructor == null) return;
+		request.getAssignedInstructors().add(instructor);
+		if (commit) {
+			if (request.isAssignCoordinator()) {
+				Debug.info(request.getOffering().getCourseName() + ": ASSIGN " + instructor.getNameLastFirst());
+				OfferingCoordinator oc = new OfferingCoordinator();
+				oc.setInstructor(instructor);
+				oc.setOffering(request.getOffering());
+				oc.setResponsibility(request.getResponsibility());
+				oc.setTeachingRequest(request);
+				request.getOffering().getOfferingCoordinators().add(oc);
+				hibSession.save(oc);
+			}
+			for (TeachingClassRequest cr: request.getClassRequests()) {
+				if (cr.isAssignInstructor()) {
+					Debug.info(cr.getTeachingClass().getClassLabel(hibSession) + ": ASSIGN " + instructor.getNameLastFirst());
+					ClassInstructor ci = new ClassInstructor();
+					ci.setClassInstructing(cr.getTeachingClass());
+					ci.setInstructor(instructor);
+					ci.setLead(cr.isLead());
+					ci.setPercentShare(cr.getPercentShare());
+					ci.setResponsibility(request.getResponsibility());
+					ci.setTeachingRequest(request);
+					cr.getTeachingClass().getClassInstructors().add(ci);
+					instructor.getClasses().add(ci);
+					hibSession.saveOrUpdate(ci);
+				}
+			}
+		}
+	}
+	
+	protected void changelog(org.hibernate.Session hibSession, TeachingRequest request, DepartmentalInstructor oldInstructor, DepartmentalInstructor newInstructor, Context context) {
 		if (oldInstructor != null || newInstructor != null) {
-			if (tr.isAssignCoordinator()) {
-				CourseOffering co = tr.getOffering().getControllingCourseOffering();
+			if (request.isAssignCoordinator()) {
+				CourseOffering co = request.getOffering().getControllingCourseOffering();
 				ChangeLog.addChange(hibSession, context.getSessionContext(),
 						co,
 						co.getCourseName() + ": " + 
@@ -249,7 +242,7 @@ public class InstructorAssignmentBackend extends InstructorSchedulingBackendHelp
 						ChangeLog.Source.INSTRUCTOR_ASSIGNMENT, ChangeLog.Operation.ASSIGN,
 						co.getSubjectArea(), co.getDepartment());
 			}
-			for (TeachingClassRequest cr: tr.getClassRequests()) {
+			for (TeachingClassRequest cr: request.getClassRequests()) {
 				if (cr.isAssignInstructor()) {
 					Class_ clazz = cr.getTeachingClass();
 					ChangeLog.addChange(hibSession, context.getSessionContext(),
@@ -260,7 +253,7 @@ public class InstructorAssignmentBackend extends InstructorSchedulingBackendHelp
 							clazz.getSchedulingSubpart().getInstrOfferingConfig().getControllingCourseOffering().getSubjectArea(), clazz.getControllingDept());
 				}
 			}
-		}		
+		}
 	}
 
 }

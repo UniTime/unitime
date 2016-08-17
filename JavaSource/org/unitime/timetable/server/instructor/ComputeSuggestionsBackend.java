@@ -26,6 +26,7 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.ComputeSuggestionsRequest;
+import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.SuggestionsResponse;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.TeachingRequest;
@@ -60,8 +61,10 @@ public class ComputeSuggestionsBackend extends InstructorSchedulingBackendHelper
 			TeachingRequest tr = TeachingRequestDAO.getInstance().get(ai.getRequest().getRequestId());
 			if (tr == null) continue;
 			DepartmentalInstructor instructor = (ai.getInstructor() == null ? null : DepartmentalInstructorDAO.getInstance().get(ai.getInstructor().getInstructorId()));
-			if (instructor != null)
-				s.set(tr, ai.getIndex(), instructor);
+			if (instructor != null) {
+				InstructorInfo prev = ai.getRequest().getInstructor(ai.getIndex());
+				s.set(tr, ai.getIndex(), instructor, prev == null ? null : DepartmentalInstructorDAO.getInstance().get(prev.getInstructorId()));
+			}
 		}
 		response.setCurrentAssignment(s.toInfo(cx));
 		

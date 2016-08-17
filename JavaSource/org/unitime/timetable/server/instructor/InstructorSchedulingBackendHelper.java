@@ -576,7 +576,7 @@ public class InstructorSchedulingBackendHelper {
 		for (DepartmentalInstructor instructor: list) {
 			if (canTeach(instructor, tr, context)) {
 				Suggestion s = new Suggestion();
-				s.set(tr, index, instructor);
+				s.set(tr, index, instructor, null);
 				response.addDomainValue(s.toInfo(context));
 			}
 		}
@@ -593,7 +593,7 @@ public class InstructorSchedulingBackendHelper {
 			Collections.sort(assigned);
 			int index = assigned.indexOf(instructor);
 			if (index >= 0)
-				selectedAssignment = new InstructorAssignment(selected, index, instructor);
+				selectedAssignment = new InstructorAssignment(selected, index, instructor, instructor);
 		}
 		for (TeachingRequest tr: requests) {
     		if (canTeach(instructor, tr, context)) {
@@ -602,7 +602,7 @@ public class InstructorSchedulingBackendHelper {
     			int maxIndex = (tr.getNbrInstructors() == 1 ? 1 : tr.getAssignedInstructors().size() + 1);
     			for (int index = 0; index < tr.getNbrInstructors() && index < maxIndex; index++) {
     				Suggestion s = new Suggestion();
-    				s.set(tr, index, instructor);
+    				s.set(tr, index, instructor, null);
     				response.addDomainValue(s.toInfo(context, selectedAssignment));
     			}
 			}
@@ -632,14 +632,23 @@ public class InstructorSchedulingBackendHelper {
 		private TeachingRequest iRequest;
 		private int iIndex;
 		private DepartmentalInstructor iInstructor;
+		private DepartmentalInstructor iOldInstructor;
 		
 		InstructorAssignment(TeachingRequest tr, int index, DepartmentalInstructor instructor) {
 			iRequest = tr; iIndex = index; iInstructor = instructor;
+			List<DepartmentalInstructor> current = new ArrayList<DepartmentalInstructor>(tr.getAssignedInstructors());
+			Collections.sort(current);
+			iOldInstructor = (index < current.size() ? current.get(index) : null);
+		}
+		
+		InstructorAssignment(TeachingRequest tr, int index, DepartmentalInstructor instructor, DepartmentalInstructor oldInstructor) {
+			iRequest = tr; iIndex = index; iInstructor = instructor; iOldInstructor = oldInstructor;
 		}
 		
 		public TeachingRequest getTeachingRequest() { return iRequest; }
 		public int getIndex() { return iIndex; }
 		public DepartmentalInstructor getAssigment() { return iInstructor; }
+		public DepartmentalInstructor getCurrentAssignment() { return iOldInstructor; }
 		public void setAssignment(DepartmentalInstructor instructor) { iInstructor = instructor; }
 		
 		public boolean isExclusive() { return true; }
@@ -705,7 +714,7 @@ public class InstructorSchedulingBackendHelper {
 	public class Suggestion {
 		List<InstructorAssignment> iAssignments = new ArrayList<InstructorAssignment>();
 		
-		public void set(TeachingRequest request, int index, DepartmentalInstructor instructor) {
+		public void set(TeachingRequest request, int index, DepartmentalInstructor instructor, DepartmentalInstructor oldInstructor) {
 			for (Iterator<InstructorAssignment> i = iAssignments.iterator(); i.hasNext(); ) {
 				InstructorAssignment other = i.next();
 				if (other.getTeachingRequest().equals(request) && other.getIndex() == index) {
@@ -717,7 +726,7 @@ public class InstructorSchedulingBackendHelper {
 				}
 			}
 			if (instructor != null)
-				iAssignments.add(new InstructorAssignment(request, index, instructor));
+				iAssignments.add(new InstructorAssignment(request, index, instructor, oldInstructor));
 		}
 		
 		public List<InstructorAssignment> getAssignments() { return iAssignments; }
@@ -742,7 +751,7 @@ public class InstructorSchedulingBackendHelper {
 					if (a.getTeachingRequest().equals(tr)) continue tr;
 				List<DepartmentalInstructor> assignments = new ArrayList<DepartmentalInstructor>(tr.getAssignedInstructors());
 				Collections.sort(assignments);
-				ret.add(new InstructorAssignment(tr, assignments.indexOf(instructor), instructor));
+				ret.add(new InstructorAssignment(tr, assignments.indexOf(instructor), instructor, instructor));
 			}
 			return ret;
 		}

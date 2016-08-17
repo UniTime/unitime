@@ -80,7 +80,7 @@ public class TeachingRequestsTable extends UniTimeTable<SingleTeachingAssingment
 						iDetail = new TeachingRequestDetailPage(iProperties) {
 							@Override
 							protected void onAssignmentChanged(List<AssignmentInfo> assignments) {
-								onAssignmentChanged(assignments);
+								TeachingRequestsTable.this.onAssignmentChanged(assignments);
 							}
 						};
 						iDetail.addCloseHandler(new CloseHandler<PopupPanel>() {

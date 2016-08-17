@@ -4429,7 +4429,7 @@ unitime-RoomSharingWidget .legend .blank {
 	padding-right: 2px;
 }
 
-.unitime-TeachingRequestDetail .suggestions .no-extid {
+.unitime-TeachingRequestDetail .no-extid {
 	font-style: italic;
 	padding-right: 2px;
 }
@@ -4509,6 +4509,10 @@ unitime-RoomSharingWidget .legend .blank {
 	font-style: italic;
 }
 
+.unitime-TeachingRequestDetail .assignments .sections .section {
+	white-space: nowrap;
+	display: inherit;
+}
 
 .unitime-TeachingRequestDetail .domain {
 	width: 100%;
@@ -4521,6 +4525,11 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-TeachingRequestDetail .domain .note {
 	font-style: italic;
 	text-align: center;
+}
+
+.unitime-TeachingRequestDetail .domain .sections .section {
+	white-space: nowrap;
+	display: inherit;
 }
 
 .unitime-TeachingRequestDetail .instructors {
