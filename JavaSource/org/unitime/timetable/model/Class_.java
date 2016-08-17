@@ -1056,6 +1056,7 @@ public class Class_ extends BaseClass_ {
 
 		// Call individual methods to delete specific collections
 	    deleteAllDistributionPreferences(hibSession, updateClass);
+	    deleteTeachingRequests(hibSession);
 		deleteClassInstructors(hibSession);
 		deleteAssignments(hibSession);
 		Exam.deleteFromExams(hibSession, this);
@@ -1085,6 +1086,28 @@ public class Class_ extends BaseClass_ {
 			ci.setClassInstructing(null);
 			hibSession.saveOrUpdate(di);
 			hibSession.delete(ci);
+			i.remove();
+		}
+	}
+	
+	public void deleteTeachingRequests(org.hibernate.Session hibSession) {
+		Set<TeachingClassRequest> s = getTeachingRequests();
+		//deleteObjectsFromCollection(hibSession, s);
+		if (s==null || s.size()==0) return;
+
+		for (Iterator<TeachingClassRequest> i=s.iterator(); i.hasNext(); ) {
+			TeachingClassRequest tcr = i.next();
+			TeachingRequest tr = tcr.getTeachingRequest();
+			tr.getClassRequests().remove(tcr);
+			hibSession.delete(tcr);
+			if (tr.getClassRequests().isEmpty() && !tr.isAssignCoordinator()) {
+				InstructionalOffering offering = tr.getOffering();
+				offering.getTeachingRequests().remove(tr);
+				hibSession.delete(tr);
+				hibSession.saveOrUpdate(offering);
+			} else {
+				hibSession.saveOrUpdate(tr);
+			}
 			i.remove();
 		}
 	}
