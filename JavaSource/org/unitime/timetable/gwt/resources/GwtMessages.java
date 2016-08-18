@@ -1230,7 +1230,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Teaching Load:")
 	String propTeachingLoad();
 	
-	@DefaultMessage("Simple:")
+	@DefaultMessage("Select Scheduling Subpart:")
 	String propSetupTeachingRequestMulti();
 	
 	@DefaultMessage("Scheduling Subpart:")

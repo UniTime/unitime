@@ -26,8 +26,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Transaction;
+import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
@@ -41,10 +44,15 @@ import org.unitime.timetable.gwt.shared.TeachingRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.TeachingRequestInterface.RequestedClass;
 import org.unitime.timetable.gwt.shared.TeachingRequestInterface.SaveRequestsRpcRequest;
 import org.unitime.timetable.gwt.shared.TeachingRequestInterface.SingleRequest;
+import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.InstructorAttributePref;
 import org.unitime.timetable.model.InstructorPref;
+import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.TeachingClassRequest;
@@ -72,6 +80,7 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 		InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(request.getOfferingId(), hibSession);
 		if (offering == null)
 			throw new GwtRpcException(MESSAGES.errorOfferingDoesNotExist(request.getOfferingId().toString()));
+		boolean commit = Department.isInstructorSchedulingCommitted(offering.getDepartment().getUniqueId());
 		context.checkPermission(offering.getDepartment(), Right.InstructorAssignmentPreferences);
 		Transaction tx = hibSession.beginTransaction();
 		try {
@@ -127,6 +136,8 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 						hibSession.delete(cr);
 					}
 					hibSession.saveOrUpdate(tr);
+					for (TeachingClassRequest tcr: tr.getClassRequests())
+						hibSession.saveOrUpdate(tcr);
 				} else {
 					MultiRequest multi = (MultiRequest)r;
 					for (RequestedClass rc: multi.getClasses()) {
@@ -175,24 +186,32 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 								cr.setPercentShare(line.getShare());
 							}
 						}
+						for (TeachingClassRequest cr: remains) {
+							cr.getTeachingClass().getTeachingRequests().remove(cr);
+							tr.getClassRequests().remove(cr);
+							hibSession.delete(cr);
+						}						
 						hibSession.saveOrUpdate(tr);
-					}
-					if (r.isAssignCoordinator()) {
-						TeachingRequest tr = new TeachingRequest();
-						tr.setOffering(offering);
-						offering.getTeachingRequests().add(tr);
-						tr.setClassRequests(new HashSet<TeachingClassRequest>());
-						tr.setPreferences(new HashSet<Preference>());
-						tr.setNbrInstructors(1);
-						fillRequestInfo(r, tr, hibSession);
-						hibSession.saveOrUpdate(tr);
+						for (TeachingClassRequest tcr: tr.getClassRequests())
+							hibSession.saveOrUpdate(tcr);
 					}
 				}
 			}
+			Set<DepartmentalInstructor> updatedInstructors = new HashSet<DepartmentalInstructor>();
 			for (TeachingRequest tr: requests.values()) {
 				tr.getOffering().getTeachingRequests().remove(tr);
 				for (Iterator<TeachingClassRequest> i = tr.getClassRequests().iterator(); i.hasNext(); ) {
 					TeachingClassRequest cr = i.next();
+					for (Iterator<ClassInstructor> j = cr.getTeachingClass().getClassInstructors().iterator(); j.hasNext(); ) {
+						ClassInstructor ci = j.next();
+						if (tr.equals(ci.getTeachingRequest())) {
+							Debug.info(cr.getTeachingClass().getClassLabel(hibSession) + ": UNASSIGN " + ci.getInstructor().getNameLastFirst());
+							updatedInstructors.add(ci.getInstructor());
+							ci.getInstructor().getClasses().remove(ci);
+							hibSession.delete(ci);
+							j.remove();
+						}
+					}
 					cr.getTeachingClass().getTeachingRequests().remove(cr);
 					i.remove();
 					hibSession.delete(cr);
@@ -201,7 +220,103 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 					Preference p = i.next();
 					hibSession.delete(p); i.remove();
 				}
+				for (Iterator<OfferingCoordinator> i = tr.getOffering().getOfferingCoordinators().iterator(); i.hasNext(); ) {
+					OfferingCoordinator oc = i.next();
+					if (tr.equals(oc.getTeachingRequest())) {
+						Debug.info(tr.getOffering().getCourseName() + ": UNASSIGN " + oc.getInstructor().getNameLastFirst());
+						updatedInstructors.add(oc.getInstructor());
+						oc.getInstructor().getOfferingCoordinators().remove(oc);
+						hibSession.delete(oc);
+						i.remove();
+					}
+				}
 				hibSession.delete(tr);
+			}
+			for (Iterator<OfferingCoordinator> i = offering.getOfferingCoordinators().iterator(); i.hasNext(); ) {
+				OfferingCoordinator oc = i.next();
+				if (oc.getTeachingRequest() != null && !oc.getTeachingRequest().isAssignCoordinator()) {
+					Debug.info(offering.getCourseName() + ": UNASSIGN " + oc.getInstructor().getNameLastFirst());
+					updatedInstructors.add(oc.getInstructor());
+					oc.getInstructor().getOfferingCoordinators().remove(oc);
+					hibSession.delete(oc);
+					i.remove();
+				}
+			}
+			for (InstrOfferingConfig config: offering.getInstrOfferingConfigs())
+				for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+					for (Class_ clazz: subpart.getClasses())
+						for (Iterator<ClassInstructor> i = clazz.getClassInstructors().iterator(); i.hasNext(); ) {
+							ClassInstructor ci = i.next();
+							if (ci.getTeachingRequest() != null) {
+								TeachingClassRequest support = null;
+								for (TeachingClassRequest tcr: ci.getTeachingRequest().getClassRequests()) {
+									if (tcr.getTeachingClass().equals(clazz) && tcr.isAssignInstructor()) { support = tcr; break; }
+								}
+								if (support == null) {
+									Debug.info(clazz.getClassLabel(hibSession) + ": UNASSIGN " + ci.getInstructor().getNameLastFirst());
+									updatedInstructors.add(ci.getInstructor());
+									ci.getInstructor().getClasses().remove(ci);
+									hibSession.delete(ci);
+									i.remove();
+								} else if (!ci.getPercentShare().equals(support.getPercentShare()) || !ci.isLead().equals(support.getLead()) ||
+										!ToolBox.equals(ci.getResponsibility(), support.getTeachingRequest().getResponsibility())) {
+									Debug.info(clazz.getClassLabel(hibSession) + ": UPDATE " + ci.getInstructor().getNameLastFirst());
+									ci.setPercentShare(support.getPercentShare());
+									ci.setLead(support.getLead());
+									ci.setResponsibility(support.getTeachingRequest().getResponsibility());
+									hibSession.saveOrUpdate(ci);
+								}
+							}
+						}
+			if (commit) {
+				for (TeachingRequest tr: offering.getTeachingRequests()) {
+					if (tr.getAssignedInstructors() == null || tr.getAssignedInstructors().isEmpty()) continue;
+					if (tr.isAssignCoordinator()) {
+						for (DepartmentalInstructor instructor: tr.getAssignedInstructors()) {
+							OfferingCoordinator support = null;
+							for (OfferingCoordinator oc: offering.getOfferingCoordinators()) {
+								if (instructor.equals(oc.getInstructor()) && tr.equals(oc.getTeachingRequest())) {
+									support = oc; break;
+								}
+							}
+							if (support == null) {
+								Debug.info(offering.getCourseName() + ": ASSIGN " + instructor.getNameLastFirst());
+								OfferingCoordinator oc = new OfferingCoordinator();
+								oc.setInstructor(instructor);
+								oc.setOffering(offering);
+								oc.setResponsibility(tr.getResponsibility());
+								oc.setTeachingRequest(tr);
+								offering.getOfferingCoordinators().add(oc);
+								hibSession.save(oc);
+							}
+						}
+					}
+					for (TeachingClassRequest cr: tr.getClassRequests()) {
+						if (cr.isAssignInstructor()) {
+							for (DepartmentalInstructor instructor: tr.getAssignedInstructors()) {
+								ClassInstructor support = null;
+								for (ClassInstructor ci: cr.getTeachingClass().getClassInstructors()) {
+									if (instructor.equals(ci.getInstructor()) && tr.equals(ci.getTeachingRequest())) {
+										support = ci; break;
+									}
+								}
+								if (support == null) {
+									Debug.info(cr.getTeachingClass().getClassLabel(hibSession) + ": ASSIGN " + instructor.getNameLastFirst());
+									ClassInstructor ci = new ClassInstructor();
+									ci.setClassInstructing(cr.getTeachingClass());
+									ci.setInstructor(instructor);
+									ci.setLead(cr.isLead());
+									ci.setPercentShare(cr.getPercentShare());
+									ci.setResponsibility(tr.getResponsibility());
+									ci.setTeachingRequest(tr);
+									cr.getTeachingClass().getClassInstructors().add(ci);
+									instructor.getClasses().add(ci);
+									hibSession.saveOrUpdate(ci);
+								}
+							}
+						}
+					}
+				}
 			}
 			hibSession.saveOrUpdate(offering);
 			

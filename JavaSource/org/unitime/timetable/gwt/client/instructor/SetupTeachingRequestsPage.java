@@ -523,6 +523,7 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 			} else*/ 
 			if ((iSimple != null && iSimple.getValue()) || (iRequest != null && iRequest instanceof MultiRequest)) {
 				getRowFormatter().setVisible(iNbrInstructorsRow, false);
+				getRowFormatter().setVisible(iCoordinatorRow, false);
 				if (iSubpart != null) getRowFormatter().setVisible(iSubpartRow, true);
 				if (iSubparts != null) getRowFormatter().setVisible(iSubpartsLine, true);
 				subpartChanged();
@@ -643,12 +644,10 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 				getRowFormatter().setVisible(iSameCommonRow, false);
 				getRowFormatter().setVisible(iClassesRow, false);
 				getRowFormatter().setVisible(iSubpartsLine, false);
-				getRowFormatter().setVisible(iCoordinatorRow, true);
 			} else {
 				getRowFormatter().setVisible(iSameCommonRow, false);
 				getRowFormatter().setVisible(iClassesRow, true);
 				getRowFormatter().setVisible(iSubpartsLine, false);
-				getRowFormatter().setVisible(iCoordinatorRow, false);
 				iClasses.clearTable(1);
 				iSubparts.clearTable(1);
 				Long subpartId = Long.valueOf(iSubpart.getSelectedValue());
@@ -677,9 +676,6 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 									ch.setValue(1);
 								else if (rc != null)
 									ch.setValue(rc.getNbrInstructors());
-								if (clazz.isCancelled()) {
-									ch.setValue("0"); ch.setEnabled(false);
-								}
 								if (rc != null && rc.hasInstructors()) {
 									P instructors = new P("instructors");
 									for (Long id: rc.getInstructorIds()) {
@@ -714,12 +710,12 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 								final CheckBox select = new CheckBox();
 								line.add(select);
 								IncludeLine include = null;
+								if (iRequest != null && iRequest instanceof MultiRequest) {
+									include = ((MultiRequest)iRequest).getSubpart(s.getId());
+								}
 								if (s.equals(subpart)) {
 									select.setValue(true); select.setEnabled(false);
 								} else {
-									if (iRequest != null && iRequest instanceof MultiRequest) {
-										include = ((MultiRequest)iRequest).getSubpart(s.getId());
-									}
 									select.setValue(include != null);
 								}
 								String name = s.getName();
@@ -815,6 +811,7 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 					r.setRequestId(((SingleRequest)iRequest).getRequestId());
 				}
 				r.setNbrInstructors(iNbrInstructors.toInteger() == null ? 1 : iNbrInstructors.toInteger());
+				r.setAssignCoordinator(iCoordinator.getValue());
 				for (int i = 1; i < iClasses.getRowCount(); i++) {
 					Clazz clazz = iClasses.getData(i);
 					if (clazz == null) continue;
@@ -835,10 +832,12 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 					include.setCommon(common.getValue());
 					r.addClass(include);
 				}
-				if (r.getClasses().isEmpty()) return null;
+				if (r.getClasses().isEmpty() && !r.isAssignCoordinator()) return null;
 				ret = r;
 			} else {
+				if (iSubpart.getSelectedIndex() == 0) return null;
 				MultiRequest r = new MultiRequest();
+				r.setAssignCoordinator(false);
 				for (int i = 1; i < iClasses.getRowCount(); i++) {
 					Clazz clazz = iClasses.getData(i);
 					if (clazz == null) continue;
@@ -885,7 +884,6 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 				ret.setTeachingResponsibility(iProperties.getResponsibility(Long.valueOf(iResponsibility.getSelectedValue())));
 			ret.setSameCoursePreference(Long.valueOf(iSameCouse.getSelectedValue()));
 			ret.setSameCommonPreference(Long.valueOf(iSameCommon.getSelectedValue()));
-			ret.setAssignCoordinator(iCoordinator.getValue());
 			if (iAttributes != null)
 				for (UniTimeTable<Preference> attributes: iAttributes.values()) {
 					for (int i = 0; i < attributes.getRowCount(); i++) {
