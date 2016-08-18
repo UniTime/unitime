@@ -42,6 +42,7 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -73,7 +74,7 @@ public class InstructorAssignmentBackend extends InstructorSchedulingBackendHelp
 			return new GwtRpcResponseNull();
 		}
 		
-		boolean commit = true;
+		Boolean commit = null;
 		Set<DepartmentalInstructor> updateInstructors = new HashSet<DepartmentalInstructor>();
 		Set<InstrOfferingConfig> updateConfigs = new HashSet<InstrOfferingConfig>();
 		Set<InstructionalOffering> updateOfferings = new HashSet<InstructionalOffering>();
@@ -86,6 +87,8 @@ public class InstructorAssignmentBackend extends InstructorSchedulingBackendHelp
 			for (AssignmentInfo ai: request.getAssignments()) {
 				TeachingRequest tr = TeachingRequestDAO.getInstance().get(ai.getRequest().getRequestId());
 				if (tr == null) continue;
+				if (commit == null)
+					commit = Department.isInstructorSchedulingCommitted(tr.getOffering().getDepartment().getUniqueId());
 				DepartmentalInstructor instructor = (ai.getInstructor() == null ? null : DepartmentalInstructorDAO.getInstance().get(ai.getInstructor().getInstructorId()));
 				if (instructor != null) {
 					InstructorInfo prev = ai.getRequest().getInstructor(ai.getIndex());

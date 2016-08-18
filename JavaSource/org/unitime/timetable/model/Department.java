@@ -447,5 +447,18 @@ public class Department extends BaseDepartment implements Comparable<Department>
         		"where a.session.uniqueId = :sessionId and (a.department is null or a.department.uniqueId = :departmentId)")
 				.setLong("sessionId", getSessionId()).setLong("departmentId", getUniqueId()).setCacheable(true).list());
 	}
+	
+	public static boolean isInstructorSchedulingCommitted(Long departmentId) {
+		Number oc = (Number)DepartmentDAO.getInstance().getSession().createQuery(
+				"select count(oc) from OfferingCoordinator oc where oc.teachingRequest is not null and " +
+				"oc.instructor.department.uniqueId = :departmentId").setLong("departmentId", departmentId).
+				setCacheable(true).uniqueResult();
+		if (oc.intValue() > 0) return true;
+		Number ci = (Number)DepartmentDAO.getInstance().getSession().createQuery(
+				"select count(ci) from ClassInstructor ci where ci.teachingRequest is not null and " +
+				"ci.instructor.department.uniqueId = :departmentId").setLong("departmentId", departmentId).
+				setCacheable(true).uniqueResult();
+		return ci.intValue() > 0;
+	}
 
 }
