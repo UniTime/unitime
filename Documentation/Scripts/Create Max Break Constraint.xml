@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<script name="Distribution Types: Create Max Break Constraint" permission="Distribution Types" engine="ECMAScript" created="Fri Aug 19 09:20:35 CEST 2016">
+  <description><![CDATA[This script creates a Max Breaks constraint distribution type of the given parameters.<br><br>
+The MaxBreaks constraint limits the number of blocks of non back-to-back classes of an instructor on a day.<br>
+It has two parameters: a maximal number of breaks and a minimal length of a break between two classes not to be considered in the same block.<br>
+Reference _MaxBreaks:1:30_ translates to a maximum number of one break (two blocks) on a day of classes not more than 30 minutes a part.]]></description>
+  <parameter name="minLength" label="Min Length (in minutes)" type="enum(0,5,10,15,20,25,30,35,40,45,50,55,60)" default="30"/>
+  <parameter name="maxBreaks" label="Max Breaks" type="enum(0,1,2,3,4,5)" default="1"/>
+  <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
+var reference = '_MaxBreaks:' + maxBreaks + ':' + minLength + '_';
+var type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', reference).uniqueResult();
+var label = '';
+var abbv = '';
+var desc = '';
+if (maxBreaks == 0) {
+  label = 'No Break During A Day';
+  abbv = 'No Break';
+  desc = 'There should be no break between classes during the day.';
+} else if (maxBreaks == 1) {
+  label = 'At Most One Break A Day';
+  abbv = 'Max 1 Break';
+  desc = 'There should be no more than one break between classes during the day.';
+} else {
+  label = 'At Most ' + maxBreaks + ' Breaks A Day';
+  abbv = 'Max ' + maxBreaks + ' Breaks';
+  desc = 'There should be no more than ' + maxBreaks + ' breaks between classes during the day.';
+}
+desc = desc + ' Two consecutive classes are considered in the same block if the time between them is not greater than ' + minLength + ' minutes.';
+if (type == null) {
+  type = new org.unitime.timetable.model.DistributionType();
+  type.setReference(reference);
+  log.info('Creating ' + label + ' constraint...');
+} else {
+  log.warn('Constraint ' + label + ' already exists.');
+}
+type.setLabel(label);
+type.setSequencingRequired(false);
+type.setRequirementId(++reqId);
+type.setAllowedPref('210R');
+type.setDescr(desc);
+type.setAbbreviation(abbv);
+type.setInstructorPref(true);
+type.setExamPref(false);
+type.setVisible(true);
+hibSession.saveOrUpdate(type);
+log.info('All done.');]]></body>
+</script>
