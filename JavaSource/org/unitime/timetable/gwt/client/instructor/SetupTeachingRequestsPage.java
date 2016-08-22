@@ -673,7 +673,7 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 								if (iRequest != null && iRequest instanceof MultiRequest)
 									rc = ((MultiRequest)iRequest).getClass(clazz.getId());
 								if (iRequest == null)
-									ch.setValue(1);
+									ch.setValue(clazz.isCancelled() ? 0 : 1);
 								else if (rc != null)
 									ch.setValue(rc.getNbrInstructors());
 								if (rc != null && rc.hasInstructors()) {
