@@ -38,4 +38,9 @@ public class TeachingClassRequest extends BaseTeachingClassRequest implements Co
 		ClassComparator cmp = new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY);
 		return cmp.compare(getTeachingClass(), o.getTeachingClass());
 	}
+	
+	@Override
+	public String toString() {
+		return getTeachingClass().getItypeDesc().trim() + " " + getTeachingClass().getSectionNumberString();
+	}
 }

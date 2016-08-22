@@ -570,6 +570,9 @@ public class InstructorSchedulingBackendHelper {
 	
 	public void computeDomainForClass(SuggestionsResponse response, TeachingRequest tr, int index, Context context) {
 		org.hibernate.Session hibSession = DepartmentalInstructorDAO.getInstance().getSession();
+		List<DepartmentalInstructor> current = new ArrayList<DepartmentalInstructor>(tr.getAssignedInstructors());
+		Collections.sort(current);
+		DepartmentalInstructor oldInstructor = (index < current.size() ? current.get(index) : null);
 		List<DepartmentalInstructor> list = (List<DepartmentalInstructor>)hibSession.createQuery(
     			"select distinct i from DepartmentalInstructor i where " +
     			"i.department.uniqueId = :deptId and i.teachingPreference.prefProlog != :prohibited and i.maxLoad > 0.0"
@@ -578,7 +581,7 @@ public class InstructorSchedulingBackendHelper {
 		for (DepartmentalInstructor instructor: list) {
 			if (canTeach(instructor, tr, context)) {
 				Suggestion s = new Suggestion();
-				s.set(tr, index, instructor, null);
+				s.set(tr, index, instructor, oldInstructor);
 				response.addDomainValue(s.toInfo(context));
 			}
 		}
@@ -602,9 +605,11 @@ public class InstructorSchedulingBackendHelper {
     			TeachingRequestInfo request = getRequest(tr, context.getNameFormat(), null);
     			if (request == null) continue;
     			int maxIndex = (tr.getNbrInstructors() == 1 ? 1 : tr.getAssignedInstructors().size() + 1);
+    			List<DepartmentalInstructor> current = new ArrayList<DepartmentalInstructor>(tr.getAssignedInstructors());
+    			Collections.sort(current);
     			for (int index = 0; index < tr.getNbrInstructors() && index < maxIndex; index++) {
     				Suggestion s = new Suggestion();
-    				s.set(tr, index, instructor, null);
+    				s.set(tr, index, instructor, (index < current.size() ? current.get(index) : null));
     				response.addDomainValue(s.toInfo(context, selectedAssignment));
     			}
 			}
@@ -653,8 +658,18 @@ public class InstructorSchedulingBackendHelper {
 		public DepartmentalInstructor getCurrentAssignment() { return iOldInstructor; }
 		public void setAssignment(DepartmentalInstructor instructor) { iInstructor = instructor; }
 		
-		public boolean isExclusive() { return true; }
-		public boolean isSameCommon() { return true; }
+		public boolean isSameCourseRequired() {
+			return iRequest.getSameCoursePreference() != null && PreferenceLevel.sRequired.equals(iRequest.getSameCoursePreference().getPrefProlog());
+		}
+		public boolean isSameCourseProhibited() {
+			return iRequest.getSameCoursePreference() != null && PreferenceLevel.sProhibited.equals(iRequest.getSameCoursePreference().getPrefProlog());
+		}
+		public boolean isSameCommonRequired() {
+			return iRequest.getSameCommonPart() != null && PreferenceLevel.sRequired.equals(iRequest.getSameCommonPart().getPrefProlog());
+		}
+		public boolean isSameCommonProhibited() {
+			return iRequest.getSameCommonPart() != null && PreferenceLevel.sProhibited.equals(iRequest.getSameCommonPart().getPrefProlog());
+		}
 		
 		public AssignmentInfo toInfo(Context context) {
 			AssignmentInfo ai = new AssignmentInfo();
@@ -681,19 +696,35 @@ public class InstructorSchedulingBackendHelper {
 			return false;
 		}
 		
-		public boolean sameCourse(TeachingRequest other, Context context) {
+		public boolean sameCourse(TeachingRequest other) {
 			return getTeachingRequest().getOffering().equals(other.getOffering());
 		}
 		
-		private boolean sameCommon(TeachingRequest other, Context context) {
-			if (!sameCourse(other, context)) return false;
+		private boolean sameCommon(TeachingRequest other) {
 			for (TeachingClassRequest c1: getTeachingRequest().getClassRequests()) {
-				if (c1.isCommon())
-					for (TeachingClassRequest c2: other.getClassRequests()) {
-						if (c2.isCommon() && c1.getTeachingClass().getSchedulingSubpart().equals(c2.getTeachingClass().getSchedulingSubpart()) && !c1.getTeachingClass().equals(c2.getTeachingClass())) return false;
-					}
+				for (TeachingClassRequest c2: other.getClassRequests()) {
+					if ((c1.isCommon() || c2.isCommon()) &&
+						c1.getTeachingClass().getSchedulingSubpart().equals(c2.getTeachingClass().getSchedulingSubpart()) &&
+						!c1.getTeachingClass().equals(c2.getTeachingClass()))
+						return false;
+					if ((c1.isCommon() || c2.isCommon()) &&
+						!c1.getTeachingClass().getSchedulingSubpart().getInstrOfferingConfig().equals(c2.getTeachingClass().getSchedulingSubpart().getInstrOfferingConfig()))
+						return false;
+				}
 			}
 			return true;
+		}
+		
+		private boolean shareCommon(TeachingRequest other) {
+			for (TeachingClassRequest c1: getTeachingRequest().getClassRequests()) {
+				for (TeachingClassRequest c2: other.getClassRequests()) {
+					if ((c1.isCommon() || c2.isCommon()) &&
+						c1.getTeachingClass().getSchedulingSubpart().equals(c2.getTeachingClass().getSchedulingSubpart()) &&
+						c1.getTeachingClass().equals(c2.getTeachingClass()))
+						return true;
+				}
+			}
+			return false;
 		}
 
 		public float getLoad(Context context) {
@@ -710,6 +741,13 @@ public class InstructorSchedulingBackendHelper {
 			if (o == null || !(o instanceof InstructorAssignment)) return false;
 			InstructorAssignment a = (InstructorAssignment)o;
 			return getTeachingRequest().equals(a.getTeachingRequest()) && getIndex() == a.getIndex();
+		}
+		
+		@Override
+		public String toString() {
+			return getTeachingRequest() + "/" + getIndex() + ": "
+					+ (getCurrentAssignment() == null ? "" : getCurrentAssignment().nameLastNameFirst() + " > ")
+					+ (getAssigment() == null ? "NULL" : getAssigment().nameLastNameFirst());
 		}
 	}
 	
@@ -751,7 +789,7 @@ public class InstructorSchedulingBackendHelper {
 					.setLong("instructorId", instructor.getUniqueId()).setCacheable(true).list()) {
 				if (tr.isCancelled()) continue;
 				for (InstructorAssignment a: iAssignments)
-					if (a.getTeachingRequest().equals(tr)) continue tr;
+					if (a.getTeachingRequest().equals(tr) && instructor.equals(a.getCurrentAssignment())) continue tr;
 				List<DepartmentalInstructor> assignments = new ArrayList<DepartmentalInstructor>(tr.getAssignedInstructors());
 				Collections.sort(assignments);
 				ret.add(new InstructorAssignment(tr, assignments.indexOf(instructor), instructor, instructor));
@@ -768,20 +806,32 @@ public class InstructorSchedulingBackendHelper {
 				}
 	        }
 			
-			if (assignment.isExclusive()) {
-	            boolean sameCommon = assignment.isSameCommon();
-	            for (InstructorAssignment ta: getAssignments(assignment.getAssigment())) {
-	            	if (ta.equals(assignment) || conflicts.contains(ta)) continue;
-	            	if (!ta.sameCourse(assignment.getTeachingRequest(), context) || (sameCommon && !ta.sameCommon(assignment.getTeachingRequest(), context)))
-	            		conflicts.add(ta);
-	            }
-	        } else if (assignment.isSameCommon()) {
-	        	for (InstructorAssignment ta: getAssignments(assignment.getAssigment())) {
-	            	if (ta.equals(assignment) || conflicts.contains(ta)) continue;
-	            	if (ta.sameCourse(assignment.getTeachingRequest(), context) && !ta.sameCommon(assignment.getTeachingRequest(), context))
-	            		conflicts.add(ta);
-	            }
-	        }
+			for (InstructorAssignment ta: getAssignments(assignment.getAssigment())) {
+            	if (ta.equals(assignment) || conflicts.contains(ta)) continue;
+            	// same request
+            	if (ta.getTeachingRequest().equals(assignment.getTeachingRequest()) && ta.getIndex() != assignment.getIndex()) {
+            		conflicts.add(ta);
+            		continue;
+            	}
+            	// same course
+            	if (assignment.isSameCourseRequired() || ta.isSameCourseRequired()) {
+            		if (!ta.sameCourse(assignment.getTeachingRequest())) { conflicts.add(ta); continue; }
+            	}
+            	// different course
+            	if (assignment.isSameCourseProhibited() || ta.isSameCommonProhibited()) {
+            		if (ta.sameCourse(assignment.getTeachingRequest())) { conflicts.add(ta); continue; }
+            	}
+            	if (ta.sameCourse(assignment.getTeachingRequest())) {
+            		// same common
+            		if (assignment.isSameCommonRequired() || ta.isSameCommonRequired()) {
+                		if (!ta.sameCommon(assignment.getTeachingRequest())) { conflicts.add(ta); continue; }
+                	}
+            		// different common
+            		if (assignment.isSameCommonProhibited() || ta.isSameCommonProhibited()) {
+                		if (ta.shareCommon(assignment.getTeachingRequest())) { conflicts.add(ta); continue; }
+                	}
+            	}
+			}
 			
 			float load = assignment.getLoad(context);
 			for (InstructorAssignment conflict: conflicts)
@@ -843,6 +893,11 @@ public class InstructorSchedulingBackendHelper {
 						si.addValue(e.getKey(), -e.getValue());
 			}
 			return si;
+		}
+		
+		@Override
+		public String toString() {
+			return getAssignments().toString();
 		}
 	}
 }

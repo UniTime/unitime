@@ -190,5 +190,10 @@ public class TeachingRequest extends BaseTeachingRequest implements Comparable<T
 		}
 		return true;
 	}
+	
+	@Override
+	public String toString() {
+		return getOffering().getCourseName() + " " + getClassRequests();
+	}
 
 }
