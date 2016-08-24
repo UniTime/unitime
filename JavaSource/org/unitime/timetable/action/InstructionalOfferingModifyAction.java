@@ -731,7 +731,7 @@ public class InstructionalOfferingModifyAction extends Action {
 				if (managingDept == null || !managingDept.getUniqueId().equals(managingDeptId))
 					managingDept = deptdao.get(managingDeptId);
 				newClass.setControllingDept(ss.getControllingDept());
-				newClass.setManagingDept(managingDept);
+				newClass.setManagingDept(managingDept, sessionContext.getUser(), hibSession);
 				if (dp == null || !dp.getUniqueId().equals(datePattern))
 					dp = dpdao.get(datePattern);
 				newClass.setDatePattern(dp);
@@ -835,7 +835,7 @@ public class InstructionalOfferingModifyAction extends Action {
 						changed = true;
 						if (managingDept == null || !managingDept.getUniqueId().equals(managingDeptId))
 							managingDept = deptdao.get(managingDeptId);
-						modifiedClass.setManagingDept(managingDept);
+						modifiedClass.setManagingDept(managingDept, sessionContext.getUser(), hibSession);
 						Set timePrefs = modifiedClass.getTimePreferences();
 						Set prefs = new HashSet();
 						prefs.addAll(modifiedClass.getPreferences());

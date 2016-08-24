@@ -116,21 +116,65 @@ public class Class_ extends BaseClass_ {
     	if (super.getControllingDept() == null) return getSchedulingSubpart().getControllingDept();
     	return super.getControllingDept();
     }
-
+    
+    @Override
     public void setManagingDept(Department dept) {
+    	setManagingDept(dept, null, Class_DAO.getInstance().getSession());
+    }
+
+    public void setManagingDept(Department dept, UserContext user, org.hibernate.Session hibSession) {
         Department oldDept = getManagingDept();
         super.setManagingDept(dept);
         if (dept==null) return;
         if (oldDept!=null && !oldDept.equals(dept) && getAssignments()!=null && !getAssignments().isEmpty()) {
-            for (Iterator i=getAssignments().iterator();i.hasNext();) {
-                Assignment a = (Assignment)i.next();
+        	boolean deleteEvent = false;
+        	String deletedAssignment = null;
+            for (Iterator<Assignment> i = getAssignments().iterator(); i.hasNext();) {
+                Assignment a = i.next();
                 if (!a.getSolution().getOwner().getDepartments().contains(dept)) {
-                	Class_DAO.getInstance().getSession().delete(a);
+                	if (a.getSolution().isCommited()) {
+                		deleteEvent = true;
+                		deletedAssignment = a.getPlacement().getName();
+                	}
+                	hibSession.delete(a);
                 	i.remove();
                 }
             }
-            ClassEvent event = getEvent();
-            if (event!=null) Class_DAO.getInstance().getSession().delete(event);
+            if (deleteEvent) {
+            	ClassEvent event = getEvent();
+            	if (event != null) {
+            		if (ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue()) {
+                		hibSession.delete(event);
+                	} else {
+                		Calendar cal = Calendar.getInstance(Locale.US);
+                		cal.set(Calendar.HOUR_OF_DAY, 0);
+                		cal.set(Calendar.MINUTE, 0);
+                		cal.set(Calendar.SECOND, 0);
+                		cal.set(Calendar.MILLISECOND, 0);
+                		Date today = cal.getTime();
+
+                    	for (Iterator<Meeting> i = event.getMeetings().iterator(); i.hasNext(); )
+                    		if (!i.next().getMeetingDate().before(today)) i.remove();
+                    	
+                    	if (event.getMeetings().isEmpty()) {
+                    		hibSession.delete(event);
+                    	} else if (user != null) {
+                			if (event.getNotes() == null)
+                				event.setNotes(new HashSet<EventNote>());
+            				EventNote note = new EventNote();
+            				note.setEvent(event);
+            				note.setNoteType(EventNote.sEventNoteTypeDeletion);
+            				note.setTimeStamp(new Date());
+            				note.setUser(user.getTrueName());
+            				note.setUserId(user.getTrueExternalUserId());
+            				note.setTextNote(MSG.classNoteUnassigned(deletedAssignment));
+            				note.setMeetings(MSG.classMeetingsNotApplicable());
+            				event.getNotes().add(note);
+                    		hibSession.saveOrUpdate(event);
+                    	}
+                	}
+            	}
+            }
         }
     }
 

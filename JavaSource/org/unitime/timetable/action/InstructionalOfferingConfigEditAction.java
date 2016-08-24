@@ -1452,7 +1452,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 		                    Debug.debug("Class Managing department changed ...");
 
                             // Update Managing Department
-                            c.setManagingDept(new DepartmentDAO().get(new Long(mdId)));
+                            c.setManagingDept(new DepartmentDAO().get(new Long(mdId)), sessionContext.getUser(), hibSession);
 
 		                    // Remove from distribution prefs
 		                    c.deleteAllDistributionPreferences(hibSession);
@@ -1768,7 +1768,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
                     c.setEnabledForStudentScheduling(new Boolean(true));
         	        c.setPreferences(new HashSet());
         	        if (md>0)
-        	            c.setManagingDept(new DepartmentDAO().get(new Long(md)));
+        	            c.setManagingDept(new DepartmentDAO().get(new Long(md)), sessionContext.getUser(), hibSession);
         	        c.setCancelled(false);
         	        subpart.addToclasses(c);
                 }

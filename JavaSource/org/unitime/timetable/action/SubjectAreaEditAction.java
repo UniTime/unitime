@@ -344,7 +344,7 @@ public class SubjectAreaEditAction extends Action {
 	                                        if (!rgp.getRoomGroup().isGlobal()) m.remove();
 	                                    }
 	                                }
-	                                c.setManagingDept(dept);
+	                                c.setManagingDept(dept, sessionContext.getUser(), hibSession);
 	                            }
 	                            for (Iterator m=c.getClassInstructors().iterator();m.hasNext();) {
 	                                ClassInstructor ci = (ClassInstructor)m.next();
