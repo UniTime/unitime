@@ -225,6 +225,7 @@ public class GetTeachingRequestBackend implements GwtRpcImplementation<GetReques
 				SingleRequest req = new SingleRequest();
 				req.setRequestId(r.getUniqueId());
 				req.setInstructorIds(toInstructorIds(r));
+				req.setNbrInstructors(r.getNbrInstructors());
 				req.setAssignCoordinator(r.isAssignCoordinator());
 				req.setSameCommonPreference(r.getSameCommonPart() == null ? null : r.getSameCommonPart().getUniqueId());
 				req.setSameCoursePreference(r.getSameCoursePreference() == null ? null : r.getSameCoursePreference().getUniqueId());

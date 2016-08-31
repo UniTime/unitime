@@ -105,6 +105,7 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 				getFlexCellFormatter().setColSpan(row, 0, getColSpan());
 				setWidget(row, 0, rp);
 				requestsChanged();
+				ToolBox.scrollToElement(rp.getElement());
 			}
 		});
 		iHeader.addButton("save", MESSAGES.buttonSaveTeachingRequests(), new ClickHandler() {
@@ -255,7 +256,7 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 			iCoordinator.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 				@Override
 				public void onValueChange(ValueChangeEvent<Boolean> event) {
-					simpleChanged();
+					// simpleChanged();
 					changeResponsibilities();
 				}
 			});
@@ -501,13 +502,16 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 		protected void changeResponsibilities() {
 			boolean coordinator = iCoordinator.getValue();
 			if (iResponsibility != null) {
+				Responsibility selected = (iRequest == null ? null : iRequest.getTeachingResponsibility());
+				if (iResponsibility.getSelectedIndex() > 0)
+					selected = iProperties.getResponsibility(Long.valueOf(iResponsibility.getSelectedValue()));
 				iResponsibility.clear();
 				iResponsibility.addItem(MESSAGES.noTeachingResponsiblitySelected(), "-1");
 				for (Responsibility resp: iProperties.getResponsibilities()) {
 					if (coordinator && !resp.isCoordinator()) continue;
 					if (!coordinator && !resp.isInstructor()) continue;
 					iResponsibility.addItem(resp.getName(), resp.getId().toString());
-					if (iRequest != null && resp.equals(iRequest.getTeachingResponsibility()))
+					if (selected != null && resp.equals(selected))
 						iResponsibility.setSelectedIndex(iResponsibility.getItemCount() - 1);
 				}
 				getRowFormatter().setVisible(iResponsibilityRow, iResponsibility.getItemCount() > 1);
