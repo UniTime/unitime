@@ -140,9 +140,9 @@ public class Class_ extends BaseClass_ {
                 	i.remove();
                 }
             }
-            if (deleteEvent) {
-            	ClassEvent event = getEvent();
-            	if (event != null) {
+        	ClassEvent event = getEvent();
+        	if (event != null) {
+        		if (deleteEvent) {
             		if (ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue()) {
                 		hibSession.delete(event);
                 	} else {
@@ -173,6 +173,9 @@ public class Class_ extends BaseClass_ {
                     		hibSession.saveOrUpdate(event);
                     	}
                 	}
+            	} else {
+            		event.setEventName(getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseName() + " " + getItypeDesc().trim() + " " + getSectionNumberString(hibSession));
+            		hibSession.saveOrUpdate(event);
             	}
             }
         }
