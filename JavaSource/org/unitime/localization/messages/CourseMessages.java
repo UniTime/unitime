@@ -736,6 +736,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Responsibility")
 	String columnTeachingResponsibility();
 	
+	@DefaultMessage("Enrollment Conflict")
+	String columnEnrollmentConflict();
+	
 	@DefaultMessage("Total")
 	String rowCrossListsTotal();
 	

@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -64,6 +65,7 @@ import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentAccomodation;
+import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.InstructorComparator;
@@ -263,18 +265,22 @@ public class ClassDetailAction extends PreferencesAction {
 						}
 					});
 	        		orderedConflicts.addAll(conflicts);
-	        		WebTable table = new WebTable(7, MSG.sectionTitleClassConflicts(), new String[] {
+	        		WebTable.setOrder(sessionContext,"classDetail.conflictsOrd",request.getParameter("conflicts"),1);
+	        		final Set<DepartmentalInstructor> conflictingInstructors = new HashSet<DepartmentalInstructor>();
+	        		WebTable table = new WebTable(8, MSG.sectionTitleClassConflicts(), "classDetail.do?cid=" + c.getUniqueId() + "&conflicts=%%", new String[] {
         					MSG.columnClass(),
         					MSG.columnExternalId(),
         					MSG.columnDemand(),
         					MSG.columnInstructor(),
         					MSG.columnDatePattern(),
         					MSG.columnAssignedTime(),
-        					MSG.columnAssignedRoom()
+        					MSG.columnAssignedRoom(),
+        					MSG.columnEnrollmentConflict()
 	        			}, new String[] {
 	        				"left",
 	        				"left",
 	        				"right",
+	        				"left",
 	        				"left",
 	        				"left",
 	        				"left",
@@ -286,8 +292,15 @@ public class ClassDetailAction extends PreferencesAction {
 	        				true,
 	        				true,
 	        				true,
+	        				true,
 	        				true
-	        		});
+	        		}) {
+	        			@Override
+	        			protected boolean isFiltered(int col) {
+	        				if (col == 7) return conflictingInstructors.isEmpty();
+	        				return false;
+	        			}
+	        		};
 	        		String nameFormat = UserProperty.NameFormat.get(sessionContext.getUser());
 	        		Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
 	        		for (Assignment assignment: orderedConflicts) {
@@ -308,6 +321,17 @@ public class ClassDetailAction extends PreferencesAction {
 	        				roomsHtml += "<span onmouseover=\"showGwtRoomHint(this, '" + r.getUniqueId() + "', '');\" onmouseout=\"hideGwtRoomHint();\">" + r.getLabel() + "</span>";
 	        				roomsText += r.getLabel();
 	        			}
+	        			String enrolledHtml = "", enrolledText = "";
+	        			for (ClassInstructor instructor: c.getClassInstructors()) {
+	        				if (!instructor.isLead() || instructor.getInstructor().getExternalUniqueId() == null) continue;
+		        			for (StudentClassEnrollment e: assignment.getClazz().getStudentEnrollments()) {
+		        				if (instructor.getInstructor().getExternalUniqueId().equals(e.getStudent().getExternalUniqueId())) {
+		        					enrolledHtml += (enrolledHtml.isEmpty() ? "" : "<br>") + e.getStudent().getName(nameFormat);
+		        					enrolledText += (enrolledText.isEmpty() ? "" : ", ") + e.getStudent().getName(nameFormat);
+		        					conflictingInstructors.add(instructor.getInstructor());
+		        				}
+		        			}
+	        			}
 	        			table.addLine(
 	        					sessionContext.hasPermission(assignment.getClazz(), Right.ClassDetail) ? "onClick=\"document.location='classDetail.do?cid=" + assignment.getClassId() + "';\"": null,
 	        					new String[] {
@@ -317,7 +341,8 @@ public class ClassDetailAction extends PreferencesAction {
 	        							assignment.getClazz().instructorHtml(nameFormat),
 	        							dp == null ? "&nbsp;" : "<span title='" + dateFormat.format(dp.getStartDate()) + " - " + dateFormat.format(dp.getEndDate()) + "'>" + dp.getName() + "</span>",
 	        							time,
-	        							roomsHtml
+	        							roomsHtml,
+	        							enrolledHtml
 	        					}, new Comparable[] {
 	        							assignment.getClazz().getClassLabel(),
 	        							suffix == null ? "" : suffix,
@@ -325,10 +350,11 @@ public class ClassDetailAction extends PreferencesAction {
 	        							assignment.getClazz().instructorText(nameFormat, ","),
 	        							dp == null ? "" : dp.getName(),
 	        							new MultiComparable(t == null ? 0 : t.getDayCode(), t == null ? 0 : t.getStartSlot()),
-	        							roomsText
+	        							roomsText,
+	        							enrolledText
 								});
 	        		}
-	        		request.setAttribute("CLASS_CONFLICTS", table.printTable());
+	        		request.setAttribute("CLASS_CONFLICTS", table.printTable(WebTable.getOrder(sessionContext,"classDetail.conflictsOrd")));
 	        	}
 	        	
 	        	Set<TimeBlock> ec = (proxy == null ? null : proxy.getConflictingTimeBlocks(c.getUniqueId()));

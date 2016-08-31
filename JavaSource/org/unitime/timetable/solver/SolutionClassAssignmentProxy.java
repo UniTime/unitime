@@ -156,6 +156,16 @@ public class SolutionClassAssignmentProxy extends CommitedClassAssignmentProxy {
 				            			return true;
 				            	}
 			            	}
+							if (instructor.getInstructor().getExternalUniqueId() != null) {
+								for (Class_ c: (List<Class_>)Class_DAO.getInstance().getSession().createQuery(
+									"select e.clazz from StudentClassEnrollment e where e.student.externalUniqueId = :externalId and e.student.session.uniqueId = :sessionId")
+									.setLong("sessionId", instructor.getInstructor().getDepartment().getSessionId())
+									.setString("externalId", instructor.getInstructor().getExternalUniqueId())
+									.setCacheable(true).list()) {
+									Assignment a = getAssignment(c);
+				            		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a)) return true;
+								}
+							}
 						}
 					
 			        Class_ parent = clazz.getParentClass();
@@ -251,6 +261,17 @@ public class SolutionClassAssignmentProxy extends CommitedClassAssignmentProxy {
 	            			conflicts.add(a);
 	            	}
             	}
+				if (instructor.getInstructor().getExternalUniqueId() != null) {
+					for (Class_ c: (List<Class_>)Class_DAO.getInstance().getSession().createQuery(
+						"select e.clazz from StudentClassEnrollment e where e.student.externalUniqueId = :externalId and e.student.session.uniqueId = :sessionId")
+						.setLong("sessionId", instructor.getInstructor().getDepartment().getSessionId())
+						.setString("externalId", instructor.getInstructor().getExternalUniqueId())
+						.setCacheable(true).list()) {
+						Assignment a = getAssignment(c);
+	            		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a))
+	            			conflicts.add(a);
+					}
+				}
 			}
 		
         Class_ parent = clazz.getParentClass();
