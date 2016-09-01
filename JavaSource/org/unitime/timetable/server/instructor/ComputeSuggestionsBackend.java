@@ -55,7 +55,7 @@ public class ComputeSuggestionsBackend extends InstructorSchedulingBackendHelper
 
 		SuggestionsResponse response = new SuggestionsResponse();
 		
-		Context cx = new Context(context);
+		Context cx = new Context(context, solver);
 		Suggestion s = new Suggestion();
 		for (AssignmentInfo ai: request.getAssignments()) {
 			TeachingRequest tr = TeachingRequestDAO.getInstance().get(ai.getRequest().getRequestId());

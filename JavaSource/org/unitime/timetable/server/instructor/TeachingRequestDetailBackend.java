@@ -20,7 +20,6 @@
 package org.unitime.timetable.server.instructor;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestDetailRequest;
@@ -48,8 +47,9 @@ public class TeachingRequestDetailBackend extends InstructorSchedulingBackendHel
 		} else {
 			TeachingRequest tr = TeachingRequestDAO.getInstance().get(request.getRequestId());
 			if (tr == null) return null;
-			
-			return getRequest(tr, UserProperty.NameFormat.get(context.getUser()), null);
+
+			Context cx = new Context(context, solver);
+			return getRequest(tr, cx, true);
 		}
 	}
 }

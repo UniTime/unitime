@@ -74,6 +74,7 @@ import org.unitime.timetable.model.dao.TeachingRequestDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.solver.instructor.InstructorSchedulingDatabaseLoader;
 import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
+import org.unitime.timetable.util.NameFormat;
 
 /**
  * @author Tomas Muller
@@ -121,11 +122,8 @@ public class InstructorSchedulingBackendHelper {
 		info.setMaxLoad(instructor.getMaxLoad() == null ? 0f : instructor.getMaxLoad());
 		if (instructor.getTeachingPreference() == null) {
 			info.setTeachingPreference(PreferenceLevel.sProhibited);
-			info.setValue("Teaching Preferences", Constants.preference2preferenceLevel(PreferenceLevel.sProhibited));
 		} else {
 			info.setTeachingPreference(instructor.getTeachingPreference().getPrefProlog());
-			if (!PreferenceLevel.sNeutral.equals(info.getTeachingPreference()))
-				info.setValue("Teaching Preferences", Constants.preference2preferenceLevel(info.getTeachingPreference()));
 		}
 		for (InstructorAttribute a: instructor.getAttributes()) {
 			AttributeInterface attribute = new AttributeInterface();
@@ -146,8 +144,6 @@ public class InstructorSchedulingBackendHelper {
 			if (p instanceof InstructorCoursePref) {
 				InstructorCoursePref cp = (InstructorCoursePref)p;
 				info.addCoursePreference(new PreferenceInfo(cp.getCourse().getUniqueId(), cp.getCourse().getCourseName(), cp.getPrefLevel().getPrefProlog()));
-				if (request != null && cp.getCourse().getUniqueId().equals(request.getCourse().getCourseId()))
-					info.setValue("Course Preferences", Constants.preference2preferenceLevel(p.getPrefLevel().getPrefProlog()));
 			} else if (p instanceof DistributionPref) {
 				DistributionPref dp = (DistributionPref)p;
 				info.addDistributionPreference(new PreferenceInfo(dp.getDistributionType().getUniqueId(), dp.getDistributionType().getLabel(), dp.getPrefLevel().getPrefProlog()));
@@ -249,18 +245,24 @@ public class InstructorSchedulingBackendHelper {
         return ret;
     }
     
-	protected TeachingRequestInfo getRequest(TeachingRequest tr, String nameFormat, InstructorSchedulingProxy solver) {
+	protected TeachingRequestInfo getRequest(TeachingRequest tr, Context context, boolean checkConflicts) {
 		org.hibernate.Session hibSession = DepartmentalInstructorDAO.getInstance().getSession();
     	TeachingRequestInfo request = new TeachingRequestInfo();
     	request.setRequestId(tr.getUniqueId());
     	request.setNrInstructors(tr.getNbrInstructors());
     	request.setCourse(getCourse(tr.getOffering().getControllingCourseOffering()));
-    	for (TeachingClassRequest tcr: new TreeSet<TeachingClassRequest>(tr.getClassRequests()))
+    	List<TimeLocation> noOverlap = new ArrayList<TimeLocation>();
+    	for (TeachingClassRequest tcr: new TreeSet<TeachingClassRequest>(tr.getClassRequests())) {
     		request.addSection(getSection(tcr));
+    		if (checkConflicts && !tcr.isCanOverlap()) {
+    			Assignment assignment = tcr.getTeachingClass().getCommittedAssignment();
+    			if (assignment != null) noOverlap.add(assignment.getTimeLocation());
+    		}
+    	}
     	request.setLoad(tr.getTeachingLoad());
 		for (Iterator it = tr.getPreferences(InstructorPref.class).iterator(); it.hasNext(); ) {
 			InstructorPref p = (InstructorPref)it.next();
-			request.addInstructorPreference(new PreferenceInfo(p.getInstructor().getUniqueId(), p.getInstructor().getName(nameFormat), p.getPrefLevel().getPrefProlog()));
+			request.addInstructorPreference(new PreferenceInfo(p.getInstructor().getUniqueId(), p.getInstructor().getName(context.getNameFormat()), p.getPrefLevel().getPrefProlog()));
 		}
 		for (Iterator it = tr.getPreferences(InstructorAttributePref.class).iterator(); it.hasNext(); ) {
 			InstructorAttributePref p = (InstructorAttributePref)it.next();
@@ -268,8 +270,8 @@ public class InstructorSchedulingBackendHelper {
 		}
 		int index = 0;
 		TreeSet<DepartmentalInstructor> instructors = new TreeSet<DepartmentalInstructor>();
-		if (solver != null) {
-			TeachingRequestInfo info = solver.getTeachingRequestInfo(tr.getUniqueId());
+		if (context.getSolver() != null) {
+			TeachingRequestInfo info = context.getSolver().getTeachingRequestInfo(tr.getUniqueId());
 			if (info != null && info.hasInstructors())
 				for (InstructorInfo i: info.getInstructors()) {
 					DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(i.getInstructorId(), hibSession);
@@ -280,9 +282,9 @@ public class InstructorSchedulingBackendHelper {
 			instructors.addAll(tr.getAssignedInstructors());
 		}
 		for (DepartmentalInstructor instructor: instructors) {
-    		InstructorInfo info = getInstructor(request, instructor, nameFormat);
-    		if (solver != null) {
-    			InstructorInfo i = solver.getInstructorInfo(instructor.getUniqueId());
+    		InstructorInfo info = getInstructor(tr, request, instructor, getInstructorAssignments(instructor, null), context);
+    		if (context.getSolver() != null) {
+    			InstructorInfo i = context.getSolver().getInstructorInfo(instructor.getUniqueId());
     			info.setAssignedLoad(i == null ? 0f : i.getAssignedLoad());
     		} else {
         		Number load = ((Number)hibSession.createQuery("select sum(r.teachingLoad) from TeachingRequest r inner join r.assignedInstructors i where i.uniqueId = :instructorId")
@@ -290,27 +292,22 @@ public class InstructorSchedulingBackendHelper {
             	info.setAssignedLoad(load == null ? 0f : load.floatValue());
     		}
         	request.addInstructor(info);
-        	for (Iterator it = tr.getPreferences(InstructorPref.class).iterator(); it.hasNext(); ) {
-    			InstructorPref p = (InstructorPref)it.next();
-    			if (p.getInstructor().equals(instructor))
-    				info.setValue("Instructor Preferences", Constants.preference2preferenceLevel(p.getPrefLevel().getPrefProlog()));
-    		}
-    		MinMaxPreferenceCombination attr = new MinMaxPreferenceCombination();
-    		for (Iterator it = tr.getPreferences(InstructorAttributePref.class).iterator(); it.hasNext(); ) {
-    			InstructorAttributePref p = (InstructorAttributePref)it.next();
-    			if (instructor.getAttributes().contains(p.getAttribute()))
-    				attr.addPreferenceProlog(p.getPrefLevel().getPrefProlog());
-    		}
-    		info.setValue("Attribute Preferences", attr.getPreferenceInt());
-    		info.setAssignmentIndex(index++);
+        	info.setAssignmentIndex(index++);
+    		if (checkConflicts && !noOverlap.isEmpty())
+    			check: for (EnrolledClass ec: InstructorSchedulingDatabaseLoader.loadUnavailability(hibSession, instructor)) {
+    				for (TimeLocation time: noOverlap)
+    					if (time.hasIntersection(ec)) {
+    						info.setConflict(true); break check;
+    					}
+    			}
     	}
 		return request;
 	}
 	
-	public InstructorInfo getInstructorInfo(DepartmentalInstructor instructor, String nameFormat) {
+	public InstructorInfo getInstructorInfo(DepartmentalInstructor instructor, Context context) {
 		InstructorInfo info = new InstructorInfo();
 		info.setInstructorId(instructor.getUniqueId());
-		info.setInstructorName(instructor.getName(nameFormat));
+		info.setInstructorName(instructor.getName(context.getNameFormat()));
 		info.setExternalId(instructor.getExternalUniqueId());
 		info.setMaxLoad(instructor.getMaxLoad() == null ? 0f : instructor.getMaxLoad());
 		for (InstructorAttribute a: instructor.getAttributes()) {
@@ -350,7 +347,8 @@ public class InstructorSchedulingBackendHelper {
 				}
 			}
 		}
-		for (EnrolledClass ec: InstructorSchedulingDatabaseLoader.loadUnavailability(Class_DAO.getInstance().getSession(), instructor)) {
+		List<EnrolledClass> unavailability = InstructorSchedulingDatabaseLoader.loadUnavailability(Class_DAO.getInstance().getSession(), instructor);
+		for (EnrolledClass ec: unavailability) {
 				PreferenceInfo pi = new PreferenceInfo(ec.getClassId(), ec.getLongName(CONSTANTS.useAmPm()), Constants.sPreferenceProhibited);
 			pi.setComparable(String.format("%03d:%05d", ec.getDayCode(), ec.getStartSlot()));
 			info.addTimePreference(pi);
@@ -380,64 +378,64 @@ public class InstructorSchedulingBackendHelper {
 				pattern.append(PreferenceLevel.prolog2char(Constants.preferenceLevel2preference(pref)));
 		}
 		info.setAvailability(pattern.toString());
+		if (instructor.getTeachingPreference() == null) {
+			info.setTeachingPreference(PreferenceLevel.sProhibited);
+		} else {
+			info.setTeachingPreference(instructor.getTeachingPreference().getPrefProlog());
+		}
 		org.hibernate.Session hibSession = DepartmentalInstructorDAO.getInstance().getSession();
 		for (TeachingRequest tr: (List<TeachingRequest>)hibSession.createQuery("select r from TeachingRequest r inner join r.assignedInstructors i where i.uniqueId = :instructorId")
 				.setLong("instructorId", instructor.getUniqueId()).setCacheable(true).list()) {
 			if (tr.isCancelled()) continue;
-			TeachingRequestInfo request = getRequest(tr, info, nameFormat);
+			TeachingRequestInfo request = getRequest(tr, info, context.getNameFormat(), unavailability);
 			if (request == null) continue;
-			if (instructor.getTeachingPreference() == null) {
-				info.setTeachingPreference(PreferenceLevel.sProhibited);
-				request.setValue("Teaching Preferences", Constants.preference2preferenceLevel(PreferenceLevel.sProhibited));
-				info.addValue("Teaching Preferences", Constants.preference2preferenceLevel(PreferenceLevel.sProhibited));
-			} else {
-				info.setTeachingPreference(instructor.getTeachingPreference().getPrefProlog());
-				if (!PreferenceLevel.sNeutral.equals(info.getTeachingPreference())) {
-					request.setValue("Teaching Preferences", Constants.preference2preferenceLevel(info.getTeachingPreference()));
-					info.addValue("Teaching Preferences", Constants.preference2preferenceLevel(info.getTeachingPreference()));
-				}
+			if (info.getTeachingPreference() != null && !PreferenceLevel.sNeutral.equals(info.getTeachingPreference())) {
+				request.setValue("Teaching Preferences", Constants.preference2preferenceLevel(info.getTeachingPreference()));
+				info.addValue("Teaching Preferences", Constants.preference2preferenceLevel(info.getTeachingPreference()));
 			}
-			for (org.unitime.timetable.model.Preference p: instructor.getPreferences()) {
-				if (p instanceof InstructorCoursePref) {
-					InstructorCoursePref cp = (InstructorCoursePref)p;
-					if (cp.getCourse().getUniqueId().equals(request.getCourse().getCourseId())) {
-						info.addValue("Course Preferences", Constants.preference2preferenceLevel(p.getPrefLevel().getPrefProlog()));
-						request.setValue("Course Preferences", Constants.preference2preferenceLevel(p.getPrefLevel().getPrefProlog()));
-					}
-				}
-			}
+			PreferenceCombination timePref = getTimePreference(instructor, tr); 
+			request.setValue("Time Preferences", timePref.getPreferenceInt());
+			info.addValue("Time Preferences", timePref.getPreferenceInt());
+			String coursePref = getCoursePreference(instructor, tr);
+			request.setValue("Course Preferences", Constants.preference2preferenceLevel(coursePref));
+			info.addValue("Course Preferences", Constants.preference2preferenceLevel(coursePref));
+			String instrPref = getInstructorPreference(instructor, tr);
+			request.setValue("Instructor Preferences", Constants.preference2preferenceLevel(instrPref));
+			info.addValue("Instructor Preferences", Constants.preference2preferenceLevel(instrPref));
+			PreferenceCombination attrPref = getAttributePreference(instructor, tr, context.getAttributeTypes());
+			request.setValue("Attribute Preferences", attrPref.getPreferenceInt());
+			info.addValue("Attribute Preferences", attrPref.getPreferenceInt());
+			List<InstructorAssignment> assignments = getInstructorAssignments(instructor, null);
+			String sameCoursePref = getSameCoursePreference(instructor, tr, assignments);
+			request.setValue("Same Course", Constants.preference2preferenceLevel(sameCoursePref));
+			info.addValue("Same Course", Constants.preference2preferenceLevel(sameCoursePref));
+			String sameCommonPref = getSameCommonPreference(instructor, tr, assignments);
+			request.setValue("Same Common", Constants.preference2preferenceLevel(sameCommonPref));
+			info.addValue("Same Common", Constants.preference2preferenceLevel(sameCommonPref));
 			info.addAssignedRequest(request);
 		}
 		return info;
     }
     
-	protected TeachingRequestInfo getRequest(TeachingRequest tr, InstructorInfo instructor, String nameFormat) {
+	protected TeachingRequestInfo getRequest(TeachingRequest tr, InstructorInfo instructor, String nameFormat, List<EnrolledClass> unavailability) {
     	TeachingRequestInfo request = new TeachingRequestInfo();
     	request.setRequestId(tr.getUniqueId());
     	request.setNrInstructors(tr.getNbrInstructors());
     	request.setCourse(getCourse(tr.getOffering().getControllingCourseOffering()));
-    	for (TeachingClassRequest tcr: new TreeSet<TeachingClassRequest>(tr.getClassRequests()))
+    	for (TeachingClassRequest tcr: new TreeSet<TeachingClassRequest>(tr.getClassRequests())) {
     		request.addSection(getSection(tcr));
+    		if (unavailability != null && !tcr.isCanOverlap() && !request.isConflict()) {
+    			Assignment assignment = tcr.getTeachingClass().getCommittedAssignment();
+    			if (assignment != null) {
+    				for (EnrolledClass ec: unavailability) {
+    					if (ec.hasIntersection(assignment.getTimeLocation())) {
+    						request.setConflict(true); break;
+    					}
+    				}
+    			}
+    		}
+    	}
     	request.setLoad(tr.getTeachingLoad());
-		for (Iterator it = tr.getPreferences(InstructorPref.class).iterator(); it.hasNext(); ) {
-			InstructorPref p = (InstructorPref)it.next();
-			request.addInstructorPreference(new PreferenceInfo(p.getInstructor().getUniqueId(), p.getInstructor().getName(nameFormat), p.getPrefLevel().getPrefProlog()));
-			if (p.getInstructor().getUniqueId().equals(instructor.getInstructorId())) {
-				request.setValue("Instructor Preferences", Constants.preference2preferenceLevel(p.getPrefLevel().getPrefProlog()));
-				instructor.addValue("Instructor Preferences", Constants.preference2preferenceLevel(p.getPrefLevel().getPrefProlog()));
-			}
-		}
-		MinMaxPreferenceCombination attr = new MinMaxPreferenceCombination();
-		for (Iterator it = tr.getPreferences(InstructorAttributePref.class).iterator(); it.hasNext(); ) {
-			InstructorAttributePref p = (InstructorAttributePref)it.next();
-			request.addAttributePreference(new PreferenceInfo(p.getAttribute().getUniqueId(), p.getAttribute().getName(), p.getPrefLevel().getPrefProlog()));
-			for (AttributeInterface a: instructor.getAttributes())
-				if (a.getId().equals(p.getAttribute().getUniqueId())) {
-					attr.addPreferenceProlog(p.getPrefLevel().getPrefProlog());
-				}
-		}
-		request.setValue("Attribute Preferences", attr.getPreferenceInt());
-		instructor.addValue("Attribute Preferences", attr.getPreferenceInt());
 		instructor.setAssignedLoad(instructor.getAssignedLoad() + request.getLoad());
 		return request;
 	}
@@ -545,6 +543,30 @@ public class InstructorSchedulingBackendHelper {
         return preference;
     }
 	
+	public String getSameCoursePreference(DepartmentalInstructor instructor, TeachingRequest tr, List<InstructorAssignment> assignments) {
+		if (assignments == null || assignments.size() < 2 || tr.getSameCoursePreference() == null) return PreferenceLevel.sNeutral;
+		if (PreferenceLevel.sRequired.equals(tr.getSameCoursePreference().getPrefProlog())) {
+			for (InstructorAssignment ia: assignments)
+				if (!ia.sameCourse(tr)) return PreferenceLevel.sProhibited;
+			return PreferenceLevel.sNeutral;
+		}
+		for (InstructorAssignment ia: assignments)
+			if (!ia.sameCourse(tr)) return Constants.sPreferenceNeutral;
+		return tr.getSameCoursePreference().getPrefProlog();
+	}
+	
+	public String getSameCommonPreference(DepartmentalInstructor instructor, TeachingRequest tr, List<InstructorAssignment> assignments) {
+		if (assignments == null || assignments.size() < 2 || tr.getSameCommonPart() == null) return Constants.sPreferenceNeutral;
+		if (PreferenceLevel.sRequired.equals(tr.getSameCoursePreference().getPrefProlog())) {
+			for (InstructorAssignment ia: assignments)
+				if (ia.sameCourse(tr) && !ia.sameCommon(tr)) return PreferenceLevel.sProhibited;
+			return PreferenceLevel.sNeutral;	
+		}
+		for (InstructorAssignment ia: assignments)
+			if (ia.sameCourse(tr) && !ia.sameCommon(tr)) return Constants.sPreferenceNeutral;
+		return tr.getSameCommonPart().getPrefProlog();
+	}
+	
 	protected boolean canTeach(DepartmentalInstructor instructor, TeachingRequest request, Context context) {
 		if (request.isCancelled()) return false;
 		if (request.getTeachingLoad() > instructor.getMaxLoad()) return false;
@@ -559,12 +581,25 @@ public class InstructorSchedulingBackendHelper {
 		return true;
 	}
 	
-	protected InstructorInfo getInstructor(TeachingRequest tr, TeachingRequestInfo request, DepartmentalInstructor instructor, Context context) {
+	protected InstructorInfo getInstructor(TeachingRequest tr, TeachingRequestInfo request, DepartmentalInstructor instructor, List<InstructorAssignment> assignments, Context context) {
 		InstructorInfo info = getInstructor(request, instructor, context.getNameFormat());
+		if (context.getSolver() != null) {
+			InstructorInfo i = context.getSolver().getInstructorInfo(instructor.getUniqueId());
+			info.setAssignedLoad(i == null ? 0f : i.getAssignedLoad());
+		} else {
+    		Number load = ((Number)TeachingRequestDAO.getInstance().getSession().createQuery(
+    				"select sum(r.teachingLoad) from TeachingRequest r inner join r.assignedInstructors i where i.uniqueId = :instructorId")
+    				.setLong("instructorId", instructor.getUniqueId()).setCacheable(true).uniqueResult());
+        	info.setAssignedLoad(load == null ? 0f : load.floatValue());
+		}
+		if (info.getTeachingPreference() != null && !PreferenceLevel.sNeutral.equals(info.getTeachingPreference()))
+			info.setValue("Teaching Preferences", Constants.preference2preferenceLevel(info.getTeachingPreference()));
 		info.setValue("Time Preferences", getTimePreference(instructor, tr).getPreferenceInt());
 		info.setValue("Course Preferences", Constants.preference2preferenceLevel(getCoursePreference(instructor, tr)));
 		info.setValue("Instructor Preferences", Constants.preference2preferenceLevel(getInstructorPreference(instructor, tr)));
 		info.setValue("Attribute Preferences", getAttributePreference(instructor, tr, context.getAttributeTypes()).getPreferenceInt());
+		info.setValue("Same Course", Constants.preference2preferenceLevel(getSameCoursePreference(instructor, tr, assignments)));
+		info.setValue("Same Common", Constants.preference2preferenceLevel(getSameCommonPreference(instructor, tr, assignments)));
 		return info;
 	}
 	
@@ -602,7 +637,7 @@ public class InstructorSchedulingBackendHelper {
 		}
 		for (TeachingRequest tr: requests) {
     		if (canTeach(instructor, tr, context)) {
-    			TeachingRequestInfo request = getRequest(tr, context.getNameFormat(), null);
+    			TeachingRequestInfo request = getRequest(tr, context, false);
     			if (request == null) continue;
     			int maxIndex = (tr.getNbrInstructors() == 1 ? 1 : tr.getAssignedInstructors().size() + 1);
     			List<DepartmentalInstructor> current = new ArrayList<DepartmentalInstructor>(tr.getAssignedInstructors());
@@ -616,16 +651,22 @@ public class InstructorSchedulingBackendHelper {
 		}
 	}
 	
+	public Context createContext(SessionContext context, InstructorSchedulingProxy solver) {
+		return new Context(context, solver);
+	}
+	
 	public static class Context {
 		private String iNameFormat;
 		private List<InstructorAttributeType> iAttributeTypes;
 		private Suggestion iBase;
 		private SessionContext iSessionContext;
+		private InstructorSchedulingProxy iSolver;
 		
-		Context(SessionContext cx) {
+		Context(SessionContext cx, InstructorSchedulingProxy solver) {
 			iSessionContext = cx;
-			iNameFormat = UserProperty.NameFormat.get(cx.getUser());
+			iNameFormat = (cx == null ? solver.getProperties().getProperty("General.InstructorFormat", NameFormat.LAST_FIRST.reference()) : UserProperty.NameFormat.get(cx.getUser()));
 			iAttributeTypes =  (List<InstructorAttributeType>)InstructorAttributeTypeDAO.getInstance().getSession().createQuery("from InstructorAttributeType").setCacheable(true).list();
+			iSolver = solver;
 		}
 		
 		public String getNameFormat() { return iNameFormat; }
@@ -633,6 +674,7 @@ public class InstructorSchedulingBackendHelper {
 		public Suggestion getBase() { return iBase; }
 		public void setBase(Suggestion base) { iBase = base; }
 		public SessionContext getSessionContext() { return iSessionContext; }
+		public InstructorSchedulingProxy getSolver() { return iSolver; }
 	}
 	
 	public class InstructorAssignment {
@@ -671,12 +713,12 @@ public class InstructorSchedulingBackendHelper {
 			return iRequest.getSameCommonPart() != null && PreferenceLevel.sProhibited.equals(iRequest.getSameCommonPart().getPrefProlog());
 		}
 		
-		public AssignmentInfo toInfo(Context context) {
+		public AssignmentInfo toInfo(Context context, List<InstructorAssignment> assignments) {
 			AssignmentInfo ai = new AssignmentInfo();
-			ai.setRequest(getRequest(getTeachingRequest(), context.getNameFormat(), null));
+			ai.setRequest(getRequest(getTeachingRequest(), context, false));
 			ai.setIndex(getIndex());
 			if (getAssigment() != null)
-				ai.setInstructor(getInstructor(getTeachingRequest(), ai.getRequest(), getAssigment(), context));
+				ai.setInstructor(getInstructor(getTeachingRequest(), ai.getRequest(), getAssigment(), assignments, context));
 			return ai;
 		}
 		
@@ -751,6 +793,25 @@ public class InstructorSchedulingBackendHelper {
 		}
 	}
 	
+	public List<InstructorAssignment> getInstructorAssignments(DepartmentalInstructor instructor, List<InstructorAssignment> suggested) {
+		List<InstructorAssignment> ret = new ArrayList<InstructorAssignment>();
+		if (suggested != null)
+			for (InstructorAssignment a: suggested)
+				if (instructor.equals(a.getAssigment())) ret.add(a);
+		tr: for (TeachingRequest tr: (List<TeachingRequest>)TeachingRequestDAO.getInstance().getSession().createQuery(
+				"select distinct r from TeachingRequest r inner join r.assignedInstructors i where i.uniqueId = :instructorId")
+				.setLong("instructorId", instructor.getUniqueId()).setCacheable(true).list()) {
+			if (tr.isCancelled()) continue;
+			if (suggested != null)
+				for (InstructorAssignment a: suggested)
+					if (a.getTeachingRequest().equals(tr) && instructor.equals(a.getCurrentAssignment())) continue tr;
+			List<DepartmentalInstructor> assignments = new ArrayList<DepartmentalInstructor>(tr.getAssignedInstructors());
+			Collections.sort(assignments);
+			ret.add(new InstructorAssignment(tr, assignments.indexOf(instructor), instructor, instructor));
+		}
+		return ret;
+	}
+	
 	public class Suggestion {
 		List<InstructorAssignment> iAssignments = new ArrayList<InstructorAssignment>();
 		
@@ -781,22 +842,9 @@ public class InstructorSchedulingBackendHelper {
 		}
 		
 		public List<InstructorAssignment> getAssignments(DepartmentalInstructor instructor) {
-			List<InstructorAssignment> ret = new ArrayList<InstructorAssignment>();
-			for (InstructorAssignment a: iAssignments)
-				if (instructor.equals(a.getAssigment())) ret.add(a);
-			tr: for (TeachingRequest tr: (List<TeachingRequest>)TeachingRequestDAO.getInstance().getSession().createQuery(
-					"select distinct r from TeachingRequest r inner join r.assignedInstructors i where i.uniqueId = :instructorId")
-					.setLong("instructorId", instructor.getUniqueId()).setCacheable(true).list()) {
-				if (tr.isCancelled()) continue;
-				for (InstructorAssignment a: iAssignments)
-					if (a.getTeachingRequest().equals(tr) && instructor.equals(a.getCurrentAssignment())) continue tr;
-				List<DepartmentalInstructor> assignments = new ArrayList<DepartmentalInstructor>(tr.getAssignedInstructors());
-				Collections.sort(assignments);
-				ret.add(new InstructorAssignment(tr, assignments.indexOf(instructor), instructor, instructor));
-			}
-			return ret;
+			if (instructor == null) return null;
+			return getInstructorAssignments(instructor, getAssignments());
 		}
-		
 		
 		public void computeConflicts(InstructorAssignment assignment, Set<InstructorAssignment> conflicts, Context context) {
 			for (InstructorAssignment ta: getAssignments(assignment.getAssigment())) {
@@ -881,9 +929,9 @@ public class InstructorSchedulingBackendHelper {
 				computeConflicts(a, conflicts, context);
 			}
 			for (InstructorAssignment a: iAssignments)
-				if (!conflicts.remove(a)) si.addAssignment(a.toInfo(context));
+				if (!conflicts.remove(a)) si.addAssignment(a.toInfo(context, getAssignments(a.getAssigment())));
 			for (InstructorAssignment c: conflicts)
-				si.addAssignment(new InstructorAssignment(c.getTeachingRequest(), c.getIndex(), null).toInfo(context));
+				si.addAssignment(new InstructorAssignment(c.getTeachingRequest(), c.getIndex(), null).toInfo(context, getAssignments(c.getAssigment())));
 			for (AssignmentInfo ai: si.getAssignments()) {
 				if (ai.getInstructor() != null)
 					for (Map.Entry<String, Double> e: ai.getInstructor().getValues().entrySet())

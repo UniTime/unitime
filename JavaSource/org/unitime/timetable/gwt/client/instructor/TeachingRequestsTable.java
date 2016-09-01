@@ -150,7 +150,9 @@ public class TeachingRequestsTable extends UniTimeTable<SingleTeachingAssingment
 								line.add(cell);
 							}
 						}
-						addRow(new SingleTeachingAssingment(instructor, request), line);
+						int row = addRow(new SingleTeachingAssingment(instructor, request), line);
+						if (instructor.isConflict())
+							getRowFormatter().addStyleName(row, "enrollment-conflict");
 					}
 				} else {
 					List<Widget> line = new ArrayList<Widget>();
@@ -173,7 +175,9 @@ public class TeachingRequestsTable extends UniTimeTable<SingleTeachingAssingment
 							line.add(cell);
 						}
 					}
-					addRow(new SingleTeachingAssingment(instructor, request), line);
+					int row = addRow(new SingleTeachingAssingment(instructor, request), line);
+					if (instructor.isConflict())
+						getRowFormatter().addStyleName(row, "enrollment-conflict");
 				}
 			else if (!iAssigned && request.getNrAssignedInstructors() < request.getNrInstructors()) {
 				List<Widget> line = new ArrayList<Widget>();

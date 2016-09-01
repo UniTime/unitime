@@ -26,7 +26,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.SessionAttribute;
-import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -59,7 +58,7 @@ public class TeachingAssignmentsBackend extends InstructorSchedulingBackendHelpe
 		if (solver != null)
 			return new GwtRpcResponseList<InstructorInfo>(solver.getInstructors(request.getDepartmentId()));
 		else {
-			String nameFormat = UserProperty.NameFormat.get(context.getUser());
+			Context cx = new Context(context, solver);
 			
 			GwtRpcResponseList<InstructorInfo> ret = new GwtRpcResponseList<InstructorInfo>();
 			org.hibernate.Session hibSession = Class_DAO.getInstance().getSession();
@@ -89,7 +88,7 @@ public class TeachingAssignmentsBackend extends InstructorSchedulingBackendHelpe
 						).setLong("departmentId", request.getDepartmentId()).setString("prohibited", PreferenceLevel.sProhibited).setCacheable(true).list();
 			}
 	    	for (DepartmentalInstructor instructor: instructors) {
-	    		ret.add(getInstructorInfo(instructor, nameFormat));
+	    		ret.add(getInstructorInfo(instructor, cx));
 	    	}
 	    	Collections.sort(ret);
 	    	return ret;

@@ -20,7 +20,6 @@
 package org.unitime.timetable.server.instructor;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorInfo;
@@ -49,7 +48,8 @@ public class TeachingAssignmentsDetailBackend extends InstructorSchedulingBacken
 			DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(request.getInstructorId());
 			if (instructor == null) return null;
 			
-			return getInstructorInfo(instructor, UserProperty.NameFormat.get(context.getUser()));
+			Context cx = new Context(context, solver);
+			return getInstructorInfo(instructor, cx);
 		}
 	}
 }

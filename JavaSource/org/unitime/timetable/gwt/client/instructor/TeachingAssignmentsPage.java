@@ -238,7 +238,9 @@ public class TeachingAssignmentsPage extends SimpleForm {
 						if (cell == null) cell = new Label();
 						line.add(cell);
 					}
-					iTable.addRow(assignment, line);
+					int row = iTable.addRow(assignment, line);
+					if (request.isConflict())
+						iTable.getRowFormatter().addStyleName(row, "enrollment-conflict");
 				}
 			}
 		}

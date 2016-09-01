@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.defaults.SessionAttribute;
-import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -51,13 +50,14 @@ public class TeachingRequestsPageBackend extends InstructorSchedulingBackendHelp
 	@Override
 	public GwtRpcResponseList<TeachingRequestInfo> execute(TeachingRequestsPageRequest request, SessionContext context) {
 		context.checkPermission(Right.InstructorSchedulingSolver);
-		context.setAttribute(SessionAttribute.OfferingsSubjectArea, request.getSubjectAreaId() == null ? "-1" : String.valueOf(request.getSubjectAreaId()));
+		if (request.getOfferingId() == null)
+			context.setAttribute(SessionAttribute.OfferingsSubjectArea, request.getSubjectAreaId() == null ? "-1" : String.valueOf(request.getSubjectAreaId()));
 		InstructorSchedulingProxy solver = instructorSchedulingSolverService.getSolver();
 		if (solver != null && request.getOfferingId() == null)
 			return new GwtRpcResponseList<TeachingRequestInfo>(solver.getTeachingRequests(request));
 		else {
-			String nameFormat = UserProperty.NameFormat.get(context.getUser());
-			
+			Context cx = new Context(context, solver);
+
 			GwtRpcResponseList<TeachingRequestInfo> ret = new GwtRpcResponseList<TeachingRequestInfo>();
 			org.hibernate.Session hibSession = Class_DAO.getInstance().getSession();
 			List<TeachingRequest> requests = null;
@@ -86,7 +86,7 @@ public class TeachingRequestsPageBackend extends InstructorSchedulingBackendHelp
 	    	// Collections.sort(classes, new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
 	    	for (TeachingRequest tr: requests) {
 	    		if (tr.isCancelled()) continue;
-	    		TeachingRequestInfo info = getRequest(tr, nameFormat, solver);
+	    		TeachingRequestInfo info = getRequest(tr, cx, true);
 	    		if (info != null) {
 	    			if (request.getOfferingId() != null)
 	    				ret.add(info);

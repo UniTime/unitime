@@ -724,6 +724,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    private List<TeachingRequestInfo> iAssignedRequests = new ArrayList<TeachingRequestInfo>();
 	    private List<ClassInfo> iEnrollments = new ArrayList<ClassInfo>();
 	    private int iAssignmentIndex = -1;
+	    private boolean iConflict = false;
 
 		public InstructorInfo() {}
 		
@@ -796,6 +797,9 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 			return getInstructorName().compareTo(course.getInstructorName());
 		}
 		
+		public boolean isConflict() { return iConflict; }
+		public void setConflict(boolean conflict) { iConflict = conflict; }
+		
 		@Override
 		public String toString() {
 			return getInstructorName() + (getExternalId() == null ? "" : " (" + getExternalId() + ")");
@@ -813,7 +817,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    private List<PreferenceInfo> iAttributePreferences = new ArrayList<PreferenceInfo>();
 	    private Map<String,Double> iValues = new HashMap<String, Double>();
 	    private int iNrInstructors = 0;
-		private String iConflict;
+		private boolean iConflict = false;
 		
 		public TeachingRequestInfo() {}
 		
@@ -868,9 +872,8 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    public int getNrInstructors() { return iNrInstructors; }
 	    public void setNrInstructors(int nrInstructors) { iNrInstructors = nrInstructors; }
 	    
-		public String getConflict() { return iConflict; }
-		public boolean hasConflict() { return iConflict != null && !iConflict.isEmpty(); }
-		public void setConflict(String conflict) { iConflict = conflict; }
+	    public boolean isConflict() { return iConflict; }
+		public void setConflict(boolean conflict) { iConflict = conflict; }
 		
 	    @Override
 	    public int hashCode() {

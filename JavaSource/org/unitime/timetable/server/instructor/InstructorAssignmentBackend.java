@@ -82,7 +82,7 @@ public class InstructorAssignmentBackend extends InstructorSchedulingBackendHelp
 		org.hibernate.Session hibSession = DepartmentalInstructorDAO.getInstance().getSession();
 		Transaction tx = hibSession.beginTransaction();
 		try {
-			Context cx = new Context(context);
+			Context cx = new Context(context, solver);
 			Suggestion s = new Suggestion();
 			for (AssignmentInfo ai: request.getAssignments()) {
 				TeachingRequest tr = TeachingRequestDAO.getInstance().get(ai.getRequest().getRequestId());

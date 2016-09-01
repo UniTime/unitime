@@ -386,7 +386,7 @@ h1 {
 }
 
 .unitime-TableRowHover {
-	background-color: #d0e4f6;
+	background-color: #d0e4f6 !important;
 }
 
 .unitime-ScrollPanel {
@@ -4601,4 +4601,16 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-SetupTeachingRequests .cancelled {
 	color: gray;
 	font-style: italic;	
+}
+
+.unitime-TeachingRequests .enrollment-conflict {
+	background-color: rgb(255, 240, 240);
+}
+
+.unitime-TeachingAssignments .enrollment-conflict {
+	background-color: rgb(255, 240, 240);
+}
+
+.unitime-TeachingRequestDetail .enrollment-conflict {
+	background-color: rgb(255, 240, 240);
 }

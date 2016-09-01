@@ -219,7 +219,9 @@ public class InstructorDetails extends SimpleForm implements HasValue<Integer>{
 				line.add(new PreferenceCell(iProperties, request.getAttributePreferences()));
 				line.add(new PreferenceCell(iProperties, request.getInstructorPreferences()));
 				line.add(new ObjectivesCell(iProperties, request.getValues()));
-				iRequestsTable.addRow(request, line);
+				int row = iRequestsTable.addRow(request, line);
+				if (request.isConflict())
+					iRequestsTable.getRowFormatter().addStyleName(row, "enrollment-conflict");
 			}
 			iObjectives.setValue(instructor.getValues());
 			getRowFormatter().setVisible(iRequestsRow, true);

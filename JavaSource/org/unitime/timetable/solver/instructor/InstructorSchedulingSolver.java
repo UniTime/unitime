@@ -73,7 +73,6 @@ import org.unitime.timetable.model.dao.TeachingRequestDAO;
 import org.unitime.timetable.server.instructor.InstructorSchedulingBackendHelper;
 import org.unitime.timetable.solver.AbstractSolver;
 import org.unitime.timetable.solver.SolverDisposeListener;
-import org.unitime.timetable.util.NameFormat;
 
 /**
  * @author Tomas Muller
@@ -462,10 +461,7 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
             	TeachingRequestInfo info = toRequestInfo(request);
             	if (rq.getType() == ChangesType.SAVED) {
                 	InstructorSchedulingBackendHelper helper = new InstructorSchedulingBackendHelper();
-                	String nameFormat = getProperties().getProperty("General.InstructorFormat", NameFormat.LAST_FIRST.reference());
-                	Set<String> commonItypes = new HashSet<String>();
-                	for (String itype: getProperties().getProperty("General.CommonItypes", "lec").split(","))
-    	    			if (!itype.isEmpty()) commonItypes.add(itype);
+                	InstructorSchedulingBackendHelper.Context cx = helper.createContext(null, this);
                 	org.unitime.timetable.model.TeachingRequest tr = TeachingRequestDAO.getInstance().get(request.getRequestId());
 					List<DepartmentalInstructor> instructors = (tr == null ? null : new ArrayList<DepartmentalInstructor>(tr.getAssignedInstructors()));
 					if (instructors != null) Collections.sort(instructors);
@@ -492,7 +488,7 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
                     			if (instr != null) {
                     				ai.setInstructor(toInstructorInfo(new TeachingAssignment(var, instr)));
                     			} else {
-                    				ai.setInstructor(helper.getInstructorInfo(instructor, nameFormat));
+                    				ai.setInstructor(helper.getInstructorInfo(instructor, cx));
                     			}
                     			ret.addChange(ai);
                 			}
