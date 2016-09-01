@@ -150,7 +150,7 @@ public class DepartmentEditAction extends Action {
                         clazz.getSchedulingSubpart().deleteAllDistributionPreferences(hibSession);
                         hibSession.saveOrUpdate(clazz.getSchedulingSubpart());
                     }
-                    clazz.setManagingDept(clazz.getControllingDept());
+                    clazz.setManagingDept(clazz.getControllingDept(), sessionContext.getUser(), hibSession);
                     // Clear all room preferences from the class
                     for (Iterator j = clazz.getPreferences().iterator(); j.hasNext(); ) {
                         Object pref = j.next();

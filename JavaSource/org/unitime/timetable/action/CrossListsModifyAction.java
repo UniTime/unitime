@@ -512,7 +512,7 @@ public class CrossListsModifyAction extends Action {
 			        	Class_ cls = (Class_) iterCls.next();
 			        	// Only change departmental class managing dept and not externally managed
 			        	if (!cls.getManagingDept().isExternalManager()) {
-				        	cls.setManagingDept(dept);
+				        	cls.setManagingDept(dept, sessionContext.getUser(), hibSession);
 				        	hibSession.saveOrUpdate(cls);
 			        	}
 			        }

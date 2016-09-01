@@ -30,6 +30,25 @@
 	<category>
 		<title>Course Timetabling</title>
 		<item>
+			<name>Class: Change Managing Department</name>
+			<description>
+				<line>Do not delete the related class event if committed assignment is not deleted.
+					<line>This fixes an issue of changing a controlling course to another subject area that has the same solver group
+						(the related class event was incorrectly deleted).</line>
+				</line>
+				<line>When a class event is being deleted, do not delete past meetings when tmtbl.classAssign.changePastMeetings is false.</line>
+				<line>Update the class event name when the controlling course of the class has changed.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.1.197</version>
+	<release-date>Wed, 27 Jul 2016</release-date>
+	<category>
+		<title>Course Timetabling</title>
+		<item>
 			<name>Reservations: Show Class Suffixes</name>
 			<description>
 				<line>Added ability to show class suffixes (external ids) on the Reservations page and in the Reservations table.</line>
