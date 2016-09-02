@@ -164,14 +164,14 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 				context.checkPermission(owners, "SolverGroup", Right.SolverSolutionSave);
 				if (request.getOperation() == SolverOperation.SAVE_AS_NEW_COMMIT || request.getOperation() == SolverOperation.SAVE_COMMIT)
 					context.checkPermission(owners, "SolverGroup", Right.TimetablesSolutionCommit);
-	        	solver.restoreBest();
+				if (solver.bestSolutionInfo() != null) solver.restoreBest();
 	        	((SolverProxy)solver).save(
 	        			request.getOperation() == SolverOperation.SAVE_AS_NEW || request.getOperation() == SolverOperation.SAVE_AS_NEW_COMMIT,
 	        			request.getOperation() == SolverOperation.SAVE_AS_NEW_COMMIT || request.getOperation() == SolverOperation.SAVE_COMMIT
 	        			);
 				break;
 			case EXAM:
-				solver.restoreBest();
+				if (solver.bestSolutionInfo() != null) solver.restoreBest();
 				solver.save();
 				break;
 			case STUDENT:
@@ -179,12 +179,12 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 	        	if (statusToSet != null) {
 	        		solver.setProperty("Save.StudentSectioningStatusToSet", request.getParameter(statusToSet.getUniqueId()));
 	        	}
-	        	solver.restoreBest();
+	        	if (solver.bestSolutionInfo() != null) solver.restoreBest();
 				solver.save();
 				break;
 			case INSTRUCTOR:
 				solver.setProperty("Save.Commit", (request.getOperation() == SolverOperation.SAVE_AS_NEW_COMMIT || request.getOperation() == SolverOperation.SAVE_COMMIT) ? "true" : "false");
-				solver.restoreBest();
+				if (solver.bestSolutionInfo() != null) solver.restoreBest();
 				solver.save();
         	}
         	break;

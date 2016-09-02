@@ -67,6 +67,7 @@ import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.TeachingClassRequest;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
+import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.NameFormat;
 
@@ -81,7 +82,6 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
 	private Map<Long, Attribute> iAttributes = new HashMap<Long, Attribute>();
 	private Map<Long, Attribute> iDepartmentAttribute = new HashMap<Long, Attribute>();
 	private Map<Long, Instructor> iInstructors = new HashMap<Long, Instructor>();
-	private boolean iHasCommitted = false;
 	private String iDefaultSameCourse = null, iDefaultSameCommon = null;
 	
     public InstructorSchedulingDatabaseLoader(InstructorSchedulingModel model, Assignment<TeachingRequest.Variable, TeachingAssignment> assignment) {
@@ -125,8 +125,9 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     	if (departments.size() > 1) {
     		Attribute.Type dt = new Attribute.Type(-1, "Department", false, false);
     		getModel().addAttributeType(dt);
-    		for (Department d: departments)
+    		for (Department d: departments) {
     			iDepartmentAttribute.put(d.getUniqueId(), new Attribute(-d.getUniqueId(), d.getDeptCode(), dt));
+    		}
     	}
     	
     	loadInstructors(hibSession);
@@ -135,7 +136,20 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
         
     	createAssignment();
         
-        getModel().getProperties().setProperty("Save.Commit", !iHasCommitted ? "false" : "true");
+        getModel().getProperties().setProperty("Save.Commit", isCommitted(hibSession, iSolverGroupId) ? "true" : "false");
+    }
+    
+    public static boolean isCommitted(org.hibernate.Session hibSession, Set<Long> solverGroupIds) {
+		Number oc = (Number)DepartmentDAO.getInstance().getSession().createQuery(
+				"select count(oc) from OfferingCoordinator oc where oc.teachingRequest is not null and " +
+				"oc.instructor.department.solverGroup.uniqueId in :solverGroupId").setParameterList("solverGroupId", solverGroupIds).
+				setCacheable(true).uniqueResult();
+		if (oc.intValue() > 0) return true;
+		Number ci = (Number)DepartmentDAO.getInstance().getSession().createQuery(
+				"select count(ci) from ClassInstructor ci where ci.teachingRequest is not null and " +
+				"ci.instructor.department.solverGroup.uniqueId in :solverGroupId").setParameterList("solverGroupId", solverGroupIds).
+				setCacheable(true).uniqueResult();
+		return ci.intValue() > 0;
     }
     
     protected Attribute getAttribute(InstructorAttribute a) {
