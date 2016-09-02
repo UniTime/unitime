@@ -21,6 +21,7 @@ package org.unitime.timetable.form;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -36,11 +37,15 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.Preference;
+import org.unitime.timetable.model.TeachingClassRequest;
 import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.TeachingResponsibilityDAO;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.util.DynamicList;
@@ -250,6 +255,8 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 	}
 
 	public void updateClasses() throws Exception {
+		InstrOfferingConfig config = InstrOfferingConfigDAO.getInstance().get(instrOffrConfigId);
+		boolean assignTeachingRequest = Department.isInstructorSchedulingCommitted(config.getInstructionalOffering().getControllingCourseOffering().getDepartment().getUniqueId());
 	    Class_DAO cdao = new Class_DAO();
 	    for (int i = 0; i < classIds.size(); ) {
 	    	if ("true".equals(getReadOnlyClasses().get(i))) {
@@ -264,16 +271,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
         	Transaction tx = hibSession.beginTransaction();
 
             // Class all instructors
-            Set classInstrs = c.getClassInstructors();
-            for (Iterator iter=classInstrs.iterator(); iter.hasNext() ;) {
-                ClassInstructor ci = (ClassInstructor) iter.next();
-                DepartmentalInstructor instr = ci.getInstructor();
-                instr.getClasses().remove(ci);
-                hibSession.saveOrUpdate(instr);
-                hibSession.delete(ci);
-            }
-            
-            classInstrs.clear();
+            Set<ClassInstructor> classInstrs = new HashSet<ClassInstructor>(c.getClassInstructors());
 
             c.setDisplayInstructor(new Boolean("on".equals(getDisplayFlags().get(i))));
 
@@ -290,9 +288,31 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 	                String responsibility = (String) getResponsibilities().get(i);
 	                
 	                DepartmentalInstructor deptInstr =  new DepartmentalInstructorDAO().get(new Long(instrId));
-	                ClassInstructor classInstr = new ClassInstructor();
-	                classInstr.setClassInstructing(c);
-	                classInstr.setInstructor(deptInstr);
+	                
+	                ClassInstructor classInstr = null;
+	                for (Iterator<ClassInstructor> j = classInstrs.iterator(); j.hasNext();) {
+	                	ClassInstructor adept = j.next();
+	                	if (adept.getInstructor().equals(deptInstr)) {
+	                		classInstr = adept;
+	                		j.remove();
+	                		break;
+	                	}
+	                }
+	                if (classInstr == null) {
+	                	classInstr = new ClassInstructor();
+		                deptInstr.getClasses().add(classInstr);
+		                c.getClassInstructors().add(classInstr);
+		                classInstr.setClassInstructing(c);
+		                classInstr.setInstructor(deptInstr);
+		                if (assignTeachingRequest) {
+		                	for (TeachingClassRequest tcr: c.getTeachingRequests()) {
+		                		if (tcr.getAssignInstructor() && tcr.getTeachingRequest().getAssignedInstructors().contains(deptInstr)) {
+		                			classInstr.setTeachingRequest(tcr.getTeachingRequest());
+		                			break;
+		                		}
+		                	}
+		                }
+	                }
 	                classInstr.setLead(lead);
 	                classInstr.setPercentShare(new Integer(pctShare));
 	                try {
@@ -301,15 +321,20 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 	                	classInstr.setResponsibility(null);
 	                }
 	                
-	                deptInstr.getClasses().add(classInstr);
 	                hibSession.saveOrUpdate(deptInstr);
 	                
-	                classInstrs.add(classInstr);
 	            };
             };
             
-            c.setClassInstructors(classInstrs);
-
+            for (Iterator<ClassInstructor> iter = classInstrs.iterator(); iter.hasNext() ;) {
+                ClassInstructor ci = iter.next();
+                DepartmentalInstructor instr = ci.getInstructor();
+                instr.getClasses().remove(ci);
+                c.getClassInstructors().remove(ci);
+                hibSession.saveOrUpdate(instr);
+                hibSession.delete(ci);
+            }
+            
         	try {
                 hibSession.saveOrUpdate(c);
 	            tx.commit();

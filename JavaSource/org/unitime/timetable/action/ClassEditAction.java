@@ -21,6 +21,7 @@ package org.unitime.timetable.action;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -59,6 +60,7 @@ import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.StudentAccomodation;
+import org.unitime.timetable.model.TeachingClassRequest;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
@@ -532,18 +534,11 @@ public class ClassEditAction extends PreferencesAction {
 
 	    Boolean di = frm.getDisplayInstructor();
 	    c.setDisplayInstructor(di==null ? new Boolean(false) : di);
+	    
+	    boolean assignTeachingRequest = Department.isInstructorSchedulingCommitted(c.getControllingDept().getUniqueId());
 
         // Class all instructors
-        Set classInstrs = c.getClassInstructors();
-        for (Iterator iter=classInstrs.iterator(); iter.hasNext() ;) {
-            ClassInstructor ci = (ClassInstructor) iter.next();
-            DepartmentalInstructor instr = ci.getInstructor();
-            instr.getClasses().remove(ci);
-            hibSession.saveOrUpdate(instr);
-            hibSession.delete(ci);
-        }
-
-        classInstrs.clear();
+	    Set<ClassInstructor> classInstrs = new HashSet<ClassInstructor>(c.getClassInstructors());
 
         // Get instructor data
         List instrLead = frm.getInstrLead();
@@ -561,10 +556,31 @@ public class ClassEditAction extends PreferencesAction {
             String resp = instrResponsibility.get(i).toString();
 
             DepartmentalInstructor deptInstr = new DepartmentalInstructorDAO().get(new Long(instrId));
-
-            ClassInstructor classInstr = new ClassInstructor();
-            classInstr.setClassInstructing(c);
-            classInstr.setInstructor(deptInstr);
+            
+            ClassInstructor classInstr = null;
+            for (Iterator<ClassInstructor> j = classInstrs.iterator(); j.hasNext();) {
+            	ClassInstructor adept = j.next();
+            	if (adept.getInstructor().equals(deptInstr)) {
+            		classInstr = adept;
+            		j.remove();
+            		break;
+            	}
+            }
+            if (classInstr == null) {
+            	classInstr = new ClassInstructor();
+                classInstr.setClassInstructing(c);
+                classInstr.setInstructor(deptInstr);
+                deptInstr.getClasses().add(classInstr);
+                c.getClassInstructors().add(classInstr);
+                if (assignTeachingRequest) {
+                	for (TeachingClassRequest tcr: c.getTeachingRequests()) {
+                		if (tcr.getAssignInstructor() && tcr.getTeachingRequest().getAssignedInstructors().contains(deptInstr)) {
+                			classInstr.setTeachingRequest(tcr.getTeachingRequest());
+                			break;
+                		}
+                	}
+                }
+            }
             classInstr.setLead(new Boolean(lead));
             try {
             	classInstr.setPercentShare(new Integer(pctShare));
@@ -576,13 +592,17 @@ public class ClassEditAction extends PreferencesAction {
             } catch (NumberFormatException e) {
             	classInstr.setResponsibility(null);
             }
-            classInstrs.add(classInstr);
-
-            deptInstr.getClasses().add(classInstr);
             hibSession.saveOrUpdate(deptInstr);
         }
 
-        c.setClassInstructors(classInstrs);
+        for (Iterator<ClassInstructor> iter = classInstrs.iterator(); iter.hasNext() ;) {
+            ClassInstructor ci = iter.next();
+            DepartmentalInstructor instr = ci.getInstructor();
+            instr.getClasses().remove(ci);
+            c.getClassInstructors().remove(ci);
+            hibSession.saveOrUpdate(instr);
+            hibSession.delete(ci);
+        }
 
         ChangeLog.addChange(
                 hibSession,

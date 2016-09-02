@@ -53,6 +53,7 @@ import org.unitime.timetable.interfaces.ExternalLinkLookup;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -63,6 +64,7 @@ import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.TeachingRequest;
 import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
@@ -267,6 +269,7 @@ public class CourseOfferingEditAction extends Action {
 	        	co.setScheduleBookNote(note);
 
 	        if ((!limitedEdit || updateCoordinators) && co.isIsControl().booleanValue()) {
+		        boolean assignTeachingRequest = Department.isInstructorSchedulingCommitted(co.getDepartment().getUniqueId());
 		        if (io.getOfferingCoordinators() == null) io.setOfferingCoordinators(new HashSet<OfferingCoordinator>());
 		        List<OfferingCoordinator> coordinators = new ArrayList<OfferingCoordinator>(io.getOfferingCoordinators());
 		        int idx = 0;
@@ -286,6 +289,14 @@ public class CourseOfferingEditAction extends Action {
 		                		coordinator = new OfferingCoordinator();
 		                		coordinator.setInstructor(instructor);
 		                		coordinator.setOffering(io);
+		                		if (assignTeachingRequest) {
+		                			for (TeachingRequest tr: io.getTeachingRequests()) {
+				                		if (tr.getAssignCoordinator() && tr.getAssignedInstructors().contains(instructor)) {
+				                			coordinator.setTeachingRequest(tr);
+				                			break;
+				                		}
+				                	}
+		                		}
 		                	}
 		                	coordinator.setResponsibility(responsibility);
 		                	io.getOfferingCoordinators().add(coordinator);
