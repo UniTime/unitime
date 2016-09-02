@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.client.instructor;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsPage.SingleTeachingAssingment;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -42,6 +43,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.RootPanel;
 
@@ -143,6 +145,17 @@ public class TeachingRequestsWidget extends SimpleForm {
 				LoadingWidget.getInstance().hide();
 				iTable.populate(result);
 				iTable.setVisible(true);
+				String requestId = Window.Location.getParameter("requestId");
+				if (requestId != null && !requestId.isEmpty()) {
+					Long id = Long.valueOf(requestId);
+					for (int row = 0; row < iTable.getRowCount(); row++) {
+						SingleTeachingAssingment a = iTable.getData(row);
+						if (a != null && a.getRequest() != null && id.equals(a.getRequest().getRequestId())) {
+							ToolBox.scrollToElement(iTable.getRowFormatter().getElement(row));
+							break;
+						}
+					}
+				}
 			}
 		});
 	}

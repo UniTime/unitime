@@ -386,15 +386,15 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     	for (TeachingClassRequest tcr: new TreeSet<TeachingClassRequest>(request.getClassRequests())) {
     		sections += (sections.isEmpty() ? "" : ", ") + (tcr.isAssignInstructor() ? "" : "<i>") + toHtml(tcr.getTeachingClass()) + (tcr.isAssignInstructor() ? "" : "</i>");
     	}
-    	return "<a href='instructionalOfferingDetail.do?io=" + request.getOffering().getUniqueId() + "&op=view#instructors'>" + request.getOffering().getCourseName() + "</a> " + sections;
+    	return "<a href='instructionalOfferingDetail.do?io=" + request.getOffering().getUniqueId() + "&requestId=" + request.getUniqueId() + "&op=view#instructors'>" + request.getOffering().getCourseName() + "</a> " + sections;
     }
     
     protected String toHtml(TeachingRequest request) {
-    	return "<a href='instructionalOfferingDetail.do?co=" + request.getCourse().getCourseId() + "&op=view#instructors'>" + request.getCourse().getCourseName() + (request.getSections().isEmpty() ? "" : " " + request.getSections()) + "</a>";
+    	return "<a href='instructionalOfferingDetail.do?co=" + request.getCourse().getCourseId() + "&requestId=" + request.getRequestId() + "&op=view#instructors'>" + request.getCourse().getCourseName() + (request.getSections().isEmpty() ? "" : " " + request.getSections()) + "</a>";
     }
     
     protected String toHtml(TeachingRequest.Variable variable) {
-    	return "<a href='instructionalOfferingDetail.do?co=" + variable.getCourse().getCourseId() + "&op=view#instructors'>" + variable.getRequest().getCourse().getCourseName() +
+    	return "<a href='instructionalOfferingDetail.do?co=" + variable.getCourse().getCourseId() + "&requestId=" + variable.getRequest().getRequestId() + "&op=view#instructors'>" + variable.getRequest().getCourse().getCourseName() +
     			(variable.getRequest().getNrInstructors() != 1 ? "/" + (1 + variable.getInstructorIndex()) : "") + (variable.getRequest().getSections().isEmpty() ? "" : " " + variable.getRequest().getSections()) + "</a>";
     }
     
