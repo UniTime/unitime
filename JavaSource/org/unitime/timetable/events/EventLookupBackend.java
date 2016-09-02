@@ -216,16 +216,22 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				
 				switch (request.getResourceType()) {
 				case ROOM:
-					if (request.getResourceId() == null)
-						meetings = (List<Meeting>)query.select("distinct m").limit(1 + limit).query(hibSession).list();
-					else
+					if (request.getResourceId() != null)
 						meetings = (List<Meeting>)query.select("distinct m")
-							.joinWithLocation()
-							.where("l.uniqueId = :resourceId")
-							.set("resourceId", request.getResourceId())
-							.limit(1 + limit)
-							.query(hibSession).list();
-					
+						.joinWithLocation()
+						.where("l.uniqueId = :resourceId")
+						.set("resourceId", request.getResourceId())
+						.limit(1 + limit)
+						.query(hibSession).list();
+					else if (request.getResourceExternalId() != null)
+						meetings = (List<Meeting>)query.select("distinct m")
+						.joinWithLocation()
+						.where("l.externalUniqueId = :externalId")
+						.set("externalId", request.getResourceExternalId())
+						.limit(1 + limit)
+						.query(hibSession).list();
+					else
+						meetings = (List<Meeting>)query.select("distinct m").limit(1 + limit).query(hibSession).list();
 					break;
 				case SUBJECT:
 				case COURSE:
