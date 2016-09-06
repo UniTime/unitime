@@ -55,6 +55,23 @@ public class InstructorAttribute extends BaseInstructorAttribute implements Comp
 				).setLong("departmentId", departmentId).setCacheable(true).list();
 	}
 	
+	public InstructorAttribute findSameAttributeInSession(Session session) {
+		if (session == null) return null;
+		if (getDepartment() != null) {
+			Department d = getDepartment().findSameDepartmentInSession(session);
+			if (d == null) return null;
+			return (InstructorAttribute)InstructorAttributeDAO.getInstance().getSession().createQuery(
+					"from InstructorAttribute ia where ia.department.uniqueId = :departmentId and ia.code = :code")
+					.setLong("departmentId", d.getUniqueId()).setString("code", getCode()).setCacheable(true)
+					.setMaxResults(1).uniqueResult();
+		} else {
+			return (InstructorAttribute)InstructorAttributeDAO.getInstance().getSession().createQuery(
+					"from InstructorAttribute ia where ia.session.uniqueId = :sessionId and ia.department is null and ia.code = :code")
+					.setLong("sessionId", session.getUniqueId()).setString("code", getCode()).setCacheable(true)
+					.setMaxResults(1).uniqueResult();
+		}
+	}
+	
 	public boolean isParentOf(InstructorAttribute attribute) {
 		while (attribute != null) {
 			if (this.equals(attribute.getParentAttribute())) return true;
@@ -66,5 +83,4 @@ public class InstructorAttribute extends BaseInstructorAttribute implements Comp
 	public String getNameWithType() {
 		return getName() + (getType() == null ? "" : " (" + getType().getLabel() + ")");
 	}
-
 }

@@ -215,6 +215,27 @@
 		</tr>
 		<tr>
 			<td valign="middle">
+			<table><tr>	<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardOfferingCoordinators"/> Roll Forward Offering Coordinators For Subject Areas: 
+				</td><td>
+				<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardOfferingCoordinatorsSubjectIds" multiple="true">
+					<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
+				</html:select>
+			</td></tr></table>
+			</td>
+		</tr>
+		<tr>
+			<td valign="middle">
+			<table><tr>	<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardTeachingRequests"/> Roll Forward Teaching Request For Subject Areas: 
+				</td><td>
+				<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardTeachingRequestsSubjectIds" multiple="true">
+					<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
+				</html:select>
+			</td></tr></table>
+			</td>
+		</tr>
+		
+		<tr>
+			<td valign="middle">
 			<table>
 				<tr>
 					<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="addNewCourseOfferings"/>Add New Course Offerings For Subject Areas:

@@ -63,7 +63,7 @@ public class TeachingRequestsPagePropertiesBackend implements GwtRpcImplementati
 
 	@Override
 	public TeachingRequestsPagePropertiesResponse execute(TeachingRequestsPagePropertiesRequest request, SessionContext context) {
-		context.checkPermission(Right.InstructorSchedulingSolver);
+		context.checkPermission(Right.InstructorScheduling);
 		InstructorSchedulingProxy solver = instructorSchedulingSolverService.getSolver();
 		Long ownerId = null;
 		if (solver != null)

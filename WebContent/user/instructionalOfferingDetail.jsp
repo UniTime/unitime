@@ -547,7 +547,7 @@
 			</TR>
 		<% } %>
 		
-		<sec:authorize access="hasPermission(null, 'Department', 'InstructorAssignmentPreferences')">
+		<sec:authorize access="hasPermission(null, 'SolverGroup', 'InstructorScheduling') and hasPermission(null, 'Department', 'InstructorAssignmentPreferences')">
 		<TR>
 			<TD colspan="2">
 				<a name="instructors"></a>

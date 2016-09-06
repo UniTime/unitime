@@ -49,7 +49,7 @@ public class TeachingRequestsPageBackend extends InstructorSchedulingBackendHelp
 	
 	@Override
 	public GwtRpcResponseList<TeachingRequestInfo> execute(TeachingRequestsPageRequest request, SessionContext context) {
-		context.checkPermission(Right.InstructorSchedulingSolver);
+		context.checkPermission(Right.InstructorScheduling);
 		if (request.getOfferingId() == null)
 			context.setAttribute(SessionAttribute.OfferingsSubjectArea, request.getSubjectAreaId() == null ? "-1" : String.valueOf(request.getSubjectAreaId()));
 		InstructorSchedulingProxy solver = instructorSchedulingSolverService.getSolver();

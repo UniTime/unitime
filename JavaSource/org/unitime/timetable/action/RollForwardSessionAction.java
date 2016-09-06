@@ -303,6 +303,22 @@ public class RollForwardSessionAction extends Action {
         		sessionRollForward.rollClassInstructorsForward(iErrors, iForm);
         	}
 	        iProgress++;
+	        if (iErrors.isEmpty()){
+				iForm.validateOfferingCoordinatorsRollForward(toAcadSession, iErrors);
+			}
+        	if (iErrors.isEmpty() && iForm.getRollForwardOfferingCoordinators()) {
+				setStatus("Offering coordinators ...");
+        		sessionRollForward.rollOfferingCoordinatorsForward(iErrors, iForm);
+        	}
+			iProgress++;
+			if (iErrors.isEmpty()){
+				iForm.validateTeachingRequestsRollForward(toAcadSession, iErrors);
+			}
+        	if (iErrors.isEmpty() && iForm.getRollForwardTeachingRequests()) {
+				setStatus("Teaching requests ...");
+        		sessionRollForward.rollTeachingRequestsForward(iErrors, iForm);
+        	}
+	        iProgress++;
         	if (iErrors.isEmpty() && iForm.getAddNewCourseOfferings()) {
 				setStatus("New courses ...");
         		sessionRollForward.addNewCourseOfferings(iErrors, iForm);
@@ -373,6 +389,8 @@ public class RollForwardSessionAction extends Action {
         	if (iForm.getRollForwardInstructorData()) names.add("instructors");
         	if (iForm.getRollForwardCourseOfferings()) names.add("courses");
         	if (iForm.getRollForwardClassInstructors()) names.add("class instructors");
+        	if (iForm.getRollForwardOfferingCoordinators()) names.add("offering coordinators");
+        	if (iForm.getRollForwardTeachingRequests()) names.add("teaching requests");
         	if (iForm.getAddNewCourseOfferings()) names.add("new courses");
         	if (iForm.getRollForwardExamConfiguration()) names.add("exam config");
         	if (iForm.getRollForwardMidtermExams()) names.add("midterm exams");

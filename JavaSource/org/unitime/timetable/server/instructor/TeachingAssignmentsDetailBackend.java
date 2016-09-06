@@ -40,7 +40,7 @@ public class TeachingAssignmentsDetailBackend extends InstructorSchedulingBacken
 	
 	@Override
 	public InstructorInfo execute(TeachingAssignmentsDetailRequest request, SessionContext context) {
-		context.checkPermission(Right.InstructorSchedulingSolver);
+		context.checkPermission(Right.InstructorScheduling);
 		InstructorSchedulingProxy solver = instructorSchedulingSolverService.getSolver();
 		if (solver != null) {
 			return solver.getInstructorInfo(request.getInstructorId());

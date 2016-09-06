@@ -76,12 +76,18 @@ import org.unitime.timetable.model.ExternalRoomFeature;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.InstructorAttribute;
+import org.unitime.timetable.model.InstructorAttributePref;
+import org.unitime.timetable.model.InstructorCoursePref;
+import org.unitime.timetable.model.InstructorPref;
 import org.unitime.timetable.model.LastLikeCourseDemand;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.NonUniversityLocationPicture;
+import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMinor;
+import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Reservation;
@@ -104,6 +110,8 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.TeachingClassRequest;
+import org.unitime.timetable.model.TeachingRequest;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TimetableManager;
@@ -126,8 +134,11 @@ import org.unitime.timetable.model.dao.ExternalRoomDAO;
 import org.unitime.timetable.model.dao.ExternalRoomDepartmentDAO;
 import org.unitime.timetable.model.dao.ExternalRoomFeatureDAO;
 import org.unitime.timetable.model.dao.GlobalRoomFeatureDAO;
+import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
+import org.unitime.timetable.model.dao.InstructorAttributeDAO;
 import org.unitime.timetable.model.dao.LastLikeCourseDemandDAO;
 import org.unitime.timetable.model.dao.NonUniversityLocationDAO;
+import org.unitime.timetable.model.dao.OfferingCoordinatorDAO;
 import org.unitime.timetable.model.dao.PosMajorDAO;
 import org.unitime.timetable.model.dao.PosMinorDAO;
 import org.unitime.timetable.model.dao.ReservationDAO;
@@ -140,6 +151,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.StudentGroupDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
+import org.unitime.timetable.model.dao.TeachingRequestDAO;
 import org.unitime.timetable.model.dao.TimePatternDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.model.dao.TravelTimeDAO;
@@ -1603,7 +1615,121 @@ public class SessionRollForward {
 				hibSession.saveOrUpdate(toDistributionPref);
 			}
 		}		
-	}	
+	}
+	
+	protected void rollForwardInstructorCoursePrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
+		Set preferences = fromPrefGroup.getPreferences(InstructorCoursePref.class);
+		if (toPrefGroup.getPreferences() != null)
+			for (Iterator<Preference> i = toPrefGroup.getPreferences().iterator(); i.hasNext(); ) {
+				Preference p = i.next();
+				if (p instanceof InstructorCoursePref) i.remove();
+			}
+		if (preferences != null && !preferences.isEmpty()) {
+			for (Iterator it = preferences.iterator(); it.hasNext();){
+				InstructorCoursePref fromCoursePref = (InstructorCoursePref) it.next();
+				CourseOffering course = CourseOffering.findByIdRolledForwardFrom(toSession.getUniqueId(), fromCoursePref.getCourse().getUniqueId());
+				if (course != null) {
+					InstructorCoursePref toCoursePref = (InstructorCoursePref) fromCoursePref.clone();
+					toCoursePref.setCourse(course);
+					toCoursePref.setOwner(toPrefGroup);
+					toPrefGroup.addTopreferences(toCoursePref);
+				}
+			}
+		}
+	}
+	
+	private void rollGlobalInstructorAttributesForward(ActionMessages errors, Session fromSession, Session toSession) {
+		Map<Long, InstructorAttribute> attributes = new HashMap<Long, InstructorAttribute>();
+		for (InstructorAttribute oldAttribute: InstructorAttribute.getAllGlobalAttributes(toSession.getUniqueId())) {
+			InstructorAttributeDAO.getInstance().delete(oldAttribute);
+		}
+		List<InstructorAttribute> globalAttributes = InstructorAttribute.getAllGlobalAttributes(fromSession.getUniqueId());
+		for (InstructorAttribute fromAttribute: globalAttributes) {
+			InstructorAttribute toAttribute = new InstructorAttribute();
+			toAttribute.setSession(toSession);
+			toAttribute.setCode(fromAttribute.getCode());
+			toAttribute.setName(fromAttribute.getName());
+			toAttribute.setType(fromAttribute.getType());
+			toAttribute.setInstructors(new HashSet<DepartmentalInstructor>());
+			toAttribute.setChildAttributes(new HashSet<InstructorAttribute>());
+			attributes.put(fromAttribute.getUniqueId(), toAttribute);
+			InstructorAttributeDAO.getInstance().saveOrUpdate(toAttribute);
+		}
+		for (InstructorAttribute fromChildAttribute: globalAttributes) {
+			if (fromChildAttribute.getParentAttribute() != null) {
+				InstructorAttribute toChildAttribute = attributes.get(fromChildAttribute.getUniqueId());
+				InstructorAttribute toParentAttribute = attributes.get(fromChildAttribute.getParentAttribute().getUniqueId());
+				if (toParentAttribute != null) {
+					toChildAttribute.setParentAttribute(toParentAttribute);
+					toParentAttribute.getChildAttributes().add(toChildAttribute);
+					InstructorAttributeDAO.getInstance().saveOrUpdate(toChildAttribute);
+				}
+			}
+		}
+	}
+	
+	private void rollDepartmentalInstructorAttributesForward(ActionMessages errors, Department fromDepartment, Department toDepartment) {
+		Map<Long, InstructorAttribute> attributes = new HashMap<Long, InstructorAttribute>();
+		for (InstructorAttribute oldAttribute: InstructorAttribute.getAllDepartmentalAttributes(toDepartment.getUniqueId())) {
+			InstructorAttributeDAO.getInstance().delete(oldAttribute);
+		}
+		List<InstructorAttribute> departmentalAttributes = InstructorAttribute.getAllDepartmentalAttributes(fromDepartment.getUniqueId());
+		for (InstructorAttribute fromAttribute: departmentalAttributes) {
+			InstructorAttribute toAttribute = new InstructorAttribute();
+			toAttribute.setSession(toDepartment.getSession());
+			toAttribute.setDepartment(toDepartment);
+			toAttribute.setCode(fromAttribute.getCode());
+			toAttribute.setName(fromAttribute.getName());
+			toAttribute.setType(fromAttribute.getType());
+			toAttribute.setInstructors(new HashSet<DepartmentalInstructor>());
+			toAttribute.setChildAttributes(new HashSet<InstructorAttribute>());
+			attributes.put(fromAttribute.getUniqueId(), toAttribute);
+		}
+		for (InstructorAttribute fromChildAttribute: departmentalAttributes) {
+			if (fromChildAttribute.getParentAttribute() != null) {
+				InstructorAttribute toChildAttribute = attributes.get(fromChildAttribute.getUniqueId());
+				InstructorAttribute toParentAttribute = attributes.get(fromChildAttribute.getParentAttribute().getUniqueId());
+				if (toParentAttribute != null) {
+					toChildAttribute.setParentAttribute(toParentAttribute);
+					toParentAttribute.getChildAttributes().add(toChildAttribute);
+				}
+			}
+		}
+		for (InstructorAttribute attribute: attributes.values())
+			InstructorAttributeDAO.getInstance().saveOrUpdate(attribute);
+	}
+	
+	protected void rollForwardInstructorAttributePrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession) {
+		Set preferences = fromPrefGroup.getPreferences(InstructorAttributePref.class);
+		if (preferences != null && !preferences.isEmpty()) {
+			for (Iterator it = preferences.iterator(); it.hasNext();){
+				InstructorAttributePref fromAttributePref = (InstructorAttributePref) it.next();
+				InstructorAttribute attribute = fromAttributePref.getAttribute().findSameAttributeInSession(toSession);
+				if (attribute != null) {
+					InstructorAttributePref toAttributePref = (InstructorAttributePref) fromAttributePref.clone();
+					toAttributePref.setAttribute(attribute);
+					toAttributePref.setOwner(toPrefGroup);
+					toPrefGroup.addTopreferences(toAttributePref);
+				}
+			}
+		}
+	}
+	
+	protected void rollForwardInstructorPrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession) {
+		Set preferences = fromPrefGroup.getPreferences(InstructorPref.class);
+		if (preferences != null && !preferences.isEmpty()) {
+			for (Iterator it = preferences.iterator(); it.hasNext();){
+				InstructorPref fromInstrPref = (InstructorPref) it.next();
+				DepartmentalInstructor instructor = fromInstrPref.getInstructor().findThisInstructorInSession(toSession.getUniqueId());
+				if (instructor != null) {
+					InstructorPref toInstrPref = (InstructorPref) fromInstrPref.clone();
+					toInstrPref.setInstructor(instructor);
+					toInstrPref.setOwner(toPrefGroup);
+					toPrefGroup.addTopreferences(toInstrPref);
+				}
+			}
+		}
+	}
 	
 	private void rollForwardExamPeriods(Session toSession, Session fromSession){	
 		ExamPeriod fromExamPeriod = null;
@@ -1864,6 +1990,7 @@ public class SessionRollForward {
 					if (fromDepartment != null && fromDepartment.getInstructors() != null && !fromDepartment.getInstructors().isEmpty()){
 						toDepartment = fromDepartment.findSameDepartmentInSession(toSession);
 						if (toDepartment != null && deptsToRollDataFor.contains(toDepartment.getUniqueId().toString())){
+							rollDepartmentalInstructorAttributesForward(errors, fromDepartment, toDepartment);
 							for (DepartmentalInstructor fromInstructor : fromDepartment.getInstructors()){
 								if (!(fromInstructor.getExternalUniqueId() == null) && !fromInstructor.getExternalUniqueId().isEmpty() && existingInstructors.contains(toDepartment.getDeptCode()+fromInstructor.getExternalUniqueId())){
 									iLog.info(fromInstructor.toString() + ": already exists in term, not rolling forward");
@@ -1876,6 +2003,14 @@ public class SessionRollForward {
 
 								toInstructor = (DepartmentalInstructor) fromInstructor.clone();
 								toInstructor.setDepartment(toDepartment);
+								toInstructor.setAttributes(new HashSet<InstructorAttribute>());
+								for (InstructorAttribute fromAttribute: fromInstructor.getAttributes()) {
+									InstructorAttribute toAttribute = fromAttribute.findSameAttributeInSession(toSession);
+									if (toAttribute != null) {
+										toAttribute.addToinstructors(toInstructor);
+										toInstructor.addToattributes(toAttribute);
+									}
+								}
 								rollForwardBuildingPrefs(fromInstructor, toInstructor, toSession);
 								rollForwardRoomPrefs(fromInstructor, toInstructor, toSession);
 								rollForwardRoomFeaturePrefs(fromInstructor, toInstructor, toSession);
@@ -2192,6 +2327,7 @@ public class SessionRollForward {
 							DepartmentalInstructor toDeptInstr = null;
 							for (Iterator ciIt = fromClass.getClassInstructors().iterator(); ciIt.hasNext();){
 								fromClassInstr = (ClassInstructor) ciIt.next();
+								if (fromClassInstr.getTeachingRequest() != null) continue;
 								toDeptInstr = fromClassInstr.getInstructor().findThisInstructorInSession(toSession.getUniqueId(), hibSession);
 								if (toDeptInstr != null){
 									toClassInstr = new ClassInstructor();
@@ -2218,6 +2354,47 @@ public class SessionRollForward {
 				}
 				hibSession.evict(toClass);
 			}	
+		}
+	}
+	
+	public void rollOfferingCoordinatorsForward(ActionMessages errors,RollForwardSessionForm rollForwardSessionForm) {
+		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
+		ArrayList subjects = new ArrayList();
+		SubjectAreaDAO saDao = new SubjectAreaDAO();
+		for (int i = 0; i <	rollForwardSessionForm.getRollForwardOfferingCoordinatorsSubjectIds().length; i++){
+			subjects.add(saDao.get(Long.parseLong(rollForwardSessionForm.getRollForwardOfferingCoordinatorsSubjectIds()[i])));
+		}
+		if (toSession.getSubjectAreas() != null) {
+			SubjectArea subjectArea = null;
+			for (Iterator saIt = subjects.iterator(); saIt.hasNext();){
+				subjectArea = (SubjectArea) saIt.next();
+				SubjectArea.loadSubjectAreas(toSession.getUniqueId());
+				rollForwardOfferingCoordinatorsForASubjectArea(subjectArea, toSession);
+			}
+		}		
+	}
+	
+	private void rollForwardOfferingCoordinatorsForASubjectArea(SubjectArea subjectArea, Session toSession) {
+		iLog.info("Rolling forward offering coordinators for:  " + subjectArea.getSubjectAreaAbbreviation());
+		for (InstructionalOffering toInstructionalOffering: (List<InstructionalOffering>)OfferingCoordinatorDAO.getInstance().getQuery(
+				"select co.instructionalOffering from CourseOffering co where co.isControl = true and co.subjectArea.uniqueId = :subjectAreaId and co.instructionalOffering.uniqueIdRolledForwardFrom is not null")
+				.setLong("subjectAreaId", subjectArea.getUniqueId()).list()) {
+			InstructionalOffering fromInstructionalOffering = InstructionalOfferingDAO.getInstance().get(toInstructionalOffering.getUniqueIdRolledForwardFrom());
+			if (fromInstructionalOffering != null) {
+				for (Iterator coIt = fromInstructionalOffering.getOfferingCoordinators().iterator(); coIt.hasNext();){
+					OfferingCoordinator fromOfferingCoordinator = (OfferingCoordinator) coIt.next();
+					if (fromOfferingCoordinator.getTeachingRequest() != null) continue;
+					DepartmentalInstructor toInstructor = fromOfferingCoordinator.getInstructor().findThisInstructorInSession(toSession.getUniqueId());
+					if (toInstructor != null) {
+						OfferingCoordinator toOfferingCoordinator = new OfferingCoordinator();
+						toOfferingCoordinator.setInstructor(toInstructor);
+						toOfferingCoordinator.setOffering(toInstructionalOffering);
+						toOfferingCoordinator.setResponsibility(fromOfferingCoordinator.getResponsibility());
+						toInstructionalOffering.addToofferingCoordinators(toOfferingCoordinator);
+						OfferingCoordinatorDAO.getInstance().saveOrUpdate(toOfferingCoordinator);
+					}
+				}
+			}
 		}
 	}
 
@@ -2662,6 +2839,9 @@ public class SessionRollForward {
         	}
         }
         
+        // roll forward global instructor attributes
+        rollGlobalInstructorAttributesForward(errors, fromSession, toSession);
+        
         hibSession.flush(); hibSession.clear();
         
         ApplicationProperties.clearSessionProperties(toSession.getUniqueId());
@@ -2924,6 +3104,58 @@ public class SessionRollForward {
 		toReservation.setGroup(group);
 		
 		return toReservation;
+	}
+	
+	public void rollTeachingRequestsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+		TeachingRequestDAO trDao = TeachingRequestDAO.getInstance();
+		for (int i = 0; i <	rollForwardSessionForm.getRollForwardTeachingRequestsSubjectIds().length; i++) {
+			SubjectArea toSubjectArea = SubjectAreaDAO.getInstance().get(Long.parseLong(rollForwardSessionForm.getRollForwardTeachingRequestsSubjectIds()[i]));
+			if (toSubjectArea == null) continue;
+			iLog.info("Rolling forward teaching requests for:  " + toSubjectArea.getSubjectAreaAbbreviation());
+			for (InstructionalOffering toInstructionalOffering: (List<InstructionalOffering>)OfferingCoordinatorDAO.getInstance().getQuery(
+					"select co.instructionalOffering from CourseOffering co where co.isControl = true and co.subjectArea.uniqueId = :subjectAreaId and co.instructionalOffering.uniqueIdRolledForwardFrom is not null")
+					.setLong("subjectAreaId", toSubjectArea.getUniqueId()).list()) {
+				InstructionalOffering fromInstructionalOffering = InstructionalOfferingDAO.getInstance().get(toInstructionalOffering.getUniqueIdRolledForwardFrom());
+				if (fromInstructionalOffering == null) continue;
+				for (Iterator<TeachingRequest> it = toInstructionalOffering.getTeachingRequests().iterator(); it.hasNext(); ) {
+					trDao.delete(it.next()); it.remove();
+				}
+				for (TeachingRequest fromRequest: fromInstructionalOffering.getTeachingRequests()) {
+					TeachingRequest toRequest = new TeachingRequest();
+					toRequest.setOffering(toInstructionalOffering);
+					toRequest.setAssignCoordinator(fromRequest.isAssignCoordinator());
+					toRequest.setClassRequests(new HashSet<TeachingClassRequest>());
+					toRequest.setNbrInstructors(fromRequest.getNbrInstructors());
+					toRequest.setResponsibility(fromRequest.getResponsibility());
+					toRequest.setSameCommonPart(fromRequest.getSameCommonPart());
+					toRequest.setSameCoursePreference(fromRequest.getSameCoursePreference());
+					toRequest.setTeachingLoad(fromRequest.getTeachingLoad());
+					boolean valid = toRequest.isAssignCoordinator();
+					for (TeachingClassRequest fromTCR: fromRequest.getClassRequests()) {
+						Class_ toClass = Class_.findByIdRolledForwardFrom(toSubjectArea.getDepartment().getSessionId(), fromTCR.getTeachingClass().getUniqueId());
+						if (toClass == null) continue;
+						TeachingClassRequest toTCR = new TeachingClassRequest();
+						toTCR.setAssignInstructor(fromTCR.isAssignInstructor());
+						toTCR.setCanOverlap(fromTCR.isCanOverlap());
+						toTCR.setCommon(fromTCR.isCommon());
+						toTCR.setLead(fromTCR.isLead());
+						toTCR.setPercentShare(fromTCR.getPercentShare());
+						toTCR.setTeachingRequest(toRequest);
+						toTCR.setTeachingClass(toClass);
+						toRequest.addToclassRequests(toTCR);
+						if (toTCR.isAssignInstructor()) valid = true;
+					}
+					if (valid) {
+						toInstructionalOffering.addToteachingRequests(toRequest);
+						trDao.saveOrUpdate(toRequest);
+						rollForwardInstructorPrefs(fromRequest, toRequest, toSubjectArea.getDepartment().getSession());
+						rollForwardInstructorAttributePrefs(fromRequest, toRequest, toSubjectArea.getDepartment().getSession());
+					}
+				}
+			}
+			trDao.getSession().flush();
+			trDao.getSession().clear();
+		}
 	}
 	
 
