@@ -40,6 +40,28 @@
 				<line>Update the class event name when the controlling course of the class has changed.</line>
 			</description>
 		</item>
+		<item>
+			<name>Back-to-Back Distribution Preference</name>
+			<description>
+				<line>Avoid issues (especially ArrayIndexOutOfBoundsException) when classes that are in a back-to-back constraint can partially overlap in time.</line>
+			</description>
+		</item>
+		<item>
+			<name>Max N Hours A Day Distribution Preference</name>
+			<description>
+				<line>Conflict checking for the Max N Hours A Day group constraint corrected: do not return a constant variable (i.e., a committed class of some other problem) as a conflict.</line>
+				<line>Also, return the evaluated placement as a conflict when there is not enough time on the day for the class without unassigning a constant variable.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Batch Student Scheduling</title>
+		<item>
+			<name>Request Groups</name>
+			<description>
+				<line>Improved ability to keep students of the same request group together by shuffling students of a request group that are spread over multiple sections into a single section or into a fewer number of sections.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
