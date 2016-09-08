@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.Vector;
 import java.util.concurrent.locks.Lock;
 
@@ -66,6 +68,7 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.type.LongType;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
@@ -77,9 +80,11 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.SolverParameterGroup.SolverType;
 import org.unitime.timetable.model.dao.DatePatternDAO;
+import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.RoomTypeDAO;
@@ -609,6 +614,34 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     				if (!match(q, dc.getName())) continue;
     				models.add(new SolverGridModel(this,dc,context));
     			}
+    			if (model.getDepartmentSpreadConstraints().isEmpty()) {
+    				org.cpsolver.ifs.assignment.Assignment<Lecture, Placement> assignment = currentSolution().getAssignment();
+    				Map<Department, Set<Long>> dept2class = new HashMap<Department, Set<Long>>();
+    				for (Object[] pair: (List<Object[]>)DepartmentDAO.getInstance().getSession().createQuery(
+    						"select c.controllingDept, c.uniqueId from Class_ c where c.managingDept.solverGroup.uniqueId in :solverGroupIds"
+    						).setParameterList("solverGroupIds", getOwnerId(), new LongType()).list()) {
+    					Department dept = (Department)pair[0];
+    					Long classId = (Long)pair[1];
+    					Set<Long> classIds = dept2class.get(dept);
+    					if (classIds == null) { classIds = new HashSet<Long>(); dept2class.put(dept, classIds); }
+    					classIds.add(classId);
+    				}
+    				for (Department d: new TreeSet<Department>(dept2class.keySet())) {
+    					if (!match(q, d.getShortLabel())) continue;
+    					Set<Long> classIds = dept2class.get(d);
+    					int size = 0;
+    					List<Placement> placements = new ArrayList<Placement>();
+    					for (Lecture lecture: getModel().variables()) {
+    						if (classIds.contains(lecture.getClassId())) {
+    							size ++;
+    							Placement placement = assignment.getValue(lecture);
+								if (placement != null) placements.add(placement);
+    						}
+    					}
+    					if (size > 0)
+    						models.add(new SolverGridModel(this, TimetableGridModel.sResourceTypeDepartment, d.getUniqueId(), d.getShortLabel(), size, placements, context));
+    				}
+    			}
     			break;
     		case TimetableGridModel.sResourceTypeCurriculum:
     			Hashtable<String, List<Student>> curricula = new Hashtable<String, List<Student>>();
@@ -644,6 +677,34 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 					models.add(new SolverGridModel(this, curriculum.getKey(), curriculum.getValue(), context));
 				}
     			break;
+    		case TimetableGridModel.sResourceTypeSubjectArea:
+    			org.cpsolver.ifs.assignment.Assignment<Lecture, Placement> assignment = currentSolution().getAssignment();
+				Map<SubjectArea, Set<Long>> sa2class = new HashMap<SubjectArea, Set<Long>>();
+				for (Object[] pair: (List<Object[]>)DepartmentDAO.getInstance().getSession().createQuery(
+						"select co.subjectArea, c.uniqueId from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where co.isControl = true and c.managingDept.solverGroup.uniqueId in :solverGroupIds"
+						).setParameterList("solverGroupIds", getOwnerId(), new LongType()).list()) {
+					SubjectArea sa = (SubjectArea)pair[0];
+					Long classId = (Long)pair[1];
+					Set<Long> classIds = sa2class.get(sa);
+					if (classIds == null) { classIds = new HashSet<Long>(); sa2class.put(sa, classIds); }
+					classIds.add(classId);
+				}
+				for (SubjectArea sa: new TreeSet<SubjectArea>(sa2class.keySet())) {
+					if (!match(q, sa.getSubjectAreaAbbreviation())) continue;
+					Set<Long> classIds = sa2class.get(sa);
+					int size = 0;
+					List<Placement> placements = new ArrayList<Placement>();
+					for (Lecture lecture: getModel().variables()) {
+						if (classIds.contains(lecture.getClassId())) {
+							size ++;
+							Placement placement = assignment.getValue(lecture);
+							if (placement != null) placements.add(placement);
+						}
+					}
+					if (size > 0)
+						models.add(new SolverGridModel(this, TimetableGridModel.sResourceTypeSubjectArea, sa.getUniqueId(), sa.getSubjectAreaAbbreviation(), size, placements, context));
+				}
+				break;
     		}
     	} finally {
     		lock.unlock();

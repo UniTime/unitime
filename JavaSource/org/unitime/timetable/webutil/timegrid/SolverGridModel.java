@@ -69,6 +69,14 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		super();
 	}
 	
+	public SolverGridModel(Solver solver, int resourceType, long resourceId, String name, int size, Collection<Placement> placements, TimetableGridContext context) {
+		super(resourceType, resourceId);
+		setName(name);
+		setSize(size);
+		setFirstDay(context.getFirstDay());
+		init(solver, placements, context.getBgMode(), context);
+	}
+	
 	public SolverGridModel(Solver solver, RoomConstraint room, TimetableGridContext context) {
 		super(sResourceTypeRoom, room.getResourceId());
 		Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
