@@ -62,6 +62,18 @@
 		</item>
 	</category>
 	<category>
+		<title>Event Management</title>
+		<item>
+			<name>Event Timetable: Arrange Hours Classes</name>
+			<description>
+				<line>Added ability to show Event Detail page for Arrange Hours classes (classes that are not assigned in time and hence have no ClassEvent associated with).</line>
+				<line>This includes the Enrollments table (showing students enrolled in the class).</line>
+				<line>The Event Detail page for an arrange hours class is only available to users with Event Detail Arrange Hour Class permission.</line>
+				<line>The related permission check requires for the user to either also have the Class Detail permission for the class in question, or that the user is listed among the course coordinators or instructors of the class.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Batch Student Scheduling</title>
 		<item>
 			<name>Request Groups</name>

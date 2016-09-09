@@ -280,6 +280,33 @@ public class EventPermissions {
 
 	}
 	
+	@PermissionForRight(Right.EventDetailArrangeHourClass)
+	public static class EventDetailArrangeHourClass implements Permission<Class_> {
+		@Autowired Permission<Class_> permissionClassDetail;
+		@Autowired Permission<Exam> permissionExaminationDetail;
+		
+		@Override
+		public boolean check(UserContext user, Class_ source) {
+			// Class event -- can see Class Detail page?
+			if (user.getCurrentAuthority().hasRight(Right.ClassDetail)) {
+				if (permissionClassDetail.check(user, source)) return true;
+			}
+			// Instructors and course coordinators can also see details
+			if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
+				for (DepartmentalInstructor instructor: source.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCoordinators()) {
+					if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+				}
+				for (ClassInstructor instructor: source.getClassInstructors()) {
+					if (user.getExternalUserId().equals(instructor.getInstructor().getExternalUniqueId())) return true;
+				}
+			}
+			return false;
+		}
+		
+		@Override
+		public Class<Class_> type() { return Class_.class; }
+	}
+	
 	@PermissionForRight(Right.EventEdit)
 	public static class EventEdit extends EventPermission<Event> {
 		@Autowired PermissionSession permissionSession;
