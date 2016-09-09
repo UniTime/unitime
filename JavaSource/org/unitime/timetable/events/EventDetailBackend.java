@@ -20,6 +20,7 @@
 package org.unitime.timetable.events;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -30,6 +31,7 @@ import java.util.TreeSet;
 
 import org.cpsolver.coursett.model.TimeLocation;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -51,6 +53,7 @@ import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventContact;
@@ -62,10 +65,13 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.OfferingCoordinator;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RelatedCourseInfo;
+import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SpecialEvent;
 import org.unitime.timetable.model.dao.ClassEventDAO;
+import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamEventDAO;
@@ -73,6 +79,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.NameFormat;
 
 /**
@@ -84,15 +91,26 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 	
 	@Override
 	public EventInterface execute(EventDetailRpcRequest request, EventContext context) {
-		Event event = EventDAO.getInstance().get(request.getEventId());
-		if (event == null)
-			throw new GwtRpcException("No event with id " + request.getEventId() + " found.");
-		
-		context.checkPermission(event, Right.EventDetail);
-		
-		EventInterface detail = getEventDetail(SessionDAO.getInstance().get(request.getSessionId()), event, context);
-		
-		return detail;
+		if (request.getEventId() != null && request.getEventId() < 0) {
+			Class_ clazz = Class_DAO.getInstance().get(-request.getEventId());
+			if (clazz == null)
+				throw new GwtRpcException("No class with id " + (-request.getEventId()) + " found.");
+			
+			if (clazz.getEvent() != null) {
+				context.checkPermission(clazz.getEvent(), Right.EventDetail);
+				return getEventDetail(clazz.getControllingDept().getSession(), clazz.getEvent(), context);
+			}
+			
+			context.checkPermission(clazz, Right.EventDetailArrangeHourClass);
+			return getArrangeHoursClassDetail(clazz, context);
+		} else {
+			Event event = EventDAO.getInstance().get(request.getEventId());
+			if (event == null)
+				throw new GwtRpcException("No event with id " + request.getEventId() + " found.");
+			
+			context.checkPermission(event, Right.EventDetail);
+			return getEventDetail(SessionDAO.getInstance().get(request.getSessionId()), event, context);
+		}
 	}
 	
 	public static EventInterface getEventDetail(Session session, Event e, EventContext context) throws GwtRpcException {
@@ -795,5 +813,151 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     	}
     	
     	return event;
+	}
+	
+	public static EventInterface getArrangeHoursClassDetail(Class_ clazz, EventContext context) throws GwtRpcException {
+		org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
+		EventInterface event = new EventInterface();
+		event.setId(-clazz.getUniqueId());
+		event.setName(clazz.getClassLabel(hibSession));
+		event.setType(EventInterface.EventType.Class);
+		event.setCanView(true);
+		event.setMaxCapacity(clazz.getClassLimit());
+		event.setEnrollment(clazz.getEnrollment());
+		
+		String nameFormat = (context != null ? context.getUser().getProperty(UserProperty.NameFormat) : NameFormat.LAST_FIRST_MIDDLE.reference());
+		Set<Long> addedInstructorIds = new HashSet<Long>();
+		if (clazz.getDisplayInstructor()) {
+			for (ClassInstructor i: clazz.getClassInstructors()) {
+				ContactInterface instructor = new ContactInterface();
+				instructor.setFirstName(i.getInstructor().getFirstName());
+				instructor.setMiddleName(i.getInstructor().getMiddleName());
+				instructor.setLastName(i.getInstructor().getLastName());
+				instructor.setAcademicTitle(i.getInstructor().getAcademicTitle());
+				instructor.setEmail(i.getInstructor().getEmail());
+				instructor.setFormattedName(i.getInstructor().getName(nameFormat));
+				event.addInstructor(instructor);
+				addedInstructorIds.add(i.getInstructor().getUniqueId());
+			}
+		}
+		for (OfferingCoordinator oc: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getOfferingCoordinators()) {
+			DepartmentalInstructor c = oc.getInstructor();
+			if (addedInstructorIds.add(c.getUniqueId())) {
+    			ContactInterface coordinator = new ContactInterface();
+				coordinator.setFirstName(c.getFirstName());
+				coordinator.setMiddleName(c.getMiddleName());
+				coordinator.setLastName(c.getLastName());
+				coordinator.setAcademicTitle(c.getAcademicTitle());
+				coordinator.setEmail(c.getEmail());
+				coordinator.setFormattedName(c.getName(nameFormat));
+				event.addCoordinator(coordinator);
+			}
+		}
+		CourseOffering correctedOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
+		List<CourseOffering> courses = new ArrayList<CourseOffering>(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings());
+		event.addCourseName(correctedOffering.getCourseName());
+		event.addCourseTitle(correctedOffering.getTitle() == null ? "" : correctedOffering.getTitle());
+		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
+		if (clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() != null)
+			event.setInstruction(event.getInstruction() + " (" + clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getLabel() + ")");
+		event.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
+		event.setSectionNumber(clazz.getSectionNumberString(hibSession));
+		if (clazz.getClassSuffix(correctedOffering) == null) {
+    		event.setName(clazz.getClassLabel(correctedOffering));
+		} else {
+    		event.addExternalId(clazz.getClassSuffix(correctedOffering));
+			event.setName(correctedOffering.getCourseName() + " " + clazz.getClassSuffix(correctedOffering));
+		}
+		for (CourseOffering co: courses) {
+    		event.addCourseName(co.getCourseName());
+    		event.addCourseTitle(co.getTitle() == null ? "" : co.getTitle());
+    		if (clazz.getClassSuffix(co) != null)
+    			event.addExternalId(clazz.getClassSuffix(co));
+		}
+		DatePattern pattern = clazz.effectiveDatePattern();
+		if (pattern != null) {
+			String datePatternFormat = ApplicationProperty.DatePatternFormatUseDates.value();
+	    	if ("never".equals(datePatternFormat)) event.setMessage(pattern.getName());
+	    	else if ("extended".equals(datePatternFormat) && pattern.getType() != DatePattern.sTypeExtended) event.setMessage(pattern.getName());
+	    	else if ("alternate".equals(datePatternFormat) && pattern.getType() == DatePattern.sTypeAlternate) event.setMessage(pattern.getName());
+	    	else {
+	    		Date first = pattern.getStartDate();
+	    		Date last = pattern.getEndDate();
+	    		event.setMessage((first.equals(last) ? Formats.getDateFormat(Formats.Pattern.DATE_EVENT_LONG).format(first) : Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT).format(first) + " - " + Formats.getDateFormat(Formats.Pattern.DATE_EVENT_LONG).format(last)));
+	    	}
+		}
+		List<ResourceInterface> locations = new ArrayList<ResourceInterface>();
+		for (RoomPref rp: (Set<RoomPref>)clazz.effectivePreferences(RoomPref.class)) {
+			if (!PreferenceLevel.sRequired.equals(rp.getPrefLevel().getPrefProlog())) continue;
+			MeetingInterface meeting = new MeetingInterface();
+			meeting.setPast(true);
+			ResourceInterface location = new ResourceInterface();
+			location.setType(ResourceType.ROOM);
+			location.setId(rp.getRoom().getUniqueId());
+			location.setName(rp.getRoom().getLabel());
+			location.setSize(rp.getRoom().getCapacity());
+			location.setRoomType(rp.getRoom().getRoomTypeLabel());
+			location.setBreakTime(rp.getRoom().getEffectiveBreakTime());
+			location.setMessage(rp.getRoom().getEventMessage());
+			location.setIgnoreRoomCheck(rp.getRoom().isIgnoreRoomCheck());
+			meeting.setLocation(location);
+			event.addMeeting(meeting);
+			locations.add(location);
+		}
+		if (!event.hasMeetings()) {
+			MeetingInterface meeting = new MeetingInterface();
+			meeting.setPast(true);
+			event.addMeeting(meeting);
+		}
+
+		RelatedObjectInterface related = new RelatedObjectInterface();
+		related.setType(RelatedObjectInterface.RelatedObjectType.Class);
+		related.setUniqueId(clazz.getUniqueId());
+		related.setName(clazz.getClassLabel(hibSession));
+		String note = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getScheduleBookNote();
+		if (clazz.getSchedulePrintNote() != null && !clazz.getSchedulePrintNote().isEmpty())
+			note = (note == null || note.isEmpty() ? "" : note + "\n") + clazz.getSchedulePrintNote();
+		related.setNote(note);
+		if (context != null && context.hasPermission(clazz, Right.ClassDetail))
+			related.setDetailPage("classDetail.do?cid=" + clazz.getUniqueId());
+
+		CourseOffering courseOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
+		related.addCourseName(courseOffering.getCourseName());
+		related.addCourseTitle(courseOffering.getTitle() == null ? "" : courseOffering.getTitle());
+		related.setSectionNumber(clazz.getSectionNumberString(hibSession));
+		if (clazz.getClassSuffix() != null)
+			related.addExternalId(clazz.getClassSuffix());
+		related.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc());
+		if (clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() != null)
+			related.setInstruction(related.getInstruction() + " (" + clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getLabel() + ")");
+		related.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
+		for (CourseOffering co: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings()) {
+			if (!co.isIsControl()) {
+				related.addCourseName(co.getCourseName());
+				related.addCourseTitle(co.getTitle() == null ? "" : co.getTitle());
+				if (clazz.getClassSuffix(co) != null)
+	    			related.addExternalId(clazz.getClassSuffix(co));
+			}
+		}
+		if (clazz.getDisplayInstructor()) {
+			for (ClassInstructor i: clazz.getClassInstructors()) {
+				ContactInterface instructor = new ContactInterface();
+				instructor.setFirstName(i.getInstructor().getFirstName());
+				instructor.setMiddleName(i.getInstructor().getMiddleName());
+				instructor.setLastName(i.getInstructor().getLastName());
+				instructor.setAcademicTitle(i.getInstructor().getAcademicTitle());
+				instructor.setExternalId(i.getInstructor().getExternalUniqueId());
+				instructor.setEmail(i.getInstructor().getEmail());
+				instructor.setFormattedName(i.getInstructor().getName(nameFormat));
+				related.addInstructor(instructor);
+			}
+		}
+		for (ResourceInterface location: locations)
+			related.addLocation(location);
+		if (pattern != null) related.setDate(pattern.getName());
+		related.setTime(CONSTANTS.arrangeHours());
+		event.addRelatedObject(related);
+		
+		return event;
 	}
 }

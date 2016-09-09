@@ -65,6 +65,7 @@ import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.RoomPref;
@@ -2229,7 +2230,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								event.setId(-clazz.getUniqueId());
 								event.setName(clazz.getClassLabel(hibSession));
 								event.setType(EventInterface.EventType.Class);
-								event.setCanView(false);
+								event.setCanView(context.hasPermission(clazz, Right.EventDetailArrangeHourClass));
 								event.setMaxCapacity(clazz.getClassLimit());
 								event.setEnrollment(clazz.getEnrollment());
 								if (groupEnrollments) {
@@ -2238,6 +2239,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 										if (group.getStudents().contains(e.getStudent())) enrl ++;
 									event.setEnrollment(enrl);
 								}
+								Set<Long> addedInstructorIds = new HashSet<Long>();
 								if (clazz.getDisplayInstructor()) {
 									for (ClassInstructor i: clazz.getClassInstructors()) {
 										ContactInterface instructor = new ContactInterface();
@@ -2248,8 +2250,22 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 										instructor.setEmail(i.getInstructor().getEmail());
 										instructor.setFormattedName(i.getInstructor().getName(nameFormat));
 										event.addInstructor(instructor);
+										addedInstructorIds.add(i.getInstructor().getUniqueId());
 					    			}
 					    		}
+								for (OfferingCoordinator oc: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getOfferingCoordinators()) {
+									DepartmentalInstructor c = oc.getInstructor();
+									if (addedInstructorIds.add(c.getUniqueId())) {
+						    			ContactInterface coordinator = new ContactInterface();
+										coordinator.setFirstName(c.getFirstName());
+										coordinator.setMiddleName(c.getMiddleName());
+										coordinator.setLastName(c.getLastName());
+										coordinator.setAcademicTitle(c.getAcademicTitle());
+										coordinator.setEmail(c.getEmail());
+										coordinator.setFormattedName(c.getName(nameFormat));
+										event.addCoordinator(coordinator);
+									}
+								}
 					    		CourseOffering correctedOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
 					    		List<CourseOffering> courses = new ArrayList<CourseOffering>(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings());
 					    		switch (request.getResourceType()) {

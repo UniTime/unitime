@@ -410,10 +410,10 @@ public class EventDetail extends Composite {
 		if (iEvent.hasNotes()) {
 			for (NoteInterface note: iEvent.getNotes()) {
 				List<Widget> row = new ArrayList<Widget>();
-				row.add(new Label(sTimeStampFormat.format(note.getDate()), false));
-				row.add(new HTML(note.getUser() == null ? "<i>N/A</i>" : note.getUser(), false));
-				row.add(new Label(note.getType().getName()));
-				row.add(new HTML(note.getMeetings() == null ? "<i>N/A</i>" : note.getMeetings(), false));
+				row.add(new HTML(note.getDate() == null ? "<i>" + MESSAGES.notApplicable() + "</i>" : sTimeStampFormat.format(note.getDate()), false));
+				row.add(new HTML(note.getUser() == null ? "<i>" + MESSAGES.notApplicable() + "</i>" : note.getUser(), false));
+				row.add(new HTML(note.getType() == null ? "<i>" + MESSAGES.notApplicable() + "</i>" : note.getType().getName()));
+				row.add(new HTML(note.getMeetings() == null ? "<i>" + MESSAGES.notApplicable() + "</i>" : note.getMeetings(), false));
 				row.add(new HTML(note.getNote() == null ? "" : note.getNote().replace("\n", "<br>"), true));
 				if (note.hasAttachment()) {
 					ImageLink link = new ImageLink(new Image(RESOURCES.download()), note.hasLink() ?
@@ -426,7 +426,8 @@ public class EventDetail extends Composite {
 					row.add(new HTML(""));
 				}
 				int r = iNotes.addRow(note, row);
-				iNotes.getRowFormatter().addStyleName(r, note.getType().getName().toLowerCase());
+				if (note.getType() != null)
+					iNotes.getRowFormatter().addStyleName(r, note.getType().getName().toLowerCase());
 			}
 		}
 		if (iNotes.getRowCount() > 1) {

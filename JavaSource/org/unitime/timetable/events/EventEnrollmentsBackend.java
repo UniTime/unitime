@@ -99,7 +99,8 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
 				if (request.getEventId() < 0) {
 					Class_ clazz = Class_DAO.getInstance().get(-request.getEventId());
 					if (clazz != null) {
-						context.checkPermission(clazz, Right.ClassDetail);
+						if (!context.hasPermission(clazz, Right.ClassDetail))
+							context.checkPermission(clazz, Right.EventDetailArrangeHourClass);
 						Collection<StudentClassEnrollment> enrollments = clazz.getStudentEnrollments();
 				    	if (enrollments == null || enrollments.isEmpty()) return null;
 				    	return convert(enrollments, null, context.hasPermission(Right.EnrollmentsShowExternalId), context.hasPermission(Right.CourseRequests), context.hasPermission(Right.SchedulingAssistant));
