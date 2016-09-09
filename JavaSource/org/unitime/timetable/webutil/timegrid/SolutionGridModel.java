@@ -52,6 +52,7 @@ import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomSharingModel;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
@@ -375,7 +376,7 @@ public class SolutionGridModel extends TimetableGridModel {
 	}
 	
 	public SolutionGridModel(String solutionIdsStr, Department dept, org.hibernate.Session hibSession, TimetableGridContext context) {
-		super(sResourceTypeInstructor, dept.getUniqueId().longValue());
+		super(sResourceTypeDepartment, dept.getUniqueId().longValue());
 		setName(dept.getShortLabel());
 		setFirstDay(context.getFirstDay());
 		Solution firstSolution = null;
@@ -396,7 +397,31 @@ public class SolutionGridModel extends TimetableGridModel {
 		List a = q.list();
 		setSize(a.size());
 		init(a,hibSession,context);
-	}	
+	}
+	
+	public SolutionGridModel(String solutionIdsStr, SubjectArea sa, org.hibernate.Session hibSession, TimetableGridContext context) {
+		super(sResourceTypeSubjectArea, sa.getUniqueId().longValue());
+		setName(sa.getSubjectAreaAbbreviation());
+		setFirstDay(context.getFirstDay());
+		Solution firstSolution = null;
+		String ownerIds = "";
+		for (StringTokenizer s=new StringTokenizer(solutionIdsStr,",");s.hasMoreTokens();) {
+			Long solutionId = Long.valueOf(s.nextToken());
+			Solution solution = (new SolutionDAO()).get(solutionId, hibSession);
+			if (solution==null) continue;
+			if (firstSolution==null) firstSolution = solution;
+			if (ownerIds.length()>0) ownerIds += ",";
+			ownerIds += solution.getOwner().getUniqueId();
+		}
+		Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as o inner join o.subjectArea as sa where " +
+				"a.solution.uniqueId in ("+solutionIdsStr+") and sa.uniqueId=:resourceId and " +
+				"o.isControl=true");
+		q.setCacheable(true);
+		q.setLong("resourceId", sa.getUniqueId().longValue());
+		List a = q.list();
+		setSize(a.size());
+		init(a,hibSession,context);
+	}
 	
 	private void init(List assignments, org.hibernate.Session hibSession, TimetableGridContext context) {
 		for (Iterator i=assignments.iterator();i.hasNext();) {

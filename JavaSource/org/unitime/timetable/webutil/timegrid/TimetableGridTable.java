@@ -49,6 +49,7 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.SolverPredefinedSetting.IdValue;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
@@ -166,6 +167,9 @@ public class TimetableGridTable {
 	public void setBgMode(int bgMode) { iBgMode = bgMode; }
 	public int getBgMode() { return iBgMode; }
 	public int getResourceType() { return iResourceType; }
+	public boolean isDepartmentalResourceType() {
+		return iResourceType == TimetableGridModel.sResourceTypeDepartment || iResourceType == TimetableGridModel.sResourceTypeSubjectArea;
+	}
 	public void setResourceType(int resourceType) { iResourceType = resourceType; }
 	public String getFindString() { return iFindStr; }
 	public void setFindString(String findSrt) {
@@ -479,7 +483,7 @@ public class TimetableGridTable {
 						if (cell==null && model.isRendered(day,slot,idx)) continue;
                         int length = (cell==null?1:cell.getLength()+cell.getSlot()-slot);
 						int colSpan = (cell==null?1:Math.min(length,slotsToEnd));
-						int rowSpan = (getResourceType()==TimetableGridModel.sResourceTypeDepartment && cell!=null?1:model.getDepth(day,slot,idx,maxIdx,colSpan));
+						int rowSpan = (isDepartmentalResourceType() && cell!=null?1:model.getDepth(day,slot,idx,maxIdx,colSpan));
 						model.setRendered(day,slot,idx,rowSpan,colSpan);
 						if (cell==null) {
 							String bgColor = model.getBackground(day,slot);
@@ -550,7 +554,7 @@ public class TimetableGridTable {
 						if (cell==null && model.isRendered(day,slot,idx)) continue;
                 		int length = (cell==null?1:cell.getLength()+cell.getSlot()-slot);
 						int colSpan = (cell==null?1:Math.min(length,slotsToEnd));
-						int rowSpan = (getResourceType()==TimetableGridModel.sResourceTypeDepartment && cell!=null?1:model.getDepth(day,slot,idx,maxIdx,colSpan));
+						int rowSpan = (isDepartmentalResourceType() && cell!=null?1:model.getDepth(day,slot,idx,maxIdx,colSpan));
 						model.setRendered(day,slot,idx,rowSpan,colSpan);
 						if (cell==null) {
 							String bgColor = model.getBackground(day,slot);
@@ -640,7 +644,7 @@ public class TimetableGridTable {
 						if (cell==null && model.isRendered(day,slot,idx,date)) continue;
                 		int length = (cell==null?1:cell.getLength()+cell.getSlot()-slot);
 						int colSpan = (cell==null?1:Math.min(length,slotsToEnd));
-						int rowSpan = (getResourceType()==TimetableGridModel.sResourceTypeDepartment && cell!=null?1:model.getDepth(day,slot,idx,maxIdx,colSpan,date));
+						int rowSpan = (isDepartmentalResourceType() && cell!=null?1:model.getDepth(day,slot,idx,maxIdx,colSpan,date));
 						model.setRendered(day,slot,idx,rowSpan,colSpan,date);
 						if (cell==null) {
 							String bgColor = model.getBackground(day,slot);
@@ -714,7 +718,7 @@ public class TimetableGridTable {
                     	TimetableGridCell cell = model.getCell(day,slot, idx);
                     	if (model.isRendered(day,slot,idx)) continue;
 						int rowSpan = (cell==null?1:Math.min(cell.getLength()+cell.getSlot()-slot,slotsToEnd));
-						int colSpan = (getResourceType()==TimetableGridModel.sResourceTypeDepartment && cell!=null?1:model.getDepth(day,slot,idx,maxIdx,rowSpan)); 
+						int colSpan = (isDepartmentalResourceType() && cell!=null?1:model.getDepth(day,slot,idx,maxIdx,rowSpan)); 
 						model.setRendered(day,slot,idx,colSpan,rowSpan);
 						int rowSpanDivStep = (int)Math.ceil(((double)rowSpan)/step);
                     	
@@ -964,6 +968,18 @@ public class TimetableGridTable {
 					String name = dept.getAbbreviation();
 					if (!match(name)) continue;
 					iModels.add(new SolutionGridModel(solutionIdsStr, dept, hibSession, cx));
+				}
+			} else if (getResourceType()==TimetableGridModel.sResourceTypeSubjectArea) {
+				Query q = hibSession.createQuery(
+						"select distinct sa from "+
+						"Assignment a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as o inner join o.subjectArea as sa where "+
+						"a.solution.uniqueId in ("+solutionIdsStr+") and o.isControl=true");
+				q.setCacheable(true);
+				for (Iterator i=q.list().iterator();i.hasNext();) {
+					SubjectArea sa = (SubjectArea)i.next();
+					String name = sa.getSubjectAreaAbbreviation();
+					if (!match(name)) continue;
+					iModels.add(new SolutionGridModel(solutionIdsStr, sa, hibSession, cx));
 				}
 			}
 			if (tx!=null) tx.commit();

@@ -53,6 +53,13 @@
 				<line>Also, return the evaluated placement as a conflict when there is not enough time on the day for the class without unassigning a constant variable.</line>
 			</description>
 		</item>
+		<item>
+			<name>Timetable Grid: Subject Area Resource</name>
+			<description>
+				<line>Added Subject Area as a Resource (showing all classes of a particular subject area in one table).</line>
+				<line>When Department is selected as a Resource, show classes by (controlling) department even when there is no departmental spread constraint created (solver mode).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Batch Student Scheduling</title>
