@@ -128,7 +128,7 @@ public class CurriculaServlet implements CurriculaService {
 	}
 	
 	private @Autowired SessionContext sessionContext;
-	private SessionContext getSessionContext() { return sessionContext; }
+	protected SessionContext getSessionContext() { return sessionContext; }
 	
 	@PreAuthorize("checkPermission('CurriculumView')")
 	public TreeSet<CurriculumInterface> findCurricula(CurriculumInterface.CurriculumFilterRpcRequest filter) throws CurriculaException, PageAccessException {
@@ -142,7 +142,7 @@ public class CurriculaServlet implements CurriculaService {
 				ci.setId(c.getUniqueId());
 				ci.setAbbv(c.getAbbv());
 				ci.setName(c.getName());
-				ci.setEditable(sessionContext.hasPermission(c, Right.CurriculumEdit));
+				ci.setEditable(getSessionContext().hasPermission(c, Right.CurriculumEdit));
 				ci.setMultipleMajors(c.isMultipleMajors());
 				DepartmentInterface di = new DepartmentInterface();
 				di.setId(c.getDepartment().getUniqueId());
@@ -312,7 +312,7 @@ public class CurriculaServlet implements CurriculaService {
 				curriculumIfc.setId(c.getUniqueId());
 				curriculumIfc.setAbbv(c.getAbbv());
 				curriculumIfc.setName(c.getName());
-				curriculumIfc.setEditable(sessionContext.hasPermission(c, Right.CurriculumEdit));
+				curriculumIfc.setEditable(getSessionContext().hasPermission(c, Right.CurriculumEdit));
 				curriculumIfc.setMultipleMajors(c.isMultipleMajors());
 				DepartmentInterface deptIfc = new DepartmentInterface();
 				deptIfc.setId(c.getDepartment().getUniqueId());
@@ -2180,7 +2180,7 @@ public class CurriculaServlet implements CurriculaService {
 						.setString("q", query.toLowerCase())
 						.setLong("sessionId", sessionId)
 						.setCacheable(true).setMaxResults(limit == null || limit < 0 || checkDepartment? Integer.MAX_VALUE : limit).list()) {
-					if (checkDepartment && !permissionDepartment.check(sessionContext.getUser(), c.getDepartment(), DepartmentStatusType.Status.OwnerEdit, DepartmentStatusType.Status.ManagerEdit))
+					if (checkDepartment && !permissionDepartment.check(getSessionContext().getUser(), c.getDepartment(), DepartmentStatusType.Status.OwnerEdit, DepartmentStatusType.Status.ManagerEdit))
 						continue;
 					CourseAssignment course = new CourseAssignment();
 					course.setCourseId(c.getUniqueId());
@@ -2259,7 +2259,7 @@ public class CurriculaServlet implements CurriculaService {
 			ArrayList<ClassAssignmentInterface.ClassAssignment> results = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			Long sessionId = getAcademicSessionId();
-			NameFormat nameFormat = NameFormat.fromReference(UserProperty.NameFormat.get(sessionContext.getUser()));
+			NameFormat nameFormat = NameFormat.fromReference(UserProperty.NameFormat.get(getSessionContext().getUser()));
 			try {
 				CourseOffering courseOffering = null;
 				for (CourseOffering c: (List<CourseOffering>)hibSession.createQuery(
@@ -3259,7 +3259,7 @@ public class CurriculaServlet implements CurriculaService {
 	}
 
 	/* Support functions (lookups etc.) */
-	private Long getAcademicSessionId() {
+	protected Long getAcademicSessionId() {
 		return getSessionContext().getUser().getCurrentAcademicSessionId();
 	}
 	
