@@ -82,6 +82,41 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>API</title>
+		<item>
+			<name>Instructors API</name>
+			<description>
+				<line>Added an instructors API that returns a list of instructors for the given department or academic session.</line>
+				<line>Examples
+					<line>GET UniTime/api/instructors?id=&lt;DEP_ID&gt;</line>
+					<line>GET UniTime/api/instructors?term=&lt;TERM&gt;&amp;code=&lt;DEPT_CODE&gt;</line>
+					<line>GET UniTime/api/instructors?term=&lt;TERM&gt;</line>
+				</line>
+				<line>Permission Api Retrieve Instructors is required.</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Groups API</name>
+			<description>
+				<line>Added a student groups API that returns a list of student groups for the given academic session.</line>
+				<line>Example: GET UniTime/api/student-groups?term=&lt;TERM&gt;</line>
+				<line>Permission Api Retrieve Student Groups is required.</line>
+			</description>
+		</item>
+		<item>
+			<name>Curricula API</name>
+			<description>
+				<line>Added a curricula API that returns a list of curricula for the given academic session.</line>
+				<line>Example: GET UniTime/api/curricula?term=&lt;TERM&gt;</line>
+				<line>Permission Api Retrieve Curricula is needed.</line>
+				<line>Same filter parameters as on the Curricula page can be used to filter the results (with c: prefix), examples:
+					<line>GET UniTime/api/curricula?term&lt;TERM&gt;&amp;c:department=0101&amp;c:area=A</line>
+					<line>GET UniTime/api/curricula?term&lt;TERM&gt;&amp;c:text=A/M1+or+A/M2</line>
+				</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>

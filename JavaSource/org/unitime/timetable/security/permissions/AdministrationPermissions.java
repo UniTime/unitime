@@ -504,4 +504,13 @@ public class AdministrationPermissions {
 	
 	@PermissionForRight(Right.ApiOnlineStudentScheduliung)
 	public static class ApiOnlineStudentScheduliung extends SimpleSessionPermission {}
+	
+	@PermissionForRight(Right.ApiRetrieveInstructors)
+	public static class ApiRetriveInstructors extends SimpleSessionPermission {}
+	
+	@PermissionForRight(Right.ApiRetrieveCurricula)
+	public static class ApiRetriveCurricula extends SimpleSessionPermission {}
+	
+	@PermissionForRight(Right.ApiRetrieveStudentGroups)
+	public static class ApiRetrieveStudentGroups extends SimpleSessionPermission {}
 }
