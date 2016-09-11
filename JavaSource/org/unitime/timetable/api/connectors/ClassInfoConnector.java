@@ -89,6 +89,7 @@ public class ClassInfoConnector extends ApiConnector {
 		String iEmail;
 		DepartmentInfo iDepartment;
 		String iResponsibility;
+		String iAcademicTitle;
 		
 		InstructorInfo(DepartmentalInstructor instructor) {
 			iInstructorId = instructor.getUniqueId();
@@ -101,6 +102,7 @@ public class ClassInfoConnector extends ApiConnector {
 				iPosition = new PositionInfo(instructor.getPositionType());
 			iEmail = instructor.getEmail();
 			iDepartment = new DepartmentInfo(instructor.getDepartment());
+			iAcademicTitle = instructor.getAcademicTitle();
 		}
 		
 		InstructorInfo(OfferingCoordinator coordinator) {

@@ -138,6 +138,7 @@ public class InstructorScheduleConnector extends ApiConnector{
 		PositionInfo iPosition;
 		String iEmail;
 		DepartmentInfo iDepartment;
+		String iAcademicTitle;
 		
 		
 		InstructorInfo(DepartmentalInstructor instructor) {
@@ -151,6 +152,7 @@ public class InstructorScheduleConnector extends ApiConnector{
 				iPosition = new PositionInfo(instructor.getPositionType());
 			iEmail = instructor.getEmail();
 			iDepartment = new DepartmentInfo(instructor.getDepartment());
+			iAcademicTitle = instructor.getAcademicTitle();
 		}
 
 	}

@@ -63,8 +63,8 @@ public class Department extends BaseDepartment implements Comparable<Department>
     public static String DEPT_ATTR_NAME = "deptsList";    
     public static String EXTERNAL_DEPT_ATTR_NAME = "externalDepartments";
     
-    public static TreeSet findAll(Long sessionId) {
-		return new TreeSet((new DepartmentDAO()).
+    public static TreeSet<Department> findAll(Long sessionId) {
+		return new TreeSet<Department>((new DepartmentDAO()).
 			getSession().
 			createQuery("select distinct d from Department as d where d.session.uniqueId=:sessionId").
 			setLong("sessionId", sessionId.longValue()).
