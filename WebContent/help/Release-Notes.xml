@@ -114,6 +114,10 @@
 					<line>GET UniTime/api/curricula?term&lt;TERM&gt;&amp;c:department=0101&amp;c:area=A</line>
 					<line>GET UniTime/api/curricula?term&lt;TERM&gt;&amp;c:text=A/M1+or+A/M2</line>
 				</line>
+				<line>To retrieve more details about a particular curriculum, use:
+					<line>GET UniTime/api/curricula?id=&lt;CURR_ID&gt; (details about a particular curriculum)</line>
+					<line>GET UniTime/api/curricula?term&lt;TERM&gt;&amp;c:text=A/M1+or+A/M2&amp;details=1 (return more information for all matching curricula)</line>
+				</line>
 			</description>
 		</item>
 	</category>
