@@ -28,4 +28,6 @@ import com.google.gwt.user.client.ui.IsWidget;
  * @author Tomas Muller
  */
 public interface PageLabelDisplay extends HasValue<PageNameInterface>, IsWidget {
+	
+	public static interface Mobile extends PageLabelDisplay {}
 }

@@ -24,4 +24,7 @@
  	<replace-with class="org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialogImpl">
  		<when-type-is class="org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialogDisplay" />
  	</replace-with>
+ 	<replace-with class="org.unitime.timetable.gwt.client.widgets.mobile.MobileUniTimeFrameDialogImpl">
+ 		<when-type-is class="org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialogDisplay.Mobile" />
+ 	</replace-with>
  </module>

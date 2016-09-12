@@ -4833,4 +4833,16 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("{0} ({1} classes)")
 	String subpartNameNoRelationClasses(String subpart, int classes);
+	
+	@DefaultMessage("\u2630")
+	@DoNotTranslate
+	String mobileMenuSymbol();
+	
+	@DefaultMessage("?")
+	@DoNotTranslate
+	String mobileHelpSymbol();
+	
+	@DefaultMessage("\u00d7")
+	@DoNotTranslate
+	String mobileCloseSymbol();
 }

@@ -49,18 +49,26 @@ import com.google.gwt.user.client.ui.RootPanel;
  */
 public class UniTimeNotifications {
 	protected static Display NOTIFICATIONS = GWT.create(Display.class);
+	protected static Display NOTIFICATIONS_MOBILE = GWT.create(MobileDisplay.class);
 	protected static Logger sLogger = Logger.getLogger(UniTimeNotifications.class.getName());
+	
+	protected static Display getDisplay() {
+		if (Window.getClientWidth() <= 800)
+			return NOTIFICATIONS_MOBILE;
+		else
+			return NOTIFICATIONS;
+	}
 
 	public static void info(String text) {
 		AriaStatus.getInstance().setText(text);
 		sLogger.log(Level.FINEST, text);
-		NOTIFICATIONS.addNotification(text, NotificationType.INFO);
+		getDisplay().addNotification(text, NotificationType.INFO);
 	}
 	
 	public static void warn(String text) {
 		AriaStatus.getInstance().setText(text);
 		sLogger.log(Level.FINER, text);
-		NOTIFICATIONS.addNotification(text, NotificationType.WARN);
+		getDisplay().addNotification(text, NotificationType.WARN);
 	}
 	
 	public static void error(Throwable t) {
@@ -85,7 +93,7 @@ public class UniTimeNotifications {
 				sLogger.log(Level.SEVERE, text, t);
 			}
 		}
-		NOTIFICATIONS.addNotification(text, NotificationType.ERROR);
+		getDisplay().addNotification(text, NotificationType.ERROR);
 	}
 	
 	public static void error(String text) {
@@ -113,6 +121,8 @@ public class UniTimeNotifications {
 	public static interface Display {
 		public void addNotification(String html, NotificationType type);		
 	}
+	
+	public static interface MobileDisplay extends Display {}
 	
 	public static class Implementation implements Display {
 		protected List<Notification> iNotifications = new ArrayList<Notification>();

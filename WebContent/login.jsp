@@ -32,21 +32,21 @@
 	    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
  	   <link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
  	   <link type="text/css" rel="stylesheet" href="styles/unitime.css">
+ 	   <link type="text/css" rel="stylesheet" href="styles/unitime-mobile.css">
  	   <link type="text/css" rel="stylesheet" href="styles/timetabling.css">
 		<link rel="shortcut icon" href="images/timetabling.ico" />
 	    <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
 		<TITLE>UniTime <%=Constants.VERSION%></TITLE>
 	</HEAD>
 	<BODY class="bodyMain" onload="document.forms[0].j_username.focus();">
-	<tt:form-factor value="unknown"><span id='UniTimeGWT:DetectFormFactor' style="display: none;"></span></tt:form-factor>
 	
 	<% if (ApplicationProperties.getProperty("tmtbl.header.external", "").trim().length()>0) { %>
 	<jsp:include flush="true" page='<%=ApplicationProperties.getProperty("tmtbl.header.external")%>' />
 	<% } %>
 	
-	<tt:form-factor value="desktop">	
+	<span class='top-menu'>
     	<span id='UniTimeGWT:TopMenu' style="display: block; height: 23px;"></span>
-	</tt:form-factor>
+    </span>
 	
 <%
 	String errorMsg = null;
@@ -71,12 +71,13 @@
 	<INPUT type="hidden" name="target" value="<%=request.getParameter("target") == null ? "" : request.getParameter("target") %>">
 			
 	<span class='unitime-Login'>
-		<span class='menu'><span id='UniTimeGWT:MobileMenu'></span></span>
+		<span class="mobile-menu-button" id='UniTimeGWT:MobileMenuButton'></span>
 		<span class='logo'><img src="images/unitime.png" border="0" alt="UniTime"></span>
 		<span class='header'>
 			<div class='h1'>University Timetabling</div>
 			<div class='h2'>Comprehensive Academic Scheduling Solutions</div>
 		</span>
+		<span class="mobile-menu" id='UniTimeGWT:MobileMenuPanel'></span>
 		<% if (errorMsg!=null)  { %><div class='error'><%= errorMsg %></div><% } %>
 		<c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION.message}">
 			<div class='error'>Authentication failed: <c:out value="${SPRING_SECURITY_LAST_EXCEPTION.message}"/>.</div>

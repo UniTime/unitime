@@ -272,9 +272,151 @@
 }
 
 .unitime-MobileFrameDialog .frame {
-	width: 100%;
-	height: 100%;
-	border: none;
+	width: 100vw;
+	height: 100vh;
 	padding: 0px;
 	margin: 0px;
+	border: none;
+}
+
+.unitime-PageHeader .mobile-menu-button {
+	display: none;
+}
+
+.unitime-Login .mobile-menu-button {
+	display: none;
+}
+
+.unitime-Page .mobile-menu {
+	display: none;
+}
+
+.unitime-Page .mobile-menu .gwt-StackPanel {
+	width: 100%;
+}
+
+.unitime-Login .mobile-menu {
+	display: none;
+}
+
+.unitime-Login .mobile-menu .gwt-StackPanel {
+	width: 100%;
+}
+
+.unitime-MobileMenuButton {
+	font-size: large;
+	height: 32px;
+	width: 32px;
+	margin: 2px 4px 2px 4px;
+	vertical-align: middle;
+	text-align: center;
+}
+
+@media all and (max-width: 800px) {
+	.unitime-Login .mobile-menu-button {
+		display: inline-block;
+		vertical-align: top;
+		padding-top: 10px;
+	}
+	
+	.unitime-Login .mobile-menu {
+		display: block;
+		padding: 5px;
+	}
+	
+	.unitime-Page .mobile-menu {
+		display: block;
+		width: 100vw;
+		padding: 5px;
+	}
+
+	.unitime-PageHeader {
+		width: 100vw;
+	}
+	
+	.unitime-PageHeader .logo {
+		display: table-cell;
+		background-image: url(../images/unitime-phone.png);
+		background-repeat: no-repeat;
+		background-position: 0px 3px;
+		background-size: 78px 48px;
+		width: 80px;
+	}
+	
+	.unitime-PageHeader .mobile-menu-button {
+		display: table-cell;
+		vertical-align: top;
+		padding-top: 10px;
+		width: 40px;
+	}
+		
+	.unitime-PageHeader .content {
+		float: right;
+	}
+	
+	.unitime-Page {
+		min-width: inherit;
+		width: 100%;
+	}
+	
+	.unitime-Page .body {
+		border: none;
+		margin-top: 0px;
+	}
+	
+	.unitime-Page .sidebar {
+		display: none;
+		padding: 0px 0px 0px 0px;
+	}
+	
+	.unitime-Page .footer {
+		max-width: 100vw;
+	}
+	
+	.top-menu {
+		display: none;
+	}
+	
+	.unitime-InfoPanel .row {
+		display: inline-table;
+	}
+	
+	.unitime-InfoPanel .cell {
+		display: inline-block;
+	}
+	
+	.unitime-Footer .row {
+		display: inline-table;
+		white-space: normal;
+		text-align: center;
+	}
+	
+	.unitime-Footer {
+		display: block;
+		text-align: center;
+		border-top: 1px solid #9CB0CE;
+		width: 100vw;
+	}
+	
+	.unitime-Footer .cell {
+		display: inline-block;
+		width: inherit;
+		min-width: 33vw;
+		padding-bottom: 2px;
+	}
+	
+	.unitime-Footer .left {
+		float: left;
+		padding-right: 20px;
+	}
+	
+	.unitime-Footer .right {
+		float: right;
+		padding-left: 20px;
+	}
+	
+	.unitime-MainContent {
+		height: inherit;
+		min-height: 600px;
+	}
 }

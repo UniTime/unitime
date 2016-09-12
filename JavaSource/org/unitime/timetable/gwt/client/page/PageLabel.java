@@ -24,35 +24,40 @@ import org.unitime.timetable.gwt.shared.MenuInterface.PageNameInterface;
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 
 /**
  * @author Tomas Muller
  */
 public class PageLabel extends Composite implements PageLabelDisplay {
-	private PageLabelDisplay IMPL = GWT.create(PageLabelDisplay.class);
+	private PageLabelDisplay iDisplay = null;
 	
 	public PageLabel() {
-		initWidget(IMPL.asWidget());
+		if (Window.getClientWidth() <= 800)
+			iDisplay = GWT.create(PageLabelDisplay.Mobile.class);
+		else
+			iDisplay = GWT.create(PageLabelDisplay.class);
+		initWidget(iDisplay.asWidget());
 	}
 
 	@Override
 	public PageNameInterface getValue() {
-		return IMPL.getValue();
+		return iDisplay.getValue();
 	}
 
 	@Override
 	public void setValue(PageNameInterface value) {
-		IMPL.setValue(value);
+		iDisplay.setValue(value);
 	}
 
 	@Override
 	public void setValue(PageNameInterface value, boolean fireEvents) {
-		IMPL.setValue(value, fireEvents);
+		iDisplay.setValue(value, fireEvents);
 	}
 
 	@Override
 	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<PageNameInterface> handler) {
-		return IMPL.addValueChangeHandler(handler);
+		return iDisplay.addValueChangeHandler(handler);
 	}
 }

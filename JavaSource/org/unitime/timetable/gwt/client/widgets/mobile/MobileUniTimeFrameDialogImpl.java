@@ -17,7 +17,7 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.gwt.mobile.client.widgets;
+package org.unitime.timetable.gwt.client.widgets.mobile;
 
 import java.util.Date;
 
@@ -146,15 +146,15 @@ public class MobileUniTimeFrameDialogImpl implements UniTimeFrameDialogDisplay {
 
 	public static native void hookFrameLoaded(FrameElement element) /*-{
 		element.onload = function() {
-			@org.unitime.timetable.gwt.mobile.client.widgets.MobileUniTimeFrameDialogImpl::notifyFrameLoaded()();
+			@org.unitime.timetable.gwt.client.widgets.mobile.MobileUniTimeFrameDialogImpl::notifyFrameLoaded()();
 		}
 		if (element.addEventListener) {
 			element.addEventListener("load", function() {
-				@org.unitime.timetable.gwt.mobile.client.widgets.MobileUniTimeFrameDialogImpl::notifyFrameLoaded()();
+				@org.unitime.timetable.gwt.client.widgets.mobile.MobileUniTimeFrameDialogImpl::notifyFrameLoaded()();
 			}, false);
 		} else if (element.attachEvent) {
 			element.attachEvent("onload", function() {
-				@org.unitime.timetable.gwt.mobile.client.widgets.MobileUniTimeFrameDialogImpl::notifyFrameLoaded()();
+				@org.unitime.timetable.gwt.client.widgets.mobile.MobileUniTimeFrameDialogImpl::notifyFrameLoaded()();
 			});
 		}
 	}-*/;

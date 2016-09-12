@@ -30,7 +30,13 @@
  	<replace-with class="org.unitime.timetable.gwt.client.page.PageLabelImpl">
  		<when-type-is class="org.unitime.timetable.gwt.client.page.PageLabelDisplay" />
  	</replace-with>
+ 	<replace-with class="org.unitime.timetable.gwt.client.page.mobile.MobilePageLabelImpl">
+ 		<when-type-is class="org.unitime.timetable.gwt.client.page.PageLabelDisplay.Mobile" />
+ 	</replace-with>
  	<replace-with class="org.unitime.timetable.gwt.client.page.UniTimeNotifications.Implementation">
  		<when-type-is class="org.unitime.timetable.gwt.client.page.UniTimeNotifications.Display" />
+ 	</replace-with>
+ 	<replace-with class="org.unitime.timetable.gwt.client.page.mobile.MobileNotifications">
+ 		<when-type-is class="org.unitime.timetable.gwt.client.page.UniTimeNotifications.MobileDisplay" />
  	</replace-with>
  </module>

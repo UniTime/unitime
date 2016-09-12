@@ -28,4 +28,6 @@ public interface UniTimeFrameDialogDisplay extends HasText {
 	public void openDialog(String title, String source, String width, String height);
 	public void hideDialog();
 	public boolean isShowing();
+	
+	public static interface Mobile extends UniTimeFrameDialogDisplay {}
 }

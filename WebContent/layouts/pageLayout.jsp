@@ -48,6 +48,7 @@
 	<meta http-equiv="cache-control" content="no-cache">
 	<meta http-equiv="expires" content="0">
 	<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="gwt:property" content="locale=<%=Localization.getFirstLocale()%>">
     <meta charset="UTF-8"/>
 	<link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
@@ -67,7 +68,6 @@
 	<script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
 </head>
 <body class="unitime-Body" <tiles:getAsString name="onLoadFunction" />>
-	<tt:form-factor value="unknown"><span id='UniTimeGWT:DetectFormFactor' style="display: none;"></span></tt:form-factor>
 	<script language="JavaScript" type="text/javascript">
 		if (!String.prototype.trim) {
 			String.prototype.trim = function() {
@@ -78,7 +78,7 @@
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     <iframe src="javascript:''" id="__printingFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     
-    <tt:form-factor value="desktop">
+    <span class='top-menu'>
     <logic:equal name="showMenu" value="true">
     	<tt:notHasProperty name="unitime.menu.style" user="true">
 	    	<span id='UniTimeGWT:DynamicTopMenu' style="display: block; height: 23px;"></span>
@@ -90,7 +90,7 @@
     		<span id='UniTimeGWT:TopMenu' style="display: block; height: 23px;"></span>
     	</tt:propertyEquals>
     </logic:equal>
-    </tt:form-factor>
+    </span>
     
     <tt:hasProperty name="tmtbl.global.info">
     	<div class='unitime-PageMessage'><tt:property name="tmtbl.global.info"/></div>
@@ -121,51 +121,6 @@
 	<tiles:importAttribute name="title" scope="request"/>
 	<tiles:importAttribute name="showNavigation" scope="request"/>
 	
-<tt:form-factor value="mobile">
-	<span class="unitime-MobilePage">
-	<span class="body">
-	<span class="unitime-MobilePageHeader">
-		<span class="row">
-			<logic:equal name="showMenu" value="true">
-				<span id='UniTimeGWT:MobileMenu' class="menu"></span>
-			</logic:equal>
-			<span class="logo"><a href='main.jsp' tabIndex="-1">
-				<tt:form-factor value="phone"><img src="images/unitime-phone.png" border="0"/></tt:form-factor>
-				<tt:form-factor value="tablet"><img src="images/unitime-tablet.png" border="0"/></tt:form-factor>
-			</a></span>
-			<span id='UniTimeGWT:Title' class="title"><bean:write name="title" scope="request"/></span>
-		</span>
-	</span>
-	<logic:equal name="showMenu" value="true">
-		<span class='unitime-MobileHeader'><span id='UniTimeGWT:Header' class="unitime-InfoPanel"></span></span>
-	</logic:equal>
-	<span id='UniTimeGWT:TitlePanel' class="unitime-MobileNavigation"><tiles:insert attribute="header"><tiles:put name="showNavigation" value="${showNavigation}"/></tiles:insert></span>
-	<span id="unitime-Page" class="content">
-		<span id='UniTimeGWT:Content'>
-			<tiles:insert attribute="body">
-				<tiles:put name="body2" value="${body2}"/>
-				<tiles:put name="action2" value="${action2}"/>
-			</tiles:insert>
-		</span>
-	</span>
-	</span>
-	<span class="unitime-MobileFooter">
-		<span class="row">
-			<span class="cell left">
-				<span id='UniTimeGWT:Version'></span>
-				<tt:time-stamp/>
-			</span>
-    		<%-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org --%>
-			<span class="cell middle"><tt:copy/></span>
-			<span class="cell right"><tt:registration/></span>
-		</span>
-	</span>
-	<tt:hasProperty name="tmtbl.page.disclaimer">
-		<span class='unitime-MobileDisclaimer'><tt:property name="tmtbl.page.disclaimer"/></span>
-	</tt:hasProperty>
-	</span>
-</tt:form-factor>
-<tt:form-factor value="desktop">
 	<span class="unitime-Page"><span class='row'>
 	<span class='sidebar' id="unitime-SideMenu">
     	<logic:equal name="showMenu" value="true">
@@ -209,7 +164,8 @@
     <span class='main'><span class='body' id="unitime-Page">
     	<span class="unitime-PageHeader" id="unitime-Header">
     		<span class="row">
-    			<span class="logo"><a href='main.jsp' tabIndex="-1"><img src="images/unitime.png" border="0"/></a></span>
+    			<span class="mobile-menu-button" id='UniTimeGWT:MobileMenuButton'></span>
+    			<a href='main.jsp' tabIndex="-1" class="logo"></a>
     			<span class="content">
 					<span id='UniTimeGWT:Title' class="title"><bean:write name="title" scope="request"/></span>
 					<logic:equal name="showMenu" value="true">
@@ -223,6 +179,7 @@
 				</span>
 			</span>
 		</span>
+		<span class="mobile-menu" id='UniTimeGWT:MobileMenuPanel'></span>
 		<span class='content'>
         	<span id='UniTimeGWT:Content'>
 	    		<tiles:insert attribute="body">
@@ -249,6 +206,5 @@
 	</span>
 </span></span></span>
 	
-</tt:form-factor>
 </body>
 </html:html>

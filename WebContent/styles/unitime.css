@@ -18,6 +18,10 @@
  * 
 */
 
+* {
+    box-sizing: border-box;
+}
+
 .unitime-Body {
 	font-family: sans-serif, verdana, arial;
 	background-color: #FFFFFF;
@@ -55,6 +59,7 @@
 .unitime-Page .content {
 	display: block;
 	padding: 2px;
+	width: 100%;
 }
 
 .unitime-Page .footer {
@@ -3517,9 +3522,14 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-PageHeader .logo {
-	display: table-cell;
-	padding: 5px;
+	background-image: url(../images/unitime.png);
+	background-size: 100% 100%;
+	min-width: 80px;
+	height: 80px;
+	margin: 5px;
+	display: inline-block;
 }
+
 
 .unitime-PageHeader .content {
 	display: table-cell;

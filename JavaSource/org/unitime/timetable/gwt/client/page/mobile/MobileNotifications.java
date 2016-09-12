@@ -17,7 +17,7 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.gwt.mobile.client.page;
+package org.unitime.timetable.gwt.client.page.mobile;
 
 import java.util.ArrayList;
 import java.util.Iterator;

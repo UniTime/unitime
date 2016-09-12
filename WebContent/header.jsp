@@ -32,18 +32,11 @@
 	<logic:equal name="showNavigation" value="true"> 
 		<% if (!"hide".equals(request.getParameter("menu"))) { %>
 		<tt:has-back>
-			<tt:form-factor value="mobile">
+			<span class="unitime-Navigation">
 				<tt:back styleClass="btn" name="[&larr;]" title="Return to %%"/>
 				<tt:back-tree/>
 				<tt:gwt-back/>
-			</tt:form-factor>
-			<tt:form-factor value="desktop">
-				<span class="unitime-Navigation">
-					<tt:back styleClass="btn" name="[&larr;]" title="Return to %%"/>
-					<tt:back-tree/>
-					<tt:gwt-back/>
-				</span>
-			</tt:form-factor>
+			</span>
 		</tt:has-back>
 		<% } %>
 	</logic:equal>

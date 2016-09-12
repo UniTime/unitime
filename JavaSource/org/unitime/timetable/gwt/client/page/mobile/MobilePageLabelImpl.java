@@ -17,51 +17,52 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.gwt.mobile.client.page;
+package org.unitime.timetable.gwt.client.page.mobile;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.PageLabelDisplay;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.MenuInterface.PageNameInterface;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.googlecode.mgwt.dom.client.event.tap.TapEvent;
-import com.googlecode.mgwt.dom.client.event.tap.TapHandler;
-import com.googlecode.mgwt.ui.client.MGWT;
-import com.googlecode.mgwt.ui.client.widget.button.ImageButton;
-import com.googlecode.mgwt.ui.client.widget.image.ImageHolder;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Button;
 
 /**
  * @author Tomas Muller
  */
 public class MobilePageLabelImpl extends P implements PageLabelDisplay {
+	private static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	
 	private P iName;
-	private ImageButton iHelp;
-	private ImageButton iClose = null;
+	private Button iHelp;
+	private Button iClose = null;
 	private String iUrl = null;
 	
 	public MobilePageLabelImpl() {
         iName = new P("text");
-		add(iName);
         
-        iHelp = new ImageButton(ImageHolder.get().about());
+		iHelp = new Button(MESSAGES.mobileHelpSymbol());
+		iHelp.addStyleName("unitime-MobileMenuButton");
 		iHelp.setVisible(false);
-		P help = new P("icon");
-        help.add(iHelp);
-		add(help);
 		
-		iHelp.addTapHandler(new TapHandler() {
+		add(iName);
+		add(iHelp);
+		
+		iHelp.addClickHandler(new ClickHandler() {
 			@Override
-			public void onTap(TapEvent event) {
+			public void onClick(ClickEvent event) {
 				if (iUrl == null || iUrl.isEmpty()) return;
-				if (MGWT.getFormFactor().isTablet())
+				if (Window.getClientWidth()>=600)
 					UniTimeFrameDialog.openDialog(MESSAGES.pageHelp(getText()), iUrl);
 				else
 					ToolBox.open(iUrl);
@@ -69,27 +70,17 @@ public class MobilePageLabelImpl extends P implements PageLabelDisplay {
 		});
 		
 		if (hasParentWindow()) {
-			iClose = new ImageButton(ImageHolder.get().remove());
-			P close = new P("icon");
-			close.add(iClose);
-			add(close);
-			
-			iClose.addTapHandler(new TapHandler() {
+			iClose = new Button(MESSAGES.mobileCloseSymbol());
+			iClose.addStyleName("unitime-MobileMenuButton");
+			iClose.addClickHandler(new ClickHandler() {
 				@Override
-				public void onTap(TapEvent event) {
+				public void onClick(ClickEvent event) {
 					tellParentToCloseThisWindo();
 				}
 			});
+			add(iClose);
 		}
 	}
-	
-	public static native boolean hasParentWindow()/*-{
-		return ($wnd.parent && $wnd.parent.hasGwtDialog());
-	}-*/;
-	
-	public static native boolean tellParentToCloseThisWindo()/*-{
-		$wnd.parent.hideGwtDialog();
-	}-*/;
 
 	@Override
 	public String getText() {
@@ -125,4 +116,12 @@ public class MobilePageLabelImpl extends P implements PageLabelDisplay {
 	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<PageNameInterface> handler) {
 		return addHandler(handler, ValueChangeEvent.getType());
 	}
+	
+	public static native boolean hasParentWindow()/*-{
+		return ($wnd.parent && $wnd.parent.hasGwtDialog());
+	}-*/;
+
+	public static native boolean tellParentToCloseThisWindo()/*-{
+		$wnd.parent.hideGwtDialog();
+	}-*/;
 }

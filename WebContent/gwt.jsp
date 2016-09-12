@@ -27,6 +27,7 @@
     <meta name="gwt:property" content="locale=<%=Localization.getFirstLocale()%>">
     <meta charset="UTF-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
     <link type="text/css" rel="stylesheet" href="styles/unitime.css">
     <link type="text/css" rel="stylesheet" href="styles/unitime-mobile.css">
@@ -40,11 +41,10 @@
     <title>UniTime <%=Constants.VERSION%>| University Timetabling Application</title>
   </head>
   <body class="unitime-Body">
-  	<tt:form-factor value="unknown"><span id='UniTimeGWT:DetectFormFactor' style="display: none;"></span></tt:form-factor>
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     <iframe src="javascript:''" id="__printingFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     
-    <tt:form-factor value="desktop">
+    <span class='top-menu'>
     	<tt:notHasProperty name="unitime.menu.style" user="true">
 	    	<span id='UniTimeGWT:DynamicTopMenu' style="display: block; height: 23px;"></span>
     	</tt:notHasProperty>
@@ -54,7 +54,7 @@
     	<tt:propertyEquals name="unitime.menu.style" user="true" value="Static On Top">
     		<span id='UniTimeGWT:TopMenu' style="display: block; height: 23px;"></span>
     	</tt:propertyEquals>
-    </tt:form-factor>
+    </span>
     
 	<tt:hasProperty name="tmtbl.global.info">
     	<div class='unitime-PageMessage'><tt:property name="tmtbl.global.info"/></div>
@@ -71,40 +71,6 @@
 	<span id='UniTimeGWT:CustomPageMessages'></span>
 	<tt:offering-locks/>
   	
-<tt:form-factor value="mobile">
-	<span class="unitime-MobilePage"><span class='body'>
-	<span class="unitime-MobilePageHeader">
-		<span class="row">
-			<span id='UniTimeGWT:MobileMenu' class="menu"></span>
-			<span class="logo"><a href='main.jsp' tabIndex="-1">
-				<tt:form-factor value="phone"><img src="images/unitime-phone.png" border="0"/></tt:form-factor>
-				<tt:form-factor value="tablet"><img src="images/unitime-tablet.png" border="0"/></tt:form-factor>
-			</a></span>
-			<span id='UniTimeGWT:Title' class="title"></span>
-		</span>
-	</span>
-	<span class='unitime-MobileHeader'><span id='UniTimeGWT:Header' class="unitime-InfoPanel"></span></span>
-	<span id='UniTimeGWT:TitlePanel' class="unitime-MobileNavigation"></span>
-		<span id="UniTimeGWT:Loading" class="unitime-PageLoading">
-			Page is loading, please wait ...
-		</span>
-	    <span id='UniTimeGWT:Body' class="content"></span>
-	</span><span class="unitime-MobileFooter">
-		<span class="row">
-			<span class="cell left">
-				<span id='UniTimeGWT:Version'></span>
-			</span>
-    		<%-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org --%>
-			<span class="cell middle"><tt:copy/></span>
-			<span class="cell right"><tt:registration/></span>
-		</span>
-	</span>
-	<tt:hasProperty name="tmtbl.page.disclaimer">
-		<span class='unitime-MobileDisclaimer'><tt:property name="tmtbl.page.disclaimer"/></span>
-	</tt:hasProperty>
-	</span>
-</tt:form-factor>
-<tt:form-factor value="desktop">
 	<span class="unitime-Page"><span class='row'>
 	<span class='sidebar' id="unitime-SideMenu">
     		<tt:propertyEquals name="unitime.menu.style" user="true" value="Stack On Side">
@@ -146,7 +112,8 @@
     <span class='main'><span class='body' id="unitime-Page">
     	<span class="unitime-PageHeader" id="unitime-Header">
     		<span class="row">
-    			<span class="logo"><a href='main.jsp' tabIndex="-1"><img src="images/unitime.png" border="0"/></a></span>
+    			<span class="mobile-menu-button" id='UniTimeGWT:MobileMenuButton'></span>
+    			<a href='main.jsp' tabIndex="-1" class="logo"></a>
     			<span class="content">
 					<span id='UniTimeGWT:Title' class="title"></span>
 					<span class='unitime-Header'><span id='UniTimeGWT:Header' class="unitime-InfoPanel"></span></span>
@@ -154,6 +121,7 @@
 				</span>
 			</span>
 		</span>
+		<span class="mobile-menu" id='UniTimeGWT:MobileMenuPanel'></span>
 		<span class="content"> 
 			<span id="UniTimeGWT:Loading" class="unitime-PageLoading">
 				Page is loading, please wait ...
@@ -177,7 +145,6 @@
 		<span class="unitime-VisibleAriaStatus" id='UniTimeGWT:AriaStatus'></span>
 	</span>
 </span></span></span>
-</tt:form-factor>
 
     <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
   </body>

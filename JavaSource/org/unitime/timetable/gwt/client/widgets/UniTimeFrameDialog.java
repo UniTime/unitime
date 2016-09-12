@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.widgets;
 
 import com.google.gwt.core.shared.GWT;
+import com.google.gwt.user.client.Window;
 
 /**
  * @author Tomas Muller
@@ -44,8 +45,12 @@ public class UniTimeFrameDialog {
 	}
 	
 	public static void openDialog(String title, String source, String width, String height) {
-		if (sDialog == null)
-			sDialog = GWT.create(UniTimeFrameDialogDisplay.class);
+		if (sDialog == null) {
+			if (Window.getClientWidth() <= 800)
+				sDialog = GWT.create(UniTimeFrameDialogDisplay.Mobile.class);
+			else
+				sDialog = GWT.create(UniTimeFrameDialogDisplay.class);
+		}
 		sDialog.openDialog(title, source, width, height);
 	}
 	
