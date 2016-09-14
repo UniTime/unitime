@@ -51,6 +51,7 @@
 			<description>
 				<line>Conflict checking for the Max N Hours A Day group constraint corrected: do not return a constant variable (i.e., a committed class of some other problem) as a conflict.</line>
 				<line>Also, return the evaluated placement as a conflict when there is not enough time on the day for the class without unassigning a constant variable.</line>
+				<line>Fixed an issue in conflict checking of Max N Hours A Day group constraint to prevent the constraint from returning null conflicts when there are too many committed classes on a day.</line>
 			</description>
 		</item>
 		<item>
