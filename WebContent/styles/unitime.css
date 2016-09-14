@@ -4666,3 +4666,153 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-CourseFinderDialog .unitime-Hint {
 	margin-top: 0px;
 }
+
+.unitime-CourseSelectionBox {
+	white-space: nowrap;
+}
+
+.unitime-CourseSelectionBox .gwt-SuggestBox {
+	vertical-align: top;
+	height: 22px;
+}
+
+.unitime-CourseSelectionBox .unitime-ImageButton {
+	vertical-align: top;
+	height: 22px;
+}
+
+.unitime-CourseSelectionBox .unitime-TextBoxHint {
+	vertical-align: top;
+	height: 22px;
+}
+
+.unitime-CourseSelectionBox .error {
+	margin-top: 0px;
+}
+
+.unitime-CourseRequests .header {
+	overflow: hidden;
+	display: block;
+	border-bottom: 1px solid #9CB0CE;
+	padding-top: 5px;
+	font-size: large;
+	font-weight: bold;
+	color: black;
+	white-space: nowrap;
+}
+
+.unitime-CourseRequests .header .title {
+	float: left;
+}
+
+.unitime-CourseRequests .header .waitlist {
+	font-size: small;
+	font-style: italic;
+	text-align: right;
+	overflow: hidden;
+	padding-right: 10px;
+	padding-top: 3px;
+}
+
+.unitime-CourseRequests .line {
+	overflow: hidden;
+}
+
+.unitime-CourseRequests .line .title {
+	display: inline-block;
+	width: 70px;
+	text-align: right;
+	padding: 2px 2px 2px 0px;
+	vertical-align: top;
+}
+
+.unitime-CourseRequests .line .course {
+	display: inline-block;
+	padding: 2px;
+	vertical-align: top;
+}
+
+.unitime-CourseRequests .line .course .gwt-SuggestBox {
+	width: 260px;
+}
+
+.unitime-CourseRequests .line .course .unitime-TextBoxHint {
+	width: 260px;
+}
+
+.unitime-CourseRequests .line .alternative .gwt-SuggestBox {
+	width: 155px;
+}
+
+.unitime-CourseRequests .line .alternative .unitime-TextBoxHint {
+	width: 155px;
+}
+
+.unitime-CourseRequests .line .alternative {
+	display: inline-block;
+	padding: 2px;
+	vertical-align: top;
+}
+
+.unitime-CourseRequests .buttons {
+	display: inline-block;
+	white-space: nowrap;
+	float: right;
+}
+
+.unitime-CourseRequests .line .wait-list {
+	display: inline-block;
+	padding: 2px;
+	white-space: pre;
+}
+
+.unitime-CourseRequests .line .blank {
+	display: inline-block;
+	width: 19px;
+	padding: 2px;
+}
+
+.unitime-CourseRequests .line .up {
+	padding: 2px;
+}
+
+.unitime-CourseRequests .line .down {
+	padding: 2px;
+}
+
+.unitime-CourseRequests .line .delete {
+	padding: 2px;
+	text-align: right;
+}
+
+.unitime-CourseRequests .tip {
+	font-size: xx-small;
+	font-style: italic;
+	color: #9CB0CE;
+	text-align: right;
+	white-space: nowrap;
+	cursor: pointer;
+	text-decoration: none;
+}
+
+.unitime-CourseRequests .alt-header {
+	overflow: hidden;
+	display: block;
+	border-bottom: 1px solid #9CB0CE;
+	padding-top: 5px;
+	font-size: large;
+	font-weight: bold;
+	color: black;
+}
+
+.unitime-CourseRequests .alt-header .title {
+	float: left;
+}
+
+.unitime-CourseRequests .alt-header .note {
+	font-size: small;
+	font-style: italic;
+	text-align: center;
+	overflow: hidden;
+	padding-top: 3px;
+}

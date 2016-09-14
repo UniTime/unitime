@@ -443,4 +443,24 @@
 		overflow: visible;
 		white-space: normal;
 	}
+	
+	.unitime-CourseRequests .line .course .gwt-SuggestBox {
+		width: 31vw;
+		min-width: 200px;
+	}
+	
+	.unitime-CourseRequests .line .course .unitime-TextBoxHint {
+		width: 31vw;
+		min-width: 200px;
+	}
+
+	.unitime-CourseRequests .line .alternative .gwt-SuggestBox {
+		width: 16vw;
+		min-width: 100px;
+	}
+
+	.unitime-CourseRequests .line .alternative .unitime-TextBoxHint {
+		width: 16vw;
+		min-width: 100px;
+	}
 }

@@ -63,12 +63,9 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.SuggestOracle;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.SuggestOracle.Callback;
 import com.google.gwt.user.client.ui.SuggestOracle.Request;
 import com.google.gwt.user.client.ui.SuggestOracle.Response;
@@ -77,7 +74,7 @@ import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 /**
  * @author Tomas Muller
  */
-public class CourseSelectionSuggestBox extends Composite implements CourseSelection {
+public class CourseSelectionSuggestBox extends P implements CourseSelection {
 	protected static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
 	protected static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	protected static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
@@ -86,8 +83,6 @@ public class CourseSelectionSuggestBox extends Composite implements CourseSelect
 	protected AriaSuggestBox iSuggest;
 	private String iLastSuggestion;
 	protected ImageButton iFinderButton;
-	private HorizontalPanel iHPanel;
-	private VerticalPanel iVPanel;
 	private Label iError;
 	
 	private String iHint = "";
@@ -107,6 +102,7 @@ public class CourseSelectionSuggestBox extends Composite implements CourseSelect
 	}
 	
 	public CourseSelectionSuggestBox(boolean showCourses, boolean showDefaultSuggestions) {
+		super("unitime-CourseSelectionBox");
 		iShowCourses = showCourses;
 		iShowDefaultSuggestions = showDefaultSuggestions;
 		
@@ -127,22 +123,20 @@ public class CourseSelectionSuggestBox extends Composite implements CourseSelect
 		
 		iSuggest = new AriaSuggestBox(courseOfferingOracle);
 		iSuggest.setStyleName("unitime-TextBoxHint");
+		iSuggest.addStyleName("text");
+		add(iSuggest);
 
 		iFinderButton = new ImageButton(RESOURCES.search_picker(), RESOURCES.search_picker_Down(), RESOURCES.search_picker_Over(), RESOURCES.search_picker_Disabled());
 		iFinderButton.setTabIndex(-1);
-		
-		iVPanel = new VerticalPanel();
-		
-		iHPanel = new HorizontalPanel();
-		iHPanel.add(iSuggest);
-		iHPanel.add(iFinderButton);
-		iVPanel.add(iHPanel);
+		iFinderButton.addStyleName("button");
+		add(iFinderButton);
 		
 		iError = new Label();
 		iError.setStyleName("unitime-ErrorHint");
 		iError.setVisible(false);
 		Roles.getPresentationRole().setAriaHiddenState(iError.getElement(), true);
-		iVPanel.add(iError);
+		iError.addStyleName("error");
+		add(iError);
 				
 		iFinderButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
@@ -207,8 +201,6 @@ public class CourseSelectionSuggestBox extends Composite implements CourseSelect
 					AriaStatus.getInstance().setText(iError.getText());
 			}
 		});
-		
-		initWidget(iVPanel);
 	}
 
 	@Override
