@@ -19,7 +19,7 @@
 */
 
 * {
-    box-sizing: border-box;
+	box-sizing: border-box;
 }
 
 .unitime-Body {
@@ -454,21 +454,22 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	margin-top: -2px;
 }
 
-.unitime-FreeTimePicker-TopLeftCorner {
+.unitime-FreeTimePicker .corner {
 	border-bottom: 1px solid #9CB0CE;
 	border-right: 1px solid #9CB0CE;
 }
 
-.unitime-FreeTimePicker-HorizontalHeader {
+.unitime-FreeTimePicker .horizontal-header {
 	font-size: xx-small;
 	text-align: center;
 	border-bottom: 1px solid #9CB0CE;
 	border-right: 1px solid #9CB0CE;
 	border-top: 1px solid #9CB0CE;
-	width: 26px;
+	width: 30px !important;
+	overflow: hidden;
 }
 
-.unitime-FreeTimePicker-VerticalHeader {
+.unitime-FreeTimePicker .vertical-header {
 	font-size: x-small;
 	text-align: center;
 	border-bottom: 1px solid #9CB0CE;
@@ -477,7 +478,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	width: 25px;
 }
 
-.unitime-FreeTimePicker-Slot {
+.unitime-FreeTimePicker .slot {
 	font-size: x-small;
 	text-align: center;
 	color: #AAAAAA;
@@ -4623,4 +4624,45 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-TeachingRequestDetail .enrollment-conflict {
 	background-color: rgb(255, 240, 240);
+}
+
+.unitime-CourseFinderDialog {
+}
+
+.unitime-CourseFinderDialog .filter {
+	width: 780px;
+}
+
+.unitime-CourseFinderDialog .filter .text {
+	overflow: auto;
+	height: 24px;
+}
+
+.unitime-CourseFinderDialog .filter .gwt-SuggestBox {
+	width: 99%;
+	margin: 2px;
+}
+
+.unitime-CourseFinderDialog .filter .button {
+	float: right;
+}
+
+.unitime-CourseFinderDialog .filter .button .gwt-Button {
+	height: 24px;
+}
+
+.unitime-CourseFinderDialog .course-table {
+	height: 200px;
+	width: 780px;
+	margin-bottom: 3px;
+}
+
+.unitime-CourseFinderDialog .course-details {
+	border: 1px solid #9CB0CE;
+	height: 200px;
+	width: 780px;
+}
+
+.unitime-CourseFinderDialog .unitime-Hint {
+	margin-top: 0px;
 }

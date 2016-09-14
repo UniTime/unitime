@@ -36,7 +36,6 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignmen
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -50,13 +49,12 @@ import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
  * @author Tomas Muller
  */
-public class CourseFinderCourses extends VerticalPanel implements CourseFinder.CourseFinderTab<Collection<CourseAssignment>> {
+public class CourseFinderCourses extends P implements CourseFinder.CourseFinderTab<Collection<CourseAssignment>> {
 	protected static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	protected static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
@@ -77,19 +75,19 @@ public class CourseFinderCourses extends VerticalPanel implements CourseFinder.C
 	}
 	
 	public CourseFinderCourses(boolean showCourses, boolean showDefaultSuggestions) {
-		super();
+		super("courses");
 		
 		iShowCourses = showCourses;
 		iShowDefaultSuggestions = showDefaultSuggestions;
 		
 		iCourses = new WebTable();
 		iCourses.setHeader(new WebTable.Row(
-				new WebTable.Cell(MESSAGES.colSubject(), 1, "80px"),
-				new WebTable.Cell(MESSAGES.colCourse(), 1, "80px"),
-				new WebTable.Cell(MESSAGES.colLimit(), 1, "60px"),
-				new WebTable.Cell(MESSAGES.colTitle(), 1, "300px"),
-				new WebTable.Cell(MESSAGES.colCredit(), 1, "60px"),
-				new WebTable.Cell(MESSAGES.colNote(), 1, "300px")
+				new WebTable.Cell(MESSAGES.colSubject(), 1, "10%"),
+				new WebTable.Cell(MESSAGES.colCourse(), 1, "10%"),
+				new WebTable.Cell(MESSAGES.colLimit(), 1, "7%"),
+				new WebTable.Cell(MESSAGES.colTitle(), 1, "33%"),
+				new WebTable.Cell(MESSAGES.colCredit(), 1, "7%"),
+				new WebTable.Cell(MESSAGES.colNote(), 1, "33%")
 				));
 		iCourses.addRowDoubleClickHandler(new WebTable.RowDoubleClickHandler() {
 			public void onRowDoubleClick(WebTable.RowDoubleClickEvent event) {
@@ -106,12 +104,12 @@ public class CourseFinderCourses extends VerticalPanel implements CourseFinder.C
 		});
 		
 		iCoursesPanel = new ScrollPanel(iCourses);
-		iCoursesPanel.getElement().getStyle().setWidth(780, Unit.PX);
-		iCoursesPanel.getElement().getStyle().setHeight(200, Unit.PX);
 		iCoursesPanel.setStyleName("unitime-ScrollPanel");
+		iCoursesPanel.addStyleName("course-table");
 		
 		iCoursesTip = new Label(CONSTANTS.courseTips()[(int)(Math.random() * CONSTANTS.courseTips().length)]);
 		iCoursesTip.setStyleName("unitime-Hint");
+		iCoursesTip.addStyleName("course-tip");
 		ToolBox.disableTextSelectInternal(iCoursesTip.getElement());
 		iCoursesTip.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
@@ -123,7 +121,7 @@ public class CourseFinderCourses extends VerticalPanel implements CourseFinder.C
 		});
 		
 		iCourseDetailsTabPanel = new UniTimeTabPanel();
-		iCourseDetailsTabPanel.setDeckStyleName("unitime-TabPanel");
+		iCourseDetailsTabPanel.setDeckStyleName("course-details");
 		iCourseDetailsTabPanel.addSelectionHandler(new SelectionHandler<Integer>() {
 			@Override
 			public void onSelection(SelectionEvent<Integer> event) {
@@ -131,7 +129,6 @@ public class CourseFinderCourses extends VerticalPanel implements CourseFinder.C
 			}
 		});
 
-		setSpacing(10);
 		add(iCoursesPanel);
 		add(iCourseDetailsTabPanel);
 		add(iCoursesTip);
@@ -308,8 +305,7 @@ public class CourseFinderCourses extends VerticalPanel implements CourseFinder.C
 		for (CourseFinderCourseDetails detail: iDetails) {
 			ScrollPanel panel = new ScrollPanel(detail.asWidget());
 			panel.setStyleName("unitime-ScrollPanel-inner");
-			panel.getElement().getStyle().setWidth(780, Unit.PX);
-			panel.getElement().getStyle().setHeight(200, Unit.PX);
+			panel.addStyleName("course-info");
 			iCourseDetailsTabPanel.add(panel, detail.getName(), true);
 			Character ch = UniTimeHeaderPanel.guessAccessKey(detail.getName());
 			if (ch != null)

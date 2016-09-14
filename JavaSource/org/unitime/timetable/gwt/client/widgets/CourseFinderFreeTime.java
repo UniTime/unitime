@@ -43,12 +43,12 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.ScrollPanel;
 
 /**
  * @author Tomas Muller
  */
-public class CourseFinderFreeTime extends VerticalPanel implements CourseFinder.CourseFinderTab<List<CourseRequestInterface.FreeTime>> {
+public class CourseFinderFreeTime extends P implements CourseFinder.CourseFinderTab<List<CourseRequestInterface.FreeTime>> {
 	protected static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	protected static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
@@ -58,7 +58,7 @@ public class CourseFinderFreeTime extends VerticalPanel implements CourseFinder.
 	private FreeTimeParser iDataProvider;
 	
 	public CourseFinderFreeTime() {
-		setSpacing(10);
+		super("free-times");
 		iFreeTimePicker = new FreeTimePicker();
 		iFreeTimePicker.addValueChangeHandler(new ValueChangeHandler<List<FreeTime>>() {
 			@Override
@@ -67,7 +67,10 @@ public class CourseFinderFreeTime extends VerticalPanel implements CourseFinder.
 				iFreeTimeError.setVisible(false);
 			}
 		});
-		add(iFreeTimePicker);
+		ScrollPanel panel = new ScrollPanel(iFreeTimePicker);
+		panel.setStyleName("unitime-ScrollPanel-inner");
+		panel.addStyleName("free-time-picker");
+		add(panel);
 
 		iFreeTimeTip = new Label(CONSTANTS.freeTimeTips()[(int)(Math.random() * CONSTANTS.freeTimeTips().length)]);
 		iFreeTimeTip.setStyleName("unitime-Hint");

@@ -35,55 +35,68 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HasValue;
 
 /**
  * @author Tomas Muller
  */
-public class FreeTimePicker extends Composite implements HasValue<List<CourseRequestInterface.FreeTime>> {
+public class FreeTimePicker extends Grid implements HasValue<List<CourseRequestInterface.FreeTime>> {
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 
-	private CellSelectingGrid iGrid;
-	
 	private boolean[][] iSelected;
 	private long[][] iLastSelectedTime;
 	private long iTime = 0;
 	
 	public FreeTimePicker() {
-		iGrid = new CellSelectingGrid(1 + CONSTANTS.freeTimeDays().length, CONSTANTS.freeTimePeriods().length);
-		iGrid.setCellPadding(2);
-		iGrid.setCellSpacing(0);
+		super(1 + CONSTANTS.freeTimeDays().length, CONSTANTS.freeTimePeriods().length);
+		setStyleName("unitime-FreeTimePicker");
+		sinkEvents(Event.ONMOUSEDOWN);
+		sinkEvents(Event.ONMOUSEUP);
+		sinkEvents(Event.ONCLICK);
+		sinkEvents(Event.ONMOUSEOVER);
+		sinkEvents(Event.ONMOUSEOUT);
+		setCellPadding(2);
+		setCellSpacing(0);
 		iSelected = new boolean[CONSTANTS.freeTimeDays().length][CONSTANTS.freeTimePeriods().length - 1];
 		iLastSelectedTime = new long[CONSTANTS.freeTimeDays().length][CONSTANTS.freeTimePeriods().length - 1];
 		
-		iGrid.setHTML(0, 0, "&nbsp;");
-		iGrid.getCellFormatter().setStyleName(0, 0, "unitime-FreeTimePicker-TopLeftCorner");
-		ToolBox.disableTextSelectInternal(iGrid.getCellFormatter().getElement(0, 0));
+		setHTML(0, 0, "&nbsp;");
+		getCellFormatter().setStyleName(0, 0, "corner");
+		ToolBox.disableTextSelectInternal(getCellFormatter().getElement(0, 0));
 		
 		for (int i=0; i<CONSTANTS.freeTimeDays().length; i++) {
-			iGrid.setText(1 + i, 0, CONSTANTS.freeTimeDays()[i]);
-			iGrid.getCellFormatter().setStyleName(1 + i, 0, "unitime-FreeTimePicker-VerticalHeader");
-			ToolBox.disableTextSelectInternal(iGrid.getCellFormatter().getElement(1 + i, 0));
+			setText(1 + i, 0, CONSTANTS.freeTimeDays()[i]);
+			getCellFormatter().setStyleName(1 + i, 0, "vertical-header");
+			ToolBox.disableTextSelectInternal(getCellFormatter().getElement(1 + i, 0));
 		}
 		for (int i=0; i<CONSTANTS.freeTimePeriods().length - 1; i++) {
-			iGrid.setText(0, 1 + i, CONSTANTS.freeTimePeriods()[i]);
-			iGrid.getCellFormatter().setStyleName(0, 1 + i, "unitime-FreeTimePicker-HorizontalHeader");
-			ToolBox.disableTextSelectInternal(iGrid.getCellFormatter().getElement(0, 1 + i));
+			setText(0, 1 + i, CONSTANTS.freeTimePeriods()[i]);
+			getCellFormatter().setStyleName(0, 1 + i, "horizontal-header");
+			ToolBox.disableTextSelectInternal(getCellFormatter().getElement(0, 1 + i));
 		}
 		for (int d=0; d<CONSTANTS.freeTimeDays().length; d++) {
 			for (int p=0; p<CONSTANTS.freeTimePeriods().length - 1; p++) {
 				iSelected[d][p] = false;
 				iLastSelectedTime[d][p] = 0;
-				iGrid.setHTML(1 + d, 1 + p, "&nbsp;");
-				iGrid.getCellFormatter().setStyleName(1 + d, 1 + p, "unitime-FreeTimePicker-Slot");
+				setHTML(1 + d, 1 + p, "&nbsp;");
+				getCellFormatter().setStyleName(1 + d, 1 + p, "slot");
 				ToolBox.disableTextSelectInternal(td(d,p));
 			}
 		}
 		update();
-		initWidget(iGrid);
+	}
+	
+	public void onBrowserEvent(Event event) {
+		Element td = getEventTargetCell(event);
+		if (td==null) return;
+	    Element tr = DOM.getParent(td);
+	    Element body = DOM.getParent(tr);
+	    int row = DOM.getChildIndex(body, tr);
+	    int col = DOM.getChildIndex(tr, td);
+	    if (row == 0 || col ==0) return;
+	    processMouseEvent(DOM.eventGetType(event), row - 1, col - 1);
 	}
 			
 	public boolean isSelected(int day, int period) {
@@ -91,7 +104,7 @@ public class FreeTimePicker extends Composite implements HasValue<List<CourseReq
 	}
 	
 	private Element td(int day, int period) {
-		return iGrid.getCellFormatter().getElement(day + 1, period + 1);
+		return getCellFormatter().getElement(day + 1, period + 1);
 	}
 		
 	private String bg(int day, int period) {
@@ -190,7 +203,7 @@ public class FreeTimePicker extends Composite implements HasValue<List<CourseReq
 							(allTheSame && (hasS || hasT))) {
 							for (int p1=first; p1<Math.min(first + 6, CONSTANTS.freeTimePeriods().length - 1); p1++) {
 								if (s[d0][p1]) {
-									iGrid.setText(1 + d0, 1 + p1, String.valueOf(priority));
+									setText(1 + d0, 1 + p1, String.valueOf(priority));
 									s[d0][p1] = false;
 								}
 							}
@@ -207,7 +220,7 @@ public class FreeTimePicker extends Composite implements HasValue<List<CourseReq
 						if (allTheSame || (hasT && 3 * (first / 3) != first)) {
 							for (int p1=first; p1<Math.min(first + 6, CONSTANTS.freeTimePeriods().length - 1); p1++) {
 								if (s[d0][p1]) {
-									iGrid.setText(1 + d0, 1 + p1, String.valueOf(priority));
+									setText(1 + d0, 1 + p1, String.valueOf(priority));
 									s[d0][p1] = false;
 								}
 							}
@@ -221,7 +234,7 @@ public class FreeTimePicker extends Composite implements HasValue<List<CourseReq
 							if (mwf0 == mwf1 && odd0 != odd1) break p1;
 							if (s[d1][p1]) {
 								if (mwf0 == mwf1 && odd0 == odd1) {
-									iGrid.setText(1 + d1, 1 + p1, String.valueOf(priority));
+									setText(1 + d1, 1 + p1, String.valueOf(priority));
 									s[d1][p1] = false;
 								}
 							}
@@ -237,7 +250,7 @@ public class FreeTimePicker extends Composite implements HasValue<List<CourseReq
 		for (int d=0; d<CONSTANTS.freeTimeDays().length; d++)
 			for (int p=0; p<CONSTANTS.freeTimePeriods().length - 1; p++) {
 				s[d][p] = iSelected[d][p];
-				if (!iSelected[d][p]) iGrid.setHTML(1 + d, 1 + p, "&nbsp;");
+				if (!iSelected[d][p]) setHTML(1 + d, 1 + p, "&nbsp;");
 			}
 		int priority = 1;
 		while (generateOnePriority(s, priority)) priority++;
@@ -299,28 +312,6 @@ public class FreeTimePicker extends Composite implements HasValue<List<CourseReq
 		update();
 	}
 	
-	private class CellSelectingGrid extends Grid {
-		private CellSelectingGrid(int rows, int cols) {
-			super(rows, cols);
-			sinkEvents(Event.ONMOUSEDOWN);
-			sinkEvents(Event.ONMOUSEUP);
-			sinkEvents(Event.ONCLICK);
-			sinkEvents(Event.ONMOUSEOVER);
-			sinkEvents(Event.ONMOUSEOUT);
-		}
-		
-		public void onBrowserEvent(Event event) {
-			Element td = getEventTargetCell(event);
-			if (td==null) return;
-		    Element tr = DOM.getParent(td);
-		    Element body = DOM.getParent(tr);
-		    int row = DOM.getChildIndex(body, tr);
-		    int col = DOM.getChildIndex(tr, td);
-		    if (row == 0 || col ==0) return;
-		    processMouseEvent(DOM.eventGetType(event), row - 1, col - 1);
-		}
-	}
-	
 	@Override
 	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<List<FreeTime>> handler) {
 		return addHandler(handler, ValueChangeEvent.getType());
@@ -352,7 +343,7 @@ public class FreeTimePicker extends Composite implements HasValue<List<CourseReq
 				for (int p=0; p<CONSTANTS.freeTimePeriods().length - 1; p++) {
 					iSelected[d][p] = false;
 					td(d, p).getStyle().setBackgroundColor(bg(d, p));
-					iGrid.setHTML(1 + d, 1 + p, "&nbsp;");
+					setHTML(1 + d, 1 + p, "&nbsp;");
 				}
 		} else {
 			for (CourseRequestInterface.FreeTime f: value) {

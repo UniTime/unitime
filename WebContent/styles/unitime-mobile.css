@@ -419,4 +419,28 @@
 		height: inherit;
 		min-height: 600px;
 	}
+	
+	.unitime-CourseFinderDialog .filter {
+		width: 85vw;
+	}
+	
+	.unitime-CourseFinderDialog .course-table {
+		width: 90vw;
+		height: 30vh;
+	}
+	
+	.unitime-CourseFinderDialog .course-details {
+		width: 90vw;
+		height: 30vh;
+	}
+	
+	.unitime-CourseFinderDialog .free-time-picker {
+		width: 90vw;
+	}
+	
+	.unitime-CourseFinderDialog .unitime-Hint {
+		max-width: 90vw;
+		overflow: visible;
+		white-space: normal;
+	}
 }

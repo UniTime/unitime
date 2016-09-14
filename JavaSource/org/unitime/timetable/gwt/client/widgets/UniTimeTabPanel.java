@@ -53,7 +53,6 @@ public class UniTimeTabPanel extends TabPanel {
 		getDeckPanel().setStyleName(style);
 	}
 
-	
 	public void selectTab(int index) {
 		super.selectTab(index);
 	}

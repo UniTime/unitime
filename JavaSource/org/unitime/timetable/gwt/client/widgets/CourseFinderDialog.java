@@ -32,7 +32,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Overflow;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -49,8 +48,6 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -74,11 +71,11 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 	
 	public CourseFinderDialog() {
 		super(true, false);
+		addStyleName("unitime-CourseFinderDialog");
 		setText(MESSAGES.courseSelectionDialog());
 		
 		iFilter = new AriaTextBox();
 		iFilter.setStyleName("gwt-SuggestBox");
-		iFilter.getElement().getStyle().setWidth(600, Unit.PX);
 
 		iFilterSelect = new AriaButton(MESSAGES.buttonSelect());
 		iFilterSelect.addClickHandler(new ClickHandler() {
@@ -92,17 +89,18 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 			}
 		});
 		
-		HorizontalPanel filterWithSelect = new HorizontalPanel();
-		filterWithSelect.add(iFilter);
-		filterWithSelect.add(iFilterSelect);
-		filterWithSelect.setCellVerticalAlignment(iFilter, HasVerticalAlignment.ALIGN_MIDDLE);
-		filterWithSelect.setCellVerticalAlignment(iFilterSelect, HasVerticalAlignment.ALIGN_MIDDLE);
-		iFilterSelect.getElement().getStyle().setMarginLeft(5, Unit.PX);
-
+		P filterPanel = new P("filter");
+		P filterText = new P("text");
+		P filterButton = new P("button");
+		filterPanel.add(filterButton);
+		filterPanel.add(filterText);
+		filterText.add(iFilter);
+		filterButton.add(iFilterSelect);
+		
 		iDialogPanel = new VerticalPanel();
 		iDialogPanel.setSpacing(5);
-		iDialogPanel.add(filterWithSelect);
-		iDialogPanel.setCellHorizontalAlignment(filterWithSelect, HasHorizontalAlignment.ALIGN_CENTER);
+		iDialogPanel.add(filterPanel);
+		iDialogPanel.setCellHorizontalAlignment(filterPanel, HasHorizontalAlignment.ALIGN_CENTER);
 
 		addCloseHandler(new CloseHandler<PopupPanel>() {
 			public void onClose(CloseEvent<PopupPanel> event) {

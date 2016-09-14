@@ -45,18 +45,18 @@ public class CourseFinderClasses extends WebTable implements CourseFinder.Course
 	public CourseFinderClasses() {
 		super();
 		setHeader(new WebTable.Row(
-				new WebTable.Cell(MESSAGES.colSubpart(), 1, "50px"),
-				new WebTable.Cell(MESSAGES.colClass(), 1, "90px"),
-				new WebTable.Cell(MESSAGES.colLimit(), 1, "60px"),
-				new WebTable.Cell(MESSAGES.colDays(), 1, "60px"),
-				new WebTable.Cell(MESSAGES.colStart(), 1, "60px"),
-				new WebTable.Cell(MESSAGES.colEnd(), 1, "60px"),
-				new WebTable.Cell(MESSAGES.colDate(), 1, "100px"),
-				new WebTable.Cell(MESSAGES.colRoom(), 1, "100px"),
-				new WebTable.Cell(MESSAGES.colInstructor(), 1, "120px"),
-				new WebTable.Cell(MESSAGES.colParent(), 1, "90px"),
-				new WebTable.Cell(MESSAGES.colHighDemand(), 1, "10px"),
-				new WebTable.Cell(MESSAGES.colNoteIcon(), 1, "10px")
+				new WebTable.Cell(MESSAGES.colSubpart(), 1, "7%"),
+				new WebTable.Cell(MESSAGES.colClass(), 1, "10%"),
+				new WebTable.Cell(MESSAGES.colLimit(), 1, "7%"),
+				new WebTable.Cell(MESSAGES.colDays(), 1, "7%"),
+				new WebTable.Cell(MESSAGES.colStart(), 1, "7%"),
+				new WebTable.Cell(MESSAGES.colEnd(), 1, "7%"),
+				new WebTable.Cell(MESSAGES.colDate(), 1, "12%"),
+				new WebTable.Cell(MESSAGES.colRoom(), 1, "12%"),
+				new WebTable.Cell(MESSAGES.colInstructor(), 1, "15%"),
+				new WebTable.Cell(MESSAGES.colParent(), 1, "10%"),
+				new WebTable.Cell(MESSAGES.colHighDemand(), 1, "3%"),
+				new WebTable.Cell(MESSAGES.colNoteIcon(), 1, "3%")
 			));
 		setEmptyMessage(MESSAGES.courseSelectionNoCourseSelected());
 	}
