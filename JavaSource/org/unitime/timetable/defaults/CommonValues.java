@@ -48,6 +48,8 @@ public enum CommonValues {
 	SortByLastName("Always by Last Name"),
 	SortAsDisplayed("Natural Order (as displayed)"),
 	
+	UseSystemDefault("not set"),
+	
 	;
 
 	String iValue;

@@ -45,7 +45,8 @@ public enum UserProperty {
 		
 	SortNames("instrNameSort", CommonValues.SortByLastName, "Sort instructor names"),
 	
-	RoomFeaturesInOneColumn("roomFeaturesInOneColumn", CommonValues.Yes, "Display Room Features In One Column");
+	RoomFeaturesInOneColumn("roomFeaturesInOneColumn", CommonValues.Yes, "Display Room Features In One Column"),
+	HighlighClassPreferences("highlightClassPrefs", CommonValues.UseSystemDefault, "Highlight preferences that are set directly on classes"),
 	;
 
 	String iKey, iDefault, iDescription;

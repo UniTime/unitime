@@ -61,6 +61,17 @@
 				<line>When Department is selected as a Resource, show classes by (controlling) department even when there is no departmental spread constraint created (solver mode).</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructional Offering, Classes: Highlight Class Preferences</name>
+			<description>
+				<line>Added ability to set whether preferences that are set directly on a class are to be highlighted using user settings.</line>
+				<line>There is a new settings (named highlightClassPrefs) with the following values:
+					<line>yes ... class preferences are to be highlighted</line>
+					<line>no ... class preferences are not to be highlighted</line>
+					<line>not set ... use the system default, as it is set using unitime.preferences.highlightClassPrefs application property</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Event Management</title>

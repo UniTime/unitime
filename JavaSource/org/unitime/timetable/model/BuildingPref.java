@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 import org.cpsolver.ifs.util.ToolBox;
-import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseBuildingPref;
 
 
@@ -72,13 +71,13 @@ public class BuildingPref extends BaseBuildingPref {
     }
     
     @Override
-    public String preferenceHtml() {
+    public String preferenceHtml(boolean highlightClassPrefs) {
     	StringBuffer sb = new StringBuffer("<span ");
     	String style = "font-weight:bold;";
 		if (this.getPrefLevel().getPrefId().intValue() != 4) {
 			style += "color:" + this.getPrefLevel().prefcolor() + ";";
 		}
-		if (this.getOwner() != null && this.getOwner() instanceof Class_ && ApplicationProperty.PreferencesHighlighClassPreferences.isTrue()) {
+		if (this.getOwner() != null && this.getOwner() instanceof Class_ && highlightClassPrefs) {
 			style += "background: #ffa;";
 		}
 		sb.append("style='" + style + "' ");

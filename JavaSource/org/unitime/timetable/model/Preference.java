@@ -50,14 +50,18 @@ public abstract class Preference extends BasePreference implements Comparable {
 	public String preferenceTitle() {
 		return getPrefLevel().getPrefName()+" "+preferenceText();
 	}
-
+	
     public String preferenceHtml() {
+    	return preferenceHtml(ApplicationProperty.PreferencesHighlighClassPreferences.isTrue());
+	}
+	
+	public String preferenceHtml(boolean highlightClassPrefs) {
     	StringBuffer sb = new StringBuffer("<span ");
     	String style = "font-weight:bold;";
 		if (this.getPrefLevel().getPrefId().intValue() != 4) {
 			style += "color:" + this.getPrefLevel().prefcolor() + ";";
 		}
-		if (this.getOwner() != null && this.getOwner() instanceof Class_ && ApplicationProperty.PreferencesHighlighClassPreferences.isTrue()) {
+		if (this.getOwner() != null && this.getOwner() instanceof Class_ && highlightClassPrefs) {
 			style += "background: #ffa;";
 		}
 		sb.append("style='" + style + "' ");

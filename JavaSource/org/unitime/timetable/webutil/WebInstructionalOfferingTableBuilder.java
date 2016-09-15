@@ -41,6 +41,7 @@ import org.unitime.commons.web.htmlgen.TableRow;
 import org.unitime.commons.web.htmlgen.TableStream;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
@@ -233,6 +234,14 @@ public class WebInstructionalOfferingTableBuilder {
     public String getInstructorNameFormat() {
     	return iInstructorNameFormat;
     }
+    private Boolean iHighlightClassPrefs = null;
+    public void setHighlightClassPrefs(boolean highlightClassPrefs) {
+    	iHighlightClassPrefs = highlightClassPrefs;
+    }
+    public boolean isHighlightClassPrefs() {
+    	if (iHighlightClassPrefs == null) return ApplicationProperty.PreferencesHighlighClassPreferences.isTrue();
+    	return iHighlightClassPrefs;
+    }
     public String iDefaultTimeGridSize = null;
     public void setDefaultTimeGridSize(String defaultTimeGridSize) {
     	iDefaultTimeGridSize = defaultTimeGridSize;
@@ -246,6 +255,13 @@ public class WebInstructionalOfferingTableBuilder {
 		setGridAsText(RequiredTimeTable.getTimeGridAsText(user));
 		setInstructorNameFormat(UserProperty.NameFormat.get(user));
 		setDefaultTimeGridSize(RequiredTimeTable.getTimeGridSize(user));
+		String highlighClassPreferences = UserProperty.HighlighClassPreferences.get(user);
+		if (CommonValues.Yes.eq(highlighClassPreferences))
+			setHighlightClassPrefs(true);
+		else if (CommonValues.No.eq(highlighClassPreferences))
+			setHighlightClassPrefs(false);
+		else
+			setHighlightClassPrefs(ApplicationProperty.PreferencesHighlighClassPreferences.isTrue());
     }
     
     public boolean isShowConsent() {
@@ -623,7 +639,7 @@ public class WebInstructionalOfferingTableBuilder {
 					hasReq = true; text = "";
 				}
 				if (!hasReq || PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog())) {
-					text +=  (text.isEmpty() ? "" : "<br>") + pref.preferenceHtml();
+					text +=  (text.isEmpty() ? "" : "<br>") + pref.preferenceHtml(isHighlightClassPrefs());
 				}
 			}
     		cell = initNormalCell("<div>"+dp.getName()+"</div>" + text, isEditable);
@@ -653,7 +669,7 @@ public class WebInstructionalOfferingTableBuilder {
 			}
     	}
     	
-    	TableCell cell = initNormalCell(prefGroup.getEffectivePrefHtmlForPrefType(a,TimePref.class, getTimeVertival(), getGridAsText(), getDefaultTimeGridSize()),isEditable);
+    	TableCell cell = initNormalCell(prefGroup.getEffectivePrefHtmlForPrefType(a,TimePref.class, getTimeVertival(), getGridAsText(), getDefaultTimeGridSize(), isHighlightClassPrefs()),isEditable);
         cell.setNoWrap(true);
     	return (cell);
     	
@@ -663,7 +679,7 @@ public class WebInstructionalOfferingTableBuilder {
     	if (TimePref.class.equals(prefType)) {
     		return(buildTimePrefCell(classAssignment,prefGroup, isEditable));
     	} else {
-    		TableCell cell = this.initNormalCell(prefGroup.getEffectivePrefHtmlForPrefType(prefType),isEditable);
+    		TableCell cell = this.initNormalCell(prefGroup.getEffectivePrefHtmlForPrefType(prefType, isHighlightClassPrefs()),isEditable);
     		cell.setNoWrap(true);
     		return(cell);
     	}
@@ -688,7 +704,7 @@ public class WebInstructionalOfferingTableBuilder {
     				prefType.equals(BuildingPref.class))
     				continue;
     		}
-    		String x = prefGroup.getEffectivePrefHtmlForPrefType(prefType);
+    		String x = prefGroup.getEffectivePrefHtmlForPrefType(prefType, isHighlightClassPrefs());
     		if (x!=null && x.trim().length()>0) {
     			if (pref.length()>0) pref.append("<BR>");
     			pref.append(x);
