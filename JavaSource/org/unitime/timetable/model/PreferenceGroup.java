@@ -174,11 +174,15 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      * @return - a String of HTML to display the Preference
      */
     
-    private String htmlForPrefs(Assignment assignment, Set prefList, boolean timeVertical, boolean gridAsText, String timeGridSize, String nameFormat){
+    private String htmlForPrefs(Assignment assignment, Set prefList, boolean timeVertical, boolean gridAsText, String timeGridSize, String nameFormat) {
+    	return htmlForPrefs(assignment, prefList, timeVertical, gridAsText, timeGridSize, nameFormat, ApplicationProperty.PreferencesHighlighClassPreferences.isTrue());
+    }
+    
+    private String htmlForPrefs(Assignment assignment, Set prefList, boolean timeVertical, boolean gridAsText, String timeGridSize, String nameFormat, boolean highlightClassPrefs){
        	StringBuffer sb = new StringBuffer();
        	if (prefList != null && !prefList.isEmpty()) {
        		if (prefList.toArray()[0] instanceof TimePref){
-       			sb.append(htmlForTimePrefs(assignment, prefList, timeVertical, gridAsText, timeGridSize));
+       			sb.append(htmlForTimePrefs(assignment, prefList, timeVertical, gridAsText, timeGridSize, highlightClassPrefs));
        		} else {
 		    	Iterator it = prefList.iterator();
 		    	Preference aPref = null;
@@ -190,7 +194,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
 		    			notFirst = true;
 		    		}
 		    		aPref = (Preference) it.next();
-		    		sb.append(aPref.preferenceHtml(nameFormat));
+		    		sb.append(aPref.preferenceHtml(nameFormat, highlightClassPrefs));
 		    	}
        		}
        	}
@@ -198,10 +202,10 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     }
     
     private String htmlForPrefs(Assignment assignment, Set prefList){
-    	return (htmlForTimePrefs(assignment, prefList, false, false, null));
+    	return (htmlForTimePrefs(assignment, prefList, false, false, null, ApplicationProperty.PreferencesHighlighClassPreferences.isTrue()));
     }
     
-    private String htmlForTimePrefs(Assignment assignment, Set timePrefList, boolean timeVertical, boolean gridAsText, String timeGridSize){
+    private String htmlForTimePrefs(Assignment assignment, Set timePrefList, boolean timeVertical, boolean gridAsText, String timeGridSize, boolean highlightClassPrefs){
     	StringBuffer sb = new StringBuffer();
     	for (Iterator i=timePrefList.iterator();i.hasNext();) {
     		TimePref tp = (TimePref)i.next();
@@ -225,14 +229,14 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     		String hint = rtt.print(false, timeVertical, true, false, rtt.getModel().getName() + owner).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
         	if (gridAsText || rtt.getModel().isExactTime()) {
         		sb.append("<span onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\" "+
-        				(tp.getOwner() != null && tp.getOwner() instanceof Class_ && ApplicationProperty.PreferencesHighlighClassPreferences.isTrue() ? " style='background: #ffa;'" : "") +
+        				(tp.getOwner() != null && tp.getOwner() instanceof Class_ && highlightClassPrefs ? " style='background: #ffa;'" : "") +
         				">"+rtt.getModel().toString().replaceAll(", ","<br>")+"</span>");
         	} else {
         		rtt.getModel().setDefaultSelection(timeGridSize);
     			sb.append("<img border='0' src='" +
     					"pattern?v=" + (timeVertical ? 1 : 0) + "&s=" + rtt.getModel().getDefaultSelection() + "&tp=" + tp.getTimePattern().getUniqueId() + "&p=" + rtt.getModel().getPreferences() +
     					(assignment == null || assignment.getTimeLocation() == null ? "" : "&as=" + assignment.getTimeLocation().getStartSlot() + "&ad=" + assignment.getTimeLocation().getDayCode()) +
-    					(tp.getOwner() != null && tp.getOwner() instanceof Class_ && ApplicationProperty.PreferencesHighlighClassPreferences.isTrue() ? "&hc=1" : "") +
+    					(tp.getOwner() != null && tp.getOwner() instanceof Class_ && highlightClassPrefs ? "&hc=1" : "") +
     					"' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">&nbsp;");
         	}
 			if (i.hasNext()) sb.append("<br>");
@@ -254,6 +258,10 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	return (htmlForPrefs(null, effectivePreferences(type), false, false, null, null));
     }
     
+    public String getEffectivePrefHtmlForPrefType(Class type, boolean highlightClassPrefs){
+    	return (htmlForPrefs(null, effectivePreferences(type), false, false, null, null, highlightClassPrefs));
+    }
+    
     public String getEffectivePrefHtmlForPrefType(Class type, boolean timeVertical, boolean gridAsText, String timeGridSize){
     	return (htmlForPrefs(null, effectivePreferences(type), timeVertical, gridAsText, timeGridSize, null));
     }
@@ -261,9 +269,17 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     public String getEffectivePrefHtmlForPrefType(Class type, String nameFormat){
     	return (htmlForPrefs(null, effectivePreferences(type), false, false, null, nameFormat));
     }
+    
+    public String getEffectivePrefHtmlForPrefType(Class type, String nameFormat, boolean highlightClassPrefs){
+    	return (htmlForPrefs(null, effectivePreferences(type), false, false, null, nameFormat, highlightClassPrefs));
+    }
 
     public String getEffectivePrefHtmlForPrefType(Assignment assignment, Class type, boolean timeVertical, boolean gridAsText, String timeGridSize){
     	return (htmlForPrefs(assignment, effectivePreferences(type), timeVertical, gridAsText, timeGridSize, null));
+    }
+    
+    public String getEffectivePrefHtmlForPrefType(Assignment assignment, Class type, boolean timeVertical, boolean gridAsText, String timeGridSize, boolean highlightClassPrefs){
+    	return (htmlForPrefs(assignment, effectivePreferences(type), timeVertical, gridAsText, timeGridSize, null, highlightClassPrefs));
     }
 
     public Class getInstanceOf() {
