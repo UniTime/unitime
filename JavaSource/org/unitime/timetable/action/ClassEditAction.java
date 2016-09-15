@@ -238,7 +238,7 @@ public class ClassEditAction extends PreferencesAction {
         	sessionContext.checkPermission(c, Right.ClassEditClearPreferences);
 
             Set s = c.getPreferences();
-            doClear(s, Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING);
+            doClear(s, Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING, Preference.Type.DATE);
             c.setPreferences(s);
             cdao.update(c);
             op = "init";
@@ -279,14 +279,14 @@ public class ClassEditAction extends PreferencesAction {
             	try {
                     // Clear all old prefs
                     Set s = c.getPreferences();
-                    doClear(s, Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING);
+                    doClear(s, Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING, Preference.Type.DATE);
 
                     // Save class data
                     doUpdate(request, frm, c, hibSession);
 
                     // Save Prefs
                     super.doUpdate(request, frm, c, s, timeVertical,
-                    		Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING);
+                    		Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING, Preference.Type.DATE);
                     
                     hibSession.saveOrUpdate(c);
 

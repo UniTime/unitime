@@ -186,7 +186,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         	sessionContext.checkPermission(ss, Right.SchedulingSubpartEditClearPreferences);
 
             Set s = ss.getPreferences();
-            super.doClear(s, Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING);
+            super.doClear(s, Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING, Preference.Type.DATE);
             ss.setPreferences(s);
             sdao.update(ss);
 
@@ -427,10 +427,10 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         Set s = ss.getPreferences();
 
         // Clear all old prefs
-        super.doClear(s, Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING);
+        super.doClear(s, Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING, Preference.Type.DATE);
 
         super.doUpdate(request, frm, ss, s, timeVertical,
-        		Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING);
+        		Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING, Preference.Type.DATE);
 
         ss.setAutoSpreadInTime(frm.getAutoSpreadInTime());
         ss.setStudentAllowOverlap(frm.getStudentAllowOverlap());
