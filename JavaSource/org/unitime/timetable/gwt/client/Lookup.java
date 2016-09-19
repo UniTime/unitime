@@ -89,12 +89,13 @@ public class Lookup extends UniTimeDialogBox implements HasValue<PersonInterface
 	
 	public Lookup() {
 		super(true, true);
+		addStyleName("unitime-PeopleLookup");
 		setText(MESSAGES.dialogPeopleLookup());
 		setEscapeToHide(true);
 		iPanel = new VerticalPanel();
 		iPanel.setSpacing(2);
 		iQuery = new AriaTextBox();
-		iQuery.setWidth("400px");
+		iQuery.addStyleName("query");
 		iQuery.setAriaLabel(ARIA.peopleLookupName());
 		HorizontalPanel queryPanel = new HorizontalPanel();
 		Label filterText = new Label(MESSAGES.propName(), false);
@@ -111,7 +112,6 @@ public class Lookup extends UniTimeDialogBox implements HasValue<PersonInterface
 		iPanel.setCellHorizontalAlignment(queryPanel, HasHorizontalAlignment.ALIGN_CENTER);
 		iTable = new UniTimeTable<PersonInterface>();
 		iScroll = new ScrollPanel(iTable);
-		iScroll.setSize("800px", "500px");
 		iScroll.setStyleName("unitime-ScrollPanel");
 		iPanel.add(iScroll);
 		setWidget(iPanel);

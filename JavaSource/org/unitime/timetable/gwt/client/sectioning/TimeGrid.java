@@ -41,6 +41,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
@@ -68,6 +69,7 @@ public class TimeGrid extends Composite {
 	private P iWorkingHours;
 	private ScrollPanel iScrollPanel;
 	private ImageLink iCalendar = null;
+	private P[][] iTimeIntervals = new P[24][4];
 	
 	private ArrayList<ArrayList<Meeting>> iMeetings = new ArrayList<ArrayList<Meeting>>();
 	@SuppressWarnings("unchecked")
@@ -87,17 +89,17 @@ public class TimeGrid extends Composite {
 	private ArrayList<BusyPanel> iBusy = new ArrayList<BusyPanel>();
 	
 	public TimeGrid() {
-		this(new ColorProvider(), 5, 900 / 5, false, 0, 24);
+		this(new ColorProvider());
 	}
 	
 	public TimeGrid(ColorProvider color) {
-		this(color, 5, 900 / 5, false, 0, 24);
+		this(color, 5, Math.min(900, Window.getClientWidth() - 60), false, 0, 24);
 	}
 	
-	public TimeGrid(ColorProvider color, int nrDays, int cellWidth, boolean print, int start, int end) {
+	public TimeGrid(ColorProvider color, int nrDays, int width, boolean print, int start, int end) {
 		iColor = color;
 		iNrDays = nrDays;
-		iCellWidth = cellWidth;
+		iCellWidth = width / iNrDays;
 		iStart = start;
 		iEnd = end;
 		iPrint = print;
@@ -141,18 +143,18 @@ public class TimeGrid extends Composite {
 		for (int i = iStart; i < iEnd; i++) {
 			
 			//create major interval
-			P sp1 = new P("major-time-interval");
-			iGrid.add(sp1, 0, 50 * (i - iStart));
+			iTimeIntervals[i][0] = new P("major-time-interval");
+			iGrid.add(iTimeIntervals[i][0], 0, 50 * (i - iStart));
 
-			P sp3 = new P("dummy-time-interval");
-			sp3.setText(CONSTANTS.useAmPm() ? (i == 0 ? "12am": i <= 11 ? i + "am" : i == 12 ? "12pm" : (i-12) + "pm") : String.valueOf(i));
-			iTimes.add(sp3, 0, 50 * (i - iStart));
+			iTimeIntervals[i][2] = new P("dummy-time-interval");
+			iTimeIntervals[i][2].setText(CONSTANTS.useAmPm() ? (i == 0 ? "12am": i <= 11 ? i + "am" : i == 12 ? "12pm" : (i-12) + "pm") : String.valueOf(i));
+			iTimes.add(iTimeIntervals[i][2], 0, 50 * (i - iStart));
 
-			P sp2 = new P("minor-time-interval");
-			iGrid.add(sp2, 0, 50 * (i - iStart) + 25);
+			iTimeIntervals[i][1] = new P("minor-time-interval");
+			iGrid.add(iTimeIntervals[i][1], 0, 50 * (i - iStart) + 25);
 			
-			P sp4 = new P("dummy-time-interval");
-			iTimes.add(sp4, 0, 50 * (i - iStart) + 25);			
+			iTimeIntervals[i][3] = new P("dummy-time-interval");
+			iTimes.add(iTimeIntervals[i][3], 0, 50 * (i - iStart) + 25);
 		}
 
 		for (int day = 0; day < iNrDays; day++) {
@@ -200,10 +202,10 @@ public class TimeGrid extends Composite {
 			iCalendar.setUrl(url);
 	}
 	
-	public Widget getPrintWidget() {
+	public Widget getPrintWidget(int width) {
 		int firstHour = firstSlot() / 12;
 		int lastHour = 1 + lastSlot() / 12;
-		TimeGrid tg = new TimeGrid(iColor, iNrDays, iCellWidth, true, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
+		TimeGrid tg = new TimeGrid(iColor, iNrDays, width, true, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
 		int i = 0;
 		for (ClassAssignmentInterface.ClassAssignment c: iClasses)
 			for (Meeting m : tg.addClass(c, i++)) {
@@ -216,13 +218,17 @@ public class TimeGrid extends Composite {
 		return tg;
 	}
 	
-	public void setNrDays(int days) {
-		if (iNrDays == days) return;
-		iNrDays = days;
-		iCellWidth = 900 / days;
-		iContainer.setWidth(40 + iNrDays * iCellWidth);
+	public void shrink(int days, int start, int end) {
+		int cellWidth = Math.min(900, Window.getClientWidth() - 60) / days;
+		if (iNrDays == days && iStart == start && iEnd == end && iCellWidth == cellWidth) return;
+		iNrDays = days; iStart = start; iEnd = end; iCellWidth = cellWidth;
+		iDock.setHeight(50 * (iEnd - iStart) + 5);
+		iContainer.setSize(40 + iNrDays * iCellWidth, iPrint ? 25 + 50 * (iEnd - iStart) : 575);
 		iHeader.setWidth(iNrDays * iCellWidth);
-		iPanel.setWidth(iNrDays * iCellWidth);
+		iPanel.setSize(iNrDays * iCellWidth + 5, 50 * (iEnd - iStart));
+		iTimes.setHeight(50 * (iEnd - iStart));
+		iWorkingHours.getElement().getStyle().setTop(375 - (50 * iStart), Unit.PX);
+		iWorkingHours.setWidth(iCellWidth * 5);
 		// iScrollPanel.setWidth(String.valueOf(iNrDays * iCellWidth + 30 + ToolBox.getScrollBarWidth()));
 		for (int day = 0; day < 7; day++) {
 			if (day < days) {
@@ -236,6 +242,18 @@ public class TimeGrid extends Composite {
 			} else {
 				if (iSeparators[day] != null) 
 					iSeparators[day].setVisible(false);
+			}
+		}
+		for (int i = 0; i < 24; i++) {
+			if (i < start || i >= end) {
+				for (int j = 0; j < 4; j++)
+					if (iTimeIntervals[i][j] != null) iTimeIntervals[i][j].setVisible(false); 
+			} else {
+				for (int j = 0; j < 4; j++)
+					if (iTimeIntervals[i][j] != null) {
+						iTimeIntervals[i][j].getElement().getStyle().setTop(50 * (i - iStart) + (j == 1 || j == 3 ? 25 : 0), Unit.PX);
+						iTimeIntervals[i][j].setVisible(true);
+					}
 			}
 		}
 		iHeader.clear();
@@ -282,9 +300,13 @@ public class TimeGrid extends Composite {
 			if (busy.getDay() == 5) hasSat = true;
 			if (busy.getDay() == 6) hasSun = true;
 		}
-		if (!hasSat && !hasSun) setNrDays(5);
-		else if (!hasSun) setNrDays(6);
-		else setNrDays(7);
+		int firstHour = firstSlot() / 12;
+		if (firstHour > 7) firstHour = 7;
+		int lastHour = 1 + lastSlot() / 12;
+		if (lastHour < 18) lastHour = 18;
+		if (!hasSat && !hasSun) shrink(5, firstHour, lastHour);
+		else if (!hasSun) shrink(6, firstHour, lastHour);
+		else shrink(7, firstHour, lastHour);
 	}
 	
 	public int getWidth() {
@@ -300,13 +322,16 @@ public class TimeGrid extends Composite {
 	}
 	
 	public void scrollDown() {
-		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-			@Override
-			public void execute() {
-				if (iScrollPanel != null)
-					iScrollPanel.setVerticalScrollPosition(350);
-			}
-		});
+		if (iStart < 7) {
+			final int pos = (7 - iStart) * 50;
+			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+				@Override
+				public void execute() {
+					if (iScrollPanel != null)
+						iScrollPanel.setVerticalScrollPosition(pos);
+				}
+			});
+		}
 	}
 	
 	public void clear(boolean clearColors) {
@@ -503,7 +528,7 @@ public class TimeGrid extends Composite {
 
 	public class Meeting extends AbsolutePanel {
 		private int iIndex, iColumn, iDay, iNrColumns;
-		private int iLeft, iWidth;
+		private int iLeft, iWidth, iStartSlot;
 		private boolean iPinned = false;
 		private Image iPin;
 		private ArrayList<Meeting> iMeetings;
@@ -516,6 +541,7 @@ public class TimeGrid extends Composite {
 			iMeetings = meetings;
 			iIndex = index;
 			iDay = day;
+			iStartSlot = start;
 			iColumn = column;
 			iNrColumns = nrColumns;
 	    	iHeaderPanel = new HorizontalPanel();
@@ -666,6 +692,7 @@ public class TimeGrid extends Composite {
 	        iLeft = 4 + iCellWidth * iDay + iColumn * (iCellWidth - 6) / iNrColumns;
 			getElement().getStyle().setWidth(iWidth, Unit.PX);
 			getElement().getStyle().setLeft(iLeft, Unit.PX);
+			getElement().getStyle().setTop(1 + 125 * iStartSlot / 30 - 50 * iStart, Unit.PX);
 		}
 		
 		public void setTitle(String title) {

@@ -25,8 +25,8 @@ import java.util.Collection;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaTextBox;
-import org.unitime.timetable.gwt.client.widgets.HorizontalPanelWithHint;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
@@ -48,12 +48,15 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Overflow;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.dom.client.MouseMoveEvent;
+import com.google.gwt.event.dom.client.MouseMoveHandler;
+import com.google.gwt.event.dom.client.MouseOutEvent;
+import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.user.client.Command;
@@ -64,14 +67,11 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * @author Tomas Muller
@@ -101,10 +101,10 @@ public class SuggestionsBox extends UniTimeDialogBox {
 	private AriaTextBox iFilter;
 	private int iIndex;
 	private CourseRequestInterface iRequest;
-	private HorizontalPanelWithHint iFilterPanel;
 	private AriaButton iSearch;
 	private boolean iOnline;
 	private AriaButton iQuickDrop;
+	private F iFilterPanel;
 	
 	private TimeGrid iGrid;
 	private PopupPanel iHint;
@@ -114,6 +114,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 	
 	public SuggestionsBox(TimeGrid.ColorProvider color, boolean online) {
 		super(true, false);
+		addStyleName("unitime-SuggestionsBox");
 		
 		iOnline = online;
 		
@@ -123,35 +124,28 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		setGlassEnabled(true);
 		setModal(false);
 		
-		VerticalPanel suggestionPanel = new VerticalPanel();
-		suggestionPanel.setSpacing(5);
+		P panel = new P("panel");
 		
-		iFilterPanel = new HorizontalPanelWithHint(new HTML(MESSAGES.suggestionsFilterHint(), false));
-		iFilterPanel.setSpacing(3);
-		
-		Label filterLabel = new Label("Filter:");
-		iFilterPanel.add(filterLabel);
-		iFilterPanel.setCellVerticalAlignment(filterLabel, HasVerticalAlignment.ALIGN_MIDDLE);
+		iFilterPanel = new F(new HTML(MESSAGES.suggestionsFilterHint(), false), "filter");
+		P label = new P("label");
+		label.setText(MESSAGES.filter());
+		iFilterPanel.add(label);
 		
 		iFilter = new AriaTextBox();
 		iFilter.setStyleName("gwt-SuggestBox");
-		iFilter.getElement().getStyle().setWidth(600, Unit.PX);
-		iFilter.getElement().getStyle().setHeight(26, Unit.PX);
-		iFilterPanel.add(iFilter);
 		
 		HTML ariaDescription = new HTML(MESSAGES.suggestionsFilterHint(), false);
 		ariaDescription.setStyleName("unitime-AriaHiddenLabel");
 		ariaDescription.getElement().setId(DOM.createUniqueId());
 		iFilterPanel.add(ariaDescription);
-		Roles.getTextboxRole().setAriaDescribedbyProperty(iFilter.getElement(), Id.of(ariaDescription.getElement()));
+		Roles.getTextboxRole().setAriaDescribedbyProperty(iFilterPanel.getElement(), Id.of(ariaDescription.getElement()));
 		
+		P buttons = new P("buttons");
 		iSearch = new AriaButton(MESSAGES.buttonSearch());
-		iFilterPanel.add(iSearch);
-		iFilterPanel.setCellVerticalAlignment(iSearch, HasVerticalAlignment.ALIGN_MIDDLE);
-
+		buttons.add(iSearch);
+		
 		iQuickDrop = new AriaButton();
-		iFilterPanel.add(iQuickDrop);
-		iFilterPanel.setCellVerticalAlignment(iQuickDrop, HasVerticalAlignment.ALIGN_MIDDLE);
+		buttons.add(iQuickDrop);
 		iQuickDrop.setVisible(false);
 		iQuickDrop.setEnabled(false);
 		iQuickDrop.addClickHandler(new ClickHandler() {
@@ -175,44 +169,43 @@ public class SuggestionsBox extends UniTimeDialogBox {
 					h.onQuickDrop(e);
 			}
 		});
+		iFilterPanel.add(buttons);
+		
+		P text = new P(DOM.createSpan(), "text"); text.add(iFilter);
+		iFilterPanel.add(text);
 
-		suggestionPanel.add(iFilterPanel);
-		suggestionPanel.setCellHorizontalAlignment(iFilterPanel, HasHorizontalAlignment.ALIGN_CENTER);
+		panel.add(iFilterPanel);
 
 		iSuggestions = new WebTable();
 		iSuggestions.setHeader(new WebTable.Row(
-				new WebTable.Cell("", 1, "10px"),
-				new WebTable.Cell(MESSAGES.colSubject(), 1, "50px"),
-				new WebTable.Cell(MESSAGES.colCourse(), 1, "50px"),
-				new WebTable.Cell(MESSAGES.colSubpart(), 1, "40px"),
-				new WebTable.Cell(MESSAGES.colClass(), 1, "40px"),
-				new WebTable.Cell(MESSAGES.colTime(), 1, "75px").aria(ARIA.colTimeCurrent()),
-				new WebTable.Cell("", 1, "1px").aria(ARIA.colTimeNew()),
-				new WebTable.Cell(MESSAGES.colDate(), 1, "50px").aria(ARIA.colDateCurrent()),
-				new WebTable.Cell("", 1, "1px").aria(ARIA.colDateNew()),
-				new WebTable.Cell(MESSAGES.colRoom(), 1, "50px").aria(ARIA.colRoomCurrent()),
-				new WebTable.Cell("", 1, "1px").aria(ARIA.colRoomNew()),
-				new WebTable.Cell(MESSAGES.colInstructor(), 1, "100px"),
-				new WebTable.Cell(MESSAGES.colParent(), 1, "50px"),
-				new WebTable.Cell(MESSAGES.colIcons(), 1, "10px")
+				new WebTable.Cell(""),
+				new WebTable.Cell(MESSAGES.colSubject()),
+				new WebTable.Cell(MESSAGES.colCourse()),
+				new WebTable.Cell(MESSAGES.colSubpart()),
+				new WebTable.Cell(MESSAGES.colClass()),
+				new WebTable.Cell(MESSAGES.colTime()).aria(ARIA.colTimeCurrent()),
+				new WebTable.Cell("").aria(ARIA.colTimeNew()),
+				new WebTable.Cell(MESSAGES.colDate()).aria(ARIA.colDateCurrent()),
+				new WebTable.Cell("").aria(ARIA.colDateNew()),
+				new WebTable.Cell(MESSAGES.colRoom()).aria(ARIA.colRoomCurrent()),
+				new WebTable.Cell("").aria(ARIA.colRoomNew()),
+				new WebTable.Cell(MESSAGES.colInstructor()),
+				new WebTable.Cell(MESSAGES.colParent()),
+				new WebTable.Cell(MESSAGES.colIcons())
 			));
 		iSuggestions.setSelectSameIdRows(true);
 		iSuggestions.setEmptyMessage(MESSAGES.suggestionsLoading());
-		iSuggestions.setWidth("100%");
 		iSuggestionsScroll = new ScrollPanel(iSuggestions);
-		iSuggestionsScroll.getElement().getStyle().setHeight(400, Unit.PX);
 		iSuggestionsScroll.setStyleName("unitime-ScrollPanel");
-		suggestionPanel.add(iSuggestionsScroll);
+		panel.add(iSuggestionsScroll);
 
 		iLegend = new HTML();
-		iLegend.setStyleName("unitime-SuggestionsLegend");
-		suggestionPanel.add(iLegend);
-		suggestionPanel.setCellHorizontalAlignment(iLegend, HasHorizontalAlignment.ALIGN_CENTER);
+		iLegend.setStyleName("legend");
+		panel.add(iLegend);
 
 		iMessages = new HTML();
-		iMessages.setStyleName("unitime-SuggestionsMessage");
-		suggestionPanel.add(iMessages);
-		suggestionPanel.setCellHorizontalAlignment(iMessages, HasHorizontalAlignment.ALIGN_CENTER);
+		iMessages.setStyleName("message");
+		panel.add(iMessages);
 		
 		iCallback = new AsyncCallback<Collection<ClassAssignmentInterface>>() {
 			public void onFailure(Throwable caught) {
@@ -580,7 +573,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 							}
 						}
 					}
-					TimeGrid w = (TimeGrid)iGrid.getPrintWidget();
+					TimeGrid w = (TimeGrid)iGrid.getPrintWidget(Math.min(900, Window.getClientWidth()));
 					w.addStyleName("unitime-SuggestionsHintWidget");
 					iHint.setWidget(new SimplePanel(w));
 					iHint.setSize((w.getWidth() / 2) + "px", (w.getHeight() / 2) + "px");
@@ -632,7 +625,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 			}
 		});
 		
-		setWidget(suggestionPanel);
+		setWidget(panel);
 	}
 
 	@Override
@@ -887,5 +880,58 @@ public class SuggestionsBox extends UniTimeDialogBox {
 
 	public void addQuickDropHandler(QuickDropHandler h) {
 		iQuickDropHandlers.add(h);
+	}
+	
+	public static class F extends P {
+		private PopupPanel iHint = null;
+		private Timer iShowHint, iHideHint = null;
+
+		public F(Widget hint, String... styles) {
+			super(styles);
+			iHint = new PopupPanel();
+			iHint.setWidget(hint);
+			iHint.setStyleName("unitime-PopupHint");
+			addMouseMoveHandler(new MouseMoveHandler() {
+				@Override
+				public void onMouseMove(MouseMoveEvent event) {
+					int x = 10 + event.getClientX() + getElement().getOwnerDocument().getScrollLeft();
+					int y = 10 + event.getClientY() + getElement().getOwnerDocument().getScrollTop();
+					if (iHint.isShowing()) {
+						iHint.setPopupPosition(x, y);
+					} else {
+						iShowHint.cancel();
+						iHint.setPopupPosition(x, y);
+						iShowHint.schedule(1000);
+					}
+				}
+			});
+			addMouseOutHandler(new MouseOutHandler() {
+				@Override
+				public void onMouseOut(MouseOutEvent event) {
+					iShowHint.cancel();
+					if (iHint.isShowing())
+						iHideHint.schedule(1000);					
+				}
+			});
+			iShowHint = new Timer() {
+				@Override
+				public void run() {
+					iHint.show();
+				}
+			};
+			iHideHint = new Timer() {
+				@Override
+				public void run() {
+					iHint.hide();
+				}
+			};
+		}
+		
+		public void hideHint() {
+			iShowHint.cancel();
+			if (iHint.isShowing()) {
+				iHint.hide();
+			}
+		}
 	}
 }

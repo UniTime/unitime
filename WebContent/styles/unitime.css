@@ -4631,20 +4631,21 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-CourseFinderDialog .filter {
 	width: 780px;
+	padding: 2px;
 }
 
 .unitime-CourseFinderDialog .filter .text {
 	overflow: auto;
-	height: 24px;
 }
 
 .unitime-CourseFinderDialog .filter .gwt-SuggestBox {
 	width: 99%;
-	margin: 2px;
+	height: 24px;
 }
 
 .unitime-CourseFinderDialog .filter .button {
 	float: right;
+	margin-left: 3px;
 }
 
 .unitime-CourseFinderDialog .filter .button .gwt-Button {
@@ -4674,6 +4675,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-CourseSelectionBox .gwt-SuggestBox {
 	vertical-align: top;
 	height: 22px;
+	border-radius: 0;
 }
 
 .unitime-CourseSelectionBox .unitime-ImageButton {
@@ -4684,6 +4686,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-CourseSelectionBox .unitime-TextBoxHint {
 	vertical-align: top;
 	height: 22px;
+	border-radius: 0;
 }
 
 .unitime-CourseSelectionBox .error {
@@ -4716,6 +4719,9 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-CourseRequests .line {
 	overflow: hidden;
+	text-align: justify;
+	text-align-last: right;
+	-moz-text-align-last: right;
 }
 
 .unitime-CourseRequests .line .title {
@@ -4730,6 +4736,18 @@ unitime-RoomSharingWidget .legend .blank {
 	display: inline-block;
 	padding: 2px;
 	vertical-align: top;
+}
+
+.unitime-CourseRequests .line .gwt-SuggestBox {
+	 text-align: left;
+	 text-align-last: left;
+	-moz-text-align-last: left;
+}
+
+.unitime-CourseRequests .line .unitime-TextBoxHint {
+	 text-align: left;
+	 text-align-last: left;
+	-moz-text-align-last: left;
 }
 
 .unitime-CourseRequests .line .course .gwt-SuggestBox {
@@ -4757,7 +4775,6 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-CourseRequests .buttons {
 	display: inline-block;
 	white-space: nowrap;
-	float: right;
 }
 
 .unitime-CourseRequests .line .wait-list {
@@ -4815,4 +4832,125 @@ unitime-RoomSharingWidget .legend .blank {
 	text-align: center;
 	overflow: hidden;
 	padding-top: 3px;
+}
+
+.unitime-SchedulingAssistantButtons {
+	width: 100%;
+	overflow: hidden;
+	font-size: 1em;
+	font-weight: bold;
+	color: black;
+	padding-top: 5px;
+	text-align: right;
+}
+
+.unitime-SchedulingAssistantButtons .left-panel {
+	float: left;
+}
+
+.unitime-SchedulingAssistantButtons .right-panel {
+	float: right;
+}
+
+.unitime-Panel {
+}
+
+.unitime-Panel .body {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.unitime-Panel .footer {
+	overflow: hidden;
+	text-align: center;
+}
+
+.unitime-Panel .footer .left {
+	float: left;
+}
+
+.unitime-Panel .footer .right {
+	float: right;
+}
+
+.unitime-Panel .footer .center {
+	width: 100%;
+}
+
+.unitime-SuggestionsBox {
+}
+
+.unitime-SuggestionsBox .panel {
+	margin: auto;
+	max-width: 780px;
+}
+
+.unitime-SuggestionsBox .filter {
+	display: block;
+	width: 90%;
+	overflow: hidden;
+	margin: auto;
+	padding: 2px;
+}
+
+.unitime-SuggestionsBox .filter .label {
+	margin: 3px 2px 0px 2px;
+	float: left;
+}
+
+.unitime-SuggestionsBox .filter .buttons {
+	float: right;
+}
+
+.unitime-SuggestionsBox .filter .buttons .gwt-Button {
+	margin-left: 3px;
+	padding: 2px;
+}
+
+.unitime-SuggestionsBox .filter .text {
+	overflow: hidden;
+	display: block;
+}
+
+.unitime-SuggestionsBox .filter .text .gwt-SuggestBox {
+	width: 100%;
+	height: 25px;
+}
+
+.unitime-SuggestionsBox .unitime-ScrollPanel {
+	height: 400px;
+}
+
+.unitime-SuggestionsBox .unitime-ScrollPanel .unitime-WebTable {
+	width: 100%;
+}
+
+.unitime-SuggestionsBox .legend {
+	font-style: italic;
+	color: black;
+	text-align: center;
+	margin-top: -2px;
+	margin-bottom: 5px;
+	white-space: normal;
+}
+
+.unitime-SuggestionsBox .legend .item {
+	white-space: nowrap;
+	display: inline-block;
+	padding-left: 5px;
+}
+
+.unitime-SuggestionsBox .message {
+	color: red;
+	white-space: normal;
+}
+
+.unitime-PeopleLookup .query {
+	width: 400px;
+}
+
+.unitime-PeopleLookup .unitime-ScrollPanel {
+	width: 800px;
+	height: 500px;
 }

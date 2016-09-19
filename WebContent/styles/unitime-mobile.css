@@ -354,6 +354,14 @@
 		float: right;
 	}
 	
+	.unitime-PageHeader .title {
+		white-space: normal;
+	}
+	
+	.unitime-PageHeader .title .text {
+		white-space: normal;
+	}
+	
 	.unitime-Page {
 		min-width: inherit;
 		width: 100%;
@@ -445,22 +453,64 @@
 	}
 	
 	.unitime-CourseRequests .line .course .gwt-SuggestBox {
-		width: 31vw;
-		min-width: 200px;
+		width: 32vw;
+		min-width: 170px;
 	}
 	
 	.unitime-CourseRequests .line .course .unitime-TextBoxHint {
-		width: 31vw;
-		min-width: 200px;
+		width: 32vw;
+		min-width: 170px;
 	}
 
 	.unitime-CourseRequests .line .alternative .gwt-SuggestBox {
-		width: 16vw;
+		width: 19vw;
 		min-width: 100px;
 	}
 
 	.unitime-CourseRequests .line .alternative .unitime-TextBoxHint {
-		width: 16vw;
+		width: 19vw;
 		min-width: 100px;
+	}
+	
+	.unitime-CourseRequests .tip {
+		white-space: normal;
+	}
+	
+	.unitime-CourseRequests .alt-header .title {
+		display: inline-block;
+	}
+
+	.unitime-CourseRequests .alt-header .note {
+		display: inline-block;
+		white-space: normal;
+	}
+	
+	.unitime-ClassScheduleTabPanel .unitime-ScrollPanel {
+		width: 95%;
+	}
+	
+	.unitime-ClassScheduleTabPanel {
+		width: 100vw;
+	}
+	
+	.unitime-SchedulingAssistantButtons {
+		width: 100vw;
+	}
+	
+	.unitime-SuggestionsBox .panel {
+		width: 90vw;
+	}
+	
+	.unitime-SuggestionsBox .unitime-ScrollPanel {
+		height: 70vw;
+	}
+	
+	.unitime-PeopleLookup .query {
+		width: 50vw;
+	}
+
+	.unitime-PeopleLookup .unitime-ScrollPanel {
+		width: 90vw;
+		height: 80vw;
 	}
 }

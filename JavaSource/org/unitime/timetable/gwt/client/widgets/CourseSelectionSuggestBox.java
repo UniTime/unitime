@@ -118,7 +118,7 @@ public class CourseSelectionSuggestBox extends P implements CourseSelection {
 					super.requestDefaultSuggestions(request, callback);
 				
 			}
-			public boolean isDisplayStringHTML() { return true; }			
+			public boolean isDisplayStringHTML() { return true; }
 		};
 		
 		iSuggest = new AriaSuggestBox(courseOfferingOracle);

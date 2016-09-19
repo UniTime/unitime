@@ -91,7 +91,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockPanel;
-import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasValue;
@@ -100,6 +99,7 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -118,7 +118,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private UserAuthenticationProvider iUserAuthentication;
 	
 	private VerticalPanel iPanel;
-	private HorizontalPanel iFooter;
+	private P iFooter;
 	private AriaButton iRequests, iReset, iSchedule, iEnroll, iPrint, iExport = null, iSave, iStartOver, iDegreePlan;
 	private AriaTabBar iAssignmentTab;
 	private DockPanel iAssignmentDock;
@@ -193,11 +193,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		
 		iPanel.add(iCourseRequests);
 		
-		iFooter = new HorizontalPanel();
-		iFooter.setStyleName("unitime-MainTableBottomHeader");
-		iFooter.setWidth("100%");
+		iFooter = new P("unitime-SchedulingAssistantButtons");
 		
-		HorizontalPanel leftFooterPanel = new HorizontalPanel();
+		P leftFooterPanel = new P("left-panel");
 		iDegreePlan = new AriaButton(MESSAGES.buttonDegreePlan());
 		iDegreePlan.setTitle(MESSAGES.hintDegreePlan());
 		iDegreePlan.setVisible(false);
@@ -218,9 +216,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		leftFooterPanel.add(iReset);
 		iFooter.add(leftFooterPanel);
 
-		HorizontalPanel rightFooterPanel = new HorizontalPanel();
+		P rightFooterPanel = new P("right-panel");
 		iFooter.add(rightFooterPanel);
-		iFooter.setCellHorizontalAlignment(rightFooterPanel, HasHorizontalAlignment.ALIGN_RIGHT);
 		
 		iStartOver = new AriaButton(MESSAGES.buttonStartOver());
 		iStartOver.setTitle(MESSAGES.hintStartOver());
@@ -282,7 +279,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				getQuickAddFinder().findCourse();
 			}
 		});
-		iQuickAdd.getElement().getStyle().setMarginTop(3, Unit.PX);
 		iQuickAdd.setEnabled(false);
 		iQuickAdd.setVisible(false);
 		
@@ -414,42 +410,45 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 
 		iAssignments = new WebTable();
 		iAssignments.setHeader(new WebTable.Row(
-				new WebTable.Cell(MESSAGES.colLock(), 1, "15px"),
-				new WebTable.Cell(MESSAGES.colSubject(), 1, "40px"),
-				new WebTable.Cell(MESSAGES.colCourse(), 1, "40px"),
-				new WebTable.Cell(MESSAGES.colSubpart(), 1, "30px"),
-				new WebTable.Cell(MESSAGES.colClass(), 1, "50px"),
-				new WebTable.Cell(MESSAGES.colLimit(), 1, "30px").aria(ARIA.colLimit()),
-				new WebTable.Cell(MESSAGES.colDays(), 1, "30px"),
-				new WebTable.Cell(MESSAGES.colStart(), 1, "40px"),
-				new WebTable.Cell(MESSAGES.colEnd(), 1, "40px"),
-				new WebTable.Cell(MESSAGES.colDate(), 1, "50px"),
-				new WebTable.Cell(MESSAGES.colRoom(), 1, "80px"),
-				new WebTable.Cell(MESSAGES.colInstructor(), 1, "80px"),
-				new WebTable.Cell(MESSAGES.colParent(), 1, "80px"),
-				new WebTable.Cell(MESSAGES.colNote(), 1, "50px"),
-				new WebTable.Cell(MESSAGES.colCredit(), 1, "30px"),
-				(iCalendar != null ? new WebTable.WidgetCell(iCalendar, MESSAGES.colIcons(), 1, "1px") : new WebTable.Cell(MESSAGES.colIcons(), 1, "1px"))
+				new WebTable.Cell(MESSAGES.colLock(), 1, "2%"),
+				new WebTable.Cell(MESSAGES.colSubject(), 1, "6%"),
+				new WebTable.Cell(MESSAGES.colCourse(), 1, "6%"),
+				new WebTable.Cell(MESSAGES.colSubpart(), 1, "4%"),
+				new WebTable.Cell(MESSAGES.colClass(), 1, "7%"),
+				new WebTable.Cell(MESSAGES.colLimit(), 1, "4%").aria(ARIA.colLimit()),
+				new WebTable.Cell(MESSAGES.colDays(), 1, "4%"),
+				new WebTable.Cell(MESSAGES.colStart(), 1, "6%"),
+				new WebTable.Cell(MESSAGES.colEnd(), 1, "6%"),
+				new WebTable.Cell(MESSAGES.colDate(), 1, "7%"),
+				new WebTable.Cell(MESSAGES.colRoom(), 1, "12%"),
+				new WebTable.Cell(MESSAGES.colInstructor(), 1, "12%"),
+				new WebTable.Cell(MESSAGES.colParent(), 1, "12%"),
+				new WebTable.Cell(MESSAGES.colNote(), 1, "7%"),
+				new WebTable.Cell(MESSAGES.colCredit(), 1, "4%"),
+				(iCalendar != null ? new WebTable.WidgetCell(iCalendar, MESSAGES.colIcons(), 1, "1%") : new WebTable.Cell(MESSAGES.colIcons(), 1, "1%"))
 			));
 		iAssignments.setWidth("100%");
 		iAssignments.setEmptyMessage(MESSAGES.emptySchedule());
 		
-		final FlexTable vp = new FlexTable();
-		vp.setCellPadding(0); vp.setCellSpacing(0);
-		vp.setWidget(0, 0, iAssignments);
-		vp.getFlexCellFormatter().setColSpan(0, 0, 3);
+		ScrollPanel assignmentsPanel = new ScrollPanel(iAssignments);
+		assignmentsPanel.setStyleName("body");
 		
-		iTotalCredit = new Label();
-		iTotalCredit.getElement().getStyle().setMarginTop(2, Unit.PX);
-		vp.setWidget(1, 0, iQuickAdd);
-		vp.setWidget(1, 1, iTotalCredit);
+		final P panel = new P("unitime-Panel");
+		panel.add(assignmentsPanel);
+		
+		iTotalCredit = new Label("", false);
 		iShowUnassignments = new CheckBox(MESSAGES.showUnassignments());
-		iShowUnassignments.getElement().getStyle().setMarginTop(2, Unit.PX);
-		vp.setWidget(1, 2, iShowUnassignments);
-		vp.getFlexCellFormatter().setHorizontalAlignment(1, 1, HasHorizontalAlignment.ALIGN_CENTER);
-		vp.getFlexCellFormatter().setHorizontalAlignment(1, 2, HasHorizontalAlignment.ALIGN_RIGHT);
-		for (int i = 0; i < 3; i++)
-			vp.getFlexCellFormatter().getElement(1, i).getStyle().setWidth(33, Unit.PCT);
+		iQuickAdd.addStyleName("left");
+		P bottom = new P("footer");
+		iTotalCredit.addStyleName("center");
+		iTotalCredit.getElement().getStyle().setMarginTop(3, Unit.PX);
+		iShowUnassignments.addStyleName("right");
+		iShowUnassignments.getElement().getStyle().setMarginTop(3, Unit.PX);
+		bottom.add(iQuickAdd);
+		bottom.add(iShowUnassignments);
+		bottom.add(iTotalCredit);
+		panel.add(bottom);
+
 		iShowUnassignments.setVisible(false);
 		String showUnassignments = Cookies.getCookie("UniTime:Unassignments");
 		iShowUnassignments.setValue(showUnassignments == null || "1".equals(showUnassignments));
@@ -468,7 +467,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			@Override
 			public void onSelection(SelectionEvent<Integer> event) {
 				if (event.getSelectedItem() == 0) {
-					iAssignmentPanel.setWidget(vp);
+					iAssignmentPanel.setWidget(panel);
 					AriaStatus.getInstance().setHTML(ARIA.listOfClasses());
 				} else {
 					iAssignmentPanel.setWidget(gridPanel);
@@ -485,7 +484,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				});
 			}
 		});
-		iAssignmentPanel = new FocusPanel(vp);
+		iAssignmentPanel = new FocusPanel(panel);
 		iAssignmentPanel.setStyleName("unitime-ClassScheduleTabPanel");
 		iAssignmentPanel.addStyleName("unitime-FocusPanel");
 		
@@ -778,7 +777,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				ToolBox.print((allSaved && !isChanged() ? MESSAGES.studentSchedule() : MESSAGES.studentScheduleNotEnrolled()),
 						(CONSTANTS.printReportShowUserName() ? iUserAuthentication.getUser() : ""),
 						iSessionSelector.getAcademicSessionName(),
-						iAssignmentGrid.getPrintWidget(),
+						iAssignmentGrid.getPrintWidget(900),
 						w,
 						iStatus);
 			}
