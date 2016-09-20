@@ -45,7 +45,6 @@ import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreePlaceHolderInt
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -112,8 +111,6 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 		for (CourseFinderCourseDetails detail: iDetails) {
 			ScrollPanel panel = new ScrollPanel(detail.asWidget());
 			panel.setStyleName("unitime-ScrollPanel-inner");
-			panel.getElement().getStyle().setWidth(786, Unit.PX);
-			panel.getElement().getStyle().setHeight(200, Unit.PX);
 			iCourseDetailsTabPanel.add(panel, detail.getName(), true);
 			Character ch = UniTimeHeaderPanel.guessAccessKey(detail.getName());
 			if (ch != null)

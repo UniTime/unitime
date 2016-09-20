@@ -502,7 +502,7 @@
 	}
 	
 	.unitime-SuggestionsBox .unitime-ScrollPanel {
-		height: 70vw;
+		height: 70vh;
 	}
 	
 	.unitime-PeopleLookup .query {
@@ -511,6 +511,20 @@
 
 	.unitime-PeopleLookup .unitime-ScrollPanel {
 		width: 90vw;
-		height: 80vw;
+		height: 80vh;
+	}
+	
+	.unitime-SelectDegreePlan .plans-table {
+		min-width: 50vw;
+	}
+	
+	.unitime-DegreePlanDialog .plan {
+		width: 90vw;
+		height: 40vh;
+	}
+	
+	.unitime-DegreePlanDialog .unitime-TabPanel {
+		width: 90vw;
+		height: 30vh;
 	}
 }

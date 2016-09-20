@@ -73,25 +73,18 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		setAllowMultiSelect(false);
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		UniTimeTableHeader hIndent = new UniTimeTableHeader("");
-		hIndent.setWidth("16px");
 		header.add(hIndent);
 		UniTimeTableHeader hName = new UniTimeTableHeader(MESSAGES.colDegreeItemName(), 2);
-		hName.setWidth("120px");
 		header.add(hName);
 		UniTimeTableHeader hTitle = new UniTimeTableHeader(MESSAGES.colDegreeItemDescription());
-		hTitle.setWidth("200px");
 		header.add(hTitle);
 		UniTimeTableHeader hLimit = new UniTimeTableHeader(MESSAGES.colLimit());
-		hLimit.setWidth("70px");
 		header.add(hLimit);
 		UniTimeTableHeader hCredit = new UniTimeTableHeader(MESSAGES.colCredit());
-		hCredit.setWidth("50px");
 		header.add(hCredit);
 		UniTimeTableHeader hNote = new UniTimeTableHeader(MESSAGES.colNote());
-		hNote.setWidth("220px");
 		header.add(hNote);
 		UniTimeTableHeader hReq = new UniTimeTableHeader(MESSAGES.colRequestPriority(), 2);
-		hReq.setWidth("70px");
 		header.add(hReq);
 		addRow(null, header);
 	}

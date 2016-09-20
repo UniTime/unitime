@@ -3558,6 +3558,7 @@ unitime-RoomSharingWidget .legend .blank {
 	display: inline-block;
 	vertical-align: top;
 	padding-left: 3px;
+	cursor: pointer;
 }
 
 .unitime-PageHeader .navigation {
@@ -4953,4 +4954,9 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-PeopleLookup .unitime-ScrollPanel {
 	width: 800px;
 	height: 500px;
+}
+
+.unitime-DegreePlanDialog .unitime-TabPanel {
+	width: 786px;
+	height: 200px;
 }
