@@ -410,22 +410,22 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 
 		iAssignments = new WebTable();
 		iAssignments.setHeader(new WebTable.Row(
-				new WebTable.Cell(MESSAGES.colLock(), 1, "2%"),
-				new WebTable.Cell(MESSAGES.colSubject(), 1, "6%"),
-				new WebTable.Cell(MESSAGES.colCourse(), 1, "6%"),
-				new WebTable.Cell(MESSAGES.colSubpart(), 1, "4%"),
-				new WebTable.Cell(MESSAGES.colClass(), 1, "7%"),
-				new WebTable.Cell(MESSAGES.colLimit(), 1, "4%").aria(ARIA.colLimit()),
-				new WebTable.Cell(MESSAGES.colDays(), 1, "4%"),
-				new WebTable.Cell(MESSAGES.colStart(), 1, "6%"),
-				new WebTable.Cell(MESSAGES.colEnd(), 1, "6%"),
-				new WebTable.Cell(MESSAGES.colDate(), 1, "7%"),
-				new WebTable.Cell(MESSAGES.colRoom(), 1, "12%"),
-				new WebTable.Cell(MESSAGES.colInstructor(), 1, "12%"),
-				new WebTable.Cell(MESSAGES.colParent(), 1, "12%"),
-				new WebTable.Cell(MESSAGES.colNote(), 1, "7%"),
-				new WebTable.Cell(MESSAGES.colCredit(), 1, "4%"),
-				(iCalendar != null ? new WebTable.WidgetCell(iCalendar, MESSAGES.colIcons(), 1, "1%") : new WebTable.Cell(MESSAGES.colIcons(), 1, "1%"))
+				new WebTable.Cell(MESSAGES.colLock()),
+				new WebTable.Cell(MESSAGES.colSubject()),
+				new WebTable.Cell(MESSAGES.colCourse()),
+				new WebTable.Cell(MESSAGES.colSubpart()),
+				new WebTable.Cell(MESSAGES.colClass()),
+				new WebTable.Cell(MESSAGES.colLimit()).aria(ARIA.colLimit()),
+				new WebTable.Cell(MESSAGES.colDays()),
+				new WebTable.Cell(MESSAGES.colStart()),
+				new WebTable.Cell(MESSAGES.colEnd()),
+				new WebTable.Cell(MESSAGES.colDate()),
+				new WebTable.Cell(MESSAGES.colRoom()),
+				new WebTable.Cell(MESSAGES.colInstructor()),
+				new WebTable.Cell(MESSAGES.colParent()),
+				new WebTable.Cell(MESSAGES.colNote()),
+				new WebTable.Cell(MESSAGES.colCredit()),
+				(iCalendar != null ? new WebTable.WidgetCell(iCalendar, MESSAGES.colIcons()) : new WebTable.Cell(MESSAGES.colIcons()))
 			));
 		iAssignments.setWidth("100%");
 		iAssignments.setEmptyMessage(MESSAGES.emptySchedule());
@@ -470,6 +470,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					iAssignmentPanel.setWidget(panel);
 					AriaStatus.getInstance().setHTML(ARIA.listOfClasses());
 				} else {
+					iAssignmentGrid.shrink();
 					iAssignmentPanel.setWidget(gridPanel);
 					iAssignmentGrid.scrollDown();
 					AriaStatus.getInstance().setHTML(ARIA.timetable());

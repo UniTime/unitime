@@ -42,6 +42,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -669,16 +670,23 @@ public class WebTable extends Composite {
 	
 	public static class NoteCell extends Cell {
 		private P iNote = null;
+		private Image iIcon = null;
 		
 		public NoteCell(String text, String title) {
 			super(null);
-			iNote = new P("unitime-Note");
-			iNote.setHTML(text);
-			if (title != null) iNote.setTitle(title);
+			if (Window.getClientWidth() <= 800 && title != null && !title.isEmpty()) {
+				iIcon = new Image(RESOURCES.note());
+				iIcon.setTitle(title);
+				iIcon.setAltText(title);
+			} else {
+				iNote = new P("unitime-Note");
+				iNote.setHTML(text);
+				if (title != null) iNote.setTitle(title);
+			}
 		}
 		
-		public String getValue() { return iNote.getHTML(); }
-		public Widget getWidget() { return iNote; }
+		public String getValue() { return iNote != null ? iNote.getHTML() : iIcon.getTitle(); }
+		public Widget getWidget() { return iNote != null ? iNote : iIcon; }
 		public void setStyleName(String styleName) {
 			super.setStyleName(styleName);
 		}

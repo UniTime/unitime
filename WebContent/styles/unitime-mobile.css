@@ -17,137 +17,6 @@
  * limitations under the License.
  * 
 */
-
-.unitime-MobilePage {
-	display: block;
-	margin: 2px;
-}
-
-.unitime-MobilePageHeader {
-	display: table;
-}
-
-.unitime-MobilePageHeader .row {
-	display: table-row;
-}
-
-.unitime-MobilePageHeader .menu {
-	display: table-cell;
-	vertical-align: middle;
-	padding: 3px;
-}
-
-.unitime-MobilePageHeader .logo {
-	display: table-cell;
-}
-
-.unitime-MobilePageHeader .title {
-	display: table-cell;
-	width: 100%;
-	vertical-align: middle;
-	text-align: right;
-	white-space: nowrap;
-	font-size: x-large;
-	font-weight: bold;
-	color: #333333;
-	padding-left: 10px;
-	padding-right: 5px;
-}
-
-.unitime-MobilePageHeader .title .text {
-	display: inline-block;
-	vertical-align: bottom;
-	white-space: nowrap;
-}
-
-.unitime-MobilePageHeader .title .icon {
-	display: inline-block;
-	vertical-align: middle;
-	padding: 3px 0px 3px 5px;
-}
-
-.unitime-MobileFooter {
-	display: table;
-	border-top: 1px solid #9CB0CE;
-	margin-top: 10px;
-	width: 100%;
-}
-
-.unitime-MobileFooter .row {
-	display: table-row;
-	font-size: 9pt;
-	vertical-align: top;
-	font-style: italic;
-	color: #9CB0CE;
-	white-space: nowrap;
-}
-
-.unitime-MobileFooter .cell {
-	display: table-cell;
-	width: 33%;
-}
-
-.unitime-MobileFooter .left {
-	padding-left: 2px;
-	text-align: left;
-}
-
-.unitime-MobileFooter .middle {
-	text-align: center;
-}
-
-.unitime-MobileFooter .right {
-	padding-right: 2px;
-	text-align: right;
-}
-
-.unitime-MobileDisclaimer {
-	display: block;
-	color: #777777;
-	text-align: center;
-	width: 100%;
-}
-
-
-.unitime-MobileHeader {
-	display: block;	
-	text-align: right;
-}
-
-.unitime-MobileNavigation {
-	display: block;
-	padding: 0px 5px 0px 5px;
-}
-
-.unitime-MobileNavigation .item {
-	white-space: nowrap;
-}
-
-.unitime-MobileMenuPhone {
-	z-index: 1500000; 
-	position: absolute;
-	background: gray;
-	top: 0px;
-	left: 0px;
-	right: 0px;
-	bottom: 0px;
-}
-
-.unitime-MobileMenuTablet {
-	position: absolute;
-	border-right: 1px solid black;
-	border-bottom: 1px solid black;
-	top: 0px;
-	left: 0px;
-	min-width: 300px;
-	bottom: 0px;
-	background: gray;
-}
-
-.unitime-AnimationHelper{
-	z-index: 1500000;	
-}
-
 .unitime-MobileNotifications {
 	display: block;
 	left: 0px;
@@ -251,20 +120,6 @@
   	background-color: rgb(209,138,138);
 }
 
-.unitime-MobileMainContent {
-	display: block;
-	height: 600px;
-}
-
-.unitime-MobileMainContent .messages {
-	display: block;
-	padding: 5px;
-}
-
-.unitime-MobileMainContent .message {
-	padding: 2px 0px 0px 10px;
-}
-
 .unitime-MobileFrameDialog {
 	width: 100%;
 	padding: 0px;
@@ -313,6 +168,21 @@
 }
 
 @media all and (max-width: 800px) {
+	.unitime-MainContent {
+		width: inherit;
+		height: inherit;
+		min-height: 70vh;
+	}
+
+	.unitime-MainContent .messages {
+		display: block;
+		padding: 5px;
+	}
+
+	.unitime-MainContent .message {
+		padding: 2px 0px 0px 10px;
+	}
+
 	.unitime-Login .mobile-menu-button {
 		display: inline-block;
 		vertical-align: top;
@@ -423,11 +293,6 @@
 		padding-left: 20px;
 	}
 	
-	.unitime-MainContent {
-		height: inherit;
-		min-height: 600px;
-	}
-	
 	.unitime-CourseFinderDialog .filter {
 		width: 85vw;
 	}
@@ -451,7 +316,7 @@
 		overflow: visible;
 		white-space: normal;
 	}
-	
+
 	.unitime-CourseRequests .line .course .gwt-SuggestBox {
 		width: 32vw;
 		min-width: 170px;
@@ -526,5 +391,15 @@
 	.unitime-DegreePlanDialog .unitime-TabPanel {
 		width: 90vw;
 		height: 30vh;
+	}
+
+	.unitime-Note {
+		max-width: 50px;
+	}
+}
+
+@media all and (max-width: 720px) {
+	.unitime-CourseRequests .line {
+		border-bottom: 1px dashed #9CB0CE;
 	}
 }
