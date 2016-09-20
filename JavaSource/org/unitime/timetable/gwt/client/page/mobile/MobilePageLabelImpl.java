@@ -34,7 +34,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.Image;
 
 /**
  * @author Tomas Muller
@@ -44,15 +44,15 @@ public class MobilePageLabelImpl extends P implements PageLabelDisplay {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	
 	private P iName;
-	private Button iHelp;
-	private Button iClose = null;
+	private Image iHelp;
+	private Image iClose = null;
 	private String iUrl = null;
 	
 	public MobilePageLabelImpl() {
         iName = new P("text");
         
-		iHelp = new Button(MESSAGES.mobileHelpSymbol());
-		iHelp.addStyleName("unitime-MobileMenuButton");
+        iHelp = new Image(RESOURCES.help());
+		iHelp.addStyleName("icon");
 		iHelp.setVisible(false);
 		
 		add(iName);
@@ -70,8 +70,8 @@ public class MobilePageLabelImpl extends P implements PageLabelDisplay {
 		});
 		
 		if (hasParentWindow()) {
-			iClose = new Button(MESSAGES.mobileCloseSymbol());
-			iClose.addStyleName("unitime-MobileMenuButton");
+			iClose = new Image(RESOURCES.close());
+			iClose.addStyleName("icon");
 			iClose.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
@@ -91,6 +91,8 @@ public class MobilePageLabelImpl extends P implements PageLabelDisplay {
 	public void setText(String text) {
 		iName.setText(text);
 		iHelp.setTitle(MESSAGES.pageHelp(text));
+		if (iClose != null)
+			iClose.setTitle(MESSAGES.pageClose(text));
 	}
 
 	@Override

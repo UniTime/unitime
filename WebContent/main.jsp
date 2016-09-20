@@ -44,6 +44,7 @@
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     <iframe src="javascript:''" id="__printingFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
 
+	<span class='top-menu'>
     <tt:notHasProperty name="unitime.menu.style" user="true">
 	   	<span id='UniTimeGWT:DynamicTopMenu' style="display: block; height: 23px;" ></span>
     </tt:notHasProperty>
@@ -53,6 +54,7 @@
     <tt:propertyEquals name="unitime.menu.style" user="true" value="Static On Top">
     	<span id='UniTimeGWT:TopMenu' style="display: block; height: 23px;" ></span>
     </tt:propertyEquals>
+    </span>
 
     <tt:hasProperty name="tmtbl.global.info">
     	<div class='unitime-PageMessage'><tt:property name="tmtbl.global.info"/></div>

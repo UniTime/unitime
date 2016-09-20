@@ -26,6 +26,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("{0} Help")
 	String pageHelp(String pageTitle);
+	
+	@DefaultMessage("Close {0}")
+	String pageClose(String pageTitle);
 
 	@DefaultMessage("Version {0} built on {1}")
 	String pageVersion(String version, String buildDate);
@@ -4837,12 +4840,4 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("\u2630")
 	@DoNotTranslate
 	String mobileMenuSymbol();
-	
-	@DefaultMessage("?")
-	@DoNotTranslate
-	String mobileHelpSymbol();
-	
-	@DefaultMessage("\u00d7")
-	@DoNotTranslate
-	String mobileCloseSymbol();
 }
