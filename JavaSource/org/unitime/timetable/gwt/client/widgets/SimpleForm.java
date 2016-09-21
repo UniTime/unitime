@@ -41,7 +41,6 @@ public class SimpleForm extends FlexTable {
 		addStyleName("unitime-NotPrintableBottomLine");
 		setCellPadding(2);
 		setCellSpacing(0);
-		setWidth("100%");
 	}
 	
 	public SimpleForm() {

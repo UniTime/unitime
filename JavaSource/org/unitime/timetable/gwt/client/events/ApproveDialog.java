@@ -54,7 +54,6 @@ import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -197,8 +196,7 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 		
 		iEmailConfirmation = new CheckBox(MESSAGES.checkSendEmailConfirmation(), true);
 		iEmailConfirmation.addStyleName("toggle");
-		iFooter.getPanel().insert(iEmailConfirmation, 4);
-		iFooter.getPanel().setCellVerticalAlignment(iEmailConfirmation, HasVerticalAlignment.ALIGN_MIDDLE);
+		iFooter.insertRight(iEmailConfirmation, true);
 		
 		iForm.addBottomRow(iFooter);
 		

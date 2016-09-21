@@ -131,6 +131,7 @@ import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.SuggestBox;
 import com.google.gwt.user.client.ui.SuggestOracle;
@@ -158,6 +159,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 	private UniTimeHeaderPanel iHeader, iFooter, iFilterHeader;
 	private TimeGrid iTimeGrid;
 	private EventMeetingTable iTable;
+	private ScrollPanel iTablePanel;
 	private ResourceInterface iResource;
 	private List<EventInterface> iData;
 	private WeekSelector iWeekPanel;
@@ -851,6 +853,8 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				}, MESSAGES.waitLoading(e.getName()));
 			}
 		});
+		iTablePanel = new ScrollPanel(iTable);
+		iTablePanel.addStyleName("scroll-panel");
 		
 		iApproveDialog = new ApproveDialog(this) {
 			@Override
@@ -1037,7 +1041,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		} else {
 			iTable.setMode(getSelectedTab() == 1 ? EventMeetingTable.Mode.ListOfEvents : EventMeetingTable.Mode.ListOfMeetings);
 			iTable.setEvents(iData);
-			iGridOrTablePanel.setWidget(iTable);
+			iGridOrTablePanel.setWidget(iTablePanel);
 		}
 		iHeader.setHeaderTitle(name(getSelectedTab()));
 		changeUrl();

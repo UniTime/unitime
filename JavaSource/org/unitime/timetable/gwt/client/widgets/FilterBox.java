@@ -334,6 +334,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			iFilterPopup.moveRelativeTo(this);
 			if (iLastFocusedWidget != null) iLastFocusedWidget.setFocus(true);
 		} else {
+			iFilterPopup.setWidth(getElement().getClientWidth() + "px");
 			iFilterPopup.showRelativeTo(this);
 			iFilterOpen.setVisible(false);
 			iFilterClose.setVisible(true);
@@ -422,6 +423,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 				if (!query.equals(iFilter.getText())) return; // old request
 				if (result != null && !result.isEmpty()) {
 					updateSuggestions(result);
+					iSuggestionsPopup.setWidth(getElement().getClientWidth() + "px");
 					iSuggestionsPopup.showRelativeTo(FilterBox.this);
 				} else {
 					if (iSuggestionsPopup.isShowing()) iSuggestionsPopup.hide();

@@ -396,6 +396,35 @@
 	.unitime-Note {
 		max-width: 50px;
 	}
+	
+	.unitime-FilterBox {
+		width: inherit;
+	}
+	
+	.unitime-FilterBoxContainer {
+		width: 100%;
+	}
+	
+	.unitime-FilterBoxPopup .value {
+		width: 45%;
+	}
+	
+	.unitime-EventResults .unitime-IntervalSelector .selection {
+		width: 19vw;
+	}
+	
+	.unitime-EventResults .gwt-TabBarItem .gwt-HTML {
+		width: 12vw;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		overflow: hidden;
+	}
+	
+	.unitime-EventResults .unitime-TabPanel {
+		border-left: none;
+		border-right: none;
+		width: 99vw;
+	}
 }
 
 @media all and (max-width: 720px) {

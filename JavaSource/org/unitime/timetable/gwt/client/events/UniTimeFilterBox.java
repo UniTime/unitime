@@ -71,6 +71,7 @@ public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Compo
 	
 	public UniTimeFilterBox(AcademicSessionProvider session) {
 		iFilter = new UniTimeWidget<FilterBox>(new FilterBox());
+		iFilter.addStyleName("unitime-FilterBoxContainer");
 		
 		iFilter.getWidget().setSuggestionsProvider(new SuggestionsProvider() {
 			@Override

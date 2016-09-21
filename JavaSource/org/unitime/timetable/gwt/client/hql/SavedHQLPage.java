@@ -182,7 +182,7 @@ public class SavedHQLPage extends Composite {
 				RPC.execute(request, new AsyncCallback<Table>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						iTableHeader.setErrorMessage(caught.getMessage(), true);
+						iTableHeader.setErrorMessage(caught.getMessage());
 						LoadingWidget.getInstance().hide();
 					}
 
@@ -913,7 +913,7 @@ public class SavedHQLPage extends Composite {
 		RPC.execute(request, new AsyncCallback<Table>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				iTableHeader.setErrorMessage(caught.getMessage(), true);
+				iTableHeader.setErrorMessage(caught.getMessage());
 				LoadingWidget.getInstance().hide();
 			}
 

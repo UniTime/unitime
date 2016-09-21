@@ -64,7 +64,6 @@ import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -90,8 +89,7 @@ public class TeachingAssignmentsChangesPage extends SimpleForm {
 		iFilterPanel = new UniTimeHeaderPanel(MESSAGES.propAssignmentChangesBase());
 		iFilter = new ListBox();
 		iFilter.setStyleName("unitime-TextBox");
-		iFilterPanel.getPanel().insert(iFilter, 2);
-		iFilterPanel.getPanel().setCellVerticalAlignment(iFilter, HasVerticalAlignment.ALIGN_MIDDLE);
+		iFilterPanel.insertLeft(iFilter, false);
 		iFilter.getElement().getStyle().setMarginLeft(5, Unit.PX);
 		for (String base: CONSTANTS.assignmentChangesBase())
 			iFilter.addItem(base);

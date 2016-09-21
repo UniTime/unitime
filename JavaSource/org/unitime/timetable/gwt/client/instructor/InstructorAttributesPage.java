@@ -59,7 +59,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SimplePanel;
 
@@ -115,7 +114,7 @@ public class InstructorAttributesPage extends Composite {
 		
 		iFilter = new ListBox();
 		iFilter.setStyleName("unitime-TextBox");
-		iFilterPanel.getPanel().insert(iFilter, 2);
+		iFilterPanel.insertLeft(iFilter, false);
 		iFilter.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
@@ -124,7 +123,6 @@ public class InstructorAttributesPage extends Composite {
 				iFilterPanel.setEnabled("new", iProperties != null && (iProperties.isCanAddGlobalAttribute() || (dept != null && dept.isCanAddAttribute())));
 			}
 		});
-		iFilterPanel.getPanel().setCellVerticalAlignment(iFilter, HasVerticalAlignment.ALIGN_MIDDLE);
 		iFilter.getElement().getStyle().setMarginLeft(5, Unit.PX);
 		
 		iFilterPanel.addButton("search", MESSAGES.buttonSearch(), clickSearch);

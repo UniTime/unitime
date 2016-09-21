@@ -102,7 +102,6 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasValue;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -926,13 +925,11 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		
 		iEmailConfirmationHeader = new CheckBox(MESSAGES.checkSendEmailConfirmation(), true);
 		iEmailConfirmationHeader.addStyleName("toggle");
-		iHeader.getPanel().insert(iEmailConfirmationHeader, 4);
-		iHeader.getPanel().setCellVerticalAlignment(iEmailConfirmationHeader, HasVerticalAlignment.ALIGN_MIDDLE);
+		iHeader.insertRight(iEmailConfirmationHeader, true);
 		
 		iEmailConfirmationFooter = new CheckBox(MESSAGES.checkSendEmailConfirmation(), true);
 		iEmailConfirmationFooter.addStyleName("toggle");
-		iFooter.getPanel().insert(iEmailConfirmationFooter, 4);
-		iFooter.getPanel().setCellVerticalAlignment(iEmailConfirmationFooter, HasVerticalAlignment.ALIGN_MIDDLE);
+		iFooter.insertRight(iEmailConfirmationFooter, true);
 		
 		iEmailConfirmationHeader.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 			@Override

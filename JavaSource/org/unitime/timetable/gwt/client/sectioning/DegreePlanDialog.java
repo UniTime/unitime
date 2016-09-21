@@ -145,7 +145,7 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 		if (backAck != null)
 			iBack.setAccessKey(backAck);
 		ToolBox.setWhiteSpace(iBack.getElement().getStyle(), "nowrap");
-		iFooter.getPanel().insert(iBack, 0);
+		iFooter.insertLeft(iBack, true);
 		
 		iForm.addBottomRow(iFooter);
 		setWidget(iForm);

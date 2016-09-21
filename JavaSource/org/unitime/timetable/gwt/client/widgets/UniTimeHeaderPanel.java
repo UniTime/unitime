@@ -40,29 +40,25 @@ import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.ComplexPanel;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * @author Tomas Muller
  */
-public class UniTimeHeaderPanel extends Composite {
+public class UniTimeHeaderPanel extends P {
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	private static RegExp sAcessKeyRegExp = RegExp.compile("<u>(\\w)</u>", "i");
 	private static RegExp sStripAcessKeyRegExp = RegExp.compile("(.*)<u>(\\w)</u>(.*)", "i");
 
 	private HashMap<String, Integer> iOperations = new HashMap<String, Integer>();
 	private HashMap<String, ClickHandler> iClickHandlers = new HashMap<String, ClickHandler>();
-	private HTML iMessage;
-	private HTML iTitle;
-	private HorizontalPanel iButtons;
-	private HorizontalPanel iPanel;
+	private P iMessage;
+	private P iTitle;
+	private P iLeft, iContent, iRight, iButtons; 
 	private Image iLoadingImage;
 	private OpenCloseSectionImage iOpenCloseImage;
 	private boolean iRotateFocus = false;
@@ -71,44 +67,37 @@ public class UniTimeHeaderPanel extends Composite {
 	private List<UniTimeHeaderPanel> iClones = new ArrayList<UniTimeHeaderPanel>();
 	
 	public UniTimeHeaderPanel(String title) {
-		iPanel = new HorizontalPanel();
+		super("unitime-HeaderPanel");
+		
+		iLeft = new P("left", "unitime-NoPrint");
+		add(iLeft);
+		
+		iRight = new P("right", "unitime-NoPrint");
+		add(iRight);
+		
+		iButtons = new P(DOM.createSpan(), "buttons");
+		iRight.add(iButtons);
+		
+		iContent = new P("content");
+		add(iContent);
 		
 		iOpenCloseImage = new OpenCloseSectionImage(true);
 		iOpenCloseImage.setVisible(false);
-		iPanel.add(iOpenCloseImage);
-		iPanel.setCellHorizontalAlignment(iOpenCloseImage, HasHorizontalAlignment.ALIGN_LEFT);
-		iPanel.setCellVerticalAlignment(iOpenCloseImage, HasVerticalAlignment.ALIGN_MIDDLE);
+		iOpenCloseImage.addStyleName("open-close");
+		iLeft.add(iOpenCloseImage);
 
-		
-		iTitle = new HTML(title, false);
-		iTitle.setStyleName("unitime-MainHeader");
-		iPanel.add(iTitle);
-		iPanel.setCellHorizontalAlignment(iTitle, HasHorizontalAlignment.ALIGN_LEFT);
-		iPanel.setCellVerticalAlignment(iTitle, HasVerticalAlignment.ALIGN_MIDDLE);
-		
-		iMessage = new HTML("", false);
-		iMessage.setStyleName("unitime-Message");
-		iMessage.setVisible(false);
-		iPanel.add(iMessage);
-		iPanel.setCellHorizontalAlignment(iMessage, HasHorizontalAlignment.ALIGN_CENTER);
-		iPanel.setCellVerticalAlignment(iMessage, HasVerticalAlignment.ALIGN_MIDDLE);
-		iPanel.setCellWidth(iMessage, "100%");
-		
 		iLoadingImage = new Image(RESOURCES.loading_small());
+		iLoadingImage.addStyleName("loading");
 		iLoadingImage.setVisible(false);
-		// iLoadingImage.getElement().getStyle().setMargin(20, Unit.PX);
-		iPanel.add(iLoadingImage);
-		iPanel.setCellHorizontalAlignment(iLoadingImage, HasHorizontalAlignment.ALIGN_CENTER);
-		iPanel.setCellVerticalAlignment(iLoadingImage, HasVerticalAlignment.ALIGN_MIDDLE);
+		iLeft.add(iLoadingImage);
 
+		iTitle = new P("title");
+		iTitle.setHTML(title);
+		iLeft.add(iTitle);
 		
-		iButtons = new HorizontalPanel();
-		iButtons.addStyleName("unitime-NoPrint");
-		iPanel.add(iButtons);
-		iPanel.setCellHorizontalAlignment(iButtons, HasHorizontalAlignment.ALIGN_RIGHT);
-		
-		iPanel.setWidth("100%");
-		// iPanel.getElement().getStyle().setMarginTop(2, Unit.PX);
+		iMessage = new P("message");
+		iMessage.setVisible(false);
+		iContent.add(iMessage);
 		
 		iKeyDownHandler = new KeyDownHandler() {
 			private void focus(KeyDownEvent event, final Button buttonToFocus) {
@@ -153,8 +142,6 @@ public class UniTimeHeaderPanel extends Composite {
 				}
 			}
 		};
-		
-		initWidget(iPanel);
 	}
 	
 	public void setRotateFocus(boolean rotateFocus) {
@@ -199,27 +186,13 @@ public class UniTimeHeaderPanel extends Composite {
 			clone.clearMessage();
 	}
 	
-	public void setErrorMessage(String message, boolean wrap) {
-		if (message == null || message.isEmpty()) {
-			clearMessage();
-		} else {
-			iLoadingImage.setVisible(false);
-			iMessage.setHTML(message);
-			iMessage.setStyleName("unitime-ErrorMessage");
-			iMessage.setVisible(true);
-			iMessage.setWordWrap(wrap);
-			for (UniTimeHeaderPanel clone: iClones)
-				clone.setErrorMessage(message, wrap);
-		}
-	}
-	
 	public void setErrorMessage(String message) {
 		if (message == null || message.isEmpty()) {
 			clearMessage();
 		} else {
 			iLoadingImage.setVisible(false);
 			iMessage.setHTML(message);
-			iMessage.setStyleName("unitime-ErrorMessage");
+			iMessage.setStyleName("error");
 			iMessage.setVisible(true);
 			for (UniTimeHeaderPanel clone: iClones)
 				clone.setErrorMessage(message);
@@ -227,20 +200,15 @@ public class UniTimeHeaderPanel extends Composite {
 	}
 	
 	public void setWarningMessage(String message) {
-		setWarningMessage(message, false);
-	}
-	
-	public void setWarningMessage(String message, boolean wrap) {
 		if (message == null || message.isEmpty()) {
 			clearMessage();
 		} else {
 			iLoadingImage.setVisible(false);
 			iMessage.setHTML(message);
-			iMessage.setStyleName("unitime-WarningMessage");
+			iMessage.setStyleName("warning");
 			iMessage.setVisible(true);
-			iMessage.setWordWrap(wrap);
 			for (UniTimeHeaderPanel clone: iClones)
-				clone.setWarningMessage(message, wrap);
+				clone.setWarningMessage(message);
 		}
 	}
 	
@@ -250,7 +218,7 @@ public class UniTimeHeaderPanel extends Composite {
 		} else {
 			iLoadingImage.setVisible(false);
 			iMessage.setHTML(message);
-			iMessage.setStyleName("unitime-Message");
+			iMessage.setStyleName("message");
 			iMessage.setVisible(true);
 			for (UniTimeHeaderPanel clone: iClones)
 				clone.setMessage(message);
@@ -383,6 +351,24 @@ public class UniTimeHeaderPanel extends Composite {
 		setVisible(visible, false);
 	}
 	
-	public HorizontalPanel getPanel() { return iPanel; }
+	public void insertLeft(Widget widget, boolean first) {
+		widget.addStyleName("left-widget");
+		if (first)
+			iLeft.insert(widget, 0);
+		else
+			iLeft.add(widget);
+	}
 
+	public void insertWidget(Widget widget) {
+		widget.addStyleName("widget");
+		iContent.insert(widget, 1);
+	}
+	
+	public void insertRight(Widget widget, boolean first) {
+		widget.addStyleName("right-widget");
+		if (first)
+			iRight.insert(widget, 0);
+		else
+			iRight.add(widget);
+	}
 }

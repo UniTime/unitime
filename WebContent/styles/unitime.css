@@ -293,6 +293,7 @@ h1 {
 }
 
 .unitime-MainHeader {
+	white-space: nowrap;
 	font-size: large;
 	font-weight: bold;
 	color: black;
@@ -316,6 +317,7 @@ h1 {
 }
 
 .unitime-MainTable {
+	width: 100%;
 }
 
 .unitime-MainTable td {
@@ -1381,6 +1383,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 }
 
 .unitime3-HeaderTitle {
+	display: inline;
 	color: #35526F;
 	font-weight: bold;
 	font-size: medium;
@@ -1839,7 +1842,6 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	-moz-box-shadow: 1px 2px 4px #9CB0CE;
 	-webkit-box-shadow: 1px 2px 4px #9CB0CE;
 	box-shadow: 1px 2px 4px #9CB0CE;
-	width: 560px;
 	margin-top: -2px;
 	font-family: Verdana, sans-serif;
 	font-size: 8pt;
@@ -1847,10 +1849,6 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	font-style: normal;
 	color: #333333;
 	z-index: 1000000;
-}
-
-.unitime-FilterBoxPopup .suggestPopupMiddleCenter {
-	width: 556px;
 }
 
 .unitime-FilterBoxPopup .item {
@@ -4959,4 +4957,75 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-DegreePlanDialog .unitime-TabPanel {
 	width: 786px;
 	height: 200px;
+}
+
+.unitime-HeaderPanel {
+	width: 100%;
+	overflow: hidden;
+	margin-bottom: -2px;
+}
+
+.unitime-HeaderPanel .left {
+	float: left;
+	line-height: 29px;
+	vertical-align: bottom;
+}
+
+.unitime-HeaderPanel .left .gwt-Image {
+	margin-bottom: -2px;
+}
+
+.unitime-HeaderPanel .left .unitime-TextBox {
+	margin: 2px;
+}
+
+.unitime-HeaderPanel .right {
+	float: right;
+}
+
+.unitime-HeaderPanel .content {
+	display: block;
+	text-align: center;
+	width: auto;
+}
+
+.unitime-HeaderPanel .gwt-Button {
+	margin: 2px;
+}
+
+.unitime-HeaderPanel .title {
+	display: inline;
+	white-space: nowrap;
+	font-size: large;
+	font-weight: bold;
+}
+
+.unitime-HeaderPanel .message {
+	font-size: small;
+	font-style: italic;
+	font-weight: normal;
+	line-height: 25px;
+	vertical-align: bottom;
+}
+
+.unitime-HeaderPanel .error {
+	font-size: small;
+	color: red;
+	font-style: italic;
+	font-weight: normal;
+	line-height: 25px;
+	vertical-align: bottom;
+}
+
+.unitime-HeaderPanel .warning {
+	font-size: small;
+	color: orange;
+	font-style: italic;
+	font-weight: normal;
+	line-height: 25px;
+	vertical-align: bottom;
+}
+
+.unitime-HeaderPanel .widget {
+	display: inline-block;
 }

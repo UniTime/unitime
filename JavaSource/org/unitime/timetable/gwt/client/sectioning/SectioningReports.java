@@ -436,7 +436,7 @@ public class SectioningReports extends Composite {
 		RPC.execute(request, new AsyncCallback<SectioningReportRpcResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				iTableHeader.setErrorMessage(caught.getMessage(), true);
+				iTableHeader.setErrorMessage(caught.getMessage());
 				LoadingWidget.getInstance().hide();
 			}
 			@Override
