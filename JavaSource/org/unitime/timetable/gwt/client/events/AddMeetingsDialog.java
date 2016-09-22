@@ -674,10 +674,10 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 	}
 	
 	public void showDialog(Long eventId, List<MeetingConflictInterface> conflicts) {
-		iStep = (Window.getClientWidth() - 300) / 105;
-		ToolBox.setMaxHeight(iScrollRooms.getElement().getStyle(), (Window.getClientHeight() - 200) + "px");
-		ToolBox.setMaxHeight(iScrollDates.getElement().getStyle(), (Window.getClientHeight() - 200) + "px");
-		int nrMonths = Math.max(3, Math.min(5, (Window.getClientWidth() - 300) / 225));
+		iStep = Math.max(1, (Window.getClientWidth() - 100) / 105);
+		ToolBox.setMaxHeight(iScrollRooms.getElement().getStyle(), (Window.getClientHeight() - 100) + "px");
+		ToolBox.setMaxHeight(iScrollDates.getElement().getStyle(), (Window.getClientHeight() - 100) + "px");
+		int nrMonths = Math.max(1, Math.min(5, (Window.getClientWidth() - 100) / 225));
 		iDates.setWidth((225 * nrMonths) + "px");
 		iConflicts = conflicts;
 		

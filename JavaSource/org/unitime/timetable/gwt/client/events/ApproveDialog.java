@@ -26,6 +26,7 @@ import org.unitime.timetable.gwt.client.events.EventAdd.EventPropertiesProvider;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.EventMeetingRow;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.MeetingFilter;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.OperationType;
+import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload;
@@ -77,9 +78,10 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 	
 	public ApproveDialog(EventPropertiesProvider properties) {
 		super(true, false);
+		addStyleName("unitime-ApproveDialog");
 		iTable = new EventMeetingTable(EventMeetingTable.Mode.ApprovalOfSingleEventMeetings, false, properties);
 		
-		iForm = new SimpleForm(3);
+		iForm = new SimpleForm();
 		
 		if (iTable instanceof Widget) {
 			ScrollPanel scroll = new ScrollPanel((Widget)iTable);
@@ -87,17 +89,17 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 			iForm.addRow(MESSAGES.propMeetings(), scroll);
 		}
 		
+		P notes = new P("standard-notes");
 		iStandardNotes = new ListBox();
 		iStandardNotes.setVisibleItemCount(4);
-		iStandardNotes.setWidth("480px");
 		iStandardNotesSelection = new Button(MESSAGES.buttonSelect());
 		ToolBox.setWhiteSpace(iStandardNotesSelection.getElement().getStyle(), "nowrap");
 		Character accessKey = UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonSelect());
 		if (accessKey != null)
 			iStandardNotesSelection.setAccessKey(accessKey);
 		iStandardNotesSelection.setEnabled(false);
-		int row = iForm.addRow(MESSAGES.propStandardNotes(), iStandardNotes, 1);
-		iForm.setWidget(row, 2, iStandardNotesSelection);
+		notes.add(iStandardNotes); notes.add(iStandardNotesSelection);
+		iForm.addRow(MESSAGES.propStandardNotes(), notes);
 		iStandardNotes.addDoubleClickHandler(new DoubleClickHandler() {
 			@Override
 			public void onDoubleClick(DoubleClickEvent event) {

@@ -410,11 +410,11 @@ public class EventDetail extends Composite {
 		if (iEvent.hasNotes()) {
 			for (NoteInterface note: iEvent.getNotes()) {
 				List<Widget> row = new ArrayList<Widget>();
-				row.add(new HTML(note.getDate() == null ? "<i>" + MESSAGES.notApplicable() + "</i>" : sTimeStampFormat.format(note.getDate()), false));
-				row.add(new HTML(note.getUser() == null ? "<i>" + MESSAGES.notApplicable() + "</i>" : note.getUser(), false));
+				row.add(new HTML(note.getDate() == null ? "<i>" + MESSAGES.notApplicable() + "</i>" : sTimeStampFormat.format(note.getDate())));
+				row.add(new HTML(note.getUser() == null ? "<i>" + MESSAGES.notApplicable() + "</i>" : note.getUser()));
 				row.add(new HTML(note.getType() == null ? "<i>" + MESSAGES.notApplicable() + "</i>" : note.getType().getName()));
-				row.add(new HTML(note.getMeetings() == null ? "<i>" + MESSAGES.notApplicable() + "</i>" : note.getMeetings(), false));
-				row.add(new HTML(note.getNote() == null ? "" : note.getNote().replace("\n", "<br>"), true));
+				row.add(new HTML(note.getMeetings() == null ? "<i>" + MESSAGES.notApplicable() + "</i>" : note.getMeetings()));
+				row.add(new HTML(note.getNote() == null ? "" : note.getNote().replace("\n", "<br>")));
 				if (note.hasAttachment()) {
 					ImageLink link = new ImageLink(new Image(RESOURCES.download()), note.hasLink() ?
 							GWT.getHostPageBaseURL() + "upload?q=" + note.getLink() :
@@ -468,7 +468,7 @@ public class EventDetail extends Composite {
 				row.add(new HTML(section, false));
 				
 				String type = (obj.hasInstruction() ? obj.getInstruction() : obj.getType().name());
-				row.add(new Label(type, false));
+				row.add(new Label(type));
 				
 				String title = "";
 				if (obj.hasCourseTitles()) {
@@ -487,16 +487,16 @@ public class EventDetail extends Composite {
 				} else {
 					title = "";
 				}
-				row.add(new HTML(title, false));
+				row.add(new HTML(title));
 				
 				if (obj.hasDate()) {
-					row.add(new Label(obj.getDate(), false));
+					row.add(new Label(obj.getDate()));
 				} else {
 					row.add(new Label());
 				}
 				
 				if (obj.hasTime()) {
-					row.add(new Label(obj.getTime(), false));
+					row.add(new Label(obj.getTime()));
 				} else {
 					row.add(new Label());
 				}
@@ -510,7 +510,7 @@ public class EventDetail extends Composite {
 				row.add(new HTML(location, false));
 
 				if (obj.hasInstructors()) {
-					row.add(new HTML(obj.getInstructorNames("<br>", MESSAGES), false));
+					row.add(new HTML(obj.getInstructorNames("<br>", MESSAGES)));
 				} else {
 					row.add(new HTML());
 				}

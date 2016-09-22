@@ -324,6 +324,10 @@ h1 {
 	vertical-align: top;
 }
 
+.unitime-MainTable .label-cell {
+	white-space: nowrap;
+}
+
 .unitime-MainTable .scroll {
 	max-height: 200px;
 }
@@ -5028,4 +5032,48 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-HeaderPanel .widget {
 	display: inline-block;
+}
+
+.unitime-FlowForm {
+	padding: 2px;
+}
+
+.unitime-FlowForm .header-cell {
+	display: inline-block;
+	float: left;
+	clear: left;
+	width: 100px;
+}
+
+.unitime-FlowForm .content-cell {
+	display:inline-block;
+	float:left;
+	padding: 1px 0px 1px 5px;
+}
+
+.unitime-FlowForm .row-cell {
+	float:left; display:block;
+	width: 100%;
+}
+
+.unitime-FlowForm .gwt-Button {
+	height: 20px;
+	padding: 1px 5px 1px 5px;
+}
+
+.unitime-ApproveDialog .standard-notes {
+	text-align: right;
+}
+
+.unitime-ApproveDialog .standard-notes .gwt-ListBox {
+	width: 480px;
+}
+
+.unitime-ApproveDialog .standard-notes .gwt-Button {
+	vertical-align: top;
+	margin: 3px;
+}
+
+.unitime-StandardNotesBox .gwt-ListBox {
+	width: 600px;	
 }

@@ -425,6 +425,60 @@
 		border-right: none;
 		width: 99vw;
 	}
+	
+	.unitime-MainTable .table-row {
+		width: 99vw;
+	}
+	
+	.unitime-MainTable .table-cell {
+		max-width: 75vw;
+	}
+	
+	.unitime-MainTable .label-cell {
+		white-space: normal;
+		max-width: 19vw;
+		text-overflow: ellipsis;
+		overflow: hidden;
+	}
+	
+	.unitime-MainTable .widget-cell input[type='text'] {
+		max-width: 80vw;
+	}
+	
+	.unitime-MainTable .widget-cell textarea {
+		max-width: 80vw;
+	}
+	
+	.unitime-ApproveDialog .unitime-MainTable .table-row {
+		width: 90vw;
+	}
+	
+	.unitime-ApproveDialog .unitime-MainTable .table-cell {
+		max-width: 75vw;
+	}
+	
+	.gwt-DialogBox .unitime-MainTable .table-row {
+		width: inherit;
+	}
+	
+	.unitime-ApproveDialog .unitime-MainTable .label-cell {
+		white-space: normal;
+		max-width: 14vw;
+		text-overflow: ellipsis;
+		overflow: hidden;
+	}
+	
+	.unitime-ApproveDialog .unitime-MainTable .widget-cell {
+		max-width: 75vw;
+	}
+	
+	.unitime-ApproveDialog .standard-notes .gwt-ListBox {
+		width: 75vw;
+	}
+	
+	.unitime-StandardNotesBox .gwt-ListBox {
+		width: 90vw;	
+	}
 }
 
 @media all and (max-width: 720px) {

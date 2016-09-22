@@ -33,6 +33,7 @@ import org.unitime.timetable.gwt.client.events.StartEndTimeSelector.StartEndTime
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
+import org.unitime.timetable.gwt.client.widgets.FlowForm;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -137,7 +138,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	private int iMainContactChangedRow;
 	private ContactInterface iOriginalContact;
 	
-	private SimpleForm iMainContact;
+	private FlowForm iMainContact;
 	private SimpleForm iCoursesForm;
 	
 	private SimpleForm iForm;
@@ -415,8 +416,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		
 		iReqAttendance = new CheckBox(MESSAGES.checkRequiredAttendance());
 						
-		iMainContact = new SimpleForm();
-		iMainContact.getElement().getStyle().clearWidth();
+		iMainContact = new FlowForm();
 		iMainContact.removeStyleName("unitime-NotPrintableBottomLine");
 		
 		iLookupButton = new Button(MESSAGES.buttonLookupMainContact());
@@ -481,9 +481,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iMainFName.setStyleName("unitime-TextBox");
 		iMainFName.setMaxLength(100);
 		iMainFName.setWidth("285px");
-		iMainContact.addRow(MESSAGES.propFirstName(), iMainFName);
-		iMainContact.setWidget(0, 2, iLookupButton);
-		iMainContact.setWidget(0, 3, iMainContactResetButton);
+		iMainContact.addRow(MESSAGES.propFirstName(), iMainFName, iLookupButton, iMainContactResetButton);
 		
 		iMainMName = new TextBox();
 		iMainMName.setStyleName("unitime-TextBox");
@@ -527,9 +525,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iMainPhone.setStyleName("unitime-TextBox");
 		iMainPhone.setMaxLength(35);
 		iMainPhone.setWidth("285px");
-		iMainContact.addRow(MESSAGES.propPhone(), iMainPhone);
-		iMainContact.setWidget(iMainContact.getRowCount() - 1, 2, iAdditionalLookupButton);
-		iMainContact.getFlexCellFormatter().setColSpan(iMainContact.getRowCount() - 1, 2, 2);
+		iMainContact.addRow(MESSAGES.propPhone(), iMainPhone, iAdditionalLookupButton);
 		
 		ValueChangeHandler<String> checkMainContactHandler = new ValueChangeHandler<String>() {
 			@Override
@@ -582,7 +578,6 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		
 		iStandardNotes = new ListBox();
 		iStandardNotes.setVisibleItemCount(10);
-		iStandardNotes.setWidth("600px");
 		iStandardNotes.addDoubleClickHandler(new DoubleClickHandler() {
 			@Override
 			public void onDoubleClick(DoubleClickEvent event) {
@@ -628,6 +623,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		final UniTimeHeaderPanel standardNotesFooter = new UniTimeHeaderPanel();
 		standardNotesForm.addRow(standardNotesFooter);
 		iStandardNotesBox = new UniTimeDialogBox(true, false);
+		iStandardNotesBox.setStyleName("unitime-StandardNotesBox");
 		iStandardNotesBox.setText(MESSAGES.dialogStandardNotes());
 		iStandardNotesBox.setWidget(standardNotesForm);
 		standardNotesFooter.addButton("select", MESSAGES.buttonSelect(), new ClickHandler() {
@@ -1246,7 +1242,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	}
 	
 	public void setEvent(EventInterface event, boolean resetUpload) {
-		iMainContact.getRowFormatter().setVisible(iAcademicTitleRow, getProperties() != null && getProperties().isCanEditAcademicTitle());
+		iMainContact.setVisible(iAcademicTitleRow, getProperties() != null && getProperties().isCanEditAcademicTitle());
 		iEmailConfirmationHeader.setValue(getProperties() == null ||  getProperties().isEmailConfirmation());
 		iEmailConfirmationHeader.setVisible(getProperties() == null || getProperties().hasEmailConfirmation());
 		iEmailConfirmationFooter.setValue(getProperties() == null ||  getProperties().isEmailConfirmation());

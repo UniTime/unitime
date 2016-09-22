@@ -26,6 +26,7 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -67,7 +68,13 @@ public class SimpleForm extends FlexTable {
 	public int addRow(Widget widget) {
 		int row = getRowCount();
 		getFlexCellFormatter().setColSpan(row, 0, iColSpan);
-		setWidget(row, 0, widget);
+		if (widget instanceof UniTimeTable) {
+			ScrollPanel scroll = new ScrollPanel(widget);
+			scroll.addStyleName("table-row");
+			setWidget(row, 0, scroll);
+		} else {
+			setWidget(row, 0, widget);
+		}
 		return row;
 	}
 	
@@ -96,7 +103,7 @@ public class SimpleForm extends FlexTable {
 	}
 
 	public int addRow(String text, Widget widget, int colspan) {
-		return addRow(new Label(text, false), widget, colspan);
+		return addRow(new Label(text), widget, colspan);
 	}
 	
 	public int addRow(Widget header, Widget widget) {
@@ -104,9 +111,17 @@ public class SimpleForm extends FlexTable {
 	}
 	
 	public int addRow(Widget header, Widget widget, int colSpan) {
+		header.addStyleName("label-cell");
 		int row = getRowCount();
 		setWidget(row, 0, header);
-		setWidget(row, 1, widget);
+		if (widget instanceof UniTimeTable) {
+			ScrollPanel scroll = new ScrollPanel(widget);
+			scroll.addStyleName("table-cell");
+			setWidget(row, 1, scroll);
+		} else {
+			widget.addStyleName("widget-cell");
+			setWidget(row, 1, widget);
+		}
 		if (colSpan != 1)
 			getFlexCellFormatter().setColSpan(row, 1, colSpan);
 		if (header.getElement().getId() == null || header.getElement().getId().isEmpty())
