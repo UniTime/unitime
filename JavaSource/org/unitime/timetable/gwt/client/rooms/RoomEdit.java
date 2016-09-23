@@ -892,8 +892,12 @@ public class RoomEdit extends Composite {
 		}
 		
 		if (iProperties.isGoogleMap()) {
-			iForm.setWidget(firstRow, 2, iGoogleMap);
-			iForm.getFlexCellFormatter().setRowSpan(firstRow, 2, iForm.getRowCount() - firstRow - 1);
+			if (Window.getClientWidth() <= 800) {
+				iForm.addRow(iGoogleMap);
+			} else {
+				iForm.setWidget(firstRow, 2, iGoogleMap);
+				iForm.getFlexCellFormatter().setRowSpan(firstRow, 2, iForm.getRowCount() - firstRow - 1);
+			}
 		}
 		
 		if (((iRoom.getUniqueId() == null && iProperties.isCanChangeGroups()) || iRoom.isCanChangeGroups()) && !iProperties.getGroups().isEmpty()) {

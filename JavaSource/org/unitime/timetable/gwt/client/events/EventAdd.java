@@ -623,7 +623,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		final UniTimeHeaderPanel standardNotesFooter = new UniTimeHeaderPanel();
 		standardNotesForm.addRow(standardNotesFooter);
 		iStandardNotesBox = new UniTimeDialogBox(true, false);
-		iStandardNotesBox.setStyleName("unitime-StandardNotesBox");
+		iStandardNotesBox.addStyleName("unitime-StandardNotesBox");
 		iStandardNotesBox.setText(MESSAGES.dialogStandardNotes());
 		iStandardNotesBox.setWidget(standardNotesForm);
 		standardNotesFooter.addButton("select", MESSAGES.buttonSelect(), new ClickHandler() {

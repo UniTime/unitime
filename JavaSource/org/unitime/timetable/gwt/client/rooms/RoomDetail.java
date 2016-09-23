@@ -247,8 +247,12 @@ public class RoomDetail extends Composite {
 		
 		if (iRoom.hasMapUrl()) {
 			Image image = new Image(iRoom.getMapUrl()); image.setStyleName("map");
-			iForm.setWidget(firstRow, 2, image);
-			iForm.getFlexCellFormatter().setRowSpan(firstRow, 2, iForm.getRowCount() - firstRow);
+			if (Window.getClientWidth() <= 800) {
+				iForm.addRow(image);
+			} else {
+				iForm.setWidget(firstRow, 2, image);
+				iForm.getFlexCellFormatter().setRowSpan(firstRow, 2, iForm.getRowCount() - firstRow);
+			}
 		}
 		
 		if (courses && iRoom.isCanSeeAvailability()) {

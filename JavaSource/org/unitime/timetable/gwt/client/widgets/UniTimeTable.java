@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.client.widgets.SimpleForm.HasMobileScroll;
 
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.dom.client.Element;
@@ -52,7 +53,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentC
 /**
  * @author Tomas Muller
  */
-public class UniTimeTable<T> extends FlexTable {
+public class UniTimeTable<T> extends FlexTable implements HasMobileScroll {
 	
 	private List<MouseOverListener<T>> iMouseOverListeners = new ArrayList<MouseOverListener<T>>();
 	private List<MouseOutListener<T>> iMouseOutListeners = new ArrayList<MouseOutListener<T>>();

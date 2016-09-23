@@ -27,6 +27,7 @@ import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
+import org.unitime.timetable.gwt.client.widgets.SimpleForm.HasMobileScroll;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
@@ -56,7 +57,7 @@ import com.google.gwt.user.client.ui.Widget;
 /**
  * @author Tomas Muller
  */
-public class RoomNoteChanges extends Composite {
+public class RoomNoteChanges extends Composite implements HasMobileScroll {
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);

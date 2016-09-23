@@ -68,7 +68,7 @@ public class SimpleForm extends FlexTable {
 	public int addRow(Widget widget) {
 		int row = getRowCount();
 		getFlexCellFormatter().setColSpan(row, 0, iColSpan);
-		if (widget instanceof UniTimeTable) {
+		if (widget instanceof HasMobileScroll) {
 			ScrollPanel scroll = new ScrollPanel(widget);
 			scroll.addStyleName("table-row");
 			setWidget(row, 0, scroll);
@@ -114,7 +114,7 @@ public class SimpleForm extends FlexTable {
 		header.addStyleName("label-cell");
 		int row = getRowCount();
 		setWidget(row, 0, header);
-		if (widget instanceof UniTimeTable) {
+		if (widget instanceof HasMobileScroll) {
 			ScrollPanel scroll = new ScrollPanel(widget);
 			scroll.addStyleName("table-cell");
 			setWidget(row, 1, scroll);
@@ -161,4 +161,6 @@ public class SimpleForm extends FlexTable {
 		}
 		return -1;
 	}
+	
+	public static interface HasMobileScroll {}
 }

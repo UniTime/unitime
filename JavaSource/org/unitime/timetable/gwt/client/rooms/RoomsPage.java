@@ -87,6 +87,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -131,6 +132,7 @@ public class RoomsPage extends Composite {
 		iPanel = new SimplePanel();
 		
 		iRoomsPanel = new VerticalPanel();
+		iRoomsPanel.addStyleName("unitime-RoomsPanel");
 		iRoomsPanel.setWidth("100%");
 		
 		ClickHandler clickSearch = new ClickHandler() {
@@ -464,7 +466,9 @@ public class RoomsPage extends Composite {
 		
 		iRoomsTable = new RoomsTable(iMode);
 		iRoomsTable.getElement().getStyle().setMarginTop(10, Unit.PX);
-		iRoomsPanel.add(iRoomsTable);
+		ScrollPanel scroll = new ScrollPanel(iRoomsTable);
+		scroll.addStyleName("scroll");
+		iRoomsPanel.add(scroll);
 		
 		iRootPanel = new SimplePanel(iRoomsPanel);
 		iPanel.setWidget(iRootPanel);

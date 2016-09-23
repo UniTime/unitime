@@ -431,7 +431,7 @@
 	}
 	
 	.unitime-MainTable .table-cell {
-		max-width: 75vw;
+		max-width: 80vw;
 	}
 	
 	.unitime-MainTable .label-cell {
@@ -441,7 +441,11 @@
 		overflow: hidden;
 	}
 	
-	.unitime-MainTable .widget-cell input[type='text'] {
+	.unitime-MainTable .widget-cell {
+		max-width: 80vw;
+	}
+	
+	.unitime-MainTable .widget-cell .unitime-TextBox {
 		max-width: 80vw;
 	}
 	
@@ -478,6 +482,34 @@
 	
 	.unitime-StandardNotesBox .gwt-ListBox {
 		width: 90vw;	
+	}
+	
+	.unitime-RoomsPanel .scroll {
+		width: 99vw;
+	}
+	
+	.unitime-RoomDetail .map {
+		width: 100%;
+	}
+	
+	.unitime-RoomEdit .map {
+		width: 99vw;
+		max-width: 600px;
+	}
+	
+	.unitime-RoomEdit .groups .group {
+		width: 25vw;
+		min-width: 150px;
+	}
+	
+	.unitime-RoomEdit .features .feature {
+		width: 25vw;
+		min-width: 150px;
+	}
+	
+	.unitime-RoomEdit .exams .exam {
+		width: 37vw; 
+		min-width: 300px;
 	}
 }
 

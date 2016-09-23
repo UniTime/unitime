@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
+import org.unitime.timetable.gwt.client.widgets.SimpleForm.HasMobileScroll;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -76,7 +77,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 /**
  * @author Tomas Muller
  */
-public class RoomSharingWidget extends Composite implements HasValue<RoomSharingModel> {
+public class RoomSharingWidget extends Composite implements HasValue<RoomSharingModel>, HasMobileScroll {
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);

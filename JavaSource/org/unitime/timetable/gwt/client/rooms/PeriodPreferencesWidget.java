@@ -30,6 +30,7 @@ import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.P;
+import org.unitime.timetable.gwt.client.widgets.SimpleForm.HasMobileScroll;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
@@ -59,7 +60,7 @@ import com.google.gwt.user.datepicker.client.CalendarUtil;
 /**
  * @author Tomas Muller
  */
-public class PeriodPreferencesWidget extends Composite implements HasValue<PeriodPreferenceModel> {
+public class PeriodPreferencesWidget extends Composite implements HasValue<PeriodPreferenceModel>, HasMobileScroll {
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
