@@ -31,6 +31,7 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Image;
@@ -41,6 +42,19 @@ import com.google.gwt.user.client.ui.Image;
 public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 	protected static GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static GwtResources RESOURCES = GWT.create(GwtResources.class);
+	public static enum Type {
+		ALERT(MESSAGES.dialogAlert(), RESOURCES.alert()),
+		CONFIRM(MESSAGES.dialogConfirmation(), RESOURCES.confirm()),
+		INFO(MESSAGES.dialogInfo(), RESOURCES.info()),
+		;
+		private String iTitle;
+		private ImageResource iIcon;
+		Type(String title, ImageResource icon) {
+			iTitle = title; iIcon = icon;
+		}
+		public String getTitle() { return iTitle; }
+		public ImageResource getIcon() { return iIcon; }
+	}
 	
 	private String iAnswer = null;
 	private UniTimeTextBox iTextBox = null;
@@ -48,9 +62,9 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 	private Command iCommand;
 	private P iError = null;
 
-	protected UniTimeConfirmationDialog(boolean alert, String message, String question, String answer, Command command) {
+	protected UniTimeConfirmationDialog(Type type, String message, String question, String answer, Command command) {
 		super(true, true);
-		this.setText(alert ? MESSAGES.dialogAlert() : MESSAGES.dialogConfirmation());
+		this.setText(type.getTitle());
 		iAnswer = answer;
 		iCommand = command;
 		
@@ -69,7 +83,7 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 
 		P ic = new P("icon-panel");
 		bd.add(ic);
-		ic.add(new Image(alert ? RESOURCES.alert() : RESOURCES.confirm()));
+		ic.add(new Image(type.getIcon()));
 
 		P cp = new P("content-panel");
 		bd.add(cp);
@@ -109,7 +123,7 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 		
 		P bp = new P("buttons-panel");
 		panel.add(bp);
-		iYes = new AriaButton(alert ? MESSAGES.buttonConfirmOK() : MESSAGES.buttonConfirmYes());
+		iYes = new AriaButton(type == Type.CONFIRM ? MESSAGES.buttonConfirmYes() : MESSAGES.buttonConfirmOK());
 		iYes.addStyleName("yes");
 		bp.add(iYes);
 		iYes.addClickHandler(new ClickHandler() {
@@ -119,7 +133,7 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 			}
 		});
 		
-		if (!alert) {
+		if (type == Type.CONFIRM) {
 			iNo = new AriaButton(MESSAGES.buttonConfirmNo());
 			iNo.addStyleName("no");
 			bp.add(iNo);
@@ -165,7 +179,11 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 	}
 	
 	public static void alert(String message) {
-		new UniTimeConfirmationDialog(true, message, null, null, null).center();
+		new UniTimeConfirmationDialog(Type.ALERT, message, null, null, null).center();
+	}
+	
+	public static void info(String message) {
+		new UniTimeConfirmationDialog(Type.INFO, message, null, null, null).center();
 	}
 
 	public static void alert(boolean useDefault, String message) {
@@ -177,7 +195,7 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 	}
 
 	public static void confirm(String message, Command callback) {
-		new UniTimeConfirmationDialog(false, message, null, null, callback).center();
+		new UniTimeConfirmationDialog(Type.CONFIRM, message, null, null, callback).center();
 	}
 
 	public static void confirm(boolean useDefault, String message, Command callback) {
@@ -190,7 +208,7 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 	}
 
 	public static void confirm(String message, String question, String answer, Command callback) {
-		new UniTimeConfirmationDialog(false, message, question, answer, callback).center();
+		new UniTimeConfirmationDialog(Type.CONFIRM, message, question, answer, callback).center();
 	}
 
 	public static native void fireCallback(JavaScriptObject callback)/*-{
@@ -198,7 +216,7 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 	}-*/;
 	
 	public static void _confirm(String message, final JavaScriptObject callback, String question, String answer) {
-		new UniTimeConfirmationDialog(callback == null, message, question, answer, callback == null ? null : new Command() {
+		new UniTimeConfirmationDialog(callback == null ? Type.ALERT : Type.CONFIRM, message, question, answer, callback == null ? null : new Command() {
 			@Override
 			public void execute() {
 				fireCallback(callback);

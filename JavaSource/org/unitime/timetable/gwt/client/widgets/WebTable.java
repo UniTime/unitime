@@ -606,7 +606,7 @@ public class WebTable extends Composite {
 		private HTML iLabel = null;
 		private HorizontalPanel iPanel = null;
 		
-		public IconCell(ImageResource resource, String title, String text) {
+		public IconCell(ImageResource resource, final String title, String text) {
 			super(null);
 			iIcon = new Image(resource);
 			iIcon.setTitle(title);
@@ -620,6 +620,13 @@ public class WebTable extends Composite {
 				iIcon.getElement().getStyle().setPaddingRight(3, Unit.PX);
 				iPanel.setCellVerticalAlignment(iIcon, HasVerticalAlignment.ALIGN_MIDDLE);
 			}
+			iIcon.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					event.stopPropagation();
+					UniTimeConfirmationDialog.info(title);
+				}
+			});
 		}
 		
 		public String getValue() { return (iPanel == null ? iIcon.getTitle() : iLabel.getText()); }
@@ -642,7 +649,7 @@ public class WebTable extends Composite {
 			iPanel.setStyleName("icons");
 		}
 		
-		public IconsCell add(ImageResource resource, String title) {
+		public IconsCell add(ImageResource resource, final String title) {
 			if (resource == null) return this;
 			Image icon = new Image(resource);
 			icon.setTitle(title);
@@ -651,6 +658,15 @@ public class WebTable extends Composite {
 				icon.getElement().getStyle().setPaddingLeft(3, Unit.PX);
 			iPanel.add(icon);
 			iPanel.setCellVerticalAlignment(icon, HasVerticalAlignment.ALIGN_MIDDLE);
+			if (title != null && !title.isEmpty()) {
+				icon.addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						event.stopPropagation();
+						UniTimeConfirmationDialog.info(title);
+					}
+				});
+			}
 			return this;
 		}
 		
@@ -672,12 +688,19 @@ public class WebTable extends Composite {
 		private P iNote = null;
 		private Image iIcon = null;
 		
-		public NoteCell(String text, String title) {
+		public NoteCell(String text, final String title) {
 			super(null);
 			if (Window.getClientWidth() <= 800 && title != null && !title.isEmpty()) {
 				iIcon = new Image(RESOURCES.note());
 				iIcon.setTitle(title);
 				iIcon.setAltText(title);
+				iIcon.addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						event.stopPropagation();
+						UniTimeConfirmationDialog.info(title);
+					}
+				});
 			} else {
 				iNote = new P("unitime-Note");
 				iNote.setHTML(text);

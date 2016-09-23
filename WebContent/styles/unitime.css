@@ -4065,6 +4065,10 @@ unitime-RoomSharingWidget .legend .blank {
 	padding: 3px;
 }
 
+.unitime-ConfirmationPanel .message-panel .message {
+	white-space: pre-wrap;
+}
+
 .unitime-ConfirmationPanel .question-panel {
 	display: block;
 	text-align: center;
@@ -4075,6 +4079,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-ConfirmationPanel .question-panel .question {
 	margin: 4px 5px 0px 0px;
 	float: left;
+	white-space: pre-wrap;
 }
 
 .unitime-ConfirmationPanel .question-panel .answer {

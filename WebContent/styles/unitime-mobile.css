@@ -518,3 +518,9 @@
 		border-bottom: 1px dashed #9CB0CE;
 	}
 }
+
+@media all and (max-width: 400px) {
+	.unitime-FilterBoxPopup .value {
+		width: 90%;
+	}
+}

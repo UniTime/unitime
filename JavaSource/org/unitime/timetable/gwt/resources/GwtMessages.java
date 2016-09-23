@@ -3092,6 +3092,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Warning")
 	String dialogAlert();
 	
+	@DefaultMessage("Information")
+	String dialogInfo();
+	
 	@DefaultMessage("Details of {0}")
 	String dialogDetailsOf(String item);
 	

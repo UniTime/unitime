@@ -107,4 +107,7 @@ public interface GwtResources extends ClientBundle, com.google.gwt.user.client.u
 	
 	@Source("org/unitime/timetable/gwt/resources/icons/close.png")
 	ImageResource close();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/info.png")
+	ImageResource info();
 }
