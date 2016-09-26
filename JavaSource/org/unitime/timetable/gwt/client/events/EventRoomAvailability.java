@@ -45,6 +45,7 @@ import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
 import org.unitime.timetable.gwt.client.widgets.TimeSelector.TimeUtils;
@@ -93,9 +94,6 @@ import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -978,24 +976,13 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 			}
 			List<WeekInterface> weeks = new ArrayList<WeekInterface>(); weeks.add(week);
 			for (ResourceInterface room: iSelectedRooms) {
-				HorizontalPanel hp = new HorizontalPanel();
-				hp.setStyleName("unitime-RoomAvailabilityHeader");
+				P hp = new P("unitime-RoomAvailabilityHeader");
 				HTML name = new HTML(room.getNameWithSizeAndHint(), false); name.setStyleName("name");
 				hp.add(name);
 				HTML type = new HTML(room.getRoomType(), false); type.setStyleName("type");
 				hp.add(type);
-				HTML size = new HTML(""); //room.getSize() == null ? "" : MESSAGES.hintRoomCapacity(room.getSize().toString()), false)
-				size.setStyleName("size");
-				hp.add(size);
-				hp.setCellHorizontalAlignment(name, HasHorizontalAlignment.ALIGN_LEFT);
-				hp.setCellHorizontalAlignment(type, HasHorizontalAlignment.ALIGN_CENTER);
-				hp.setCellHorizontalAlignment(size, HasHorizontalAlignment.ALIGN_RIGHT);
-				hp.setCellVerticalAlignment(name, HasVerticalAlignment.ALIGN_BOTTOM);
-				hp.setCellVerticalAlignment(type, HasVerticalAlignment.ALIGN_BOTTOM);
-				hp.setCellVerticalAlignment(size, HasVerticalAlignment.ALIGN_BOTTOM);
-				hp.setCellWidth(name, "33%");
-				hp.setCellWidth(type, "34%");
-				hp.setCellWidth(size, "33%");
+				HTML warn = new HTML(room.hasMessage() ? room.getMessage() : ""); warn.setStyleName("warning");
+				hp.add(warn);
 				if (iTables.getWidgetCount() > 0) hp.addStyleName("unitime-TopLineDash");
 				iTables.add(hp);
 				

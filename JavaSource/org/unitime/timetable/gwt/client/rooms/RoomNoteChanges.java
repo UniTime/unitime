@@ -39,6 +39,7 @@ import org.unitime.timetable.gwt.shared.LastChangesInterface.LastChangesRequest;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Float;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.dom.client.Style.WhiteSpace;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -249,7 +250,9 @@ public class RoomNoteChanges extends Composite implements HasMobileScroll {
 			line.add(new Label(sDateFormat.format(log.getDate()), false));
 			line.add(new Label(log.getSession(), false));
 			line.add(new HTML(log.getManager() == null ? "<i>" + MESSAGES.notApplicable() + "</i>" : log.getManager(), false));
-			line.add(new HTML(log.getObject() == null || log.getObject().isEmpty() || "-".equals(log.getObject()) ? "<i>" + MESSAGES.emptyNote() + "</i>" : log.getObject(), true));
+			HTML note = new HTML(log.getObject() == null || log.getObject().isEmpty() || "-".equals(log.getObject()) ? "<i>" + MESSAGES.emptyNote() + "</i>" : log.getObject());
+			note.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE_WRAP);
+			line.add(note);
 			
 			iChanges.addRow(log, line);
 			iChanges.getRowFormatter().setVerticalAlign(iChanges.getRowCount() - 1, HasVerticalAlignment.ALIGN_TOP);

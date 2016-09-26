@@ -83,6 +83,7 @@ public class TimeGrid extends Composite {
 	public static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static DateTimeFormat sDateFormat = ServerDateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 
+	private boolean iShowRoomNote = false;
 	private P iContainer;
 	private ScrollPanel iScrollPanel;
 	private P iPanel;
@@ -93,6 +94,7 @@ public class TimeGrid extends Composite {
 	private P[] iSeparators = new P[7];
 	private P iWorkingHours;
 	private P iTimes;
+	private P iRoomNote;
 	private SelectionLayer iSelectionLayer;
 	private List<SelectionInterface> iAllSelections = new ArrayList<SelectionInterface>();
 	private ResourceType iResourceType;
@@ -178,6 +180,9 @@ public class TimeGrid extends Composite {
 		iWorkingHours.setSize(iCellWidth * nrWorkDays(), iCellHeight * 10);
 		iPanel.add(iWorkingHours, iCellWidth * firstWorkDay(), 15 * iCellHeight / 2 - (iCellHeight * iStart));
 		
+		iRoomNote = new P("room-note");
+		iPanel.add(iRoomNote, 0, 0);
+		
         for (int i = iStart; i < iEnd; i++) {
 			
 			//create major interval
@@ -249,6 +254,9 @@ public class TimeGrid extends Composite {
 			reg.removeHandler();
 	}
 	
+	public void setShowRoomNote(boolean showRoomNote) { iShowRoomNote = showRoomNote; }
+	public boolean isShowRoomNote() { return iShowRoomNote; }
+	
 	public void setResourceType(ResourceType resourceType) { iResourceType = resourceType; }
 	public ResourceType getResourceType() { return iResourceType; }
 	
@@ -278,6 +286,12 @@ public class TimeGrid extends Composite {
 	
 	public void setRoomResources(List<ResourceInterface> roomResources) {
 		iRoomResources = roomResources;
+		if (isSingleRoom() && isShowRoomNote()) {
+			ResourceInterface r = iRoomResources.get(0);
+			iRoomNote.setHTML(r.hasMessage() ? r.getMessage() : "");
+		} else {
+			iRoomNote.setHTML("");
+		}
 	}
 	public List<ResourceInterface> getRoomResources() { return iRoomResources; }
 	public boolean isSingleRoom() { return iRoomResources != null && iRoomResources.size() == 1; }
@@ -294,6 +308,7 @@ public class TimeGrid extends Composite {
 		if (firstHour <= 7 && firstHour > 0 && ((firstSlot % 12) <= 6)) firstHour--;
 		int lastHour = (11 + lastSlot()) / 12;
 		TimeGrid tg = new TimeGrid(iColors, iDays, (int) (1000 / iDays.length), true, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18), iPropertiesProvider);
+		tg.setShowRoomNote(isShowRoomNote());
 		tg.setSelectedWeeks(getSelectedWeeks());
 		tg.setRoomResources(getRoomResources());
 		tg.setResourceType(getResourceType());
