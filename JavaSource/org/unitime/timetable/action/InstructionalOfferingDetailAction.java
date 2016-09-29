@@ -64,6 +64,7 @@ import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentAccomodation;
+import org.unitime.timetable.model.TeachingRequest;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
@@ -521,6 +522,12 @@ public class InstructionalOfferingDetailAction extends Action {
             for (Iterator<Reservation> i = io.getReservations().iterator(); i.hasNext(); ) {
             	Reservation r = i.next();
             	hibSession.delete(r);
+            	i.remove();
+            }
+            
+            for (Iterator<TeachingRequest> i = io.getTeachingRequests().iterator(); i.hasNext(); ) {
+            	TeachingRequest tr = i.next();
+            	hibSession.delete(tr);
             	i.remove();
             }
             
