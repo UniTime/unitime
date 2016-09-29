@@ -547,14 +547,16 @@
 			</TR>
 		<% } %>
 		
-		<sec:authorize access="hasPermission(null, 'SolverGroup', 'InstructorScheduling') and hasPermission(null, 'Department', 'InstructorAssignmentPreferences')">
-		<TR>
-			<TD colspan="2">
-				<a name="instructors"></a>
-				<div id='UniTimeGWT:TeachingRequests' style="display: none;"><bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" /></div>
-			</TD>
-		</TR>
-		</sec:authorize>
+		<logic:equal name="instructionalOfferingDetailForm" property="notOffered" value="false">
+			<sec:authorize access="hasPermission(null, 'SolverGroup', 'InstructorScheduling') and hasPermission(null, 'Department', 'InstructorAssignmentPreferences')">
+			<TR>
+				<TD colspan="2">
+					<a name="instructors"></a>
+					<div id='UniTimeGWT:TeachingRequests' style="display: none;"><bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" /></div>
+				</TD>
+			</TR>
+			</sec:authorize>
+		</logic:equal>
 
 		<logic:equal name="instructionalOfferingDetailForm" property="notOffered" value="false">
 		<TR>
@@ -570,11 +572,13 @@
 			<bean:write name="<%=frmName%>" property="instrOfferingId"/>
 		</tt:last-change>		
 
-		<TR>
-			<TD colspan="2">
-				<div id='UniTimeGWT:OfferingEnrollments' style="display: none;"><bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" /></div>
-			</TD>
-		</TR>
+		<logic:equal name="instructionalOfferingDetailForm" property="notOffered" value="false">
+			<TR>
+				<TD colspan="2">
+					<div id='UniTimeGWT:OfferingEnrollments' style="display: none;"><bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" /></div>
+				</TD>
+			</TR>
+		</logic:equal>
 
 <!-- Buttons -->
 		<TR>
