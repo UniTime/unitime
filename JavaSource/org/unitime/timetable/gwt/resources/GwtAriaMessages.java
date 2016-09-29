@@ -280,6 +280,9 @@ public interface GwtAriaMessages extends Messages {
 	@DefaultMessage("{0} {1} not available")
 	String courseFinderClassNotAvailable(String clazz, String assignment);
 	
+	@DefaultMessage("Check to prefer {0}")
+	String courseFinderPreferClass(String clazz);
+	
 	@DefaultMessage("Showing List of Classes. Use Alt + Up and Alt + Down to navigate, Alt + Enter to open Suggestions for the selected class.")
 	String listOfClasses();
 	

@@ -19,20 +19,24 @@
 */
 package org.unitime.timetable.gwt.client.widgets;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.AriaHiddenLabel;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
+import org.unitime.timetable.gwt.client.aria.AriaTabBar;
 import org.unitime.timetable.gwt.client.widgets.CourseFinder.CourseFinderCourseDetails;
 import org.unitime.timetable.gwt.client.widgets.CourseFinder.ResponseEvent;
 import org.unitime.timetable.gwt.client.widgets.CourseFinder.ResponseHandler;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
-import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
@@ -47,6 +51,8 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.CheckBox;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -60,49 +66,53 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	
 	private DataProvider<String, Collection<CourseAssignment>> iDataProvider = null;
-	private WebTable iCourses;
+	private UniTimeTable<CourseAssignment> iCourses;
 	private ScrollPanel iCoursesPanel;
 	private Label iCoursesTip;
-	private UniTimeTabPanel iCourseDetailsTabPanel;
+	private AriaTabBar iCourseDetailsTabBar;
+	private ScrollPanel iCourseDetailsPanel;
 	private Map<Character, Integer> iTabAccessKeys = new HashMap<Character, Integer>();
 	private CourseFinderCourseDetails[] iDetails = null;
 	private String iLastQuery = null;
+	private P iInstructionalMethodsPanel = null;
+	private Map<Long, CheckBox> iInstructionalMethods = new HashMap<Long, CheckBox>();
 	
-	private boolean iShowCourses = false, iShowDefaultSuggestions = false;
+	private boolean iShowCourseTitles = false, iShowDefaultSuggestions = false;
 	
 	public CourseFinderCourses() {
 		this(false, false);
 	}
 	
-	public CourseFinderCourses(boolean showCourses, boolean showDefaultSuggestions) {
+	public CourseFinderCourses(boolean showCourseTitles, boolean showDefaultSuggestions) {
 		super("courses");
 		
-		iShowCourses = showCourses;
+		iShowCourseTitles = showCourseTitles;
 		iShowDefaultSuggestions = showDefaultSuggestions;
 		
-		iCourses = new WebTable();
-		iCourses.setHeader(new WebTable.Row(
-				new WebTable.Cell(MESSAGES.colSubject(), 1, "10%"),
-				new WebTable.Cell(MESSAGES.colCourse(), 1, "10%"),
-				new WebTable.Cell(MESSAGES.colLimit(), 1, "7%"),
-				new WebTable.Cell(MESSAGES.colTitle(), 1, "33%"),
-				new WebTable.Cell(MESSAGES.colCredit(), 1, "7%"),
-				new WebTable.Cell(MESSAGES.colNote(), 1, "33%")
-				));
-		iCourses.addRowDoubleClickHandler(new WebTable.RowDoubleClickHandler() {
-			public void onRowDoubleClick(WebTable.RowDoubleClickEvent event) {
-				iCourses.setSelectedRow(event.getRowIdx());
+		iCourses = new UniTimeTable<CourseAssignment>();
+		iCourses.setAllowMultiSelect(false);
+		iCourses.setAllowSelection(true);
+		List<UniTimeTableHeader> head = new ArrayList<UniTimeTableHeader>();
+		head.add(new UniTimeTableHeader(MESSAGES.colSubject()));
+		head.add(new UniTimeTableHeader(MESSAGES.colCourse()));
+		head.add(new UniTimeTableHeader(MESSAGES.colLimit()));
+		head.add(new UniTimeTableHeader(MESSAGES.colTitle()));
+		head.add(new UniTimeTableHeader(MESSAGES.colCredit()));
+		head.add(new UniTimeTableHeader(MESSAGES.colNote()));
+		iCourses.addRow(null, head);
+		iCourses.addMouseDoubleClickListener(new UniTimeTable.MouseDoubleClickListener<CourseAssignment>() {
+			@Override
+			public void onMouseDoubleClick(UniTimeTable.TableEvent<CourseAssignment> event) {
 				updateCourseDetails();
 				SelectionEvent.fire(CourseFinderCourses.this, getValue());
 			}
 		});
-		iCourses.addRowClickHandler(new WebTable.RowClickHandler() {
-			public void onRowClick(WebTable.RowClickEvent event) {
-				iCourses.setSelectedRow(event.getRowIdx());
+		iCourses.addMouseClickListener(new UniTimeTable.MouseClickListener<CourseAssignment>() {
+			@Override
+			public void onMouseClick(UniTimeTable.TableEvent<CourseAssignment> event) {
 				updateCourseDetails();
 			}
 		});
-		
 		iCoursesPanel = new ScrollPanel(iCourses);
 		iCoursesPanel.setStyleName("unitime-ScrollPanel");
 		iCoursesPanel.addStyleName("course-table");
@@ -120,17 +130,23 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 			}
 		});
 		
-		iCourseDetailsTabPanel = new UniTimeTabPanel();
-		iCourseDetailsTabPanel.setDeckStyleName("course-details");
-		iCourseDetailsTabPanel.addSelectionHandler(new SelectionHandler<Integer>() {
+		iCourseDetailsTabBar = new AriaTabBar();
+		iCourseDetailsTabBar.addStyleName("course-details-tabs");
+		iCourseDetailsPanel = new ScrollPanel();
+		iCourseDetailsPanel.addStyleName("course-details");
+		iCourseDetailsTabBar.addSelectionHandler(new SelectionHandler<Integer>() {
 			@Override
 			public void onSelection(SelectionEvent<Integer> event) {
 				Cookies.setCookie("UniTime:CourseFinderCourses", String.valueOf(event.getSelectedItem()));
+				iCourseDetailsPanel.setWidget(iDetails[event.getSelectedItem()]);
 			}
 		});
+		iInstructionalMethodsPanel = new P("instructional-methods");
+		iCourseDetailsTabBar.setRestWidget(iInstructionalMethodsPanel);
 
 		add(iCoursesPanel);
-		add(iCourseDetailsTabPanel);
+		add(iCourseDetailsTabBar);
+		add(iCourseDetailsPanel);
 		add(iCoursesTip);
 	}
 
@@ -156,15 +172,14 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 
 	@Override
 	public String getValue() {
-		if (iCourses.getSelectedRow() < 0 || iCourses.getRowsCount() == 0) {
-			return null;
-		} else {
-			WebTable.Row row = iCourses.getRows()[iCourses.getSelectedRow()];
-			String courseName = MESSAGES.courseName(row.getCell(0).getValue(), row.getCell(1).getValue());
-			if ("false".equals(row.getId()) || iShowCourses)
-				courseName = MESSAGES.courseNameWithTitle(row.getCell(0).getValue(), row.getCell(1).getValue(), row.getCell(3).getValue());
-			return courseName;
-		}
+		int row = iCourses.getSelectedRow();
+		if (iCourses.getSelectedRow() < 0) return null;
+		CourseAssignment record = iCourses.getData(row);
+		if (record == null) return null;
+		String courseName = MESSAGES.courseName(record.getSubject(), record.getCourseNbr());
+		if (record.hasTitle() && (!record.hasUniqueName() || iShowCourseTitles))
+			courseName = MESSAGES.courseNameWithTitle(record.getSubject(), record.getCourseNbr(), record.getTitle());
+		return courseName;
 	}
 
 	@Override
@@ -172,57 +187,61 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 		if (value == null) value = "";
 		if (value.isEmpty() && !iShowDefaultSuggestions) {
 			iLastQuery = null;
-			iCourses.clearData(true);
+			iCourses.clearTable(1);
 			iCourses.setEmptyMessage(MESSAGES.courseSelectionNoCourseFilter());
 			updateCourseDetails();
 		} else if (!value.equals(iLastQuery)) {
 			iLastQuery = value;
-			iDataProvider.getData(value, new AsyncCallback<Collection<ClassAssignmentInterface.CourseAssignment>>() {
+			iDataProvider.getData(value, new AsyncCallback<Collection<CourseAssignment>>() {
 				public void onFailure(Throwable caught) {
-					iCourses.clearData(true);
+					iCourses.clearTable(1);
 					iCourses.setEmptyMessage(caught.getMessage());
 					if (isVisible())
 						AriaStatus.getInstance().setText(caught.getMessage());
 					updateCourseDetails();
 					ResponseEvent.fire(CourseFinderCourses.this, false);
 				}
-				public void onSuccess(Collection<ClassAssignmentInterface.CourseAssignment> result) {
-					WebTable.Row[] records = new WebTable.Row[result.size()];
-					int idx = 0;
-					int selectRow = -1;
-					for (ClassAssignmentInterface.CourseAssignment record: result) {
-						records[idx] = new WebTable.Row(
-								record.getSubject(),
-								record.getCourseNbr(),
-								(record.getLimit() == null || record.getLimit() == 0 || record.getEnrollment() == null ? "" : record.getLimit() < 0 ? "&infin;" : (record.getLimit() - record.getEnrollment()) + " / " + record.getLimit()),
-								(record.getTitle() == null ? "" : record.getTitle()),
-								(record.hasCredit() ? record.getCreditAbbv() : ""),
-								(record.getNote() == null ? "" : record.getNote()));
-						if (record.hasCredit())
-							records[idx].getCell(4).setTitle(record.getCreditText());
-						records[idx].setId(record.hasUniqueName() ? "true" : "false");
-						if (iLastQuery.equalsIgnoreCase(MESSAGES.courseName(record.getSubject(), record.getCourseNbr())) || (record.getTitle() != null && iLastQuery.equalsIgnoreCase(MESSAGES.courseNameWithTitle(record.getSubject(), record.getCourseNbr(), record.getTitle()))))
-							selectRow = idx;
-						if (record.getTitle() == null || record.getTitle().isEmpty()) {
-							if (record.getNote() == null || record.getNote().isEmpty()) {
-								records[idx].setAriaLabel(ARIA.courseFinderCourse(record.getSubject(), record.getCourseNbr()));
+				public void onSuccess(Collection<CourseAssignment> result) {
+					iCourses.clearTable(1);
+					boolean hasCredit = false, hasNote = false;
+					for (CourseAssignment record: result) {
+						List<Widget> line = new ArrayList<Widget>();
+						line.add(new Label(record.getSubject(), false));
+						line.add(new Label(record.getCourseNbr(), false));
+						line.add(new HTML(record.getLimit() == null || record.getLimit() == 0 || record.getEnrollment() == null ? "" : record.getLimit() < 0 ? "&infin;" : (record.getLimit() - record.getEnrollment()) + " / " + record.getLimit(), false));
+						line.add(new Label(record.getTitle() == null ? "" : record.getTitle(), false));
+						if (record.hasCredit()) {
+							Label credit = new Label(record.getCreditAbbv(), false);
+							if (record.hasCredit()) credit.setTitle(record.getCreditText());
+							line.add(credit);
+							hasCredit = true;
+						} else {
+							line.add(new Label());
+						}
+						line.add(new Label(record.getNote() == null ? "" : record.getNote()));
+						if (record.hasNote()) hasNote = true;
+						if (record.hasTitle()) {
+							if (record.hasNote()) {
+								line.add(new AriaHiddenLabel(ARIA.courseFinderCourseWithTitleAndNote(record.getSubject(), record.getCourseNbr(), record.getTitle(), record.getNote())));
 							} else {
-								records[idx].setAriaLabel(ARIA.courseFinderCourseWithNote(record.getSubject(), record.getCourseNbr(), record.getNote()));
+								line.add(new AriaHiddenLabel(ARIA.courseFinderCourseWithTitle(record.getSubject(), record.getCourseNbr(), record.getTitle())));
 							}
 						} else {
-							if (record.getNote() == null || record.getNote().isEmpty()) {
-								records[idx].setAriaLabel(ARIA.courseFinderCourseWithTitle(record.getSubject(), record.getCourseNbr(), record.getTitle()));
+							if (record.hasNote()) {
+								line.add(new AriaHiddenLabel(ARIA.courseFinderCourseWithNote(record.getSubject(), record.getCourseNbr(), record.getNote())));
 							} else {
-								records[idx].setAriaLabel(ARIA.courseFinderCourseWithTitleAndNote(record.getSubject(), record.getCourseNbr(), record.getTitle(), record.getNote()));
+								line.add(new AriaHiddenLabel(ARIA.courseFinderCourse(record.getSubject(), record.getCourseNbr())));
 							}
 						}
-						idx++;
+						int row = iCourses.addRow(record, line);
+						if (iLastQuery.equalsIgnoreCase(MESSAGES.courseName(record.getSubject(), record.getCourseNbr())) || (record.getTitle() != null && iLastQuery.equalsIgnoreCase(MESSAGES.courseNameWithTitle(record.getSubject(), record.getCourseNbr(), record.getTitle()))))
+							iCourses.setSelected(row, true);
 					}
-					iCourses.setData(records);
-					if (records.length == 1)
-						selectRow = 0;
-					if (selectRow >= 0) {
-						iCourses.setSelectedRow(selectRow);
+					iCourses.setColumnVisible(4, hasCredit);
+					iCourses.setColumnVisible(5, hasNote);
+					if (result.size() == 1)
+						iCourses.setSelected(1, true);
+					if (iCourses.getSelectedRow() >= 0) {
 						scrollToSelectedRow();
 						if (fireEvents)
 							ValueChangeEvent.fire(CourseFinderCourses.this, getValue());
@@ -235,11 +254,11 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 	}
 
 	protected void scrollToSelectedRow() {
-		if (iCourses.getSelectedRow()<0) return;
+		if (iCourses.getSelectedRow() < 0) return;
 		
 		Element scroll = iCoursesPanel.getElement();
 		
-		com.google.gwt.dom.client.Element item = iCourses.getTable().getRowFormatter().getElement(iCourses.getSelectedRow());
+		com.google.gwt.dom.client.Element item = iCourses.getRowFormatter().getElement(iCourses.getSelectedRow());
 		if (item==null) return;
 		
 		int realOffset = 0;
@@ -252,32 +271,49 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 	}
 	
 	protected void updateCourseDetails() {
-		if (iCourses.getSelectedRow() < 0 || iCourses.getRows() == null || iCourses.getRows().length == 0) {
+		int row = iCourses.getSelectedRow();
+		CourseAssignment record = iCourses.getData(row);
+		if (record == null) {
 			if (iDetails != null)
 				for (CourseFinderCourseDetails detail: iDetails) {
 					detail.setValue(null);
 				}
 			AriaStatus.getInstance().setHTML(ARIA.courseFinderNoCourse());
+			iInstructionalMethodsPanel.clear();
+			iInstructionalMethods.clear();
 		} else {
-			WebTable.Row row = iCourses.getRows()[iCourses.getSelectedRow()];
-			String courseName = MESSAGES.courseName(row.getCell(0).getValue(), row.getCell(1).getValue());
-			if ("false".equals(row.getId()) || iShowCourses)
-				courseName = MESSAGES.courseNameWithTitle(row.getCell(0).getValue(), row.getCell(1).getValue(), row.getCell(3).getValue());
 			for (CourseFinderCourseDetails detail: iDetails)
-				detail.setValue(courseName);
-			String title = row.getCell(3).getValue();
-			String note = row.getCell(5).getValue();
-			if (title.isEmpty()) {
-				if (note.isEmpty()) {
-					AriaStatus.getInstance().setHTML(ARIA.courseFinderSelected(1 + iCourses.getSelectedRow(), iCourses.getRowsCount(), row.getCell(0).getValue(), row.getCell(1).getValue()));
+				detail.setValue(record);
+			if (record.hasTitle()) {
+				if (record.hasNote()) {
+					AriaStatus.getInstance().setHTML(ARIA.courseFinderSelectedWithTitleAndNote(iCourses.getSelectedRow(), iCourses.getRowCount() - 1, record.getSubject(), record.getCourseNbr(), record.getTitle(), record.getNote()));
 				} else {
-					AriaStatus.getInstance().setHTML(ARIA.courseFinderSelectedWithNote(1 + iCourses.getSelectedRow(), iCourses.getRowsCount(), row.getCell(0).getValue(), row.getCell(1).getValue(), note));
+					AriaStatus.getInstance().setHTML(ARIA.courseFinderSelectedWithTitle(iCourses.getSelectedRow(), iCourses.getRowCount() - 1, record.getSubject(), record.getCourseNbr(), record.getTitle()));
 				}
 			} else {
-				if (note.isEmpty()) {
-					AriaStatus.getInstance().setHTML(ARIA.courseFinderSelectedWithTitle(1 + iCourses.getSelectedRow(), iCourses.getRowsCount(), row.getCell(0).getValue(), row.getCell(1).getValue(), title));
+				if (record.hasNote()) {
+					AriaStatus.getInstance().setHTML(ARIA.courseFinderSelectedWithNote(iCourses.getSelectedRow(), iCourses.getRowCount() - 1, record.getSubject(), record.getCourseNbr(), record.getNote()));
 				} else {
-					AriaStatus.getInstance().setHTML(ARIA.courseFinderSelectedWithTitleAndNote(1 + iCourses.getSelectedRow(), iCourses.getRowsCount(), row.getCell(0).getValue(), row.getCell(1).getValue(), title, note));
+					AriaStatus.getInstance().setHTML(ARIA.courseFinderSelected(iCourses.getSelectedRow(), iCourses.getRowCount() - 1, record.getSubject(), record.getCourseNbr()));
+				}
+			}
+			AriaStatus.getInstance().setHTML(ARIA.courseFinderNoCourse());
+			iInstructionalMethodsPanel.clear();
+			iInstructionalMethods.clear();
+			if (record.hasInstructionalMethodSelection()) {
+				for (IdValue m: record.getInstructionalMethods()) {
+					CheckBox ch = new CheckBox(m.getValue());
+					ch.addStyleName("instructional-method");
+					iInstructionalMethods.put(m.getId(), ch);
+					iInstructionalMethodsPanel.add(ch);
+				}
+			} else if (record.hasInstructionalMethods()) {
+				for (IdValue m: record.getInstructionalMethods()) {
+					CheckBox ch = new CheckBox(m.getValue());
+					ch.addStyleName("instructional-method");
+					ch.setValue(true); ch.setEnabled(false);
+					iInstructionalMethods.put(m.getId(), ch);
+					iInstructionalMethodsPanel.add(ch);
 				}
 			}
 		}
@@ -306,7 +342,7 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 			ScrollPanel panel = new ScrollPanel(detail.asWidget());
 			panel.setStyleName("unitime-ScrollPanel-inner");
 			panel.addStyleName("course-info");
-			iCourseDetailsTabPanel.add(panel, detail.getName(), true);
+			iCourseDetailsTabBar.addTab(detail.getName(), true);
 			Character ch = UniTimeHeaderPanel.guessAccessKey(detail.getName());
 			if (ch != null)
 				iTabAccessKeys.put(ch, tabIndex);
@@ -317,18 +353,26 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 
 	@Override
 	public void onKeyUp(KeyUpEvent event) {
+		if (iCourses.getRowCount() < 2 || iCourses.getData(1) == null) return;
+		int row = iCourses.getSelectedRow();
 		if (event.getNativeKeyCode() == KeyCodes.KEY_DOWN) {
-			iCourses.setSelectedRow(iCourses.getSelectedRow() + 1);
+			if (row < 0 || iCourses.getSelectedRow() + 1 >= iCourses.getRowCount())
+				iCourses.setSelected(1, true);
+			else
+				iCourses.setSelected(row + 1, true);
             scrollToSelectedRow();
             updateCourseDetails();
 		} else if (event.getNativeKeyCode()==KeyCodes.KEY_UP) {
-			iCourses.setSelectedRow(iCourses.getSelectedRow() == 0 ? iCourses.getRowsCount() - 1 : iCourses.getSelectedRow() - 1);
+			if (row - 1 < 1)
+				iCourses.setSelected(iCourses.getRowCount() - 1, true);
+			else
+				iCourses.setSelected(row - 1, true);
 			scrollToSelectedRow();
 			updateCourseDetails();
 		} else if (event.isControlKeyDown() || event.isAltKeyDown()) {
 			for (Map.Entry<Character, Integer> entry: iTabAccessKeys.entrySet())
 				if (event.getNativeKeyCode() == Character.toLowerCase(entry.getKey()) || event.getNativeKeyCode() == Character.toUpperCase(entry.getKey())) {
-					iCourseDetailsTabPanel.selectTab(entry.getValue());
+					iCourseDetailsTabBar.selectTab(entry.getValue(), true);
 					event.preventDefault();
 					event.stopPropagation();
 				}
@@ -343,12 +387,12 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 	private void selectLastTab() {
 		try {
 			int tab = Integer.valueOf(Cookies.getCookie("UniTime:CourseFinderCourses"));
-			if (tab >= 0 || tab < iCourseDetailsTabPanel.getTabCount() && tab != iCourseDetailsTabPanel.getSelectedTab())
-				iCourseDetailsTabPanel.selectTab(tab);
+			if (tab >= 0 || tab < iCourseDetailsTabBar.getTabCount() && tab != iCourseDetailsTabBar.getSelectedTab())
+				iCourseDetailsTabBar.selectTab(tab, true);
 			else
-				iCourseDetailsTabPanel.selectTab(0);
+				iCourseDetailsTabBar.selectTab(0, true);
 		} catch (Exception e) {
-			iCourseDetailsTabPanel.selectTab(0);
+			iCourseDetailsTabBar.selectTab(0, true);
 		}
 	}
 

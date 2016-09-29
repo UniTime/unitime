@@ -62,24 +62,24 @@ public class CurriculaCourseSelectionBox extends CourseSelectionSuggestBox {
 					}
 				});
 				CourseFinderDetails details = new CourseFinderDetails();
-				details.setDataProvider(new DataProvider<String, String>() {
+				details.setDataProvider(new DataProvider<CourseAssignment, String>() {
 					@Override
-					public void getData(String source, AsyncCallback<String> callback) {
-						iCurriculaService.retrieveCourseDetails(source, callback);
+					public void getData(CourseAssignment source, AsyncCallback<String> callback) {
+						iCurriculaService.retrieveCourseDetails(source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 					}
 				});
-				CourseFinderClasses classes = new CourseFinderClasses();
-				classes.setDataProvider(new DataProvider<String, Collection<ClassAssignment>>() {
+				CourseFinderClasses classes = new CourseFinderClasses(false);
+				classes.setDataProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
 					@Override
-					public void getData(String source, AsyncCallback<Collection<ClassAssignment>> callback) {
-						iCurriculaService.listClasses(source, callback);
+					public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {
+						iCurriculaService.listClasses(source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 					}
 				});
 				CourseFinderCurricula curricula = new CourseFinderCurricula();
-				curricula.setDataProvider(new DataProvider<String, TreeSet<CurriculumInterface>>() {
+				curricula.setDataProvider(new DataProvider<CourseAssignment, TreeSet<CurriculumInterface>>() {
 					@Override
-					public void getData(String source, AsyncCallback<TreeSet<CurriculumInterface>> callback) {
-						iCurriculaService.findCurriculaForACourse(source, callback);
+					public void getData(CourseAssignment source, AsyncCallback<TreeSet<CurriculumInterface>> callback) {
+						iCurriculaService.findCurriculaForACourse(source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 					}
 				});
 				courses.setCourseDetails(details, classes, curricula);				

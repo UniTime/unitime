@@ -30,9 +30,11 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
+import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
 
 /**
  * @author Tomas Muller
@@ -96,6 +98,14 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 					enrl ++;
 		}
 		course.setEnrollment(enrl);
+		XOffering offering = server.getOffering(c.getOfferingId());
+		if (offering != null)
+			for (XConfig config: offering.getConfigs()) {
+				if (config.getInstructionalMethod() != null)
+					course.addInstructionalMethod(config.getInstructionalMethod().getUniqueId(), config.getInstructionalMethod().getLabel());
+				else
+					course.setHasNoInstructionalMethod(true);
+			}
 		return course;
 	}
 

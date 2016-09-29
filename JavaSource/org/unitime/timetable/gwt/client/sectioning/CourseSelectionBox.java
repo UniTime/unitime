@@ -86,17 +86,17 @@ public class CourseSelectionBox extends CourseSelectionSuggestBox {
 					}
 				});
 				CourseFinderDetails details = new CourseFinderDetails();
-				details.setDataProvider(new DataProvider<String, String>() {
+				details.setDataProvider(new DataProvider<CourseAssignment, String>() {
 					@Override
-					public void getData(String source, AsyncCallback<String> callback) {
-						iSectioningService.retrieveCourseDetails(iAcademicSessionProvider.getAcademicSessionId(), source, callback);
+					public void getData(CourseAssignment source, AsyncCallback<String> callback) {
+						iSectioningService.retrieveCourseDetails(iAcademicSessionProvider.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 					}
 				});
-				CourseFinderClasses classes = new CourseFinderClasses();
-				classes.setDataProvider(new DataProvider<String, Collection<ClassAssignment>>() {
+				CourseFinderClasses classes = new CourseFinderClasses(true);
+				classes.setDataProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
 					@Override
-					public void getData(String source, AsyncCallback<Collection<ClassAssignment>> callback) {
-						iSectioningService.listClasses(iAcademicSessionProvider.getAcademicSessionId(), source, callback);
+					public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {
+						iSectioningService.listClasses(iAcademicSessionProvider.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 					}
 				});
 				courses.setCourseDetails(details, classes);

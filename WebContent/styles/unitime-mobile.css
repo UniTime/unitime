@@ -348,6 +348,7 @@
 	.unitime-CourseRequests .alt-header .note {
 		display: inline-block;
 		white-space: normal;
+		padding-left: 20px;
 	}
 	
 	.unitime-ClassScheduleTabPanel .unitime-ScrollPanel {

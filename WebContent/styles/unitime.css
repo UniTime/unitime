@@ -336,6 +336,30 @@ h1 {
 	background-color: #d0e4f6;
 }
 
+.unitime-MainTable .empty-row {
+	font-style: italic;
+	text-align: center;
+}
+
+.unitime-MainTable .itemize {
+	white-space: normal;
+}
+
+.unitime-MainTable .itemize .item {
+	display: inline-block;
+	white-space: nowrap;
+	padding-right: 5px;
+}
+
+.unitime-MainTable .rowheader {
+	padding-left: 0px;
+	width: 1px;
+}
+
+.unitime-MainTable .top-border-dashed {
+	border-top: 1px dashed #9CB0CE;
+}
+
 .unitime-LoadingPanel {
 	position: absolute;
 	top: 0px;
@@ -4697,6 +4721,15 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-CourseFinderDialog .unitime-Hint {
 	margin-top: 0px;
+}
+
+.unitime-CourseFinderDialog .instructional-methods {
+	vertical-align: middle;	
+}
+
+.unitime-CourseFinderDialog .instructional-method {
+	display: inline-block;
+	padding: 2px 10px 2px 2px;
 }
 
 .unitime-CourseSelectionBox {

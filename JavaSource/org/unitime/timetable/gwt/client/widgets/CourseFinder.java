@@ -45,8 +45,8 @@ public interface CourseFinder extends HasValue<String>, HasSelectionHandlers<Str
 		public void changeTip();
 	}
 		
-	public interface CourseFinderCourseDetails<E> extends TakesValue<String>, IsWidget {
-		public void setDataProvider(DataProvider<String, E> provider);
+	public interface CourseFinderCourseDetails<T, E> extends TakesValue<T>, IsWidget {
+		public void setDataProvider(DataProvider<T, E> provider);
 		public String getName();
 	}
 	

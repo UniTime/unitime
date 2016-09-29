@@ -29,6 +29,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.TabBar;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -98,5 +99,15 @@ public class AriaTabBar extends TabBar {
 		if (html == null || html.isEmpty()) return "";
 		MatchResult result = sStripAcessKeyRegExp.exec(html);
 		return (result == null ? html : result.getGroup(1) + result.getGroup(2) + result.getGroup(3));
+	}
+	
+	public void setRestWidget(Widget rest) {
+		HorizontalPanel panel = (HorizontalPanel)getWidget();
+		rest.addStyleName("gwt-TabBarRest");
+		rest.setHeight("100%");
+		panel.remove(panel.getWidgetCount() - 1);
+		panel.add(rest);
+		panel.setCellWidth(rest, "100%");
+		setStyleName(rest.getElement().getParentElement(), "gwt-TabBarRest-wrapper");
 	}
 }

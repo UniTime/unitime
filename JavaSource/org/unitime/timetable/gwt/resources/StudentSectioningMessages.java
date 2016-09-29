@@ -122,6 +122,9 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("&nbsp;")
 	String colNoteIcon();
+	
+	@DefaultMessage("&nbsp;")
+	String colClassSelection();
 
 	/* Academic Session Selector messages
 	 */

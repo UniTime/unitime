@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.widgets;
 
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -29,10 +30,10 @@ import com.google.gwt.user.client.ui.Widget;
 /**
  * @author Tomas Muller
  */
-public class CourseFinderDetails extends HTML implements CourseFinder.CourseFinderCourseDetails<String> {
+public class CourseFinderDetails extends HTML implements CourseFinder.CourseFinderCourseDetails<CourseAssignment, String> {
 	protected static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
-	private DataProvider<String, String> iDataProvider = null;
-	private String iValue = null;
+	private DataProvider<CourseAssignment, String> iDataProvider = null;
+	private CourseAssignment iValue = null;
 	
 	public CourseFinderDetails() {
 		setHTML(MESSAGES.courseSelectionNoCourseSelected());
@@ -40,7 +41,7 @@ public class CourseFinderDetails extends HTML implements CourseFinder.CourseFind
 	}
 	
 	@Override
-	public void setDataProvider(DataProvider<String, String> provider) {
+	public void setDataProvider(DataProvider<CourseAssignment, String> provider) {
 		iDataProvider = provider;
 	}
 
@@ -50,8 +51,8 @@ public class CourseFinderDetails extends HTML implements CourseFinder.CourseFind
 	}
 
 	@Override
-	public void setValue(String value) {
-		if (value == null || value.isEmpty()) {
+	public void setValue(CourseAssignment value) {
+		if (value == null) {
 			iValue = value;
 			setHTML(MESSAGES.courseSelectionNoCourseSelected());
 			setStyleName("unitime-Message");
@@ -77,7 +78,7 @@ public class CourseFinderDetails extends HTML implements CourseFinder.CourseFind
 	}
 
 	@Override
-	public String getValue() {
+	public CourseAssignment getValue() {
 		return iValue;
 	}
 

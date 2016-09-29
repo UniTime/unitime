@@ -52,6 +52,7 @@ public class XConfig implements Serializable, Comparable<XConfig>, Externalizabl
     private Long iOfferingId = null;
     private int iLimit = -1;
     private List<XSubpart> iSubparts = new ArrayList<XSubpart>();
+    private XInstructionalMethod iInstructionalMethod = null;
 
     public XConfig() {
     }
@@ -77,6 +78,8 @@ public class XConfig implements Serializable, Comparable<XConfig>, Externalizabl
     		credit = false;
         }
     	Collections.sort(iSubparts, new XSubpartComparator());
+    	if (config.getInstructionalMethod() != null)
+    		iInstructionalMethod = new XInstructionalMethod(config.getInstructionalMethod());
     }
     
     public XConfig(Config config) {
@@ -135,6 +138,10 @@ public class XConfig implements Serializable, Comparable<XConfig>, Externalizabl
     public List<XSubpart> getSubparts() {
         return iSubparts;
     }
+    
+    public XInstructionalMethod getInstructionalMethod() {
+    	return iInstructionalMethod;
+    }
 
     @Override
     public String toString() {
@@ -189,6 +196,9 @@ public class XConfig implements Serializable, Comparable<XConfig>, Externalizabl
 		iSubparts.clear();
 		for (int i = 0; i < nrSubparts; i++)
 			iSubparts.add(new XSubpart(in));
+
+		if (in.readBoolean())
+			iInstructionalMethod = new XInstructionalMethod(in);
 	}
 
 	@Override
@@ -201,6 +211,10 @@ public class XConfig implements Serializable, Comparable<XConfig>, Externalizabl
 		out.writeInt(iSubparts.size());
 		for (XSubpart subpart: iSubparts)
 			subpart.writeExternal(out);
+		
+		out.writeBoolean(iInstructionalMethod != null);
+		if (iInstructionalMethod != null)
+			iInstructionalMethod.writeExternal(out);
 	}
 	
 	public static class XConfigSerializer implements Externalizer<XConfig> {

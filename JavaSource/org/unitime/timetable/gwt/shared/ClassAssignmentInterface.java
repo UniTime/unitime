@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 import com.google.gwt.regexp.shared.MatchResult;
@@ -93,6 +94,8 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private String iEnrollmentMessage = null;
 
 		private ArrayList<ClassAssignment> iAssignments = new ArrayList<ClassAssignment>();
+		private Set<IdValue> iInstructionalMethods = null;
+		private boolean iHasNoInstructionalMethod = false;
 
 		public Long getCourseId() { return iCourseId; }
 		public void setCourseId(Long courseId) { iCourseId = courseId; }
@@ -128,6 +131,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 
 		public String getNote() { return iNote; }
 		public void setNote(String note) { iNote = note; }
+		public boolean hasNote() { return iNote != null && !iNote.isEmpty(); }
 		
 		public boolean hasCredit() { return iCreditAbbv != null && !iCreditAbbv.isEmpty(); }
 		public String getCreditText() { return iCreditText; }
@@ -210,6 +214,23 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public String getEnrollmentMessage() { return iEnrollmentMessage; }
 		public boolean hasEnrollmentMessage() { return iEnrollmentMessage != null && !iEnrollmentMessage.isEmpty(); }
 		public void setEnrollmentMessage(String message) { iEnrollmentMessage = message; }
+		
+		public boolean hasInstructionalMethods() { return iInstructionalMethods != null && !iInstructionalMethods.isEmpty(); }
+		public Set<IdValue> getInstructionalMethods() { return iInstructionalMethods; }
+		public void addInstructionalMethod(Long id, String value) {
+			if (iInstructionalMethods == null)
+				iInstructionalMethods = new TreeSet<IdValue>();
+			iInstructionalMethods.add(new IdValue(id, value));
+		}
+		public boolean isHasNoInstructionalMethod() { return iHasNoInstructionalMethod; }
+		public void setHasNoInstructionalMethod(boolean hasNoInstructionalMethod) { iHasNoInstructionalMethod = hasNoInstructionalMethod; }
+		public boolean hasInstructionalMethodSelection() {
+			if (hasInstructionalMethods()) {
+				return getInstructionalMethods().size() + (isHasNoInstructionalMethod() ? 1 : 0) > 1;
+			} else {
+				return false;
+			}
+		}
 		
 		public String toString() {
 			return (isFreeTime() ? "Free Time" : getSubject() + " " + getCourseNbr()) + ": " + (isAssigned() ? getClassAssignments() : "NOT ASSIGNED");
@@ -1072,6 +1093,40 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 
 		public String getProto() { return iProto; }
 		public void setProto(String proto) { iProto = proto; }
-}
+	}
 	
+	public static class IdValue implements IsSerializable, Serializable, Comparable<IdValue> {
+		private static final long serialVersionUID = 1L;
+		private Long iId;
+		private String iValue;
+		
+		public IdValue() {}
+		public IdValue(Long id, String value) { 
+			iId = id; iValue = value;
+		}
+		
+		public Long getId() { return iId; }
+		public String getValue() { return iValue; }
+		
+		@Override
+		public int compareTo(IdValue other) {
+			return getValue().compareTo(other.getValue());
+		}
+		
+		@Override
+		public String toString() {
+			return getValue();
+		}
+		
+		@Override
+		public int hashCode() {
+			return getId().hashCode();
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof IdValue)) return false;
+			return getId().equals(((IdValue)o).getId());
+		}
+	}
 }

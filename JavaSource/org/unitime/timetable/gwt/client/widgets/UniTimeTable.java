@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
+import org.unitime.timetable.gwt.client.aria.AriaHiddenLabel;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm.HasMobileScroll;
 
@@ -58,6 +59,7 @@ public class UniTimeTable<T> extends FlexTable implements HasMobileScroll {
 	private List<MouseOverListener<T>> iMouseOverListeners = new ArrayList<MouseOverListener<T>>();
 	private List<MouseOutListener<T>> iMouseOutListeners = new ArrayList<MouseOutListener<T>>();
 	private List<MouseClickListener<T>> iMouseClickListeners = new ArrayList<MouseClickListener<T>>();
+	private List<MouseDoubleClickListener<T>> iMouseDoubleClickListeners = new ArrayList<MouseDoubleClickListener<T>>();
 	private List<DataChangedListener<T>> iDataChangedListeners = new ArrayList<DataChangedListener<T>>();
 	
 	private PopupPanel iHintPanel = null;
@@ -74,6 +76,7 @@ public class UniTimeTable<T> extends FlexTable implements HasMobileScroll {
 		sinkEvents(Event.ONMOUSEOUT);
 		sinkEvents(Event.ONCLICK);
 		sinkEvents(Event.ONKEYDOWN);
+		sinkEvents(Event.ONDBLCLICK);
 		setStylePrimaryName("unitime-MainTable");
 		iHintPanel = new PopupPanel();
 		iHintPanel.setStyleName("unitime-PopupHint");
@@ -85,6 +88,8 @@ public class UniTimeTable<T> extends FlexTable implements HasMobileScroll {
 	
 	public void setAllowMultiSelect(boolean allow) { iAllowMultiSelect = allow; }
 	public boolean isAllowMultiSelect() { return iAllowMultiSelect; }
+	
+	public boolean isCanSelectRow(int row) { return true; }
 
 	public void clearTable(int headerRows) {
 		for (int row = getRowCount() - 1; row >= headerRows; row--)
@@ -96,11 +101,11 @@ public class UniTimeTable<T> extends FlexTable implements HasMobileScroll {
 		clearTable(0);
 	}
 	
-	public void addRow(T data, Widget... widgets) {
+	public int addRow(T data, Widget... widgets) {
 		List<Widget> list = new ArrayList<Widget>();
 		for (Widget widget: widgets)
 			list.add(widget);
-		addRow(data, list);
+		return addRow(data, list);
 	}
 	
 	public int addRow(T data, List<? extends Widget> widgets) {
@@ -140,7 +145,10 @@ public class UniTimeTable<T> extends FlexTable implements HasMobileScroll {
 			if (widget instanceof HasColumn)
 				((HasColumn)widget).setColumn(col);
 			setWidget(row, col, cell);
-			if (widget instanceof UniTimeTableHeader) {
+			if (widget instanceof AriaHiddenLabel) {
+				getFlexCellFormatter().addStyleName(row, col, "rowheader");
+				Roles.getRowheaderRole().set(getCellFormatter().getElement(row, col));
+			} else if (widget instanceof UniTimeTableHeader) {
 				Roles.getColumnheaderRole().set(getCellFormatter().getElement(row, col));
 			} else {
 				Roles.getGridcellRole().set(getCellFormatter().getElement(row, col));
@@ -569,7 +577,7 @@ public class UniTimeTable<T> extends FlexTable implements HasMobileScroll {
 			}
 			break;
 		case Event.ONCLICK:
-			if (isAllowSelection() && hasData) {
+			if (isAllowSelection() && hasData && isCanSelectRow(row)) {
 				Element element = DOM.eventGetTarget(event);
 				while (element.getPropertyString("tagName").equalsIgnoreCase("div"))
 					element = DOM.getParent(element);
@@ -591,6 +599,32 @@ public class UniTimeTable<T> extends FlexTable implements HasMobileScroll {
 				iHintPanel.hide();
 			for (MouseClickListener<T> listener: iMouseClickListeners)
 				listener.onMouseClick(tableEvent);
+			break;
+		case Event.ONDBLCLICK:
+			/*
+			if (isAllowSelection() && hasData && isCanSelectRow(row)) {
+				Element element = DOM.eventGetTarget(event);
+				while (element.getPropertyString("tagName").equalsIgnoreCase("div"))
+					element = DOM.getParent(element);
+				if (isAllowMultiSelect()) {
+					if (element.getPropertyString("tagName").equalsIgnoreCase("td")) {
+						boolean hover = ("unitime-TableRowHover".equals(style) || "unitime-TableRowSelectedHover".equals(style));
+						boolean selected = !("unitime-TableRowSelected".equals(style) || "unitime-TableRowSelectedHover".equals(style));
+						getRowFormatter().setStyleName(row, "unitime-TableRow" + (selected ? "Selected" : "") + (hover ? "Hover" : ""));
+					}
+				} else {
+					int old = getSelectedRow();
+					if (old != row && old >= 0)
+						setSelected(old, false);
+					boolean hover = ("unitime-TableRowHover".equals(style) || "unitime-TableRowSelectedHover".equals(style));
+					getRowFormatter().setStyleName(row, "unitime-TableRowSelected" + (hover ? "Hover" : ""));
+				}
+			}
+			*/
+			if (iHintPanel != null && iHintPanel.isShowing())
+				iHintPanel.hide();
+			for (MouseDoubleClickListener<T> listener: iMouseDoubleClickListeners)
+				listener.onMouseDoubleClick(tableEvent);
 			break;
 		case Event.ONKEYDOWN:
 			if (event.getKeyCode() == KeyCodes.KEY_RIGHT && (event.getAltKey() || event.getMetaKey())) {
@@ -695,6 +729,7 @@ public class UniTimeTable<T> extends FlexTable implements HasMobileScroll {
 	}
 	
 	public void setSelected(int row, boolean selected) {
+		if (!isCanSelectRow(row)) return;
 		if (isAllowSelection() && !isAllowMultiSelect() && selected) {
 			int old = getSelectedRow();
 			if (old >= 0 && old != row) setSelected(old, false);
@@ -781,6 +816,14 @@ public class UniTimeTable<T> extends FlexTable implements HasMobileScroll {
 	
 	public void addMouseClickListener(MouseClickListener<T> mouseClickListener) {
 		iMouseClickListeners.add(mouseClickListener);
+	}
+	
+	public static interface MouseDoubleClickListener<T> {
+		public void onMouseDoubleClick(TableEvent<T> event);
+	}
+	
+	public void addMouseDoubleClickListener(MouseDoubleClickListener<T> mouseDoubleClickListener) {
+		iMouseDoubleClickListeners.add(mouseDoubleClickListener);
 	}
 
 	public static class DataChangedEvent<T> {
@@ -964,5 +1007,20 @@ public class UniTimeTable<T> extends FlexTable implements HasMobileScroll {
 			if (td == getBodyElement()) { return -1; }
 		}
 		return -1;
+	}
+	
+	public void setEmptyMessage(String message) {
+		addRow(null, new EmptyRow(message));
+	}
+	
+	public class EmptyRow extends P implements UniTimeTable.HasColSpan {
+		public EmptyRow(String message) {
+			super("empty-row");
+			setText(message);
+		}
+		@Override
+		public int getColSpan() {
+			return getRowCount() == 0 ? 1 : getCellCount(0);
+		}
 	}
 }

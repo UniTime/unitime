@@ -25,6 +25,7 @@ import org.unitime.timetable.gwt.client.widgets.CourseFinder;
 import org.unitime.timetable.gwt.client.widgets.DataProvider;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.CurriculumInterface;
 
 import com.google.gwt.core.client.GWT;
@@ -33,12 +34,12 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 /**
  * @author Tomas Muller
  */
-public class CourseFinderCurricula extends CourseCurriculaTable implements CourseFinder.CourseFinderCourseDetails<TreeSet<CurriculumInterface>>{
+public class CourseFinderCurricula extends CourseCurriculaTable implements CourseFinder.CourseFinderCourseDetails<CourseAssignment, TreeSet<CurriculumInterface>>{
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static final StudentSectioningMessages SCT_MESSAGES = GWT.create(StudentSectioningMessages.class);
 	
-	private String iValue = null;
-	private DataProvider<String, TreeSet<CurriculumInterface>> iDataProvider;
+	private CourseAssignment iValue = null;
+	private DataProvider<CourseAssignment, TreeSet<CurriculumInterface>> iDataProvider;
 	
 	public CourseFinderCurricula() {
 		super(false, false);
@@ -46,8 +47,8 @@ public class CourseFinderCurricula extends CourseCurriculaTable implements Cours
 	}
 
 	@Override
-	public void setValue(final String value) {
-		if (value == null || value.isEmpty()) {
+	public void setValue(final CourseAssignment value) {
+		if (value == null) {
 			iValue = value;
 			clear(false);
 			setMessage(SCT_MESSAGES.courseSelectionNoCourseSelected());
@@ -84,12 +85,12 @@ public class CourseFinderCurricula extends CourseCurriculaTable implements Cours
 	}
 
 	@Override
-	public String getValue() {
+	public CourseAssignment getValue() {
 		return iValue;
 	}
 
 	@Override
-	public void setDataProvider(DataProvider<String, TreeSet<CurriculumInterface>> provider) {
+	public void setDataProvider(DataProvider<CourseAssignment, TreeSet<CurriculumInterface>> provider) {
 		iDataProvider = provider;
 	}
 

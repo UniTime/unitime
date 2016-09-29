@@ -170,6 +170,30 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		}
 	}
 	
+	public static class RequestedCourse {
+		private Long iCourseId;
+		private String iCourseName;
+		
+		public RequestedCourse() {}
+		
+		public Long getCourseId() { return iCourseId; }
+		public boolean hasCourseId() { return iCourseId != null; }
+		public void setCourseId(Long courseId) { iCourseId = courseId; }
+		
+		public String getCourseName() { return iCourseName; }
+		public void setCourseName(String courseName) { iCourseName = courseName; }
+		
+		@Override
+		public int hashCode() {
+			return (hasCourseId() ? getCourseId().hashCode() : getCourseName().hashCode());
+		}
+		
+		@Override
+		public String toString() {
+			return getCourseName();
+		}
+	}
+	
 	public static class Request implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private ArrayList<FreeTime> iRequestedFreeTime = null;
