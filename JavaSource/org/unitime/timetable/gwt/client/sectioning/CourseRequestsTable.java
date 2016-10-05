@@ -26,7 +26,6 @@ import java.util.List;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
 import org.unitime.timetable.gwt.client.aria.ImageButton;
-import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.CourseSelection;
 import org.unitime.timetable.gwt.client.widgets.CourseSelectionEvent;
 import org.unitime.timetable.gwt.client.widgets.CourseSelectionHandler;
@@ -42,10 +41,11 @@ import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.SectioningException;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -97,18 +97,18 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		
 		iCheckForDuplicities = new Validator<CourseSelection>() {
 			public String validate(CourseSelection source) {
-				if (source.getValue().isEmpty() || source.isFreeTime()) return null;
-				String course = source.getValue();
+				RequestedCourse course = source.getValue();
+				if (course == null || course.isFreeTime()) return null;
 				for (CourseSelectionBox[] c: iCourses) {
 					for (int i = 0; i < c.length; i++) {
 						if (c[i] == source) continue;
-						if (c[i].getValue().equals(course)) return MESSAGES.validationMultiple(course);
+						if (course.equals(c[i].getValue())) return MESSAGES.validationMultiple(course.getCourseName());
 					}
 				}
 				for (CourseSelectionBox[] c: iAlternatives) {
 					for (int i = 0; i < c.length; i++) {
 						if (c[i] == source) continue;
-						if (c[i].getValue().equals(course)) return MESSAGES.validationMultiple(course);
+						if (course.equals(c[i].getValue())) return MESSAGES.validationMultiple(course.getCourseName());
 					}
 				}
 				return null;
@@ -301,18 +301,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		}
 		iAlternatives.get(0)[0].setHint(MESSAGES.courseRequestsHintA0());
 		
-		initAsync();
-	}
-	
-	private void initAsync() {
-		GWT.runAsync(new RunAsyncCallback() {
-			public void onSuccess() {
-				init();
-			}
-			public void onFailure(Throwable reason) {
-				UniTimeNotifications.error(reason);
-			}
-		});
+		init();
 	}
 	
 	private void addCourseLine() {
@@ -407,10 +396,10 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			@Override
 			public void onCourseSelection(CourseSelectionEvent event) {
 				if (event.isValid()) c[0].setError("");
-				if (!c[0].isFreeTime()) {
+				if (event.getValue().isFreeTime()) {
 					c[1].setEnabled(event.isValid() || !c[1].getValue().isEmpty() || !c[2].getValue().isEmpty());
 					if (event.isValid() && !c[0].getValue().isEmpty())
-						c[1].setHint(MESSAGES.courseRequestsHintAlt(c[0].getValue()));
+						c[1].setHint(MESSAGES.courseRequestsHintAlt(c[0].getText()));
 					else
 						c[1].setHint("");
 				} else {
@@ -426,7 +415,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 				if (event.isValid()) c[1].setError("");
 				c[2].setEnabled(event.isValid() || !c[2].getValue().isEmpty());
 				if (event.isValid() && !c[0].getValue().isEmpty() && !c[1].getValue().isEmpty())
-					c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getValue(), c[1].getValue()));
+					c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getText(), c[1].getText()));
 				else
 					c[2].setHint("");
 				ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
@@ -444,10 +433,10 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 				if (!c[1].getValue().isEmpty() && c[0].getValue().isEmpty()) {
 					return MESSAGES.validationNoCourse();
 				}
-				if (!c[1].getValue().isEmpty() && c[0].isFreeTime()) {
+				if (!c[1].getValue().isEmpty() && c[0].getValue().isFreeTime()) {
 					return MESSAGES.validationFreeTimeWithAlt();
 				}
-				if (c[1].isFreeTime()) {
+				if (c[1].getValue().isFreeTime()) {
 					return MESSAGES.validationAltFreeTime();
 				}
 				return null;
@@ -458,10 +447,10 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 				if (!c[2].getValue().isEmpty() && c[1].getValue().isEmpty()) {
 					return MESSAGES.validationSecondAltWithoutFirst();
 				}
-				if (!c[2].getValue().isEmpty() && c[0].isFreeTime()) {
+				if (!c[2].getValue().isEmpty() && c[0].getValue().isFreeTime()) {
 					return MESSAGES.validationFreeTimeWithAlt();
 				}
-				if (c[2].isFreeTime()) {
+				if (c[2].getValue().isFreeTime()) {
 					return MESSAGES.validationAltFreeTime();
 				}
 				return null;
@@ -549,10 +538,10 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			@Override
 			public void onCourseSelection(CourseSelectionEvent event) {
 				if (event.isValid()) c[0].setError("");
-				if (!c[0].isFreeTime()) {
+				if (!event.getValue().isFreeTime()) {
 					c[1].setEnabled(event.isValid() || !c[1].getValue().isEmpty() || !c[2].getValue().isEmpty());
 					if (event.isValid() && !c[0].getValue().isEmpty())
-						c[1].setHint(MESSAGES.courseRequestsHintAlt(c[0].getValue()));
+						c[1].setHint(MESSAGES.courseRequestsHintAlt(c[0].getText()));
 					else
 						c[1].setHint("");
 				} else {
@@ -568,7 +557,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 				if (event.isValid()) c[1].setError("");
 				c[2].setEnabled(event.isValid() || !c[2].getValue().isEmpty());
 				if (event.isValid() && !c[0].getValue().isEmpty() && !c[1].getValue().isEmpty())
-					c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getValue(), c[1].getValue()));
+					c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getText(), c[1].getText()));
 				else
 					c[2].setHint("");
 				ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
@@ -583,7 +572,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		});
 		c[0].addValidator(new Validator<CourseSelection>() {
 			public String validate(CourseSelection source) {
-				if (c[0].isFreeTime()) {
+				if (c[0].getValue().isFreeTime()) {
 					return MESSAGES.validationAltFreeTime();
 				}
 				return null;
@@ -594,10 +583,10 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 				if (!c[1].getValue().isEmpty() && c[0].getValue().isEmpty()) {
 					return MESSAGES.validationNoCourse();
 				}
-				if (!c[1].getValue().isEmpty() && c[0].isFreeTime()) {
+				if (!c[1].getValue().isEmpty() && c[0].getValue().isFreeTime()) {
 					return MESSAGES.validationFreeTimeWithAlt();
 				}
-				if (c[1].isFreeTime()) {
+				if (c[1].getValue().isFreeTime()) {
 					return MESSAGES.validationAltFreeTime();
 				}
 				return null;
@@ -608,10 +597,10 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 				if (!c[2].getValue().isEmpty() && c[1].getValue().isEmpty()) {
 					return MESSAGES.validationSecondAltWithoutFirst();
 				}
-				if (!c[2].getValue().isEmpty() && c[0].isFreeTime()) {
+				if (!c[2].getValue().isEmpty() && c[0].getValue().isFreeTime()) {
 					return MESSAGES.validationFreeTimeWithAlt();
 				}
-				if (c[2].isFreeTime()) {
+				if (c[2].getValue().isFreeTime()) {
 					return MESSAGES.validationAltFreeTime();
 				}
 				return null;
@@ -630,10 +619,10 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 				@Override
 				public void onCourseSelection(CourseSelectionEvent event) {
 					if (event.isValid()) c[0].setError("");
-					if (!c[0].isFreeTime()) {
+					if (!event.getValue().isFreeTime()) {
 						c[1].setEnabled(event.isValid() || !c[1].getValue().isEmpty() || !c[2].getValue().isEmpty());
 						if (event.isValid() && !c[0].getValue().isEmpty())
-							c[1].setHint(MESSAGES.courseRequestsHintAlt(c[0].getValue()));
+							c[1].setHint(MESSAGES.courseRequestsHintAlt(c[0].getText()));
 						else
 							c[1].setHint("");
 					} else {
@@ -649,7 +638,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 					if (event.isValid()) c[1].setError("");
 					c[2].setEnabled(event.isValid() || !c[2].getValue().isEmpty());
 					if (event.isValid() && !c[0].getValue().isEmpty() && !c[1].getValue().isEmpty())
-						c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getValue(), c[1].getValue()));
+						c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getText(), c[1].getText()));
 					else
 						c[2].setHint("");
 					ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
@@ -667,10 +656,10 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 					if (!c[1].getValue().isEmpty() && c[0].getValue().isEmpty()) {
 						return MESSAGES.validationNoCourse();
 					}
-					if (!c[1].getValue().isEmpty() && c[0].isFreeTime()) {
+					if (!c[1].getValue().isEmpty() && c[0].getValue().isFreeTime()) {
 						return MESSAGES.validationFreeTimeWithAlt();
 					}
-					if (c[1].isFreeTime()) {
+					if (c[1].getValue().isFreeTime()) {
 						return MESSAGES.validationAltFreeTime();
 					}
 					return null;
@@ -681,10 +670,10 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 					if (!c[2].getValue().isEmpty() && c[1].getValue().isEmpty()) {
 						return MESSAGES.validationSecondAltWithoutFirst();
 					}
-					if (!c[2].getValue().isEmpty() && c[0].isFreeTime()) {
+					if (!c[2].getValue().isEmpty() && c[0].getValue().isFreeTime()) {
 						return MESSAGES.validationFreeTimeWithAlt();
 					}
-					if (c[2].isFreeTime()) {
+					if (c[2].getValue().isFreeTime()) {
 						return MESSAGES.validationAltFreeTime();
 					}
 					return null;
@@ -702,10 +691,10 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 				@Override
 				public void onCourseSelection(CourseSelectionEvent event) {
 					if (event.isValid()) c[0].setError("");
-					if (!c[0].isFreeTime()) {
+					if (!c[0].getValue().isFreeTime()) {
 						c[1].setEnabled(event.isValid() || !c[1].getValue().isEmpty() || !c[2].getValue().isEmpty());
 						if (event.isValid() && !c[0].getValue().isEmpty())
-							c[1].setHint(MESSAGES.courseRequestsHintAlt(c[0].getValue()));
+							c[1].setHint(MESSAGES.courseRequestsHintAlt(c[0].getText()));
 						else
 							c[1].setHint("");
 					} else {
@@ -721,7 +710,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 					if (event.isValid()) c[1].setError("");
 					c[2].setEnabled(event.isValid() || !c[2].getValue().isEmpty());
 					if (event.isValid() && !c[0].getValue().isEmpty() && !c[1].getValue().isEmpty())
-						c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getValue(), c[1].getValue()));
+						c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getText(), c[1].getText()));
 					else
 						c[2].setHint("");
 					ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
@@ -736,7 +725,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			});
 			c[0].addValidator(new Validator<CourseSelection>() {
 				public String validate(CourseSelection source) {
-					if (c[0].isFreeTime()) {
+					if (c[0].getValue().isFreeTime()) {
 						return MESSAGES.validationAltFreeTime();
 					}
 					return null;
@@ -747,10 +736,10 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 					if (!c[1].getValue().isEmpty() && c[0].getValue().isEmpty()) {
 						return MESSAGES.validationNoCourse();
 					}
-					if (!c[1].getValue().isEmpty() && c[0].isFreeTime()) {
+					if (!c[1].getValue().isEmpty() && c[0].getValue().isFreeTime()) {
 						return MESSAGES.validationFreeTimeWithAlt();
 					}
-					if (c[1].isFreeTime()) {
+					if (c[1].getValue().isFreeTime()) {
 						return MESSAGES.validationAltFreeTime();
 					}
 					return null;
@@ -761,10 +750,10 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 					if (!c[2].getValue().isEmpty() && c[1].getValue().isEmpty()) {
 						return MESSAGES.validationSecondAltWithoutFirst();
 					}
-					if (!c[2].getValue().isEmpty() && c[0].isFreeTime()) {
+					if (!c[2].getValue().isEmpty() && c[0].getValue().isFreeTime()) {
 						return MESSAGES.validationFreeTimeWithAlt();
 					}
-					if (c[2].isFreeTime()) {
+					if (c[2].getValue().isFreeTime()) {
 						return MESSAGES.validationAltFreeTime();
 					}
 					return null;
@@ -782,7 +771,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		iCanWaitList = canWaitList;
 		iHeaderWaitlist.setVisible(canWaitList);
 		for (int i = 0; i < iLines.size(); i++)
-			((P)iLines.get(0).getWidget(4)).getWidget(0).setVisible(iCanWaitList);
+			((P)iLines.get(i).getWidget(4)).getWidget(0).setVisible(iCanWaitList);
 	}
 
 	public void validate(final AsyncCallback<Boolean> callback) {
@@ -829,12 +818,12 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		GWT.log(error);
 		for (CourseSelectionBox[] c: iCourses) {
 			for (int i = 0; i < c.length; i++) {
-				if (course.equals(c[i].getValue()) && c[i].getError() == null) c[i].setError(error);			
+				if (course.equals(c[i].getText())) c[i].setError(error);
 			}
 		}
 		for (CourseSelectionBox[] c: iAlternatives) {
 			for (int i = 0; i < c.length; i++) {
-				if (course.equals(c[i].getValue()) && c[i].getError() == null) c[i].setError(error);			
+				if (course.equals(c[i].getText())) c[i].setError(error);
 			}
 		}
 	}
@@ -846,26 +835,25 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	public void fillInCourses(CourseRequestInterface cr) {
 		for (CourseSelectionBox[] course: iCourses) {
 			CourseRequestInterface.Request req = new CourseRequestInterface.Request();
-			course[0].fillInFreeTime(req);
-			req.setRequestedCourse(course[0].getValue());
-			req.setFirstAlternative(course[1].getValue());
-			req.setSecondAlternative(course[2].getValue());
+			for (CourseSelectionBox c: course) {
+				RequestedCourse rc = c.getValue();
+				if (rc != null && !rc.isEmpty()) req.addRequestedCourse(rc);
+			}
 			req.setWaitList(course[0].getWaitList());
-			if (!course[0].isEnabled())
-				req.setReadOnly(course[2].isSaved() ? 2 : course[1].isSaved() ? 1 : 0);
-			cr.getCourses().add(req);
+			if (!req.isEmpty())
+				cr.getCourses().add(req);
 		}
 	}
 	
 	public void fillInAlternatives(CourseRequestInterface cr) {
 		for (CourseSelectionBox[] course: iAlternatives) {
 			CourseRequestInterface.Request req = new CourseRequestInterface.Request();
-			req.setRequestedCourse(course[0].getValue());
-			req.setFirstAlternative(course[1].getValue());
-			req.setSecondAlternative(course[2].getValue());
-			if (!course[0].isEnabled())
-				req.setReadOnly(course[2].isSaved() ? 2 : course[1].isSaved() ? 1 : 0);
-			cr.getAlternatives().add(req);
+			for (CourseSelectionBox c: course) {
+				RequestedCourse rc = c.getValue();
+				if (rc != null && !rc.isEmpty()) req.addRequestedCourse(rc);
+			}
+			if (!req.isEmpty())
+				cr.getAlternatives().add(req);
 		}
 	}
 	
@@ -881,40 +869,28 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		clear();
 		while (iCourses.size() < request.getCourses().size()) addCourseLine();
 		for (int idx = 0; idx < request.getCourses().size(); idx++) {
-			iCourses.get(idx)[0].setValue(request.getCourses().get(idx).getRequestedCourse(), true);
-			iCourses.get(idx)[1].setValue(request.getCourses().get(idx).getFirstAlternative(), true);
-			iCourses.get(idx)[2].setValue(request.getCourses().get(idx).getSecondAlternative(), true);
+			for (int c = 0; c < 3; c++) {
+				RequestedCourse rc = request.getCourses().get(idx).getRequestedCourse(c);
+				iCourses.get(idx)[c].setValue(rc, true);
+				if (c == 0 && rc != null && rc.isReadOnly())
+					iCourses.get(idx)[c].setWaitListEnabled(false);
+			}
 			iCourses.get(idx)[0].setWaitList(request.getCourses().get(idx).isWaitList());
 			if (request.getCourses().get(idx).isReadOnly()) {
-				iCourses.get(idx)[0].setSaved(request.getCourses().get(idx).isRequestedCourseReadOnly());
-				iCourses.get(idx)[1].setSaved(request.getCourses().get(idx).isFirstAlternativeReadOnly());
-				iCourses.get(idx)[2].setSaved(request.getCourses().get(idx).isSecondAlternativeReadOnly());
 				iCourses.get(idx)[0].setEnabled(false);
 				iCourses.get(idx)[1].setEnabled(false); iCourses.get(idx)[1].setHint("");
 				iCourses.get(idx)[2].setEnabled(false); iCourses.get(idx)[2].setHint("");
 				iCourses.get(idx)[0].setWaitListEnabled(false);
-			} else {
-				iCourses.get(idx)[0].setSaved(false);
-				iCourses.get(idx)[1].setSaved(false);
-				iCourses.get(idx)[2].setSaved(false);
 			}
 		}
 		while (iAlternatives.size() < request.getAlternatives().size()) addAlternativeLine();
 		for (int idx = 0; idx < request.getAlternatives().size(); idx++) {
-			iAlternatives.get(idx)[0].setValue(request.getAlternatives().get(idx).getRequestedCourse(), true);
-			iAlternatives.get(idx)[1].setValue(request.getAlternatives().get(idx).getFirstAlternative(), true);
-			iAlternatives.get(idx)[2].setValue(request.getAlternatives().get(idx).getSecondAlternative(), true);
+			for (int c = 0; c < 3; c++)
+				iAlternatives.get(idx)[c].setValue(request.getAlternatives().get(idx).getRequestedCourse(c), true);
 			if (request.getAlternatives().get(idx).isReadOnly()) {
-				iAlternatives.get(idx)[0].setSaved(request.getAlternatives().get(idx).isRequestedCourseReadOnly());
-				iAlternatives.get(idx)[1].setSaved(request.getAlternatives().get(idx).isFirstAlternativeReadOnly());
-				iAlternatives.get(idx)[2].setSaved(request.getAlternatives().get(idx).isSecondAlternativeReadOnly());
 				iAlternatives.get(idx)[0].setEnabled(false);
 				iAlternatives.get(idx)[1].setEnabled(false); iAlternatives.get(idx)[1].setHint("");
 				iAlternatives.get(idx)[2].setEnabled(false); iAlternatives.get(idx)[2].setHint("");				
-			} else {
-				iAlternatives.get(idx)[0].setSaved(false);
-				iAlternatives.get(idx)[1].setSaved(false);
-				iAlternatives.get(idx)[2].setSaved(false);
 			}
 		}
 	}
@@ -938,7 +914,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		iTip.setText(CONSTANTS.tips()[(int)(Math.random() * CONSTANTS.tips().length)]);
 		for (CourseSelectionBox[] c: iCourses) {
 			for (int i=0;i<3;i++) {
-				c[i].setValue("");
+				c[i].setValue(null);
 				c[i].setSaved(false);
 				if (i>0) {
 					c[i].setEnabled(false);
@@ -952,7 +928,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		}
 		for (CourseSelectionBox[] c: iAlternatives) {
 			for (int i=0;i<3;i++) {
-				c[i].setValue("");
+				c[i].setValue(null);
 				c[i].setSaved(false);
 				if (i>0) {
 					c[i].setEnabled(false);
@@ -1002,7 +978,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 
 	protected void clear(CourseSelectionBox[] c) {
 		for (int i=0;i<3;i++) {
-			c[i].setValue("");
+			c[i].setValue(null);
 			c[i].setSaved(false);
 			if (i>0) {
 				c[i].setEnabled(false);
@@ -1026,11 +1002,11 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		}
 	}
 
-	public Command addCourse(String text) {
+	public Command addCourse(RequestedCourse rc) {
 		for (final CourseSelectionBox[] course: iCourses) {
-			if (course[0].getValue().isEmpty()) {
+			if (!course[0].hasValue()) {
 				clear(course);
-				course[0].setValue(text, true);
+				course[0].setValue(rc, true);
 				return new Command() {
 					@Override
 					public void execute() {
@@ -1042,7 +1018,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		}
 		addCourseLine();
 		final CourseSelectionBox[] course = iCourses.get(iCourses.size() - 1);
-		course[0].setValue(text, true);
+		course[0].setValue(rc, true);
 		return new Command() {
 			@Override
 			public void execute() {
@@ -1052,27 +1028,27 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		};
 	}
 
-	public boolean hasCourse(String text) {
+	public boolean hasCourse(RequestedCourse rc) {
 		for (final CourseSelectionBox[] course: iCourses) {
-			if (text.equalsIgnoreCase(course[0].getValue()) || text.equalsIgnoreCase(course[1].getValue()) || text.equalsIgnoreCase(course[2].getValue()))
+			if (rc.equals(course[0].getValue()) || rc.equals(course[1].getValue()) || rc.equals(course[2].getValue()))
 				return true;
 		}
 		for (final CourseSelectionBox[] course: iAlternatives) {
-			if (text.equalsIgnoreCase(course[0].getValue()) || text.equalsIgnoreCase(course[1].getValue()) || text.equalsIgnoreCase(course[2].getValue()))
+			if (rc.equals(course[0].getValue()) || rc.equals(course[1].getValue()) || rc.equals(course[2].getValue()))
 				return true;
 		}
 		return false;
 	}
 
-	public void dropCourse(String text) {
+	public void dropCourse(RequestedCourse rc) {
 		for (final CourseSelectionBox[] course: iCourses) {
-			if (text.equalsIgnoreCase(course[0].getValue()) || text.equalsIgnoreCase(course[1].getValue()) || text.equalsIgnoreCase(course[2].getValue())) {
+			if (rc.equals(course[0].getValue()) || rc.equals(course[1].getValue()) || rc.equals(course[2].getValue())) {
 				course[0].remove();
 				return;
 			}
 		}
 		for (final CourseSelectionBox[] course: iAlternatives) {
-			if (text.equalsIgnoreCase(course[0].getValue()) || text.equalsIgnoreCase(course[1].getValue()) || text.equalsIgnoreCase(course[2].getValue())) {
+			if (rc.equals(course[0].getValue()) || rc.equals(course[1].getValue()) || rc.equals(course[2].getValue())) {
 				course[0].remove();
 				return;
 			}
@@ -1080,33 +1056,20 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	}
 
 	public void dropCourse(ClassAssignmentInterface.ClassAssignment assignment) {
-		if (assignment.isFreeTime()) {
-			String free = assignment.getTimeString(new String[] {"M","T","W","R","F","S","X"}, true, "");
+		if (assignment.isFreeTime() && assignment.isAssigned()) {
+			FreeTime ft = new FreeTime(assignment.getDays(), assignment.getStart(), assignment.getLength());
 			for (final CourseSelectionBox[] course: iCourses) {
-				try {
-					boolean changed = false;
-					String text = null;
-					if (course[0].getFreeTimes() != null)
-						for (CourseRequestInterface.FreeTime ft: course[0].getFreeTimes().parseFreeTime(course[0].getValue()))
-							if (free.equals(ft.toString(new String[] {"M","T","W","R","F","S","X"}, true))) {
-								changed = true;
-							} else {
-								if (text == null)
-									text = CONSTANTS.freePrefix() + ft.toString(CONSTANTS.shortDays(), CONSTANTS.useAmPm());
-								else
-									text += ", " + ft.toString(CONSTANTS.shortDays(), CONSTANTS.useAmPm());
-							}
-					if (changed) {
-						if (text == null) {
-							course[0].remove();
-						} else {
-							course[0].setValue(text, true);
-						}
-						return;
-					}
-				} catch (Exception e) {}
+				RequestedCourse rc = course[0].getValue();
+				if (rc != null && rc.isFreeTime() && rc.getFreeTime().contains(ft)) {
+					rc.getFreeTime().remove(ft);
+					if (rc.isEmpty())
+						course[0].remove();
+					else
+						course[0].setValue(rc, true);
+					return;
+				}
 			}
-		} else {
+		} else if (!assignment.isFreeTime()) {
 			for (final CourseSelectionBox[] course: iCourses) {
 				if (assignment.equalsIgnoreCase(course[0].getValue()) || assignment.equalsIgnoreCase(course[1].getValue()) || assignment.equalsIgnoreCase(course[2].getValue())) {
 					course[0].remove();

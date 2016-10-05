@@ -73,6 +73,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerContext;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.onlinesectioning.updates.CheckAllOfferingsAction;
@@ -767,5 +768,12 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 			iProperties.remove(name);
 		else
 			iProperties.put(name,  value);
+	}
+	
+	@Override
+	public XCourseId getCourse(Long courseId, String courseName) {
+		if (courseId != null) return getCourse(courseId);
+		else if (courseName != null) return getCourse(courseName);
+		else return null;
 	}
 }

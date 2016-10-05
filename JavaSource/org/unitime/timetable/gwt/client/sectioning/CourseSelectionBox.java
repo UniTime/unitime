@@ -38,9 +38,9 @@ import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
-import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -128,7 +128,7 @@ public class CourseSelectionBox extends CourseSelectionSuggestBox {
 	public void setWaitList(boolean waitList) { if (iWaitList != null) iWaitList.setValue(waitList); }
 	public Boolean getWaitList() { return iWaitList == null ? null : iWaitList.getValue(); }
 	public void setWaitListEnabled(boolean enabled) { if (iWaitList != null) iWaitList.setEnabled(enabled); }
-	
+		
 	private void swapWith(CourseSelectionBox other) {
 		hideSuggestionList();
 		other.hideSuggestionList();
@@ -140,9 +140,9 @@ public class CourseSelectionBox extends CourseSelectionSuggestBox {
 			setHint(other.getHint());
 			other.setHint(x);
 		}
-		x = getValue();
+		RequestedCourse y = getValue();
 		setValue(other.getValue(), false);
-		other.setValue(x, false);
+		other.setValue(y, false);
 		if (iAlternative!=null) iAlternative.swapWith(other.iAlternative);
 		if (iWaitList != null && other.iWaitList != null) {
 			Boolean ch = iWaitList.getValue(); iWaitList.setValue(other.iWaitList.getValue()); other.iWaitList.setValue(ch);
@@ -229,17 +229,6 @@ public class CourseSelectionBox extends CourseSelectionSuggestBox {
 			} else {
 				replaceWith(null);
 			}
-		}
-	}
-	
-	public boolean fillInFreeTime(CourseRequestInterface.Request request) {
-		try {
-			if (getFreeTimes() != null)
-			for (CourseRequestInterface.FreeTime ft: getFreeTimes().parseFreeTime(getValue()))
-				request.addRequestedFreeTime(ft);
-			return request.hasRequestedFreeTime();
-		} catch (IllegalArgumentException e) {
-			return false;
 		}
 	}
 }

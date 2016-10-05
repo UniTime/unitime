@@ -21,7 +21,7 @@ package org.unitime.timetable.gwt.client.widgets;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -37,7 +37,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public class FreeTimeParser implements DataProvider<String, List<CourseRequestInterface.FreeTime>> {
 	protected static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	protected static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
-	private Set<String> iValidCourseNames = null;
+	private Map<String, ?> iValidCourseNames = null;
 
 	@Override
 	public void getData(String source, AsyncCallback<List<FreeTime>> callback) {
@@ -48,10 +48,10 @@ public class FreeTimeParser implements DataProvider<String, List<CourseRequestIn
 		}
 	}
 	
-	public void setValidCourseNames(Set<String> validCourseNames) { iValidCourseNames = validCourseNames; }
+	public void setValidCourseNames(Map<String, ?> validCourseNames) { iValidCourseNames = validCourseNames; }
 	
 	public ArrayList<CourseRequestInterface.FreeTime> parseFreeTime(String text) throws IllegalArgumentException {
-		if (iValidCourseNames != null && iValidCourseNames.contains(text))
+		if (iValidCourseNames != null && iValidCourseNames.containsKey(text.toLowerCase()))
 			throw new IllegalArgumentException(MESSAGES.notFreeTimeIsCourse(text));
 		if (text.isEmpty()) throw new IllegalArgumentException(MESSAGES.courseSelectionNoFreeTime());
 		for (String dnp: CONSTANTS.freeTimeDoNotParse())

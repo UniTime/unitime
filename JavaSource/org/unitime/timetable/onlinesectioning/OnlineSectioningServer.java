@@ -65,6 +65,7 @@ public interface OnlineSectioningServer {
 	
 	public XCourse getCourse(Long courseId);
 	public XCourseId getCourse(String course);
+	public XCourseId getCourse(Long courseId, String courseName);
 	public String getCourseDetails(Long courseId, CourseDetailsProvider provider);
 	
 	public XStudent getStudent(Long studentId);

@@ -48,6 +48,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao._RootDAO;
@@ -612,60 +613,50 @@ public class OnlineSectioningHelper {
     	List<OnlineSectioningLog.Request> ret = new ArrayList<OnlineSectioningLog.Request>();
     	int priority = 0;
     	for (CourseRequestInterface.Request r: request.getCourses()) {
-    		if (!r.hasRequestedCourse() && !r.hasRequestedFreeTime()) continue;
+    		if (!r.hasRequestedCourse()) continue;
     		OnlineSectioningLog.Request.Builder rq = OnlineSectioningLog.Request.newBuilder();
     		rq.setPriority(priority++);
     		rq.setWaitList(r.hasRequestedCourse() && r.isWaitList());
     		rq.setAlternative(false);
-    		if (r.hasRequestedFreeTime()) {
-        		for (CourseRequestInterface.FreeTime ft: r.getRequestedFreeTime()) {
-        			rq.addFreeTime(OnlineSectioningLog.Time.newBuilder()
-        					.setDays(DayCode.toInt(DayCode.toDayCodes(ft.getDays())))
-        					.setStart(ft.getStart())
-        					.setLength(ft.getLength()));
-        		}
-    		}
-    		if (r.hasRequestedCourse()) {
-    			rq.addCourse(OnlineSectioningLog.Entity.newBuilder()
-    					.setName(r.getRequestedCourse()));
-    		}
-    		if (r.hasFirstAlternative()) {
-    			rq.addCourse(OnlineSectioningLog.Entity.newBuilder()
-    					.setName(r.getFirstAlternative()));
-    		}
-    		if (r.hasSecondAlternative()) {
-    			rq.addCourse(OnlineSectioningLog.Entity.newBuilder()
-    					.setName(r.getSecondAlternative()));
-    		}
+			for (RequestedCourse rc: r.getRequestedCourse()) {
+				if (rc.isFreeTime()) {
+	        		for (CourseRequestInterface.FreeTime ft: rc.getFreeTime()) {
+	        			rq.addFreeTime(OnlineSectioningLog.Time.newBuilder()
+	        					.setDays(DayCode.toInt(DayCode.toDayCodes(ft.getDays())))
+	        					.setStart(ft.getStart())
+	        					.setLength(ft.getLength()));
+	        		}
+				} else if (rc.isCourse()) {
+    				OnlineSectioningLog.Entity.Builder e = OnlineSectioningLog.Entity.newBuilder();
+    				if (rc.hasCourseId()) e.setUniqueId(rc.getCourseId());
+    				if (rc.hasCourseName()) e.setName(rc.getCourseName());
+    				rq.addCourse(e);
+				}
+			}
     		ret.add(rq.build());
     	}
     	priority = 0;
     	for (CourseRequestInterface.Request r: request.getAlternatives()) {
-    		if (!r.hasRequestedCourse() && !r.hasRequestedFreeTime()) continue;
+    		if (!r.hasRequestedCourse()) continue;
     		OnlineSectioningLog.Request.Builder rq = OnlineSectioningLog.Request.newBuilder();
     		rq.setPriority(priority++);
     		rq.setAlternative(true);
     		rq.setWaitList(r.hasRequestedCourse() && r.isWaitList());
-    		if (r.hasRequestedFreeTime()) {
-        		for (CourseRequestInterface.FreeTime ft: r.getRequestedFreeTime()) {
-        			rq.addFreeTime(OnlineSectioningLog.Time.newBuilder()
-        					.setDays(DayCode.toInt(DayCode.toDayCodes(ft.getDays())))
-        					.setStart(ft.getStart())
-        					.setLength(ft.getLength()));
-        		}
-    		}
-    		if (r.hasRequestedCourse()) {
-    			rq.addCourse(OnlineSectioningLog.Entity.newBuilder()
-    					.setName(r.getRequestedCourse()));
-    		}
-    		if (r.hasFirstAlternative()) {
-    			rq.addCourse(OnlineSectioningLog.Entity.newBuilder()
-    					.setName(r.getFirstAlternative()));
-    		}
-    		if (r.hasSecondAlternative()) {
-    			rq.addCourse(OnlineSectioningLog.Entity.newBuilder()
-    					.setName(r.getSecondAlternative()));
-    		}
+    		for (RequestedCourse rc: r.getRequestedCourse()) {
+				if (rc.isFreeTime()) {
+	        		for (CourseRequestInterface.FreeTime ft: rc.getFreeTime()) {
+	        			rq.addFreeTime(OnlineSectioningLog.Time.newBuilder()
+	        					.setDays(DayCode.toInt(DayCode.toDayCodes(ft.getDays())))
+	        					.setStart(ft.getStart())
+	        					.setLength(ft.getLength()));
+	        		}
+				} else if (rc.isCourse()) {
+    				OnlineSectioningLog.Entity.Builder e = OnlineSectioningLog.Entity.newBuilder();
+    				if (rc.hasCourseId()) e.setUniqueId(rc.getCourseId());
+    				if (rc.hasCourseName()) e.setName(rc.getCourseName());
+    				rq.addCourse(e);
+				}
+			}
     		ret.add(rq.build());
     	}
     	return ret;

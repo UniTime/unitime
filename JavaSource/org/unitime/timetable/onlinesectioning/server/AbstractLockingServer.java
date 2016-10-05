@@ -197,30 +197,30 @@ public abstract class AbstractLockingServer extends AbstractServer {
 			if (lockOfferings) {
 				for (CourseRequestInterface.Request r: request.getCourses()) {
 					if (r.hasRequestedCourse()) {
-						Long id = getOfferingIdFromCourseName(r.getRequestedCourse());
-						if (id != null && (!excludeLockedOffering || !isOfferingLocked(id))) ids.add(id);
-					}
-					if (r.hasFirstAlternative()) {
-						Long id = getOfferingIdFromCourseName(r.getFirstAlternative());
-						if (id != null && (!excludeLockedOffering || !isOfferingLocked(id))) ids.add(id);
-					}
-					if (r.hasSecondAlternative()) {
-						Long id = getOfferingIdFromCourseName(r.getSecondAlternative());
-						if (id != null && (!excludeLockedOffering || !isOfferingLocked(id))) ids.add(id);
+						for (CourseRequestInterface.RequestedCourse rc: r.getRequestedCourse()) {
+							if (rc.hasCourseId()) {
+								XCourseId c = getCourse(rc.getCourseId());
+								Long id = (c == null ? null : c.getOfferingId());
+								if (id != null && (!excludeLockedOffering || !isOfferingLocked(id))) ids.add(id);
+							} else if (rc.hasCourseName()) {
+								Long id = getOfferingIdFromCourseName(rc.getCourseName());
+								if (id != null && (!excludeLockedOffering || !isOfferingLocked(id))) ids.add(id);
+							}
+						}
 					}
 				}
 				for (CourseRequestInterface.Request r: request.getAlternatives()) {
 					if (r.hasRequestedCourse()) {
-						Long id = getOfferingIdFromCourseName(r.getRequestedCourse());
-						if (id != null && (!excludeLockedOffering || !isOfferingLocked(id))) ids.add(id);
-					}
-					if (r.hasFirstAlternative()) {
-						Long id = getOfferingIdFromCourseName(r.getFirstAlternative());
-						if (id != null && (!excludeLockedOffering || !isOfferingLocked(id))) ids.add(id);
-					}
-					if (r.hasSecondAlternative()) {
-						Long id = getOfferingIdFromCourseName(r.getSecondAlternative());
-						if (id != null && (!excludeLockedOffering || !isOfferingLocked(id))) ids.add(id);
+						for (CourseRequestInterface.RequestedCourse rc: r.getRequestedCourse()) {
+							if (rc.hasCourseId()) {
+								XCourseId c = getCourse(rc.getCourseId());
+								Long id = (c == null ? null : c.getOfferingId());
+								if (id != null && (!excludeLockedOffering || !isOfferingLocked(id))) ids.add(id);
+							} else if (rc.hasCourseName()) {
+								Long id = getOfferingIdFromCourseName(rc.getCourseName());
+								if (id != null && (!excludeLockedOffering || !isOfferingLocked(id))) ids.add(id);
+							}
+						}
 					}
 				}
 			}

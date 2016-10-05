@@ -375,6 +375,13 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		
 		public boolean isUnlockNeeded() { return iNeedUnlock; }
 		public void setUnlockNeeded(boolean unlockNeeded) { iNeedUnlock = unlockNeeded; }
+		
+		public Course getControllingCourse() {
+			for (Course course: iCourses)
+				if (course.isControl())
+					return course;
+			return null;
+		}
 	}
 	
 	public static class Area extends IdName {

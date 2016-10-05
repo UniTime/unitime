@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client.widgets;
 
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -86,5 +87,11 @@ public class CourseFinderDetails extends HTML implements CourseFinder.CourseFind
 	public String getName() {
 		return MESSAGES.courseSelectionDetails();
 	}
+
+	@Override
+	public void onSetValue(RequestedCourse course) {}
+
+	@Override
+	public void onGetValue(RequestedCourse course) {}
 
 }

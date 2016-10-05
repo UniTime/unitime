@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -83,6 +84,16 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 	}
 	
 	public boolean isCourseSelected(String course) {
+		if (iGroup != null) return iGroup.isCourseSelected(course);
+		return false;
+	}
+	
+	public boolean hasCourse(RequestedCourse course) {
+		if (iGroup != null) return iGroup.hasCourse(course);
+		return false;
+	}
+	
+	public boolean isCourseSelected(RequestedCourse course) {
 		if (iGroup != null) return iGroup.isCourseSelected(course);
 		return false;
 	}
@@ -277,6 +288,39 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 			if (iGroups != null)
 				for (DegreeGroupInterface g: iGroups) {
 					if ((!isChoice() || g.isSelected()) && g.hasCourse(name)) return true;
+				}
+			return false;
+		}
+		
+		protected boolean hasCourse(RequestedCourse rc) {
+			if (iCourses != null)
+				for (DegreeCourseInterface course: iCourses) {
+					if (course.hasCourses()) {
+						for (CourseAssignment ca: course.getCourses())
+							if (rc.equals(ca)) return true;
+					}
+					if (rc.equals(course)) return true;
+				}
+			if (iGroups != null)
+				for (DegreeGroupInterface g: iGroups)
+					if (g.hasCourse(rc)) return true;
+			return false;
+		}
+		
+		protected boolean isCourseSelected(RequestedCourse rc) {
+			if (iCourses != null)
+				for (DegreeCourseInterface course: iCourses) {
+					if (isChoice() && !course.isSelected()) continue;
+					if (course.hasCourses() && course.getCourseId() != null) {
+						for (CourseAssignment ca: course.getCourses())
+							if (course.getCourseId().equals(ca.getCourseId()) && rc.equals(ca)) return true;
+					} else {
+						if (rc.equals(course)) return true;
+					}
+				}
+			if (iGroups != null)
+				for (DegreeGroupInterface g: iGroups) {
+					if ((!isChoice() || g.isSelected()) && g.hasCourse(rc)) return true;
 				}
 			return false;
 		}

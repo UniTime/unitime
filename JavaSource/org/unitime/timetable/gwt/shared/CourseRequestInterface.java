@@ -21,8 +21,14 @@ package org.unitime.timetable.gwt.shared;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
+import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreeCourseInterface;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -37,7 +43,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	private boolean iSaved = false;
 	private boolean iNoChange = false;
 	private Boolean iUpdateLastRequest = null;
-	private String iLastCourse = null;
+	private RequestedCourse iLastCourse = null;
 	
 	public CourseRequestInterface() {}
 
@@ -59,48 +65,54 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	public boolean isUpdateLastRequest() { return iUpdateLastRequest == null || iUpdateLastRequest.booleanValue(); }
 	public void setUpdateLastRequest(boolean updateLastRequest) { iUpdateLastRequest = updateLastRequest; }
 	
-	public boolean addCourse(String course) {
+	public boolean addCourse(RequestedCourse course) {
 		iLastCourse = course;
 		if (getRequestPriority(course) != null) return false;
 		for (CourseRequestInterface.Request r: getCourses()) {
-			if (!r.hasRequestedFreeTime() && !r.hasRequestedCourse()) {
-				r.setRequestedCourse(course);
+			if (r.isEmpty()) {
+				r.addRequestedCourse(course);
 				return true;
 			}
 		}
 		CourseRequestInterface.Request r = new CourseRequestInterface.Request();
-		r.setRequestedCourse(course);
+		r.addRequestedCourse(course);
 		getCourses().add(r);
 		return true;
 	}
 	
 	public boolean hasLastCourse() { return iLastCourse != null; }
 	
-	public String getLastCourse() { return iLastCourse; }
+	public RequestedCourse getLastCourse() { return iLastCourse; }
 	
-	public RequestPriority getRequestPriority(String course) {
-		if (course == null || course.isEmpty()) return null;
+	private RequestPriority __getRequestPriority(Object course) {
+		if (course == null) return null;
 		int priority = 1;
 		for (CourseRequestInterface.Request r: getCourses()) {
-			if (course.equalsIgnoreCase(r.getRequestedCourse()))
-				return new RequestPriority(false, priority, 0, r);
-			if (course.equalsIgnoreCase(r.getFirstAlternative()))
-				return new RequestPriority(false, priority, 1, r);
-			if (course.equalsIgnoreCase(r.getSecondAlternative()))
-				return new RequestPriority(false, priority, 2, r);
+			if (r.hasRequestedCourse())
+				for (int i = 0; i < r.getRequestedCourse().size(); i++)
+					if (r.getRequestedCourse(i).equals(course)) return new RequestPriority(false, priority, i, r);
 			priority ++;
 		}
 		priority = 1;
 		for (CourseRequestInterface.Request r: getAlternatives()) {
-			if (course.equalsIgnoreCase(r.getRequestedCourse()))
-				return new RequestPriority(true, priority, 0, r);
-			if (course.equalsIgnoreCase(r.getFirstAlternative()))
-				return new RequestPriority(true, priority, 1, r);
-			if (course.equalsIgnoreCase(r.getSecondAlternative()))
-				return new RequestPriority(true, priority, 2, r);
+			if (r.hasRequestedCourse())
+				for (int i = 0; i < r.getRequestedCourse().size(); i++)
+					if (r.getRequestedCourse(i).equals(course)) return new RequestPriority(true, priority, i, r);
 			priority ++;
 		}
 		return null;
+	}
+	
+	public RequestPriority getRequestPriority(CourseAssignment course) {
+		return __getRequestPriority(course);
+	}
+	
+	public RequestPriority getRequestPriority(DegreeCourseInterface course) {
+		return __getRequestPriority(course);
+	}
+	
+	public RequestPriority getRequestPriority(RequestedCourse course) {
+		return __getRequestPriority(course);
 	}
 
 	public static class FreeTime implements IsSerializable, Serializable {
@@ -109,6 +121,10 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		private int iStart;
 		private int iLength;
 		public FreeTime() {}
+		public FreeTime(List<Integer> days, int start, int length) {
+			if (days != null) iDays.addAll(days);
+			iStart = start; iLength = length;
+		}
 		
 		public void addDay(int day) { iDays.add(day); }
 		public ArrayList<Integer> getDays() { return iDays; }
@@ -117,6 +133,12 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			String ret = "";
 			for (int day: iDays)
 				ret += (ret.isEmpty() ? "" : separator) + shortDays[day];
+			return ret;
+		}
+		public int getDayCode() {
+			int ret = 0;
+			for (int day: iDays)
+				ret += (1 << day);
 			return ret;
 		}
 		
@@ -168,20 +190,93 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	        	ret += h + " " + (m < 10 ? "0" : "") + m;
 	        return ret;  
 		}
+		
+		@Override
+		public int hashCode() {
+			return toString().hashCode();
+		}
+		
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof FreeTime)) return false;
+			FreeTime f = (FreeTime)o;
+			return f.getStart() == getStart() && f.getLength() == getLength() && f.getDayCode() == getDayCode();
+		}
 	}
 	
-	public static class RequestedCourse {
+	public static class RequestedCourse implements IsSerializable, Serializable, Comparable<RequestedCourse> {
+		private static final long serialVersionUID = 1L;
 		private Long iCourseId;
 		private String iCourseName;
+		private Boolean iReadOnly = null;
+		private List<FreeTime> iFreeTime;
+		private Set<Long> iSelectedIntructionalMethods;
+		private Set<Long> iSelectedClasses;
 		
 		public RequestedCourse() {}
+		public RequestedCourse(List<FreeTime> freeTime) {
+			iFreeTime = freeTime;
+		}
+		public RequestedCourse(CourseAssignment course, boolean showTitle) {
+			iCourseId = course.getCourseId();
+			iCourseName = (course.hasUniqueName() && !showTitle ? course.getCourseName() : course.getCourseNameWithTitle()); 
+		}
 		
+		public boolean isCourse() { return hasCourseId() || hasCourseName(); }
 		public Long getCourseId() { return iCourseId; }
 		public boolean hasCourseId() { return iCourseId != null; }
 		public void setCourseId(Long courseId) { iCourseId = courseId; }
-		
 		public String getCourseName() { return iCourseName; }
+		public boolean hasCourseName() { return iCourseName != null && !iCourseName.isEmpty(); }
 		public void setCourseName(String courseName) { iCourseName = courseName; }
+		
+		public List<FreeTime> getFreeTime() { return iFreeTime; }
+		public boolean isFreeTime() { return iFreeTime != null && !iFreeTime.isEmpty(); }
+		public void setFreeTime(List<FreeTime> freeTime) { iFreeTime = freeTime; }
+		public void addFreeTime(FreeTime freeTime) {
+			if (iFreeTime == null) iFreeTime = new ArrayList<FreeTime>();
+			iFreeTime.add(freeTime);
+		}
+		
+		public boolean isReadOnly() { return iReadOnly != null && iReadOnly.booleanValue(); }
+		public void setReadOnly(Boolean readOnly) { iReadOnly = readOnly; }
+		
+		public boolean isEmpty() { return !isCourse() && !isFreeTime(); }
+		
+		public boolean hasSelectedIntructionalMethods() { return iSelectedIntructionalMethods != null && !iSelectedIntructionalMethods.isEmpty(); }
+		public Set<Long> getSelectedIntructionalMethods() { return iSelectedIntructionalMethods; }
+		public void setSelectedIntructionalMethod(Long id, boolean value) {
+			if (iSelectedIntructionalMethods == null) iSelectedIntructionalMethods = new HashSet<Long>();
+			if (value)
+				iSelectedIntructionalMethods.add(id);
+			else
+				iSelectedIntructionalMethods.remove(id);
+		}
+		public boolean isSelectedIntructionalMethod(Long id) {
+			if (iSelectedIntructionalMethods == null) return false;
+			return iSelectedIntructionalMethods.contains(id);
+		}
+		
+		public boolean hasSelectedClasses() { return iSelectedClasses != null && !iSelectedClasses.isEmpty(); }
+		public Set<Long> getSelectedClasses() { return iSelectedClasses; }
+		public void setSelectedClasses(Set<Long> classes) { 
+			if (iSelectedClasses == null)
+				iSelectedClasses = new HashSet<Long>();
+			else
+				iSelectedClasses.clear();
+			if (classes != null)
+				iSelectedClasses.addAll(classes);
+		}
+		public void setSelectedClass(Long id, boolean value) {
+			if (iSelectedClasses == null) iSelectedClasses = new HashSet<Long>();
+			if (value)
+				iSelectedClasses.add(id);
+			else
+				iSelectedClasses.remove(id);
+		}
+		public boolean isSelectedClass(Long id) {
+			if (iSelectedClasses == null) return false;
+			return iSelectedClasses.contains(id);
+		}
 		
 		@Override
 		public int hashCode() {
@@ -190,56 +285,130 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		
 		@Override
 		public String toString() {
-			return getCourseName();
+			if (isCourse()) return getCourseName();
+			if (isFreeTime()) {
+				String ret = "";
+				for (FreeTime ft: getFreeTime())
+					ret += (ret.isEmpty() ? "" : ", ") + ft.toString();
+				return ret;
+			}
+			return "N/A";
+		}
+		
+		public String toString(StudentSectioningConstants CONSTANTS) {
+			if (isCourse()) return getCourseName();
+			if (isFreeTime()) {
+				String display = "";
+				String lastDays = null;
+				for (CourseRequestInterface.FreeTime ft: getFreeTime()) {
+					if (display.length() > 0) display += ", ";
+					String days = ft.getDaysString(CONSTANTS.shortDays(), "");
+					if (ft.getDays().size() == CONSTANTS.freeTimeDays().length && !ft.getDays().contains(5) && !ft.getDays().contains(6)) days = "";
+					display += (days.isEmpty() || days.equals(lastDays) ? "" : days + " ") + ft.getStartString(CONSTANTS.useAmPm()) + " - " + ft.getEndString(CONSTANTS.useAmPm());
+					lastDays = days;
+				}
+				return CONSTANTS.freePrefix() + display;
+			}
+			return "";
+		}
+		
+		public String toAriaString(StudentSectioningConstants CONSTANTS) {
+			if (isCourse()) return getCourseName();
+			if (isFreeTime()) {
+				String status = "";
+				for (FreeTime ft: getFreeTime())
+					status += (status.isEmpty() ? "" : " ") + ft.toAriaString(CONSTANTS.longDays(), CONSTANTS.useAmPm());
+				return status;
+			}
+			return "";
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null) return false;
+			if (o instanceof String) return ((String)o).equalsIgnoreCase(getCourseName());
+			if (o instanceof Long) return ((Long)o).equals(getCourseId());
+			if (o instanceof RequestedCourse) {
+				RequestedCourse c = (RequestedCourse)o;
+				if (c.hasCourseId() && hasCourseId())
+					return getCourseId().equals(c.getCourseId());
+				else if (c.hasCourseName() && hasCourseName())
+					return getCourseName().equalsIgnoreCase(c.getCourseName());
+				else if (c.isFreeTime() && isFreeTime())
+					return c.getFreeTime().equals(getFreeTime());
+			}
+			if (o instanceof CourseAssignment) {
+				CourseAssignment c = (CourseAssignment)o;
+				if (hasCourseId())
+					return getCourseId().equals(c.getCourseId());
+				else if (hasCourseName())
+					return getCourseName().equalsIgnoreCase(c.getCourseName()) || getCourseName().equalsIgnoreCase(c.getCourseNameWithTitle());
+			}
+			if (o instanceof DegreeCourseInterface) {
+				DegreeCourseInterface c = (DegreeCourseInterface)o;
+				if (hasCourseId() && c.getCourseId() != null)
+					return getCourseId().equals(c.getCourseId());
+				else if (hasCourseName())
+					return getCourseName().equalsIgnoreCase(c.getCourseName()) || getCourseName().equalsIgnoreCase(c.getCourseNameWithTitle());
+			}
+			return false;
+		}
+		@Override
+		public int compareTo(RequestedCourse o) {
+			return toString().compareToIgnoreCase(o.toString());
 		}
 	}
 	
 	public static class Request implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
-		private ArrayList<FreeTime> iRequestedFreeTime = null;
-		private String iRequestedCourse = null;
-		private String iFirstAlternative = null;
-		private String iSecondAlternative = null;
+		private List<RequestedCourse> iRequestedCourse = null;
 		private Boolean iWaitList = false;
-		private Integer iReadOnly = null;
 		
 		public Request() {}
 		
-		public String getRequestedCourse() { return iRequestedCourse; }
-		public void setRequestedCourse(String requestedCourse) { iRequestedCourse = requestedCourse; }
-		public boolean hasRequestedCourse() { return iRequestedCourse != null && !iRequestedCourse.isEmpty(); }
-
-		public ArrayList<FreeTime> getRequestedFreeTime() { return iRequestedFreeTime; }
-		public void addRequestedFreeTime(FreeTime ft) { 
-			if (iRequestedFreeTime == null)
-				iRequestedFreeTime = new ArrayList<FreeTime>();
-			iRequestedFreeTime.add(ft);
+		public List<RequestedCourse> getRequestedCourse() { return iRequestedCourse; }
+		public RequestedCourse getRequestedCourse(int index) {
+			if (iRequestedCourse != null && index < iRequestedCourse.size())
+				return iRequestedCourse.get(index);
+			return null;
 		}
-		public boolean hasRequestedFreeTime() { return iRequestedFreeTime != null && !iRequestedFreeTime.isEmpty(); }
+		public boolean hasRequestedCourse() { return iRequestedCourse != null && !iRequestedCourse.isEmpty(); } //&& !hasRequestedFreeTime(); }
+		public void addRequestedCourse(RequestedCourse requestedCourse) {
+			if (iRequestedCourse == null)
+				iRequestedCourse = new ArrayList<RequestedCourse>();
+			iRequestedCourse.add(requestedCourse);
+		}
+		public boolean hasRequestedCourse(CourseAssignment course) {
+			if (iRequestedCourse == null) return false;
+			for (RequestedCourse rc: iRequestedCourse)
+				if (rc.equals(course)) return true;
+			return false;
+		}
+
+		/*
+		public List<FreeTime> getRequestedFreeTime() {
+			if (iRequestedCourse != null)
+				for (RequestedCourse course: iRequestedCourse)
+					if (course.isFreeTime()) return course.getFreeTime();
+			return null;
+		}
+		public boolean hasRequestedFreeTime() { return getRequestedFreeTime() != null; }
+		*/
 		
-		public String getFirstAlternative() { return iFirstAlternative; }
-		public void setFirstAlternative(String firstAlternative) { iFirstAlternative = firstAlternative; }
-		public boolean hasFirstAlternative() { return iFirstAlternative != null && !iFirstAlternative.isEmpty(); }
-		
-		public String getSecondAlternative() { return iSecondAlternative; }
-		public void setSecondAlternative(String secondAlternative) { iSecondAlternative = secondAlternative; }
-		public boolean hasSecondAlternative() { return iSecondAlternative != null && !iSecondAlternative.isEmpty(); }
+		public boolean isEmpty() { return !hasRequestedCourse(); }
+		public boolean isReadOnly() {
+			if (iRequestedCourse == null) return false;
+			for (RequestedCourse rc: iRequestedCourse)
+				if (rc.isReadOnly()) return true;
+			return false;
+		}
 		
 		public boolean hasWaitList() { return iWaitList != null; }
 		public boolean isWaitList() { return iWaitList != null && iWaitList.booleanValue(); }
 		public void setWaitList(Boolean waitList) { iWaitList = waitList; }
 		
-		public boolean isReadOnly() { return iReadOnly != null && iReadOnly.intValue() >= 0; }
-		public boolean isRequestedCourseReadOnly() { return iReadOnly != null && iReadOnly == 0; }
-		public boolean isFirstAlternativeReadOnly() { return iReadOnly != null && iReadOnly == 1; }
-		public boolean isSecondAlternativeReadOnly() { return iReadOnly != null && iReadOnly == 2; }
-		public void setReadOnly(Integer readOnly) { iReadOnly = readOnly; }
-		
 		public String toString() {
-			return (hasRequestedFreeTime() ? iRequestedFreeTime.toString() : hasRequestedCourse() ? iRequestedCourse : "-") +
-				(hasFirstAlternative() ? ", " + iFirstAlternative : "") +
-				(hasSecondAlternative() ? ", " + iSecondAlternative : "") +
-				(isWaitList() ? " (w)" : "");
+			return (hasRequestedCourse() ? iRequestedCourse.toString() : "-") + (isWaitList() ? " (w)" : "");
 		}
 	}
 	

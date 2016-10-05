@@ -22,13 +22,14 @@ package org.unitime.timetable.gwt.client.widgets;
 import java.util.Collection;
 
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.IsWidget;
 
-public interface CourseSelection extends HasValue<String>, IsWidget, HasEnabled, Focusable, HasCourseSelectionHandlers {
+public interface CourseSelection extends HasValue<RequestedCourse>, IsWidget, HasEnabled, Focusable, HasCourseSelectionHandlers {
 	public void setSuggestions(DataProvider<String, Collection<ClassAssignmentInterface.CourseAssignment>> provider);
 	public void setFreeTimes(FreeTimeParser parser);
 	public FreeTimeParser getFreeTimes();
@@ -38,8 +39,6 @@ public interface CourseSelection extends HasValue<String>, IsWidget, HasEnabled,
 	
 	public void setLabel(String title, String finderTitle);
 	
-	public boolean isFreeTime();
-
 	public void setHint(String hint);
 	public String getHint();
 

@@ -43,6 +43,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.ReservationService;
 import org.unitime.timetable.gwt.services.ReservationServiceAsync;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.ReservationException;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
@@ -524,8 +525,8 @@ public class ReservationEdit extends Composite {
 		iCourseBox.addCourseSelectionHandler(new CourseSelectionHandler() {			
 			@Override
 			public void onCourseSelection(CourseSelectionEvent event) {
-				if (event.isValid()) {
-					iReservationService.getOfferingByCourseName(event.getCourse(), new AsyncCallback<Offering>() {
+				if (event.getValue() != null && event.getValue().isCourse()) {
+					iReservationService.getOfferingByCourseName(event.getValue().getCourseName(), new AsyncCallback<Offering>() {
 						@Override
 						public void onFailure(Throwable caught) {
 							iCourseBox.setError(caught.getMessage());
@@ -622,7 +623,7 @@ public class ReservationEdit extends Composite {
 		if (offeringId == null) {
 			iOffering = null;
 			iCourseBox.setEnabled(true);
-			iCourseBox.setValue("", false);
+			iCourseBox.setValue((RequestedCourse)null, false);
 			iCourseBox.setError(null);
 			iLimit.getWidget().setValue("", true);
 			iExpirationDate.getWidget().setValue(null);
@@ -679,8 +680,14 @@ public class ReservationEdit extends Composite {
 		if (iOffering.isUnlockNeeded())
 			iCourseBox.setError(MESSAGES.hintOfferingIsLocked(iOffering.getAbbv()));
 
-		if (!iCourseBox.isEnabled())
-			iCourseBox.setValue(iOffering.getAbbv(), false);
+		if (!iCourseBox.isEnabled()) {
+			RequestedCourse rc = new RequestedCourse();
+			Course course = iOffering.getControllingCourse();
+			if (course != null)
+				rc.setCourseId(course.getId());
+			rc.setCourseName(iOffering.getAbbv());
+			iCourseBox.setValue(rc, false);
+		}
 
 		iRestrictions.setOffering(iOffering);
 		

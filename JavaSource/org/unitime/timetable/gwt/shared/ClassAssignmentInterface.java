@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.rpc.IsSerializable;
@@ -581,6 +583,14 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 
 		public boolean equalsIgnoreCase(String requestedCourse) {
 			return getCourseName().equalsIgnoreCase(requestedCourse) || getCourseNameWithTitle().equalsIgnoreCase(requestedCourse);
+		}
+		
+		public boolean equalsIgnoreCase(RequestedCourse requestedCourse) {
+			if (requestedCourse == null || !requestedCourse.isCourse()) return false;
+			if (requestedCourse.hasCourseId())
+				return requestedCourse.getCourseId().equals(getCourseId());
+			else
+				return getCourseName().equalsIgnoreCase(requestedCourse.getCourseName()) || getCourseNameWithTitle().equalsIgnoreCase(requestedCourse.getCourseName());
 		}
 	}
 	

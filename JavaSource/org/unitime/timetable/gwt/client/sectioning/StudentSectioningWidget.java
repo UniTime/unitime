@@ -55,6 +55,7 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
@@ -160,6 +161,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iTrackHistory = history;
 		
 		iPanel = new VerticalPanel();
+		iPanel.addStyleName("unitime-SchedulingAssistant");
 		
 		iCourseRequests = new CourseRequestsTable(iSessionSelector, iOnline);
 		iCourseRequests.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface>() {
@@ -171,14 +173,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					courses: for (ClassAssignmentInterface.CourseAssignment course: iLastAssignment.getCourseAssignments()) {
 						if (!course.isAssigned() || course.isFreeTime()) continue;
 						for (CourseRequestInterface.Request r: event.getValue().getCourses()) {
-							if (r.hasRequestedCourse()  && course.equalsIgnoreCase(r.getRequestedCourse())) continue courses;
-							if (r.hasFirstAlternative()  && course.equalsIgnoreCase(r.getFirstAlternative())) continue courses;
-							if (r.hasSecondAlternative()  && course.equalsIgnoreCase(r.getSecondAlternative())) continue courses;
+							if (r.hasRequestedCourse(course)) continue courses;
 						}
 						for (CourseRequestInterface.Request r: event.getValue().getAlternatives()) {
-							if (r.hasRequestedCourse()  && course.equalsIgnoreCase(r.getRequestedCourse())) continue courses;
-							if (r.hasFirstAlternative()  && course.equalsIgnoreCase(r.getFirstAlternative())) continue courses;
-							if (r.hasSecondAlternative()  && course.equalsIgnoreCase(r.getSecondAlternative())) continue courses;
+							if (r.hasRequestedCourse(course)) continue courses;
 						}
 						iScheduleChanged = true;
 						iStatus.warning(MESSAGES.warnScheduleChangedOnCourseRequest(), false);
@@ -1772,14 +1770,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		courses: for (ClassAssignmentInterface.CourseAssignment course: iLastAssignment.getCourseAssignments()) {
 			if (!course.isAssigned() || course.isFreeTime()) continue;
 			for (CourseRequestInterface.Request r: request.getCourses()) {
-				if (r.hasRequestedCourse()  && course.equalsIgnoreCase(r.getRequestedCourse())) continue courses;
-				if (r.hasFirstAlternative()  && course.equalsIgnoreCase(r.getFirstAlternative())) continue courses;
-				if (r.hasSecondAlternative()  && course.equalsIgnoreCase(r.getSecondAlternative())) continue courses;
+				if (r.hasRequestedCourse(course)) continue courses;
 			}
 			for (CourseRequestInterface.Request r: request.getAlternatives()) {
-				if (r.hasRequestedCourse()  && course.equalsIgnoreCase(r.getRequestedCourse())) continue courses;
-				if (r.hasFirstAlternative()  && course.equalsIgnoreCase(r.getFirstAlternative())) continue courses;
-				if (r.hasSecondAlternative()  && course.equalsIgnoreCase(r.getSecondAlternative())) continue courses;
+				if (r.hasRequestedCourse(course)) continue courses;
 			}
 			iScheduleChanged = true;
 			iEnroll.addStyleName("unitime-EnrollButton");
@@ -1935,15 +1929,15 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			});
 			courses.setCourseDetails(details, classes);
 			iQuickAddFinder.setTabs(courses);
-			iQuickAddFinder.addSelectionHandler(new SelectionHandler<String>() {
+			iQuickAddFinder.addSelectionHandler(new SelectionHandler<RequestedCourse>() {
 				@Override
-				public void onSelection(final SelectionEvent<String> event) {
+				public void onSelection(final SelectionEvent<RequestedCourse> event) {
 					if (event.getSelectedItem() == null || event.getSelectedItem().isEmpty()) {
 						iStatus.warning(MESSAGES.courseSelectionNoCourseSelected());
 						return;
 					}
 					if (iCourseRequests.hasCourse(event.getSelectedItem())) {
-						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.confirmQuickDrop(event.getSelectedItem()), new Command() {
+						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.confirmQuickDrop(event.getSelectedItem().getCourseName()), new Command() {
 							@Override
 							public void execute() {
 								final CourseRequestInterface undo = iCourseRequests.getRequest();
@@ -1958,7 +1952,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									public void onSuccess(ClassAssignmentInterface result) {
 										fillIn(result);
 										addHistory();
-										iQuickAddFinder.setValue("", true);
+										iQuickAddFinder.setValue(null, true);
 									}
 								});
 							}
@@ -1984,7 +1978,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								iCourseRequests.addCourse(event.getSelectedItem());
 								fillIn(result);
 								addHistory();
-								iQuickAddFinder.setValue("", true);
+								iQuickAddFinder.setValue(null, true);
 							}
 							
 							@Override

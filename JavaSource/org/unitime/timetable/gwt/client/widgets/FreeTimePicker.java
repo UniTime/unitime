@@ -346,6 +346,9 @@ public class FreeTimePicker extends Grid implements HasValue<List<CourseRequestI
 					setHTML(1 + d, 1 + p, "&nbsp;");
 				}
 		} else {
+			for (int d=0; d<CONSTANTS.freeTimeDays().length; d++)
+				for (int p=0; p<CONSTANTS.freeTimePeriods().length - 1; p++)
+					iSelected[d][p] = false;
 			for (CourseRequestInterface.FreeTime f: value) {
 				for (int day: f.getDays()) {
 					if (day < CONSTANTS.freeTimeDays().length) {

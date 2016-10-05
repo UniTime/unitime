@@ -22,8 +22,10 @@ package org.unitime.timetable.gwt.client.widgets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaHiddenLabel;
@@ -37,6 +39,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
@@ -76,6 +79,7 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 	private String iLastQuery = null;
 	private P iInstructionalMethodsPanel = null;
 	private Map<Long, CheckBox> iInstructionalMethods = new HashMap<Long, CheckBox>();
+	private Set<Long> iSelectedMethods = new HashSet<Long>();
 	
 	private boolean iShowCourseTitles = false, iShowDefaultSuggestions = false;
 	
@@ -166,33 +170,48 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 	}
 
 	@Override
-	public void setValue(final String value) {
+	public void setValue(final RequestedCourse value) {
 		setValue(value, false);
 	}
 
 	@Override
-	public String getValue() {
+	public RequestedCourse getValue() {
 		int row = iCourses.getSelectedRow();
 		if (iCourses.getSelectedRow() < 0) return null;
 		CourseAssignment record = iCourses.getData(row);
 		if (record == null) return null;
-		String courseName = MESSAGES.courseName(record.getSubject(), record.getCourseNbr());
+		RequestedCourse rc = new RequestedCourse();
+		rc.setCourseId(record.getCourseId());
+		rc.setCourseName(MESSAGES.courseName(record.getSubject(), record.getCourseNbr()));
 		if (record.hasTitle() && (!record.hasUniqueName() || iShowCourseTitles))
-			courseName = MESSAGES.courseNameWithTitle(record.getSubject(), record.getCourseNbr(), record.getTitle());
-		return courseName;
+			rc.setCourseName(MESSAGES.courseNameWithTitle(record.getSubject(), record.getCourseNbr(), record.getTitle()));
+		for (Map.Entry<Long, CheckBox> e: iInstructionalMethods.entrySet())
+			if (e.getValue().isEnabled() && e.getValue().getValue())
+				rc.setSelectedIntructionalMethod(e.getKey(), true);
+		if (iDetails != null)
+			for (CourseFinderCourseDetails d: iDetails)
+				d.onGetValue(rc);
+		return rc;
 	}
 
 	@Override
-	public void setValue(String value, final boolean fireEvents) {
-		if (value == null) value = "";
-		if (value.isEmpty() && !iShowDefaultSuggestions) {
+	public void setValue(RequestedCourse value, final boolean fireEvents) {
+		String query = (value == null || !value.isCourse() ? "" : value.getCourseName());
+		iSelectedMethods.clear();
+		if (value.hasSelectedIntructionalMethods())
+			for (Long id: value.getSelectedIntructionalMethods())
+				iSelectedMethods.add(id);
+		if (iDetails != null)
+			for (CourseFinderCourseDetails d: iDetails)
+				d.onSetValue(value);
+		if (query.isEmpty() && !iShowDefaultSuggestions) {
 			iLastQuery = null;
 			iCourses.clearTable(1);
 			iCourses.setEmptyMessage(MESSAGES.courseSelectionNoCourseFilter());
 			updateCourseDetails();
-		} else if (!value.equals(iLastQuery)) {
-			iLastQuery = value;
-			iDataProvider.getData(value, new AsyncCallback<Collection<CourseAssignment>>() {
+		} else if (!query.equals(iLastQuery)) {
+			iLastQuery = query;
+			iDataProvider.getData(query, new AsyncCallback<Collection<CourseAssignment>>() {
 				public void onFailure(Throwable caught) {
 					iCourses.clearTable(1);
 					iCourses.setEmptyMessage(caught.getMessage());
@@ -301,8 +320,18 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 			iInstructionalMethodsPanel.clear();
 			iInstructionalMethods.clear();
 			if (record.hasInstructionalMethodSelection()) {
-				for (IdValue m: record.getInstructionalMethods()) {
+				for (final IdValue m: record.getInstructionalMethods()) {
 					CheckBox ch = new CheckBox(m.getValue());
+					ch.setValue(iSelectedMethods.contains(m.getId()));
+					ch.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+						@Override
+						public void onValueChange(ValueChangeEvent<Boolean> event) {
+							if (event.getValue())
+								iSelectedMethods.add(m.getId());
+							else
+								iSelectedMethods.remove(m.getId());
+						}
+					});
 					ch.addStyleName("instructional-method");
 					iInstructionalMethods.put(m.getId(), ch);
 					iInstructionalMethodsPanel.add(ch);
@@ -320,12 +349,12 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 	}
 
 	@Override
-	public HandlerRegistration addSelectionHandler(SelectionHandler<String> handler) {
+	public HandlerRegistration addSelectionHandler(SelectionHandler<RequestedCourse> handler) {
 		return addHandler(handler, SelectionEvent.getType());
 	}
 
 	@Override
-	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
+	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<RequestedCourse> handler) {
 		return addHandler(handler, ValueChangeEvent.getType());
 	}
 

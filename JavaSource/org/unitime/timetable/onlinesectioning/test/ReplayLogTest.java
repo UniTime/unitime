@@ -31,6 +31,7 @@ import java.util.Map;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.dao._RootDAO;
@@ -99,20 +100,16 @@ public class ReplayLogTest extends OnlineSectioningTestFwk {
 			freeTime.setLength(time.getLength());
 			for (DayCode c: DayCode.toDayCodes(time.getDays()))
 				freeTime.addDay(c.ordinal());
-			ret.addRequestedFreeTime(freeTime);
+			RequestedCourse rc = new RequestedCourse();
+			ret.addRequestedCourse(rc);
+			rc.addFreeTime(freeTime);
 		}
 		for (int i = 0; i < request.getCourseCount(); i++) {
-			switch (i) {
-			case 0:
-				ret.setRequestedCourse(request.getCourse(i).getName());
-				break;
-			case 1:
-				ret.setFirstAlternative(request.getCourse(i).getName());
-				break;
-			case 2:
-				ret.setSecondAlternative(request.getCourse(i).getName());
-				break;
-			}
+			RequestedCourse rc = new RequestedCourse();
+			if (request.getCourse(i).hasUniqueId())
+				rc.setCourseId(request.getCourse(i).getUniqueId());
+			rc.setCourseName(request.getCourse(i).getName());
+			ret.addRequestedCourse(rc);
 		}
 		if (request.hasWaitList())
 			ret.setWaitList(request.getWaitList());

@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.gwt.client.widgets;
 
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.HasSelectionHandlers;
 import com.google.gwt.event.shared.EventHandler;
@@ -32,12 +34,12 @@ import com.google.gwt.user.client.ui.IsWidget;
 /**
  * @author Tomas Muller
  */
-public interface CourseFinder extends HasValue<String>, HasSelectionHandlers<String>, IsWidget {
+public interface CourseFinder extends HasValue<RequestedCourse>, HasSelectionHandlers<RequestedCourse>, IsWidget {
 	public void findCourse();
 	
 	public void setTabs(CourseFinderTab... tabs);
 	
-	public interface CourseFinderTab<E> extends HasValue<String>, HasSelectionHandlers<String>, IsWidget, KeyUpHandler, HasResponseHandlers {
+	public interface CourseFinderTab<E> extends HasValue<RequestedCourse>, HasSelectionHandlers<RequestedCourse>, IsWidget, KeyUpHandler, HasResponseHandlers {
 		public String getName();
 		public void setDataProvider(DataProvider<String, E> provider);
 		public boolean isCourseSelection();
@@ -48,6 +50,8 @@ public interface CourseFinder extends HasValue<String>, HasSelectionHandlers<Str
 	public interface CourseFinderCourseDetails<T, E> extends TakesValue<T>, IsWidget {
 		public void setDataProvider(DataProvider<T, E> provider);
 		public String getName();
+		public void onSetValue(RequestedCourse course);
+		public void onGetValue(RequestedCourse course);
 	}
 	
 	public interface HasResponseHandlers extends HasHandlers {

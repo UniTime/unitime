@@ -40,6 +40,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -178,7 +179,10 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 						.addCourse(toEntity(course, cid));
 					
 					CourseRequestInterface.Request r = new CourseRequestInterface.Request();
-					r.setRequestedCourse(cid.getCourseName());
+					RequestedCourse rc = new RequestedCourse();
+					rc.setCourseId(cid.getCourseId());
+					rc.setCourseName(cid.getCourseName());
+					r.addRequestedCourse(rc);
 					request.getCourses().add(r);
 					hasSelection = true;
 				}
@@ -197,14 +201,10 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				for (XEInterface.Course course: group.plannedClasses) {
 					XCourseId cid = getCourse(server, course);
 					if (cid == null) continue;
-					if (!r.hasRequestedCourse()) {
-						r.setRequestedCourse(cid.getCourseName());
-					} else if (!r.hasFirstAlternative()) {
-						r.setFirstAlternative(cid.getCourseName());
-					} else if (!r.hasSecondAlternative()) {
-						r.setSecondAlternative(cid.getCourseName());
-						break;
-					}
+					RequestedCourse rc = new RequestedCourse();
+					rc.setCourseId(cid.getCourseId());
+					rc.setCourseName(cid.getCourseName());
+					r.addRequestedCourse(rc);
 					b.addCourse(toEntity(course, cid));
 				}
 				
@@ -225,7 +225,10 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					.addCourse(toEntity(course, cid));
 				
 				CourseRequestInterface.Request r = new CourseRequestInterface.Request();
-				r.setRequestedCourse(cid.getCourseName());
+				RequestedCourse rc = new RequestedCourse();
+				rc.setCourseId(cid.getCourseId());
+				rc.setCourseName(cid.getCourseName());
+				r.addRequestedCourse(rc);
 				request.getCourses().add(r);
 			}
 			for (XEInterface.Group g: group.groups)
@@ -279,7 +282,9 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 										if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.includePlaceHolders", "true")))
 											for (PlaceHolder ph: t.group.plannedPlaceholders) {
 												CourseRequestInterface.Request r = new CourseRequestInterface.Request();
-												r.setRequestedCourse(ph.placeholderValue.trim());
+												RequestedCourse rc = new RequestedCourse();
+												rc.setCourseName(ph.placeholderValue.trim());
+												r.addRequestedCourse(rc);
 												request.getCourses().add(r);
 											}
 										

@@ -36,6 +36,7 @@ import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
@@ -303,7 +304,9 @@ public class OnlineSectioningTest extends Composite {
 								request.setStudentId(iStudentId);
 								for (String course: courses) {
 									CourseRequestInterface.Request r = new CourseRequestInterface.Request();
-									r.setRequestedCourse(course);
+									RequestedCourse rc = new RequestedCourse();
+									rc.setCourseName(course);
+									r.addRequestedCourse(rc);
 									r.setWaitList(iWaitList.getValue());
 									request.getCourses().add(r);
 								}

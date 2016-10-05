@@ -717,4 +717,11 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	public SolverType getType() {
 		return SolverType.STUDENT;
 	}
+
+	@Override
+	public XCourseId getCourse(Long courseId, String courseName) {
+		if (courseId != null) return getCourse(courseId);
+		if (courseName != null) return getCourse(courseName);
+		return null;
+	}
 }

@@ -56,6 +56,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
@@ -543,20 +544,18 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				CourseMatcher matcher = getCourseMatcher(request.getAcademicSessionId());
 				Long studentId = getStudentId(request.getAcademicSessionId());
 				for (CourseRequestInterface.Request cr: request.getCourses()) {
-					if (!cr.hasRequestedFreeTime() && cr.hasRequestedCourse() && lookupCourse(hibSession, request.getAcademicSessionId(), studentId, cr.getRequestedCourse(), matcher) == null)
-						notFound.add(cr.getRequestedCourse());
-					if (cr.hasFirstAlternative() && lookupCourse(hibSession, request.getAcademicSessionId(), studentId, cr.getFirstAlternative(), matcher) == null)
-						notFound.add(cr.getFirstAlternative());
-					if (cr.hasSecondAlternative() && lookupCourse(hibSession, request.getAcademicSessionId(), studentId, cr.getSecondAlternative(), matcher) == null)
-						notFound.add(cr.getSecondAlternative());
+					if (cr.hasRequestedCourse()) {
+						for (RequestedCourse rc: cr.getRequestedCourse())
+							if (rc.isCourse() && lookupCourse(hibSession, request.getAcademicSessionId(), studentId, rc, matcher) == null)
+								notFound.add(rc.getCourseName());
+					}
 				}
 				for (CourseRequestInterface.Request cr: request.getAlternatives()) {
-					if (cr.hasRequestedCourse() && lookupCourse(hibSession, request.getAcademicSessionId(), studentId,  cr.getRequestedCourse(), matcher) == null)
-						notFound.add(cr.getRequestedCourse());
-					if (cr.hasFirstAlternative() && lookupCourse(hibSession, request.getAcademicSessionId(), studentId, cr.getFirstAlternative(), matcher) == null)
-						notFound.add(cr.getFirstAlternative());
-					if (cr.hasSecondAlternative() && lookupCourse(hibSession, request.getAcademicSessionId(), studentId,  cr.getSecondAlternative(), matcher) == null)
-						notFound.add(cr.getSecondAlternative());
+					if (cr.hasRequestedCourse()) {
+						for (RequestedCourse rc: cr.getRequestedCourse())
+							if (rc.isCourse() && lookupCourse(hibSession, request.getAcademicSessionId(), studentId, rc, matcher) == null)
+								notFound.add(rc.getCourseName());
+					}
 				}
 				return notFound;
 			} else {
@@ -598,6 +597,17 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		return null;
 	}
 	
+	public static CourseOffering lookupCourse(org.hibernate.Session hibSession, Long sessionId, Long studentId, RequestedCourse rc, CourseMatcher courseMatcher) {
+		if (rc.hasCourseId()) {
+			CourseOffering co = CourseOfferingDAO.getInstance().get(rc.getCourseId(), hibSession);
+			if (courseMatcher != null && !courseMatcher.match(new XCourse(co))) return null;
+			return co;
+		}
+		if (rc.hasCourseName())
+			return lookupCourse(hibSession, sessionId, studentId, rc.getCourseName(), courseMatcher);
+		return null;
+	}
+	
 	public 	Collection<ClassAssignmentInterface> computeSuggestions(boolean online, CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> currentAssignment, int selectedAssignmentIndex, String filter) throws SectioningException, PageAccessException {
 		try {
 			if (!online) {
@@ -609,9 +619,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				ClassAssignmentInterface.ClassAssignment selectedAssignment = null;
 				if (selectedAssignmentIndex >= 0) {
 					selectedAssignment = ((List<ClassAssignmentInterface.ClassAssignment>)currentAssignment).get(selectedAssignmentIndex);
-				} else {
-					XCourseId course = server.getCourse(request.getLastCourse());
-					if (course == null) throw new SectioningException(MSG.exceptionCourseDoesNotExist(request.getLastCourse()));
+				} else if (request.getLastCourse() != null) {
+					XCourseId course = server.getCourse(request.getLastCourse().getCourseId(), request.getLastCourse().getCourseName());
+					if (course == null) throw new SectioningException(MSG.exceptionCourseDoesNotExist(request.getLastCourse().getCourseName()));
 					selectedAssignment = new ClassAssignmentInterface.ClassAssignment();
 					selectedAssignment.setCourseId(course.getCourseId());
 				}
@@ -634,9 +644,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			ClassAssignmentInterface.ClassAssignment selectedAssignment = null;
 			if (selectedAssignmentIndex >= 0) {
 				selectedAssignment = ((List<ClassAssignmentInterface.ClassAssignment>)currentAssignment).get(selectedAssignmentIndex);
-			} else {
-				XCourseId course = server.getCourse(request.getLastCourse());
-				if (course == null) throw new SectioningException(MSG.exceptionCourseDoesNotExist(request.getLastCourse()));
+			} else if (request.getLastCourse() != null) {
+				XCourseId course = server.getCourse(request.getLastCourse().getCourseId(), request.getLastCourse().getCourseName());
+				if (course == null) throw new SectioningException(MSG.exceptionCourseDoesNotExist(request.getLastCourse().getCourseName()));
 				selectedAssignment = new ClassAssignmentInterface.ClassAssignment();
 				selectedAssignment.setCourseId(course.getCourseId());
 			}
@@ -1774,36 +1784,30 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							ft.setLength(cd.getFreeTime().getLength());
 							for (DayCode day : DayCode.toDayCodes(cd.getFreeTime().getDayCode()))
 								ft.addDay(day.getIndex());
-							if (lastRequest != null && lastRequestPriority == cd.getPriority()) {
-								r = lastRequest;
-								lastRequest.addRequestedFreeTime(ft);
-								lastRequest.setRequestedCourse(lastRequest.getRequestedCourse() + ", " + ft.toString());
+							if (lastRequest != null && lastRequestPriority == cd.getPriority() && lastRequest.hasRequestedCourse() && lastRequest.getRequestedCourse(0).isFreeTime()) {
+								lastRequest.getRequestedCourse(0).addFreeTime(ft);
 							} else {
 								r = new CourseRequestInterface.Request();
-								r.addRequestedFreeTime(ft);
-								r.setRequestedCourse(ft.toString());
+								RequestedCourse rc = new RequestedCourse();
+								rc.addFreeTime(ft);
+								r.addRequestedCourse(rc);
 								if (cd.isAlternative())
 									request.getAlternatives().add(r);
 								else
 									request.getCourses().add(r);
+								lastRequest = r;
+								lastRequestPriority = cd.getPriority();
 							}
 						} else if (!cd.getCourseRequests().isEmpty()) {
 							r = new CourseRequestInterface.Request();
-							for (Iterator<CourseRequest> i = cd.getCourseRequests().iterator(); i.hasNext(); ) {
-								CourseRequest course = i.next();
+							for (CourseRequest course: new TreeSet<CourseRequest>(cd.getCourseRequests())) {
 								courseIds.add(course.getCourseOffering().getUniqueId());
 								XCourse c = (server == null ? new XCourse(course.getCourseOffering()) : server.getCourse(course.getCourseOffering().getUniqueId()));
 								if (c == null) continue;
-								switch (course.getOrder()) {
-								case 0: 
-									r.setRequestedCourse(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
-									break;
-								case 1:
-									r.setFirstAlternative(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
-									break;
-								case 2:
-									r.setSecondAlternative(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
-								}
+								RequestedCourse rc = new RequestedCourse();
+								rc.setCourseId(c.getCourseId());
+								rc.setCourseName(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
+								r.addRequestedCourse(rc);
 							}
 							if (r.hasRequestedCourse()) {
 								if (cd.isAlternative())
@@ -1811,10 +1815,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								else
 									request.getCourses().add(r);
 							}
+							r.setWaitList(cd.getWaitlist());
+							lastRequest = r;
+							lastRequestPriority = cd.getPriority();
 						}
-						r.setWaitList(cd.getWaitlist());
-						lastRequest = r;
-						lastRequestPriority = cd.getPriority();
 					}
 				}
 				if (!student.getClassEnrollments().isEmpty()) {
@@ -1823,11 +1827,14 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						StudentClassEnrollment enrl = i.next();
 						if (courseIds.contains(enrl.getCourseOffering().getUniqueId())) continue;
 						XCourse c = (server == null ? new XCourse(enrl.getCourseOffering()) : server.getCourse(enrl.getCourseOffering().getUniqueId()));
-						if (c != null)  courses.add(c);
+						if (c != null) courses.add(c);
 					}
 					for (XCourse c: courses) {
 						CourseRequestInterface.Request r = new CourseRequestInterface.Request();
-						r.setRequestedCourse(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
+						RequestedCourse rc = new RequestedCourse();
+						rc.setCourseId(c.getCourseId());
+						rc.setCourseName(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
+						r.addRequestedCourse(rc);
 						request.getCourses().add(r);
 					}
 				}

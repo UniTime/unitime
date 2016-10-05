@@ -39,6 +39,7 @@ import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.SectioningException;
 
 import com.google.gwt.aria.client.Id;
@@ -697,21 +698,20 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		iSectioningService.computeSuggestions(iOnline, request, rows, index, iFilter.getText(), iCallback);
 	}
 	
-	public void open(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> rows, String course, boolean useGwtConfirmations, AsyncCallback<ClassAssignmentInterface> callback) {
+	public void open(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> rows, RequestedCourse course, boolean useGwtConfirmations, AsyncCallback<ClassAssignmentInterface> callback) {
 		LoadingWidget.getInstance().show(MESSAGES.suggestionsLoadingChoices());
 		iAssignment = null;
 		iCurrent = rows;
-		iSource = null;
 		iRequest = request;
 		iIndex = -1;
 		iHintId = null;
 		iUseGwtConfirmations = useGwtConfirmations;
-		iSource = course;
+		iSource = course.getCourseName();
 		setText(MESSAGES.suggestionsChoices(iSource));
 		iSuggestions.setSelectedRow(-1);
 		iSuggestions.clearData(true);
 		iSuggestions.setEmptyMessage(MESSAGES.suggestionsLoadingChoices());
-		iLegend.setHTML(MESSAGES.suggestionsLegendOnNewCourse(course));
+		iLegend.setHTML(MESSAGES.suggestionsLegendOnNewCourse(course.getCourseName()));
 		iMessages.setHTML("");
 		iFilter.setText("");
 		iQuickDrop.setVisible(false); iQuickDrop.setEnabled(false);

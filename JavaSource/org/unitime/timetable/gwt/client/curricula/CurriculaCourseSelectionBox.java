@@ -33,8 +33,10 @@ import org.unitime.timetable.gwt.client.widgets.DataProvider;
 import org.unitime.timetable.gwt.services.CurriculaService;
 import org.unitime.timetable.gwt.services.CurriculaServiceAsync;
 import org.unitime.timetable.gwt.shared.CurriculumInterface;
+import org.unitime.timetable.gwt.shared.CurriculumInterface.CourseInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -111,5 +113,23 @@ public class CurriculaCourseSelectionBox extends CourseSelectionSuggestBox {
 			iSuggest.getElement().getStyle().setBorderColor("transparent");
             iSuggest.getElement().getStyle().setBackgroundColor("transparent");
 		}
+	}
+	
+	public void setValue(CourseInterface course, boolean fireEvents) {
+		RequestedCourse rc = new RequestedCourse(); rc.setCourseId(course.getId()); rc.setCourseName(course.getCourseName());
+		setValue(rc, fireEvents);
+	}
+	
+	public void setValue(CourseInterface course) {
+		setValue(course, false);
+	}
+	
+	public void setValue(String course, boolean fireEvents) {
+		RequestedCourse rc = new RequestedCourse(); rc.setCourseName(course);
+		setValue(rc, fireEvents);
+	}
+	
+	public void setValue(String course) {
+		setValue(course, false);
 	}
 }

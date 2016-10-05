@@ -47,6 +47,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -86,162 +87,148 @@ public class BatchEnrollStudent extends EnrollStudent {
 			Long ts = new Date().getTime();
 			boolean changed = false;
 			for (CourseRequestInterface.Request r: getRequest().getCourses()) {
-				if (r.hasRequestedFreeTime() && r.hasRequestedCourse() && server.getCourse(r.getRequestedCourse()) != null)
-					r.getRequestedFreeTime().clear();
-				if (r.hasRequestedFreeTime()) {
-					for (CourseRequestInterface.FreeTime ft: r.getRequestedFreeTime()) {
-						TimeLocation time = new TimeLocation(
-								DayCode.toInt(DayCode.toDayCodes(ft.getDays())),
-		                        ft.getStart(),
-		                        ft.getLength(),
-		                        0, 0, -1l, "", server.getAcademicSession().getFreeTimePattern(), 0);
-						
-						FreeTimeRequest freeTimeRequest = null;
-						for (Iterator<Request> i = remaining.iterator(); i.hasNext(); ) {
-							Request adept = i.next();
-							if (adept instanceof FreeTimeRequest && !adept.isAlternative()) {
-								FreeTimeRequest f = (FreeTimeRequest) adept;
-								if (f.getTime().equals(time)) { freeTimeRequest = f; i.remove(); break; }
+				List<Course> courses = new ArrayList<Course>();
+				if (r.hasRequestedCourse()) {
+					for (RequestedCourse rc: r.getRequestedCourse()) {
+						if (rc.isFreeTime()) {
+							for (CourseRequestInterface.FreeTime ft: rc.getFreeTime()) {
+								TimeLocation time = new TimeLocation(
+										DayCode.toInt(DayCode.toDayCodes(ft.getDays())),
+				                        ft.getStart(),
+				                        ft.getLength(),
+				                        0, 0, -1l, "", server.getAcademicSession().getFreeTimePattern(), 0);
+								
+								FreeTimeRequest freeTimeRequest = null;
+								for (Iterator<Request> i = remaining.iterator(); i.hasNext(); ) {
+									Request adept = i.next();
+									if (adept instanceof FreeTimeRequest && !adept.isAlternative()) {
+										FreeTimeRequest f = (FreeTimeRequest) adept;
+										if (f.getTime().equals(time)) { freeTimeRequest = f; i.remove(); break; }
+									}
+								}
+								
+								if (freeTimeRequest == null) {
+									freeTimeRequest = new FreeTimeRequest(sLastGeneratedId.getAndDecrement(), priority, false, student, time);
+									model.addVariable(freeTimeRequest);
+									changed = true;
+								} else {
+									if (freeTimeRequest.getPriority() != priority) {
+										freeTimeRequest.setPriority(priority);
+										changed = true;
+									}
+								}
 							}
-						}
-						
-						if (freeTimeRequest == null) {
-							freeTimeRequest = new FreeTimeRequest(sLastGeneratedId.getAndDecrement(), priority, false, student, time);
-							model.addVariable(freeTimeRequest);
-							changed = true;
-						} else {
-							if (freeTimeRequest.getPriority() != priority) {
-								freeTimeRequest.setPriority(priority);
-								changed = true;
-							}
+							priority++;
+						} else if (rc.isCourse()) {
+							Course c = getCourse(model, rc.getCourseId(), rc.getCourseName());
+							if (c != null) courses.add(c);
 						}
 					}
+				}
+				if (courses.isEmpty()) continue;
+				
+				CourseRequest courseRequest = null;
+				for (Iterator<Request> i = remaining.iterator(); i.hasNext(); ) {
+					Request adept = i.next();
+					if (adept instanceof CourseRequest && !adept.isAlternative()) {
+						CourseRequest cr = (CourseRequest) adept;
+						if (cr.getCourses().equals(courses)) {
+							courseRequest = cr; i.remove(); break;
+						}
+					}
+				}
+				
+				if (courseRequest == null) {
+					courseRequest = new CourseRequest(
+							sLastGeneratedId.getAndDecrement(),
+							priority,
+							false,
+	                        student,
+	                        courses,
+	                        r.isWaitList(), 
+	                        ts);
+					model.addVariable(courseRequest);
+					changed = true;
 				} else {
-					List<Course> courses = new ArrayList<Course>();
-					if (r.hasRequestedCourse()) {
-						Course c = getCourse(model, r.getRequestedCourse());
-						if (c != null) courses.add(c);
-					}
-					if (r.hasFirstAlternative()) {
-						Course c = getCourse(model, r.getFirstAlternative());
-						if (c != null) courses.add(c);
-					}
-					if (r.hasSecondAlternative()) {
-						Course c = getCourse(model, r.getSecondAlternative());
-						if (c != null) courses.add(c);
-					}
-					if (courses.isEmpty()) continue;
-					
-					CourseRequest courseRequest = null;
-					for (Iterator<Request> i = remaining.iterator(); i.hasNext(); ) {
-						Request adept = i.next();
-						if (adept instanceof CourseRequest && !adept.isAlternative()) {
-							CourseRequest cr = (CourseRequest) adept;
-							if (cr.getCourses().equals(courses)) {
-								courseRequest = cr; i.remove(); break;
-							}
-						}
-					}
-					
-					if (courseRequest == null) {
-						courseRequest = new CourseRequest(
-								sLastGeneratedId.getAndDecrement(),
-								priority,
-								false,
-		                        student,
-		                        courses,
-		                        r.isWaitList(), 
-		                        ts);
-						model.addVariable(courseRequest);
+					if (courseRequest.getPriority() != priority) {
+						courseRequest.setPriority(priority);
 						changed = true;
-					} else {
-						if (courseRequest.getPriority() != priority) {
-							courseRequest.setPriority(priority);
-							changed = true;
-						}
-						if (courseRequest.isWaitlist() != r.isWaitList()) {
-							courseRequest.setWaitlist(r.isWaitList());
-							changed = true;
-						}
+					}
+					if (courseRequest.isWaitlist() != r.isWaitList()) {
+						courseRequest.setWaitlist(r.isWaitList());
+						changed = true;
 					}
 				}
 				priority++;
 			}
 			
 			for (CourseRequestInterface.Request r: getRequest().getAlternatives()) {
-				if (r.hasRequestedFreeTime() && r.hasRequestedCourse() && server.getCourse(r.getRequestedCourse()) != null)
-					r.getRequestedFreeTime().clear();
-				if (r.hasRequestedFreeTime()) {
-					for (CourseRequestInterface.FreeTime ft: r.getRequestedFreeTime()) {
-						TimeLocation time = new TimeLocation(
-								DayCode.toInt(DayCode.toDayCodes(ft.getDays())),
-		                        ft.getStart(),
-		                        ft.getLength(),
-		                        0, 0, -1l, "", server.getAcademicSession().getFreeTimePattern(), 0);
-						
-						FreeTimeRequest freeTimeRequest = null;
-						for (Iterator<Request> i = remaining.iterator(); i.hasNext(); ) {
-							Request adept = i.next();
-							if (adept instanceof FreeTimeRequest && adept.isAlternative()) {
-								FreeTimeRequest f = (FreeTimeRequest) adept;
-								if (f.getTime().equals(time)) { freeTimeRequest = f; i.remove(); break; }
+				List<Course> courses = new ArrayList<Course>();
+				if (r.hasRequestedCourse()) {
+					for (RequestedCourse rc: r.getRequestedCourse()) {
+						if (rc.isFreeTime()) {
+							for (CourseRequestInterface.FreeTime ft: rc.getFreeTime()) {
+								TimeLocation time = new TimeLocation(
+										DayCode.toInt(DayCode.toDayCodes(ft.getDays())),
+				                        ft.getStart(),
+				                        ft.getLength(),
+				                        0, 0, -1l, "", server.getAcademicSession().getFreeTimePattern(), 0);
+								
+								FreeTimeRequest freeTimeRequest = null;
+								for (Iterator<Request> i = remaining.iterator(); i.hasNext(); ) {
+									Request adept = i.next();
+									if (adept instanceof FreeTimeRequest && adept.isAlternative()) {
+										FreeTimeRequest f = (FreeTimeRequest) adept;
+										if (f.getTime().equals(time)) { freeTimeRequest = f; i.remove(); break; }
+									}
+								}
+								
+								if (freeTimeRequest == null) {
+									freeTimeRequest = new FreeTimeRequest(sLastGeneratedId.getAndDecrement(), priority, true, student, time);
+									model.addVariable(freeTimeRequest);
+									changed = true;
+								} else {
+									if (freeTimeRequest.getPriority() != priority) {
+										freeTimeRequest.setPriority(priority);
+										changed = true;
+									}
+								}
 							}
-						}
-						
-						if (freeTimeRequest == null) {
-							freeTimeRequest = new FreeTimeRequest(sLastGeneratedId.getAndDecrement(), priority, true, student, time);
-							model.addVariable(freeTimeRequest);
-							changed = true;
-						} else {
-							if (freeTimeRequest.getPriority() != priority) {
-								freeTimeRequest.setPriority(priority);
-								changed = true;
-							}
+							priority++;
+						} else if (rc.isCourse()) {
+							Course c = getCourse(model, rc.getCourseId(), rc.getCourseName());
+							if (c != null) courses.add(c);
 						}
 					}
+				}
+				if (courses.isEmpty()) continue;
+				
+				CourseRequest courseRequest = null;
+				for (Iterator<Request> i = remaining.iterator(); i.hasNext(); ) {
+					Request adept = i.next();
+					if (adept instanceof CourseRequest && adept.isAlternative()) {
+						CourseRequest cr = (CourseRequest) adept;
+						if (cr.getCourses().equals(courses)) {
+							courseRequest = cr; i.remove(); break;
+						}
+					}
+				}
+				
+				if (courseRequest == null) {
+					courseRequest = new CourseRequest(
+							sLastGeneratedId.getAndDecrement(),
+							priority,
+							true,
+	                        student,
+	                        courses,
+	                        r.isWaitList(), 
+	                        ts);
+					model.addVariable(courseRequest);
+					changed = true;
 				} else {
-					List<Course> courses = new ArrayList<Course>();
-					if (r.hasRequestedCourse()) {
-						Course c = getCourse(model, r.getRequestedCourse());
-						if (c != null) courses.add(c);
-					}
-					if (r.hasFirstAlternative()) {
-						Course c = getCourse(model, r.getFirstAlternative());
-						if (c != null) courses.add(c);
-					}
-					if (r.hasSecondAlternative()) {
-						Course c = getCourse(model, r.getSecondAlternative());
-						if (c != null) courses.add(c);
-					}
-					if (courses.isEmpty()) continue;
-					
-					CourseRequest courseRequest = null;
-					for (Iterator<Request> i = remaining.iterator(); i.hasNext(); ) {
-						Request adept = i.next();
-						if (adept instanceof CourseRequest && adept.isAlternative()) {
-							CourseRequest cr = (CourseRequest) adept;
-							if (cr.getCourses().equals(courses)) {
-								courseRequest = cr; i.remove(); break;
-							}
-						}
-					}
-					
-					if (courseRequest == null) {
-						courseRequest = new CourseRequest(
-								sLastGeneratedId.getAndDecrement(),
-								priority,
-								true,
-		                        student,
-		                        courses,
-		                        r.isWaitList(), 
-		                        ts);
-						model.addVariable(courseRequest);
+					if (courseRequest.getPriority() != priority) {
+						courseRequest.setPriority(priority);
 						changed = true;
-					} else {
-						if (courseRequest.getPriority() != priority) {
-							courseRequest.setPriority(priority);
-							changed = true;
-						}
 					}
 				}
 				priority++;
@@ -326,10 +313,15 @@ public class BatchEnrollStudent extends EnrollStudent {
 		return server.execute(server.createAction(GetAssignment.class).forStudent(getStudentId()).withMessages(failures), helper.getUser());
 	}
 	
-	protected Course getCourse(StudentSectioningModel model, String courseName){
+	protected Course getCourse(StudentSectioningModel model, Long courseId, String courseName){
 		for (Offering offering: model.getOfferings())
-			for (Course course: offering.getCourses())
-				if (course.getName().equalsIgnoreCase(courseName)) return course;
+			for (Course course: offering.getCourses()) {
+				if (courseId != null) {
+					if (courseId.equals(course.getId())) return course;
+				} else {
+					if (course.getName().equalsIgnoreCase(courseName)) return course;
+				}
+			}
 		return null;
 	}
 }

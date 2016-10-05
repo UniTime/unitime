@@ -31,6 +31,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -63,7 +64,7 @@ public class CourseFinderFreeTime extends P implements CourseFinder.CourseFinder
 		iFreeTimePicker.addValueChangeHandler(new ValueChangeHandler<List<FreeTime>>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<List<FreeTime>> event) {
-				ValueChangeEvent.fire(CourseFinderFreeTime.this, iDataProvider.freeTimesToString(event.getValue()));
+				ValueChangeEvent.fire(CourseFinderFreeTime.this, new RequestedCourse(event.getValue()));
 				iFreeTimeError.setVisible(false);
 			}
 		});
@@ -92,25 +93,35 @@ public class CourseFinderFreeTime extends P implements CourseFinder.CourseFinder
 	}
 
 	@Override
-	public String getValue() {
+	public RequestedCourse getValue() {
 		List<CourseRequestInterface.FreeTime> ret = iFreeTimePicker.getValue();
 		if (ret == null || ret.isEmpty()) return null;
-		return iDataProvider.freeTimesToString(ret);
+		return new RequestedCourse(ret);
 	}
 	
 	@Override
-	public void setValue(String value) {
+	public void setValue(RequestedCourse value) {
 		setValue(value, false);
 	}
 
 	@Override
-	public void setValue(String value, final boolean fireEvents) {
-		if (value == null || value.isEmpty()) {
+	public void setValue(RequestedCourse value, final boolean fireEvents) {
+		if (value == null) {
 			iFreeTimePicker.setValue(null);
 			iFreeTimeError.setText(MESSAGES.courseSelectionNoFreeTime());
 			iFreeTimeError.setVisible(true);
-		} else {
-			iDataProvider.getData(value, new AsyncCallback<List<FreeTime>>() {
+		} else if (value.isFreeTime()) {
+			iFreeTimePicker.setValue(value.getFreeTime(), fireEvents);
+			iFreeTimeError.setVisible(false);
+			String status = "";
+			for (CourseRequestInterface.FreeTime ft: value.getFreeTime()) {
+				status += ft.toAriaString(CONSTANTS.longDays(), CONSTANTS.useAmPm()) + " ";
+			}
+			if (!status.isEmpty())
+				AriaStatus.getInstance().setText(ARIA.courseFinderSelectedFreeTime(status));
+			ResponseEvent.fire(CourseFinderFreeTime.this, true);
+		} else if (value.isCourse()) {
+			iDataProvider.getData(value.getCourseName(), new AsyncCallback<List<FreeTime>>() {
 				@Override
 				public void onSuccess(List<FreeTime> freeTimes) {
 					iFreeTimePicker.setValue(freeTimes, fireEvents);
@@ -136,12 +147,12 @@ public class CourseFinderFreeTime extends P implements CourseFinder.CourseFinder
 	}
 	
 	@Override
-	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
+	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<RequestedCourse> handler) {
 		return addHandler(handler, ValueChangeEvent.getType());
 	}
 
 	@Override
-	public HandlerRegistration addSelectionHandler(SelectionHandler<String> handler) {
+	public HandlerRegistration addSelectionHandler(SelectionHandler<RequestedCourse> handler) {
 		return addHandler(handler, SelectionEvent.getType());
 	}
 

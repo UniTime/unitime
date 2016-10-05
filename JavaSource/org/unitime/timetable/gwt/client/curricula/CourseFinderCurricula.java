@@ -26,6 +26,7 @@ import org.unitime.timetable.gwt.client.widgets.DataProvider;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CurriculumInterface;
 
 import com.google.gwt.core.client.GWT;
@@ -98,4 +99,10 @@ public class CourseFinderCurricula extends CourseCurriculaTable implements Cours
 	public String getName() {
 		return MESSAGES.tabCurricula();
 	}
+
+	@Override
+	public void onSetValue(RequestedCourse course) {}
+
+	@Override
+	public void onGetValue(RequestedCourse course) {}
 }

@@ -30,6 +30,7 @@ import org.cpsolver.coursett.Constants;
 import org.cpsolver.ifs.heuristics.RouletteWheelSelection;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.model.dao._RootDAO;
@@ -57,22 +58,19 @@ public class OnlineSectioningTest extends OnlineSectioningTestFwk {
 	private ClassAssignmentInterface.CourseAssignment course(CourseRequestInterface.Request request, ClassAssignmentInterface assignment) {
 		if (assignment == null) return null;
 		for (CourseAssignment course: assignment.getCourseAssignments()) {
-			if (request.hasRequestedFreeTime() && course.isFreeTime()) {
-				for (CourseRequestInterface.FreeTime ft: request.getRequestedFreeTime()) {
-					for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
-						if (ft.getStart() == clazz.getStart() && ft.getLength() == clazz.getLength() && ft.getDaysString(sDays, "").equals(clazz.getDaysString(sDays, ""))) {
-							return course;
-						}
+			if (request.hasRequestedCourse()) {
+				for (RequestedCourse rc: request.getRequestedCourse()) {
+					if (rc.isFreeTime()) {
+						for (CourseRequestInterface.FreeTime ft: rc.getFreeTime()) {
+							for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
+								if (ft.getStart() == clazz.getStart() && ft.getLength() == clazz.getLength() && ft.getDaysString(sDays, "").equals(clazz.getDaysString(sDays, ""))) {
+									return course;
+								}
+							}
+						}		
+					} else if (rc.isCourse()) {
+						if (rc.equals(course)) return course;
 					}
-				}
-			}
-			if (request.hasRequestedCourse() && !course.isFreeTime()) {
-				if (course.getCourseName().equals(request.getRequestedCourse())) {
-					return course;
-				} else if (request.hasFirstAlternative() && course.getCourseName().equals(request.getFirstAlternative())) {
-					return course;
-				} else if (request.hasSecondAlternative() && course.getCourseName().equals(request.getSecondAlternative())) {
-					return course;
 				}
 			}
 		}

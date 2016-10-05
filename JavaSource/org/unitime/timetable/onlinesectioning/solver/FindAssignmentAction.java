@@ -71,6 +71,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -501,47 +502,31 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	}
 	
 	protected void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, Student student, XStudent originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Set<XDistribution> distributions) {
-		if (request.hasRequestedFreeTime() && request.hasRequestedCourse() && server.getCourse(request.getRequestedCourse()) != null)
-			request.getRequestedFreeTime().clear();			
-		if (request.hasRequestedFreeTime()) {
-			for (CourseRequestInterface.FreeTime freeTime: request.getRequestedFreeTime()) {
-				int dayCode = 0;
-				for (DayCode d: DayCode.values()) {
-					if (freeTime.getDays().contains(d.getIndex()))
-						dayCode |= d.getCode();
+		if (request.hasRequestedCourse()) {
+			Vector<Course> cr = new Vector<Course>();
+			for (RequestedCourse rc: request.getRequestedCourse()) {
+				if (rc.isFreeTime()) {
+					for (CourseRequestInterface.FreeTime freeTime: rc.getFreeTime()) {
+						int dayCode = 0;
+						for (DayCode d: DayCode.values()) {
+							if (freeTime.getDays().contains(d.getIndex()))
+								dayCode |= d.getCode();
+						}
+						TimeLocation freeTimeLoc = new TimeLocation(dayCode, freeTime.getStart(), freeTime.getLength(), 0, 0, 
+								-1l, "", server.getAcademicSession().getFreeTimePattern(), 0);
+						new FreeTimeRequest(student.getRequests().size() + 1, student.getRequests().size(), alternative, student, freeTimeLoc);
+					}
+				} else if (rc.isCourse()) {
+					XCourseId courseInfo = server.getCourse(rc.getCourseId(), rc.getCourseName());
+					XOffering offering = null;
+					if (courseInfo != null) offering = server.getOffering(courseInfo.getOfferingId());
+					if (offering != null) {
+						cr.add(clone(offering, server.getEnrollments(offering.getOfferingId()), courseInfo.getCourseId(), student.getId(), originalStudent, classTable, server, model));
+						distributions.addAll(offering.getDistributions());
+					}	
 				}
-				TimeLocation freeTimeLoc = new TimeLocation(dayCode, freeTime.getStart(), freeTime.getLength(), 0, 0, 
-						-1l, "", server.getAcademicSession().getFreeTimePattern(), 0);
-				new FreeTimeRequest(student.getRequests().size() + 1, student.getRequests().size(), alternative, student, freeTimeLoc);
 			}
-		} else if (request.hasRequestedCourse()) {
-			XCourseId courseInfo = server.getCourse(request.getRequestedCourse());
-			XOffering offering = null;
-			if (courseInfo != null) offering = server.getOffering(courseInfo.getOfferingId());
-			if (offering != null) {
-				Vector<Course> cr = new Vector<Course>();
-				cr.add(clone(offering, server.getEnrollments(offering.getOfferingId()), courseInfo.getCourseId(), student.getId(), originalStudent, classTable, server, model));
-				distributions.addAll(offering.getDistributions());
-				if (request.hasFirstAlternative()) {
-					XCourseId ci = server.getCourse(request.getFirstAlternative());
-					if (ci != null) {
-						XOffering x = server.getOffering(ci.getOfferingId());
-						if (x != null) {
-							cr.add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getCourseId(), student.getId(), originalStudent, classTable, server, model));
-							distributions.addAll(x.getDistributions());
-						}
-					}
-				}
-				if (request.hasSecondAlternative()) {
-					XCourseId ci = server.getCourse(request.getSecondAlternative());
-					if (ci != null) {
-						XOffering x = server.getOffering(ci.getOfferingId());
-						if (x != null) {
-							cr.add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getCourseId(), student.getId(), originalStudent, classTable, server, model));
-							distributions.addAll(x.getDistributions());
-						}
-					}
-				}
+			if (!cr.isEmpty()) {
 				CourseRequest clonnedRequest = new CourseRequest(student.getRequests().size() + 1, student.getRequests().size(), alternative, student, cr, request.isWaitList(), null);
 				if (originalStudent != null)
 					for (XRequest originalRequest: originalStudent.getRequests()) {

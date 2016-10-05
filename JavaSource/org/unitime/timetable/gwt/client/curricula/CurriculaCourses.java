@@ -43,6 +43,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.CurriculumInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificationInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CourseInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumCourseGroupInterface;
@@ -153,6 +154,7 @@ public class CurriculaCourses extends Composite {
 	
 	public CurriculaCourses() {
 		iTable = new UniTimeTable<String>();
+		iTable.addStyleName("unitime-CurriculaCourseProjections");
 		initWidget(iTable);
 		iCourseChangedHandler = new CourseSelectionHandler() {
 			
@@ -321,7 +323,7 @@ public class CurriculaCourses extends Composite {
 			public void execute() {
 				for (int row = iTable.getRowCount() - 1; row > 0; row --) {
 					if (!iTable.isSelected(row)) continue;
-					String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getValue();
+					String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getText();
 					if (course.isEmpty() && row + 1 == iTable.getRowCount()) {
 						iTable.setSelected(row, false);
 						continue;
@@ -432,7 +434,7 @@ public class CurriculaCourses extends Composite {
 			public void execute() {
 				// boolean selectedOnly = (iTable.getSelectedCount() > 0);
 				rows: for (int row = iTable.getRowCount() - 1; row > 0; row --) {
-					String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getValue();
+					String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getText();
 					if (course.isEmpty() && row + 1 == iTable.getRowCount()) continue;
 					/*
 					if (selectedOnly && !iTable.isSelected(row)) {
@@ -975,7 +977,8 @@ public class CurriculaCourses extends Composite {
 				}
 				
 				CurriculaCourseSelectionBox cx = new CurriculaCourseSelectionBox();
-				cx.setValue(course.getCourseName(), false);
+				RequestedCourse rc = new RequestedCourse(); rc.setCourseId(course.getId()); rc.setCourseName(course.getCourseName());
+				cx.setValue(course, false);
 				cx.setWidth("130px");
 				if (cx.getCourseFinder() instanceof HasOpenHandlers)
 					((HasOpenHandlers<PopupPanel>)cx.getCourseFinder()).addOpenHandler(fx);
@@ -1010,7 +1013,7 @@ public class CurriculaCourses extends Composite {
 		HashMap<String, CurriculumCourseGroupInterface> groups = new HashMap<String, CurriculumCourseGroupInterface>();
 		if (c.hasCourses()) c.getCourses().clear();
 		for (int row = 1; row < iTable.getRowCount(); row++) {
-			String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getValue();
+			String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getText();
 			if (course.isEmpty()) continue;
 			if (!courses.add(course)) {
 				((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).setError(MESSAGES.errorDuplicateCourse(course));
@@ -1066,7 +1069,7 @@ public class CurriculaCourses extends Composite {
 					for (CurriculumCourseGroupInterface g: cr.getGroups())
 						groups.put(g.getName(), g);
 		for (int row = 1; row < iTable.getRowCount(); row++) {
-			String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getValue();
+			String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getText();
 			if (course.isEmpty()) continue;
 			if (!courses.add(course)) continue;
 			CourseInterface cr = c.getCourse(course);
@@ -1186,7 +1189,7 @@ public class CurriculaCourses extends Composite {
 	
 	public int getCourseIndex(String course) {
 		for (int row = 1; row < iTable.getRowCount(); row++) {
-			String c = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getValue();
+			String c = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getText();
 			if (course.equals(c)) return row - 1;
 		}
 		return -1;
@@ -1195,7 +1198,7 @@ public class CurriculaCourses extends Composite {
 	public boolean setEnrollmentAndLastLike(String course, int clasf, Integer enrollment, Integer lastLike, Integer projection, Integer requested) {
 		boolean changed = false;
 		for (int row = 1; row < iTable.getRowCount(); row++) {
-			String c = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getValue();
+			String c = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getText();
 			if (!course.equals(c)) continue;
 			EnrollmentLabel note = ((EnrollmentLabel)iTable.getWidget(row, 3 + 2 * clasf));
 			note.iEnrollment = enrollment;
@@ -1222,7 +1225,7 @@ public class CurriculaCourses extends Composite {
 		}
 		HashSet<String> updated = new HashSet<String>();
 		for (int row = 1; row < iTable.getRowCount(); row++) {
-			String c = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getValue();
+			String c = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getText();
 			if (c.isEmpty()) continue;
 			updated.add(c);
 			CurriculumStudentsInterface[] cc = courses.get(c);
@@ -1768,7 +1771,7 @@ public class CurriculaCourses extends Composite {
 		iVisibleCourses = new TreeSet<String>();
 		for (CourseInterface c: courses) iVisibleCourses.add(c.getCourseName());
 		for (int row = 1; row < iTable.getRowCount(); row++) {
-			String courseName = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getValue();
+			String courseName = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getText();
 			if (iVisibleCourses.contains(courseName)) {
 				((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).setEnabled(false);
 				iTable.getRowFormatter().setVisible(row, true);
@@ -1781,7 +1784,7 @@ public class CurriculaCourses extends Composite {
 	public void showAllCourses() {
 		if (iVisibleCourses != null) {
 			for (int i = 1; i < iTable.getRowCount(); i++) {
-				String courseName = ((CurriculaCourseSelectionBox)iTable.getWidget(i, 1)).getValue();
+				String courseName = ((CurriculaCourseSelectionBox)iTable.getWidget(i, 1)).getText();
 				iTable.setSelected(i, iVisibleCourses.contains(courseName));
 			}
 		}
@@ -1795,7 +1798,7 @@ public class CurriculaCourses extends Composite {
 	public boolean canShowStudentsTable(int row) {
 		if (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.NONE) return false;
 		if (row < 1 || row >= iTable.getRowCount()) return false;
-		String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getValue();
+		String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getText();
 		if (iLastCourses == null || !iLastCourses.containsKey(course)) return false;
 		int nrOther = 0;
 		for (int r = 1; r < iTable.getRowCount(); r ++) {
@@ -1818,7 +1821,7 @@ public class CurriculaCourses extends Composite {
 		private StudentsTable(int currentRow) {
 			super();
 			
-			String course = ((CurriculaCourseSelectionBox)iTable.getWidget(currentRow, 1)).getValue();
+			String course = ((CurriculaCourseSelectionBox)iTable.getWidget(currentRow, 1)).getText();
 			
 			iP.add(new Label(MESSAGES.hintComparingStudentsWithOtherCourses(course + " " + CurriculumCookie.getInstance().getCurriculaCoursesMode().getName().toLowerCase().replace(" enrollment", ""))));
 			iP.add(iT);
@@ -1847,7 +1850,7 @@ public class CurriculaCourses extends Composite {
 			List<CurriculumStudentsInterface[]> other = new ArrayList<CurriculumStudentsInterface[]>();
 			for (int r = 1; r < iTable.getRowCount(); r ++) {
 				if (r == currentRow || !iTable.isSelected(r)) continue;
-				String c = ((CurriculaCourseSelectionBox)iTable.getWidget(r, 1)).getValue();
+				String c = ((CurriculaCourseSelectionBox)iTable.getWidget(r, 1)).getText();
 				if (c.isEmpty()) continue;
 				other.add(iLastCourses.get(c));
 				iT.setText(6 + row, 0, MESSAGES.hinStudentsSharedWith(c));

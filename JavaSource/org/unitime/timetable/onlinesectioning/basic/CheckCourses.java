@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -54,26 +55,22 @@ public class CheckCourses implements OnlineSectioningAction<Collection<String>> 
 		ArrayList<String> notFound = new ArrayList<String>();
 		XStudent student = (iRequest.getStudentId() == null ? null : server.getStudent(iRequest.getStudentId()));
 		for (CourseRequestInterface.Request cr: iRequest.getCourses()) {
-			if (!cr.hasRequestedFreeTime() && cr.hasRequestedCourse() && lookup(server, student, cr.getRequestedCourse()) == null)
-				notFound.add(cr.getRequestedCourse());
-			if (cr.hasFirstAlternative() && lookup(server, student, cr.getFirstAlternative()) == null)
-				notFound.add(cr.getFirstAlternative());
-			if (cr.hasSecondAlternative() && lookup(server, student, cr.getSecondAlternative()) == null)
-				notFound.add(cr.getSecondAlternative());
+			if (cr.hasRequestedCourse()) {
+				for (RequestedCourse rc: cr.getRequestedCourse())
+					if (rc.isCourse() && lookup(server, student, rc) == null) notFound.add(rc.getCourseName());
+			}
 		}
 		for (CourseRequestInterface.Request cr: iRequest.getAlternatives()) {
-			if (cr.hasRequestedCourse() && lookup(server, student, cr.getRequestedCourse()) == null)
-				notFound.add(cr.getRequestedCourse());
-			if (cr.hasFirstAlternative() && lookup(server, student, cr.getFirstAlternative()) == null)
-				notFound.add(cr.getFirstAlternative());
-			if (cr.hasSecondAlternative() && lookup(server, student, cr.getSecondAlternative()) == null)
-				notFound.add(cr.getSecondAlternative());
+			if (cr.hasRequestedCourse()) {
+				for (RequestedCourse rc: cr.getRequestedCourse())
+					if (rc.isCourse() && lookup(server, student, rc) == null) notFound.add(rc.getCourseName());
+			}
 		}
 		return notFound;
 	}
 	
-	public XCourseId lookup(OnlineSectioningServer server, XStudent student, String course) {
-		XCourseId c = server.getCourse(course);
+	public XCourseId lookup(OnlineSectioningServer server, XStudent student, RequestedCourse course) {
+		XCourseId c = server.getCourse(course.getCourseId(), course.getCourseName());
 		if (c != null && iMatcher != null && !iMatcher.match(c)) {
 			if (student != null) {
 				for (XRequest r: student.getRequests())

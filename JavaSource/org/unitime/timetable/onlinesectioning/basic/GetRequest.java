@@ -25,6 +25,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -96,40 +97,33 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 					ft.setLength(ftr.getTime().getLength());
 					for (DayCode day : DayCode.toDayCodes(ftr.getTime().getDays()))
 						ft.addDay(day.getIndex());
-					if (lastRequest != null && lastRequestPriority == cd.getPriority()) {
-						r = lastRequest;
-						lastRequest.addRequestedFreeTime(ft);
-						lastRequest.setRequestedCourse(lastRequest.getRequestedCourse() + ", " + ft.toString());
+					if (lastRequest != null && lastRequestPriority == cd.getPriority() && lastRequest.hasRequestedCourse() && lastRequest.getRequestedCourse(0).isFreeTime()) {
+						lastRequest.getRequestedCourse(0).addFreeTime(ft);
 					} else {
 						r = new CourseRequestInterface.Request();
-						r.addRequestedFreeTime(ft);
-						r.setRequestedCourse(ft.toString());
+						RequestedCourse rc = new RequestedCourse();
+						r.addRequestedCourse(rc);
+						rc.addFreeTime(ft);
 						if (cd.isAlternative())
 							request.getAlternatives().add(r);
 						else
 							request.getCourses().add(r);
+						lastRequest = r;
+						lastRequestPriority = cd.getPriority();
 					}
 				} else if (cd instanceof XCourseRequest) {
 					r = new CourseRequestInterface.Request();
-					int order = 0;
 					for (XCourseId courseId: ((XCourseRequest)cd).getCourseIds()) {
 						XCourse c = server.getCourse(courseId.getCourseId());
 						if (c == null) continue;
-						switch (order) {
-							case 0: 
-								r.setRequestedCourse(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
-								break;
-							case 1:
-								r.setFirstAlternative(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
-								break;
-							case 2:
-								r.setSecondAlternative(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
-							}
-						order++;
-						}
+						RequestedCourse rc = new RequestedCourse();
+						rc.setCourseId(c.getCourseId());
+						rc.setCourseName(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
+						if (setReadOnly && ((XCourseRequest)cd).getEnrollment() != null && c.getCourseId().equals(((XCourseRequest)cd).getEnrollment().getCourseId()))
+							rc.setReadOnly(true);
+						r.addRequestedCourse(rc);
+					}
 					r.setWaitList(((XCourseRequest)cd).isWaitlist());
-					if (setReadOnly)
-						r.setReadOnly(((XCourseRequest)cd).getEnrolledCourseIndex());
 					if (r.hasRequestedCourse()) {
 						if (cd.isAlternative())
 							request.getAlternatives().add(r);

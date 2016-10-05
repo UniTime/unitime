@@ -21,9 +21,9 @@ package org.unitime.timetable.gwt.client.widgets;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaSuggestBox;
@@ -34,9 +34,9 @@ import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
-import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
@@ -81,12 +81,12 @@ public class CourseSelectionSuggestBox extends P implements CourseSelection {
 	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	
 	protected AriaSuggestBox iSuggest;
-	private String iLastSuggestion;
+	private SimpleSuggestion iLastSuggestion;
 	protected ImageButton iFinderButton;
 	private Label iError;
 	
 	private String iHint = "";
-	private Set<String> iValidCourseNames = new HashSet<String>();
+	private Map<String, RequestedCourse> iValidCourseNames = new HashMap<String, RequestedCourse>();
 	
 	private DataProvider<String, Collection<CourseAssignment>> iDataProvider;
 	private FreeTimeParser iFreeTimeParser = null;
@@ -148,23 +148,23 @@ public class CourseSelectionSuggestBox extends P implements CourseSelection {
 		
 		iSuggest.addSelectionHandler(new SelectionHandler<Suggestion>() {
 			public void onSelection(SelectionEvent<Suggestion> event) {
-				String text = event.getSelectedItem().getReplacementString();
-				iLastSuggestion = text;
-				CourseSelectionEvent.fire(CourseSelectionSuggestBox.this, text, !text.isEmpty());
+				iLastSuggestion = (SimpleSuggestion)event.getSelectedItem();
+				if (iLastSuggestion.hasRequestedCourse())
+					CourseSelectionEvent.fire(CourseSelectionSuggestBox.this, iLastSuggestion.getRequestedCourse());
+				else
+					CourseSelectionEvent.fire(CourseSelectionSuggestBox.this, iLastSuggestion.getReplacementString());
 			}
 		});
 		iSuggest.getValueBox().addChangeHandler(new ChangeHandler() {
 			public void onChange(ChangeEvent event) {
-				boolean valid = false;
 				String text = iSuggest.getText();
-				if (text.equalsIgnoreCase(iLastSuggestion))
-					valid = true;
-				else for (String course: iValidCourseNames) {
-					if (course.equalsIgnoreCase(text)) {
-						valid = true; break;
-					}
+				if (iLastSuggestion != null && text.equalsIgnoreCase(iLastSuggestion.getReplacementString()) && iLastSuggestion.hasRequestedCourse()) {
+					CourseSelectionEvent.fire(CourseSelectionSuggestBox.this, iLastSuggestion.getRequestedCourse());
+				} else if (iValidCourseNames.containsKey(text.toLowerCase())) {
+					CourseSelectionEvent.fire(CourseSelectionSuggestBox.this, iValidCourseNames.get(text.toLowerCase()));
+				} else {
+					CourseSelectionEvent.fire(CourseSelectionSuggestBox.this, text);
 				}
-				CourseSelectionEvent.fire(CourseSelectionSuggestBox.this, text, valid);
 			}
 		});
 		iSuggest.getValueBox().addKeyDownHandler(new KeyDownHandler() {
@@ -204,12 +204,38 @@ public class CourseSelectionSuggestBox extends P implements CourseSelection {
 	}
 
 	@Override
-	public String getValue() {
-		return (iSuggest.getText().equals(iHint) ? "" : iSuggest.getText());
+	public RequestedCourse getValue() {
+		if (iSuggest.getText().equals(iHint) || iSuggest.getText().trim().isEmpty()) return new RequestedCourse();
+		if (iLastSuggestion != null && iLastSuggestion.hasRequestedCourse() && iSuggest.getText().equalsIgnoreCase(iLastSuggestion.getReplacementString()))
+			return iLastSuggestion.getRequestedCourse();
+		if (iValidCourseNames.containsKey(iSuggest.getText().toLowerCase())) {
+			return iValidCourseNames.get(iSuggest.getText().toLowerCase().toLowerCase());
+		}
+		RequestedCourse ret = new RequestedCourse();
+		if (iFreeTimeParser != null) {
+			try {
+				ret.setFreeTime(iFreeTimeParser.parseFreeTime(iSuggest.getText()));
+			} catch (IllegalArgumentException e) {
+				ret.setCourseName(iSuggest.getText());
+			}
+		} else {
+			ret.setCourseName(iSuggest.getText());
+		}
+		if (!isEnabled() && ret.isCourse() && isSaved()) ret.setReadOnly(true);
+		return ret;
+	}
+	
+	public boolean hasValue() {
+		RequestedCourse value = getValue();
+		return value != null && !value.isEmpty();
+	}
+	
+	public String getText() {
+		return iSuggest.getText().equals(iHint) ? "" : iSuggest.getText();
 	}
 
 	@Override
-	public void setValue(String value) {
+	public void setValue(RequestedCourse value) {
 		setValue(value, false);
 	}
 	
@@ -225,13 +251,14 @@ public class CourseSelectionSuggestBox extends P implements CourseSelection {
 	}
 	
 	private void openDialog() {
-		getCourseFinder().setValue(iSuggest.getText().equals(iHint)?"":iSuggest.getText(), true);
+		getCourseFinder().setValue(getValue(), true);
 		getCourseFinder().findCourse();
 	}
 
 	@Override
-	public void setValue(String value, boolean fireEvents) {
+	public void setValue(RequestedCourse value, boolean fireEvents) {
 		if (value == null || value.isEmpty()) {
+			iSaved = false;
 			iSuggest.setText(iHint);
 			if (!iHint.isEmpty())
 				iSuggest.setStyleName("unitime-TextBoxHint");
@@ -239,7 +266,9 @@ public class CourseSelectionSuggestBox extends P implements CourseSelection {
 				iSuggest.setStyleName("gwt-SuggestBox");
 			setError(null);
 		} else {
-			iSuggest.setText(value);
+			iSaved = value.isReadOnly();
+			iLastSuggestion = new SimpleSuggestion(value);
+			iSuggest.setText(iLastSuggestion.getReplacementString());
 			if (iSuggest.getText().isEmpty()) {
 				if (!iHint.isEmpty()) {
 					iSuggest.setText(iHint);
@@ -252,11 +281,11 @@ public class CourseSelectionSuggestBox extends P implements CourseSelection {
 			}
 		}
 		if (fireEvents)
-			CourseSelectionEvent.fire(CourseSelectionSuggestBox.this, value, value != null && !value.isEmpty());
+			CourseSelectionEvent.fire(CourseSelectionSuggestBox.this, value);
 	}
 
 	@Override
-	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
+	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<RequestedCourse> handler) {
 		return addHandler(handler, ValueChangeEvent.getType());
 	}
 
@@ -298,7 +327,7 @@ public class CourseSelectionSuggestBox extends P implements CourseSelection {
 		iSaved = saved;
 		if (!isEnabled())
 			iFinderButton.setFace(saved ? RESOURCES.search_picker_Assigned() : RESOURCES.search_picker_Disabled());
-		iFinderButton.setTitle(saved ? MESSAGES.saved(getValue()) : iFinderButton.getAltText());
+		iFinderButton.setTitle(saved ? MESSAGES.saved(iSuggest.getValue()) : iFinderButton.getAltText());
 	}
 	
 	public boolean isSaved() {
@@ -342,28 +371,21 @@ public class CourseSelectionSuggestBox extends P implements CourseSelection {
 					@Override
 					public void onFailure(Throwable e) {
 						if (iRequest.getQuery().toLowerCase().startsWith(CONSTANTS.freePrefix().toLowerCase())) {
-							suggestions.add(new SimpleSuggestion("<font color='red'>"+e.getMessage()+"</font>", "", e.getMessage()));
+							suggestions.add(new SimpleSuggestion(e));
 							// setStatus(e.getMessage());
 						} else {
-							suggestions.add(new SimpleSuggestion("<font color='red'>"+caught.getMessage()+"</font>", "", caught.getMessage()));
+							suggestions.add(new SimpleSuggestion(caught));
 							// setStatus(caught.getMessage());
 						}
 					}
 
 					@Override
 					public void onSuccess(List<FreeTime> freeTimes) {
-						String status = "";
-						for (CourseRequestInterface.FreeTime ft: freeTimes) {
-							status += ft.toAriaString(CONSTANTS.longDays(), CONSTANTS.useAmPm()) + " ";
-						}
-						String ft = iFreeTimeParser.freeTimesToString(freeTimes);
-						Suggestion suggestion = new SimpleSuggestion(ft, ft, ARIA.courseFinderSelectedFreeTime(status)); 
-						suggestions.add(suggestion);
-						// setStatus(status + " matches the entered text. Press enter to select it.");
+						suggestions.add(new SimpleSuggestion(freeTimes));
 					}
 				});
 			} else {
-				suggestions.add(new SimpleSuggestion("<font color='red'>"+caught.getMessage()+"</font>", "", caught.getMessage()));
+				suggestions.add(new SimpleSuggestion(caught));
 				// setStatus(caught.getMessage());
 			}
 			iCallback.onSuggestionsReady(iRequest, new Response(suggestions));
@@ -372,16 +394,10 @@ public class CourseSelectionSuggestBox extends P implements CourseSelection {
 		public void onSuccess(Collection<ClassAssignmentInterface.CourseAssignment> result) {
 			ArrayList<Suggestion> suggestions = new ArrayList<Suggestion>();
 			iValidCourseNames.clear();
-			for (ClassAssignmentInterface.CourseAssignment suggestion: result) {
-				String courseName = MESSAGES.courseName(suggestion.getSubject(), suggestion.getCourseNbr());
-				String courseNameWithTitle = (suggestion.getTitle() == null ? courseName : MESSAGES.courseNameWithTitle(suggestion.getSubject(), suggestion.getCourseNbr(), suggestion.getTitle()));
-				if (suggestion.hasUniqueName() && !iShowCourses) {
-					suggestions.add(new SimpleSuggestion(courseNameWithTitle, courseName, suggestion.getTitle() == null ? courseName : courseName + " " + suggestion.getTitle()));
-					iValidCourseNames.add(courseName);
-				} else {
-					suggestions.add(new SimpleSuggestion(courseNameWithTitle, courseNameWithTitle, suggestion.getTitle() == null ? courseName : courseName + " " + suggestion.getTitle()));
-					iValidCourseNames.add(courseNameWithTitle);
-				}
+			for (ClassAssignmentInterface.CourseAssignment course: result) {
+				SimpleSuggestion suggestion = new SimpleSuggestion(course, iShowCourses);
+				suggestions.add(suggestion);
+				iValidCourseNames.put(suggestion.getReplacementString().toLowerCase(), suggestion.getRequestedCourse());
 			}
 			iCallback.onSuggestionsReady(iRequest, new Response(suggestions));
 		}
@@ -389,21 +405,49 @@ public class CourseSelectionSuggestBox extends P implements CourseSelection {
 	
 	public static class SimpleSuggestion implements Suggestion, AriaSuggestBox.HasStatus {
 		private String iDisplay, iReplace, iStatus;
-
-		public SimpleSuggestion(String display, String replace, String status) {
-			iDisplay = display;
-			iReplace = replace;
-			iStatus = status;
+		private RequestedCourse iSuggestion = null;
+		
+		public SimpleSuggestion(Throwable error) {
+			iDisplay = "<font color='red'>"+error.getMessage()+"</font>";
+			iReplace = "";
+			iStatus = error.getMessage();
 		}
 		
-		public SimpleSuggestion(String display, String replace) {
-			this(display, replace, display);
+		public SimpleSuggestion(List<FreeTime> freeTimes) {
+			iSuggestion = new RequestedCourse();
+			iSuggestion.setFreeTime(freeTimes);
+			iDisplay = iSuggestion.toString(CONSTANTS);
+			iReplace = iDisplay;
+			iStatus = ARIA.courseFinderSelectedFreeTime(iSuggestion.toAriaString(CONSTANTS));
 		}
 		
-		public SimpleSuggestion(String replace) {
-			this(replace, replace, replace);
+		public SimpleSuggestion(ClassAssignmentInterface.CourseAssignment suggestion, boolean showCourseTitle) {
+			iDisplay = (suggestion.hasTitle() ? MESSAGES.courseNameWithTitle(suggestion.getSubject(), suggestion.getCourseNbr(), suggestion.getTitle()) : MESSAGES.courseName(suggestion.getSubject(), suggestion.getCourseNbr()));
+			if (suggestion.hasUniqueName() && !showCourseTitle) {
+				iReplace = MESSAGES.courseName(suggestion.getSubject(), suggestion.getCourseNbr());
+			} else {
+				iReplace = iDisplay;
+			}
+			iStatus = MESSAGES.courseName(suggestion.getSubject(), suggestion.getCourseNbr());
+			if (suggestion.hasTitle()) iStatus += " " + suggestion.getTitle();
+			iSuggestion = new RequestedCourse();
+			iSuggestion.setCourseId(suggestion.getCourseId());
+			iSuggestion.setCourseName(iReplace);
 		}
-
+		
+		public SimpleSuggestion(RequestedCourse course) {
+			if (course.isCourse()) {
+				iDisplay = course.getCourseName();
+				iReplace = course.getCourseName();
+				iStatus = course.getCourseName();
+			} else if (course.isFreeTime()) {
+				iDisplay = course.toString(CONSTANTS);
+				iReplace = iDisplay;
+				iStatus = ARIA.courseFinderSelectedFreeTime(course.toAriaString(CONSTANTS));
+			}
+			iSuggestion = course;
+		}
+		
 		@Override
 		public String getDisplayString() {
 			return iDisplay;
@@ -418,6 +462,14 @@ public class CourseSelectionSuggestBox extends P implements CourseSelection {
 		public String getStatusString() {
 			return iStatus;
 		}
+		
+		public boolean hasRequestedCourse() {
+			return iSuggestion != null;
+		}
+		
+		public RequestedCourse getRequestedCourse() {
+			return iSuggestion;
+		}
 	}
 	
 	@Override
@@ -429,9 +481,9 @@ public class CourseSelectionSuggestBox extends P implements CourseSelection {
 	public CourseFinder getCourseFinder() {
 		if (iCourseFinder == null) {
 			iCourseFinder = iCourseFinderFactory.createCourseFinder();
-			iCourseFinder.addSelectionHandler(new SelectionHandler<String>() {
+			iCourseFinder.addSelectionHandler(new SelectionHandler<RequestedCourse>() {
 				@Override
-				public void onSelection(SelectionEvent<String> event) {
+				public void onSelection(SelectionEvent<RequestedCourse> event) {
 					setValue(event.getSelectedItem(), true);
 				}
 			});
@@ -516,17 +568,6 @@ public class CourseSelectionSuggestBox extends P implements CourseSelection {
 	}
 
 	@Override
-	public boolean isFreeTime() {
-		if (iFreeTimeParser == null || getValue().isEmpty()) return false;
-		try {
-			iFreeTimeParser.parseFreeTime(getValue());
-			return true;
-		} catch (IllegalArgumentException e) {
-			return false;
-		}
-	}
-
-	@Override
 	public void addValidator(Validator<CourseSelection> validator) {
 		iValidators.add(validator);
 	}
@@ -538,11 +579,11 @@ public class CourseSelectionSuggestBox extends P implements CourseSelection {
 		}
 		if (iFreeTimeParser != null) {
 			try {
-				iFreeTimeParser.parseFreeTime(getValue());
+				iFreeTimeParser.parseFreeTime(iSuggest.getValue());
 				setError(null);
 				return null;
 			} catch (IllegalArgumentException e) {
-				if (getValue().toLowerCase().startsWith(CONSTANTS.freePrefix().toLowerCase())) {
+				if (iSuggest.getValue().toLowerCase().startsWith(CONSTANTS.freePrefix().toLowerCase())) {
 					setError(MESSAGES.invalidFreeTime());
 					return e.getMessage();
 				}

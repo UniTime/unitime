@@ -19,6 +19,11 @@
 */
 package org.unitime.timetable.gwt.client.widgets;
 
+import java.util.List;
+
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HasHandlers;
 
@@ -27,14 +32,15 @@ import com.google.gwt.event.shared.HasHandlers;
  */
 public class CourseSelectionEvent extends GwtEvent<CourseSelectionHandler> {
 	static Type<CourseSelectionHandler> TYPE = new Type<CourseSelectionHandler>();
-	private String iCourse;
-	private boolean iValid;
+	private RequestedCourse iValue;
 	
-	public CourseSelectionEvent(String course, boolean valid) { iCourse = course; iValid = valid; }
+	public CourseSelectionEvent(RequestedCourse value) { iValue = value; }
 	
-	public boolean isValid() { return iValid; }
+	public RequestedCourse getValue() { return iValue; }
 	
-	public String getCourse() { return iCourse; }
+	public boolean isValid() { return getValue() != null && (getValue().isFreeTime() || getValue().hasCourseId()); }
+	
+	public String getCourse() { return getValue() == null ? "" : getValue().toString(); }
 
 	@Override
 	public Type<CourseSelectionHandler> getAssociatedType() { return TYPE; }
@@ -45,7 +51,17 @@ public class CourseSelectionEvent extends GwtEvent<CourseSelectionHandler> {
 		handler.onCourseSelection(this);
 	}
 	
-	public static void fire(HasHandlers source, String course, boolean valid) {
-		source.fireEvent(new CourseSelectionEvent(course, valid));
+	public static void fire(HasHandlers source, RequestedCourse value) {
+		source.fireEvent(new CourseSelectionEvent(value));
+	}
+	
+	public static void fire(HasHandlers source, List<FreeTime> freeTime) {
+		RequestedCourse value = new RequestedCourse(); value.setFreeTime(freeTime);
+		fire(source, value);
+	}
+	
+	public static void fire(HasHandlers source, String courseName) {
+		RequestedCourse course = new RequestedCourse(); course.setCourseName(courseName);
+		fire(source, course);
 	}
 }

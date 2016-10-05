@@ -26,7 +26,9 @@ import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaTextBox;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
+import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -59,6 +61,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder {
 	protected static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
+	protected static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	
 	private AriaTextBox iFilter = null;
 	private AriaButton iFilterSelect;
@@ -82,8 +85,9 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 			@Override
 			public void onClick(ClickEvent event) {
 				CourseFinderTab tab = getSelectedTab();
-				if (tab != null && tab.getValue() != null)
-					iFilter.setValue((String)tab.getValue());
+				RequestedCourse rc = (RequestedCourse)(tab == null ? null : tab.getValue());
+				if (rc != null)
+					iFilter.setValue(rc.toString(CONSTANTS));
 				hide();
 				SelectionEvent.fire(CourseFinderDialog.this, getValue());
 			}
@@ -112,8 +116,9 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
             @Override
             public void run() {
             	if (iTabs != null) {
+            		RequestedCourse rc = new RequestedCourse(); rc.setCourseName(iFilter.getValue());
 					for (CourseFinderTab tab: iTabs)
-						tab.setValue(iFilter.getValue(), false);
+						tab.setValue(rc, false);
 				}
             }
 		};
@@ -124,8 +129,9 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 				finderTimer.schedule(250);
 				if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
 					CourseFinderTab tab = getSelectedTab();
-					if (tab != null && tab.getValue() != null)
-						iFilter.setValue((String)tab.getValue());
+					RequestedCourse rc = (RequestedCourse)(tab == null ? null : tab.getValue());
+					if (rc != null)
+						iFilter.setValue(rc.toString(CONSTANTS));
 					hide();
 					SelectionEvent.fire(CourseFinderDialog.this, getValue());
 					return;
@@ -151,15 +157,16 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 		iFilter.addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<String> event) {
+				RequestedCourse value = new RequestedCourse(); value.setCourseName(event.getValue());
 				if (iTabs != null) {
 					for (CourseFinderTab tab: iTabs)
-						tab.setValue(event.getValue(), true);
+						tab.setValue(value, true);
 				}
 			}
 		});
-		addValueChangeHandler(new ValueChangeHandler<String>() {
+		addValueChangeHandler(new ValueChangeHandler<RequestedCourse>() {
 			@Override
-			public void onValueChange(ValueChangeEvent<String> event) {
+			public void onValueChange(ValueChangeEvent<RequestedCourse> event) {
 				if (iTabs != null) {
 					for (CourseFinderTab tab: iTabs)
 						tab.setValue(event.getValue(), true);
@@ -185,13 +192,17 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 	}
 	
 	@Override
-	public void setValue(String value) {
+	public void setValue(RequestedCourse value) {
 		setValue(value, false);
 	}
 
 	@Override
-	public String getValue() {
-		return iFilter.getValue();
+	public RequestedCourse getValue() {
+		RequestedCourse ret = (RequestedCourse)getSelectedTab().getValue();
+		if (ret != null) return ret;
+		RequestedCourse rc = new RequestedCourse();
+		rc.setCourseName(iFilter.getValue());
+		return rc;
 	}
 
 	@Override
@@ -245,20 +256,20 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 			iDialogPanel.add(iTabPanel);
 		}
 		for (final CourseFinderTab tab: iTabs) {
-			tab.addValueChangeHandler(new ValueChangeHandler<String>() {
+			tab.addValueChangeHandler(new ValueChangeHandler<RequestedCourse>() {
 				@Override
-				public void onValueChange(ValueChangeEvent<String> event) {
+				public void onValueChange(ValueChangeEvent<RequestedCourse> event) {
 					if (event.getSource().equals(tab))
 						selectTab(tab);
 					else
 						tab.setValue(event.getValue());
-					iFilter.setValue(event.getValue());
+					iFilter.setValue(event.getValue() == null ? "" : event.getValue().toString(CONSTANTS));
 				}
 			});
-			tab.addSelectionHandler(new SelectionHandler<String>() {
+			tab.addSelectionHandler(new SelectionHandler<RequestedCourse>() {
 				@Override
-				public void onSelection(SelectionEvent<String> event) {
-					iFilter.setValue(event.getSelectedItem());
+				public void onSelection(SelectionEvent<RequestedCourse> event) {
+					iFilter.setValue(event.getSelectedItem() == null ? "" : event.getSelectedItem().toString(CONSTANTS));
 					hide();
 					SelectionEvent.fire(CourseFinderDialog.this, getValue());
 				}
@@ -288,7 +299,7 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 	}
 
 	@Override
-	public HandlerRegistration addSelectionHandler(SelectionHandler<String> handler) {
+	public HandlerRegistration addSelectionHandler(SelectionHandler<RequestedCourse> handler) {
 		return addHandler(handler, SelectionEvent.getType());
 	}
 	
@@ -299,14 +310,14 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 	}
 	
 	@Override
-	public void setValue(final String value, boolean fireEvents) {
-		iFilter.setValue(value, fireEvents);
+	public void setValue(final RequestedCourse value, boolean fireEvents) {
+		iFilter.setValue(value == null ? "" : value.toString(CONSTANTS), false);
 		if (fireEvents)
 			ValueChangeEvent.fire(this, value);
 	}
 
 	@Override
-	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
+	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<RequestedCourse> handler) {
 		return addHandler(handler, ValueChangeEvent.getType());
 	}
 }

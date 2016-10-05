@@ -4815,19 +4815,19 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-CourseRequests .line .course .gwt-SuggestBox {
-	width: 260px;
+	width: 275px;
 }
 
 .unitime-CourseRequests .line .course .unitime-TextBoxHint {
-	width: 260px;
+	width: 275px;
 }
 
 .unitime-CourseRequests .line .alternative .gwt-SuggestBox {
-	width: 155px;
+	width: 165px;
 }
 
 .unitime-CourseRequests .line .alternative .unitime-TextBoxHint {
-	width: 155px;
+	width: 165px;
 }
 
 .unitime-CourseRequests .line .alternative {
@@ -5137,4 +5137,8 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-StandardNotesBox .gwt-ListBox {
 	width: 600px;	
+}
+
+.unitime-CurriculaCourseProjections {
+	width: inherit;
 }
