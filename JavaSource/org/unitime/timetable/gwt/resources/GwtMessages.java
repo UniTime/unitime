@@ -4843,4 +4843,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("\u2630")
 	@DoNotTranslate
 	String mobileMenuSymbol();
+	
+	@DefaultMessage("Please wait ...")
+	String waitPlease();
 }

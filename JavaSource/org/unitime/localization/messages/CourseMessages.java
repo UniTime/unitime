@@ -2484,10 +2484,10 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Student are allowed to drop from this course up to {0}. week of classes.")
 	String textLastWeekDrop(String wkDrop);
 	
-	@DefaultMessage("if (showGwtLoading) { showGwtLoading('Locking {0}...'); } return true;")
+	@DefaultMessage("displayLoading('Locking {0}...'); return true;")
 	String jsSubmitLockIO(String instrOfferingName);
 
-	@DefaultMessage("if (showGwtLoading) { showGwtLoading('Unlocking {0}...'); } return true;")
+	@DefaultMessage("displayLoading('Unlocking {0}...'); return true;")
 	String jsSubmitUnlockIO(String instrOfferingName);
 	
 	@DefaultMessage("Course {0} is locked (students are not able to enroll to this course).")

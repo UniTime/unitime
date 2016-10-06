@@ -388,7 +388,7 @@
 					<TABLE width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0;">
 						<%=request.getAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR)%>
 					</TABLE>
-					<script language="javascript">displayElement('loading', false);</script>
+					<script language="javascript">hideLoading();</script>
 				</TD>
 			</TR>
 			<TR>

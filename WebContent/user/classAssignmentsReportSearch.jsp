@@ -210,5 +210,5 @@
 <logic:notEmpty name="body2">
 	<script language="javascript">displayLoading();</script>
 	<tiles:insert attribute="body2" />
-	<script language="javascript">displayElement('loading', false);</script>
+	<script language="javascript">hideLoading();</script>
 </logic:notEmpty>

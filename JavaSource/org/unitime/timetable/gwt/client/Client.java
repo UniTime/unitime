@@ -120,6 +120,14 @@ public class Client implements EntryPoint {
 					}
 			}
 		}
+		
+		Window.addWindowClosingHandler(new Window.ClosingHandler() {
+			@Override
+			public void onWindowClosing(Window.ClosingEvent event) {
+				if (isLoadingDisplayed() || LoadingWidget.getInstance().isShowing()) return;
+				LoadingWidget.showLoading(MESSAGES.waitPlease());
+			}
+		});
 	}
 	
 	public void initPageAsync(final String page) {
@@ -208,4 +216,10 @@ public class Client implements EntryPoint {
 	public final native static NodeList<Element> getElementsByName(String name) /*-{
     	return $doc.getElementsByName(name);
   	}-*/;
+	
+	static final native boolean isLoadingDisplayed() /*-{
+		if ($wnd.isLoadingDisplayed)
+			return $wnd.isLoadingDisplayed();
+		return false;
+	}-*/;
 }

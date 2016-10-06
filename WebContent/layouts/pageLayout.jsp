@@ -26,6 +26,7 @@
 <%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic"%>
 <%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
 <%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
+<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
 	
 <tiles:importAttribute name="checkLogin" scope="request"/>
 <tiles:importAttribute name="checkRole" scope="request"/>
@@ -68,13 +69,16 @@
 	<script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
 </head>
 <body class="unitime-Body" <tiles:getAsString name="onLoadFunction" />>
+	<loc:bundle name="org.unitime.timetable.gwt.resources.GwtMessages" id="GWTMSG">
 	<script language="JavaScript" type="text/javascript">
 		if (!String.prototype.trim) {
 			String.prototype.trim = function() {
 				return this.replace(/^\s+|\s+$/g,"");
 			};
 		}
+		setPageLoadingMessage("<%=GWTMSG.waitLoadingPage().replace("\"", "\"\"")%>");
 	</script>
+	</loc:bundle>
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     <iframe src="javascript:''" id="__printingFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     

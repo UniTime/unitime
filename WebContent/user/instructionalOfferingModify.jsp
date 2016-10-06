@@ -731,6 +731,6 @@
 
 	</TABLE>
 </html:form>
-	<script language="javascript">displayElement('loading', false);</script>
+	<script language="javascript">hideLoading();</script>
 
 </loc:bundle>

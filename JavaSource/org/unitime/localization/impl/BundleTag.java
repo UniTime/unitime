@@ -43,8 +43,11 @@ public class BundleTag extends BodyTagSupport {
 	@Override
 	public int doStartTag() throws JspTagException {
 		try {
-			pageContext.setAttribute(getId(), Localization.create(
-					(Class<? extends Messages>)Class.forName(Localization.ROOT + getName())));
+			try {
+				pageContext.setAttribute(getId(), Localization.create((Class<? extends Messages>)Class.forName(Localization.ROOT + getName())));
+			} catch (ClassNotFoundException f) {
+				pageContext.setAttribute(getId(), Localization.create((Class<? extends Messages>)Class.forName(getName())));
+			}
 		} catch (Exception e) {
             throw new JspTagException("Unable to find messages '" + getName() + "': " + e.getMessage(), e);
 		}

@@ -33,9 +33,16 @@ public class BundleTei extends TagExtraInfo {
 	public VariableInfo [] getVariableInfo(TagData data) {
 		String name = data.getAttributeString("name");
 		String id = data.getAttributeString("id");
-		return new VariableInfo[] {
-			new VariableInfo(id == null ? BundleTag.DEFAULT_ID : id, Localization.ROOT + name, true, VariableInfo.NESTED)
-		};
+		try {
+			Class.forName(Localization.ROOT + name);
+			return new VariableInfo[] {
+					new VariableInfo(id == null ? BundleTag.DEFAULT_ID : id, Localization.ROOT + name, true, VariableInfo.NESTED)
+				};
+		} catch (ClassNotFoundException e) {
+			return new VariableInfo[] {
+					new VariableInfo(id == null ? BundleTag.DEFAULT_ID : id, name, true, VariableInfo.NESTED)
+				};
+		}
 	}
 
 }
