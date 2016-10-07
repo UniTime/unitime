@@ -588,7 +588,7 @@ public class ClassificationsEdit extends Composite {
 		}
 		
 		public void update() {
-			iTextBox.setText(iClasf.getExpected().toString());
+			iTextBox.setText(iClasf.getExpected() == null ? "" : iClasf.getExpected().toString());
 			switch (CurriculumCookie.getInstance().getCurriculaCoursesMode()) {
 			case NONE: // None
 				iRearLabel.setHTML("");

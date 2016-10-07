@@ -75,6 +75,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -188,7 +189,9 @@ public class CurriculumProjectionRulesPage extends Composite {
 		iTable = new MyFlexTable();
 		iTable.setVisible(false);
 		
-		iPanel.addRow(iTable);
+		ScrollPanel tableScroll = new ScrollPanel(iTable);
+		tableScroll.addStyleName("unitime-ScrollTable");
+		iPanel.addRow(tableScroll);
 		
 		iBottom = iHeader.clonePanel();
 		iPanel.addNotPrintableBottomRow(iBottom);

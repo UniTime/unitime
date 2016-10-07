@@ -27,6 +27,7 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.reservations.ReservationEdit.EditFinishedEvent;
+import org.unitime.timetable.gwt.client.widgets.FilterPanel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -49,8 +50,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -75,7 +74,7 @@ public class ReservationsPage extends Composite {
 	private VerticalPanel iReservationPanel = null;
 	
 	private SimplePanel iPanel = null;
-	private HorizontalPanel iFilterPanel = null;
+	private FilterPanel iFilterPanel = null;
 	
 	private ReservationEdit iReservationEdit = null;
 	private Long iLastReservationId = null;
@@ -86,31 +85,29 @@ public class ReservationsPage extends Composite {
 		
 		iReservationPanel = new VerticalPanel();
 		
-		iFilterPanel = new HorizontalPanel();
-		iFilterPanel.setSpacing(3);
+		iFilterPanel = new FilterPanel();
 		
 		Label filterLabel = new Label(MESSAGES.propFilter());
-		iFilterPanel.add(filterLabel);
-		iFilterPanel.setCellVerticalAlignment(filterLabel, HasVerticalAlignment.ALIGN_MIDDLE);
+		iFilterPanel.addLeft(filterLabel);
 		
 		iFilter = new ReservationFilterBox();
-		iFilterPanel.add(iFilter);
+		iFilterPanel.addLeft(iFilter);
 		
 		iSearch = new Button(MESSAGES.buttonSearch());
 		iSearch.setAccessKey('s');
 		iSearch.addStyleName("unitime-NoPrint");
-		iFilterPanel.add(iSearch);		
+		iFilterPanel.addRight(iSearch);		
 		
 		iPrint = new Button(MESSAGES.buttonPrint());
 		iPrint.setAccessKey('p');
 		iPrint.addStyleName("unitime-NoPrint");
-		iFilterPanel.add(iPrint);		
+		iFilterPanel.addRight(iPrint);		
 
 		iNew = new Button(MESSAGES.buttonAddNew());
 		iNew.setAccessKey('a');
 		iNew.setEnabled(false);
 		iNew.addStyleName("unitime-NoPrint");
-		iFilterPanel.add(iNew);
+		iFilterPanel.addRight(iNew);
 		iReservationService.canAddReservation(new AsyncCallback<Boolean>() {
 			@Override
 			public void onFailure(Throwable caught) {

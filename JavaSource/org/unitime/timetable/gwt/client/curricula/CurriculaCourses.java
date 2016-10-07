@@ -33,6 +33,7 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.curricula.CurriculaClassifications.NameChangedEvent;
 import org.unitime.timetable.gwt.client.widgets.CourseSelectionEvent;
 import org.unitime.timetable.gwt.client.widgets.CourseSelectionHandler;
+import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
@@ -83,7 +84,7 @@ import com.google.gwt.user.client.ui.Widget;
 /**
  * @author Tomas Muller
  */
-public class CurriculaCourses extends Composite {
+public class CurriculaCourses extends Composite implements SimpleForm.HasMobileScroll {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private UniTimeTable<String> iTable = null;
 	

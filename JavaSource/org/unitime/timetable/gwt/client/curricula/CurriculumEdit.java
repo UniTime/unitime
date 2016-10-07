@@ -800,7 +800,7 @@ public class CurriculumEdit extends Composite {
 		iCurriculumCourses.showOnlyCourses(courses);
 	}
 	
-	private static class CurriculaClassificationsPanel extends UniTimeWidget<CurriculaClassifications> {
+	private static class CurriculaClassificationsPanel extends UniTimeWidget<CurriculaClassifications> implements SimpleForm.HasMobileScroll {
 		private Label iHint;
 		
 		public CurriculaClassificationsPanel(CurriculaClassifications classifications) {

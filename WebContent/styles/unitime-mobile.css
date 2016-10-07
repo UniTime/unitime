@@ -527,6 +527,15 @@
 		min-width: 100%;
 		width: 100vw;
 	}
+	
+	.unitime-CurriculumProjectionRulesDialog .unitime-ScrollTable {
+		min-width: inherit;
+		width: 80vw;
+	}
+	
+	.unitime-FilterPanel .filter-left .unitime-FilterBox {
+		width: 99vw;
+	}
 }
 
 @media all and (max-width: 720px) {

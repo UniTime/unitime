@@ -49,9 +49,12 @@ import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumFilterRpcR
 import org.unitime.timetable.gwt.shared.CurriculumInterface.DepartmentInterface;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Window;
@@ -64,13 +67,12 @@ import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -82,9 +84,6 @@ public class CurriculaTable extends Composite {
 	
 	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
 
-	private VerticalPanel iPanel = null;
-	private Image iLoadingImage = null;
-	private Label iErrorLabel = null;
 	private UniTimeTable<CurriculumInterface> iTable = null;
 	private CurriculumFilterRpcRequest iLastQuery = null;
 	private AriaButton iOperations = null;
@@ -120,23 +119,6 @@ public class CurriculaTable extends Composite {
 		
 		iTable.addRow(null, header);
 		
-		iPanel = new VerticalPanel();
-		
-		iPanel.add(iTable);
-		
-		iLoadingImage = new Image(RESOURCES.loading_small());
-		iLoadingImage.setVisible(false);
-		iLoadingImage.getElement().getStyle().setMargin(20, Unit.PX);
-		iPanel.add(iLoadingImage);
-		iPanel.setCellHorizontalAlignment(iLoadingImage, HasHorizontalAlignment.ALIGN_CENTER);
-		iPanel.setCellVerticalAlignment(iLoadingImage, HasVerticalAlignment.ALIGN_MIDDLE);
-
-		iErrorLabel = new Label(MESSAGES.errorNoData());
-		iErrorLabel.setStyleName("unitime-Message");
-		
-		iPanel.add(iErrorLabel);
-		iErrorLabel.setVisible(true);
-		
 		iTable.addMouseClickListener(new MouseClickListener<CurriculumInterface>() {
 			@Override
 			public void onMouseClick(TableEvent<CurriculumInterface> event) {
@@ -151,7 +133,7 @@ public class CurriculaTable extends Composite {
 			}
 		});
 
-		initWidget(iPanel);
+		initWidget(iTable);
 		
 		iLoadClassifications = new AsyncCallback<List<CurriculumClassificationInterface>>() {
 			public void onFailure(Throwable caught) {}
@@ -325,22 +307,6 @@ public class CurriculaTable extends Composite {
 		iClassifications.setup(classifications);
 	}
 	
-	public void setMessage(String message) {
-		iErrorLabel.setStyleName("unitime-Message");
-		iErrorLabel.setText(message == null ? "" : message);
-		iErrorLabel.setVisible(message != null && !message.isEmpty());
-		if (iErrorLabel.isVisible())
-			iErrorLabel.getElement().scrollIntoView();
-	}
-	
-	public void setError(String message) {
-		iErrorLabel.setStyleName("unitime-ErrorMessage");
-		iErrorLabel.setText(message == null ? "" : message);
-		iErrorLabel.setVisible(message != null && !message.isEmpty());
-		if (iErrorLabel.isVisible())
-			iErrorLabel.getElement().scrollIntoView();
-	}
-		
 	private void fillRow(CurriculumInterface c) {
 		int row = iTable.getRowCount();
 		List<Widget> line = new ArrayList<Widget>();
@@ -390,11 +356,9 @@ public class CurriculaTable extends Composite {
 		iTable.clearTable(1);
 		
 		if (result.isEmpty()) {
-			setError(MESSAGES.errorNoMatchingCurriculaFound());
+			iTable.setEmptyMessage(MESSAGES.errorNoMatchingCurriculaFound());
 			return;
 		}
-		
-		setMessage(null);
 		
 		List<Long> ids = new ArrayList<Long>();
 		int row = 0;
@@ -447,13 +411,12 @@ public class CurriculaTable extends Composite {
 	public void query(CurriculumFilterRpcRequest filter, final AsyncCallback<TreeSet<CurriculumInterface>> callback) {
 		iLastQuery = filter;
 		iTable.clearTable(1);
-		setMessage(null);
-		iLoadingImage.setVisible(true);
+		LoadingWidget.getInstance().show(MESSAGES.waitLoadingCurricula());
 		iService.findCurricula(filter, new AsyncCallback<TreeSet<CurriculumInterface>>() {
 			
 			@Override
 			public void onSuccess(TreeSet<CurriculumInterface> result) {
-				iLoadingImage.setVisible(false);
+				LoadingWidget.getInstance().hide();
 				populate(result, true);
 				if (callback != null)
 					callback.onSuccess(result);
@@ -461,8 +424,8 @@ public class CurriculaTable extends Composite {
 			
 			@Override
 			public void onFailure(Throwable caught) {
-				iLoadingImage.setVisible(false);
-				setError(MESSAGES.failedToLoadCurricula(caught.getMessage()));
+				LoadingWidget.getInstance().hide();
+				iTable.setEmptyMessage(MESSAGES.failedToLoadCurricula(caught.getMessage()));
 				UniTimeNotifications.error(MESSAGES.failedToLoadCurricula(caught.getMessage()), caught);
 				ToolBox.checkAccess(caught);
 				if (callback != null)
@@ -479,6 +442,7 @@ public class CurriculaTable extends Composite {
 	
 	private void openCurriculumProjectionRules() {
 		final DialogBox dialog = new UniTimeDialogBox(true, true);
+		dialog.addStyleName("unitime-CurriculumProjectionRulesDialog");
 		final CurriculumProjectionRulesPage rules = new CurriculumProjectionRulesPage();
 		rules.setAllowClose(true);
 		rules.getElement().getStyle().setMarginRight(ToolBox.getScrollBarWidth(), Unit.PX);
@@ -489,6 +453,12 @@ public class CurriculaTable extends Composite {
 		panel.setStyleName("unitime-ScrollPanel");
 		dialog.setWidget(panel);
 		dialog.setText(MESSAGES.dialogCurriculumProjectionRules());
+		dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
+			@Override
+			public void onClose(CloseEvent<PopupPanel> event) {
+				RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
+			}
+		});
 		rules.addProjectionRulesHandler(new CurriculumProjectionRulesPage.ProjectionRulesHandler() {
 			@Override
 			public void onRulesSaved(ProjectionRulesEvent evt) {
@@ -497,6 +467,7 @@ public class CurriculaTable extends Composite {
 			}
 			@Override
 			public void onRulesLoaded(ProjectionRulesEvent evt) {
+				RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
 				dialog.center();
 				//panel.setWidth((ToolBox.getScrollBarWidth() + rules.getOffsetWidth()) + "px");
 			}
@@ -506,7 +477,6 @@ public class CurriculaTable extends Composite {
 			}
 			@Override
 			public void onException(Throwable caught) {
-				setError(MESSAGES.failedToOpenCurriculumProjectionRules(caught.getMessage()));
 				UniTimeNotifications.error(MESSAGES.failedToOpenCurriculumProjectionRules(caught.getMessage()), caught);
 			}
 		});
@@ -757,7 +727,6 @@ public class CurriculaTable extends Composite {
 								@Override
 								public void onFailure(Throwable caught) {
 									LoadingWidget.getInstance().hide();
-									setError(MESSAGES.failedToDeleteSelectedCurricula(caught.getMessage()));
 									UniTimeNotifications.error(MESSAGES.failedToDeleteSelectedCurricula(caught.getMessage()), caught);
 									unmarkSelected();
 								}
@@ -814,7 +783,6 @@ public class CurriculaTable extends Composite {
 								@Override
 								public void onFailure(Throwable caught) {
 									LoadingWidget.getInstance().hide();
-									setError(MESSAGES.failedToMergeSelectedCurricula(caught.getMessage()));
 									UniTimeNotifications.error(MESSAGES.failedToMergeSelectedCurricula(caught.getMessage()), caught);
 									unmarkSelected();
 								}
@@ -873,7 +841,6 @@ public class CurriculaTable extends Composite {
 							@Override
 							public void onFailure(Throwable caught) {
 								LoadingWidget.getInstance().hide();
-								setError(MESSAGES.failedToUpdateCurricula(caught.getMessage()));
 								UniTimeNotifications.error(MESSAGES.failedToUpdateCurricula(caught.getMessage()), caught);
 								unmarkSelected();
 							}
@@ -912,7 +879,6 @@ public class CurriculaTable extends Composite {
 							@Override
 							public void onFailure(Throwable caught) {
 								LoadingWidget.getInstance().hide();
-								setError(MESSAGES.failedToUpdateCurricula(caught.getMessage()));
 								UniTimeNotifications.error(MESSAGES.failedToUpdateCurricula(caught.getMessage()), caught);
 								unmarkSelected();
 							}
@@ -949,7 +915,6 @@ public class CurriculaTable extends Composite {
 
 							@Override
 							public void onFailure(Throwable caught) {
-								setError(MESSAGES.failedToPopulateProjectedDemands(caught.getMessage()));
 								UniTimeNotifications.error(MESSAGES.failedToPopulateProjectedDemands(caught.getMessage()), caught);
 								LoadingWidget.getInstance().hide();
 							}
@@ -985,7 +950,6 @@ public class CurriculaTable extends Composite {
 						iService.populateCourseProjectedDemands(true, new AsyncCallback<Boolean>(){
 							@Override
 							public void onFailure(Throwable caught) {
-								setError(MESSAGES.failedToPopulateProjectedDemands(caught.getMessage()));
 								UniTimeNotifications.error(MESSAGES.failedToPopulateProjectedDemands(caught.getMessage()), caught);
 								LoadingWidget.getInstance().hide();
 							}
@@ -1024,7 +988,6 @@ public class CurriculaTable extends Composite {
 
 								@Override
 								public void onFailure(Throwable caught) {
-									setError(MESSAGES.failedToCreateCurricula(caught.getMessage()));
 									UniTimeNotifications.error(MESSAGES.failedToCreateCurricula(caught.getMessage()), caught);
 									unmarkAll();
 									LoadingWidget.getInstance().hide();
@@ -1069,7 +1032,6 @@ public class CurriculaTable extends Composite {
 
 								@Override
 								public void onFailure(Throwable caught) {
-									setError(MESSAGES.failedToCreateCurricula(caught.getMessage()));
 									UniTimeNotifications.error(MESSAGES.failedToCreateCurricula(caught.getMessage()), caught);
 									unmarkAll();
 									LoadingWidget.getInstance().hide();

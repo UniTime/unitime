@@ -28,8 +28,8 @@ import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.curricula.CurriculumEdit.EditFinishedEvent;
-import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
+import org.unitime.timetable.gwt.client.widgets.FilterPanel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -54,9 +54,8 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -77,7 +76,7 @@ public class CurriculaPage extends Composite {
 	private VerticalPanel iCurriculaPanel = null;
 	
 	private SimplePanel iPanel = null;
-	private HorizontalPanel iFilterPanel = null;
+	private FilterPanel iFilterPanel = null;
 	
 	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
 	
@@ -89,28 +88,26 @@ public class CurriculaPage extends Composite {
 		
 		iCurriculaPanel = new VerticalPanel();
 		
-		iFilterPanel = new HorizontalPanel();
-		iFilterPanel.setSpacing(3);
+		iFilterPanel = new FilterPanel();
 		
 		Label filterLabel = new Label(MESSAGES.propFilter());
-		iFilterPanel.add(filterLabel);
-		iFilterPanel.setCellVerticalAlignment(filterLabel, HasVerticalAlignment.ALIGN_MIDDLE);
+		iFilterPanel.addLeft(filterLabel);
 		
 		iFilter = new CurriculumFilterBox();
-		iFilterPanel.add(iFilter);
+		iFilterPanel.addLeft(iFilter);
 		
 		iSearch = new AriaButton(MESSAGES.buttonSearch());
 		iSearch.addStyleName("unitime-NoPrint");
-		iFilterPanel.add(iSearch);		
+		iFilterPanel.addRight(iSearch);		
 		
 		iPrint = new AriaButton(MESSAGES.buttonPrint());
 		iPrint.addStyleName("unitime-NoPrint");
-		iFilterPanel.add(iPrint);		
+		iFilterPanel.addRight(iPrint);		
 
 		iNew = new AriaButton(MESSAGES.buttonAddNew());
 		iNew.setEnabled(false);
 		iNew.addStyleName("unitime-NoPrint");
-		iFilterPanel.add(iNew);
+		iFilterPanel.addRight(iNew);
 		iService.canAddCurriculum(new AsyncCallback<Boolean>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -126,11 +123,13 @@ public class CurriculaPage extends Composite {
 		
 		iCurriculaTable = new CurriculaTable();
 		iCurriculaTable.getElement().getStyle().setMarginTop(10, Unit.PX);
-		iFilterPanel.add(iCurriculaTable.getOperations());
+		iFilterPanel.addRight(iCurriculaTable.getOperations());
 		iCurriculaTable.getOperations().setEnabled(false);
 		iCurriculaTable.setVisible(false);
 		
-		iCurriculaPanel.add(iCurriculaTable);
+		ScrollPanel curriculumTableScroll = new ScrollPanel(iCurriculaTable);
+		curriculumTableScroll.addStyleName("unitime-ScrollTable");
+		iCurriculaPanel.add(curriculumTableScroll);
 		
 		iCurriculaPanel.setWidth("100%");
 		
@@ -385,19 +384,13 @@ public class CurriculaPage extends Composite {
 		if (newEnabled)
 			iNew.setEnabled(false);
 		History.newItem(iFilter.getValue(), false);
-		showLoading(MESSAGES.waitLoadingCurricula());
 		iCurriculaTable.query(iFilter.getElementsRequest(), new AsyncCallback<TreeSet<CurriculumInterface>>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				hideLoading();
-				iCurriculaTable.setError(MESSAGES.failedToLoadCurricula(caught.getMessage()));
-				UniTimeNotifications.error(MESSAGES.failedToLoadCurricula(caught.getMessage()), caught);
-				ToolBox.checkAccess(caught);
 			}
 
 			@Override
 			public void onSuccess(TreeSet<CurriculumInterface> result) {
-				hideLoading();
 				iCurriculaTable.setVisible(true);
 				iSearch.setEnabled(true);
 				iPrint.setEnabled(true);

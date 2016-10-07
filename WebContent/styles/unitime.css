@@ -5161,3 +5161,34 @@ unitime-RoomSharingWidget .legend .blank {
 	zoom: 1;
 	margin: -3px;
 }
+
+.unitime-FilterPanel {
+	display: block;
+	text-align: left;
+	overflow: hidden;
+}
+
+.unitime-FilterPanel .filter-item {
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.unitime-FilterPanel .filter-left .filter-item {
+	padding: 3px;
+}
+
+.unitime-FilterPanel .filter-left {
+	float: left;
+}
+
+.unitime-FilterPanel .filter-right {
+	float: right;
+}
+
+.unitime-FilterPanel .filter-right .filter-item {
+	margin: 3px;
+}
+
+.unitime-FilterPanel .filter-middle {
+	display: block;
+}

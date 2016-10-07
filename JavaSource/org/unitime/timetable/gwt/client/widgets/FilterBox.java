@@ -63,6 +63,8 @@ import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.logical.shared.HasValueChangeHandlers;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -120,6 +122,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	private List<Filter> iFilters = new ArrayList<Filter>();
 	private Focusable iLastFocusedWidget = null;
 	private Image iFilterOpen, iFilterClose, iFilterClear;
+	private HandlerRegistration iResizeHandler;
 	
 	private TakesValue<String> iDefaultValueProvider = null;
 	
@@ -495,6 +498,21 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	protected void onAttach() {
 		super.onAttach();
 		resizeFilterIfNeeded();
+		iResizeHandler = Window.addResizeHandler(new ResizeHandler() {
+			@Override
+			public void onResize(ResizeEvent event) {
+				resizeFilterIfNeeded();
+			}
+		});
+	}
+	
+	@Override
+	protected void onDetach() {
+		super.onDetach();
+		if (iResizeHandler != null) {
+			iResizeHandler.removeHandler();
+			iResizeHandler = null;
+		}
 	}
 	
 	private void resizeFilterIfNeeded() {
