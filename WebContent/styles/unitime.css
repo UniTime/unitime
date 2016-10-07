@@ -5142,3 +5142,22 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-CurriculaCourseProjections {
 	width: inherit;
 }
+
+.unitime-ScrollTable {
+	overflow: auto;
+	position: relative;
+	zoom: 1;
+}
+
+.unitime-ScrollTableCell {
+	overflow: auto;
+	position: relative;
+	zoom: 1;
+}
+
+.unitime-LegacyWebTable {
+	overflow: auto;
+	position: relative;
+	zoom: 1;
+	margin: -3px;
+}

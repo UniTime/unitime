@@ -225,6 +225,7 @@
 		<TR>
 			<TD width="20%" valign="top"><loc:message name="propertyCourseOfferings"/></TD>
 			<TD>
+				<div class='unitime-ScrollTableCell'>
 				<TABLE border="0" width="100%" cellspacing="0" cellpadding="2">
 					<TR>
 						<TD align="center" class="WebTableHeader">&nbsp;</TD>
@@ -342,6 +343,7 @@
 					</TR>
 				</logic:iterate>
 				</TABLE>
+				</div>
 			</TD>
 		</TR>
 		

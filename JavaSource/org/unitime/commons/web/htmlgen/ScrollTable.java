@@ -19,56 +19,23 @@
 */
 package org.unitime.commons.web.htmlgen;
 
-import java.io.IOException;
-
-import javax.servlet.jsp.JspWriter;
 /**
- * 
- * @author Stephanie Schluttenhofer
- *
+ * @author Tomas Muller
  */
-public class TableStream extends ScrollTable {
-	JspWriter outStream;
-	
-	public TableStream() {
-		super();
-	}
-	
-	public TableStream(JspWriter out){
-		super();
-		outStream = out;
-	}
+public class ScrollTable extends Table {
 
-	public JspWriter getOutStream() {
-		return outStream;
-	}
-
-	public void setOutStream(JspWriter outStream) {
-		this.outStream = outStream;
-	}
-	
-	public void addContent(Object obj){
-		try {
-			getOutStream().print(htmlForObject(obj));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	@Override
+	public String startTagHtml(){
+		StringBuffer sb = new StringBuffer();
+		sb.append("<div class='unitime-ScrollTable'>");
+		sb.append(super.startTagHtml());
+		return sb.toString();
 	}
 	
-	public void tableDefComplete(){
-		try {
-			getOutStream().print(startTagHtml());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	@Override
+	public String endTagHtml(){
+		StringBuffer sb = new StringBuffer(super.endTagHtml());
+		sb.append("</div>");
+		return sb.toString();
 	}
-	
-	public void tableComplete(){
-		try {
-			getOutStream().print(endTagHtml());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
 }

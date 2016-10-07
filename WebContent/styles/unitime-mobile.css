@@ -429,6 +429,7 @@
 	
 	.unitime-MainTable .table-row {
 		width: 99vw;
+		min-width: 100%;
 	}
 	
 	.unitime-MainTable .table-cell {
@@ -511,6 +512,20 @@
 	.unitime-RoomEdit .exams .exam {
 		width: 37vw; 
 		min-width: 300px;
+	}
+	
+	.unitime-ScrollTable {
+		min-width: 100%;
+		width: 100vw;
+	}
+	
+	.unitime-ScrollTableCell {
+		width: 80vw;
+	}
+	
+	.unitime-LegacyWebTable {
+		min-width: 100%;
+		width: 100vw;
 	}
 }
 

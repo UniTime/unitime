@@ -69,7 +69,7 @@ public class UniTimeHeaderPanel extends P {
 	public UniTimeHeaderPanel(String title) {
 		super("unitime-HeaderPanel");
 		
-		iLeft = new P("left", "unitime-NoPrint");
+		iLeft = new P("left");
 		add(iLeft);
 		
 		iRight = new P("right", "unitime-NoPrint");
@@ -84,10 +84,12 @@ public class UniTimeHeaderPanel extends P {
 		iOpenCloseImage = new OpenCloseSectionImage(true);
 		iOpenCloseImage.setVisible(false);
 		iOpenCloseImage.addStyleName("open-close");
+		iOpenCloseImage.addStyleName("unitime-NoPrint");
 		iLeft.add(iOpenCloseImage);
 
 		iLoadingImage = new Image(RESOURCES.loading_small());
 		iLoadingImage.addStyleName("loading");
+		iLoadingImage.addStyleName("unitime-NoPrint");
 		iLoadingImage.setVisible(false);
 		iLeft.add(iLoadingImage);
 

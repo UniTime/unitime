@@ -260,11 +260,14 @@ public class WebTable {
     public String printTable(int ordCol) {
         String lastLine[] = new String[Math.max(iColumns,(iHeaders==null?0:iHeaders.length))];
         StringBuffer sb = new StringBuffer();
-
+        
         if (iName != null && iName.trim().length()>0) {
             sb.append("<tr><td colspan=" + iColumns
                     + "><div class=WelcomeRowHead>" + iName + "</div></td></tr>");
         }
+
+        sb.append("<tr><td colspan='" + iColumns + "'><div class='unitime-LegacyWebTable'><table width='100%' border='0' cellspacing='0' cellpadding='3'>");
+        
         boolean asc = (ordCol == 0 || iAsc == null
                 || iAsc.length <= Math.abs(ordCol) - 1
                 ? true
@@ -386,6 +389,9 @@ public class WebTable {
             }
             sb.append("</tr>" + (anchor ? "</a>" : ""));
         }
+        
+        sb.append("</table></div></td></tr>");
+        
         return sb.toString();
     }
     

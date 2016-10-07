@@ -78,19 +78,19 @@ public class WebInstrOfferingConfigTableBuilder extends
 	
 	public String buttonsTable(InstrOfferingConfig ioc, SessionContext context) {
 		StringBuffer btnTable = new StringBuffer("");
-		btnTable.append("<table class='BottomBorder' width='100%'><tr><td width='100%' nowrap>");
-		btnTable.append("<DIV class='WelcomeRowHeadNoLine'>");
+		btnTable.append("<div class='unitime-MainTableHeader'><div class='unitime-HeaderPanel' style='margin-bottom: 0px;'>");
+		btnTable.append("<div class='left'><div class='title'>");
 		String configName = ioc.getName();
 	    if (configName==null || configName.trim().length()==0) configName = ioc.getUniqueId().toString();
 	    if (ioc.getInstructionalMethod() != null)
 	    	btnTable.append(MSG.labelConfigurationWithInstructionalMethod(configName, ioc.getInstructionalMethod().getLabel()));
 	    else
 	    	btnTable.append(MSG.labelConfiguration(configName));
-		btnTable.append("</DIV>");
-		btnTable.append("</td><td style='padding-bottom: 3px' nowrap>");
+	    btnTable.append("</div></div>");
 		boolean notOffered = ioc.getInstructionalOffering().isNotOffered().booleanValue();
 		if (!notOffered) {
-	        btnTable.append("<table border='0' align='right' cellspacing='1' cellpadding='0'>");
+		    btnTable.append("<div class='right unitime-NoPrint' style='line-height: 29px; vertical-align: bottom; font-size: small;'>");
+	        btnTable.append("<table border='0' align='right' cellspacing='1' cellpadding='0'><tr>");
 	        
 	        if (context.hasPermission(ioc, Right.InstrOfferingConfigEdit)) {
 		        btnTable.append("<td>");
@@ -119,10 +119,10 @@ public class WebInstrOfferingConfigTableBuilder extends
 		        btnTable.append("</td>");
 	        }
 
-	        btnTable.append("</tr>");
-	        btnTable.append("</table>");
+	        btnTable.append("</tr></table>");
+	        btnTable.append("</div>");
 	    }
-		btnTable.append("</td></tr></table>");		
+		btnTable.append("</div></div>");
 		return(btnTable.toString());
 	}
 	

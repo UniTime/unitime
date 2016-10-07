@@ -40,6 +40,18 @@ public class SectionHeader extends BodyTagSupport {
 	
 	public int doEndTag() throws JspException {
 		try {
+			pageContext.getOut().println("<div class='unitime-MainTableHeader'><div class='unitime-HeaderPanel' style='margin-bottom: 0px;'>");
+			if (iTitle != null) {
+				pageContext.getOut().println("<div class='left'><div class='title'>" + iTitle + "</div></div>");
+			}
+			String body = (getBodyContent() == null ? null : getBodyContent().getString());
+			if (body != null) {
+				pageContext.getOut().println("<div class='right unitime-NoPrint' style='line-height: 29px; vertical-align: bottom; font-size: small;'>");
+				pageContext.getOut().println(body);
+				pageContext.getOut().println("</div>");
+			}
+			pageContext.getOut().println("</div></div>");
+			/*
 			pageContext.getOut().println("<table class='BottomBorder' width='100%'><tr><td width='100%' nowrap>");
 			pageContext.getOut().println("<DIV class='WelcomeRowHeadNoLine'>");
 			if (iTitle!=null)
@@ -50,6 +62,7 @@ public class SectionHeader extends BodyTagSupport {
 			if (body!=null)
 				pageContext.getOut().println(body);
 			pageContext.getOut().println("</td></tr></table>");
+			*/
 		} catch (Exception e) {
 			throw new JspTagException(e.getMessage());
 		}
