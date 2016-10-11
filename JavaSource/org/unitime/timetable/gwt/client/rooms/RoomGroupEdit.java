@@ -419,7 +419,7 @@ public class RoomGroupEdit extends Composite {
 		}
 		iGroup.setDefault(iDefault.getValue());
 		iGroup.setDescription(iDescription.getWidget().getText());
-		if (iGroup.getDescription().length() > 200) {
+		if (iGroup.getDescription().length() > 1000) {
 			iDescription.setErrorHint(MESSAGES.errorDescriptionTooLong());
 			result = false;
 		}

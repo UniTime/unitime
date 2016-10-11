@@ -61,6 +61,7 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 
 /**
@@ -82,6 +83,7 @@ public class RoomFeatureEdit extends Composite {
 	private UniTimeWidget<ListBox> iDepartment;
 	private CheckBox iGlobal;
 	private int iDepartmentRow = -1;
+	private UniTimeWidget<TextArea> iDescription;
 
 	private RoomsTable iRooms = null;
 	
@@ -231,6 +233,12 @@ public class RoomFeatureEdit extends Composite {
 		iDepartment.getWidget().setStyleName("unitime-TextBox");
 		iDepartmentRow = iForm.addRow(MESSAGES.propDepartment(), iDepartment);
 		
+		iDescription = new UniTimeWidget<TextArea>(new TextArea());
+		iDescription.getWidget().setStyleName("unitime-TextArea");
+		iDescription.getWidget().setVisibleLines(3);
+		iDescription.getWidget().setCharacterWidth(50);
+		iForm.addRow(MESSAGES.propDescription(), iDescription);
+		
 		iForm.addHeaderRow(MESSAGES.headerRooms());
 		
 		iRooms = new RoomsTable(mode, true);
@@ -314,6 +322,7 @@ public class RoomFeatureEdit extends Composite {
 		iName.clearHint(); 
 		iAbbreviation.clearHint();
 		iDepartment.clearHint();
+		iDescription.clearHint();
 		if (feature == null) {
 			iFeature = new FeatureInterface();
 			iFeature.setSessionId(iProperties.getAcademicSessionId());
@@ -324,6 +333,7 @@ public class RoomFeatureEdit extends Composite {
 			iHeader.setEnabled("delete", false);
 			iName.getWidget().setText("");
 			iAbbreviation.getWidget().setText("");
+			iDescription.getWidget().setText("");
 			iDepartment.getWidget().clear();
 			iGlobal.setValue(true, true);
 			iGlobal.setEnabled(true);
@@ -352,6 +362,7 @@ public class RoomFeatureEdit extends Composite {
 			iHeader.setEnabled("delete", feature.canDelete());
 			iName.getWidget().setText(feature.getLabel() == null ? "" : feature.getLabel());
 			iAbbreviation.getWidget().setText(feature.getAbbreviation() == null ? "" : feature.getAbbreviation());
+			iDescription.getWidget().setText(feature.getDescription() == null ? "" : feature.getDescription());
 			if (iType != null && iType.getItemCount() > 0) {
 				if (feature.getType() == null) {
 					iType.setSelectedIndex(0);
@@ -423,6 +434,11 @@ public class RoomFeatureEdit extends Composite {
 			iFeature.setType(iProperties.getFeatureType(Long.valueOf(iType.getValue(iType.getSelectedIndex()))));
 		} else {
 			iFeature.setType(null);
+		}
+		iFeature.setDescription(iDescription.getWidget().getText());
+		if (iFeature.getDescription().length() > 1000) {
+			iDescription.setErrorHint(MESSAGES.errorDescriptionTooLong());
+			result = false;
 		}
 		if (!iGlobal.getValue()) {
 			iFeature.setDepartment(iProperties.getDepartment(Long.valueOf(iDepartment.getWidget().getValue(iDepartment.getWidget().getSelectedIndex()))));

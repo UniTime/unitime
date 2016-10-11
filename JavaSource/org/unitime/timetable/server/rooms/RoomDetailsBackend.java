@@ -253,6 +253,7 @@ public class RoomDetailsBackend extends RoomFilterBackend {
     	
     	for (RoomFeature f: location.getFeatures()) {
     		FeatureInterface feature = new FeatureInterface(f.getUniqueId(), f.getAbbv(), f.getLabel());
+    		feature.setDescription(f.getDescription());
     		if (f.getFeatureType() != null)
     			feature.setType(new FeatureTypeInterface(f.getFeatureType().getUniqueId(), f.getFeatureType().getReference(), f.getFeatureType().getLabel(), f.getFeatureType().isShowInEventManagement()));
     		if (f instanceof DepartmentRoomFeature) {
@@ -260,9 +261,9 @@ public class RoomDetailsBackend extends RoomFilterBackend {
     			Department d = ((DepartmentRoomFeature)f).getDepartment();
     			if (filterDepartments && !context.getUser().getCurrentAuthority().hasQualifier(d)) continue; 
     			feature.setDepartment(wrap(d, location, null));
-    			feature.setTitle(f.getLabel() + " (" + d.getName() + (f.getFeatureType() == null ? "" : ", " + f.getFeatureType().getLabel()) + ")");
+    			feature.setTitle((f.getDescription() == null || f.getDescription().isEmpty() ? f.getLabel() : f.getDescription()) + " (" + d.getName() + (f.getFeatureType() == null ? "" : ", " + f.getFeatureType().getLabel()) + ")");
     		} else {
-    			feature.setTitle(f.getLabel() + (f.getFeatureType() == null ? "" : " (" + f.getFeatureType().getLabel() + ")"));
+    			feature.setTitle((f.getDescription() == null || f.getDescription().isEmpty() ? f.getLabel() : f.getDescription()) + (f.getFeatureType() == null ? "" : " (" + f.getFeatureType().getLabel() + ")"));
     		}
     		response.addFeature(feature);
     	}

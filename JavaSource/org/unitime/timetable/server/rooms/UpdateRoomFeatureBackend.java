@@ -90,14 +90,15 @@ public class UpdateRoomFeatureBackend implements GwtRpcImplementation<UpdateRoom
             FeatureInterface feature = null;
             if (f != null) {
             	feature = new FeatureInterface(f.getUniqueId(), f.getAbbv(), f.getLabel());
+            	feature.setDescription(f.getDescription());
         		if (f.getFeatureType() != null)
         			feature.setType(new FeatureTypeInterface(f.getFeatureType().getUniqueId(), f.getFeatureType().getReference(), f.getFeatureType().getLabel(), f.getFeatureType().isShowInEventManagement()));
         		if (f instanceof DepartmentRoomFeature) {
         			Department d = ((DepartmentRoomFeature)f).getDepartment();
         			feature.setDepartment(RoomDetailsBackend.wrap(d, null, null));
-        			feature.setTitle(f.getLabel() + " (" + d.getName() + (f.getFeatureType() == null ? "" : ", " + f.getFeatureType().getLabel()) + ")");
+        			feature.setTitle((f.getDescription() == null || f.getDescription().isEmpty() ? f.getLabel() : f.getDescription()) + " (" + d.getName() + (f.getFeatureType() == null ? "" : ", " + f.getFeatureType().getLabel()) + ")");
         		} else {
-        			feature.setTitle(f.getLabel() + (f.getFeatureType() == null ? "" : " (" + f.getFeatureType().getLabel() + ")"));
+        			feature.setTitle((f.getDescription() == null || f.getDescription().isEmpty() ? f.getLabel() : f.getDescription()) + (f.getFeatureType() == null ? "" : " (" + f.getFeatureType().getLabel() + ")"));
         		}
             }
 
@@ -211,6 +212,7 @@ public class UpdateRoomFeatureBackend implements GwtRpcImplementation<UpdateRoom
     	rf.setAbbv(feature.getAbbreviation());
     	rf.setLabel(feature.getLabel());
     	rf.setFeatureType(feature.getType() == null ? null : RoomFeatureTypeDAO.getInstance().get(feature.getType().getId(), hibSession));
+    	rf.setDescription(feature.getDescription());
 
     	hibSession.saveOrUpdate(rf);
     	

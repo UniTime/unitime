@@ -187,7 +187,7 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 				FeatureInterface feature = new FeatureInterface(f.getUniqueId(), f.getAbbv(), f.getLabel());
 				if (f.getFeatureType() != null)
 					feature.setType(response.getFeatureType(f.getFeatureType().getUniqueId()));
-				feature.setTitle(f.getLabel());
+				feature.setTitle((f.getDescription() == null || f.getDescription().isEmpty() ? f.getLabel() : f.getDescription()));
 				response.addFeature(feature);
 			}
 		}
@@ -199,7 +199,8 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 				if (f.getFeatureType() != null)
 	    			feature.setType(new FeatureTypeInterface(f.getFeatureType().getUniqueId(), f.getFeatureType().getReference(), f.getFeatureType().getLabel(), f.getFeatureType().isShowInEventManagement()));
 				feature.setDepartment(response.getDepartment(f.getDepartment().getUniqueId()));
-				feature.setTitle(f.getLabel() + " (" + f.getDepartment().getName() + ")");
+				feature.setTitle((f.getDescription() == null || f.getDescription().isEmpty() ? f.getLabel() : f.getDescription()) + " (" + f.getDepartment().getName() + ")");
+				feature.setDescription(f.getDescription());
 				response.addFeature(feature);
 			}
 		}

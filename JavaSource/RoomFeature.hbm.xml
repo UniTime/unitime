@@ -55,6 +55,13 @@
             not-null="false"
             length="60"/>
 
+        <property
+            name="description"
+            column="description"
+            type="java.lang.String"
+            not-null="false"
+            length="1000"/>
+
         <set
             name="rooms"
             table="room_join_room_feature"

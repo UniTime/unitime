@@ -11650,4 +11650,10 @@
 		<plsql>alter table %SCHEMA%.class_instructor drop column tentative</plsql>
 		<plsql>alter table %SCHEMA%.class_instructor drop column assign_index</plsql>
 	</update>
+	<update version="168" date="11-Oct-2016" comment="Room Feature Description">
+		<mysql>alter table %SCHEMA%.room_group modify description varchar(1000)</mysql>
+		<mysql>alter table %SCHEMA%.room_feature add description varchar(1000)</mysql>
+		<plsql>alter table %SCHEMA%.room_group modify description varchar2(1000 char)</plsql>
+		<plsql>alter table %SCHEMA%.room_feature add description varchar2(1000 char)</plsql>
+	</update>
 </dbupdate>

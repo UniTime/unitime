@@ -4042,6 +4042,11 @@ unitime-RoomSharingWidget .legend .blank {
 	padding-right: 3px;
 }
 
+.unitime-RoomFeatures .description {
+	white-space: pre-wrap;
+}
+
+
 .unitime-RoomFeatureEdit .future-sessions {
 	padding-top: 20px;
 }

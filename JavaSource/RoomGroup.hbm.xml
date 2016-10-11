@@ -58,7 +58,7 @@
             column="description"
             type="java.lang.String"
             not-null="false"
-            length="200"/>
+            length="1000"/>
 
         <property
             name="global"

@@ -916,6 +916,7 @@ public class RoomInterface implements IsSerializable {
 		private Boolean iCanEdit = null, iCanDelete = null;
 		private Long iSessionId = null;
 		private String iSessionName = null;
+		private String iDescription = null;
 		
 		public FeatureInterface() {
 			super();
@@ -933,6 +934,7 @@ public class RoomInterface implements IsSerializable {
 			iCanDelete = feature.iCanDelete;
 			iSessionId = feature.iSessionId;
 			iSessionName = feature.iSessionName;
+			iDescription = feature.iDescription;
 		}
 		
 		public boolean isDepartmental() { return iDepartment != null; }
@@ -969,6 +971,10 @@ public class RoomInterface implements IsSerializable {
 		public boolean hasSessionName() { return iSessionName != null; }
 		public String getSessionName() { return iSessionName; }
 		public void setSessionName(String sessionName) { iSessionName = sessionName; }
+		
+		public boolean hasDescription() { return iDescription != null && !iDescription.isEmpty(); }
+		public void setDescription(String description) { iDescription = description; }
+		public String getDescription() { return iDescription; }
 	}
 	
 	public static class GroupInterface extends RoomPropertyInterface {
@@ -2197,6 +2203,7 @@ public class RoomInterface implements IsSerializable {
 		TYPE,
 		DEPARTMENT,
 		ROOMS,
+		DESCRIPTION,
 		;
 	}
 	

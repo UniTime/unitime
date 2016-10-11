@@ -59,6 +59,10 @@ public class RoomFeaturesComparator implements Comparator<FeatureInterface> {
 	public int compareByType(FeatureInterface r1, FeatureInterface r2) {
 		return compare(r1.getType() == null ? null : r1.getType().getAbbreviation(), r2.getType() == null ? null : r2.getType().getAbbreviation());
 	}
+	
+	public int compareByDescription(FeatureInterface r1, FeatureInterface r2) {
+		return compare(r1.getDescription(), r2.getDescription());
+	}
 
 	
 	public int compareByRooms(FeatureInterface r1, FeatureInterface r2) {
@@ -90,6 +94,7 @@ public class RoomFeaturesComparator implements Comparator<FeatureInterface> {
 		case TYPE: return compareByType(r1, r2);
 		case DEPARTMENT: return compareByDepartment(r1, r2);
 		case ROOMS: return compareByRooms(r1, r2);
+		case DESCRIPTION: return compareByDescription(r1, r2);
 		default: return compareByName(r1, r2);
 		}
 	}
@@ -101,6 +106,7 @@ public class RoomFeaturesComparator implements Comparator<FeatureInterface> {
 		case DEPARTMENT:
 		case TYPE:
 		case ROOMS:
+		case DESCRIPTION:
 			return true;
 		default:
 			return false;

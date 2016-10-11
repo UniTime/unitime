@@ -68,6 +68,7 @@ public abstract class BaseDepartmentRoomFeature extends RoomFeature implements S
 		return "DepartmentRoomFeature[" +
 			"\n	Abbv: " + getAbbv() +
 			"\n	Department: " + getDepartment() +
+			"\n	Description: " + getDescription() +
 			"\n	FeatureType: " + getFeatureType() +
 			"\n	Label: " + getLabel() +
 			"\n	UniqueId: " + getUniqueId() +

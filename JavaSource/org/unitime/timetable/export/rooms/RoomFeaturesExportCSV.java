@@ -115,6 +115,7 @@ public class RoomFeaturesExportCSV implements Exporter {
 				MESSAGES.colAbbreviation(),
 				MESSAGES.colType(),
 				MESSAGES.colDepartment(),
+				MESSAGES.colDescription(),
 				MESSAGES.colRooms()
 				);
 	}
@@ -135,7 +136,7 @@ public class RoomFeaturesExportCSV implements Exporter {
 	}
 	
 	protected void printLine(Printer out, FeatureInterface feature, int dm) throws IOException {
-		String[] line = new String[4 + (feature.hasRooms() ? feature.getRooms().size() : 0)];
+		String[] line = new String[5 + (feature.hasRooms() ? feature.getRooms().size() : 0)];
 		int idx = 0;
 		line[idx++] = feature.getLabel();
 		line[idx++] = feature.getAbbreviation();
@@ -144,6 +145,7 @@ public class RoomFeaturesExportCSV implements Exporter {
 			line[idx++] = dept2string(feature.getDepartment(), dm);
 		else
 			line[idx++] = "";
+		line[idx++] = feature.getDescription();
 		if (feature.hasRooms())
 			for (Entity room: feature.getRooms())
 				line[idx++] = name(room);

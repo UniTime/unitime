@@ -37,6 +37,7 @@ import org.unitime.timetable.gwt.shared.RoomInterface.FeatureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomFeaturesColumn;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
@@ -145,6 +146,7 @@ public class RoomFeaturesTable extends UniTimeTable<FeatureInterface> {
 		case TYPE: return MESSAGES.colType();
 		case DEPARTMENT: return MESSAGES.colDepartment();
 		case ROOMS: return MESSAGES.colRooms();
+		case DESCRIPTION: return MESSAGES.colDescription();
 		default: return column.name();
 		}
 	}
@@ -179,6 +181,13 @@ public class RoomFeaturesTable extends UniTimeTable<FeatureInterface> {
 			}
 		case DEPARTMENT:
 			return new DepartmentCell(true, feature.getDepartment());
+		case DESCRIPTION:
+			if (feature.hasDescription()) {
+				HTML html = new HTML(feature.getDescription());
+				html.setStyleName("description");
+				return html;
+			} else
+				return null;
 		case ROOMS:
 			if (feature.hasRooms())
 				return new RoomsCell(feature);

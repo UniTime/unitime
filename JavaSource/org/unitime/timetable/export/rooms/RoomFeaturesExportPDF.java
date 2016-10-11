@@ -56,7 +56,8 @@ public class RoomFeaturesExportPDF extends RoomFeaturesExportCSV {
 				MESSAGES.colAbbreviation(),
 				MESSAGES.colType(),
 				MESSAGES.colDepartment(),
-				MESSAGES.colRooms()
+				MESSAGES.colRooms(),
+				MESSAGES.colDescription()
 				);
 	}
 	
@@ -66,7 +67,8 @@ public class RoomFeaturesExportPDF extends RoomFeaturesExportCSV {
 				new A(feature.getAbbreviation()),
 				new A(feature.getType() == null ? "" : feature.getType().getAbbreviation()),
 				new A(feature.isDepartmental() ? dept2string(feature.getDepartment(), dm) : ""),
-				rooms(feature));
+				rooms(feature),
+				new A(feature.getDescription()).maxWidth(250f));
 	}
 	
 	protected A rooms(FeatureInterface feature) {

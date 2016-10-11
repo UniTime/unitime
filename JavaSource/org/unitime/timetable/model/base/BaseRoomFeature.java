@@ -37,6 +37,7 @@ public abstract class BaseRoomFeature implements Serializable {
 	private Long iUniqueId;
 	private String iLabel;
 	private String iAbbv;
+	private String iDescription;
 
 	private RoomFeatureType iFeatureType;
 	private Set<Location> iRooms;
@@ -44,6 +45,7 @@ public abstract class BaseRoomFeature implements Serializable {
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_LABEL = "label";
 	public static String PROP_ABBV = "abbv";
+	public static String PROP_DESCRIPTION = "description";
 
 	public BaseRoomFeature() {
 		initialize();
@@ -64,6 +66,9 @@ public abstract class BaseRoomFeature implements Serializable {
 
 	public String getAbbv() { return iAbbv; }
 	public void setAbbv(String abbv) { iAbbv = abbv; }
+
+	public String getDescription() { return iDescription; }
+	public void setDescription(String description) { iDescription = description; }
 
 	public RoomFeatureType getFeatureType() { return iFeatureType; }
 	public void setFeatureType(RoomFeatureType featureType) { iFeatureType = featureType; }
@@ -93,6 +98,7 @@ public abstract class BaseRoomFeature implements Serializable {
 	public String toDebugString() {
 		return "RoomFeature[" +
 			"\n	Abbv: " + getAbbv() +
+			"\n	Description: " + getDescription() +
 			"\n	FeatureType: " + getFeatureType() +
 			"\n	Label: " + getLabel() +
 			"\n	UniqueId: " + getUniqueId() +
