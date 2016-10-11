@@ -244,7 +244,7 @@
 		</init-param>
 	</filter>
 	
-		<filter>
+	<filter>
 		<filter-name>
 			Locale Filter
 		</filter-name>
@@ -260,6 +260,11 @@
 	<filter>
 		<filter-name>Cache Disabling Filter</filter-name>
 		<filter-class>org.unitime.timetable.filter.CacheDisablingFilter</filter-class>
+	</filter>
+	
+	<filter>
+		<filter-name>Busy Sessions</filter-name>
+		<filter-class>org.unitime.timetable.filter.BusySessions$Filter</filter-class>
 	</filter>
 
 	<!-- Filter Mappings -->
@@ -347,6 +352,11 @@
 		<filter-name>Cache Disabling Filter</filter-name>
 		<url-pattern>/unitime/unitime.nocache.js</url-pattern>
 	</filter-mapping>
+	
+	<filter-mapping>
+		<filter-name>Busy Sessions</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
 
 	<jsp-config>
 		<jsp-property-group>
@@ -364,6 +374,9 @@
 	</listener>
 	<listener>
 		<listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+	</listener>
+	<listener>
+		<listener-class>org.unitime.timetable.filter.BusySessions$Listener</listener-class>
 	</listener>
 	<!-- CAS Authentication -->
 	<listener>

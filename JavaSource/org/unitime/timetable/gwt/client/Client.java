@@ -27,8 +27,12 @@ import java.util.logging.Logger;
 import org.unitime.timetable.gwt.client.page.UniTimeMenu;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseBoolean;
+import org.unitime.timetable.gwt.command.client.GwtRpcService;
+import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.shared.MenuInterface.IsSessionBusyRpcRequest;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -39,7 +43,9 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 
@@ -49,8 +55,10 @@ import com.google.gwt.user.client.ui.RootPanel;
 public class Client implements EntryPoint {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	public static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
+	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	public static List<GwtPageChangedHandler> iGwtPageChangedHandlers = new ArrayList<GwtPageChangedHandler>();
 	public static Logger sLogger = Logger.getLogger(Client.class.getName());
+	private Timer iPageLoadingTimer;
 	
 	public void onModuleLoad() {
 		GWT.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
@@ -126,6 +134,26 @@ public class Client implements EntryPoint {
 			public void onWindowClosing(Window.ClosingEvent event) {
 				if (isLoadingDisplayed() || LoadingWidget.getInstance().isShowing()) return;
 				LoadingWidget.showLoading(MESSAGES.waitPlease());
+				iPageLoadingTimer = new Timer() {
+					@Override
+					public void run() {
+						RPC.execute(new IsSessionBusyRpcRequest(), new AsyncCallback<GwtRpcResponseBoolean>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								LoadingWidget.hideLoading();
+							}
+							@Override
+							public void onSuccess(GwtRpcResponseBoolean result) {
+								if (result.getValue()) {
+									iPageLoadingTimer.schedule(500);
+								} else {
+									LoadingWidget.hideLoading();
+								}
+							}
+						});
+					}
+				};
+				iPageLoadingTimer.schedule(500);
 			}
 		});
 	}

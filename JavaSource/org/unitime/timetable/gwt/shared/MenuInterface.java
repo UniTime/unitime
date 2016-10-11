@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseBoolean;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
@@ -267,5 +268,8 @@ public class MenuInterface implements IsSerializable {
 		
 		@Override
 		public String toString() { return iName; }
+	}
+	
+	public static class IsSessionBusyRpcRequest implements GwtRpcRequest<GwtRpcResponseBoolean> {
 	}
 }
