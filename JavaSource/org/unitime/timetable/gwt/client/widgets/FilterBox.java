@@ -625,7 +625,10 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			iButton = new HTML("&times;");
 			iButton.setStyleName("button");
 			add(iButton);
-			setTitle(toString());
+			if (chip.hasToolTip())
+				setTitle(toString() + "\n" + chip.getToolTip());
+			else
+				setTitle(toString());
 			Roles.getDocumentRole().setAriaHiddenState(getElement(), true);
 		}
 		
@@ -984,11 +987,13 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 					}
 					for (final Chip value: values) {
 						String html = SafeHtmlUtils.htmlEscape(value.getLabel());
-						if (value.hasToolTip())
-							html += "<span class='item-hint'>" + value.getToolTip() + "</span>";
-						else if (value.hasCount())
+						if (value.hasCount())
 							html += "<span class='item-hint'>(" + value.getCount() + ")</span>";
+						else if (value.hasToolTip())
+							html += "<span class='item-hint'>" + value.getToolTip() + "</span>";
 						HTML item = new HTML(html, false);
+						if (value.hasToolTip())
+							item.setTitle(value.getToolTip());
 						item.addStyleName("value");
 						item.addMouseDownHandler(new MouseDownHandler() {
 							@Override

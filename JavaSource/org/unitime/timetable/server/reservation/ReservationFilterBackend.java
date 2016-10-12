@@ -209,7 +209,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 					.set("x", request.getText().toLowerCase() + "%")
 					.order("co.subjectAreaAbbv, co.courseNbr")
 					.limit(20).query(hibSession).list()) {
-				response.addSuggestion(course.getCourseName(), course.getCourseName(), course.getTitle() == null ? "Course" : course.getTitle());
+				response.addSuggestion(course.getCourseName(), course.getCourseName(), course.getTitle() == null ? MESSAGES.reservationCourseAbbv() : course.getTitle());
 			}
 		}
 		
@@ -223,14 +223,14 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 				
 				for (CourseOffering course: reservation.getInstructionalOffering().getCourseOfferings()) {
 					if (subjects.contains(course.getSubjectArea())) {
-						suggestions.add(new Entity(0l, course.getCourseName(), course.getCourseName(), "hint", course.getTitle() == null ? "Course" : course.getTitle()));		
+						suggestions.add(new Entity(0l, course.getCourseName(), course.getCourseName(), "hint", course.getTitle() == null ? MESSAGES.reservationCourseAbbv() : course.getTitle()));
 					}
 				}
 				
 			}
 			
 			for (Entity suggestion: suggestions) {
-				response.addSuggestion(suggestion.getName(), suggestion.getName(), suggestion.getProperty("hint", "Course"));
+				response.addSuggestion(suggestion.getName(), suggestion.getName(), suggestion.getProperty("hint", MESSAGES.reservationCourseAbbv()));
 				if (response.getSuggestions().size() == 20) break;
 			}
 		}

@@ -182,7 +182,8 @@ public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Compo
 							.withLabel(entity.getName())
 							.withCount(entity.getCount())
 							.withTranslatedCommand(filter.getLabel())
-							.withTranslatedValue(entity.getProperty("translated-value", null));
+							.withTranslatedValue(entity.getProperty("translated-value", null))
+							.withToolTip(entity.getProperty("hint", null));
 					chips.add(chip);
 					if (!chip.getValue().equals(chip.getTranslatedValue()))
 						iFilter.getWidget().fixLabel(chip);

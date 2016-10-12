@@ -122,7 +122,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 						}
 						Entity feature = features.get(rf.getUniqueId());
 						if (feature == null) {
-							feature = new Entity(rf.getUniqueId(), rf.getAbbv(), rf.getLabel(), "translated-value", rf.getLabel());
+							feature = new Entity(rf.getUniqueId(), rf.getAbbv(), rf.getLabel(), "translated-value", rf.getLabel(), "hint", rf.getDescription());
 							features.put(feature.getUniqueId(), feature);
 						}
 						feature.incCount();
@@ -140,7 +140,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 				if (rg.isGlobal() || (departments != null && departments.contains(rg.getDepartment().getDeptCode()))) {
 					Entity group = groups.get(rg.getUniqueId());
 					if (group == null) {
-						group = new Entity(rg.getUniqueId(), rg.getAbbv(), rg.getName(), "translated-value", rg.getName());
+						group = new Entity(rg.getUniqueId(), rg.getAbbv(), rg.getName(), "translated-value", rg.getName(), "hint", rg.getDescription());
 						groups.put(group.getUniqueId(), group);
 					}
 					group.incCount();
@@ -337,9 +337,9 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 
 		Map<Long, Double> distances = new HashMap<Long, Double>();
 		for (Location location: locations(request.getSessionId(), request.getOptions(), new Query(suggestionQuery(request.getText())), 20, distances, null, context)) {
-			String hint = location.getRoomTypeLabel() + ", " + location.getCapacity() + " seats";
+			String hint = location.getRoomTypeLabel() + (location.getCapacity() == null ? "" : ", " + MESSAGES.hintRoomCapacity(location.getCapacity().toString()));
 			Double dist = distances.get(location.getUniqueId());
-			if (dist != null) hint += ", " + Math.round(dist) + " m";
+			if (dist != null) hint += ", " + MESSAGES.hintRoomDistance(String.valueOf(Math.round(dist)));
 			response.addSuggestion(location.getLabel(), location.getLabel(), "(" + hint + ")");
 		}
 	}
