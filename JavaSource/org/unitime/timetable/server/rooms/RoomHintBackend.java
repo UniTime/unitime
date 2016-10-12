@@ -29,6 +29,9 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.shared.RoomInterface.FeatureInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.FeatureTypeInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.GroupInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomHintRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomHintResponse;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
@@ -37,6 +40,7 @@ import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.LocationPicture;
+import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
@@ -83,16 +87,19 @@ public class RoomHintBackend implements GwtRpcImplementation<RoomHintRequest, Ro
 	    		response.setArea(new DecimalFormat(CONSTANTS.roomAreaFormat()).format(location.getArea()) + " " + (ApplicationProperty.RoomAreaUnitsMetric.isTrue() ? MSG.roomAreaMetricUnitsShort() : MSG.roomAreaUnitsShort()));
 
 	    	for (GlobalRoomFeature f: location.getGlobalRoomFeatures()) {
-	    		String type = (f.getFeatureType() == null ? MESSAGES.roomFeatures() : f.getFeatureType().getReference());
-	    		response.addFeature(type, f.getLabel());
+	    		FeatureInterface feature = new FeatureInterface(f.getUniqueId(), f.getAbbv(), f.getLabel());
+	    		feature.setDescription(f.getDescription());
+	    		RoomFeatureType t = f.getFeatureType();
+	    		if (t != null)
+	    			feature.setType(new FeatureTypeInterface(t.getUniqueId(), t.getReference(), t.getLabel(), t.isShowInEventManagement()));
+	    		response.addFeature(feature);
 	    	}
-	    	String groups = "";
+	    	
 	    	for (RoomGroup g: location.getGlobalRoomGroups()) {
-	    		if (!groups.isEmpty()) groups += ", ";
-	    		groups += g.getName();
+	    		GroupInterface group = new GroupInterface(g.getUniqueId(), g.getAbbv(), g.getName());
+	    		group.setDescription(g.getDescription());
+	    		response.addGroup(group);
 	    	}
-	    	if (!groups.isEmpty())
-	    		response.setGroups(groups);
 	    	
 	    	response.setEventStatus(location.getEventDepartment() == null ? null : location.getEffectiveEventStatus().toString());
 	    	response.setEventDepartment(location.getEventDepartment() == null ? MESSAGES.noEventDepartment() : location.getEventDepartment().getDeptCode() + " - " + location.getEventDepartment().getName());

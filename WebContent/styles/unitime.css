@@ -5197,3 +5197,21 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-FilterPanel .filter-middle {
 	display: block;
 }
+
+.unitime-RoomHint .groups .group {
+	display: inline-block;
+	padding-right: 3px;
+}
+
+.unitime-RoomHint .groups .group-des {
+	display: block;
+}
+
+.unitime-RoomHint .features .feature {
+	display: inline-block;
+	padding-right: 3px;
+}
+
+.unitime-RoomHint .features .feature-des {
+	display: block;
+}

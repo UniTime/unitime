@@ -20,14 +20,19 @@
 package org.unitime.timetable.gwt.client.rooms;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.GwtHint;
+import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.RoomInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.FeatureInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.GroupInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
 
 import com.google.gwt.core.client.GWT;
@@ -48,6 +53,7 @@ public class RoomHint {
 	private static long sLastLocationId = -1;
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
+	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static boolean sShowHint = false;
 	private static Timer sLastSwapper = null;
 	
@@ -96,13 +102,56 @@ public class RoomHint {
 		
 		if (room.hasArea())
 			form.addRow(MESSAGES.propRoomArea(), new HTML(room.getArea(), false));
+		
+		if (room.hasFeatures(null)) {
+			P features = new P("features");
+			for (Iterator<FeatureInterface> i = room.getFeatures(null).iterator(); i.hasNext(); ) {
+				FeatureInterface feature = i.next();
+				P f = new P();
+				if (feature.hasDescription()) {
+					f.setText(MESSAGES.hintRoomFeatureWithDescription(feature.getLabel(), feature.getDescription()));
+					f.addStyleName("feature-des");
+				} else {
+					f.setText(feature.getLabel() + (i.hasNext() ? CONSTANTS.itemSeparator() : ""));
+					f.addStyleName("feature");
+				}
+				features.add(f);
+			}
+			form.addRow(MESSAGES.propFeatures(), features);
+		}
+		for (String type: room.getFeatureTypes()) {
+			P features = new P("features");
+			for (Iterator<FeatureInterface> i = room.getFeatures(type).iterator(); i.hasNext(); ) {
+				FeatureInterface feature = i.next();
+				P f = new P();
+				if (feature.hasDescription()) {
+					f.setText(MESSAGES.hintRoomFeatureWithDescription(feature.getLabel(), feature.getDescription()));
+					f.addStyleName("feature-des");
+				} else {
+					f.setText(feature.getLabel() + (i.hasNext() ? CONSTANTS.itemSeparator() : ""));
+					f.addStyleName("feature");
+				}
+				features.add(f);
+			}
+			form.addRow(type, features);
+		}
 
-		if (room.hasFeatures())
-			for (String name: room.getFeatureNames())
-				form.addRow(name + ":", new Label(room.getFeatures(name)));
-
-		if (room.hasGroups())
-			form.addRow(MESSAGES.propRoomGroups(), new Label(room.getGroups()));
+		if (room.hasGroups()) {
+			P groups = new P("groups");
+			for (Iterator<GroupInterface> i = room.getGroups().iterator(); i.hasNext(); ) {
+				GroupInterface group = i.next();
+				P g = new P();
+				if (group.hasDescription()) {
+					g.setText(MESSAGES.hintRoomFeatureWithDescription(group.getLabel(), group.getDescription()));
+					g.addStyleName("group-des");
+				} else {
+					g.setText(group.getLabel() + (i.hasNext() ? CONSTANTS.itemSeparator() : ""));
+					g.addStyleName("group");
+				}
+				groups.add(g);
+			}
+			form.addRow(MESSAGES.propRoomGroups(), groups);
+		}
 		
 		if (room.hasEventStatus())
 			form.addRow(MESSAGES.propRoomEventStatus(), new Label(room.getEventStatus()));

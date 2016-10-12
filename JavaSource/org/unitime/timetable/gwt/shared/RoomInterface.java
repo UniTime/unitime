@@ -419,13 +419,13 @@ public class RoomInterface implements IsSerializable {
 		private Integer iCapacity = null, iExamCapacity = null, iBreakTime = null;
 		private String iExamType = null;
 		private String iArea = null;
-		private String iGroups = null;
+		private List<GroupInterface> iGroups = null;
 		private String iEventStatus = null;
 		private String iEventDepartment = null;
 		private String iNote = null;
 		private boolean iIgnoreRoomCheck = false;
 		
-		private Map<String, String> iFeatures = null;
+		private List<FeatureInterface> iFeatures = null;
 		private List<RoomPictureInterface> iPictures = null;
 		
 		public RoomHintResponse() {
@@ -466,22 +466,45 @@ public class RoomInterface implements IsSerializable {
 		public boolean hasArea() { return iArea != null && !iArea.isEmpty(); }
 		
 		public boolean hasFeatures() { return iFeatures != null && !iFeatures.isEmpty(); }
-		public void addFeature(String type, String name) {
-			if (iFeatures == null) iFeatures = new HashMap<String, String>();
-			String featuresThisType = iFeatures.get(type);
-    		if (featuresThisType == null) {
-    			featuresThisType = "";
-    		} else {
-    			featuresThisType += ", ";
-    		}
-    		featuresThisType += name;
-    		iFeatures.put(type, featuresThisType);
+		public void addFeature(FeatureInterface feature) {
+			if (iFeatures == null) iFeatures = new ArrayList<FeatureInterface>();
+			iFeatures.add(feature);
 		}
-		public Set<String> getFeatureNames() { return new TreeSet<String>(iFeatures.keySet()); }
-		public String getFeatures(String name) { return iFeatures.get(name); }
+		public Set<String> getFeatureTypes() {
+			Set<String> types = new TreeSet<String>();
+			if (iFeatures != null)
+				for (FeatureInterface feature: iFeatures)
+					if (feature.hasType())
+						types.add(feature.getType().getLabel());
+			return types;
+		}
+		public List<FeatureInterface> getFeatures(String type) {
+			List<FeatureInterface> features = new ArrayList<FeatureInterface>();
+			if (iFeatures != null)
+				for (FeatureInterface feature: iFeatures)
+					if (type == null && !feature.hasType()) {
+						features.add(feature);
+					} else if (type != null && feature.hasType() && type.equals(feature.getType().getLabel())) {
+						features.add(feature);
+					}
+			return features;
+		}
+		public boolean hasFeatures(String type) {
+			if (iFeatures != null)
+				for (FeatureInterface feature: iFeatures)
+					if (type == null && !feature.hasType()) {
+						return true;
+					} else if (type != null && feature.hasType() && type.equals(feature.getType().getLabel())) {
+						return true;
+					}
+			return false;
+		}
 		
-		public String getGroups() { return iGroups; }
-		public void setGroups(String groups) { iGroups = groups; }
+		public List<GroupInterface> getGroups() { return iGroups; }
+		public void addGroup(GroupInterface group) {
+			if (iGroups == null) iGroups = new ArrayList<GroupInterface>();
+			iGroups.add(group);
+		}
 		public boolean hasGroups() { return iGroups != null && !iGroups.isEmpty(); }
 
 		public String getEventStatus() { return iEventStatus; }

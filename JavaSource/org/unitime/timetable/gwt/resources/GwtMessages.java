@@ -3374,6 +3374,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("{0} m")
 	String hintRoomDistance(String distanceInMeters);
 	
+	@DefaultMessage("{0}: {1}")
+	String hintRoomFeatureWithDescription(String label, String description);
+	
+	@DefaultMessage("{0}: {1}")
+	String hintRoomGroupWithDescription(String label, String description);
+	
 	@DefaultMessage("Press ENTER or double click a standard note to add it to additional information.")
 	String hintStandardNoteDoubleClickToSelect();
 	
