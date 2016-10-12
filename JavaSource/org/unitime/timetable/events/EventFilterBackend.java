@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.hibernate.type.LongType;
+import org.hibernate.type.StringType;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -53,6 +55,7 @@ import org.unitime.timetable.model.UnavailableEvent;
 import org.unitime.timetable.model.DepartmentStatusType.Status;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.UserQualifier;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
@@ -232,6 +235,13 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 			query.addParameter("xstatus", "XstClass", Status.ReportClasses.toInt());
 			query.addParameter("xstatus", "XstFinal", Status.ReportExamsFinal.toInt());
 			query.addParameter("xstatus", "XstMidtr", Status.ReportExamsMidterm.toInt());
+		} else if (ApplicationProperty.EventHasRoleCheckReportStatus.isTrue() && !context.hasPermission(Right.DepartmentIndependent) && !context.hasPermission(Right.StatusIndependent)) {
+			List<Long> departmentIds = new ArrayList<Long>();
+			for (UserQualifier q: context.getUser().getCurrentAuthority().getQualifiers("Department"))
+				departmentIds.add((Long)q.getQualifierId());
+			query.addWhere("xstatus", "(e.class != ClassEvent or bit_and(s.statusType.status, :XstClass) > 0 or e.departmentId in :XstDepts)");
+			query.addParameter("xstatus", "XstClass", Status.ReportClasses.toInt());
+			query.addParameter("xstatus", "XstDepts", departmentIds);
 		}
 		
 		if (request.getText() != null && !request.getText().isEmpty()) {
@@ -530,6 +540,14 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 						query.setBoolean(param.getKey(), (Boolean)param.getValue());
 					} else if (param.getValue() instanceof Date) {
 						query.setDate(param.getKey(), (Date)param.getValue());
+					} else if (param.getValue() instanceof List) {
+						List<?> list = (List<?>)param.getValue();
+						if (!list.isEmpty() && list.get(0) instanceof Long)
+							query.setParameterList(param.getKey(), list, new LongType());
+						else if (!list.isEmpty() && list.get(0) instanceof String)
+							query.setParameterList(param.getKey(), list, new StringType());
+						else
+							query.setParameterList(param.getKey(), list);
 					} else {
 						query.setString(param.getKey(), param.getValue().toString());
 					}

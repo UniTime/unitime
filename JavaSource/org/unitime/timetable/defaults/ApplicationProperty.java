@@ -1185,6 +1185,12 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Event ICS Calendar: set main contact as organizer")
 	EventCalendarSetOrganizer("unitime.events.ics_set_organizer"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Events: departmental managers can only see class events of their department(s) until the schedule is published (academic session status includes no-role class schedule)")
+	@Since(4.2)
+	EventHasRoleCheckReportStatus("unitime.events.hasRole.checkSessionStatusForClasses"),
 
 	@Type(Class.class)
 	@Implements(Email.class)
