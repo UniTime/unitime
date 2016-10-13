@@ -239,7 +239,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 			List<Long> departmentIds = new ArrayList<Long>();
 			for (UserQualifier q: context.getUser().getCurrentAuthority().getQualifiers("Department"))
 				departmentIds.add((Long)q.getQualifierId());
-			query.addWhere("xstatus", "(e.class != ClassEvent or bit_and(s.statusType.status, :XstClass) > 0 or e.departmentId in :XstDepts)");
+			query.addWhere("xstatus", "(e.class != ClassEvent or bit_and(s.statusType.status, :XstClass) > 0 or e.departmentId in (:XstDepts))");
 			query.addParameter("xstatus", "XstClass", Status.ReportClasses.toInt());
 			query.addParameter("xstatus", "XstDepts", departmentIds);
 		}
