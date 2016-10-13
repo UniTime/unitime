@@ -113,8 +113,11 @@ public class RoomHint {
 		if (room.hasBreakTime())
 			form.addRow(MESSAGES.propRoomBreakTime(), new Label(MESSAGES.breakTime(room.getBreakTime().toString())));
 				
-		if (room.hasNote())
-			form.addRow(new HTML(room.getNote()));
+		if (room.hasNote()) {
+			HTML note = new HTML(room.getNote());
+			note.addStyleName("note");
+			form.addRow(note);
+		}
 		
 		if (room.isIgnoreRoomCheck())
 			form.addRow(new HTML(MESSAGES.ignoreRoomCheck()));

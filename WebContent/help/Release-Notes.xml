@@ -84,6 +84,13 @@
 				<line>The related permission check requires for the user to either also have the Class Detail permission for the class in question, or that the user is listed among the course coordinators or instructors of the class.</line>
 			</description>
 		</item>
+		<item>
+			<name>Events, Room Availability: Display Room Event Note</name>
+			<description>
+				<line>Display the room note on the top of the room grid on the Events and Room Availability pages (when showing a time grid for a single room).</line>
+				<line>Use white-space:pre-wrap for the room note (follow \n, but wrap the long lines if needed).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Batch Student Scheduling</title>

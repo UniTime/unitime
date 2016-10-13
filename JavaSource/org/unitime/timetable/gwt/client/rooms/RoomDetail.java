@@ -216,6 +216,7 @@ public class RoomDetail extends Composite {
 		}
 		if (events && (iRoom.hasEventNote() || iRoom.hasDefaultEventNote())) {
 			HTML note = new HTML(iRoom.hasEventNote() ? iRoom.getEventNote() : iRoom.getDefaultEventNote());
+			note.addStyleName("note");
 			if (!iRoom.hasEventNote()) note.addStyleName("default");
 			iForm.addRow(MESSAGES.propEventNote(), note, 1);
 		}

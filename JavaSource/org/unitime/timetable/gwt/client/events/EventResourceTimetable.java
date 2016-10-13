@@ -563,6 +563,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				HashMap<Long, String> colors = new HashMap<Long, String>();
 				
 				final TimeGrid tg = new TimeGrid(colors, days, (int)(1000 / nrDays), 55, true, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18), EventResourceTimetable.this);
+				tg.setShowRoomNote(true);
 				tg.setResourceType(getResourceType());
 				tg.setSelectedWeeks(iWeekPanel.getSelected());
 				tg.setRoomResources(iRoomPanel.getSelected());
@@ -1003,6 +1004,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				iTimeGrid.destroy();
 			}
 			iTimeGrid = new TimeGrid(colors, days, (int)(0.9 * ToolBox.getClientWidth() / nrDays), false, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18), this);
+			iTimeGrid.setShowRoomNote(true);
 			iTimeGrid.addMeetingClickHandler(iMeetingClickHandler);
 
 			iTimeGrid.clear();
