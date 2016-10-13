@@ -150,6 +150,15 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Edit Roles: Fixed Delete</name>
+			<description>
+				<line>Edit Roles (bulk edit page for user roles) did not delete roles that were marked for deletion.</line>
+			</description>
+		</item>
+	</category>	
 </release>
 
 <release>

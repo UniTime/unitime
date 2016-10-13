@@ -83,6 +83,7 @@ public class UserRoles implements AdminTable {
 		for (Roles role: RolesDAO.getInstance().findAll()) {
 			Record r = data.getRecord(role.getRoleId());
 			if (r == null) {
+				delete(role, context, hibSession);
 			} else
 				update(role, r, context, hibSession);
 		}
