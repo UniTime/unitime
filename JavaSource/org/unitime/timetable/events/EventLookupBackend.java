@@ -2223,8 +2223,10 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					}
 					
 					if (arrageHourClasses != null) {
+						boolean checkDepartment = (ApplicationProperty.EventHasRoleCheckReportStatus.isTrue() && !context.hasPermission(Right.DepartmentIndependent) && !context.hasPermission(Right.StatusIndependent) && !session.canNoRoleReportClass());
+
 						 for (Class_ clazz: arrageHourClasses) {
-							 
+							 if (checkDepartment && !context.getUser().getCurrentAuthority().hasQualifier(clazz.getControllingDept())) continue;
 							 EventInterface event = new EventInterface();
 								event.setId(-clazz.getUniqueId());
 								event.setName(clazz.getClassLabel(hibSession));

@@ -91,6 +91,16 @@
 				<line>Use white-space:pre-wrap for the room note (follow \n, but wrap the long lines if needed).</line>
 			</description>
 		</item>
+		<item>
+			<name>Events: Display of Class Events</name>
+			<description>
+				<line>
+					It is now possible to restrict departmental managers to only see class events of their department(s) until the schedule is published.
+					That is until the session status includes no-role class schedule (e.g., Timetable Published).
+				</line>
+				<line>Set unitime.events.hasRole.checkSessionStatusForClasses to true to enable this restriction (default is false, i.e., work as before).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Batch Student Scheduling</title>
