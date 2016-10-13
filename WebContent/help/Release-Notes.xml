@@ -25,7 +25,7 @@
 <doc-title>UniTime 3.5 Release Notes</doc-title>
 
 <release>
-	<version>4.0.${build.number}</version>
+	<version>3.5.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
 		<title>Bug Fixes</title>
