@@ -69,4 +69,9 @@ public class RoomGroupPref extends BaseRoomGroupPref {
 	}
 	
 	public Type getType() { return Type.ROOM_GROUP; }
+	
+	@Override
+	public String preferenceDescription() {
+		return getRoomGroup().getDescription();
+	}
 }

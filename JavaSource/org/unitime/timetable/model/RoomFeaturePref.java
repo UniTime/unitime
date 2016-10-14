@@ -80,4 +80,9 @@ public class RoomFeaturePref extends BaseRoomFeaturePref {
 	}
 	
 	public Type getType() { return Type.ROOM_FEATURE; }
+	
+	@Override
+	public String preferenceDescription() {
+		return getRoomFeature().getDescription();
+	}
 }

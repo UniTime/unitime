@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import org.springframework.web.util.HtmlUtils;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -98,6 +99,10 @@ public abstract class Preference extends BasePreference implements Comparable {
 		return preferenceHtml(nameFormat, ApplicationProperty.PreferencesHighlighClassPreferences.isTrue());
 	}
 	
+	public String preferenceDescription() {
+		return null;
+	}
+	
 	public String preferenceHtml(String nameFormat, boolean highlightClassPrefs) {
     	StringBuffer sb = new StringBuffer("<span ");
     	String style = "font-weight:bold;";
@@ -122,7 +127,11 @@ public abstract class Preference extends BasePreference implements Comparable {
 		} else if (getOwner() != null && getOwner() instanceof Session) {
 			owner = " (" + MSG.prefOwnerSession() + ")";
 		}
-		sb.append("onmouseover=\"showGwtHint(this, '" + preferenceTitle(nameFormat) + owner + "');\" onmouseout=\"hideGwtHint();\">");
+		String hint = HtmlUtils.htmlEscape(preferenceTitle(nameFormat) + owner);
+		String description = preferenceDescription();
+		if (description != null && !description.isEmpty())
+			hint += "<br>" + HtmlUtils.htmlEscape(description.replace("\'", "\\\'")).replace("\n", "<br>");
+		sb.append("onmouseover=\"showGwtHint(this, '" + hint + "');\" onmouseout=\"hideGwtHint();\">");
 		
 		sb.append(this.preferenceAbbv(nameFormat));
 		sb.append("</span>");
