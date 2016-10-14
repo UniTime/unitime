@@ -66,7 +66,7 @@ public class AcademicClassifications implements AdminTable {
 			r.setField(0, clasf.getExternalUniqueId());
 			r.setField(1, clasf.getCode());
 			r.setField(2, clasf.getName());
-			r.setDeletable(clasf.getExternalUniqueId() == null);
+			r.setDeletable(clasf.getExternalUniqueId() == null && !clasf.isUsed(hibSession));
 		}
 		data.setEditable(context.hasPermission(Right.AcademicClassificationEdit));
 		return data;

@@ -79,7 +79,7 @@ public class Majors implements AdminTable {
 			r.setField(0, major.getExternalUniqueId());
 			r.setField(1, major.getCode());
 			r.setField(2, major.getName());
-			r.setDeletable(major.getExternalUniqueId() == null);
+			r.setDeletable(major.getExternalUniqueId() == null && !major.isUsed(hibSession));
 			for (AcademicArea area: major.getAcademicAreas())
 				r.setField(3, area.getUniqueId().toString());
 		}

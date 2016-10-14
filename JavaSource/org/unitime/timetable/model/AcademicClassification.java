@@ -162,4 +162,11 @@ public class AcademicClassification extends BaseAcademicClassification {
     	c.setName(getName());
     	return c;
     }
+    
+    public boolean isUsed(org.hibernate.Session hibSession) {
+    	return ((Number)(hibSession == null ? AcademicClassificationDAO.getInstance().getSession() : hibSession).createQuery(
+    			"select count(c) from CurriculumClassification c inner join c.academicClassification f where f.uniqueId = :clasfId")
+    			.setLong("clasfId", getUniqueId()).setCacheable(true).uniqueResult()).intValue() > 0;
+    }
+    
 }

@@ -141,5 +141,10 @@ public class AcademicArea extends BaseAcademicArea {
     	area.setTitle(getTitle());
     	return area;
     }
-        
+    
+    public boolean isUsed(org.hibernate.Session hibSession) {
+    	return ((Number)(hibSession == null ? AcademicAreaDAO.getInstance().getSession() : hibSession).createQuery(
+    			"select count(c) from Curriculum c inner join c.academicArea a where a.uniqueId = :areaId")
+    			.setLong("areaId", getUniqueId()).setCacheable(true).uniqueResult()).intValue() > 0;
+    }
 }

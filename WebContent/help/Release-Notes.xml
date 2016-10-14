@@ -158,6 +158,13 @@
 				<line>Edit Roles (bulk edit page for user roles) did not delete roles that were marked for deletion.</line>
 			</description>
 		</item>
+		<item>
+			<name>Academic Areas, Classifications, Majors: Delete</name>
+			<description>
+				<line>Do not allow an academic area, a classification, or a major to be deleted when it is being used (there is a curriculum associated with it).</line>
+				<line>When an academic area is deleted, delete all orphaned majors and minors as well.</line>
+			</description>
+		</item>
 	</category>	
 </release>
 
