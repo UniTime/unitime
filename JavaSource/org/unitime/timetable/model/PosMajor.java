@@ -153,4 +153,10 @@ public class PosMajor extends BasePosMajor {
     	m.setName(getName());
     	return m;
     }
+    
+    public boolean isUsed(org.hibernate.Session hibSession) {
+    	return ((Number)(hibSession == null ? PosMajorDAO.getInstance().getSession() : hibSession).createQuery(
+    			"select count(c) from Curriculum c inner join c.majors m where m.uniqueId = :majorId")
+    			.setLong("majorId", getUniqueId()).setCacheable(true).uniqueResult()).intValue() > 0;
+    }
 }

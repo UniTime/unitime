@@ -20,6 +20,8 @@
 package org.unitime.timetable.server.admin;
 
 
+import java.util.Iterator;
+
 import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,6 +38,8 @@ import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ChangeLog.Operation;
 import org.unitime.timetable.model.ChangeLog.Source;
+import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.dao.AcademicAreaDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -67,7 +71,7 @@ public class AcademicAreas implements AdminTable {
 			r.setField(0, area.getExternalUniqueId());
 			r.setField(1, area.getAcademicAreaAbbreviation());
 			r.setField(2, area.getTitle());
-			r.setDeletable(area.getExternalUniqueId() == null);
+			r.setDeletable(area.getExternalUniqueId() == null && !area.isUsed(hibSession));
 		}
 		data.setEditable(context.hasPermission(Right.AcademicAreaEdit));
 		return data;
@@ -142,6 +146,24 @@ public class AcademicAreas implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
+		for (Iterator<PosMajor> i = area.getPosMajors().iterator(); i.hasNext(); ) {
+			PosMajor m = i.next();
+			i.remove();
+			m.getAcademicAreas().remove(area);
+			if (m.getAcademicAreas().isEmpty())
+				hibSession.delete(m);
+			else
+				hibSession.update(m);
+		}
+		for (Iterator<PosMinor> i = area.getPosMinors().iterator(); i.hasNext(); ) {
+			PosMinor m = i.next();
+			i.remove();
+			m.getAcademicAreas().remove(area);
+			if (m.getAcademicAreas().isEmpty())
+				hibSession.delete(m);
+			else
+				hibSession.update(m);
+		}
 		hibSession.delete(area);
 	}
 
