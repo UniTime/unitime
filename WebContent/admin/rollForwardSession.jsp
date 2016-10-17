@@ -58,7 +58,7 @@
 			<tt:section-header>
 				<tt:section-title>Roll Forward(s) In Progress</tt:section-title>
 				<%--
-				<html:submit property="op" accesskey="R" styleClass="btn" onclick="displayElement('loading', true);">Refresh</html:submit>
+				<html:submit property="op" accesskey="R" styleClass="btn" onclick="displayLoading();">Refresh</html:submit>
 				--%>
 			</tt:section-header>
 		</TD></TR>
@@ -93,14 +93,14 @@
 	<TR><TD>
 		<tt:section-header>
 			<tt:section-title>Roll Forward Actions</tt:section-title>
-					<html:submit property="op" accesskey="M" styleClass="btn" onclick="displayElement('loading', true);">
+					<html:submit property="op" accesskey="M" styleClass="btn" onclick="displayLoading();">
 					<bean:message key="button.rollForward" />
 				</html:submit>
 		</tt:section-header>
 	</TD></TR>
 		<tr>
 			<td valign="middle" nowrap ><b>Session To Roll Forward To: </b>
-			<html:select style="width:200px;" property="sessionToRollForwardTo" onchange="displayElement('loading', true);submit();">
+			<html:select style="width:200px;" property="sessionToRollForwardTo" onchange="displayLoading();submit();">
 			<html:optionsCollection property="toSessions" value="uniqueId" label="label"  /></html:select>
 			</td>			
 		</tr>
@@ -362,7 +362,7 @@
 		</tr>
 		<tr>
 			<td align="right">
-					<html:submit property="op" accesskey="M" styleClass="btn" onclick="displayElement('loading', true);">
+					<html:submit property="op" accesskey="M" styleClass="btn" onclick="displayLoading();">
 						<bean:message key="button.rollForward" />
 					</html:submit>
 			</TD>
