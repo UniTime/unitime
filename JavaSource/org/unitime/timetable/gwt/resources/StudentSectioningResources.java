@@ -163,4 +163,7 @@ public interface StudentSectioningResources extends ClientBundle {
 
 	@Source("org/unitime/timetable/gwt/resources/icons/alert.png")
 	ImageResource statusError();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/finder_assigned.png")
+	ImageResource finderAssigned();
 }

@@ -1391,4 +1391,19 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Class Schedule")
 	String headerClassSchedule();
+	
+	@DefaultMessage("Course")
+	String hintCourseWithNoTitle();
+	
+	@DefaultMessage("Free Time")
+	String hintFreeTimeRequest();
+	
+	@DefaultMessage("Instructional Method")
+	String hintInstructionalMethod();
+	
+	@DefaultMessage("method")
+	String tagInstructionalMethod();
+	
+	@DefaultMessage("section")
+	String tagSection();
 }

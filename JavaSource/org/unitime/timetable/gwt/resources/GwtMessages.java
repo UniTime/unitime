@@ -4351,6 +4351,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("The current filter value is the default.")
 	String altStarFilterSelected();
 	
+	@DefaultMessage("Clear course request")
+	String altClearCourseRequest();
+	
 	@DefaultMessage("Password")
 	@DoNotTranslate
 	String pageChangePassword();

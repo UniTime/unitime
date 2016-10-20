@@ -296,6 +296,8 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public String getSection() { return iSection; }
 		public void setSection(String section) { iSection = section; }
+		
+		public String getSelection() { return iSection.length() <= 4 ? iSubpart + " " + iSection : iSection; }
 
 		public String getParentSection() { return iParentSection; }
 		public void setParentSection(String parentSection) { iParentSection = parentSection; }

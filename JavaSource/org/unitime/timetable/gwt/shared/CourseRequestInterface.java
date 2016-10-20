@@ -209,8 +209,8 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		private String iCourseName;
 		private Boolean iReadOnly = null;
 		private List<FreeTime> iFreeTime;
-		private Set<Long> iSelectedIntructionalMethods;
-		private Set<Long> iSelectedClasses;
+		private Set<String> iSelectedIntructionalMethods;
+		private Set<String> iSelectedClasses;
 		
 		public RequestedCourse() {}
 		public RequestedCourse(List<FreeTime> freeTime) {
@@ -243,37 +243,37 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public boolean isEmpty() { return !isCourse() && !isFreeTime(); }
 		
 		public boolean hasSelectedIntructionalMethods() { return iSelectedIntructionalMethods != null && !iSelectedIntructionalMethods.isEmpty(); }
-		public Set<Long> getSelectedIntructionalMethods() { return iSelectedIntructionalMethods; }
-		public void setSelectedIntructionalMethod(Long id, boolean value) {
-			if (iSelectedIntructionalMethods == null) iSelectedIntructionalMethods = new HashSet<Long>();
+		public Set<String> getSelectedIntructionalMethods() { return iSelectedIntructionalMethods; }
+		public void setSelectedIntructionalMethod(String id, boolean value) {
+			if (iSelectedIntructionalMethods == null) iSelectedIntructionalMethods = new HashSet<String>();
 			if (value)
 				iSelectedIntructionalMethods.add(id);
 			else
 				iSelectedIntructionalMethods.remove(id);
 		}
-		public boolean isSelectedIntructionalMethod(Long id) {
+		public boolean isSelectedIntructionalMethod(String id) {
 			if (iSelectedIntructionalMethods == null) return false;
 			return iSelectedIntructionalMethods.contains(id);
 		}
 		
 		public boolean hasSelectedClasses() { return iSelectedClasses != null && !iSelectedClasses.isEmpty(); }
-		public Set<Long> getSelectedClasses() { return iSelectedClasses; }
-		public void setSelectedClasses(Set<Long> classes) { 
+		public Set<String> getSelectedClasses() { return iSelectedClasses; }
+		public void setSelectedClasses(Set<String> classes) { 
 			if (iSelectedClasses == null)
-				iSelectedClasses = new HashSet<Long>();
+				iSelectedClasses = new HashSet<String>();
 			else
 				iSelectedClasses.clear();
 			if (classes != null)
 				iSelectedClasses.addAll(classes);
 		}
-		public void setSelectedClass(Long id, boolean value) {
-			if (iSelectedClasses == null) iSelectedClasses = new HashSet<Long>();
+		public void setSelectedClass(String id, boolean value) {
+			if (iSelectedClasses == null) iSelectedClasses = new HashSet<String>();
 			if (value)
 				iSelectedClasses.add(id);
 			else
 				iSelectedClasses.remove(id);
 		}
-		public boolean isSelectedClass(Long id) {
+		public boolean isSelectedClass(String id) {
 			if (iSelectedClasses == null) return false;
 			return iSelectedClasses.contains(id);
 		}
@@ -285,7 +285,11 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		
 		@Override
 		public String toString() {
-			if (isCourse()) return getCourseName();
+			if (isCourse()) {
+				return getCourseName() +
+						(hasSelectedIntructionalMethods() ? " method:" + getSelectedIntructionalMethods() : "") +
+						(hasSelectedClasses() ? " section:" + getSelectedClasses() : "");
+			}
 			if (isFreeTime()) {
 				String ret = "";
 				for (FreeTime ft: getFreeTime())

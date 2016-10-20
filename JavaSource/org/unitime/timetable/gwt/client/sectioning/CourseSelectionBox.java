@@ -28,7 +28,7 @@ import org.unitime.timetable.gwt.client.widgets.CourseFinderDetails;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderDialog;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderFactory;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderFreeTime;
-import org.unitime.timetable.gwt.client.widgets.CourseSelectionSuggestBox;
+import org.unitime.timetable.gwt.client.widgets.CourseRequestBox;
 import org.unitime.timetable.gwt.client.widgets.DataProvider;
 import org.unitime.timetable.gwt.client.widgets.FreeTimeParser;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
@@ -49,7 +49,7 @@ import com.google.gwt.user.client.ui.CheckBox;
 /**
  * @author Tomas Muller
  */
-public class CourseSelectionBox extends CourseSelectionSuggestBox {
+public class CourseSelectionBox extends CourseRequestBox {
 	public static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
@@ -65,7 +65,7 @@ public class CourseSelectionBox extends CourseSelectionSuggestBox {
 	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
 	
 	public CourseSelectionBox(AcademicSessionProvider acadSession, boolean enabled, boolean allowFreeTime) {
-		super(CONSTANTS.showCourseTitle(), CONSTANTS.courseFinderSuggestWhenEmpty());
+		super(CONSTANTS.showCourseTitle());
 		iAcademicSessionProvider = acadSession;
 		
 		if (allowFreeTime) {
@@ -117,6 +117,12 @@ public class CourseSelectionBox extends CourseSelectionSuggestBox {
 				iSectioningService.listCourseOfferings(iAcademicSessionProvider.getAcademicSessionId(), source, 20, callback);
 			}
 		});
+		setSectionsProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
+			@Override
+			public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {
+				iSectioningService.listClasses(iAcademicSessionProvider.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
+			}
+		});
 	}
 	
 	public void setNext(CourseSelectionBox next) { iNext = next; }
@@ -133,8 +139,6 @@ public class CourseSelectionBox extends CourseSelectionSuggestBox {
 		hideSuggestionList();
 		other.hideSuggestionList();
 		String x = getError(); setError(other.getError()); other.setError(x);
-		boolean b = isEnabled(); setEnabled(other.isEnabled()); other.setEnabled(b);
-		boolean s = isSaved(); setSaved(other.isSaved()); other.setSaved(s);
 		if (iPrimary != null) {
 			x = getHint();
 			setHint(other.getHint());
@@ -143,6 +147,7 @@ public class CourseSelectionBox extends CourseSelectionSuggestBox {
 		RequestedCourse y = getValue();
 		setValue(other.getValue(), false);
 		other.setValue(y, false);
+		boolean b = isEnabled(); setEnabled(other.isEnabled()); other.setEnabled(b);
 		if (iAlternative!=null) iAlternative.swapWith(other.iAlternative);
 		if (iWaitList != null && other.iWaitList != null) {
 			Boolean ch = iWaitList.getValue(); iWaitList.setValue(other.iWaitList.getValue()); other.iWaitList.setValue(ch);

@@ -317,22 +317,12 @@
 		white-space: normal;
 	}
 
-	.unitime-CourseRequests .line .course .gwt-SuggestBox {
-		width: 32vw;
-		min-width: 170px;
-	}
-	
-	.unitime-CourseRequests .line .course .unitime-TextBoxHint {
+	.unitime-CourseRequests .line .course .unitime-FilterBox {
 		width: 32vw;
 		min-width: 170px;
 	}
 
-	.unitime-CourseRequests .line .alternative .gwt-SuggestBox {
-		width: 19vw;
-		min-width: 100px;
-	}
-
-	.unitime-CourseRequests .line .alternative .unitime-TextBoxHint {
+	.unitime-CourseRequests .line .alternative .unitime-FilterBox {
 		width: 19vw;
 		min-width: 100px;
 	}

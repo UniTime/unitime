@@ -78,8 +78,8 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 	private CourseFinderCourseDetails[] iDetails = null;
 	private String iLastQuery = null;
 	private P iInstructionalMethodsPanel = null;
-	private Map<Long, CheckBox> iInstructionalMethods = new HashMap<Long, CheckBox>();
-	private Set<Long> iSelectedMethods = new HashSet<Long>();
+	private Map<String, CheckBox> iInstructionalMethods = new HashMap<String, CheckBox>();
+	private Set<String> iSelectedMethods = new HashSet<String>();
 	
 	private boolean iShowCourseTitles = false, iShowDefaultSuggestions = false;
 	
@@ -185,7 +185,7 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 		rc.setCourseName(MESSAGES.courseName(record.getSubject(), record.getCourseNbr()));
 		if (record.hasTitle() && (!record.hasUniqueName() || iShowCourseTitles))
 			rc.setCourseName(MESSAGES.courseNameWithTitle(record.getSubject(), record.getCourseNbr(), record.getTitle()));
-		for (Map.Entry<Long, CheckBox> e: iInstructionalMethods.entrySet())
+		for (Map.Entry<String, CheckBox> e: iInstructionalMethods.entrySet())
 			if (e.getValue().isEnabled() && e.getValue().getValue())
 				rc.setSelectedIntructionalMethod(e.getKey(), true);
 		if (iDetails != null)
@@ -198,9 +198,14 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 	public void setValue(RequestedCourse value, final boolean fireEvents) {
 		String query = (value == null || !value.isCourse() ? "" : value.getCourseName());
 		iSelectedMethods.clear();
+		for (CheckBox ch: iInstructionalMethods.values())
+			if (ch.isEnabled()) ch.setValue(false);
 		if (value.hasSelectedIntructionalMethods())
-			for (Long id: value.getSelectedIntructionalMethods())
+			for (String id: value.getSelectedIntructionalMethods()) {
 				iSelectedMethods.add(id);
+				CheckBox ch = iInstructionalMethods.get(id);
+				if (ch != null && ch.isEnabled()) ch.setValue(true);
+			}
 		if (iDetails != null)
 			for (CourseFinderCourseDetails d: iDetails)
 				d.onSetValue(value);
@@ -327,13 +332,13 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 						@Override
 						public void onValueChange(ValueChangeEvent<Boolean> event) {
 							if (event.getValue())
-								iSelectedMethods.add(m.getId());
+								iSelectedMethods.add(m.getValue());
 							else
-								iSelectedMethods.remove(m.getId());
+								iSelectedMethods.remove(m.getValue());
 						}
 					});
 					ch.addStyleName("instructional-method");
-					iInstructionalMethods.put(m.getId(), ch);
+					iInstructionalMethods.put(m.getValue(), ch);
 					iInstructionalMethodsPanel.add(ch);
 				}
 			} else if (record.hasInstructionalMethods()) {
@@ -341,7 +346,7 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 					CheckBox ch = new CheckBox(m.getValue());
 					ch.addStyleName("instructional-method");
 					ch.setValue(true); ch.setEnabled(false);
-					iInstructionalMethods.put(m.getId(), ch);
+					iInstructionalMethods.put(m.getValue(), ch);
 					iInstructionalMethodsPanel.add(ch);
 				}
 			}
