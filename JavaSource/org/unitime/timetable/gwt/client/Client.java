@@ -25,6 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.unitime.timetable.gwt.client.page.UniTimeMenu;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseBoolean;
@@ -171,6 +172,7 @@ public class Client implements EntryPoint {
 				if (loading != null) loading.setVisible(false);
 				RootPanel.get("UniTimeGWT:Body").add(error);
 				LoadingWidget.getInstance().hide();
+				UniTimeNotifications.error(MESSAGES.failedToLoadPage(reason.getMessage()), reason);
 			}
 		});
 	}
@@ -195,6 +197,7 @@ public class Client implements EntryPoint {
 			Label error = new Label(MESSAGES.failedToLoadPage(e.getMessage()));
 			error.setStyleName("unitime-ErrorMessage");
 			RootPanel.get("UniTimeGWT:Body").add(error);
+			UniTimeNotifications.error(MESSAGES.failedToLoadPage(e.getMessage()), e);
 		}
 	}
 	

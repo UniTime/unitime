@@ -283,6 +283,7 @@ public class UniTimeMenuBar extends UniTimeMenu {
 			Label error = new Label(MESSAGES.failedToLoadPage(e.getMessage()));
 			error.setStyleName("unitime-ErrorMessage");
 			RootPanel.get("UniTimeGWT:Body").add(error);
+			UniTimeNotifications.error(MESSAGES.failedToLoadPage(e.getMessage()), e);
 		}
 	}
 	
