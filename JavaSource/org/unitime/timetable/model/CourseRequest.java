@@ -88,18 +88,16 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
     	}
     }
     
-    public void updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType type, OnlineSectioningLog.CourseRequestOption.Builder option, org.hibernate.Session hibSession) {
+    public void updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType type, OnlineSectioningLog.CourseRequestOption.Builder option) {
     	if (getCourseRequestOptions() == null)
     		setCourseRequestOptions(new HashSet<CourseRequestOption>());
     	for (Iterator<CourseRequestOption> i = getCourseRequestOptions().iterator(); i.hasNext(); ) {
     		CourseRequestOption o = i.next();
     		if (type.equals(type)) {
     			if (option == null) {
-    				if (hibSession != null) hibSession.delete(o);
     				i.remove();
     			} else {
     				o.setOption(option.build());
-    				if (hibSession != null) hibSession.update(o);
     			}
     			return;
     		}

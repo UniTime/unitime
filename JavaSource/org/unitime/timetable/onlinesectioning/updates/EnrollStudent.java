@@ -329,8 +329,8 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							cr.setCourseDemand(cd);
 							cr.setCourseRequestOptions(new HashSet<CourseRequestOption>());
 						}
-						cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT, options.get(co.getCourseId()), helper.getHibSession());
-						cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE, preferences.get(co.getCourseId()), helper.getHibSession());
+						cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT, options.get(co.getCourseId()));
+						cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE, preferences.get(co.getCourseId()));
 						cr.setAllowOverlap(false);
 						cr.setCredit(0);
 						cr.setOrder(order++);
@@ -459,8 +459,8 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							cd.getCourseRequests().add(cr);
 							cr.setCourseDemand(cd);
 						}
-						cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT, options.get(co.getCourseId()), helper.getHibSession());
-						cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE, preferences.get(co.getCourseId()), helper.getHibSession());
+						cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT, options.get(co.getCourseId()));
+						cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE, preferences.get(co.getCourseId()));
 						cr.setAllowOverlap(false);
 						cr.setCredit(0);
 						cr.setOrder(order++);
@@ -534,7 +534,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						cr = new CourseRequest();
 						cd.getCourseRequests().add(cr);
 						cr.setCourseDemand(cd);
-						cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT, options.get(ca.getCourseId()), helper.getHibSession());
+						cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT, options.get(ca.getCourseId()));
 						cr.setAllowOverlap(false);
 						cr.setCredit(0);
 						cr.setOrder(cd.getCourseRequests().size());

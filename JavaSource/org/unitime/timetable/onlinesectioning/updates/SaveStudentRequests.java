@@ -254,8 +254,8 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 						cd.getCourseRequests().add(cr);
 						cr.setCourseDemand(cd);
 					}
-					cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT, null, helper.getHibSession());
-					cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE, preferences.get(co.getUniqueId()), helper.getHibSession());
+					cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT, null);
+					cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE, preferences.get(co.getUniqueId()));
 					cr.setAllowOverlap(false);
 					cr.setCredit(0);
 					cr.setOrder(order++);
