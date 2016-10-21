@@ -166,6 +166,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 		for (CourseRequestInterface.Request r: request.getCourses()) {
 			if (r.hasRequestedCourse()) {
 				List<CourseOffering> courses = new ArrayList<CourseOffering>();
+				Map<Long, OnlineSectioningLog.CourseRequestOption.Builder> preferences = new HashMap<Long, OnlineSectioningLog.CourseRequestOption.Builder>();
 				for (RequestedCourse rc: r.getRequestedCourse()) {
 					if (rc.isFreeTime()) {
 						for (CourseRequestInterface.FreeTime ft: rc.getFreeTime()) {
@@ -208,7 +209,16 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 							XCourseId c = (server == null ? null : server.getCourse(rc.getCourseName()));
 							co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), student.getUniqueId(), rc) : getCourse(helper.getHibSession(), c.getCourseId()));
 						}
-						if (co != null) courses.add(co);
+						if (co != null) {
+							courses.add(co);
+							if (server != null) {
+								OnlineSectioningLog.CourseRequestOption.Builder pref = OnlineSectioningHelper.toPreference(server, rc, new XCourseId(co));
+								if (pref != null) preferences.put(co.getUniqueId(), pref);
+							} else {
+								OnlineSectioningLog.CourseRequestOption.Builder pref = OnlineSectioningHelper.toPreference(co, rc);
+								if (pref != null) preferences.put(co.getUniqueId(), pref);
+							}
+						}
 					}
 				}
 				if (courses.isEmpty()) continue;
@@ -239,17 +249,13 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 					CourseRequest cr = null;
 					if (requests.hasNext()) {
 						cr = requests.next();
-						if (cr.getCourseRequestOptions() != null) {
-							for (Iterator<CourseRequestOption> i = cr.getCourseRequestOptions().iterator(); i.hasNext(); )
-								helper.getHibSession().delete(i.next());
-							cr.getCourseRequestOptions().clear();
-						}
 					} else {
 						cr = new CourseRequest();
 						cd.getCourseRequests().add(cr);
 						cr.setCourseDemand(cd);
-						cr.setCourseRequestOptions(new HashSet<CourseRequestOption>());
 					}
+					cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT, null, helper.getHibSession());
+					cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE, preferences.get(co.getUniqueId()), helper.getHibSession());
 					cr.setAllowOverlap(false);
 					cr.setCredit(0);
 					cr.setOrder(order++);

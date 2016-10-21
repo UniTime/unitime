@@ -237,6 +237,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				Map<Long, CourseDemand> alt2demand = new HashMap<Long, CourseDemand>();
 				for (CourseRequestInterface.Request r: getRequest().getCourses()) {
 					List<XCourseId> courses = new ArrayList<XCourseId>();
+					Map<Long, OnlineSectioningLog.CourseRequestOption.Builder> preferences = new Hashtable<Long, OnlineSectioningLog.CourseRequestOption.Builder>();
 					if (r.hasRequestedCourse()) {
 						for (RequestedCourse rc: r.getRequestedCourse()) {
 							if (rc.isFreeTime()) {
@@ -274,7 +275,11 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 								priority++;
 							} else {
 								XCourseId c = server.getCourse(rc.getCourseId(), rc.getCourseName());
-								if (c != null) courses.add(c);
+								if (c != null) {
+									courses.add(c);
+									OnlineSectioningLog.CourseRequestOption.Builder preference = OnlineSectioningHelper.toPreference(server, rc, c);
+									if (preference != null) preferences.put(c.getCourseId(), preference);
+								}
 							}
 						}
 					}
@@ -311,27 +316,8 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					int order = 0;
 					for (XCourseId co: courses) {
 						CourseRequest cr = null;
-						OnlineSectioningLog.CourseRequestOption.Builder option = options.get(co.getCourseId());
 						if (requests.hasNext()) {
 							cr = requests.next();
-							if (cr.getCourseRequestOptions() != null && cr.getCourseRequestOptions().size() == 1 && option != null) {
-								CourseRequestOption o = cr.getCourseRequestOptions().iterator().next();
-								o.setOption(option.build());
-							} else {
-								if (cr.getCourseRequestOptions() != null) {
-									for (Iterator<CourseRequestOption> i = cr.getCourseRequestOptions().iterator(); i.hasNext(); ) {
-										helper.getHibSession().delete(i.next()); i.remove();
-									}
-								} else {
-									cr.setCourseRequestOptions(new HashSet<CourseRequestOption>());
-								}
-								if (option != null) {
-									CourseRequestOption o = new CourseRequestOption();
-									o.setCourseRequest(cr);
-									o.setOption(option.build());
-									cr.getCourseRequestOptions().add(o);
-								}
-							}
 							if (cr.getClassWaitLists() != null)
 								for (Iterator<ClassWaitList> i = cr.getClassWaitLists().iterator(); i.hasNext(); ) {
 									helper.getHibSession().delete(i.next());
@@ -342,13 +328,9 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							cd.getCourseRequests().add(cr);
 							cr.setCourseDemand(cd);
 							cr.setCourseRequestOptions(new HashSet<CourseRequestOption>());
-							if (option != null) {
-								CourseRequestOption o = new CourseRequestOption();
-								o.setCourseRequest(cr);
-								o.setOption(option.build());
-								cr.getCourseRequestOptions().add(o);
-							}
 						}
+						cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT, options.get(co.getCourseId()), helper.getHibSession());
+						cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE, preferences.get(co.getCourseId()), helper.getHibSession());
 						cr.setAllowOverlap(false);
 						cr.setCredit(0);
 						cr.setOrder(order++);
@@ -393,6 +375,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				
 				for (CourseRequestInterface.Request r: getRequest().getAlternatives()) {
 					List<XCourseId> courses = new ArrayList<XCourseId>();
+					Map<Long, OnlineSectioningLog.CourseRequestOption.Builder> preferences = new HashMap<Long, OnlineSectioningLog.CourseRequestOption.Builder>();
 					if (r.hasRequestedCourse()) {
 						for (RequestedCourse rc: r.getRequestedCourse()) {
 							if (rc.isFreeTime()) {
@@ -430,7 +413,11 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 								priority ++;
 							} else if (rc.isCourse()) {
 								XCourseId c = server.getCourse(rc.getCourseId(), rc.getCourseName());
-								if (c != null) courses.add(c);
+								if (c != null) {
+									courses.add(c);
+									OnlineSectioningLog.CourseRequestOption.Builder preference = OnlineSectioningHelper.toPreference(server, rc, c);
+									if (preference != null) preferences.put(c.getCourseId(), preference);
+								}
 							}
 						}
 					}
@@ -460,27 +447,8 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					int order = 0;
 					for (XCourseId co: courses) {
 						CourseRequest cr = null;
-						OnlineSectioningLog.CourseRequestOption.Builder option = options.get(co.getCourseId());
 						if (requests.hasNext()) {
 							cr = requests.next();
-							if (cr.getCourseRequestOptions() != null && cr.getCourseRequestOptions().size() == 1 && option != null) {
-								CourseRequestOption o = cr.getCourseRequestOptions().iterator().next();
-								o.setOption(option.build());
-							} else {
-								if (cr.getCourseRequestOptions() != null) {
-									for (Iterator<CourseRequestOption> i = cr.getCourseRequestOptions().iterator(); i.hasNext(); ) {
-										helper.getHibSession().delete(i.next()); i.remove();
-									}
-								} else {
-									cr.setCourseRequestOptions(new HashSet<CourseRequestOption>());
-								}
-								if (option != null) {
-									CourseRequestOption o = new CourseRequestOption();
-									o.setCourseRequest(cr);
-									o.setOption(option.build());
-									cr.getCourseRequestOptions().add(o);
-								}
-							}
 							if (cr.getClassWaitLists() != null)
 								for (Iterator<ClassWaitList> i = cr.getClassWaitLists().iterator(); i.hasNext(); ) {
 									helper.getHibSession().delete(i.next());
@@ -490,14 +458,9 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							cr = new CourseRequest();
 							cd.getCourseRequests().add(cr);
 							cr.setCourseDemand(cd);
-							cr.setCourseRequestOptions(new HashSet<CourseRequestOption>());
-							if (option != null) {
-								CourseRequestOption o = new CourseRequestOption();
-								o.setCourseRequest(cr);
-								o.setOption(option.build());
-								cr.getCourseRequestOptions().add(o);
-							}
 						}
+						cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT, options.get(co.getCourseId()), helper.getHibSession());
+						cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE, preferences.get(co.getCourseId()), helper.getHibSession());
 						cr.setAllowOverlap(false);
 						cr.setCredit(0);
 						cr.setOrder(order++);
@@ -571,14 +534,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						cr = new CourseRequest();
 						cd.getCourseRequests().add(cr);
 						cr.setCourseDemand(cd);
-						cr.setCourseRequestOptions(new HashSet<CourseRequestOption>());
-						OnlineSectioningLog.CourseRequestOption.Builder option = options.get(ca.getCourseId());
-						if (option != null) {
-							CourseRequestOption o = new CourseRequestOption();
-							o.setCourseRequest(cr);
-							o.setOption(option.build());
-							cr.getCourseRequestOptions().add(o);
-						}
+						cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT, options.get(ca.getCourseId()), helper.getHibSession());
 						cr.setAllowOverlap(false);
 						cr.setCredit(0);
 						cr.setOrder(cd.getCourseRequests().size());

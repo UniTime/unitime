@@ -49,19 +49,28 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.model.ClassInstructor;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.model.XExactTimeConversion;
+import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XFreeTimeRequest;
 import org.unitime.timetable.onlinesectioning.model.XInstructor;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XReservationId;
 import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
+import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.util.NameFormat;
 
@@ -747,6 +756,57 @@ public class OnlineSectioningHelper {
     	return section;
     }
     
+    public static OnlineSectioningLog.Section.Builder toProto(Class_ clazz, CourseOffering course) {
+		OnlineSectioningLog.Section.Builder section = OnlineSectioningLog.Section.newBuilder();
+		section.setClazz(
+				OnlineSectioningLog.Entity.newBuilder()
+				.setUniqueId(clazz.getUniqueId())
+				.setExternalId(clazz.getExternalId(course))
+				.setName(clazz.getClassSuffix(course))
+				);
+		section.setSubpart(
+				OnlineSectioningLog.Entity.newBuilder()
+				.setUniqueId(clazz.getSchedulingSubpart().getUniqueId())
+				.setName(clazz.getSchedulingSubpart().getItypeDesc().trim())
+				.setExternalId(clazz.getSchedulingSubpart().getItype().getItype().toString())
+				);
+		if (clazz.isDisplayInstructor())
+			for (ClassInstructor ci: clazz.getClassInstructors()) {
+				OnlineSectioningLog.Entity.Builder instructor = OnlineSectioningLog.Entity.newBuilder().setUniqueId(ci.getInstructor().getUniqueId()).setName(NameFormat.LAST_FIRST_MIDDLE.format(ci.getInstructor()));
+				if (ci.getInstructor().getEmail() != null)
+					instructor.setExternalId(ci.getInstructor().getEmail());
+				else if (ci.getInstructor().getExternalUniqueId() != null)
+					instructor.setExternalId(ci.getInstructor().getExternalUniqueId());
+				section.addInstructor(instructor);
+			}
+		if (course != null) {
+			section.setCourse(
+					OnlineSectioningLog.Entity.newBuilder()
+					.setUniqueId(course.getUniqueId())
+					.setName(course.getCourseName()));
+		}
+		if (clazz.getCommittedAssignment() != null) {
+			OnlineSectioningLog.Time.Builder time = OnlineSectioningLog.Time.newBuilder();
+			time.setDays(clazz.getCommittedAssignment().getDays());
+			time.setStart(clazz.getCommittedAssignment().getStartSlot());
+			time.setLength(clazz.getCommittedAssignment().getSlotPerMtg());
+			if (clazz.getCommittedAssignment().getDatePattern() != null)
+				time.setPattern(clazz.getCommittedAssignment().getDatePattern().getName());
+			section.setTime(time);
+		}
+		if (clazz.getCommittedAssignment() != null) {
+			for (Location location: clazz.getCommittedAssignment().getRooms()) {
+				OnlineSectioningLog.Entity.Builder room = OnlineSectioningLog.Entity.newBuilder()
+						.setUniqueId(location.getUniqueId())
+						.setName(location.getLabel());
+				if (location.getExternalUniqueId() != null)
+						room.setExternalId(location.getExternalUniqueId());
+				section.addLocation(room);
+			}
+		}
+    	return section;
+    }
+    
 	public static long getCpuTime() {
 		return ManagementFactory.getThreadMXBean().isCurrentThreadCpuTimeSupported() ? ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() : 1000000l * System.currentTimeMillis();
 	}
@@ -793,5 +853,66 @@ public class OnlineSectioningHelper {
 			for (OnlineSectioningLog.Property p: getUser().getParameterList())
 				if ("student".equals(p.getKey())) return p.getValue();
 		return getUser().getExternalId();
+	}
+	
+	public static OnlineSectioningLog.CourseRequestOption.Builder toPreference(OnlineSectioningServer server, RequestedCourse rc, XCourseId c) {
+		if (!rc.isCourse() || (!rc.hasSelectedClasses() && !rc.hasSelectedIntructionalMethods())) return null;
+		if (c == null) c = server.getCourse(rc.getCourseId(), rc.getCourseName());
+		if (c == null) return null;
+		XOffering offering = server.getOffering(c.getOfferingId());
+		if (offering == null) return null;
+		OnlineSectioningLog.CourseRequestOption.Builder preference = OnlineSectioningLog.CourseRequestOption.newBuilder();
+		preference.setType(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE);
+		if (rc.hasSelectedIntructionalMethods()) {
+			for (XConfig config: offering.getConfigs()) {
+				if (config.getInstructionalMethod() != null && (rc.isSelectedIntructionalMethod(config.getInstructionalMethod().getLabel()) || rc.isSelectedIntructionalMethod(config.getInstructionalMethod().getReference())))
+					preference.addInstructionalMethod(OnlineSectioningLog.Entity.newBuilder()
+							.setUniqueId(config.getInstructionalMethod().getUniqueId())
+							.setExternalId(config.getInstructionalMethod().getReference())
+							.setName(config.getInstructionalMethod().getLabel()));
+			}
+		}
+		if (rc.hasSelectedClasses()) {
+			for (XConfig config: offering.getConfigs())
+				for (XSubpart subpart: config.getSubparts())
+					for (XSection section: subpart.getSections())
+						if (rc.isSelectedClass(section.getName(c.getCourseId())) || rc.isSelectedClass(subpart.getName() + " " + section.getName(c.getCourseId())) || rc.isSelectedClass(section.getExternalId(c.getCourseId())))
+							preference.addSection(OnlineSectioningHelper.toProto(section));
+		}
+		return preference;
+	}
+	
+	public static OnlineSectioningLog.CourseRequestOption.Builder toPreference(CourseOffering co, RequestedCourse rc) {
+		if (!rc.isCourse() || (!rc.hasSelectedClasses() && !rc.hasSelectedIntructionalMethods())) return null;
+		OnlineSectioningLog.CourseRequestOption.Builder preference = OnlineSectioningLog.CourseRequestOption.newBuilder();
+		preference.setType(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE);
+		if (rc.hasSelectedIntructionalMethods()) {
+			for (InstrOfferingConfig config: co.getInstructionalOffering().getInstrOfferingConfigs()) {
+				if (config.getInstructionalMethod() != null && (rc.isSelectedIntructionalMethod(config.getInstructionalMethod().getLabel()) || rc.isSelectedIntructionalMethod(config.getInstructionalMethod().getReference())))
+					preference.addInstructionalMethod(OnlineSectioningLog.Entity.newBuilder()
+							.setUniqueId(config.getInstructionalMethod().getUniqueId())
+							.setExternalId(config.getInstructionalMethod().getReference())
+							.setName(config.getInstructionalMethod().getLabel()));
+			}
+		}
+		if (rc.hasSelectedClasses()) {
+			for (InstrOfferingConfig config: co.getInstructionalOffering().getInstrOfferingConfigs())
+				for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+					for (Class_ clazz: subpart.getClasses())
+						if (rc.isSelectedClass(clazz.getClassSuffix(co)) || rc.isSelectedClass(clazz.getExternalId(co)) || rc.isSelectedClass(clazz.getItypeDesc().trim() + " " + clazz.getSectionNumberString()))
+							preference.addSection(OnlineSectioningHelper.toProto(clazz, co));
+		}
+		return preference;
+	}
+	
+	public static void fillPreferencesIn(RequestedCourse rc, OnlineSectioningLog.CourseRequestOption pref) {
+		if (pref != null) {
+			if (pref.getInstructionalMethodCount() > 0)
+				for (OnlineSectioningLog.Entity im: pref.getInstructionalMethodList())
+					rc.setSelectedIntructionalMethod(im.getName(), true);
+			if (pref.getSectionCount() > 0)
+				for (OnlineSectioningLog.Section s: pref.getSectionList())
+					rc.setSelectedClass((s.getClazz().getExternalId().length() <= 4 ? s.getSubpart().getName() + " ": "") + s.getClazz().getExternalId(), true);
+		}
 	}
 }

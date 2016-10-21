@@ -153,9 +153,11 @@ message Log {
 message CourseRequestOption {
 	enum OptionType {
 		ORIGINAL_ENROLLMENT = 0;
+		REQUEST_PREFERENCE = 1;
 	}
 	required OptionType type = 1;
 	repeated Section section = 2;
+	repeated Entity instructionalMethod = 3;
 }
 
 message ExportedLog {

@@ -72,6 +72,7 @@ import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
+import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.CourseType;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -149,6 +150,8 @@ import org.unitime.timetable.solver.studentsct.BatchEnrollStudent;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.util.LoginManager;
 import org.unitime.timetable.util.NameFormat;
+
+import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
  * @author Tomas Muller
@@ -1807,6 +1810,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								RequestedCourse rc = new RequestedCourse();
 								rc.setCourseId(c.getCourseId());
 								rc.setCourseName(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
+								CourseRequestOption pref = course.getCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE);
+								if (pref != null) {
+									try {
+										OnlineSectioningHelper.fillPreferencesIn(rc, pref.getOption());
+									} catch (InvalidProtocolBufferException e) {}
+								}
 								r.addRequestedCourse(rc);
 							}
 							if (r.hasRequestedCourse()) {

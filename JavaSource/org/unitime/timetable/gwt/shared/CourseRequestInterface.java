@@ -274,7 +274,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 				iSelectedClasses.remove(id);
 		}
 		public boolean isSelectedClass(String id) {
-			if (iSelectedClasses == null) return false;
+			if (iSelectedClasses == null || id == null) return false;
 			return iSelectedClasses.contains(id);
 		}
 		

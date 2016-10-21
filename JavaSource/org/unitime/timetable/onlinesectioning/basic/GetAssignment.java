@@ -456,6 +456,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 							rc.setCourseName(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
 							if (setReadOnly && ((XCourseRequest)cd).getEnrollment() != null && c.getCourseId().equals(((XCourseRequest)cd).getEnrollment().getCourseId()))
 								rc.setReadOnly(true);
+							OnlineSectioningHelper.fillPreferencesIn(rc, ((XCourseRequest)cd).getPreferences(courseId));
 							r.addRequestedCourse(rc);
 						}
 						r.setWaitList(((XCourseRequest)cd).isWaitlist());

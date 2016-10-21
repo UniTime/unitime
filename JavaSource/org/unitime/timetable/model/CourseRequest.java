@@ -20,9 +20,12 @@
 package org.unitime.timetable.model;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 
 import org.unitime.timetable.model.base.BaseCourseRequest;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 
 
 
@@ -61,6 +64,52 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
 				ret.add(e);
     	}
     	return ret;
+    }
+    
+    public CourseRequestOption getCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType type) {
+    	if (getCourseRequestOptions() == null) return null;
+    	for (CourseRequestOption option: getCourseRequestOptions())
+    		if (type.equals(option.getType())) return option;
+    	return null;
+    }
+    
+    public void setCourseRequestOption(OnlineSectioningLog.CourseRequestOption option) {
+    	if (getCourseRequestOptions() == null) {
+    		setCourseRequestOptions(new HashSet<CourseRequestOption>());
+    	}
+    	CourseRequestOption o = getCourseRequestOption(option.getType());
+    	if (o == null) {
+    		o = new CourseRequestOption();
+			o.setCourseRequest(this);
+			o.setOption(option);
+			getCourseRequestOptions().add(o);
+    	} else {
+    		o.setOption(option);
+    	}
+    }
+    
+    public void updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType type, OnlineSectioningLog.CourseRequestOption.Builder option, org.hibernate.Session hibSession) {
+    	if (getCourseRequestOptions() == null)
+    		setCourseRequestOptions(new HashSet<CourseRequestOption>());
+    	for (Iterator<CourseRequestOption> i = getCourseRequestOptions().iterator(); i.hasNext(); ) {
+    		CourseRequestOption o = i.next();
+    		if (type.equals(type)) {
+    			if (option == null) {
+    				if (hibSession != null) hibSession.delete(o);
+    				i.remove();
+    			} else {
+    				o.setOption(option.build());
+    				if (hibSession != null) hibSession.update(o);
+    			}
+    			return;
+    		}
+    	}
+    	if (option != null) {
+        	CourseRequestOption o = new CourseRequestOption();
+        	o.setCourseRequest(this);
+    		o.setOption(option.build());
+    		getCourseRequestOptions().add(o);
+    	}
     }
 
 

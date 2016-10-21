@@ -62,6 +62,7 @@ public class XCourseRequest extends XRequest {
     private XEnrollment iEnrollment = null;
     private Map<XCourseId, List<XWaitListedSection>> iSectionWaitlist = null;
     private Map<XCourseId, byte[]> iOptions = null;
+    private Map<XCourseId, byte[]> iPreferences = null;
     private String iMessage = null;
 
     public XCourseRequest() {}
@@ -96,6 +97,9 @@ public class XCourseRequest extends XRequest {
         		if (OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT.getNumber() == option.getOptionType()) {
         			if (iOptions == null) iOptions = new HashMap<XCourseId, byte[]>();
         			iOptions.put(courseId, option.getValue());
+        		} else if (OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE.getNumber() == option.getOptionType()) {
+        			if (iPreferences == null) iPreferences = new HashMap<XCourseId, byte[]>();
+        			iPreferences.put(courseId, option.getValue());
         		}
         	}
         }
@@ -236,6 +240,17 @@ public class XCourseRequest extends XRequest {
     	return null;
     }
     
+    public OnlineSectioningLog.CourseRequestOption getPreferences(XCourseId courseId) {
+    	if (iPreferences == null) return null;
+    	byte[] option = iPreferences.get(courseId);
+    	if (option != null) {
+    		try {
+    			return OnlineSectioningLog.CourseRequestOption.parseFrom(option);
+    		} catch (InvalidProtocolBufferException e) {}    		
+    	}
+    	return null;
+    }
+    
     public void fillChoicesIn(org.cpsolver.studentsct.model.CourseRequest request) {
     	if (iSectionWaitlist != null)
     		for (Map.Entry<XCourseId, List<XWaitListedSection>> entry: iSectionWaitlist.entrySet()) {
@@ -312,6 +327,23 @@ public class XCourseRequest extends XRequest {
         	}
         }
         
+        int nrPrefs = in.readInt();
+        if (nrPrefs == 0)
+        	iPreferences = null;
+        else {
+        	iPreferences = new HashMap<XCourseId, byte[]>();
+        	for (int i = 0; i < nrPrefs; i++) {
+        		Long courseId = in.readLong();
+        		byte[] data = new byte[in.readInt()];
+        		in.read(data);
+				for (XCourseId course: iCourseIds)
+    				if (course.getCourseId().equals(courseId)) {
+    					iPreferences.put(course, data);
+    					break;
+    				}
+        	}
+        }
+        
         iMessage = (String)in.readObject();
 	}
 
@@ -346,6 +378,15 @@ public class XCourseRequest extends XRequest {
 		out.writeInt(iOptions == null ? 0 : iOptions.size());
 		if (iOptions != null)
 			for (Map.Entry<XCourseId, byte[]> entry: iOptions.entrySet()) {
+				out.writeLong(entry.getKey().getCourseId());
+				byte[] value = entry.getValue();
+				out.writeInt(value.length);
+				out.write(value);
+			}
+		
+		out.writeInt(iPreferences == null ? 0 : iPreferences.size());
+		if (iPreferences != null)
+			for (Map.Entry<XCourseId, byte[]> entry: iPreferences.entrySet()) {
 				out.writeLong(entry.getKey().getCourseId());
 				byte[] value = entry.getValue();
 				out.writeInt(value.length);
