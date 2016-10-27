@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.test;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -44,16 +45,17 @@ import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Offering;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Subpart;
 import org.hibernate.Transaction;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
-import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
@@ -76,6 +78,7 @@ import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.Formats;
+import org.unitime.timetable.util.NameFormat;
 import org.unitime.timetable.util.duration.DurationModel;
 
 
@@ -93,6 +96,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
     private String iTerm = null;
     private String iYear = null;
     private long iMakeupAssignmentId = 0;
+    private NameFormat iInstructorNameFormat;
 
     public BatchStudentSectioningLoader(StudentSectioningModel model, org.cpsolver.ifs.assignment.Assignment<Request, Enrollment> assignment) {
         super(model, assignment);
@@ -104,6 +108,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
         iInitiative = model.getProperties().getProperty("Data.Initiative");
         iYear = model.getProperties().getProperty("Data.Year");
         iTerm = model.getProperties().getProperty("Data.Term");
+        iInstructorNameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
     }
     
     public void load() throws Exception {
@@ -116,36 +121,18 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
         load(session);
     }
     
-    private String getInstructorIds(Class_ clazz) {
+    private List<Instructor> getInstructors(Class_ clazz) {
         if (!clazz.isDisplayInstructor().booleanValue()) return null;
-        String ret = null;
+        List<Instructor> ret = new ArrayList<Instructor>();
         TreeSet ts = new TreeSet(clazz.getClassInstructors());
         for (Iterator i=ts.iterator();i.hasNext();) {
             ClassInstructor ci = (ClassInstructor)i.next();
             if (!ci.isLead().booleanValue()) continue;
-            if (ret==null)
-                ret = ci.getInstructor().getUniqueId().toString();
-            else
-                ret += ":"+ci.getInstructor().getUniqueId().toString();
+            ret.add(new Instructor(ci.getInstructor().getUniqueId(), ci.getInstructor().getExternalUniqueId(), iInstructorNameFormat.format(ci.getInstructor()), ci.getInstructor().getEmail()));
         }
         return ret;
     }
-    
-    private String getInstructorNames(Class_ clazz) {
-        if (!clazz.isDisplayInstructor().booleanValue()) return null;
-        String ret = null;
-        TreeSet ts = new TreeSet(clazz.getClassInstructors());
-        for (Iterator i=ts.iterator();i.hasNext();) {
-            ClassInstructor ci = (ClassInstructor)i.next();
-            if (!ci.isLead().booleanValue()) continue;
-            if (ret==null)
-                ret = ci.getInstructor().nameShort();
-            else
-                ret += ":"+ci.getInstructor().nameShort();
-        }
-        return ret;
-    }
-    
+
     public TimeLocation makeupTime(Class_ c) {
         DatePattern datePattern = c.effectiveDatePattern(); 
         if (datePattern==null) {
@@ -234,7 +221,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
             Assignment a = c.getCommittedAssignment();
             p = (a==null?null:a.getPlacement());
         }
-        Section section = new Section(c.getUniqueId().longValue(), limit, c.getClassLabel(), subpart, p, getInstructorIds(c), getInstructorNames(c), parentSection);
+        Section section = new Section(c.getUniqueId().longValue(), limit, c.getClassLabel(), subpart, p, getInstructors(c), parentSection);
         if (section.getTime()!=null && section.getTime().getDatePatternId().equals(c.getSession().getDefaultDatePattern().getUniqueId()))
             section.getTime().setDatePattern(section.getTime().getDatePatternId(),"",section.getTime().getWeekCode());
         if (section.getTime()!=null && section.getTime().getDatePatternName().startsWith("generated")) {
@@ -279,6 +266,10 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
                 continue;
             }
             Config config = new Config(ioc.getUniqueId().longValue(), (ioc.isUnlimitedEnrollment() ? -1 : ioc.getLimit()), ioc.getCourseName()+" ["+ioc.getName()+"]", offering);
+            if (ioc.getInstructionalMethod() != null) {
+            	config.setInstructionalMethodId(ioc.getInstructionalMethod().getUniqueId());
+            	config.setInstructionalMethodName(ioc.getInstructionalMethod().getLabel());
+            }
             sLog.debug("  -- created config "+config);
             TreeSet subparts = new TreeSet(new SchedulingSubpartComparator());
             subparts.addAll(ioc.getSchedulingSubparts());
@@ -348,16 +339,6 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
                     if (course==null) {
                         sLog.warn("  -- course "+cr.getCourseOffering().getCourseName()+" not loaded");
                         continue;
-                    }
-                    for (Iterator k=cr.getClassWaitLists().iterator();k.hasNext();) {
-                        ClassWaitList cwl = (ClassWaitList)k.next();
-                        Section section = course.getOffering().getSection(cwl.getClazz().getUniqueId().longValue());
-                        if (section!=null) {
-                            if (cwl.getType().equals(ClassWaitList.TYPE_SELECTION))
-                                selChoices.add(section.getChoice());
-                            else if (cwl.getType().equals(ClassWaitList.TYPE_WAITLIST))
-                                wlChoices.add(section.getChoice());
-                        }
                     }
                     if (assignedConfig==null) {
                         for (Iterator k=cr.getClassEnrollments().iterator();k.hasNext();) {

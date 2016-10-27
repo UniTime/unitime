@@ -45,11 +45,13 @@ import org.cpsolver.studentsct.StudentSectioningModel;
 import org.cpsolver.studentsct.extension.DistanceConflict;
 import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import org.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
+import org.cpsolver.studentsct.model.Choice;
 import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Offering;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.SctAssignment;
@@ -88,7 +90,6 @@ import org.unitime.timetable.onlinesectioning.model.XDummyReservation;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
-import org.unitime.timetable.onlinesectioning.model.XInstructor;
 import org.unitime.timetable.onlinesectioning.model.XDistribution;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
@@ -276,7 +277,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								requiredOrSavedSections.add(section);
 							}
 							preferredSections.add(section);
-							cr.getSelectedChoices().add(section.getChoice());
+							// cr.getSelectedChoices().add(section.getChoice());
 							rq.addSection(OnlineSectioningHelper.toProto(section, cr.getCourse(a.getCourseId())).setPreference(
 									a.isPinned() || a.isSaved() || getRequest().isNoChange() ? OnlineSectioningLog.Section.Preference.REQUIRED : OnlineSectioningLog.Section.Preference.PREFERRED));
 						}
@@ -387,6 +388,10 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				if (configStudent && configLimit == 0) configLimit = 1; // allow enrolled student in
 			}
 			OnlineConfig clonedConfig = new OnlineConfig(config.getConfigId(), configLimit, config.getName(), clonedOffering);
+			if (config.getInstructionalMethod() != null) {
+				clonedConfig.setInstructionalMethodId(config.getInstructionalMethod().getUniqueId());
+				clonedConfig.setInstructionalMethodName(config.getInstructionalMethod().getLabel());
+			}
 			clonedConfig.setEnrollment(configEnrl);
 			configs.put(config.getConfigId(), clonedConfig);
 			for (XSubpart subpart: config.getSubparts()) {
@@ -408,15 +413,6 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 						if (limit < 0) limit = 0; // over-enrolled, but not unlimited
 						if (student && limit == 0) limit = 1; // allow enrolled student in
 					}
-                    String instructorIds = "";
-                    String instructorNames = "";
-                    for (XInstructor instructor: section.getInstructors()) {
-                    	if (!instructorIds.isEmpty()) {
-                    		instructorIds += ":"; instructorNames += ":";
-                    	}
-                    	instructorIds += instructor.getIntructorId().toString();
-                    	instructorNames += instructor.getName() + "|"  + (instructor.getEmail() == null ? "" : instructor.getEmail());
-                    }
                     List<RoomLocation> rooms = new ArrayList<RoomLocation>();
                     for (XRoom r: section.getRooms())
                     	rooms.add(new RoomLocation(r.getUniqueId(), r.getName(), null, 0, 0, r.getX(), r.getY(), r.getIgnoreTooFar(), null));
@@ -427,8 +423,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
                     				section.getTime().getBreakTime()),
                     		rooms);
 					OnlineSection clonedSection = new OnlineSection(section.getSectionId(), limit,
-							section.getName(course.getCourseId()), clonedSubpart, placement,
-							instructorIds, instructorNames,
+							section.getName(course.getCourseId()), clonedSubpart, placement, section.toInstructors(),
 							(section.getParentId() == null ? null : sections.get(section.getParentId())));
 					clonedSection.setName(-1l, section.getName(-1l));
 					clonedSection.setNote(section.getNote());
@@ -504,6 +499,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	protected void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, Student student, XStudent originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Set<XDistribution> distributions) {
 		if (request.hasRequestedCourse()) {
 			Vector<Course> cr = new Vector<Course>();
+			Set<Choice> selChoices = new HashSet<Choice>();
 			for (RequestedCourse rc: request.getRequestedCourse()) {
 				if (rc.isFreeTime()) {
 					for (CourseRequestInterface.FreeTime freeTime: rc.getFreeTime()) {
@@ -521,13 +517,28 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					XOffering offering = null;
 					if (courseInfo != null) offering = server.getOffering(courseInfo.getOfferingId());
 					if (offering != null) {
-						cr.add(clone(offering, server.getEnrollments(offering.getOfferingId()), courseInfo.getCourseId(), student.getId(), originalStudent, classTable, server, model));
+						Course course = clone(offering, server.getEnrollments(offering.getOfferingId()), courseInfo.getCourseId(), student.getId(), originalStudent, classTable, server, model);
+						cr.add(course);
+						if (rc.hasSelectedIntructionalMethods()) {
+							for (Config config: course.getOffering().getConfigs()) {
+								if (config.getInstructionalMethodName() != null && rc.isSelectedIntructionalMethod(config.getInstructionalMethodName()))
+									selChoices.add(new Choice(config));
+							}
+						}
+						if (rc.hasSelectedClasses()) {
+							for (Config config: course.getOffering().getConfigs())
+								for (Subpart subpart: config.getSubparts())
+									for (Section section: subpart.getSections())
+										if (rc.isSelectedClass(section.getName(course.getId())) || rc.isSelectedClass(subpart.getName() + " " + section.getName()))
+											selChoices.add(new Choice(section));
+						}
 						distributions.addAll(offering.getDistributions());
 					}	
 				}
 			}
 			if (!cr.isEmpty()) {
 				CourseRequest clonnedRequest = new CourseRequest(student.getRequests().size() + 1, student.getRequests().size(), alternative, student, cr, request.isWaitList(), null);
+				clonnedRequest.getSelectedChoices().addAll(selChoices);
 				if (originalStudent != null)
 					for (XRequest originalRequest: originalStudent.getRequests()) {
 						XEnrollment originalEnrollment = (originalRequest instanceof XCourseRequest ? ((XCourseRequest)originalRequest).getEnrollment() : null);
@@ -742,12 +753,10 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							}
 						}
 					}
-					if (section.getChoice().getInstructorNames() != null && !section.getChoice().getInstructorNames().isEmpty()) {
-						String[] instructors = section.getChoice().getInstructorNames().split(":");
-						for (String instructor: instructors) {
-							String[] nameEmail = instructor.split("\\|");
-							a.addInstructor(nameEmail[0]);
-							a.addInstructoEmail(nameEmail.length < 2 ? "" : nameEmail[1]);
+					if (section.hasInstructors()) {
+						for (Instructor instructor: section.getInstructors()) {
+							a.addInstructor(instructor.getName());
+							a.addInstructoEmail(instructor.getEmail());
 						}
 					}
 					if (section.getParent() != null)

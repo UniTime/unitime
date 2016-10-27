@@ -27,14 +27,19 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.cpsolver.studentsct.model.Choice;
+import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.Instructor;
+import org.cpsolver.studentsct.model.Section;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.ClassWaitList;
@@ -167,6 +172,32 @@ public class XCourseRequest extends XRequest {
     	iWaitlist = request.isWaitlist();
     	iTimeStamp = request.getTimeStamp() == null ? null : new Date(request.getTimeStamp());
     	iEnrollment = enrollment == null ? null : new XEnrollment(enrollment);
+
+    	if (!request.getSelectedChoices().isEmpty()) {
+        	for (Course course: request.getCourses()) {
+            	Set<Long> im = new HashSet<Long>();
+            	OnlineSectioningLog.CourseRequestOption.Builder preference = OnlineSectioningLog.CourseRequestOption.newBuilder();
+            	preference.setType(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE);
+            	for (Choice choice: request.getSelectedChoices()) {
+            		if (!course.getOffering().equals(choice.getOffering())) continue;
+            		if (choice.getSectionId() != null) {
+            			Section section = choice.getOffering().getSection(choice.getSectionId());
+            			if (section != null)
+            				preference.addSection(OnlineSectioningHelper.toProto(section));
+            		} else if (choice.getConfigId() != null) {
+            			for (Config config: choice.getOffering().getConfigs()) {
+            				if (choice.getConfigId().equals(config.getId()) && config.getInstructionalMethodId() != null && im.add(config.getInstructionalMethodId())) {
+            					preference.addInstructionalMethod(OnlineSectioningLog.Entity.newBuilder().setUniqueId(config.getInstructionalMethodId()).setName(config.getInstructionalMethodName()));
+            				}
+            			}
+            		}
+            	}
+            	if (preference.getInstructionalMethodCount() > 0 || preference.getSectionCount() > 0) {
+            		if (iPreferences == null) iPreferences = new HashMap<XCourseId, byte[]>();
+        			iPreferences.put(new XCourseId(course), preference.build().toByteArray());	
+            	}    		
+        	}
+    	}
     }
 
     /**
@@ -256,9 +287,40 @@ public class XCourseRequest extends XRequest {
     		for (Map.Entry<XCourseId, List<XWaitListedSection>> entry: iSectionWaitlist.entrySet()) {
     			Course course = request.getCourse(entry.getKey().getCourseId());
     			if (course != null)
-    				for (XSection section: entry.getValue())
-                        request.getSelectedChoices().add(new Choice(course.getOffering(), section.getInstructionalType(), section.getTime() == null || section.getTime().getDays() == 0 ? null : section.getTime().toTimeLocation(), section.getInstructorIds(), section.getInstructorNames()));
+    				for (XSection section: entry.getValue()) {
+    					List<Instructor> instructors = null;
+    					if (!section.getInstructors().isEmpty()) {
+    						instructors = new ArrayList<Instructor>();
+    						for (XInstructor i: section.getInstructors())
+    							instructors.add(new Instructor(i.getIntructorId(), i.getExternalId(), i.getName(), i.getEmail()));
+    					}
+                        request.getSelectedChoices().add(new Choice(course.getOffering(), section.getInstructionalType(), section.getTime() == null || section.getTime().getDays() == 0 ? null : section.getTime().toTimeLocation(), instructors));
+    				}
     		}
+    	if (iPreferences != null) {
+    		for (Map.Entry<XCourseId, byte[]> entry: iPreferences.entrySet()) {
+    			Course course = request.getCourse(entry.getKey().getCourseId());
+    			if (course != null) {
+    				try {
+    					OnlineSectioningLog.CourseRequestOption option = OnlineSectioningLog.CourseRequestOption.parseFrom(entry.getValue());
+    					if (option.getInstructionalMethodCount() > 0) {
+    						for (OnlineSectioningLog.Entity e: option.getInstructionalMethodList()) {
+    							for (Config config: course.getOffering().getConfigs())
+    								if (config.getInstructionalMethodId() != null && config.getInstructionalMethodId().equals(e.getUniqueId()))
+    									request.getSelectedChoices().add(new Choice(config));
+    						}
+    					}
+    					if (option.getSectionCount() > 0) {
+    						for (OnlineSectioningLog.Section s: option.getSectionList()) {
+    							Section section = course.getOffering().getSection(s.getClazz().getUniqueId());
+    							if (section != null)
+    								request.getSelectedChoices().add(new Choice(section));
+    						}
+    					}
+    	    		} catch (InvalidProtocolBufferException e) {}
+    			}
+    		}
+    	}
     }
     
     public String getEnrollmentMessage() { return iMessage; }

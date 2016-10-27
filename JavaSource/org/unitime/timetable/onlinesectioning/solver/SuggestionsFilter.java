@@ -25,6 +25,7 @@ import java.util.Locale;
 
 import org.cpsolver.coursett.model.RoomLocation;
 import org.cpsolver.studentsct.model.Course;
+import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.online.selection.SuggestionsBranchAndBound;
 import org.unitime.localization.impl.Localization;
@@ -137,16 +138,16 @@ public class SuggestionsFilter implements SuggestionsBranchAndBound.SuggestionFi
 				}
 			}
 			if (attr == null || attr.equals("instr") || attr.equals("instructor")) {
-				if (attr != null && (iSection.getChoice().getInstructorNames() == null || iSection.getChoice().getInstructorNames().isEmpty()) && term.equalsIgnoreCase("none")) return true;
-				for (String instructor: iSection.getChoice().getInstructorNames().split(":")) {
-					String[] nameEmail = instructor.split("\\|");
-					if (has(nameEmail[0], term)) return true;
-					if (nameEmail.length == 2) {
-						String email = nameEmail[1];
-						if (email.indexOf('@') >= 0) email = email.substring(0, email.indexOf('@'));
-						if (eq(email, term)) return true;
+				if (attr != null && !iSection.hasInstructors() && term.equalsIgnoreCase("none")) return true;
+				if (iSection.hasInstructors())
+					for (Instructor instructor: iSection.getInstructors()) {
+						if (has(instructor.getName(), term)) return true;
+						if (instructor.getEmail() != null) {
+							String email = instructor.getEmail();
+							if (email.indexOf('@') >= 0) email = email.substring(0, email.indexOf('@'));
+							if (eq(email, term)) return true;
+						}
 					}
-				}
 			}
 			if (attr != null && iSection.getTime() != null) {
 				int start = parseStart(attr + ":" + term);

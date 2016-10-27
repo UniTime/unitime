@@ -27,8 +27,6 @@ import org.unitime.timetable.model.base.BaseClassWaitList;
  * @author Tomas Muller
  */
 public class ClassWaitList extends BaseClassWaitList {
-    public static Integer TYPE_WAITLIST = new Integer(0);
-    public static Integer TYPE_SELECTION = new Integer(1);
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/

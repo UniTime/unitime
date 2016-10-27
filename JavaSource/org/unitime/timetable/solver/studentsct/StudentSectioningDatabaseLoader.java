@@ -58,6 +58,7 @@ import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Offering;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.RequestGroup;
@@ -86,6 +87,7 @@ import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
@@ -114,6 +116,7 @@ import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbStudentMatcher;
 import org.unitime.timetable.solver.TimetableDatabaseLoader;
 import org.unitime.timetable.solver.curricula.LastLikeStudentCourseDemands;
@@ -124,6 +127,8 @@ import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.NameFormat;
 import org.unitime.timetable.util.duration.DurationModel;
+
+import com.google.protobuf.InvalidProtocolBufferException;
 
 
 /**
@@ -260,32 +265,15 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         }
     }
     
-    private String getInstructorIds(Class_ clazz) {
+    private List<Instructor> getInstructors(Class_ clazz) {
         if (!clazz.isDisplayInstructor().booleanValue()) return null;
-        String ret = null;
+        List<Instructor> ret = new ArrayList<Instructor>();
         TreeSet ts = new TreeSet(clazz.getClassInstructors());
+        NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
         for (Iterator i=ts.iterator();i.hasNext();) {
             ClassInstructor ci = (ClassInstructor)i.next();
             if (!ci.isLead().booleanValue()) continue;
-            if (ret==null)
-                ret = ci.getInstructor().getUniqueId().toString();
-            else
-                ret += ":"+ci.getInstructor().getUniqueId().toString();
-        }
-        return ret;
-    }
-    
-    private String getInstructorNames(Class_ clazz) {
-        if (!clazz.isDisplayInstructor().booleanValue()) return null;
-        String ret = null;
-        TreeSet ts = new TreeSet(clazz.getClassInstructors());
-        for (Iterator i=ts.iterator();i.hasNext();) {
-            ClassInstructor ci = (ClassInstructor)i.next();
-            if (!ci.isLead().booleanValue()) continue;
-            if (ret==null)
-                ret = ci.getInstructor().nameShort();
-            else
-                ret += ":"+ci.getInstructor().nameShort();
+            ret.add(new Instructor(ci.getInstructor().getUniqueId(), ci.getInstructor().getExternalUniqueId(), nameFormat.format(ci.getInstructor()), ci.getInstructor().getEmail()));
         }
         return ret;
     }
@@ -404,6 +392,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	int configLimit = (ioc.isUnlimitedEnrollment() ? -1 : ioc.getLimit());
         	if (configLimit >= 9999) configLimit = -1;
             Config config = new Config(ioc.getUniqueId(), configLimit, courseName + " [" + ioc.getName() + "]", offering);
+            if (ioc.getInstructionalMethod() != null) {
+            	config.setInstructionalMethodId(ioc.getInstructionalMethod().getUniqueId());
+            	config.setInstructionalMethodName(ioc.getInstructionalMethod().getLabel());
+            }
             TreeSet<SchedulingSubpart> subparts = new TreeSet<SchedulingSubpart>(new SchedulingSubpartComparator());
             subparts.addAll(ioc.getSchedulingSubparts());
             for (SchedulingSubpart ss: subparts) {
@@ -449,7 +441,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     if (ioc.isUnlimitedEnrollment() || limit >= 9999) limit = -1;
                     if (iCheckEnabledForScheduling && !c.isEnabledForStudentScheduling()) limit = 0;
                     Section section = new Section(c.getUniqueId().longValue(), limit, (c.getExternalUniqueId() == null ? c.getClassSuffix() == null ? c.getSectionNumberString() : c.getClassSuffix() : c.getExternalUniqueId()), subpart, p,
-                    		getInstructorIds(c), getInstructorNames(c), parentSection);
+                    		getInstructors(c), parentSection);
                     section.setCancelled(c.isCancelled());
                     class2section.put(c.getUniqueId(), section);
                     classTable.put(c.getUniqueId(), section);
@@ -718,15 +710,32 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         iProgress.warn("Student " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + ") requests course " + cr.getCourseOffering().getCourseName() + " that is not loaded.");
                         continue;
                     }
-                    for (Iterator k=cr.getClassWaitLists().iterator();k.hasNext();) {
-                        ClassWaitList cwl = (ClassWaitList)k.next();
+                    for (Iterator<ClassWaitList> k=cr.getClassWaitLists().iterator();k.hasNext();) {
+                        ClassWaitList cwl = k.next();
                         Section section = course.getOffering().getSection(cwl.getClazz().getUniqueId().longValue());
-                        if (section!=null) {
-                            if (cwl.getType().equals(ClassWaitList.TYPE_SELECTION))
-                                selChoices.add(section.getChoice());
-                            else if (cwl.getType().equals(ClassWaitList.TYPE_WAITLIST))
-                                wlChoices.add(section.getChoice());
-                        }
+                        if (section != null && cwl.getType().equals(ClassWaitList.Type.LOCKED.ordinal()))
+                        	wlChoices.add(section.getChoice());
+                    }
+                    OnlineSectioningLog.CourseRequestOption pref = null;
+                    try {
+                        CourseRequestOption opt = cr.getCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE);
+                    	if (opt != null) pref = opt.getOption();
+                    } catch (InvalidProtocolBufferException e) {}
+                    if (pref != null) {
+    					if (pref.getInstructionalMethodCount() > 0) {
+    						for (OnlineSectioningLog.Entity e: pref.getInstructionalMethodList()) {
+    							for (Config config: course.getOffering().getConfigs())
+    								if (config.getInstructionalMethodId() != null && config.getInstructionalMethodId().equals(e.getUniqueId()))
+    									selChoices.add(new Choice(config));
+    						}
+    					}
+    					if (pref.getSectionCount() > 0) {
+    						for (OnlineSectioningLog.Section x: pref.getSectionList()) {
+    							Section section = course.getOffering().getSection(x.getClazz().getUniqueId());
+    							if (section != null)
+    								selChoices.add(section.getChoice());
+    						}
+    					}
                     }
                     if (assignedConfig==null) {
                         HashSet<Long> subparts = new HashSet<Long>();

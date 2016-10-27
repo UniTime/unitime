@@ -38,6 +38,7 @@ import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.RoomLocation;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.util.DistanceMetric;
+import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Section;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
@@ -158,17 +159,13 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     	if (section.getNrRooms() > 0)
     		for (RoomLocation room: section.getRooms())
     			iRooms.add(new XRoom(room));
-    	if (section.getChoice() != null && section.getChoice().getInstructorNames() != null) {
-    		String[] ids = section.getChoice().getInstructorIds().split(":");
-    		int i = 0;
-    		for (String instructor: section.getChoice().getInstructorNames().split(":")) {
-    			String[] nameEmail = instructor.split("\\|");
+    	if (section.hasInstructors()) {
+    		for (Instructor instructor: section.getInstructors()) {
     			iInstructors.add(new XInstructor(
-    					Long.valueOf(ids[i]),
-    					null,
-    					nameEmail[0],
-    					nameEmail.length > 1 ? nameEmail[1] : null));
-    			i++;
+    					instructor.getId(),
+    					instructor.getExternalId(),
+    					instructor.getName(),
+    					instructor.getEmail()));
     		}
     	}
     }
@@ -284,6 +281,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
      */
     public List<XInstructor> getInstructors() { return iInstructors; }
     
+    @Deprecated
     public String getInstructorIds() {
     	if (iInstructors == null || iInstructors.isEmpty()) return null;
     	StringBuffer ret = new StringBuffer();
@@ -294,6 +292,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     	return ret.toString();
     }
     
+    @Deprecated
     public String getInstructorNames() {
     	if (iInstructors == null || iInstructors.isEmpty()) return null;
     	StringBuffer ret = new StringBuffer();
@@ -412,6 +411,14 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
         		new Lecture(getSectionId(), null, getSubpartId(), getName(), new ArrayList<TimeLocation>(), new ArrayList<RoomLocation>(), getNrRooms(), null, getLimit(), getLimit(), 1.0),
         		getTime().toTimeLocation(),
         		rooms);
+    }
+    
+    public List<Instructor> toInstructors() {
+    	if (getInstructors() == null || getInstructors().isEmpty()) return null;
+    	List<Instructor> instructors = new ArrayList<Instructor>();
+        for (XInstructor instructor: getInstructors())
+        	instructors.add(new Instructor(instructor.getIntructorId(), instructor.getExternalId(), instructor.getName(), instructor.getEmail()));
+        return instructors;
     }
 
 	@Override

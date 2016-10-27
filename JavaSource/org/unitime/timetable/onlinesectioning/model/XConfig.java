@@ -95,6 +95,8 @@ public class XConfig implements Serializable, Comparable<XConfig>, Externalizabl
     		iSubparts.add(new XSubpart(subpart, credit));
     		credit = false;
     	}
+    	if (config.getInstructionalMethodId() != null)
+    		iInstructionalMethod = new XInstructionalMethod(config.getInstructionalMethodId(), config.getInstructionalMethodName());
     }
 
     /** Configuration id */

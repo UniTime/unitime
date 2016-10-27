@@ -529,6 +529,10 @@ public class XOffering implements Serializable, Externalizable {
 				if (configStudent && configLimit == 0) configLimit = 1;
 			}
 			OnlineConfig clonedConfig = new OnlineConfig(config.getConfigId(), configLimit, config.getName(), clonedOffering);
+			if (config.getInstructionalMethod() != null) {
+				clonedConfig.setInstructionalMethodId(config.getInstructionalMethod().getUniqueId());
+				clonedConfig.setInstructionalMethodName(config.getInstructionalMethod().getLabel());
+			}
 			clonedConfig.setEnrollment(configEnrl);
 			configs.put(config.getConfigId(), clonedConfig);
 			for (XSubpart subpart: config.getSubparts()) {
@@ -549,18 +553,8 @@ public class XOffering implements Serializable, Externalizable {
 						if (limit < 0) limit = 0; // over-enrolled, but not unlimited
 						if (std && limit == 0) limit = 1; // allow enrolled student in
 					}
-                    String instructorIds = "";
-                    String instructorNames = "";
-                    for (XInstructor instructor: section.getInstructors()) {
-                    	if (!instructorIds.isEmpty()) {
-                    		instructorIds += ":"; instructorNames += ":";
-                    	}
-                    	instructorIds += instructor.getIntructorId().toString();
-                    	instructorNames += instructor.getName() + "|"  + (instructor.getEmail() == null ? "" : instructor.getEmail());
-                    }
 					OnlineSection clonedSection = new OnlineSection(section.getSectionId(), limit,
-							section.getName(), clonedSubpart, section.toPlacement(),
-							instructorIds, instructorNames,
+							section.getName(), clonedSubpart, section.toPlacement(), section.toInstructors(),
 							(section.getParentId() == null ? null : sections.get(section.getParentId())));
 					clonedSection.setName(-1l, section.getName(-1l));
 					clonedSection.setNote(section.getNote());

@@ -33,6 +33,7 @@ import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
@@ -508,17 +509,15 @@ public class OnlineSectioningHelper {
 					.setExternalId(s.getSubpart().getInstructionalType())
 					);
 			
-			if (s.getChoice().getInstructorNames() != null && !s.getChoice().getInstructorNames().isEmpty()) {
-				String[] instructors = s.getChoice().getInstructorNames().split(":");
-				String[] instructorIds = s.getChoice().getInstructorIds().split(":");
-				for (int i = 0; i < Math.min(instructorIds.length, instructors.length); i++) {
-					String[] nameEmail = instructors[i].split("\\|");
-					String id = instructorIds[i];
+			if (s.hasInstructors()) {
+				for (Instructor i: s.getInstructors()) {
 					OnlineSectioningLog.Entity.Builder instructor = OnlineSectioningLog.Entity.newBuilder()
-						.setUniqueId(Long.valueOf(id))
-						.setName(nameEmail[0]);
-					if (nameEmail.length >= 2)
-						instructor.setExternalId( nameEmail[1]);
+						.setUniqueId(i.getId())
+						.setName(i.getName());
+					if (i.getExternalId() != null)
+						instructor.setExternalId(i.getExternalId());
+					else if (i.getEmail() != null)
+						instructor.setExternalId(i.getEmail());
 					section.addInstructor(instructor);
 				}
 			}

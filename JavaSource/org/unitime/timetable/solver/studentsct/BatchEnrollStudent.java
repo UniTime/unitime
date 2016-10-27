@@ -27,11 +27,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.studentsct.StudentSectioningModel;
+import org.cpsolver.studentsct.model.Choice;
 import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
@@ -42,6 +44,7 @@ import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.model.Subpart;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
@@ -88,6 +91,7 @@ public class BatchEnrollStudent extends EnrollStudent {
 			boolean changed = false;
 			for (CourseRequestInterface.Request r: getRequest().getCourses()) {
 				List<Course> courses = new ArrayList<Course>();
+				Set<Choice> selChoices = new HashSet<Choice>();
 				if (r.hasRequestedCourse()) {
 					for (RequestedCourse rc: r.getRequestedCourse()) {
 						if (rc.isFreeTime()) {
@@ -121,7 +125,21 @@ public class BatchEnrollStudent extends EnrollStudent {
 							priority++;
 						} else if (rc.isCourse()) {
 							Course c = getCourse(model, rc.getCourseId(), rc.getCourseName());
-							if (c != null) courses.add(c);
+							if (c != null) {
+								courses.add(c);
+								if (rc.hasSelectedIntructionalMethods()) {
+									for (Config config: c.getOffering().getConfigs())
+										if (config.getInstructionalMethodName() != null && rc.isSelectedIntructionalMethod(config.getInstructionalMethodName()))
+											selChoices.add(new Choice(config));
+								}
+								if (rc.hasSelectedClasses()) {
+									for (Config config: c.getOffering().getConfigs())
+										for (Subpart subpart: config.getSubparts())
+											for (Section section: subpart.getSections())
+												if (rc.isSelectedClass(section.getName(c.getId())) || rc.isSelectedClass(section.getSubpart().getName() + " " + section.getName()))
+													selChoices.add(new Choice(section));
+								}
+							}
 						}
 					}
 				}
@@ -159,11 +177,18 @@ public class BatchEnrollStudent extends EnrollStudent {
 						changed = true;
 					}
 				}
+				
+				if (!courseRequest.getSelectedChoices().equals(selChoices)) {
+					courseRequest.getSelectedChoices().clear();
+					courseRequest.getSelectedChoices().addAll(selChoices);
+				}
+				
 				priority++;
 			}
 			
 			for (CourseRequestInterface.Request r: getRequest().getAlternatives()) {
 				List<Course> courses = new ArrayList<Course>();
+				Set<Choice> selChoices = new HashSet<Choice>();
 				if (r.hasRequestedCourse()) {
 					for (RequestedCourse rc: r.getRequestedCourse()) {
 						if (rc.isFreeTime()) {
@@ -197,7 +222,21 @@ public class BatchEnrollStudent extends EnrollStudent {
 							priority++;
 						} else if (rc.isCourse()) {
 							Course c = getCourse(model, rc.getCourseId(), rc.getCourseName());
-							if (c != null) courses.add(c);
+							if (c != null) {
+								courses.add(c);
+								if (rc.hasSelectedIntructionalMethods()) {
+									for (Config config: c.getOffering().getConfigs())
+										if (config.getInstructionalMethodName() != null && rc.isSelectedIntructionalMethod(config.getInstructionalMethodName()))
+											selChoices.add(new Choice(config));
+								}
+								if (rc.hasSelectedClasses()) {
+									for (Config config: c.getOffering().getConfigs())
+										for (Subpart subpart: config.getSubparts())
+											for (Section section: subpart.getSections())
+												if (rc.isSelectedClass(section.getName(c.getId())) || rc.isSelectedClass(section.getSubpart().getName() + " " + section.getName()))
+													selChoices.add(new Choice(section));
+								}
+							}
 						}
 					}
 				}
@@ -231,6 +270,12 @@ public class BatchEnrollStudent extends EnrollStudent {
 						changed = true;
 					}
 				}
+				
+				if (!courseRequest.getSelectedChoices().equals(selChoices)) {
+					courseRequest.getSelectedChoices().clear();
+					courseRequest.getSelectedChoices().addAll(selChoices);
+				}
+				
 				priority++;
 			}
 			

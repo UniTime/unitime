@@ -37,6 +37,7 @@ import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
@@ -228,12 +229,10 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 	public boolean sameLastChoice(Section current) {
 		if (getLastEnrollment() != null)
 			for (Section section: iLastSections)
-				if (section.getSubpart().getInstructionalType().equals(current.getSubpart().getInstructionalType()))
-					if (ResectioningWeights.sameChoice(current, section.getChoice()))
-						return true;
+				if (current.sameChoice(section)) return true;
 		
 		if (getOriginalEnrollment() != null)
-			for (OnlineSectioningLog.Section section: getOriginalEnrollment().getSectionList()) {
+			sections: for (OnlineSectioningLog.Section section: getOriginalEnrollment().getSectionList()) {
 				
 				if (!section.hasSubpart()) continue;
 				if (section.getSubpart().hasExternalId()) {
@@ -253,20 +252,10 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 				} else {
 					if (current.getTime() != null) continue;
 				}
-				String instructorNames = "";
-				String instructorIds = "";
-				for (OnlineSectioningLog.Entity instructor: section.getInstructorList()) {
-					if (instructor.hasUniqueId()) {
-						if (!instructorIds.isEmpty()) instructorIds += ":";
-						instructorIds += instructor.getUniqueId();
-					}
-					if (instructor.hasName()) {
-						if (!instructorNames.isEmpty()) instructorNames += ":";
-						instructorNames += instructor.getName() + "|" + (instructor.hasExternalId() ? instructor.getExternalId() : "");
-					}
-				}
-				if (!instructorIds.equals(current.getChoice().getInstructorIds()) && !instructorNames.equals(current.getChoice().getInstructorNames()))
-					continue;
+				
+				if (current.nrInstructors() != section.getInstructorCount()) continue;
+				for (OnlineSectioningLog.Entity instructor: section.getInstructorList())
+					if (!instructor.hasUniqueId() || !current.getInstructors().contains(new Instructor(instructor.getUniqueId()))) continue sections;
 
 				return true;
 			}

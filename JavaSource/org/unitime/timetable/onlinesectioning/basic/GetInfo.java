@@ -111,6 +111,10 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
         		}
         		for (XConfig config: offering.getConfigs()) {
         			Config clonedConfig = new Config(config.getConfigId(), config.getLimit(), config.getName(), clonedOffering);
+        			if (config.getInstructionalMethod() != null) {
+        				clonedConfig.setInstructionalMethodId(config.getInstructionalMethod().getUniqueId());
+        				clonedConfig.setInstructionalMethodName(config.getInstructionalMethod().getLabel());
+        			}
         			configs.put(config.getConfigId(), clonedConfig);
         			for (XSubpart subpart: config.getSubparts()) {
         				Subpart clonedSubpart = new Subpart(subpart.getSubpartId(), subpart.getInstructionalType(), subpart.getName(), clonedConfig,
@@ -120,8 +124,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
         				subparts.put(subpart.getSubpartId(), clonedSubpart);
         				for (XSection section: subpart.getSections()) {
         					Section clonedSection = new Section(section.getSectionId(), section.getLimit(),
-        							section.getName(), clonedSubpart, section.toPlacement(),
-        							section.getInstructorIds(), section.getInstructorNames(),
+        							section.getName(), clonedSubpart, section.toPlacement(), section.toInstructors(),
         							(section.getParentId() == null ? null : sections.get(section.getParentId())));
         					clonedSection.setName(-1l, section.getName(-1l));
         					clonedSection.setNote(section.getNote());
