@@ -194,6 +194,10 @@ public class CourseRequestBox extends P implements CourseSelection {
 								Suggestion suggestion = new CourseSuggestion(course);
 								suggestions.add(suggestion);
 								iValidCourseNames.put(suggestion.getReplacementString().toLowerCase(), course);
+								if (course.getClassAssignments() != null) {
+									for (ClassAssignment clazz: course.getClassAssignments())
+										suggestions.add(new CourseSuggestion(course, clazz));
+								}
 								if (result.size() <= 5 && course.hasInstructionalMethodSelection()) {
 									for (IdValue im: course.getInstructionalMethods()) {
 										suggestions.add(new CourseSuggestion(course, im));
