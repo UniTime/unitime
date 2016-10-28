@@ -166,4 +166,13 @@ public interface StudentSectioningResources extends ClientBundle {
 	
 	@Source("org/unitime/timetable/gwt/resources/icons/finder_assigned.png")
 	ImageResource finderAssigned();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/filter_plus.png")
+	ImageResource filterAddAlternative();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/filter_swap.png")
+	ImageResource filterSwap();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/times.png")
+	ImageResource filterRemoveAlternative();
 }

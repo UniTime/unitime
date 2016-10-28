@@ -4802,7 +4802,21 @@ unitime-RoomSharingWidget .legend .blank {
 	vertical-align: top;
 }
 
+.unitime-CourseRequests .alt-line .title {
+	display: inline-block;
+	width: 120px;
+	text-align: right;
+	padding: 2px 2px 2px 0px;
+	vertical-align: top;
+}
+
 .unitime-CourseRequests .line .course {
+	display: inline-block;
+	padding: 2px;
+	vertical-align: top;
+}
+
+.unitime-CourseRequests .alt-line .course {
 	display: inline-block;
 	padding: 2px;
 	vertical-align: top;
@@ -4821,11 +4835,11 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-CourseRequests .line .course .unitime-FilterBox {
-	width: 275px;
+	width: 650px;
 }
 
-.unitime-CourseRequests .line .alternative .unitime-FilterBox {
-	width: 165px;
+.unitime-CourseRequests .alt-line .course .unitime-FilterBox {
+	width: 600px;
 }
 
 .unitime-CourseRequests .line .alternative {

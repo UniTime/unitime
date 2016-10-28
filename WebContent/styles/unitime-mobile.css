@@ -318,12 +318,14 @@
 	}
 
 	.unitime-CourseRequests .line .course .unitime-FilterBox {
-		width: 32vw;
-		min-width: 170px;
+		width: 70vw;
+		width: calc(99vw - 150px);
+		min-width: 150px;
 	}
 
-	.unitime-CourseRequests .line .alternative .unitime-FilterBox {
-		width: 19vw;
+	.unitime-CourseRequests .alt-line .course .unitime-FilterBox {
+		width: 70vw;
+		width: calc(99vw - 200px);
 		min-width: 100px;
 	}
 	
@@ -525,12 +527,6 @@
 	
 	.unitime-FilterPanel .filter-left .unitime-FilterBox {
 		width: 99vw;
-	}
-}
-
-@media all and (max-width: 720px) {
-	.unitime-CourseRequests .line {
-		border-bottom: 1px dashed #9CB0CE;
 	}
 }
 

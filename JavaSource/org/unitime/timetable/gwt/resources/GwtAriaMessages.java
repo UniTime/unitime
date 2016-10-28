@@ -112,6 +112,9 @@ public interface GwtAriaMessages extends Messages {
 	@DefaultMessage("Second alternative to the priority {0, number} course request.")
 	String titleRequestedCourseSecondAlternative(int priority);
 	
+	@DefaultMessage("{0, number}. alternative to the priority {1, number} course request.")
+	String titleRequestedCourseNAlternative(int alt, int priority);
+	
 	@DefaultMessage("Priority {0, number} alternate course request. Access key {1}.")
 	String titleRequestedAlternate(int priority, String accessKey);
 	
@@ -120,6 +123,9 @@ public interface GwtAriaMessages extends Messages {
 
 	@DefaultMessage("Second alternative to the priority {0, number} alternate course request.")
 	String titleRequestedAlternateSecondAlternative(int priority);
+	
+	@DefaultMessage("{0, number}. alternative to the priority {1, number} alternate course request.")
+	String titleRequestedAlternateNAlternative(int alt, int priority);
 	
 	@DefaultMessage("Check to wait list priority {0, number} course request, if it is not available.")
 	String titleRequestedWaitList(int priority);
@@ -136,6 +142,9 @@ public interface GwtAriaMessages extends Messages {
 	@DefaultMessage("Opens Course Finder dialog for priority {0, number} second alternative course request.")
 	String altRequestedCourseSecondAlternativeFinder(int priority);
 	
+	@DefaultMessage("Opens Course Finder dialog for priority {1, number} {0, number}. alternative course request.")
+	String altRequestedCourseNAlternativeFinder(int alt, int priority);
+	
 	@DefaultMessage("Opens Course Finder dialog for priority {0, number} alternate course request.")
 	String altRequestedAlternateFinder(int priority);
 
@@ -144,6 +153,9 @@ public interface GwtAriaMessages extends Messages {
 
 	@DefaultMessage("Opens Course Finder dialog for priority {0, number} second alternative alternate course request.")
 	String altRequestedAlternateSecondFinder(int priority);
+	
+	@DefaultMessage("Opens Course Finder dialog for priority {1, number} {0, number}. alternative alternate course request.")
+	String altRequestedNAlternateFinder(int alt, int priority);
 	
 	@DefaultMessage("Swaps priority {0, number} course request with priority {1, number} course request including alternatives and wait list information.")
 	String altSwapCourseRequest(int p1, int p2);

@@ -196,6 +196,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("{0}. Priority")
 	String courseRequestsPriority(int i);
 	
+	@DefaultMessage("{0}. Alternative")
+	String courseRequestsAlternative(int i);
+	
 	@DefaultMessage("Alternate Course Requests")
 	String courseRequestsAlternatives();
 	
@@ -203,13 +206,16 @@ public interface StudentSectioningMessages extends Messages {
 	String courseRequestsAlternativesNote();
 
 	@DefaultMessage("{0}. Alternate")
-	String courseRequestsAlternative(int i);
+	String courseRequestsAlternate(int i);
 	
 	@DefaultMessage("Alternative to {0}")
 	String courseRequestsHintAlt(String course);
 	
 	@DefaultMessage("Alt. to {0} & {1}")
 	String courseRequestsHintAlt2(String course, String altCourse);
+	
+	@DefaultMessage("Alt. to {0}, {1}, ...")
+	String courseRequestsHintAlt3(String course, String altCourse);
 	
 	@DefaultMessage("Course with the second highest priority.")
 	String courseRequestsHint1();
@@ -1406,4 +1412,16 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("section")
 	String tagSection();
+	
+	@DefaultMessage("Swap this course with its alternative")
+	String altFilterSwapWithAlternative();
+	
+	@DefaultMessage("Add alernative course")
+	String altFilterAddAlternative();
+	
+	@DefaultMessage("Remove alernative course")
+	String altFilterRemoveAlternative();
+	
+	@DefaultMessage("Clear course request")
+	String altFilterClearCourseRequest();
 }

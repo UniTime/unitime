@@ -67,6 +67,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * @author Tomas Muller
@@ -89,7 +90,6 @@ public class CourseRequestBox extends P implements CourseSelection {
 	private List<Validator<CourseSelection>> iValidators = new ArrayList<Validator<CourseSelection>>();
 	
 	private boolean iShowCourses = false;
-	private boolean iSaved = false;
 	private RequestedCourse iLastCourse = null;
 	
 	public CourseRequestBox() {
@@ -103,7 +103,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 		iFilter = new CourseRequestFilterBox(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				if (!isSaved())
+				if (isEnabled())
 					openDialogAsync();
 			}
 		}) {
@@ -112,7 +112,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 				if (suggestion instanceof CourseSuggestion) {
 					CourseRequestBox.this.setValue(((CourseSuggestion)suggestion).getRequestedCourse());
 				} else {
-					applySuggestion(suggestion);
+					super.applySuggestion(suggestion);
 				}
 			}
 		};
@@ -264,6 +264,9 @@ public class CourseRequestBox extends P implements CourseSelection {
 		if (course != null) {
 			ret.setCourseId(course.getCourseId());
 			ret.setCourseName(course.getCourseName());
+		} else if (iLastCourse != null && iLastCourse.isCourse() && iLastCourse.hasCourseId() && courseName.equalsIgnoreCase(iLastCourse.getCourseName())) {
+			ret.setCourseId(iLastCourse.getCourseId());
+			ret.setCourseName(courseName);
 		} else if (iFreeTimeParser != null) {
 			try {
 				ret.setFreeTime(iFreeTimeParser.parseFreeTime(courseName));
@@ -277,29 +280,19 @@ public class CourseRequestBox extends P implements CourseSelection {
 			ret.setSelectedClass(chip.getValue(), true);
 		for (Chip chip: iFilter.getChips("method"))
 			ret.setSelectedIntructionalMethod(chip.getValue(), true);
-		if (!iFilter.isEnabled() && ret.isCourse() && isSaved()) ret.setReadOnly(true);
+		if (!iFilter.isEnabled() && ret.isCourse()) ret.setReadOnly(true);
 		return ret;
 		
 	}
 
 	@Override
 	public void setValue(RequestedCourse value) {
-		setValue(value, false);
-	}
-	
-	public boolean hasValue() {
-		RequestedCourse value = getValue();
-		return value != null && !value.isEmpty();
-	}
-
-	@Override
-	public void setValue(RequestedCourse value, boolean fireEvents) {
 		iLastCourse = value;
 		iFilter.removeAllChips();
 		if (value == null || value.isEmpty()) {
 			iFilter.setText("");
 			setError(null);
-			setSaved(false);
+			setEnabled(true);
 		} else {
 			if (value.isCourse()) {
 				iFilter.setText(value.getCourseName());
@@ -314,9 +307,19 @@ public class CourseRequestBox extends P implements CourseSelection {
 			} else {
 				iFilter.setText("");
 			}
-			setSaved(value.isReadOnly());
+			setEnabled(!value.isReadOnly());
 		}
 		iFilter.resizeFilterIfNeeded();
+	}
+	
+	public boolean hasValue() {
+		RequestedCourse value = getValue();
+		return value != null && !value.isEmpty();
+	}
+
+	@Override
+	public void setValue(RequestedCourse value, boolean fireEvents) {
+		setValue(value);
 		if (fireEvents)
 			CourseSelectionEvent.fire(CourseRequestBox.this, value);		
 	}
@@ -340,22 +343,18 @@ public class CourseRequestBox extends P implements CourseSelection {
 	public void setEnabled(boolean enabled) {
 		if (enabled) {
 			iFilter.setEnabled(true);
-			if (iSaved) iFilter.setFilterFinderFace(null);
+			iFilter.setFilterFinderFace(null);
+			iFilter.getFilterFinderButton().setTitle(iFilter.getFilterFinderButton().getAltText());
 		} else {
 			iFilter.setEnabled(false);
-			if (iSaved) iFilter.setFilterFinderFace(RESOURCES.finderAssigned());
+			if (!getText().isEmpty()) {
+				iFilter.setFilterFinderFace(RESOURCES.finderAssigned());
+				iFilter.getFilterFinderButton().setTitle(MESSAGES.saved(getText()));
+			} else {
+				iFilter.setFilterFinderFace(null);
+				iFilter.getFilterFinderButton().setTitle(iFilter.getFilterFinderButton().getAltText());
+			}
 		}
-	}
-	
-	public void setSaved(boolean saved) {
-		iSaved = saved;
-		if (!isEnabled())
-			iFilter.setFilterFinderFace(saved ? RESOURCES.finderAssigned() : null);
-		iFilter.getFilterFinderButton().setTitle(saved ? MESSAGES.saved(getText()) : iFilter.getFilterFinderButton().getAltText());
-	}
-	
-	public boolean isSaved() {
-		return iSaved;
 	}
 	
 	@Override
@@ -600,6 +599,13 @@ public class CourseRequestBox extends P implements CourseSelection {
 					if ((event.getNativeEvent().getKeyCode()=='F' || event.getNativeEvent().getKeyCode()=='f') && (event.isControlKeyDown() || event.isAltKeyDown())) {
 						hideSuggestions();
 						iFilterFinder.getElement().dispatchEvent(Document.get().createClickEvent(1, 0, 0, 0, 0, false, false, false, false));
+					} else if (event.isControlKeyDown() || event.isAltKeyDown()) {
+						for (int i = 0; i < getWidgetCount(); i++) {
+							Widget w = getWidget(i);
+							if (w instanceof FilterOperation && w.isVisible() && ((FilterOperation)w).getAccessKey() != null && event.getNativeEvent().getKeyCode() == ((FilterOperation)w).getAccessKey()) {
+								w.getElement().dispatchEvent(Document.get().createClickEvent(1, 0, 0, 0, 0, false, false, false, false));
+							}
+						}
 					}
 				}
 			});
@@ -642,14 +648,22 @@ public class CourseRequestBox extends P implements CourseSelection {
 		protected void resizeFilterIfNeeded() {
 			if (!isAttached()) return;
 			ChipPanel last = getLastChipPanel();
-			iFilterClear.setVisible(isEnabled() && (!getText().isEmpty() || last != null));
+			if (iFilterClear.isAttached())
+				iFilterClear.setVisible(isEnabled() && (!getText().isEmpty() || last != null));
 			iFilterFinder.setVisible(isEnabled() || !getText().isEmpty());
+			int buttonWidth = 0;
+			for (int i = 0; i < getWidgetCount(); i++) {
+				Widget w = getWidget(i);
+				if (w instanceof FilterOperation)
+					((FilterOperation)w).onBeforeResize(this);
+				if (w instanceof Image && w.isAttached() && w.isVisible())
+					buttonWidth += w.getElement().getOffsetWidth() + 2;
+			}
 			int w = 0;
 			for (int i = 1; i < getWidgetCount(); i++)
 				w += 2 + getWidget(i).getOffsetWidth();
 			int width = getElement().getClientWidth() - w;
 			if (width < 100) {
-				int buttonWidth = iFilterFinder.getElement().getOffsetWidth() + iFilterClear.getElement().getOffsetWidth() + 4;
 				width = getElement().getClientWidth() - buttonWidth;
 			}
 			iFilter.getElement().getStyle().setWidth(width, Unit.PX);
@@ -709,5 +723,46 @@ public class CourseRequestBox extends P implements CourseSelection {
 		public String getHint() {
 			return iHint;
 		}
+	}
+	
+	public void addOperation(FilterOperation operation, boolean beforeFinder) {
+		operation.addStyleName("button-image");
+		if (beforeFinder)
+			iFilter.add(operation);
+		else
+			iFilter.insert(operation, iFilter.getWidgetIndex(iFilter.iFilterFinder));
+        Roles.getDocumentRole().setAriaHiddenState(operation.getElement(), true);
+	}
+	
+	public void removeOperation(FilterOperation operation) {
+		iFilter.remove(operation);
+	}
+	
+	public void removeClearOperation() {
+		iFilter.remove(iFilter.iFilterClear);
+	}
+
+	public void resizeFilterIfNeeded() {
+		iFilter.resizeFilterIfNeeded();
+	}
+	
+	public static class FilterOperation extends Image {
+		private Character iAccessKey;
+		
+		public FilterOperation(ImageResource resource, Character accessKey) {
+			super(resource);
+			iAccessKey = accessKey;
+			addStyleName("button-image");
+	        Roles.getDocumentRole().setAriaHiddenState(getElement(), true);
+		}
+		
+		public FilterOperation(ImageResource resource) {
+			this(resource, null);
+		}
+		
+		public void onBeforeResize(CourseRequestFilterBox filter) {
+		}
+		
+		public Character getAccessKey() { return iAccessKey; }
 	}
 }

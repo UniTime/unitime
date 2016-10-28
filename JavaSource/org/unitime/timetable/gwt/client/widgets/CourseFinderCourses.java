@@ -200,7 +200,7 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 		iSelectedMethods.clear();
 		for (CheckBox ch: iInstructionalMethods.values())
 			if (ch.isEnabled()) ch.setValue(false);
-		if (value.hasSelectedIntructionalMethods())
+		if (value != null && value.hasSelectedIntructionalMethods())
 			for (String id: value.getSelectedIntructionalMethods()) {
 				iSelectedMethods.add(id);
 				CheckBox ch = iInstructionalMethods.get(id);

@@ -21,14 +21,10 @@ package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
-import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
-import org.unitime.timetable.gwt.client.aria.ImageButton;
+import org.unitime.timetable.gwt.client.sectioning.CourseRequestLine.CourseSelectionBox;
 import org.unitime.timetable.gwt.client.widgets.CourseSelection;
-import org.unitime.timetable.gwt.client.widgets.CourseSelectionEvent;
-import org.unitime.timetable.gwt.client.widgets.CourseSelectionHandler;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.Validator;
@@ -42,6 +38,7 @@ import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.SectioningException;
 
@@ -68,8 +65,8 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
 	
 	private AcademicSessionProvider iSessionProvider;
-	private ArrayList<CourseSelectionBox[]> iCourses;
-	private ArrayList<CourseSelectionBox[]> iAlternatives;
+	private ArrayList<CourseRequestLine> iCourses;
+	private ArrayList<CourseRequestLine> iAlternatives;
 	private Label iTip;
 	private boolean iOnline;
 	
@@ -77,8 +74,6 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	private boolean iCanWaitList = true;
 	private P iHeader, iHeaderTitle, iHeaderWaitlist;
 	private P iAltHeader, iAltHeaderTitle, iAltHeaderNote;
-	private List<P> iLines = new ArrayList<P>();
-	private List<P> iAltLines = new ArrayList<P>();
 
 	public CourseRequestsTable(AcademicSessionProvider sessionProvider, boolean online) {
 		super("unitime-CourseRequests");
@@ -92,117 +87,48 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		iHeader.add(iHeaderWaitlist);
 		add(iHeader);
 
-		iCourses = new ArrayList<CourseSelectionBox[]>();
-		iAlternatives = new ArrayList<CourseSelectionBox[]>();
+		iCourses = new ArrayList<CourseRequestLine>();
+		iAlternatives = new ArrayList<CourseRequestLine>();
 		
 		iCheckForDuplicities = new Validator<CourseSelection>() {
 			public String validate(CourseSelection source) {
 				RequestedCourse course = source.getValue();
 				if (course == null || course.isFreeTime()) return null;
-				for (CourseSelectionBox[] c: iCourses) {
-					for (int i = 0; i < c.length; i++) {
-						if (c[i] == source) continue;
-						if (course.equals(c[i].getValue())) return MESSAGES.validationMultiple(course.getCourseName());
+				for (CourseRequestLine line: iCourses)
+					for (CourseSelectionBox c: line.getCourses()) {
+						if (c == source) continue;
+						if (course.equals(c.getValue())) return MESSAGES.validationMultiple(course.getCourseName());
 					}
-				}
-				for (CourseSelectionBox[] c: iAlternatives) {
-					for (int i = 0; i < c.length; i++) {
-						if (c[i] == source) continue;
-						if (course.equals(c[i].getValue())) return MESSAGES.validationMultiple(course.getCourseName());
+				for (CourseRequestLine line: iAlternatives)
+					for (CourseSelectionBox c: line.getCourses()) {
+						if (c == source) continue;
+						if (course.equals(c.getValue())) return MESSAGES.validationMultiple(course.getCourseName());
 					}
-				}
 				return null;
 			}
 		};
 
-		for (int i=0; i<CONSTANTS.numberOfCourses(); i++) {
-			P line = new P("line");
-			
-			P title = new P("title"); title.setText(MESSAGES.courseRequestsPriority(i+1));
-			line.add(title);
-
-			final CourseSelectionBox[] c = new CourseSelectionBox[] {
-					new CourseSelectionBox(iSessionProvider, true, true),
-					new CourseSelectionBox(iSessionProvider, false, false),
-					new CourseSelectionBox(iSessionProvider, false, false)
-			};
-			c[0].setLabel(ARIA.titleRequestedCourse(1 + i), ARIA.altRequestedCourseFinder(1 + i));
-			c[1].setLabel(ARIA.titleRequestedCourseFirstAlternative(1 + i), ARIA.altRequestedCourseFirstAlternativeFinder(1 + i));
-			c[2].setLabel(ARIA.titleRequestedCourseSecondAlternative(1 + i), ARIA.altRequestedCourseSecondAlternativeFinder(1 + i));
-			if (i < 9)
-				c[0].setAccessKey((char)((int)'1'+i));
-			else if (i == 9)
-				c[0].setAccessKey('0');
-			c[0].addStyleName("course");
-			c[1].addStyleName("alternative");
-			c[2].addStyleName("alternative");
-			line.add(c[0]);
-			line.add(c[1]);
-			line.add(c[2]);
-			
-			P buttons = new P("buttons");
-			final AriaCheckBox ch = new AriaCheckBox();
-			ch.setAriaLabel(ARIA.titleRequestedWaitList(1 + i));
-			ch.addStyleName("wait-list");
-			ch.setVisible(iCanWaitList);
-			buttons.add(ch);
-			
-			if (i>0) {
-				final CourseSelectionBox[] x = iCourses.get(i - 1);
-				for (int j=0; j<3; j++) {
-					c[j].setPrev(x[j]);
-					x[j].setNext(c[j]);
-				}
-				final ImageButton up = new ImageButton(RESOURCES.up(), RESOURCES.up_Down(), RESOURCES.up_Over());
-				up.addClickHandler(new ClickHandler() {
-					public void onClick(ClickEvent event) {
-						c[0].swapUp();
-					}
-				});
-				up.addStyleName("up");
-				up.setAltText(ARIA.altSwapCourseRequest(i + 1, i));
-				buttons.add(up);
-			} else {
-				P p = new P("blank");
-				buttons.add(p);
+		for (int i = 0; i < CONSTANTS.numberOfCourses(); i++) {
+			final CourseRequestLine line = new CourseRequestLine(iSessionProvider, i, false, iCheckForDuplicities);
+			iCourses.add(line);
+			if (i > 0) {
+				CourseRequestLine prev = iCourses.get(i - 1);
+				line.setPrevious(prev); prev.setNext(line);
 			}
-			if (i<=CONSTANTS.numberOfCourses()) {
-				final ImageButton down = new ImageButton(RESOURCES.down(), RESOURCES.down_Down(), RESOURCES.down_Over());
-				down.addClickHandler(new ClickHandler() {
-					public void onClick(ClickEvent event) {
-						c[0].swapDown();
-					}
-				});
-				down.addStyleName("down");
-				down.setAltText(i + 1 == CONSTANTS.numberOfCourses() ? ARIA.altSwapCourseAlternateRequest(i + 1, 1) : ARIA.altSwapCourseRequest(i + 1, i + 2));
-				buttons.add(down);;
-			} else {
-				P p = new P("blank");
-				buttons.add(p);
-			}
-			
-			final ImageButton delete = new ImageButton(RESOURCES.delete(), RESOURCES.delete_Down(), RESOURCES.delete_Over());
-			delete.addClickHandler(new ClickHandler() {
-				public void onClick(ClickEvent event) {
-					c[0].remove();
-					ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
+			line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<Request> event) {
+					if (event.getValue() != null && iCourses.indexOf(line) + 1 == iCourses.size())
+						addCourseLine();
 				}
 			});
-			delete.addStyleName("delete");
-			delete.setAltText(ARIA.altDeleteRequest(i + 1));
-			buttons.add(delete);
-			line.add(buttons);
-			
-			iCourses.add(c);
-			c[0].setWaitList(ch);
-			
-			iLines.add(line);
 			add(line);
 		}
-		iCourses.get(1)[0].setHint(MESSAGES.courseRequestsHint1());
-		iCourses.get(3)[0].setHint(MESSAGES.courseRequestsHint3());
-		iCourses.get(4)[0].setHint(MESSAGES.courseRequestsHint4());
-		iCourses.get(CONSTANTS.numberOfCourses()-1)[0].setHint(MESSAGES.courseRequestsHint8());
+		
+		iCourses.get(1).getCourses().get(0).setHint(MESSAGES.courseRequestsHint1());
+		iCourses.get(3).getCourses().get(0).setHint(MESSAGES.courseRequestsHint3());
+		iCourses.get(4).getCourses().get(0).setHint(MESSAGES.courseRequestsHint4());
+		iCourses.get(CONSTANTS.numberOfCourses()-1).getCourses().get(0).setHint(MESSAGES.courseRequestsHint8());
 
 		iTip = new Label(CONSTANTS.tips()[(int)(Math.random() * CONSTANTS.tips().length)]);
 		ToolBox.disableTextSelectInternal(iTip.getElement());
@@ -225,553 +151,68 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		add(iAltHeader);
 
 		for (int i=0; i<CONSTANTS.numberOfAlternatives(); i++) {
-			P line = new P("line", "alternative");
-			
-			P title = new P("title"); title.setText(MESSAGES.courseRequestsAlternative(i+1));
-			line.add(title);
-			
-			final CourseSelectionBox[] c = new CourseSelectionBox[] {
-					new CourseSelectionBox(iSessionProvider, true, false),
-					new CourseSelectionBox(iSessionProvider, false, false),
-					new CourseSelectionBox(iSessionProvider, false, false)
-			};
-			c[0].setLabel(ARIA.titleRequestedAlternate(1 + i, String.valueOf((char)((int)'a'+i))), ARIA.altRequestedAlternateFinder(1 + i));
-			c[1].setLabel(ARIA.titleRequestedAlternateFirstAlternative(1 + i), ARIA.altRequestedAlternateFirstFinder(1 + i));
-			c[2].setLabel(ARIA.titleRequestedAlternateSecondAlternative(1 + i), ARIA.altRequestedAlternateSecondFinder(1 + i));
-			c[0].setAccessKey((char)((int)'a'+i));
-			c[0].addStyleName("course");
-			c[1].addStyleName("alternative");
-			c[2].addStyleName("alternative");
-			line.add(c[0]);
-			line.add(c[1]);
-			line.add(c[2]);
-			
-			P buttons = new P("buttons");
-			if (i>=0) {
-				final CourseSelectionBox[] x = (i==0 ? iCourses.get(CONSTANTS.numberOfCourses() - 1) : iAlternatives.get(i - 1));
-				for (int j=0; j<3; j++) {
-					c[j].setPrev(x[j]);
-					x[j].setNext(c[j]);
-				}
-				final ImageButton up = new ImageButton(RESOURCES.up(), RESOURCES.up_Down(), RESOURCES.up_Over());
-				up.addClickHandler(new ClickHandler() {
-					public void onClick(ClickEvent event) {
-						c[0].swapUp();
-					}
-				});
-				up.addStyleName("up");
-				up.setAltText(i == 0 ? ARIA.altSwapCourseAlternateRequest(CONSTANTS.numberOfCourses(), 1) : ARIA.altSwapAlternateRequest(i + 1, i));
-				buttons.add(up);
+			final CourseRequestLine line = new CourseRequestLine(iSessionProvider, i, true, iCheckForDuplicities);
+			iAlternatives.add(line);
+			if (i == 0) {
+				CourseRequestLine prev = iCourses.get(iCourses.size() - 1);
+				line.setPrevious(prev); prev.setNext(line);
 			} else {
-				P p = new P("blank");
-				buttons.add(p);
+				CourseRequestLine prev = iAlternatives.get(i - 1);
+				line.setPrevious(prev); prev.setNext(line);
 			}
-			
-			if (i<CONSTANTS.numberOfAlternatives() - 1) {
-				final ImageButton down = new ImageButton(RESOURCES.down(), RESOURCES.down_Down(), RESOURCES.down_Over());
-				down.addClickHandler(new ClickHandler() {
-					public void onClick(ClickEvent event) {
-						c[0].swapDown();
-					}
-				});
-				down.addStyleName("down");
-				down.setAltText(ARIA.altSwapAlternateRequest(i + 1, i + 2));
-				buttons.add(down);
-			} else {
-				P p = new P("blank");
-				buttons.add(p);
-			}
-			
-			final ImageButton delete = new ImageButton(RESOURCES.delete(), RESOURCES.delete_Down(), RESOURCES.delete_Over());
-			delete.addClickHandler(new ClickHandler() {
-				public void onClick(ClickEvent event) {
-					c[0].remove();
-					ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
+			line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<Request> event) {
+					if (event.getValue() != null && iAlternatives.indexOf(line) + 1 == iAlternatives.size())
+						addAlternativeLine();
 				}
 			});
-			delete.addStyleName("delete");
-			delete.setAltText(ARIA.altDeleteAlternateRequest(i + 1));
-			buttons.add(delete);
-			line.add(buttons);
-			
-			
-			iAlternatives.add(c);
-			iAltLines.add(line);
 			add(line);
 		}
-		iAlternatives.get(0)[0].setHint(MESSAGES.courseRequestsHintA0());
-		
-		init();
+		iAlternatives.get(0).getCourses().get(0).setHint(MESSAGES.courseRequestsHintA0());
 	}
 	
 	private void addCourseLine() {
 		int i = iCourses.size();
-		P line = new P("line");
-		
-		P title = new P("title"); title.setText(MESSAGES.courseRequestsPriority(i+1));
-		line.add(title);
-		final CourseSelectionBox[] c = new CourseSelectionBox[] {
-				new CourseSelectionBox(iSessionProvider, true, true),
-				new CourseSelectionBox(iSessionProvider, false, false),
-				new CourseSelectionBox(iSessionProvider, false, false)
-		};
-		c[0].setHint(MESSAGES.courseRequestsHint8());
-		c[0].setLabel(ARIA.titleRequestedCourse(1 + i), ARIA.altRequestedCourseFinder(1 + i));
-		c[1].setLabel(ARIA.titleRequestedCourseFirstAlternative(1 + i), ARIA.altRequestedCourseFirstAlternativeFinder(1 + i));
-		c[2].setLabel(ARIA.titleRequestedCourseSecondAlternative(1 + i), ARIA.altRequestedCourseSecondAlternativeFinder(1 + i));
-		if (i < 9)
-			c[0].setAccessKey((char)((int)'1'+i));
-		else if (i == 9)
-			c[0].setAccessKey('0');
-		CourseSelectionBox[] x = iCourses.get(i - 1);
-		x[0].setHint("");
-		for (int j=0; j<3; j++) {
-			c[j].setPrev(x[j]);
-			x[j].setNext(c[j]);
-		}
-		CourseSelectionBox[] y = iAlternatives.get(0);
-		for (int j=0; j<3; j++) {
-			c[j].setNext(y[j]);
-			y[j].setPrev(c[j]);
-		}
-		c[0].addStyleName("course");
-		c[1].addStyleName("alternative");
-		c[2].addStyleName("alternative");
-		line.add(c[0]);
-		line.add(c[1]);
-		line.add(c[2]);
-		
-		P buttons = new P("buttons");
-		
-		final AriaCheckBox ch = new AriaCheckBox();
-		ch.setAriaLabel(ARIA.titleRequestedWaitList(1 + i));
-		ch.addStyleName("wait-list");
-		buttons.add(ch);
-		if (i > 0) {
-			final ImageButton up = new ImageButton(RESOURCES.up(), RESOURCES.up_Down(), RESOURCES.up_Over());
-			up.addClickHandler(new ClickHandler() {
-				public void onClick(ClickEvent event) {
-					c[0].swapUp();
-				}
-			});
-			up.setAltText(ARIA.altSwapCourseRequest(i + 1, i));
-			up.addStyleName("up");
-			buttons.add(up);
-		} else {
-			P blank = new P("blank");
-			buttons.add(blank);
-		}
-		final ImageButton down = new ImageButton(RESOURCES.down(), RESOURCES.down_Down(), RESOURCES.down_Over());
-		down.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				c[0].swapDown();
-			}
-		});
-		down.setAltText(ARIA.altSwapCourseAlternateRequest(i + 1, 1));
-		down.addStyleName("down");
-		buttons.add(down);
-		((ImageButton)((P)iLines.get(i - 1).getWidget(4)).getWidget(2)).setAltText(ARIA.altSwapCourseRequest(i, i + 1));
-		((ImageButton)((P)iAltLines.get(0).getWidget(4)).getWidget(0)).setAltText(ARIA.altSwapCourseAlternateRequest(i + 1, 1));
-		
-		final ImageButton delete = new ImageButton(RESOURCES.delete(), RESOURCES.delete_Down(), RESOURCES.delete_Over());
-		delete.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				c[0].remove();
-				ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
-			}
-		});
-		delete.setAltText(ARIA.altDeleteRequest(i + 1));
-		delete.addStyleName("delete");
-		buttons.add(delete);
-		line.add(buttons);
-		
-		c[1].setEnabled(false);
-		c[2].setEnabled(false);
-		iCourses.add(c);
-		c[0].setWaitList(ch);
-		insert(line, 1 + iLines.size());
-		iLines.add(line);
-		
-		c[0].addCourseSelectionHandler(new CourseSelectionHandler() {
+		final CourseRequestLine line = new CourseRequestLine(iSessionProvider, i, false, iCheckForDuplicities);
+		iCourses.add(line);
+		CourseRequestLine prev = iCourses.get(i - 1);
+		prev.getCourses().get(0).setHint("");
+		line.getCourses().get(0).setHint(MESSAGES.courseRequestsHint8());
+		CourseRequestLine next = iAlternatives.get(0);
+		line.setPrevious(prev); prev.setNext(line);
+		line.setNext(next); next.setPrevious(line);
+		insert(line, 1 + i);
+		line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
 			@Override
-			public void onCourseSelection(CourseSelectionEvent event) {
-				if (event.isValid()) c[0].setError("");
-				if (event.getValue().isFreeTime()) {
-					c[1].setEnabled(event.isValid() || !c[1].getValue().isEmpty() || !c[2].getValue().isEmpty());
-					if (event.isValid() && !c[0].getValue().isEmpty())
-						c[1].setHint(MESSAGES.courseRequestsHintAlt(c[0].getText()));
-					else
-						c[1].setHint("");
-				} else {
-					c[1].setHint("");
-				}
-				if (event.isValid() && c == iCourses.get(iCourses.size() - 1)) addCourseLine();
-				ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
+			public void onValueChange(ValueChangeEvent<Request> event) {
+				if (event.getValue() != null && iCourses.indexOf(line) + 1 == iCourses.size())
+					addCourseLine();
 			}
 		});
-		c[1].addCourseSelectionHandler(new CourseSelectionHandler() {
-			@Override
-			public void onCourseSelection(CourseSelectionEvent event) {
-				if (event.isValid()) c[1].setError("");
-				c[2].setEnabled(event.isValid() || !c[2].getValue().isEmpty());
-				if (event.isValid() && !c[0].getValue().isEmpty() && !c[1].getValue().isEmpty())
-					c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getText(), c[1].getText()));
-				else
-					c[2].setHint("");
-				ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
-			}
-		});
-		c[2].addCourseSelectionHandler(new CourseSelectionHandler() {
-			@Override
-			public void onCourseSelection(CourseSelectionEvent event) {
-				if (event.isValid()) c[2].setError("");
-				ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
-			}
-		});
-		c[1].addValidator(new Validator<CourseSelection>() {
-			public String validate(CourseSelection source) {
-				if (!c[1].getValue().isEmpty() && c[0].getValue().isEmpty()) {
-					return MESSAGES.validationNoCourse();
-				}
-				if (!c[1].getValue().isEmpty() && c[0].getValue().isFreeTime()) {
-					return MESSAGES.validationFreeTimeWithAlt();
-				}
-				if (c[1].getValue().isFreeTime()) {
-					return MESSAGES.validationAltFreeTime();
-				}
-				return null;
-			}
-		});
-		c[2].addValidator(new Validator<CourseSelection>() {
-			public String validate(CourseSelection source) {
-				if (!c[2].getValue().isEmpty() && c[1].getValue().isEmpty()) {
-					return MESSAGES.validationSecondAltWithoutFirst();
-				}
-				if (!c[2].getValue().isEmpty() && c[0].getValue().isFreeTime()) {
-					return MESSAGES.validationFreeTimeWithAlt();
-				}
-				if (c[2].getValue().isFreeTime()) {
-					return MESSAGES.validationAltFreeTime();
-				}
-				return null;
-			}
-		});
-		c[0].setAlternative(c[1]); c[1].setAlternative(c[2]);
-		c[1].setPrimary(c[0]); c[2].setPrimary(c[1]);
-		c[0].addValidator(iCheckForDuplicities);
-		c[1].addValidator(iCheckForDuplicities);
-		c[2].addValidator(iCheckForDuplicities);
 	}
 	
 	private void addAlternativeLine() {
 		int i = iAlternatives.size();
-		P line = new P("line", "alternative");
-		
-		P title = new P("title"); title.setText(MESSAGES.courseRequestsAlternative(i+1));
-		line.add(title);
-		
-		final CourseSelectionBox[] c = new CourseSelectionBox[] {
-				new CourseSelectionBox(iSessionProvider, true, false),
-				new CourseSelectionBox(iSessionProvider, false, false),
-				new CourseSelectionBox(iSessionProvider, false, false)
-		};
-		c[0].setLabel(ARIA.titleRequestedAlternate(1 + i, String.valueOf((char)((int)'a'+i))), ARIA.altRequestedAlternateFinder(1 + i));
-		c[1].setLabel(ARIA.titleRequestedAlternateFirstAlternative(1 + i), ARIA.altRequestedAlternateFirstFinder(1 + i));
-		c[2].setLabel(ARIA.titleRequestedAlternateSecondAlternative(1 + i), ARIA.altRequestedAlternateSecondFinder(1 + i));
-		c[0].setAccessKey((char)((int)'a'+i));
-		c[0].addStyleName("course");
-		c[1].addStyleName("alternative");
-		c[2].addStyleName("alternative");
-		line.add(c[0]);
-		line.add(c[1]);
-		line.add(c[2]);
-		
-		P buttons = new P("buttons");
-		if (i>=0) {
-			final CourseSelectionBox[] x = iAlternatives.get(i - 1);
-			for (int j=0; j<3; j++) {
-				c[j].setPrev(x[j]);
-				x[j].setNext(c[j]);
-			}
-			final ImageButton up = new ImageButton(RESOURCES.up(), RESOURCES.up_Down(), RESOURCES.up_Over());
-			up.addClickHandler(new ClickHandler() {
-				public void onClick(ClickEvent event) {
-					c[0].swapUp();
-				}
-			});
-			up.setAltText(i == 0 ? ARIA.altSwapCourseAlternateRequest(CONSTANTS.numberOfCourses(), 1) : ARIA.altSwapAlternateRequest(i + 1, i));
-			up.addStyleName("up");
-			buttons.add(up);
-			
-			final ImageButton down = new ImageButton(RESOURCES.down(), RESOURCES.down_Down(), RESOURCES.down_Over());
-			down.addClickHandler(new ClickHandler() {
-				public void onClick(ClickEvent event) {
-					x[0].swapDown();
-				}
-			});
-			down.setAltText(ARIA.altSwapAlternateRequest(i, i + 1));
-			down.addStyleName("down");
-			((P)iAltLines.get(i - 1).getWidget(4)).remove(1);
-			((P)iAltLines.get(i - 1).getWidget(4)).insert(down, 1);
-			P p = new P("blank");
-			buttons.add(p);
-			
-			final ImageButton delete = new ImageButton(RESOURCES.delete(), RESOURCES.delete_Down(), RESOURCES.delete_Over());
-			delete.addClickHandler(new ClickHandler() {
-				public void onClick(ClickEvent event) {
-					c[0].remove();
-					ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
-				}
-			});
-			delete.setAltText(ARIA.altDeleteAlternateRequest(i + 1));
-			delete.addStyleName("delete");
-			buttons.add(delete);
-			line.add(buttons);
-		}
-		c[1].setEnabled(false);
-		c[2].setEnabled(false);
-		iAlternatives.add(c);
-		iAltLines.add(line);
-		add(line);
-		
-		c[0].addCourseSelectionHandler(new CourseSelectionHandler() {
+		final CourseRequestLine line = new CourseRequestLine(iSessionProvider, i, true, iCheckForDuplicities);
+		iAlternatives.add(line);
+		CourseRequestLine prev = iAlternatives.get(i - 1);
+		line.setPrevious(prev); prev.setNext(line);
+		insert(line, 3 + iCourses.size() + i);
+		line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
 			@Override
-			public void onCourseSelection(CourseSelectionEvent event) {
-				if (event.isValid()) c[0].setError("");
-				if (!event.getValue().isFreeTime()) {
-					c[1].setEnabled(event.isValid() || !c[1].getValue().isEmpty() || !c[2].getValue().isEmpty());
-					if (event.isValid() && !c[0].getValue().isEmpty())
-						c[1].setHint(MESSAGES.courseRequestsHintAlt(c[0].getText()));
-					else
-						c[1].setHint("");
-				} else {
-					c[1].setHint("");
-				}
-				if (event.isValid() && c == iAlternatives.get(iAlternatives.size() - 1)) addAlternativeLine();
-				ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
+			public void onValueChange(ValueChangeEvent<Request> event) {
+				if (event.getValue() != null && iAlternatives.indexOf(line) + 1 == iAlternatives.size())
+					addAlternativeLine();
 			}
 		});
-		c[1].addCourseSelectionHandler(new CourseSelectionHandler() {
-			@Override
-			public void onCourseSelection(CourseSelectionEvent event) {
-				if (event.isValid()) c[1].setError("");
-				c[2].setEnabled(event.isValid() || !c[2].getValue().isEmpty());
-				if (event.isValid() && !c[0].getValue().isEmpty() && !c[1].getValue().isEmpty())
-					c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getText(), c[1].getText()));
-				else
-					c[2].setHint("");
-				ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
-			}
-		});
-		c[2].addCourseSelectionHandler(new CourseSelectionHandler() {
-			@Override
-			public void onCourseSelection(CourseSelectionEvent event) {
-				if (event.isValid()) c[2].setError("");
-				ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
-			}
-		});
-		c[0].addValidator(new Validator<CourseSelection>() {
-			public String validate(CourseSelection source) {
-				if (c[0].getValue().isFreeTime()) {
-					return MESSAGES.validationAltFreeTime();
-				}
-				return null;
-			}
-		});
-		c[1].addValidator(new Validator<CourseSelection>() {
-			public String validate(CourseSelection source) {
-				if (!c[1].getValue().isEmpty() && c[0].getValue().isEmpty()) {
-					return MESSAGES.validationNoCourse();
-				}
-				if (!c[1].getValue().isEmpty() && c[0].getValue().isFreeTime()) {
-					return MESSAGES.validationFreeTimeWithAlt();
-				}
-				if (c[1].getValue().isFreeTime()) {
-					return MESSAGES.validationAltFreeTime();
-				}
-				return null;
-			}
-		});
-		c[2].addValidator(new Validator<CourseSelection>() {
-			public String validate(CourseSelection source) {
-				if (!c[2].getValue().isEmpty() && c[1].getValue().isEmpty()) {
-					return MESSAGES.validationSecondAltWithoutFirst();
-				}
-				if (!c[2].getValue().isEmpty() && c[0].getValue().isFreeTime()) {
-					return MESSAGES.validationFreeTimeWithAlt();
-				}
-				if (c[2].getValue().isFreeTime()) {
-					return MESSAGES.validationAltFreeTime();
-				}
-				return null;
-			}
-		});
-		c[0].setAlternative(c[1]); c[1].setAlternative(c[2]);
-		c[1].setPrimary(c[0]); c[2].setPrimary(c[1]);
-		c[0].addValidator(iCheckForDuplicities);
-		c[1].addValidator(iCheckForDuplicities);
-		c[2].addValidator(iCheckForDuplicities);
-	}
-	
-	private void init() {
-		for (final CourseSelectionBox[] c: iCourses) {
-			c[0].addCourseSelectionHandler(new CourseSelectionHandler() {
-				@Override
-				public void onCourseSelection(CourseSelectionEvent event) {
-					if (event.isValid()) c[0].setError("");
-					if (!event.getValue().isFreeTime()) {
-						c[1].setEnabled(event.isValid() || !c[1].getValue().isEmpty() || !c[2].getValue().isEmpty());
-						if (event.isValid() && !c[0].getValue().isEmpty())
-							c[1].setHint(MESSAGES.courseRequestsHintAlt(c[0].getText()));
-						else
-							c[1].setHint("");
-					} else {
-						c[1].setHint("");
-					}
-					if (event.isValid() && c == iCourses.get(iCourses.size() - 1)) addCourseLine();
-					ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
-				}
-			});
-			c[1].addCourseSelectionHandler(new CourseSelectionHandler() {
-				@Override
-				public void onCourseSelection(CourseSelectionEvent event) {
-					if (event.isValid()) c[1].setError("");
-					c[2].setEnabled(event.isValid() || !c[2].getValue().isEmpty());
-					if (event.isValid() && !c[0].getValue().isEmpty() && !c[1].getValue().isEmpty())
-						c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getText(), c[1].getText()));
-					else
-						c[2].setHint("");
-					ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
-				}
-			});
-			c[2].addCourseSelectionHandler(new CourseSelectionHandler() {
-				@Override
-				public void onCourseSelection(CourseSelectionEvent event) {
-					if (event.isValid()) c[2].setError("");
-					ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
-				}
-			});
-			c[1].addValidator(new Validator<CourseSelection>() {
-				public String validate(CourseSelection source) {
-					if (!c[1].getValue().isEmpty() && c[0].getValue().isEmpty()) {
-						return MESSAGES.validationNoCourse();
-					}
-					if (!c[1].getValue().isEmpty() && c[0].getValue().isFreeTime()) {
-						return MESSAGES.validationFreeTimeWithAlt();
-					}
-					if (c[1].getValue().isFreeTime()) {
-						return MESSAGES.validationAltFreeTime();
-					}
-					return null;
-				}
-			});
-			c[2].addValidator(new Validator<CourseSelection>() {
-				public String validate(CourseSelection source) {
-					if (!c[2].getValue().isEmpty() && c[1].getValue().isEmpty()) {
-						return MESSAGES.validationSecondAltWithoutFirst();
-					}
-					if (!c[2].getValue().isEmpty() && c[0].getValue().isFreeTime()) {
-						return MESSAGES.validationFreeTimeWithAlt();
-					}
-					if (c[2].getValue().isFreeTime()) {
-						return MESSAGES.validationAltFreeTime();
-					}
-					return null;
-				}
-			});
-			c[0].setAlternative(c[1]); c[1].setAlternative(c[2]);
-			c[1].setPrimary(c[0]); c[2].setPrimary(c[1]);
-			c[0].addValidator(iCheckForDuplicities);
-			c[1].addValidator(iCheckForDuplicities);
-			c[2].addValidator(iCheckForDuplicities);
-		}
-		
-		for (final CourseSelectionBox[] c: iAlternatives) {
-			c[0].addCourseSelectionHandler(new CourseSelectionHandler() {
-				@Override
-				public void onCourseSelection(CourseSelectionEvent event) {
-					if (event.isValid()) c[0].setError("");
-					if (!c[0].getValue().isFreeTime()) {
-						c[1].setEnabled(event.isValid() || !c[1].getValue().isEmpty() || !c[2].getValue().isEmpty());
-						if (event.isValid() && !c[0].getValue().isEmpty())
-							c[1].setHint(MESSAGES.courseRequestsHintAlt(c[0].getText()));
-						else
-							c[1].setHint("");
-					} else {
-						c[1].setHint("");
-					}
-					if (event.isValid() && c == iAlternatives.get(iAlternatives.size() - 1)) addAlternativeLine();
-					ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
-				}
-			});
-			c[1].addCourseSelectionHandler(new CourseSelectionHandler() {
-				@Override
-				public void onCourseSelection(CourseSelectionEvent event) {
-					if (event.isValid()) c[1].setError("");
-					c[2].setEnabled(event.isValid() || !c[2].getValue().isEmpty());
-					if (event.isValid() && !c[0].getValue().isEmpty() && !c[1].getValue().isEmpty())
-						c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getText(), c[1].getText()));
-					else
-						c[2].setHint("");
-					ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
-				}
-			});
-			c[2].addCourseSelectionHandler(new CourseSelectionHandler() {
-				@Override
-				public void onCourseSelection(CourseSelectionEvent event) {
-					if (event.isValid()) c[2].setError("");
-					ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
-				}
-			});
-			c[0].addValidator(new Validator<CourseSelection>() {
-				public String validate(CourseSelection source) {
-					if (c[0].getValue().isFreeTime()) {
-						return MESSAGES.validationAltFreeTime();
-					}
-					return null;
-				}
-			});
-			c[1].addValidator(new Validator<CourseSelection>() {
-				public String validate(CourseSelection source) {
-					if (!c[1].getValue().isEmpty() && c[0].getValue().isEmpty()) {
-						return MESSAGES.validationNoCourse();
-					}
-					if (!c[1].getValue().isEmpty() && c[0].getValue().isFreeTime()) {
-						return MESSAGES.validationFreeTimeWithAlt();
-					}
-					if (c[1].getValue().isFreeTime()) {
-						return MESSAGES.validationAltFreeTime();
-					}
-					return null;
-				}
-			});
-			c[2].addValidator(new Validator<CourseSelection>() {
-				public String validate(CourseSelection source) {
-					if (!c[2].getValue().isEmpty() && c[1].getValue().isEmpty()) {
-						return MESSAGES.validationSecondAltWithoutFirst();
-					}
-					if (!c[2].getValue().isEmpty() && c[0].getValue().isFreeTime()) {
-						return MESSAGES.validationFreeTimeWithAlt();
-					}
-					if (c[2].getValue().isFreeTime()) {
-						return MESSAGES.validationAltFreeTime();
-					}
-					return null;
-				}
-			});
-			c[0].setAlternative(c[1]); c[1].setAlternative(c[2]);
-			c[1].setPrimary(c[0]); c[2].setPrimary(c[1]);
-			c[0].addValidator(iCheckForDuplicities);
-			c[1].addValidator(iCheckForDuplicities);
-			c[2].addValidator(iCheckForDuplicities);
-		}
 	}
 	
 	public void setCanWaitList(boolean canWaitList) {
 		iCanWaitList = canWaitList;
 		iHeaderWaitlist.setVisible(canWaitList);
-		for (int i = 0; i < iLines.size(); i++)
-			((P)iLines.get(i).getWidget(4)).getWidget(0).setVisible(iCanWaitList);
+		for (CourseRequestLine line: iCourses)
+			line.setWaitListVisible(canWaitList);
 	}
 
 	public void validate(final AsyncCallback<Boolean> callback) {
@@ -782,11 +223,13 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		try {
 			String failed = null;
 			LoadingWidget.getInstance().show(MESSAGES.courseRequestsValidating());
-			for (final CourseSelectionBox[] c: iCourses) {
-				for (CourseSelectionBox x: c) {
-					String message = x.validate();
-					if (message != null) failed = message;
-				}
+			for (CourseRequestLine line: iCourses) {
+				String message = line.validate();
+				if (message != null) failed = message;
+			}
+			for (CourseRequestLine line: iAlternatives) {
+				String message = line.validate();
+				if (message != null) failed = message;
 			}
 			CourseRequestInterface cr = new CourseRequestInterface();
 			cr.setAcademicSessionId(iSessionProvider.getAcademicSessionId());
@@ -816,14 +259,14 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	
 	public void setError(String course, String error) {
 		GWT.log(error);
-		for (CourseSelectionBox[] c: iCourses) {
-			for (int i = 0; i < c.length; i++) {
-				if (course.equals(c[i].getText())) c[i].setError(error);
+		for (CourseRequestLine line: iCourses) {
+			for (CourseSelectionBox box: line.getCourses()) {
+				if (course.equals(box.getText())) box.setError(error);
 			}
 		}
-		for (CourseSelectionBox[] c: iAlternatives) {
-			for (int i = 0; i < c.length; i++) {
-				if (course.equals(c[i].getText())) c[i].setError(error);
+		for (CourseRequestLine line: iAlternatives) {
+			for (CourseSelectionBox box: line.getCourses()) {
+				if (course.equals(box.getText())) box.setError(error);
 			}
 		}
 	}
@@ -833,27 +276,16 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	}
 	
 	public void fillInCourses(CourseRequestInterface cr) {
-		for (CourseSelectionBox[] course: iCourses) {
-			CourseRequestInterface.Request req = new CourseRequestInterface.Request();
-			for (CourseSelectionBox c: course) {
-				RequestedCourse rc = c.getValue();
-				if (rc != null && !rc.isEmpty()) req.addRequestedCourse(rc);
-			}
-			req.setWaitList(course[0].getWaitList());
-			if (!req.isEmpty())
-				cr.getCourses().add(req);
+		for (CourseRequestLine line: iCourses) {
+			CourseRequestInterface.Request req = line.getValue();
+			if (req != null) cr.getCourses().add(req);
 		}
 	}
 	
 	public void fillInAlternatives(CourseRequestInterface cr) {
-		for (CourseSelectionBox[] course: iAlternatives) {
-			CourseRequestInterface.Request req = new CourseRequestInterface.Request();
-			for (CourseSelectionBox c: course) {
-				RequestedCourse rc = c.getValue();
-				if (rc != null && !rc.isEmpty()) req.addRequestedCourse(rc);
-			}
-			if (!req.isEmpty())
-				cr.getAlternatives().add(req);
+		for (CourseRequestLine line: iAlternatives) {
+			CourseRequestInterface.Request req = line.getValue();
+			if (req != null) cr.getAlternatives().add(req);
 		}
 	}
 	
@@ -868,89 +300,44 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	public void setRequest(CourseRequestInterface request) {
 		clear();
 		while (iCourses.size() < request.getCourses().size()) addCourseLine();
-		for (int idx = 0; idx < request.getCourses().size(); idx++) {
-			for (int c = 0; c < 3; c++) {
-				RequestedCourse rc = request.getCourses().get(idx).getRequestedCourse(c);
-				iCourses.get(idx)[c].setValue(rc, true);
-				if (c == 0 && rc != null && rc.isReadOnly())
-					iCourses.get(idx)[c].setWaitListEnabled(false);
-			}
-			iCourses.get(idx)[0].setWaitList(request.getCourses().get(idx).isWaitList());
-			if (request.getCourses().get(idx).isReadOnly()) {
-				iCourses.get(idx)[0].setEnabled(false);
-				iCourses.get(idx)[1].setEnabled(false); iCourses.get(idx)[1].setHint("");
-				iCourses.get(idx)[2].setEnabled(false); iCourses.get(idx)[2].setHint("");
-				iCourses.get(idx)[0].setWaitListEnabled(false);
-			}
-		}
-		while (iAlternatives.size() < request.getAlternatives().size()) addAlternativeLine();
-		for (int idx = 0; idx < request.getAlternatives().size(); idx++) {
-			for (int c = 0; c < 3; c++)
-				iAlternatives.get(idx)[c].setValue(request.getAlternatives().get(idx).getRequestedCourse(c), true);
-			if (request.getAlternatives().get(idx).isReadOnly()) {
-				iAlternatives.get(idx)[0].setEnabled(false);
-				iAlternatives.get(idx)[1].setEnabled(false); iAlternatives.get(idx)[1].setHint("");
-				iAlternatives.get(idx)[2].setEnabled(false); iAlternatives.get(idx)[2].setHint("");				
-			}
-		}
+		for (int idx = 0; idx < request.getCourses().size(); idx++)
+			iCourses.get(idx).setValue(request.getCourses().get(idx), true);
+		while (iAlternatives.size() < request.getAlternatives().size()) addAlternativeLine();;
+		for (int idx = 0; idx < request.getAlternatives().size(); idx++)
+			iAlternatives.get(idx).setValue(request.getAlternatives().get(idx), true);
 	}
 	
 	public Boolean getWaitList(String course) {
 		if (iCanWaitList)
-			for (CourseSelectionBox[] line: iCourses)
-				if (course.equals(line[0].getValue()) || course.equals(line[1].getValue()) || course.equals(line[2].getValue()))
-					return line[0].getWaitList();
+			for (CourseRequestLine line: iCourses)
+				for (CourseSelectionBox box: line.getCourses())
+					if (course.equals(box.getValue()))
+						return line.getWaitList();
 		return null;
 	}
 	
 	public void setWaitList(String course, boolean waitList) {
-		for (CourseSelectionBox[] line: iCourses) {
-			if (course.equals(line[0].getValue()) || course.equals(line[1].getValue()) || course.equals(line[2].getValue()))
-				line[0].setWaitList(waitList);
-		}
+		for (CourseRequestLine line: iCourses)
+			for (CourseSelectionBox box: line.getCourses())
+				if (course.equals(box.getValue()))
+					line.setWaitList(waitList);
 	}
 	
 	public void clear() {
 		iTip.setText(CONSTANTS.tips()[(int)(Math.random() * CONSTANTS.tips().length)]);
-		for (CourseSelectionBox[] c: iCourses) {
-			for (int i=0;i<3;i++) {
-				c[i].setValue(null);
-				c[i].setSaved(false);
-				if (i>0) {
-					c[i].setEnabled(false);
-					c[i].setHint("");
-				} else {
-					c[i].setEnabled(true);
-				}
-			}
-			c[0].setWaitList(false);
-			c[0].setWaitListEnabled(true);
-		}
-		for (CourseSelectionBox[] c: iAlternatives) {
-			for (int i=0;i<3;i++) {
-				c[i].setValue(null);
-				c[i].setSaved(false);
-				if (i>0) {
-					c[i].setEnabled(false);
-					c[i].setHint("");
-				} else {
-					c[i].setEnabled(true);
-				}
-			}
-		}
+		for (CourseRequestLine line: iCourses)
+			line.setValue(null);
+		for (CourseRequestLine line: iAlternatives)
+			line.setValue(null);
 	}
 	
 	public String getFirstError() {
-		for (CourseSelectionBox[] c: iCourses) {
-			for (int i=0;i<3;i++) {
-				if (c[i].getError() != null) return c[i].getError();
-			}
-		}
-		for (CourseSelectionBox[] c: iAlternatives) {
-			for (int i=0;i<3;i++) {
-				if (c[i].getError() != null) return c[i].getError();
-			}
-		}
+		for (CourseRequestLine line: iCourses)
+			for (CourseSelectionBox box: line.getCourses())
+				if (box.getError() != null) return box.getError();
+		for (CourseRequestLine line: iAlternatives)
+			for (CourseSelectionBox box: line.getCourses())
+				if (box.getError() != null) return box.getError();
 		return null;
 	}
 
@@ -976,112 +363,94 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			ValueChangeEvent.fire(this, value);
 	}
 
-	protected void clear(CourseSelectionBox[] c) {
-		for (int i=0;i<3;i++) {
-			c[i].setValue(null);
-			c[i].setSaved(false);
-			if (i>0) {
-				c[i].setEnabled(false);
-				c[i].setHint("");
-			} else {
-				c[i].setEnabled(true);
-			}
-		}
-		c[0].setWaitList(false);
-		c[0].setWaitListEnabled(true);
-	}
-
 	protected void clearErrors() {
-		for (CourseSelectionBox[] c: iCourses) {
-			for (int i=0;i<3;i++)
-				c[i].setError(null);
-		}
-		for (CourseSelectionBox[] c: iAlternatives) {
-			for (int i=0;i<3;i++)
-				c[i].setError(null);
-		}
+		for (CourseRequestLine line: iCourses)
+			for (CourseSelectionBox box: line.getCourses())
+				box.setError(null);
+		for (CourseRequestLine line: iAlternatives)
+			for (CourseSelectionBox box: line.getCourses())
+				box.setError(null);
 	}
 
 	public Command addCourse(RequestedCourse rc) {
-		for (final CourseSelectionBox[] course: iCourses) {
-			if (!course[0].hasValue()) {
-				clear(course);
-				course[0].setValue(rc, true);
+		Request request = new Request(); request.addRequestedCourse(rc);
+		for (final CourseRequestLine line: iCourses)
+			if (line.getValue() == null) {
+				line.setValue(request, true);
 				return new Command() {
 					@Override
 					public void execute() {
-						course[0].setValue(null, true);
+						line.setValue(null, true);
 						clearErrors();
 					}
 				};
 			}
-		}
 		addCourseLine();
-		final CourseSelectionBox[] course = iCourses.get(iCourses.size() - 1);
-		course[0].setValue(rc, true);
+		final CourseRequestLine line = iCourses.get(iCourses.size() - 1);
+		line.setValue(request, true);
 		return new Command() {
 			@Override
 			public void execute() {
-				course[0].setValue(null, true);
+				line.setValue(null, true);
 				clearErrors();
 			}
 		};
 	}
 
 	public boolean hasCourse(RequestedCourse rc) {
-		for (final CourseSelectionBox[] course: iCourses) {
-			if (rc.equals(course[0].getValue()) || rc.equals(course[1].getValue()) || rc.equals(course[2].getValue()))
-				return true;
+		for (final CourseRequestLine line: iCourses) {
+			Request request = line.getValue();
+			if (request != null && request.hasRequestedCourse(rc)) return true;
 		}
-		for (final CourseSelectionBox[] course: iAlternatives) {
-			if (rc.equals(course[0].getValue()) || rc.equals(course[1].getValue()) || rc.equals(course[2].getValue()))
-				return true;
+		for (final CourseRequestLine line: iAlternatives) {
+			Request request = line.getValue();
+			if (request != null && request.hasRequestedCourse(rc)) return true;
 		}
 		return false;
 	}
 
 	public void dropCourse(RequestedCourse rc) {
-		for (final CourseSelectionBox[] course: iCourses) {
-			if (rc.equals(course[0].getValue()) || rc.equals(course[1].getValue()) || rc.equals(course[2].getValue())) {
-				course[0].remove();
+		for (final CourseRequestLine line: iCourses) {
+			Request request = line.getValue();
+			if (request != null && request.hasRequestedCourse(rc)) {
+				line.delete();
 				return;
 			}
 		}
-		for (final CourseSelectionBox[] course: iAlternatives) {
-			if (rc.equals(course[0].getValue()) || rc.equals(course[1].getValue()) || rc.equals(course[2].getValue())) {
-				course[0].remove();
+		for (final CourseRequestLine line: iAlternatives) {
+			Request request = line.getValue();
+			if (request != null && request.hasRequestedCourse(rc)) {
+				line.delete();
 				return;
 			}
 		}
 	}
-
+	
 	public void dropCourse(ClassAssignmentInterface.ClassAssignment assignment) {
 		if (assignment.isFreeTime() && assignment.isAssigned()) {
 			FreeTime ft = new FreeTime(assignment.getDays(), assignment.getStart(), assignment.getLength());
-			for (final CourseSelectionBox[] course: iCourses) {
-				RequestedCourse rc = course[0].getValue();
-				if (rc != null && rc.isFreeTime() && rc.getFreeTime().contains(ft)) {
-					rc.getFreeTime().remove(ft);
-					if (rc.isEmpty())
-						course[0].remove();
+			for (final CourseRequestLine line: iCourses) {
+				Request request = line.getValue();
+				if (request != null && request.hasRequestedCourse() && request.getRequestedCourse(0).isFreeTime() && request.getRequestedCourse(0).getFreeTime().contains(ft)) {
+					request.getRequestedCourse(0).getFreeTime().remove(ft);
+					if (request.getRequestedCourse(0).isEmpty())
+						line.delete();
 					else
-						course[0].setValue(rc, true);
+						line.setValue(request, true);
 					return;
 				}
 			}
 		} else if (!assignment.isFreeTime()) {
-			for (final CourseSelectionBox[] course: iCourses) {
-				if (assignment.equalsIgnoreCase(course[0].getValue()) || assignment.equalsIgnoreCase(course[1].getValue()) || assignment.equalsIgnoreCase(course[2].getValue())) {
-					course[0].remove();
-					return;
-				}
-			}
-			for (final CourseSelectionBox[] course: iAlternatives) {
-				if (assignment.equalsIgnoreCase(course[0].getValue()) || assignment.equalsIgnoreCase(course[1].getValue()) || assignment.equalsIgnoreCase(course[2].getValue())) {
-					course[0].remove();
-					return;
-				}
-			}
+			for (final CourseRequestLine line: iCourses)
+				for (CourseSelectionBox box: line.getCourses())
+					if (assignment.equalsIgnoreCase(box.getValue())) {
+						line.delete(); return;
+					}
+			for (final CourseRequestLine line: iAlternatives)
+				for (CourseSelectionBox box: line.getCourses())
+					if (assignment.equalsIgnoreCase(box.getValue())) {
+						line.delete(); return;
+					}
 		}
 	}
 }

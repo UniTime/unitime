@@ -288,7 +288,8 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			if (isCourse()) {
 				return getCourseName() +
 						(hasSelectedIntructionalMethods() ? " method:" + getSelectedIntructionalMethods() : "") +
-						(hasSelectedClasses() ? " section:" + getSelectedClasses() : "");
+						(hasSelectedClasses() ? " section:" + getSelectedClasses() : "") + 
+						(isReadOnly() ? " [S]" : "") + (hasCourseId() ? "[i]" : "");
 			}
 			if (isFreeTime()) {
 				String ret = "";
@@ -383,6 +384,12 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			iRequestedCourse.add(requestedCourse);
 		}
 		public boolean hasRequestedCourse(CourseAssignment course) {
+			if (iRequestedCourse == null) return false;
+			for (RequestedCourse rc: iRequestedCourse)
+				if (rc.equals(course)) return true;
+			return false;
+		}
+		public boolean hasRequestedCourse(RequestedCourse course) {
 			if (iRequestedCourse == null) return false;
 			for (RequestedCourse rc: iRequestedCourse)
 				if (rc.equals(course)) return true;
