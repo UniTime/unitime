@@ -1191,6 +1191,11 @@ public enum ApplicationProperty {
 	@Description("Events: departmental managers can only see class events of their department(s) until the schedule is published (academic session status includes no-role class schedule)")
 	@Since(4.2)
 	EventHasRoleCheckReportStatus("unitime.events.hasRole.checkSessionStatusForClasses"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Events Personal Schedule: show exams associated with classes that the person is teaching (not only exams where the person is directly listed as instructor)")
+	EventExamsConsiderClassInstructorAssignments("unitime.events.exams.considerClassInstructors"),
 
 	@Type(Class.class)
 	@Implements(Email.class)
