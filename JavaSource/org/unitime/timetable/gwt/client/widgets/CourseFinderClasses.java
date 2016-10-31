@@ -185,6 +185,8 @@ public class CourseFinderClasses extends UniTimeTable<ClassAssignment> implement
 							if (clazz.isCancelled() || (!clazz.isSaved() && !clazz.isAvailable()))
 								for (int c = 0; c < getCellCount(row); c++)
 									getCellFormatter().addStyleName(row, c, "text-gray");
+							if (isAllowSelection() && !clazz.isCancelled() && (clazz.isSaved() || clazz.isAvailable()) && iSelectedClasses.contains(clazz.getSelection()))
+								setSelected(row, true);
 							lastSubpartId = clazz.getSubpartId();
 						}
 					} else {

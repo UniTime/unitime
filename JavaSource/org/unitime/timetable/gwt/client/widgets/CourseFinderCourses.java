@@ -327,7 +327,7 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 			if (record.hasInstructionalMethodSelection()) {
 				for (final IdValue m: record.getInstructionalMethods()) {
 					CheckBox ch = new CheckBox(m.getValue());
-					ch.setValue(iSelectedMethods.contains(m.getId()));
+					ch.setValue(iSelectedMethods.contains(m.getValue()));
 					ch.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 						@Override
 						public void onValueChange(ValueChangeEvent<Boolean> event) {
