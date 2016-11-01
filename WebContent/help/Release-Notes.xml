@@ -101,6 +101,15 @@
 				<line>Set unitime.events.hasRole.checkSessionStatusForClasses to true to enable this restriction (default is false, i.e., work as before).</line>
 			</description>
 		</item>
+		<item>
+			<name>Personal Schedule (Instructor)</name>
+			<description>
+				<line>Added an option to include indirect examinations (that is cases where an instructor is assigned to a class for which the exam is held).</line>
+				<line>To enable this, set unitime.events.exams.considerClassInstructors to true.
+					<line>If set to false, which is also the default, only exams that have the person assigned as instructor would show.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Batch Student Scheduling</title>
