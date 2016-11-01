@@ -11656,4 +11656,34 @@
 		<plsql>alter table %SCHEMA%.room_group modify description varchar2(1000 char)</plsql>
 		<plsql>alter table %SCHEMA%.room_feature add description varchar2(1000 char)</plsql>
 	</update>
+	<update version="169" date="31-Oct-2016" comment="External Department Status">
+		<plsql>
+			create table %SCHEMA%.ext_dept_status (
+				ext_dept_id number(20,0) constraint nn_dept_status_ext not null,
+				department_id number(20,0)  constraint nn_dept_status_dep not null,
+				status_type number(20,0)  constraint nn_dept_status_type not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.ext_dept_status add constraint pk_ext_dept_status primary key (ext_dept_id, department_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.ext_dept_status (
+				ext_dept_id decimal(20,0) not null,
+				department_id decimal(20,0) not null,
+				status_type decimal(20,0) not null,
+				primary key(ext_dept_id, department_id)
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.ext_dept_status add constraint fk_dept_status_ext foreign key (ext_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.ext_dept_status add constraint fk_dept_status_dep foreign key (department_id)
+			references %SCHEMA%.department (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.ext_dept_status add constraint fk_dept_status_type foreign key (status_type)
+			references %SCHEMA%.dept_status_type (uniqueid) on delete cascade
+		</sql>
+	</update>
 </dbupdate>

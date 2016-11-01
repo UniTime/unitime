@@ -27,6 +27,7 @@ import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.ExternalDepartmentStatusType;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.Session;
@@ -65,6 +66,7 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 	private Set<RoomDept> iRoomDepts;
 	private Set<DatePattern> iDatePatterns;
 	private Set<TimePattern> iTimePatterns;
+	private Set<ExternalDepartmentStatusType> iExternalStatusTypes;
 	private Set<TimetableManager> iTimetableManagers;
 	private Set<DepartmentalInstructor> iInstructors;
 
@@ -182,6 +184,13 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 	public void addTotimePatterns(TimePattern timePattern) {
 		if (iTimePatterns == null) iTimePatterns = new HashSet<TimePattern>();
 		iTimePatterns.add(timePattern);
+	}
+
+	public Set<ExternalDepartmentStatusType> getExternalStatusTypes() { return iExternalStatusTypes; }
+	public void setExternalStatusTypes(Set<ExternalDepartmentStatusType> externalStatusTypes) { iExternalStatusTypes = externalStatusTypes; }
+	public void addToexternalStatusTypes(ExternalDepartmentStatusType externalDepartmentStatusType) {
+		if (iExternalStatusTypes == null) iExternalStatusTypes = new HashSet<ExternalDepartmentStatusType>();
+		iExternalStatusTypes.add(externalDepartmentStatusType);
 	}
 
 	public Set<TimetableManager> getTimetableManagers() { return iTimetableManagers; }

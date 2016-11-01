@@ -92,7 +92,7 @@ public class SimpleDepartmentPermission implements PermissionDepartment {
 
 		// Check department status
 		if ((ownerStatus != null || managerStatus != null) && !authority.hasRight(Right.StatusIndependent)) {
-			DepartmentStatusType type = managingDepartment.effectiveStatusType();
+			DepartmentStatusType type = managingDepartment.effectiveStatusType(controllingDepartment);
 			if (ownerStatus != null && authority.hasQualifier(controllingDepartment) && type.can(ownerStatus))
 				return true;
 			if (managerStatus != null && authority.hasQualifier(managingDepartment) && type.can(managerStatus))

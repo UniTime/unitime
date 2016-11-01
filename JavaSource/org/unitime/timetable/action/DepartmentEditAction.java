@@ -66,6 +66,8 @@ public class DepartmentEditAction extends Action {
 			// Read operation to be performed
 			String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 			
+			request.setAttribute(Department.DEPT_ATTR_NAME, Department.findAllNonExternal(sessionContext.getUser().getCurrentAcademicSessionId()));
+			
 	        // Edit
 	        if(rsc.getMessage("op.edit").equalsIgnoreCase(op)) {
 	            String id = request.getParameter("id");
@@ -105,6 +107,16 @@ public class DepartmentEditAction extends Action {
 	            		sessionContext.checkPermission(myForm.getId(), "Department", Right.DepartmentEdit);
 	            	myForm.save(sessionContext);
 	            }
+	        }
+	        
+	        if ("Add Status".equals(op)) {
+	        	myForm.addBlankDependentDepartment();
+	        	return mapping.findForward(myForm.getId() == null ? "add" : "edit");
+	        }
+
+	        if ("Delete".equals(op) && request.getParameter("deleteId") != null && !request.getParameter("deleteId").isEmpty()) {
+	        	myForm.deleteDependentDepartment(Integer.parseInt(request.getParameter("deleteId")));
+	        	return mapping.findForward(myForm.getId() == null ? "add" : "edit");
 	        }
 	        
 	        // Delete

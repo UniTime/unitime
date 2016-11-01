@@ -17,6 +17,7 @@
  * limitations under the License.
  * 
  --%>
+<%@page import="org.unitime.timetable.model.Department"%>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean"%> 
@@ -224,6 +225,51 @@
 				<html:checkbox property="allowStudentScheduling"/>
 			</TD>
 		</TR>
+		
+		<logic:notEmpty name="departmentEditForm" property="dependentDepartments">
+			<TR><TD colspan='2'>&nbsp;</TD></TR>
+			<TR>
+				<TD valign="middle" colspan='2'>
+					<A name='ExternalDepartmentStatuses'></A>
+					<tt:section-header title="Controlling Department Statuses">
+						<html:submit property="op" styleClass="btn" accesskey="A" title="Add Controlling Department Status (Alt+A)">Add Status</html:submit> 			
+					</tt:section-header>
+				</TD>
+			</TR>
+			<INPUT type="hidden" name="deleteId" id="deleteId" value="">
+			<TR>
+				<TD colspan="2" align="left">
+					<TABLE align="left" cellspacing="0" cellpadding="2" border="0">
+						<TR>
+							<TD><I>Controlling Department</I></TD>
+							<TD colspan='2'><I>Status for classes managed by
+							<logic:empty name="departmentEditForm" property="id">this department</logic:empty>
+							<logic:notEmpty name="departmentEditForm" property="id"><bean:write name="departmentEditForm" property="deptCode"/> - <bean:write name="departmentEditForm" property="name"/></logic:notEmpty>
+							</I></TD>
+						</TR>
+						<logic:iterate name="departmentEditForm" property="dependentDepartments" id="dept" indexId="ctr">
+							<TR>
+								<TD align="left" nowrap>
+									<html:select property='<%= "dependentDepartments[" + ctr + "]"%>'>
+										<html:option value="-1">-</html:option>
+										<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="uniqueId" labelProperty="label" />
+									</html:select>
+								</TD>
+								<TD>
+									<html:select property='<%= "dependentStatuses[" + ctr + "]"%>'>
+										<html:option value="">Department/Session Default</html:option>
+										<html:optionsCollection property="statusOptions" value="reference" label="label" />
+									</html:select>
+								</TD>
+								<TD>
+									<html:submit property="op" styleClass="btn" title="Remove controlling department" onclick="<%=\"javascript: document.getElementById('deleteId').value = \" + ctr + \";\"%>">Delete</html:submit>
+								</TD>
+							</TR>
+						</logic:iterate>
+					</TABLE>
+				</TD>
+			</TR>
+		</logic:notEmpty>
 
 		<TR>
 			<TD colspan="2">

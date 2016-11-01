@@ -57,6 +57,7 @@ import org.unitime.timetable.model.ClassDurationType;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -82,6 +83,7 @@ import org.unitime.timetable.model.dao.InstructionalMethodDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.ItypeDescDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.permissions.Permission.PermissionDepartment;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.AccessDeniedException;
 import org.unitime.timetable.util.Constants;
@@ -104,6 +106,8 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
 	@Autowired SessionContext sessionContext;
+	
+	@Autowired PermissionDepartment permissionDepartment;
 
     // --------------------------------------------------------- Instance Variables
 
@@ -126,11 +130,18 @@ public class InstructionalOfferingConfigEditAction extends Action {
     	MessageResources rsc = getResources(request);
         InstructionalOfferingConfigEditForm frm = (InstructionalOfferingConfigEditForm) form;
         
-        if (frm.getConfigId() == null || frm.getConfigId() == 0)
-        	sessionContext.checkPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.InstrOfferingConfigAdd);
+        Department contrDept = null;
+        if (frm.getConfigId() == null || frm.getConfigId() == 0) {
+        	InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(Long.valueOf(frm.getInstrOfferingId()));
+        	sessionContext.checkPermission(offering, Right.InstrOfferingConfigAdd);
+        	contrDept = offering.getControllingCourseOffering().getSubjectArea().getDepartment();
+        }
         
-        if (frm.getConfigId() != null && frm.getConfigId() != 0)
-        	sessionContext.checkPermission(frm.getConfigId(), "InstrOfferingConfig", Right.InstrOfferingConfigEdit);
+        if (frm.getConfigId() != null && frm.getConfigId() != 0) {
+        	InstrOfferingConfig config = InstrOfferingConfigDAO.getInstance().get(frm.getConfigId());
+        	sessionContext.checkPermission(config, Right.InstrOfferingConfigEdit);
+        	contrDept = config.getInstructionalOffering().getControllingCourseOffering().getSubjectArea().getDepartment();
+        }
 
         String html = "";
         String op = (request.getParameter("op")==null)
@@ -154,7 +165,8 @@ public class InstructionalOfferingConfigEditAction extends Action {
 		TreeSet ts = new TreeSet();
 		for (Iterator it = ((TreeSet) request.getAttribute(Department.EXTERNAL_DEPT_ATTR_NAME)).iterator(); it.hasNext();){
 			Department d = (Department) it.next();
-			if (sessionContext.hasPermission(d, Right.InstrOfferingConfigEditDepartment))
+			if (sessionContext.hasPermission(d, Right.InstrOfferingConfigEditDepartment) &&
+				permissionDepartment.check(sessionContext.getUser(), contrDept, DepartmentStatusType.Status.OwnerEdit, d, DepartmentStatusType.Status.ManagerEdit))
 				ts.add(d);
 		}
 		request.setAttribute((Department.EXTERNAL_DEPT_ATTR_NAME), ts);

@@ -20,8 +20,10 @@
 package org.unitime.timetable.action;
 
 import java.text.DecimalFormat;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,6 +37,7 @@ import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.DepartmentListForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.ExternalDepartmentStatusType;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.ExportUtils;
@@ -134,6 +137,23 @@ public class DepartmentListAction extends Action {
                     	allowReqOrd += 4;
                     }
                     if (allowReqOrd == 7) allowReq = "all";
+                    
+                    String dependentStatuses = null;
+                    if (d.isExternalManager() && d.getExternalStatusTypes() != null && !d.getExternalStatusTypes().isEmpty()) {
+                    	TreeSet<ExternalDepartmentStatusType> set = new TreeSet<ExternalDepartmentStatusType>(new Comparator<ExternalDepartmentStatusType>() {
+            				@Override
+            				public int compare(ExternalDepartmentStatusType e1, ExternalDepartmentStatusType e2) {
+            					return e1.getDepartment().compareTo(e2.getDepartment());
+            				}
+            			});
+                    	set.addAll(d.getExternalStatusTypes());
+                    	for (ExternalDepartmentStatusType t: set) {
+                    		if (dependentStatuses == null)
+                    			dependentStatuses = "    " + t.getDepartment().getDeptCode() + ": " + t.getStatusType().getLabel();
+                    		else
+                    			dependentStatuses += "\n    " + t.getDepartment().getDeptCode() + ": " + t.getStatusType().getLabel();
+                    	}
+                    }
 
                     webTable.addLine(null,
                             new String[] {
@@ -143,7 +163,7 @@ public class DepartmentListAction extends Action {
                                 (d.isExternalManager().booleanValue()?d.getExternalMgrAbbv():""),
                                 df5.format(d.getSubjectAreas().size()),
                                 df5.format(d.getRoomDepts().size()),
-                                (d.getStatusType() == null ? "@@ITALIC " : "")+d.effectiveStatusType().getLabel()+(d.getStatusType() == null?"@@END_ITALIC " : ""),
+                                (d.getStatusType() == null ? "@@ITALIC " : "")+d.effectiveStatusType().getLabel()+(d.getStatusType() == null?"@@END_ITALIC " : "") + (dependentStatuses == null ? "" : "\n" + dependentStatuses),
                                 (d.getDistributionPrefPriority()==null && d.getDistributionPrefPriority().intValue()!=0 ? "" : d.getDistributionPrefPriority().toString()),
                                 allowReq,
                                 d.isInheritInstructorPreferences() ? "Yes" : "No",
@@ -238,6 +258,23 @@ public class DepartmentListAction extends Action {
                         }
                         if (allowReqOrd == 7) allowReq = "all";
                         if (allowReqOrd == 0) allowReq = "&nbsp;";
+                        
+                String dependentStatuses = null;
+                if (d.isExternalManager() && d.getExternalStatusTypes() != null && !d.getExternalStatusTypes().isEmpty()) {
+                	TreeSet<ExternalDepartmentStatusType> set = new TreeSet<ExternalDepartmentStatusType>(new Comparator<ExternalDepartmentStatusType>() {
+        				@Override
+        				public int compare(ExternalDepartmentStatusType e1, ExternalDepartmentStatusType e2) {
+        					return e1.getDepartment().compareTo(e2.getDepartment());
+        				}
+        			});
+                	set.addAll(d.getExternalStatusTypes());
+                	for (ExternalDepartmentStatusType t: set) {
+                		if (dependentStatuses == null)
+                			dependentStatuses = t.getDepartment().getDeptCode() + ": " + t.getStatusType().getLabel();
+                		else
+                			dependentStatuses += "<br>" + t.getDepartment().getDeptCode() + ": " + t.getStatusType().getLabel();
+                	}
+                }
 
     			webTable.addLine(
     				"onClick=\"document.location='departmentEdit.do?op=Edit&id=" + d.getUniqueId() + "';\"",
@@ -252,7 +289,7 @@ public class DepartmentListAction extends Action {
     						df5.format(d.getRoomDepts().size()),
     						(d.getStatusType() == null ? "<i>" : "&nbsp;")
     							+ d.effectiveStatusType().getLabel()
-    							+ (d.getStatusType() == null ? "</i>" : ""),
+    							+ (d.getStatusType() == null ? "</i>" : "") + (dependentStatuses == null ? "" : "<div style='padding-left:30px;'>" + dependentStatuses + "</div>"),
     						(d.getDistributionPrefPriority() == null && d.getDistributionPrefPriority().intValue() != 0 
     							? "&nbsp;" : d.getDistributionPrefPriority().toString()),
     						allowReq,

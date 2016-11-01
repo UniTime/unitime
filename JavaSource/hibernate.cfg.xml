@@ -216,5 +216,6 @@
 	<mapping resource="InstructorAttribute.hbm.xml"/>
 	<mapping resource="OfferingCoordinator.hbm.xml"/>
 	<mapping resource="TeachingClassRequest.hbm.xml"/>
+	<mapping resource="ExternalDepartmentStatusType.hbm.xml"/>
 </session-factory>
 </hibernate-configuration>

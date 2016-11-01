@@ -55,6 +55,7 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -77,6 +78,7 @@ import org.unitime.timetable.model.dao.InstructionalMethodDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.permissions.Permission.PermissionDepartment;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.service.AssignmentService;
@@ -91,6 +93,8 @@ public class InstructionalOfferingModifyAction extends Action {
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
 	@Autowired SessionContext sessionContext;
+	
+	@Autowired PermissionDepartment permissionDepartment;
 	
 	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
 	
@@ -111,15 +115,6 @@ public class InstructionalOfferingModifyAction extends Action {
         MessageResources rsc = getResources(request);
         InstructionalOfferingModifyForm frm = (InstructionalOfferingModifyForm) form;
         
-		LookupTables.setupExternalDepts(request, sessionContext.getUser().getCurrentAcademicSessionId());
-		TreeSet ts = new TreeSet();
-		for (Iterator it = ((TreeSet) request.getAttribute(Department.EXTERNAL_DEPT_ATTR_NAME)).iterator(); it.hasNext();){
-			Department d = (Department) it.next();
-			if (sessionContext.hasPermission(d, Right.MultipleClassSetupDepartment))
-				ts.add(d);
-		}
-		request.setAttribute((Department.EXTERNAL_DEPT_ATTR_NAME + "list"), ts);
-
         // Get operation
         String op = (request.getParameter("op")==null)
 						? (frm.getOp()==null || frm.getOp().length()==0)
@@ -152,6 +147,17 @@ public class InstructionalOfferingModifyAction extends Action {
 								        
             doLoad(request, frm, instrOffrConfigId);
         }
+        
+		LookupTables.setupExternalDepts(request, sessionContext.getUser().getCurrentAcademicSessionId());
+		Department contrDept = InstrOfferingConfigDAO.getInstance().get(frm.getInstrOffrConfigId()).getInstructionalOffering().getControllingCourseOffering().getSubjectArea().getDepartment();
+		TreeSet ts = new TreeSet();
+		for (Iterator it = ((TreeSet) request.getAttribute(Department.EXTERNAL_DEPT_ATTR_NAME)).iterator(); it.hasNext();){
+			Department d = (Department) it.next();
+			if (sessionContext.hasPermission(d, Right.MultipleClassSetupDepartment) && 
+				permissionDepartment.check(sessionContext.getUser(), contrDept, DepartmentStatusType.Status.OwnerEdit, d, DepartmentStatusType.Status.ManagerEdit))
+				ts.add(d);
+		}
+		request.setAttribute((Department.EXTERNAL_DEPT_ATTR_NAME + "list"), ts);
 
         // Add a class
         if(op.equalsIgnoreCase(rsc.getMessage("button.add"))) {

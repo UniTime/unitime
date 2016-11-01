@@ -334,11 +334,39 @@ public class Department extends BaseDepartment implements Comparable<Department>
 				list());
 		return ret;
 	}
-
+	
 	public DepartmentStatusType effectiveStatusType() {
 		DepartmentStatusType t = getStatusType();
 		if (t!=null) return t;
 		return getSession().getStatusType();
+	}
+
+	public DepartmentStatusType effectiveStatusType(Department controllingDepartment) {
+		if (isExternalManager() && controllingDepartment != null && getExternalStatusTypes() != null) {
+			for (ExternalDepartmentStatusType t: getExternalStatusTypes()) {
+				if (controllingDepartment.equals(t.getDepartment())) return t.getStatusType();
+			}
+		}
+		return effectiveStatusType();
+	}
+	
+	public DepartmentStatusType effectiveStatusType(UserContext cx) {
+		if (isExternalManager() && getExternalStatusTypes() != null && !cx.hasDepartment(getUniqueId())) {
+			Integer status = null;
+			for (ExternalDepartmentStatusType t: getExternalStatusTypes()) {
+				if (cx.hasDepartment(t.getDepartment().getUniqueId())) {
+					if (status == null) {
+						status = t.getStatusType().getStatus();
+					} else {
+						status = new Integer(status | t.getStatusType().getStatus());
+					}
+				}
+			}
+			if (status != null) {
+				DepartmentStatusType ret = new DepartmentStatusType(); ret.setStatus(status); return ret;
+			}
+		}
+		return effectiveStatusType();
 	}
 	
 	public Long getSessionId(){

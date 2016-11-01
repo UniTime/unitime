@@ -564,6 +564,12 @@
                 column="status_type"
                 not-null="false"
                 foreign-key="fk_department_status_type"/>
+                
+            <set name="externalStatusTypes" table="ext_dept_status" lazy="true" inverse="true" cascade="all-delete-orphan">
+                <cache include="non-lazy" usage="transactional"/>
+                <key column="ext_dept_id" not-null="true"/>
+                <one-to-many class="ExternalDepartmentStatusType"/>
+            </set>
 
             <set name="timetableManagers" table="dept_to_tt_mgr">
                 <cache include="non-lazy" usage="transactional"/>
@@ -572,7 +578,6 @@
                     class="TimetableManager"
                     column="timetable_mgr_id"
                     foreign-key="fk_dept_mgr_to_mgr"/>
-
             </set>
             <many-to-one
                 name="solverGroup"

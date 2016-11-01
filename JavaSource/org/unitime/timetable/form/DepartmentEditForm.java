@@ -19,6 +19,13 @@
 */
 package org.unitime.timetable.form;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.TreeSet;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionErrors;
@@ -29,10 +36,13 @@ import org.unitime.commons.Debug;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
+import org.unitime.timetable.model.ExternalDepartmentStatusType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.util.DynamicList;
+import org.unitime.timetable.util.DynamicListObjectFactory;
 import org.unitime.timetable.util.ReferenceList;
 
 
@@ -59,7 +69,9 @@ public class DepartmentEditForm extends ActionForm {
     public boolean iAllowEvents = false;
     public boolean iInheritInstructorPreferences = false;
     public boolean iAllowStudentScheduling = false;
-	
+    private List iDependentDepartments;
+    private List iDependentStatuses;
+    
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
 		
@@ -129,6 +141,16 @@ public class DepartmentEditForm extends ActionForm {
 		iIsExternal = false; iExtName = null; iExtAbbv = null;
         iAllowReqTime = false; iAllowReqRoom = false; iAllowReqDist = false; iAllowEvents = false;
         iInheritInstructorPreferences = false; iAllowStudentScheduling = false;
+        iDependentDepartments = DynamicList.getInstance(new ArrayList(), new DynamicListObjectFactory() {
+            public Object create() {
+                return new String("-1");
+            }
+        });
+        iDependentStatuses = DynamicList.getInstance(new ArrayList(), new DynamicListObjectFactory() {
+            public Object create() {
+                return new String("");
+            }
+        });
 	}
 
 	public Long getId() { return iId; }
@@ -183,6 +205,15 @@ public class DepartmentEditForm extends ActionForm {
 		return ref;
 	}
 	
+    public List getDependentDepartments() { return iDependentDepartments; }
+    public String getDependentDepartments(int key) { return iDependentDepartments.get(key).toString(); }
+    public void setDependentDepartments(int key, Object value) { iDependentDepartments.set(key, value); }
+    public void setDependentDepartments(List departments) { iDependentDepartments = departments; }
+    public List getDependentStatuses() { return iDependentStatuses; }
+    public String getDependentStatuses(int key) { return iDependentStatuses.get(key).toString(); }
+    public void setDependentStatuses(int key, Object value) { iDependentStatuses.set(key, value); }
+    public void setDependentStatuses(List statuses) { iDependentStatuses = statuses; }
+	
 	public void load(Department department) {
 		setId(department.getUniqueId());
 		setSessionId(department.getSessionId());
@@ -201,6 +232,34 @@ public class DepartmentEditForm extends ActionForm {
         setAllowEvents(department.isAllowEvents());
         setAllowStudentScheduling(department.isAllowStudentScheduling());
         setInheritInstructorPreferences(department.isInheritInstructorPreferences());
+        iDependentDepartments.clear(); iDependentStatuses.clear();
+        if (department.isExternalManager() && department.getExternalStatusTypes() != null) {
+        	if (!department.getExternalStatusTypes().isEmpty()) {
+            	TreeSet<ExternalDepartmentStatusType> set = new TreeSet<ExternalDepartmentStatusType>(new Comparator<ExternalDepartmentStatusType>() {
+    				@Override
+    				public int compare(ExternalDepartmentStatusType e1, ExternalDepartmentStatusType e2) {
+    					return e1.getDepartment().compareTo(e2.getDepartment());
+    				}
+    			});
+            	set.addAll(department.getExternalStatusTypes());
+            	for (ExternalDepartmentStatusType e: set) {
+            		iDependentDepartments.add(e.getDepartment().getUniqueId().toString());
+            		iDependentStatuses.add(e.getStatusType().getReference());
+            	}
+        	}
+            addBlankDependentDepartment();
+            addBlankDependentDepartment();
+        }
+	}
+	
+	public void addBlankDependentDepartment() {
+        iDependentDepartments.add("-1");
+        iDependentStatuses.add("");
+	}
+	
+	public void deleteDependentDepartment(int idx) {
+        iDependentDepartments.remove(idx);
+        iDependentStatuses.remove(idx);
 	}
 
 	public void save(SessionContext context) throws Exception {
@@ -215,6 +274,7 @@ public class DepartmentEditForm extends ActionForm {
 			department.setSession(acadSession);
 			department.setDistributionPrefPriority(new Integer(0));
 			acadSession.addTodepartments(department);
+			department.setExternalStatusTypes(new HashSet<ExternalDepartmentStatusType>());
 		}
 		else {
 			department = dao.get(getId(), session);
@@ -235,8 +295,36 @@ public class DepartmentEditForm extends ActionForm {
             department.setAllowEvents(getAllowEvents());
             department.setAllowStudentScheduling(getAllowStudentScheduling());
             department.setInheritInstructorPreferences(getInheritInstructorPreferences());
-
-			dao.saveOrUpdate(department);
+            
+            List<ExternalDepartmentStatusType> statuses = new ArrayList<ExternalDepartmentStatusType>(department.getExternalStatusTypes());
+            if (department.isExternalManager()) {
+            	for (int i = 0; i < Math.min(iDependentDepartments.size(), iDependentStatuses.size()); i++) {
+            		Long deptId = Long.valueOf((String)iDependentDepartments.get(i));
+            		String status = (String)iDependentStatuses.get(i);
+            		if (deptId >= 0 && !status.isEmpty()) {
+            			ExternalDepartmentStatusType t = null;
+            			for (Iterator<ExternalDepartmentStatusType> j = statuses.iterator(); j.hasNext(); ) {
+            				ExternalDepartmentStatusType x = j.next();
+            				if (deptId.equals(x.getDepartment().getUniqueId())) {
+            					j.remove(); t = x; break;
+            				}
+            			}
+            			if (t == null) {
+            				t = new ExternalDepartmentStatusType();
+            				t.setExternalDepartment(department);
+            				t.setDepartment(DepartmentDAO.getInstance().get(deptId));
+                			department.getExternalStatusTypes().add(t);
+            			}
+            			t.setStatusType(DepartmentStatusType.findByRef(status));
+            		}
+            	}
+            }
+            for (ExternalDepartmentStatusType t: statuses) {
+            	department.getExternalStatusTypes().remove(t);
+            	session.delete(t);
+            }
+            
+            session.saveOrUpdate(department);
 //			if( acadSession != null) {
 //				session.saveOrUpdate(acadSession);
 //			}

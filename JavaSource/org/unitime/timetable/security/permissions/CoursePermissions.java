@@ -403,7 +403,7 @@ public class CoursePermissions {
 					if (clazz.getManagingDept() != null && clazz.getManagingDept().isExternalManager()) {
 						if (externals.add(clazz.getManagingDept()) &&
 							!permissionDepartment.check(user, clazz.getManagingDept(), DepartmentStatusType.Status.ManagerEdit) &&
-							!clazz.getManagingDept().effectiveStatusType().can(DepartmentStatusType.Status.OwnerEdit))
+							!clazz.getManagingDept().effectiveStatusType(clazz.getControllingDept()).can(DepartmentStatusType.Status.OwnerEdit))
 							return false;
 					}
 				}
