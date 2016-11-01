@@ -74,7 +74,7 @@ public class SchedulingSubpartTableBuilder {
         
         // Get external depts
         Collection extDepts = (Collection) request.getAttribute(Department.EXTERNAL_DEPT_ATTR_NAME);
-        String extDeptsOption = "<OPTION value='-1'>Department</OPTION>";
+        String extDeptsOption = "<OPTION value='-1'>" + MSG.dropDeptDepartment() + "</OPTION>";
         for(Iterator it = extDepts.iterator(); it.hasNext();){
         	Department d = (Department) it.next();
         	extDeptsOption += "<OPTION value='" + d.getUniqueId().toString() + "'>" + d.getManagingDeptLabel() + "</OPTION>";

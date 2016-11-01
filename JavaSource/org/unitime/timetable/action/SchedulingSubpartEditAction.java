@@ -302,7 +302,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         		(frm.getDatePattern() < 0 ? (ss.canInheritParentPreferences() ? ss.getParentSubpart().effectiveDatePattern() : ss.getSession().getDefaultDatePatternNotNull()) : DatePatternDAO.getInstance().get(frm.getDatePattern())),
 				timePatterns, op, timeVertical, true, null);
 		setupChildren(frm, request, ss); // Date patterns allowed in the DDL for Date pattern preferences
-		LookupTables.setupDatePatterns(request, sessionContext.getUser(), "Default", (ss.canInheritParentPreferences() ? ss.getParentSubpart().effectiveDatePattern() : ss.getSession().getDefaultDatePatternNotNull()), ss.getManagingDept(), ss.effectiveDatePattern());
+		LookupTables.setupDatePatterns(request, sessionContext.getUser(), MSG.dropDefaultDatePattern(), (ss.canInheritParentPreferences() ? ss.getParentSubpart().effectiveDatePattern() : ss.getSession().getDefaultDatePatternNotNull()), ss.getManagingDept(), ss.effectiveDatePattern());
 
         LookupTables.setupRooms(request, ss);		 // Room Prefs
         LookupTables.setupBldgs(request, ss);		 // Building Prefs

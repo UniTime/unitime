@@ -402,7 +402,7 @@ public class ClassEditAction extends PreferencesAction {
 		// Instructors
         setupInstructors(request, frm, c);
         setupChildren(frm, request, c); // Date patterns allowed in the DDL for Date pattern preferences
-        LookupTables.setupDatePatterns(request, sessionContext.getUser(), "Default", c.getSchedulingSubpart().effectiveDatePattern(), c.getManagingDept(), c.effectiveDatePattern());
+        LookupTables.setupDatePatterns(request, sessionContext.getUser(), MSG.dropDefaultDatePattern(), c.getSchedulingSubpart().effectiveDatePattern(), c.getManagingDept(), c.effectiveDatePattern());
 
         LookupTables.setupRooms(request, c);		 // Rooms
         LookupTables.setupBldgs(request, c);		 // Buildings

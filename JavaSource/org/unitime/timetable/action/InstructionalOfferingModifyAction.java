@@ -245,7 +245,7 @@ public class InstructionalOfferingModifyAction extends Action {
         if (frm.getInstrOfferingId()!=null) {
         	InstructionalOffering io = (new InstructionalOfferingDAO()).get(frm.getInstrOfferingId());
         	if (io!=null)
-        		LookupTables.setupDatePatterns(request, sessionContext.getUser(), "Default", null, io.getDepartment(), io.getSession().getDefaultDatePatternNotNull()); // Facility Groups
+        		LookupTables.setupDatePatterns(request, sessionContext.getUser(), MSG.dropDefaultDatePattern(), null, io.getDepartment(), io.getSession().getDefaultDatePatternNotNull()); // Facility Groups
         }
 
         frm.setDirectionsClassesCanMove(); //after all classes have been loaded into the form tell the form to determine whether each class can be moved up or down.

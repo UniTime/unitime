@@ -228,7 +228,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        		ss.effectiveDatePattern(),
 	        		timePatterns, "init", timeVertical, false, null);
 
-			LookupTables.setupDatePatterns(request, sessionContext.getUser(), "Default", ss.getSession().getDefaultDatePatternNotNull(), ss.getManagingDept(), ss.effectiveDatePattern());
+			LookupTables.setupDatePatterns(request, sessionContext.getUser(), MSG.dropDefaultDatePattern(), ss.getSession().getDefaultDatePatternNotNull(), ss.getManagingDept(), ss.effectiveDatePattern());
 
 	        LookupTables.setupRooms(request, ss);		 // Room Prefs
 	        LookupTables.setupBldgs(request, ss);		 // Building Prefs

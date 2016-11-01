@@ -237,7 +237,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        // date Patterns
 	        setupDatePatterns(request, frm, c);
 
-	        LookupTables.setupDatePatterns(request, sessionContext.getUser(), "Default", c.getSchedulingSubpart().effectiveDatePattern(), c.getManagingDept(), c.effectiveDatePattern());
+	        LookupTables.setupDatePatterns(request, sessionContext.getUser(), MSG.dropDefaultDatePattern(), c.getSchedulingSubpart().effectiveDatePattern(), c.getManagingDept(), c.effectiveDatePattern());
 
 	        LookupTables.setupRooms(request, c);		 // Room Prefs
 	        LookupTables.setupBldgs(request, c);		 // Building Prefs
