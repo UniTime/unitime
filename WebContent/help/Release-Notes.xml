@@ -112,11 +112,20 @@
 		</item>
 	</category>
 	<category>
-		<title>Batch Student Scheduling</title>
+		<title>Student Scheduling</title>
 		<item>
-			<name>Request Groups</name>
+			<name>Request Groups (Batch)</name>
 			<description>
 				<line>Improved ability to keep students of the same request group together by shuffling students of a request group that are spread over multiple sections into a single section or into a fewer number of sections.</line>
+			</description>
+		</item>
+		<item>
+			<name>Reservations</name>
+			<description>
+				<line>When enumerating possible enrollments for a course request, do not skip enrollments without a reservation if there is a matching reservation that is not marked as must be used.</line>
+				<line>This change fixes an issue related to the server's capability to keep the student's current enrollment by creating a dummy reservation for it.
+					<line>A student was not able to move into a different section in certain cases.</line>
+				</line>
 			</description>
 		</item>
 	</category>
