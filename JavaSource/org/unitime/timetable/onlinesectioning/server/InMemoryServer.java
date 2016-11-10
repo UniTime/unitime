@@ -21,6 +21,7 @@ package org.unitime.timetable.onlinesectioning.server;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
@@ -50,6 +51,7 @@ public class InMemoryServer extends AbstractLockingServer {
 	private Hashtable<Long, XOffering> iOfferingTable = new Hashtable<Long, XOffering>();
 	private Hashtable<Long, List<XCourseRequest>> iOfferingRequests = new Hashtable<Long, List<XCourseRequest>>();
 	private Hashtable<Long, XExpectations> iExpectations = new Hashtable<Long, XExpectations>();
+	private Hashtable<String, Set<Long>> iInstructedOfferings = new Hashtable<String, Set<Long>>();
 	
 	public InMemoryServer(OnlineSectioningServerContext context) throws SectioningException {
 		super(context);
@@ -264,6 +266,10 @@ public class InMemoryServer extends AbstractLockingServer {
 			iOfferingTable.remove(offering.getOfferingId());
 			if (removeExpectations)
 				iExpectations.remove(offering.getOfferingId());
+			for (String externalId: offering.getInstructorExternalIds()) {
+				Set<Long> offeringIds = iInstructedOfferings.get(externalId);
+				if (offeringIds != null) offeringIds.remove(offering.getOfferingId());
+			}
 		} finally {
 			lock.release();
 		}
@@ -290,6 +296,14 @@ public class InMemoryServer extends AbstractLockingServer {
 					for (XCourseId x: courses) x.setHasUniqueName(true);
 				else if (courses.size() > 1)
 					for (XCourseId x: courses) x.setHasUniqueName(false);
+			}
+			for (String externalId: offering.getInstructorExternalIds()) {
+				Set<Long> offeringIds = iInstructedOfferings.get(externalId);
+				if (offeringIds == null) {
+					offeringIds = new HashSet<Long>();
+					iInstructedOfferings.put(externalId, offeringIds);
+				}
+				offeringIds.add(offering.getOfferingId());
 			}
 		} finally {
 			lock.release();
@@ -324,6 +338,10 @@ public class InMemoryServer extends AbstractLockingServer {
 				iCourseForName = new Hashtable<String, TreeSet<XCourseId>>();
 			else
 				iCourseForName.clear();
+			if (iInstructedOfferings == null)
+				iInstructedOfferings = new Hashtable<String, Set<Long>>();
+			else
+				iInstructedOfferings.clear();
 		} finally {
 			lock.release();
 		}
@@ -409,6 +427,16 @@ public class InMemoryServer extends AbstractLockingServer {
 				}
 			}
 			return null;
+		} finally {
+			lock.release();
+		}
+	}
+
+	@Override
+	public Collection<Long> getInstructedOfferings(String instructorExternalId) {
+		Lock lock = readLock();
+		try {
+			return iInstructedOfferings.get(instructorExternalId);
 		} finally {
 			lock.release();
 		}

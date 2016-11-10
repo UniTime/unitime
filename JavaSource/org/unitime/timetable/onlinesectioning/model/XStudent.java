@@ -66,6 +66,7 @@ public class XStudent extends XStudentId implements Externalizable {
     private String iStatus = null;
     private String iEmail = null;
     private Date iEmailTimeStamp = null;
+    private List<XInstructorAssignment> iInstructorAssignments = new ArrayList<XInstructorAssignment>();
 
     public XStudent() {
     	super();
@@ -217,6 +218,9 @@ public class XStudent extends XStudentId implements Externalizable {
     		}
     	}
     }
+    
+    public List<XInstructorAssignment> getInstructorAssignments() { return iInstructorAssignments; }
+    public boolean hasInstructorAssignments() { return iInstructorAssignments != null && !iInstructorAssignments.isEmpty(); }
 
     public XCourseRequest getRequestForCourse(Long courseId) {
     	for (XRequest request: iRequests)

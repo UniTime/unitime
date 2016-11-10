@@ -31,7 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-
 import org.cpsolver.coursett.Constants;
 import org.cpsolver.coursett.model.Lecture;
 import org.cpsolver.coursett.model.Placement;
@@ -40,6 +39,7 @@ import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.util.DistanceMetric;
 import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Unavailability;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.Assignment;
@@ -47,9 +47,11 @@ import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RoomPref;
+import org.unitime.timetable.model.TeachingClassRequest;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
 /**
@@ -136,11 +138,15 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
         	if (dp != null)
         		iTime = new XTime(dp, helper.getDatePatternFormat());
         }
-        
-        if (clazz.isDisplayInstructor())
-            for (ClassInstructor ci: clazz.getClassInstructors()) {
-            	iInstructors.add(new XInstructor(ci.getInstructor(), helper));
-            }
+        for (ClassInstructor ci: clazz.getClassInstructors()) {
+        	iInstructors.add(new XInstructor(ci, helper));
+        }
+        for (TeachingClassRequest tcr: clazz.getTeachingRequests()) {
+        	if (!tcr.isAssignInstructor() && tcr.getTeachingRequest().isCommitted()) {
+            	for (DepartmentalInstructor di: tcr.getTeachingRequest().getAssignedInstructors())
+            		iInstructors.add(new XInstructor(di, tcr, helper));
+        	}
+        }
     }
     
     public XSection(Section section) {
@@ -165,9 +171,19 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     					instructor.getId(),
     					instructor.getExternalId(),
     					instructor.getName(),
-    					instructor.getEmail()));
+    					instructor.getEmail(),
+    					true, false));
     		}
     	}
+    	for (Unavailability u: section.getUnavailabilities()) {
+			if (u.getId() == section.getId())
+				iInstructors.add(new XInstructor(
+						u.getStudent().getId(),
+						u.getStudent().getExternalId(),
+						u.getStudent().getName(),
+						null,
+						false, u.isAllowOverlap()));
+		}
     }
     
     /** For testing only! */
@@ -279,7 +295,17 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     /**
      * Instructors
      */
-    public List<XInstructor> getInstructors() { return iInstructors; }
+    public List<XInstructor> getAllInstructors() { return iInstructors; }
+    
+    /**
+     * Instructors (only those that can be displayed)
+     */
+    public List<XInstructor> getInstructors() {
+    	List<XInstructor> instructors = new ArrayList<XInstructor>();
+    	for (XInstructor instructor: iInstructors)
+    		if (instructor.isAllowDisplay()) instructors.add(instructor);
+    	return instructors;
+    }
     
     @Deprecated
     public String getInstructorIds() {

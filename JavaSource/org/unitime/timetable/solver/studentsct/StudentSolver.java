@@ -46,14 +46,18 @@ import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.studentsct.StudentSectioningModel;
 import org.cpsolver.studentsct.StudentSectioningXMLLoader;
 import org.cpsolver.studentsct.StudentSectioningXMLSaver;
+import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Offering;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.studentsct.model.Unavailability;
 import org.cpsolver.studentsct.online.expectations.NeverOverExpected;
 import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
 import org.cpsolver.studentsct.report.SectionConflictTable;
@@ -224,6 +228,10 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
         }
         
         private void assign(Enrollment enrollment) {
+        	if (!enrollment.getStudent().isAvailable(enrollment)) {
+        		iProgress.warn("Unable to assign "+enrollment.variable().getName()+" := "+enrollment.getName() + " (student not available)");
+        		return;
+        	}
         	Map<Constraint<Request, Enrollment>, Set<Enrollment>> conflictConstraints = currentSolution().getModel().conflictConstraints(currentSolution().getAssignment(), enrollment);
             if (conflictConstraints.isEmpty()) {
             	currentSolution().getAssignment().assign(0, enrollment);
@@ -723,5 +731,28 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 		if (courseId != null) return getCourse(courseId);
 		if (courseName != null) return getCourse(courseName);
 		return null;
+	}
+
+	@Override
+	public Collection<Long> getInstructedOfferings(String instructorExternalId) {
+		List<Long> ret = new ArrayList<Long>();
+		Set<Long> sections = new HashSet<Long>();
+		for (Student student: ((StudentSectioningModel)currentSolution().getModel()).getStudents())
+			if (instructorExternalId.equals(student.getExternalId()))
+				for (Unavailability unavailability: student.getUnavailabilities())
+					sections.add(unavailability.getId());
+		offerings: for (Offering offering: ((StudentSectioningModel)currentSolution().getModel()).getOfferings()) {
+			for (Config config: offering.getConfigs())
+				for (Subpart subpart: config.getSubparts())
+					for (Section section: subpart.getSections())
+						if (sections.contains(section.getId())) {
+							ret.add(offering.getId()); continue offerings;
+						} else if (section.hasInstructors())
+							for (Instructor instructor: section.getInstructors())
+								if (instructorExternalId.equals(instructor.getExternalId())) {
+									ret.add(offering.getId()); continue offerings;
+								}
+		}
+		return ret;
 	}
 }

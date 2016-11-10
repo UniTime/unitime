@@ -73,6 +73,7 @@ public interface OnlineSectioningServer {
 	public Collection<XCourseRequest> getRequests(Long offeringId);
 	public XEnrollments getEnrollments(Long offeringId);
 	public XExpectations getExpectations(Long offeringId);
+	public Collection<Long> getInstructedOfferings(String instructorExternalId);
 	
 	@CheckMaster(Master.REQUIRED)
 	public void update(XExpectations expectations);

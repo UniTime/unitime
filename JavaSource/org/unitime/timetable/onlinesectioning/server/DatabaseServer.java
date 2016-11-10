@@ -266,4 +266,14 @@ public class DatabaseServer extends AbstractLockingServer {
 		request.setWaitlist(waitlist);
 		return request;
 	}
+
+	@Override
+	public Collection<Long> getInstructedOfferings(String instructorExternalId) {
+		return (List<Long>)getCurrentHelper().getHibSession().createQuery(
+				"select distinct ci.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.uniqueId " +
+				"where ci.instructor.externalUniqueId = :instructorExternalId and ci.instructor.department.session.uniqueId = :sessionId")
+				.setLong("sessionId", getAcademicSession().getUniqueId())
+				.setString("instructorExternalId", instructorExternalId)
+				.setCacheable(true).list();
+	}
 }

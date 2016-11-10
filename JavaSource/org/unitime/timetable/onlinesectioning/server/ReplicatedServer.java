@@ -76,6 +76,7 @@ public class ReplicatedServer extends AbstractServer {
 	private Cache<Long, Set<XCourseRequest>> iOfferingRequests;
 	private Cache<Long, XExpectations> iExpectations;
 	private Cache<Long, Boolean> iOfferingLocks;
+	private Cache<String, Set<Long>> iInstructedOfferings; 
 
 	public ReplicatedServer(OnlineSectioningServerContext context) throws SectioningException {
 		super(context);
@@ -104,6 +105,7 @@ public class ReplicatedServer extends AbstractServer {
 		iOfferingRequests = getCache("OfferingRequests");
 		iExpectations = getCache("Expectations");
 		iOfferingLocks = getCache("OfferingLocks");
+		iInstructedOfferings = getCache("InstructedOfferings");
 
 		Map<String, Object> original = new HashMap<String, Object>(iProperties);
 		iProperties = getCache("Config");
@@ -136,6 +138,7 @@ public class ReplicatedServer extends AbstractServer {
 		removeCache(iOfferingRequests);
 		removeCache(iExpectations);
 		removeCache(iOfferingLocks);
+		removeCache(iInstructedOfferings);
 		removeCache((Cache<String, Object>)iProperties);
 	}
 	
@@ -406,6 +409,13 @@ public class ReplicatedServer extends AbstractServer {
 			iOfferingTable.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(offering.getOfferingId());
 			if (removeExpectations)
 				iExpectations.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(offering.getOfferingId());
+			for (String externalId: offering.getInstructorExternalIds()) {
+				Set<Long> offeringIds = iInstructedOfferings.get(externalId);
+				if (offeringIds != null) {
+					if (offeringIds.remove(offering.getOfferingId()))
+						iInstructedOfferings.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(externalId, offeringIds);
+				}
+			}
 		} finally {
 			lock.release();
 		}
@@ -436,6 +446,13 @@ public class ReplicatedServer extends AbstractServer {
 					iCourseForName.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getCourseNameInLowerCase(), courses);
 				}
 			}
+			for (String externalId: offering.getInstructorExternalIds()) {
+				Set<Long> offeringIds = iInstructedOfferings.get(externalId);
+				if (offeringIds == null)
+					offeringIds = new HashSet<Long>();
+				offeringIds.add(offering.getOfferingId());
+				iInstructedOfferings.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(externalId, offeringIds);
+			}
 		} finally {
 			lock.release();
 		}
@@ -450,6 +467,7 @@ public class ReplicatedServer extends AbstractServer {
 			iCourseForId.clear();
 			iCourseForName.clear();
 			iOfferingRequests.clear();
+			iInstructedOfferings.clear();
 		} finally {
 			lock.release();
 		}
@@ -906,5 +924,15 @@ public class ReplicatedServer extends AbstractServer {
 	@Override
 	public void releaseAllOfferingLocks() {
 		iOfferingLocks.clear();
+	}
+
+	@Override
+	public Collection<Long> getInstructedOfferings(String instructorExternalId) {
+		Lock lock = readLock();
+		try {
+			return iInstructedOfferings.get(instructorExternalId);
+		} finally {
+			lock.release();
+		}
 	}
 }

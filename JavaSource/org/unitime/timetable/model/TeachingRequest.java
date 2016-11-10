@@ -191,6 +191,14 @@ public class TeachingRequest extends BaseTeachingRequest implements Comparable<T
 		return true;
 	}
 	
+	public boolean isCommitted() {
+		for (TeachingClassRequest tcr: getClassRequests())
+			if (tcr.isAssignInstructor())
+				for (ClassInstructor ci: tcr.getTeachingClass().getClassInstructors())
+					if (this.equals(ci.getTeachingRequest()) && getAssignedInstructors().contains(ci.getInstructor())) return true;
+		return false;
+	}
+	
 	@Override
 	public String toString() {
 		return getOffering().getCourseName() + " " + getClassRequests();

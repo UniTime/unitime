@@ -75,6 +75,7 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 	private Map<Long, XCourseRequestSet> iOfferingRequests;
 	private Cache<Long, XExpectations> iExpectations;
 	private Cache<Long, Boolean> iOfferingLocks;
+	private Map<String, Set<Long>> iInstructedOfferings;
 
 	public ReplicatedServerWithMaster(OnlineSectioningServerContext context) throws SectioningException {
 		super(context);
@@ -103,6 +104,7 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 		iOfferingRequests = new HashMap<Long, XCourseRequestSet>();
 		iExpectations = getCache("Expectations");
 		iOfferingLocks = getCache("OfferingLocks");
+		iInstructedOfferings = new HashMap<String, Set<Long>>();
 		
 		Map<String, Object> original = new HashMap<String, Object>(iProperties);
 		iProperties = getCache("Config");
@@ -601,6 +603,10 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 							iCourseForName.remove(course.getCourseNameInLowerCase());
 					}
 				}
+				for (String externalId: offering.getInstructorExternalIds()) {
+					Set<Long> offeringIds = iInstructedOfferings.get(externalId);
+					if (offeringIds != null) offeringIds.remove(offering.getOfferingId());
+				}
 			} finally {
 				if (lock != null) lock.release();
 			}
@@ -621,6 +627,14 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 						for (XCourseId x: courses) x.setHasUniqueName(true);
 					else if (courses.size() > 1)
 						for (XCourseId x: courses) x.setHasUniqueName(false);
+				}
+				for (String externalId: offering.getInstructorExternalIds()) {
+					Set<Long> offeringIds = iInstructedOfferings.get(externalId);
+					if (offeringIds == null) {
+						offeringIds = new HashSet<Long>();
+						iInstructedOfferings.put(externalId, offeringIds);
+					}
+					offeringIds.add(offering.getOfferingId());
 				}
 			} finally {
 				if (lock != null) lock.release();
@@ -768,5 +782,15 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 		else
 			properties.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS, Flag.IGNORE_RETURN_VALUES).put(name,  value);
 		flushCache(properties);
+	}
+
+	@Override
+	public Collection<Long> getInstructedOfferings(String instructorExternalId) {
+		Lock lock = readLock();
+		try {
+			return iInstructedOfferings.get(instructorExternalId);
+		} finally {
+			lock.release();
+		}
 	}
 }

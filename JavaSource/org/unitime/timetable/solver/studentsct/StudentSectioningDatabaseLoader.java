@@ -65,6 +65,7 @@ import org.cpsolver.studentsct.model.RequestGroup;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.studentsct.model.Unavailability;
 import org.cpsolver.studentsct.reservation.CourseReservation;
 import org.cpsolver.studentsct.reservation.CurriculumReservation;
 import org.cpsolver.studentsct.reservation.DummyReservation;
@@ -89,6 +90,7 @@ import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.ExactTimeMins;
@@ -108,6 +110,7 @@ import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.TeachingClassRequest;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TravelTime;
@@ -159,6 +162,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private boolean iNoUnlimitedGroupReservations = false;
 	private boolean iLinkedClassesMustBeUsed = false;
 	private boolean iAllowDefaultCourseAlternatives = false;
+	private boolean iIncludeUnavailabilities = true;
     
     private Progress iProgress = null;
     
@@ -188,6 +192,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iNoUnlimitedGroupReservations = model.getProperties().getPropertyBoolean("Load.NoUnlimitedGroupReservations", iNoUnlimitedGroupReservations);
         iLinkedClassesMustBeUsed = model.getProperties().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
         iAllowDefaultCourseAlternatives = ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue();
+        iIncludeUnavailabilities = model.getProperties().getPropertyBoolean("Load.IncludeUnavailabilities", iIncludeUnavailabilities);
         
         try {
         	String studentCourseDemandsClassName = getModel().getProperties().getProperty("StudentSct.ProjectedCourseDemadsClass", LastLikeStudentCourseDemands.class.getName());
@@ -911,7 +916,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     
     public void assignStudent(Student student) {
 		for (Request r: student.getRequests()) {
-			if (r.getInitialAssignment() != null && r.getModel().conflictValues(getAssignment(), r.getInitialAssignment()).isEmpty())
+			if (r.getInitialAssignment() != null && student.isAvailable(r.getInitialAssignment()) && r.getModel().conflictValues(getAssignment(), r.getInitialAssignment()).isEmpty())
 				getAssignment().assign(0, r.getInitialAssignment());
 		}
 		for (Request r: student.getRequests()) {
@@ -929,6 +934,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     public void checkForConflicts(Student student) {
     	for (Request r: student.getRequests()) {
     		if (getAssignment().getValue(r) != null || r.getInitialAssignment() == null || !(r instanceof CourseRequest)) continue;
+    		if (!student.isAvailable(r.getInitialAssignment())) {
+    			iProgress.error("There is a problem assigning " + r.getName() + " to " + student.getName() + " (" + student.getExternalId() + "): Student not available.");
+    			continue;
+    		}
     		if (r.getModel().conflictValues(getAssignment(), r.getInitialAssignment()).isEmpty()) {
     			getAssignment().assign(0, r.getInitialAssignment());
     			continue;
@@ -1486,6 +1495,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             if (offering!=null) getModel().addOffering(offering);
         }
         
+        Map<String, Student> ext2student = new HashMap<String, Student>();
         if (iIncludeCourseDemands || iProjections) {
             List students = hibSession.createQuery(
                     "select distinct s from Student s " +
@@ -1536,6 +1546,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 	}
                 } else {
                 	if (iLoadRequestGroups) loadRequestGroups(student, s);
+                	if (student.getExternalId() != null && !student.getExternalId().isEmpty())
+                		ext2student.put(student.getExternalId(), student);
                     getModel().addStudent(student);
                     // assignStudent(student);
                 }
@@ -1569,6 +1581,38 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 				if (!s1.equals(s2)) s1.addIgnoreConflictWith(s2.getId());
         			}
         		}
+        	}
+        }
+        
+        if (iIncludeUnavailabilities) {
+        	iProgress.setPhase("Loading unavailabilities...", offerings.size());
+        	for (InstructionalOffering offering: offerings) {
+        		iProgress.incProgress();
+        		for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
+        			for (SchedulingSubpart subpart: config.getSchedulingSubparts()) {
+        				for (Class_ clazz: subpart.getClasses()) {
+    						Section section = classTable.get(clazz.getUniqueId());
+    						if (section == null || section.isCancelled() || section.getTime() == null) continue;
+        					for (ClassInstructor ci: clazz.getClassInstructors()) {
+        						if (ci.getInstructor().getExternalUniqueId() == null || ci.getInstructor().getExternalUniqueId().isEmpty()) continue;
+        						Student student = ext2student.get(ci.getInstructor().getExternalUniqueId());
+        						if (student != null)
+        							new Unavailability(student, section, false);
+        			        }
+        			        for (TeachingClassRequest tcr: clazz.getTeachingRequests()) {
+        			        	if (!tcr.isAssignInstructor() && tcr.getTeachingRequest().isCommitted()) {
+        			            	for (DepartmentalInstructor di: tcr.getTeachingRequest().getAssignedInstructors()) {
+        			            		if (di.getExternalUniqueId() == null || di.getExternalUniqueId().isEmpty()) continue;
+        			            		Student student = ext2student.get(di.getExternalUniqueId());
+                						if (student != null)
+                							new Unavailability(student, section, tcr.isCanOverlap());
+        			            	}
+        			        	}
+        			        }
+        				}
+        			}
+        		}
+        		
         	}
         }
         

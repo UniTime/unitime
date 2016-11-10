@@ -20,6 +20,7 @@
 package org.unitime.timetable.onlinesectioning.solver;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -377,6 +378,8 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 	
 	public static CourseRequest convert(Assignment<Request, Enrollment> assignment, XStudent student, XCourseRequest request, OnlineSectioningServer server, XOffering oldOffering, XEnrollment oldEnrollment) {
 		Student clonnedStudent = new Student(request.getStudentId());
+		clonnedStudent.setExternalId(student.getExternalId());
+		clonnedStudent.setName(student.getName());
 		CourseRequest ret = null;
 		for (XRequest r: student.getRequests()) {
 			if (r instanceof XFreeTimeRequest) {
@@ -419,6 +422,15 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 					
 				if (request.equals(r)) ret = clonnedRequest;
 			}
+		}
+		if (clonnedStudent.getExternalId() != null && !clonnedStudent.getExternalId().isEmpty()) {
+			Collection<Long> offerings = server.getInstructedOfferings(clonnedStudent.getExternalId());
+			if (offerings != null)
+				for (Long offeringId: offerings) {
+					XOffering offering = server.getOffering(offeringId);
+					if (offering != null)
+						offering.fillInUnavailabilities(clonnedStudent);
+				}
 		}
 		return ret;
 	}

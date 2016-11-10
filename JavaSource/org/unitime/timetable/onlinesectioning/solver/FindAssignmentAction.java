@@ -149,6 +149,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		try {
 			XStudent original = (getRequest().getStudentId() == null ? null : server.getStudent(getRequest().getStudentId()));
 			if (original != null) {
+				student.setExternalId(original.getExternalId());
+				student.setName(original.getName());
 				action.getStudentBuilder().setUniqueId(original.getStudentId()).setExternalId(original.getExternalId()).setName(original.getName());
 				enrolled = new HashSet<IdPair>();
 				for (XRequest r: original.getRequests()) {
@@ -203,6 +205,15 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 						}
 					}
 				}
+			}
+			if (student.getExternalId() != null && !student.getExternalId().isEmpty()) {
+				Collection<Long> offeringIds = server.getInstructedOfferings(student.getExternalId());
+				if (offeringIds != null)
+					for (Long offeringId: offeringIds) {
+						XOffering offering = server.getOffering(offeringId);
+						if (offering != null)
+							offering.fillInUnavailabilities(student);
+					}
 			}
 			model.addStudent(student);
 			model.setDistanceConflict(new DistanceConflict(server.getDistanceMetric(), model.getProperties()));

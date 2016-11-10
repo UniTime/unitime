@@ -20,6 +20,7 @@
 package org.unitime.timetable.onlinesectioning.basic;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -260,6 +261,15 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 					}
 					students.put(student.getStudentId(), clonnedStudent);
 					model.addStudent(clonnedStudent);
+				}
+				if (clonnedStudent.getExternalId() != null && !clonnedStudent.getExternalId().isEmpty()) {
+					Collection<Long> offeringIds = server.getInstructedOfferings(clonnedStudent.getExternalId());
+					if (offeringIds != null)
+						for (Long offeringId: offeringIds) {
+							XOffering offering = server.getOffering(offeringId);
+							if (offering != null)
+								offering.fillInUnavailabilities(clonnedStudent);
+						}
 				}
 			}
 			

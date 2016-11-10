@@ -44,7 +44,9 @@ import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.Offering;
 import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.studentsct.model.Unavailability;
 import org.cpsolver.studentsct.online.OnlineConfig;
 import org.cpsolver.studentsct.online.OnlineReservation;
 import org.cpsolver.studentsct.online.OnlineSection;
@@ -631,6 +633,32 @@ public class XOffering implements Serializable, Externalizable {
     			return true;
     	}
     	return false;
+    }
+    
+    public Set<String> getInstructorExternalIds() {
+    	Set<String> ret = new HashSet<String>();
+    	for (XConfig config: getConfigs())
+    		for (XSubpart subpart: config.getSubparts())
+    			for (XSection section: subpart.getSections())
+    				for (XInstructor instructor: section.getAllInstructors())
+    					if (instructor.hasExternalId())
+    						ret.add(instructor.getExternalId());
+    	return ret;
+    }
+    
+    public void fillInUnavailabilities(Student student) {
+    	if (student.getExternalId() == null || student.getExternalId().isEmpty()) return;
+    	for (XConfig config: getConfigs())
+			for (XSubpart subpart: config.getSubparts())
+				for (XSection section: subpart.getSections()) {
+					if (section.getTime() != null && !section.isCancelled())
+						for (XInstructor instructor: section.getAllInstructors())
+							if (student.getExternalId().equals(instructor.getExternalId())) {
+								new Unavailability(student,
+										new Section(section.getSectionId(), section.getLimit(), section.getName(), null, section.toPlacement(), null),
+										instructor.isAllowOverlap());
+							}
+				}
     }
 
 	@Override
