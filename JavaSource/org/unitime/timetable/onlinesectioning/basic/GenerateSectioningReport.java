@@ -259,9 +259,10 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 							}
 						}
 					}
-					students.put(student.getStudentId(), clonnedStudent);
-					model.addStudent(clonnedStudent);
 				}
+				students.put(student.getStudentId(), clonnedStudent);
+				model.addStudent(clonnedStudent);
+				
 				if (clonnedStudent.getExternalId() != null && !clonnedStudent.getExternalId().isEmpty()) {
 					Collection<Long> offeringIds = server.getInstructedOfferings(clonnedStudent.getExternalId());
 					if (offeringIds != null)
