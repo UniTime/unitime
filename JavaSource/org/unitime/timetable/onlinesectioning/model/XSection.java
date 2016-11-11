@@ -27,9 +27,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.cpsolver.coursett.Constants;
 import org.cpsolver.coursett.model.Lecture;
@@ -165,6 +167,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     	if (section.getNrRooms() > 0)
     		for (RoomLocation room: section.getRooms())
     			iRooms.add(new XRoom(room));
+    	Set<String> instructorExternalIds = new HashSet<String>();
     	if (section.hasInstructors()) {
     		for (Instructor instructor: section.getInstructors()) {
     			iInstructors.add(new XInstructor(
@@ -173,10 +176,11 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     					instructor.getName(),
     					instructor.getEmail(),
     					true, false, true));
+    			if (instructor.getExternalId() != null) instructorExternalIds.add(instructor.getExternalId());
     		}
     	}
     	for (Unavailability u: section.getUnavailabilities()) {
-			if (u.getId() == section.getId())
+			if (u.getId() == section.getId() && u.getStudent().getExternalId() != null && instructorExternalIds.add(u.getStudent().getExternalId()))
 				iInstructors.add(new XInstructor(
 						u.getStudent().getId(),
 						u.getStudent().getExternalId(),
