@@ -663,6 +663,16 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								ca.addOverlap(ov);
 							}
 						}
+						unavailabilities: for (Unavailability unavailability: enrollment.getStudent().getUnavailabilities()) {
+							for (Config config: course.getOffering().getConfigs())
+								for (Subpart subpart: config.getSubparts())
+									for (Section section: subpart.getSections()) {
+										if (unavailability.isOverlapping(section)) {
+											ca.addOverlap(unavailability.getSection().getName());
+											continue unavailabilities;
+										}
+									}
+						}
 						int alt = nrUnassignedCourses;
 						for (Enrollment x: enrollments) {
 							if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
