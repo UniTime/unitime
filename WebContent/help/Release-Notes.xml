@@ -128,6 +128,13 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Online Student Scheduling Reports</name>
+			<description>
+				<line>Make sure each student is present only once in the student scheduling model that is used to generate the online scheduling report.</line>
+				<line>This fixes an issue with showing wrong numbers on the Time &amp; Availability Conflicts report.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>API</title>

@@ -255,9 +255,9 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 							}
 						}
 					}
-					students.put(student.getStudentId(), clonnedStudent);
-					model.addStudent(clonnedStudent);
 				}
+				students.put(student.getStudentId(), clonnedStudent);
+				model.addStudent(clonnedStudent);
 			}
 			
 			for (XDistribution distribution: linkedSections) {
