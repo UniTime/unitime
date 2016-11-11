@@ -84,7 +84,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	public static class CourseAssignment implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private Long iCourseId = null;
-		private boolean iAssigned = true;
+		private boolean iAssigned = true, iTeachingAssigment = false;
 		private String iSubject, iCourseNbr, iTitle, iNote, iCreditText = null, iCreditAbbv = null;
 		private boolean iHasUniqueName = true;
 		private Integer iLimit = null, iProjected = null, iEnrollment = null, iLastLike = null;
@@ -105,6 +105,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public boolean isAssigned() { return iAssigned; }
 		public void setAssigned(boolean assigned) { iAssigned = assigned; }
+		
+		public boolean isTeachingAssignment() { return iTeachingAssigment; }
+		public void setTeachingAssignment(boolean ta) { iTeachingAssigment = ta; }
 
 		public String getSubject() { return iSubject; }
 		public void setSubject(String subject) { iSubject = subject; }
@@ -248,7 +251,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private ArrayList<String> iInstructos = new ArrayList<String>();
 		private ArrayList<String> iInstructoEmails = new ArrayList<String>();
 		private ArrayList<String> iRooms = new ArrayList<String>();
-		private boolean iAlternative = false, iHasAlternatives = true, iDistanceConflict = false;
+		private boolean iAlternative = false, iHasAlternatives = true, iDistanceConflict = false, iTeachingAssigment = false, iInstructing = false;
 		private String iDatePattern = null;
 		private String iSubject, iCourseNbr, iSubpart, iSection, iParentSection, iNumber, iTitle;
 		private int[] iLimit = null;
@@ -478,6 +481,12 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public boolean hasAlternatives() { return iHasAlternatives; }
 		public void setHasAlternatives(boolean alternatives) { iHasAlternatives = alternatives; }
+		
+		public boolean isTeachingAssignment() { return iTeachingAssigment; }
+		public void setTeachingAssignment(boolean ta) { iTeachingAssigment = ta; }
+		
+		public boolean isInstructing() { return iInstructing; }
+		public void setInstructing(boolean instructing) { iInstructing = instructing; }
 		
 		public boolean hasDistanceConflict() { return iDistanceConflict; }
 		public void setDistanceConflict(boolean distanceConflict) { iDistanceConflict = distanceConflict; }

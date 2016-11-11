@@ -98,6 +98,10 @@ public interface StudentSectioningConstants extends Constants {
 	@DoNotTranslate
 	String freeTimeColor();
 	
+	@DefaultStringValue("steelblue")
+	@DoNotTranslate
+	String teachingAssignmentColor();
+	
 	@DefaultBooleanValue(false)
 	@DoNotTranslate
 	boolean printReportShowUserName();
@@ -199,4 +203,8 @@ public interface StudentSectioningConstants extends Constants {
 	@DefaultBooleanValue(true)
 	@DoNotTranslate
 	boolean listOfClassesUseLockIcon();
+	
+	@DefaultBooleanValue(false)
+	@DoNotTranslate
+	boolean checkLastResult();
 }

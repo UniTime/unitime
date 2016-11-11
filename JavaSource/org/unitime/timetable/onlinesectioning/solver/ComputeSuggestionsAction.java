@@ -21,6 +21,7 @@ package org.unitime.timetable.onlinesectioning.solver;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -62,6 +63,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -125,9 +127,13 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		Set<IdPair> enrolled = null;
 
 		Lock readLock = server.readLock();
+		ClassAssignmentInterface unavailabilities = null;
 		try {
 			XStudent original = (getRequest().getStudentId() == null ? null : server.getStudent(getRequest().getStudentId()));
 			if (original != null) {
+				unavailabilities = new ClassAssignmentInterface();
+				GetAssignment.fillUnavailabilitiesIn(unavailabilities, original, server, helper, null);
+				Collections.reverse(unavailabilities.getCourseAssignments());
 				student.setExternalId(original.getExternalId());
 				student.setName(original.getName());
 				action.getStudentBuilder().setUniqueId(original.getStudentId()).setExternalId(original.getExternalId()).setName(original.getName());
@@ -367,7 +373,12 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		helper.debug("  -- suggestion B&B took "+suggestionBaB.getTime()+"ms"+(suggestionBaB.isTimeoutReached()?", timeout reached":""));
 
 		for (SuggestionsBranchAndBound.Suggestion suggestion : suggestions) {
-        	ret.add(convert(server, assignment, suggestion.getEnrollments(), requiredSectionsForCourse, requiredFreeTimes, true, model.getDistanceConflict(), enrolled));
+			ClassAssignmentInterface ca = convert(server, assignment, suggestion.getEnrollments(), requiredSectionsForCourse, requiredFreeTimes, true, model.getDistanceConflict(), enrolled); 
+			if (unavailabilities != null)
+				for (ClassAssignmentInterface.CourseAssignment u: unavailabilities.getCourseAssignments())
+					ca.getCourseAssignments().add(0, u);
+        	ret.add(ca);
+			
         	OnlineSectioningLog.Enrollment.Builder solution = OnlineSectioningLog.Enrollment.newBuilder();
         	solution.setType(OnlineSectioningLog.Enrollment.EnrollmentType.COMPUTED);
         	solution.setValue(- suggestion.getValue());

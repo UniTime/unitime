@@ -51,6 +51,7 @@ public class XCourse extends XCourseId {
     private Integer iWkEnroll = null, iWkChange = null, iWkDrop = null;
     private XCredit iCredit = null;
     private Long iAlternativeCourseId = null;
+    private boolean iControl = false;
 
     public XCourse() {
     	super();
@@ -91,6 +92,7 @@ public class XCourse extends XCourseId {
         if (course.getCredit() != null)
         	iCredit = new XCredit(course.getCredit());
         iAlternativeCourseId = (course.getAlternativeOffering() == null ? null : course.getAlternativeOffering().getUniqueId());
+        iControl = course.isIsControl();
     }
     
     public XCourse(Course course) {
@@ -102,6 +104,7 @@ public class XCourse extends XCourseId {
         iProjected = course.getProjected();
         if (course.getCredit() != null)
         	iCredit = new XCredit(course.getCredit());
+        iControl = course.getName().equals(course.getOffering().getName());
     }
 
     /** Subject area */
@@ -148,6 +151,8 @@ public class XCourse extends XCourseId {
     
     public boolean hasAlternativeCourse() { return iAlternativeCourseId != null; }
     public Long getAlternativeCourseId() { return iAlternativeCourseId; }
+    
+    public boolean isControlling() { return iControl; }
 	
 	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
@@ -166,6 +171,7 @@ public class XCourse extends XCourseId {
 		iWkDrop = (in.readBoolean() ? in.readInt() : null);
 		iCredit = (in.readBoolean() ? new XCredit(in) : null);
 		iAlternativeCourseId = (in.readBoolean() ? in.readLong() : null);
+		iControl = in.readBoolean();
 	}
 
 	@Override
@@ -195,6 +201,7 @@ public class XCourse extends XCourseId {
 		out.writeBoolean(iAlternativeCourseId != null);
 		if (iAlternativeCourseId != null)
 			out.writeLong(iAlternativeCourseId);
+		out.writeBoolean(iControl);
 	}
 	
 	public static class XCourseSerializer implements Externalizer<XCourse> {

@@ -176,6 +176,12 @@ public class XOffering implements Serializable, Externalizable {
         return iCourses;
     }
     
+    public XCourse getControllingCourse() {
+    	for (XCourse course: getCourses())
+    		if (course.isControlling()) return course;
+    	return (getCourses().isEmpty() ? null : getCourses().get(0));
+    }
+    
     /** Course of this offering with the given id */
     public XCourse getCourse(Long courseId) {
     	if (courseId == null) {
@@ -655,7 +661,7 @@ public class XOffering implements Serializable, Externalizable {
 						for (XInstructor instructor: section.getAllInstructors())
 							if (student.getExternalId().equals(instructor.getExternalId())) {
 								new Unavailability(student,
-										new Section(section.getSectionId(), section.getLimit(), section.getName(), null, section.toPlacement(), null),
+										new Section(section.getSectionId(), section.getLimit(), getName() + " " + subpart.getName() + " " + section.getName(), null, section.toPlacement(), null),
 										instructor.isAllowOverlap());
 							}
 				}

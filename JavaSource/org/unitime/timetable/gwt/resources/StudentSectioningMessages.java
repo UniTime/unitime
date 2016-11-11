@@ -560,6 +560,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Class {0} has been cancelled.")
 	String classCancelled(String clazz);
 	
+	@DefaultMessage("You are instructing {0}.")
+	String instructing(String clazz);
+	
 	@DefaultMessage("Show unassignments")
 	String showUnassignments();
 	

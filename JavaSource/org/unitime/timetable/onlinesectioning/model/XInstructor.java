@@ -44,6 +44,7 @@ public class XInstructor implements Serializable, Externalizable {
 	private String iEmail;
 	private boolean iAllowOverlap;
 	private boolean iDisplay = true;
+	private boolean iInstructing = false;
 	
 	public XInstructor() {}
 	
@@ -57,7 +58,8 @@ public class XInstructor implements Serializable, Externalizable {
 		iName = helper.getInstructorNameFormat().format(instructor.getInstructor());
 		iEmail = instructor.getInstructor().getEmail();
 		iDisplay = instructor.getClassInstructing().isDisplayInstructor();
-		iAllowOverlap = false; 
+		iAllowOverlap = false;
+		iInstructing = true;
 		if (instructor.getTeachingRequest() != null)
 			for (TeachingClassRequest tcr: instructor.getTeachingRequest().getClassRequests())
 				if (tcr.getTeachingClass().equals(instructor.getClassInstructing())) {
@@ -72,15 +74,17 @@ public class XInstructor implements Serializable, Externalizable {
 		iEmail = instructor.getEmail();
 		iDisplay = false;
 		iAllowOverlap = tcr.isCanOverlap();
+		iInstructing = false;
 	}
 	
-	public XInstructor(Long uniqueId, String externalId, String name, String email, boolean display, boolean allowOverlap) {
+	public XInstructor(Long uniqueId, String externalId, String name, String email, boolean display, boolean allowOverlap, boolean instructing) {
 		iUniqueId = uniqueId;
 		iExternalId = externalId;
 		iName = name;
 		iEmail = email;
 		iDisplay = display;
 		iAllowOverlap = allowOverlap;
+		iInstructing = instructing;
 	}
 	
 	public Long getIntructorId() {
@@ -111,6 +115,8 @@ public class XInstructor implements Serializable, Externalizable {
     public boolean isAllowOverlap() { return iAllowOverlap; }
     
     public boolean isAllowDisplay() { return iDisplay; }
+    
+    public boolean isInstructing() { return iInstructing; }
 
     @Override
     public boolean equals(Object o) {
@@ -131,6 +137,7 @@ public class XInstructor implements Serializable, Externalizable {
 		iEmail = (String)in.readObject();
 		iAllowOverlap = in.readBoolean();
 		iDisplay = in.readBoolean();
+		iInstructing = in.readBoolean();
 	}
 
 	@Override
@@ -141,6 +148,7 @@ public class XInstructor implements Serializable, Externalizable {
 		out.writeObject(iEmail);
 		out.writeBoolean(iAllowOverlap);
 		out.writeBoolean(iDisplay);
+		out.writeBoolean(iInstructing);
 	}
 	
 	public static class XInstructorSerializer implements Externalizer<XInstructor> {

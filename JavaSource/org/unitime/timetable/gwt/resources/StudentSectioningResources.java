@@ -175,4 +175,7 @@ public interface StudentSectioningResources extends ClientBundle {
 	
 	@Source("org/unitime/timetable/gwt/resources/icons/times.png")
 	ImageResource filterRemoveAlternative();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/user_business_boss.png")
+	ImageResource isInstructing();
 }

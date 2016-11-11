@@ -99,7 +99,7 @@ public class CheckAssignmentAction implements OnlineSectioningAction<List<Enroll
 		Hashtable<Long, XOffering> courseId2offering = new Hashtable<Long, XOffering>();
 		for (ClassAssignmentInterface.ClassAssignment ca: getAssignment()) {	
 			// Skip free times and dummy sections
-			if (ca == null || ca.isFreeTime() || ca.getClassId() == null || ca.isDummy()) continue;
+			if (ca == null || ca.isFreeTime() || ca.getClassId() == null || ca.isDummy() || ca.isTeachingAssignment()) continue;
 			
 			XCourse course = server.getCourse(ca.getCourseId());
 			if (course == null)

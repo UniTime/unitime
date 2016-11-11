@@ -172,7 +172,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     					instructor.getExternalId(),
     					instructor.getName(),
     					instructor.getEmail(),
-    					true, false));
+    					true, false, true));
     		}
     	}
     	for (Unavailability u: section.getUnavailabilities()) {
@@ -182,7 +182,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
 						u.getStudent().getExternalId(),
 						u.getStudent().getName(),
 						null,
-						false, u.isAllowOverlap()));
+						false, u.isAllowOverlap(), false));
 		}
     }
     

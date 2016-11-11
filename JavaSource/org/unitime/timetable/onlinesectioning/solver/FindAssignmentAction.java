@@ -21,6 +21,7 @@ package org.unitime.timetable.onlinesectioning.solver;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,6 +59,7 @@ import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.studentsct.model.Unavailability;
 import org.cpsolver.studentsct.online.OnlineConfig;
 import org.cpsolver.studentsct.online.OnlineReservation;
 import org.cpsolver.studentsct.online.OnlineSection;
@@ -80,6 +82,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -146,9 +149,13 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 
 		Set<IdPair> enrolled = null;
 		Lock readLock = server.readLock();
+		ClassAssignmentInterface unavailabilities = null;
 		try {
 			XStudent original = (getRequest().getStudentId() == null ? null : server.getStudent(getRequest().getStudentId()));
 			if (original != null) {
+				unavailabilities = new ClassAssignmentInterface();
+				GetAssignment.fillUnavailabilitiesIn(unavailabilities, original, server, helper, null);
+				Collections.reverse(unavailabilities.getCourseAssignments());
 				student.setExternalId(original.getExternalId());
 				student.setName(original.getName());
 				action.getStudentBuilder().setUniqueId(original.getStudentId()).setExternalId(original.getExternalId()).setName(original.getName());
@@ -357,6 +364,9 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		long t2 = System.currentTimeMillis();
 
 		ClassAssignmentInterface ret = convert(server, model, assignment, student, neighbour, requiredSectionsForCourse, pinnedFreeTimes, enrolled);
+		if (unavailabilities != null)
+			for (ClassAssignmentInterface.CourseAssignment ca: unavailabilities.getCourseAssignments())
+				ret.getCourseAssignments().add(0, ca);
 		
 		long t3 = System.currentTimeMillis();
 		helper.debug("Sectioning took "+(t3-t0)+"ms (model "+(t1-t0)+"ms, sectioning "+(t2-t1)+"ms, conversion "+(t3-t2)+"ms)");
@@ -801,6 +811,9 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							}
 						}
 					}
+					for (Unavailability unavailability: enrollment.getStudent().getUnavailabilities())
+						if (section.getTime() != null && section.getTime().hasIntersection(unavailability.getTime()))
+							overlap.add(unavailability.getSection().getName());
 					if (!overlap.isEmpty()) {
 						String note = null;
 						for (Iterator<String> j = overlap.iterator(); j.hasNext(); ) {

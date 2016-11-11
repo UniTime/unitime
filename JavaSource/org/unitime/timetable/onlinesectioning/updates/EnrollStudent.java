@@ -123,7 +123,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 		List<EnrollmentFailure> failures = null;
 		boolean includeRequestInTheReturnMessage = false;
 		for (ClassAssignmentInterface.ClassAssignment ca: getAssignment())
-			if (ca != null && !ca.isFreeTime() && !ca.isDummy()) {
+			if (ca != null && !ca.isFreeTime() && !ca.isDummy() && !ca.isTeachingAssignment()) {
 				XCourse course = server.getCourse(ca.getCourseId());
 				if (course == null)
 					throw new SectioningException(MSG.exceptionEnrollNotAvailable(MSG.clazz(ca.getSubject(), ca.getCourseNbr(), ca.getSubpart(), ca.getSection())));
@@ -171,7 +171,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					if (assignment != null) {
 						OnlineSectioningLog.Section s = OnlineSectioningHelper.toProto(assignment); 
 						requested.addSection(s);
-						if (!assignment.isFreeTime() && !assignment.isDummy()) {
+						if (!assignment.isFreeTime() && !assignment.isDummy() && !assignment.isTeachingAssignment()) {
 							OnlineSectioningLog.CourseRequestOption.Builder option = options.get(assignment.getCourseId());
 							if (option == null) {
 								option = OnlineSectioningLog.CourseRequestOption.newBuilder().setType(OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT);
@@ -211,7 +211,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					failures = CustomStudentEnrollmentHolder.getProvider().enroll(server, helper, oldStudent, enrlCheck, lockedCourses);
 					for (Iterator<ClassAssignmentInterface.ClassAssignment> i = getAssignment().iterator(); i.hasNext(); ) {
 						ClassAssignmentInterface.ClassAssignment ca = i.next();
-						if (ca == null || ca.isFreeTime() || ca.getClassId() == null || ca.isDummy()) continue;
+						if (ca == null || ca.isFreeTime() || ca.getClassId() == null || ca.isDummy() || ca.isTeachingAssignment()) continue;
 						for (EnrollmentFailure f: failures) {
 							if (!f.isEnrolled() && f.getSection().getSectionId().equals(ca.getClassId())) {
 								i.remove();
@@ -489,7 +489,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				Map<Long, Class_> classes = new HashMap<Long, Class_>();
 				String classIds = null;
 				for (ClassAssignmentInterface.ClassAssignment ca: getAssignment()) {
-					if (ca == null || ca.isFreeTime() || ca.getClassId() == null || ca.isDummy() || oldEnrollments.containsKey(new IdPair(ca.getCourseId(), ca.getClassId()))) continue;
+					if (ca == null || ca.isFreeTime() || ca.getClassId() == null || ca.isDummy() || ca.isTeachingAssignment() || oldEnrollments.containsKey(new IdPair(ca.getCourseId(), ca.getClassId()))) continue;
 					if (classIds == null)
 						classIds = ca.getClassId().toString();
 					else
@@ -506,7 +506,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				Map<Long, Long> courseDemandId2courseId = new HashMap<Long, Long>();
 				
 				for (ClassAssignmentInterface.ClassAssignment ca: getAssignment()) {
-					if (ca == null || ca.isFreeTime() || ca.getClassId() == null || ca.isDummy()) continue;
+					if (ca == null || ca.isFreeTime() || ca.getClassId() == null || ca.isDummy() || ca.isTeachingAssignment()) continue;
 					CourseRequest cr = course2request.get(ca.getCourseId());
 					if (cr == null) {
 						CourseDemand cd = alt2demand.get(ca.getCourseId());

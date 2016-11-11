@@ -264,6 +264,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 							suggestionId++; continue;
 						}
 						for (ClassAssignmentInterface.CourseAssignment course: suggestion.getCourseAssignments()) {
+							if (course.isTeachingAssignment()) continue;
 							ArrayList<ClassAssignmentInterface.ClassAssignment> sameCourse = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 							if (!course.isFreeTime()) {
 								for (ClassAssignmentInterface.ClassAssignment x: iCurrent) {
@@ -418,7 +419,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 						}
 						Long lastCourseId = null;
 						current: for (ClassAssignmentInterface.ClassAssignment old: iCurrent) {
-							if (old == null || old.isFreeTime()) continue;
+							if (old == null || old.isFreeTime() || old.isTeachingAssignment()) continue;
 							for (ClassAssignmentInterface.CourseAssignment course: suggestion.getCourseAssignments()) {
 								if (old.getCourseId().equals(course.getCourseId())) continue current;
 							}
@@ -658,8 +659,9 @@ public class SuggestionsBox extends UniTimeDialogBox {
 	}
 	
 	public void open(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> rows, int index, boolean quickDrop, boolean useGwtConfirmations) {
-		LoadingWidget.getInstance().show(MESSAGES.suggestionsLoading());
 		ClassAssignmentInterface.ClassAssignment row = rows.get(index);
+		if (row == null || row.isTeachingAssignment()) return;
+		LoadingWidget.getInstance().show(MESSAGES.suggestionsLoading());
 		iAssignment = row;
 		iCurrent = rows;
 		iSource = null;
@@ -795,6 +797,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 	private String toString(ClassAssignmentInterface suggestion) {
 		String ret = "";
 		for (ClassAssignmentInterface.CourseAssignment course: suggestion.getCourseAssignments()) {
+			if (course.isTeachingAssignment()) continue;
 			ArrayList<ClassAssignmentInterface.ClassAssignment> sameCourse = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 			if (!course.isFreeTime()) {
 				for (ClassAssignmentInterface.ClassAssignment x: iCurrent) {
@@ -837,7 +840,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 			}
 		}
 		current: for (ClassAssignmentInterface.ClassAssignment old: iCurrent) {
-			if (old == null || old.isFreeTime()) continue;
+			if (old == null || old.isFreeTime() || old.isTeachingAssignment()) continue;
 			for (ClassAssignmentInterface.CourseAssignment course: suggestion.getCourseAssignments()) {
 				if (old.getCourseId().equals(course.getCourseId())) continue current;
 			}

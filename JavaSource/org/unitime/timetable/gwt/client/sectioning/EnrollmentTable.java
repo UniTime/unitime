@@ -236,6 +236,7 @@ public class EnrollmentTable extends Composite {
 						boolean firstClazz = true;
 						for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
 							String style = (firstClazz && !rows.isEmpty() ? "top-border-dashed": "");
+							if (clazz.isTeachingAssignment()) style += (clazz.isInstructing() ? " text-steelblue" : " text-steelblue-italic");
 							final WebTable.Row row = new WebTable.Row(
 									new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject() : ""),
 									new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr() : ""),

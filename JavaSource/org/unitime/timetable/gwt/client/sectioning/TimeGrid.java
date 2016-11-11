@@ -479,8 +479,14 @@ public class TimeGrid extends Composite {
 				m.addIcon(highDemand);
 			}
 		}
-		if (row.isSaved() && !iPrint) {
-			for (Meeting m: meetings) m.setSaved(row.isSaved());
+		if ((row.isSaved() || row.isTeachingAssignment()) && !iPrint) {
+			for (Meeting m: meetings) 
+				if (row.isTeachingAssignment()) {
+					if (row.isInstructing()) m.setInstructing(true);
+					m.hidePin();
+				} else {
+					m.setSaved(row.isSaved());
+				}
 		}
 		if (row.isCancelled() && !iPrint) {
 			for (Meeting m: meetings) {
@@ -604,6 +610,11 @@ public class TimeGrid extends Composite {
 		
 		public void setSaved(boolean saved) {
 			iSaved.setVisible(saved);
+		}
+		
+		public void setInstructing(boolean instructing) {
+			iSaved.setResource(RESOURCES.isInstructing());
+			iSaved.setVisible(instructing);
 		}
 		
 		public void setPinned(boolean pinned) {
@@ -771,6 +782,7 @@ public class TimeGrid extends Composite {
 		
 		public String getColor(ClassAssignmentInterface.ClassAssignment clazz) {
 			if (clazz.isFreeTime()) return CONSTANTS.freeTimeColor();
+			if (clazz.isTeachingAssignment()) return CONSTANTS.teachingAssignmentColor();
 			for (String[] pair: iColor)
 				if (pair[0].equals(clazz.getCourseId().toString())) return pair[1];
 			String color = CONSTANTS.meetingColors()[iColor.size() % CONSTANTS.meetingColors().length];

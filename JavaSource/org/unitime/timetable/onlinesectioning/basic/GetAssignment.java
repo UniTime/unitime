@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.onlinesectioning.basic;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
@@ -55,6 +56,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentFailure;
+import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -119,6 +121,9 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 			boolean setReadOnly = ApplicationProperty.OnlineSchedulingMakeAssignedRequestReadOnly.isTrue();
 			if (!setReadOnly && helper.getUser() != null && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER)
 				setReadOnly = ApplicationProperty.OnlineSchedulingMakeAssignedRequestReadOnlyIfAdmin.isTrue();
+			
+			List<CourseSection> unavailabilities = fillUnavailabilitiesIn(ret, student, server, helper, stored);
+			
 			for (XRequest request: student.getRequests()) {
 				action.addRequest(OnlineSectioningHelper.toProto(request));
 				ClassAssignmentInterface.CourseAssignment ca = new ClassAssignmentInterface.CourseAssignment();
@@ -294,6 +299,12 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 									}
 								}
 							}
+							if (unavailabilities != null)
+								for (CourseSection cs: unavailabilities) {
+									if (section.getTime() != null && section.getTime().hasIntersection(cs.getSection().getTime())) {
+										overlap.add(MSG.clazz(cs.getCourse().getSubjectArea(), cs.getCourse().getCourseNumber(), cs.getSection().getSubpartName(), cs.getSection().getName(cs.getCourse().getCourseId())));
+									}
+								}
 							if (!overlap.isEmpty()) {
 								String note = null;
 								for (Iterator<String> j = overlap.iterator(); j.hasNext(); ) {
@@ -403,6 +414,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 				}
 				ret.add(ca);
 			}
+						
 			action.addEnrollment(stored);
 			
 			if (iMessages != null) {
@@ -479,10 +491,104 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 			lock.release();
 		}
 	}
+	
+	public static List<CourseSection> fillUnavailabilitiesIn(ClassAssignmentInterface ret, XStudent student, OnlineSectioningServer server, OnlineSectioningHelper helper, OnlineSectioningLog.Enrollment.Builder eb) {
+		if (student.getExternalId() == null || student.getExternalId().isEmpty()) return null;
+		List<CourseSection> sections = new ArrayList<CourseSection>();
+		Collection<Long> offeringIds = server.getInstructedOfferings(student.getExternalId());
+		if (offeringIds != null && !offeringIds.isEmpty()) {
+			TreeSet<XOffering> offerings = new TreeSet<XOffering>(new Comparator<XOffering>() {
+				@Override
+				public int compare(XOffering o1, XOffering o2) {
+					int cmp = o1.getName().compareTo(o2.getName());
+					if (cmp != 0) return cmp;
+					return o1.getOfferingId().compareTo(o2.getOfferingId());
+				}
+			});
+			for (Long offeringId: offeringIds) {
+				XOffering offering = server.getOffering(offeringId);
+				if (offering != null)
+					offerings.add(offering);
+			}
+			for (XOffering offering: offerings) {
+				ClassAssignmentInterface.CourseAssignment ca = new ClassAssignmentInterface.CourseAssignment();
+		    	XCourse course = offering.getControllingCourse();
+				XEnrollments enrollments = server.getEnrollments(offering.getOfferingId());
+				
+		    	if (server.isOfferingLocked(course.getOfferingId()))
+					ca.setLocked(true);
+				ca.setAssigned(true);
+				ca.setCourseId(course.getCourseId());
+				ca.setSubject(course.getSubjectArea());
+				ca.setWaitListed(false);
+				ca.setCourseNbr(course.getCourseNumber());
+				ca.setTitle(course.getTitle());
+				ca.setTeachingAssignment(true);
+				
+		    	for (XConfig config: offering.getConfigs())
+					for (XSubpart subpart: config.getSubparts())
+						for (XSection section: subpart.getSections()) {
+							if (!section.isCancelled())
+								for (XInstructor instructor: section.getAllInstructors())
+									if (student.getExternalId().equals(instructor.getExternalId())) {
+										if (eb != null)
+											eb.addSection(OnlineSectioningHelper.toProto(section, null));
+										ClassAssignmentInterface.ClassAssignment a = ca.addClassAssignment();
+										a.setAlternative(false);
+										a.setClassId(section.getSectionId());
+										a.setSubpart(subpart.getName());
+										a.setClassNumber(section.getName(-1l));
+										a.setSection(section.getName(course.getCourseId()));
+										a.setCancelled(section.isCancelled());
+										a.setLimit(new int[] {enrollments.countEnrollmentsForSection(section.getSectionId()), section.getLimit()});
+										if (section.getTime() != null) {
+											for (DayCode d : DayCode.toDayCodes(section.getTime().getDays()))
+												a.addDay(d.getIndex());
+											a.setStart(section.getTime().getSlot());
+											a.setLength(section.getTime().getLength());
+											a.setBreakTime(section.getTime().getBreakTime());
+											a.setDatePattern(section.getTime().getDatePatternName());
+										}
+										if (section.getRooms() != null) {
+											for (XRoom room: section.getRooms()) {
+												a.addRoom(room.getName());
+											}
+										}
+										for (XInstructor instr: section.getInstructors()) {
+											a.addInstructor(instr.getName());
+											a.addInstructoEmail(instr.getEmail() == null ? "" : instr.getEmail());
+										}
+										if (section.getParentId() != null)
+											a.setParentSection(offering.getSection(section.getParentId()).getName(course.getCourseId()));
+										a.setSubpartId(section.getSubpartId());
+										a.setHasAlternatives(false);
+										a.addNote(course.getNote());
+										a.addNote(section.getNote());
+										a.setCredit(subpart.getCredit(course.getCourseId()));
+										a.setTeachingAssignment(true);
+										a.setInstructing(instructor.isInstructing());
+										sections.add(new CourseSection(course, section));
+								}
+						}
+		    	ret.add(ca);
+			}
+		}
+		return sections;
+	}
 
 	@Override
 	public String name() {
 		return "get-assignment";
+	}
+	
+	public static class CourseSection {
+		XCourse iCourse;
+		XSection iSection;
+		CourseSection(XCourse course, XSection section) {
+			iCourse = course; iSection = section;
+		}
+		public XCourse getCourse() { return iCourse; }
+		public XSection getSection() { return iSection; }
 	}
 
 }

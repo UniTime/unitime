@@ -672,7 +672,7 @@ public class OnlineSectioningHelper {
     
     public static OnlineSectioningLog.Section.Builder toProto(XSection a, XEnrollment e) {
     	OnlineSectioningLog.Section.Builder section = toProto(a, e == null ? null: e, e == null ? null : e.getReservation());
-    	if (e.getTimeStamp() != null)
+    	if (e != null && e.getTimeStamp() != null)
     		section.setTimeStamp(e.getTimeStamp().getTime());
     	return section;
     }
