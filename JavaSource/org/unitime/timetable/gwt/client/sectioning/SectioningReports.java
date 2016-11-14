@@ -94,6 +94,8 @@ public class SectioningReports extends Composite {
 		NOT_ALLOWED_TIME_OVERLAPS("Not Allowed Time Overlaps", "org.unitime.timetable.reports.studentsct.IndividualStudentTimeOverlaps", "includeAllowedOverlaps", "false"),
 		INDIVIDUAL_TIME_OVERLAPS_BT("Individual Student Time Overlaps (Exclude Break Times)", "org.unitime.timetable.reports.studentsct.IndividualStudentTimeOverlaps", "ignoreBreakTimeConflicts", "true"),
 		NOT_ALLOWED_TIME_OVERLAPS_BT("Not Allowed Time Overlaps (Exclude Break Times)", "org.unitime.timetable.reports.studentsct.IndividualStudentTimeOverlaps", "ignoreBreakTimeConflicts", "true", "includeAllowedOverlaps", "false"),
+		TEACHING_CONFLICTS("Teaching Conflicts", "org.unitime.timetable.reports.studentsct.StudentAvailabilityConflicts"),
+		TEACHING_CONFLICTS_NA("Teaching Conflicts (Exclude Allowed)", "org.unitime.timetable.reports.studentsct.StudentAvailabilityConflicts", "includeAllowedOverlaps", "false"),
 		;
 		
 		String iName, iImplementation;
