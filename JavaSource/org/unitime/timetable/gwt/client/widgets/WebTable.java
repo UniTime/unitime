@@ -25,6 +25,7 @@ import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
 import org.unitime.timetable.gwt.client.aria.AriaHiddenLabel;
 import org.unitime.timetable.gwt.client.aria.AriaToggleButton;
 import org.unitime.timetable.gwt.client.aria.HasAriaLabel;
+import org.unitime.timetable.gwt.client.widgets.SimpleForm.HasMobileScroll;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
@@ -63,7 +64,7 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConst
 /**
  * @author Tomas Muller
  */
-public class WebTable extends Composite {
+public class WebTable extends Composite implements HasMobileScroll {
 	public static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);

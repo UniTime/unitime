@@ -282,6 +282,14 @@
 		</TR>
 	<% } %>
 	
+		<logic:notEmpty name="<%=frmName%>" property="puId">
+			<TR>
+				<TD colspan="2">
+					<div id='UniTimeGWT:StudentEnrollments' style="display: none;"><bean:write name="<%=frmName%>" property="puId"/></div>
+				</TD>
+			</TR>
+		</logic:notEmpty>	
+
 		<tt:last-change type='DepartmentalInstructor'>
 			<bean:write name="<%=frmName%>" property="instructorId"/>
 		</tt:last-change>		

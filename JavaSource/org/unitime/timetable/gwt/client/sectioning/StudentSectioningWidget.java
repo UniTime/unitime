@@ -960,7 +960,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (clazz.isCancelled())
 							icons.add(RESOURCES.cancelled(), MESSAGES.classCancelled(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
 
-						totalCredit += clazz.guessCreditCount();
+						if (!clazz.isTeachingAssignment())
+							totalCredit += clazz.guessCreditCount();
 						if (clazz.isAssigned()) {
 							row = new WebTable.Row(
 								clazz.isDummy() || clazz.isTeachingAssignment() ? new WebTable.Cell(null) : new WebTable.LockCell(clazz.isPinned(), course.isFreeTime() ? ARIA.freeTimePin(clazz.getTimeStringAria(CONSTANTS.longDays(), CONSTANTS.useAmPm(), ARIA.arrangeHours())) : ARIA.classPin(MESSAGES.clazz(course.getSubject(), course.getCourseNbr(), clazz.getSubpart(), clazz.getSection())), MESSAGES.hintLocked(), MESSAGES.hintUnlocked()),

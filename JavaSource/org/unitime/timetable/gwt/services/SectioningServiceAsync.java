@@ -79,4 +79,5 @@ public interface SectioningServiceAsync {
 	void massCancel(List<Long> studentIds, String status, String subject, String message, String cc, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	void requestStudentUpdate(List<Long> studentIds, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	void listDegreePlans(boolean online, Long sessionId, Long studentId, AsyncCallback<List<DegreePlanInterface>> callback) throws SectioningException, PageAccessException;
+	void lookupStudent(boolean online, String studentId, AsyncCallback<ClassAssignmentInterface.Student> callback) throws SectioningException, PageAccessException;
 }

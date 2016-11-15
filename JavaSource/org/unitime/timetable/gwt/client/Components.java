@@ -37,6 +37,7 @@ import org.unitime.timetable.gwt.client.rooms.RoomSharingWidget;
 import org.unitime.timetable.gwt.client.sectioning.CourseDetailsWidget;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
 import org.unitime.timetable.gwt.client.sectioning.ExaminationEnrollmentTable;
+import org.unitime.timetable.gwt.client.sectioning.StudentScheduleTable;
 import org.unitime.timetable.gwt.client.solver.SolverAllocatedMemory;
 import org.unitime.timetable.gwt.client.widgets.CourseNumbersSuggestBox;
 
@@ -75,6 +76,7 @@ public enum Components {
 	courseNumberSuggestions("UniTimeGWT:CourseNumberSuggestBox", true, new ComponentFactory() { public void insert(RootPanel panel) { CourseNumbersSuggestBox.insert(panel); } }),
 	periodPreferences("UniTimeGWT:PeriodPreferences", new ComponentFactory() { public void insert(RootPanel panel) { new PeriodPreferencesWidget(true).insert(panel); } }),
 	teachingRequests("UniTimeGWT:TeachingRequests", new ComponentFactory() { public void insert(RootPanel panel) { new TeachingRequestsWidget().insert(panel); } }),
+	studentEnrollments("UniTimeGWT:StudentEnrollments", new ComponentFactory() { public void insert(RootPanel panel) { new StudentScheduleTable(true, true).insert(panel); } }),
 	;
 	
 	private String iId;

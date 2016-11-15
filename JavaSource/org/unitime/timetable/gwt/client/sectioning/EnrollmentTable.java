@@ -101,7 +101,7 @@ public class EnrollmentTable extends Composite {
 	private static DateTimeFormat sTSF = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
 	private Long iOfferingId = null;
 
-	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
+	protected static final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
 	
 	private SimpleForm iEnrollmentPanel;
 	private UniTimeTable<ClassAssignmentInterface.Enrollment> iEnrollments;
@@ -256,7 +256,8 @@ public class EnrollmentTable extends Composite {
 							for (WebTable.Cell cell: row.getCells())
 								cell.setStyleName(style);
 							firstClazz = false;
-							totalCredit += clazz.guessCreditCount();
+							if (!clazz.isTeachingAssignment())
+								totalCredit += clazz.guessCreditCount();
 						}
 					} else {
 						String style = "text-red" + (!rows.isEmpty() ? " top-border-dashed": "");
@@ -332,7 +333,7 @@ public class EnrollmentTable extends Composite {
 				buttons.addButton("registration", MESSAGES.buttonRegistration(), new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent e) {
-						showCourseRequests(student, new AsyncCallback<Boolean>() {
+						showCourseRequests(student, iOnline, new AsyncCallback<Boolean>() {
 							@Override
 							public void onFailure(Throwable caught) {
 								UniTimeNotifications.error(caught);
@@ -349,7 +350,7 @@ public class EnrollmentTable extends Composite {
 				buttons.addButton("assistant", MESSAGES.buttonAssistant(), new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent e) {
-						showStudentAssistant(student, new AsyncCallback<Boolean>() {
+						showStudentAssistant(student, iOnline, new AsyncCallback<Boolean>() {
 							@Override
 							public void onFailure(Throwable caught) {
 								UniTimeNotifications.error(caught);
@@ -420,7 +421,7 @@ public class EnrollmentTable extends Composite {
 		});
 	}
 	
-	public void showStudentAssistant(final ClassAssignmentInterface.Student student, final AsyncCallback<Boolean> callback) {
+	public static void showStudentAssistant(final ClassAssignmentInterface.Student student, final boolean online, final AsyncCallback<Boolean> callback) {
 		UserAuthenticationProvider user = new UserAuthenticationProvider() {
 			@Override
 			public String getUser() {
@@ -452,9 +453,9 @@ public class EnrollmentTable extends Composite {
 			}
 		};
 		
-		final StudentSectioningWidget widget = new StudentSectioningWidget(iOnline, session, user, StudentSectioningPage.Mode.SECTIONING, false);
+		final StudentSectioningWidget widget = new StudentSectioningWidget(online, session, user, StudentSectioningPage.Mode.SECTIONING, false);
 		
-		iSectioningService.logIn(iOnline ? "LOOKUP" : "BATCH", iOnline ? student.getExternalId() : String.valueOf(student.getId()), null, new AsyncCallback<String>() {
+		iSectioningService.logIn(online ? "LOOKUP" : "BATCH", online ? student.getExternalId() : String.valueOf(student.getId()), null, new AsyncCallback<String>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				callback.onFailure(caught);
@@ -488,7 +489,7 @@ public class EnrollmentTable extends Composite {
 		});
 	}
 	
-	public void showCourseRequests(final ClassAssignmentInterface.Student student, final AsyncCallback<Boolean> callback) {
+	public static void showCourseRequests(final ClassAssignmentInterface.Student student, final boolean online, final AsyncCallback<Boolean> callback) {
 		UserAuthenticationProvider user = new UserAuthenticationProvider() {
 			@Override
 			public String getUser() {
@@ -520,9 +521,9 @@ public class EnrollmentTable extends Composite {
 			}
 		};
 		
-		final StudentSectioningWidget widget = new StudentSectioningWidget(iOnline, session, user, StudentSectioningPage.Mode.REQUESTS, false);
+		final StudentSectioningWidget widget = new StudentSectioningWidget(online, session, user, StudentSectioningPage.Mode.REQUESTS, false);
 		
-		iSectioningService.logIn(iOnline ? "LOOKUP" : "BATCH", iOnline ? student.getExternalId() : String.valueOf(student.getId()), null, new AsyncCallback<String>() {
+		iSectioningService.logIn(online ? "LOOKUP" : "BATCH", online ? student.getExternalId() : String.valueOf(student.getId()), null, new AsyncCallback<String>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				callback.onFailure(caught);
@@ -546,7 +547,7 @@ public class EnrollmentTable extends Composite {
 		});
 	}
 	
-	public void showChangeLog(final ClassAssignmentInterface.Student student, final AsyncCallback<Boolean> callback) {
+	public static void showChangeLog(final ClassAssignmentInterface.Student student, final AsyncCallback<Boolean> callback) {
 		iSectioningService.changeLog("id:" + student.getExternalId(), new AsyncCallback<List<ClassAssignmentInterface.SectioningAction>>() {
 			@Override
 			public void onFailure(Throwable caught) {

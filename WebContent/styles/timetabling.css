@@ -857,13 +857,6 @@ A.submenuLink {
 	background-color: #8EACD0;
 }
 
-.course {
-	color: black;
-	width: 100%;
-	cursor: hand;
-	background-color: transparent;
-}
-
 .contextmenu {
 	cursor: default;
 	position: absolute;
