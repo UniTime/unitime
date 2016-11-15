@@ -227,6 +227,7 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 			public OnlineSectioningInterface.EligibilityCheck execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
 				return service.checkEligibility(
 						helper.getOptinalParameterBoolean("online", true),
+						helper.getOptinalParameterBoolean("sectioning", true),
 						sessionId,
 						studentId,
 						helper.getOptinalParameter("pin", null));

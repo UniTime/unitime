@@ -1708,7 +1708,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					recheckCustomEligibility = true;
 			}
 			
-			EligibilityCheck check = checkEligibility(online, sessionId, studentId, null, recheckCustomEligibility);
+			EligibilityCheck check = checkEligibility(online, true, sessionId, studentId, null, recheckCustomEligibility);
 			if (check == null || !check.hasFlag(EligibilityFlag.CAN_ENROLL) || check.hasFlag(EligibilityFlag.RECHECK_BEFORE_ENROLLMENT))
 				throw new SectioningException(check.getMessage() == null ?
 						check.hasFlag(EligibilityFlag.PIN_REQUIRED) ? MSG.exceptionAuthenticationPinNotProvided() :
@@ -2027,11 +2027,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 
 	@Override
-	public EligibilityCheck checkEligibility(boolean online, Long sessionId, Long studentId, String pin) throws SectioningException, PageAccessException {
-		return checkEligibility(online, sessionId, studentId, pin, true);
+	public EligibilityCheck checkEligibility(boolean online, boolean sectioning, Long sessionId, Long studentId, String pin) throws SectioningException, PageAccessException {
+		return checkEligibility(online, sectioning, sessionId, studentId, pin, true);
 	}
 	
-	public EligibilityCheck checkEligibility(boolean online, Long sessionId, Long studentId, String pin, boolean includeCustomCheck) throws SectioningException, PageAccessException {
+	public EligibilityCheck checkEligibility(boolean online, boolean sectioning, Long sessionId, Long studentId, String pin, boolean includeCustomCheck) throws SectioningException, PageAccessException {
 		try {
 			if (pin != null && !pin.isEmpty()) getSessionContext().setAttribute("pin", pin);
 			if (includeCustomCheck) getSessionContext().removeAttribute("eligibility");
@@ -2071,10 +2071,6 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			
 			if (sessionId == null) return new EligibilityCheck(MSG.exceptionNoAcademicSession());
 			
-			OnlineSectioningServer server = getServerInstance(sessionId, false);
-			if (server == null)
-				return new EligibilityCheck(MSG.exceptionNoServerForSession());
-			
 			UserContext user = getSessionContext().getUser();
 			if (user == null)
 				return new EligibilityCheck(getSessionContext().isHttpSessionNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
@@ -2096,6 +2092,33 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			check.setFlag(EligibilityFlag.DEGREE_PLANS, CustomDegreePlansHolder.hasProvider());
 			check.setSessionId(sessionId);
 			check.setStudentId(studentId);
+			
+			if (!sectioning) {
+				Student student = (studentId == null ? null : StudentDAO.getInstance().get(studentId));
+				if (student == null) {
+					if (!check.hasFlag(EligibilityFlag.IS_ADMIN) && !check.hasFlag(EligibilityFlag.IS_ADVISOR))
+						check.setMessage(MSG.exceptionEnrollNotStudent(SessionDAO.getInstance().get(sessionId).getLabel()));
+					return check;
+				}
+				StudentSectioningStatus status = student.getSectioningStatus();
+				if (status == null) status = student.getSession().getDefaultSectioningStatus();
+				if (status == null) {
+					check.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, true);
+					check.setFlag(EligibilityFlag.CAN_WAITLIST, true);
+				} else {
+					check.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, status.hasOption(StudentSectioningStatus.Option.enabled));
+					check.setFlag(EligibilityFlag.CAN_REGISTER, status.hasOption(StudentSectioningStatus.Option.enrollment) ||
+							(status.hasOption(StudentSectioningStatus.Option.admin) && check.hasFlag(EligibilityFlag.IS_ADMIN)) ||
+							(status.hasOption(StudentSectioningStatus.Option.advisor) && check.hasFlag(EligibilityFlag.IS_ADVISOR)));
+					check.setFlag(EligibilityFlag.CAN_WAITLIST, status.hasOption(StudentSectioningStatus.Option.waitlist));
+					check.setMessage(status.getMessage());
+				}
+				return check;
+			}
+			
+			OnlineSectioningServer server = getServerInstance(sessionId, false);
+			if (server == null)
+				return new EligibilityCheck(MSG.exceptionNoServerForSession());
 			
 			EligibilityCheck ret = server.execute(server.createAction(CheckEligibility.class).forStudent(studentId).withCheck(check).includeCustomCheck(includeCustomCheck), currentUser());
 			if (includeCustomCheck) getSessionContext().setAttribute("eligibility", ret);

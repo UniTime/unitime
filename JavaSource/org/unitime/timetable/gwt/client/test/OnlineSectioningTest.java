@@ -363,7 +363,7 @@ public class OnlineSectioningTest extends Composite {
 		
 		private void checkEligibility(final Callback<EligibilityCheck> callback) {
 			debug("checkEligibility()");	
-			iSectioningService.checkEligibility(true, iSessionId, iStudentId, iPin.getWidget().getText(),  new AsyncCallback<EligibilityCheck>() {
+			iSectioningService.checkEligibility(true, true, iSessionId, iStudentId, iPin.getWidget().getText(),  new AsyncCallback<EligibilityCheck>() {
 				@Override
 				public void onSuccess(EligibilityCheck result) {
 					callback.execute(result, null);

@@ -237,7 +237,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		if (!mode.isSectioning())
 			rightFooterPanel.add(iSave);
 		iSave.setVisible(!mode.isSectioning());
-		iSave.setEnabled(!mode.isSectioning());
+		iSave.setEnabled(false);
 
 		iEnroll = new AriaButton(MESSAGES.buttonEnroll());
 		iEnroll.setTitle(MESSAGES.hintEnroll());
@@ -696,7 +696,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									iStatus.info(MESSAGES.enrollOK());
 								updateHistory();
 								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.RECHECK_AFTER_ENROLLMENT)) {
-									iSectioningService.checkEligibility(iOnline, iSessionSelector.getAcademicSessionId(),
+									iSectioningService.checkEligibility(iOnline, iMode.isSectioning(), iSessionSelector.getAcademicSessionId(),
 											iEligibilityCheck.getStudentId(), (String)null,
 											new AsyncCallback<OnlineSectioningInterface.EligibilityCheck>() {
 												@Override
@@ -743,7 +743,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 													}
 												}
 											};
-											iPinDialog.checkEligibility(iOnline, iSessionSelector.getAcademicSessionId(), null, callback);
+											iPinDialog.checkEligibility(iOnline, iMode.isSectioning(), iSessionSelector.getAcademicSessionId(), null, callback);
 										}
 									}
 									if (se.hasSectionMessages()) {
@@ -1409,7 +1409,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		if (iExport != null) {
 			iExport.setVisible(false); iExport.setEnabled(false);
 		}
-		iSchedule.setVisible(true); iSchedule.setEnabled(true);
+		iSchedule.setVisible(iMode.isSectioning()); iSchedule.setEnabled(iMode.isSectioning());
+		iSave.setVisible(!iMode.isSectioning()); iSave.setEnabled(!iMode.isSectioning() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_REGISTER));
 		if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.DEGREE_PLANS)) {
 			iDegreePlan.setVisible(true); iDegreePlan.setEnabled(true);
 		}
@@ -1438,14 +1439,15 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	}
 	
 	public void checkEligibility(final Long sessionId, final Long studentId, final boolean saved, final AsyncCallback<OnlineSectioningInterface.EligibilityCheck> ret) {
+		/*
 		if (!iMode.isSectioning()) {
 			lastRequest(sessionId, studentId, saved, true);
 			if (ret != null) ret.onSuccess(null);
 			return;
-		}
+		}*/
 		LoadingWidget.getInstance().show(MESSAGES.courseRequestsLoading());
 		iStartOver.setVisible(false); iStartOver.setEnabled(false);
-		iSectioningService.checkEligibility(iOnline, sessionId, studentId, null, new AsyncCallback<OnlineSectioningInterface.EligibilityCheck>() {
+		iSectioningService.checkEligibility(iOnline, iMode.isSectioning(), sessionId, studentId, null, new AsyncCallback<OnlineSectioningInterface.EligibilityCheck>() {
 			@Override
 			public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
 				clearMessage(false);
@@ -1464,7 +1466,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							@Override
 							public void onFailure(Throwable caught) {
 								iStatus.error(MESSAGES.exceptionFailedEligibilityCheck(caught.getMessage()), caught);
-								iSchedule.setVisible(true); iSchedule.setEnabled(true);
+								iSchedule.setVisible(iMode.isSectioning()); iSchedule.setEnabled(iMode.isSectioning());
+								iSave.setVisible(!iMode.isSectioning()); iSave.setEnabled(!iMode.isSectioning() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_REGISTER));
 								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.DEGREE_PLANS)) {
 									iDegreePlan.setVisible(true); iDegreePlan.setEnabled(true);
 								}
@@ -1475,7 +1478,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
 								iCourseRequests.setCanWaitList(result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
 								iEligibilityCheck = result;
-								iSchedule.setVisible(true); iSchedule.setEnabled(true);
+								iSchedule.setVisible(iMode.isSectioning()); iSchedule.setEnabled(iMode.isSectioning());
+								iSave.setVisible(!iMode.isSectioning()); iSave.setEnabled(!iMode.isSectioning() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_REGISTER));
 								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.DEGREE_PLANS)) {
 									iDegreePlan.setVisible(true); iDegreePlan.setEnabled(true);
 								}
@@ -1493,9 +1497,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								}
 							}
 						};
-						iPinDialog.checkEligibility(iOnline, sessionId, null, callback);
+						iPinDialog.checkEligibility(iOnline, iMode.isSectioning(), sessionId, null, callback);
 					} else {
-						iSchedule.setVisible(true); iSchedule.setEnabled(true);
+						iSchedule.setVisible(iMode.isSectioning()); iSchedule.setEnabled(iMode.isSectioning());
+						iSave.setVisible(!iMode.isSectioning()); iSave.setEnabled(!iMode.isSectioning() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_REGISTER));
 						if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.DEGREE_PLANS)) {
 							iDegreePlan.setVisible(true); iDegreePlan.setEnabled(true);
 						}
@@ -1509,6 +1514,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						iStatus.error(result.getMessage());
 					}
 					iSchedule.setVisible(false);  iSchedule.setEnabled(false);
+					iSave.setVisible(false); iSave.setEnabled(false);
 					iDegreePlan.setVisible(false); iDegreePlan.setEnabled(false);
 					if (ret != null) ret.onFailure(new SectioningException(result.getMessage()));
 				}
