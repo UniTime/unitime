@@ -192,7 +192,7 @@ public class StudentSchedulingPermissions {
 	public static class StudentSchedulingChangeStudentStatus extends SimpleSessionPermission {
 		@Override
 		public boolean check(UserContext user, Session source) {
-			return super.check(user, source) && source.getStatusType().can(Status.StudentsOnline);
+			return super.check(user, source) && (source.getStatusType().can(Status.StudentsOnline) || source.getStatusType().can(Status.StudentsAssistant) || source.getStatusType().can(Status.StudentsPreRegister));
 		}
 	}
 	
