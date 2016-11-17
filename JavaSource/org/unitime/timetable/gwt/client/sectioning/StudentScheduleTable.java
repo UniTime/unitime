@@ -28,7 +28,7 @@ import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
-import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.services.SectioningService;
@@ -53,7 +53,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 public class StudentScheduleTable extends Composite {
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
-	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
+	public static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	protected static final SectioningServiceAsync sSectioningService = GWT.create(SectioningService.class);
 	private boolean iOnline;
 	
@@ -207,9 +207,7 @@ public class StudentScheduleTable extends Composite {
 				new WebTable.Cell(MESSAGES.colSubpart(), 1, "50px"),
 				new WebTable.Cell(MESSAGES.colClass(), 1, "75px"),
 				new WebTable.Cell(MESSAGES.colLimit(), 1, "60px"),
-				new WebTable.Cell(MESSAGES.colDays(), 1, "50px"),
-				new WebTable.Cell(MESSAGES.colStart(), 1, "75px"),
-				new WebTable.Cell(MESSAGES.colEnd(), 1, "75px"),
+				new WebTable.Cell(MESSAGES.colTime(), 1, "150px"),
 				new WebTable.Cell(MESSAGES.colDate(), 1, "75px"),
 				new WebTable.Cell(MESSAGES.colRoom(), 1, "100px"),
 				new WebTable.Cell(MESSAGES.colInstructor(), 1, "100px"),
@@ -232,9 +230,7 @@ public class StudentScheduleTable extends Composite {
 							new WebTable.Cell(clazz.getSubpart()),
 							new WebTable.Cell(clazz.getSection()),
 							new WebTable.Cell(clazz.getLimitString()),
-							new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())),
-							new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())),
-							new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
+							new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays()) + " " + clazz.getStartString(CONSTANTS.useAmPm()) + " - " + clazz.getEndString(CONSTANTS.useAmPm())),
 							new WebTable.Cell(clazz.getDatePattern()),
 							(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
 							new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),

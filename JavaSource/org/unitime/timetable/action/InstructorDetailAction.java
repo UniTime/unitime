@@ -49,6 +49,7 @@ import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.InstructorEditForm;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -321,7 +322,39 @@ public class InstructorDetailAction extends PreferencesAction {
 							}
 						}
 			    	}
-		    		
+			    	String icon = null, bgColor = null, title = null;
+			    	if (!c.isCancelled() && ci.isLead()) {
+			        	Set<Assignment> conflicts = null;
+			        	try { conflicts = classAssignmentService.getAssignment().getConflicts(c.getUniqueId()); } catch (Exception e) {}
+			        	if (conflicts != null && !conflicts.isEmpty()) {
+			        		bgColor = "#fff0f0";
+			    			String s = "";
+			    			for (Assignment x: conflicts) {
+			    				if (!s.isEmpty()) s += ", ";
+			    				s += (x.getClassName() + " " + x.getPlacement().getName(CONST.useAmPm())).trim();
+			    			}
+			    			title = MSG.classIsConflicting(c.getClassLabel(), s);
+							icon = "<IMG alt='" + MSG.classIsConflicting(c.getClassLabel(), s) + "' title='" + MSG.classIsConflicting(c.getClassLabel(), s) + "' src='images/warning.png' style='margin-left: 1px; margin-right: 3px; vertical-align: top;'>";
+			        	} else {
+			        		Set<TimeBlock> ec = null;
+			        		try { ec = classAssignmentService.getAssignment().getConflictingTimeBlocks(c.getUniqueId()); } catch (Exception e) {}
+			        		if (ec != null && !ec.isEmpty()) {
+			        			String s = "";
+			        			String lastName = null, lastType = null;
+			        			for (TimeBlock t: ec) {
+			        				if (lastName == null || !lastName.equals(t.getEventName()) || !lastType.equals(t.getEventType())) {
+			        					lastName = t.getEventName(); lastType = t.getEventType();
+			        					if (!s.isEmpty()) s += ", ";
+			            				s += lastName + " (" + lastType + ")";
+			        				}
+			        			}
+			        			bgColor = "#fff0f0";
+			        			title = MSG.classIsConflicting(c.getClassLabel(), s);
+			            		icon = "<IMG alt='" + MSG.classIsConflicting(c.getClassLabel(), s) + "' title='" + MSG.classIsConflicting(c.getClassLabel(), s) + "' src='images/warning.png' style='margin-left: 1px; margin-right: 3px; vertical-align: top;'>";
+			        		}
+			        	}			    		
+			    	}
+		        	
 		    		String onClick = null;
 		    		if (sessionContext.hasPermission(c, Right.ClassDetail)) {
 		    			onClick = "onClick=\"document.location='classDetail.do?cid="+c.getUniqueId()+"';\"";
@@ -336,7 +369,7 @@ public class InstructorDetailAction extends PreferencesAction {
 								onClick,
 								new String[] {
 									(back?"<A name=\"back\"></A>":"")+
-									c.getClassLabel(),
+									(icon == null ? "" : icon) + c.getClassLabel(),
 									(ci.isLead().booleanValue()?"<IMG border='0' alt='true' align='absmiddle' src='images/accept.png'>":""),
 									ci.getPercentShare()+"%",
 									responsibility,
@@ -362,6 +395,9 @@ public class InstructorDetailAction extends PreferencesAction {
 								},
 								null,null);
 					}
+					
+					if (bgColor != null) line.setBgColor(bgColor);
+					if (title != null) line.setTitle(title);
 					
 					if (c.isCancelled()) {
 						line.setStyle("color: gray; font-style: italic;");
