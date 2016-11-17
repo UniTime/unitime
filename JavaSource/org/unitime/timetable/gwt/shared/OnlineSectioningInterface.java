@@ -50,6 +50,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			ALTERNATIVES_DROP,
 			GWT_CONFIRMATIONS,
 			DEGREE_PLANS,
+			CAN_REGISTER,
 			;
 			
 			public int flag() { return 1 << ordinal(); }

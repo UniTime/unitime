@@ -56,7 +56,7 @@ public class PinDialog extends AriaDialogBox {
 	private AriaButton iButton = null, iCancel = null;
 	private PinCallback iCallback = null;
 	
-	private boolean iOnline;
+	private boolean iOnline, iSectioning;
 	private Long iSessionId, iStudentId;
 
 	public PinDialog() {
@@ -122,7 +122,7 @@ public class PinDialog extends AriaDialogBox {
 		final String pin = iPin.getText();
 		hide();
 		LoadingWidget.getInstance().show(MESSAGES.waitEligibilityCheck());
-		sSectioningService.checkEligibility(iOnline, iSessionId, iStudentId, pin, new AsyncCallback<EligibilityCheck>() {
+		sSectioningService.checkEligibility(iOnline, iSectioning, iSessionId, iStudentId, pin, new AsyncCallback<EligibilityCheck>() {
 			
 			@Override
 			public void onSuccess(EligibilityCheck result) {
@@ -150,8 +150,9 @@ public class PinDialog extends AriaDialogBox {
 		});
 	}
 	
-	public void checkEligibility(boolean online, Long sessionId, Long studentId, PinCallback callback) {
+	public void checkEligibility(boolean online, boolean sectioning, Long sessionId, Long studentId, PinCallback callback) {
 		iOnline = online;
+		iSectioning = sectioning;
 		iSessionId = sessionId;
 		iStudentId = studentId;
 		iCallback = callback;

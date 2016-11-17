@@ -135,6 +135,13 @@
 				<line>This fixes an issue with showing wrong numbers on the Time &amp; Availability Conflicts report.</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Course Requests</name>
+			<description>
+				<line>Student Course Requests page now checks for student eligibility to register.</line>
+				<line>This means that student status can be used to determine whether the wait-listing is enabled, if a student is allowed to make any changes, etc.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>API</title>
