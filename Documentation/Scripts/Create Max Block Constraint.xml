@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+ <script name="Distribution Types: Create Max Block Constraint" permission="Distribution Types" engine="ECMAScript" created="Thu Nov 17 15:52:14 CET 2016">
+  <description><![CDATA[This script creates a Max Block constraint distribution type of the given parameters.<br><br>
+The MaxBlock constraint checks for too big blocks of back-to-back classes of an instructor on a day.<br>
+It has two parameters: a maximal length of a back-to-back block that is allowed and a minimal length of a break between two classes not to be considered in the same block.<br>
+Reference _MaxBlock:120:30_ translates to a maximal block of at most 2 hours (120 minutes) with classes not more than 30 minutes apart.]]></description>
+  <parameter name="minBreakStr" label="Min Break Length (in minutes)" type="enum(00,05,10,15,20,25,30,35,40,45,50,55,60)" default="30"/>
+  <parameter name="maxBlockStr" label="Max Block Length (in minutes)" type="enum(030,035,040,045,050,055,060,065,070,075,080,085,090,095,100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200,205,210,215,220,225,230,235,240)" default="120"/>
+  <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
+var maxBlock = +maxBlockStr;
+var minBreak = +minBreakStr;
+var reference = '_MaxBlock:' + maxBlock + ':' + minBreak + '_';
+var type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', reference).uniqueResult();
+var label = '';
+var abbv = '';
+var desc = '';
+if (maxBlock == 60) {
+  label = 'Max ' + (maxBlock / 60) + 'h Blocks';
+  abbv = (maxBlock / 60) + 'h Blocks';
+  desc = 'There needs to be a break of more than ' + minBreak + ' minutes after each block of at most one hour.';
+} else if ((maxBlock % 60) == 0) {
+  label = 'Max ' + (maxBlock / 60) + 'h Blocks';
+  abbv = (maxBlock / 60) + 'h Blocks';
+  desc = 'There needs to be a break of more than ' + minBreak + ' minutes after each block of at most ' + (maxBlock / 60) + ' hours.';
+} else {
+  label = 'Max ' + maxBlock + ' Min Blocks';
+  abbv = maxBlock + 'm Blocks';
+  desc = 'There needs to be a break of more than ' + minBreak + ' minutes after each block of at most ' + maxBlock + ' minutes.';
+}
+desc = desc + ' Two consecutive classes are considered in the same block if the time between them is not more than ' + minBreak + ' minutes.';
+if (type == null) {
+  type = new org.unitime.timetable.model.DistributionType();
+  type.setReference(reference);
+  log.info('Creating ' + label + ' constraint...');
+} else {
+  log.warn('Constraint ' + label + ' already exists.');
+}
+type.setLabel(label);
+type.setSequencingRequired(false);
+type.setRequirementId(++reqId);
+type.setAllowedPref('210R');
+type.setDescr(desc);
+type.setAbbreviation(abbv);
+type.setInstructorPref(true);
+type.setExamPref(false);
+type.setVisible(true);
+hibSession.saveOrUpdate(type);
+log.info('All done.');]]></body>
+</script>
