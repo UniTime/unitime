@@ -142,6 +142,12 @@
 				<line>This means that student status can be used to determine whether the wait-listing is enabled, if a student is allowed to make any changes, etc.</line>
 			</description>
 		</item>
+		<item>
+			<name>Online Student Scheduling Dashboard</name>
+			<description>
+				<line>Allow student status change during assistant mode and during registration (when Student Course Requests page can be used).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>API</title>
