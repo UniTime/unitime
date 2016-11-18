@@ -323,7 +323,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 			break;
 		case INSTRUCTOR:
 			type = SolverParameterGroup.SolverType.INSTRUCTOR;
-			group = "InstrSchdBasic";
+			group = "InstrSchd.Basic";
 			appearance = SolverPredefinedSetting.APPEARANCE_INSTRUCTOR_SOLVER;
 			defaultConfig = "InstrSchd.Default";
 			break;

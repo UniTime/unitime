@@ -269,7 +269,7 @@ public class SolverPage extends SimpleForm {
 			if (iType == SolverType.EXAM && iSolverOwner != null)
 				addRow(MESSAGES.propExamSolverOwner(), iSolverOwner);
 			iSolverConfig = new ListBox();
-			iSolverConfigRow = addRow(MESSAGES.propSolverProgress(), iSolverConfig);
+			iSolverConfigRow = addRow(MESSAGES.propSolverConfiguration(), iSolverConfig);
 			iConfigurations = new HashMap<String, SolverConfiguration>();
 			if (response.hasConfigurations()) {
 				for (SolverConfiguration config: response.getConfigurations()) {
