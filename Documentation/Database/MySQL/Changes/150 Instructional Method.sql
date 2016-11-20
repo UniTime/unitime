@@ -23,7 +23,7 @@ create table instructional_method (
 	reference varchar(20) not null,
 	label varchar(60) not null,
 	visible int(1) not null default 1
-);
+) engine = INNODB;
 
 alter table instr_offering_config add instr_method_id decimal(20,0);
 
