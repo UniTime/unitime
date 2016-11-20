@@ -4151,4 +4151,7 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("All Departments")
 	String departmentsAllTitle();
+	
+	@DefaultMessage("Please wait ...")
+	String waitPlease();
 }

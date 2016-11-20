@@ -203,6 +203,14 @@
 				<line>When an academic area is deleted, delete all orphaned majors and minors as well.</line>
 			</description>
 		</item>
+		<item>
+			<name>GWT-based Administration Pages</name>
+			<description>
+				<line>Show the page loading (page grayed out, a blue message in the middle) when working.</line>
+				<line>In some cases, the function is wrapped in a deferred command to ensure that the page loading widget is shown immediately.</line>
+				<line>This is to ensure that no button is pressed multiple times.</line>
+			</description>
+		</item>
 	</category>	
 </release>
 

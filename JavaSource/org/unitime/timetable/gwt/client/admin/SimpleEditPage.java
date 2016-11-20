@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
 import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
+import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
@@ -67,6 +68,8 @@ import org.unitime.timetable.gwt.shared.UserDataInterface.GetUserDataRpcRequest;
 import org.unitime.timetable.gwt.shared.UserDataInterface.SetUserDataRpcRequest;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.TextAlign;
@@ -159,20 +162,29 @@ public class SimpleEditPage extends Composite {
 					iHeader.setErrorMessage(valid);
 					return;
 				}
-				iData.getRecords().clear();
-				iData.getRecords().addAll(iTable.getData());
 				iHeader.setMessage(MESSAGES.waitSavingData());
-				RPC.execute(SimpleEditInterface.SaveDataRpcRequest.saveData(iType, iData), new AsyncCallback<SimpleEditInterface>() {
+				LoadingWidget.showLoading(MESSAGES.waitSavingData());
+				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 					@Override
-					public void onFailure(Throwable caught) {
-						iHeader.setErrorMessage(MESSAGES.failedSave(caught.getMessage()));
-					}
-					@Override
-					public void onSuccess(SimpleEditInterface result) {
-						iData = result;
-						iEditable = false;
-						refreshTable();
-						saveOrder();
+					public void execute() {
+						iData.getRecords().clear();
+						iData.getRecords().addAll(iTable.getData());
+						RPC.execute(SimpleEditInterface.SaveDataRpcRequest.saveData(iType, iData), new AsyncCallback<SimpleEditInterface>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								LoadingWidget.hideLoading();
+								iHeader.setErrorMessage(MESSAGES.failedSave(caught.getMessage()));
+								UniTimeNotifications.error(MESSAGES.failedSave(caught.getMessage()), caught);
+							}
+							@Override
+							public void onSuccess(SimpleEditInterface result) {
+								iData = result;
+								iEditable = false;
+								refreshTable();
+								saveOrder();
+								LoadingWidget.hideLoading();
+							}
+						});
 					}
 				});
 			}
@@ -183,7 +195,14 @@ public class SimpleEditPage extends Composite {
 			public void onClick(ClickEvent event) {
 				iEditable = true;
 				iHeader.setEnabled("edit", false);
-				refreshTable();
+				LoadingWidget.showLoading(MESSAGES.waitPlease());
+				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+					@Override
+					public void execute() {
+						refreshTable();
+						LoadingWidget.hideLoading();
+					}
+				});
 			}
 		};
 		
@@ -191,12 +210,18 @@ public class SimpleEditPage extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				iEditable = false;
-				load(null);
+				LoadingWidget.showLoading(MESSAGES.waitPlease());
+				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+					@Override
+					public void execute() {
+						load(null);
+						LoadingWidget.hideLoading();
+					}
+				});
 			}
 		};
 		
 		ClickHandler add = new ClickHandler() {
-			
 			@Override
 			public void onClick(ClickEvent event) {
 				detail(iData.addRecord(null));
@@ -336,10 +361,13 @@ public class SimpleEditPage extends Composite {
 					return;
 				}
 				header.setMessage(MESSAGES.waitSavingRecord());
+				LoadingWidget.showLoading(MESSAGES.waitSavingRecord());
 				RPC.execute(SimpleEditInterface.SaveRecordRpcRequest.saveRecord(iType, record), new AsyncCallback<Record>() {
 					@Override
 					public void onFailure(Throwable caught) {
+						LoadingWidget.hideLoading();
 						header.setErrorMessage(MESSAGES.failedSave(caught.getMessage()));
+						UniTimeNotifications.error(MESSAGES.failedSave(caught.getMessage()), caught);
 					}
 					@Override
 					public void onSuccess(Record result) {
@@ -356,6 +384,7 @@ public class SimpleEditPage extends Composite {
 								break;
 							}
 						}
+						LoadingWidget.hideLoading();
 						Client.fireGwtPageChanged(new GwtPageChangeEvent());
 					}
 				});
@@ -367,10 +396,13 @@ public class SimpleEditPage extends Composite {
 				@Override
 				public void onClick(ClickEvent event) {
 					header.setMessage(MESSAGES.waitDeletingRecord());
+					LoadingWidget.showLoading(MESSAGES.waitDeletingRecord());
 					RPC.execute(SimpleEditInterface.DeleteRecordRpcRequest.deleteRecord(iType, record), new AsyncCallback<Record>() {
 						@Override
 						public void onFailure(Throwable caught) {
+							LoadingWidget.hideLoading();
 							header.setErrorMessage(MESSAGES.failedDelete(iPageName.singular().toLowerCase(), caught.getMessage()));
+							UniTimeNotifications.error(MESSAGES.failedDelete(iPageName.singular().toLowerCase(), caught.getMessage()), caught);
 						}
 						@Override
 						public void onSuccess(Record result) {
@@ -379,6 +411,7 @@ public class SimpleEditPage extends Composite {
 							iSimple.setWidget(iPanel);
 							refreshTable();
 							saveOrder();
+							LoadingWidget.hideLoading();
 							Client.fireGwtPageChanged(new GwtPageChangeEvent());
 						}
 					});
@@ -396,10 +429,13 @@ public class SimpleEditPage extends Composite {
 						return;
 					}
 					header.setMessage(MESSAGES.waitSavingRecord());
+					LoadingWidget.showLoading(MESSAGES.waitSavingRecord());
 					RPC.execute(SimpleEditInterface.SaveRecordRpcRequest.saveRecord(iType, record), new AsyncCallback<Record>() {
 						@Override
 						public void onFailure(Throwable caught) {
+							LoadingWidget.hideLoading();
 							header.setErrorMessage(MESSAGES.failedSave(caught.getMessage()));
+							UniTimeNotifications.error(MESSAGES.failedSave(caught.getMessage()), caught);
 						}
 						@Override
 						public void onSuccess(Record result) {
@@ -411,6 +447,7 @@ public class SimpleEditPage extends Composite {
 							} else {
 								iSimple.setWidget(iPanel);
 							}
+							LoadingWidget.hideLoading();
 							Client.fireGwtPageChanged(new GwtPageChangeEvent());
 						}
 					});
@@ -428,10 +465,13 @@ public class SimpleEditPage extends Composite {
 						return;
 					}
 					header.setMessage(MESSAGES.waitSavingRecord());
+					LoadingWidget.showLoading(MESSAGES.waitSavingRecord());
 					RPC.execute(SimpleEditInterface.SaveRecordRpcRequest.saveRecord(iType, record), new AsyncCallback<Record>() {
 						@Override
 						public void onFailure(Throwable caught) {
+							LoadingWidget.hideLoading();
 							header.setErrorMessage(MESSAGES.failedSave(caught.getMessage()));
+							UniTimeNotifications.error(MESSAGES.failedSave(caught.getMessage()), caught);
 						}
 						@Override
 						public void onSuccess(Record result) {
@@ -443,6 +483,7 @@ public class SimpleEditPage extends Composite {
 							} else {
 								iSimple.setWidget(iPanel);
 							}
+							LoadingWidget.hideLoading();
 							Client.fireGwtPageChanged(new GwtPageChangeEvent());
 						}
 					});
@@ -453,25 +494,32 @@ public class SimpleEditPage extends Composite {
 		header.addButton("back", MESSAGES.buttonBack(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				iSimple.setWidget(iPanel);
-				record.copyFrom(backup);
-				if (record.isEmpty())
-					iData.getRecords().remove(record);
-				iEditable = false;
-				iSimple.setWidget(iPanel);
-				refreshTable();
-				saveOrder();
-				if (record.getUniqueId() != null) {
-					for (int r = 0; r < iTable.getRowCount(); r++) {
-						if (iTable.getData(r) == null) continue;
-						if (record.getUniqueId().equals(iTable.getData(r).getUniqueId())) {
-							iTable.setSelected(r, true);
-							ToolBox.scrollToElement(iTable.getRowFormatter().getElement(r - 1));
-							break;
+				LoadingWidget.showLoading(MESSAGES.waitPlease());
+				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+					@Override
+					public void execute() {
+						iSimple.setWidget(iPanel);
+						record.copyFrom(backup);
+						if (record.isEmpty())
+							iData.getRecords().remove(record);
+						iEditable = false;
+						iSimple.setWidget(iPanel);
+						refreshTable();
+						saveOrder();
+						if (record.getUniqueId() != null) {
+							for (int r = 0; r < iTable.getRowCount(); r++) {
+								if (iTable.getData(r) == null) continue;
+								if (record.getUniqueId().equals(iTable.getData(r).getUniqueId())) {
+									iTable.setSelected(r, true);
+									ToolBox.scrollToElement(iTable.getRowFormatter().getElement(r - 1));
+									break;
+								}
+							}
 						}
+						LoadingWidget.hideLoading();
+						Client.fireGwtPageChanged(new GwtPageChangeEvent());
 					}
-				}
-				Client.fireGwtPageChanged(new GwtPageChangeEvent());
+				});
 			}
 		});
 		
@@ -531,6 +579,8 @@ public class SimpleEditPage extends Composite {
 		iHeader.setEnabled("edit", false);
 		iHeader.setEnabled("back", false);
 		iHeader.setMessage(MESSAGES.waitLoadingData());
+		LoadingWidget.showLoading(MESSAGES.waitLoadingData());
+		
 		iTable.clearTable();
 
 		RPC.execute(SimpleEditInterface.LoadDataRpcRequest.loadData(iType), new AsyncCallback<SimpleEditInterface>() {
@@ -581,24 +631,29 @@ public class SimpleEditPage extends Composite {
 								}
 							});
 							refreshTable("|" + result.get("SimpleEdit.Hidden[" + iType.toString() + "]") + "|");
+							LoadingWidget.hideLoading();
 							if (callback != null) callback.onSuccess(true);
 						}
 						@Override
 						public void onFailure(Throwable caught) {
 							Collections.sort(iData.getRecords(), cmp);
 							refreshTable();
+							LoadingWidget.hideLoading();
 							if (callback != null) callback.onSuccess(false);
 						}
 					});
 				} else {
 					refreshTable();
+					LoadingWidget.hideLoading();
 					if (callback != null) callback.onSuccess(true);
 				}
 			}
 			
 			@Override
 			public void onFailure(Throwable caught) {
+				LoadingWidget.hideLoading();
 				iHeader.setErrorMessage(MESSAGES.failedLoadData(caught.getMessage()));
+				UniTimeNotifications.error(MESSAGES.failedLoadData(caught.getMessage()), caught);
 				ToolBox.checkAccess(caught);
 				if (callback != null) callback.onFailure(caught);
 			}
