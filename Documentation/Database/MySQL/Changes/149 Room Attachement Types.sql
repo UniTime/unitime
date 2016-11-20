@@ -24,7 +24,7 @@ create table attachment_type (
 	abbreviation varchar(20) not null,
 	label varchar(60) not null,
 	visibility bigint(10) not null
-);
+) engine = INNODB;
 
 alter table room_picture add type_id decimal(20,0);
 alter table location_picture add type_id decimal(20,0);

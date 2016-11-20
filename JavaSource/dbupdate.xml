@@ -10133,7 +10133,7 @@
 				abbreviation varchar(20) not null,
 				label varchar(60) not null,
 				visibility bigint(10) not null
-			)
+			) engine = INNODB
 		</mysql>
 		<plsql>alter table %SCHEMA%.room_picture add type_id number(20,0)</plsql>
 		<mysql>alter table %SCHEMA%.room_picture add type_id decimal(20,0)</mysql>
@@ -10204,7 +10204,7 @@
 				reference varchar(20) not null,
 				label varchar(60) not null,
 				visible int(1) not null default 1
-			)
+			) engine = INNODB
 		</mysql>
 		<plsql>alter table %SCHEMA%.instr_offering_config add instr_method_id number(20,0)</plsql>
 		<mysql>alter table %SCHEMA%.instr_offering_config add instr_method_id decimal(20,0)</mysql>
