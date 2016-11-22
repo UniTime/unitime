@@ -404,11 +404,11 @@ public class RequiredTimeTable {
         if (highlight) { dx = 3; dy = 3; }
 
         if (timeVertical) {
-            cellsAcross = maxDay-minDay+1;
+            cellsAcross = (maxDay >= minDay ? maxDay - minDay + 1 : maxDay - minDay + 8);
             cellsDown = 1+(maxTime-minTime)/timeStep;
         } else {
             cellsAcross = 1+(maxTime-minTime)/timeStep;
-            cellsDown = maxDay-minDay+1;
+            cellsDown = (maxDay >= minDay ? maxDay - minDay + 1 : maxDay - minDay + 8);
         }
 
         BufferedImage image = new BufferedImage(
@@ -440,12 +440,13 @@ public class RequiredTimeTable {
                 drawVline(raster, dx + cellX2 * (cellWidth + lineWidth), dy, height, Color.darkGray);
             }
         }
-
-        for (int day = minDay; day <= maxDay; day++) {
+        
+        int day = minDay, idx = 0;
+        while (true) {
             if (timeVertical)
-                cellX = day-minDay;
+                cellX = idx;
             else
-                cellY = day-minDay;
+                cellY = idx;
 
             for (int time = minTime; time <= maxTime; time += timeStep) {
                 if (timeVertical)
@@ -464,6 +465,9 @@ public class RequiredTimeTable {
                 	fillRect(raster, dx + (cellX * (cellWidth + lineWidth)) + 1, dy + (cellY * (cellWidth + lineWidth)) + 1, cellWidth, cellWidth, color);
                 }
             }
+            if (day == maxDay) break;
+            day = (1 + day) % 7;
+            idx ++;
         }
         return image;
     }
