@@ -19,12 +19,23 @@
 */
 package org.unitime.timetable.server.rooms;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
+import org.springframework.security.crypto.codec.Base64;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -347,6 +358,24 @@ public class RoomDetailsBackend extends RoomFilterBackend {
     				.replace("%y", location.getCoordinateY().toString())
     				.replace("%n", location.getLabel())
     				.replace("%i", location.getExternalUniqueId() == null ? "" : location.getExternalUniqueId()));
+    	String apikey = ApplicationProperty.RoomMapStaticApiKey.value();
+    	String secret = ApplicationProperty.RoomMapStaticSecret.value();
+    	if (response.hasMapUrl() && apikey != null && !apikey.isEmpty()) {
+    		response.setMapUrl(response.getMapUrl() + "&key=" + apikey);
+    		if (secret != null && !secret.isEmpty()) {
+    			try {
+					response.setMapUrl(response.getMapUrl() + "&signature=" + new UrlSigner(secret).signRequest(response.getMapUrl()));
+				} catch (Exception e) {}
+    		}
+    	}
+    	if (response.hasMiniMapUrl() && apikey != null && !apikey.isEmpty()) {
+    		response.setMiniMapUrl(response.getMiniMapUrl() + "&key=" + apikey);
+    		if (secret != null && !secret.isEmpty()) {
+    			try {
+					response.setMiniMapUrl(response.getMiniMapUrl() + "&signature=" + new UrlSigner(secret).signRequest(response.getMiniMapUrl()));
+				} catch (Exception e) {}
+    		}
+    	}
     	
     	for (LocationPicture picture: new TreeSet<LocationPicture>(location.getPictures()))
     		response.addPicture(new RoomPictureInterface(picture.getUniqueId(), picture.getFileName(), picture.getContentType(), picture.getTimeStamp().getTime(), RoomPicturesBackend.getPictureType(picture.getType())));
@@ -359,4 +388,33 @@ public class RoomDetailsBackend extends RoomFilterBackend {
     	
     	return response;
 	}
+	
+	public static class UrlSigner {
+		private static byte[] key;
+		
+		public UrlSigner(String keyString) throws IOException {
+			keyString = keyString.replace('-', '+');
+			keyString = keyString.replace('_', '/');
+			key = Base64.decode(keyString.getBytes());
+		}
+		
+		public String signRequest(String mapsUrl) throws NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException, URISyntaxException, MalformedURLException {
+			URL url = new URL(mapsUrl);
+			String resource = url.getPath() + "?" + url.getQuery();
+			SecretKeySpec sha1Key = new SecretKeySpec(key, "HmacSHA1");
+			Mac mac = Mac.getInstance("HmacSHA1");
+			mac.init(sha1Key);
+			byte[] sigBytes = mac.doFinal(resource.getBytes());
+			String signature = new String(Base64.encode(sigBytes));
+			signature = signature.replace('+', '-');
+			signature = signature.replace('/', '_');
+			return signature;
+		}
+	}
+	
+	public static void main(String[] args) throws Exception {
+		String url = "https://maps.googleapis.com/maps/api/staticmap?key=AIzaSyDpUnTRgd4mB7HdVt5ug_LwKzdNfTQVA14&center=48.8584,2.2945&size=600x400&zoom=16&maptype=roadmap&sensor=false&markers=color:blue%7c48.8584,2.2945";
+		System.out.println(url + "&signature=" + new UrlSigner("oJaEChTm5G0AZsqWVQJcb-9SXHY=").signRequest(url));
+	}
+
 }

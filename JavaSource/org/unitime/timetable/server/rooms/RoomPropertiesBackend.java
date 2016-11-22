@@ -217,6 +217,7 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		response.setEllipsoid(ellipsoid.getEclipsoindName());
 		
 		response.setGoogleMap(ApplicationProperty.RoomUseGoogleMap.isTrue());
+		response.setGoogleMapApiKey(ApplicationProperty.GoogleMapsApiKey.value());
 		
 		if (response.getAcademicSession() != null) {
 			for (Session session: (List<Session>)SessionDAO.getInstance().getSession().createQuery(

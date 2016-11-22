@@ -192,7 +192,12 @@
 </html:form>
 
 <tt:propertyEquals name="unitime.coordinates.googlemap" value="true">
-<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false"></script>
+<tt:hasProperty name="unitime.coordinates.googlemap.apikey">
+	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=<%=ApplicationProperties.getProperty("unitime.coordinates.googlemap.apikey")%>&sensor=false"></script>
+</tt:hasProperty>
+<tt:notHasProperty name="unitime.coordinates.googlemap.apikey">
+	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
+</tt:notHasProperty>
 <script type="text/javascript" language="javascript">
 	var latlng = new google.maps.LatLng(50, -58);
 	var myOptions = {

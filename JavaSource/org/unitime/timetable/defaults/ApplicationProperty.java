@@ -1514,7 +1514,7 @@ public enum ApplicationProperty {
 	 * <li>String %i is replaced by the room external id 
 	 * </ul>
 	 */
-	@DefaultValue("https://maps.google.com/maps/api/staticmap?center=%x,%y&zoom=16&size=600x400&maptype=roadmap&sensor=false&markers=color:blue|%x,%y")
+	@DefaultValue("https://maps.googleapis.com/maps/api/staticmap?center=%x,%y&zoom=16&size=600x400&maptype=roadmap&sensor=false&markers=color:blue%7c%x,%y")
 	@Description("Rooms: Campus map image")
 	RoomMapStatic("unitime.minimap.url"),
 
@@ -1526,14 +1526,24 @@ public enum ApplicationProperty {
 	 * <li>String %i is replaced by the room external id 
 	 * </ul>
 	 */
-	@DefaultValue("https://maps.google.com/maps/api/staticmap?center=%x,%y&zoom=15&size=300x200&maptype=roadmap&sensor=false&markers=color:blue|%x,%y")
+	@DefaultValue("https://maps.googleapis.com/maps/api/staticmap?center=%x,%y&zoom=15&size=300x200&maptype=roadmap&sensor=false&markers=color:blue%7c%x,%y")
 	@Description("Rooms: minimap to be used in location's tooltip (%x and %y are replaced by the room's coordinates)")
 	RoomHintMinimapUrl("unitime.minimap.hint"),
+	
+	@Description("Rooms: Google static maps API key (see https://developers.google.com/maps/documentation/static-maps/get-api-key#key for more details)")
+	RoomMapStaticApiKey("unitime.minimap.apikey"),
+	
+	@Description("Rooms: Google static maps API secret (that can be used to provide digital signature, see https://developers.google.com/maps/documentation/static-maps/get-api-key#digital-signature for more details)")
+	RoomMapStaticSecret("unitime.minimap.secret"),
 
 	@Type(Boolean.class)
 	@DefaultValue("true")
 	@Description("Rooms: use Google maps to enter room / building coordinates")
 	RoomUseGoogleMap("unitime.coordinates.googlemap"),
+	
+	@Type(String.class)
+	@Description("Rooms: Google maps optional API key (see https://developers.google.com/maps/documentation/javascript/get-api-key#key for more details).")
+	GoogleMapsApiKey("unitime.coordinates.googlemap.apikey"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")

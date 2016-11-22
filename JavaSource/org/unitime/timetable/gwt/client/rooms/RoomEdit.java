@@ -1241,7 +1241,8 @@ public class RoomEdit extends Composite {
 		Window.scrollTo(0, 0);
 		if (iGoogleMap != null && !iGoogleMapInitialized) {
 			iGoogleMapInitialized = true;
-			ScriptInjector.fromUrl("https://maps.google.com/maps/api/js?sensor=false&callback=setupGoogleMap").setWindow(ScriptInjector.TOP_WINDOW).setCallback(
+			ScriptInjector.fromUrl("https://maps.googleapis.com/maps/api/js?" + (iProperties != null && iProperties.hasGoogleMapApiKey() ? "key=" + iProperties.getGoogleMapApiKey() + "&" : "") +
+					"sensor=false&callback=setupGoogleMap").setWindow(ScriptInjector.TOP_WINDOW).setCallback(
 					new Callback<Void, Exception>() {
 						@Override
 						public void onSuccess(Void result) {
