@@ -177,8 +177,8 @@ public class TimeGrid extends Composite {
 		iGrid = new P("calendar-grid");
 		
 		iWorkingHours = new P("working-hours");
-		iWorkingHours.setSize(iCellWidth * nrWorkDays(), iCellHeight * 10);
-		iPanel.add(iWorkingHours, iCellWidth * firstWorkDay(), 15 * iCellHeight / 2 - (iCellHeight * iStart));
+		iWorkingHours.setSize(iCellWidth * nrWorkDays(), iCellHeight * (CONSTANTS.eventStopDefault() - CONSTANTS.eventStartDefault()) / 12);
+		iPanel.add(iWorkingHours, iCellWidth * firstWorkDay(), iCellHeight * CONSTANTS.eventStartDefault() / 12 - (iCellHeight * iStart));
 		
 		iRoomNote = new P("room-note");
 		iPanel.add(iRoomNote, 0, 0);
@@ -305,9 +305,11 @@ public class TimeGrid extends Composite {
 	public TimeGrid getPrintWidget() {
 		int firstSlot = firstSlot();
 		int firstHour = firstSlot / 12;
-		if (firstHour <= 7 && firstHour > 0 && ((firstSlot % 12) <= 6)) firstHour--;
+		int maxFirstHour = (int)(CONSTANTS.eventStartDefault() / 12);
+		int minLastHour = (int)((11 + CONSTANTS.eventStopDefault()) / 12);
+		if (firstHour <= maxFirstHour && firstHour > 0 && ((firstSlot % 12) <= 6)) firstHour--;
 		int lastHour = (11 + lastSlot()) / 12;
-		TimeGrid tg = new TimeGrid(iColors, iDays, (int) (1000 / iDays.length), true, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18), iPropertiesProvider);
+		TimeGrid tg = new TimeGrid(iColors, iDays, (int) (1000 / iDays.length), true, false, (firstHour < maxFirstHour ? firstHour : maxFirstHour), (lastHour > minLastHour ? lastHour : minLastHour), iPropertiesProvider);
 		tg.setShowRoomNote(isShowRoomNote());
 		tg.setSelectedWeeks(getSelectedWeeks());
 		tg.setRoomResources(getRoomResources());

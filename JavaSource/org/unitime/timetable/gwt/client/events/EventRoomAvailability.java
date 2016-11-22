@@ -233,11 +233,11 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 					List<WeekInterface> weeks = new ArrayList<WeekInterface>(); weeks.add(week);
 					boolean past = !iDates.isEnabled(date) || iDates.hasFlag(date, Flag.PAST);
 					for (int i = 0; i < iSelectedDates.size(); i++) {
-						int startHour = 7;
+						int startHour = (int)(CONSTANTS.eventStartDefault() / 12);
 						if (iSelectedTimes.getStart() != null) {
 							startHour = Math.max(0, (iSelectedTimes.getStart() - 6) / 12);
 						}
-						int endHour = 18;
+						int endHour = (int)((11 + CONSTANTS.eventStopDefault()) / 12);
 						if (iSelectedTimes.getEnd() != null) {
 							endHour = Math.min(24, (17 + iSelectedTimes.getEnd()) / 12);
 						}
@@ -259,7 +259,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 								grid.addEvent(event, meetings);
 						}
 						grid.labelDays(week, null);
-						grid.yellow(iSelectedTimes.getStart() == null ? 90 : iSelectedTimes.getStart(), iSelectedTimes.getEnd() == null ? 210 : iSelectedTimes.getEnd());
+						grid.yellow(iSelectedTimes.getStart() == null ? CONSTANTS.eventStartDefault() : iSelectedTimes.getStart(), iSelectedTimes.getEnd() == null ? CONSTANTS.eventStopDefault() : iSelectedTimes.getEnd());
 						if (past) grid.gray(0, 1);
 						grid.showVerticalSplit();
 						grid.addMeetingClickHandler(iMeetingClickHandler);
@@ -293,11 +293,11 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 					}
 					List<WeekInterface> weeks = new ArrayList<WeekInterface>(); weeks.add(week);
 					for (final ResourceInterface room: iSelectedRooms) {
-						int startHour = 7;
+						int startHour = (int)(CONSTANTS.eventStartDefault() / 12);
 						if (iSelectedTimes.getStart() != null) {
 							startHour = Math.max(0, (iSelectedTimes.getStart() - 6) / 12);
 						}
-						int endHour = 18;
+						int endHour = (int)((11 + CONSTANTS.eventStopDefault()) / 12);
 						if (iSelectedTimes.getEnd() != null) {
 							endHour = Math.min(24, (17 + iSelectedTimes.getEnd()) / 12);
 						}
@@ -324,7 +324,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 								grid.addEvent(event, meetings);
 						}
 						grid.labelDays(dows, week);
-						grid.yellow(iSelectedTimes.getStart() == null ? 90 : iSelectedTimes.getStart(), iSelectedTimes.getEnd() == null ? 210 : iSelectedTimes.getEnd());
+						grid.yellow(iSelectedTimes.getStart() == null ? CONSTANTS.eventStartDefault() : iSelectedTimes.getStart(), iSelectedTimes.getEnd() == null ? CONSTANTS.eventStopDefault() : iSelectedTimes.getEnd());
 						if (lastPast >= 0) grid.gray(0, lastPast);
 						grid.addMeetingClickHandler(iMeetingClickHandler);
 						pages.add(new Page() {
@@ -549,8 +549,8 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 	}
 	
 	private Integer getOccupancy(ResourceInterface room) {
-		int startSlot = (iSelectedTimes.getStart() == null ? 90 : iSelectedTimes.getStart());
-		int endSlot = (iSelectedTimes.getEnd() == null ? 210 : iSelectedTimes.getEnd());
+		int startSlot = (iSelectedTimes.getStart() == null ? CONSTANTS.eventStartDefault() : iSelectedTimes.getStart());
+		int endSlot = (iSelectedTimes.getEnd() == null ? CONSTANTS.eventStopDefault() : iSelectedTimes.getEnd());
 		int use = 0;
 		for (EventInterface event: iData) {
 			for (MeetingInterface meeting: event.getMeetings()) {
@@ -925,11 +925,11 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 			List<WeekInterface> weeks = new ArrayList<WeekInterface>(); weeks.add(week);
 			boolean past = !iDates.isEnabled(date) || iDates.hasFlag(date, Flag.PAST);
 			for (int i = 0; i < iSelectedDates.size(); i++) {
-				int startHour = 7;
+				int startHour = (int)(CONSTANTS.eventStartDefault() / 12);
 				if (iSelectedTimes.getStart() != null) {
 					startHour = Math.max(0, (iSelectedTimes.getStart() - 6) / 12);
 				}
-				int endHour = 18;
+				int endHour = (int)((11 + CONSTANTS.eventStopDefault()) / 12);
 				if (iSelectedTimes.getEnd() != null) {
 					endHour = Math.min(24, (17 + iSelectedTimes.getEnd()) / 12);
 				}
@@ -951,7 +951,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 						grid.addEvent(event, meetings);
 				}
 				grid.labelDays(week, null);
-				grid.yellow(iSelectedTimes.getStart() == null ? 90 : iSelectedTimes.getStart(), iSelectedTimes.getEnd() == null ? 210 : iSelectedTimes.getEnd());
+				grid.yellow(iSelectedTimes.getStart() == null ? CONSTANTS.eventStartDefault() : iSelectedTimes.getStart(), iSelectedTimes.getEnd() == null ? CONSTANTS.eventStopDefault() : iSelectedTimes.getEnd());
 				if (past) grid.gray(0, 1);
 				grid.showVerticalSplit();
 				grid.addMeetingClickHandler(iMeetingClickHandler);
@@ -986,11 +986,11 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 				if (iTables.getWidgetCount() > 0) hp.addStyleName("unitime-TopLineDash");
 				iTables.add(hp);
 				
-				int startHour = 7;
+				int startHour = (int)(CONSTANTS.eventStartDefault() / 12);
 				if (iSelectedTimes.getStart() != null) {
 					startHour = Math.max(0, (iSelectedTimes.getStart() - 6) / 12);
 				}
-				int endHour = 18;
+				int endHour = (int)((11 + CONSTANTS.eventStopDefault()) / 12);
 				if (iSelectedTimes.getEnd() != null) {
 					endHour = Math.min(24, (17 + iSelectedTimes.getEnd()) / 12);
 				}
@@ -1017,7 +1017,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 						grid.addEvent(event, meetings);
 				}
 				grid.labelDays(dows, week);
-				grid.yellow(iSelectedTimes.getStart() == null ? 90 : iSelectedTimes.getStart(), iSelectedTimes.getEnd() == null ? 210 : iSelectedTimes.getEnd());
+				grid.yellow(iSelectedTimes.getStart() == null ? CONSTANTS.eventStartDefault() : iSelectedTimes.getStart(), iSelectedTimes.getEnd() == null ? CONSTANTS.eventStopDefault() : iSelectedTimes.getEnd());
 				if (lastPast >= 0) grid.gray(0, lastPast);
 				grid.addMeetingClickHandler(iMeetingClickHandler);
 				iTables.add(grid);

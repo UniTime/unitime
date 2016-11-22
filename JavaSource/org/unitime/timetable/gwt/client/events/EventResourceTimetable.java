@@ -523,7 +523,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				table.setSortBy(iTable.getSortBy());
 				table.getElement().getStyle().setWidth(1040, Unit.PX);
 				
-				int firstSlot = 84, lastSlot = 216;
+				int firstSlot = 12 + CONSTANTS.eventStartDefault(), lastSlot = CONSTANTS.eventStopDefault();
 				boolean skipDays = iEvents.hasChip(new FilterBox.Chip("day", null));
 				boolean hasDay[] = new boolean[] {
 						!skipDays || iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[0])),
@@ -550,7 +550,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				}
 				Chip before = iEvents.getChip("before");
 				if (before != null) {
-					Integer slot = TimeUtils.parseTime(CONSTANTS, before.getValue(), firstSlot);
+					Integer slot = TimeUtils.parseTime(CONSTANTS, before.getValue(), Math.min(firstSlot, CONSTANTS.eventStartDefault()));
 					if (slot != null && lastSlot < slot) lastSlot = slot;
 				}
 				int nrDays = 0;
@@ -560,11 +560,13 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				for (int i = 0; i < 7; i++)
 					if (hasDay[i]) days[d++] = i;
 				int firstHour = firstSlot / 12;
+				int maxFirstHour = (int)(CONSTANTS.eventStartDefault() / 12);
+				int minLastHour = (int)((11 + CONSTANTS.eventStopDefault()) / 12);
 				int lastHour = 1 + (lastSlot - 1) / 12;
-				if (firstHour <= 7 && firstHour > 0 && ((firstSlot % 12) <= 6)) firstHour--;
+				if (firstHour <= maxFirstHour && firstHour > 0 && ((firstSlot % 12) < 6)) firstHour--;
 				HashMap<Long, String> colors = new HashMap<Long, String>();
 				
-				final TimeGrid tg = new TimeGrid(colors, days, (int)(1000 / nrDays), 55, true, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18), EventResourceTimetable.this);
+				final TimeGrid tg = new TimeGrid(colors, days, (int)(1000 / nrDays), 55, true, false, (firstHour < maxFirstHour ? firstHour : maxFirstHour), (lastHour > minLastHour ? lastHour : minLastHour), EventResourceTimetable.this);
 				tg.setShowRoomNote(true);
 				tg.setResourceType(getResourceType());
 				tg.setSelectedWeeks(iWeekPanel.getSelected());
@@ -973,7 +975,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		if (iTable != null) iTable.clearHover();
 		if (getSelectedTab() == 0) {
 			int nrDays = 4;
-			int firstSlot = 84, lastSlot = 216;
+			int firstSlot = 12 + CONSTANTS.eventStartDefault(), lastSlot = CONSTANTS.eventStopDefault();
 			for (EventInterface event: iData) {
 				if (event.getType() == EventType.Unavailabile && !iEvents.hasChip(new Chip("type", "Not Available"))) continue;
 				for (MeetingInterface meeting: event.getMeetings()) {
@@ -991,7 +993,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			}
 			Chip before = iEvents.getChip("before");
 			if (before != null) {
-				Integer slot = TimeUtils.parseTime(CONSTANTS, before.getValue(), firstSlot);
+				Integer slot = TimeUtils.parseTime(CONSTANTS, before.getValue(), Math.min(firstSlot, CONSTANTS.eventStartDefault()));
 				if (slot != null && lastSlot < slot) lastSlot = slot;
 			}
 			nrDays ++;
@@ -999,7 +1001,9 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			for (int i = 0; i < days.length; i++) days[i] = i;
 			int firstHour = firstSlot / 12;
 			int lastHour = 1 + (lastSlot - 1) / 12;
-			if (firstHour <= 7 && firstHour > 0 && ((firstSlot % 12) <= 6)) firstHour--;
+			int maxFirstHour = (int)(CONSTANTS.eventStartDefault() / 12);
+			int minLastHour = (int)((11 + CONSTANTS.eventStopDefault()) / 12);
+			if (firstHour <= maxFirstHour && firstHour > 0 && ((firstSlot % 12) < 6)) firstHour--;
 			HashMap<Long, String> colors = new HashMap<Long, String>();
 			List<SelectionInterface> selections = null;
 
@@ -1007,7 +1011,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				if (keepSelection) selections = iTimeGrid.getSelections();
 				iTimeGrid.destroy();
 			}
-			iTimeGrid = new TimeGrid(colors, days, (int)(0.9 * ToolBox.getClientWidth() / nrDays), false, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18), this);
+			iTimeGrid = new TimeGrid(colors, days, (int)(0.9 * ToolBox.getClientWidth() / nrDays), false, false, (firstHour < maxFirstHour ? firstHour : maxFirstHour), (lastHour > minLastHour ? lastHour : minLastHour), this);
 			iTimeGrid.setShowRoomNote(true);
 			iTimeGrid.addMeetingClickHandler(iMeetingClickHandler);
 
