@@ -722,7 +722,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    private Map<String,Double> iValues = new HashMap<String, Double>();
 	    private String iAvailability;
 	    private List<TeachingRequestInfo> iAssignedRequests = new ArrayList<TeachingRequestInfo>();
-	    private List<ClassInfo> iEnrollments = new ArrayList<ClassInfo>();
+	    private Set<ClassInfo> iEnrollments = new TreeSet<ClassInfo>();
 	    private int iAssignmentIndex = -1;
 	    private boolean iConflict = false;
 
@@ -785,7 +785,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    public List<TeachingRequestInfo> getAssignedRequests() { return iAssignedRequests; }
 	    public void addAssignedRequest(TeachingRequestInfo request) { iAssignedRequests.add(request); }
 	    
-	    public List<ClassInfo> getEnrollments() { return iEnrollments; }
+	    public Set<ClassInfo> getEnrollments() { return iEnrollments; }
 	    public void addEnrollment(ClassInfo enrollment) { iEnrollments.add(enrollment); }
 	    
 	    public int hashCode() { return getInstructorId().hashCode(); }
