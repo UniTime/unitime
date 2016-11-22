@@ -517,6 +517,8 @@ public class ManageSolversAction extends Action {
 		INSTRUCTOR_SAME_INSTRUCTOR(SolverType.INSTRUCTOR, "SameInstr", new InfoSolverProperty("Same Instructor", true)),
 		INSTRUCTOR_SAME_LECTURE(SolverType.INSTRUCTOR, "SameLect", new InfoSolverProperty("Same Lecture", true)),
 		INSTRUCTOR_BTB(SolverType.INSTRUCTOR, "BTB", new InfoSolverProperty("Back To Back", true)),
+		INSTRUCTOR_SAME_DAYS(SolverType.INSTRUCTOR, "SameDays", new InfoSolverProperty("Same Days", true)),
+		INSTRUCTOR_SAME_ROOM(SolverType.INSTRUCTOR, "SameRoom", new InfoSolverProperty("Same Room", true)),
 		INSTRUCTOR_PERTURBATIONS(SolverType.INSTRUCTOR, "Original", new InfoSolverProperty("Original Instructor", true)),
 		OPERATIONS("Operation(s)", new StringSolverProperty() {
 			@Override

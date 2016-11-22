@@ -240,6 +240,10 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
 			info.setTeachingPreference(Constants.preferenceLevel2preference(instructor.getPreference()));
 		if (instructor.getBackToBackPreference() != 0)
 			info.addDistributionPreference(new PreferenceInfo(1l, CONSTANTS.instructorBackToBack(), Constants.preferenceLevel2preference(instructor.getBackToBackPreference())));
+		if (instructor.getSameDaysPreference() != 0)
+			info.addDistributionPreference(new PreferenceInfo(1l, CONSTANTS.instructorSameDays(), Constants.preferenceLevel2preference(instructor.getSameDaysPreference())));
+		if (instructor.getSameRoomPreference() != 0)
+			info.addDistributionPreference(new PreferenceInfo(1l, CONSTANTS.instructorSameRoom(), Constants.preferenceLevel2preference(instructor.getSameRoomPreference())));
 		return info;
 	}
 	

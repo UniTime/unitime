@@ -170,6 +170,10 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     protected void loadDistributionPreferences(Instructor instructor, DistributionPref dp) {
 		if ("BTB_TIME".equals(dp.getDistributionType().getReference()) || "BTB".equals(dp.getDistributionType().getReference())) {
 			instructor.setBackToBackPreference(Constants.preference2preferenceLevel(dp.getPrefLevel().getPrefProlog()));
+		} else if ("SAME_DAYS".equals(dp.getDistributionType().getReference())) {
+			instructor.setSameDaysPreference(Constants.preference2preferenceLevel(dp.getPrefLevel().getPrefProlog()));
+		} else if ("SAME_ROOM".equals(dp.getDistributionType().getReference())) {
+			instructor.setSameRoomPreference(Constants.preference2preferenceLevel(dp.getPrefLevel().getPrefProlog()));
 		}
     }
     
