@@ -1905,6 +1905,7 @@ public class RoomInterface implements IsSerializable {
 		private List<AttachmentTypeInterface> iPictureTypes = new ArrayList<AttachmentTypeInterface>();
 		private boolean iCanSeeCourses = false, iCanSeeExams = false, iCanSeeEvents = false;
 		private boolean iGridAsText = false, iHorizontal = false, iGoogleMap = false;
+		private String iGoogleMapApiKey = null;
 		private List<RoomSharingDisplayMode> iModes;
 		private String iEllipsoid = null;
 		private boolean iCanChangeAvailability = false, iCanChangeControll = false, iCanChangeExternalId = false, iCanChangeExamStatus = false,
@@ -2090,6 +2091,10 @@ public class RoomInterface implements IsSerializable {
 		
 		public void setGoogleMap(boolean map) { iGoogleMap = map; }
 		public boolean isGoogleMap() { return iGoogleMap; }
+		
+		public void setGoogleMapApiKey(String apiKey) { iGoogleMapApiKey = apiKey; }
+		public boolean hasGoogleMapApiKey() { return iGoogleMapApiKey != null && !iGoogleMapApiKey.isEmpty(); }
+		public String getGoogleMapApiKey() { return iGoogleMapApiKey; }
 		
 		public boolean isCanChangeAvailability() { return iCanChangeAvailability; }
 		public void setCanChangeAvailability(boolean canChangeAvailability) { iCanChangeAvailability = canChangeAvailability; }

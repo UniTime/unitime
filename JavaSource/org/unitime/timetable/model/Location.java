@@ -48,6 +48,7 @@ import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.server.rooms.RoomDetailsBackend.UrlSigner;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
@@ -958,13 +959,22 @@ public abstract class Location extends BaseLocation implements Comparable {
     	String hint = (preference == null ? "" : preference + " " ) + getLabel() + (getDisplayName() == null ? " (" + getRoomTypeLabel() + ")" : " (" + getDisplayName() + ")");
     	String minimap = ApplicationProperty.RoomHintMinimapUrl.value();
     	if (minimap != null && getCoordinateX() != null && getCoordinateY() != null) {
-    		hint += "<br><img src=\\'" + 
-    			minimap
+    		minimap = minimap
     				.replace("%x", getCoordinateX().toString())
     				.replace("%y", getCoordinateY().toString())
     				.replace("%n", getLabel())
-    				.replace("%i", getExternalUniqueId() == null ? "" : getExternalUniqueId()) +
-    			"\\' border=\\'0\\' style=\\'border: 1px solid #9CB0CE;\\'/>";
+    				.replace("%i", getExternalUniqueId() == null ? "" : getExternalUniqueId());
+	    	String apikey = ApplicationProperty.RoomMapStaticApiKey.value();
+	    	if (apikey != null && !apikey.isEmpty()) {
+	    		minimap += "&key=" + apikey;
+		    	String secret = ApplicationProperty.RoomMapStaticSecret.value();
+	    		if (secret != null && !secret.isEmpty()) {
+	    			try {
+	    				minimap += "&signature=" + new UrlSigner(secret).signRequest(minimap);
+					} catch (Exception e) {}
+	    		}
+	    	}
+	    	hint += "<br><img src=\\'" + minimap + "\\' border=\\'0\\' style=\\'border: 1px solid #9CB0CE;\\'/>";
     	}
     	hint += "<table width=\\'300px;\\'>";
     	hint += "<tr><td>Capacity:</td><td width=\\'99%\\'>" + getCapacity();

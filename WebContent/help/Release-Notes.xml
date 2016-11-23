@@ -79,6 +79,21 @@
 				<line>For example unitime.room.sharingMode5=Su-Th 8am-9pm|6|3|96|252|6 would create a mode going from Sunday till Thursday, in half-hours between 8am and 9pm.</line>
 			</description>
 		</item>
+		<item>
+			<name>Google Maps API Keys</name>
+			<description>
+				<line>Google Maps Static API (used on Rooms, Room Detail, and in the mouseover popups):
+					<line>API key can be provided in the unitime.minimap.apikey configuration property.</line>
+					<line>API secret for digital signatures can be provided in the unitime.minimap.secret configuration property.</line>
+					<line>See https://developers.google.com/maps/documentation/static-maps/get-api-key for more details.</line>
+				</line>
+				<line>Google Maps Standard API (used on Room Edit and Building Edit to enter/show coordinates):
+					<line>API key can be provided in the unitime.coordinates.googlemap.apikey configuration property.</line>
+					<line>See https://developers.google.com/maps/documentation/javascript/get-api-key for more details.</line>
+				</line>
+				<line>Also, use the Google Maps v3 API (maps.googleapis.com) instead of the Google Maps v2 API (maps.google.com).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Event Management</title>

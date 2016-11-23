@@ -41,6 +41,7 @@ import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.server.rooms.RoomDetailsBackend.UrlSigner;
 
 /**
  * @author Tomas Muller
@@ -65,12 +66,24 @@ public class RoomHintBackend implements GwtRpcImplementation<RoomHintRequest, Ro
 			response.setRoomTypeLabel(location.getRoomTypeLabel());
 			
 			String minimap = ApplicationProperty.RoomHintMinimapUrl.value();
-	    	if (minimap != null && location.getCoordinateX() != null && location.getCoordinateY() != null)
-	    		response.setMiniMapUrl(minimap
+	    	if (minimap != null && location.getCoordinateX() != null && location.getCoordinateY() != null) {
+	    		minimap = minimap
 	    				.replace("%x", location.getCoordinateX().toString())
 	    				.replace("%y", location.getCoordinateY().toString())
 	    				.replace("%n", location.getLabel())
-	    				.replace("%i", location.getExternalUniqueId() == null ? "" : location.getExternalUniqueId()));
+	    				.replace("%i", location.getExternalUniqueId() == null ? "" : location.getExternalUniqueId());
+		    	String apikey = ApplicationProperty.RoomMapStaticApiKey.value();
+		    	if (apikey != null && !apikey.isEmpty()) {
+		    		minimap += "&key=" + apikey;
+			    	String secret = ApplicationProperty.RoomMapStaticSecret.value();
+		    		if (secret != null && !secret.isEmpty()) {
+		    			try {
+		    				minimap += "&signature=" + new UrlSigner(secret).signRequest(minimap);
+						} catch (Exception e) {}
+		    		}
+		    	}
+		    	response.setMiniMapUrl(minimap);
+	    	}
 	    	
 	    	response.setCapacity(location.getCapacity());
 	    	if (location.getExamCapacity() != null && location.getExamCapacity() > 0 && !location.getExamCapacity().equals(location.getCapacity()) && !location.getExamTypes().isEmpty()) {
