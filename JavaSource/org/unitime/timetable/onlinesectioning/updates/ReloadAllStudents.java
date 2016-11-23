@@ -61,6 +61,7 @@ public class ReloadAllStudents extends ReloadAllData {
 	                    "left join fetch s.posMajors as mj " +
 	                    "left join fetch s.waitlists as w " +
 	                    "left join fetch s.groups as g " +
+	                    "left join fetch s.notes as n " +
 	                    "where s.session.uniqueId=:sessionId").
 	                    setLong("sessionId",server.getAcademicSession().getUniqueId()).list();
 	            for (org.unitime.timetable.model.Student student: students) {

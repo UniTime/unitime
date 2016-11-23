@@ -59,7 +59,7 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private List<Long> iStudentIds;
-	private StudentSectioningStatus iStatus;
+	private String iStatus;
 	private boolean iEmail = false;
 	private String iSubject;
 	private String iMessage;
@@ -70,7 +70,7 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 		return this;
 	}
 	
-	public MassCancelAction withStatus(StudentSectioningStatus status) {
+	public MassCancelAction withStatus(String status) {
 		iStatus = status;
 		return this;
 	}
@@ -84,7 +84,9 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 	}
 
 	public List<Long> getStudentIds() { return iStudentIds; }
-	public StudentSectioningStatus getStatus() { return iStatus; }
+	public String getStatus() { return iStatus; }
+	public boolean hasStatus() { return iStatus != null && !iStatus.isEmpty(); }
+	public boolean changeStatus() { return !"-".equals(iStatus); }
 	public String getSubject() { return iSubject; }
 	public String getMessage() { return iMessage; }
 	public String getCC() { return iCC; }
@@ -110,6 +112,8 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 			}
 		};
 		
+		StudentSectioningStatus status = (changeStatus() && hasStatus() ? (StudentSectioningStatus)helper.getHibSession().createQuery(
+				"from StudentSectioningStatus where reference = :ref").setString("ref", getStatus()).uniqueResult() : null);
 		for (Long studentId: getStudentIds()) {
 			Lock lock = server.lockStudent(studentId, null, name());
 			try {
@@ -123,6 +127,14 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 							.setUniqueId(student.getUniqueId())
 							.setExternalId(student.getExternalUniqueId())
 							.setName(helper.getStudentNameFormat().format(student)));
+						
+						if (status != null) {
+							action.addOther(OnlineSectioningLog.Entity.newBuilder()
+									.setUniqueId(status.getUniqueId())
+									.setName(status.getLabel())
+									.setExternalId(status.getReference())
+									.setType(OnlineSectioningLog.Entity.EntityType.OTHER));
+						}
 						
 						for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
 							StudentClassEnrollment enrl = i.next();
@@ -152,7 +164,8 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 							i.remove();
 						}
 						
-						student.setSectioningStatus(getStatus());
+						if (changeStatus())
+							student.setSectioningStatus(status);
 						
 						helper.getHibSession().saveOrUpdate(student);
 						helper.getHibSession().flush();

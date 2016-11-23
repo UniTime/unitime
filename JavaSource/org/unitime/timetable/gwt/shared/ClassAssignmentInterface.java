@@ -997,7 +997,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Integer iConsentNeeded, iTotalConsentNeeded;
 		private Integer iTopWaitingPriority;
 		private Date iRequestedDate = null, iEnrolledDate = null, iApprovedDate = null, iEmailDate = null;
-		private String iStatus;
+		private String iStatus, iNote;
 		private Float iCredit, iTotalCredit;
 		
 		public StudentInfo() {}
@@ -1067,6 +1067,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 
 		public String getStatus() { return iStatus; }
 		public void setStatus(String status) { iStatus = status; }
+		
+		public String getNote() { return iNote; }
+		public boolean hasNote() { return iNote != null && !iNote.isEmpty(); }
+		public void setNote(String note) { iNote = note; }
 		
 		public boolean hasCredit() { return iCredit != null && iCredit > 0; }
 		public void setCredit(Float credit) { iCredit = credit; }

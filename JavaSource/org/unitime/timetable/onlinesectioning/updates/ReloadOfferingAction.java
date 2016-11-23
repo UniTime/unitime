@@ -156,6 +156,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
                 "left join fetch s.posMajors as mj " +
                 "left join fetch s.waitlists as w " +
                 "left join fetch s.groups as g " +
+                "left join fetch s.notes as n " +
                 "where s.uniqueId in (select xe.student.uniqueId from StudentClassEnrollment xe where xe.courseOffering.instructionalOffering.uniqueId = :offeringId) " +
                 "or s.uniqueId in (select xr.courseDemand.student.uniqueId from CourseRequest xr where xr.courseOffering.instructionalOffering.uniqueId = :offeringId)"
                 ).setLong("offeringId", offeringId).list()) {
@@ -171,6 +172,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
                 "left join fetch s.posMajors as mj " +
                 "left join fetch s.waitlists as w " +
                 "left join fetch s.groups as g " +
+                "left join fetch s.notes as n " +
                 "where cr.courseOffering.instructionalOffering.uniqueId = :offeringId"
                 ).setLong("offeringId", offeringId).list()) {
 			newStudents.put(student.getUniqueId(), student);
@@ -186,6 +188,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
                 "left join fetch s.posMajors as mj " +
                 "left join fetch s.waitlists as w " +
                 "left join fetch s.groups as g " +
+                "left join fetch s.notes as n " +
                 "where e.courseOffering.instructionalOffering.uniqueId = :offeringId and e.courseRequest is null"
                 ).setLong("offeringId", offeringId).list()) {
 			newStudents.put(student.getUniqueId(), student);

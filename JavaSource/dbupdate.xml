@@ -11686,4 +11686,32 @@
 			references %SCHEMA%.dept_status_type (uniqueid) on delete cascade
 		</sql>
 	</update>
+	<update version="170" date="23-Nov-2016" comment="Student Notes">
+		<plsql onFail="done">
+			create table %SCHEMA%.student_note (
+				uniqueid number(20) constraint nn_student_note_uniqueid not null,
+				student_id number(20) constraint nn_student_note_student not null,
+				text_note varchar2(1000 chars),
+				time_stamp date constraint nn_student_note_ts not null,
+				user_id varchar2(40 chars)
+			)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.student_note add constraint pk_student_note_uniqueid primary key (uniqueid)
+		</plsql>
+		<mysql onFail="done">
+			create table %SCHEMA%.student_note (
+				uniqueid decimal(20,0) primary key not null,
+				student_id decimal(20,0) not null,
+				text_note varchar(1000),
+				time_stamp datetime not null,
+				user_id varchar(40)
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.student_note
+				add constraint fk_student_note_student foreign key (student_id)
+				references %SCHEMA%.student (uniqueid) on delete cascade
+		</sql>
+	</update>
 </dbupdate>

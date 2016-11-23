@@ -34,6 +34,7 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
+import org.unitime.timetable.model.StudentNote;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.WaitList;
 
@@ -65,6 +66,7 @@ public abstract class BaseStudent implements Serializable {
 	private Set<CourseDemand> iCourseDemands;
 	private Set<StudentClassEnrollment> iClassEnrollments;
 	private Set<LastLikeCourseDemand> iLastLikeCourseDemands;
+	private Set<StudentNote> iNotes;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_EXTERNAL_UID = "externalUniqueId";
@@ -181,6 +183,13 @@ public abstract class BaseStudent implements Serializable {
 	public void addTolastLikeCourseDemands(LastLikeCourseDemand lastLikeCourseDemand) {
 		if (iLastLikeCourseDemands == null) iLastLikeCourseDemands = new HashSet<LastLikeCourseDemand>();
 		iLastLikeCourseDemands.add(lastLikeCourseDemand);
+	}
+
+	public Set<StudentNote> getNotes() { return iNotes; }
+	public void setNotes(Set<StudentNote> notes) { iNotes = notes; }
+	public void addTonotes(StudentNote studentNote) {
+		if (iNotes == null) iNotes = new HashSet<StudentNote>();
+		iNotes.add(studentNote);
 	}
 
 	public boolean equals(Object o) {

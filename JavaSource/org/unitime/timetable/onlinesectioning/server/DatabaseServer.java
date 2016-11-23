@@ -119,6 +119,7 @@ public class DatabaseServer extends AbstractLockingServer {
 	                    "left join fetch s.posMajors as mj " +
 	                    "left join fetch s.waitlists as w " +
 	                    "left join fetch s.groups as g " +
+	                    "left join fetch s.notes as n " +
 				"where s.session.uniqueId = :sessionId")
 				.setLong("sessionId", getAcademicSession().getUniqueId())
 				.setCacheable(true).list()) {

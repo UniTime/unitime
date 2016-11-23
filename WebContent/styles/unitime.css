@@ -5231,3 +5231,10 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-RoomHint .features .feature-des {
 	display: block;
 }
+
+.unitime-StudentsTable .student-note {
+	max-width: 200px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}

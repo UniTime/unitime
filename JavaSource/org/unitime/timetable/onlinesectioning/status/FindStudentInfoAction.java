@@ -197,6 +197,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						s.setEmailDate(student.getEmailTimeStamp() == null ? null : student.getEmailTimeStamp());
 						s.setCredit(0f);
 						s.setTotalCredit(tCred);
+						s.setNote(student.hasLastNote() ? student.getLastNote().getNote() : null);
 					}
 					if (m.enrollment() != null) {
 						s.setEnrollment(s.getEnrollment() + 1); gEnrl ++;
@@ -275,6 +276,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 				}
 				s.setStatus(student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
 				s.setEmailDate(student.getEmailTimeStamp() == null ? null : student.getEmailTimeStamp());
+				s.setNote(student.hasLastNote() ? student.getLastNote().getNote() : null);
 				ret.add(s);
 			}
 		} else {
@@ -304,6 +306,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 				}
 				s.setStatus(student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
 				s.setEmailDate(student.getEmailTimeStamp() == null ? null : student.getEmailTimeStamp());
+				s.setNote(student.hasLastNote() ? student.getLastNote().getNote() : null);
 				ret.add(s);
 			}
 		}

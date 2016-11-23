@@ -215,5 +215,55 @@
             type="java.util.Date"
             not-null="false"/>
 
+        <set
+            name="notes"
+            table="student_note"
+            cascade="all"
+            lazy="true"
+            inverse="true">
+
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="student_id" foreign-key="fk_student_note_student"/>
+            <one-to-many class="StudentNote"/>
+        </set>
+    </class>
+    
+    <class name="StudentNote" table="student_note">
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">pref_group_seq</param>
+            </generator>
+        </id>
+        
+        <many-to-one
+            name="student"
+            class="Student"
+            column="student_id"
+            foreign-key="fk_student_note_student"
+            not-null="true"/>
+
+        <property
+            name="textNote"
+            column="text_note"
+            type="java.lang.String"
+            length="1000"
+            not-null="false"/>
+
+        <property
+            name="timeStamp"
+            column="time_stamp"
+            type="java.util.Date"
+            not-null="true"/>
+
+		<property
+            name="userId"
+            column="user_id"
+            type="java.lang.String"
+            not-null="false"
+            length="40"/>
     </class>
 </hibernate-mapping>

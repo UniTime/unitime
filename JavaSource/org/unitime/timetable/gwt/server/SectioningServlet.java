@@ -1925,12 +1925,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 
 	@Override
-	public Boolean changeStatus(List<Long> studentIds, String ref) throws SectioningException, PageAccessException {
+	public Boolean changeStatus(List<Long> studentIds, String note, String ref) throws SectioningException, PageAccessException {
 		try {
 			OnlineSectioningServer server = getServerInstance(getStatusPageSessionId(), true);
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
 			getSessionContext().checkPermission(server.getAcademicSession(), Right.StudentSchedulingChangeStudentStatus);
-			return server.execute(server.createAction(ChangeStudentStatus.class).forStudents(studentIds).withStatus(ref), currentUser());
+			return server.execute(server.createAction(ChangeStudentStatus.class).forStudents(studentIds).withStatus(ref).withNote(note), currentUser());
 		} catch (PageAccessException e) {
 			throw e;
 		} catch (SectioningException e) {
@@ -1983,11 +1983,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			
 			getSessionContext().checkPermission(server.getAcademicSession(), Right.StudentSchedulingMassCancel);
 			
-			org.hibernate.Session hibSession = StudentDAO.getInstance().getSession();
-			StudentSectioningStatus status = (statusRef == null || statusRef.isEmpty() ? null : (StudentSectioningStatus)hibSession.createQuery(
-					"from StudentSectioningStatus where reference = :ref").setString("ref", statusRef).uniqueResult());
-
-			return server.execute(server.createAction(MassCancelAction.class).forStudents(studentIds).withStatus(status).withEmail(subject, message, cc), currentUser());
+			return server.execute(server.createAction(MassCancelAction.class).forStudents(studentIds).withStatus(statusRef).withEmail(subject, message, cc), currentUser());
 		} catch (PageAccessException e) {
 			throw e;
 		} catch (SectioningException e) {

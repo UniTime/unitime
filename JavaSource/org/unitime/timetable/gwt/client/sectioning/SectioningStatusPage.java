@@ -142,10 +142,10 @@ public class SectioningStatusPage extends Composite {
 	private String iLastFilterOnEnter = null, iCourseFilter = null;
 	private SectioningStatusFilterRpcRequest iCourseFilterRequest = null;
 	private Map<String, String> iStates = null;
-	private int iStatusColumn = 0;
+	private int iStatusColumn = 0, iNoteColumn = 0;
 	private UniTimeTextBox iSubject, iCC;
 	private UniTimeWidget<ListBox> iStatus;
-	private TextArea iMessage;
+	private TextArea iMessage, iNote;
 	private Set<Long> iSelectedStudentIds = new HashSet<Long>();
 	private boolean iOnline; 
 	
@@ -180,7 +180,7 @@ public class SectioningStatusPage extends Composite {
 		iSectioningPanel.setCellHorizontalAlignment(iFilterPanel, HasHorizontalAlignment.ALIGN_CENTER);
 		
 		iCourseTable = new UniTimeTable<EnrollmentInfo>();
-		iStudentTable = new UniTimeTable<StudentInfo>();
+		iStudentTable = new UniTimeTable<StudentInfo>(); iStudentTable.addStyleName("unitime-StudentsTable");
 		iLogTable = new UniTimeTable<SectioningAction>();
 
 		VerticalPanel courseTableWithHint = new VerticalPanel();
@@ -475,7 +475,7 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		iStatus = new UniTimeWidget<ListBox>(new ListBox());
-		iStatus.getWidget().addItem("");
+		iStatus.getWidget().addItem("", "-");
 		iStatus.getWidget().setSelectedIndex(0);
 		
 		iSectioningService.lookupStudentSectioningStates(new AsyncCallback<Map<String,String>>() {
@@ -506,7 +506,10 @@ public class SectioningStatusPage extends Composite {
 		iMessage.setStyleName("unitime-TextArea");
 		iMessage.setVisibleLines(10);
 		iMessage.setCharacterWidth(80);
-
+		iNote = new TextArea();
+		iNote.setStyleName("unitime-TextArea");
+		iNote.setVisibleLines(10);
+		iNote.setCharacterWidth(80);
 	}
 	
 	private void checkLastQuery() {
@@ -1093,7 +1096,7 @@ public class SectioningStatusPage extends Composite {
 						public void execute() {
 							List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
 							LoadingWidget.getInstance().show(MESSAGES.changingStatusTo(iStates.get(ref)));
-							iSectioningService.changeStatus(studentIds, ref, new AsyncCallback<Boolean>() {
+							iSectioningService.changeStatus(studentIds, null, ref, new AsyncCallback<Boolean>() {
 
 								@Override
 								public void onFailure(Throwable caught) {
@@ -1117,6 +1120,76 @@ public class SectioningStatusPage extends Composite {
 					});
 				}
 			}
+			hSelect.addOperation(new Operation() {
+				@Override
+				public String getName() {
+					return MESSAGES.setStudentNote();
+				}
+				@Override
+				public boolean hasSeparator() {
+					return true;
+				}
+				@Override
+				public boolean isApplicable() {
+					return iOnline && iSelectedStudentIds.size() > 0 && iProperties != null && iProperties.isChangeStatus();
+				}
+				@Override
+				public void execute() {
+					SimpleForm sf = new SimpleForm();
+					final UniTimeHeaderPanel buttons = new UniTimeHeaderPanel();
+					sf.removeStyleName("unitime-NotPrintableBottomLine");
+					sf.addRow(MESSAGES.propNote(), iNote);
+					sf.addRow(MESSAGES.newStatus(), iStatus);
+					sf.addBottomRow(buttons);
+					final UniTimeDialogBox dialog = new UniTimeDialogBox(true, false);
+					dialog.setWidget(sf);
+					dialog.setText(MESSAGES.setStudentNote());
+					dialog.setEscapeToHide(true);
+					buttons.addButton("update", MESSAGES.buttonSetNote(), new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
+							dialog.hide();
+							
+							LoadingWidget.getInstance().show(MESSAGES.changingStudentNote());
+							final String status = iStatus.getWidget().getValue(iStatus.getWidget().getSelectedIndex());
+							final String note = iNote.getText();
+							iSectioningService.changeStatus(studentIds, note, status, new AsyncCallback<Boolean>() {
+								
+								@Override
+								public void onFailure(Throwable caught) {
+									LoadingWidget.getInstance().hide();
+									UniTimeNotifications.error(caught);
+								}
+
+								@Override
+								public void onSuccess(Boolean result) {
+									for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+										StudentInfo i = iStudentTable.getData(row);
+										if (i != null && i.getStudent() != null && ((CheckBox)iStudentTable.getWidget(row, 0)).getValue()) {
+											if (!"-".equals(status)) {
+												i.setStatus(status);
+												((HTML)iStudentTable.getWidget(row, iStatusColumn)).setHTML(status);
+											}
+											i.setNote(note);
+											HTML w = ((HTML)iStudentTable.getWidget(row, iNoteColumn));
+											w.setHTML(note); w.setTitle(w.getText());
+										}
+									}
+									LoadingWidget.getInstance().hide();
+								}
+							});
+						}
+					});
+					buttons.addButton("close", MESSAGES.buttonClose(), new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							dialog.hide();
+						}
+					});
+					dialog.center();
+				}
+			});
 		}
 		
 		boolean hasExtId = false;
@@ -1249,6 +1322,16 @@ public class SectioningStatusPage extends Composite {
 			addSortOperation(hEnrolledTS, StudentComparator.SortBy.ENROLLMENT_TS, MESSAGES.colEnrollmentTimeStamp());
 		}
 		
+		UniTimeTableHeader hNote = null;
+		if (iOnline) {
+			iNoteColumn = header.size() - 1;
+			hNote = new UniTimeTableHeader(MESSAGES.colStudentNote());
+			header.add(hNote);
+			addSortOperation(hNote, StudentComparator.SortBy.EMAIL_TS, MESSAGES.colEmailTimeStamp());
+		} else {
+			iNoteColumn = -1;
+		}
+		
 		UniTimeTableHeader hEmailTS = null;
 		if (iOnline) {
 			hEmailTS = new UniTimeTableHeader(MESSAGES.colEmailTimeStamp());
@@ -1341,12 +1424,20 @@ public class SectioningStatusPage extends Composite {
 					line.add(new HTML(info.getRequestedDate() == null ? "&nbsp;" : sDF.format(info.getRequestedDate()), false));
 				if (hasEnrolledDate)
 					line.add(new HTML(info.getEnrolledDate() == null ? "&nbsp;" : sDF.format(info.getEnrolledDate()), false));
+				if (iOnline) {
+					HTML note = new HTML(info.hasNote() ? info.getNote() : ""); note.addStyleName("student-note");
+					if (info.hasNote())
+						note.setTitle(note.getText());
+					line.add(note);
+				}
 				if (iOnline)
 					line.add(new HTML(info.getEmailDate() == null ? "&nbsp;" : sDF.format(info.getEmailDate()), false));
 			} else {
 				if (hasRequestedDate)
 					line.add(new HTML("&nbsp;", false));
 				if (hasEnrolledDate)
+					line.add(new HTML("&nbsp;", false));
+				if (iOnline)
 					line.add(new HTML("&nbsp;", false));
 				if (iOnline)
 					line.add(new HTML("&nbsp;", false));
@@ -1384,6 +1475,7 @@ public class SectioningStatusPage extends Composite {
 			case STATUS: h = hStatus; break;
 			case STUDENT: h = hStudent; break;
 			case WAITLIST: h = hWaitlist; break;
+			case NOTE: h = hNote; break;
 			}
 			if (h != null)
 				iStudentTable.sort(h, new StudentComparator(sort), asc);
@@ -1815,6 +1907,7 @@ public class SectioningStatusPage extends Composite {
 			REQUEST_TS,
 			ENROLLMENT_TS,
 			EMAIL_TS,
+			NOTE,
 			;
 		}
 		
@@ -1887,6 +1980,8 @@ public class SectioningStatusPage extends Composite {
 				return (e1.getEnrolledDate() == null ? new Date(0) : e1.getEnrolledDate()).compareTo(e2.getEnrolledDate() == null ? new Date(0) : e2.getEnrolledDate());
 			case EMAIL_TS:
 				return (e1.getEmailDate() == null ? new Date(0) : e1.getEmailDate()).compareTo(e2.getEmailDate() == null ? new Date(0) : e2.getEmailDate());
+			case NOTE:
+				return (e1.hasNote() ? e1.getNote().compareTo(e2.hasNote() ? e2.getNote() : "") : "".compareTo(e2.hasNote() ? e2.getNote() : ""));
 			default:
 				return 0;
 			}

@@ -20,11 +20,13 @@
 package org.unitime.timetable.onlinesectioning.updates;
 
 import java.util.Collection;
+import java.util.Date;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentNote;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -33,6 +35,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XStudentNote;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 
@@ -46,6 +49,7 @@ public class ChangeStudentStatus implements OnlineSectioningAction<Boolean> {
 
 	private Collection<Long> iStudentIds = null;
 	private String iStatus = null;
+	private String iNote = null;
 	
 	public ChangeStudentStatus forStudents(Collection<Long> studentIds) {
 		iStudentIds = studentIds;
@@ -57,15 +61,25 @@ public class ChangeStudentStatus implements OnlineSectioningAction<Boolean> {
 		return this;
 	}
 	
+	public ChangeStudentStatus withNote(String note) {
+		iNote = note;
+		return this;
+	}
+	
 	public String getStatus() { return iStatus; }
 	public boolean hasStatus() { return iStatus != null && !iStatus.isEmpty(); }
-	
+	public boolean changeStatus() { return !"-".equals(iStatus); }
+
+	public String getNote() { return iNote; }
+	public boolean hasNote() { return iNote != null; }
+
 	public Collection<Long> getStudentIds() { return iStudentIds; }
 
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		StudentSectioningStatus status = (hasStatus() ? (StudentSectioningStatus)helper.getHibSession().createQuery(
+		StudentSectioningStatus status = (changeStatus() && hasStatus() ? (StudentSectioningStatus)helper.getHibSession().createQuery(
 				"from StudentSectioningStatus where reference = :ref").setString("ref", getStatus()).uniqueResult() : null);
+		Date ts = new Date();
 		for (Long studentId: getStudentIds()) {
 			Lock lock = server.lockStudent(studentId, null, name());
 			try {
@@ -88,8 +102,22 @@ public class ChangeStudentStatus implements OnlineSectioningAction<Boolean> {
 									.setType(OnlineSectioningLog.Entity.EntityType.OTHER));
 						}
 						
-						student.setStatus(getStatus());
-						dbStudent.setSectioningStatus(status);
+						if (hasNote()) {
+							action.addMessage(OnlineSectioningLog.Message.newBuilder().setText(getNote()).setTimeStamp(ts.getTime()).setLevel(OnlineSectioningLog.Message.Level.INFO));
+							StudentNote note = new StudentNote();
+							note.setStudent(dbStudent);
+							note.setTextNote(getNote());
+							note.setTimeStamp(ts);
+							note.setUserId(helper.getUser().getExternalId());
+							dbStudent.addTonotes(note);
+							student.setLastNote(new XStudentNote(note));
+						}
+						
+						if (changeStatus()) {
+							student.setStatus(getStatus());
+							dbStudent.setSectioningStatus(status);
+						}
+						
 						helper.getHibSession().saveOrUpdate(dbStudent);
 						server.update(student, false);
 					}

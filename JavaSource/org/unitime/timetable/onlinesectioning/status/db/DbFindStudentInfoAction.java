@@ -39,6 +39,7 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
+import org.unitime.timetable.model.StudentNote;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -170,6 +171,11 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					s.setEmailDate(student.getScheduleEmailedDate() == null ? null : student.getScheduleEmailedDate());
 					s.setCredit(0f);
 					s.setTotalCredit(tCred);
+					
+					StudentNote note = null;
+					for (StudentNote n: student.getNotes())
+						if (note == null || note.compareTo(n) > 0) note = n;
+					if (note != null) s.setNote(note.getTextNote());
 				}
 				DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, helper.getStudentNameFormat());
 				if (!crm.enrollment().isEmpty()) {
@@ -252,6 +258,12 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 			}
 			s.setStatus(student.getSectioningStatus() == null ? session.getDefaultSectioningStatus() : student.getSectioningStatus().getReference());
 			s.setEmailDate(student.getScheduleEmailedDate() == null ? null : student.getScheduleEmailedDate());
+			
+			StudentNote note = null;
+			for (StudentNote n: student.getNotes())
+				if (note == null || note.compareTo(n) > 0) note = n;
+			if (note != null) s.setNote(note.getTextNote());
+			
 			ret.add(s);
 		}
 		

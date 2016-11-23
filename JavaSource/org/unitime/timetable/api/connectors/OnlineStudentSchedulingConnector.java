@@ -409,7 +409,7 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 					request.studentIds = new ArrayList<Long>();
 				if (request.studentIds.isEmpty() && studentId != null)
 					request.studentIds.add(studentId);
-				return service.changeStatus(request.studentIds, helper.getOptinalParameter("status", request.status));
+				return service.changeStatus(request.studentIds, helper.getOptinalParameter("note", request.status), helper.getOptinalParameter("status", request.status));
 			}
 		}, Flag.GET, Flag.POST),
 		changeLog(new OpExecution<List<ClassAssignmentInterface.SectioningAction>>() {
