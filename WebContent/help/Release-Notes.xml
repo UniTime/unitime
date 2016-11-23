@@ -72,6 +72,13 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Room Sharing / Instructor Time Preferences Grid</name>
+			<description>
+				<line>Room Sharing / Instructor Time Preferences grid changed to allow for the week to run over Sunday.</line>
+				<line>For example unitime.room.sharingMode5=Su-Th 8am-9pm|6|3|96|252|6 would create a mode going from Sunday till Thursday, in half-hours between 8am and 9pm.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Event Management</title>

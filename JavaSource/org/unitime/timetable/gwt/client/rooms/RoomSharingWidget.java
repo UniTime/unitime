@@ -337,7 +337,8 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 				}
 				
 				final List<Cell> thisPage = new ArrayList<Cell>();
-				for (int day = iMode.getFirstDay(); day <= iMode.getLastDay(); day++) {
+				int day = iMode.getFirstDay();
+				while (true) {
 					P line = new P("row");
 					box.add(line);
 					P d = new P("cell", "day", isEditable() ? "clickable" : null);
@@ -359,6 +360,8 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 									d.setOption(iOption);
 							}
 						});
+					if (day == iMode.getLastDay()) break;
+					day = (1 + day) % 7;
 				}
 				
 				if (isEditable())
@@ -382,7 +385,9 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 			header.add(corner);
 			
 			final List<List<Cell>> thisDay = new ArrayList<List<Cell>>();
-			for (int day = iMode.getFirstDay(); day <= iMode.getLastDay(); day++) {
+			int day = iMode.getFirstDay();
+			int idx = 0;
+			while (true) {
 				P p = new P("cell", "time", isEditable() ? "clickable" : null); p.setHTML(CONSTANTS.days()[day % 7]);
 				final List<Cell> t = new ArrayList<Cell>();
 				thisDay.add(t);
@@ -395,6 +400,9 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 								d.setOption(iOption);
 						}
 					});
+				if (day == iMode.getLastDay()) break;
+				day = (1 + day) % 7;
+				idx ++;				
 			}
 
 			
@@ -406,12 +414,16 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 				d.setHTML(MESSAGES.roomSharingTimeHeader(slot2short(slot), slot2short(slot + iMode.getStep())));
 				line.add(d);
 				final List<Cell> thisSlot = new ArrayList<Cell>();
-				for (int day = iMode.getFirstDay(); day <= iMode.getLastDay(); day++) {
+				day = iMode.getFirstDay(); idx = 0;
+				while (true) {
 					Cell p = new Cell(day, slot);
 					line.add(p);
 					thisSlot.add(p);
 					thisPage.add(p);
-					thisDay.get(day - iMode.getFirstDay()).add(p);
+					thisDay.get(idx).add(p);
+					if (day == iMode.getLastDay()) break;
+					day = (1 + day) % 7;
+					idx ++;
 				}
 				if (isEditable())
 					d.addMouseDownHandler(new MouseDownHandler() {
