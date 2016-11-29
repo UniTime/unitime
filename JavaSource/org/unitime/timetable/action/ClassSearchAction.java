@@ -21,6 +21,7 @@ package org.unitime.timetable.action;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
@@ -220,7 +221,7 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 
 			BackTracker.markForBack(
 					request, 
-					"classSearch.do?doit=Search&loadFilter=1"+ids+"&courseNbr="+classListForm.getCourseNbr(), 
+					"classSearch.do?doit=Search&loadFilter=1"+ids+"&courseNbr="+URLEncoder.encode(classListForm.getCourseNbr(), "utf-8"), 
 					MSG.backClasses(names+(classListForm.getCourseNbr()==null || classListForm.getCourseNbr().length()==0?"":" "+classListForm.getCourseNbr())), 
 					true, true);
 				

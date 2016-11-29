@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
 import java.util.Collection;
 
 import javax.servlet.http.HttpServletRequest;
@@ -141,7 +142,7 @@ public class ClassShowSearchAction extends Action {
 					}
 			        BackTracker.markForBack(
 							request, 
-							"classSearch.do?doit=Search&loadFilter=1&"+ids+"&courseNbr="+classListForm.getCourseNbr(), 
+							"classSearch.do?doit=Search&loadFilter=1&"+ids+"&courseNbr="+URLEncoder.encode(classListForm.getCourseNbr(), "utf-8"), 
 							"Classes ("+names+
 								(classListForm.getCourseNbr()==null || classListForm.getCourseNbr().length()==0?"":" "+classListForm.getCourseNbr())+
 								")", 

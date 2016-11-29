@@ -21,6 +21,7 @@ package org.unitime.timetable.action;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -170,7 +171,7 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 
 				BackTracker.markForBack(
 						request, 
-						"instructionalOfferingSearch.do?op=Back&doit=Search&loadInstrFilter=1"+ids+"&courseNbr="+frm.getCourseNbr(), 
+						"instructionalOfferingSearch.do?op=Back&doit=Search&loadInstrFilter=1"+ids+"&courseNbr="+URLEncoder.encode(frm.getCourseNbr(), "utf-8"), 
 						MSG.labelInstructionalOfferings() + " ("+names + (frm.getCourseNbr()==null || frm.getCourseNbr().length()==0?"":" "+frm.getCourseNbr()) + ")", 
 						true, true);
 

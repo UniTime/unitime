@@ -94,6 +94,13 @@
 				<line>Also, use the Google Maps v3 API (maps.googleapis.com) instead of the Google Maps v2 API (maps.google.com).</line>
 			</description>
 		</item>
+		<item>
+			<name>Instuctional Offerings, Classes, Examinations: Back</name>
+			<description>
+				<line>Encode the entered course number to UTF-8 for the navigation / back.</line>
+				<line>This fixes an issue with URL encoding when course number contains non-ASCII characters.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Event Management</title>
