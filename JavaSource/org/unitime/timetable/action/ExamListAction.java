@@ -20,6 +20,7 @@
 package org.unitime.timetable.action;
 
 import java.awt.Image;
+import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -173,7 +174,7 @@ public class ExamListAction extends Action {
         if (myForm.getExamType() != null)
             BackTracker.markForBack(
                     request, 
-                    "examList.do?op=Search&examType="+myForm.getExamType()+"&subjectAreaId="+myForm.getSubjectAreaId()+"&courseNbr="+myForm.getCourseNbr(),
+                    "examList.do?op=Search&examType="+myForm.getExamType()+"&subjectAreaId="+myForm.getSubjectAreaId()+"&courseNbr="+URLEncoder.encode(myForm.getCourseNbr(), "utf-8"),
                     ExamTypeDAO.getInstance().get(myForm.getExamType()).getLabel()+" Exams ("+(Constants.ALL_OPTION_VALUE.equals(myForm.getSubjectAreaId())?"All":subjectAreaName+
                         (myForm.getCourseNbr()==null || myForm.getCourseNbr().length()==0?"":" "+myForm.getCourseNbr()))+
                         ")", 
