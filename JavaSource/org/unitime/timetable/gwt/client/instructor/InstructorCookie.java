@@ -104,6 +104,10 @@ public class InstructorCookie {
 		save();
 	}
 	
+	public int getTeachingRequestsColumns(Boolean assigned) {
+		return iTeachingRequestsColumns[assigned == null ? 2 : assigned ? 0 : 1];
+	}
+	
 	public boolean isTeachingRequestsColumnVisible(Boolean assigned, int ordinal) {
 		return (iTeachingRequestsColumns[assigned == null ? 2 : assigned ? 0 : 1] & (1 << ordinal)) != 0;
 	}
@@ -126,6 +130,10 @@ public class InstructorCookie {
 	public void setSortTeachingAssignmentsBy(int sortTeachingAssignmentsBy) {
 		iSortTeachingAssignmentsBy = sortTeachingAssignmentsBy;
 		save();
+	}
+	
+	public int getTeachingAssignmentsColumns() {
+		return iTeachingAssignmentsColumns;
 	}
 	
 	public boolean isTeachingAssignmentsColumnVisible(int ordinal) {

@@ -161,11 +161,15 @@ public class PDFPrinter implements Printer {
 		for (int idx = 0; idx < fields.length; idx++) {
 			if (iHiddenColumns.contains(idx)) continue;
 			A f = fields[idx];
-			if (f == null || f.isEmpty() || (iCheckLast && f.equals(iLastLine == null || idx >= iLastLine.length ? null : iLastLine[idx]))) f = new A();
+			if (f == null || f.isEmpty() || (iCheckLast && f.equals(iLastLine == null || idx >= iLastLine.length ? null : iLastLine[idx]))) {
+				f = new A();
+				if (fields[idx] != null && fields[idx].has(F.NOSEPARATOR))
+					f.set(F.NOSEPARATOR);
+			}
 			
 			PdfPCell cell = new PdfPCell();
 			float rpad = 0f;
-			cell.setBorder(iLastLine == null ? Rectangle.TOP : Rectangle.NO_BORDER);
+			cell.setBorder(iLastLine == null && !f.has(F.NOSEPARATOR) ? Rectangle.TOP : Rectangle.NO_BORDER);
 			cell.setVerticalAlignment(Element.ALIGN_TOP);
 			if (f.has(F.RIGHT)) {
 				cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
@@ -358,7 +362,7 @@ public class PDFPrinter implements Printer {
 	} 
 	
 	public static enum F {
-		ITALIC, BOLD, UNDERLINE, RIGHT, CENTER,
+		ITALIC, BOLD, UNDERLINE, RIGHT, CENTER, NOSEPARATOR,
 		;
 		
 		public int flag() { return 1 << ordinal(); }

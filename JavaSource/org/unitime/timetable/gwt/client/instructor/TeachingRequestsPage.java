@@ -24,6 +24,7 @@ import java.util.List;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
+import org.unitime.timetable.gwt.client.rooms.RoomCookie;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -34,6 +35,8 @@ import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.SubjectAreaInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestInfo;
@@ -80,6 +83,8 @@ public class TeachingRequestsPage extends SimpleForm {
 			@Override
 			public void onChange(ChangeEvent event) {
 				iFilterPanel.setEnabled("search", iFilter.getSelectedIndex() > 0);
+				iFilterPanel.setEnabled("csv", iFilter.getSelectedIndex() > 0);
+				iFilterPanel.setEnabled("pdf", iFilter.getSelectedIndex() > 0);
 			}
 		});
 		iFilter.getElement().getStyle().setMarginLeft(5, Unit.PX);
@@ -91,6 +96,21 @@ public class TeachingRequestsPage extends SimpleForm {
 			}
 		});
 		iFilterPanel.setEnabled("search", false);
+
+		iFilterPanel.addButton("csv", MESSAGES.buttonExportCSV(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				export("teaching-requests.csv");
+			}
+		});
+		iFilterPanel.setEnabled("csv", false);
+		iFilterPanel.addButton("pdf", MESSAGES.buttonExportPDF(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				export("teaching-requests.pdf");
+			}
+		});
+		iFilterPanel.setEnabled("pdf", false);
 		addRow(iFilterPanel);
 		
 		iTable = new TeachingRequestsTable(iAssigned) {
@@ -126,6 +146,8 @@ public class TeachingRequestsPage extends SimpleForm {
 						iFilter.setSelectedIndex(iFilter.getItemCount() - 1);
 				}
 				iFilterPanel.setEnabled("search", iFilter.getSelectedIndex() > 0);
+				iFilterPanel.setEnabled("csv", iFilter.getSelectedIndex() > 0);
+				iFilterPanel.setEnabled("pdf", iFilter.getSelectedIndex() > 0);
 			}
 		});
 	}
@@ -145,6 +167,25 @@ public class TeachingRequestsPage extends SimpleForm {
 				LoadingWidget.getInstance().hide();
 				iTable.populate(result);
 				iTable.setVisible(true);
+			}
+		});
+	}
+	
+	void export(String type) {
+		RoomCookie cookie = RoomCookie.getInstance();
+		String query = "output=" + type + "&assigned=" + iAssigned + (iFilter.getSelectedIndex() <= 1 ? "" : "&subjectId=" + Long.valueOf(iFilter.getSelectedValue())) +
+				"&sort=" + InstructorCookie.getInstance().getSortTeachingRequestsBy(iAssigned) +
+				"&columns=" + InstructorCookie.getInstance().getTeachingRequestsColumns(iAssigned) + 
+				"&grid=" + (cookie.isGridAsText() ? "0" : "1") +
+				"&vertical=" + (cookie.areRoomsHorizontal() ? "0" : "1") +
+				(cookie.hasMode() ? "&mode=" + cookie.getMode() : "");
+		RPC.execute(EncodeQueryRpcRequest.encode(query), new AsyncCallback<EncodeQueryRpcResponse>() {
+			@Override
+			public void onFailure(Throwable caught) {
+			}
+			@Override
+			public void onSuccess(EncodeQueryRpcResponse result) {
+				ToolBox.open(GWT.getHostPageBaseURL() + "export?q=" + result.getQuery());
 			}
 		});
 	}

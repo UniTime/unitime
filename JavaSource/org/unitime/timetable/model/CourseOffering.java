@@ -359,6 +359,12 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
         uniqueResult(); 
     }
     
+    public static CourseOffering findByName(String name, Long sessionId) {
+    	return (CourseOffering)new CourseOfferingDAO().getSession().createQuery(
+    			"select c from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId and lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :name")
+    			.setLong("sessionId", sessionId).setString("name", name.toLowerCase()).setCacheable(true).uniqueResult();
+    }
+    
     public static CourseOffering findByIdRolledForwardFrom(Long sessionId, Long uniqueIdRolledForwardFrom) {
         return (CourseOffering)new CourseOfferingDAO().
             getSession().

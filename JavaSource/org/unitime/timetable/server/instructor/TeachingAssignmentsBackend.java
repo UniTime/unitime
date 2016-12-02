@@ -40,6 +40,7 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
 import org.unitime.timetable.solver.service.SolverService;
+import org.unitime.timetable.spring.SpringApplicationContextHolder;
 
 /**
  * @author Tomas Muller
@@ -52,6 +53,8 @@ public class TeachingAssignmentsBackend extends InstructorSchedulingBackendHelpe
 	
 	@Override
 	public GwtRpcResponseList<InstructorInfo> execute(TeachingAssignmentsPageRequest request, SessionContext context) {
+		if (instructorSchedulingSolverService == null)
+			instructorSchedulingSolverService = (SolverService<InstructorSchedulingProxy>)SpringApplicationContextHolder.getBean("instructorSchedulingSolverService");
 		context.checkPermission(Right.InstructorScheduling);
 		context.setAttribute(SessionAttribute.DepartmentId, request.getDepartmentId() == null ? "-1" : String.valueOf(request.getDepartmentId()));
 		InstructorSchedulingProxy solver = instructorSchedulingSolverService.getSolver();

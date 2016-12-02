@@ -281,7 +281,7 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
             		if (placement != null)
             			info.addInstructor(toInstructorInfo(placement));
             	}
-            	if (r.getOfferingId() != null)
+            	if (r.getOfferingId() != null || !r.hasAssigned())
             		ret.add(info);
             	else if (r.isAssigned() && info.hasInstructors())
             		ret.add(info);

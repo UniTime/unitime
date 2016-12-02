@@ -971,13 +971,13 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	
 	public static class TeachingRequestsPageRequest implements GwtRpcRequest<GwtRpcResponseList<TeachingRequestInfo>>, Serializable {
 		private static final long serialVersionUID = 1L;
-		private boolean iAssigned = true;
+		private Boolean iAssigned = null;
 		private Long iSubjectAreaId = null;
 		private Long iOfferingId = null;
 		
 		public TeachingRequestsPageRequest() {}
 		
-		public TeachingRequestsPageRequest(Long subjectAreaId, boolean assigned) {
+		public TeachingRequestsPageRequest(Long subjectAreaId, Boolean assigned) {
 			iAssigned = assigned;
 			iSubjectAreaId = subjectAreaId;
 		}
@@ -986,13 +986,18 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 			iOfferingId = offeringId;
 		}
 		
-		public boolean isAssigned() { return iAssigned; }
+		public void setSubjectAreaId(Long subjectAreaId) { iSubjectAreaId = subjectAreaId; }
+		public void setOfferingId(Long offeringId) { iOfferingId = offeringId; }
+		public void setAssigned(Boolean assigned) { iAssigned = assigned; }
+
+		public boolean hasAssigned() { return iAssigned != null; }
+		public boolean isAssigned() { return iAssigned == null || iAssigned.booleanValue(); }
 		public Long getSubjectAreaId() { return iSubjectAreaId; }
 		public Long getOfferingId() { return iOfferingId; }
 		
 		@Override
 		public String toString() {
-			return (getOfferingId() == null ? (isAssigned() ? "ASSIGNED" : "UNASSIGNED") + (getSubjectAreaId() == null ? "(all)" : "(" + getSubjectAreaId() + ")") : "[" + getOfferingId() + "]");
+			return (getOfferingId() == null ? (!hasAssigned() ? "" : isAssigned() ? "ASSIGNED" : "UNASSIGNED") + (getSubjectAreaId() == null ? "(all)" : "(" + getSubjectAreaId() + ")") : "[" + getOfferingId() + "]");
 		}
 	}
 	
@@ -1006,6 +1011,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 			iDepartmentId = departmentId;
 		}
 		
+		public void setDepartmentId(Long departmentId) { iDepartmentId = departmentId; }
 		public Long getDepartmentId() { return iDepartmentId; }
 		
 		@Override

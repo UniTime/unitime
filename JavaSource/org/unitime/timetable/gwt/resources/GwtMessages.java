@@ -1368,6 +1368,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Export&nbsp;<u>C</u>SV")
 	String buttonExportCSV();
 	
+	@DefaultMessage("Export&nbsp;<u>P</u>DF")
+	String buttonExportPDF();
+	
 	@DefaultMessage("Add&nbsp;<u>R</u>eservation")
 	String buttonAddReservation();
 	
