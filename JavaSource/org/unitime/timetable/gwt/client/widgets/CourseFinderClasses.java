@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
 import org.unitime.timetable.gwt.client.aria.AriaHiddenLabel;
+import org.unitime.timetable.gwt.client.rooms.RoomHint;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -35,11 +36,16 @@ import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.MouseOutEvent;
+import com.google.gwt.event.dom.client.MouseOutHandler;
+import com.google.gwt.event.dom.client.MouseOverEvent;
+import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.DOM;
@@ -161,7 +167,7 @@ public class CourseFinderClasses extends UniTimeTable<ClassAssignment> implement
 								line.add(new ArrangeHours());
 							}
 							line.add(new Label(clazz.hasDatePattern() ? clazz.getDatePattern() : "", false));
-							line.add(new RoomsOrInstructors(clazz.getRooms(), ","));
+							line.add(new Rooms(clazz.getRooms(), ","));
 							line.add(new RoomsOrInstructors(clazz.getInstructors(), ","));
 							line.add(new Label(clazz.getParentSection() != null ? clazz.getParentSection() : ""));
 							line.add(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), MESSAGES.saved(clazz.getSubpart() + " " + clazz.getSection()), null).getWidget() :
@@ -219,6 +225,33 @@ public class CourseFinderClasses extends UniTimeTable<ClassAssignment> implement
 				for (Iterator<String> i = list.iterator(); i.hasNext(); ) {
 					P p = new P(DOM.createSpan(), "item");
 					p.setText(i.next() + (i.hasNext() ? delimiter : ""));
+					add(p);
+				}
+		}	
+	}
+	
+	public static class Rooms extends P {
+		public Rooms(List<IdValue> list, String delimiter) {
+			super("itemize");
+			if (list != null)
+				for (Iterator<IdValue> i = list.iterator(); i.hasNext(); ) {
+					final P p = new P(DOM.createSpan(), "item");
+					final IdValue room = i.next();
+					p.setText(room.getValue() + (i.hasNext() ? delimiter : ""));
+					if (room.getId() != null) {
+						p.addMouseOverHandler(new MouseOverHandler() {
+							@Override
+							public void onMouseOver(MouseOverEvent event) {
+								RoomHint.showHint(p.getElement(), room.getId(), null, null, true);
+							}
+						});
+						p.addMouseOutHandler(new MouseOutHandler() {
+							@Override
+							public void onMouseOut(MouseOutEvent event) {
+								RoomHint.hideHint();
+							}
+						});
+					}
 					add(p);
 				}
 		}	

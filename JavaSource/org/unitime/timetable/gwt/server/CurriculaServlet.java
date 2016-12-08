@@ -2316,11 +2316,11 @@ public class CurriculaServlet implements CurriculaService {
 					}
 					if (p != null && p.getRoomLocations() != null) {
 						for (RoomLocation rm: p.getRoomLocations()) {
-							a.addRoom(rm.getName());
+							a.addRoom(rm.getId(), rm.getName());
 						}
 					}
 					if (p != null && p.getRoomLocation() != null) {
-						a.addRoom(p.getRoomLocation().getName());
+						a.addRoom(p.getRoomLocation().getId(), p.getRoomLocation().getName());
 					}
 					if (!clazz.getClassInstructors().isEmpty()) {
 						for (Iterator<ClassInstructor> i = clazz.getClassInstructors().iterator(); i.hasNext(); ) {

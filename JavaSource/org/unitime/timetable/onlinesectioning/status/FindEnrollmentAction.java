@@ -200,7 +200,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 					}
 					if (section.getNrRooms() > 0) {
 						for (XRoom rm: section.getRooms()) {
-							a.addRoom(rm.getName());
+							a.addRoom(rm.getUniqueId(), rm.getName());
 						}
 					}
 					if (section.getInstructors() != null) {

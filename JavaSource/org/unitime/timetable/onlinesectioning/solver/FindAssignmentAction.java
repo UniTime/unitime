@@ -774,13 +774,13 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					if (section.getRooms() != null) {
 						for (Iterator<RoomLocation> e = section.getRooms().iterator(); e.hasNext(); ) {
 							RoomLocation rm = e.next();
-							a.addRoom(rm.getName());
+							a.addRoom(rm.getId(), rm.getName());
 						}
 					} else {
 						XSection x = offering.getSection(section.getId());
 						if (x != null) {
 							for (XRoom rm: x.getRooms()) {
-								a.addRoom(rm.getName());
+								a.addRoom(rm.getUniqueId(), rm.getName());
 							}
 						}
 					}

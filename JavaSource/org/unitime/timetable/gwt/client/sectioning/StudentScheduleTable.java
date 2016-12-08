@@ -232,7 +232,7 @@ public class StudentScheduleTable extends Composite {
 							new WebTable.Cell(clazz.getLimitString()),
 							new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays()) + " " + clazz.getStartString(CONSTANTS.useAmPm()) + " - " + clazz.getEndString(CONSTANTS.useAmPm())),
 							new WebTable.Cell(clazz.getDatePattern()),
-							(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
+							(clazz.hasDistanceConflict() ? new WebTable.RoomCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(), ", ") : new WebTable.RoomCell(clazz.getRooms(), ", ")),
 							new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
 							new WebTable.Cell(clazz.getParentSection()),
 							clazz.hasNote() ? new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), "") : new WebTable.Cell(""),

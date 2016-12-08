@@ -254,7 +254,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private int iStart, iLength, iBreakTime = 0;
 		private ArrayList<String> iInstructos = new ArrayList<String>();
 		private ArrayList<String> iInstructoEmails = new ArrayList<String>();
-		private ArrayList<String> iRooms = new ArrayList<String>();
+		private ArrayList<IdValue> iRooms = new ArrayList<IdValue>();
 		private boolean iAlternative = false, iHasAlternatives = true, iDistanceConflict = false, iTeachingAssigment = false, iInstructing = false;
 		private String iDatePattern = null;
 		private String iSubject, iCourseNbr, iSubpart, iSection, iParentSection, iNumber, iTitle;
@@ -445,18 +445,18 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public ArrayList<String> getInstructorEmails() { return iInstructoEmails; }
 
 		public boolean hasRoom() { return iRooms != null && !iRooms.isEmpty(); }
-		public void addRoom(String room) {
-			if (iRooms == null) iRooms = new ArrayList<String>();
-			iRooms.add(room);
+		public void addRoom(Long id, String name) {
+			if (iRooms == null) iRooms = new ArrayList<IdValue>();
+			iRooms.add(new IdValue(id, name));
 		}
-		public ArrayList<String> getRooms() { return iRooms; }
+		public ArrayList<IdValue> getRooms() { return iRooms; }
 		
 		public String getRooms(String delim) {
 			if (iRooms == null) return "";
 			String ret = "";
-			for (String room: iRooms) {
+			for (IdValue room: iRooms) {
 				if (!ret.isEmpty()) ret += delim;
-				ret += room;
+				ret += room.getValue();
 			}
 			return ret;
 		}

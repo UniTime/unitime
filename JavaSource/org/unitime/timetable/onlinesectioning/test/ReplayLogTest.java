@@ -135,7 +135,7 @@ public class ReplayLogTest extends OnlineSectioningTestFwk {
 			a.addInstructoEmail(instructor.hasExternalId() ? instructor.getExternalId() : null);
 		}
 		for (OnlineSectioningLog.Entity location: section.getLocationList()) {
-			a.addRoom(location.getName());
+			a.addRoom(location.getUniqueId(), location.getName());
 		}
 		a.setPinned(section.getPreference() == OnlineSectioningLog.Section.Preference.REQUIRED);
 		a.setCourseId(toCourseId(section.getCourse()));
