@@ -21,9 +21,9 @@
 create table student_note (
 	uniqueid number(20) constraint nn_student_note_uniqueid not null,
 	student_id number(20) constraint nn_student_note_student not null,
-	text_note varchar2(1000 chars),
+	text_note varchar2(1000 char),
 	time_stamp date constraint nn_student_note_ts not null,
-	user_id varchar2(40 chars)
+	user_id varchar2(40 char)
 );
 
 alter table student_note add constraint pk_student_note_uniqueid primary key (uniqueid);
