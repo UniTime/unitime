@@ -171,7 +171,7 @@ public class ExamListAction extends Action {
         if (request.getParameter("backId")!=null)
             request.setAttribute("hash", request.getParameter("backId"));
         
-        if (myForm.getExamType() != null)
+        if (myForm.getExamType() != null && myForm.getSubjectAreaId() != null && myForm.getCourseNbr() != null)
             BackTracker.markForBack(
                     request, 
                     "examList.do?op=Search&examType="+myForm.getExamType()+"&subjectAreaId="+myForm.getSubjectAreaId()+"&courseNbr="+URLEncoder.encode(myForm.getCourseNbr(), "utf-8"),
