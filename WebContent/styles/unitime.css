@@ -304,8 +304,12 @@ h1 {
 	font-size: 1em;
 	font-weight: bold;
 	color: black;
-	padding-top: 5px;
 	text-align: right;
+	padding: 0px 2px 2px 2px;
+}
+
+.unitime-MainTableBottomHeader .unitime-HeaderPanel {
+	padding-top: 0px;
 }
 
 .unitime-MainTableBottomHeader .toggle {
@@ -358,6 +362,14 @@ h1 {
 
 .unitime-MainTable .top-border-dashed {
 	border-top: 1px dashed #9CB0CE;
+}
+
+.unitime-MainTable .unitime-HeaderPanel .left {
+	padding-left: 0px;
+}
+
+.unitime-MainTable .unitime-HeaderPanel .right {
+	padding-right: 0px;
 }
 
 .unitime-LoadingPanel {
@@ -5053,12 +5065,14 @@ unitime-RoomSharingWidget .legend .blank {
 	width: 100%;
 	overflow: hidden;
 	margin-bottom: -2px;
+	padding-top: 1px;
 }
 
 .unitime-HeaderPanel .left {
 	float: left;
 	line-height: 29px;
 	vertical-align: bottom;
+	padding-left: 4px;
 }
 
 .unitime-HeaderPanel .left .gwt-Image {
@@ -5071,6 +5085,7 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-HeaderPanel .right {
 	float: right;
+	padding-right: 4px;
 }
 
 .unitime-HeaderPanel .content {
