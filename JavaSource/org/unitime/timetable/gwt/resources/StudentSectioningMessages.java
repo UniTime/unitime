@@ -1442,4 +1442,22 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Clear course request")
 	String altFilterClearCourseRequest();
+	
+	@DefaultMessage("Student\nId")
+	String reportStudentId();
+	
+	@DefaultMessage("Student\nName")
+	String reportStudentName();
+	
+	@DefaultMessage("Student\nEmail")
+	String reportStudentEmail();
+	
+	@DefaultMessage("Course")
+	String reportUnassignedCourse();
+	
+	@DefaultMessage("Conflict")
+	String reportAssignmentConflict();
+	
+	@DefaultMessage("Not-Assigned Course Requests")
+	String reportUnassignedCourseRequests();
 }

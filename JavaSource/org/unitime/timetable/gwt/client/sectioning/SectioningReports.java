@@ -39,6 +39,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 
@@ -66,6 +67,7 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class SectioningReports extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
+	protected static final StudentSectioningMessages SCT_MSG = GWT.create(StudentSectioningMessages.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static NumberFormat PF = NumberFormat.getFormat("0.0%");
 	private static NumberFormat DF = NumberFormat.getFormat("0.00");
@@ -96,6 +98,7 @@ public class SectioningReports extends Composite {
 		NOT_ALLOWED_TIME_OVERLAPS_BT("Not Allowed Time Overlaps (Exclude Break Times)", "org.unitime.timetable.reports.studentsct.IndividualStudentTimeOverlaps", "ignoreBreakTimeConflicts", "true", "includeAllowedOverlaps", "false"),
 		TEACHING_CONFLICTS("Teaching Conflicts", "org.unitime.timetable.reports.studentsct.StudentAvailabilityConflicts"),
 		TEACHING_CONFLICTS_NA("Teaching Conflicts (Exclude Allowed)", "org.unitime.timetable.reports.studentsct.StudentAvailabilityConflicts", "includeAllowedOverlaps", "false"),
+		NOT_ASSIGNED_COURSE_REQUESTS(SCT_MSG.reportUnassignedCourseRequests(), "org.unitime.timetable.reports.studentsct.UnasignedCourseRequests"),
 		;
 		
 		String iName, iImplementation;
