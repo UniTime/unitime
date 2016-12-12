@@ -111,6 +111,7 @@ public class SectioningReportsExporter implements Exporter {
 		String[] header = new String[csv.getHeader().getFields().size()];
 		for (int i = 0; i < csv.getHeader().getFields().size(); i++)
 			header[i] = csv.getHeader().getField(i).toString();
+		if (header.length >= 1 && header[0].startsWith("__")) out.hideColumn(0);
 		out.printHeader(header);
 		
 		DecimalFormat pf = new DecimalFormat("0.00%");
