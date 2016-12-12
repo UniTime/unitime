@@ -181,6 +181,7 @@
 			<name>Student Sectioning Solver Reports, Online Student Scheduling Reports</name>
 			<description>
 				<line>Not-Assigned Course Requests: Added a new report showing individual course requests that are left unassigned.</line>
+				<line>Added ability to show all classes of an individual student when a row containing student unique id (in the first column named __Student) is clicked.</line>
 			</description>
 		</item>
 	</category>
