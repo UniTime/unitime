@@ -169,6 +169,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private StudentCourseDemands iStudentCourseDemands = null;
     private boolean iUseAmPm = true;
     private String iDatePatternFormat = null;
+    private boolean iShowClassSuffix = false;
     
     public StudentSectioningDatabaseLoader(StudentSectioningModel model, org.cpsolver.ifs.assignment.Assignment<Request, Enrollment> assignment) {
         super(model, assignment);
@@ -218,6 +219,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 
         iProjections = "Projection".equals(model.getProperties().getProperty("StudentSctBasic.Mode", "Initial"));
         iUseAmPm = model.getProperties().getPropertyBoolean("General.UseAmPm", iUseAmPm);
+        iShowClassSuffix = ApplicationProperty.SolverShowClassSufix.isTrue();
     }
     
     public void load() {
@@ -286,7 +288,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     public TimeLocation makeupTime(Class_ c) {
         DatePattern datePattern = c.effectiveDatePattern(); 
         if (datePattern==null) {
-            iProgress.warn("        -- makup time for "+c.getClassLabel()+": no date pattern set");
+            iProgress.warn("        -- makup time for "+c.getClassLabel(iShowClassSuffix)+": no date pattern set");
             return null;
         }        
         for (Iterator i=c.getEffectiveTimePreferences().iterator();i.hasNext();) {
@@ -319,9 +321,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             }
         }
         if (c.getEffectiveTimePreferences().isEmpty())
-            iProgress.warn("        -- makup time for "+c.getClassLabel()+": no time preference set");
+            iProgress.warn("        -- makup time for "+c.getClassLabel(iShowClassSuffix)+": no time preference set");
         else
-            iProgress.warn("        -- makup time for "+c.getClassLabel()+": no required time set");
+            iProgress.warn("        -- makup time for "+c.getClassLabel(iShowClassSuffix)+": no required time set");
         return null;
     }
     
@@ -330,7 +332,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         for (Iterator i=c.getEffectiveRoomPreferences().iterator();i.hasNext();) {
             RoomPref rp = (RoomPref)i.next();
             if (!PreferenceLevel.sRequired.equals(rp.getPrefLevel().getPrefProlog())) {
-                iProgress.warn("        -- makup room for "+c.getClassLabel()+": preference for "+rp.getRoom().getLabel()+" is not required");
+                iProgress.warn("        -- makup room for "+c.getClassLabel(iShowClassSuffix)+": preference for "+rp.getRoom().getLabel()+" is not required");
                 continue;
             }
             Location room = (Location)rp.getRoom();
@@ -354,12 +356,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         if (time==null) return null;
         Vector rooms = makeupRooms(c);
         Vector times = new Vector(1); times.addElement(time);
-        Lecture lecture = new Lecture(c.getUniqueId(), null, c.getSchedulingSubpart().getUniqueId(), c.getClassLabel(), times, rooms, rooms.size(), new Placement(null,time,rooms), 0, 0, 1.0);
+        Lecture lecture = new Lecture(c.getUniqueId(), null, c.getSchedulingSubpart().getUniqueId(), c.getClassLabel(iShowClassSuffix), times, rooms, rooms.size(), new Placement(null,time,rooms), 0, 0, 1.0);
         lecture.setNote(c.getNotes());
         Placement p = (Placement)lecture.getInitialAssignment();
         p.setAssignmentId(new Long(iMakeupAssignmentId++));
         lecture.setBestAssignment(p, 0l);
-        iProgress.trace("makup placement for "+c.getClassLabel()+": "+p.getLongName(iUseAmPm));
+        iProgress.trace("makup placement for "+c.getClassLabel(iShowClassSuffix)+": "+p.getLongName(iUseAmPm));
         return p;
     }
     
@@ -420,7 +422,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 	Class_ c = j.next();
                     Section parentSection = (c.getParentClass() == null ? null : (Section)class2section.get(c.getParentClass().getUniqueId()));
                     if (c.getParentClass()!=null && parentSection==null) {
-                        iProgress.error("Class " + c.getClassLabel() + " has parent " + c.getClassLabel() + ", but the appropriate parent section is not loaded.");
+                        iProgress.error("Class " + c.getClassLabel(iShowClassSuffix) + " has parent " + c.getClassLabel(iShowClassSuffix) + ", but the appropriate parent section is not loaded.");
                     }
                     Assignment a = c.getCommittedAssignment();
                     Placement p = null;
@@ -759,7 +761,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                                 	iProgress.error("There is a problem assigning " + course.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): two or more classes of the same subpart.");
                                 }
                             } else {
-                            	iProgress.error("There is a problem assigning " + course.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel() + " not known.");
+                            	iProgress.error("There is a problem assigning " + course.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel(iShowClassSuffix) + " not known.");
                             }
                         }
                     }
@@ -796,7 +798,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                                         	iProgress.error("There is a problem assigning " + course.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): two or more classes of the same subpart.");
                                         }
                                     } else {
-                                    	iProgress.error("There is a problem assigning " + course.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel() + " not known.");
+                                    	iProgress.error("There is a problem assigning " + course.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel(iShowClassSuffix) + " not known.");
                                     }
                                 }
                             }
@@ -891,7 +893,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         	continue courses;
                         }
                     } else {
-                    	iProgress.error("There is a problem assigning " + request.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel() + " not known.");
+                    	iProgress.error("There is a problem assigning " + request.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel(iShowClassSuffix) + " not known.");
                     	Section x = classTable.get(enrl.getClazz().getUniqueId());
                     	if (x != null) {
                     		iProgress.info("  but a class with the same id is loaded, but under offering " + x.getSubpart().getConfig().getOffering().getName() + " (id is " + x.getSubpart().getConfig().getOffering().getId() + 

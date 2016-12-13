@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.dao.Class_DAO;
@@ -50,7 +51,7 @@ public class ClassInfo implements Serializable, Comparable<ClassInfo> {
     
     public ClassInfo(Class_ clazz) {
     	iClassId = clazz.getUniqueId();
-    	iClassName = clazz.getClassLabel();
+    	iClassName = clazz.getClassLabel(ApplicationProperty.SolverShowClassSufix.isTrue());
     	iClassTitle = clazz.getClassLabelWithTitle();
     	iClass = clazz;
     	iNrRooms = (clazz.getNbrRooms()==null?1:clazz.getNbrRooms().intValue());

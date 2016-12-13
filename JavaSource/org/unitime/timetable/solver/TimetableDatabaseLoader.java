@@ -200,6 +200,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     
     private ClassWeightProvider iClassWeightProvider = null;
     private boolean iUseAmPm = true;
+    private boolean iShowClassSuffix = false;
 
     public static enum CommittedStudentConflictsMode {
     		Ignore,
@@ -295,6 +296,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         }
         
         iUseAmPm = getModel().getProperties().getPropertyBoolean("General.UseAmPm", iUseAmPm);
+        iShowClassSuffix = ApplicationProperty.SolverShowClassSufix.isTrue();
     }
     
     public int msglevel(String type, int defaultLevel) {
@@ -310,7 +312,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private String getClassLabel(Class_ clazz) {
-    	return "<A href='classDetail.do?cid="+clazz.getUniqueId()+"'>"+clazz.getClassLabel()+"</A>";
+    	return "<A href='classDetail.do?cid="+clazz.getUniqueId()+"'>"+clazz.getClassLabel(iShowClassSuffix)+"</A>";
     }
     
     private String getClassLabel(Lecture lecture) {
@@ -1088,7 +1090,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	
     	List<DepartmentalInstructor> instructors = clazz.getLeadInstructors();
     	
-    	String className = clazz.getClassLabel();
+    	String className = clazz.getClassLabel(iShowClassSuffix);
 
     	Lecture lecture = new Lecture(
     			clazz.getUniqueId(),
@@ -2150,7 +2152,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	if (parentLecture!=null && !parentLecture.isCommitted()) {
     		for (Lecture lecture: parentLecture.sameSubpartLectures()) {
     			if (!lecture.equals(parentLecture) && !lecture.isCommitted()) {
-    				//iProgress.debug("[A] Students "+students+" cannot enroll "+lecture.getName()+" due to the enrollment of "+clazz.getClassLabel());
+    				//iProgress.debug("[A] Students "+students+" cannot enroll "+lecture.getName()+" due to the enrollment of "+clazz.getClassLabel(iShowClassSuffix));
     				for (Iterator i=students.iterator();i.hasNext();) {
     					Student student = (Student)i.next();
     					student.addCanNotEnroll(lecture);
@@ -2175,7 +2177,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private void propagateCommittedAssignment(HashSet students, Class_ parent, Class_ clazz) {
     	Lecture lecture = (Lecture)iLectures.get(clazz.getUniqueId());
     	if (lecture!=null && !lecture.isCommitted()) {
-    		//iProgress.debug("[B] Students "+students+" cannot enroll "+lecture.getName()+" due to the enrollment of "+parent.getClassLabel());
+    		//iProgress.debug("[B] Students "+students+" cannot enroll "+lecture.getName()+" due to the enrollment of "+parent.getClassLabel(iShowClassSuffix));
 			for (Iterator i=students.iterator();i.hasNext();) {
 				Student student = (Student)i.next();
 				student.addCanNotEnroll(lecture);
@@ -2673,7 +2675,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             				
             				ClassLimitConstraint clc = clcs.get(parentClazz.getUniqueId());
             				if (clc == null) {
-            					clc = new ClassLimitConstraint(parentClazz.getClassLimit(), parentClazz.getClassLabel());
+            					clc = new ClassLimitConstraint(parentClazz.getClassLimit(), parentClazz.getClassLabel(iShowClassSuffix));
             					clcs.put(parentClazz.getUniqueId(), clc);
             				}
             				

@@ -1202,6 +1202,7 @@ public class ClassInfoModel implements Serializable {
  			
  			boolean changePast = ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue();
  			boolean ignorePast = ApplicationProperty.ClassAssignmentIgnorePastMeetings.isTrue();
+ 			boolean includeSuffix = ApplicationProperty.SolverShowClassSufix.isTrue();
 
  			List<Date> datesToCheck = null;
  			if (ignorePast || !changePast) {
@@ -1251,7 +1252,7 @@ public class ClassInfoModel implements Serializable {
                 if (!allowConflicts && classIds!=null && !classIds.isEmpty()) {
                 	for (Long classId: classIds) {
                 		if (!clazz.canShareRoom(classId)) {
-                			if (room.getLabel().equals(filter)) iForm.setMessage("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to the class "+Class_DAO.getInstance().get(classId).getClassLabel()+".");
+                			if (room.getLabel().equals(filter)) iForm.setMessage("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to the class "+Class_DAO.getInstance().get(classId).getClassLabel(includeSuffix)+".");
                 			continue rooms;
                 		}
                 	}
@@ -1260,7 +1261,7 @@ public class ClassInfoModel implements Serializable {
                 	for (Long classId: classIds) {
                 		if (!clazz.canShareRoom(classId)) {
                 			prefInt += 10000;
-                			note = "Conflicts with " + Class_DAO.getInstance().get(classId).getClassLabel();
+                			note = "Conflicts with " + Class_DAO.getInstance().get(classId).getClassLabel(includeSuffix);
                 			break;
                 		}
                 	}
@@ -1268,7 +1269,7 @@ public class ClassInfoModel implements Serializable {
                 if (classIds!=null && iChange!=null) {
                 	for (Long classId: classIds) {
                 		if (iChange.getCurrent(classId)!=null && !clazz.canShareRoom(classId)) {
-                        	if (room.getLabel().equals(filter)) iForm.setMessage("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to the class "+Class_DAO.getInstance().get(classId).getClassLabel()+".");
+                        	if (room.getLabel().equals(filter)) iForm.setMessage("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to the class "+Class_DAO.getInstance().get(classId).getClassLabel(includeSuffix)+".");
                         	continue rooms;
                 		}
                 	}

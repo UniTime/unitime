@@ -286,7 +286,11 @@ public class Assignment extends BaseAssignment {
 	
 	public String getClassName() {
 		if (super.getClassName()!=null) return super.getClassName();
-		return getClazz().getClassLabel();
+		return getClazz().getClassLabel(ApplicationProperty.SolverShowClassSufix.isTrue());
+	}
+	
+	public String getClassName(boolean showSuffix) {
+		return getClazz().getClassLabel(showSuffix);
 	}
 	
 	public Set<Location> getRooms() {

@@ -36,6 +36,7 @@ import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassEvent;
@@ -253,7 +254,7 @@ public class MakeAssignmentsForClassEvents {
             Department dept = clazz.getManagingDept();
             if (dept==null) dept = clazz.getSchedulingSubpart().getControllingDept();
             assignment.setSolution(getSolution(dept));
-            assignment.setClassName(clazz.getClassLabel());
+            assignment.setClassName(clazz.getClassLabel(ApplicationProperty.SolverShowClassSufix.isTrue()));
             assignment.setClassId(clazz.getUniqueId());
             clazz.setCommittedAssignment(assignment);
         }

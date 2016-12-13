@@ -84,6 +84,7 @@ public class CourseTimetableImport extends BaseImport {
 	private Date iToday;
 	private Session iSession;
 	private boolean iInstructors, iPreferExtId, iNotes;
+	private boolean iShowClassSuffix;
 	
 	public CourseTimetableImport() {
 		super();
@@ -106,6 +107,7 @@ public class CourseTimetableImport extends BaseImport {
 	        String timeFormat = rootElement.attributeValue("timeFormat", "HHmm");
 	        if (!"HHmm".equals(timeFormat))
 	        	iTimeFormat = new SimpleDateFormat(timeFormat, Locale.US);
+	        iShowClassSuffix = ApplicationProperty.SolverShowClassSufix.isTrue();
 	        		
 	        beginTransaction();
 	        
@@ -458,7 +460,7 @@ public class CourseTimetableImport extends BaseImport {
 			assignment.setSolution(solution);
 			assignment.setClazz(clazz);
 			assignment.setClassId(clazz.getUniqueId());
-			assignment.setClassName(clazz.getClassLabel());
+			assignment.setClassName(clazz.getClassLabel(iShowClassSuffix));
 			solution.getAssignments().add(assignment);
 			clazz.getAssignments().add(assignment);
 		}

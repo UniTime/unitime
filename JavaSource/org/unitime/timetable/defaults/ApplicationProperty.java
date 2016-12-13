@@ -2108,6 +2108,12 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
+	@Description("Course Timetabling Solver: show class suffix (external id) next to the class section number")
+	@Since(4.2)
+	SolverShowClassSufix("unitime.solver.showClassSuffixes"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
 	@Description("API: allow API tokens to be used for user authentication")
 	ApiCanUseAPIToken("unitime.api.canUseToken"),
 	

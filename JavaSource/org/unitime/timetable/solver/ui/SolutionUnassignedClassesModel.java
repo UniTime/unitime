@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Solution;
@@ -41,7 +42,7 @@ public class SolutionUnassignedClassesModel extends UnassignedClassesModel {
 			Solution solution = (Solution)i.next();
 			for (Iterator j=solution.getOwner().getNotAssignedClasses(solution).iterator();j.hasNext();) {
 				Class_ clazz = (Class_)j.next();
-				String name = clazz.getClassLabel();
+				String name = clazz.getClassLabel(ApplicationProperty.SolverShowClassSufix.isTrue());
 				if (prefix != null && !name.startsWith(prefix)) continue;
 				String onClick = "showGwtDialog('Suggestions', 'suggestions.do?id="+clazz.getUniqueId()+"&op=Reset','900','90%');";
 				List<DepartmentalInstructor> leads = clazz.getLeadInstructors();

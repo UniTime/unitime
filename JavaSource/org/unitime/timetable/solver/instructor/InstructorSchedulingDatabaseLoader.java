@@ -50,6 +50,7 @@ import org.cpsolver.instructor.model.TeachingRequest;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -83,6 +84,7 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
 	private Map<Long, Attribute> iDepartmentAttribute = new HashMap<Long, Attribute>();
 	private Map<Long, Instructor> iInstructors = new HashMap<Long, Instructor>();
 	private String iDefaultSameCourse = null, iDefaultSameCommon = null;
+	private boolean iShowClassSuffix = false;
 	
     public InstructorSchedulingDatabaseLoader(InstructorSchedulingModel model, Assignment<TeachingRequest.Variable, TeachingAssignment> assignment) {
     	super(model, assignment);
@@ -93,6 +95,7 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     	iInstructorFormat = getModel().getProperties().getProperty("General.InstructorFormat", NameFormat.LAST_FIRST.reference());
     	iDefaultSameCourse = getModel().getProperties().getProperty("Defaults.SameCourse", "R");
     	iDefaultSameCommon = getModel().getProperties().getProperty("Defaults.SameCommon", "R");
+    	iShowClassSuffix = ApplicationProperty.SolverShowClassSufix.isTrue();
     }
     
     public void load() throws Exception {
@@ -388,7 +391,7 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     }
     
     protected String toHtml(Class_ clazz) {
-    	return "<A href='classDetail.do?cid="+clazz.getUniqueId()+"'>"+clazz.getClassLabel()+"</A>";
+    	return "<A href='classDetail.do?cid="+clazz.getUniqueId()+"'>"+clazz.getClassLabel(iShowClassSuffix)+"</A>";
     }
     
     protected String toHtml(DepartmentalInstructor instructor) {
