@@ -209,6 +209,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				Map<Long, Set<Long>[]> restrictions = null;
 				Session session = SessionDAO.getInstance().get(request.getSessionId(), hibSession);
 				Collection<Long> curriculumCourses = null;
+				Collection<Long> curriculumClasses = null;
 				Department department = null;
 				StudentGroup group = null;
 				if (request.getResourceType() == ResourceType.GROUP)
@@ -546,24 +547,46 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					boolean contact = (roles == null || roles.contains("contact") || roles.contains("Contact"));
 					boolean coordinator = (roles != null && (roles.contains("coordinator") || roles.contains("Coordinator")));
 					curriculumCourses = new HashSet<Long>();
+					curriculumClasses = new HashSet<Long>();
 					if (allSessions) {
-						if (student)
+						if (student) {
 							curriculumCourses.addAll(hibSession.createQuery("select e.courseOffering.uniqueId from StudentClassEnrollment e where e.student.externalUniqueId = :externalId")
 								.setString("externalId", request.getResourceExternalId()).list());
-						if (instructor)
-							curriculumCourses
-								.addAll(hibSession.createQuery("select o.course.uniqueId from Exam x inner join x.owners o inner join x.instructors i where i.externalUniqueId = :externalId")
-										.setString("externalId", request.getResourceExternalId()).list());
+							curriculumClasses.addAll(hibSession.createQuery("select e.clazz.uniqueId from StudentClassEnrollment e where e.student.externalUniqueId = :externalId")
+								.setString("externalId", request.getResourceExternalId()).list());
+						}
+						if (instructor) {
+							curriculumCourses.addAll(hibSession.createQuery("select co.uniqueId from ClassInstructor i inner join i.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where i.instructor.externalUniqueId = :externalId and co.isControl = true")
+									.setString("externalId", request.getResourceExternalId()).list());
+							curriculumClasses.addAll(hibSession.createQuery("select i.classInstructing.uniqueId from ClassInstructor i where i.instructor.externalUniqueId = :externalId")
+									.setString("externalId", request.getResourceExternalId()).list());
+						}
+						if (coordinator) {
+							curriculumCourses.addAll(hibSession.createQuery("select co.uniqueId from OfferingCoordinator c inner join c.offering.courseOfferings co where c.instructor.externalUniqueId = :externalId")
+									.setString("externalId", request.getResourceExternalId()).list());
+							curriculumClasses.addAll(hibSession.createQuery("select z.uniqueId from Class_ z inner join z.schedulingSubpart.instrOfferingConfig.instructionalOffering.offeringCoordinators c where c.instructor.externalUniqueId = :externalId")
+									.setString("externalId", request.getResourceExternalId()).list());
+						}
 					} else {
-						if (student)
-							curriculumCourses
-								.addAll(hibSession.createQuery("select e.courseOffering.uniqueId from StudentClassEnrollment e where e.student.session.uniqueId = :sessionId and e.student.externalUniqueId = :externalId")
-										.setLong("sessionId", request.getSessionId()).setString("externalId", request.getResourceExternalId()).list());
-						if (instructor)
-							curriculumCourses
-								.addAll(hibSession.createQuery("select o.course.uniqueId from Exam x inner join x.owners o inner join x.instructors i where x.session.uniqueId = :sessionId and i.externalUniqueId = :externalId")
-										.setLong("sessionId", request.getSessionId())
-										.setString("externalId", request.getResourceExternalId()).list());
+						if (student) {
+							curriculumCourses.addAll(hibSession.createQuery("select e.courseOffering.uniqueId from StudentClassEnrollment e where e.student.session.uniqueId = :sessionId and e.student.externalUniqueId = :externalId")
+									.setLong("sessionId", request.getSessionId()).setString("externalId", request.getResourceExternalId()).list());
+							curriculumClasses.addAll(hibSession.createQuery("select e.clazz.uniqueId from StudentClassEnrollment e where e.student.session.uniqueId = :sessionId and e.student.externalUniqueId = :externalId")
+									.setLong("sessionId", request.getSessionId()).setString("externalId", request.getResourceExternalId()).list());
+						}
+						if (instructor) {
+							curriculumCourses.addAll(hibSession.createQuery("select co.uniqueId from ClassInstructor i inner join i.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co " +
+									"where i.instructor.externalUniqueId = :externalId and co.isControl = true and i.instructor.department.session.uniqueId = :sessionId")
+									.setLong("sessionId", request.getSessionId()).setString("externalId", request.getResourceExternalId()).list());
+							curriculumClasses.addAll(hibSession.createQuery("select i.classInstructing.uniqueId from ClassInstructor i where i.instructor.externalUniqueId = :externalId and i.instructor.department.session.uniqueId = :sessionId")
+									.setLong("sessionId", request.getSessionId()).setString("externalId", request.getResourceExternalId()).list());
+						}
+						if (coordinator) {
+							curriculumCourses.addAll(hibSession.createQuery("select co.uniqueId from OfferingCoordinator c inner join c.offering.courseOfferings co where c.instructor.externalUniqueId = :externalId and c.instructor.department.session.uniqueId = :sessionId")
+									.setLong("sessionId", request.getSessionId()).setString("externalId", request.getResourceExternalId()).list());
+							curriculumClasses.addAll(hibSession.createQuery("select z.uniqueId from Class_ z inner join z.schedulingSubpart.instrOfferingConfig.instructionalOffering.offeringCoordinators c where c.instructor.externalUniqueId = :externalId and c.instructor.department.session.uniqueId = :sessionId")
+									.setLong("sessionId", request.getSessionId()).setString("externalId", request.getResourceExternalId()).list());
+						}						
 					}
 					meetings = new ArrayList<Meeting>();
 
@@ -1122,6 +1145,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				case GROUP:
 					allSessions = request.getEventFilter().hasOption("flag") && request.getEventFilter().getOptions("flag").contains("All Sessions");
 					curriculumCourses = new HashSet<Long>();
+					curriculumClasses = new HashSet<Long>();
 					Integer minEnrollment = null;
 					String pMinEnrl = ApplicationProperty.StudentGroupsTimetableMinimalEnrollment.value();
 					if (pMinEnrl != null) {
@@ -1132,14 +1156,21 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					}
 					
 					if (allSessions) {
-						if (group.getExternalUniqueId() != null)
+						if (group.getExternalUniqueId() != null) {
 							curriculumCourses.addAll(hibSession.createQuery("select distinct e.courseOffering.uniqueId from StudentGroup g inner join g.students s inner join s.classEnrollments e where g.externalId = :externalId")
 									.setString("externalId", group.getExternalUniqueId()).list());
-						else
+							curriculumClasses.addAll(hibSession.createQuery("select distinct e.clazz.uniqueId from StudentGroup g inner join g.students s inner join s.classEnrollments e where g.externalId = :externalId")
+									.setString("externalId", group.getExternalUniqueId()).list());
+						} else {
 							curriculumCourses.addAll(hibSession.createQuery("select distinct e.courseOffering.uniqueId from StudentGroup g inner join g.students s inner join s.classEnrollments e where g.groupAbbreviation = :abbreviation")
 									.setString("abbreviation", group.getGroupAbbreviation()).list());
+							curriculumClasses.addAll(hibSession.createQuery("select distinct e.clazz.uniqueId from StudentGroup g inner join g.students s inner join s.classEnrollments e where g.groupAbbreviation = :abbreviation")
+									.setString("abbreviation", group.getGroupAbbreviation()).list());
+						}
 					} else {
 						curriculumCourses.addAll(hibSession.createQuery("select distinct e.courseOffering.uniqueId from StudentGroup g inner join g.students s inner join s.classEnrollments e where g.uniqueId = :resourceId")
+								.setLong("resourceId", group.getUniqueId()).list());
+						curriculumClasses.addAll(hibSession.createQuery("select distinct e.clazz.uniqueId from StudentGroup g inner join g.students s inner join s.classEnrollments e where g.uniqueId = :resourceId")
 								.setLong("resourceId", group.getUniqueId()).list());
 					}
 					meetings = new ArrayList<Meeting>();
@@ -1487,8 +1518,14 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								instructor.setFormattedName(i.getName(nameFormat));
 								event.addInstructor(instructor);
 			    			}
+				    		boolean instructing = false;
+				    		if (request.getResourceType() == ResourceType.PERSON && request.getResourceExternalId() != null) {
+				    			for (DepartmentalInstructor i: xe.getExam().getInstructors())
+				    				if (request.getResourceExternalId().equals(i.getExternalUniqueId())) { instructing = true; break; }
+				    		}
 			    			String name = null;
 			    			for (ExamOwner owner: new TreeSet<ExamOwner>(xe.getExam().getOwners())) {
+			    				if (owner.getOwnerType() == ExamOwner.sOwnerTypeClass && !instructing && curriculumClasses != null && !curriculumClasses.contains(owner.getOwnerId())) continue;
 			    				TreeSet<CourseOffering> courses = new TreeSet<CourseOffering>();
 			    				if (owner.getOwnerType() == ExamOwner.sOwnerTypeCourse || request.getResourceType() == ResourceType.ROOM) {
 			    					courses.add(owner.getCourse());
@@ -1512,7 +1549,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    		case CURRICULUM:
 						    		case PERSON:
 						    		case GROUP:
-						    			if (!curriculumCourses.contains(course.getUniqueId())) continue courses;
+						    			if ((!instructing || !course.isIsControl()) && !curriculumCourses.contains(course.getUniqueId())) continue courses;
 						    			break;
 						    		}
 						    		event.addCourseName(course.getCourseName());
@@ -1549,7 +1586,16 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    		event.setRequiredAttendance(ce.isReqAttendance());
 							int enrl = 0;
 							int cap = 0;
+							boolean instructing = false;
+							if (request.getResourceType() == ResourceType.PERSON && request.getResourceExternalId() != null) {
+								if (request.getResourceExternalId().equals(m.getEvent().getMainContact().getExternalUniqueId())) instructing = true;
+								if (!instructing)
+									for (EventContact contact: m.getEvent().getAdditionalContacts()) {
+										if (request.getResourceExternalId().equals(contact.getExternalUniqueId())) { instructing = true; break; }
+									}
+							}
 							for (RelatedCourseInfo owner: ce.getRelatedCourses()) {
+								if (owner.getOwnerType() == ExamOwner.sOwnerTypeClass && !instructing && curriculumClasses != null && !curriculumClasses.contains(owner.getOwnerId())) continue;
 								if (groupEnrollments) {
 									Set<Long> studentIds = new HashSet<Long>(owner.getStudentIds());
 									for (Student s: group.getStudents())
@@ -1582,7 +1628,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    		case CURRICULUM:
 						    		case PERSON:
 						    		case GROUP:
-						    			if (!curriculumCourses.contains(course.getUniqueId())) continue courses;
+						    			if ((!instructing || !course.isIsControl()) && !curriculumCourses.contains(course.getUniqueId())) continue courses;
 						    			break;
 						    		}
 						    		event.addCourseName(course.getCourseName());
