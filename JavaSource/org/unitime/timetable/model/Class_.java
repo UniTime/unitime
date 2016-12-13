@@ -741,14 +741,8 @@ public class Class_ extends BaseClass_ {
      * @return Class Label of the form {CourseName} {Itype} {[config]} {Section No.}
      */
     public String getClassLabel() {
-        /*
-        SchedulingSubpart ss = getSchedulingSubpart();
-    	String itypeDesc = ss.getItypeDesc();
-    	if (ss.getInstrOfferingConfig().getInstructionalOffering().hasMultipleConfigurations())
-    		itypeDesc += " [" + ss.getInstrOfferingConfig().getName() + "]";
-        */
-    	return getCourseName()+" "+getItypeDesc().trim()+" "+getSectionNumberString();
-//    	return(getClassLabel(getSchedulingSubpart().getControllingCourseOffering()));
+        // return getCourseName()+" "+getItypeDesc().trim()+" "+getSectionNumberString();
+    	return getClassLabel(getSchedulingSubpart().getControllingCourseOffering());
     }
     
     public String getClassLabel(CourseOffering course, boolean includeSuffix) {
@@ -757,7 +751,8 @@ public class Class_ extends BaseClass_ {
     		return course.getCourseName() + " " + getItypeDesc().trim() + " " + getSectionNumberString() + 
     				(extId == null || extId.isEmpty() || extId.equalsIgnoreCase(getSectionNumberString()) ? "" : " - " + extId);
     	} else {
-    		return course.getCourseName() + " " + getItypeDesc().trim() + " " + getSectionNumberString();
+    		// return course.getCourseName() + " " + getItypeDesc().trim() + " " + getSectionNumberString();
+    		return getClassLabel(course);
     	}
     }
     
@@ -766,12 +761,17 @@ public class Class_ extends BaseClass_ {
     }
 
     public String getClassLabel(org.hibernate.Session hibSession) {
-    	return getCourseName()+" "+getItypeDesc().trim()+" "+getSectionNumberString(hibSession);
+    	if (getSectionNumberCache() == null) {
+    		getSectionNumber(hibSession, true);
+    		getSchedulingSubpart().getSchedulingSubpartSuffix(hibSession, true);
+    	}
+    	// return getCourseName()+" "+getItypeDesc().trim()+" "+getSectionNumberString(hibSession);
+    	return getClassLabel(getSchedulingSubpart().getControllingCourseOffering());
     }
 
     public String getClassLabelWithTitle() {
-    	return getCourseNameWithTitle()+" "+getItypeDesc().trim()+" "+getSectionNumberString();
-//    	return(getClassLabelWithTitle(getSchedulingSubpart().getControllingCourseOffering()));
+    	// return getCourseNameWithTitle()+" "+getItypeDesc().trim()+" "+getSectionNumberString();
+    	return getClassLabelWithTitle(getSchedulingSubpart().getControllingCourseOffering());
     }
 
     /**
