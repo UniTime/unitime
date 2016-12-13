@@ -477,8 +477,11 @@ public class Suggestions implements Serializable {
     	double value = iSolver.currentSolution().getModel().getTotalValue(iAssignment);
     	for (Enumeration e=conflictsToResolve.keys();e.hasMoreElements();) {
     		Lecture lect = (Lecture)e.nextElement();
-    		PlacementValue val = values(lect).first();
-    		value += val.getValue();
+    		TreeSet<PlacementValue> values = values(lect);
+    		if (!values.isEmpty()) {
+    			PlacementValue val = values.first();
+    			value += val.getValue();
+    		}
     	}
     	return value;
     }
