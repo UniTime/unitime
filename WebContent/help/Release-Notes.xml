@@ -141,6 +141,10 @@
 					<line>Show all owners when the person is also the instructor associated directly with the exam or the contact of the course-related event.</line>
 					<line>Show all owners that the person is coordinating (if any).</line>
 				</line>
+				<line>Multiple Rooms Warning: The following warning has been added at the bottom of the page when a student is looking at a personal schedule and there
+					is at least one class or exam with two meetings at the same date and time with different rooms (e.g., an exam is placed in two or more rooms):
+					<line>When multiple rooms are listed, please consult your instructor regarding your class or examination room location.</line>
+				</line>
 			</description>
 		</item>
 	</category>

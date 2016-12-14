@@ -772,6 +772,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 					getStartSlot() < meeting.getEndSlot() && meeting.getStartSlot() < getEndSlot() &&
 					getLocation() != null &&  getLocation().equals(meeting.getLocation()) && !getLocation().isIgnoreRoomCheck();
 		}
+
+		public boolean overlapsWith(MeetingInterface meeting) {
+			return getDayOfYear() == meeting.getDayOfYear() && 
+					getStartSlot() < meeting.getEndSlot() && meeting.getStartSlot() < getEndSlot();
+		}
 	}
 	
 	public static class MeetingConflictInterface extends MeetingInterface {
@@ -1807,6 +1812,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private Integer iTooEarlySlot = null;
 		private boolean iCanEditAcademicTitle = false;
 		private boolean iGridDisplayTitle = false;
+		private boolean iStudent = false;
 	
 		public EventPropertiesRpcResponse() {}
 		
@@ -1884,6 +1890,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		
 		public boolean isGridDisplayTitle() { return iGridDisplayTitle; }
 		public void setGridDisplayTitle(boolean gridDisplayTitle) { iGridDisplayTitle = gridDisplayTitle; }
+		
+		public boolean isStudent() { return iStudent; }
+		public void setStudent(boolean student) { iStudent = student; }
 	}
 	
 	public static class EventDetailRpcRequest extends EventRpcRequest<EventInterface> {

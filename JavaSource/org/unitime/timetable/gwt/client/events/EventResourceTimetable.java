@@ -1712,6 +1712,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		iHeader.setEnabled("print", false);
 		iHeader.setEnabled("export", false);
 		iHeader.setEnabled("operations", false);
+		if (iFooter != null) iFooter.clearMessage();
 	}
 	
 	private void showResults() {
@@ -1722,6 +1723,26 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		iHeader.setEnabled("operations", getSelectedTab() > 0 && iTable.getRowCount() > 1);
 		// iGridOrTablePanel.setVisible(true);
 		// iTabBar.setVisible(true);
+		if (iFooter != null)  {
+			iFooter.clearMessage();
+			if (getResourceType() == ResourceType.PERSON && iData != null && iProperties != null && iProperties.isStudent()) {
+				boolean multiRoom = false;
+				data: for (EventInterface e: iData) {
+					if (e.getType() == EventType.Class || e.getType() == EventType.FinalExam || e.getType() == EventType.MidtermExam) {
+						MeetingInterface last = null;
+						for (MeetingInterface m: e.getMeetings()) {
+							if (last != null && last.overlapsWith(m) && last.hasLocation() && m.hasLocation() && !last.getLocation().equals(m.getLocation())) { multiRoom = true; break data; }
+							last = m;
+						}
+						
+					}
+				}
+				if (multiRoom) {
+					iFooter.setMessage(MESSAGES.warnMultiRoomClassOrExam());
+					// UniTimeNotifications.info(MESSAGES.warnMultiRoomClassOrExam());
+				}
+			}
+		}
 	}
 	
 	private boolean isShowingResults() {
