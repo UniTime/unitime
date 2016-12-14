@@ -225,7 +225,8 @@ public class EnrollmentTable extends Composite {
 						new WebTable.Cell(MESSAGES.colInstructor(), 1, "100px"),
 						new WebTable.Cell(MESSAGES.colParent(), 1, "75px"),
 						new WebTable.Cell(MESSAGES.colNoteIcon(), 1, "10px"),
-						new WebTable.Cell(MESSAGES.colCredit(), 1, "75px")
+						new WebTable.Cell(MESSAGES.colCredit(), 1, "75px"),
+						new WebTable.Cell(MESSAGES.colEnrollmentTimeStamp(), 1, "75px")
 					));
 				assignments.setEmptyMessage(MESSAGES.emptySchedule());
 				
@@ -250,7 +251,8 @@ public class EnrollmentTable extends Composite {
 									new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
 									new WebTable.Cell(clazz.getParentSection()),
 									clazz.hasNote() ? new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), "") : new WebTable.Cell(""),
-									new WebTable.AbbvTextCell(clazz.getCredit()));
+									new WebTable.AbbvTextCell(clazz.getCredit()),
+									new WebTable.Cell(clazz.getEnrolledDate() == null ? "" : sDF.format(clazz.getEnrolledDate())));
 							rows.add(row);
 							for (WebTable.Cell cell: row.getCells())
 								cell.setStyleName(style);
@@ -299,18 +301,20 @@ public class EnrollmentTable extends Composite {
 									new WebTable.Cell(clazz.getDatePattern()),
 									new WebTable.Cell(unassignedMessage, 3, null),
 									clazz.getNote() == null ? new WebTable.Cell("") : new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), ""),
-									new WebTable.AbbvTextCell(clazz.getCredit()));
+									new WebTable.AbbvTextCell(clazz.getCredit()),
+									new WebTable.Cell(clazz.getEnrolledDate() != null ? sDF.format(clazz.getEnrolledDate()) : course.getRequestedDate() == null ? "" : sDF.format(course.getRequestedDate())));
 							break;
 						}
 						if (row == null) {
 							row = new WebTable.Row(
 									new WebTable.Cell(course.getSubject()),
 									new WebTable.Cell(course.getCourseNbr()),
-									new WebTable.Cell(unassignedMessage, 12, null));
+									new WebTable.Cell(unassignedMessage, 12, null),
+									new WebTable.Cell(course.getRequestedDate() == null ? "" : sDF.format(course.getRequestedDate())));
 						}
 						for (WebTable.Cell cell: row.getCells())
 							cell.setStyleName(style);
-						row.getCell(row.getNrCells() - 1).setStyleName("text-gray" + (!rows.isEmpty() ? " top-border-dashed": ""));
+						row.getCell(row.getNrCells() - 2).setStyleName("text-gray" + (!rows.isEmpty() ? " top-border-dashed": ""));
 						rows.add(row);
 					}
 				}
@@ -318,6 +322,10 @@ public class EnrollmentTable extends Composite {
 				int idx = 0;
 				for (WebTable.Row row: rows) rowArray[idx++] = row;
 				assignments.setData(rowArray);
+				if (!iOnline) {
+					for (int row = 0; row < assignments.getTable().getRowCount(); row++)
+						assignments.getTable().getFlexCellFormatter().setVisible(row, assignments.getTable().getCellCount(row) - 2, false);
+				}
 				SimpleForm form = new SimpleForm();
 				form.addRow(assignments);
 				final UniTimeHeaderPanel buttons = new UniTimeHeaderPanel();

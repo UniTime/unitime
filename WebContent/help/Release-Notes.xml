@@ -175,6 +175,7 @@
 			<name>Online Student Scheduling Dashboard</name>
 			<description>
 				<line>Allow student status change during assistant mode and during registration (when Student Course Requests page can be used).</line>
+				<line>Classes for student dialog: Include Enrolled column containing student class enrollment date when the student is enrolled and course request date when not enrolled.</line>
 			</description>
 		</item>
 		<item>

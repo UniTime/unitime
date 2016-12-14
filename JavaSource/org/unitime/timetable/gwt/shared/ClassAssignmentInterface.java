@@ -91,6 +91,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private String iInstead;
 		private boolean iWaitListed = false;
 		private String iEnrollmentMessage = null;
+		private Date iRequestedDate = null;
 
 		private ArrayList<ClassAssignment> iAssignments = new ArrayList<ClassAssignment>();
 
@@ -214,6 +215,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public String toString() {
 			return (isFreeTime() ? "Free Time" : getSubject() + " " + getCourseNbr()) + ": " + (isAssigned() ? getClassAssignments() : "NOT ASSIGNED");
 		}
+		
+		public Date getRequestedDate() { return iRequestedDate; }
+		public void setRequestedDate(Date ts) { iRequestedDate = ts; }
 	}
 	
 	public static class ClassAssignment implements IsSerializable, Serializable {
@@ -238,6 +242,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private String iNote = null;
 		private String iCredit = null;
 		private String iError = null;
+		private Date iEnrolledDate = null;
 		
 		public ClassAssignment() {}
 		public ClassAssignment(CourseAssignment course) {
@@ -561,6 +566,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public boolean equalsIgnoreCase(String requestedCourse) {
 			return getCourseName().equalsIgnoreCase(requestedCourse) || getCourseNameWithTitle().equalsIgnoreCase(requestedCourse);
 		}
+
+		public Date getEnrolledDate() { return iEnrolledDate; }
+		public void setEnrolledDate(Date ts) { iEnrolledDate = ts; }
 	}
 	
 	public static class Student implements IsSerializable, Serializable {

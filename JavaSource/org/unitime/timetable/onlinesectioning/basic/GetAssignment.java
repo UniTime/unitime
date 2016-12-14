@@ -142,6 +142,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 					ca.setCourseNbr(course.getCourseNumber());
 					ca.setTitle(course.getTitle());
 					ca.setEnrollmentMessage(r.getEnrollmentMessage());
+					ca.setRequestedDate(r.getTimeStamp());
 					if (enrollment == null) {
 						TreeSet<Enrollment> overlap = new TreeSet<Enrollment>(new Comparator<Enrollment>() {
 							@Override
@@ -265,6 +266,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 							a.addNote(course.getNote());
 							a.addNote(section.getNote());
 							a.setCredit(subpart.getCredit(course.getCourseId()));
+							a.setEnrolledDate(enrollment.getTimeStamp());
 							int dist = 0;
 							String from = null;
 							TreeSet<String> overlap = new TreeSet<String>();

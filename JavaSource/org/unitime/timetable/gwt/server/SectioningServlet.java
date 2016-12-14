@@ -1232,6 +1232,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								course.setTitle(enrollment.getCourseOffering().getTitle());
 								course.setWaitListed(enrollment.getCourseRequest() != null && enrollment.getCourseRequest().getCourseDemand().getWaitlist() != null && enrollment.getCourseRequest().getCourseDemand().getWaitlist().booleanValue());
 								credit = enrollment.getCourseOffering().getCredit();
+								if (enrollment.getCourseRequest() != null)
+									course.setRequestedDate(enrollment.getCourseRequest().getCourseDemand().getTimestamp());
 							}
 							ClassAssignment clazz = course.addClassAssignment();
 							clazz.setClassId(enrollment.getClazz().getUniqueId());
@@ -1264,6 +1266,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		                    if (enrollment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment() || limit >= 9999) limit = -1;
 		                    clazz.setCancelled(enrollment.getClazz().isCancelled());
 							clazz.setLimit(new int[] { enrollment.getClazz().getEnrollment(), limit});
+							clazz.setEnrolledDate(enrollment.getTimestamp());
 							if (placement != null) {
 								if (placement.getTimeLocation() != null) {
 									for (DayCode d : DayCode.toDayCodes(placement.getTimeLocation().getDayCode()))
@@ -1318,6 +1321,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 											}
 									}
 								}
+								course.setRequestedDate(demand.getTimestamp());
 								ret.add(course);
 							} else {
 								CourseRequest request = null;
@@ -1329,6 +1333,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								if (request == null) continue;
 								CourseAssignment course = new CourseAssignment();
 								courses.put(request.getCourseOffering().getUniqueId(), course);
+								course.setRequestedDate(demand.getTimestamp());
 								ret.add(course);
 								course.setAssigned(false);
 								course.setWaitListed(demand.getWaitlist() != null && demand.getWaitlist().booleanValue());
