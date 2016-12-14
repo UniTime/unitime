@@ -391,11 +391,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				}
 				if (p != null && p.getRoomLocations() != null) {
 					for (RoomLocation rm: p.getRoomLocations()) {
-						a.addRoom(rm.getName());
+						a.addRoom(rm.getId(), rm.getName());
 					}
 				}
 				if (p != null && p.getRoomLocation() != null) {
-					a.addRoom(p.getRoomLocation().getName());
+					a.addRoom(p.getRoomLocation().getId(), p.getRoomLocation().getName());
 				}
 				if (!clazz.getClassInstructors().isEmpty()) {
 					for (Iterator<ClassInstructor> i = clazz.getClassInstructors().iterator(); i.hasNext(); ) {
@@ -1277,10 +1277,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 									clazz.setDatePattern(placement.getTimeLocation().getDatePatternName());
 								}
 								if (placement.getNrRooms() == 1) {
-									clazz.addRoom(placement.getRoomLocation().getName());
+									clazz.addRoom(placement.getRoomLocation().getId(), placement.getRoomLocation().getName());
 								} else if (placement.getNrRooms() > 1) {
 									for (RoomLocation rm: placement.getRoomLocations())
-										clazz.addRoom(rm.getName());
+										clazz.addRoom(rm.getId(), rm.getName());
 								}
 							}
 							if (enrollment.getClazz().getDisplayInstructor())

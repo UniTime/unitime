@@ -31,9 +31,11 @@ import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.client.rooms.RoomHint;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable.TopCell;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -56,6 +58,7 @@ import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.StudentInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
@@ -67,6 +70,10 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.event.dom.client.MouseOutEvent;
+import com.google.gwt.event.dom.client.MouseOutHandler;
+import com.google.gwt.event.dom.client.MouseOverEvent;
+import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.OpenEvent;
@@ -78,6 +85,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -741,7 +749,7 @@ public class SectioningStatusPage extends Composite {
 			line.add(new HTML(e.getClazz() == null ? "" : e.getIndent() + e.getClazz(), false));
 			line.add(new Label(e.getAssignment().getDays().isEmpty()  ? "" : e.getAssignment().getDaysString(CONSTANTS.shortDays()) + " " + e.getAssignment().getStartString(CONSTANTS.useAmPm()) + " - " + e.getAssignment().getEndString(CONSTANTS.useAmPm()), false));
 			line.add(new Label(!e.getAssignment().hasDatePattern()  ? "" : e.getAssignment().getDatePattern(), false));
-			line.add(new Label(!e.getAssignment().hasRoom() ? "" : e.getAssignment().getRooms(","), false));
+			line.add(new RoomsCell(e.getAssignment().getRooms(), ","));
 		}
 		if (e.getCourseId() == null)
 			line.add(new NumberCell(e.getAvailable(), e.getLimit()));
@@ -2019,5 +2027,32 @@ public class SectioningStatusPage extends Composite {
 		public HorizontalAlignmentConstant getCellAlignment() {
 			return HasHorizontalAlignment.ALIGN_RIGHT;
 		}
+	}
+	
+	public static class RoomsCell extends P {
+		public RoomsCell(List<IdValue> list, String delimiter) {
+			super("itemize");
+			if (list != null)
+				for (Iterator<IdValue> i = list.iterator(); i.hasNext(); ) {
+					final P p = new P(DOM.createSpan(), "item");
+					final IdValue room = i.next();
+					p.setText(room.getValue() + (i.hasNext() ? delimiter : ""));
+					if (room.getId() != null) {
+						p.addMouseOverHandler(new MouseOverHandler() {
+							@Override
+							public void onMouseOver(MouseOverEvent event) {
+								RoomHint.showHint(p.getElement(), room.getId(), null, null, true);
+							}
+						});
+						p.addMouseOutHandler(new MouseOutHandler() {
+							@Override
+							public void onMouseOut(MouseOutEvent event) {
+								RoomHint.hideHint();
+							}
+						});
+					}
+					add(p);
+				}
+		}	
 	}
 }

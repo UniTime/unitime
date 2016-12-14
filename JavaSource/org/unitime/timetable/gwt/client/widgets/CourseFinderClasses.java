@@ -96,7 +96,7 @@ public class CourseFinderClasses extends WebTable implements CourseFinder.Course
 										new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())),
 										new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
 										new WebTable.Cell(clazz.getDatePattern()),
-										new WebTable.Cell(clazz.getRooms(", ")),
+										new WebTable.RoomCell(clazz.getRooms(), ", "),
 										new WebTable.Cell(clazz.getInstructors(", ")),
 										new WebTable.Cell(clazz.getParentSection()),
 										(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), MESSAGES.saved(clazz.getSubpart() + " " + clazz.getSection()), null) :
@@ -111,7 +111,7 @@ public class CourseFinderClasses extends WebTable implements CourseFinder.Course
 										new WebTable.Cell(clazz.getLimitString()),
 										new WebTable.Cell(MESSAGES.arrangeHours(), 3, null),
 										new WebTable.Cell(clazz.hasDatePattern() ? clazz.getDatePattern() : ""),
-										new WebTable.Cell(clazz.getRooms(", ")),
+										new WebTable.RoomCell(clazz.getRooms(), ", "),
 										new WebTable.Cell(clazz.getInstructors(", ")),
 										new WebTable.Cell(clazz.getParentSection()),
 										(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), MESSAGES.saved(clazz.getSubpart() + " " + clazz.getSection()), null) :

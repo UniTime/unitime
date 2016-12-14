@@ -252,7 +252,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 							}
 							if (section.getRooms() != null) {
 								for (XRoom room: section.getRooms()) {
-									a.addRoom(room.getName());
+									a.addRoom(room.getUniqueId(), room.getName());
 								}
 							}
 							for (XInstructor instructor: section.getInstructors()) {
@@ -354,7 +354,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 							}
 							if (section.getRooms() != null) {
 								for (XRoom room: section.getRooms()) {
-									a.addRoom(room.getName());
+									a.addRoom(room.getUniqueId(), room.getName());
 								}
 							}
 							for (XInstructor instructor: section.getInstructors()) {

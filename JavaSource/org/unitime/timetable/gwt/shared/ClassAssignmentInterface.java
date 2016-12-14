@@ -228,7 +228,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private int iStart, iLength, iBreakTime = 0;
 		private ArrayList<String> iInstructos = new ArrayList<String>();
 		private ArrayList<String> iInstructoEmails = new ArrayList<String>();
-		private ArrayList<String> iRooms = new ArrayList<String>();
+		private ArrayList<IdValue> iRooms = new ArrayList<IdValue>();
 		private boolean iAlternative = false, iHasAlternatives = true, iDistanceConflict = false;
 		private String iDatePattern = null;
 		private String iSubject, iCourseNbr, iSubpart, iSection, iParentSection, iNumber, iTitle;
@@ -417,18 +417,18 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public ArrayList<String> getInstructorEmails() { return iInstructoEmails; }
 
 		public boolean hasRoom() { return iRooms != null && !iRooms.isEmpty(); }
-		public void addRoom(String room) {
-			if (iRooms == null) iRooms = new ArrayList<String>();
-			iRooms.add(room);
+		public void addRoom(Long id, String name) {
+			if (iRooms == null) iRooms = new ArrayList<IdValue>();
+			iRooms.add(new IdValue(id, name));
 		}
-		public ArrayList<String> getRooms() { return iRooms; }
+		public ArrayList<IdValue> getRooms() { return iRooms; }
 		
 		public String getRooms(String delim) {
 			if (iRooms == null) return "";
 			String ret = "";
-			for (String room: iRooms) {
+			for (IdValue room: iRooms) {
 				if (!ret.isEmpty()) ret += delim;
-				ret += room;
+				ret += room.getValue();
 			}
 			return ret;
 		}
@@ -1081,5 +1081,40 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public String getProto() { return iProto; }
 		public void setProto(String proto) { iProto = proto; }
 }
+	
+	public static class IdValue implements IsSerializable, Serializable, Comparable<IdValue> {
+		private static final long serialVersionUID = 1L;
+		private Long iId;
+		private String iValue;
+		
+		public IdValue() {}
+		public IdValue(Long id, String value) { 
+			iId = id; iValue = value;
+		}
+		
+		public Long getId() { return iId; }
+		public String getValue() { return iValue; }
+		
+		@Override
+		public int compareTo(IdValue other) {
+			return getValue().compareTo(other.getValue());
+		}
+		
+		@Override
+		public String toString() {
+			return getValue();
+		}
+		
+		@Override
+		public int hashCode() {
+			return getId().hashCode();
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof IdValue)) return false;
+			return getId().equals(((IdValue)o).getId());
+		}
+	}
 	
 }

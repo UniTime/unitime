@@ -186,6 +186,17 @@
 				<line>Export CSV: Do not export the first column when the column name starts with __ (contains unique id of a class, offering, exam, student, etc.).</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling Assistnat, Student Scheduling Dashboard, Enrollments tables</name>
+			<description>
+				<line>Show room mouse-over tooltips on various pages, including
+					<line>Student Scheduling Assistant: Class Schedule tab</line>
+					<line>Course Finder: List of Classes tab</line>
+					<line>Class, Instructional Offering, Examination, Event, Instructor: Enrollments table</line>
+					<line>Student Scheduling Dashboard: Enrollments tab, Enrollments of student table</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>API</title>

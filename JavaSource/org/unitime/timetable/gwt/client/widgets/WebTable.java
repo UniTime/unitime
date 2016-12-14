@@ -20,14 +20,18 @@
 package org.unitime.timetable.gwt.client.widgets;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
 import org.unitime.timetable.gwt.client.aria.AriaHiddenLabel;
 import org.unitime.timetable.gwt.client.aria.AriaToggleButton;
 import org.unitime.timetable.gwt.client.aria.HasAriaLabel;
+import org.unitime.timetable.gwt.client.rooms.RoomHint;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
 
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
@@ -37,6 +41,10 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
+import com.google.gwt.event.dom.client.MouseOutEvent;
+import com.google.gwt.event.dom.client.MouseOutHandler;
+import com.google.gwt.event.dom.client.MouseOverEvent;
+import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.resources.client.ImageResource;
@@ -736,11 +744,12 @@ public class WebTable extends Composite {
 			}
 		}
 		
-		protected void add(String text) {
+		protected HTML add(String text) {
 			iText += text;
 			HTML h = new HTML(text, false);
 			iPanel.add(h);
 			iContent.add(h);
+			return h;
 		}
 		
 		public String getValue() { return iText; }
@@ -791,6 +800,62 @@ public class WebTable extends Composite {
 				add("&nbsp;");
 			}
 		}
+	}
+	
+	public static class RoomCell extends MultiCell {
+		
+		public RoomCell(ImageResource resource, final String title, List<IdValue> rooms, String separator) {
+			super(null, separator);
+			Image icon = null;
+			if (resource != null) {
+				icon = new Image(resource);
+				icon.setTitle(title);
+				icon.setAltText(title);
+				icon.getElement().getStyle().setPaddingRight(3, Unit.PX);
+				iPanel.add(icon);
+			}
+			if (rooms != null && !rooms.isEmpty()) {
+				separator = separator.replace(" ", "&nbsp;");
+				for (Iterator<IdValue> i = rooms.iterator(); i.hasNext(); ) {
+					final IdValue room = i.next();
+					final HTML h = (icon == null ? add(room.getValue() + (i.hasNext() ? separator : "")) : new HTML(room.getValue() + (i.hasNext() ? separator : ""), false));
+					if (icon != null) {
+						HorizontalPanel hp = new HorizontalPanel();
+						hp.add(icon);
+						hp.add(h);
+						hp.setCellVerticalAlignment(icon, HasVerticalAlignment.ALIGN_MIDDLE);
+						iContent.add(h);
+						iPanel.add(hp);
+						icon = null;
+						hp.addStyleName("room");
+					}
+					if (room.getId() != null) {
+						h.addMouseOverHandler(new MouseOverHandler() {
+							@Override
+							public void onMouseOver(MouseOverEvent event) {
+								RoomHint.showHint(h.getElement(), room.getId(), null, null, true);
+							}
+						});
+						h.addMouseOutHandler(new MouseOutHandler() {
+							@Override
+							public void onMouseOut(MouseOutEvent event) {
+								RoomHint.hideHint();
+							}
+						});
+					}
+				}
+			} else {
+				if (icon != null) {
+					iPanel.add(icon);
+				} else {
+					add("&nbsp;");
+				}
+			}
+		}
+		
+		public RoomCell(List<IdValue> rooms, String separator) {
+			this(null, null, rooms, separator);
+		}		
 	}
 	
 	public class RowSelectingFlexTable extends FlexTable {

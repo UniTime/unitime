@@ -200,7 +200,7 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 								a.setDatePattern(section.getTime().getDatePatternName());
 							}
 							for (XRoom rm: section.getRooms())
-								a.addRoom(rm.getName());
+								a.addRoom(rm.getUniqueId(), rm.getName());
 							for (XInstructor instructor: section.getInstructors()) {
 								a.addInstructor(instructor.getName());
 								a.addInstructor(instructor.getEmail() == null ? "" : instructor.getEmail());

@@ -47,6 +47,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.TimetableManager;
@@ -451,10 +452,12 @@ public class OnlineSectioningHelper {
 			}
 		}
 		if (assignment.hasRoom()) {
-			for (String room: assignment.getRooms())
-				section.addLocation(OnlineSectioningLog.Entity.newBuilder()
-						.setName(room)
-						);
+			for (IdValue room: assignment.getRooms()) {
+				OnlineSectioningLog.Entity.Builder e = OnlineSectioningLog.Entity.newBuilder();
+				e.setName(room.getValue());
+				if (room.getId() != null) e.setUniqueId(room.getId());
+				section.addLocation(e);
+			}
 		}
 		return section.build();
     }

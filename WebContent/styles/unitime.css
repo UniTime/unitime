@@ -583,6 +583,10 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	padding-left: 0px;
 }
 
+.unitime-WebTable .room td {
+	padding-left: 0px;
+}
+
 .unitime-WebTable .toggle {
 	color: black;
 	font-style: italic;
