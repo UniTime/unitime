@@ -131,11 +131,15 @@
 			</description>
 		</item>
 		<item>
-			<name>Personal Schedule (Instructor)</name>
+			<name>Personal Schedule</name>
 			<description>
-				<line>Added an option to include indirect examinations (that is cases where an instructor is assigned to a class for which the exam is held).</line>
-				<line>To enable this, set unitime.events.exams.considerClassInstructors to true.
+				<line>Instructor: Added an option to include indirect examinations (that is cases where an instructor is assigned to a class for which the exam is held).
+					<line>To enable this, set unitime.events.exams.considerClassInstructors to true.</line>
 					<line>If set to false, which is also the default, only exams that have the person assigned as instructor would show.</line>
+				</line>
+				<line>When showing an exam (or a course-related event) that is set on multiple classes, only show classes that relates to the student (or instructor).
+					<line>Show all owners when the person is also the instructor associated directly with the exam or the contact of the course-related event.</line>
+					<line>Show all owners that the person is coordinating (if any).</line>
 				</line>
 			</description>
 		</item>
