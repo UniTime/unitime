@@ -4771,6 +4771,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Application of this preference will remove all required preferences.")
 	String warnPreferenceUseNotRequired();
 	
+	@DefaultMessage("When multiple rooms are listed, please consult your instructor regarding your class or examination room location.")
+	String warnMultiRoomClassOrExam();
+	
 	@DefaultMessage("Cancelled")
 	String reservationCancelledClass();
 	

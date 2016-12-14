@@ -105,6 +105,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 			response.setTooEarlySlot(tooEarly);
 		
 		response.setGridDisplayTitle(ApplicationProperty.EventGridDisplayTitle.isTrue());
+		response.setStudent(context.getUser() != null && context.getUser().hasRole(Roles.ROLE_STUDENT));
 		
 		return response;
 	}
