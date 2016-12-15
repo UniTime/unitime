@@ -23,6 +23,7 @@
 <%@ page import="org.unitime.timetable.model.DistributionType" %>
 <%@ page import="org.unitime.timetable.model.PreferenceLevel" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>
+<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
 <%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
 <%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
@@ -41,7 +42,23 @@
 		focusElement = null;
 %> 
 <html:form action="/distributionPrefs" focus="<%= focusElement %>">
-  	<loc:bundle name="CourseMessages"> 
+<loc:bundle name="CourseMessages"><tt:session-context/>
+<SCRIPT language="javascript">
+	<!--
+		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
+		
+		function confirmDelete() {
+			if (jsConfirm!=null && !jsConfirm)
+				return true;
+
+			if (!confirm('<%=MSG.confirmDeleteDistributionPreference()%>')) {
+				return false;
+			}
+
+			return true;
+		}
+	// -->
+</SCRIPT>  	
 	<INPUT type="hidden" name="deleteType" id="deleteType" value="">
 	<INPUT type="hidden" name="deleteId" id="deleteId" value="">
 	<INPUT type="hidden" name="reloadCause" id="reloadCause" value="">
@@ -77,7 +94,7 @@
 							<html:submit styleClass="btn" property="op" 
 								accesskey="<%=MSG.accessDeleteDistributionPreference() %>" 
 								title="<%=MSG.titleDeleteDistributionPreference(MSG.accessDeleteDistributionPreference()) %>" 
-								onclick="javascript: doDel('distPref', '-1');">
+								onclick="javascript: doDel('distPref', '-1'); return confirmDelete();">
 								<loc:message name="actionDeleteDistributionPreference" />
 							</html:submit>
 						</sec:authorize>				
@@ -296,7 +313,7 @@
 					<html:submit styleClass="btn" property="op" 
 						accesskey="<%=MSG.accessDeleteDistributionPreference() %>" 
 						title="<%=MSG.titleDeleteDistributionPreference(MSG.accessDeleteDistributionPreference()) %>" 
-						onclick="javascript: doDel('distPref', '-1');">
+						onclick="javascript: doDel('distPref', '-1'); return confirmDelete();">
 						<loc:message name="actionDeleteDistributionPreference" />
 					</html:submit>
 				</logic:notEmpty>

@@ -2409,6 +2409,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Any instructor class assignments will be deleted as well. Continue?")
 	String confirmDeleteInstructor();
 	
+	@DefaultMessage("Do you really want to delete this distribution preference?")
+	String confirmDeleteDistributionPreference();
+	
 	@DefaultMessage("Select an instructor")
 	String alertSelectAnInstructor();
 

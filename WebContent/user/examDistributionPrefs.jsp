@@ -23,15 +23,34 @@
 <%@ page import="org.unitime.timetable.model.DistributionType" %>
 <%@ page import="org.unitime.timetable.model.PreferenceLevel" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>
+<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
 <%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
 <%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
 <%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
 <%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
+<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
 <%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <tiles:importAttribute />
 <html:form action="/examDistributionPrefs" >
+<loc:bundle name="CourseMessages"><tt:session-context/>
+<SCRIPT language="javascript">
+	<!--
+		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
+		
+		function confirmDelete() {
+			if (jsConfirm!=null && !jsConfirm)
+				return true;
+
+			if (!confirm('<%=MSG.confirmDeleteDistributionPreference()%>')) {
+				return false;
+			}
+
+			return true;
+		}
+	// -->
+</SCRIPT>
 	<INPUT type="hidden" name="deleteType" id="deleteType" value="">
 	<INPUT type="hidden" name="deleteId" id="deleteId" value="">
 	<INPUT type="hidden" name="reloadCause" id="reloadCause" value="">
@@ -60,7 +79,7 @@
 						
 						<sec:authorize access="hasPermission(#examDistributionPrefsForm.distPrefId, 'DistributionPref', 'ExaminationDistributionPreferenceDelete')">
 							&nbsp;
-							<html:submit styleClass="btn" property="op" accesskey="D" titleKey="title.removeDistPref" onclick="javascript: doDel('distPref', '-1');">
+							<html:submit styleClass="btn" property="op" accesskey="D" titleKey="title.removeDistPref" onclick="javascript: doDel('distPref', '-1'); return confirmDelete();">
 								<bean:message key="button.delete" />
 							</html:submit>
 						</sec:authorize>					
@@ -254,7 +273,7 @@
 					</html:submit>
 					
 					&nbsp;
-					<html:submit styleClass="btn" property="op" accesskey="D" titleKey="title.removeDistPref" onclick="javascript: doDel('distPref', '-1');">
+					<html:submit styleClass="btn" property="op" accesskey="D" titleKey="title.removeDistPref" onclick="javascript: doDel('distPref', '-1'); return confirmDelete();">
 						<bean:message key="button.delete" />
 					</html:submit>					
 				</logic:notEmpty>
@@ -381,7 +400,7 @@
 		<% } %>
 
 	</TABLE>
-
+</loc:bundle>
 </html:form>
 
 <SCRIPT type="text/javascript" language="javascript">
