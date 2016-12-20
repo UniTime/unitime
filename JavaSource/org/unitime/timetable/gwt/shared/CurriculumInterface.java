@@ -727,7 +727,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		
 		public int countProjectedStudents(Set<Long> students) {
 			if (iLastLike == null || iLastLike.isEmpty()) return 0;
-			if (iProjection == null) return iLastLike.size();
+			if (iProjection == null) return students.size();
 			double proj = 0;
 			for (Long student: students) {
 				Set<String> majors = iLastLike.get(student);
