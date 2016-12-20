@@ -101,6 +101,12 @@
 				<line>This fixes an issue with URL encoding when course number contains non-ASCII characters.</line>
 			</description>
 		</item>
+		<item>
+			<name>Add/Edit Curriculum</name>
+			<description>
+				<line>Shared Students Tooltip: Computation of projected students that are shared between two or more courses corrected.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Event Management</title>
