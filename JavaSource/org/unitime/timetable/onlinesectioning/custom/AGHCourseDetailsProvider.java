@@ -175,9 +175,13 @@ public class AGHCourseDetailsProvider implements CourseDetailsProvider, CourseUr
 		return years;
 	}
 
-	public String syllabusLink(Integer year, String session, Integer classification) {
+	public String syllabusLink(Integer year, String term, Integer classification) {
 		Integer yearShift, yearLink, sessionShift;
 		String syllabusLinkRw = "current_annual"; // newest syllabus
+		if (term.toLowerCase().endsWith("zimowy")) sessionShift=0;
+		if (term.toLowerCase().endsWith("letni")) sessionShift=1;
+		else sessionShift=0;
+		/*		
 		switch (session) {
 		case "Semestr zimowy":
 			sessionShift = 0;
@@ -190,6 +194,7 @@ public class AGHCourseDetailsProvider implements CourseDetailsProvider, CourseUr
 			break;
 
 		}
+		*/
 		// div 2 (two semesters per year)
 		yearShift = (classification - sessionShift) / 2;
 		// current year minus shift
