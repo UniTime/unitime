@@ -190,7 +190,7 @@ public class AGHCourseDetailsProvider implements CourseDetailsProvider, CourseUr
 			break;
 
 		}
-		// modulo 2 (two semesters per year)
+		// div 2 (two semesters per year)
 		yearShift = (classification - sessionShift) / 2;
 		// current year minus shift
 		yearLink = year - yearShift;
