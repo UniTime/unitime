@@ -80,6 +80,7 @@ public class DataImportForm extends ActionForm {
     	PERMISSIONS("permissions", "Permissions"),
     	TRAVELTIMES("traveltimes", "Travel Times"),
     	ROOM_SHARING("roomSharing", "Room Sharing"),
+    	POINT_IN_TIME_DATA("pointInTimeData", "Point-In-Time Data"),
     	;
     	
     	private String iType, iLabel;

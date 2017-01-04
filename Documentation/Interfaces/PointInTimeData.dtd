@@ -1,0 +1,346 @@
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+
+<!ELEMENT class ( classEvent*, classInstructor* ) >
+<!ATTLIST class uniqueId CDATA #REQUIRED >
+<!ATTLIST class parentClassUniqueId CDATA #IMPLIED >
+<!ATTLIST class studentScheduling ( false | true ) #IMPLIED >
+<!ATTLIST class limit NMTOKEN #IMPLIED >
+<!ATTLIST class numberOfRooms CDATA #IMPLIED >
+<!ATTLIST class datePatternUniqueId CDATA #REQUIRED >
+<!ATTLIST class timePatternUniqueId CDATA #IMPLIED >
+<!ATTLIST class managingDepartmentUniqueId CDATA #REQUIRED >
+<!ATTLIST class classSuffix CDATA #IMPLIED >
+<!ATTLIST class sectionNumber CDATA #REQUIRED >
+<!ATTLIST class uniqueIdRolledForwardFrom CDATA #IMPLIED >
+<!ATTLIST class externalId CDATA #REQUIRED >
+
+<!ELEMENT config ( subpart+ ) >
+<!ATTLIST config uniqueId CDATA #REQUIRED >
+<!ATTLIST config name CDATA #REQUIRED >
+<!ATTLIST config unlimitedEnrollment ( false | true ) #REQUIRED >
+<!-- durationType was introduced in UniTime 4.1, if not present the class duration type defaults to minutes per week -->
+<!-- the value of this field has to match ClassDurationType.reference (one of MIN_PER_WEEK, SEMESTER_MIN, SEMESTER_HRS, MEETING_MIN, MEETING_HRS )-->
+<!ATTLIST config durationType CDATA #IMPLIED >
+<!-- instructionalMethod was introduced in UniTime 4.1, if not present the instructional method will not be set -->
+<!-- the value of this field has to match InstructionalMethod.reference -->
+<!ATTLIST config instructionalMethod CDATA #IMPLIED >
+<!ATTLIST config uniqueIdRolledForwardFrom CDATA #IMPLIED >
+
+<!ELEMENT course EMPTY >
+<!ATTLIST course uniqueId CDATA #REQUIRED >
+<!ATTLIST course subjectAreaAbbreviation CDATA #REQUIRED >
+<!ATTLIST course courseNbr NMTOKEN #REQUIRED >
+<!ATTLIST course controlling ( false | true ) #IMPLIED >
+<!ATTLIST course permanentId CDATA #REQUIRED >
+<!ATTLIST course projectedDemand CDATA #IMPLIED >
+<!ATTLIST course title CDATA #IMPLIED > 
+<!ATTLIST course numberExpectedStudents CDATA #IMPLIED >
+<!ATTLIST course lastlikeDemand CDATA #IMPLIED >
+<!ATTLIST course courseTypeId CDATA #IMPLIED >
+<!ATTLIST course uniqueIdRolledForwardFrom CDATA #IMPLIED >
+<!ATTLIST course externalId CDATA #IMPLIED >
+
+<!ELEMENT courseCredit EMPTY >
+<!ATTLIST courseCredit creditFormat ( arrangeHours | fixedUnit | variableMinMax | variableRange ) #REQUIRED >
+<!ATTLIST courseCredit creditType ( collegiate | equivalent | mastersCredit | phdThesisCredit | continuingEdUnits ) #REQUIRED >
+<!ATTLIST courseCredit creditUnitType CDATA #REQUIRED >
+<!ATTLIST courseCredit fixedCredit CDATA #IMPLIED >
+<!ATTLIST courseCredit fractionalCreditAllowed ( false | true ) #IMPLIED >
+<!ATTLIST courseCredit maximumCredit CDATA #IMPLIED >
+<!ATTLIST courseCredit minimumCredit CDATA #IMPLIED >
+
+<!ELEMENT classInstructor EMPTY >
+<!ATTLIST classInstructor departmentalInstructorUniqueId CDATA #REQUIRED >
+<!ATTLIST classInstructor lead ( false | true ) #IMPLIED >
+<!ATTLIST classInstructor responsibilityUniqueId CDATA #IMPLIED >
+<!ATTLIST classInstructor share NMTOKEN #REQUIRED >
+<!ATTLIST classInstructor normalizedPercentShare NMTOKEN #REQUIRED >
+
+<!ELEMENT courseTypes ( courseType* ) >
+
+<!ELEMENT courseType EMPTY >
+<!ATTLIST courseType uniqueId CDATA #REQUIRED >
+<!ATTLIST courseType reference CDATA #REQUIRED >
+<!ATTLIST courseType label CDATA #REQUIRED >
+
+<!ELEMENT roomTypes ( roomType* ) >
+
+<!ELEMENT roomType EMPTY >
+<!ATTLIST roomType uniqueId CDATA #REQUIRED >
+<!ATTLIST roomType reference CDATA #REQUIRED >
+<!ATTLIST roomType label CDATA #REQUIRED >
+<!ATTLIST roomType order CDATA #REQUIRED >
+<!ATTLIST roomType isRoom ( false | true ) #REQUIRED >
+
+<!ELEMENT creditTypes ( creditType* ) >
+
+<!ELEMENT creditType EMPTY >
+<!ATTLIST creditType uniqueId CDATA #REQUIRED >
+<!ATTLIST creditType reference CDATA #REQUIRED >
+<!ATTLIST creditType label CDATA #REQUIRED >
+<!ATTLIST creditType legacyCourseMasterCode CDATA #REQUIRED >
+
+<!ELEMENT creditUnitTypes ( creditUnitType* ) >
+
+<!ELEMENT creditUnitType EMPTY >
+<!ATTLIST creditUnitType uniqueId CDATA #REQUIRED >
+<!ATTLIST creditUnitType reference CDATA #REQUIRED >
+<!ATTLIST creditUnitType label CDATA #REQUIRED >
+
+<!ELEMENT positionTypes ( positionType* ) >
+
+<!ELEMENT positionType EMPTY >
+<!ATTLIST positionType uniqueId CDATA #REQUIRED >
+<!ATTLIST positionType reference CDATA #REQUIRED >
+<!ATTLIST positionType label CDATA #REQUIRED >
+<!ATTLIST positionType order CDATA #REQUIRED >
+
+<!ELEMENT teachingResponsibilities ( teachingResponsibility* ) >
+
+<!ELEMENT teachingResponsibility EMPTY >
+<!ATTLIST teachingResponsibility uniqueId CDATA #REQUIRED >
+<!ATTLIST teachingResponsibility reference CDATA #REQUIRED >
+<!ATTLIST teachingResponsibility label CDATA #REQUIRED >
+<!ATTLIST teachingResponsibility abbreviation CDATA #REQUIRED >
+<!ATTLIST teachingResponsibility instructor ( false | true ) #REQUIRED >
+<!ATTLIST teachingResponsibility coordinator ( false | true ) #REQUIRED >
+
+<!ELEMENT datePatterns ( datePattern* ) >
+
+<!ELEMENT datePattern EMPTY >
+<!ATTLIST datePattern uniqueId CDATA #REQUIRED >
+<!ATTLIST datePattern name CDATA #REQUIRED >
+<!ATTLIST datePattern pattern CDATA #REQUIRED >
+<!ATTLIST datePattern offset CDATA #REQUIRED >
+<!ATTLIST datePattern type CDATA #REQUIRED >
+<!ATTLIST datePattern visible CDATA #REQUIRED >
+<!ATTLIST datePattern numberOfWeeks CDATA #IMPLIED >
+
+<!ELEMENT timePatterns ( timePattern* ) >
+
+<!ELEMENT timePattern (timePatternDays*, timePatternTime*) >
+<!ATTLIST timePattern uniqueId CDATA #REQUIRED >
+<!ATTLIST timePattern name CDATA #REQUIRED >
+<!ATTLIST timePattern minutesPerMeeting CDATA #REQUIRED >
+<!ATTLIST timePattern slotsPerMeeting CDATA #REQUIRED >
+<!ATTLIST timePattern numberOfMeetingsPerWeek CDATA #REQUIRED >
+<!ATTLIST timePattern visible CDATA #REQUIRED >
+<!ATTLIST timePattern type CDATA #REQUIRED >
+<!ATTLIST timePattern breakTime CDATA #REQUIRED >
+
+<!ELEMENT timePatternDays EMPTY >
+<!ATTLIST timePatternDays dayCode CDATA #REQUIRED >
+
+<!ELEMENT timePatternTime EMPTY >
+<!ATTLIST timePatternTime startSlot CDATA #REQUIRED >
+
+<!ELEMENT classDurationTypes ( classDurationType* ) >
+
+<!ELEMENT classDurationType EMPTY >
+<!ATTLIST classDurationType uniqueId CDATA #REQUIRED >
+<!ATTLIST classDurationType reference CDATA #REQUIRED >
+<!ATTLIST classDurationType label CDATA #REQUIRED >
+<!ATTLIST classDurationType abbreviation CDATA #REQUIRED >
+<!ATTLIST classDurationType implementation CDATA #REQUIRED >
+<!ATTLIST classDurationType parameter CDATA #REQUIRED >
+<!ATTLIST classDurationType visible ( false | true ) #IMPLIED >
+
+<!ELEMENT instructionalMethods ( instructionalMethod* ) >
+
+<!ELEMENT instructionalMethod EMPTY >
+<!ATTLIST instructionalMethod uniqueId CDATA #REQUIRED >
+<!ATTLIST instructionalMethod reference CDATA #REQUIRED >
+<!ATTLIST instructionalMethod label CDATA #REQUIRED >
+<!ATTLIST instructionalMethod visible ( false | true ) #IMPLIED >
+
+<!ELEMENT departments ( department+ ) >
+
+<!ELEMENT department (subjectArea*, departmentalInstructor* ) >
+<!ATTLIST department uniqueId CDATA #REQUIRED >
+<!ATTLIST department externalId CDATA #REQUIRED >
+<!ATTLIST department name CDATA #REQUIRED >
+<!ATTLIST department abbreviation CDATA #IMPLIED >
+<!ATTLIST department departmentCode CDATA #REQUIRED >
+
+
+<!ELEMENT departmentalInstructor EMPTY >
+<!ATTLIST departmentalInstructor uniqueId CDATA #REQUIRED >
+<!ATTLIST departmentalInstructor externalId CDATA #IMPLIED >
+<!ATTLIST departmentalInstructor firstName CDATA #IMPLIED >
+<!ATTLIST departmentalInstructor middleName CDATA #IMPLIED >
+<!ATTLIST departmentalInstructor lastName CDATA #IMPLIED >
+<!ATTLIST departmentalInstructor careerAcct CDATA #IMPLIED >
+<!ATTLIST departmentalInstructor email CDATA #IMPLIED > 
+<!ATTLIST departmentalInstructor positionTypeUniqueId CDATA #IMPLIED >
+
+
+<!ELEMENT subjectArea EMPTY >
+<!ATTLIST subjectArea uniqueId CDATA #REQUIRED >
+<!ATTLIST subjectArea subjectAreaAbbreviation CDATA #REQUIRED >
+<!ATTLIST subjectArea title CDATA #REQUIRED >
+<!ATTLIST subjectArea externalId NMTOKEN #IMPLIED >
+
+
+<!ELEMENT students ( student* ) >
+
+<!ELEMENT student ( acadAreaMajorClassification*, acadAreaMinorClassification*, enrollment* ) >
+<!ATTLIST student uniqueId CDATA #REQUIRED >
+<!ATTLIST student externalId CDATA #REQUIRED >
+<!ATTLIST student firstName CDATA #IMPLIED >
+<!ATTLIST student middleName CDATA #IMPLIED >
+<!ATTLIST student lastName CDATA #REQUIRED >
+
+<!ELEMENT enrollment EMPTY >
+<!ATTLIST enrollment classUniqueId CDATA #REQUIRED >
+<!ATTLIST enrollment courseOfferingUniqueId CDATA #REQUIRED >
+<!ATTLIST enrollment timestamp CDATA #REQUIRED >
+<!ATTLIST enrollment changedBy CDATA #IMPLIED >
+
+<!ELEMENT acadAreaMajorClassification EMPTY >
+<!ATTLIST acadAreaMajorClassification academicAreaUniqueId CDATA #REQUIRED >
+<!ATTLIST acadAreaMajorClassification academicClassificationUniqueId CDATA #REQUIRED >
+<!ATTLIST acadAreaMajorClassification majorUniqueId CDATA #REQUIRED >
+
+<!ELEMENT acadAreaMinorClassification EMPTY >
+<!ATTLIST acadAreaMinorClassification academicAreaUniqueId CDATA #REQUIRED >
+<!ATTLIST acadAreaMinorClassification academicClassificationUniqueId CDATA #REQUIRED >
+<!ATTLIST acadAreaMinorClassification minorUniqueId CDATA #REQUIRED >
+
+
+<!ELEMENT offerings ( offering* ) >
+
+<!ELEMENT offering ( course+, config+ ) >
+<!ATTLIST offering uniqueId CDATA #REQUIRED >
+<!ATTLIST offering permanentId CDATA #REQUIRED >
+<!ATTLIST offering demand CDATA #REQUIRED >
+<!ATTLIST offering limit CDATA #REQUIRED >
+<!ATTLIST offering uniqueIdRolledForwardFrom CDATA #IMPLIED >
+<!ATTLIST offering externalId CDATA #IMPLIED >
+
+<!ELEMENT academicAreas ( academicArea* ) >
+
+<!ELEMENT academicArea EMPTY >
+<!ATTLIST academicArea uniqueId CDATA #REQUIRED >
+<!ATTLIST academicArea abbreviation CDATA #REQUIRED >
+<!ATTLIST academicArea title CDATA #REQUIRED >
+<!ATTLIST academicArea externalId CDATA #IMPLIED >
+
+<!ELEMENT academicClassifications ( academicClassification* ) >
+
+<!ELEMENT academicClassification EMPTY >
+<!ATTLIST academicClassification uniqueId CDATA #REQUIRED >
+<!ATTLIST academicClassification code CDATA #REQUIRED >
+<!ATTLIST academicClassification name CDATA #REQUIRED >
+<!ATTLIST academicClassification externalId CDATA #IMPLIED >
+
+<!ELEMENT majors ( major* ) >
+
+<!ELEMENT major EMPTY >
+<!ATTLIST major uniqueId CDATA #REQUIRED >
+<!ATTLIST major code CDATA #REQUIRED >
+<!ATTLIST major name CDATA #REQUIRED >
+<!ATTLIST major externalId CDATA #IMPLIED >
+
+<!ELEMENT minors ( minor* ) >
+<!ELEMENT minor EMPTY >
+<!ATTLIST minor uniqueId CDATA #REQUIRED >
+<!ATTLIST minor code CDATA #REQUIRED >
+<!ATTLIST minor name CDATA #REQUIRED >
+<!ATTLIST minor externalId CDATA #IMPLIED >
+
+<!ELEMENT pointInTimeData ( departments, courseTypes, classDurationTypes, teachingResponsibilities, instructionalMethods, datePatterns, 
+   timePatterns, academicClassifications, academicAreas, majors, minors, locations, roomTypes, creditTypes, creditUnitTypes, positionTypes, students, offerings ) >
+<!ATTLIST pointInTimeData academicSessionUniqueId NMTOKEN #REQUIRED >
+<!ATTLIST pointInTimeData academicInitiative NMTOKEN #REQUIRED >
+<!ATTLIST pointInTimeData academicTerm NMTOKEN #REQUIRED >
+<!ATTLIST pointInTimeData academicYear NMTOKEN #REQUIRED >
+<!ATTLIST pointInTimeData dateFormat CDATA #IMPLIED >
+<!ATTLIST pointInTimeData timeFormat CDATA #IMPLIED >
+<!ATTLIST pointInTimeData sessionBeginDate CDATA #REQUIRED >
+<!ATTLIST pointInTimeData sessionEndDate CDATA #REQUIRED >
+<!ATTLIST pointInTimeData classesEndDate CDATA #REQUIRED >
+<!-- durationType was introduced in UniTime 4.1, if not present the class duration type defaults to minutes per week -->
+<!-- the value of this field has to match ClassDurationType.reference (one of MIN_PER_WEEK, SEMESTER_MIN, SEMESTER_HRS, MEETING_MIN, MEETING_HRS )-->
+<!ATTLIST pointInTimeData durationType CDATA #IMPLIED >
+<!ATTLIST pointInTimeData pointInTimeName CDATA #REQUIRED >
+<!ATTLIST pointInTimeData pointInTimeNote CDATA #REQUIRED >
+<!ATTLIST pointInTimeData created CDATA #REQUIRED >
+
+<!ELEMENT building ( room+ ) >
+<!ATTLIST building uniqueId CDATA #REQUIRED >
+<!ATTLIST building abbreviation CDATA #REQUIRED >
+<!ATTLIST building name CDATA #REQUIRED >
+<!ATTLIST building coordinateX CDATA #IMPLIED >
+<!ATTLIST building coordinateY CDATA #IMPLIED >
+<!ATTLIST building externalId CDATA #IMPLIED >
+
+
+<!ELEMENT room EMPTY >
+<!ATTLIST room uniqueId CDATA #REQUIRED >
+<!ATTLIST room roomNbr CDATA #REQUIRED >
+<!ATTLIST room roomType CDATA #REQUIRED >
+<!ATTLIST room capacity CDATA #REQUIRED >
+<!ATTLIST room controllingDepartmentUniqueId CDATA #IMPLIED >
+<!ATTLIST room permanentId CDATA #IMPLIED >
+<!ATTLIST room externalId CDATA #IMPLIED >
+<!ATTLIST room coordinateX CDATA #IMPLIED >
+<!ATTLIST room coordinateY CDATA #IMPLIED >
+
+<!ELEMENT nonUniversityLocation EMPTY >
+<!ATTLIST nonUniversityLocation uniqueId CDATA #REQUIRED >
+<!ATTLIST nonUniversityLocation name CDATA #REQUIRED >
+<!ATTLIST nonUniversityLocation roomTypeId CDATA #REQUIRED >
+<!ATTLIST nonUniversityLocation capacity CDATA #REQUIRED >
+<!ATTLIST nonUniversityLocation permanentId CDATA #IMPLIED >
+<!ATTLIST nonUniversityLocation controllingDepartmentUniqueId CDATA #IMPLIED >
+<!ATTLIST nonUniversityLocation externalId CDATA #IMPLIED >
+<!ATTLIST nonUniversityLocation coordinateX CDATA #IMPLIED >
+<!ATTLIST nonUniversityLocation coordinateY CDATA #IMPLIED >
+
+<!ELEMENT locations ( building*, nonUniversityLocation* ) >
+
+<!ELEMENT subpart (  subpart*, class+ ) >
+<!ATTLIST subpart uniqueId NMTOKEN #REQUIRED >
+<!ATTLIST subpart minPerWeek NMTOKEN #REQUIRED >
+<!ATTLIST subpart suffix CDATA #IMPLIED >
+<!ATTLIST subpart type CDATA #REQUIRED >
+<!ATTLIST subpart studentAllowOverlap CDATA #REQUIRED >
+<!ATTLIST subpart uniqueIdRolledForwardFrom CDATA #IMPLIED >
+<!ATTLIST subpart creditType CDATA #IMPLIED >
+<!ATTLIST subpart creditUnitType CDATA #IMPLIED >
+<!ATTLIST subpart credit CDATA #IMPLIED >
+
+<!ELEMENT classEvent ( classMeeting+ ) >
+<!ATTLIST classEvent name CDATA #IMPLIED >
+
+<!ELEMENT classMeeting ( classMeetingUtilPeriod+  ) >
+<!ATTLIST classMeeting meetingDate CDATA #REQUIRED >
+<!ATTLIST classMeeting startPeriod NMTOKEN #REQUIRED >
+<!ATTLIST classMeeting stopPeriod CDATA #REQUIRED >
+<!ATTLIST classMeeting startOffset NMTOKEN #IMPLIED >
+<!ATTLIST classMeeting stopOffset NMTOKEN #IMPLIED >
+<!ATTLIST classMeeting locationUniqueId CDATA #REQUIRED >
+<!ATTLIST classMeeting timePatternMinutesPerMeeting CDATA #REQUIRED >
+<!ATTLIST classMeeting calculatedMinutesPerMeeting CDATA #REQUIRED >
+
+<!ELEMENT classMeetingUtilPeriod EMPTY >
+<!ATTLIST classMeetingUtilPeriod period CDATA #IMPLIED >
+

@@ -123,6 +123,166 @@ public class PointInTimeDataExport extends BaseExport {
     private Element majorsElement = null;
     private Element minorsElement = null;
     
+	public static String sRootElementName = "pointInTimeData";
+	public static String sNameAttribute = "name";
+	public static String sNoteAttribute = "note";
+	public static String sCreatedAttribute = "created";
+	public static String sDateFormatAttribute = "dateFormat";
+	public static String sTimeFormatAttribute = "timeFormat";
+	public static String sPointInTimeNameAttribute = "pointInTimeName";
+	public static String sPointInTimeNoteAttribute = "pointInTimeNote";
+	public static String sAcademicSessionUniqueIdAttribute = "academicSessionUniqueId";
+	public static String sAcademicInitiativeAttribute = "academicInitiativeUniqueId";
+	public static String sAcademicYearAttribute = "academicYearUniqueId";
+	public static String sAcademicTermAttribute = "academicTermUniqueId";
+	public static String sSessionBeginDateAttribute = "sessionBeginDate";
+	public static String sSessionEndDateAttribute = "sessionEndDate";
+	public static String sClassesEndDateAttribute = "classesEndDate";
+	public static String sDurationTypeAttribute = "durationType";
+	public static String sCourseTypesElementName = "courseTypes";
+	public static String sCourseTypeElementName = "courseType";
+	public static String sPositionTypesElementName = "positionTypes";
+	public static String sPositionTypeElementName = "positionType";
+	public static String sUniqueIdAttribute = "uniqueId";
+	public static String sReferenceAttribute = "reference";
+	public static String sLabelAttribute = "label";
+	public static String sRoomTypesElementName = "roomTypes";
+	public static String sRoomTypeElementName = "roomType";
+	public static String sCreditTypesElementName = "creditTypes";
+	public static String sCreditTypeElementName = "creditType";
+	public static String sLegacyCourseMasterCodeAttribute = "legacyCourseMasterCode";
+	public static String sCreditUnitTypesElementName = "creditUnitTypes";
+	public static String sCreditUnitTypeElementName = "creditUnitType";
+	public static String sIsRoomAttribute = "isRoom";
+	public static String sOrderAttribute = "order";
+	public static String sTeachingResponsibilitiesElementName = "teachingResponsibilities";
+	public static String sTeachingResponsibilityElementName = "teachingResponsibility";
+	public static String sInstructorAttribute = "instructor";
+	public static String sCoordinatorAttribute = "coordinator";
+	public static String sInstructionalMethodsElementName = "instructionalMethods";
+	public static String sInstructionalMethodElementName = "instructionalMethod";
+	public static String sVisibleAttribute = "visible";
+	public static String sClassDurationTypesElementName = "classDurationTypes";
+	public static String sClassDurationTypeElementName = "classDurationType";
+	public static String sAbbreviationAttribute = "abbreviation";
+	public static String sImplementationAttribute = "implementation";
+	public static String sParameterAttribute = "parameter";
+	public static String sDepartmentsElementName = "departments";
+	public static String sDepartmentElementName = "department";
+	public static String sDepartmentCode = "departmentCode";
+	public static String sExternalIdAttribute = "externalId";
+	public static String sSubjectAreaElementName = "subjectArea";
+	public static String sSubjectAreaAbbreviationAttribute = "subjectAreaAbbreviation";
+	public static String sTitleAttribute = "title";
+	public static String sDeptInstructorElementName = "departmentalInstructor";
+	public static String sFirstNameAttribute = "firstName";
+	public static String sMiddleNameAttribute = "middleName";
+	public static String sLastNameAttribute = "lastName";
+	public static String sEmailAttribute = "email";
+	public static String sCareerAcctAttribute = "careerAcct";
+	public static String sPositionTypeUniqueIdAttribute = "positionTypeUniqueId";
+	public static String sAcademicAreasElementName = "academicAreas";
+	public static String sAcademicAreaElementName = "academicArea";
+	public static String sAcademicClassificationsElementName = "academicClassifications";
+	public static String sAcademicClassificationElementName = "academicClassification";
+	public static String sCodeAttribute = "code";
+	public static String sMajorsElementName = "majors";
+	public static String sMajorElementName = "major";
+	public static String sMinorsElementName = "minors";
+	public static String sMinorElementName = "minor";
+	public static String sLocationsElementName = "locations";
+	public static String sBuildingElementName = "building";
+	public static String sCoordinateXAttribute = "coordinateX";
+	public static String sCoordinateYAttribute = "coordinateY";
+	public static String sRoomElementName = "room";
+	public static String sRoomNumberAttribute = "roomNbr";
+	public static String sRoomTypeIdAttribute = "roomType";
+	public static String sCapacityAttribute = "capacity";
+	public static String sControllingDepartmentUniqueIdAttribute = "controllingDepartmentUniqueId";
+	public static String sNonUniversityLocationElementName = "nonUniversityLocation";
+	public static String sTimePatternsElementName = "timePatterns";
+	public static String sTimePatternElementName = "timePattern";
+	public static String sMinutesPerMeetingAttribute = "minutesPerMeeting";
+	public static String sSlotsPerMeetingAttribute = "slotsPerMeeting";
+	public static String sNumberOfMeetingsPerWeekAttribute = "numberOfMeetingsPerWeek";
+	public static String sTypeAttribute = "type";
+	public static String sBreakTimeAttribute = "breakTime";
+	public static String sTimePatternDaysElementName = "timePatternDays";
+	public static String sDayCodeAttribute = "dayCode";
+	public static String sTimePatternTimeElementName = "timePatternTime";
+	public static String sStartSlotAttribute = "startSlot";
+	public static String sDatePatternsElementName = "datePatterns";
+	public static String sDatePatternElementName = "datePattern";
+	public static String sPatternAttribute = "pattern";
+	public static String sOffsetAttribute = "offset";
+	public static String sNumberOfWeeksAttribute = "numberOfWeeks";
+	public static String sOfferingsElementName = "offerings";	
+	public static String sOfferingElementName = "offering";
+	public static String sPermanentIdAttribute = "permanentId";
+	public static String sLimitAttribute = "limit";
+	public static String sDemandAttribute = "demand";
+	public static String sUniqueIdRolledForwardFromAttribute = "uniqueIdRolledForwardFrom";
+	public static String sCourseElementName = "course";
+	public static String sCourseNbrAttribute = "courseNbr";
+	public static String sControllingAttribute = "controlling";
+	public static String sProjectedDemandAttribute = "projectDemand";
+	public static String sNumberExpectedStudentsAttribute = "numberExpectedStudents";
+	public static String sLastlikeDemandAttribute = "lastlikeDemand";
+	public static String sCourseTypeIdAttribute = "courseTypeId";
+	public static String sConfigElementName = "config";
+	public static String sUnlimitedEnrollmentAttributeName = "unlimitedEnrollment";
+	public static String sInstructionalMethodAttribute = "instructionalMethod";
+	public static String sSubpartElementName = "subpart";
+	public static String sMinPerWeekAttribute = "minPerWeek";
+	public static String sSuffixAttribute = "suffix";
+	public static String sStudentAllowOverlapAttribute = "studentAllowOverlap";
+	public static String sCreditTypeAttribute = "creditType";
+	public static String sCreditUnitTypeAttribute = "creditUnitType";
+	public static String sCreditAttribute = "credit";
+	public static String sClassElementName = "class";
+	public static String sParentClassUniqueIdAttribute = "parentClassUniqueId";
+	public static String sDatePatternUniqueIdAttribute = "datePatternUniqueId";
+	public static String sTimePatternUniqueIdAttribute = "timePatternUniqueId";
+	public static String sStudentSchedulingAttribute = "studentScheduling";
+	public static String sNumberOfRoomsAttribute = "numberOfRooms";
+	public static String sManagingDepartmentUniqueIdAttribute = "managingDepartmentUniqueId";
+	public static String sClassSuffixAttribute = "classSuffix";
+	public static String sSectionNumberAttribute = "sectionNumber";
+	public static String sClassInstructorElementName = "classInstructor";
+	public static String sNormalizedPercentShareAttribute = "normalizedPercentShare";
+	public static String sResponsibilityUniqueIdAttribute = "responsibilityUniqueId";
+	public static String sLeadAttribute = "lead";
+	public static String sDepartmentalInstructorUniqueIdAttribute = "departmentalInstructorUniqueId";
+	public static String sShareAttribute = "share";
+	public static String sClassEventElementName = "classEvent";
+	public static String sClassMeetingElementName = "classMeeting";
+	public static String sMeetingDateAttribute = "meetingDate";
+	public static String sStartPeriodAttribute = "startPeriod";
+	public static String sStopPeriodAttribute = "stopPeriod";
+	public static String sStartOffsetAttribute = "startOffset";
+	public static String sStopOffsetAttribute = "stopOffset";
+	public static String sLocationUniqueIdAttribute = "locationUniqueId";
+	public static String sTimePatternMinutesPerMeetingAttribute = "timePatternMinutesPerMeeting";
+	public static String sCalculatedMinutesPerMeetingAttribute = "calculatedMinutesPerMeeting";
+	public static String sClassMeetingUtilPeriodElementName = "classMeetingUtilPeriod";
+	public static String sPeriodAttribute = "period";
+	public static String sStudentsElementName = "students";
+	public static String sStudentElementName = "student";
+	public static String sAcadAreaMajorClassificationElementName = "acadAreaMajorClassification";
+	public static String sAcademicAreaUniqueIdAttribute = "academicAreaUniqueId";
+	public static String sAcademicClassificationUniqueIdAttribute = "academicClassificationUniqueId";
+	public static String sMajorUniqueIdAttribute = "majorUniqueId";
+	public static String sAcadAreaMinorClassificationElementName = "acadAreaMinorClassification";
+	public static String sMinorUniqueIdAttribute = "minorUniqueId";
+	public static String sEnrollmentElementName = "enrollment";
+	public static String sClassUniqueIdAttribute = "classUniqueId";
+	public static String sCourseOfferingUniqueIdAttribute = "courseOfferingUniqueId";
+	public static String sTimestampAttribute = "timestamp";
+	public static String sChangedByAttribute = "changedBy";
+
+    
+    
+    
 	@SuppressWarnings("unchecked")
 	private TreeSet<InstructionalOffering> findOfferingsWithClasses(Session acadSession) {
 		StringBuilder querySb =  new StringBuilder();
@@ -369,26 +529,26 @@ public class PointInTimeDataExport extends BaseExport {
             beginTransaction();
             Date timestamp = new Date();
             info("Data extract for Point in Time Data started at:  " + timestamp.toString());
-            Element root = document.addElement(PointInTimeDataImport.sRootElementName);
-            root.addAttribute(PointInTimeDataImport.sAcademicSessionUniqueIdAttribute, session.getUniqueId().toString());
-            root.addAttribute(PointInTimeDataImport.sAcademicInitiativeAttribute, session.getAcademicInitiative());
-            root.addAttribute(PointInTimeDataImport.sAcademicYearAttribute, session.getAcademicYear());
-            root.addAttribute(PointInTimeDataImport.sAcademicTermAttribute, session.getAcademicTerm());
-            root.addAttribute(PointInTimeDataImport.sDateFormatAttribute, sDateFormat.toPattern());
-            root.addAttribute(PointInTimeDataImport.sTimeFormatAttribute, sTimeFormat.toPattern());
-            root.addAttribute(PointInTimeDataImport.sCreatedAttribute, (sDateFormat.format(timestamp) + " " + sTimeFormat.format(timestamp)));
-            root.addAttribute(PointInTimeDataImport.sSessionBeginDateAttribute, sDateFormat.format(session.getSessionBeginDateTime()));
-            root.addAttribute(PointInTimeDataImport.sSessionEndDateAttribute, sDateFormat.format(session.getSessionEndDateTime()));
-            root.addAttribute(PointInTimeDataImport.sClassesEndDateAttribute, sDateFormat.format(session.getClassesEndDateTime()));
+            Element root = document.addElement(sRootElementName);
+            root.addAttribute(sAcademicSessionUniqueIdAttribute, session.getUniqueId().toString());
+            root.addAttribute(sAcademicInitiativeAttribute, session.getAcademicInitiative());
+            root.addAttribute(sAcademicYearAttribute, session.getAcademicYear());
+            root.addAttribute(sAcademicTermAttribute, session.getAcademicTerm());
+            root.addAttribute(sDateFormatAttribute, sDateFormat.toPattern());
+            root.addAttribute(sTimeFormatAttribute, sTimeFormat.toPattern());
+            root.addAttribute(sCreatedAttribute, (sDateFormat.format(timestamp) + " " + sTimeFormat.format(timestamp)));
+            root.addAttribute(sSessionBeginDateAttribute, sDateFormat.format(session.getSessionBeginDateTime()));
+            root.addAttribute(sSessionEndDateAttribute, sDateFormat.format(session.getSessionEndDateTime()));
+            root.addAttribute(sClassesEndDateAttribute, sDateFormat.format(session.getClassesEndDateTime()));
             if (session.getDefaultClassDurationType() != null) {
-            	root.addAttribute(PointInTimeDataImport.sDurationTypeAttribute, session.getDefaultClassDurationType().getReference());
+            	root.addAttribute(sDurationTypeAttribute, session.getDefaultClassDurationType().getReference());
             }
             String name = session.getAcademicInitiative()+session.getAcademicYear()+session.getAcademicTerm()+timestamp.getTime();
             String note = "This is a point in time data snapshot for session:  " + session.getLabel() + ", taken on:  " + timestamp.toString();
-            root.addAttribute(PointInTimeDataImport.sPointInTimeNameAttribute, name);
-            root.addAttribute(PointInTimeDataImport.sPointInTimeNoteAttribute, note);
+            root.addAttribute(sPointInTimeNameAttribute, name);
+            root.addAttribute(sPointInTimeNoteAttribute, note);
                        
-            document.addDocType(PointInTimeDataImport.sRootElementName, "-//UniTime//DTD University Course Timetabling/EN", "http://www.unitime.org/interface/PointInTmeData.dtd");
+            document.addDocType(sRootElementName, "-//UniTime//DTD University Course Timetabling/EN", "http://www.unitime.org/interface/PointInTmeData.dtd");
             
             info("Loading Data...");
             TreeSet<InstructionalOffering> offerings = findOfferingsWithClasses(session);
@@ -411,24 +571,24 @@ public class PointInTimeDataExport extends BaseExport {
             info("Data extract for Point in Time Data ended at:  " + endTransTimestamp.toString());
             info("Milliseconds elapsed = " + (endTransTimestamp.getTime() - timestamp.getTime()));
                     
-            departmentsElement = root.addElement(PointInTimeDataImport.sDepartmentsElementName);
-            roomTypesElement = root.addElement(PointInTimeDataImport.sRoomTypesElementName);
-            creditTypesElement = root.addElement(PointInTimeDataImport.sCreditTypesElementName);
-            creditUnitTypesElement = root.addElement(PointInTimeDataImport.sCreditUnitTypesElementName);
-            positionTypesElement = root.addElement(PointInTimeDataImport.sPositionTypesElementName);
-            teachingResponsibilitiesElement = root.addElement(PointInTimeDataImport.sTeachingResponsibilitiesElementName);
-            locationsElement = root.addElement(PointInTimeDataImport.sLocationsElementName);
-            studentsElement = root.addElement(PointInTimeDataImport.sStudentsElementName);
-            courseTypesElement = root.addElement(PointInTimeDataImport.sCourseTypesElementName);
-            classDurationTypesElement = root.addElement(PointInTimeDataImport.sClassDurationTypesElementName);
-            instructionalMethodsElement = root.addElement(PointInTimeDataImport.sInstructionalMethodsElementName);
-            timePatternsElement = root.addElement(PointInTimeDataImport.sTimePatternsElementName);
-            datePatternsElement = root.addElement(PointInTimeDataImport.sDatePatternsElementName);
-            academicAreasElement = root.addElement(PointInTimeDataImport.sAcademicAreasElementName);
-            academicClassificationsElement = root.addElement(PointInTimeDataImport.sAcademicClassificationsElementName);
-            majorsElement = root.addElement(PointInTimeDataImport.sMajorsElementName);
-            minorsElement = root.addElement(PointInTimeDataImport.sMinorsElementName);
-            offeringsElement = root.addElement(PointInTimeDataImport.sOfferingsElementName);
+            departmentsElement = root.addElement(sDepartmentsElementName);
+            roomTypesElement = root.addElement(sRoomTypesElementName);
+            creditTypesElement = root.addElement(sCreditTypesElementName);
+            creditUnitTypesElement = root.addElement(sCreditUnitTypesElementName);
+            positionTypesElement = root.addElement(sPositionTypesElementName);
+            teachingResponsibilitiesElement = root.addElement(sTeachingResponsibilitiesElementName);
+            locationsElement = root.addElement(sLocationsElementName);
+            studentsElement = root.addElement(sStudentsElementName);
+            courseTypesElement = root.addElement(sCourseTypesElementName);
+            classDurationTypesElement = root.addElement(sClassDurationTypesElementName);
+            instructionalMethodsElement = root.addElement(sInstructionalMethodsElementName);
+            timePatternsElement = root.addElement(sTimePatternsElementName);
+            datePatternsElement = root.addElement(sDatePatternsElementName);
+            academicAreasElement = root.addElement(sAcademicAreasElementName);
+            academicClassificationsElement = root.addElement(sAcademicClassificationsElementName);
+            majorsElement = root.addElement(sMajorsElementName);
+            minorsElement = root.addElement(sMinorsElementName);
+            offeringsElement = root.addElement(sOfferingsElementName);
 
             
             info("Exporting "+offerings.size()+" offerings ...");
@@ -466,21 +626,21 @@ public class PointInTimeDataExport extends BaseExport {
     }
     
     private void exportInstructionalOffering(Element offeringsElement, InstructionalOffering offering, Session session) {
-        Element offeringElement = offeringsElement.addElement(PointInTimeDataImport.sOfferingElementName);
-        offeringElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, offering.getUniqueId().toString());
-        offeringElement.addAttribute(PointInTimeDataImport.sPermanentIdAttribute, offering.getInstrOfferingPermId().toString());
-        offeringElement.addAttribute(PointInTimeDataImport.sDemandAttribute, offering.getDemand().toString());
-        offeringElement.addAttribute(PointInTimeDataImport.sLimitAttribute, (offering.getLimit() == null?"0":offering.getLimit().toString()));
-        offeringElement.addAttribute(PointInTimeDataImport.sUniqueIdRolledForwardFromAttribute, (offering.getUniqueIdRolledForwardFrom() == null?"":offering.getUniqueIdRolledForwardFrom().toString()));
-        offeringElement.addAttribute(PointInTimeDataImport.sExternalIdAttribute, (offering.getExternalUniqueId()!=null?offering.getExternalUniqueId():offering.getUniqueId().toString()));
+        Element offeringElement = offeringsElement.addElement(sOfferingElementName);
+        offeringElement.addAttribute(sUniqueIdAttribute, offering.getUniqueId().toString());
+        offeringElement.addAttribute(sPermanentIdAttribute, offering.getInstrOfferingPermId().toString());
+        offeringElement.addAttribute(sDemandAttribute, offering.getDemand().toString());
+        offeringElement.addAttribute(sLimitAttribute, (offering.getLimit() == null?"0":offering.getLimit().toString()));
+        offeringElement.addAttribute(sUniqueIdRolledForwardFromAttribute, (offering.getUniqueIdRolledForwardFrom() == null?"":offering.getUniqueIdRolledForwardFrom().toString()));
+        offeringElement.addAttribute(sExternalIdAttribute, (offering.getExternalUniqueId()!=null?offering.getExternalUniqueId():offering.getUniqueId().toString()));
         
         for (CourseOffering course : offering.getCourseOfferings()) {
-            exportCourse(offeringElement.addElement(PointInTimeDataImport.sCourseElementName), course, session);
+            exportCourse(offeringElement.addElement(sCourseElementName), course, session);
         }
         if (!offering.isNotOffered()) {
             for (InstrOfferingConfig config : offering.getInstrOfferingConfigs()) {
             	if (configHasAtLeastOneStudentEnrolled(config)) {
-            		exportConfig(offeringElement.addElement(PointInTimeDataImport.sConfigElementName), config, session);
+            		exportConfig(offeringElement.addElement(sConfigElementName), config, session);
             	}
             }
         }
@@ -497,35 +657,35 @@ public class PointInTimeDataExport extends BaseExport {
 	        	if (!creditTypeElements.containsKey(credit.getCreditType().getUniqueId())){
 	        		exportCreditType(credit.getCreditType());
 	        	}
-	            subpartElement.addAttribute(PointInTimeDataImport.sCreditTypeAttribute, credit.getCreditType().getUniqueId().toString());
+	            subpartElement.addAttribute(sCreditTypeAttribute, credit.getCreditType().getUniqueId().toString());
 	        }
 	        if (credit.getCreditUnitType()!=null){
 	        	if (!creditUnitTypeElements.containsKey(credit.getCreditUnitType().getUniqueId())){
 	        		exportCreditUnitType(credit.getCreditUnitType());
 	        	}
-	        	subpartElement.addAttribute(PointInTimeDataImport.sCreditUnitTypeAttribute, credit.getCreditUnitType().getUniqueId().toString());
+	        	subpartElement.addAttribute(sCreditUnitTypeAttribute, credit.getCreditUnitType().getUniqueId().toString());
 	        }
 	        if (credit instanceof ArrangeCreditUnitConfig) {
 	        } else if (credit instanceof FixedCreditUnitConfig) {
 	            FixedCreditUnitConfig fixedCredit = (FixedCreditUnitConfig)credit;
-	            subpartElement.addAttribute(PointInTimeDataImport.sCreditAttribute, fixedCredit.getFixedUnits().toString());
+	            subpartElement.addAttribute(sCreditAttribute, fixedCredit.getFixedUnits().toString());
 	        } else if (credit instanceof VariableRangeCreditUnitConfig) {
 	            VariableRangeCreditUnitConfig variableCredit = (VariableRangeCreditUnitConfig)credit;
-	            subpartElement.addAttribute(PointInTimeDataImport.sCreditAttribute, variableCredit.getMinUnits().toString());
+	            subpartElement.addAttribute(sCreditAttribute, variableCredit.getMinUnits().toString());
 	        } else if (credit instanceof VariableFixedCreditUnitConfig) {
 	            VariableFixedCreditUnitConfig variableCredit = (VariableFixedCreditUnitConfig)credit;
-	            subpartElement.addAttribute(PointInTimeDataImport.sCreditAttribute, variableCredit.getMinUnits().toString());
+	            subpartElement.addAttribute(sCreditAttribute, variableCredit.getMinUnits().toString());
 	        }
     	}
     }
     
     private void exportDepartment(Department department){
-    	Element departmentElement = departmentsElement.addElement(PointInTimeDataImport.sDepartmentElementName);
-    	departmentElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, department.getUniqueId().toString());
-    	departmentElement.addAttribute(PointInTimeDataImport.sExternalIdAttribute, (department.getExternalUniqueId() == null?department.getUniqueId().toString():department.getExternalUniqueId()));
-    	departmentElement.addAttribute(PointInTimeDataImport.sNameAttribute, department.getName());
-    	departmentElement.addAttribute(PointInTimeDataImport.sAbbreviationAttribute, department.getAbbreviation());
-    	departmentElement.addAttribute(PointInTimeDataImport.sDepartmentCode, department.getDeptCode());
+    	Element departmentElement = departmentsElement.addElement(sDepartmentElementName);
+    	departmentElement.addAttribute(sUniqueIdAttribute, department.getUniqueId().toString());
+    	departmentElement.addAttribute(sExternalIdAttribute, (department.getExternalUniqueId() == null?department.getUniqueId().toString():department.getExternalUniqueId()));
+    	departmentElement.addAttribute(sNameAttribute, department.getName());
+    	departmentElement.addAttribute(sAbbreviationAttribute, department.getAbbreviation());
+    	departmentElement.addAttribute(sDepartmentCode, department.getDeptCode());
     	departmentElements.put(department.getUniqueId(), departmentElement);
     }
 
@@ -534,20 +694,20 @@ public class PointInTimeDataExport extends BaseExport {
     	if (!departmentElements.containsKey(subjectArea.getDepartment().getUniqueId())){
     		exportDepartment(subjectArea.getDepartment());
     	}
-    	Element subjectElement = departmentElements.get(subjectArea.getDepartment().getUniqueId()).addElement(PointInTimeDataImport.sSubjectAreaElementName);
-    	subjectElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, subjectArea.getUniqueId().toString());
-    	subjectElement.addAttribute(PointInTimeDataImport.sExternalIdAttribute, (subjectArea.getExternalUniqueId() == null?subjectArea.getUniqueId().toString():subjectArea.getExternalUniqueId()));
-    	subjectElement.addAttribute(PointInTimeDataImport.sSubjectAreaAbbreviationAttribute, subjectArea.getSubjectAreaAbbreviation());
-    	subjectElement.addAttribute(PointInTimeDataImport.sTitleAttribute, subjectArea.getTitle());
+    	Element subjectElement = departmentElements.get(subjectArea.getDepartment().getUniqueId()).addElement(sSubjectAreaElementName);
+    	subjectElement.addAttribute(sUniqueIdAttribute, subjectArea.getUniqueId().toString());
+    	subjectElement.addAttribute(sExternalIdAttribute, (subjectArea.getExternalUniqueId() == null?subjectArea.getUniqueId().toString():subjectArea.getExternalUniqueId()));
+    	subjectElement.addAttribute(sSubjectAreaAbbreviationAttribute, subjectArea.getSubjectAreaAbbreviation());
+    	subjectElement.addAttribute(sTitleAttribute, subjectArea.getTitle());
     	subjectElements.put(subjectArea.getUniqueId(), subjectElement);
     	
     }
     
     private void exportCourseType(CourseType courseType){
-    	Element courseTypeElement = courseTypesElement.addElement(PointInTimeDataImport.sCourseTypeElementName);
-    	courseTypeElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, courseType.getUniqueId().toString());
-    	courseTypeElement.addAttribute(PointInTimeDataImport.sReferenceAttribute, courseType.getReference());
-    	courseTypeElement.addAttribute(PointInTimeDataImport.sLabelAttribute, courseType.getLabel());
+    	Element courseTypeElement = courseTypesElement.addElement(sCourseTypeElementName);
+    	courseTypeElement.addAttribute(sUniqueIdAttribute, courseType.getUniqueId().toString());
+    	courseTypeElement.addAttribute(sReferenceAttribute, courseType.getReference());
+    	courseTypeElement.addAttribute(sLabelAttribute, courseType.getLabel());
     	courseTypeElements.put(courseType.getUniqueId(), courseTypeElement);
     }
     
@@ -555,54 +715,54 @@ public class PointInTimeDataExport extends BaseExport {
     	if (!subjectElements.containsKey(course.getSubjectArea().getUniqueId())){
     		exportSubjectArea(course.getSubjectArea());
     	}
-        courseElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, course.getUniqueId().toString());
-        courseElement.addAttribute(PointInTimeDataImport.sExternalIdAttribute, (course.getExternalUniqueId()!=null?course.getExternalUniqueId():course.getUniqueId().toString()));
-        courseElement.addAttribute(PointInTimeDataImport.sSubjectAreaAbbreviationAttribute, course.getSubjectArea().getSubjectAreaAbbreviation());
-        courseElement.addAttribute(PointInTimeDataImport.sCourseNbrAttribute, course.getCourseNbr());
-        courseElement.addAttribute(PointInTimeDataImport.sControllingAttribute, course.isIsControl()?"true":"false");
-        courseElement.addAttribute(PointInTimeDataImport.sPermanentIdAttribute, (course.getPermId() == null ? course.getUniqueId().toString() : course.getPermId()));
+        courseElement.addAttribute(sUniqueIdAttribute, course.getUniqueId().toString());
+        courseElement.addAttribute(sExternalIdAttribute, (course.getExternalUniqueId()!=null?course.getExternalUniqueId():course.getUniqueId().toString()));
+        courseElement.addAttribute(sSubjectAreaAbbreviationAttribute, course.getSubjectArea().getSubjectAreaAbbreviation());
+        courseElement.addAttribute(sCourseNbrAttribute, course.getCourseNbr());
+        courseElement.addAttribute(sControllingAttribute, course.isIsControl()?"true":"false");
+        courseElement.addAttribute(sPermanentIdAttribute, (course.getPermId() == null ? course.getUniqueId().toString() : course.getPermId()));
         if (course.getProjectedDemand() != null){
-            courseElement.addAttribute(PointInTimeDataImport.sProjectedDemandAttribute,
+            courseElement.addAttribute(sProjectedDemandAttribute,
             		course.getProjectedDemand().toString());
         }
         if (course.getTitle() != null) {
-        	courseElement.addAttribute(PointInTimeDataImport.sTitleAttribute, course.getTitle());
+        	courseElement.addAttribute(sTitleAttribute, course.getTitle());
         }
         if (course.getNbrExpectedStudents() != null) {
-        	courseElement.addAttribute(PointInTimeDataImport.sNumberExpectedStudentsAttribute, course.getNbrExpectedStudents().toString());
+        	courseElement.addAttribute(sNumberExpectedStudentsAttribute, course.getNbrExpectedStudents().toString());
         }
         if (course.getDemand() != null){
-        	courseElement.addAttribute(PointInTimeDataImport.sLastlikeDemandAttribute, course.getDemand().toString());
+        	courseElement.addAttribute(sLastlikeDemandAttribute, course.getDemand().toString());
         }
         if (course.getCourseType() != null) {
         	if (!courseTypeElements.containsKey(course.getCourseType().getUniqueId())){
         		exportCourseType(course.getCourseType());
         	}
-        	courseElement.addAttribute(PointInTimeDataImport.sCourseTypeIdAttribute, (course.getCourseType().getUniqueId().toString()) );
+        	courseElement.addAttribute(sCourseTypeIdAttribute, (course.getCourseType().getUniqueId().toString()) );
         }
         if (course.getUniqueIdRolledForwardFrom() != null){
-        	courseElement.addAttribute(PointInTimeDataImport.sUniqueIdRolledForwardFromAttribute, course.getUniqueIdRolledForwardFrom().toString());
+        	courseElement.addAttribute(sUniqueIdRolledForwardFromAttribute, course.getUniqueIdRolledForwardFrom().toString());
         }
     }
     
     private void exportClassDurationType(ClassDurationType classDurationType){
-    	Element classDurationTypeElement = classDurationTypesElement.addElement(PointInTimeDataImport.sClassDurationTypeElementName);
-    	classDurationTypeElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, classDurationType.getUniqueId().toString());
-    	classDurationTypeElement.addAttribute(PointInTimeDataImport.sReferenceAttribute, classDurationType.getReference());
-    	classDurationTypeElement.addAttribute(PointInTimeDataImport.sLabelAttribute, classDurationType.getLabel());
-    	classDurationTypeElement.addAttribute(PointInTimeDataImport.sAbbreviationAttribute, classDurationType.getAbbreviation());
-    	classDurationTypeElement.addAttribute(PointInTimeDataImport.sImplementationAttribute, classDurationType.getImplementation());
-    	classDurationTypeElement.addAttribute(PointInTimeDataImport.sParameterAttribute, classDurationType.getParameter());
-    	classDurationTypeElement.addAttribute(PointInTimeDataImport.sVisibleAttribute, (classDurationType.getVisible()?"true":"false"));
+    	Element classDurationTypeElement = classDurationTypesElement.addElement(sClassDurationTypeElementName);
+    	classDurationTypeElement.addAttribute(sUniqueIdAttribute, classDurationType.getUniqueId().toString());
+    	classDurationTypeElement.addAttribute(sReferenceAttribute, classDurationType.getReference());
+    	classDurationTypeElement.addAttribute(sLabelAttribute, classDurationType.getLabel());
+    	classDurationTypeElement.addAttribute(sAbbreviationAttribute, classDurationType.getAbbreviation());
+    	classDurationTypeElement.addAttribute(sImplementationAttribute, classDurationType.getImplementation());
+    	classDurationTypeElement.addAttribute(sParameterAttribute, classDurationType.getParameter());
+    	classDurationTypeElement.addAttribute(sVisibleAttribute, (classDurationType.getVisible()?"true":"false"));
     	courseTypeElements.put(classDurationType.getUniqueId(), classDurationTypeElement);
     }
 
     private void exportInstructionalMethod(InstructionalMethod instructionalMethod){
-    	Element instructionalMethodElement = instructionalMethodsElement.addElement(PointInTimeDataImport.sInstructionalMethodElementName);
-    	instructionalMethodElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, instructionalMethod.getUniqueId().toString());
-    	instructionalMethodElement.addAttribute(PointInTimeDataImport.sReferenceAttribute, instructionalMethod.getReference());
-    	instructionalMethodElement.addAttribute(PointInTimeDataImport.sLabelAttribute, instructionalMethod.getLabel());
-    	instructionalMethodElement.addAttribute(PointInTimeDataImport.sVisibleAttribute, (instructionalMethod.getVisible()?"true":"false"));
+    	Element instructionalMethodElement = instructionalMethodsElement.addElement(sInstructionalMethodElementName);
+    	instructionalMethodElement.addAttribute(sUniqueIdAttribute, instructionalMethod.getUniqueId().toString());
+    	instructionalMethodElement.addAttribute(sReferenceAttribute, instructionalMethod.getReference());
+    	instructionalMethodElement.addAttribute(sLabelAttribute, instructionalMethod.getLabel());
+    	instructionalMethodElement.addAttribute(sVisibleAttribute, (instructionalMethod.getVisible()?"true":"false"));
     	instructionalMethodElements.put(instructionalMethod.getUniqueId(), instructionalMethodElement);
     }
 
@@ -618,39 +778,39 @@ public class PointInTimeDataExport extends BaseExport {
     }
 
     private void exportConfig(Element configElement, InstrOfferingConfig config, Session session) {
-        configElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, config.getUniqueId().toString());
-        configElement.addAttribute(PointInTimeDataImport.sNameAttribute, config.getName());
-        configElement.addAttribute(PointInTimeDataImport.sUnlimitedEnrollmentAttributeName, (config.isUnlimitedEnrollment() ? "true" : "false"));
+        configElement.addAttribute(sUniqueIdAttribute, config.getUniqueId().toString());
+        configElement.addAttribute(sNameAttribute, config.getName());
+        configElement.addAttribute(sUnlimitedEnrollmentAttributeName, (config.isUnlimitedEnrollment() ? "true" : "false"));
         if (config.getClassDurationType() != null) {
         	if (!classDurationTypeElements.containsKey(config.getClassDurationType().getUniqueId())){
         		exportClassDurationType(config.getClassDurationType());
         	}
-        	configElement.addAttribute(PointInTimeDataImport.sDurationTypeAttribute, config.getClassDurationType().getReference());
+        	configElement.addAttribute(sDurationTypeAttribute, config.getClassDurationType().getReference());
         }
         if (config.getInstructionalMethod() != null) {
         	if (!instructionalMethodElements.containsKey(config.getInstructionalMethod().getUniqueId())){
         		exportInstructionalMethod(config.getInstructionalMethod());
         	}
-        	configElement.addAttribute(PointInTimeDataImport.sInstructionalMethodAttribute, config.getInstructionalMethod().getReference());
+        	configElement.addAttribute(sInstructionalMethodAttribute, config.getInstructionalMethod().getReference());
         }
         if (config.getUniqueIdRolledForwardFrom() != null) {
-        	configElement.addAttribute(PointInTimeDataImport.sUniqueIdRolledForwardFromAttribute, config.getUniqueIdRolledForwardFrom().toString());
+        	configElement.addAttribute(sUniqueIdRolledForwardFromAttribute, config.getUniqueIdRolledForwardFrom().toString());
         }
         for (SchedulingSubpart subpart : config.getSchedulingSubparts()) {
             if (subpart.getParentSubpart()==null) {
-                exportSubpart(configElement.addElement(PointInTimeDataImport.sSubpartElementName), subpart, session);
+                exportSubpart(configElement.addElement(sSubpartElementName), subpart, session);
             }
         }
     }
     
     private void exportSubpart(Element subpartElement, SchedulingSubpart subpart, Session session) {
-        subpartElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, subpart.getUniqueId().toString());
-        subpartElement.addAttribute(PointInTimeDataImport.sTypeAttribute, subpart.getItypeDesc().trim());
-        subpartElement.addAttribute(PointInTimeDataImport.sSuffixAttribute, subpart.getSchedulingSubpartSuffixCache());
-        subpartElement.addAttribute(PointInTimeDataImport.sMinPerWeekAttribute, subpart.getMinutesPerWk().toString());
-        subpartElement.addAttribute(PointInTimeDataImport.sStudentAllowOverlapAttribute, (subpart.getStudentAllowOverlap()?"true":"false"));
+        subpartElement.addAttribute(sUniqueIdAttribute, subpart.getUniqueId().toString());
+        subpartElement.addAttribute(sTypeAttribute, subpart.getItypeDesc().trim());
+        subpartElement.addAttribute(sSuffixAttribute, subpart.getSchedulingSubpartSuffixCache());
+        subpartElement.addAttribute(sMinPerWeekAttribute, subpart.getMinutesPerWk().toString());
+        subpartElement.addAttribute(sStudentAllowOverlapAttribute, (subpart.getStudentAllowOverlap()?"true":"false"));
         if (subpart.getUniqueIdRolledForwardFrom() != null)
-        	subpartElement.addAttribute(PointInTimeDataImport.sUniqueIdRolledForwardFromAttribute, subpart.getUniqueIdRolledForwardFrom().toString());
+        	subpartElement.addAttribute(sUniqueIdRolledForwardFromAttribute, subpart.getUniqueIdRolledForwardFrom().toString());
 
         for (CourseCreditUnitConfig credit :subpart.getCreditConfigs()) {
             exportCredit(subpartElement, credit);
@@ -658,112 +818,112 @@ public class PointInTimeDataExport extends BaseExport {
         
         for (Class_ clazz : subpart.getClasses()){
         	if (!clazz.getCancelled() && clazz.getEnrollment().intValue() > 0){
-        		exportClass(subpartElement.addElement(PointInTimeDataImport.sClassElementName), clazz);
+        		exportClass(subpartElement.addElement(sClassElementName), clazz);
         	}
         }
         
         for (SchedulingSubpart childSubpart : subpart.getChildSubparts()) {
-            exportSubpart(subpartElement.addElement(PointInTimeDataImport.sSubpartElementName), childSubpart, session);
+            exportSubpart(subpartElement.addElement(sSubpartElementName), childSubpart, session);
         }
     }
     
     private void exportDatePattern(DatePattern datePattern){
-    	Element datePatternElement = datePatternsElement.addElement(PointInTimeDataImport.sDatePatternElementName);
-    	datePatternElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, datePattern.getUniqueId().toString());
-    	datePatternElement.addAttribute(PointInTimeDataImport.sNameAttribute, datePattern.getName());
-    	datePatternElement.addAttribute(PointInTimeDataImport.sPatternAttribute, datePattern.getPattern());
-    	datePatternElement.addAttribute(PointInTimeDataImport.sOffsetAttribute, datePattern.getOffset().toString());
-    	datePatternElement.addAttribute(PointInTimeDataImport.sTypeAttribute, datePattern.getType().toString());
-    	datePatternElement.addAttribute(PointInTimeDataImport.sVisibleAttribute, datePattern.getVisible()?"true":"false");
+    	Element datePatternElement = datePatternsElement.addElement(sDatePatternElementName);
+    	datePatternElement.addAttribute(sUniqueIdAttribute, datePattern.getUniqueId().toString());
+    	datePatternElement.addAttribute(sNameAttribute, datePattern.getName());
+    	datePatternElement.addAttribute(sPatternAttribute, datePattern.getPattern());
+    	datePatternElement.addAttribute(sOffsetAttribute, datePattern.getOffset().toString());
+    	datePatternElement.addAttribute(sTypeAttribute, datePattern.getType().toString());
+    	datePatternElement.addAttribute(sVisibleAttribute, datePattern.getVisible()?"true":"false");
     	if (datePattern.getNumberOfWeeks() != null) {
-    		datePatternElement.addAttribute(PointInTimeDataImport.sNumberOfWeeksAttribute, datePattern.getNumberOfWeeks().toString());
+    		datePatternElement.addAttribute(sNumberOfWeeksAttribute, datePattern.getNumberOfWeeks().toString());
     	}
     	datePatternElements.put(datePattern.getUniqueId(), datePatternElement);
     }
 
     private void exportTimePatternDays(Element timePatternDaysElement, TimePatternDays timePatternDays){
-    	timePatternDaysElement.addAttribute(PointInTimeDataImport.sDayCodeAttribute, timePatternDays.getDayCode().toString());
+    	timePatternDaysElement.addAttribute(sDayCodeAttribute, timePatternDays.getDayCode().toString());
     }
     
     private void exportTimePatternTimes(Element timePatternTimesElement, TimePatternTime timePatternTimes){
-    	timePatternTimesElement.addAttribute(PointInTimeDataImport.sStartSlotAttribute, timePatternTimes.getStartSlot().toString());
+    	timePatternTimesElement.addAttribute(sStartSlotAttribute, timePatternTimes.getStartSlot().toString());
     }
 
     private void exportTimePattern(TimePattern timePattern){
-    	Element timePatternElement = timePatternsElement.addElement(PointInTimeDataImport.sTimePatternElementName);
-    	timePatternElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, timePattern.getUniqueId().toString());
-    	timePatternElement.addAttribute(PointInTimeDataImport.sNameAttribute, timePattern.getName());
-    	timePatternElement.addAttribute(PointInTimeDataImport.sMinutesPerMeetingAttribute, timePattern.getMinPerMtg().toString());
-    	timePatternElement.addAttribute(PointInTimeDataImport.sSlotsPerMeetingAttribute, timePattern.getSlotsPerMtg().toString());
-    	timePatternElement.addAttribute(PointInTimeDataImport.sNumberOfMeetingsPerWeekAttribute, timePattern.getNrMeetings().toString());
-    	timePatternElement.addAttribute(PointInTimeDataImport.sVisibleAttribute, timePattern.getVisible()?"true":"false");
-    	timePatternElement.addAttribute(PointInTimeDataImport.sTypeAttribute, timePattern.getType().toString());
-    	timePatternElement.addAttribute(PointInTimeDataImport.sBreakTimeAttribute, timePattern.getBreakTime().toString());
+    	Element timePatternElement = timePatternsElement.addElement(sTimePatternElementName);
+    	timePatternElement.addAttribute(sUniqueIdAttribute, timePattern.getUniqueId().toString());
+    	timePatternElement.addAttribute(sNameAttribute, timePattern.getName());
+    	timePatternElement.addAttribute(sMinutesPerMeetingAttribute, timePattern.getMinPerMtg().toString());
+    	timePatternElement.addAttribute(sSlotsPerMeetingAttribute, timePattern.getSlotsPerMtg().toString());
+    	timePatternElement.addAttribute(sNumberOfMeetingsPerWeekAttribute, timePattern.getNrMeetings().toString());
+    	timePatternElement.addAttribute(sVisibleAttribute, timePattern.getVisible()?"true":"false");
+    	timePatternElement.addAttribute(sTypeAttribute, timePattern.getType().toString());
+    	timePatternElement.addAttribute(sBreakTimeAttribute, timePattern.getBreakTime().toString());
     	for(TimePatternDays day : timePattern.getDays()){
-    		exportTimePatternDays(timePatternElement.addElement(PointInTimeDataImport.sTimePatternDaysElementName), day);
+    		exportTimePatternDays(timePatternElement.addElement(sTimePatternDaysElementName), day);
     	}
     	
     	for(TimePatternTime time : timePattern.getTimes()){
-    		exportTimePatternTimes(timePatternElement.addElement(PointInTimeDataImport.sTimePatternTimeElementName), time);
+    		exportTimePatternTimes(timePatternElement.addElement(sTimePatternTimeElementName), time);
     	}
     	
     	timePatternElements.put(timePattern.getUniqueId(), timePatternElement);
     }
     
     private void exportClass(Element classElement, Class_ clazz) {
-        classElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, clazz.getUniqueId().toString());
-        classElement.addAttribute(PointInTimeDataImport.sExternalIdAttribute, getExternalUniqueId(clazz));
+        classElement.addAttribute(sUniqueIdAttribute, clazz.getUniqueId().toString());
+        classElement.addAttribute(sExternalIdAttribute, getExternalUniqueId(clazz));
         if (clazz.getParentClass() != null){
-            classElement.addAttribute(PointInTimeDataImport.sParentClassUniqueIdAttribute, clazz.getParentClass().getUniqueId().toString());        	
+            classElement.addAttribute(sParentClassUniqueIdAttribute, clazz.getParentClass().getUniqueId().toString());        	
         }
-        classElement.addAttribute(PointInTimeDataImport.sStudentSchedulingAttribute, clazz.isEnabledForStudentScheduling()?"true":"false");
+        classElement.addAttribute(sStudentSchedulingAttribute, clazz.isEnabledForStudentScheduling()?"true":"false");
         if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment()) {
-        	classElement.addAttribute(PointInTimeDataImport.sLimitAttribute, "inf");
+        	classElement.addAttribute(sLimitAttribute, "inf");
         }
         else {
-        	classElement.addAttribute(PointInTimeDataImport.sLimitAttribute, String.valueOf(clazz.getClassLimit()));
+        	classElement.addAttribute(sLimitAttribute, String.valueOf(clazz.getClassLimit()));
         }
         if (clazz.getNbrRooms() != null){
-        	classElement.addAttribute(PointInTimeDataImport.sNumberOfRoomsAttribute, clazz.getNbrRooms().toString());        	
+        	classElement.addAttribute(sNumberOfRoomsAttribute, clazz.getNbrRooms().toString());        	
         }
         if (!datePatternElements.containsKey(clazz.effectiveDatePattern().getUniqueId())){
         	exportDatePattern(clazz.effectiveDatePattern());
         }
-        classElement.addAttribute(PointInTimeDataImport.sDatePatternUniqueIdAttribute, clazz.effectiveDatePattern().getUniqueId().toString());
+        classElement.addAttribute(sDatePatternUniqueIdAttribute, clazz.effectiveDatePattern().getUniqueId().toString());
         if (clazz.getCommittedAssignment() != null){
         	if (!timePatternElements.containsKey(clazz.getCommittedAssignment().getTimePattern().getUniqueId())){
         		exportTimePattern(clazz.getCommittedAssignment().getTimePattern());
         	}
-            classElement.addAttribute(PointInTimeDataImport.sTimePatternUniqueIdAttribute, clazz.getCommittedAssignment().getTimePattern().getUniqueId().toString());        	
+            classElement.addAttribute(sTimePatternUniqueIdAttribute, clazz.getCommittedAssignment().getTimePattern().getUniqueId().toString());        	
         }
-        classElement.addAttribute(PointInTimeDataImport.sClassSuffixAttribute, (clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString()));
-        classElement.addAttribute(PointInTimeDataImport.sSectionNumberAttribute, clazz.getSectionNumber().toString());
+        classElement.addAttribute(sClassSuffixAttribute, (clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString()));
+        classElement.addAttribute(sSectionNumberAttribute, clazz.getSectionNumber().toString());
         if (!departmentElements.containsKey(clazz.getManagingDept().getUniqueId())){
         	exportDepartment(clazz.getManagingDept());
         }
-        classElement.addAttribute(PointInTimeDataImport.sManagingDepartmentUniqueIdAttribute, clazz.getManagingDept().getUniqueId().toString());
+        classElement.addAttribute(sManagingDepartmentUniqueIdAttribute, clazz.getManagingDept().getUniqueId().toString());
         if (clazz.getUniqueIdRolledForwardFrom() != null)
-        	classElement.addAttribute(PointInTimeDataImport.sUniqueIdRolledForwardFromAttribute, clazz.getUniqueIdRolledForwardFrom().toString());
+        	classElement.addAttribute(sUniqueIdRolledForwardFromAttribute, clazz.getUniqueIdRolledForwardFrom().toString());
 
         for (ClassInstructor instructor : clazz.getClassInstructors()) {
-            exportClassInstructor(classElement.addElement(PointInTimeDataImport.sClassInstructorElementName), instructor);
+            exportClassInstructor(classElement.addElement(sClassInstructorElementName), instructor);
         }
         
         classElements.put(clazz.getUniqueId(), classElement);
     }
     
     private void exportStudent(Student student){
-    	Element studentElement = studentsElement.addElement(PointInTimeDataImport.sStudentElementName);
-    	studentElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, student.getUniqueId().toString());
-    	studentElement.addAttribute(PointInTimeDataImport.sExternalIdAttribute, (student.getExternalUniqueId() == null?student.getUniqueId().toString():student.getExternalUniqueId()));
-    	studentElement.addAttribute(PointInTimeDataImport.sFirstNameAttribute, student.getFirstName());
-    	studentElement.addAttribute(PointInTimeDataImport.sMiddleNameAttribute, student.getMiddleName());
-    	studentElement.addAttribute(PointInTimeDataImport.sLastNameAttribute, student.getLastName());
+    	Element studentElement = studentsElement.addElement(sStudentElementName);
+    	studentElement.addAttribute(sUniqueIdAttribute, student.getUniqueId().toString());
+    	studentElement.addAttribute(sExternalIdAttribute, (student.getExternalUniqueId() == null?student.getUniqueId().toString():student.getExternalUniqueId()));
+    	studentElement.addAttribute(sFirstNameAttribute, student.getFirstName());
+    	studentElement.addAttribute(sMiddleNameAttribute, student.getMiddleName());
+    	studentElement.addAttribute(sLastNameAttribute, student.getLastName());
     	studentElements.put(student.getUniqueId(), studentElement);
     	for(PosMajor major : student.getPosMajors()){
     		for(AcademicAreaClassification aac : student.getAcademicAreaClassifications()){
     			if (aac.getAcademicArea().getPosMajors().contains(major)) {
-    				exportAcadAreaMajorClassification(studentElement.addElement(PointInTimeDataImport.sAcadAreaMajorClassificationElementName), aac, major);
+    				exportAcadAreaMajorClassification(studentElement.addElement(sAcadAreaMajorClassificationElementName), aac, major);
     				break;
     			}
     		}
@@ -771,7 +931,7 @@ public class PointInTimeDataExport extends BaseExport {
     	for(PosMinor minor : student.getPosMinors()){
     		for(AcademicAreaClassification aac : student.getAcademicAreaClassifications()){
     			if (aac.getAcademicArea().getPosMinors().contains(minor)) {
-    				exportAcadAreaMinorClassification(studentElement.addElement(PointInTimeDataImport.sAcadAreaMinorClassificationElementName), aac, minor);
+    				exportAcadAreaMinorClassification(studentElement.addElement(sAcadAreaMinorClassificationElementName), aac, minor);
     				break;
     			}
     		}
@@ -789,9 +949,9 @@ public class PointInTimeDataExport extends BaseExport {
     	if (!academicClassificationElements.containsKey(academicAreaClassification.getAcademicClassification().getUniqueId())){
     		exportAcademicClassification(academicAreaClassification.getAcademicClassification());
     	}
-    	acadAreaMajorClassificationElement.addAttribute(PointInTimeDataImport.sAcademicAreaUniqueIdAttribute, academicAreaClassification.getAcademicArea().getUniqueId().toString());
-    	acadAreaMajorClassificationElement.addAttribute(PointInTimeDataImport.sAcademicClassificationUniqueIdAttribute, academicAreaClassification.getAcademicClassification().getUniqueId().toString());
-    	acadAreaMajorClassificationElement.addAttribute(PointInTimeDataImport.sMajorUniqueIdAttribute, major.getUniqueId().toString());
+    	acadAreaMajorClassificationElement.addAttribute(sAcademicAreaUniqueIdAttribute, academicAreaClassification.getAcademicArea().getUniqueId().toString());
+    	acadAreaMajorClassificationElement.addAttribute(sAcademicClassificationUniqueIdAttribute, academicAreaClassification.getAcademicClassification().getUniqueId().toString());
+    	acadAreaMajorClassificationElement.addAttribute(sMajorUniqueIdAttribute, major.getUniqueId().toString());
 	}
 
     private void exportAcadAreaMinorClassification(Element acadAreaMinorClassificationElement,
@@ -805,44 +965,44 @@ public class PointInTimeDataExport extends BaseExport {
     	if (!academicClassificationElements.containsKey(academicAreaClassification.getAcademicClassification().getUniqueId())){
     		exportAcademicClassification(academicAreaClassification.getAcademicClassification());
     	}
-    	acadAreaMinorClassificationElement.addAttribute(PointInTimeDataImport.sAcademicAreaUniqueIdAttribute, academicAreaClassification.getAcademicArea().getUniqueId().toString());
-    	acadAreaMinorClassificationElement.addAttribute(PointInTimeDataImport.sAcademicClassificationUniqueIdAttribute, academicAreaClassification.getAcademicClassification().getUniqueId().toString());
-    	acadAreaMinorClassificationElement.addAttribute(PointInTimeDataImport.sMinorUniqueIdAttribute, minor.getUniqueId().toString());
+    	acadAreaMinorClassificationElement.addAttribute(sAcademicAreaUniqueIdAttribute, academicAreaClassification.getAcademicArea().getUniqueId().toString());
+    	acadAreaMinorClassificationElement.addAttribute(sAcademicClassificationUniqueIdAttribute, academicAreaClassification.getAcademicClassification().getUniqueId().toString());
+    	acadAreaMinorClassificationElement.addAttribute(sMinorUniqueIdAttribute, minor.getUniqueId().toString());
 	}
 
 	private void exportMajor(PosMajor major) {
-    	Element majorElement = majorsElement.addElement(PointInTimeDataImport.sMajorElementName);
-    	majorElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, major.getUniqueId().toString());
-    	majorElement.addAttribute(PointInTimeDataImport.sCodeAttribute, major.getCode());
-    	majorElement.addAttribute(PointInTimeDataImport.sNameAttribute, major.getName());
-    	majorElement.addAttribute(PointInTimeDataImport.sExternalIdAttribute, (major.getExternalUniqueId() == null? major.getUniqueId().toString() : major.getExternalUniqueId()));
+    	Element majorElement = majorsElement.addElement(sMajorElementName);
+    	majorElement.addAttribute(sUniqueIdAttribute, major.getUniqueId().toString());
+    	majorElement.addAttribute(sCodeAttribute, major.getCode());
+    	majorElement.addAttribute(sNameAttribute, major.getName());
+    	majorElement.addAttribute(sExternalIdAttribute, (major.getExternalUniqueId() == null? major.getUniqueId().toString() : major.getExternalUniqueId()));
     	majorElements.put(major.getUniqueId(), majorElement);
 	}
 
 	private void exportMinor(PosMinor minor) {
-    	Element minorElement = minorsElement.addElement(PointInTimeDataImport.sMinorElementName);
-    	minorElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, minor.getUniqueId().toString());
-    	minorElement.addAttribute(PointInTimeDataImport.sCodeAttribute, minor.getCode());
-    	minorElement.addAttribute(PointInTimeDataImport.sNameAttribute, minor.getName());
-    	minorElement.addAttribute(PointInTimeDataImport.sExternalIdAttribute, (minor.getExternalUniqueId() == null? minor.getUniqueId().toString() : minor.getExternalUniqueId()));
+    	Element minorElement = minorsElement.addElement(sMinorElementName);
+    	minorElement.addAttribute(sUniqueIdAttribute, minor.getUniqueId().toString());
+    	minorElement.addAttribute(sCodeAttribute, minor.getCode());
+    	minorElement.addAttribute(sNameAttribute, minor.getName());
+    	minorElement.addAttribute(sExternalIdAttribute, (minor.getExternalUniqueId() == null? minor.getUniqueId().toString() : minor.getExternalUniqueId()));
     	minorElements.put(minor.getUniqueId(), minorElement);
 	}
 
 	private void exportAcademicClassification(AcademicClassification academicClassification) {
-    	Element academicClassificationElement = academicClassificationsElement.addElement(PointInTimeDataImport.sAcademicClassificationElementName);
-    	academicClassificationElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, academicClassification.getUniqueId().toString());
-    	academicClassificationElement.addAttribute(PointInTimeDataImport.sCodeAttribute, academicClassification.getCode());
-    	academicClassificationElement.addAttribute(PointInTimeDataImport.sNameAttribute, academicClassification.getName());
-    	academicClassificationElement.addAttribute(PointInTimeDataImport.sExternalIdAttribute, (academicClassification.getExternalUniqueId() == null? academicClassification.getUniqueId().toString() : academicClassification.getExternalUniqueId()));
+    	Element academicClassificationElement = academicClassificationsElement.addElement(sAcademicClassificationElementName);
+    	academicClassificationElement.addAttribute(sUniqueIdAttribute, academicClassification.getUniqueId().toString());
+    	academicClassificationElement.addAttribute(sCodeAttribute, academicClassification.getCode());
+    	academicClassificationElement.addAttribute(sNameAttribute, academicClassification.getName());
+    	academicClassificationElement.addAttribute(sExternalIdAttribute, (academicClassification.getExternalUniqueId() == null? academicClassification.getUniqueId().toString() : academicClassification.getExternalUniqueId()));
     	academicClassificationElements.put(academicClassification.getUniqueId(), academicClassificationElement);
 	}
 
 	private void exportAcademicArea(AcademicArea academicArea) {
-    	Element academicAreaElement = academicAreasElement.addElement(PointInTimeDataImport.sAcademicAreaElementName);
-    	academicAreaElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, academicArea.getUniqueId().toString());
-    	academicAreaElement.addAttribute(PointInTimeDataImport.sAbbreviationAttribute, academicArea.getAcademicAreaAbbreviation());
-    	academicAreaElement.addAttribute(PointInTimeDataImport.sTitleAttribute, academicArea.getTitle());
-    	academicAreaElement.addAttribute(PointInTimeDataImport.sExternalIdAttribute, (academicArea.getExternalUniqueId() == null? academicArea.getUniqueId().toString() : academicArea.getExternalUniqueId()));
+    	Element academicAreaElement = academicAreasElement.addElement(sAcademicAreaElementName);
+    	academicAreaElement.addAttribute(sUniqueIdAttribute, academicArea.getUniqueId().toString());
+    	academicAreaElement.addAttribute(sAbbreviationAttribute, academicArea.getAcademicAreaAbbreviation());
+    	academicAreaElement.addAttribute(sTitleAttribute, academicArea.getTitle());
+    	academicAreaElement.addAttribute(sExternalIdAttribute, (academicArea.getExternalUniqueId() == null? academicArea.getUniqueId().toString() : academicArea.getExternalUniqueId()));
     	academicAreaElements.put(academicArea.getUniqueId(), academicAreaElement);
 	}
 	
@@ -851,18 +1011,18 @@ public class PointInTimeDataExport extends BaseExport {
     	if (!studentElements.containsKey(studentClassEnrollment.getStudent().getUniqueId())){
     		exportStudent(studentClassEnrollment.getStudent());
     	}
-    	Element studentClassEnrollmentElement = studentElements.get(studentClassEnrollment.getStudent().getUniqueId()).addElement(PointInTimeDataImport.sEnrollmentElementName);
-    	studentClassEnrollmentElement.addAttribute(PointInTimeDataImport.sClassUniqueIdAttribute, studentClassEnrollment.getClazz().getUniqueId().toString());
-    	studentClassEnrollmentElement.addAttribute(PointInTimeDataImport.sCourseOfferingUniqueIdAttribute, studentClassEnrollment.getCourseOffering().getUniqueId().toString());
-    	studentClassEnrollmentElement.addAttribute(PointInTimeDataImport.sTimestampAttribute, (sDateFormat.format(studentClassEnrollment.getTimestamp()) + " " + sTimeFormat.format(studentClassEnrollment.getTimestamp())));
-    	studentClassEnrollmentElement.addAttribute(PointInTimeDataImport.sChangedByAttribute, studentClassEnrollment.getChangedBy());
+    	Element studentClassEnrollmentElement = studentElements.get(studentClassEnrollment.getStudent().getUniqueId()).addElement(sEnrollmentElementName);
+    	studentClassEnrollmentElement.addAttribute(sClassUniqueIdAttribute, studentClassEnrollment.getClazz().getUniqueId().toString());
+    	studentClassEnrollmentElement.addAttribute(sCourseOfferingUniqueIdAttribute, studentClassEnrollment.getCourseOffering().getUniqueId().toString());
+    	studentClassEnrollmentElement.addAttribute(sTimestampAttribute, (sDateFormat.format(studentClassEnrollment.getTimestamp()) + " " + sTimeFormat.format(studentClassEnrollment.getTimestamp())));
+    	studentClassEnrollmentElement.addAttribute(sChangedByAttribute, studentClassEnrollment.getChangedBy());
     }
 
     private void exportClassEvent(ClassEvent classEvent, Meeting meeting, Location location) {
     	Element classEventElement = classEventElements.get(classEvent.getUniqueId());
     	if (classEventElement == null){
-	    	classEventElement = classElements.get(classEvent.getClazz().getUniqueId()).addElement(PointInTimeDataImport.sClassEventElementName);
-			classEventElement.addAttribute(PointInTimeDataImport.sNameAttribute, classEvent.getEventName());
+	    	classEventElement = classElements.get(classEvent.getClazz().getUniqueId()).addElement(sClassEventElementName);
+			classEventElement.addAttribute(sNameAttribute, classEvent.getEventName());
 			classEventElements.put(classEvent.getUniqueId(), classEventElement);
     	}
 		exportClassMeeting(classEventElement.addElement("classMeeting"), meeting, classEvent.getClazz(), location);
@@ -892,8 +1052,8 @@ public class PointInTimeDataExport extends BaseExport {
 		if (totalMinPerMeeting <= timePatMinPerMtg) {
 			for(int i = firstPeriod; i < lastPeriod; i++) {
 				if (meetPeriodsCount < totalTimePeriodsNeeded) {
-					Element classMeetingUtilPeriod = classMeetingElement.addElement(PointInTimeDataImport.sClassMeetingUtilPeriodElementName);
-					classMeetingUtilPeriod.addAttribute(PointInTimeDataImport.sPeriodAttribute, Integer.toString(i));
+					Element classMeetingUtilPeriod = classMeetingElement.addElement(sClassMeetingUtilPeriodElementName);
+					classMeetingUtilPeriod.addAttribute(sPeriodAttribute, Integer.toString(i));
 					meetPeriodsCount++;
 				} else {
 					extraPeriodsCount++;
@@ -915,8 +1075,8 @@ public class PointInTimeDataExport extends BaseExport {
 			for(int i = firstPeriod; i < lastPeriod; i++) {
 				if (meetPeriodsCount < totalTimePeriodsNeeded) {
 					if (markAsMeeting){
-						Element classMeetingUtilPeriod = classMeetingElement.addElement(PointInTimeDataImport.sClassMeetingUtilPeriodElementName);
-						classMeetingUtilPeriod.addAttribute(PointInTimeDataImport.sPeriodAttribute, Integer.toString(i));
+						Element classMeetingUtilPeriod = classMeetingElement.addElement(sClassMeetingUtilPeriodElementName);
+						classMeetingUtilPeriod.addAttribute(sPeriodAttribute, Integer.toString(i));
 						meetCount++;
 						meetPeriodsCount++;
 						if (meetCount >= numPeriodsPerStandardHour  && numBreakPeriods > 0){
@@ -957,73 +1117,73 @@ public class PointInTimeDataExport extends BaseExport {
 			calcMinutesPerMeeting = timePatternMinPerMeeting;
 		}
 
-		meetingElement.addAttribute(PointInTimeDataImport.sMeetingDateAttribute, sDateFormat.format(meeting.getMeetingDate()));
-		meetingElement.addAttribute(PointInTimeDataImport.sStartPeriodAttribute, meeting.getStartPeriod().toString());
-		meetingElement.addAttribute(PointInTimeDataImport.sStopPeriodAttribute, meeting.getStopPeriod().toString());
-		meetingElement.addAttribute(PointInTimeDataImport.sStartOffsetAttribute, meeting.getStartOffset().toString());
-		meetingElement.addAttribute(PointInTimeDataImport.sStopOffsetAttribute, meeting.getStopOffset().toString());
-		meetingElement.addAttribute(PointInTimeDataImport.sTimePatternMinutesPerMeetingAttribute, Integer.toString(timePatternMinPerMeeting));
-		meetingElement.addAttribute(PointInTimeDataImport.sCalculatedMinutesPerMeetingAttribute, Integer.toString(calcMinutesPerMeeting));
+		meetingElement.addAttribute(sMeetingDateAttribute, sDateFormat.format(meeting.getMeetingDate()));
+		meetingElement.addAttribute(sStartPeriodAttribute, meeting.getStartPeriod().toString());
+		meetingElement.addAttribute(sStopPeriodAttribute, meeting.getStopPeriod().toString());
+		meetingElement.addAttribute(sStartOffsetAttribute, meeting.getStartOffset().toString());
+		meetingElement.addAttribute(sStopOffsetAttribute, meeting.getStopOffset().toString());
+		meetingElement.addAttribute(sTimePatternMinutesPerMeetingAttribute, Integer.toString(timePatternMinPerMeeting));
+		meetingElement.addAttribute(sCalculatedMinutesPerMeetingAttribute, Integer.toString(calcMinutesPerMeeting));
 		if (!locationElements.containsKey(location.getUniqueId())){
 			exportLocation(location);
 		}
-		meetingElement.addAttribute(PointInTimeDataImport.sLocationUniqueIdAttribute, location.getUniqueId().toString());
+		meetingElement.addAttribute(sLocationUniqueIdAttribute, location.getUniqueId().toString());
 		
 		exportClassMeetingUtilPeriods(meetingElement, meeting, clazz);
 		
 	}
 
 	private void exportBuilding(Building building){
-		Element buildingElement = locationsElement.addElement(PointInTimeDataImport.sBuildingElementName);
-		buildingElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, building.getUniqueId().toString());   	
-		buildingElement.addAttribute(PointInTimeDataImport.sAbbreviationAttribute, building.getAbbreviation());   	
-		buildingElement.addAttribute(PointInTimeDataImport.sNameAttribute, building.getName());   
+		Element buildingElement = locationsElement.addElement(sBuildingElementName);
+		buildingElement.addAttribute(sUniqueIdAttribute, building.getUniqueId().toString());   	
+		buildingElement.addAttribute(sAbbreviationAttribute, building.getAbbreviation());   	
+		buildingElement.addAttribute(sNameAttribute, building.getName());   
 		if (building.getCoordinateX() != null) {
-			buildingElement.addAttribute(PointInTimeDataImport.sCoordinateXAttribute, building.getCoordinateX().toString());   	
+			buildingElement.addAttribute(sCoordinateXAttribute, building.getCoordinateX().toString());   	
 		}
 		if (building.getCoordinateY() != null) {
-			buildingElement.addAttribute(PointInTimeDataImport.sCoordinateYAttribute, building.getCoordinateY().toString());   	
+			buildingElement.addAttribute(sCoordinateYAttribute, building.getCoordinateY().toString());   	
 		}
-		buildingElement.addAttribute(PointInTimeDataImport.sExternalIdAttribute, (building.getExternalUniqueId() == null ? building.getUniqueId().toString() : building.getExternalUniqueId()));   	
+		buildingElement.addAttribute(sExternalIdAttribute, (building.getExternalUniqueId() == null ? building.getUniqueId().toString() : building.getExternalUniqueId()));   	
 		buildingElements.put(building.getUniqueId(), buildingElement);
 	}
 	
     private void exportRoomType(RoomType roomType){
-    	Element roomTypeElement = roomTypesElement.addElement(PointInTimeDataImport.sRoomTypeElementName);
-    	roomTypeElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, roomType.getUniqueId().toString());
-    	roomTypeElement.addAttribute(PointInTimeDataImport.sReferenceAttribute, roomType.getReference());
-    	roomTypeElement.addAttribute(PointInTimeDataImport.sLabelAttribute, roomType.getLabel());
-    	roomTypeElement.addAttribute(PointInTimeDataImport.sOrderAttribute, roomType.getOrd().toString());
-    	roomTypeElement.addAttribute(PointInTimeDataImport.sIsRoomAttribute, (roomType.isRoom()?"true":"false"));
+    	Element roomTypeElement = roomTypesElement.addElement(sRoomTypeElementName);
+    	roomTypeElement.addAttribute(sUniqueIdAttribute, roomType.getUniqueId().toString());
+    	roomTypeElement.addAttribute(sReferenceAttribute, roomType.getReference());
+    	roomTypeElement.addAttribute(sLabelAttribute, roomType.getLabel());
+    	roomTypeElement.addAttribute(sOrderAttribute, roomType.getOrd().toString());
+    	roomTypeElement.addAttribute(sIsRoomAttribute, (roomType.isRoom()?"true":"false"));
 
     	roomTypeElements.put(roomType.getUniqueId(), roomTypeElement);
     }
     
     private void exportCreditType(CourseCreditType creditType){
-    	Element creditTypeElement = creditTypesElement.addElement(PointInTimeDataImport.sCreditTypeElementName);
-    	creditTypeElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, creditType.getUniqueId().toString());
-    	creditTypeElement.addAttribute(PointInTimeDataImport.sReferenceAttribute, creditType.getReference());
-    	creditTypeElement.addAttribute(PointInTimeDataImport.sLabelAttribute, creditType.getLabel());
-    	creditTypeElement.addAttribute(PointInTimeDataImport.sAbbreviationAttribute, creditType.getAbbreviation());
-    	creditTypeElement.addAttribute(PointInTimeDataImport.sLegacyCourseMasterCodeAttribute, creditType.getLegacyCourseMasterCode());
+    	Element creditTypeElement = creditTypesElement.addElement(sCreditTypeElementName);
+    	creditTypeElement.addAttribute(sUniqueIdAttribute, creditType.getUniqueId().toString());
+    	creditTypeElement.addAttribute(sReferenceAttribute, creditType.getReference());
+    	creditTypeElement.addAttribute(sLabelAttribute, creditType.getLabel());
+    	creditTypeElement.addAttribute(sAbbreviationAttribute, creditType.getAbbreviation());
+    	creditTypeElement.addAttribute(sLegacyCourseMasterCodeAttribute, creditType.getLegacyCourseMasterCode());
     	creditTypeElements.put(creditType.getUniqueId(), creditTypeElement);
     }
 
     private void exportCreditUnitType(CourseCreditUnitType creditUnitType){
-    	Element creditUnitTypeElement = creditUnitTypesElement.addElement(PointInTimeDataImport.sCreditUnitTypeElementName);
-    	creditUnitTypeElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, creditUnitType.getUniqueId().toString());
-    	creditUnitTypeElement.addAttribute(PointInTimeDataImport.sReferenceAttribute, creditUnitType.getReference());
-    	creditUnitTypeElement.addAttribute(PointInTimeDataImport.sLabelAttribute, creditUnitType.getLabel());
-    	creditUnitTypeElement.addAttribute(PointInTimeDataImport.sAbbreviationAttribute, creditUnitType.getAbbreviation());
+    	Element creditUnitTypeElement = creditUnitTypesElement.addElement(sCreditUnitTypeElementName);
+    	creditUnitTypeElement.addAttribute(sUniqueIdAttribute, creditUnitType.getUniqueId().toString());
+    	creditUnitTypeElement.addAttribute(sReferenceAttribute, creditUnitType.getReference());
+    	creditUnitTypeElement.addAttribute(sLabelAttribute, creditUnitType.getLabel());
+    	creditUnitTypeElement.addAttribute(sAbbreviationAttribute, creditUnitType.getAbbreviation());
     	creditUnitTypeElements.put(creditUnitType.getUniqueId(), creditUnitTypeElement);
     }
 
     private void exportPositionType(PositionType positionType){
-    	Element positionTypeElement = positionTypesElement.addElement(PointInTimeDataImport.sPositionTypeElementName);
-    	positionTypeElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, positionType.getUniqueId().toString());
-    	positionTypeElement.addAttribute(PointInTimeDataImport.sReferenceAttribute, positionType.getReference());
-    	positionTypeElement.addAttribute(PointInTimeDataImport.sLabelAttribute, positionType.getLabel());
-    	positionTypeElement.addAttribute(PointInTimeDataImport.sOrderAttribute, positionType.getSortOrder().toString());
+    	Element positionTypeElement = positionTypesElement.addElement(sPositionTypeElementName);
+    	positionTypeElement.addAttribute(sUniqueIdAttribute, positionType.getUniqueId().toString());
+    	positionTypeElement.addAttribute(sReferenceAttribute, positionType.getReference());
+    	positionTypeElement.addAttribute(sLabelAttribute, positionType.getLabel());
+    	positionTypeElement.addAttribute(sOrderAttribute, positionType.getSortOrder().toString());
 
     	positionTypeElements.put(positionType.getUniqueId(), positionTypeElement);
     }
@@ -1038,30 +1198,30 @@ public class PointInTimeDataExport extends BaseExport {
 			if (!buildingElements.containsKey(room.getBuilding().getUniqueId())){
 				exportBuilding(room.getBuilding());
 			}
-			roomElement = buildingElements.get(room.getBuilding().getUniqueId()).addElement(PointInTimeDataImport.sRoomElementName);
-			roomElement.addAttribute(PointInTimeDataImport.sRoomNumberAttribute, room.getRoomNumber());   	
+			roomElement = buildingElements.get(room.getBuilding().getUniqueId()).addElement(sRoomElementName);
+			roomElement.addAttribute(sRoomNumberAttribute, room.getRoomNumber());   	
 		} else if (location instanceof NonUniversityLocation) {
 			NonUniversityLocation nonUniversityLocation = (NonUniversityLocation) location;
-			roomElement = locationsElement.addElement(PointInTimeDataImport.sNonUniversityLocationElementName);
-			roomElement.addAttribute(PointInTimeDataImport.sNameAttribute, nonUniversityLocation.getName());   	
+			roomElement = locationsElement.addElement(sNonUniversityLocationElementName);
+			roomElement.addAttribute(sNameAttribute, nonUniversityLocation.getName());   	
 		}
-		roomElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, location.getUniqueId().toString());   	
-		roomElement.addAttribute(PointInTimeDataImport.sPermanentIdAttribute, location.getPermanentId().toString());   	
-		roomElement.addAttribute(PointInTimeDataImport.sRoomTypeIdAttribute, location.getRoomType().getUniqueId().toString());   	
-		roomElement.addAttribute(PointInTimeDataImport.sCapacityAttribute, location.getCapacity().toString());  
+		roomElement.addAttribute(sUniqueIdAttribute, location.getUniqueId().toString());   	
+		roomElement.addAttribute(sPermanentIdAttribute, location.getPermanentId().toString());   	
+		roomElement.addAttribute(sRoomTypeIdAttribute, location.getRoomType().getUniqueId().toString());   	
+		roomElement.addAttribute(sCapacityAttribute, location.getCapacity().toString());  
 		if (location.getControllingDepartment() != null){
 			if (!departmentElements.containsKey(location.getControllingDepartment().getUniqueId())){
 				exportDepartment(location.getControllingDepartment());
 			}
-			roomElement.addAttribute(PointInTimeDataImport.sControllingDepartmentUniqueIdAttribute, location.getControllingDepartment().getUniqueId().toString());
+			roomElement.addAttribute(sControllingDepartmentUniqueIdAttribute, location.getControllingDepartment().getUniqueId().toString());
 		}
 		if (location.getCoordinateX() != null) {
-			roomElement.addAttribute(PointInTimeDataImport.sCoordinateXAttribute, location.getCoordinateX().toString());   	
+			roomElement.addAttribute(sCoordinateXAttribute, location.getCoordinateX().toString());   	
 		}
 		if (location.getCoordinateY() != null) {
-			roomElement.addAttribute(PointInTimeDataImport.sCoordinateYAttribute, location.getCoordinateY().toString());   	
+			roomElement.addAttribute(sCoordinateYAttribute, location.getCoordinateY().toString());   	
 		}
-		roomElement.addAttribute(PointInTimeDataImport.sExternalIdAttribute, (location.getExternalUniqueId() == null ? location.getUniqueId().toString() : location.getExternalUniqueId()));   	
+		roomElement.addAttribute(sExternalIdAttribute, (location.getExternalUniqueId() == null ? location.getUniqueId().toString() : location.getExternalUniqueId()));   	
 		locationElements.put(location.getUniqueId(), roomElement);
 
 		
@@ -1072,14 +1232,14 @@ public class PointInTimeDataExport extends BaseExport {
     	if (!departmentalInstructorElements.containsKey(instructor.getInstructor().getUniqueId())){
 	       exportDepartmentalInstructor(instructor.getInstructor());   		
     	}
-    	instructorElement.addAttribute(PointInTimeDataImport.sDepartmentalInstructorUniqueIdAttribute, instructor.getInstructor().getUniqueId().toString());
+    	instructorElement.addAttribute(sDepartmentalInstructorUniqueIdAttribute, instructor.getInstructor().getUniqueId().toString());
     	if (instructor.getResponsibility() != null) {
     		if (!teachingResponsibilityElements.containsKey(instructor.getResponsibility().getUniqueId())) {
     			exportTeachingResponsibility(instructor.getResponsibility());
     		}
-    		instructorElement.addAttribute(PointInTimeDataImport.sResponsibilityUniqueIdAttribute, instructor.getResponsibility().getUniqueId().toString());
+    		instructorElement.addAttribute(sResponsibilityUniqueIdAttribute, instructor.getResponsibility().getUniqueId().toString());
     	}
-    	instructorElement.addAttribute(PointInTimeDataImport.sNormalizedPercentShareAttribute, Integer.toString(calculateNormalizedPercentShareForInstructor(instructor)));
+    	instructorElement.addAttribute(sNormalizedPercentShareAttribute, Integer.toString(calculateNormalizedPercentShareForInstructor(instructor)));
         if (instructor.getPercentShare()!=null)
         	instructorElement.addAttribute("share", instructor.getPercentShare().toString());
         instructorElement.addAttribute("lead", instructor.isLead()?"true":"false");
@@ -1114,13 +1274,13 @@ public class PointInTimeDataExport extends BaseExport {
 
     
     private void exportTeachingResponsibility(TeachingResponsibility responsibility) {
-    	Element responsibilityElement = teachingResponsibilitiesElement.addElement(PointInTimeDataImport.sTeachingResponsibilityElementName);
-    	responsibilityElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, responsibility.getUniqueId().toString());
-    	responsibilityElement.addAttribute(PointInTimeDataImport.sReferenceAttribute, responsibility.getReference());
-    	responsibilityElement.addAttribute(PointInTimeDataImport.sLabelAttribute, responsibility.getLabel());
-    	responsibilityElement.addAttribute(PointInTimeDataImport.sAbbreviationAttribute, responsibility.getAbbreviation());
-    	responsibilityElement.addAttribute(PointInTimeDataImport.sInstructorAttribute, (responsibility.isInstructor()?"true":"false"));
-    	responsibilityElement.addAttribute(PointInTimeDataImport.sCoordinatorAttribute, (responsibility.isCoordinator()?"true":"false"));
+    	Element responsibilityElement = teachingResponsibilitiesElement.addElement(sTeachingResponsibilityElementName);
+    	responsibilityElement.addAttribute(sUniqueIdAttribute, responsibility.getUniqueId().toString());
+    	responsibilityElement.addAttribute(sReferenceAttribute, responsibility.getReference());
+    	responsibilityElement.addAttribute(sLabelAttribute, responsibility.getLabel());
+    	responsibilityElement.addAttribute(sAbbreviationAttribute, responsibility.getAbbreviation());
+    	responsibilityElement.addAttribute(sInstructorAttribute, (responsibility.isInstructor()?"true":"false"));
+    	responsibilityElement.addAttribute(sCoordinatorAttribute, (responsibility.isCoordinator()?"true":"false"));
 
     	teachingResponsibilityElements.put(responsibility.getUniqueId(), responsibilityElement);
 	}
@@ -1129,25 +1289,25 @@ public class PointInTimeDataExport extends BaseExport {
     	if (!departmentElements.containsKey(instructor.getDepartment().getUniqueId())){
     		exportDepartment(instructor.getDepartment());
     	}
-    	Element departmentalInstructorElement = departmentElements.get(instructor.getDepartment().getUniqueId()).addElement(PointInTimeDataImport.sDeptInstructorElementName);
-       	departmentalInstructorElement.addAttribute(PointInTimeDataImport.sUniqueIdAttribute, instructor.getUniqueId().toString());   	
+    	Element departmentalInstructorElement = departmentElements.get(instructor.getDepartment().getUniqueId()).addElement(sDeptInstructorElementName);
+       	departmentalInstructorElement.addAttribute(sUniqueIdAttribute, instructor.getUniqueId().toString());   	
         if (instructor.getExternalUniqueId()!=null)
-        	departmentalInstructorElement.addAttribute(PointInTimeDataImport.sExternalIdAttribute, instructor.getExternalUniqueId());
+        	departmentalInstructorElement.addAttribute(sExternalIdAttribute, instructor.getExternalUniqueId());
         if (instructor.getFirstName()!=null)
-        	departmentalInstructorElement.addAttribute(PointInTimeDataImport.sFirstNameAttribute, instructor.getFirstName());
+        	departmentalInstructorElement.addAttribute(sFirstNameAttribute, instructor.getFirstName());
         if (instructor.getMiddleName()!=null)
-        	departmentalInstructorElement.addAttribute(PointInTimeDataImport.sMiddleNameAttribute, instructor.getMiddleName());
+        	departmentalInstructorElement.addAttribute(sMiddleNameAttribute, instructor.getMiddleName());
         if (instructor.getLastName()!=null)
-        	departmentalInstructorElement.addAttribute(PointInTimeDataImport.sLastNameAttribute, instructor.getLastName());
+        	departmentalInstructorElement.addAttribute(sLastNameAttribute, instructor.getLastName());
         if (instructor.getCareerAcct() != null)
-        	departmentalInstructorElement.addAttribute(PointInTimeDataImport.sCareerAcctAttribute, instructor.getCareerAcct());
+        	departmentalInstructorElement.addAttribute(sCareerAcctAttribute, instructor.getCareerAcct());
         if (instructor.getEmail() != null)
-        	departmentalInstructorElement.addAttribute(PointInTimeDataImport.sEmailAttribute, instructor.getEmail());
+        	departmentalInstructorElement.addAttribute(sEmailAttribute, instructor.getEmail());
         if (instructor.getPositionType() != null) {
         	if (!positionTypeElements.containsKey(instructor.getPositionType().getUniqueId())){
         		exportPositionType(instructor.getPositionType());
         	}
-        	departmentalInstructorElement.addAttribute(PointInTimeDataImport.sPositionTypeUniqueIdAttribute, instructor.getPositionType().getUniqueId().toString());
+        	departmentalInstructorElement.addAttribute(sPositionTypeUniqueIdAttribute, instructor.getPositionType().getUniqueId().toString());
         }
         departmentalInstructorElements.put(instructor.getUniqueId(), departmentalInstructorElement);
     }

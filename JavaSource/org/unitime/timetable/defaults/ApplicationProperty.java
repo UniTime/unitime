@@ -2159,6 +2159,12 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Chameleon: allow to switch into any user (not just timetable managers), using the People Lookup dialog")
 	ChameleonAllowLookup("unitime.chameleon.lookup"),
+
+	@Type(Integer.class)
+	@DefaultValue("50")
+	@Description("Point In Time Data: number of minutes that is considered to be an hour of class.  Defaults to 50.")
+	StandardClassMeetingLengthInMinutes("unitime.pointInTimeData.standardClassMeetingLengthInMinutes"),
+
 	;
 
 	String iKey;
