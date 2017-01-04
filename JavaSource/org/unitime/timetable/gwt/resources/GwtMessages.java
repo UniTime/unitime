@@ -3038,6 +3038,14 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageSetupTeachingRequests();
 	
+	@DefaultMessage("Point In Time Data Snapshot")
+	@DoNotTranslate
+	String pagePointInTimeDataSnapshot();
+	
+	@DefaultMessage("Point In Time Data Snapshots")
+	@DoNotTranslate
+	String pagePointInTimeDataSnapshots();
+
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	
@@ -4284,6 +4292,12 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Course Types")
 	String optionCourseTypes();
+	
+	@DefaultMessage("Saved Successfully")
+	String fieldSavedSuccessfully();
+
+	@DefaultMessage("Snapshot Timestamp")
+	String fieldSnapshotTimestamp();
 	
 	@DefaultMessage("Individual Reservation")
 	String reservationIndividual();

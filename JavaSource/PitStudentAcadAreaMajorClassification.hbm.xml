@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="PitStudentAcadAreaMajorClassification" table="pit_stu_aa_major_clasf">
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">point_in_time_seq</param>
+            </generator>
+        </id>
+
+        <many-to-one
+            name="pitStudent"
+            class="PitStudent"
+            column="pit_student_id"
+            not-null="true"
+            foreign-key="fk_pit_stuamc_to_pit_stu"/>
+
+        <many-to-one
+            name="academicArea"
+            class="AcademicArea"
+            column="acad_area_id"
+            not-null="true"
+            foreign-key="fk_pit_stuamc_to_aa"/>
+            
+        <many-to-one
+            name="academicClassification"
+            class="AcademicClassification"
+            column="acad_clasf_id"
+            not-null="true"
+            foreign-key="fk_pit_stuamc_to_ac"/>
+
+        <many-to-one
+            name="major"
+            class="PosMajor"
+            column="major_id"
+            not-null="true"
+            foreign-key="fk_pit_stuamc_to_pm"/>
+
+    </class>
+</hibernate-mapping>

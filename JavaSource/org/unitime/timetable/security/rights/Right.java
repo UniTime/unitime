@@ -548,7 +548,12 @@ public enum Right {
 	
 	TeachingResponsibilities,
 	TeachingResponsibilityEdit,
+
+	/** Point In Time Data */
 	
+	PointInTimeData,
+	PointInTimeDataEdit,
+
 	/** Administration: Defaults */
 	
 	ApplicationConfig,

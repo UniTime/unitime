@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class
+        name="PitClassMeeting"
+        abstract="false"
+        table="pit_class_meeting">
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">point_in_time_seq</param>
+            </generator>
+        </id>
+
+        <many-to-one
+            name="pitClassEvent"
+            class="PitClassEvent"
+            column="pit_class_event_id"
+            foreign-key="fk_pit_cm_to_pit_ce"
+            not-null="true"/>
+
+        <property
+            name="meetingDate"
+            column="meeting_date"
+            type="java.sql.Timestamp"
+            not-null="true"/>
+
+        <property
+            name="startPeriod"
+            column="start_period"
+            type="java.lang.Integer"
+            not-null="true"
+            length="10"/>
+
+        <property
+            name="startOffset"
+            column="start_offset"
+            type="java.lang.Integer"
+            not-null="false"
+            length="10"/>
+
+        <property
+            name="stopPeriod"
+            column="stop_period"
+            type="java.lang.Integer"
+            not-null="true"
+            length="10"/>
+
+        <property
+            name="stopOffset"
+            column="stop_offset"
+            type="java.lang.Integer"
+            not-null="false"
+            length="10"/>
+
+        <property
+            name="locationPermanentId"
+            column="location_perm_id"
+            type="java.lang.Long"
+            not-null="false"
+            length="20"/>
+
+        <property
+            name="timePatternMinPerMtg"
+            column="time_pattern_min_per_mtg"
+            type="java.lang.Integer"
+            not-null="true"
+            length="10"/>
+
+        <property
+            name="calculatedMinPerMtg"
+            column="calculated_min_per_mtg"
+            type="java.lang.Integer"
+            not-null="true"
+            length="10"/>
+            
+        <set
+            name="pitClassMeetingUtilPeriods"
+            lazy="true"
+            cascade="all-delete-orphan"
+            inverse="true">
+
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="pit_class_meeting_id" foreign-key="fk_pit_cmup_to_pit_cm"/>
+            <one-to-many class="PitClassMeetingUtilPeriod"/>
+        </set>
+
+    </class>
+
+</hibernate-mapping>

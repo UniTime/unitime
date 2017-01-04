@@ -834,6 +834,12 @@
 					<hasPermission name="HQLReportsAdministration"/>
 				</condition>
 			</item>
+			<item name="Point In Time Data Snapshots" page="admin" type="gwt">
+				<parameter name="type">pitds</parameter>
+				<condition>
+					<hasPermission name="PointInTimeData"/>
+				</condition>
+			</item>			
 		</menu>
 		<menu name="Solver">
 			<item name="Manage Solvers" page="manageSolvers.do">

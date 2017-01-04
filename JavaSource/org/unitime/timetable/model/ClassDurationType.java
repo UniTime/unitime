@@ -45,6 +45,7 @@ public class ClassDurationType extends BaseClassDurationType implements Comparab
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static List<ClassDurationType> findAll() {
 		return (List<ClassDurationType>)ClassDurationTypeDAO.getInstance().getSession().createQuery("from ClassDurationType order by label").setCacheable(true).list();
 	}
@@ -64,6 +65,7 @@ public class ClassDurationType extends BaseClassDurationType implements Comparab
 	}
 	
 	public static Set<ClassDurationType> findAllVisible(ClassDurationType include) {
+		@SuppressWarnings("unchecked")
 		Set<ClassDurationType> ret = new TreeSet<ClassDurationType>(
 				ClassDurationTypeDAO.getInstance().getSession().createQuery("from ClassDurationType where visible = true order by label").setCacheable(true).list());
 		if (include != null && !ret.contains(include))

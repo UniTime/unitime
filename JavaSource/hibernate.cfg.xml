@@ -217,5 +217,21 @@
 	<mapping resource="OfferingCoordinator.hbm.xml"/>
 	<mapping resource="TeachingClassRequest.hbm.xml"/>
 	<mapping resource="ExternalDepartmentStatusType.hbm.xml"/>
+	<mapping resource="PointInTimeData.hbm.xml"/>
+	<mapping resource="PitInstructionalOffering.hbm.xml"/>
+	<mapping resource="PitCourseOffering.hbm.xml"/>
+	<mapping resource="PitInstrOfferingConfig.hbm.xml"/>
+	<mapping resource="PitSchedulingSubpart.hbm.xml"/>
+	<mapping resource="PitClass.hbm.xml"/>
+	<mapping resource="PitStudent.hbm.xml"/>
+	<mapping resource="PitStudentClassEnrollment.hbm.xml"/>
+	<mapping resource="PitStudentAcadAreaMajorClassification.hbm.xml"/>
+	<mapping resource="PitStudentAcadAreaMinorClassification.hbm.xml"/>
+	<mapping resource="PitDepartmentalInstructor.hbm.xml"/>
+	<mapping resource="PitClassInstructor.hbm.xml"/>
+	<mapping resource="PitClassEvent.hbm.xml"/>
+	<mapping resource="PitClassMeeting.hbm.xml"/>
+	<mapping resource="PitClassMeetingUtilPeriod.hbm.xml"/>
+
 </session-factory>
 </hibernate-configuration>

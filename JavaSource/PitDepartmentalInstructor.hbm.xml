@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="PitDepartmentalInstructor" table="pit_dept_instructor">
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">point_in_time_seq</param>
+            </generator>
+        </id>
+
+        <property
+            name="externalUniqueId"
+            column="external_uid"
+            type="java.lang.String"
+            not-null="false"
+            length="40"/>
+
+        <property
+            name="careerAcct"
+            column="career_acct"
+            type="java.lang.String"
+            not-null="false"
+            length="20"/>
+
+        <property
+            name="firstName"
+            column="fname"
+            type="java.lang.String"
+            not-null="false"
+            length="100"/>
+
+        <property
+            name="middleName"
+            column="mname"
+            type="java.lang.String"
+            not-null="false"
+            length="100"/>
+
+        <property
+            name="lastName"
+            column="lname"
+            type="java.lang.String"
+            not-null="true"
+            length="100"/>
+
+        <property
+            name="email"
+            column="email"
+            type="java.lang.String"
+            not-null="false"
+            length="200"/>
+
+        <set
+            name="pitClassesInstructing"
+            cascade="all"
+            lazy="true"
+            inverse="true"
+            table="pit_class_instructor">
+
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="pit_dept_instr_id"/>
+            <one-to-many class="PitClassInstructor"/>
+        </set>
+
+        <many-to-one
+            name="positionType"
+            class="PositionType"
+            column="pos_code_type"
+            not-null="false"
+            insert="true"
+            update="true"
+            foreign-key="fk_pit_di_to_pt"/>
+
+        <many-to-one
+            name="department"
+            class="Department"
+            column="department_id"
+            not-null="true"
+            insert="true"
+            update="true"
+            foreign-key="fk_pit_di_to_d"/>
+            
+        <many-to-one
+            name="pointInTimeData"
+            class="PointInTimeData"
+            column="point_in_time_data_id"
+            not-null="true"
+            foreign-key="fk_pit_di_to_pitd"/>
+        
+        <many-to-one
+            name="departmentalInstructor"
+            class="DepartmentalInstructor"
+            column="dept_instructor_id"
+            not-null="false"
+            foreign-key="fk_pit_di_to_di"/>
+
+
+
+    </class>
+</hibernate-mapping>

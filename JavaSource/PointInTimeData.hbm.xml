@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class
+        name="PointInTimeData"
+        table="point_in_time_data">
+        <cache usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">point_in_time_seq</param>
+            </generator>
+        </id>
+
+    	<many-to-one
+	    	name="session"
+	    	class="Session"
+    		column="session_id"
+	    	not-null="true"
+	    	foreign-key="fk_pitd_to_s"/>
+	            
+		<property
+            name="timestamp"
+            column="timestamp"
+            type="java.sql.Timestamp"
+            not-null="true"/>
+            
+        <property
+            name="name"
+            column="name"
+            type="string"
+            not-null="true"
+            length="100"
+            unique="true"/>
+
+        <property
+            name="note"
+            column="note"
+            type="string"
+            not-null="false"
+            length="1000"
+            unique="true"/>
+
+        <property
+            name="savedSuccessfully"
+            column="saved_successfully"
+            type="java.lang.Boolean"
+            not-null="true"/>
+
+<!--         <set
+            name="pitDepartmentalInstructors"
+            table="pit_dept_instructor"
+            inverse="true"
+            cascade="all"
+            lazy="true">
+
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="point_in_time_data_id" foreign-key="fk_pit_di_to_pitd"/>
+            <one-to-many class="PitDepartmentalInstructor"/>
+        </set>
+
+        <set
+            name="pitInstructionalOfferings"
+            table="pit_instr_offering"
+            inverse="true"
+            cascade="all"
+            lazy="true">
+
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="point_in_time_data_id" foreign-key="fk_pit_io_to_pitd"/>
+            <one-to-many class="PitInstructionalOffering"/>
+        </set>
+
+        <set
+            name="pitStudents"
+            table="pit_student"
+            inverse="true"
+            cascade="all"
+            lazy="true">
+
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="point_in_time_data_id" foreign-key="fk_pit_stu_to_pitd"/>
+            <one-to-many class="PitStudent"/>
+        </set>
+ -->
+    </class>
+
+</hibernate-mapping>

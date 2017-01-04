@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="PitInstrOfferingConfig" table="pit_instr_offer_config">
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long"
+            length="10">
+
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">point_in_time_seq</param>
+            </generator>
+        </id>
+
+        <many-to-one
+            name="instrOfferingConfig"
+            class="InstrOfferingConfig"
+            column="instr_offering_config_id"
+            not-null="false"
+            insert="true"
+            update="true"
+            foreign-key="fk_pit_ioc_to_ioc"/>
+
+        <many-to-one
+            name="pitInstructionalOffering"
+            class="PitInstructionalOffering"
+            column="pit_instr_offr_id"
+            not-null="true"
+            insert="true"
+            update="true"
+            foreign-key="fk_pit_ioc_to_pit_io"/>
+
+        <set
+            name="schedulingSubparts"
+            inverse="true"
+            lazy="true"
+            cascade="all-delete-orphan"
+            table="pit_scheduling_subpart">
+
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="pit_config_id"/>
+            <one-to-many class="PitSchedulingSubpart"/>
+        </set>
+
+        <property
+            name="unlimitedEnrollment"
+            column="unlimited_enrollment"
+            type="java.lang.Boolean"
+            not-null="true"
+            insert="true"
+            update="true"/>
+
+        <property
+            name="name"
+            column="name"
+            type="java.lang.String"
+            not-null="false"
+            length="10"
+            insert="true"
+            update="true"/>
+
+        <property
+            name="uniqueIdRolledForwardFrom"
+            column="uid_rolled_fwd_from"
+            type="java.lang.Long"
+            not-null="false"
+            length="20"/>
+
+		<many-to-one
+			name="classDurationType"
+			class="ClassDurationType"
+			column="duration_type_id"
+			not-null="false"
+			foreign-key="fk_pit_ioc_to_dt"/>
+
+		<many-to-one
+			name="instructionalMethod"
+			class="InstructionalMethod"
+			column="instr_method_id"
+			not-null="false"
+			foreign-key="fk_pit_ioc_to_im"/>
+    </class>
+</hibernate-mapping>

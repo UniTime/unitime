@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="PitCourseOffering" table="pit_course_offering">
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">point_in_time_seq</param>
+            </generator>
+        </id>
+
+        <properties name="uniqueCourseNbr" unique="true">
+            <many-to-one
+                name="subjectArea"
+                class="SubjectArea"
+                column="subject_area_id"
+                insert="false"
+                update="false"
+                not-null="true"
+                foreign-key="fk_pit_co_to_sa"/>
+
+            <property
+                name="courseNbr"
+                column="course_nbr"
+                type="java.lang.String"
+                not-null="true"
+                insert="false"
+                update="false"
+                length="40"/>
+
+        </properties>
+
+        <property
+            name="subjectAreaAbbv"
+            type="java.lang.String"
+            formula=" ( select sa.subject_area_abbreviation from %SCHEMA%.subject_area sa where sa.uniqueid = subject_area_id ) "/>
+
+        <property
+            name="courseNbr"
+            column="course_nbr"
+            type="java.lang.String"
+            not-null="true"
+            length="10"/>
+
+        <property
+            name="isControl"
+            column="is_control"
+            type="java.lang.Boolean"
+            not-null="true"/>
+
+        <property
+            name="permId"
+            column="perm_id"
+            type="java.lang.String"
+            not-null="false"
+            length="20"/>
+
+        <property
+            name="projectedDemand"
+            column="proj_demand"
+            type="java.lang.Integer"
+            length="5"/>
+
+        <property
+            name="nbrExpectedStudents"
+            column="nbr_expected_stdents"
+            type="java.lang.Integer"
+            length="10"
+            not-null="true"/>
+
+        <property
+            name="demand"
+            column="lastlike_demand"
+            type="java.lang.Integer"
+            length="10"
+            not-null="true"/>
+
+         <property
+            name="enrollment"
+            type="java.lang.Integer"
+            lazy="true"
+            formula="(select /*+ RULE */ count(distinct e.pit_student_id) from %SCHEMA%.pit_student_class_enrl e where e.pit_course_offering_id = uniqueid)"/>
+
+
+        <property
+            name="title"
+            column="title"
+            type="java.lang.String"
+            not-null="false"
+            length="200"/>
+
+        <property
+            name="externalUniqueId"
+            column="external_uid"
+            type="java.lang.String"
+            not-null="false"
+            length="40"/>
+
+        <property
+            name="uniqueIdRolledForwardFrom"
+            column="uid_rolled_fwd_from"
+            type="java.lang.Long"
+            not-null="false"
+            length="20"/>
+
+
+        <many-to-one
+            name="subjectArea"
+            class="SubjectArea"
+            column="subject_area_id"
+            insert="true"
+            update="true"
+            not-null="true"
+            foreign-key="fk_pit_co_to_sa"/>
+
+        <many-to-one
+            name="courseOffering"
+            class="CourseOffering"
+            column="course_offering_id"
+            not-null="false"
+            insert="true"
+            update="true"
+            foreign-key="fk_pit_co_to_co"/>
+
+        <many-to-one
+            name="pitInstructionalOffering"
+            class="PitInstructionalOffering"
+            column="pit_instr_offr_id"
+            not-null="true"
+            insert="true"
+            update="true"
+            foreign-key="fk_pit_co_to_pit_io"/>
+
+        <many-to-one
+            name="courseType"
+            class="CourseType"
+            column="course_type_id"
+            not-null="false"
+            foreign-key="fk_pit_co_to_ct"/>
+
+<!-- TODO:  decide what to do with course credit
+        <set
+            name="creditConfigs"
+            inverse="true"
+            lazy="true"
+            cascade="all-delete-orphan"
+            table="course_credit_unit_config">
+
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="course_id" foreign-key="fk_crs_crdt_unit_cfg_crs_own"/>
+            <one-to-many class="CourseCreditUnitConfig"/>
+        </set>
+ -->
+    </class>
+</hibernate-mapping>

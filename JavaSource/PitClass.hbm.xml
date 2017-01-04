@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="PitClass" table="pit_class">
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">point_in_time_seq</param>
+            </generator>
+        </id>
+
+		<property
+		    name="limit"
+		    column="class_limit"
+		    type="java.lang.Integer"
+		    not-null="false"
+		    length="10"/>
+		
+		<property
+		    name="nbrRooms"
+		    type="java.lang.Integer"
+		    column="nbr_rooms"
+		    not-null="false"
+		    length="4"/>
+		
+		<property
+		    name="enabledForStudentScheduling"
+		    type="java.lang.Boolean"
+		    column="enabled_for_stu_sched"
+		    not-null="true"/>
+		    
+		<property
+		    name="sectionNumber"
+		    column="section_number"
+		    type="java.lang.Integer"
+		    not-null="false"
+		    length="5"/>
+		
+		<many-to-one
+		    name="controllingDept"
+		    class="Department"
+		    lazy="false"
+		    formula=" ( select sa.department_uniqueid from %SCHEMA%.pit_sched_subpart ss, %SCHEMA%.pit_instr_offer_config ioc, %SCHEMA%.pit_instr_offering io, %SCHEMA%.pit_course_offering co, %SCHEMA%.subject_area sa where ss.uniqueid = pit_subpart_id and ioc.uniqueid = ss.pit_config_id and io.uniqueid = ioc.pit_instr_offr_id and co.pit_instr_offr_id = io.uniqueid and co.is_control = 1 and sa.uniqueid = co.subject_area_id ) "/>
+		
+		<many-to-one
+		    name="clazz"
+		    class="Class_"
+		    column="class_id"
+		    not-null="false"
+		    insert="true"
+		    update="true"
+		    lazy="false"
+		    foreign-key="fk_pit_c_to_c"/>
+		    
+		<many-to-one
+		    name="managingDept"
+		    class="Department"
+		    column="managing_dept"
+		    not-null="false"
+		    insert="true"
+		    update="true"
+		    lazy="false"
+		    foreign-key="fk_pit_c_to_d"/>
+		
+		<many-to-one
+		    name="pitSchedulingSubpart"
+		    class="PitSchedulingSubpart"
+		    column="pit_subpart_id"
+		    not-null="true"
+		    insert="true"
+		    update="true"
+		    foreign-key="fk_pit_c_to_pit_ss"/>
+		
+		<many-to-one
+		    name="pitParentClass"
+		    class="PitClass"
+		    column="pit_parent_id"
+		    not-null="false"
+		    insert="true"
+		    update="true"
+		    foreign-key="fk_pit_c_to_parent_pit_c"/>
+		
+		<set
+		    name="pitChildClasses"
+		    inverse="true"
+		    cascade="save-update"
+		    lazy="true"
+		    table="pit_class"
+		    order-by="uniqueid">
+		
+		    <cache include="non-lazy" usage="transactional"/>
+		    <key column="pit_parent_id"/>
+		    <one-to-many class="PitClass"/>
+		</set>
+		
+		<set
+		    name="pitClassInstructors"
+		    cascade="all"
+		    lazy="true"
+		    inverse="true"
+		    table="pit_class_instructor">
+		
+		    <cache include="non-lazy" usage="transactional"/>
+		    <key column="pit_class_id"/>
+		    <one-to-many class="PitClassInstructor"/>
+		</set>
+		
+		
+		<set
+		    name="studentEnrollments"
+		    inverse="true"
+		    lazy="true"
+		    cascade="all-delete-orphan"
+		    table="pit_student_class_enrl">
+		
+		    <cache include="non-lazy" usage="transactional"/>
+		    <key column="pit_class_id"/>
+		    <one-to-many class="PitStudentClassEnrollment"/>
+		</set>
+		
+		<many-to-one
+		    name="datePattern"
+		    class="DatePattern"
+		    column="date_pattern_id"
+		    not-null="false"
+		    foreign-key="fk_pit_c_to_dp"/>
+		
+		<many-to-one
+		    name="timePattern"
+		    class="TimePattern"
+		    column="time_pattern_id"
+		    not-null="false"
+		    foreign-key="fk_pit_c_to_tp"/>
+		
+		<property
+		    name="classSuffix"
+		    column="class_suffix"
+		    type="java.lang.String"
+		    not-null="false"
+		    length="10"/>
+		
+		<property
+		    name="uniqueIdRolledForwardFrom"
+		    column="uid_rolled_fwd_from"
+		    type="java.lang.Long"
+		    not-null="false"
+		    length="20"/>
+		
+		<property
+		    name="externalUniqueId"
+		    column="external_uid"
+		    type="java.lang.String"
+		    not-null="false"
+		    length="40"/>
+	
+		<property
+          	name="enrollment"
+          	type="java.lang.Integer"
+          	lazy="true"
+          	formula="(select /*+ RULE */ count(e.pit_student_id) from %SCHEMA%.pit_student_class_enrl e where e.pit_class_id = uniqueid)"/>
+
+        <set
+            name="pitClassEvents"
+            lazy="true"
+            cascade="all-delete-orphan"
+            inverse="true">
+
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="pit_class_id" foreign-key="fk_pit_ce_to_pit_c"/>
+            <one-to-many class="PitClassEvent"/>
+        </set>
+
+
+    </class>
+</hibernate-mapping>

@@ -2165,6 +2165,17 @@ public enum ApplicationProperty {
 	@Description("Point In Time Data: number of minutes that is considered to be an hour of class.  Defaults to 50.")
 	StandardClassMeetingLengthInMinutes("unitime.pointInTimeData.standardClassMeetingLengthInMinutes"),
 
+	@Type(Integer.class)
+	@DefaultValue("50")
+	@Description("Point In Time Data: number of minutes that equal an hour in standard reporting.  This is 50 minutes in the US"
+			+ ".  Defaults to 50.")
+	StandardMinutesInReportingHour("unitime.pointInTimeData.standardMinutesInReportingHour"),
+
+	@Type(Integer.class)
+	@DefaultValue("15")
+	@Description("Point In Time Data: number of weeks in a term used in standard reporting.  This is 15 weeks in the US"
+			+ ".  Defaults to 15.")
+	StandardWeeksInReportingTerm("unitime.pointInTimeData.standardWeeksInReportingTerm"),
 	;
 
 	String iKey;

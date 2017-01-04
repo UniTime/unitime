@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="PitStudentClassEnrollment" table="pit_student_class_enrl">
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">point_in_time_seq</param>
+            </generator>
+        </id>
+
+        <many-to-one
+            name="pitStudent"
+            class="PitStudent"
+            column="pit_student_id"
+            not-null="true"
+            foreign-key="fk_pit_sce_to_pit_stu"/>
+
+
+        <many-to-one
+            name="pitCourseOffering"
+            class="PitCourseOffering"
+            column="pit_course_offering_id"
+            foreign-key="fk_pit_sce_to_pit_co"
+            not-null="false"/>
+
+        <many-to-one
+            name="pitClass"
+            class="PitClass"
+            column="pit_class_id"
+            not-null="true"
+            foreign-key="fk_pit_sce_to_pit_c"/>
+
+        <property
+            name="timestamp"
+            column="timestamp"
+            type="java.util.Date"
+            not-null="true"/>
+            
+        <property
+            name="changedBy"
+            column="changed_by"
+            type="java.lang.String"
+            not-null="false"
+            length="40"/>
+
+    </class>
+</hibernate-mapping>

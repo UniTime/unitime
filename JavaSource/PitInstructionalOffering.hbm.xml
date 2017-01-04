@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="PitInstructionalOffering" table="pit_instr_offering">
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long"
+            length="20">
+
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">point_in_time_seq</param>
+            </generator>
+        </id>
+
+        <property
+            name="instrOfferingPermId"
+            column="instr_offering_perm_id"
+            type="java.lang.Integer"
+            not-null="true"
+            length="10"/>
+
+        <property
+            name="demand"
+	        column="demand"
+	        type="java.lang.Integer"
+	        not-null="false"
+	        length="4"/>
+
+        <property 
+        	name="limit"
+	        column="offr_limit"
+	        type="java.lang.Integer"
+	        not-null="false"
+	        length="10"/>
+
+        <property
+            name="uniqueIdRolledForwardFrom"
+            column="uid_rolled_fwd_from"
+            type="java.lang.Long"
+            not-null="false"
+            length="20"/>
+
+        <property
+            name="externalUniqueId"
+            column="external_uid"
+            type="java.lang.String"
+            not-null="false"
+            length="40"/>
+
+        <many-to-one
+            name="pointInTimeData"
+            class="PointInTimeData"
+            column="point_in_time_data_id"
+            not-null="true"
+            foreign-key="fk_pit_io_to_pitd"/>
+
+        <many-to-one
+            name="instructionalOffering"
+            class="InstructionalOffering"
+            column="instr_offering_id"
+            not-null="false"
+            foreign-key="fk_pit_io_to_io"/>
+
+
+         <property
+            name="enrollment"
+            type="java.lang.Integer"
+            lazy="true"
+            formula="(select /*+ RULE */ count(distinct e.pit_student_id) from %SCHEMA%.pit_student_class_enrl e inner join %SCHEMA%.pit_course_offering co on co.uniqueid = e.pit_course_offering_id where co.pit_instr_offr_id = uniqueid)"/>
+
+        <property
+            name="ctrlCourseId"
+            type="java.lang.Integer"
+            formula=" (select /*+ RULE */ co.uniqueid from %SCHEMA%.pit_course_offering co where co.pit_instr_offr_id = uniqueid and co.is_control = 1) "/>
+
+
+        <set
+            name="pitCourseOfferings"
+            inverse="true"
+            lazy="true"
+            cascade="all-delete-orphan"
+            table="pit_course_offering"
+            order-by="subject_area_id,course_nbr">
+
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="pit_instr_offr_id"/>
+            <one-to-many class="PitCourseOffering"/>
+        </set>
+
+        <set
+            name="pitInstrOfferingConfigs"
+            inverse="true"
+            lazy="true"
+            cascade="all-delete-orphan"
+            table="pit_instr_offer_config">
+
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="pit_instr_offr_id"/>
+            <one-to-many class="PitInstrOfferingConfig"/>
+        </set>
+
+
+<!-- TODO:  ??? do I care about course coordinators ???            
+        <set
+            name="coordinators"
+            lazy="true"
+            table="offering_coordinator">
+
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="offering_id" foreign-key="fk_offering_coord_offering"/>
+            <many-to-many
+                class="DepartmentalInstructor"
+                column="instructor_id"
+                foreign-key="fk_offering_coord_instructor"/>
+        </set>
+--> 
+	</class>
+</hibernate-mapping>
