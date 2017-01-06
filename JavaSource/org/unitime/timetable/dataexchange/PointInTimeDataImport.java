@@ -855,7 +855,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		Long uid = new Long(uidString);
 		Long permId = new Long(getRequiredStringAttribute(nonUniversityLocationElement, PointInTimeDataExport.sPermanentIdAttribute, PointInTimeDataExport.sNonUniversityLocationElementName));
 		String name = getRequiredStringAttribute(nonUniversityLocationElement, PointInTimeDataExport.sNameAttribute, PointInTimeDataExport.sNonUniversityLocationElementName);
-		Location l = locations.get(name + permId.toString());
+		Location l = locationsByName.get(name + permId.toString());
 		if(l == null){
 			NonUniversityLocation n = new NonUniversityLocation();
 			n.setName(name);
