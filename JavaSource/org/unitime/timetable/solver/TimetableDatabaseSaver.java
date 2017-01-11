@@ -46,6 +46,7 @@ import org.cpsolver.ifs.util.Progress;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.ExternalSolutionCommitAction;
 import org.unitime.timetable.model.Assignment;
@@ -140,6 +141,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
 	}
 	
     public void save() {
+    	ApplicationProperties.setSessionId(iSessionId);
     	org.hibernate.Session hibSession = null;
     	Transaction tx = null;
     	try {

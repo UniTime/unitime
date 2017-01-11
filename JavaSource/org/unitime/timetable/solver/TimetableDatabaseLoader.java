@@ -70,6 +70,7 @@ import org.hibernate.FlushMode;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.Query;
 import org.hibernate.Transaction;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
@@ -2033,6 +2034,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     public void load() {
+    	ApplicationProperties.setSessionId(iSessionId);
     	org.hibernate.Session hibSession = null;
     	Transaction tx = null;
     	try {

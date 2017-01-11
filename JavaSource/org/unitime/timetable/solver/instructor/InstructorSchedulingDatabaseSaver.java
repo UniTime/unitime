@@ -34,6 +34,7 @@ import org.cpsolver.instructor.model.TeachingAssignment;
 import org.cpsolver.instructor.model.TeachingRequest;
 import org.hibernate.CacheMode;
 import org.hibernate.Transaction;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.ExternalCourseOfferingEditAction;
 import org.unitime.timetable.interfaces.ExternalInstrOfferingConfigAssignInstructorsAction;
@@ -53,6 +54,7 @@ import org.unitime.timetable.util.NameFormat;
  */
 public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequest.Variable, TeachingAssignment, InstructorSchedulingModel> {
     private String iInstructorFormat;
+    private Long iSessionId = null;
     private Set<Long> iSolverGroupId = new HashSet<Long>();
     private Set<InstrOfferingConfig> iUpdatedConfigs = new HashSet<InstrOfferingConfig>();
     private Set<InstructionalOffering> iUpdatedOfferings = new HashSet<InstructionalOffering>();
@@ -63,6 +65,7 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
     public InstructorSchedulingDatabaseSaver(Solver solver) {
         super(solver);
         iProgress = Progress.getInstance(getModel());
+        iSessionId = getModel().getProperties().getPropertyLong("General.SessionId", (Long)null);
     	for (Long id: getModel().getProperties().getPropertyLongArry("General.SolverGroupId", null))
     		iSolverGroupId.add(id);
     	iTentative = !getModel().getProperties().getPropertyBoolean("Save.Commit", false);
@@ -72,6 +75,7 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
 
 	@Override
 	public void save() throws Exception {
+		ApplicationProperties.setSessionId(iSessionId);
         iProgress.setStatus("Saving solution ...");
         org.hibernate.Session hibSession = new _RootDAO().getSession();
         hibSession.setCacheMode(CacheMode.IGNORE);

@@ -34,6 +34,7 @@ import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.CacheMode;
 import org.hibernate.Transaction;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -73,6 +74,7 @@ public class ExamDatabaseSaver extends ProblemSaver<Exam, ExamPlacement, ExamMod
     
     @Override
     public void save() {
+    	ApplicationProperties.setSessionId(iSessionId);
         iProgress.setStatus("Saving solution ...");
         org.hibernate.Session hibSession = new ExamDAO().getSession();
         hibSession.setCacheMode(CacheMode.IGNORE);

@@ -50,6 +50,7 @@ import org.cpsolver.instructor.model.TeachingRequest;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -78,6 +79,7 @@ import org.unitime.timetable.util.NameFormat;
 public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRequest.Variable, TeachingAssignment, InstructorSchedulingModel> {
 	private Progress iProgress = null;
 	private Set<Long> iSolverGroupId = new HashSet<Long>();
+	private Long iSessionId = null;
 	private String iInstructorFormat;
 	private Map<Long, Attribute.Type> iAttributeTypes = new HashMap<Long, Attribute.Type>();
 	private Map<Long, Attribute> iAttributes = new HashMap<Long, Attribute>();
@@ -89,7 +91,7 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     public InstructorSchedulingDatabaseLoader(InstructorSchedulingModel model, Assignment<TeachingRequest.Variable, TeachingAssignment> assignment) {
     	super(model, assignment);
     	iProgress = Progress.getInstance(model);
-    	// iSessionId = model.getProperties().getPropertyLong("General.SessionId", (Long)null);
+    	iSessionId = model.getProperties().getPropertyLong("General.SessionId", (Long)null);
     	for (Long id: model.getProperties().getPropertyLongArry("General.SolverGroupId", null))
     		iSolverGroupId.add(id);
     	iInstructorFormat = getModel().getProperties().getProperty("General.InstructorFormat", NameFormat.LAST_FIRST.reference());
@@ -99,6 +101,7 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     }
     
     public void load() throws Exception {
+    	ApplicationProperties.setSessionId(iSessionId);
     	org.hibernate.Session hibSession = null;
     	Transaction tx = null;
     	try {

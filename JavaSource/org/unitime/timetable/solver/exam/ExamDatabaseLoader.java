@@ -55,6 +55,7 @@ import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.CacheMode;
 import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
@@ -124,6 +125,7 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
     }
 
     public void load() throws Exception {
+    	ApplicationProperties.setSessionId(iSessionId);
         iProgress.setStatus("Loading input data ...");
         org.hibernate.Session hibSession = new ExamDAO().getSession();
         hibSession.setCacheMode(CacheMode.IGNORE);

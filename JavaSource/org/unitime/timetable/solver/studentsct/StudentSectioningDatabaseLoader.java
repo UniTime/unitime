@@ -76,6 +76,7 @@ import org.cpsolver.studentsct.reservation.ReservationOverride;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.server.Query;
@@ -253,6 +254,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             }
             
             if (session==null) throw new Exception("Session "+iInitiative+" "+iTerm+iYear+" not found!");
+        	ApplicationProperties.setSessionId(session.getUniqueId());
             
             iProgress.info("Loading data for "+iInitiative+" "+iTerm+iYear+"...");
             

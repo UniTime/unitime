@@ -45,6 +45,7 @@ import org.cpsolver.studentsct.model.Subpart;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
@@ -95,7 +96,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
     }
     
     public void save() {
-        iProgress.setStatus("Saving solution ...");
+    	iProgress.setStatus("Saving solution ...");
         iTimeStamp = new Date();
         org.hibernate.Session hibSession = null;
         Transaction tx = null;
@@ -109,6 +110,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             Session session = Session.getSessionUsingInitiativeYearTerm(iInitiative, iYear, iTerm);
             
             if (session==null) throw new Exception("Session "+iInitiative+" "+iTerm+iYear+" not found!");
+            ApplicationProperties.setSessionId(session.getUniqueId());
                         
             save(session, hibSession);
             
