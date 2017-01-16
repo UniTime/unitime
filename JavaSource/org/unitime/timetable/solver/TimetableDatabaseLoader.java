@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -1511,7 +1512,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	return createGroupConstraint(pref.getUniqueId(), pref.getDistributionType(), pref.getPrefLevel(), pref.getOwner());
     }
     
-    private Constraint createGroupConstraint(Long id, DistributionType type, PreferenceLevel pref, PreferenceGroup owner) {
+    private Constraint createGroupConstraint(Long id, DistributionType type, PreferenceLevel pref, Object owner) {
     	Constraint gc = null;
     	if (type.getReference().matches("_(.+)_")){
     		for (FlexibleConstraintType fcType: FlexibleConstraintType.values()) {
@@ -3180,6 +3181,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         
     	if (!hibSession.isOpen())
     		iProgress.message(msglevel("hibernateFailure", Progress.MSGLEVEL_FATAL), "Hibernate session not open.");
+    	
+    	if (!getModel().getStudentSectioning().hasFinalSectioning())
+    		postAutomaticStudentConstraints(hibSession);
 
     	if (solutions!=null) {
         	for (int idx=0;idx<iSolverGroupId.length;idx++) {
@@ -3727,5 +3731,113 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	addGroupConstraint(gc);
     	
 		return true;
+    }
+    
+    protected void postAutomaticStudentConstraints(org.hibernate.Session hibSession) {
+		String constraints = getModel().getProperties().getProperty("General.AutomaticStudentConstraints");
+		if (constraints == null || constraints.isEmpty()) return;
+		Map<String, Integer> classes2counts = new HashMap<String, Integer>();
+		Map<String, Student> firstStudent = new HashMap<String, Student>();
+		for (Iterator<Student> i1 = getModel().getAllStudents().iterator(); i1.hasNext(); ) {
+			Student student = i1.next();
+			Set<Long> idSet = new TreeSet<Long>();
+			for (Lecture lecture: student.getLectures())
+				idSet.add(lecture.getClassId());
+			String ids = "";
+			for (Long id: idSet)
+				ids += (ids.isEmpty() ? "" : ",") + id;
+			Integer count = classes2counts.get(ids);
+			classes2counts.put(ids, 1 + (count == null ? 0 : count.intValue()));
+			if (count == null)
+				firstStudent.put(ids, student);
+		}
+		int limit = getModel().getProperties().getPropertyInt("General.AutomaticStudentConstraints.StudentLimit", 5);
+
+		List<DistributionType> types = (List<DistributionType>)hibSession.createQuery("from DistributionType where examPref = false").list();
+		for (String term: constraints.split("[,;][ ]?(?=([^\"]*\"[^\"]*\")*[^\"]*$)")) {
+			String constraint = term.trim().toLowerCase();
+			if (constraint.isEmpty()) continue;
+			PreferenceLevel pref = null;
+			for (PreferenceLevel p: PreferenceLevel.getPreferenceLevelList()) {
+				if (constraint.startsWith(p.getPrefName().toLowerCase() + " ") || constraint.startsWith(p.getPrefName().toLowerCase() + ":")) {
+					pref = p;
+					constraint = constraint.substring(p.getPrefName().length() + 1).trim();
+					break;
+				} else if (constraint.startsWith(p.getPrefProlog().toLowerCase() + " ") || constraint.startsWith(p.getPrefProlog().toLowerCase() + ":")) {
+					pref = p;
+					constraint = constraint.substring(p.getPrefProlog().length() + 1).trim();
+					break;
+				} else if (p.getPrefAbbv() != null && constraint.startsWith(p.getPrefAbbv().toLowerCase() + " ") || constraint.startsWith(p.getPrefAbbv().toLowerCase() + ":")) {
+					pref = p;
+					constraint = constraint.substring(p.getPrefAbbv().length() + 1).trim();
+					break;
+				} else if (PreferenceLevel.sRequired.equals(p.getPrefProlog()) && (constraint.startsWith("required ") || constraint.startsWith("required:"))) {
+					pref = p; constraint = constraint.substring("required ".length()).trim(); break;
+				} else if (PreferenceLevel.sStronglyPreferred.equals(p.getPrefProlog()) && (constraint.startsWith("strongly preferred ") || constraint.startsWith("strongly preferred:"))) {
+					pref = p; constraint = constraint.substring("strongly preferred ".length()).trim(); break;
+				} else if (PreferenceLevel.sPreferred.equals(p.getPrefProlog()) && (constraint.startsWith("preferred ") || constraint.startsWith("preferred:"))) {
+					pref = p; constraint = constraint.substring("preferred ".length()).trim(); break;
+				} else if (PreferenceLevel.sNeutral.equals(p.getPrefProlog()) && (constraint.startsWith("neutral ") || constraint.startsWith("neutral:"))) {
+					pref = p; constraint = constraint.substring("neutral ".length()).trim(); break;
+				} else if (PreferenceLevel.sDiscouraged.equals(p.getPrefProlog()) && (constraint.startsWith("discouraged ") || constraint.startsWith("discouraged:"))) {
+					pref = p; constraint = constraint.substring("discouraged ".length()).trim(); break;
+				} else if (PreferenceLevel.sStronglyDiscouraged.equals(p.getPrefProlog()) && (constraint.startsWith("strongly discouraged ") || constraint.startsWith("strongly discouraged:"))) {
+					pref = p; constraint = constraint.substring("strongly discouraged ".length()).trim(); break;
+				} else if (PreferenceLevel.sProhibited.equals(p.getPrefProlog()) && (constraint.startsWith("prohibited ") || constraint.startsWith("prohibited:"))) {
+					pref = p; constraint = constraint.substring("prohibited ".length()).trim(); break;
+				}
+			}
+			if (pref == null) {
+				iProgress.message(msglevel("automaticStudentConstraints", Progress.MSGLEVEL_WARN), "Failed to parse automatic hierarchical constraint preference " + term);
+				continue;
+			}
+			DistributionType type = null;
+			for (DistributionType t: types) {
+				if (constraint.equalsIgnoreCase(t.getReference()) || constraint.equalsIgnoreCase(t.getAbbreviation()) || constraint.equalsIgnoreCase(t.getLabel())) {
+					type = t; constraint = ""; break;
+				} else if (constraint.startsWith(t.getReference().toLowerCase() + " ") || constraint.startsWith(t.getReference().toLowerCase() + ":")) {
+					type = t; constraint = constraint.substring(t.getReference().length() + 1).trim(); break;
+				} else if (constraint.startsWith(t.getAbbreviation().toLowerCase() + " ") || constraint.startsWith(t.getAbbreviation().toLowerCase() + ":")) {
+					type = t; constraint = constraint.substring(t.getAbbreviation().length() + 1).trim(); break;
+				} else if (constraint.startsWith(t.getLabel().toLowerCase() + " ") || constraint.startsWith(t.getLabel().toLowerCase() + ":")) {
+					type = t; constraint = constraint.substring(t.getLabel().length() + 1).trim(); break;
+				}
+			}
+			if (type == null) {
+				for (GroupConstraint.ConstraintType t: GroupConstraint.ConstraintType.values()) {
+					if (constraint.equalsIgnoreCase(t.reference()) || constraint.equalsIgnoreCase(t.getName())) {
+						type = new DistributionType(); type.setReference(t.reference()); type.setLabel(t.getName()); type.setAbbreviation(t.getName());
+					}
+				}
+			}
+			if (type == null) {
+				iProgress.message(msglevel("automaticStudentConstraints", Progress.MSGLEVEL_WARN), "Failed to parse automatic hierarchical constraint preference " + term);
+				continue;
+			}
+			iProgress.setPhase("Posting automatic " + pref.getPrefName() + " " + type.getLabel() + " constraints for students...", classes2counts.size());
+			for (Map.Entry<String, Integer> entry: classes2counts.entrySet()) {
+				iProgress.incProgress();
+				if (entry.getValue() >= limit) {
+					List<Lecture> variables = new ArrayList<Lecture>();
+					for (String id: entry.getKey().split(",")) {
+						Lecture lecture = (Lecture)iLectures.get(Long.valueOf(id));
+						if (lecture != null) variables.add(lecture);
+					}
+					Student student = firstStudent.get(entry.getKey());
+					if (variables.size() > 1) {
+				    	Constraint gc = createGroupConstraint(student.getId(), type, pref, student);
+				    	if (gc == null) continue;
+				    	String info = "";
+						for (Lecture var: variables) {
+							gc.addVariable(var);
+							if (!info.isEmpty()) info += ", ";
+							info += getClassLabel(var);
+						}
+						iProgress.info("Posted " + type.getLabel() + " constraint between " + info + " (" + pref.getPrefName() + ")");
+				    	addGroupConstraint(gc);
+					}
+				}
+			}
+		}
     }
 }
