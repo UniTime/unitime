@@ -30,6 +30,24 @@
 	<category>
 		<title>Course Timetabling</title>
 		<item>
+			<name>Automatic Hierarchical Constraints</name>
+			<description>
+				<line>Improved parsing of the General.AutomaticHierarchicalConstraints parameter.</line>
+				<line>If there is a date pattern that is not used or that does not exist, do not skip parsing of the rest of the parameter.</line>
+				<line>Check for English (not localized) versions of the preferences and for preference abbreviations.</line>
+				<line>Flexible and other constraints (that are not implemented by the GroupConstraint class) are now allowed as well.</line>
+				<line>Date patterns containing commas must use quotation marks, e.g., Preferred Same Start &quot;Week 1,3,5&quot;.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.1.218</version>
+	<release-date>Tue, 10 Jan 2017</release-date>
+	<category>
+		<title>Course Timetabling</title>
+		<item>
 			<name>Class: Change Managing Department</name>
 			<description>
 				<line>Do not delete the related class event if committed assignment is not deleted.
