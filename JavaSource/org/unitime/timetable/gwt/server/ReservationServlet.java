@@ -500,6 +500,19 @@ public class ReservationServlet implements ReservationService {
 					.setLong("groupId", sg.getUniqueId()).setCacheable(true).uniqueResult();
 			if (enrollment.intValue() > 0)
 				r.setEnrollment(enrollment.intValue());
+			Number lastLike = (Number)hibSession.createQuery(
+					"select count(distinct s) from " +
+					"LastLikeCourseDemand x inner join x.student s inner join s.groups g, CourseOffering co where " +
+					"x.subjectArea.session.uniqueId = :sessionId and co.instructionalOffering.uniqueId = :offeringId and "+
+					"co.subjectArea.uniqueId = x.subjectArea.uniqueId and " +
+					"((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr)) " +
+					"and g.groupAbbreviation = :groupAbbv")
+					.setLong("sessionId", getAcademicSessionId())
+					.setLong("offeringId", reservation.getInstructionalOffering().getUniqueId())
+					.setString("groupAbbv", sg.getGroupAbbreviation())
+					.setCacheable(true).uniqueResult();
+			if (lastLike.intValue() > 0)
+				r.setLastLike(lastLike.intValue());
 		} else {
 			throw new ReservationException(MESSAGES.errorUnknownReservationType(reservation.getClass().getName()));
 		}
