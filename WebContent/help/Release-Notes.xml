@@ -39,6 +39,21 @@
 				<line>Date patterns containing commas must use quotation marks, e.g., Preferred Same Start &quot;Week 1,3,5&quot;.</line>
 			</description>
 		</item>
+		<item>
+			<name>Automatic Student Constraints</name>
+			<description>
+				<line>Added ability to automatically post certain distribution constraints between classes that are attended by the same students
+					(the given constraints are posted between all classes of a student).</line>
+				<line>This is only enabled when deterministic student sectioning is used.</line>
+				<line>The list of constraints that are to be posted (together with their preferences) is given by solver parameter General.AutomaticStudentConstraints.
+					<line>Contains a comma delimited list of &lt;preference&gt; &lt;constraint&gt;, for example:</line>
+					<line>Preferred Max 1 Break, Strongly Preferred Ay Most 6 Hrs, Required 8h Work-Day</line>
+				</line>
+				<line>By default, the given constraints are posted on every set of classes that are attended by at least 5 students (must be all classes those 5 students are attending).
+					<line>This can be changed by General.AutomaticStudentConstraints.StudentLimit solver parameter (defaults to 5).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 
