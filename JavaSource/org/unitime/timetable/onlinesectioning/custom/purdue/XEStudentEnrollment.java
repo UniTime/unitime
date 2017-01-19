@@ -660,6 +660,9 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			
 			if (req.isEmpty() || !changed) {
 				// no classes to add or drop -> return no failures
+				if (!fails.isEmpty())
+					for (EnrollmentFailure f: fails)
+						helper.getAction().addMessageBuilder().setText(f.toString()).setLevel(OnlineSectioningLog.Message.Level.WARN);
 				return fails;
 			}
 
@@ -811,7 +814,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			if (helper.isDebugEnabled())
 				helper.debug("Return: " + fails);
 			if (!fails.isEmpty())
-				helper.getAction().addOptionBuilder().setKey("message").setValue(fails.toString());
+				for (EnrollmentFailure f: fails)
+					helper.getAction().addMessageBuilder().setText(f.toString()).setLevel(OnlineSectioningLog.Message.Level.WARN);
 			return fails;
 		} catch (SectioningException e) {
 			helper.info("Banner enrollment failed: " + e.getMessage());

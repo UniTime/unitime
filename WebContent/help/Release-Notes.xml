@@ -61,6 +61,9 @@
 			<name>Banner XE Interface</name>
 			<description>
 				<line>When dropping a section and the DW action is not available, check for other D% action that can be used.</line>
+				<line>Log all the exceptions and Banner messages as warnings. Also log all the exceptions when no enrollment change is detected.
+					<line>This fixes the issue of not seeing the &quot;Section not available for student scheduling.&quot; in the log.</line>
+				</line>
 			</description>
 		</item>
 	</category>
