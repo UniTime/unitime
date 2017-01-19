@@ -43,6 +43,7 @@ import org.cpsolver.ifs.model.Variable;
 import org.cpsolver.ifs.solution.Solution;
 import org.cpsolver.ifs.solver.ParallelSolver;
 import org.cpsolver.ifs.solver.Solver;
+import org.cpsolver.ifs.termination.TerminationCondition;
 import org.cpsolver.ifs.util.Callback;
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.ProblemLoader;
@@ -258,7 +259,8 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
         iWorking = true;
         ProblemSaver<V, T, M> saver = getDatabaseSaver(this);
         saver.setCallback(getSavingDoneCallback());
-        iWorkThread = new Thread(saver);
+        iWorkThread = new InterruptibleThread(saver);
+        saver.setTerminationCondition((InterruptibleThread)iWorkThread);
         iWorkThread.setPriority(THREAD_PRIORITY);
         iWorkThread.start();
     }
@@ -277,7 +279,8 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
         
         ProblemLoader<V, T, M> loader = getDatabaseLoader(model, currentSolution().getAssignment());
         loader.setCallback(getLoadingDoneCallback());
-        iWorkThread = new Thread(loader);
+        iWorkThread = new InterruptibleThread(loader);
+        loader.setTerminationCondition((InterruptibleThread)iWorkThread);
         iWorkThread.setPriority(THREAD_PRIORITY);
         iWorkThread.start();
     }
@@ -300,7 +303,8 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
         
         ProblemLoader<V, T, M> loader = getDatabaseLoader(model, currentSolution().getAssignment());
         loader.setCallback(callBack);
-        iWorkThread = new Thread(loader);
+        iWorkThread = new InterruptibleThread(loader);
+        loader.setTerminationCondition((InterruptibleThread)iWorkThread);
         iWorkThread.start();
     }
     
@@ -727,5 +731,19 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
     
     protected M getModel() {
     	return (M)currentSolution().getModel();
+    }
+    
+    static class InterruptibleThread<V extends Variable<V, T>, T extends Value<V, T>> extends Thread implements TerminationCondition<V, T> {
+    	InterruptibleThread(Runnable runnable) {
+    		super(runnable);
+    	}
+    	
+    	InterruptibleThread() {
+    		super();
+    	}
+    	
+    	public boolean canContinue(Solution<V, T> currentSolution) {
+    		return !isInterrupted();
+    	}
     }
 }

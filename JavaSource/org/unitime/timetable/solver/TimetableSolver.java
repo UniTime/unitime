@@ -236,12 +236,12 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 	
 	protected void afterFinalSectioning() {}
     
-    public class FinalSectioning extends Thread {
+    public class FinalSectioning extends InterruptibleThread<Lecture, Placement> {
     	public void run() {
     		setName("FinalSectioning");
     		iWorking = true;
     		try {
-    			((TimetableModel)currentSolution().getModel()).switchStudents(currentSolution().getAssignment());
+    			((TimetableModel)currentSolution().getModel()).switchStudents(currentSolution().getAssignment(), this);
     		} finally {
     			iWorking = false;
     			Progress.getInstance(currentSolution().getModel()).setStatus("Awaiting commands ...");
@@ -259,7 +259,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     @Override
     protected void finishBeforeSave() {
 		if (getProperties().getPropertyBoolean("General.SwitchStudents",true)) {
-			((TimetableModel)currentSolution().getModel()).switchStudents(currentSolution().getAssignment());
+			((TimetableModel)currentSolution().getModel()).switchStudents(currentSolution().getAssignment(), null);
 			currentSolution().saveBest();
 		}
     }
@@ -1411,5 +1411,24 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 	@Override
 	public SolverType getType() {
 		return SolverType.COURSE;
+	}
+	
+	@Override
+	public boolean isRunning() {
+		if (super.isRunning()) return true;
+		if (iWorking && iWorkThread != null && iWorkThread instanceof InterruptibleThread && iWorkThread.isAlive() && !iWorkThread.isInterrupted())
+			return true;
+		return false;
+	}
+	
+	@Override
+	public void stopSolver() {
+		if (super.isRunning()) super.stopSolver();
+		if (iWorking && iWorkThread != null && iWorkThread instanceof InterruptibleThread && iWorkThread.isAlive() && !iWorkThread.isInterrupted()) {
+			try {
+				iWorkThread.interrupt();
+				iWorkThread.join();
+			} catch (InterruptedException e) {}
+		}
 	}
 }

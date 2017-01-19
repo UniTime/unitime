@@ -1157,9 +1157,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     
     private void assignCommited() {
     	if (!getModel().hasConstantVariables()) return;
-    	iProgress.setPhase("Assigning committed classes ...", getModel().constantVariables().size());
+    	setPhase("Assigning committed classes ...", getModel().constantVariables().size());
     	for (Lecture lecture: getModel().constantVariables()) {
-    		iProgress.incProgress();
+    		incProgress();
     		if (getAssignment().getValue(lecture)!=null) continue;
     		Placement placement = (Placement)lecture.getInitialAssignment();
     		getModel().weaken(getAssignment(), placement);
@@ -1182,7 +1182,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private void purgeInvalidValues() {
-    	iProgress.setPhase("Purging invalid placements ...", getModel().variables().size());
+    	setPhase("Purging invalid placements ...", getModel().variables().size());
     	for (Lecture lecture: new ArrayList<Lecture>(getModel().variables())) {
     		List<Placement> oldValues = new ArrayList<Placement>(lecture.values(getAssignment()));
     		lecture.purgeInvalidValues(iInteractiveMode);
@@ -1205,7 +1205,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                     }
     			}
     		}
-    		iProgress.incProgress();
+    		incProgress();
     	}
     }
     
@@ -1420,7 +1420,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private void loadInstructorAvailabilities(org.hibernate.Session hibSession) {
-    	iProgress.setPhase("Loading instructor availabilities ...", 1);
+    	setPhase("Loading instructor availabilities ...", 1);
     	StringBuffer puids = new StringBuffer();
     	int idx = 0;
     	for (Enumeration e=iInstructors.elements();e.hasMoreElements();) {
@@ -1435,7 +1435,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		}
     	}
     	if (puids.length()>0) loadInstructorAvailabilities(hibSession, puids.toString());
-    	iProgress.incProgress();
+    	incProgress();
     }
     
     private void loadInstructorStudentConflicts(org.hibernate.Session hibSession, String puids) {
@@ -1458,7 +1458,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private void loadInstructorStudentConflicts(org.hibernate.Session hibSession) {
-    	iProgress.setPhase("Loading instructor student conflicts ...", 1);
+    	setPhase("Loading instructor student conflicts ...", 1);
     	StringBuffer puids = new StringBuffer();
     	int idx = 0;
     	for (InstructorConstraint ic: iInstructors.values()) {
@@ -1472,7 +1472,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		}
     	}
     	if (puids.length()>0) loadInstructorStudentConflicts(hibSession, puids.toString());
-    	iProgress.incProgress();
+    	incProgress();
     }
     
     private void loadRoomAvailabilities(org.hibernate.Session hibSession, String roomids) {
@@ -1494,7 +1494,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private void loadRoomAvailabilities(org.hibernate.Session hibSession) {
-    	iProgress.setPhase("Loading room availabilities ...", 1);
+    	setPhase("Loading room availabilities ...", 1);
     	StringBuffer roomids = new StringBuffer();
     	int idx = 0;
     	for (Enumeration e=iRooms.elements();e.hasMoreElements();) {
@@ -1508,7 +1508,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		}
     	}
     	if (roomids.length()>0) loadRoomAvailabilities(hibSession, roomids.toString());
-    	iProgress.incProgress();
+    	incProgress();
     }
     
     private Constraint createGroupConstraint(DistributionPref pref) {
@@ -1912,11 +1912,11 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     				).setLong("deptId",department.getUniqueId()).list();
     	}
     	if (instructors==null || instructors.isEmpty()) return;
-    	iProgress.setPhase("Loading instructor distr. constraints for "+department.getShortLabel()+" ...", instructors.size());
+    	setPhase("Loading instructor distr. constraints for "+department.getShortLabel()+" ...", instructors.size());
     	for (Iterator i=instructors.iterator();i.hasNext();) {
     		DepartmentalInstructor instructor = (DepartmentalInstructor)i.next();
     		loadInstructorGroupConstraints(instructor, checkedDistPrefIds);
-    		iProgress.incProgress();
+    		incProgress();
     	}
     }
     
@@ -2232,7 +2232,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		}
 		
 		// Make up the appropriate committed placements and propagate those through the course structure
-        iProgress.setPhase("Loading student conflicts with commited solutions ...", assignments.size());
+        setPhase("Loading student conflicts with commited solutions ...", assignments.size());
 		for (Iterator i1=assignments.entrySet().iterator(); i1.hasNext();) {
 			Map.Entry entry = (Map.Entry)i1.next();
 			Assignment assignment = (Assignment)entry.getKey();
@@ -2247,7 +2247,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     			getModel().addVariable(committedPlacement.variable());
     		}
     		propagateCommittedAssignment(students, assignment);
-    		iProgress.incProgress();
+    		incProgress();
         }
     }
     
@@ -2278,10 +2278,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private void makeupCommittedStudentConflicts(Set<Long> offeringsToAvoid) {
-        iProgress.setPhase("Creating student conflicts with commited solutions ...", iStudents.size());
+        setPhase("Creating student conflicts with commited solutions ...", iStudents.size());
     	for (Student student: iStudents.values()) {
     		Set<WeightedCourseOffering> courses = iStudentCourseDemands.getCourses(student.getId());
-    		iProgress.incProgress();
+    		incProgress();
     		if (courses == null) continue;
     		for (WeightedCourseOffering course: courses) {
     			if (offeringsToAvoid.contains(course.getCourseOffering().getInstructionalOffering().getUniqueId())) continue;
@@ -2540,7 +2540,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		}
 		iProgress.debug("classes to load: "+iAllClasses.size());
 		
-		iProgress.setPhase("Loading classes ...",iAllClasses.size());
+		setPhase("Loading classes ...",iAllClasses.size());
 		int ord = 0;
 		HashSet<SchedulingSubpart> subparts = new HashSet<SchedulingSubpart>();
 		for (Iterator i1=iAllClasses.iterator();i1.hasNext();) {
@@ -2550,18 +2550,18 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			if (lecture!=null) 
 				lecture.setOrd(ord++);
 			iClasses.put(clazz.getUniqueId(),clazz);
-			iProgress.incProgress();
+			incProgress();
 		}
 		
 		loadInstructorAvailabilities(hibSession);
 		
 		loadRoomAvailabilities(hibSession);
 		
-		iProgress.setPhase("Loading offerings ...", iAllClasses.size());
+		setPhase("Loading offerings ...", iAllClasses.size());
     	Set<Long> loadedOfferings = new HashSet<Long>();
 		for (Class_ clazz: iAllClasses) {
 			Lecture lecture = (Lecture)iLectures.get(clazz.getUniqueId());
-			iProgress.incProgress();
+			incProgress();
 			
 			if (lecture==null) continue; //skip classes that were not loaded
 			
@@ -2575,12 +2575,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		for (int i=0;i<iSolverGroup.length;i++) {
 			distPrefs.addAll(iSolverGroup[i].getDistributionPreferences());
 		}
-		iProgress.setPhase("Loading distribution preferences ...",distPrefs.size());
+		setPhase("Loading distribution preferences ...",distPrefs.size());
 		for (Iterator i=distPrefs.iterator();i.hasNext();) {
 			DistributionPref distributionPref = (DistributionPref)i.next();
 			if (!PreferenceLevel.sNeutral.equals(distributionPref.getPrefLevel().getPrefProlog()))
 				loadGroupConstraint(distributionPref);
-			iProgress.incProgress();
+			incProgress();
 		}
 		
 		Set<Long> checkedDistPrefIds = new HashSet<Long>();
@@ -2591,7 +2591,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		}
 		
 		if (iAutoSameStudents) {
-			iProgress.setPhase("Posting automatic same_students constraints ...",iAllClasses.size());
+			setPhase("Posting automatic same_students constraints ...",iAllClasses.size());
     		for (Iterator i1=iAllClasses.iterator();i1.hasNext();) {
     			Class_ clazz = (Class_)i1.next();
     			Lecture lecture = (Lecture)iLectures.get(clazz.getUniqueId());
@@ -2600,7 +2600,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     			if (!lecture.hasAnyChildren())
     				postSameStudentConstraint(clazz, iAutoSameStudentsConstraint);
     			
-    			iProgress.incProgress();
+    			incProgress();
     		}
 		}
 		
@@ -2615,7 +2615,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			if (pref == null) {
 				iProgress.message(msglevel("autoPrecedence", Progress.MSGLEVEL_WARN), "Preference " + iAutoPrecedence + " not recognized.");
 			} else if (!PreferenceLevel.sNeutral.equals(pref.getPrefProlog())) {
-				iProgress.setPhase("Posting automatic precedence constraints ...",iAllClasses.size());
+				setPhase("Posting automatic precedence constraints ...",iAllClasses.size());
 	    		for (Iterator i1=iAllClasses.iterator();i1.hasNext();) {
 	    			Class_ clazz = (Class_)i1.next();
 	    			Lecture lecture = (Lecture)iLectures.get(clazz.getUniqueId());
@@ -2624,7 +2624,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 	    			if (!lecture.hasAnyChildren())
 	    				postPrecedenceConstraint(clazz, pref.getPrefProlog());
 	    			
-	    			iProgress.incProgress();
+	    			incProgress();
 	    		}				
 			}
 		}
@@ -2633,7 +2633,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		
 		assignCommited();
 		
-    	iProgress.setPhase("Posting class limit constraints ...", iOfferings.size());
+    	setPhase("Posting class limit constraints ...", iOfferings.size());
     	for (Map.Entry<InstructionalOffering, Hashtable<InstrOfferingConfig, Set<SchedulingSubpart>>> entry: iOfferings.entrySet()) {
     		Hashtable<InstrOfferingConfig, Set<SchedulingSubpart>> topSubparts = entry.getValue();
     		for (Map.Entry<InstrOfferingConfig, Set<SchedulingSubpart>> subpartEntry: topSubparts.entrySet()) {
@@ -2701,12 +2701,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         			
     			}
     		}
-    		iProgress.incProgress();
+    		incProgress();
     	}
 		
 		iStudentCourseDemands.init(hibSession, iProgress, iSession, iOfferings.keySet());
 
-    	iProgress.setPhase("Loading students ...",iOfferings.size());
+    	setPhase("Loading students ...",iOfferings.size());
     	for (InstructionalOffering offering: iOfferings.keySet()) {
     		
     		boolean unlimitedOffering = false;
@@ -2964,7 +2964,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         		}
         	}
     		
-        	iProgress.incProgress();
+        	incProgress();
     	}
     	iProgress.debug(iStudents.size()+" students loaded.");
     	
@@ -2988,7 +2988,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     					"StudentClassEnrollment e, Class_ c where " + 
     					"e.courseOffering.instructionalOffering = c.schedulingSubpart.instrOfferingConfig.instructionalOffering and " +
     					"c.managingDept.solverGroup.uniqueId in (" + iSolverGroupIds + ")").list();
-    			iProgress.setPhase("Loading current student enrolments  ...", enrollments.size());
+    			setPhase("Loading current student enrolments  ...", enrollments.size());
     			int totalEnrollments = 0;
     			for (Object[] o: enrollments) {
             		Long studentId = (Long)o[0];
@@ -3014,7 +3014,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                     	}
                     }
 
-    				iProgress.incProgress();
+    				incProgress();
     			}
     			iProgress.message(msglevel("enrollmentsLoaded", Progress.MSGLEVEL_INFO), "Loaded " + totalEnrollments + " enrollments of " + iPreEnrollments.size() + " students.");
     		} else {
@@ -3033,7 +3033,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         				.setLong("sovlerGroupId", iSolverGroupId[idx])
         				.list();
             		}
-            		iProgress.setPhase("Loading student enrolments ["+(idx+1)+"] ...",studentEnrls.size());
+            		setPhase("Loading student enrolments ["+(idx+1)+"] ...",studentEnrls.size());
                 	for (Iterator i1=studentEnrls.iterator();i1.hasNext();) {
                 		Object o[] = (Object[])i1.next();
                 		Long studentId = (Long)o[0];
@@ -3057,7 +3057,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                         	}
                         }
                         
-                        iProgress.incProgress();
+                        incProgress();
                 	}
             	}
             	
@@ -3069,7 +3069,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         					"e.solution.commited = true and e.solution.owner.uniqueId not in (" + iSolverGroupIds + ") and " +
         					"e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering = c.schedulingSubpart.instrOfferingConfig.instructionalOffering and " +
         					"c.managingDept.solverGroup.uniqueId in (" + iSolverGroupIds + ")").list();
-        			iProgress.setPhase("Loading other committed student enrolments  ...", enrollments.size());
+        			setPhase("Loading other committed student enrolments  ...", enrollments.size());
 
         			for (Object[] o: enrollments) {
                 		Long studentId = (Long)o[0];
@@ -3094,7 +3094,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                         	}
                         }
 
-        				iProgress.incProgress();
+        				incProgress();
         			}
         		}
     		}
@@ -3119,7 +3119,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         if (!hibSession.isOpen())
             iProgress.message(msglevel("hibernateFailure", Progress.MSGLEVEL_FATAL), "Hibernate session not open.");
 
-    	iProgress.setPhase("Initial sectioning ...", iOfferings.size());
+    	setPhase("Initial sectioning ...", iOfferings.size());
         for (InstructionalOffering offering: iOfferings.keySet()) {
     		Set<Student> students = new HashSet<Student>();
 			for (CourseOffering course: offering.getCourseOfferings()) {
@@ -3131,7 +3131,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		
     		getModel().getStudentSectioning().initialSectioning(getAssignment(), offering.getUniqueId(), offering.getCourseName(), students, iAltConfigurations.get(offering));
     		
-    		iProgress.incProgress();
+    		incProgress();
     	}
         
     	for (Enumeration e=iStudents.elements();e.hasMoreElements();) {
@@ -3139,9 +3139,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	}
     	
     	if (!iPreEnrollments.isEmpty()) {
-        	iProgress.setPhase("Checking loaded enrollments ....", iPreEnrollments.size());
+        	setPhase("Checking loaded enrollments ....", iPreEnrollments.size());
         	for (Map.Entry<Student, Set<Lecture>> entry: iPreEnrollments.entrySet()) {
-        		iProgress.incProgress();
+        		incProgress();
         		Student student = entry.getKey();
         		Set<Lecture> lectures = entry.getValue();
         		for (Lecture lecture: lectures) {
@@ -3172,7 +3172,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         if (iLoadStudentInstructorConflicts)
         	loadInstructorStudentConflicts(hibSession);
 
-        iProgress.setPhase("Computing jenrl ...",iStudents.size());
+        setPhase("Computing jenrl ...",iStudents.size());
         Hashtable jenrls = new Hashtable();
         for (Iterator i1=iStudents.values().iterator();i1.hasNext();) {
             Student st = (Student)i1.next();
@@ -3194,7 +3194,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                     jenrl.incJenrl(getAssignment(), st);
                 }
             }
-            iProgress.incProgress();
+            incProgress();
         }
         
     	if (!hibSession.isOpen())
@@ -3207,21 +3207,21 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	for (int idx=0;idx<iSolverGroupId.length;idx++) {
         		Solution solution = (Solution)solutions.get(iSolverGroupId[idx]);
         		if (solution==null) continue;
-            	iProgress.setPhase("Creating initial assignment ["+(idx+1)+"] ...",solution.getAssignments().size());
+            	setPhase("Creating initial assignment ["+(idx+1)+"] ...",solution.getAssignments().size());
             	for (Iterator i1=solution.getAssignments().iterator();i1.hasNext();) {
             		Assignment assignment = (Assignment)i1.next();
             		loadAssignment(assignment);
-            		iProgress.incProgress();
+            		incProgress();
             	}
         	}
         } else if (iLoadCommittedAssignments) {
-        	iProgress.setPhase("Creating initial assignment ...", getModel().variables().size());
+        	setPhase("Creating initial assignment ...", getModel().variables().size());
         	for (Lecture lecture: getModel().variables()) {
         		if (lecture.isCommitted()) continue;
         		Class_ clazz = iClasses.get(lecture.getClassId());
         		if (clazz != null && clazz.getCommittedAssignment() != null)
         			loadAssignment(clazz.getCommittedAssignment());
-        		iProgress.incProgress();
+        		incProgress();
         	}
         }
         
@@ -3229,15 +3229,15 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		iProgress.message(msglevel("hibernateFailure", Progress.MSGLEVEL_FATAL), "Hibernate session not open.");
 
     	if (iSpread) {
-    		iProgress.setPhase("Posting automatic spread constraints ...", subparts.size());
+    		setPhase("Posting automatic spread constraints ...", subparts.size());
     		for (SchedulingSubpart subpart: subparts) {
     			if (subpart.getClasses().size()<=1) {
-    				iProgress.incProgress();
+    				incProgress();
     				continue;
     			}
     			if (!subpart.isAutoSpreadInTime().booleanValue()) {
     				iProgress.debug("Automatic spread constraint disabled for "+getSubpartLabel(subpart));
-    				iProgress.incProgress();
+    				incProgress();
     				continue;
     			}
 				SpreadConstraint spread = new SpreadConstraint(getModel().getProperties(),subpart.getCourseName()+" "+subpart.getItypeDesc().trim());
@@ -3251,12 +3251,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 					iProgress.message(msglevel("courseWithNoClasses", Progress.MSGLEVEL_WARN), "No class for course "+getSubpartLabel(subpart));
 				else
 					getModel().addConstraint(spread);
-    			iProgress.incProgress();
+    			incProgress();
     		}
 		}
 		
 		if (iDeptBalancing) {
-        	iProgress.setPhase("Creating dept. spread constraints ...",getModel().variables().size());
+        	setPhase("Creating dept. spread constraints ...",getModel().variables().size());
             Hashtable<Long, DepartmentSpreadConstraint> depSpreadConstraints = new Hashtable<Long, DepartmentSpreadConstraint>();
             for (Lecture lecture: getModel().variables()) {
                 if (lecture.getDepartment()==null) continue;
@@ -3267,12 +3267,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                     getModel().addConstraint(deptConstr);
                 }
                 deptConstr.addVariable(lecture);
-                iProgress.incProgress();
+                incProgress();
             }
         }
 		
 		if (iSubjectBalancing) {
-        	iProgress.setPhase("Creating subject spread constraints ...",getModel().variables().size());
+        	setPhase("Creating subject spread constraints ...",getModel().variables().size());
             Hashtable<Long, SpreadConstraint> subjectSpreadConstraints = new Hashtable<Long, SpreadConstraint>();
             for (Lecture lecture: getModel().variables()) {
             	Class_ clazz = iClasses.get(lecture.getClassId());
@@ -3287,7 +3287,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                     }
                     subjectSpreadConstr.addVariable(lecture);
             	}
-                iProgress.incProgress();
+                incProgress();
             }
         }
 
@@ -3307,10 +3307,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		}
 		*/
 		
-		iProgress.setPhase("Checking for inconsistencies...", getModel().variables().size());
+		setPhase("Checking for inconsistencies...", getModel().variables().size());
 		for (Lecture lecture: getModel().variables()) {
 			
-			iProgress.incProgress();
+			incProgress();
     		for (Iterator i=lecture.students().iterator();i.hasNext();) {
     			Student s = (Student)i.next();
     			if (!s.canEnroll(lecture))
@@ -3396,9 +3396,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			new EnrollmentCheck(getModel(), getAssignment(), msglevel("enrollmentCheck", Progress.MSGLEVEL_WARN)).checkStudentEnrollments(iProgress);
 		
 		if (getModel().getProperties().getPropertyBoolean("General.SwitchStudents",true) && getAssignment().nrAssignedVariables() != 0 && !iLoadStudentEnrlsFromSolution)
-			getModel().switchStudents(getAssignment());
+			getModel().switchStudents(getAssignment(), getTerminationCondition());
 		
- 		iProgress.setPhase("Done",1);iProgress.incProgress();            
+ 		setPhase("Done",1);incProgress();            
 		iProgress.message(msglevel("allDone", Progress.MSGLEVEL_INFO), "Model successfully loaded.");
     }
     
@@ -3453,7 +3453,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     public void loadRoomAvailability(RoomAvailabilityInterface availability, Date[] startEnd) {
-        iProgress.setPhase("Loading room availability...", iRooms.size());
+        setPhase("Loading room availability...", iRooms.size());
         int firstDOY = iSession.getDayOfYear(1,iSession.getPatternStartMonth());
         int lastDOY = iSession.getDayOfYear(0,iSession.getPatternEndMonth()+1);
         int size = lastDOY - firstDOY;
@@ -3462,7 +3462,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         int sessionYear = iSession.getSessionStartYear();
         for (Enumeration e=iRooms.elements();e.hasMoreElements();) {
             RoomConstraint room = (RoomConstraint)e.nextElement();
-            iProgress.incProgress();
+            incProgress();
             if (!room.getConstraint()) continue;
             Collection<TimeBlock> times = getRoomAvailability(availability, room, startEnd[0], startEnd[1]);
             if (times==null) continue;
@@ -3535,7 +3535,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     public void loadInstructorAvailability(RoomAvailabilityInterface availability, Date[] startEnd) {
-        iProgress.setPhase("Loading instructor availability...", getModel().getInstructorConstraints().size());
+        setPhase("Loading instructor availability...", getModel().getInstructorConstraints().size());
         int firstDOY = iSession.getDayOfYear(1,iSession.getPatternStartMonth());
         int lastDOY = iSession.getDayOfYear(0,iSession.getPatternEndMonth()+1);
         int size = lastDOY - firstDOY;
@@ -3543,7 +3543,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_PATTERN);
         int sessionYear = iSession.getSessionStartYear();
         for (InstructorConstraint instructor: getModel().getInstructorConstraints()) {
-            iProgress.incProgress();
+            incProgress();
             Collection<TimeBlock> times = getInstructorAvailability(availability, instructor, startEnd[0], startEnd[1]);
             if (times==null) continue;
             for (TimeBlock time : times) {
@@ -3695,7 +3695,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 					continue;
 				}
 			}
-			iProgress.setPhase("Posting automatic " + pref.getPrefName() + " " + type.getLabel() + " constraints" + (pattern == null ? "" : " between classes of pattern " + pattern.getName()) + "...", iAllClasses.size());
+			setPhase("Posting automatic " + pref.getPrefName() + " " + type.getLabel() + " constraints" + (pattern == null ? "" : " between classes of pattern " + pattern.getName()) + "...", iAllClasses.size());
 			for (Iterator i1=iAllClasses.iterator();i1.hasNext();) {
     			Class_ clazz = (Class_)i1.next();
     			Lecture lecture = (Lecture)iLectures.get(clazz.getUniqueId());
@@ -3704,7 +3704,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     			if (!lecture.hasAnyChildren())
     				postAutomaticHierarchicalConstraint(clazz, type, pref, pattern);
     			
-    			iProgress.incProgress();
+    			incProgress();
     		}			
 		}
     }
@@ -3832,9 +3832,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 				iProgress.message(msglevel("automaticStudentConstraints", Progress.MSGLEVEL_WARN), "Failed to parse automatic hierarchical constraint preference " + term);
 				continue;
 			}
-			iProgress.setPhase("Posting automatic " + pref.getPrefName() + " " + type.getLabel() + " constraints for students...", classes2counts.size());
+			setPhase("Posting automatic " + pref.getPrefName() + " " + type.getLabel() + " constraints for students...", classes2counts.size());
 			for (Map.Entry<String, Integer> entry: classes2counts.entrySet()) {
-				iProgress.incProgress();
+				incProgress();
 				if (entry.getValue() >= limit) {
 					List<Lecture> variables = new ArrayList<Lecture>();
 					for (String id: entry.getKey().split(",")) {
@@ -3857,5 +3857,20 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 				}
 			}
 		}
+    }
+    
+    protected void checkTermination() {
+    	if (getTerminationCondition() != null && !getTerminationCondition().canContinue(new org.cpsolver.ifs.solution.Solution(getModel(), getAssignment())))
+    		throw new RuntimeException("The load was interrupted.");
+    }
+    
+    protected void setPhase(String phase, long progressMax) {
+    	checkTermination();
+    	iProgress.setPhase(phase, progressMax);
+    }
+    
+    protected void incProgress() {
+    	checkTermination();
+    	iProgress.incProgress();
     }
 }
