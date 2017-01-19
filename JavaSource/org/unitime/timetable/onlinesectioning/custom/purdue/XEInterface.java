@@ -23,6 +23,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.joda.time.DateTime;
 
@@ -108,8 +109,18 @@ public class XEInterface {
 			return false;
 		}
 
-		public boolean canDrop(boolean admin) {
-			return can(admin ? "DDD" : "DW");
+		public boolean canDrop(boolean admin, Map<String, String> actions) {
+			// Check the default drop status DDD / DW first
+			if (can(admin ? "DDD" : "DW")) return true;
+			// Look for any other status with D, make note of it in the actions if found
+			if (registrationActions != null)
+				for (RegistrationAction action: registrationActions) {
+					if (action.courseRegistrationStatus != null && action.courseRegistrationStatus.startsWith("D")) {
+						actions.put(courseReferenceNumber, action.courseRegistrationStatus);
+						return true;
+					}
+				}
+			return false;
 		}
 		
 		public boolean canAdd(boolean admin) {
@@ -236,8 +247,15 @@ public class XEInterface {
 			this.term = term; this.bannerId = bannerId; this.altPin = pin; this.systemIn = (admin ? "SB" : "WA");
 		}
 		
-		public RegisterRequest drop(String crn) {
+		public RegisterRequest drop(String crn, Map<String, String> actions) {
 			if (actionsAndOptions == null) actionsAndOptions = new ArrayList<RegisterAction>();
+			if (actions != null) {
+				String action = actions.get(crn);
+				if (action != null && action.startsWith("D")) {
+					actionsAndOptions.add(new RegisterAction(action, crn));
+					return this;
+				}
+			}
 			actionsAndOptions.add(new RegisterAction("SB".equals(systemIn) ? "DDD" : "DW", crn));
 			return this;
 		}

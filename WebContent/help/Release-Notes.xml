@@ -55,6 +55,15 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Banner XE Interface</name>
+			<description>
+				<line>When dropping a section and the DW action is not available, check for other D% action that can be used.</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>
