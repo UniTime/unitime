@@ -57,6 +57,7 @@ import org.cpsolver.coursett.model.Lecture;
 import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.RoomLocation;
 import org.cpsolver.coursett.model.Student;
+import org.cpsolver.coursett.model.StudentGroup;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.coursett.model.TimetableModel;
 import org.cpsolver.coursett.preference.MinMaxPreferenceCombination;
@@ -97,7 +98,6 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PosMajor;
-import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.Room;
@@ -110,6 +110,7 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
+import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
@@ -127,6 +128,7 @@ import org.unitime.timetable.solver.course.weights.ClassWeightProvider;
 import org.unitime.timetable.solver.course.weights.DefaultClassWeights;
 import org.unitime.timetable.solver.curricula.LastLikeStudentCourseDemands;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands;
+import org.unitime.timetable.solver.curricula.StudentCourseDemands.Group;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedCourseOffering;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedStudentId;
 import org.unitime.timetable.solver.jgroups.SolverServerImplementation;
@@ -158,6 +160,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 	private Hashtable<Long, String> iDeptNames = new Hashtable<Long, String>();
 	private Hashtable<Long, Class_> iClasses = new Hashtable<Long, Class_>();
 	private Set<DatePattern> iAllUsedDatePatterns = new HashSet<DatePattern>();
+	private Hashtable<Long, StudentGroup> iGroups = new Hashtable<Long, StudentGroup>();
 	private Set<Class_> iAllClasses = null;
 	private Hashtable<InstructionalOffering, List<Configuration>> iAltConfigurations = new Hashtable<InstructionalOffering, List<Configuration>>();
 	private Hashtable<InstructionalOffering, Hashtable<InstrOfferingConfig, Set<SchedulingSubpart>>> iOfferings = new Hashtable<InstructionalOffering, Hashtable<InstrOfferingConfig,Set<SchedulingSubpart>>>();
@@ -2862,6 +2865,16 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         				student.setCurriculum(studentId.getCurriculum());
         				getModel().addStudent(student);
         				iStudents.put(studentId.getStudentId(), student);
+        				for (Group g: studentId.getGroups()) {
+        					StudentGroup group = iGroups.get(g.getId());
+        					if (group == null) {
+        						group = new StudentGroup(g.getId(), g.getWeight(), g.getName());
+        						iGroups.put(g.getId(), group);
+        						getModel().addStudentGroup(group);
+        					}
+        					group.addStudent(student);
+        					student.addGroup(group);
+        				}
         			}
         			student.addOffering(offering.getUniqueId(), weight * studentId.getWeight(), iStudentCourseDemands.getEnrollmentPriority(studentId.getStudentId(), course.getUniqueId()));
         			
@@ -2897,6 +2910,11 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         						}
     							if (!match) continue;
         					}
+        				} else if (reservation instanceof StudentGroupReservation) {
+        					StudentGroupReservation gr = (StudentGroupReservation)reservation;
+        					if (gr.getGroup() == null) continue;
+        					Group g = studentId.getGroup(gr.getGroup().getGroupAbbreviation());
+        					if (g == null || g.getId() < 0) continue;
         				} else continue;
         				for (Class_ clazz: reservation.getClasses()) {
     						propagateReservedClasses(clazz, reservedClasses);

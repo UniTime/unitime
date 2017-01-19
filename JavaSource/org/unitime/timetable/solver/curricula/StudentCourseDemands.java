@@ -20,6 +20,7 @@
 package org.unitime.timetable.solver.curricula;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -32,6 +33,7 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 
 /**
@@ -111,12 +113,51 @@ public interface StudentCourseDemands {
 		}
 	}
 	
+	public static class Group implements Comparable<Group> {
+		Long iId;
+		String iName;
+		double iWeight;
+		
+		public Group(Long id, String name, double weight) {
+			iId = id; iName = name; iWeight = weight;
+		}
+		
+		public Group(Long id, String name) {
+			this(id, name, 1.0);
+		}
+		
+		public Long getId() { return iId; }
+		public String getName() { return iName; }
+		public double getWeight() { return iWeight; }
+		
+		public String toString() { return getName(); }
+		
+		@Override
+		public int hashCode() {
+			return toString().hashCode();
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof Group)) return false;
+			return getId().equals(((Group)o).getId());
+		}
+		
+		@Override
+		public int compareTo(Group g) {
+			int cmp = getName().compareTo(g.getName());
+			if (cmp != 0) return cmp;
+			return getId().compareTo(g.getId());
+		}
+	}
+	
 	public static class WeightedStudentId {
 		private long iStudentId;
 		private float iWeight;
 		private Set<AreaCode> iAreas = new TreeSet<AreaCode>();
 		private Set<AreaCode> iMajors = new TreeSet<AreaCode>();
 		private Set<String> iCurricula = new TreeSet<String>();
+		private Set<Group> iGroups = new HashSet<Group>();
 		
 		public WeightedStudentId(Student student, ProjectionsProvider projections) {
 			iStudentId = student.getUniqueId();
@@ -144,6 +185,8 @@ public interface StudentCourseDemands {
 				iWeight = rule;
 			else if (cnt > 1)
 				iWeight = (float) Math.pow(rule, 1.0 / cnt);
+			for (StudentGroup g: student.getGroups())
+				iGroups.add(new Group(g.getUniqueId(), g.getGroupAbbreviation()));
 		}
 		
 		public WeightedStudentId(Long studentId, CurriculumClassification cc, ProjectionsProvider projections) {
@@ -167,6 +210,7 @@ public interface StudentCourseDemands {
 			for (PosMajor major: curriculum.getMajors())
 				iMajors.add(new AreaCode(curriculum.getAcademicArea().getAcademicAreaAbbreviation(), major.getCode()));
 			iCurricula.add(curriculum.getAbbv());
+			iGroups.add(new Group(-cc.getUniqueId(), cc.getCurriculum().getAbbv() + " " + cc.getAcademicClassification().getCode())); 
 		}
 		
 		public WeightedStudentId(Student student) {
@@ -218,6 +262,12 @@ public interface StudentCourseDemands {
 				if (m.getArea().equals(area))
 					ret.add(m.getCode());
 			return ret;
+		}
+		public Set<Group> getGroups() { return iGroups; }
+		public Group getGroup(String name) {
+			for (Group g: iGroups)
+				if (name.equals(g.getName())) return g;
+			return null;
 		}
 		
 		public String getArea() { return toString(iAreas, true, ","); }
