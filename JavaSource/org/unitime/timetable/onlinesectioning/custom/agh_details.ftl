@@ -23,11 +23,10 @@
 	<tr>
 		<td>Osoba odpowiedzialna:</td><td class='unitime-SubTitle'> ${owner.get("title").getAsString()}  ${owner.get("name").getAsString()}, ${owner.get("email").getAsString()}  </td>
 	</tr>
-		
-	<#list instructorsList as instructor>
 	<tr>
 	<td>Prowadzący: </td>
 	</tr>
+	<#list instructorsList as instructor>
 	<tr>
 	<td> </td><td>${instructor.get("title").getAsString()} ${instructor.get("name").getAsString()}, ${instructor.get("email").getAsString()} </td>
 	</tr>

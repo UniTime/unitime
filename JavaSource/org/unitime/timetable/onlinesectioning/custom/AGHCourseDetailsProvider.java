@@ -94,7 +94,7 @@ public class AGHCourseDetailsProvider implements CourseDetailsProvider, CourseUr
 		and cu.course.instructionalOffering.session.uniqueId=231379
 		*/
 		return (String)CurriculumCourseDAO.getInstance().createNewSession().createQuery(
-				"select max(cu.classification.academicClassification.code) " +
+				"select min(cu.classification.academicClassification.code) " +
 				"from CurriculumCourse as cu " +
 				"where cu.course.subjectAreaAbbv = :subjArea " +
 				"and cu.course.courseNbr = :crsNbr " +
@@ -176,31 +176,34 @@ public class AGHCourseDetailsProvider implements CourseDetailsProvider, CourseUr
 	}
 
 	public String syllabusLink(Integer year, String term, Integer classification) {
-		Integer yearShift, yearLink, sessionShift;
+		Integer yearShift=0, yearLink, academicShift=0;
+		Boolean winterApplication=false;
 		String syllabusLinkRw = "current_annual"; // newest syllabus
-		if (term.toLowerCase().endsWith("zimowy")) sessionShift=0;
-		if (term.toLowerCase().endsWith("letni")) sessionShift=1;
-		else sessionShift=0;
-		/*		
-		switch (session) {
-		case "Semestr zimowy":
-			sessionShift = 0;
-			break;
-		case "Semestr letni":
-			sessionShift = 1;
-			break;
-		default:
-			sessionShift = 0;
-			break;
-
+		if (term.toLowerCase().endsWith("zimowy")) {
+			if ((classification % 2) == 0) { // even
+				winterApplication = true;
+			} else {
+				winterApplication = false;
+			}
+		} else {
+			if ((classification % 2) == 1) { // odd
+				winterApplication = true;
+			} else {
+				winterApplication = false;
+			}
 		}
-		*/
-		// div 2 (two semesters per year)
-		yearShift = (classification - sessionShift) / 2;
+		if (winterApplication) {
+			academicShift = 1;
+		} else {
+			academicShift = 0;
+		}
+
+		// div 2 (two semesters per year) add shift for winter applications
+		yearShift = (classification + academicShift) / 2;
 		// current year minus shift
 		yearLink = year - yearShift;
 		// link = beginning + next year
-		syllabusLinkRw = yearLink.toString() + "-" + new Integer(yearLink+1).toString();
+		syllabusLinkRw = yearLink.toString() + "-" + new Integer(yearLink + 1).toString();
 
 		return syllabusLinkRw;
 	}
