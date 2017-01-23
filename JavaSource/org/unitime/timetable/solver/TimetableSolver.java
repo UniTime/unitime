@@ -50,6 +50,7 @@ import org.cpsolver.coursett.model.Lecture;
 import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.RoomLocation;
 import org.cpsolver.coursett.model.Student;
+import org.cpsolver.coursett.model.StudentGroup;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.coursett.model.TimetableModel;
 import org.cpsolver.ifs.extension.ConflictStatistics;
@@ -705,6 +706,12 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 						models.add(new SolverGridModel(this, TimetableGridModel.sResourceTypeSubjectArea, sa.getUniqueId(), sa.getSubjectAreaAbbreviation(), size, placements, context));
 				}
 				break;
+    		case TimetableGridModel.sResourceTypeStudentGroup:
+    			for (StudentGroup group: model.getStudentGroups()) {
+					if (match(q, group.getName())) 
+						models.add(new SolverGridModel(this, group, context));
+    			}
+    			break;
     		}
     	} finally {
     		lock.unlock();

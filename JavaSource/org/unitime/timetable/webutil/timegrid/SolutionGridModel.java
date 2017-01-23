@@ -56,6 +56,7 @@ import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomSharingModel;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
+import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.dao.SolutionDAO;
@@ -457,6 +458,53 @@ public class SolutionGridModel extends TimetableGridModel {
 				"and cc.course.instructionalOffering = r.instructionalOffering and r.area = cc.classification.curriculum.academicArea "+
 				"and (rm is null or rm = cm) and (rc is null or rc = cc.classification.academicClassification)")
 				.setLong("resourceId", cc.getUniqueId()).setCacheable(true).list()) {
+			Long offeringId = (Long)o[0];
+			Long configId = (Long)o[1];
+			Long clazzId = (Long)o[2];
+			Set<Long>[] r = restrictions.get(offeringId);
+			if (r == null) {
+				r = new Set[] { new HashSet<Long>(), new HashSet<Long>()};
+				restrictions.put(offeringId, r);
+			}
+			if (configId != null) r[0].add(configId);
+			if (clazzId != null) r[1].add(clazzId);
+		}
+		if (!restrictions.isEmpty())
+			for (Iterator i = a.iterator(); i.hasNext(); ) {
+				Assignment asgn = (Assignment)i.next();
+				Set<Long>[] r = (restrictions == null ? null : restrictions.get(asgn.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId()));
+	    		if (r != null && EventLookupBackend.hide(r, asgn.getClazz())) i.remove();
+			}
+		setSize(a.size());
+		init(a,hibSession,context);
+	}
+	
+	public SolutionGridModel(String solutionIdsStr, StudentGroup g, org.hibernate.Session hibSession, TimetableGridContext context) {
+		super(sResourceTypeStudentGroup, g.getUniqueId());
+		setName(g.getGroupAbbreviation());
+		setFirstDay(context.getFirstDay());
+		Solution firstSolution = null;
+		String ownerIds = "";
+		for (StringTokenizer s=new StringTokenizer(solutionIdsStr,",");s.hasMoreTokens();) {
+			Long solutionId = Long.valueOf(s.nextToken());
+			Solution solution = (new SolutionDAO()).get(solutionId, hibSession);
+			if (solution==null) continue;
+			if (firstSolution==null) firstSolution = solution;
+			if (ownerIds.length()>0) ownerIds += ",";
+			ownerIds += solution.getOwner().getUniqueId();
+		}
+		Query q = hibSession.createQuery(
+				"select distinct a from StudentGroupReservation r, Assignment a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering as io where "+
+				"a.solution.uniqueId in ("+solutionIdsStr+") and io = r.instructionalOffering and r.group.uniqueId=:resourceId");
+		q.setCacheable(true);
+		q.setLong("resourceId", g.getUniqueId());
+		List a = q.list();
+		Map<Long, Set<Long>[]> restrictions = new Hashtable<Long, Set<Long>[]>();
+		for (Object[] o: (List<Object[]>)hibSession.createQuery(
+				"select distinct r.instructionalOffering.uniqueId, (case when g.uniqueId is null then x.uniqueId else g.uniqueId end), z.uniqueId " +
+				"from StudentGroupReservation r left outer join r.configurations g left outer join r.classes z left outer join z.schedulingSubpart.instrOfferingConfig x " +
+				"where r.group.uniqueId = :resourceId")
+				.setLong("resourceId", g.getUniqueId()).setCacheable(true).list()) {
 			Long offeringId = (Long)o[0];
 			Long configId = (Long)o[1];
 			Long clazzId = (Long)o[2];

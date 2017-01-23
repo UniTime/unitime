@@ -44,6 +44,7 @@ import org.cpsolver.coursett.model.Lecture;
 import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.RoomSharingModel;
 import org.cpsolver.coursett.model.Student;
+import org.cpsolver.coursett.model.StudentGroup;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.coursett.model.TimetableModel;
 import org.cpsolver.ifs.assignment.Assignment;
@@ -234,6 +235,43 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 			String group = (entry.getKey().variable().getConfiguration() == null ? null : groups.get(entry.getKey().variable().getConfiguration().getOfferingId()));
 			while (cell != null) {
 				cell.setRoomName(cell.getRoomName() + " (" + Math.round(entry.getValue()) + (group == null ? "" : ", " + group) + ")");
+				cell = cell.getParent();
+			}
+		}
+	}
+	
+	public SolverGridModel(Solver solver, StudentGroup group, TimetableGridContext context) {
+		super(sResourceTypeStudentGroup, group.getId());
+		Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
+		setName(group.getName());
+		setFirstDay(context.getFirstDay());
+		double size = 0;
+		Hashtable<Placement, Double> placements = new Hashtable<Placement, Double>();
+		for (Student student: group.getStudents()) {
+			int cnt = 0; double w = 0;
+			for (Lecture lecture: student.getLectures()) {
+				w += student.getOfferingWeight(lecture.getConfiguration()); cnt ++;
+				Placement placement = assignment.getValue(lecture);
+				if (placement != null)  {
+					Double old = placements.get(placement);
+					placements.put(placement, student.getOfferingWeight(lecture.getConfiguration()) + (old == null ? 0 : old));
+				}
+			}
+			if (student.getCommitedPlacements() != null)
+				for (Placement placement: student.getCommitedPlacements()) {
+					w += student.getOfferingWeight(placement.variable().getConfiguration()); cnt ++;
+					Double old = placements.get(placement);
+					placements.put(placement, student.getOfferingWeight(placement.variable().getConfiguration()) + (old == null ? 0 : old));
+				}
+			if (cnt > 0)
+				size += w / cnt;
+		}
+		setSize((int) Math.round(size));
+		setUtilization(countUtilization(context, placements.keySet()));
+		for (Map.Entry<Placement, Double> entry: placements.entrySet()) {
+			TimetableGridCell cell = init(solver, entry.getKey(), (entry.getKey().variable().isCommitted() ? sBgModeNotAvailable : context.getBgMode()), context);
+			while (cell != null) {
+				cell.setRoomName(cell.getRoomName() + " (" + Math.round(entry.getValue()) + ")");
 				cell = cell.getParent();
 			}
 		}

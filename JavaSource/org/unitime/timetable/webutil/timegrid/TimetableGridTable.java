@@ -52,6 +52,8 @@ import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.SolverPredefinedSetting.IdValue;
+import org.unitime.timetable.model.StudentGroup;
+import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -993,6 +995,16 @@ public class TimetableGridTable {
 					String name = cc.getCurriculum().getAbbv() + " " + cc.getName();
 					if (!match(name)) continue;
 					iModels.add(new SolutionGridModel(solutionIdsStr, cc, hibSession, cx));
+				}
+			} else if (getResourceType()==TimetableGridModel.sResourceTypeStudentGroup) {
+				Query q = hibSession.createQuery(
+						"select distinct r.group from StudentGroupReservation r, Assignment a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering as io where "+
+						"a.solution.uniqueId in ("+solutionIdsStr+") and io = r.instructionalOffering");
+				q.setCacheable(true);
+				for (Iterator i=q.list().iterator();i.hasNext();) {
+					StudentGroup g = (StudentGroup)i.next();
+					if (!match(g.getGroupName()) && !match(g.getGroupAbbreviation())) continue;
+					iModels.add(new SolutionGridModel(solutionIdsStr, g, hibSession, cx));
 				}
 			}
 			if (tx!=null) tx.commit();

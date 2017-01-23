@@ -52,6 +52,7 @@ public abstract class TimetableGridModel implements Serializable {
 	public static final int sResourceTypeDepartment = 2;
 	public static final int sResourceTypeCurriculum = 3;
 	public static final int sResourceTypeSubjectArea = 4;
+	public static final int sResourceTypeStudentGroup = 5;
 	
 	public static final int sBgModeNotAvailable = -1;
 	public static final int sBgModeNone = 0;
@@ -80,7 +81,7 @@ public abstract class TimetableGridModel implements Serializable {
 		"Too Big Rooms"
 	};
 	public static String[] sResourceTypes = new String[] {
-		"Room", "Instructor", "Department", "Curriculum", "Subject Area"
+		"Room", "Instructor", "Department", "Curriculum", "Subject Area", "Student Group"
 	};
 	
 	
