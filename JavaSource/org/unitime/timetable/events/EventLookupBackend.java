@@ -342,8 +342,8 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					
 					restrictions = new Hashtable<Long, Set<Long>[]>();
 					for (Object[] o: (List<Object[]>)hibSession.createQuery(
-							"select distinct cc.course.instructionalOffering.uniqueId, g.uniqueId, z.uniqueId " +
-							"from CurriculumReservation r left outer join r.configurations g left outer join r.classes z " +
+							"select distinct cc.course.instructionalOffering.uniqueId, (case when g.uniqueId is null then x.uniqueId else g.uniqueId end), z.uniqueId " +
+							"from CurriculumReservation r left outer join r.configurations g left outer join r.classes z left outer join z.schedulingSubpart.instrOfferingConfig x " +
 							"left outer join r.majors rm left outer join r.classifications rc, " +
 							"CurriculumCourse cc inner join cc.classification.curriculum.majors cm " +
 							"where (cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId) " +
