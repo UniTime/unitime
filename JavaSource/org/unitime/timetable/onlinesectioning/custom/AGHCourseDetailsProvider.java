@@ -94,7 +94,8 @@ public class AGHCourseDetailsProvider implements CourseDetailsProvider, CourseUr
 		and cu.course.instructionalOffering.session.uniqueId=231379
 		*/
 		return (String)CurriculumCourseDAO.getInstance().createNewSession().createQuery(
-				"select max(cu.classification.academicClassification.code) " +
+
+				"select min(cu.classification.academicClassification.code) " +
 				"from CurriculumCourse as cu " +
 				"where cu.course.subjectAreaAbbv = :subjArea " +
 				"and cu.course.courseNbr = :crsNbr " +
