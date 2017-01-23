@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -89,6 +90,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -1503,61 +1505,65 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private Constraint createGroupConstraint(DistributionPref pref) {
+    	return createGroupConstraint(pref.getUniqueId(), pref.getDistributionType(), pref.getPrefLevel(), pref.getOwner());
+    }
+    
+    private Constraint createGroupConstraint(Long id, DistributionType type, PreferenceLevel pref, Object owner) {
     	Constraint gc = null;
-    	if (pref.getDistributionType().getReference().matches("_(.+)_")){
+    	if (type.getReference().matches("_(.+)_")){
     		for (FlexibleConstraintType fcType: FlexibleConstraintType.values()) {
-    			if (pref.getDistributionType().getReference().matches(fcType.getPattern())) {
+    			if (type.getReference().matches(fcType.getPattern())) {
     				try {
-    					gc = fcType.create(pref.getUniqueId(), pref.getOwner().toString(), pref.getPrefLevel().getPrefProlog(), pref.getDistributionType().getReference());
+    					gc = fcType.create(id, owner.toString(), pref.getPrefProlog(), type.getReference());
     				} catch (IllegalArgumentException e) {
-    					iProgress.warn("Constraint " + pref.getDistributionType().getReference() + " was not loaded. Inconsistent values.", e);
+    					iProgress.warn("Constraint " + type.getReference() + " was not loaded. Inconsistent values.", e);
     				}
     			}
     		}
     		if (gc == null) {
-    			iProgress.warn("Constraint " + pref.getDistributionType().getReference() + " was not recognized.");
+    			iProgress.warn("Constraint " + type.getReference() + " was not recognized.");
 	        	return null;
     		}
-    	} else if ("SAME_INSTR".equals(pref.getDistributionType().getReference())) {
-    		if (PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog()))
-    			gc = new InstructorConstraint(new Long(-(int)pref.getUniqueId().longValue()),null, pref.getDistributionType().getLabel(),false);
-    	} else if ("SPREAD".equals(pref.getDistributionType().getReference())) {
+    	} else if ("SAME_INSTR".equals(type.getReference())) {
+    		if (PreferenceLevel.sRequired.equals(pref.getPrefProlog()))
+    			gc = new InstructorConstraint(new Long(-id),null, type.getLabel(),false);
+    	} else if ("SPREAD".equals(type.getReference())) {
     		gc = new SpreadConstraint(getModel().getProperties(), "spread");
-    	} else if ("MIN_ROOM_USE".equals(pref.getDistributionType().getReference())) {
+    	} else if ("MIN_ROOM_USE".equals(type.getReference())) {
     		if (!iInteractiveMode)
     			gc = new MinimizeNumberOfUsedRoomsConstraint(getModel().getProperties());
     		else
     			iProgress.message(msglevel("constraintNotUsed", Progress.MSGLEVEL_INFO), "Minimize number of used rooms constraint not loaded due to the interactive mode of the solver.");
-    	} else if ("MIN_GRUSE(10x1h)".equals(pref.getDistributionType().getReference())) {
+    	} else if ("MIN_GRUSE(10x1h)".equals(type.getReference())) {
     		if (!iInteractiveMode)
     			gc = new MinimizeNumberOfUsedGroupsOfTime(getModel().getProperties(),"10x1h",MinimizeNumberOfUsedGroupsOfTime.sGroups10of1h);
     		else
     			iProgress.message(msglevel("constraintNotUsed", Progress.MSGLEVEL_INFO), "Minimize number of used groups of time constraint not loaded due to the interactive mode of the solver.");
-    	} else if ("MIN_GRUSE(5x2h)".equals(pref.getDistributionType().getReference())) {
+    	} else if ("MIN_GRUSE(5x2h)".equals(type.getReference())) {
     		if (!iInteractiveMode)
     			gc = new MinimizeNumberOfUsedGroupsOfTime(getModel().getProperties(),"5x2h",MinimizeNumberOfUsedGroupsOfTime.sGroups5of2h);
     		else
     			iProgress.message(msglevel("constraintNotUsed", Progress.MSGLEVEL_INFO), "Minimize number of used groups of time constraint not loaded due to the interactive mode of the solver.");
-    	} else if ("MIN_GRUSE(3x3h)".equals(pref.getDistributionType().getReference())) {
+    	} else if ("MIN_GRUSE(3x3h)".equals(type.getReference())) {
     		if (!iInteractiveMode)
     			gc = new MinimizeNumberOfUsedGroupsOfTime(getModel().getProperties(),"3x3h",MinimizeNumberOfUsedGroupsOfTime.sGroups3of3h);
     		else
     			iProgress.message(msglevel("constraintNotUsed", Progress.MSGLEVEL_INFO), "Minimize number of used groups of time constraint not loaded due to the interactive mode of the solver.");
-    	} else if ("MIN_GRUSE(2x5h)".equals(pref.getDistributionType().getReference())) {
+    	} else if ("MIN_GRUSE(2x5h)".equals(type.getReference())) {
     		if (!iInteractiveMode)
     			gc = new MinimizeNumberOfUsedGroupsOfTime(getModel().getProperties(),"2x5h",MinimizeNumberOfUsedGroupsOfTime.sGroups2of5h);
     		else
     			iProgress.message(msglevel("constraintNotUsed", Progress.MSGLEVEL_INFO), "Minimize number of used groups of time constraint not loaded due to the interactive mode of the solver.");
-    	} else if (IgnoreStudentConflictsConstraint.REFERENCE.equals(pref.getDistributionType().getReference())) {
-    		if (PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog()))
+    	} else if (IgnoreStudentConflictsConstraint.REFERENCE.equals(type.getReference())) {
+    		if (PreferenceLevel.sRequired.equals(pref.getPrefProlog()))
     			gc = new IgnoreStudentConflictsConstraint();
     	} else {
-    		GroupConstraint.ConstraintType type = GroupConstraint.ConstraintType.get(pref.getDistributionType().getReference());
-    		if (type == null) {
-    			iProgress.error("Distribution constraint " + pref.getDistributionType().getReference() + " is not implemented.");
+    		GroupConstraint.ConstraintType gcType = GroupConstraint.ConstraintType.get(type.getReference());
+    		if (gcType == null) {
+    			iProgress.error("Distribution constraint " + type.getReference() + " is not implemented.");
     			return null;
     		}
-    		gc = new GroupConstraint(pref.getUniqueId(), type, pref.getPrefLevel().getPrefProlog());
+    		gc = new GroupConstraint(id, gcType, pref.getPrefProlog());
     	}
     	return gc;
     }
@@ -2615,7 +2621,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			}
 		}
 		
-		postAutomaticHierarchicalConstraints();
+		postAutomaticHierarchicalConstraints(hibSession);
 		
 		assignCommited();
 		
@@ -3170,6 +3176,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         
     	if (!hibSession.isOpen())
     		iProgress.message(msglevel("hibernateFailure", Progress.MSGLEVEL_FATAL), "Hibernate session not open.");
+    	
+    	if (!getModel().getStudentSectioning().hasFinalSectioning())
+    		postAutomaticStudentConstraints(hibSession);
 
     	if (solutions!=null) {
         	for (int idx=0;idx<iSolverGroupId.length;idx++) {
@@ -3579,86 +3588,105 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         return ret;
     }
     
-    protected void postAutomaticHierarchicalConstraints() {
-		String automaticHierarchicalConstraints = getModel().getProperties().getProperty("General.AutomaticHierarchicalConstraints");
-		while (automaticHierarchicalConstraints != null && !automaticHierarchicalConstraints.isEmpty()) {
-			while (automaticHierarchicalConstraints.startsWith(" ") || automaticHierarchicalConstraints.startsWith(",") || automaticHierarchicalConstraints.startsWith(";"))
-				automaticHierarchicalConstraints = automaticHierarchicalConstraints.substring(1);
-			if (automaticHierarchicalConstraints.isEmpty()) break;
+    protected void postAutomaticHierarchicalConstraints(org.hibernate.Session hibSession) {
+		String constraints = getModel().getProperties().getProperty("General.AutomaticHierarchicalConstraints");
+		if (constraints == null || constraints.isEmpty()) return;
+		List<DistributionType> types = (List<DistributionType>)hibSession.createQuery("from DistributionType where examPref = false").list();
+		List<DatePattern> patterns = (List<DatePattern>)hibSession.createQuery("from DatePattern where session.uniqueId = :sessionId").setLong("sessionId", iSessionId).list();
+		for (String term: constraints.split("[,;][ ]?(?=([^\"]*\"[^\"]*\")*[^\"]*$)")) {
+			String constraint = term.trim().toLowerCase();
+			if (constraint.isEmpty()) continue;
 			PreferenceLevel pref = null;
 			for (PreferenceLevel p: PreferenceLevel.getPreferenceLevelList()) {
-				if (automaticHierarchicalConstraints.toLowerCase().startsWith(p.getPrefName().toLowerCase() + " ")) {
+				if (constraint.startsWith(p.getPrefName().toLowerCase() + " ") || constraint.startsWith(p.getPrefName().toLowerCase() + ":")) {
 					pref = p;
-					automaticHierarchicalConstraints = automaticHierarchicalConstraints.substring(p.getPrefName().length() + 1);
+					constraint = constraint.substring(p.getPrefName().length() + 1).trim();
 					break;
-				} else if (automaticHierarchicalConstraints.startsWith(p.getPrefProlog() + " ")) {
+				} else if (constraint.startsWith(p.getPrefProlog().toLowerCase() + " ") || constraint.startsWith(p.getPrefProlog().toLowerCase() + ":")) {
 					pref = p;
-					automaticHierarchicalConstraints = automaticHierarchicalConstraints.substring(p.getPrefProlog().length() + 1);
+					constraint = constraint.substring(p.getPrefProlog().length() + 1).trim();
 					break;
+				} else if (p.getPrefAbbv() != null && constraint.startsWith(p.getPrefAbbv().toLowerCase() + " ") || constraint.startsWith(p.getPrefAbbv().toLowerCase() + ":")) {
+					pref = p;
+					constraint = constraint.substring(p.getPrefAbbv().length() + 1).trim();
+					break;
+				} else if (PreferenceLevel.sRequired.equals(p.getPrefProlog()) && (constraint.startsWith("required ") || constraint.startsWith("required:"))) {
+					pref = p; constraint = constraint.substring("required ".length()).trim(); break;
+				} else if (PreferenceLevel.sStronglyPreferred.equals(p.getPrefProlog()) && (constraint.startsWith("strongly preferred ") || constraint.startsWith("strongly preferred:"))) {
+					pref = p; constraint = constraint.substring("strongly preferred ".length()).trim(); break;
+				} else if (PreferenceLevel.sPreferred.equals(p.getPrefProlog()) && (constraint.startsWith("preferred ") || constraint.startsWith("preferred:"))) {
+					pref = p; constraint = constraint.substring("preferred ".length()).trim(); break;
+				} else if (PreferenceLevel.sNeutral.equals(p.getPrefProlog()) && (constraint.startsWith("neutral ") || constraint.startsWith("neutral:"))) {
+					pref = p; constraint = constraint.substring("neutral ".length()).trim(); break;
+				} else if (PreferenceLevel.sDiscouraged.equals(p.getPrefProlog()) && (constraint.startsWith("discouraged ") || constraint.startsWith("discouraged:"))) {
+					pref = p; constraint = constraint.substring("discouraged ".length()).trim(); break;
+				} else if (PreferenceLevel.sStronglyDiscouraged.equals(p.getPrefProlog()) && (constraint.startsWith("strongly discouraged ") || constraint.startsWith("strongly discouraged:"))) {
+					pref = p; constraint = constraint.substring("strongly discouraged ".length()).trim(); break;
+				} else if (PreferenceLevel.sProhibited.equals(p.getPrefProlog()) && (constraint.startsWith("prohibited ") || constraint.startsWith("prohibited:"))) {
+					pref = p; constraint = constraint.substring("prohibited ".length()).trim(); break;
 				}
 			}
 			if (pref == null) {
-				iProgress.message(msglevel("automaticHierarchicalConstraints", Progress.MSGLEVEL_WARN), "Failed to parse automatic hierarchical constraint preference " + automaticHierarchicalConstraints);
-				break;
+				iProgress.message(msglevel("automaticHierarchicalConstraints", Progress.MSGLEVEL_WARN), "Failed to parse automatic hierarchical constraint preference " + term);
+				continue;
 			}
-			while (automaticHierarchicalConstraints.startsWith(" ") || automaticHierarchicalConstraints.startsWith(":"))
-				automaticHierarchicalConstraints = automaticHierarchicalConstraints.substring(1);
-			GroupConstraint.ConstraintType type = null;
-			for (GroupConstraint.ConstraintType t: GroupConstraint.ConstraintType.values()) {
-				if (automaticHierarchicalConstraints.toLowerCase().startsWith(t.getName().toLowerCase() + " ")
-						|| automaticHierarchicalConstraints.toLowerCase().startsWith(t.getName().toLowerCase() + ",")
-						|| automaticHierarchicalConstraints.toLowerCase().startsWith(t.getName().toLowerCase() + ";")) {
-					type = t;
-					automaticHierarchicalConstraints = automaticHierarchicalConstraints.substring(t.getName().length() + 1);
-					break;
-				} else 	if (automaticHierarchicalConstraints.toLowerCase().startsWith(t.name().toLowerCase() + " ")
-						|| automaticHierarchicalConstraints.toLowerCase().startsWith(t.name().toLowerCase() + ",")
-						|| automaticHierarchicalConstraints.toLowerCase().startsWith(t.name().toLowerCase() + ";")) {
-					type = t;
-					automaticHierarchicalConstraints = automaticHierarchicalConstraints.substring(t.getName().length() + 1);
-					break;
-				} else if (automaticHierarchicalConstraints.equalsIgnoreCase(t.getName()) || automaticHierarchicalConstraints.equalsIgnoreCase(t.name())) {
-					type = t;
-					automaticHierarchicalConstraints = "";
-					break;
+			DistributionType type = null;
+			for (DistributionType t: types) {
+				if (constraint.equalsIgnoreCase(t.getReference()) || constraint.equalsIgnoreCase(t.getAbbreviation()) || constraint.equalsIgnoreCase(t.getLabel())) {
+					type = t; constraint = ""; break;
+				} else if (constraint.startsWith(t.getReference().toLowerCase() + " ") || constraint.startsWith(t.getReference().toLowerCase() + ":")) {
+					type = t; constraint = constraint.substring(t.getReference().length() + 1).trim(); break;
+				} else if (constraint.startsWith(t.getAbbreviation().toLowerCase() + " ") || constraint.startsWith(t.getAbbreviation().toLowerCase() + ":")) {
+					type = t; constraint = constraint.substring(t.getAbbreviation().length() + 1).trim(); break;
+				} else if (constraint.startsWith(t.getLabel().toLowerCase() + " ") || constraint.startsWith(t.getLabel().toLowerCase() + ":")) {
+					type = t; constraint = constraint.substring(t.getLabel().length() + 1).trim(); break;
 				}
 			}
 			if (type == null) {
-				iProgress.message(msglevel("automaticHierarchicalConstraints", Progress.MSGLEVEL_WARN), "Failed to parse automatic hierarchical constraint type " + automaticHierarchicalConstraints);
-				break;
-			}
-			
-			DatePattern pattern = null;
-			for (DatePattern p: (Set<DatePattern>)DatePattern.findAllUsed(iSessionId)) {
-				if (automaticHierarchicalConstraints.toLowerCase().startsWith(p.getName().toLowerCase() + " ")
-					|| automaticHierarchicalConstraints.toLowerCase().startsWith(p.getName().toLowerCase() + ",")
-					|| automaticHierarchicalConstraints.toLowerCase().startsWith(p.getName().toLowerCase() + ";")) {
-					automaticHierarchicalConstraints = automaticHierarchicalConstraints.substring(p.getName().length() + 1);
-					pattern = p;
-					break;
-				} else if (automaticHierarchicalConstraints.equalsIgnoreCase(p.getName())) {
-					automaticHierarchicalConstraints = "";
-					pattern = p;
-					break;
+				for (GroupConstraint.ConstraintType t: GroupConstraint.ConstraintType.values()) {
+					if (constraint.equalsIgnoreCase(t.reference()) || constraint.equalsIgnoreCase(t.getName())) {
+						type = new DistributionType(); type.setReference(t.reference()); type.setLabel(t.getName()); type.setAbbreviation(t.getName());
+						constraint = ""; break;
+					} else if (constraint.startsWith(t.reference().toLowerCase() + " ") || constraint.startsWith(t.reference().toLowerCase() + ":")) {
+						type = new DistributionType(); type.setReference(t.reference()); type.setLabel(t.getName()); type.setAbbreviation(t.getName());
+						constraint = constraint.substring(t.reference().length() + 1).trim(); break;
+					} else if (constraint.startsWith(t.getName().toLowerCase() + " ") || constraint.startsWith(t.getName().toLowerCase() + ":")) {
+						type = new DistributionType(); type.setReference(t.reference()); type.setLabel(t.getName()); type.setAbbreviation(t.getName());
+						constraint = constraint.substring(t.getName().length() + 1).trim(); break;
+					}
 				}
 			}
-			
-			iProgress.setPhase("Posting automatic " + pref.getPrefName() + " " + type.getName() + " constraints" +
-					(pattern == null ? "" : " between classes of pattern " + pattern.getName()) + "...",iAllClasses.size());
+			if (type == null) {
+				iProgress.message(msglevel("automaticHierarchicalConstraints", Progress.MSGLEVEL_WARN), "Failed to parse automatic hierarchical constraint preference " + term);
+				continue;
+			}
+			DatePattern pattern = null;
+			if (!constraint.isEmpty()) {
+				for (DatePattern p: patterns) {
+					if (constraint.equalsIgnoreCase(p.getName()) || constraint.equalsIgnoreCase("\"" + p.getName() + "\"")) {
+						pattern = p; break;
+					}
+				}
+				if (pattern == null) {
+					iProgress.message(msglevel("automaticHierarchicalConstraints", Progress.MSGLEVEL_WARN), "Failed to parse automatic hierarchical constraint preference: unknown date pattern " + constraint);
+					continue;
+				}
+			}
+			iProgress.setPhase("Posting automatic " + pref.getPrefName() + " " + type.getLabel() + " constraints" + (pattern == null ? "" : " between classes of pattern " + pattern.getName()) + "...", iAllClasses.size());
 			for (Iterator i1=iAllClasses.iterator();i1.hasNext();) {
     			Class_ clazz = (Class_)i1.next();
     			Lecture lecture = (Lecture)iLectures.get(clazz.getUniqueId());
     			if (lecture==null) continue;
     			
     			if (!lecture.hasAnyChildren())
-    				postAutomaticHierarchicalConstraint(clazz, type, pref.getPrefProlog(), pattern);
+    				postAutomaticHierarchicalConstraint(clazz, type, pref, pattern);
     			
     			iProgress.incProgress();
-    		}
+    		}			
 		}
     }
     
-    protected boolean postAutomaticHierarchicalConstraint(Class_ clazz, GroupConstraint.ConstraintType type, String preference, DatePattern pattern) {
+    protected boolean postAutomaticHierarchicalConstraint(Class_ clazz, DistributionType type, PreferenceLevel preference, DatePattern pattern) {
     	boolean posted = false;
     	if (!clazz.getChildClasses().isEmpty()) {
     		for (Iterator i=clazz.getChildClasses().iterator();i.hasNext();) {
@@ -3686,17 +3714,125 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		}
 
     	if (variables.size() <= 1) return false;
-
-    	GroupConstraint gc = new GroupConstraint(null, type, preference);
+    	Constraint gc = createGroupConstraint(clazz.getUniqueId(), type, preference, clazz);
+    	if (gc == null) return false;
     	String info = "";
 		for (Lecture var: variables) {
 			gc.addVariable(var);
 			if (!info.isEmpty()) info += ", ";
 			info += getClassLabel(var);
 		}
-		iProgress.info("Posted " + gc.getName() + " constraint between " + info + " (" + PreferenceLevel.prolog2string(preference) + ")");
+		iProgress.info("Posted " + type.getLabel() + " constraint between " + info + " (" + preference.getPrefName() + ")");
     	addGroupConstraint(gc);
     	
 		return true;
+    }
+    
+    protected void postAutomaticStudentConstraints(org.hibernate.Session hibSession) {
+		String constraints = getModel().getProperties().getProperty("General.AutomaticStudentConstraints");
+		if (constraints == null || constraints.isEmpty()) return;
+		Map<String, Integer> classes2counts = new HashMap<String, Integer>();
+		Map<String, Student> firstStudent = new HashMap<String, Student>();
+		for (Iterator<Student> i1 = getModel().getAllStudents().iterator(); i1.hasNext(); ) {
+			Student student = i1.next();
+			Set<Long> idSet = new TreeSet<Long>();
+			for (Lecture lecture: student.getLectures())
+				idSet.add(lecture.getClassId());
+			String ids = "";
+			for (Long id: idSet)
+				ids += (ids.isEmpty() ? "" : ",") + id;
+			Integer count = classes2counts.get(ids);
+			classes2counts.put(ids, 1 + (count == null ? 0 : count.intValue()));
+			if (count == null)
+				firstStudent.put(ids, student);
+		}
+		int limit = getModel().getProperties().getPropertyInt("General.AutomaticStudentConstraints.StudentLimit", 5);
+
+		List<DistributionType> types = (List<DistributionType>)hibSession.createQuery("from DistributionType where examPref = false").list();
+		for (String term: constraints.split("[,;][ ]?(?=([^\"]*\"[^\"]*\")*[^\"]*$)")) {
+			String constraint = term.trim().toLowerCase();
+			if (constraint.isEmpty()) continue;
+			PreferenceLevel pref = null;
+			for (PreferenceLevel p: PreferenceLevel.getPreferenceLevelList()) {
+				if (constraint.startsWith(p.getPrefName().toLowerCase() + " ") || constraint.startsWith(p.getPrefName().toLowerCase() + ":")) {
+					pref = p;
+					constraint = constraint.substring(p.getPrefName().length() + 1).trim();
+					break;
+				} else if (constraint.startsWith(p.getPrefProlog().toLowerCase() + " ") || constraint.startsWith(p.getPrefProlog().toLowerCase() + ":")) {
+					pref = p;
+					constraint = constraint.substring(p.getPrefProlog().length() + 1).trim();
+					break;
+				} else if (p.getPrefAbbv() != null && constraint.startsWith(p.getPrefAbbv().toLowerCase() + " ") || constraint.startsWith(p.getPrefAbbv().toLowerCase() + ":")) {
+					pref = p;
+					constraint = constraint.substring(p.getPrefAbbv().length() + 1).trim();
+					break;
+				} else if (PreferenceLevel.sRequired.equals(p.getPrefProlog()) && (constraint.startsWith("required ") || constraint.startsWith("required:"))) {
+					pref = p; constraint = constraint.substring("required ".length()).trim(); break;
+				} else if (PreferenceLevel.sStronglyPreferred.equals(p.getPrefProlog()) && (constraint.startsWith("strongly preferred ") || constraint.startsWith("strongly preferred:"))) {
+					pref = p; constraint = constraint.substring("strongly preferred ".length()).trim(); break;
+				} else if (PreferenceLevel.sPreferred.equals(p.getPrefProlog()) && (constraint.startsWith("preferred ") || constraint.startsWith("preferred:"))) {
+					pref = p; constraint = constraint.substring("preferred ".length()).trim(); break;
+				} else if (PreferenceLevel.sNeutral.equals(p.getPrefProlog()) && (constraint.startsWith("neutral ") || constraint.startsWith("neutral:"))) {
+					pref = p; constraint = constraint.substring("neutral ".length()).trim(); break;
+				} else if (PreferenceLevel.sDiscouraged.equals(p.getPrefProlog()) && (constraint.startsWith("discouraged ") || constraint.startsWith("discouraged:"))) {
+					pref = p; constraint = constraint.substring("discouraged ".length()).trim(); break;
+				} else if (PreferenceLevel.sStronglyDiscouraged.equals(p.getPrefProlog()) && (constraint.startsWith("strongly discouraged ") || constraint.startsWith("strongly discouraged:"))) {
+					pref = p; constraint = constraint.substring("strongly discouraged ".length()).trim(); break;
+				} else if (PreferenceLevel.sProhibited.equals(p.getPrefProlog()) && (constraint.startsWith("prohibited ") || constraint.startsWith("prohibited:"))) {
+					pref = p; constraint = constraint.substring("prohibited ".length()).trim(); break;
+				}
+			}
+			if (pref == null) {
+				iProgress.message(msglevel("automaticStudentConstraints", Progress.MSGLEVEL_WARN), "Failed to parse automatic hierarchical constraint preference " + term);
+				continue;
+			}
+			DistributionType type = null;
+			for (DistributionType t: types) {
+				if (constraint.equalsIgnoreCase(t.getReference()) || constraint.equalsIgnoreCase(t.getAbbreviation()) || constraint.equalsIgnoreCase(t.getLabel())) {
+					type = t; constraint = ""; break;
+				} else if (constraint.startsWith(t.getReference().toLowerCase() + " ") || constraint.startsWith(t.getReference().toLowerCase() + ":")) {
+					type = t; constraint = constraint.substring(t.getReference().length() + 1).trim(); break;
+				} else if (constraint.startsWith(t.getAbbreviation().toLowerCase() + " ") || constraint.startsWith(t.getAbbreviation().toLowerCase() + ":")) {
+					type = t; constraint = constraint.substring(t.getAbbreviation().length() + 1).trim(); break;
+				} else if (constraint.startsWith(t.getLabel().toLowerCase() + " ") || constraint.startsWith(t.getLabel().toLowerCase() + ":")) {
+					type = t; constraint = constraint.substring(t.getLabel().length() + 1).trim(); break;
+				}
+			}
+			if (type == null) {
+				for (GroupConstraint.ConstraintType t: GroupConstraint.ConstraintType.values()) {
+					if (constraint.equalsIgnoreCase(t.reference()) || constraint.equalsIgnoreCase(t.getName())) {
+						type = new DistributionType(); type.setReference(t.reference()); type.setLabel(t.getName()); type.setAbbreviation(t.getName());
+					}
+				}
+			}
+			if (type == null) {
+				iProgress.message(msglevel("automaticStudentConstraints", Progress.MSGLEVEL_WARN), "Failed to parse automatic hierarchical constraint preference " + term);
+				continue;
+			}
+			iProgress.setPhase("Posting automatic " + pref.getPrefName() + " " + type.getLabel() + " constraints for students...", classes2counts.size());
+			for (Map.Entry<String, Integer> entry: classes2counts.entrySet()) {
+				iProgress.incProgress();
+				if (entry.getValue() >= limit) {
+					List<Lecture> variables = new ArrayList<Lecture>();
+					for (String id: entry.getKey().split(",")) {
+						Lecture lecture = (Lecture)iLectures.get(Long.valueOf(id));
+						if (lecture != null) variables.add(lecture);
+					}
+					Student student = firstStudent.get(entry.getKey());
+					if (variables.size() > 1) {
+				    	Constraint gc = createGroupConstraint(student.getId(), type, pref, student);
+				    	if (gc == null) continue;
+				    	String info = "";
+						for (Lecture var: variables) {
+							gc.addVariable(var);
+							if (!info.isEmpty()) info += ", ";
+							info += getClassLabel(var);
+						}
+						iProgress.info("Posted " + type.getLabel() + " constraint between " + info + " (" + pref.getPrefName() + ")");
+				    	addGroupConstraint(gc);
+					}
+				}
+			}
+		}
     }
 }

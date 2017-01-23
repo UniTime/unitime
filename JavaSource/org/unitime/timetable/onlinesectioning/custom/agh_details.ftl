@@ -27,6 +27,7 @@
 	<td>Prowadzący: </td>
 	</tr>
 	<#list instructorsList as instructor>
+
 	<tr>
 	<td> </td><td>${instructor.get("title").getAsString()} ${instructor.get("name").getAsString()}, ${instructor.get("email").getAsString()} </td>
 	</tr>
@@ -80,4 +81,6 @@
 	</tr>
 
 	</#list>
+
 	</table>
+

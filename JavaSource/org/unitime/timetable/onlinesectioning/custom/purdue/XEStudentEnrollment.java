@@ -496,6 +496,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			Map<String, XEInterface.Registration> registered = new HashMap<String, XEInterface.Registration>();
 			Set<String> noadd = new HashSet<String>();
 			Set<String> nodrop = new HashSet<String>();
+			Map<String, String> actions = new HashMap<String, String>();
 			Set<String> notregistered = new HashSet<String>();
 			if (helper.isDebugEnabled())
 				helper.debug("Current registration: " + gson.toJson(original));
@@ -503,7 +504,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				for (XEInterface.Registration reg: original.registrations) {
 					if (reg.isRegistered()) {
 						registered.put(reg.courseReferenceNumber, reg);
-						if (!reg.canDrop(admin))
+						if (!reg.canDrop(admin, actions))
 							nodrop.add(reg.courseReferenceNumber);
 					} else {
 						notregistered.add(reg.courseReferenceNumber);
@@ -632,7 +633,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					if (added.add(id)) req.keep(id);
 				} else  if (drop) {
 					changed = true;
-					req.drop(id);
+					req.drop(id, actions);
 					hasDrop = true;
 				} else {
 					if (added.add(id)) req.keep(id);
@@ -659,6 +660,9 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			
 			if (req.isEmpty() || !changed) {
 				// no classes to add or drop -> return no failures
+				if (!fails.isEmpty())
+					for (EnrollmentFailure f: fails)
+						helper.getAction().addMessageBuilder().setText(f.toString()).setLevel(OnlineSectioningLog.Message.Level.WARN);
 				return fails;
 			}
 
@@ -810,7 +814,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			if (helper.isDebugEnabled())
 				helper.debug("Return: " + fails);
 			if (!fails.isEmpty())
-				helper.getAction().addOptionBuilder().setKey("message").setValue(fails.toString());
+				for (EnrollmentFailure f: fails)
+					helper.getAction().addMessageBuilder().setText(f.toString()).setLevel(OnlineSectioningLog.Message.Level.WARN);
 			return fails;
 		} catch (SectioningException e) {
 			helper.info("Banner enrollment failed: " + e.getMessage());
@@ -947,13 +952,14 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			if (getConditionalAddDrop(true) != ConditionalDropType.NEVER)
 				req.setConditionalAddDrop(true);
 			boolean changed = false;
+			Map<String, String> actions = new HashMap<String, String>();
 			if (original.registrations != null)
 				for (XEInterface.Registration reg: original.registrations) {
 					if (reg.isRegistered()) {
 						if (idsToDrop.contains(reg.courseReferenceNumber)) {
-							if (!reg.canDrop(true))
+							if (!reg.canDrop(true, actions))
 								throw new SectioningException("Section " + reg.courseReferenceNumber + " is not available for student scheduling.");
-							req.drop(reg.courseReferenceNumber);
+							req.drop(reg.courseReferenceNumber, actions);
 							changed = true;
 						} else {
 							req.keep(reg.courseReferenceNumber);
