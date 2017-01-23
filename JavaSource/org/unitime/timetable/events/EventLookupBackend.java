@@ -139,14 +139,14 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 		return findEvents(request, context);
 	}
 	
-	private boolean hasChild(Set<Long> restrictions, Class_ clazz) {
+	private static boolean hasChild(Set<Long> restrictions, Class_ clazz) {
 		if (restrictions.contains(clazz.getUniqueId())) return true;
     	for (Class_ child: clazz.getChildClasses())
     		if (hasChild(restrictions, child)) return true;
     	return false;
 	}
 	
-	private boolean hasClassRestrictionChild(Set<Long> restrictions, SchedulingSubpart subpart) {
+	private static boolean hasClassRestrictionChild(Set<Long> restrictions, SchedulingSubpart subpart) {
 		for (Class_ other: subpart.getClasses())
 			if (restrictions.contains(other.getUniqueId())) return true;
     	for (SchedulingSubpart child: subpart.getChildSubparts())
@@ -154,7 +154,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 		return false;
 	}
 	
-	private boolean hasClassRestriction(Set<Long> restrictions, Class_ clazz) {
+	private static boolean hasClassRestriction(Set<Long> restrictions, Class_ clazz) {
 		if (restrictions.isEmpty()) return false;
 		SchedulingSubpart parent = clazz.getSchedulingSubpart().getParentSubpart();
 		while (parent != null) {
@@ -165,7 +165,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 		return hasClassRestrictionChild(restrictions, clazz.getSchedulingSubpart());
 	}
 	
-	protected boolean hide(Set<Long>[] restrictions, Class_ clazz) {
+	public static boolean hide(Set<Long>[] restrictions, Class_ clazz) {
 		// check configs
 		if (!restrictions[0].isEmpty() && !restrictions[0].contains(clazz.getSchedulingSubpart().getInstrOfferingConfig().getUniqueId()))
 			return true;

@@ -26,9 +26,11 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -38,11 +40,13 @@ import org.cpsolver.coursett.preference.PreferenceCombination;
 import org.hibernate.Query;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.events.EventLookupBackend;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
+import org.unitime.timetable.model.CurriculumClassification;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.ExactTimeMins;
@@ -419,6 +423,57 @@ public class SolutionGridModel extends TimetableGridModel {
 		q.setCacheable(true);
 		q.setLong("resourceId", sa.getUniqueId().longValue());
 		List a = q.list();
+		setSize(a.size());
+		init(a,hibSession,context);
+	}
+	
+	public SolutionGridModel(String solutionIdsStr, CurriculumClassification cc, org.hibernate.Session hibSession, TimetableGridContext context) {
+		super(sResourceTypeCurriculum, cc.getUniqueId().longValue());
+		setName(cc.getCurriculum().getAbbv() + " " + cc.getName());
+		setFirstDay(context.getFirstDay());
+		Solution firstSolution = null;
+		String ownerIds = "";
+		for (StringTokenizer s=new StringTokenizer(solutionIdsStr,",");s.hasMoreTokens();) {
+			Long solutionId = Long.valueOf(s.nextToken());
+			Solution solution = (new SolutionDAO()).get(solutionId, hibSession);
+			if (solution==null) continue;
+			if (firstSolution==null) firstSolution = solution;
+			if (ownerIds.length()>0) ownerIds += ",";
+			ownerIds += solution.getOwner().getUniqueId();
+		}
+		Query q = hibSession.createQuery("select distinct a from CurriculumClassification cc inner join cc.courses cx, Assignment a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
+				"a.solution.uniqueId in ("+solutionIdsStr+") and cc.uniqueId=:resourceId and " +
+				"cx.course = co");
+		q.setCacheable(true);
+		q.setLong("resourceId", cc.getUniqueId());
+		List a = q.list();
+		Map<Long, Set<Long>[]> restrictions = new Hashtable<Long, Set<Long>[]>();
+		for (Object[] o: (List<Object[]>)hibSession.createQuery(
+				"select distinct cc.course.instructionalOffering.uniqueId, (case when g.uniqueId is null then x.uniqueId else g.uniqueId end), z.uniqueId " +
+				"from CurriculumReservation r left outer join r.configurations g left outer join r.classes z left outer join z.schedulingSubpart.instrOfferingConfig x " +
+				"left outer join r.majors rm left outer join r.classifications rc, " +
+				"CurriculumCourse cc inner join cc.classification.curriculum.majors cm " +
+				"where cc.classification.uniqueId = :resourceId " +
+				"and cc.course.instructionalOffering = r.instructionalOffering and r.area = cc.classification.curriculum.academicArea "+
+				"and (rm is null or rm = cm) and (rc is null or rc = cc.classification.academicClassification)")
+				.setLong("resourceId", cc.getUniqueId()).setCacheable(true).list()) {
+			Long offeringId = (Long)o[0];
+			Long configId = (Long)o[1];
+			Long clazzId = (Long)o[2];
+			Set<Long>[] r = restrictions.get(offeringId);
+			if (r == null) {
+				r = new Set[] { new HashSet<Long>(), new HashSet<Long>()};
+				restrictions.put(offeringId, r);
+			}
+			if (configId != null) r[0].add(configId);
+			if (clazzId != null) r[1].add(clazzId);
+		}
+		if (!restrictions.isEmpty())
+			for (Iterator i = a.iterator(); i.hasNext(); ) {
+				Assignment asgn = (Assignment)i.next();
+				Set<Long>[] r = (restrictions == null ? null : restrictions.get(asgn.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId()));
+	    		if (r != null && EventLookupBackend.hide(r, asgn.getClazz())) i.remove();
+			}
 		setSize(a.size());
 		init(a,hibSession,context);
 	}

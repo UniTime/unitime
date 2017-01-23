@@ -43,6 +43,7 @@ import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.model.CurriculumClassification;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -980,6 +981,18 @@ public class TimetableGridTable {
 					String name = sa.getSubjectAreaAbbreviation();
 					if (!match(name)) continue;
 					iModels.add(new SolutionGridModel(solutionIdsStr, sa, hibSession, cx));
+				}
+			} else if (getResourceType()==TimetableGridModel.sResourceTypeCurriculum) {
+				Query q = hibSession.createQuery(
+						"select distinct cc.classification from "+
+						"CurriculumCourse cc, Assignment a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as co where "+
+						"a.solution.uniqueId in ("+solutionIdsStr+") and co = cc.course");
+				q.setCacheable(true);
+				for (Iterator i=q.list().iterator();i.hasNext();) {
+					CurriculumClassification cc = (CurriculumClassification)i.next();
+					String name = cc.getCurriculum().getAbbv() + " " + cc.getName();
+					if (!match(name)) continue;
+					iModels.add(new SolutionGridModel(solutionIdsStr, cc, hibSession, cx));
 				}
 			}
 			if (tx!=null) tx.commit();
