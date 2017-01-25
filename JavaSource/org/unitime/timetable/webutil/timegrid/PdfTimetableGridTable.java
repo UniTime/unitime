@@ -219,6 +219,8 @@ public class PdfTimetableGridTable {
 				addTextVertical(c, "(" + model.getSize() + ", " + sUtF.format(model.getUtilization() / iTable.nrSlotsPerPeriod()) + ")");
 			else if (model.getResourceType() == TimetableGridModel.sResourceTypeCurriculum)
 				addTextVertical(c, "(" + model.getSize() + ")");
+			else if (model.getResourceType() == TimetableGridModel.sResourceTypeStudentGroup)
+				addTextVertical(c, "(" + model.getSize() + ", " + sUtF.format(100.0 * model.getUtilization()) + "%)");
 			else if (model.getSize() > 0)
 				addTextVertical(c, "(" + model.getSize() + ")");
 			addTextVertical(c, model.getName(), true);
@@ -234,6 +236,8 @@ public class PdfTimetableGridTable {
 					addText(c, "(" + model.getSize() + ", " + sUtF.format(model.getUtilization() / iTable.nrSlotsPerPeriod()) + ")");
 				else if (model.getResourceType() == TimetableGridModel.sResourceTypeCurriculum)
 					addText(c, "(" + model.getSize() + ")");
+				else if (model.getResourceType() == TimetableGridModel.sResourceTypeStudentGroup)
+					addText(c, "(" + model.getSize() + ", " + sUtF.format(100.0 * model.getUtilization()) + "%)");
 				else if (model.getSize() > 0)
 					addText(c, "(" + model.getSize() + ")");
 			}

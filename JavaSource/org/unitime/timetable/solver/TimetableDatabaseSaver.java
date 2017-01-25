@@ -40,6 +40,7 @@ import org.cpsolver.coursett.model.Lecture;
 import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.RoomLocation;
 import org.cpsolver.coursett.model.Student;
+import org.cpsolver.coursett.model.StudentGroup;
 import org.cpsolver.ifs.extension.ConflictStatistics;
 import org.cpsolver.ifs.extension.Extension;
 import org.cpsolver.ifs.util.Progress;
@@ -83,6 +84,7 @@ import org.unitime.timetable.solver.ui.GroupConstraintInfo;
 import org.unitime.timetable.solver.ui.JenrlInfo;
 import org.unitime.timetable.solver.ui.LogInfo;
 import org.unitime.timetable.solver.ui.PropertiesInfo;
+import org.unitime.timetable.solver.ui.StudentGroupInfo;
 import org.unitime.timetable.solver.ui.TimetableInfoFileProxy;
 import org.unitime.timetable.solver.ui.TimetableInfoUtil;
 
@@ -490,6 +492,15 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		SolverInfoDef defBtbInstrInfo = SolverInfoDef.findByName(hibSession,"BtbInstructorInfo");
     		if (defBtbInstrInfo==null)
     			iProgress.warn("Back-to-back instructor info is not registered.");
+    		SolverInfoDef defGroupInfo = SolverInfoDef.findByName(hibSession, "GroupInfo");
+    		if (defGroupInfo == null) {
+    			iProgress.warn("Student group info is not registered.");
+    			defGroupInfo = new SolverInfoDef();
+    			defGroupInfo.setDescription("Student group information");
+    			defGroupInfo.setImplementation(StudentGroupInfo.class.getName());
+    			defGroupInfo.setName("GroupInfo");
+    			hibSession.save(defGroupInfo);
+    		}
     		
     		Hashtable<Solution, List<Lecture>> lectures4solution = new Hashtable<Solution, List<Lecture>>();
     		for (Lecture lecture: getModel().variables()) {
@@ -660,6 +671,28 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     			jAssignments.add(secondAssignment);
    				constraintInfo.setAssignments(jAssignments);
        			constraintInfo.setInfo(jInfo,getFileProxy());
+   				hibSession.save(constraintInfo);
+   				if (++batchIdx % BATCH_SIZE == 0) {
+   					hibSession.flush(); hibSession.clear();
+   				}
+    			
+    			incProgress();
+    		}
+    		
+    		setPhase("Saving student group infos ...", getModel().getStudentGroups().size());
+    		for (StudentGroup group: getModel().getStudentGroups()) {
+    			StudentGroupInfo gInfo = new StudentGroupInfo(getSolver(), group);
+    			ConstraintInfo constraintInfo = new ConstraintInfo();
+    			constraintInfo.setDefinition(defGroupInfo);
+    			constraintInfo.setOpt(gInfo.getGroupName());
+    			HashSet jAssignments = new HashSet();
+    			for (StudentGroupInfo.ClassInfo clazz: gInfo.getGroupAssignments()) {
+    				Assignment a = (Assignment)iAssignments.get(clazz.getClassId());
+    				if (a != null) jAssignments.add(a);
+    			}
+    			if (jAssignments.isEmpty()) continue;
+   				constraintInfo.setAssignments(jAssignments);
+       			constraintInfo.setInfo(gInfo, getFileProxy());
    				hibSession.save(constraintInfo);
    				if (++batchIdx % BATCH_SIZE == 0) {
    					hibSession.flush(); hibSession.clear();

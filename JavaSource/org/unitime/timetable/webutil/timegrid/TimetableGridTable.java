@@ -43,6 +43,7 @@ import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.model.ConstraintInfo;
 import org.unitime.timetable.model.CurriculumClassification;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
@@ -53,12 +54,13 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.SolverPredefinedSetting.IdValue;
 import org.unitime.timetable.model.StudentGroup;
-import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.solver.SolverProxy;
+import org.unitime.timetable.solver.ui.StudentGroupInfo;
+import org.unitime.timetable.solver.ui.TimetableInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
@@ -399,6 +401,10 @@ public class TimetableGridTable {
 						model.getSize() + ", " + sUtF.format(model.getUtilization() / nrSlotsPerPeriod()) + ")</div>");
 			else if (getResourceType() == TimetableGridModel.sResourceTypeCurriculum)
 				out.println("<span style='white-space:nowrap;' title='" + model.getSize() + " students'  >(" + model.getSize() + ")</span>");
+			else if (model.getResourceType() == TimetableGridModel.sResourceTypeStudentGroup)
+				out.println("<div style='white-space:nowrap;' title='capacity " + model.getSize() + " seats, same class " + 
+						sUtF.format(100.0 * model.getUtilization()) + "%'  >(" +
+						model.getSize() + ", " + sUtF.format(100.0 * model.getUtilization()) + "%)</div>");
 			else if (model.getSize() > 0)
 				out.println("<span style='white-space:nowrap;' title='" + model.getSize() + " classes'  >(" + model.getSize() + ")</span>");
 		}
@@ -472,6 +478,10 @@ public class TimetableGridTable {
 						model.getSize() + ", " + sUtF.format(model.getUtilization() / nrSlotsPerPeriod()) + ")</div>");
 			else if (getResourceType() == TimetableGridModel.sResourceTypeCurriculum)
 				out.println("<span style='white-space:nowrap;' title='" + model.getSize() + " students'  >(" + model.getSize() + ")</span>");
+			if (getResourceType() == TimetableGridModel.sResourceTypeStudentGroup)
+				out.println("<div style='white-space:nowrap;' title='capacity " + model.getSize() + " seats, same class " + 
+						sUtF.format(100.0 * model.getUtilization()) + "%'  >(" +
+						model.getSize() + ", " + sUtF.format(100.0 * model.getUtilization()) + "%)</div>");
 			else if (model.getSize() > 0)
 				out.println("<span style='white-space:nowrap;' title='" + model.getSize() + " classes'  >(" + model.getSize() + ")</span>");
 			out.println("</th>");
@@ -998,13 +1008,25 @@ public class TimetableGridTable {
 				}
 			} else if (getResourceType()==TimetableGridModel.sResourceTypeStudentGroup) {
 				Query q = hibSession.createQuery(
-						"select distinct r.group from StudentGroupReservation r, Assignment a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering as io where "+
-						"a.solution.uniqueId in ("+solutionIdsStr+") and io = r.instructionalOffering");
+						"select distinct c from ConstraintInfo c inner join c.assignments a where a.solution.uniqueId in ("+solutionIdsStr+") and c.definition.name = 'GroupInfo'");
 				q.setCacheable(true);
 				for (Iterator i=q.list().iterator();i.hasNext();) {
-					StudentGroup g = (StudentGroup)i.next();
-					if (!match(g.getGroupName()) && !match(g.getGroupAbbreviation())) continue;
-					iModels.add(new SolutionGridModel(solutionIdsStr, g, hibSession, cx));
+					ConstraintInfo g = (ConstraintInfo)i.next();
+					if (!match(g.getOpt()) && !match(g.getOpt())) continue;
+					TimetableInfo info = g.getInfo();
+					if (info != null && info instanceof StudentGroupInfo)
+						iModels.add(new SolutionGridModel(solutionIdsStr, (StudentGroupInfo)info, hibSession, cx));
+				}
+				if (iModels.isEmpty()) {
+					q = hibSession.createQuery(
+							"select distinct r.group from StudentGroupReservation r, Assignment a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering as io where "+
+							"a.solution.uniqueId in ("+solutionIdsStr+") and io = r.instructionalOffering");
+					q.setCacheable(true);
+					for (Iterator i=q.list().iterator();i.hasNext();) {
+						StudentGroup g = (StudentGroup)i.next();
+						if (!match(g.getGroupName()) && !match(g.getGroupAbbreviation())) continue;
+						iModels.add(new SolutionGridModel(solutionIdsStr, g, hibSession, cx));
+					}					
 				}
 			}
 			if (tx!=null) tx.commit();

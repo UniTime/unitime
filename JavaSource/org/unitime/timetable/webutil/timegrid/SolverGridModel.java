@@ -54,6 +54,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.dao.CurriculumDAO;
+import org.unitime.timetable.solver.ui.StudentGroupInfo;
 import org.unitime.timetable.util.Constants;
 
 
@@ -267,7 +268,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 				size += w / cnt;
 		}
 		setSize((int) Math.round(size));
-		setUtilization(countUtilization(context, placements.keySet()));
+		setUtilization(StudentGroupInfo.value(group));
 		for (Map.Entry<Placement, Double> entry: placements.entrySet()) {
 			TimetableGridCell cell = init(solver, entry.getKey(), (entry.getKey().variable().isCommitted() ? sBgModeNotAvailable : context.getBgMode()), context);
 			while (cell != null) {

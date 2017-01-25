@@ -20,6 +20,7 @@
 package org.unitime.timetable.webutil.timegrid;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Collection;
@@ -38,6 +39,7 @@ import java.util.Vector;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.coursett.preference.PreferenceCombination;
 import org.hibernate.Query;
+import org.hibernate.type.LongType;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.events.EventLookupBackend;
@@ -62,6 +64,7 @@ import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.solver.ui.GroupConstraintInfo;
+import org.unitime.timetable.solver.ui.StudentGroupInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
@@ -384,16 +387,6 @@ public class SolutionGridModel extends TimetableGridModel {
 		super(sResourceTypeDepartment, dept.getUniqueId().longValue());
 		setName(dept.getShortLabel());
 		setFirstDay(context.getFirstDay());
-		Solution firstSolution = null;
-		String ownerIds = "";
-		for (StringTokenizer s=new StringTokenizer(solutionIdsStr,",");s.hasMoreTokens();) {
-			Long solutionId = Long.valueOf(s.nextToken());
-			Solution solution = (new SolutionDAO()).get(solutionId, hibSession);
-			if (solution==null) continue;
-			if (firstSolution==null) firstSolution = solution;
-			if (ownerIds.length()>0) ownerIds += ",";
-			ownerIds += solution.getOwner().getUniqueId();
-		}
 		Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as o inner join o.subjectArea.department as d where " +
 				"a.solution.uniqueId in ("+solutionIdsStr+") and d.uniqueId=:resourceId and " +
 				"o.isControl=true");
@@ -408,16 +401,6 @@ public class SolutionGridModel extends TimetableGridModel {
 		super(sResourceTypeSubjectArea, sa.getUniqueId().longValue());
 		setName(sa.getSubjectAreaAbbreviation());
 		setFirstDay(context.getFirstDay());
-		Solution firstSolution = null;
-		String ownerIds = "";
-		for (StringTokenizer s=new StringTokenizer(solutionIdsStr,",");s.hasMoreTokens();) {
-			Long solutionId = Long.valueOf(s.nextToken());
-			Solution solution = (new SolutionDAO()).get(solutionId, hibSession);
-			if (solution==null) continue;
-			if (firstSolution==null) firstSolution = solution;
-			if (ownerIds.length()>0) ownerIds += ",";
-			ownerIds += solution.getOwner().getUniqueId();
-		}
 		Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as o inner join o.subjectArea as sa where " +
 				"a.solution.uniqueId in ("+solutionIdsStr+") and sa.uniqueId=:resourceId and " +
 				"o.isControl=true");
@@ -432,16 +415,6 @@ public class SolutionGridModel extends TimetableGridModel {
 		super(sResourceTypeCurriculum, cc.getUniqueId().longValue());
 		setName(cc.getCurriculum().getAbbv() + " " + cc.getName());
 		setFirstDay(context.getFirstDay());
-		Solution firstSolution = null;
-		String ownerIds = "";
-		for (StringTokenizer s=new StringTokenizer(solutionIdsStr,",");s.hasMoreTokens();) {
-			Long solutionId = Long.valueOf(s.nextToken());
-			Solution solution = (new SolutionDAO()).get(solutionId, hibSession);
-			if (solution==null) continue;
-			if (firstSolution==null) firstSolution = solution;
-			if (ownerIds.length()>0) ownerIds += ",";
-			ownerIds += solution.getOwner().getUniqueId();
-		}
 		Query q = hibSession.createQuery("select distinct a from CurriculumClassification cc inner join cc.courses cx, Assignment a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
 				"a.solution.uniqueId in ("+solutionIdsStr+") and cc.uniqueId=:resourceId and " +
 				"cx.course = co");
@@ -483,16 +456,6 @@ public class SolutionGridModel extends TimetableGridModel {
 		super(sResourceTypeStudentGroup, g.getUniqueId());
 		setName(g.getGroupAbbreviation());
 		setFirstDay(context.getFirstDay());
-		Solution firstSolution = null;
-		String ownerIds = "";
-		for (StringTokenizer s=new StringTokenizer(solutionIdsStr,",");s.hasMoreTokens();) {
-			Long solutionId = Long.valueOf(s.nextToken());
-			Solution solution = (new SolutionDAO()).get(solutionId, hibSession);
-			if (solution==null) continue;
-			if (firstSolution==null) firstSolution = solution;
-			if (ownerIds.length()>0) ownerIds += ",";
-			ownerIds += solution.getOwner().getUniqueId();
-		}
 		Query q = hibSession.createQuery(
 				"select distinct a from StudentGroupReservation r, Assignment a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering as io where "+
 				"a.solution.uniqueId in ("+solutionIdsStr+") and io = r.instructionalOffering and r.group.uniqueId=:resourceId");
@@ -526,6 +489,34 @@ public class SolutionGridModel extends TimetableGridModel {
 		init(a,hibSession,context);
 	}
 	
+	public SolutionGridModel(String solutionIdsStr, StudentGroupInfo g, org.hibernate.Session hibSession, TimetableGridContext context) {
+		super(sResourceTypeStudentGroup, g.getGroupId());
+		setName(g.getGroupName());
+		setFirstDay(context.getFirstDay());
+		List<Long> classIds = new ArrayList<Long>();
+		for (StudentGroupInfo.ClassInfo clazz: g.getGroupAssignments())
+			classIds.add(clazz.getClassId());
+		if (classIds.isEmpty()) return;
+		Query q = hibSession.createQuery(
+				"select distinct a from Assignment a where a.solution.uniqueId in ("+solutionIdsStr+") and a.classId in (:classIds)");
+		q.setParameterList("classIds", classIds, new LongType());
+		q.setCacheable(true);
+		List a = q.list();
+		setSize((int)Math.round(g.countStudentWeights()));
+		for (Iterator i = a.iterator(); i.hasNext(); ) {
+			Assignment assignment = (Assignment)i.next();
+			TimetableGridCell cell = init(assignment, hibSession, context.getFirstDay(), context.getBgMode());
+			StudentGroupInfo.ClassInfo ci = g.getGroupAssignment(assignment.getClassId());
+			if (ci != null) {
+				while (cell != null) {
+					cell.setRoomName(cell.getRoomName() + " (" + Math.round(ci.countStudentsWeight()) + ")");
+					cell = cell.getParent();
+				}
+			}
+		}
+		setUtilization(g.getGroupValue());
+	}
+	
 	private void init(List assignments, org.hibernate.Session hibSession, TimetableGridContext context) {
 		for (Iterator i=assignments.iterator();i.hasNext();) {
 			Assignment assignment = (Assignment)i.next();
@@ -534,7 +525,7 @@ public class SolutionGridModel extends TimetableGridModel {
 		setUtilization(countUtilization(context, assignments));
 	}
 	
-	public void init(Assignment assignment, org.hibernate.Session hibSession, int firstDay, int bgMode) {
+	public TimetableGridCell init(Assignment assignment, org.hibernate.Session hibSession, int firstDay, int bgMode) {
 		TimetableGridCell cell = null;
 
 		int days = assignment.getDays().intValue();
@@ -557,6 +548,7 @@ public class SolutionGridModel extends TimetableGridModel {
 			}
 			addCell(j,start,cell);
 		}
+		return cell;
 	}
 	
 	public static String hardConflicts2pref(AssignmentPreferenceInfo assignmentInfo) {
