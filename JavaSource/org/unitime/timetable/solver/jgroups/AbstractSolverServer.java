@@ -36,7 +36,9 @@ import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.ExamType;
+import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Solution;
+import org.unitime.timetable.model.TeachingRequest;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.RoomAvailability;
@@ -182,6 +184,21 @@ public abstract class AbstractSolverServer implements SolverServer {
 	    	for (Long instructorId: instructorIds) {
 	            hibSessionFactory.getCache().evictEntity(DepartmentalInstructor.class, instructorId);
 	            hibSessionFactory.getCache().evictCollection(DepartmentalInstructor.class.getName()+".classes", instructorId);
+	    	}
+	    	List<Long> requestIds = (List<Long>)hibSession.createQuery(
+	    			"select distinct r.uniqueId from Class_ c inner join c.teachingRequests r where c.controllingDept.solverGroup.uniqueId in :solverGroupId and c.cancelled = false")
+	    			.setParameterList("solverGroupId", solverGroupIds).list();
+	    	for (Long requestId: requestIds) {
+	            hibSessionFactory.getCache().evictEntity(TeachingRequest.class, requestId);
+	            hibSessionFactory.getCache().evictCollection(TeachingRequest.class.getName()+".assignedInstructors", requestId);
+	    	}
+	    	List<Long> offeringIds = (List<Long>)hibSession.createQuery(
+	    			"select distinct c.schedulingSubpart.instrOfferingConfig.instructionalOffering.uniqueId from " +
+	    			"Class_ c inner join c.teachingRequests r where c.controllingDept.solverGroup.uniqueId in :solverGroupId and c.cancelled = false")
+	    			.setParameterList("solverGroupId", solverGroupIds).list();
+	    	for (Long offeringId: offeringIds) {
+	            hibSessionFactory.getCache().evictEntity(InstructionalOffering.class, offeringId);
+	            hibSessionFactory.getCache().evictCollection(InstructionalOffering.class.getName()+".offeringCoordinators", offeringId);
 	    	}
 		} finally {
 			hibSession.close();

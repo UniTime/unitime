@@ -270,7 +270,7 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
     @Override
     public void load(DataProperties properties) {
         setProperties(properties);
-        M model = createModel(properties);
+        M model = createModel(getProperties());
         Progress.getInstance(model).addProgressListener(new ProgressWriter(System.out));
         
         iWorking = true;
@@ -294,7 +294,7 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
         
         Callback callBack = getReloadingDoneCallback();
         setProperties(properties);
-        M model = createModel(properties);
+        M model = createModel(getProperties());
         
         iWorking = true;
         Progress.changeInstance(currentSolution().getModel(),model);
