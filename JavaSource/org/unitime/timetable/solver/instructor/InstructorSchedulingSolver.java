@@ -302,11 +302,13 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
         	List<InstructorInfo> ret = new ArrayList<InstructorInfo>();
         	Set<Long> instructorIds = null;
         	if (departmentId != null) {
-        		instructorIds = new HashSet<Long>(
-        				CourseOfferingDAO.getInstance().getSession().createQuery(
-        						"select i.uniqueId from DepartmentalInstructor i where i.department.uniqueId = :departmentId"
-        						).setLong("departmentId", departmentId).list()
-        				);
+        		if (departmentId < 0) {
+        			instructorIds = new HashSet<Long>(); instructorIds.add(-departmentId);
+        		} else {
+        			instructorIds = new HashSet<Long>(CourseOfferingDAO.getInstance().getSession().createQuery(
+        					"select i.uniqueId from DepartmentalInstructor i where i.department.uniqueId = :departmentId"
+        					).setLong("departmentId", departmentId).list());
+        		}
         	}
         	InstructorSchedulingModel model = (InstructorSchedulingModel)currentSolution().getModel();
         	for (Instructor instructor: model.getInstructors()) {

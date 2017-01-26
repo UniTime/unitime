@@ -29,7 +29,7 @@ import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.PDFPrinter;
 import org.unitime.timetable.export.PDFPrinter.A;
 import org.unitime.timetable.export.PDFPrinter.F;
-import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsPage.COLUMN;
+import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsTable.COLUMN;
 import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsPage.SingleTeachingAssingment;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorInfo;

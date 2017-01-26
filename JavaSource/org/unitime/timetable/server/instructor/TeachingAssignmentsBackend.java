@@ -34,6 +34,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingAssignmentsPageRequest;
 import org.unitime.timetable.security.SessionContext;
@@ -56,7 +57,8 @@ public class TeachingAssignmentsBackend extends InstructorSchedulingBackendHelpe
 		if (instructorSchedulingSolverService == null)
 			instructorSchedulingSolverService = (SolverService<InstructorSchedulingProxy>)SpringApplicationContextHolder.getBean("instructorSchedulingSolverService");
 		context.checkPermission(Right.InstructorScheduling);
-		context.setAttribute(SessionAttribute.DepartmentId, request.getDepartmentId() == null ? "-1" : String.valueOf(request.getDepartmentId()));
+		if (request.getDepartmentId() == null || request.getDepartmentId() >= 0)
+			context.setAttribute(SessionAttribute.DepartmentId, request.getDepartmentId() == null ? null : String.valueOf(request.getDepartmentId()));
 		InstructorSchedulingProxy solver = instructorSchedulingSolverService.getSolver();
 		if (solver != null)
 			return new GwtRpcResponseList<InstructorInfo>(solver.getInstructors(request.getDepartmentId()));
@@ -82,13 +84,17 @@ public class TeachingAssignmentsBackend extends InstructorSchedulingBackendHelpe
 						"left join fetch c.preferences as cp left join fetch ss.preferences as sp left join fetch i.preferences as ip " +
 						"where i.department.uniqueId in :departmentIds and i.teachingPreference.prefProlog != :prohibited and i.maxLoad > 0.0"
 						).setParameterList("departmentIds", departmentIds).setString("prohibited", PreferenceLevel.sProhibited).setCacheable(true).list();
-			} else {
+			} else if (request.getDepartmentId() >= 0) {
 				instructors = (List<DepartmentalInstructor>)hibSession.createQuery(
 						"select distinct i from DepartmentalInstructor i " +
 						"left join fetch i.classes as ci left join fetch ci.classInstructing as c left join fetch c.schedulingSubpart as ss " +
 						"left join fetch c.preferences as cp left join fetch ss.preferences as sp left join fetch i.preferences as ip " +
 				    	"where i.department.uniqueId = :departmentId and i.teachingPreference.prefProlog != :prohibited and i.maxLoad > 0.0"
 						).setLong("departmentId", request.getDepartmentId()).setString("prohibited", PreferenceLevel.sProhibited).setCacheable(true).list();
+			} else {
+				instructors = new ArrayList<DepartmentalInstructor>();
+				DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(-request.getDepartmentId());
+				if (instructor != null) instructors.add(instructor);
 			}
 	    	for (DepartmentalInstructor instructor: instructors) {
 	    		ret.add(getInstructorInfo(instructor, cx));

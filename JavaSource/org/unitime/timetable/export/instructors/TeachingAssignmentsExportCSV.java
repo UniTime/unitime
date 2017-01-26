@@ -30,9 +30,9 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.export.CSVPrinter;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.Exporter;
-import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsPage;
-import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsPage.COLUMN;
+import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsTable.COLUMN;
 import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsPage.SingleTeachingAssingment;
+import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsTable;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -97,7 +97,7 @@ public class TeachingAssignmentsExportCSV implements Exporter {
 		if (helper.getParameter("sort") != null) {
 			int sort = Integer.parseInt(helper.getParameter("sort"));
 			if (sort != 0) {
-				TeachingAssignmentsPage.TableComparator cmp = new TeachingAssignmentsPage.TableComparator(COLUMN.values()[Math.abs(sort) - 1]);
+				TeachingAssignmentsTable.TableComparator cmp = new TeachingAssignmentsTable.TableComparator(COLUMN.values()[Math.abs(sort) - 1]);
 				Collections.sort(list, sort < 0 ? Collections.reverseOrder(cmp) : cmp);
 			}
 		}

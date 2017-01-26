@@ -288,7 +288,16 @@
 					<div id='UniTimeGWT:StudentEnrollments' style="display: none;"><bean:write name="<%=frmName%>" property="puId"/></div>
 				</TD>
 			</TR>
-		</logic:notEmpty>	
+		</logic:notEmpty>
+		
+		<sec:authorize access="hasPermission(null, 'SolverGroup', 'InstructorScheduling') and hasPermission(#deptCode, 'Department', 'InstructorAssignmentPreferences')">
+		<TR>
+			<TD colspan="2">
+				<a name="assignments"></a>
+				<div id='UniTimeGWT:TeachingAssignments' style="display: none;"><bean:write name="<%=frmName%>" property="instructorId" /></div>
+			</TD>
+		</TR>
+		</sec:authorize>
 
 		<tt:last-change type='DepartmentalInstructor'>
 			<bean:write name="<%=frmName%>" property="instructorId"/>

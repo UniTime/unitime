@@ -1551,6 +1551,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Teaching Requests")
 	String sectTeachingRequests();
 	
+	@DefaultMessage("Teaching Assignments")
+	String sectTeachingAssignments();
+	
 	@DefaultMessage("Loading {0}...")
 	String waitLoading(String name);
 	

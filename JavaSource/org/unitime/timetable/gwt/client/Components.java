@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.client;
 import org.unitime.timetable.gwt.client.curricula.CourseCurriculaTable;
 import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.client.instructor.InstructorAvailabilityWidget;
+import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsWidget;
 import org.unitime.timetable.gwt.client.instructor.TeachingRequestsWidget;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.page.UniTimeBack;
@@ -77,6 +78,7 @@ public enum Components {
 	periodPreferences("UniTimeGWT:PeriodPreferences", new ComponentFactory() { public void insert(RootPanel panel) { new PeriodPreferencesWidget(true).insert(panel); } }),
 	teachingRequests("UniTimeGWT:TeachingRequests", new ComponentFactory() { public void insert(RootPanel panel) { new TeachingRequestsWidget().insert(panel); } }),
 	studentEnrollments("UniTimeGWT:StudentEnrollments", new ComponentFactory() { public void insert(RootPanel panel) { new StudentScheduleTable(true, true).insert(panel); } }),
+	teachingAssignments("UniTimeGWT:TeachingAssignments", new ComponentFactory() { public void insert(RootPanel panel) { new TeachingAssignmentsWidget().insert(panel); } }),
 	;
 	
 	private String iId;
