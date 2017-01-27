@@ -71,6 +71,15 @@
 						</html:submit>
 					</html:form>
 					</TD>
+					<TD style="padding-left: 3px;">
+					<html:form action="instructorList" styleClass="FormWithNoPadding">			
+						<html:submit property="op" styleClass="btn" 
+							accesskey="<%=MSG.accessExportCsv() %>" 
+							title="<%=MSG.titleExportCsv(MSG.accessExportCsv()) %>">
+							<loc:message name="actionExportCsv" />
+						</html:submit>
+					</html:form>
+					</TD>
 				</sec:authorize>
 				<sec:authorize access="hasPermission(#deptUniqueId, 'Department', 'ManageInstructors')">
 					<TD style="padding-left: 3px;">

@@ -355,7 +355,7 @@ public class InstructorListBuilder {
 		}        
     }
     
-    public PdfWebTable pdfTableForInstructor(SessionContext context, String deptId) throws Exception {
+    public PdfWebTable pdfTableForInstructor(SessionContext context, String deptId, boolean canHaveImages) throws Exception {
 		boolean timeVertical = RequiredTimeTable.getTimeGridVertical(context.getUser());
 		boolean gridAsText = RequiredTimeTable.getTimeGridAsText(context.getUser());
 		String timeGridSize = RequiredTimeTable.getTimeGridSize(context.getUser());
@@ -499,7 +499,7 @@ public class InstructorListBuilder {
 				for (Iterator i = di.getTimePreferences().iterator(); i.hasNext();) {
 					TimePref tp = (TimePref) i.next();
 					RequiredTimeTable rtt = tp.getRequiredTimeTable();
-					if (gridAsText) {
+					if (gridAsText || !canHaveImages) {
 						timePref.append(rtt.getModel().toString().replaceAll(", ","\n"));
 					} else {
 						rtt.getModel().setDefaultSelection(timeGridSize);

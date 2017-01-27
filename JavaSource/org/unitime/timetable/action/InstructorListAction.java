@@ -143,9 +143,15 @@ public class InstructorListAction extends Action {
 			saveErrors(request, errors);
 		} else {
 			if (MSG.actionExportPdf().equals(op)) {
-				PdfWebTable table = ilb.pdfTableForInstructor(sessionContext, instructorSearchForm.getDeptUniqueId());
+				PdfWebTable table = ilb.pdfTableForInstructor(sessionContext, instructorSearchForm.getDeptUniqueId(), true);
 				if (table != null) {
 					ExportUtils.exportPDF(table, WebTable.getOrder(sessionContext,"instructorList.ord"), response, "instructors");
+					return null;
+				}
+			} else if (MSG.actionExportCsv().equals(op)) {
+				PdfWebTable table = ilb.pdfTableForInstructor(sessionContext, instructorSearchForm.getDeptUniqueId(), false);
+				if (table != null) {
+					ExportUtils.exportCSV(table, WebTable.getOrder(sessionContext,"instructorList.ord"), response, "instructors");
 					return null;
 				}
 			}
