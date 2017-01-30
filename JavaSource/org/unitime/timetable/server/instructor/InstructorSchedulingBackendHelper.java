@@ -128,10 +128,10 @@ public class InstructorSchedulingBackendHelper {
 		for (InstructorAttribute a: instructor.getAttributes()) {
 			AttributeInterface attribute = new AttributeInterface();
 			attribute.setId(a.getUniqueId());
-			attribute.setName(a.getName());
+			attribute.setName(a.getCode());
 			AttributeTypeInterface type = new AttributeTypeInterface();
 			type.setId(a.getType().getUniqueId());
-			type.setLabel(a.getType().getLabel());
+			type.setLabel(a.getType().getReference());
 			type.setConjunctive(a.getType().isConjunctive());
 			type.setRequired(a.getType().isRequired());
 			attribute.setType(type);
@@ -313,10 +313,10 @@ public class InstructorSchedulingBackendHelper {
 		for (InstructorAttribute a: instructor.getAttributes()) {
 			AttributeInterface attribute = new AttributeInterface();
 			attribute.setId(a.getUniqueId());
-			attribute.setName(a.getName());
+			attribute.setName(a.getCode());
 			AttributeTypeInterface type = new AttributeTypeInterface();
 			type.setId(a.getType().getUniqueId());
-			type.setLabel(a.getType().getLabel());
+			type.setLabel(a.getType().getReference());
 			type.setConjunctive(a.getType().isConjunctive());
 			type.setRequired(a.getType().isRequired());
 			attribute.setType(type);

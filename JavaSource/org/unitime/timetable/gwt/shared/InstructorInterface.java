@@ -33,6 +33,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingDisplayMode;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
@@ -724,7 +725,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    private List<TeachingRequestInfo> iAssignedRequests = new ArrayList<TeachingRequestInfo>();
 	    private Set<ClassInfo> iEnrollments = new TreeSet<ClassInfo>();
 	    private int iAssignmentIndex = -1;
-	    private boolean iConflict = false;
+	    private boolean iConflict = false, iMatching = true;
 
 		public InstructorInfo() {}
 		
@@ -800,6 +801,9 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		public boolean isConflict() { return iConflict; }
 		public void setConflict(boolean conflict) { iConflict = conflict; }
 		
+		public boolean isMatchingFilter() { return iMatching; }
+		public void setMatchingFilter(boolean matching) { iMatching = matching; }
+		
 		@Override
 		public String toString() {
 			return getInstructorName() + (getExternalId() == null ? "" : " (" + getExternalId() + ")");
@@ -817,7 +821,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    private List<PreferenceInfo> iAttributePreferences = new ArrayList<PreferenceInfo>();
 	    private Map<String,Double> iValues = new HashMap<String, Double>();
 	    private int iNrInstructors = 0;
-		private boolean iConflict = false;
+		private boolean iConflict = false, iMatching = true;
 		
 		public TeachingRequestInfo() {}
 		
@@ -874,6 +878,9 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    
 	    public boolean isConflict() { return iConflict; }
 		public void setConflict(boolean conflict) { iConflict = conflict; }
+		
+		public boolean isMatchingFilter() { return iMatching; }
+		public void setMatchingFilter(boolean matching) { iMatching = matching; }
 		
 	    @Override
 	    public int hashCode() {
@@ -971,52 +978,47 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	
 	public static class TeachingRequestsPageRequest implements GwtRpcRequest<GwtRpcResponseList<TeachingRequestInfo>>, Serializable {
 		private static final long serialVersionUID = 1L;
-		private Boolean iAssigned = null;
-		private Long iSubjectAreaId = null;
-		private Long iOfferingId = null;
+		private TeachingRequestsFilterRpcRequest iRequest = null;
 		
-		public TeachingRequestsPageRequest() {}
+		public TeachingRequestsPageRequest() {
+			iRequest = new TeachingRequestsFilterRpcRequest();
+		}
 		
-		public TeachingRequestsPageRequest(Long subjectAreaId, Boolean assigned) {
-			iAssigned = assigned;
-			iSubjectAreaId = subjectAreaId;
+		public TeachingRequestsPageRequest(TeachingRequestsFilterRpcRequest request) {
+			iRequest = request;
 		}
 		
 		public TeachingRequestsPageRequest(Long offeringId) {
-			iOfferingId = offeringId;
+			iRequest = new TeachingRequestsFilterRpcRequest();
+			if (offeringId != null)
+				iRequest.setOption("offeringId", offeringId.toString());
 		}
 		
-		public void setSubjectAreaId(Long subjectAreaId) { iSubjectAreaId = subjectAreaId; }
-		public void setOfferingId(Long offeringId) { iOfferingId = offeringId; }
-		public void setAssigned(Boolean assigned) { iAssigned = assigned; }
-
-		public boolean hasAssigned() { return iAssigned != null; }
-		public boolean isAssigned() { return iAssigned == null || iAssigned.booleanValue(); }
-		public Long getSubjectAreaId() { return iSubjectAreaId; }
-		public Long getOfferingId() { return iOfferingId; }
+		public TeachingRequestsFilterRpcRequest getFilter() { return iRequest; }
 		
 		@Override
 		public String toString() {
-			return (getOfferingId() == null ? (!hasAssigned() ? "" : isAssigned() ? "ASSIGNED" : "UNASSIGNED") + (getSubjectAreaId() == null ? "(all)" : "(" + getSubjectAreaId() + ")") : "[" + getOfferingId() + "]");
+			return iRequest.toString();
 		}
 	}
 	
 	public static class TeachingAssignmentsPageRequest implements GwtRpcRequest<GwtRpcResponseList<InstructorInfo>>, Serializable {
 		private static final long serialVersionUID = 1L;
-		private Long iDepartmentId = null;
+		private TeachingRequestsFilterRpcRequest iRequest = null;
 		
-		public TeachingAssignmentsPageRequest() {}
-		
-		public TeachingAssignmentsPageRequest(Long departmentId) {
-			iDepartmentId = departmentId;
+		public TeachingAssignmentsPageRequest() {
+			iRequest = new TeachingRequestsFilterRpcRequest();
 		}
 		
-		public void setDepartmentId(Long departmentId) { iDepartmentId = departmentId; }
-		public Long getDepartmentId() { return iDepartmentId; }
+		public TeachingAssignmentsPageRequest(TeachingRequestsFilterRpcRequest request) {
+			iRequest = request;
+		}
+		
+		public TeachingRequestsFilterRpcRequest getFilter() { return iRequest; }
 		
 		@Override
 		public String toString() {
-			return (getDepartmentId() == null ? "(all)" : "(" + getDepartmentId() + ")");
+			return iRequest.toString();
 		}
 	}
 	
@@ -1404,6 +1406,12 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		
 		public void addChange(AssignmentInfo change) { iChanges.add(change); }
 		public List<AssignmentInfo> getChanges() { return iChanges; }
+	}
+	
+	public static class TeachingRequestsFilterRpcRequest extends FilterRpcRequest {
+		private static final long serialVersionUID = 1L;
+		
+		public TeachingRequestsFilterRpcRequest() {}
 	}
 
 }

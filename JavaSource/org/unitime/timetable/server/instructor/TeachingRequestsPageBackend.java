@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.server.instructor;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,15 +27,16 @@ import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestsPageRequest;
-import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TeachingRequest;
-import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestInfo;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.server.instructor.TeachingRequestsFilterBackend.TeachingRequestMatcher;
 import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.spring.SpringApplicationContextHolder;
@@ -54,50 +54,38 @@ public class TeachingRequestsPageBackend extends InstructorSchedulingBackendHelp
 			instructorSchedulingSolverService = (SolverService<InstructorSchedulingProxy>)SpringApplicationContextHolder.getBean("instructorSchedulingSolverService");
 		
 		context.checkPermission(Right.InstructorScheduling);
-		if (request.getOfferingId() == null)
-			context.setAttribute(SessionAttribute.OfferingsSubjectArea, request.getSubjectAreaId() == null ? "-1" : String.valueOf(request.getSubjectAreaId()));
+		if (!request.getFilter().hasOption("offeringId")) {
+			String subjectId = null;
+			if (request.getFilter().hasOption("subjectId")) {
+				subjectId = request.getFilter().getOption("subjectId");
+			} else if (request.getFilter().hasOption("subject")) {
+				SubjectArea subject = SubjectArea.findByAbbv(context.getUser().getCurrentAcademicSessionId(), request.getFilter().getOption("subject"));
+				if (subject != null) {
+					subjectId = subject.getUniqueId().toString();
+					request.getFilter().setOption("subjectId", subjectId);
+				}
+			}
+			context.setAttribute(SessionAttribute.OfferingsSubjectArea, subjectId == null ? "-1" : subjectId);
+		}
+		if (!request.getFilter().hasSessionId())
+			request.getFilter().setSessionId(context.getUser().getCurrentAcademicSessionId());
+		
 		InstructorSchedulingProxy solver = instructorSchedulingSolverService.getSolver();
-		if (solver != null && request.getOfferingId() == null)
-			return new GwtRpcResponseList<TeachingRequestInfo>(solver.getTeachingRequests(request));
+		if (solver != null && !request.getFilter().hasOption("offeringId"))
+			return new GwtRpcResponseList<TeachingRequestInfo>(solver.getTeachingRequests(request.getFilter()));
 		else {
 			Context cx = new Context(context, solver);
+			Query q = TeachingRequestsFilterBackend.toQuery(request.getFilter());
 
 			GwtRpcResponseList<TeachingRequestInfo> ret = new GwtRpcResponseList<TeachingRequestInfo>();
-			org.hibernate.Session hibSession = Class_DAO.getInstance().getSession();
-			List<TeachingRequest> requests = null;
-			if (request.getOfferingId() != null) {
-				requests = (List<TeachingRequest>)hibSession.createQuery(
-						"from TeachingRequest r where r.offering.uniqueId = :offeringId")
-						.setLong("offeringId", request.getOfferingId()).setCacheable(true).list();
-			} else if (request.getSubjectAreaId() == null) {
-				List<Long> subjectAreaIds = new ArrayList<Long>();
-				for (SubjectArea sa: SubjectArea.getUserSubjectAreas(context.getUser(), true)) {
-					for (DepartmentalInstructor di: sa.getDepartment().getInstructors())
-						if (di.getTeachingPreference() != null && !PreferenceLevel.sProhibited.equals(di.getTeachingPreference().getPrefProlog())) {
-							subjectAreaIds.add(sa.getUniqueId());
-							break;
-						}
-				}
-				if (subjectAreaIds.isEmpty()) return ret;
-				requests = (List<TeachingRequest>)hibSession.createQuery(
-						"select r from TeachingRequest r inner join r.offering.courseOfferings co where co.isControl = true and co.subjectArea.uniqueId in :subjectAreaIds")
-						.setParameterList("subjectAreaIds", subjectAreaIds).setCacheable(true).list();
-			} else {
-				requests = (List<TeachingRequest>)hibSession.createQuery(
-						"select r from TeachingRequest r inner join r.offering.courseOfferings co where co.isControl = true and co.subjectArea.uniqueId = :subjectAreaId")
-		    			.setLong("subjectAreaId", request.getSubjectAreaId()).setCacheable(true).list();
-			}
-	    	// Collections.sort(classes, new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
+			List<TeachingRequest> requests = TeachingRequestsFilterBackend.getRequestQuery(request.getFilter(), context.getUser()).select("r").query(DepartmentalInstructorDAO.getInstance().getSession()).list();
 	    	for (TeachingRequest tr: requests) {
 	    		if (tr.isCancelled()) continue;
 	    		TeachingRequestInfo info = getRequest(tr, cx, true);
-	    		if (info != null) {
-	    			if (request.getOfferingId() != null || !request.hasAssigned())
-	    				ret.add(info);
-	    			else if (request.isAssigned() && info.getNrAssignedInstructors() > 0)
-	    				ret.add(info);
-	    			else if (!request.isAssigned() && info.getNrAssignedInstructors() < info.getNrInstructors())
-	    				ret.add(info);
+	    		if (info != null && q.match(new TeachingRequestMatcher(info, request.getFilter()))) {
+    				for (InstructorInfo ii: info.getInstructors())
+    					ii.setMatchingFilter(q.match(new TeachingRequestMatcher(info, ii, request.getFilter())));
+	    			ret.add(info);
 	    		}
 	    	}
 	    	Collections.sort(ret);

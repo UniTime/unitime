@@ -39,6 +39,7 @@ public class InstructorCookie {
 	private int iAssignmentChangesColumns = 0xffff;
 	private boolean iShowTeachingRequests = false;
 	private boolean iShowTeachingAssignments = false;
+	private String[] iQuery = new String[] {"", "", ""};
 
 	private InstructorCookie() {
 		try {
@@ -57,6 +58,7 @@ public class InstructorCookie {
 				iAssignmentChangesColumns = Integer.valueOf(params[idx++]);
 				iShowTeachingRequests = "T".equals(params[idx++]);
 				iShowTeachingAssignments = "T".equals(params[idx++]);
+				iQuery = new String[] {params[idx++], params[idx++], params[idx++]};
 			}
 		} catch (Exception e) {
 		}
@@ -75,7 +77,8 @@ public class InstructorCookie {
 				"|" + iSortTeachingAssignmentsBy + "|" + iTeachingAssignmentsColumns +
 				"|" + iAssignmentChangesBase + "|" + iSortAssignmentChangesBy + "|" + iAssignmentChangesColumns +
 				"|" + (iShowTeachingRequests ? "T" : "F") +
-				"|" + (iShowTeachingAssignments ? "T" : "F");
+				"|" + (iShowTeachingAssignments ? "T" : "F") +
+				"|" + iQuery[0] + "|" + iQuery[1] + "|" + iQuery[2];
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:Instructor", cookie, expires);
 	}
@@ -197,5 +200,8 @@ public class InstructorCookie {
 	}
 	
 	public boolean isShowTeachingAssignments() { return iShowTeachingAssignments; }
-	public void setShowTeachingAssignments(boolean showTeachingAssignments) { iShowTeachingAssignments = showTeachingAssignments; }
+	public void setShowTeachingAssignments(boolean showTeachingAssignments) { iShowTeachingAssignments = showTeachingAssignments; save(); }
+	
+	public String getQuery(Boolean assigned) { return iQuery[assigned == null ? 2 : assigned ? 0 : 1]; }
+	public void setQuery(Boolean assigned, String query) { iQuery[assigned == null ? 2 : assigned ? 0 : 1] = query; save(); }
 }

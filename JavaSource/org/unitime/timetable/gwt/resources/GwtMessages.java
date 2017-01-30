@@ -3055,6 +3055,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("All Departments")
 	String itemAllDepartments();
 	
+	@DefaultMessage("All Subject Areas")
+	String itemAllSubjectAreas();
+	
 	@DefaultMessage("None")
 	String itemNone();
 	
@@ -3644,7 +3647,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Distribution Preferences:")
 	String propDistributionPreferences();
-
+	
 	@DefaultMessage("{0} ({1})")
 	String label(String name, String type);
 
@@ -3833,7 +3836,10 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Coordinator")
 	String fieldCoordinator();
-
+	
+	@DefaultMessage("Course")
+	String fieldCourse();
+	
 	@DefaultMessage("Access")
 	String toggleAccess();
 	
@@ -4764,6 +4770,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("course")
 	String tagCourse();
+	
+	@DefaultMessage("instructor")
+	String tagInstructor();
 	
 	@DefaultMessage("All Sessions")
 	String attrFlagAllSessions();

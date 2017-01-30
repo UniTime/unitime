@@ -22,6 +22,7 @@ package org.unitime.timetable.export.instructors;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -63,8 +64,17 @@ public class TeachingRequestsExportCSV implements Exporter {
 	@Override
 	public void export(ExportHelper helper) throws IOException {
 		TeachingRequestsPageRequest request = new TeachingRequestsPageRequest();
+		for (Enumeration<String> e = helper.getParameterNames(); e.hasMoreElements(); ) {
+    		String command = e.nextElement();
+    		if (command.equals("r:text")) {
+    			request.getFilter().setText(helper.getParameter("r:text"));
+    		} else if (command.startsWith("r:")) {
+    			for (String value: helper.getParameterValues(command))
+    				request.getFilter().addOption(command.substring(2), value);
+    		}
+		}
 		if (helper.getParameter("subjectId") != null) {
-			request.setSubjectAreaId(Long.valueOf(helper.getParameter("subjectId")));
+			request.getFilter().addOption("subjectId", helper.getParameter("subjectId"));
 		} else if (helper.getParameter("subject") != null) {
 			Long sessionId = helper.getAcademicSessionId();
 			if (sessionId == null)
@@ -72,10 +82,10 @@ public class TeachingRequestsExportCSV implements Exporter {
 			SubjectArea subject = SubjectArea.findByAbbv(sessionId, helper.getParameter("subject"));
 			if (subject == null)
 				throw new IllegalArgumentException("Subject area " + helper.getParameter("subject") + " does not exist.");
-			request.setSubjectAreaId(subject.getUniqueId());
+			request.getFilter().addOption("subjectId", subject.getUniqueId().toString());
 		}
 		if (helper.getParameter("offeringId") != null) {
-			request.setOfferingId(Long.valueOf(helper.getParameter("offeringId")));
+			request.getFilter().addOption("offeringId", helper.getParameter("offeringId"));
 		} else if (helper.getParameter("course") != null) {
 			Long sessionId = helper.getAcademicSessionId();
 			if (sessionId == null)
@@ -83,16 +93,16 @@ public class TeachingRequestsExportCSV implements Exporter {
 			CourseOffering course = CourseOffering.findByName(helper.getParameter("course"), sessionId);
 			if (course == null)
 				throw new IllegalArgumentException("Course offering " + helper.getParameter("course") + " does not exist.");
-			request.setOfferingId(course.getInstructionalOffering().getUniqueId());
+			request.getFilter().addOption("offeringId", course.getInstructionalOffering().getUniqueId().toString());
 		}
 		if (helper.getParameter("assigned") != null) {
-			request.setAssigned("true".equalsIgnoreCase(helper.getParameter("assigned")) || "1".equals(helper.getParameter("assigned")));
+			request.getFilter().addOption("assigned", ("true".equalsIgnoreCase(helper.getParameter("assigned")) || "1".equals(helper.getParameter("assigned"))) ? "true" : "false");
 		}
 		
 		List<SingleTeachingAssingment> list = new ArrayList<SingleTeachingAssingment>();
 		boolean hasInstructors = false;
 		for (TeachingRequestInfo req: new TeachingRequestsPageBackend().execute(request, helper.getSessionContext())) {
-			if (!request.hasAssigned()) {
+			if (!request.getFilter().hasOption("assigned")) {
 				if (req.hasInstructors()) {
 					for (InstructorInfo instructor: req.getInstructors()) {
 						list.add(new SingleTeachingAssingment(instructor, req));
@@ -101,12 +111,13 @@ public class TeachingRequestsExportCSV implements Exporter {
 				} else {
 					list.add(new SingleTeachingAssingment(null, req));
 				}
-			} else if (request.isAssigned() && req.hasInstructors()) {
+			} else if ("true".equalsIgnoreCase(request.getFilter().getOption("assigned")) && req.hasInstructors()) {
 				for (InstructorInfo instructor: req.getInstructors()) {
+					if (!instructor.isMatchingFilter()) continue;
 					list.add(new SingleTeachingAssingment(instructor, req));
 					hasInstructors = true;
 				}
-			} else if (!request.isAssigned() && req.getNrAssignedInstructors() < req.getNrInstructors()) {
+			} else if (!"true".equalsIgnoreCase(request.getFilter().getOption("assigned")) && req.getNrAssignedInstructors() < req.getNrInstructors()) {
 				list.add(new SingleTeachingAssingment(null, req));
 			}
 		}

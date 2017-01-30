@@ -143,7 +143,7 @@ public class TeachingRequestsWidget extends SimpleForm {
 			public void onSuccess(GwtRpcResponseList<TeachingRequestInfo> result) {
 				iHeader.clearMessage();
 				LoadingWidget.getInstance().hide();
-				iTable.populate(result);
+				iTable.populate(result, null);
 				iTable.setVisible(true);
 				String requestId = Window.Location.getParameter("requestId");
 				if (requestId != null && !requestId.isEmpty()) {

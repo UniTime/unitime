@@ -21,6 +21,7 @@ package org.unitime.timetable.solver.instructor;
 
 import java.util.List;
 
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentChangesRequest;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentChangesResponse;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentInfo;
@@ -28,15 +29,14 @@ import org.unitime.timetable.gwt.shared.InstructorInterface.ComputeSuggestionsRe
 import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.SuggestionsResponse;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestInfo;
-import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestsPageRequest;
 import org.unitime.timetable.solver.CommonSolverInterface;
 
 /**
  * @author Tomas Muller
  */
 public interface InstructorSchedulingProxy extends CommonSolverInterface {
-	public List<TeachingRequestInfo> getTeachingRequests(TeachingRequestsPageRequest request);
-	public List<InstructorInfo> getInstructors(Long departmentId);
+	public List<TeachingRequestInfo> getTeachingRequests(FilterRpcRequest filter);
+	public List<InstructorInfo> getInstructors(FilterRpcRequest filter);
 	public TeachingRequestInfo getTeachingRequestInfo(Long requestId);
 	public InstructorInfo getInstructorInfo(Long instructorId);
 	public void assign(List<AssignmentInfo> assignments);

@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.server.instructor;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,15 +29,16 @@ import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingAssignmentsPageRequest;
+import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestInfo;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.server.instructor.TeachingRequestsFilterBackend.TeachingRequestMatcher;
 import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.spring.SpringApplicationContextHolder;
@@ -56,48 +56,41 @@ public class TeachingAssignmentsBackend extends InstructorSchedulingBackendHelpe
 	public GwtRpcResponseList<InstructorInfo> execute(TeachingAssignmentsPageRequest request, SessionContext context) {
 		if (instructorSchedulingSolverService == null)
 			instructorSchedulingSolverService = (SolverService<InstructorSchedulingProxy>)SpringApplicationContextHolder.getBean("instructorSchedulingSolverService");
+
 		context.checkPermission(Right.InstructorScheduling);
-		if (request.getDepartmentId() == null || request.getDepartmentId() >= 0)
-			context.setAttribute(SessionAttribute.DepartmentId, request.getDepartmentId() == null ? null : String.valueOf(request.getDepartmentId()));
+		if (!request.getFilter().hasOption("instructorId")) {
+			Long departmentId = null;
+			if (request.getFilter().hasOption("departmentId")) {
+				departmentId = Long.valueOf(request.getFilter().getOption("departmentId"));
+			} else if (request.getFilter().hasOption("department")) {
+				Department department = Department.findByDeptCode(request.getFilter().getOption("department"), context.getUser().getCurrentAcademicSessionId());
+				if (department != null) {
+					departmentId = department.getUniqueId();
+					request.getFilter().setOption("departmentId", departmentId.toString());
+				}
+			}
+			context.setAttribute(SessionAttribute.DepartmentId, departmentId == null ? null : departmentId.toString());
+		}
+		if (!request.getFilter().hasSessionId())
+			request.getFilter().setSessionId(context.getUser().getCurrentAcademicSessionId());
+		
 		InstructorSchedulingProxy solver = instructorSchedulingSolverService.getSolver();
 		if (solver != null)
-			return new GwtRpcResponseList<InstructorInfo>(solver.getInstructors(request.getDepartmentId()));
+			return new GwtRpcResponseList<InstructorInfo>(solver.getInstructors(request.getFilter()));
 		else {
 			Context cx = new Context(context, solver);
+			Query q = TeachingRequestsFilterBackend.toQuery(request.getFilter());
 			
 			GwtRpcResponseList<InstructorInfo> ret = new GwtRpcResponseList<InstructorInfo>();
-			org.hibernate.Session hibSession = Class_DAO.getInstance().getSession();
-			List<DepartmentalInstructor> instructors = null;
-			if (request.getDepartmentId() == null) {
-				List<Long> departmentIds = new ArrayList<Long>();
-				for (Department d: Department.getUserDepartments(context.getUser())) {
-					for (DepartmentalInstructor di: d.getInstructors())
-						if (di.getTeachingPreference() != null && !PreferenceLevel.sProhibited.equals(di.getTeachingPreference().getPrefProlog())) {
-							departmentIds.add(d.getUniqueId());
-							break;
-						}
-				}
-				if (departmentIds.isEmpty()) return ret;
-				instructors = (List<DepartmentalInstructor>)hibSession.createQuery(
-						"select distinct i from DepartmentalInstructor i " +
-						"left join fetch i.classes as ci left join fetch ci.classInstructing as c left join fetch c.schedulingSubpart as ss " +
-						"left join fetch c.preferences as cp left join fetch ss.preferences as sp left join fetch i.preferences as ip " +
-						"where i.department.uniqueId in :departmentIds and i.teachingPreference.prefProlog != :prohibited and i.maxLoad > 0.0"
-						).setParameterList("departmentIds", departmentIds).setString("prohibited", PreferenceLevel.sProhibited).setCacheable(true).list();
-			} else if (request.getDepartmentId() >= 0) {
-				instructors = (List<DepartmentalInstructor>)hibSession.createQuery(
-						"select distinct i from DepartmentalInstructor i " +
-						"left join fetch i.classes as ci left join fetch ci.classInstructing as c left join fetch c.schedulingSubpart as ss " +
-						"left join fetch c.preferences as cp left join fetch ss.preferences as sp left join fetch i.preferences as ip " +
-				    	"where i.department.uniqueId = :departmentId and i.teachingPreference.prefProlog != :prohibited and i.maxLoad > 0.0"
-						).setLong("departmentId", request.getDepartmentId()).setString("prohibited", PreferenceLevel.sProhibited).setCacheable(true).list();
-			} else {
-				instructors = new ArrayList<DepartmentalInstructor>();
-				DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(-request.getDepartmentId());
-				if (instructor != null) instructors.add(instructor);
-			}
+			List<DepartmentalInstructor> instructors = TeachingRequestsFilterBackend.getQuery(request.getFilter(), context.getUser())
+					.select("distinct i").query(DepartmentalInstructorDAO.getInstance().getSession()).list();
 	    	for (DepartmentalInstructor instructor: instructors) {
-	    		ret.add(getInstructorInfo(instructor, cx));
+	    		InstructorInfo info = getInstructorInfo(instructor, cx);
+	    		if (info != null && q.match(new TeachingRequestMatcher(info, request.getFilter()))) {
+	    			for (TeachingRequestInfo ar: info.getAssignedRequests())
+	    				ar.setMatchingFilter(q.match(new TeachingRequestMatcher(ar, info, request.getFilter())));
+	    			ret.add(info);
+	    		}
 	    	}
 	    	Collections.sort(ret);
 	    	return ret;

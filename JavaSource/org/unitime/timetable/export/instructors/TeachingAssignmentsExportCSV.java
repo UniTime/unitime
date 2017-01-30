@@ -22,6 +22,7 @@ package org.unitime.timetable.export.instructors;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -62,8 +63,18 @@ public class TeachingAssignmentsExportCSV implements Exporter {
 	@Override
 	public void export(ExportHelper helper) throws IOException {
 		TeachingAssignmentsPageRequest request = new TeachingAssignmentsPageRequest();
+		for (Enumeration<String> e = helper.getParameterNames(); e.hasMoreElements(); ) {
+    		String command = e.nextElement();
+    		if (command.equals("r:text")) {
+    			request.getFilter().setText(helper.getParameter("r:text"));
+    		} else if (command.startsWith("r:")) {
+    			for (String value: helper.getParameterValues(command))
+    				request.getFilter().addOption(command.substring(2), value);
+    		}
+		}
+
 		if (helper.getParameter("departmentId") != null) {
-			request.setDepartmentId(Long.valueOf(helper.getParameter("departmentId")));
+			request.getFilter().setOption("departmentId", helper.getParameter("departmentId"));
 		} else if (helper.getParameter("department") != null) {
 			Long sessionId = helper.getAcademicSessionId();
 			if (sessionId == null)
@@ -71,7 +82,7 @@ public class TeachingAssignmentsExportCSV implements Exporter {
 			Department department = Department.findByDeptCode(helper.getParameter("department"), sessionId);
 			if (department == null)
 				throw new IllegalArgumentException("Department " + helper.getParameter("department") + " does not exist.");
-			request.setDepartmentId(department.getUniqueId());
+			request.getFilter().setOption("departmentId", department.getUniqueId().toString());
 		} else if (helper.getParameter("deptCode") != null) {
 			Long sessionId = helper.getAcademicSessionId();
 			if (sessionId == null)
@@ -79,7 +90,7 @@ public class TeachingAssignmentsExportCSV implements Exporter {
 			Department department = Department.findByDeptCode(helper.getParameter("deptCode"), sessionId);
 			if (department == null)
 				throw new IllegalArgumentException("Department " + helper.getParameter("deptCode") + " does not exist.");
-			request.setDepartmentId(department.getUniqueId());
+			request.getFilter().setOption("departmentId", department.getUniqueId().toString());
 		}
 		
 		List<SingleTeachingAssingment> list = new ArrayList<SingleTeachingAssingment>();
@@ -89,6 +100,7 @@ public class TeachingAssignmentsExportCSV implements Exporter {
 				list.add(new SingleTeachingAssingment(instructor, null));
 			} else {
 				for (TeachingRequestInfo req: instructor.getAssignedRequests()) {
+					if (!req.isMatchingFilter()) continue;
 					list.add(new SingleTeachingAssingment(instructor, req));
 					hasRequests = true;
 				}

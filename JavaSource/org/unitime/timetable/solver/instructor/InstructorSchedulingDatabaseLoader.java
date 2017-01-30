@@ -163,11 +163,11 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     	if (attribute == null) {
     		Attribute.Type type = iAttributeTypes.get(a.getType().getUniqueId());
     		if (type == null) {
-    			type = new Attribute.Type(a.getType().getUniqueId(), a.getType().getLabel(), a.getType().isConjunctive(), a.getType().isRequired());
+    			type = new Attribute.Type(a.getType().getUniqueId(), a.getType().getReference(), a.getType().isConjunctive(), a.getType().isRequired());
     			iAttributeTypes.put(a.getType().getUniqueId(), type);
     			getModel().addAttributeType(type);
     		}
-    		attribute = new Attribute(a.getUniqueId(), a.getName(), type);
+    		attribute = new Attribute(a.getUniqueId(), a.getCode(), type);
     		iAttributes.put(a.getUniqueId(), attribute);
     	}
     	return attribute;

@@ -144,6 +144,7 @@ public class TeachingAssignmentsTable extends UniTimeTable<SingleTeachingAssingm
 				addRow(assignment, line);
 			} else {
 				for (TeachingRequestInfo request: instructor.getAssignedRequests()) {
+					if (!request.isMatchingFilter()) continue;
 					SingleTeachingAssingment assignment = new SingleTeachingAssingment(instructor, request);
 					List<Widget> line = new ArrayList<Widget>();
 					for (COLUMN column: COLUMN.values()) {

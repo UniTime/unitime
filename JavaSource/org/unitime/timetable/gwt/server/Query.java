@@ -36,6 +36,12 @@ public class Query implements Serializable {
 		iQuery = parse(query == null ? "" : query.trim());
 	}
 	
+	public Query(Term query) {
+		iQuery = query;
+	}
+	
+	public Term getQuery() { return iQuery; }
+	
 	public boolean match(TermMatcher m) {
 		return iQuery.match(m);
 	}

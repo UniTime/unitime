@@ -49,6 +49,8 @@ import org.cpsolver.instructor.model.TeachingRequest;
 import org.dom4j.Document;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.server.Query;
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentChangesRequest;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentChangesResponse;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentInfo;
@@ -63,7 +65,6 @@ import org.unitime.timetable.gwt.shared.InstructorInterface.PreferenceInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.SectionInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.SuggestionsResponse;
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestInfo;
-import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestsPageRequest;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -71,6 +72,8 @@ import org.unitime.timetable.model.SolverParameterGroup.SolverType;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.TeachingRequestDAO;
 import org.unitime.timetable.server.instructor.InstructorSchedulingBackendHelper;
+import org.unitime.timetable.server.instructor.TeachingRequestsFilterBackend;
+import org.unitime.timetable.server.instructor.TeachingRequestsFilterBackend.TeachingRequestMatcher;
 import org.unitime.timetable.solver.AbstractSolver;
 import org.unitime.timetable.solver.SolverDisposeListener;
 
@@ -261,32 +264,33 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
 	}
 
 	@Override
-	public List<TeachingRequestInfo> getTeachingRequests(TeachingRequestsPageRequest r) {
+	public List<TeachingRequestInfo> getTeachingRequests(FilterRpcRequest filter) {
         Lock lock = currentSolution().getLock().readLock();
         lock.lock();
         try {
+        	Query q = TeachingRequestsFilterBackend.toQuery(filter);
             List<TeachingRequestInfo> ret = new ArrayList<TeachingRequestInfo>();
             for (TeachingRequest request: getModel().getRequests()) {
-            	if (r.getOfferingId() != null) {
+            	if (filter.hasOption("offeringId")) {
             		CourseOffering course = CourseOfferingDAO.getInstance().get(request.getCourse().getCourseId());
-            		if (course == null || !r.getOfferingId().equals(course.getInstructionalOffering().getUniqueId())) continue;
-            	}
-            	if (r.getSubjectAreaId() != null) {
+            		if (course == null || !filter.getOption("offeringId").equals(course.getInstructionalOffering().getUniqueId().toString())) continue;
+            	} else if (filter.hasOption("subjectId")) {
             		CourseOffering course = CourseOfferingDAO.getInstance().get(request.getCourse().getCourseId());
-            		if (course == null || !r.getSubjectAreaId().equals(course.getSubjectArea().getUniqueId())) continue;
+            		if (course == null || !filter.getOption("subjectId").equals(course.getSubjectArea().getUniqueId().toString())) continue;
+            	} else if (filter.hasOption("subject")) {
+            		CourseOffering course = CourseOfferingDAO.getInstance().get(request.getCourse().getCourseId());
+            		if (course == null || !filter.getOption("subject").equalsIgnoreCase(course.getSubjectAreaAbbv())) continue;
             	}
             	TeachingRequestInfo info = toRequestInfo(request);
             	for (TeachingRequest.Variable var: request.getVariables()) {
             		TeachingAssignment placement = currentSolution().getAssignment().getValue(var);
-            		if (placement != null)
-            			info.addInstructor(toInstructorInfo(placement));
+            		if (placement != null) {
+            			InstructorInfo ii = toInstructorInfo(placement);
+            			ii.setMatchingFilter(q.match(new TeachingRequestMatcher(info, ii, filter)));
+            			info.addInstructor(ii);
+            		}
             	}
-            	if (r.getOfferingId() != null || !r.hasAssigned())
-            		ret.add(info);
-            	else if (r.isAssigned() && info.hasInstructors())
-            		ret.add(info);
-            	if (!r.isAssigned() && info.getNrAssignedInstructors() < info.getNrInstructors())
-            		ret.add(info);
+            	if (q.match(new TeachingRequestMatcher(info, filter))) ret.add(info);
             }
             return ret;
         } finally {
@@ -295,20 +299,23 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
 	}
 	
 	@Override
-	public List<InstructorInfo> getInstructors(Long departmentId) {
+	public List<InstructorInfo> getInstructors(FilterRpcRequest filter) {
         Lock lock = currentSolution().getLock().readLock();
         lock.lock();
         try {
+        	Query q = TeachingRequestsFilterBackend.toQuery(filter);
         	List<InstructorInfo> ret = new ArrayList<InstructorInfo>();
         	Set<Long> instructorIds = null;
-        	if (departmentId != null) {
-        		if (departmentId < 0) {
-        			instructorIds = new HashSet<Long>(); instructorIds.add(-departmentId);
-        		} else {
-        			instructorIds = new HashSet<Long>(CourseOfferingDAO.getInstance().getSession().createQuery(
-        					"select i.uniqueId from DepartmentalInstructor i where i.department.uniqueId = :departmentId"
-        					).setLong("departmentId", departmentId).list());
-        		}
+        	if (filter.hasOption("instructorId")) {
+        		instructorIds = new HashSet<Long>(); instructorIds.add(Long.valueOf(filter.getOption("instructorId")));
+        	} else if (filter.hasOption("departmentId")) {
+        		instructorIds = new HashSet<Long>(CourseOfferingDAO.getInstance().getSession().createQuery(
+        				"select i.uniqueId from DepartmentalInstructor i where i.department.uniqueId = :departmentId"
+        					).setLong("departmentId", Long.valueOf(filter.getOption("departmentId"))).list());
+        	} else if (filter.hasOption("department")) {
+        		instructorIds = new HashSet<Long>(CourseOfferingDAO.getInstance().getSession().createQuery(
+        				"select i.uniqueId from DepartmentalInstructor i where i.department.deptCode = :deptCode and i.department.session.uniqueId = :sessionId"
+        					).setString("deptCode", filter.getOption("department")).setLong("sessionId", filter.getSessionId()).list());
         	}
         	InstructorSchedulingModel model = (InstructorSchedulingModel)currentSolution().getModel();
         	for (Instructor instructor: model.getInstructors()) {
@@ -326,9 +333,10 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
     						info.addValue(c.getName(), value);
     					}
     				}
+    				request.setMatchingFilter(q.match(new TeachingRequestMatcher(request, info, filter)));
         			info.addAssignedRequest(request);
     			}
-        		ret.add(info);
+    			if (q.match(new TeachingRequestMatcher(info, filter)))  ret.add(info);
         	}
             return ret;
         } finally {

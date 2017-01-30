@@ -52,7 +52,7 @@ public class TeachingAssignmentsWidget extends SimpleForm {
 	
 	private UniTimeHeaderPanel iHeader;
 	private TeachingAssignmentsTable iTable;
-	private Long iInstructorId;
+	private String iInstructorId;
 	
 	public TeachingAssignmentsWidget() {
 		iHeader = new UniTimeHeaderPanel(MESSAGES.sectTeachingAssignments());
@@ -76,7 +76,7 @@ public class TeachingAssignmentsWidget extends SimpleForm {
 	}
 	
 	public void insert(final RootPanel panel) {
-		iInstructorId = Long.valueOf(panel.getElement().getInnerText());
+		iInstructorId = panel.getElement().getInnerText();
 		if (InstructorCookie.getInstance().isShowTeachingAssignments()) {
 			refresh();
 		}
@@ -120,7 +120,9 @@ public class TeachingAssignmentsWidget extends SimpleForm {
 	}
 	
 	protected void populate() {
-		RPC.execute(new TeachingAssignmentsPageRequest(-iInstructorId), new AsyncCallback<GwtRpcResponseList<InstructorInfo>>() {
+		TeachingAssignmentsPageRequest req = new TeachingAssignmentsPageRequest();
+		req.getFilter().setOption("instructorId", iInstructorId);
+		RPC.execute(req, new AsyncCallback<GwtRpcResponseList<InstructorInfo>>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				iHeader.setCollapsible(null);

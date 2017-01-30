@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AssignmentInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorInfo;
@@ -63,14 +64,8 @@ public class TeachingRequestsTable extends UniTimeTable<SingleTeachingAssingment
 	
 	private TeachingRequestDetailPage iDetail = null;
 	private TeachingRequestsPagePropertiesResponse iProperties;
-	private Boolean iAssigned;
 	
 	public TeachingRequestsTable() {
-		this(null);
-	}
-	
-	public TeachingRequestsTable(Boolean assigned) {
-		iAssigned = assigned;
 		addStyleName("unitime-TeachingRequests");
 		addMouseClickListener(new MouseClickListener<SingleTeachingAssingment>() {
 			@Override
@@ -102,20 +97,21 @@ public class TeachingRequestsTable extends UniTimeTable<SingleTeachingAssingment
 		iProperties = properties;
 	}
 	
-	void populate(GwtRpcResponseList<TeachingRequestInfo> results) {
+	void populate(GwtRpcResponseList<TeachingRequestInfo> results, FilterRpcRequest filter) {
+		final Boolean assigned = (filter != null && filter.hasOption("assigned") ? new Boolean("true".equalsIgnoreCase(filter.getOption("assigned"))) : null);
 		clearTable();
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		UniTimeTableHeader sortHeader = null; COLUMN sortColumn = null; boolean asc = true;
-		int sort = InstructorCookie.getInstance().getSortTeachingRequestsBy(iAssigned);
+		int sort = InstructorCookie.getInstance().getSortTeachingRequestsBy(assigned);
 		for (final COLUMN column: COLUMN.values())
-			if (column.isVisible(iAssigned)) {
+			if (column.isVisible(assigned)) {
 				final UniTimeTableHeader h = getHeader(column);
 				h.addOperation(new UniTimeTableHeader.Operation() {
 					@Override
 					public void execute() {
 						sort(h, new TableComparator(column));
-						InstructorCookie.getInstance().setSortTeachingRequestsBy(iAssigned, h.getOrder() ? 1 + column.ordinal() : -1 - column.ordinal());
-						hideDuplicateRequests();
+						InstructorCookie.getInstance().setSortTeachingRequestsBy(assigned, h.getOrder() ? 1 + column.ordinal() : -1 - column.ordinal());
+						hideDuplicateRequests(assigned);
 					}
 					@Override
 					public boolean isApplicable() {
@@ -138,13 +134,13 @@ public class TeachingRequestsTable extends UniTimeTable<SingleTeachingAssingment
 		addRow(null, header);
 		boolean hasInstructor = false;
 		for (TeachingRequestInfo request: results) {
-			if (iAssigned == null) {
+			if (assigned == null) {
 				if (request.hasInstructors()) {
 					for (InstructorInfo instructor: request.getInstructors()) {
 						hasInstructor = true;
 						List<Widget> line = new ArrayList<Widget>();
 						for (COLUMN column: COLUMN.values()) {
-							if (column.isVisible(iAssigned)) {
+							if (column.isVisible(assigned)) {
 								Widget cell = getCell(column, request, instructor);
 								if (cell == null) cell = new Label();
 								line.add(cell);
@@ -157,7 +153,7 @@ public class TeachingRequestsTable extends UniTimeTable<SingleTeachingAssingment
 				} else {
 					List<Widget> line = new ArrayList<Widget>();
 					for (COLUMN column: COLUMN.values()) {
-						if (column.isVisible(iAssigned)) {
+						if (column.isVisible(assigned)) {
 							Widget cell = getCell(column, request, null);
 							if (cell == null) cell = new Label();
 							line.add(cell);
@@ -165,11 +161,12 @@ public class TeachingRequestsTable extends UniTimeTable<SingleTeachingAssingment
 					}
 					addRow(new SingleTeachingAssingment(null, request), line);
 				}
-			} else if (iAssigned && request.hasInstructors())
+			} else if (assigned && request.hasInstructors())
 				for (InstructorInfo instructor: request.getInstructors()) {
+					if (!instructor.isMatchingFilter()) continue;
 					List<Widget> line = new ArrayList<Widget>();
 					for (COLUMN column: COLUMN.values()) {
-						if (column.isVisible(iAssigned)) {
+						if (column.isVisible(assigned)) {
 							Widget cell = getCell(column, request, instructor);
 							if (cell == null) cell = new Label();
 							line.add(cell);
@@ -179,10 +176,10 @@ public class TeachingRequestsTable extends UniTimeTable<SingleTeachingAssingment
 					if (instructor.isConflict())
 						getRowFormatter().addStyleName(row, "enrollment-conflict");
 				}
-			else if (!iAssigned && request.getNrAssignedInstructors() < request.getNrInstructors()) {
+			else if (!assigned && request.getNrAssignedInstructors() < request.getNrInstructors()) {
 				List<Widget> line = new ArrayList<Widget>();
 				for (COLUMN column: COLUMN.values()) {
-					if (column.isVisible(iAssigned)) {
+					if (column.isVisible(assigned)) {
 						Widget cell = getCell(column, request, null);
 						if (cell == null) cell = new Label();
 						line.add(cell);
@@ -195,21 +192,21 @@ public class TeachingRequestsTable extends UniTimeTable<SingleTeachingAssingment
 			sort(sortHeader, new TableComparator(sortColumn), asc);
 		int col = 0;
 		for (final COLUMN column: COLUMN.values())
-			if (column.isVisible(iAssigned)) {
+			if (column.isVisible(assigned)) {
 				final UniTimeTableHeader h = header.get(col);
 				final int colIdx = col;
 				if (column.isCanHide()) {
 					header.get(0).getOperations().add(header.get(0).getOperations().size() - 1, new UniTimeTableHeader.Operation() {
 						@Override
 						public void execute() {
-							boolean visible = !InstructorCookie.getInstance().isTeachingRequestsColumnVisible(iAssigned, column.ordinal());
-							InstructorCookie.getInstance().setTeachingRequestsColumnVisible(iAssigned, column.ordinal(), visible);
+							boolean visible = !InstructorCookie.getInstance().isTeachingRequestsColumnVisible(assigned, column.ordinal());
+							InstructorCookie.getInstance().setTeachingRequestsColumnVisible(assigned, column.ordinal(), visible);
 							setColumnVisible(colIdx, visible);
 							if (COLUMN.NAME == column && !visible) {
-								InstructorCookie.getInstance().setTeachingRequestsColumnVisible(iAssigned, COLUMN.EXTERNAL_ID.ordinal(), true);
+								InstructorCookie.getInstance().setTeachingRequestsColumnVisible(assigned, COLUMN.EXTERNAL_ID.ordinal(), true);
 								setColumnVisible(colIdx - 1, true);
 							} else if (COLUMN.EXTERNAL_ID == column && !visible) {
-								InstructorCookie.getInstance().setTeachingRequestsColumnVisible(iAssigned, COLUMN.NAME.ordinal(), true);
+								InstructorCookie.getInstance().setTeachingRequestsColumnVisible(assigned, COLUMN.NAME.ordinal(), true);
 								setColumnVisible(colIdx + 1, true);
 							}
 						}
@@ -223,7 +220,7 @@ public class TeachingRequestsTable extends UniTimeTable<SingleTeachingAssingment
 						}
 						@Override
 						public String getName() {
-							if (InstructorCookie.getInstance().isTeachingRequestsColumnVisible(iAssigned, column.ordinal()))
+							if (InstructorCookie.getInstance().isTeachingRequestsColumnVisible(assigned, column.ordinal()))
 								return MESSAGES.opHide(h.getHTML().replace("<br>", " "));
 							else
 								return MESSAGES.opShow(h.getHTML().replace("<br>", " "));
@@ -232,14 +229,14 @@ public class TeachingRequestsTable extends UniTimeTable<SingleTeachingAssingment
 					h.addOperation(new UniTimeTableHeader.Operation() {
 						@Override
 						public void execute() {
-							boolean visible = !InstructorCookie.getInstance().isTeachingRequestsColumnVisible(iAssigned, column.ordinal());
-							InstructorCookie.getInstance().setTeachingRequestsColumnVisible(iAssigned, column.ordinal(), visible);
+							boolean visible = !InstructorCookie.getInstance().isTeachingRequestsColumnVisible(assigned, column.ordinal());
+							InstructorCookie.getInstance().setTeachingRequestsColumnVisible(assigned, column.ordinal(), visible);
 							setColumnVisible(colIdx, visible);
 							if (COLUMN.NAME == column && !visible) {
-								InstructorCookie.getInstance().setTeachingRequestsColumnVisible(iAssigned, COLUMN.EXTERNAL_ID.ordinal(), true);
+								InstructorCookie.getInstance().setTeachingRequestsColumnVisible(assigned, COLUMN.EXTERNAL_ID.ordinal(), true);
 								setColumnVisible(colIdx - 1, true);
 							} else if (COLUMN.EXTERNAL_ID == column && !visible) {
-								InstructorCookie.getInstance().setTeachingRequestsColumnVisible(iAssigned, COLUMN.NAME.ordinal(), true);
+								InstructorCookie.getInstance().setTeachingRequestsColumnVisible(assigned, COLUMN.NAME.ordinal(), true);
 								setColumnVisible(colIdx + 1, true);
 							}
 						}
@@ -253,7 +250,7 @@ public class TeachingRequestsTable extends UniTimeTable<SingleTeachingAssingment
 						}
 						@Override
 						public String getName() {
-							if (InstructorCookie.getInstance().isTeachingRequestsColumnVisible(iAssigned, column.ordinal()))
+							if (InstructorCookie.getInstance().isTeachingRequestsColumnVisible(assigned, column.ordinal()))
 								return MESSAGES.opHideItem(h.getHTML().replace("<br>", " "));
 							else
 								return MESSAGES.opShowItem(h.getHTML().replace("<br>", " "));
@@ -261,16 +258,16 @@ public class TeachingRequestsTable extends UniTimeTable<SingleTeachingAssingment
 					});
 							
 				}
-				setColumnVisible(col, !column.isCanHide() || InstructorCookie.getInstance().isTeachingRequestsColumnVisible(iAssigned, column.ordinal()));
-				if (iAssigned == null && !hasInstructor && column.isCanHide() && column.isHasInstructor())
+				setColumnVisible(col, !column.isCanHide() || InstructorCookie.getInstance().isTeachingRequestsColumnVisible(assigned, column.ordinal()));
+				if (assigned == null && !hasInstructor && column.isCanHide() && column.isHasInstructor())
 					setColumnVisible(col, false);
 				col ++;
 			}
-		hideDuplicateRequests();
+		hideDuplicateRequests(assigned);
 	}
 	
-	public void hideDuplicateRequests() {
-		if (iAssigned != null && !iAssigned) return;
+	public void hideDuplicateRequests(Boolean assigned) {
+		if (assigned != null && !assigned) return;
 		TeachingRequestInfo last = null;
 		for (int i = 0; i < getRowCount(); i++) {
 			SingleTeachingAssingment ta = getData(i);
