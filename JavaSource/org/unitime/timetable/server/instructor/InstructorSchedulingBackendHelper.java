@@ -549,22 +549,32 @@ public class InstructorSchedulingBackendHelper {
 			for (InstructorAssignment ia: assignments)
 				if (!ia.sameCourse(tr)) return PreferenceLevel.sProhibited;
 			return PreferenceLevel.sNeutral;
+		} else if (PreferenceLevel.sStronglyPreferred.equals(tr.getSameCommonPart().getPrefProlog()) || PreferenceLevel.sPreferred.equals(tr.getSameCommonPart().getPrefProlog())) {
+			for (InstructorAssignment ia: assignments)
+				if (!ia.sameCourse(tr)) return PreferenceLevel.sNeutral;
+			return tr.getSameCoursePreference().getPrefProlog();
+		} else {
+			for (InstructorAssignment ia: assignments)
+				if (ia.sameCourse(tr)) return tr.getSameCoursePreference().getPrefProlog();
+			return PreferenceLevel.sNeutral;
 		}
-		for (InstructorAssignment ia: assignments)
-			if (!ia.sameCourse(tr)) return Constants.sPreferenceNeutral;
-		return tr.getSameCoursePreference().getPrefProlog();
 	}
 	
 	public String getSameCommonPreference(DepartmentalInstructor instructor, TeachingRequest tr, List<InstructorAssignment> assignments) {
 		if (assignments == null || assignments.size() < 2 || tr.getSameCommonPart() == null) return Constants.sPreferenceNeutral;
-		if (PreferenceLevel.sRequired.equals(tr.getSameCoursePreference().getPrefProlog())) {
+		if (PreferenceLevel.sRequired.equals(tr.getSameCommonPart().getPrefProlog())) {
 			for (InstructorAssignment ia: assignments)
 				if (ia.sameCourse(tr) && !ia.sameCommon(tr)) return PreferenceLevel.sProhibited;
-			return PreferenceLevel.sNeutral;	
+			return PreferenceLevel.sNeutral;
+		} else if (PreferenceLevel.sStronglyPreferred.equals(tr.getSameCommonPart().getPrefProlog()) || PreferenceLevel.sPreferred.equals(tr.getSameCommonPart().getPrefProlog())) {
+			for (InstructorAssignment ia: assignments)
+				if (ia.sameCourse(tr) && !ia.sameCommon(tr)) return PreferenceLevel.sNeutral;
+			return tr.getSameCommonPart().getPrefProlog();
+		} else {
+			for (InstructorAssignment ia: assignments)
+				if (ia.sameCourse(tr) && ia.shareCommon(tr)) return tr.getSameCommonPart().getPrefProlog();
+			return PreferenceLevel.sNeutral;
 		}
-		for (InstructorAssignment ia: assignments)
-			if (ia.sameCourse(tr) && !ia.sameCommon(tr)) return Constants.sPreferenceNeutral;
-		return tr.getSameCommonPart().getPrefProlog();
 	}
 	
 	protected boolean canTeach(DepartmentalInstructor instructor, TeachingRequest request, Context context) {
@@ -743,28 +753,25 @@ public class InstructorSchedulingBackendHelper {
 		}
 		
 		private boolean sameCommon(TeachingRequest other) {
-			for (TeachingClassRequest c1: getTeachingRequest().getClassRequests()) {
-				for (TeachingClassRequest c2: other.getClassRequests()) {
-					if ((c1.isCommon() || c2.isCommon()) &&
-						c1.getTeachingClass().getSchedulingSubpart().equals(c2.getTeachingClass().getSchedulingSubpart()) &&
-						!c1.getTeachingClass().equals(c2.getTeachingClass()))
-						return false;
-					if ((c1.isCommon() || c2.isCommon()) &&
-						!c1.getTeachingClass().getSchedulingSubpart().getInstrOfferingConfig().equals(c2.getTeachingClass().getSchedulingSubpart().getInstrOfferingConfig()))
-						return false;
-				}
+			c1: for (TeachingClassRequest c1: getTeachingRequest().getClassRequests()) {
+				if (!c1.isCommon()) continue;
+				for (TeachingClassRequest c2: other.getClassRequests())
+					if (c1.getTeachingClass().equals(c2.getTeachingClass())) continue c1;
+				return false;
+			}
+			c2: for (TeachingClassRequest c2: other.getClassRequests()) {
+				if (!c2.isCommon()) continue;
+				for (TeachingClassRequest c1: getTeachingRequest().getClassRequests())
+					if (c1.getTeachingClass().equals(c2.getTeachingClass())) continue c2;
+				return false;
 			}
 			return true;
 		}
 		
 		private boolean shareCommon(TeachingRequest other) {
 			for (TeachingClassRequest c1: getTeachingRequest().getClassRequests()) {
-				for (TeachingClassRequest c2: other.getClassRequests()) {
-					if ((c1.isCommon() || c2.isCommon()) &&
-						c1.getTeachingClass().getSchedulingSubpart().equals(c2.getTeachingClass().getSchedulingSubpart()) &&
-						c1.getTeachingClass().equals(c2.getTeachingClass()))
-						return true;
-				}
+				for (TeachingClassRequest c2: other.getClassRequests())
+					if ((c1.isCommon() || c2.isCommon()) && c1.getTeachingClass().equals(c2.getTeachingClass())) return true;
 			}
 			return false;
 		}
@@ -866,7 +873,7 @@ public class InstructorSchedulingBackendHelper {
             		if (!ta.sameCourse(assignment.getTeachingRequest())) { conflicts.add(ta); continue; }
             	}
             	// different course
-            	if (assignment.isSameCourseProhibited() || ta.isSameCommonProhibited()) {
+            	if (assignment.isSameCourseProhibited() || ta.isSameCourseProhibited()) {
             		if (ta.sameCourse(assignment.getTeachingRequest())) { conflicts.add(ta); continue; }
             	}
             	if (ta.sameCourse(assignment.getTeachingRequest())) {
