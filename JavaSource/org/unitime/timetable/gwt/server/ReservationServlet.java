@@ -462,10 +462,10 @@ public class ReservationServlet implements ReservationService {
 			for (Object[] o: (List<Object[]>)hibSession.createQuery(
 					"select count(distinct s), m.code, f.code from " +
 					"LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a inner join s.posMajors m " +
-					"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co where " +
+					"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co left outer join co.demandOffering do where " +
 					"x.subjectArea.session.uniqueId = :sessionId and co.instructionalOffering.uniqueId = :offeringId and "+
-					"co.subjectArea.uniqueId = x.subjectArea.uniqueId and " +
-					"((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr)) " +
+					"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
+					"(do is not null and do.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and do.permId=x.coursePermId) or (x.coursePermId is null and do.courseNbr=x.courseNbr))))"+
 					"and r.academicAreaAbbreviation = :areaAbbv" +
 					(mjCodes.isEmpty() ? "" : " and m.code in (" + mjCodes + ")") +
 					(cfCodes.isEmpty() ? "" : " and f.code in (" + cfCodes + ")") +
@@ -502,10 +502,10 @@ public class ReservationServlet implements ReservationService {
 				r.setEnrollment(enrollment.intValue());
 			Number lastLike = (Number)hibSession.createQuery(
 					"select count(distinct s) from " +
-					"LastLikeCourseDemand x inner join x.student s inner join s.groups g, CourseOffering co where " +
+					"LastLikeCourseDemand x inner join x.student s inner join s.groups g, CourseOffering co left outer join co.demandOffering do where " +
 					"x.subjectArea.session.uniqueId = :sessionId and co.instructionalOffering.uniqueId = :offeringId and "+
-					"co.subjectArea.uniqueId = x.subjectArea.uniqueId and " +
-					"((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr)) " +
+					"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
+					"(do is not null and do.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and do.permId=x.coursePermId) or (x.coursePermId is null and do.courseNbr=x.courseNbr))))"+
 					"and g.groupAbbreviation = :groupAbbv")
 					.setLong("sessionId", getAcademicSessionId())
 					.setLong("offeringId", reservation.getInstructionalOffering().getUniqueId())
