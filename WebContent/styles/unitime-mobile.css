@@ -319,13 +319,13 @@
 
 	.unitime-CourseRequests .line .course .unitime-FilterBox {
 		width: 70vw;
-		width: calc(99vw - 150px);
+		width: calc(99vw - 160px);
 		min-width: 150px;
 	}
 
 	.unitime-CourseRequests .alt-line .course .unitime-FilterBox {
 		width: 70vw;
-		width: calc(99vw - 200px);
+		width: calc(99vw - 210px);
 		min-width: 100px;
 	}
 	

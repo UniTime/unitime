@@ -3329,7 +3329,14 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-ImageButton-disabled {
-  cursor: default;
+	cursor: default;
+}
+
+.unitime-ImageButton-focus:focus {
+	outline: none;
+	-moz-box-shadow: 0 0 2px 1px #7ba7d4;
+	-webkit-box-shadow: 0 0 2px 1px #7ba7d4;
+	box-shadow: 0 0 2px 1px #7ba7d4;
 }
 
 .unitime-ImageButton .gwt-Image {
@@ -4811,7 +4818,7 @@ unitime-RoomSharingWidget .legend .blank {
 	font-style: italic;
 	text-align: right;
 	overflow: hidden;
-	padding-right: 10px;
+	padding-right: 20px;
 	padding-top: 3px;
 }
 
@@ -4825,6 +4832,7 @@ unitime-RoomSharingWidget .legend .blank {
 	text-align: right;
 	padding: 2px 2px 2px 0px;
 	vertical-align: top;
+	margin-top: 3px;
 }
 
 .unitime-CourseRequests .alt-line .title {
@@ -4833,6 +4841,7 @@ unitime-RoomSharingWidget .legend .blank {
 	text-align: right;
 	padding: 2px 2px 2px 0px;
 	vertical-align: top;
+	margin-top: 3px;
 }
 
 .unitime-CourseRequests .line .course {
@@ -4887,19 +4896,19 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-CourseRequests .line .blank {
 	display: inline-block;
 	width: 19px;
-	padding: 2px;
+	margin: 2px 2px 0px 2px;
 }
 
 .unitime-CourseRequests .line .up {
-	padding: 2px;
+	margin: 2px 2px 0px 2px;
 }
 
 .unitime-CourseRequests .line .down {
-	padding: 2px;
+	margin: 2px 2px 0px 2px;
 }
 
 .unitime-CourseRequests .line .delete {
-	padding: 2px;
+	margin: 2px 2px 0px 2px;
 	text-align: right;
 }
 

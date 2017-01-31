@@ -22,6 +22,11 @@ package org.unitime.timetable.gwt.client.aria;
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.HasAllFocusHandlers;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.dom.client.MouseOutEvent;
@@ -30,6 +35,7 @@ import com.google.gwt.event.dom.client.MouseOverEvent;
 import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
@@ -40,7 +46,7 @@ import com.google.gwt.user.client.ui.Image;
 /**
  * @author Tomas Muller
  */
-public class ImageButton extends Image implements HasEnabled, Focusable, HasAriaLabel {
+public class ImageButton extends Image implements HasEnabled, Focusable, HasAriaLabel, HasAllFocusHandlers {
 	private ImageResource iUp = null, iDown = null, iOver = null, iDisabled = null;
 	private boolean iEnabled = true, iFocusing = false;
 	
@@ -75,6 +81,21 @@ public class ImageButton extends Image implements HasEnabled, Focusable, HasAria
 		addMouseUpHandler(new MouseUpHandler() {
 			@Override
 			public void onMouseUp(MouseUpEvent event) {
+				if (isEnabled())
+					setResource(iUp);
+			}
+		});
+		addStyleName("unitime-ImageButton-focus");
+		addFocusHandler(new FocusHandler() {
+			@Override
+			public void onFocus(FocusEvent event) {
+				if (isEnabled() && iOver != null)
+					setResource(iOver);
+			}
+		});
+		addBlurHandler(new BlurHandler() {
+			@Override
+			public void onBlur(BlurEvent event) {
 				if (isEnabled())
 					setResource(iUp);
 			}
@@ -183,5 +204,15 @@ public class ImageButton extends Image implements HasEnabled, Focusable, HasAria
 		super.setAltText(altText);
 		if (getTitle() == null || getTitle().isEmpty())
 			setTitle(altText);
+	}
+
+	@Override
+	public HandlerRegistration addFocusHandler(FocusHandler handler) {
+		return addDomHandler(handler, FocusEvent.getType());
+	}
+
+	@Override
+	public HandlerRegistration addBlurHandler(BlurHandler handler) {
+		return addDomHandler(handler, BlurEvent.getType());
 	}
 }
