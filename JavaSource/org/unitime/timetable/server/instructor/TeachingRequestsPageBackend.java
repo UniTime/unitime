@@ -83,8 +83,9 @@ public class TeachingRequestsPageBackend extends InstructorSchedulingBackendHelp
 	    		if (tr.isCancelled()) continue;
 	    		TeachingRequestInfo info = getRequest(tr, cx, true);
 	    		if (info != null && q.match(new TeachingRequestMatcher(info, request.getFilter()))) {
-    				for (InstructorInfo ii: info.getInstructors())
-    					ii.setMatchingFilter(q.match(new TeachingRequestMatcher(info, ii, request.getFilter())));
+	    			if (info.hasInstructors())
+	    				for (InstructorInfo ii: info.getInstructors())
+	    					ii.setMatchingFilter(q.match(new TeachingRequestMatcher(info, ii, request.getFilter())));
 	    			ret.add(info);
 	    		}
 	    	}
