@@ -276,6 +276,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				course.setEnrollment(c.getEnrollment());
 				course.setLastLike(c.getDemand());
 				results.add(course);
+				for (InstrOfferingConfig config: c.getInstructionalOffering().getInstrOfferingConfigs()) {
+					if (config.getInstructionalMethod() != null)
+						course.addInstructionalMethod(config.getInstructionalMethod().getUniqueId(), config.getInstructionalMethod().getLabel());
+					else
+						course.setHasNoInstructionalMethod(true);
+				}
 				if (parent != null && limit != null && limit > 0 && results.size() >= limit) break;
 			}
 			if (results.isEmpty()) {
@@ -366,6 +372,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				ClassAssignmentInterface.ClassAssignment a = new ClassAssignmentInterface.ClassAssignment();
 				a.setClassId(clazz.getUniqueId());
 				a.setSubpart(clazz.getSchedulingSubpart().getItypeDesc());
+				if (clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() != null)
+					a.setSubpart(clazz.getSchedulingSubpart().getItypeDesc() + " (" + clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getLabel() + ")");
 				a.setSection(clazz.getClassSuffix(courseOffering));
 				a.setClassNumber(clazz.getSectionNumberString(hibSession));
 				a.addNote(clazz.getSchedulePrintNote());
