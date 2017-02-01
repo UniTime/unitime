@@ -36,6 +36,7 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ChangeLog.Operation;
 import org.unitime.timetable.model.ChangeLog.Source;
 import org.unitime.timetable.model.TeachingResponsibility;
+import org.unitime.timetable.model.TeachingResponsibility.Option;
 import org.unitime.timetable.model.dao.TeachingResponsibilityDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -60,7 +61,10 @@ public class TeachingResponsibilities implements AdminTable {
 				new Field(MESSAGES.fieldName(), FieldType.text, 300, 60, Flag.UNIQUE, Flag.NOT_EMPTY),
 				new Field(MESSAGES.fieldAbbreviation(), FieldType.text, 200, 40),
 				new Field(MESSAGES.fieldInstructor(), FieldType.toggle, 40),
-				new Field(MESSAGES.fieldCoordinator(), FieldType.toggle, 40)
+				new Field(MESSAGES.fieldCoordinator(), FieldType.toggle, 40),
+				new Field(MESSAGES.fieldAuxiliaryNoReport(), FieldType.toggle, 40),
+				new Field(MESSAGES.fieldHideInEvents(), FieldType.toggle, 40),
+				new Field(MESSAGES.fieldNoExport(), FieldType.toggle, 40)
 				);
 		data.setSortBy(1);
 		for (TeachingResponsibility responsibility: TeachingResponsibilityDAO.getInstance().findAll()) {
@@ -70,6 +74,10 @@ public class TeachingResponsibilities implements AdminTable {
 			r.setField(2, responsibility.getAbbreviation());
 			r.setField(3, responsibility.isInstructor() ? "true" : "false");
 			r.setField(4, responsibility.isCoordinator() ? "true" : "false");
+			r.setField(5, responsibility.hasOption(Option.auxiliary) ? "true" : "false");
+			r.setField(6, responsibility.hasOption(Option.noevents) ? "true" : "false");
+			r.setField(7, responsibility.hasOption(Option.noexport) ? "true" : "false");
+			r.setDeletable(!responsibility.isUsed());
 		}
 		data.setEditable(context.hasPermission(Right.TeachingResponsibilityEdit));
 		return data;
@@ -88,6 +96,14 @@ public class TeachingResponsibilities implements AdminTable {
 		for (Record r: data.getNewRecords())
 			save(r, context, hibSession);		
 	}
+	
+	protected static Integer options(Record record) {
+		int ret = 0;
+		if ("true".equals(record.getField(5))) ret += Option.auxiliary.toggle();
+		if ("true".equals(record.getField(6))) ret += Option.noevents.toggle();
+		if ("true".equals(record.getField(7))) ret += Option.noexport.toggle();
+		return ret;
+	}
 
 	@Override
 	@PreAuthorize("checkPermission('TeachingResponsibilityEdit')")
@@ -98,6 +114,7 @@ public class TeachingResponsibilities implements AdminTable {
 		responsibility.setAbbreviation(record.getField(2));
 		responsibility.setInstructor("true".equals(record.getField(3)));
 		responsibility.setCoordinator("true".equals(record.getField(4)));
+		responsibility.setOptions(options(record));
 		record.setUniqueId((Long)hibSession.save(responsibility));
 		ChangeLog.addChange(hibSession,
 				context,
@@ -115,12 +132,14 @@ public class TeachingResponsibilities implements AdminTable {
 			ToolBox.equals(responsibility.getLabel(), record.getField(1)) &&
 			ToolBox.equals(responsibility.getAbbreviation(), record.getField(2)) &&
 			ToolBox.equals(responsibility.isInstructor(), "true".equals(record.getField(3))) &&
-			ToolBox.equals(responsibility.isCoordinator(), "true".equals(record.getField(4)))) return;
+			ToolBox.equals(responsibility.isCoordinator(), "true".equals(record.getField(4))) &&
+			ToolBox.equals(responsibility.getOptions(), options(record))) return;
 		responsibility.setReference(record.getField(0));
 		responsibility.setLabel(record.getField(1));
 		responsibility.setAbbreviation(record.getField(2));
 		responsibility.setInstructor("true".equals(record.getField(3)));
 		responsibility.setCoordinator("true".equals(record.getField(4)));
+		responsibility.setOptions(options(record));
 		hibSession.saveOrUpdate(responsibility);
 		ChangeLog.addChange(hibSession,
 				context,

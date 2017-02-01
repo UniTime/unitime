@@ -159,6 +159,7 @@ public class PointInTimeDataExport extends BaseExport {
 	public static String sTeachingResponsibilityElementName = "teachingResponsibility";
 	public static String sInstructorAttribute = "instructor";
 	public static String sCoordinatorAttribute = "coordinator";
+	public static String sOptionsAttribute = "options";
 	public static String sInstructionalMethodsElementName = "instructionalMethods";
 	public static String sInstructionalMethodElementName = "instructionalMethod";
 	public static String sVisibleAttribute = "visible";
@@ -1281,6 +1282,7 @@ public class PointInTimeDataExport extends BaseExport {
     	responsibilityElement.addAttribute(sAbbreviationAttribute, responsibility.getAbbreviation());
     	responsibilityElement.addAttribute(sInstructorAttribute, (responsibility.isInstructor()?"true":"false"));
     	responsibilityElement.addAttribute(sCoordinatorAttribute, (responsibility.isCoordinator()?"true":"false"));
+    	responsibilityElement.addAttribute(sOptionsAttribute, responsibility.getOptions().toString());
 
     	teachingResponsibilityElements.put(responsibility.getUniqueId(), responsibilityElement);
 	}

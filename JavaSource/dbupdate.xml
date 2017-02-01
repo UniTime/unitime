@@ -12275,5 +12275,10 @@
 			select distinct r.role_id, 'PointInTimeDataReports'
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'HQLReports'
 		</sql>		
+	</update>
+	<update version="172" date="1-Feb-2017" comment="Teachning Responsibility Options">
+		<mysql>alter table %SCHEMA%.teaching_responsibility add options int(10) not null default 0</mysql>
+		<plsql>alter table %SCHEMA%.teaching_responsibility add options number(10,0) default 0</plsql>
+		<plsql>alter table %SCHEMA%.teaching_responsibility add constraint nn_responsibility_options check (options is not null)</plsql>
 	</update>	
 </dbupdate>

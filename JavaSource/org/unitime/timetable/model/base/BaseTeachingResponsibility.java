@@ -34,11 +34,13 @@ public abstract class BaseTeachingResponsibility extends RefTableEntry implement
 	private Boolean iCoordinator;
 	private Boolean iInstructor;
 	private String iAbbreviation;
+	private Integer iOptions;
 
 
 	public static String PROP_COORDINATOR = "coordinator";
 	public static String PROP_INSTRUCTOR = "instructor";
 	public static String PROP_ABBREVIATION = "abbreviation";
+	public static String PROP_OPTIONS = "options";
 
 	public BaseTeachingResponsibility() {
 		initialize();
@@ -62,6 +64,9 @@ public abstract class BaseTeachingResponsibility extends RefTableEntry implement
 	public String getAbbreviation() { return iAbbreviation; }
 	public void setAbbreviation(String abbreviation) { iAbbreviation = abbreviation; }
 
+	public Integer getOptions() { return iOptions; }
+	public void setOptions(Integer options) { iOptions = options; }
+
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof TeachingResponsibility)) return false;
 		if (getUniqueId() == null || ((TeachingResponsibility)o).getUniqueId() == null) return false;
@@ -83,6 +88,7 @@ public abstract class BaseTeachingResponsibility extends RefTableEntry implement
 			"\n	Coordinator: " + getCoordinator() +
 			"\n	Instructor: " + getInstructor() +
 			"\n	Label: " + getLabel() +
+			"\n	Options: " + getOptions() +
 			"\n	Reference: " + getReference() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";

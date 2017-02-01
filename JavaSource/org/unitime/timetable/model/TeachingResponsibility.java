@@ -19,13 +19,32 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.unitime.timetable.model.base.BaseTeachingResponsibility;
 import org.unitime.timetable.model.dao.TeachingResponsibilityDAO;
 
 public class TeachingResponsibility extends BaseTeachingResponsibility {
 	private static final long serialVersionUID = 1L;
+	
+	public static enum Option {
+		auxiliary("Do not report"),
+		noexport("Do not export"),
+		noevents("Do not show in events"),
+		;
+		
+		private String iName;
+		
+		Option(String name) {
+			iName = name;
+		}
+		
+		public String getName() { return iName; }
+		
+		public int toggle() { return 1 << ordinal(); }
+	}
 
 	public TeachingResponsibility() {
 		super();
@@ -49,5 +68,43 @@ public class TeachingResponsibility extends BaseTeachingResponsibility {
 				"from TeachingResponsibility where reference = :reference")
 				.setString("reference", reference).setMaxResults(1).setCacheable(true).uniqueResult();
 	}
+	
+	public boolean hasOption(Option option) {
+		return getOptions() != null && (getOptions() & option.toggle()) != 0;
+	}
+	
+	public void addOption(Option option) {
+		if (!hasOption(option)) setOptions((getOptions() == null ? 0 : getOptions()) + option.toggle());
+	}
 
+	public void removeOption(Option option) {
+		if (hasOption(option)) setOptions(getOptions() - option.toggle());
+	}
+
+	public static boolean hasOption(Option option, String reference, org.hibernate.Session hibSession) {
+		TeachingResponsibility responsibility = getTeachingResponsibility(reference, hibSession);
+		return responsibility != null && responsibility.hasOption(option);
+	}
+	
+	public static Set<String> getMatchingResponsibilities(Option option) {
+		org.hibernate.Session hibSession = TeachingResponsibilityDAO.getInstance().createNewSession();
+		try {
+			Set<String> responsibilities = new HashSet<String>();
+			for (TeachingResponsibility responsibility: TeachingResponsibilityDAO.getInstance().findAll(hibSession)) {
+				if (responsibility.hasOption(option))
+					responsibilities.add(responsibility.getReference());
+			}
+			return responsibilities;
+		} finally {
+			hibSession.close();
+		}
+	}
+	
+	public boolean isUsed() {
+		if (((Number)TeachingResponsibilityDAO.getInstance().getSession().createQuery("select count(ci) from ClassInstructor ci where ci.responsibility.uniqueId = :responsibilityId")
+			.setLong("responsibilityId", getUniqueId()).uniqueResult()).intValue() > 0) return false;
+		if (((Number)TeachingResponsibilityDAO.getInstance().getSession().createQuery("select count(oc) from OfferingCoordinator oc where oc.responsibility.uniqueId = :responsibilityId")
+				.setLong("responsibilityId", getUniqueId()).uniqueResult()).intValue() > 0) return false;
+		return true;
+	}
 }

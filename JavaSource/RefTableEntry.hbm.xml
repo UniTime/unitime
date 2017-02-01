@@ -369,7 +369,12 @@
         		column="abbreviation"
         		type="string"
         		not-null="false"
-        		length="40"/>             
+        		length="40"/>
+			<property
+                name="options"
+                column="options"
+                type="java.lang.Integer"
+                not-null="true"/>
         </union-subclass>
     </class>
 </hibernate-mapping>

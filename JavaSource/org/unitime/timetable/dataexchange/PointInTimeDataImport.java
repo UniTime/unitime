@@ -418,12 +418,14 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			String abbreviation = getRequiredStringAttribute(teachingResponsibilityElement, PointInTimeDataExport.sAbbreviationAttribute, PointInTimeDataExport.sTeachingResponsibilityElementName);
 			Boolean instructor = getRequiredBooleanAttribute(teachingResponsibilityElement, PointInTimeDataExport.sInstructorAttribute, PointInTimeDataExport.sTeachingResponsibilityElementName);
 			Boolean coordinator = getRequiredBooleanAttribute(teachingResponsibilityElement, PointInTimeDataExport.sCoordinatorAttribute, PointInTimeDataExport.sTeachingResponsibilityElementName);
+			Integer options = getOptionalIntegerAttribute(teachingResponsibilityElement, PointInTimeDataExport.sOptionsAttribute);
 			tr = new TeachingResponsibility();
 			tr.setReference(reference);
 			tr.setLabel(label);
 			tr.setInstructor(instructor);
 			tr.setCoordinator(coordinator);
 			tr.setAbbreviation(abbreviation);
+			tr.setOptions(options == null ? 0 : options.intValue());
 			tr.setUniqueId((Long)getHibSession().save(tr));
 		}
 		teachingResponsibilities.put(uid, tr);

@@ -3840,6 +3840,15 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Course")
 	String fieldCourse();
 	
+	@DefaultMessage("Auxiliary (No Report)")
+	String fieldAuxiliaryNoReport();
+	
+	@DefaultMessage("No Export")
+	String fieldNoExport();
+	
+	@DefaultMessage("Hide in Events")
+	String fieldHideInEvents();
+	
 	@DefaultMessage("Access")
 	String toggleAccess();
 	
