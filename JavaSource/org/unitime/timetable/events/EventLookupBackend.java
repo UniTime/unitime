@@ -75,6 +75,7 @@ import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
+import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
@@ -1397,6 +1398,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							event.setMaxCapacity(clazz.getClassLimit());
 				    		if (clazz.getDisplayInstructor()) {
 				    			for (ClassInstructor i: clazz.getClassInstructors()) {
+				    				if (i.getResponsibility() != null && i.getResponsibility().hasOption(TeachingResponsibility.Option.noevents)) continue;
 									ContactInterface instructor = new ContactInterface();
 									instructor.setFirstName(i.getInstructor().getFirstName());
 									instructor.setMiddleName(i.getInstructor().getMiddleName());
@@ -1404,6 +1406,10 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									instructor.setAcademicTitle(i.getInstructor().getAcademicTitle());
 									instructor.setEmail(i.getInstructor().getEmail());
 									instructor.setFormattedName(i.getInstructor().getName(nameFormat));
+									if (i.getResponsibility() != null) {
+										instructor.setResponsibility(i.getResponsibility().getLabel());
+										instructor.setResponsibilityAbbreviation(i.getResponsibility().getAbbreviation());
+				    				}
 									event.addInstructor(instructor);
 				    			}
 				    		}
@@ -2041,6 +2047,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									event.setMaxCapacity(clazz.getClassLimit());
 						    		if (clazz.getDisplayInstructor()) {
 						    			for (ClassInstructor i: clazz.getClassInstructors()) {
+						    				if (i.getResponsibility() != null && i.getResponsibility().hasOption(TeachingResponsibility.Option.noevents)) continue;
 											ContactInterface instructor = new ContactInterface();
 											instructor.setFirstName(i.getInstructor().getFirstName());
 											instructor.setMiddleName(i.getInstructor().getMiddleName());
@@ -2048,6 +2055,10 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 											instructor.setAcademicTitle(i.getInstructor().getAcademicTitle());
 											instructor.setEmail(i.getInstructor().getEmail());
 											instructor.setFormattedName(i.getInstructor().getName(nameFormat));
+											if (i.getResponsibility() != null) {
+												instructor.setResponsibility(i.getResponsibility().getLabel());
+												instructor.setResponsibilityAbbreviation(i.getResponsibility().getAbbreviation());
+						    				}
 											event.addInstructor(instructor);
 						    			}
 						    		}
@@ -2370,6 +2381,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								Set<Long> addedInstructorIds = new HashSet<Long>();
 								if (clazz.getDisplayInstructor()) {
 									for (ClassInstructor i: clazz.getClassInstructors()) {
+										if (i.getResponsibility() != null && i.getResponsibility().hasOption(TeachingResponsibility.Option.noevents)) continue;
 										ContactInterface instructor = new ContactInterface();
 										instructor.setFirstName(i.getInstructor().getFirstName());
 										instructor.setMiddleName(i.getInstructor().getMiddleName());
@@ -2377,11 +2389,16 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 										instructor.setAcademicTitle(i.getInstructor().getAcademicTitle());
 										instructor.setEmail(i.getInstructor().getEmail());
 										instructor.setFormattedName(i.getInstructor().getName(nameFormat));
+										if (i.getResponsibility() != null) {
+											instructor.setResponsibility(i.getResponsibility().getLabel());
+											instructor.setResponsibilityAbbreviation(i.getResponsibility().getAbbreviation());
+					    				}
 										event.addInstructor(instructor);
 										addedInstructorIds.add(i.getInstructor().getUniqueId());
 					    			}
 					    		}
 								for (OfferingCoordinator oc: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getOfferingCoordinators()) {
+									if (oc.getResponsibility() != null && oc.getResponsibility().hasOption(TeachingResponsibility.Option.noevents)) continue;
 									DepartmentalInstructor c = oc.getInstructor();
 									if (addedInstructorIds.add(c.getUniqueId())) {
 						    			ContactInterface coordinator = new ContactInterface();
@@ -2391,6 +2408,10 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 										coordinator.setAcademicTitle(c.getAcademicTitle());
 										coordinator.setEmail(c.getEmail());
 										coordinator.setFormattedName(c.getName(nameFormat));
+										if (oc.getResponsibility() != null) {
+					    					coordinator.setResponsibility(oc.getResponsibility().getLabel());
+					    					coordinator.setResponsibilityAbbreviation(oc.getResponsibility().getAbbreviation());
+					    				}
 										event.addCoordinator(coordinator);
 									}
 								}

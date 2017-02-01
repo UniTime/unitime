@@ -1015,6 +1015,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	private String iFirstName, iMiddleName, iLastName, iTitle;
     	private String iFormattedName;
     	private String iExternalId, iEmail, iPhone;
+    	private String iResponsibilityAbbreviation, iResponsibility;
     	
     	public ContactInterface() {}
     	
@@ -1059,15 +1060,27 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	
     	public void setFormattedName(String name) { iFormattedName = name; }
     	public boolean hasFormattedName() { return iFormattedName != null && !iFormattedName.isEmpty(); }
-    	public String getFormattedName() { return iFormattedName; }
+    	public String getFormattedName(boolean includeResponsibility) { return iFormattedName + (includeResponsibility && hasResponsibilityAbbreviation() ? " (" + getResponsibilityAbbreviation() + ")" : ""); }
     	
-    	public String getName(GwtMessages messages) {
-    		if (hasFormattedName()) return getFormattedName();
+    	public void setResponsibilityAbbreviation(String responsibility) { iResponsibilityAbbreviation = responsibility; }
+    	public boolean hasResponsibilityAbbreviation() { return iResponsibilityAbbreviation != null && !iResponsibilityAbbreviation.isEmpty(); }
+    	public String getResponsibilityAbbreviation() { return iResponsibilityAbbreviation; }
+    	
+    	public void setResponsibility(String responsibility) { iResponsibility = responsibility; }
+    	public boolean hasResponsibility() { return iResponsibility != null && !iResponsibility.isEmpty(); }
+    	public String getResponsibility() { return iResponsibility; }
+    	
+    	public String getName(GwtMessages messages, boolean includeResponsibility) {
+    		if (hasFormattedName()) return getFormattedName(includeResponsibility);
     		if (messages == null) return toString();
     		return messages.formatName(
     				hasFirstName() ? getFirstName() : "",
     				hasMiddleName() ? getMiddleName() : "",
     				hasLastName() ? getLastName() : "").trim();
+    	}
+    	
+    	public String getName(GwtMessages messages) {
+    		return getName(messages, true);
     	}
     	
     	public String getShortName() {
@@ -1089,9 +1102,10 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	}
     	
     	public String toString() { 
-    		if (hasFormattedName()) return getFormattedName();
+    		if (hasFormattedName()) return getFormattedName(true);
     		return (hasLastName() ? getLastName() : "") + (hasFirstName() || hasMiddleName() ?
-    				", " + (hasFirstName() ? getFirstName() + (hasMiddleName() ? " " + getMiddleName() : "") : getMiddleName()) : "");
+    				", " + (hasFirstName() ? getFirstName() + (hasMiddleName() ? " " + getMiddleName() : "") : getMiddleName()) : "") +
+    				(hasResponsibility() ? " (" + getResponsibility() + ")" : "");
     	}
 
 		@Override

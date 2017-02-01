@@ -334,9 +334,9 @@ public class EventDetail extends Composite {
 		if (iEvent.hasInstructors()) {
 			for (ContactInterface contact: iEvent.getInstructors()) {
 				List<Label> row = new ArrayList<Label>();
-				row.add(new Label(contact.getName(MESSAGES), false));
+				row.add(new Label(contact.getName(MESSAGES, false), false));
 				row.add(new Label(contact.hasEmail() ? contact.getEmail() : "", false));
-				row.add(new HTML(contact.hasPhone() ? contact.getPhone() : MESSAGES.eventContactInstructorPhone(), false));
+				row.add(new HTML(contact.hasPhone() ? contact.getPhone() : contact.hasResponsibility() ? contact.getResponsibility() : MESSAGES.eventContactInstructorPhone(), false));
 				int rowNum = iContacts.addRow(contact, row);
 				for (int col = 0; col < iContacts.getCellCount(rowNum); col++)
 					iContacts.getCellFormatter().addStyleName(rowNum, col, "instructor-contact");
@@ -345,9 +345,9 @@ public class EventDetail extends Composite {
 		if (iEvent.hasCoordinators()) {
 			for (ContactInterface contact: iEvent.getCoordinators()) {
 				List<Label> row = new ArrayList<Label>();
-				row.add(new Label(contact.getName(MESSAGES), false));
+				row.add(new Label(contact.getName(MESSAGES, false), false));
 				row.add(new Label(contact.hasEmail() ? contact.getEmail() : "", false));
-				row.add(new HTML(contact.hasPhone() ? contact.getPhone() : MESSAGES.eventContactCoordinatorPhone(), false));
+				row.add(new HTML(contact.hasPhone() ? contact.getPhone() : contact.hasResponsibility() ? contact.getResponsibility() : MESSAGES.eventContactCoordinatorPhone(), false));
 				int rowNum = iContacts.addRow(contact, row);
 				for (int col = 0; col < iContacts.getCellCount(rowNum); col++)
 					iContacts.getCellFormatter().addStyleName(rowNum, col, "coordinator-contact");

@@ -51,6 +51,7 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
@@ -125,6 +126,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 			    		conflict.setEnrollment(clazz.getEnrollment());
 			    		if (clazz.getDisplayInstructor()) {
 			    			for (ClassInstructor i: clazz.getClassInstructors()) {
+			    				if (i.getResponsibility() != null && i.getResponsibility().hasOption(TeachingResponsibility.Option.noevents)) continue;
 								ContactInterface instructor = new ContactInterface();
 								instructor.setFirstName(i.getInstructor().getFirstName());
 								instructor.setMiddleName(i.getInstructor().getMiddleName());
@@ -132,6 +134,10 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 								instructor.setAcademicTitle(i.getInstructor().getAcademicTitle());
 								instructor.setEmail(i.getInstructor().getEmail());
 								instructor.setFormattedName(i.getInstructor().getName(nameFormat));
+								if (i.getResponsibility() != null) {
+									instructor.setResponsibility(i.getResponsibility().getLabel());
+									instructor.setResponsibilityAbbreviation(i.getResponsibility().getAbbreviation());
+			    				}
 								conflict.addInstructor(instructor);
 			    			}
 			    		}

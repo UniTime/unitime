@@ -70,6 +70,7 @@ import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SpecialEvent;
+import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseEventDAO;
@@ -169,6 +170,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		Set<Long> addedInstructorIds = new HashSet<Long>();
     		if (clazz.getDisplayInstructor()) {
     			for (ClassInstructor i: clazz.getClassInstructors()) {
+    				if (i.getResponsibility() != null && i.getResponsibility().hasOption(TeachingResponsibility.Option.noevents)) continue;
 					ContactInterface instructor = new ContactInterface();
 					instructor.setFirstName(i.getInstructor().getFirstName());
 					instructor.setMiddleName(i.getInstructor().getMiddleName());
@@ -176,11 +178,16 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 					instructor.setAcademicTitle(i.getInstructor().getAcademicTitle());
 					instructor.setEmail(i.getInstructor().getEmail());
 					instructor.setFormattedName(i.getInstructor().getName(nameFormat));
+					if (i.getResponsibility() != null) {
+						instructor.setResponsibility(i.getResponsibility().getLabel());
+						instructor.setResponsibilityAbbreviation(i.getResponsibility().getAbbreviation());
+    				}
 					event.addInstructor(instructor);
 					addedInstructorIds.add(i.getInstructor().getUniqueId());
     			}
     		}
     		for (OfferingCoordinator oc: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getOfferingCoordinators()) {
+    			if (oc.getResponsibility() != null && oc.getResponsibility().hasOption(TeachingResponsibility.Option.noevents)) continue;
     			DepartmentalInstructor c = oc.getInstructor();
     			if (addedInstructorIds.add(c.getUniqueId())) {
         			ContactInterface coordinator = new ContactInterface();
@@ -190,6 +197,10 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     				coordinator.setAcademicTitle(c.getAcademicTitle());
     				coordinator.setEmail(c.getEmail());
     				coordinator.setFormattedName(c.getName(nameFormat));
+    				if (oc.getResponsibility() != null) {
+    					coordinator.setResponsibility(oc.getResponsibility().getLabel());
+    					coordinator.setResponsibilityAbbreviation(oc.getResponsibility().getAbbreviation());
+    				}
     				event.addCoordinator(coordinator);
     			}
     		}
@@ -225,6 +236,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		}
     		if (clazz.getDisplayInstructor()) {
     			for (ClassInstructor i: clazz.getClassInstructors()) {
+    				if (i.getResponsibility() != null && i.getResponsibility().hasOption(TeachingResponsibility.Option.noevents)) continue;
 					ContactInterface instructor = new ContactInterface();
 					instructor.setFirstName(i.getInstructor().getFirstName());
 					instructor.setMiddleName(i.getInstructor().getMiddleName());
@@ -233,6 +245,10 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 					instructor.setExternalId(i.getInstructor().getExternalUniqueId());
 					instructor.setEmail(i.getInstructor().getEmail());
 					instructor.setFormattedName(i.getInstructor().getName(nameFormat));
+					if (i.getResponsibility() != null) {
+						instructor.setResponsibility(i.getResponsibility().getLabel());
+						instructor.setResponsibilityAbbreviation(i.getResponsibility().getAbbreviation());
+    				}
 					related.addInstructor(instructor);
     			}
     		}
@@ -389,6 +405,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 						related.setDetailPage("classDetail.do?cid=" + clazz.getUniqueId());
 					if (clazz.getDisplayInstructor()) {
 		    			for (ClassInstructor i: clazz.getClassInstructors()) {
+		    				if (i.getResponsibility() != null && i.getResponsibility().hasOption(TeachingResponsibility.Option.noevents)) continue;
 							ContactInterface instructor = new ContactInterface();
 							instructor.setFirstName(i.getInstructor().getFirstName());
 							instructor.setMiddleName(i.getInstructor().getMiddleName());
@@ -397,6 +414,10 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 							instructor.setExternalId(i.getInstructor().getExternalUniqueId());
 							instructor.setEmail(i.getInstructor().getEmail());
 							instructor.setFormattedName(i.getInstructor().getName(nameFormat));
+							if (i.getResponsibility() != null) {
+								instructor.setResponsibility(i.getResponsibility().getLabel());
+								instructor.setResponsibilityAbbreviation(i.getResponsibility().getAbbreviation());
+		    				}
 							related.addInstructor(instructor);
 		    			}
 		    		}
@@ -419,6 +440,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				}
 				event.addRelatedObject(related);
 	    		for (OfferingCoordinator oc: owner.getCourse().getInstructionalOffering().getOfferingCoordinators()) {
+	    			if (oc.getResponsibility() != null && oc.getResponsibility().hasOption(TeachingResponsibility.Option.noevents)) continue;
 	    			DepartmentalInstructor c = oc.getInstructor();
 	    			if (addedInstructorIds.add(c.getUniqueId())) {
 		    			ContactInterface coordinator = new ContactInterface();
@@ -428,6 +450,10 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 						coordinator.setAcademicTitle(c.getAcademicTitle());
 						coordinator.setEmail(c.getEmail());
 						coordinator.setFormattedName(c.getName(nameFormat));
+						if (oc.getResponsibility() != null) {
+	    					coordinator.setResponsibility(oc.getResponsibility().getLabel());
+	    					coordinator.setResponsibilityAbbreviation(oc.getResponsibility().getAbbreviation());
+	    				}
 						event.addCoordinator(coordinator);
 		    		}
 				}
@@ -490,6 +516,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 						related.setDetailPage("classDetail.do?cid=" + clazz.getUniqueId());
 					if (clazz.getDisplayInstructor()) {
 		    			for (ClassInstructor i: clazz.getClassInstructors()) {
+		    				if (i.getResponsibility() != null && i.getResponsibility().hasOption(TeachingResponsibility.Option.noevents)) continue;
 							ContactInterface instructor = new ContactInterface();
 							instructor.setFirstName(i.getInstructor().getFirstName());
 							instructor.setMiddleName(i.getInstructor().getMiddleName());
@@ -498,6 +525,10 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 							instructor.setExternalId(i.getInstructor().getExternalUniqueId());
 							instructor.setEmail(i.getInstructor().getEmail());
 							instructor.setFormattedName(i.getInstructor().getName(nameFormat));
+							if (i.getResponsibility() != null) {
+								instructor.setResponsibility(i.getResponsibility().getLabel());
+								instructor.setResponsibilityAbbreviation(i.getResponsibility().getAbbreviation());
+		    				}
 							related.addInstructor(instructor);
 		    			}
 		    		}
@@ -523,6 +554,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				enrl += owner.countStudents();
 				limit += owner.getLimit();
 	    		for (OfferingCoordinator oc: owner.getCourse().getInstructionalOffering().getOfferingCoordinators()) {
+	    			if (oc.getResponsibility() != null && oc.getResponsibility().hasOption(TeachingResponsibility.Option.noevents)) continue;
 	    			DepartmentalInstructor c = oc.getInstructor();
 	    			if (addedInstructorIds.add(c.getUniqueId())) {
 		    			ContactInterface coordinator = new ContactInterface();
@@ -532,6 +564,10 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 						coordinator.setAcademicTitle(c.getAcademicTitle());
 						coordinator.setEmail(c.getEmail());
 						coordinator.setFormattedName(c.getName(nameFormat));
+						if (oc.getResponsibility() != null) {
+	    					coordinator.setResponsibility(oc.getResponsibility().getLabel());
+	    					coordinator.setResponsibilityAbbreviation(oc.getResponsibility().getAbbreviation());
+	    				}
 						event.addCoordinator(coordinator);
 		    		}
 				}
@@ -682,6 +718,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 							confEvent.setMaxCapacity(clazz.getClassLimit());
 				    		if (clazz.getDisplayInstructor()) {
 				    			for (ClassInstructor i: clazz.getClassInstructors()) {
+				    				if (i.getResponsibility() != null && i.getResponsibility().hasOption(TeachingResponsibility.Option.noevents)) continue;
 									ContactInterface instructor = new ContactInterface();
 									instructor.setFirstName(i.getInstructor().getFirstName());
 									instructor.setMiddleName(i.getInstructor().getMiddleName());
@@ -689,6 +726,10 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 									instructor.setAcademicTitle(i.getInstructor().getAcademicTitle());
 									instructor.setEmail(i.getInstructor().getEmail());
 									instructor.setFormattedName(i.getInstructor().getName(nameFormat));
+									if (i.getResponsibility() != null) {
+										instructor.setResponsibility(i.getResponsibility().getLabel());
+										instructor.setResponsibilityAbbreviation(i.getResponsibility().getAbbreviation());
+				    				}
 									confEvent.addInstructor(instructor);
 				    			}
 				    		}
@@ -829,6 +870,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		Set<Long> addedInstructorIds = new HashSet<Long>();
 		if (clazz.getDisplayInstructor()) {
 			for (ClassInstructor i: clazz.getClassInstructors()) {
+				if (i.getResponsibility() != null && i.getResponsibility().hasOption(TeachingResponsibility.Option.noevents)) continue;
 				ContactInterface instructor = new ContactInterface();
 				instructor.setFirstName(i.getInstructor().getFirstName());
 				instructor.setMiddleName(i.getInstructor().getMiddleName());
@@ -836,11 +878,16 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				instructor.setAcademicTitle(i.getInstructor().getAcademicTitle());
 				instructor.setEmail(i.getInstructor().getEmail());
 				instructor.setFormattedName(i.getInstructor().getName(nameFormat));
+				if (i.getResponsibility() != null) {
+					instructor.setResponsibility(i.getResponsibility().getLabel());
+					instructor.setResponsibilityAbbreviation(i.getResponsibility().getAbbreviation());
+				}
 				event.addInstructor(instructor);
 				addedInstructorIds.add(i.getInstructor().getUniqueId());
 			}
 		}
 		for (OfferingCoordinator oc: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getOfferingCoordinators()) {
+			if (oc.getResponsibility() != null && oc.getResponsibility().hasOption(TeachingResponsibility.Option.noevents)) continue;
 			DepartmentalInstructor c = oc.getInstructor();
 			if (addedInstructorIds.add(c.getUniqueId())) {
     			ContactInterface coordinator = new ContactInterface();
@@ -850,6 +897,10 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				coordinator.setAcademicTitle(c.getAcademicTitle());
 				coordinator.setEmail(c.getEmail());
 				coordinator.setFormattedName(c.getName(nameFormat));
+				if (oc.getResponsibility() != null) {
+					coordinator.setResponsibility(oc.getResponsibility().getLabel());
+					coordinator.setResponsibilityAbbreviation(oc.getResponsibility().getAbbreviation());
+				}
 				event.addCoordinator(coordinator);
 			}
 		}
@@ -941,6 +992,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		}
 		if (clazz.getDisplayInstructor()) {
 			for (ClassInstructor i: clazz.getClassInstructors()) {
+				if (i.getResponsibility() != null && i.getResponsibility().hasOption(TeachingResponsibility.Option.noevents)) continue;
 				ContactInterface instructor = new ContactInterface();
 				instructor.setFirstName(i.getInstructor().getFirstName());
 				instructor.setMiddleName(i.getInstructor().getMiddleName());
@@ -949,6 +1001,10 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				instructor.setExternalId(i.getInstructor().getExternalUniqueId());
 				instructor.setEmail(i.getInstructor().getEmail());
 				instructor.setFormattedName(i.getInstructor().getName(nameFormat));
+				if (i.getResponsibility() != null) {
+					instructor.setResponsibility(i.getResponsibility().getLabel());
+					instructor.setResponsibilityAbbreviation(i.getResponsibility().getAbbreviation());
+				}
 				related.addInstructor(instructor);
 			}
 		}
