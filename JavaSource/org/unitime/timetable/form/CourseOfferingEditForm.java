@@ -37,6 +37,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 
@@ -140,6 +141,18 @@ public class CourseOfferingEditForm extends ActionForm {
 					}
 		    	}
 
+			}
+			
+			for (int i = 0; i < instructors.size(); i++) {
+				String id1 = (String)instructors.get(i);
+				if (Constants.BLANK_OPTION_VALUE.equals(id1)) continue;
+				
+				for (int j = i + 1; j < instructors.size(); j++) {
+					String id2 = (String)instructors.get(j);
+					if (id1.equals(id2)) {
+						errors.add("duplicateCoordinator", new ActionMessage("errors.generic", MSG.errorDuplicateCoordinator()));
+					}
+				}
 			}
 		}
 

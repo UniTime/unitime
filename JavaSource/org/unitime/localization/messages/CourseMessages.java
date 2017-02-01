@@ -2145,6 +2145,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("<b>Number of Instructors</b> is required.")
 	String errorNoNbrInstructors();
 	
+	@DefaultMessage("Duplicate coordinator for a course.")
+	String errorDuplicateCoordinator();
+	
 	@DefaultMessage("This instructor is allowed to teach two back-to-back classes that are too far away.")
 	String descriptionInstructorIgnoreTooFar();
 	
