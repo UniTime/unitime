@@ -1027,22 +1027,8 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	private boolean elementInstructor(Element element, Class_ c) throws Exception {
 		boolean changed = false;
 		String elementName = "instructor";
-		HashMap<String, ClassInstructor> existingInstructors = new HashMap<String, ClassInstructor>();
-		if(c.getClassInstructors() != null){
-			for(Iterator<?> ciIt = c.getClassInstructors().iterator(); ciIt.hasNext(); ){
-				ClassInstructor ci = (ClassInstructor) ciIt.next();
-				existingInstructors.put(ci.getInstructor().getExternalUniqueId(), ci);
-			}
-		}
-        if(element.element(elementName) != null){
-        	HashSet<String> ids = new HashSet<String>();
-        	HashMap<String, String> firstNames = new HashMap<String, String>();
-        	HashMap<String, String> middleNames = new HashMap<String, String>();
-        	HashMap<String, String> lastNames = new HashMap<String, String>();
-        	HashMap<String, String> acadTitles = new HashMap<String, String>();
-        	HashMap<String, Integer> shares = new HashMap<String, Integer>();
-        	HashMap<String, Boolean> leads = new HashMap<String, Boolean>();
-        	HashMap<String, String> responsibilities = new HashMap<String, String>();
+		List<ClassInstructor> existingInstructors = new ArrayList<ClassInstructor>(c.getClassInstructors());
+        if (element.element(elementName) != null) {
         	for (Iterator<?> it = element.elementIterator(elementName); it.hasNext();){
 				Element instructorElement = (Element) it.next();
 				String id = getRequiredStringAttribute(instructorElement, "id", elementName);
@@ -1054,48 +1040,39 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						// do nothing
 					}
 	            }
-				ids.add(id);
-				firstNames.put(id, getOptionalStringAttribute(instructorElement, "fname"));
-				middleNames.put(id, getOptionalStringAttribute(instructorElement, "mname"));
-				lastNames.put(id, getOptionalStringAttribute(instructorElement, "lname"));
-				acadTitles.put(id, getOptionalStringAttribute(instructorElement, "title"));
-				Integer share = getOptionalIntegerAttribute(instructorElement, "share");;
-				if (share == null){
-					share = new Integer(100);
+	            String responsibility = getOptionalStringAttribute(instructorElement, "responsibility");
+	            ClassInstructor instructor = null;
+	            for (Iterator<ClassInstructor> ciIt = existingInstructors.iterator(); ciIt.hasNext(); ) {
+	            	ClassInstructor ci = ciIt.next();
+	            	if (id.equals(ci.getInstructor().getExternalUniqueId()) && ToolBox.equals(responsibility, ci.getResponsibility() == null ? null : ci.getResponsibility().getReference())) {
+						instructor = ci; ciIt.remove(); break;
+					}
 				}
-				shares.put(id, share);
-				Boolean lead = getOptionalBooleanAttribute(instructorElement, "lead");
-				if (lead == null){
-					lead = new Boolean(true);
-				}
-				leads.put(id, lead);
-				String responsibility = getOptionalStringAttribute(instructorElement, "responsibility");
-				if (responsibility != null && !responsibility.isEmpty())
-					responsibilities.put(id, responsibility);
-        	}
-        	for(Iterator<String> it = ids.iterator(); it.hasNext(); ){
-				boolean addNew = false;
-				String id = (String) it.next();
-				ClassInstructor ci = existingInstructors.get(id);
-				if (ci == null){
-					DepartmentalInstructor di = findDepartmentalInstructorWithExternalUniqueId(id, c.getSchedulingSubpart().getControllingDept());
+	            String firstName = getOptionalStringAttribute(instructorElement, "fname");
+				String middleName = getOptionalStringAttribute(instructorElement, "mname");
+				String lastName = getOptionalStringAttribute(instructorElement, "lname");
+				String acadTitle = getOptionalStringAttribute(instructorElement, "title");
+				Integer share = getOptionalIntegerAttribute(instructorElement, "share");
+				boolean lead = getOptionalBooleanAttribute(instructorElement, "lead", true);
+	            boolean addNew = false;
+	            if (instructor == null) {
+	            	DepartmentalInstructor di = findDepartmentalInstructorWithExternalUniqueId(id, c.getSchedulingSubpart().getControllingDept());
 					if (di == null) {
 						di = new DepartmentalInstructor();
 						di.setDepartment(c.getSchedulingSubpart().getControllingDept());
 						di.setExternalUniqueId(id);
-						if (lastNames.get(id)  == null){
+						if (lastName == null){
 							Staff staffData = findStaffMember(id);
-							if (staffData != null){
-								firstNames.put(id, staffData.getFirstName());
-								middleNames.put(id, staffData.getMiddleName());
-								lastNames.put(id, staffData.getLastName());
-								acadTitles.put(id, staffData.getAcademicTitle());
+							if (staffData != null) {
+								firstName = staffData.getFirstName();
+								middleName = staffData.getMiddleName();
+								lastName = staffData.getLastName();
+								acadTitle = staffData.getAcademicTitle();
 							}
 						}
-						di.setFirstName(firstNames.get(id));
-						di.setMiddleName(middleNames.get(id));
-						di.setAcademicTitle(acadTitles.get(id));
-						String lastName = lastNames.get(id);
+						di.setFirstName(firstName);
+						di.setMiddleName(middleName);
+						di.setAcademicTitle(acadTitle);
 						di.setLastName((lastName != null?lastName:"Unknown Name"));
 						di.setIgnoreToFar(new Boolean(false));
 						getHibSession().save(di);
@@ -1103,45 +1080,37 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						getHibSession().refresh(di);
 			        	ChangeLog.addChange(getHibSession(), getManager(), session, di, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.CREATE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
 					}
-					ci = new ClassInstructor();
-					ci.setClassInstructing(c);
-					c.addToclassInstructors(ci);
-					ci.setInstructor(di);
-					di.addToclasses(ci);
+					instructor = new ClassInstructor();
+					instructor.setClassInstructing(c);
+					c.addToclassInstructors(instructor);
+					instructor.setInstructor(di);
+					di.addToclasses(instructor);
 					changed = true;
 					addNew = true;
-					
-				} else {
-					existingInstructors.remove(id);
-				}
-				Integer share = shares.get(id);
-				if (ci.getPercentShare() == null || !ci.getPercentShare().equals(share)){
-					ci.setPercentShare(share);
+	            }
+				if (instructor.getPercentShare() == null || !instructor.getPercentShare().equals(share)){
+					instructor.setPercentShare(share);
 					changed = true;
 				}
-				
-				Boolean lead = leads.get(id);
-				if (ci.isLead() == null || !ci.isLead().equals(lead)){
-					ci.setLead(lead);
+				if (instructor.isLead() == null || !instructor.isLead().equals(lead)){
+					instructor.setLead(lead);
 					changed = true;
 				}
-				String responsibility = responsibilities.get(id);
-				if (!ToolBox.equals(ci.getResponsibility() == null ? null : ci.getResponsibility().getReference(), responsibility)) {
-					ci.setResponsibility(TeachingResponsibility.getTeachingResponsibility(responsibility, getHibSession()));
+				if (!ToolBox.equals(instructor.getResponsibility() == null ? null : instructor.getResponsibility().getReference(), responsibility)) {
+					instructor.setResponsibility(TeachingResponsibility.getTeachingResponsibility(responsibility, getHibSession()));
 					changed = true;
 				}
-				
-				if (changed){
+				if (changed) {
 					getHibSession().saveOrUpdate(c);
 					getHibSession().flush();
 					getHibSession().refresh(c);
-		        	ChangeLog.addChange(getHibSession(), getManager(), session, ci, ChangeLog.Source.DATA_IMPORT_OFFERINGS, (addNew?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
-				}
+		        	ChangeLog.addChange(getHibSession(), getManager(), session, instructor, ChangeLog.Source.DATA_IMPORT_OFFERINGS, (addNew?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
+				}	            
 			}
         }
-        if(existingInstructors.size() > 0){
-        	for(Iterator<ClassInstructor> ciIt = existingInstructors.values().iterator(); ciIt.hasNext(); ){
-        		ClassInstructor ci = (ClassInstructor) ciIt.next();
+        if (!existingInstructors.isEmpty()) {
+        	for (Iterator<ClassInstructor> ciIt = existingInstructors.iterator(); ciIt.hasNext(); ) {
+        		ClassInstructor ci = ciIt.next();
         		deleteClassInstructor(ci);
         		changed = true;
         	}

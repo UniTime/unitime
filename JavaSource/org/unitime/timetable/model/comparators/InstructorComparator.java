@@ -82,6 +82,9 @@ public class InstructorComparator implements Comparator {
         cmp = compareStrings(ci1.getInstructor().getMiddleName(),ci2.getInstructor().getMiddleName());
         if (cmp!=0) return cmp;
         
+        cmp = compareStrings(ci1.getResponsibility() == null ? "" : ci1.getResponsibility().getAbbreviation(), ci2.getResponsibility() == null ? "" : ci2.getResponsibility().getAbbreviation());
+        if (cmp!=0) return cmp;
+        
         return ci1.getInstructor().getUniqueId().compareTo(ci2.getInstructor().getUniqueId());
     }
 }

@@ -145,9 +145,10 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 	        for (int i = 0; i < classIds.size(); i++) {
 	        	String classId = (String) classIds.get(i);
 	        	String instrUid = (String) instructorUids.get(i);
+	        	String resp = (String) responsibilities.get(i);
 	        	for (int j = i + 1; j < classIds.size(); j++) {
 	        		if (((String) instructorUids.get(j)).length() > 0) {
-		        		if(classIds.get(j).equals(classId) && instructorUids.get(j).equals(instrUid)) {
+		        		if(classIds.get(j).equals(classId) && instructorUids.get(j).equals(instrUid) && responsibilities.get(j).equals(resp)) {
 		        			errors.add("duplicateInstructor", new ActionMessage("errors.generic", MSG.errorDuplicateInstructorForClass()));
 		        		}
 	        		}

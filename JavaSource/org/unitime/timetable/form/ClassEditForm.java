@@ -168,7 +168,7 @@ public class ClassEditForm extends PreferencesForm {
         if (instructors.size()>0) {
             
 	        // Check no duplicates or blank instructors
-            if(!super.checkPrefs(instructors))
+            if(!super.checkPrefs(instructors, instrResponsibility))
                 errors.add("instructors", 
                         new ActionMessage(
                                 "errors.generic", 

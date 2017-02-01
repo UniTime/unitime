@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.cpsolver.ifs.util.ToolBox;
 import org.dom4j.Element;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -710,9 +711,11 @@ public class CourseTimetableImport extends BaseImport {
         for (Iterator i = classElement.elementIterator("instructor"); i.hasNext(); ) {
 			Element instructorElement = (Element)i.next();
 			ClassInstructor instructor = null;
+			String responsibility = instructorElement.attributeValue("responsibility");
 			for (ClassInstructor ci: instructors) {
 				DepartmentalInstructor di = ci.getInstructor();
-				if (di.getExternalUniqueId() != null && di.getExternalUniqueId().equals(instructorElement.attributeValue("id"))) {
+				if (di.getExternalUniqueId() != null && di.getExternalUniqueId().equals(instructorElement.attributeValue("id")) &&
+					ToolBox.equals(responsibility, ci.getResponsibility() == null ? null : ci.getResponsibility().getReference())) {
 					instructor = ci; break;
 				}
 				String name = (di.getFirstName() == null ? "" : di.getFirstName()) + ":" + (di.getMiddleName() == null ? "" : di.getMiddleName()) + ":" + (di.getLastName() == null ? "" : di.getLastName());
@@ -724,7 +727,6 @@ public class CourseTimetableImport extends BaseImport {
 				instructors.remove(instructor);
 				instructor.setLead("true".equals(instructorElement.attributeValue("lead", instructor.isLead() ? "true" : "false")));
 				instructor.setPercentShare(Integer.valueOf(instructorElement.attributeValue("share", instructor.getPercentShare() == null ? "100" : instructor.getPercentShare().toString())));
-				String responsibility = instructorElement.attributeValue("responsibility");
 				if (responsibility != null)
 					instructor.setResponsibility(TeachingResponsibility.getTeachingResponsibility(responsibility, getHibSession()));
 				continue;
@@ -755,7 +757,9 @@ public class CourseTimetableImport extends BaseImport {
 			instructor.setClassInstructing(clazz);
 			instructor.setInstructor(di);
 			instructor.setLead("true".equals(instructorElement.attributeValue("lead", "true")));
-			instructor.setPercentShare(Integer.valueOf(instructorElement.attributeValue("share", "100")));				
+			instructor.setPercentShare(Integer.valueOf(instructorElement.attributeValue("share", "100")));	
+			if (responsibility != null)
+				instructor.setResponsibility(TeachingResponsibility.getTeachingResponsibility(responsibility, getHibSession()));
 			clazz.addToclassInstructors(instructor);
 			di.addToclasses(instructor);
 			getHibSession().saveOrUpdate(instructor);

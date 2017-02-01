@@ -33,7 +33,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.action.ActionRedirect;
 import org.apache.struts.util.MessageResources;
@@ -655,18 +654,8 @@ public class ClassEditAction extends PreferencesAction {
                 && request.getParameter("instrListTypeAction").toString().length()>0)
             return;
 
-        List lst = frm.getInstructors();
-        if(frm.checkPrefs(lst)) {
-            frm.addToInstructors(null);
-            request.setAttribute(HASH_ATTR, HASH_INSTRUCTORS);
-        }
-        else {
-            errors.add("instrPrefs",
-                       new ActionMessage(
-                               "errors.generic",
-                               MSG.errorInvalidInstructors()) );
-            saveErrors(request, errors);
-        }
+        frm.addToInstructors(null);
+        request.setAttribute(HASH_ATTR, HASH_INSTRUCTORS);
     }
 
     /**

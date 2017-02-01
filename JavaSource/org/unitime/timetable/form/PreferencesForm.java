@@ -336,19 +336,22 @@ public class PreferencesForm extends ActionForm {
      * @param lst List of values
      * @return true if checks ok, false otherwise
      */
-    public boolean checkPrefs(List lst) {
+    public boolean checkPrefs(List... lst) {
         
         HashMap map = new HashMap();
-        for(int i=0; i<lst.size(); i++) {
-            String value = ((String) lst.get(i));
-            // No selection made - ignore            
+        for(int i=0; i<lst[0].size(); i++) {
+            String value = ((String) lst[0].get(i));
+            // No selection made - ignore
             if( value==null || value.trim().equals(Preference.BLANK_PREF_VALUE)) {
                 continue;
             }
+            // Add additional columns, when present
+            for (int j = 1; j < lst.length; j++)
+            	value += "|" + ((String)lst[j].get(i));
             
             // Duplicate selection made
             if(map.get(value.trim())!=null) {
-                lst.set(i, Preference.BLANK_PREF_VALUE);
+                // lst[0].set(i, Preference.BLANK_PREF_VALUE);
                 return false;
             }
             map.put(value, value);
