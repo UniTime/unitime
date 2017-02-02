@@ -392,7 +392,9 @@ public class TimetableGridTable {
 		if (isDispModePerWeekVertical())
 			sfx2 += "Vertical";
 		out.println("<tr valign='top'>");
-		out.println("<th class='Timetable"+(rowNumber==0?"Head":"")+"Cell"+sfx2+"'>");
+		out.println("<th class='Timetable"+(rowNumber==0?"Head":"")+"Cell"+sfx2+"' "+
+				(getResourceType() == TimetableGridModel.sResourceTypeRoom ? "onmouseover=\"showGwtRoomHint(this, '" + model.getResourceId() + "');\" onmouseout=\"hideGwtRoomHint();\"" : "") +
+				">");
 		if (isDispModePerWeek()) {
 			out.println(model.getName());
 			if (getResourceType() == TimetableGridModel.sResourceTypeRoom)
@@ -470,7 +472,9 @@ public class TimetableGridTable {
 		out.println("<tr valign='top'>");
 		if (isDispModeInRow()) {
 			int maxIdx = model.getMaxIdx(startDay(),endDay(),firstSlot(),lastSlot());
-			out.println("<th rowspan='"+(1+maxIdx)+"' class='Timetable" + (rowNumber%10==0?"Head":"") + "Cell'>");
+			out.println("<th rowspan='"+(1+maxIdx)+"' class='Timetable" + (rowNumber%10==0?"Head":"") + "Cell' " +
+			(getResourceType() == TimetableGridModel.sResourceTypeRoom ? "onmouseover=\"showGwtRoomHint(this, '" + model.getResourceId() + "');\" onmouseout=\"hideGwtRoomHint();\"" : "") +
+			">");
 			out.println(model.getName());
 			if (getResourceType() == TimetableGridModel.sResourceTypeRoom)
 				out.println("<div style='white-space:nowrap;' title='capacity " + model.getSize() + " seats, utilization " + 
