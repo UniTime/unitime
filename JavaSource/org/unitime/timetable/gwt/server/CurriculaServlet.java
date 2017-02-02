@@ -3634,9 +3634,10 @@ public class CurriculaServlet implements CurriculaService {
 	private Hashtable<String, Hashtable<String, Hashtable<Long, Integer>>> loadClasfMajorCourse2ll(org.hibernate.Session hibSession, Curriculum c) {
 		List<Object[]> lines = null;
 		String select = "f.code, m.code, co.uniqueId, count(distinct s)";
-		String from = "CourseOffering co, LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a inner join a.academicClassification f";
-		String where = "x.subjectArea.session.uniqueId = :sessionId and a.academicArea.academicAreaAbbreviation = :acadAbbv" + 
-				" and co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId = x.coursePermId) or (x.coursePermId is null and co.courseNbr = x.courseNbr))";
+		String from = "CourseOffering co left outer join co.demandOffering do, LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a inner join a.academicClassification f";
+		String where = "x.subjectArea.session.uniqueId = :sessionId and a.academicArea.academicAreaAbbreviation = :acadAbbv and " +
+				"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
+				"(do is not null and do.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and do.permId=x.coursePermId) or (x.coursePermId is null and do.courseNbr=x.courseNbr))))";
 		String group = "f.code, m.code, co.uniqueId";
 		if (c.getMajors().isEmpty()) {
 			// students with no major
@@ -3697,9 +3698,10 @@ public class CurriculaServlet implements CurriculaService {
 	private Hashtable<String, Hashtable<CourseInterface, HashMap<String, Set<Long>>>> loadClasfCourseMajor2ll(org.hibernate.Session hibSession, String acadAreaAbbv, Collection<PosMajor> majors, boolean multipleMajors) {
 		List<Object[]> lines = null;
 		String select = "f.code, co.uniqueId, co.subjectArea.subjectAreaAbbreviation || ' ' || co.courseNbr, m.code, s.uniqueId";
-		String from = "CourseOffering co, LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a inner join a.academicClassification f";
-		String where = "x.subjectArea.session.uniqueId = :sessionId and a.academicArea.academicAreaAbbreviation = :acadAbbv" +
-			" and co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))";
+		String from = "CourseOffering co left outer join co.demandOffering do, LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a inner join a.academicClassification f";
+		String where = "x.subjectArea.session.uniqueId = :sessionId and a.academicArea.academicAreaAbbreviation = :acadAbbv and " +
+				"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
+				"(do is not null and do.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and do.permId=x.coursePermId) or (x.coursePermId is null and do.courseNbr=x.courseNbr))))";
 		if (majors.isEmpty()) {
 			// students with no major
 			select = "f.code, co.uniqueId, co.subjectArea.subjectAreaAbbreviation || ' ' || co.courseNbr, '', s.uniqueId";
@@ -3812,10 +3814,10 @@ public class CurriculaServlet implements CurriculaService {
 		for (Object[] o : (List<Object[]>)hibSession.createQuery(
 				"select distinct r.academicAreaAbbreviation, m.code, f.code, s.uniqueId from " +
 				"LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a left outer join s.posMajors m " +
-				"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co where " +
+				"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co left outer join co.demandOffering do where " +
 				"x.subjectArea.session.uniqueId = :sessionId and co.uniqueId = :courseId and "+
-				"co.subjectArea.uniqueId = x.subjectArea.uniqueId and " +
-				"((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))")
+				"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
+				"(do is not null and do.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and do.permId=x.coursePermId) or (x.coursePermId is null and do.courseNbr=x.courseNbr))))")
 				.setLong("sessionId", getAcademicSessionId())
 				.setLong("courseId", courseOfferingId)
 				.setCacheable(true).list()) {
@@ -3877,10 +3879,10 @@ public class CurriculaServlet implements CurriculaService {
 		for (Object[] o : (List<Object[]>)hibSession.createQuery(
 				"select distinct co.uniqueId, r.academicAreaAbbreviation, m.code, f.code, s.uniqueId from " +
 				"LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a left outer join s.posMajors m " +
-				"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co where " +
+				"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co left outer join co.demandOffering do where " +
 				"x.subjectArea.session.uniqueId = :sessionId and co.subjectArea.session.uniqueId = :sessionId and "+
-				"co.subjectArea.uniqueId = x.subjectArea.uniqueId and " +
-				"((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))")
+				"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
+				"(do is not null and do.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and do.permId=x.coursePermId) or (x.coursePermId is null and do.courseNbr=x.courseNbr))))")
 				.setLong("sessionId", getAcademicSessionId())
 				.setCacheable(true).list()) {
 			Long courseId = (Long)o[0];

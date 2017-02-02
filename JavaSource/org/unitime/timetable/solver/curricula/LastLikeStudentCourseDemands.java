@@ -132,10 +132,10 @@ public class LastLikeStudentCourseDemands implements StudentCourseDemands, Proje
 			iStudentRequests = new Hashtable<Long, Set<WeightedCourseOffering>>();
 			for (Object[] o : (List<Object[]>)iHibSession.createQuery(
 					"select distinct s, co " +
-					"from LastLikeCourseDemand x inner join x.student s left join fetch s.academicAreaClassifications left join fetch s.posMajors, CourseOffering co where " +
-					"x.subjectArea.session.uniqueId = :sessionId and "+
-					"co.subjectArea.uniqueId = x.subjectArea.uniqueId and " +
-					"((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))")
+					"from LastLikeCourseDemand x inner join x.student s left join fetch s.academicAreaClassifications left join fetch s.posMajors, CourseOffering co left outer join co.demandOffering do where " +
+					"x.subjectArea.session.uniqueId = :sessionId and " +
+					"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
+					"(do is not null and do.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and do.permId=x.coursePermId) or (x.coursePermId is null and do.courseNbr=x.courseNbr))))")
 					.setLong("sessionId", iSessionId)
 					.setCacheable(true).list()) {
 				Student student = (Student)o[0];

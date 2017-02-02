@@ -172,9 +172,10 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 	private Map<CourseOffering, Set<WeightedStudentId>> loadLastLikeStudents(org.hibernate.Session hibSession, CurriculumClassification cc) {
 		List<Object[]> lines = null;
 		String select = "distinct co, s";
-		String from = "CourseOffering co, LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a";
-		String where = "x.subjectArea.session.uniqueId = :sessionId and a.academicArea.academicAreaAbbreviation = :acadAbbv and a.academicClassification.code = :clasfCode " +
-			" and co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))";
+		String from = "CourseOffering co left outer join co.demandOffering do, LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a";
+		String where = "x.subjectArea.session.uniqueId = :sessionId and a.academicArea.academicAreaAbbreviation = :acadAbbv and a.academicClassification.code = :clasfCode and " +
+			"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
+			"(do is not null and do.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and do.permId=x.coursePermId) or (x.coursePermId is null and do.courseNbr=x.courseNbr))))";
 		if (cc.getCurriculum().getMajors().isEmpty()) {
 			// students with no major
 			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + (cc.getCurriculum().isMultipleMajors() ? " and s.posMajors is empty" : ""))

@@ -60,6 +60,12 @@
 				<line>Added room tooltip when resource is Room and when hovering over a room name (top left corner of each table).</line>
 			</description>
 		</item>
+		<item>
+			<name>Curricula: Last-Like Course Demands</name>
+			<description>
+				<line>Consinder demand offering (Take Course Demands from Offering parameter on a course) when showing last-like enrollments and when Curricula Last Like Course Demands are used.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>
