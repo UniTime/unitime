@@ -54,6 +54,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Timetable Grid</name>
+			<description>
+				<line>Added room tooltip when resource is Room and when hovering over a room name (top left corner of each table).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>
