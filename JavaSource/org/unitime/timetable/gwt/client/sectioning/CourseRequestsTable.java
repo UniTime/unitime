@@ -74,6 +74,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	private boolean iCanWaitList = true;
 	private P iHeader, iHeaderTitle, iHeaderWaitlist;
 	private P iAltHeader, iAltHeaderTitle, iAltHeaderNote;
+	private boolean iArrowsVisible = true;
 
 	public CourseRequestsTable(AcademicSessionProvider sessionProvider, boolean online) {
 		super("unitime-CourseRequests");
@@ -182,6 +183,8 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		CourseRequestLine next = iAlternatives.get(0);
 		line.setPrevious(prev); prev.setNext(line);
 		line.setNext(next); next.setPrevious(line);
+		line.setArrowsVisible(iArrowsVisible);
+		line.setWaitListVisible(iCanWaitList);
 		insert(line, 1 + i);
 		line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
 			@Override
@@ -198,6 +201,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		iAlternatives.add(line);
 		CourseRequestLine prev = iAlternatives.get(i - 1);
 		line.setPrevious(prev); prev.setNext(line);
+		line.setArrowsVisible(iArrowsVisible);
 		insert(line, 3 + iCourses.size() + i);
 		line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
 			@Override
@@ -213,6 +217,16 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		iHeaderWaitlist.setVisible(canWaitList);
 		for (CourseRequestLine line: iCourses)
 			line.setWaitListVisible(canWaitList);
+	}
+	
+	public void setArrowsVisible(boolean arrowsVisible) {
+		iArrowsVisible = arrowsVisible;
+		iHeaderWaitlist.setHTML(arrowsVisible ? MESSAGES.courseRequestsWaitList() : MESSAGES.courseRequestsWaitListNoArrows());
+		iHeader.setStyleName("noarrows", !arrowsVisible);
+		for (CourseRequestLine line: iCourses)
+			line.setArrowsVisible(arrowsVisible);
+		for (CourseRequestLine line: iAlternatives)
+			line.setArrowsVisible(arrowsVisible);
 	}
 
 	public void validate(final AsyncCallback<Boolean> callback) {

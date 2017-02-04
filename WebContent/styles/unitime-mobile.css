@@ -319,16 +319,40 @@
 
 	.unitime-CourseRequests .line .course .unitime-FilterBox {
 		width: 70vw;
-		width: calc(99vw - 160px);
+		width: calc(99vw - 165px);
 		min-width: 150px;
 	}
 
 	.unitime-CourseRequests .alt-line .course .unitime-FilterBox {
 		width: 70vw;
-		width: calc(99vw - 210px);
+		width: calc(99vw - 215px);
 		min-width: 100px;
 	}
 	
+	.unitime-CourseRequests .nowaitlist .line .course .unitime-FilterBox {
+		width: calc(99vw - 140px);
+	}
+
+	.unitime-CourseRequests .nowaitlist .alt-line .course .unitime-FilterBox {
+		width: calc(99vw - 190px);
+	}
+
+	.unitime-CourseRequests .noarrows .line .course .unitime-FilterBox {
+		width: calc(99vw - 105px);
+	}
+
+	.unitime-CourseRequests .noarrows .alt-line .course .unitime-FilterBox {
+		width: calc(99vw - 155px);
+	}
+	
+	.unitime-CourseRequests .noarrowswaitlist .line .course .unitime-FilterBox {
+		width: calc(99vw - 85px);
+	}
+
+	.unitime-CourseRequests .noarrowswaitlist .alt-line .course .unitime-FilterBox {
+		width: calc(99vw - 135px);
+	}
+
 	.unitime-CourseRequests .tip {
 		white-space: normal;
 	}

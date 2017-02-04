@@ -4822,6 +4822,10 @@ unitime-RoomSharingWidget .legend .blank {
 	padding-top: 3px;
 }
 
+.unitime-CourseRequests .noarrows .waitlist {
+	padding-right: 5px;
+}
+
 .unitime-CourseRequests .line {
 	overflow: hidden;
 }
@@ -4869,11 +4873,35 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-CourseRequests .line .course .unitime-FilterBox {
-	width: 650px;
+	width: 625px;
+}
+
+.unitime-CourseRequests .nowaitlist .line .course .unitime-FilterBox {
+	width: 645px;
+}
+
+.unitime-CourseRequests .noarrows .line .course .unitime-FilterBox {
+	width: 695px;
+}
+
+.unitime-CourseRequests .noarrowswaitlist .line .course .unitime-FilterBox {
+	width: 715px;
 }
 
 .unitime-CourseRequests .alt-line .course .unitime-FilterBox {
-	width: 600px;
+	width: 575px;
+}
+
+.unitime-CourseRequests .nowaitlist .alt-line .course .unitime-FilterBox {
+	width: 595px;
+}
+
+.unitime-CourseRequests .noarrows .alt-line .course .unitime-FilterBox {
+	width: 645px;
+}
+
+.unitime-CourseRequests .noarrowswaitlist .alt-line .course .unitime-FilterBox {
+	width: 665px;
 }
 
 .unitime-CourseRequests .line .alternative {
@@ -4910,6 +4938,38 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-CourseRequests .line .delete {
 	margin: 2px 2px 0px 2px;
 	text-align: right;
+}
+
+.unitime-CourseRequests .noarrows .blank {
+	display: none;
+}
+
+.unitime-CourseRequests .noarrows .up {
+	display: none;
+}
+
+.unitime-CourseRequests .noarrows .down {
+	display: none;
+}
+
+.unitime-CourseRequests .noarrows .delete {
+	display: none;
+}
+
+.unitime-CourseRequests .noarrowswaitlist .blank {
+	display: none;
+}
+
+.unitime-CourseRequests .noarrowswaitlist .up {
+	display: none;
+}
+
+.unitime-CourseRequests .noarrowswaitlist .down {
+	display: none;
+}
+
+.unitime-CourseRequests .noarrowswaitlist .delete {
+	display: none;
 }
 
 .unitime-CourseRequests .tip {

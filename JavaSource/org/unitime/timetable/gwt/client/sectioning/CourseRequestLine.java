@@ -113,6 +113,8 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			iWaitList.setAriaLabel(ARIA.titleRequestedWaitList(1 + priority));
 			iWaitList.addStyleName("wait-list");
 			buttons.add(iWaitList);
+		} else {
+			addStyleName("nowaitlist");
 		}
 		
 		P up = new P("blank");
@@ -140,8 +142,10 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 	}
 	
 	public void setWaitListVisible(boolean visible) {
-		if (iWaitList != null)
+		if (iWaitList != null) {
 			iWaitList.setVisible(visible);
+			changeVisibleStyle();
+		}
 	}
 	
 	public boolean getWaitList() { return iWaitList != null && iWaitList.getValue(); }
@@ -640,8 +644,10 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 							RequestedCourse rc = iCourses.get(1).getValue();
 							deleteAlternative(1);
 							setValue(rc, true);
-						} else {
+						} else if (!getValue().isEmpty()) {
 							setValue((RequestedCourse)null, true);
+						} else {
+							delete();
 						}
 					}
 				});
@@ -706,5 +712,19 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			iCourseSelectionHandlerRegistration.removeHandler();
 		}
 	}
-
+	
+	private boolean iArrowsVisible = true;
+	public void setArrowsVisible(boolean visible) {
+		iArrowsVisible = visible;
+		changeVisibleStyle();
+	}
+	public boolean areArrowsVisible() {
+		return iArrowsVisible;
+	}
+	
+	protected void changeVisibleStyle() {
+		setStyleName("noarrows", !areArrowsVisible() && isWaitListVisible());
+		setStyleName("nowaitlist", areArrowsVisible() && !isWaitListVisible());
+		setStyleName("noarrowswaitlist", !areArrowsVisible() && !isWaitListVisible());
+	}
 }

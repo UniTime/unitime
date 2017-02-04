@@ -2093,6 +2093,12 @@ public enum ApplicationProperty {
 	@Description("Online Student Scheduling: use GWT-based confirmation dialog (instead of the default one)")
 	@Since(4.1)
 	OnlineSchedulingGWTConfirmations("unitime.enrollment.gwtConfirmations"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Online Student Scheduling: hide up and down arrows in the Course Requests table")
+	@Since(4.1)
+	OnlineSchedulingNoRequestArrows("unitime.enrollment.hideCourseRequestArrows"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
