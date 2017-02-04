@@ -189,6 +189,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("&darr; Wait-List")
 	String courseRequestsWaitList();
+	
+	@DefaultMessage("Wait-List &darr;")
+	String courseRequestsWaitListNoArrows();
 
 	@DefaultMessage("{0}. Priority")
 	String courseRequestsPriority(int i);

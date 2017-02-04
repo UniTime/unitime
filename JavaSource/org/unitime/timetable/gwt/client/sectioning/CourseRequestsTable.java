@@ -44,6 +44,8 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.RunAsyncCallback;
+import com.google.gwt.dom.client.Style.TextAlign;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -79,6 +81,7 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 	
 	Validator<CourseSelection> iCheckForDuplicities;
 	private boolean iCanWaitList = true;
+	private boolean iArrowsVisible = true;
 
 	public CourseRequestsTable(AcademicSessionProvider sessionProvider, boolean online) {
 		iOnline = online;
@@ -326,6 +329,7 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 		}
 		if (i > 0) {
 			final ImageButton up = new ImageButton(RESOURCES.up(), RESOURCES.up_Down(), RESOURCES.up_Over());
+			up.setVisible(iArrowsVisible);
 			up.addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
 					c[0].swapUp();
@@ -334,6 +338,7 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 			iGrid.setWidget(idx, 5, up);
 			up.setAltText(ARIA.altSwapCourseRequest(i + 1, i));
 			final ImageButton down = new ImageButton(RESOURCES.down(), RESOURCES.down_Down(), RESOURCES.down_Over());
+			down.setVisible(iArrowsVisible);
 			down.addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
 					c[0].swapDown();
@@ -354,7 +359,7 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 			iGrid.setWidget(idx, 7, delete);
 			delete.setAltText(ARIA.altDeleteRequest(i + 1));
 		}
-		c[0].setWidth("260px");
+		c[0].setWidth(iArrowsVisible ? "260px" : "300px");
 		c[1].setWidth("155px");
 		c[2].setWidth("155px");
 		c[1].setEnabled(false);
@@ -461,6 +466,7 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 				x[j].setNext(c[j]);
 			}
 			final ImageButton up = new ImageButton(RESOURCES.up(), RESOURCES.up_Down(), RESOURCES.up_Over());
+			up.setVisible(iArrowsVisible);
 			up.addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
 					c[0].swapUp();
@@ -476,6 +482,7 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 			});
 			iGrid.setWidget(idx - 1, 5, down);
 			down.setAltText(ARIA.altSwapAlternateRequest(i, i + 1));
+			down.setVisible(iArrowsVisible);
 			final ImageButton delete = new ImageButton(RESOURCES.delete(), RESOURCES.delete_Down(), RESOURCES.delete_Over());
 			delete.addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
@@ -486,7 +493,7 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 			iGrid.setWidget(idx, 6, delete);
 			delete.setAltText(ARIA.altDeleteAlternateRequest(i + 1));
 		}
-		c[0].setWidth("260px");
+		c[0].setWidth(iArrowsVisible ? "260px" : "300px");
 		c[1].setWidth("155px");
 		c[2].setWidth("155px");
 		c[1].setEnabled(false);
@@ -732,9 +739,36 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 	
 	public void setCanWaitList(boolean canWaitList) {
 		iCanWaitList = canWaitList;
-		iGrid.setHTML(0, 1, iCanWaitList ? MESSAGES.courseRequestsWaitList() : "");
+		iGrid.setHTML(0, 1, iCanWaitList ? (iArrowsVisible ? MESSAGES.courseRequestsWaitList() : MESSAGES.courseRequestsWaitListNoArrows()) : "");
 		for (int i = 0; i < iCourses.size(); i++)
 			iGrid.getCellFormatter().setVisible(1 + i, 4, iCanWaitList);
+	}
+	
+	public void setArrowsVisible(boolean arrowsVisible) {
+		iArrowsVisible = arrowsVisible;
+		for (int i = 0; i < iCourses.size(); i++) {
+			iCourses.get(i)[0].setWidth(iArrowsVisible ? "260px" : "300px");
+			iGrid.getCellFormatter().setVisible(1 + i, 5, iArrowsVisible);
+			iGrid.getCellFormatter().setVisible(1 + i, 6, iArrowsVisible);
+		}
+		for (int i = 0; i < iAlternatives.size(); i++) {
+			iAlternatives.get(i)[0].setWidth(iArrowsVisible ? "260px" : "300px");
+			iGrid.getCellFormatter().setVisible(3 + iCourses.size() + i, 4, iArrowsVisible);
+			iGrid.getCellFormatter().setVisible(3 + iCourses.size() + i, 5, iArrowsVisible);
+		}
+		if (iArrowsVisible) {
+			iGrid.getFlexCellFormatter().setColSpan(0, 0, 4);
+			iGrid.getFlexCellFormatter().setColSpan(0, 1, 4);
+			iGrid.getFlexCellFormatter().getElement(0, 1).getStyle().clearTextAlign();
+			iGrid.setHTML(0, 1, iCanWaitList ? MESSAGES.courseRequestsWaitList() : "");
+			iGrid.getFlexCellFormatter().getElement(0, 1).getStyle().clearPaddingRight();
+		} else {
+			iGrid.getFlexCellFormatter().setColSpan(0, 0, 3);
+			iGrid.getFlexCellFormatter().setColSpan(0, 1, 5);
+			iGrid.getFlexCellFormatter().getElement(0, 1).getStyle().setTextAlign(TextAlign.RIGHT);
+			iGrid.setHTML(0, 1, iCanWaitList ? MESSAGES.courseRequestsWaitListNoArrows() : "");
+			iGrid.getFlexCellFormatter().getElement(0, 1).getStyle().setPaddingRight(30, Unit.PX);
+		}
 	}
 
 	public void validate(final AsyncCallback<Boolean> callback) {

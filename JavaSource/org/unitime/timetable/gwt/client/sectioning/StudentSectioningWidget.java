@@ -1451,6 +1451,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				clearMessage(false);
 				iEligibilityCheck = result;
 				iCourseRequests.setCanWaitList(result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
+				iCourseRequests.setArrowsVisible(!result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.NO_REQUEST_ARROWS));
 				if (result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_USE_ASSISTANT)) {
 					if (result.hasMessage()) {
 						iStatus.warning(result.getMessage());
@@ -1475,6 +1476,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							@Override
 							public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
 								iCourseRequests.setCanWaitList(result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
+								iCourseRequests.setArrowsVisible(!result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.NO_REQUEST_ARROWS));
 								iEligibilityCheck = result;
 								iSchedule.setVisible(iMode.isSectioning()); iSchedule.setEnabled(iMode.isSectioning());
 								iSave.setVisible(!iMode.isSectioning()); iSave.setEnabled(!iMode.isSectioning() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_REGISTER));
@@ -1826,6 +1828,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	protected void setElibibilityCheckDuringEnrollment(EligibilityCheck check) {
 		iEligibilityCheck = check;
 		iCourseRequests.setCanWaitList(check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
+		iCourseRequests.setArrowsVisible(!check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.NO_REQUEST_ARROWS));
 		if (check.hasFlag(EligibilityFlag.CAN_ENROLL)) {
 			iEnroll.setVisible(true);
 			if (check.hasCheckboxMessage()) {

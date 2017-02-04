@@ -78,6 +78,13 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Requests, Student Scheduling Assistant</name>
+			<description>
+				<line>Added ability to hide up and down arrows in the Course Requests table.</line>
+				<line>This can be done by setting the application property unitime.enrollment.hideCourseRequestArrows to true (defaults to false).</line>
+			</description>
+		</item>
 	</category>
 </release>
 
