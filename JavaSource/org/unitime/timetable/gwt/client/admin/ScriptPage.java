@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.admin;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -27,8 +28,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload;
@@ -419,6 +422,51 @@ public class ScriptPage extends Composite {
 							}
 						});
 						widget = textarea;
+					} else if ("integer".equalsIgnoreCase(param.getType()) || "int".equalsIgnoreCase(param.getType()) || "long".equalsIgnoreCase(param.getType()) || "short".equalsIgnoreCase(param.getType()) || "byte".equalsIgnoreCase(param.getType())) {
+						NumberBox text = new NumberBox();
+						text.setDecimal(false); text.setNegative(true);
+						if (param.getDefaultValue() != null)
+							text.setText(param.getDefaultValue());
+						text.addValueChangeHandler(new ValueChangeHandler<String>() {
+							@Override
+							public void onValueChange(ValueChangeEvent<String> event) {
+								if (event.getValue() == null)
+									iParams.remove(param.getName());
+								else
+									iParams.put(param.getName(), event.getValue());
+							}
+						});
+						widget = text;
+					} else if ("number".equalsIgnoreCase(param.getType()) || "float".equalsIgnoreCase(param.getType()) || "double".equalsIgnoreCase(param.getType())) {
+						NumberBox text = new NumberBox();
+						text.setDecimal(true); text.setNegative(true);
+						if (param.getDefaultValue() != null)
+							text.setText(param.getDefaultValue());
+						text.addValueChangeHandler(new ValueChangeHandler<String>() {
+							@Override
+							public void onValueChange(ValueChangeEvent<String> event) {
+								if (event.getValue() == null)
+									iParams.remove(param.getName());
+								else
+									iParams.put(param.getName(), event.getValue());
+							}
+						});
+						widget = text;
+					} else if ("date".equalsIgnoreCase(param.getType())) {
+						SingleDateSelector text = new SingleDateSelector();
+						if (param.getDefaultValue() != null)
+							text.setText(param.getDefaultValue());
+						final DateTimeFormat format = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
+						text.addValueChangeHandler(new ValueChangeHandler<Date>() {
+							@Override
+							public void onValueChange(ValueChangeEvent<Date> event) {
+								if (event.getValue() == null)
+									iParams.remove(param.getName());
+								else
+									iParams.put(param.getName(), format.format(event.getValue()));
+							}
+						});
+						widget = text;
 					} else {
 						TextBox text = new TextBox();
 						text.setStyleName("unitime-TextBox");

@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.script.Compilable;
@@ -51,6 +52,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.queue.QueueItem;
 
 /**
@@ -176,17 +178,20 @@ public class ScriptExecution extends QueueItem {
 				if (parameter.getType().equalsIgnoreCase("boolean")) {
 					engine.put(parameter.getName(), "true".equalsIgnoreCase(value));
 				} else if (parameter.getType().equalsIgnoreCase("long")) {
-					engine.put(parameter.getName(), Long.valueOf(value));
+					engine.put(parameter.getName(), value == null || value.isEmpty() ? null : Long.valueOf(value));
 				} else if (parameter.getType().equalsIgnoreCase("int") || parameter.getType().equalsIgnoreCase("integer")) {
-					engine.put(parameter.getName(), Integer.valueOf(value));
+					engine.put(parameter.getName(), value == null || value.isEmpty() ? null : Integer.valueOf(value));
 				} else if (parameter.getType().equalsIgnoreCase("double")) {
-					engine.put(parameter.getName(), Double.valueOf(value));
+					engine.put(parameter.getName(), value == null || value.isEmpty() ? null : Double.valueOf(value));
 				} else if (parameter.getType().equalsIgnoreCase("float")) {
-					engine.put(parameter.getName(), Float.valueOf(value));
+					engine.put(parameter.getName(), value == null || value.isEmpty() ? null : Float.valueOf(value));
 				} else if (parameter.getType().equalsIgnoreCase("short")) {
-					engine.put(parameter.getName(), Short.valueOf(value));
+					engine.put(parameter.getName(), value == null || value.isEmpty() ? null : Short.valueOf(value));
 				} else if (parameter.getType().equalsIgnoreCase("byte")) {
-					engine.put(parameter.getName(), Byte.valueOf(value));
+					engine.put(parameter.getName(), value == null || value.isEmpty() ? null : Byte.valueOf(value));
+				} else if (parameter.getType().equalsIgnoreCase("date")) {
+					Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
+					engine.put(parameter.getName(), dateFormat.parse(value));
 				} else if (parameter.getType().equalsIgnoreCase("department")) {
 					engine.put(parameter.getName(), DepartmentDAO.getInstance().get(Long.valueOf(value), hibSession));
 				} else if (parameter.getType().equalsIgnoreCase("departments")) {
