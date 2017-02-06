@@ -86,6 +86,15 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Event Management</title>
+		<item>
+			<name>Personal Schedule: Examinations and Course-Related Events</name>
+			<description>
+				<line>Fixed an issue introduced by commit 8d552bf: OfferingCoordinator is not mapped error is shown when looking up a coordinator schedule (role:Coordinator in the event filter).</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>

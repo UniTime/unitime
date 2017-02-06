@@ -561,9 +561,9 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									.setString("externalId", request.getResourceExternalId()).list());
 						}
 						if (coordinator) {
-							curriculumCourses.addAll(hibSession.createQuery("select co.uniqueId from OfferingCoordinator c inner join c.offering.courseOfferings co where c.instructor.externalUniqueId = :externalId")
+							curriculumCourses.addAll(hibSession.createQuery("select co.uniqueId from CourseOffering co inner join co.instructionalOffering.coordinators i where i.externalUniqueId = :externalId")
 									.setString("externalId", request.getResourceExternalId()).list());
-							curriculumClasses.addAll(hibSession.createQuery("select z.uniqueId from Class_ z inner join z.schedulingSubpart.instrOfferingConfig.instructionalOffering.offeringCoordinators c where c.instructor.externalUniqueId = :externalId")
+							curriculumClasses.addAll(hibSession.createQuery("select z.uniqueId from Class_ z inner join z.schedulingSubpart.instrOfferingConfig.instructionalOffering.coordinators i where i.externalUniqueId = :externalId")
 									.setString("externalId", request.getResourceExternalId()).list());
 						}
 					} else {
@@ -581,9 +581,9 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									.setLong("sessionId", request.getSessionId()).setString("externalId", request.getResourceExternalId()).list());
 						}
 						if (coordinator) {
-							curriculumCourses.addAll(hibSession.createQuery("select co.uniqueId from OfferingCoordinator c inner join c.offering.courseOfferings co where c.instructor.externalUniqueId = :externalId and c.instructor.department.session.uniqueId = :sessionId")
+							curriculumCourses.addAll(hibSession.createQuery("select co.uniqueId from CourseOffering co inner join co.instructionalOffering.coordinators i where i.externalUniqueId = :externalId and i.department.session.uniqueId = :sessionId")
 									.setLong("sessionId", request.getSessionId()).setString("externalId", request.getResourceExternalId()).list());
-							curriculumClasses.addAll(hibSession.createQuery("select z.uniqueId from Class_ z inner join z.schedulingSubpart.instrOfferingConfig.instructionalOffering.offeringCoordinators c where c.instructor.externalUniqueId = :externalId and c.instructor.department.session.uniqueId = :sessionId")
+							curriculumClasses.addAll(hibSession.createQuery("select z.uniqueId from Class_ z inner join z.schedulingSubpart.instrOfferingConfig.instructionalOffering.coordinators i where i.externalUniqueId = :externalId and i.department.session.uniqueId = :sessionId")
 									.setLong("sessionId", request.getSessionId()).setString("externalId", request.getResourceExternalId()).list());
 						}						
 					}
