@@ -363,11 +363,9 @@
 							Examination Distribution Preferences
 						</tt:section-title>
 						<sec:authorize access="hasPermission(null, 'Session', 'ExaminationDistributionPreferenceAdd')">
-							<TD colspan="2" align="right">
-								<html:submit property="op" styleClass="btn" accesskey="A" title="Add New Distribution Preference (Alt+A)" >
-									<bean:message key="button.addDistPref" />
-								</html:submit>
-							</TD>
+							<html:submit property="op" styleClass="btn" accesskey="A" title="Add New Distribution Preference (Alt+A)" >
+								<bean:message key="button.addDistPref" />
+							</html:submit>
 						</sec:authorize>
 					</tt:section-header>
 				</TD>
