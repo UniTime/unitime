@@ -39,6 +39,7 @@ public abstract class BaseStudentGroup implements Serializable {
 	private String iGroupAbbreviation;
 	private String iGroupName;
 	private String iExternalUniqueId;
+	private Integer iExpectedSize;
 
 	private Session iSession;
 	private Set<Student> iStudents;
@@ -48,6 +49,7 @@ public abstract class BaseStudentGroup implements Serializable {
 	public static String PROP_GROUP_ABBREVIATION = "groupAbbreviation";
 	public static String PROP_GROUP_NAME = "groupName";
 	public static String PROP_EXTERNAL_UID = "externalUniqueId";
+	public static String PROP_EXPECTED_SIZE = "expectedSize";
 
 	public BaseStudentGroup() {
 		initialize();
@@ -74,6 +76,9 @@ public abstract class BaseStudentGroup implements Serializable {
 
 	public String getExternalUniqueId() { return iExternalUniqueId; }
 	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
+
+	public Integer getExpectedSize() { return iExpectedSize; }
+	public void setExpectedSize(Integer expectedSize) { iExpectedSize = expectedSize; }
 
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
@@ -102,6 +107,7 @@ public abstract class BaseStudentGroup implements Serializable {
 
 	public String toDebugString() {
 		return "StudentGroup[" +
+			"\n	ExpectedSize: " + getExpectedSize() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +
 			"\n	GroupAbbreviation: " + getGroupAbbreviation() +
 			"\n	GroupName: " + getGroupName() +

@@ -54,6 +54,7 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.solver.curricula.CurriculaCourseDemands.CurriculumCourseGroupsProvider;
 import org.unitime.timetable.solver.curricula.CurriculaCourseDemands.DefaultCurriculumCourseGroupsProvider;
 import org.unitime.timetable.solver.curricula.CurriculaCourseDemands.TableCurriculumCourseGroupsProvider;
+import org.unitime.timetable.solver.curricula.StudentCourseDemands.NeedsStudentIdGenerator;
 import org.unitime.timetable.solver.curricula.students.CurCourse;
 import org.unitime.timetable.solver.curricula.students.CurModel;
 import org.unitime.timetable.solver.curricula.students.CurStudent;
@@ -63,11 +64,11 @@ import org.unitime.timetable.solver.curricula.students.CurVariable;
 /**
  * @author Tomas Muller
  */
-public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
+public class CurriculaLastLikeCourseDemands implements StudentCourseDemands, NeedsStudentIdGenerator {
 	private static Log sLog = LogFactory.getLog(CurriculaLastLikeCourseDemands.class);
 
 	private ProjectedStudentCourseDemands iProjectedDemands;
-	private IdGenerator iLastStudentId = new IdGenerator();
+	private IdGenerator iLastStudentId = null;
 	private Hashtable<Long, Set<WeightedStudentId>> iDemands = new Hashtable<Long, Set<WeightedStudentId>>();
 	private Hashtable<Long, Set<WeightedCourseOffering>> iStudentRequests = new Hashtable<Long, Set<WeightedCourseOffering>>();
 	private Hashtable<String, Set<String>> iLoadedCurricula = new Hashtable<String, Set<String>>();
@@ -569,5 +570,10 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 					majors.add(mj.getCode());
 			}
 		}
+	}
+	
+	@Override
+	public void setStudentIdGenerator(IdGenerator generator) {
+		iLastStudentId = generator;
 	}
 }

@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.cpsolver.ifs.util.IdGenerator;
 import org.cpsolver.ifs.util.Progress;
 import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.CourseOffering;
@@ -79,6 +80,14 @@ public interface StudentCourseDemands {
 	 * Return true if students should be weghted so that the offering is filled in completely.
 	 */
 	public boolean isWeightStudentsToFillUpOffering();
+	
+	
+	public static interface NeedsStudentIdGenerator {
+		/**
+		 * Set student id generator
+		 */
+		public void setStudentIdGenerator(IdGenerator generator);
+	}
 	
 	/**
 	 * List of courses for a student
@@ -159,6 +168,15 @@ public interface StudentCourseDemands {
 		private Set<String> iCurricula = new TreeSet<String>();
 		private Set<Group> iGroups = new HashSet<Group>();
 		
+		public WeightedStudentId(WeightedStudentId student, float weight) {
+			iStudentId = student.iStudentId;
+			iWeight = weight;
+			iAreas.addAll(student.iAreas);
+			iMajors.addAll(student.iMajors);
+			iCurricula.addAll(student.iCurricula);
+			iGroups.addAll(student.iGroups);
+		}
+		
 		public WeightedStudentId(Student student, ProjectionsProvider projections) {
 			iStudentId = student.getUniqueId();
 			iWeight = 1.0f;
@@ -211,6 +229,11 @@ public interface StudentCourseDemands {
 				iMajors.add(new AreaCode(curriculum.getAcademicArea().getAcademicAreaAbbreviation(), major.getCode()));
 			iCurricula.add(curriculum.getAbbv());
 			iGroups.add(new Group(-cc.getUniqueId(), cc.getCurriculum().getAbbv() + " " + cc.getAcademicClassification().getCode())); 
+		}
+
+		public WeightedStudentId(Long studentId) {
+			iStudentId = studentId;
+			iWeight = 1.0f;
 		}
 		
 		public WeightedStudentId(Student student) {
@@ -395,6 +418,22 @@ public interface StudentCourseDemands {
 		
 		public float getWeight() {
 			return iWeight;
+		}
+
+		@Override
+		public int hashCode() {
+			return (int)(iCourseOfferingId ^ (iCourseOfferingId >>> 32));
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof WeightedCourseOffering)) return false;
+			return getCourseOfferingId() == ((WeightedCourseOffering)o).getCourseOfferingId();
+		}
+		
+		@Override
+		public String toString() {
+			return getCourseOffering().getCourseName() + (getWeight() != 1.0f ? "@" + getWeight() : "");
 		}
 	}
 	

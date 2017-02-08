@@ -1,4 +1,4 @@
-<!-- 
+/*
  * Licensed to The Apereo Foundation under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
  * additional information regarding copyright ownership.
@@ -16,17 +16,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- -->
+*/
 
-<!ELEMENT studentGroups ( studentGroup+ ) >
-<!ATTLIST studentGroups campus CDATA #REQUIRED >
-<!ATTLIST studentGroups term CDATA #REQUIRED >
-<!ATTLIST studentGroups year CDATA #REQUIRED >
+alter table student_group add expected_size int(10);
 
-<!ELEMENT studentGroup EMPTY >
-<!ATTLIST studentGroup externalId CDATA #IMPLIED >
-<!ATTLIST studentGroup code CDATA #REQUIRED >
-<!ATTLIST studentGroup name CDATA #REQUIRED >
-<!ATTLIST studentGroup size CDATA #IMPLIED >
+/*
+ * Update database version
+ */
 
+update application_config set value='173' where name='tmtbl.db.version';
 
+commit;

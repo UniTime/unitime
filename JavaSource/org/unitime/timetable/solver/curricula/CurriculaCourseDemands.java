@@ -49,6 +49,7 @@ import org.unitime.timetable.model.CurriculumCourseGroup;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.solver.curricula.StudentCourseDemands.NeedsStudentIdGenerator;
 import org.unitime.timetable.solver.curricula.students.CurCourse;
 import org.unitime.timetable.solver.curricula.students.CurModel;
 import org.unitime.timetable.solver.curricula.students.CurStudent;
@@ -59,12 +60,12 @@ import org.unitime.timetable.solver.curricula.students.CurVariable;
 /**
  * @author Tomas Muller
  */
-public class CurriculaCourseDemands implements StudentCourseDemands {
+public class CurriculaCourseDemands implements StudentCourseDemands, NeedsStudentIdGenerator {
 	private static Log sLog = LogFactory.getLog(CurriculaCourseDemands.class);
 	private Hashtable<Long, Set<WeightedStudentId>> iDemands = new Hashtable<Long, Set<WeightedStudentId>>();
 	private Hashtable<Long, Set<WeightedCourseOffering>> iStudentRequests = new Hashtable<Long, Set<WeightedCourseOffering>>();
 	private Hashtable<Long, Hashtable<Long, Double>> iEnrollmentPriorities = new Hashtable<Long, Hashtable<Long, Double>>();
-	private IdGenerator lastStudentId = new IdGenerator();
+	private IdGenerator iLastStudentId = null;
 	protected ProjectedStudentCourseDemands iFallback;
 	private Hashtable<Long, Hashtable<String, Set<String>>> iLoadedCurricula = new Hashtable<Long,Hashtable<String, Set<String>>>();
 	private HashSet<Long> iCheckedCourses = new HashSet<Long>();
@@ -367,7 +368,7 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 				majors += major.getCode();
 			}
 			for (CurStudent s: iModel.getStudents()) {
-				WeightedStudentId student = new WeightedStudentId(- lastStudentId.newId(), iClassification);
+				WeightedStudentId student = new WeightedStudentId(- iLastStudentId.newId(), iClassification);
 				Set<WeightedCourseOffering> studentCourses = new HashSet<WeightedCourseOffering>();
 				iStudentRequests.put(student.getStudentId(), studentCourses);
 				Hashtable<Long, Double> priorities = new Hashtable<Long, Double>(); iEnrollmentPriorities.put(student.getStudentId(), priorities);
@@ -418,5 +419,10 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 			return (groups == null ? course.getGroups() : groups);
 		}
 		
+	}
+
+	@Override
+	public void setStudentIdGenerator(IdGenerator generator) {
+		iLastStudentId = generator;
 	}
 }

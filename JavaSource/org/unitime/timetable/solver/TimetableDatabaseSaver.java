@@ -436,6 +436,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
         			
         			for (Iterator i2=lecture.students().iterator();i2.hasNext();) {
         				Student student = (Student)i2.next();
+        				if (student.getId() < 0) continue;
         				StudentEnrollment enrl = new StudentEnrollment();
         				enrl.setStudentId(student.getId());
         				enrl.setClazz(clazz);

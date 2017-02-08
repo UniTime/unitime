@@ -12280,5 +12280,9 @@
 		<mysql>alter table %SCHEMA%.teaching_responsibility add options int(10) not null default 0</mysql>
 		<plsql>alter table %SCHEMA%.teaching_responsibility add options number(10,0) default 0</plsql>
 		<plsql>alter table %SCHEMA%.teaching_responsibility add constraint nn_responsibility_options check (options is not null)</plsql>
-	</update>	
+	</update>
+	<update version="173" date="8-Feb-2017" comment="Student Group Expected Size">
+		<mysql>alter table %SCHEMA%.student_group add expected_size int(10)</mysql>
+		<plsql>alter table %SCHEMA%.student_group add expected_size number(10,0)</plsql>
+	</update>
 </dbupdate>

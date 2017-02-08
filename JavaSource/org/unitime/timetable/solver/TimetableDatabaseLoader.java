@@ -66,6 +66,7 @@ import org.cpsolver.coursett.preference.SumPreferenceCombination;
 import org.cpsolver.ifs.model.BinaryConstraint;
 import org.cpsolver.ifs.model.Constraint;
 import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.IdGenerator;
 import org.cpsolver.ifs.util.Progress;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
@@ -131,6 +132,7 @@ import org.unitime.timetable.solver.curricula.StudentCourseDemands;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.Group;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedCourseOffering;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedStudentId;
+import org.unitime.timetable.solver.curricula.StudentGroupCourseDemands;
 import org.unitime.timetable.solver.jgroups.SolverServerImplementation;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
@@ -202,6 +204,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private CommittedStudentConflictsMode iCommittedStudentConflictsMode = CommittedStudentConflictsMode.Load;
     
     private StudentCourseDemands iStudentCourseDemands = null;
+    private StudentGroupCourseDemands iStudentGroupCourseDemands = null;
     
     private ClassWeightProvider iClassWeightProvider = null;
     private boolean iUseAmPm = true;
@@ -270,8 +273,16 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	iProgress.message(msglevel("badStudentCourseDemands", Progress.MSGLEVEL_WARN), "Failed to load custom student course demands class, using last-like course demands instead.",e);
         	iStudentCourseDemands = new LastLikeStudentCourseDemands(getModel().getProperties());
         }
+        IdGenerator studentIdGenerator = new IdGenerator();
+        if (iStudentCourseDemands instanceof StudentCourseDemands.NeedsStudentIdGenerator)
+        	((StudentCourseDemands.NeedsStudentIdGenerator)iStudentCourseDemands).setStudentIdGenerator(studentIdGenerator);
         getModel().getProperties().setProperty("General.SaveStudentEnrollments", iStudentCourseDemands.isMakingUpStudents() ? "false" : "true");
         getModel().getProperties().setProperty("General.WeightStudents", iStudentCourseDemands.isWeightStudentsToFillUpOffering() ? "true" : "false");
+        if (getModel().getProperties().getPropertyBoolean("General.StudentGroupCourseDemands", false)) {
+        	iStudentGroupCourseDemands = new StudentGroupCourseDemands(getModel().getProperties());
+        	if (iStudentGroupCourseDemands instanceof StudentCourseDemands.NeedsStudentIdGenerator)
+            	((StudentCourseDemands.NeedsStudentIdGenerator)iStudentGroupCourseDemands).setStudentIdGenerator(studentIdGenerator);
+        }
         
         iCommittedStudentConflictsMode = CommittedStudentConflictsMode.valueOf(getModel().getProperties().getProperty("General.CommittedStudentConflicts",
         		iCommittedStudentConflictsMode.name()));
@@ -2281,6 +2292,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         setPhase("Creating student conflicts with commited solutions ...", iStudents.size());
     	for (Student student: iStudents.values()) {
     		Set<WeightedCourseOffering> courses = iStudentCourseDemands.getCourses(student.getId());
+    		if (iStudentGroupCourseDemands != null) {
+    			Set<WeightedCourseOffering> other = iStudentGroupCourseDemands.getCourses(student.getId());
+    			if (other != null && !other.isEmpty()) {
+    				if (courses == null) courses = other; else courses.addAll(other);
+    			}
+    		}
     		incProgress();
     		if (courses == null) continue;
     		for (WeightedCourseOffering course: courses) {
@@ -2705,6 +2722,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	}
 		
 		iStudentCourseDemands.init(hibSession, iProgress, iSession, iOfferings.keySet());
+		if (iStudentGroupCourseDemands != null)
+			iStudentGroupCourseDemands.init(hibSession, iProgress, iSession, iOfferings.keySet());
 
     	setPhase("Loading students ...",iOfferings.size());
     	for (InstructionalOffering offering: iOfferings.keySet()) {
@@ -2757,6 +2776,13 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		
     		for (CourseOffering course: offering.getCourseOfferings()) {
         		Set<WeightedStudentId> studentIds = iStudentCourseDemands.getDemands(course);
+        		
+        		if (iStudentGroupCourseDemands != null) {
+        			Set<WeightedStudentId> other = iStudentGroupCourseDemands.getDemands(course);
+        			if (other != null && !other.isEmpty()) {
+        				if (studentIds == null) studentIds = other; else studentIds.addAll(other);
+        			}
+        		}
         		
 				float studentWeight = 0.0f;
 				if (studentIds != null)

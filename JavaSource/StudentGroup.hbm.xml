@@ -83,6 +83,12 @@
 
         </set>
 
+        <property
+            name="expectedSize"
+            column="expected_size"
+            type="java.lang.Integer"
+            not-null="false"
+            />
     </class>
 
 </hibernate-mapping>

@@ -65,6 +65,7 @@ public class StudentGroupImport extends BaseImport {
                 String externalId = element.attributeValue("externalId");
                 String code = element.attributeValue("code");
                 String name = element.attributeValue("name");
+                String size = element.attributeValue("size");
                 
                 StudentGroup group = null;
                 if (externalId != null)
@@ -83,6 +84,11 @@ public class StudentGroupImport extends BaseImport {
                 group.setExternalUniqueId(externalId);
                 group.setGroupAbbreviation(code);
                 group.setGroupName(name);
+                try {
+        			group.setExpectedSize(size == null || size.isEmpty() ? null : Integer.valueOf(size));
+        		} catch (NumberFormatException e) {
+        			group.setExpectedSize(null);
+        		}
                 
                 getHibSession().saveOrUpdate(group);
             }

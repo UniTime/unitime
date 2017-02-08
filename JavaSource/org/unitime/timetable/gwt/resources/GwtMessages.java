@@ -3849,6 +3849,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Hide in Events")
 	String fieldHideInEvents();
 	
+	@DefaultMessage("Expected Size")
+	String fieldExpectedSize();
+	
 	@DefaultMessage("Access")
 	String toggleAccess();
 	

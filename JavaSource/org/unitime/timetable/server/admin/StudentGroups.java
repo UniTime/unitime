@@ -68,6 +68,7 @@ public class StudentGroups implements AdminTable {
 				new Field(MESSAGES.fieldExternalId(), FieldType.text, 120, 40, Flag.READ_ONLY),
 				new Field(MESSAGES.fieldCode(), FieldType.text, 80, 10, Flag.UNIQUE),
 				new Field(MESSAGES.fieldName(), FieldType.text, 300, 50, Flag.UNIQUE),
+				new Field(MESSAGES.fieldExpectedSize(), FieldType.number, 80, 10),
 				new Field(MESSAGES.fieldStudents(), FieldType.students, 200));
 		data.setSortBy(1,2);
 		for (StudentGroup group: StudentGroupDAO.getInstance().findBySession(hibSession, context.getUser().getCurrentAcademicSessionId())) {
@@ -75,12 +76,13 @@ public class StudentGroups implements AdminTable {
 			r.setField(0, group.getExternalUniqueId());
 			r.setField(1, group.getGroupAbbreviation());
 			r.setField(2, group.getGroupName());
+			r.setField(3, group.getExpectedSize() == null ? "" : group.getExpectedSize().toString());
 			String students = "";
 			for (Student student: new TreeSet<Student>(group.getStudents())) {
 				if (!students.isEmpty()) students += "\n";
 				students += student.getExternalUniqueId() + " " + student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
 			}
-			r.setField(3, students, group.getExternalUniqueId() == null);
+			r.setField(4, students, group.getExternalUniqueId() == null);
 			r.setDeletable(group.getExternalUniqueId() == null);
 		}
 		data.setEditable(context.hasPermission(Right.StudentGroupEdit));
@@ -109,11 +111,16 @@ public class StudentGroups implements AdminTable {
 		group.setExternalUniqueId(record.getField(0));
 		group.setGroupAbbreviation(record.getField(1));
 		group.setGroupName(record.getField(2));
+		try {
+			group.setExpectedSize(record.getField(3) == null || record.getField(3).isEmpty() ? null : Integer.valueOf(record.getField(3)));
+		} catch (NumberFormatException e) {
+			group.setExpectedSize(null);
+		}
 		group.setSession(SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId(), hibSession));
 		group.setStudents(new HashSet<Student>());
-		if (record.getField(3) != null) {
+		if (record.getField(4) != null) {
 			String students = "";
-			for (String s: record.getField(3).split("\\n")) {
+			for (String s: record.getField(4).split("\\n")) {
 				if (s.indexOf(' ') >= 0) s = s.substring(0, s.indexOf(' '));
 				if (s.trim().isEmpty()) continue;
 				Student student = Student.findByExternalId(context.getUser().getCurrentAcademicSessionId(), s.trim());
@@ -125,7 +132,7 @@ public class StudentGroups implements AdminTable {
 					studentIds.add(student.getUniqueId());
 				}
 			}
-			record.setField(3, students, true);
+			record.setField(4, students, true);
 		}
 		record.setUniqueId((Long)hibSession.save(group));
 		ChangeLog.addChange(hibSession,
@@ -153,15 +160,21 @@ public class StudentGroups implements AdminTable {
 		boolean changed = 
 				!ToolBox.equals(group.getExternalUniqueId(), record.getField(0)) ||
 				!ToolBox.equals(group.getGroupAbbreviation(), record.getField(1)) ||
-				!ToolBox.equals(group.getGroupName(), record.getField(2));
+				!ToolBox.equals(group.getGroupName(), record.getField(2)) ||
+				!ToolBox.equals(group.getExpectedSize() == null ? "" : group.getExpectedSize().toString(), record.getField(3));
 			group.setExternalUniqueId(record.getField(0));
 			group.setGroupAbbreviation(record.getField(1));
 			group.setGroupName(record.getField(2));
-			if (group.getExternalUniqueId() == null && record.getField(3) != null) {
+			try {
+				group.setExpectedSize(record.getField(3) == null || record.getField(3).isEmpty() ? null : Integer.valueOf(record.getField(3)));
+			} catch (NumberFormatException e) {
+				group.setExpectedSize(null);
+			}
+			if (group.getExternalUniqueId() == null && record.getField(4) != null) {
 				Hashtable<String, Student> students = new Hashtable<String, Student>();
 				for (Student s: group.getStudents())
 					students.put(s.getExternalUniqueId(), s);
-				for (String line: record.getField(3).split("\\n")) {
+				for (String line: record.getField(4).split("\\n")) {
 					String extId = (line.indexOf(' ') >= 0 ? line.substring(0, line.indexOf(' ')) : line).trim();
 					if (extId.isEmpty() || students.remove(extId) != null) continue;
 					Student student = Student.findByExternalId(context.getUser().getCurrentAcademicSessionId(), extId);
@@ -185,7 +198,7 @@ public class StudentGroups implements AdminTable {
 					if (!newStudents.isEmpty()) newStudents += "\n";
 					newStudents += student.getExternalUniqueId() + " " + student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
 				}
-				record.setField(3, newStudents, group.getExternalUniqueId() == null);
+				record.setField(4, newStudents, group.getExternalUniqueId() == null);
 			}
 			hibSession.saveOrUpdate(group);
 			if (changed)
