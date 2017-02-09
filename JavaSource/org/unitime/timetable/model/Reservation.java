@@ -155,4 +155,60 @@ public abstract class Reservation extends BaseReservation implements Comparable<
     					}
     	return students.size();
     }
+    
+    protected Set<InstrOfferingConfig> getAllConfigurations() {
+    	Set<InstrOfferingConfig> configs = new HashSet<InstrOfferingConfig>();
+    	if (getConfigurations() != null)
+    		configs.addAll(getConfigurations());
+    	if (getClasses() != null)
+    		for (Class_ clazz: getClasses())
+    			configs.add(clazz.getSchedulingSubpart().getInstrOfferingConfig());
+    	return configs;
+    }
+    
+    protected Map<SchedulingSubpart, Set<Class_>> getAllSections() {
+    	Map<SchedulingSubpart, Set<Class_>> ret = new HashMap<SchedulingSubpart, Set<Class_>>();
+    	for (Class_ clazz: getClasses()) {
+    		while (clazz != null) {
+                Set<Class_> sections = ret.get(clazz.getSchedulingSubpart());
+                if (sections == null) {
+                    sections = new HashSet<Class_>();
+                    ret.put(clazz.getSchedulingSubpart(), sections);
+                }
+                sections.add(clazz);
+                clazz = clazz.getParentClass();
+            }
+    	}
+    	return ret;
+    }
+    
+    public Integer getLimitCap() {
+    	Set<InstrOfferingConfig> configs = getAllConfigurations();
+    	if (configs.isEmpty()) return null;
+    	
+    	// config cap
+    	int cap = 0;
+    	for (InstrOfferingConfig config: configs)
+    		cap = add(cap, config.isUnlimitedEnrollment() ? -1 : config.getLimit());
+    	
+    	for (Set<Class_> sections: getAllSections().values()) {
+            // subpart cap
+            int subpartCap = 0;
+            for (Class_ section: sections)
+                subpartCap = add(subpartCap, section.getClassLimit());
+            
+            // minimize
+            cap = min(cap, subpartCap);
+        }
+        
+        return (cap < 0 ? null : new Integer(cap));
+    }
+
+    private static int min(int l1, int l2) {
+        return (l1 < 0 ? l2 : l2 < 0 ? l1 : Math.min(l1, l2));
+    }
+
+    private static int add(int l1, int l2) {
+        return (l1 < 0 ? -1 : l2 < 0 ? -1 : l1 + l2);
+    }
 }

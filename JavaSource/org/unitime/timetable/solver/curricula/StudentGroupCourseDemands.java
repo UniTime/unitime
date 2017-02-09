@@ -79,8 +79,13 @@ public class StudentGroupCourseDemands implements StudentCourseDemands, NeedsStu
 			madeupStudents = g.getExpectedSize() - realStudents;
 		if (realStudents + madeupStudents == 0 && !reservations.isEmpty()) {
 			for (StudentGroupReservation r: reservations)
-				if (r.getLimit() != null && madeupStudents < r.getLimit())
+				if (r.getLimit() != null && madeupStudents < r.getLimit()) {
 					madeupStudents = r.getLimit();
+				} else if (r.getLimit() == null) {
+					Integer cap = r.getLimitCap();
+					if (cap != null && madeupStudents < cap)
+						madeupStudents = cap;
+				}
 		}
 		if (realStudents + madeupStudents > 0) {
 			float weight = 1.0f;
@@ -100,8 +105,13 @@ public class StudentGroupCourseDemands implements StudentCourseDemands, NeedsStu
 		
 		for (StudentGroupReservation r: reservations) {
 			float weight = 1.0f;
-			if (r.getLimit() != null)
+			if (r.getLimit() != null) {
 				weight = r.getLimit().floatValue() / (realStudents + madeupStudents);
+			} else {
+				Integer cap = r.getLimitCap();
+				if (cap != null)
+					weight = cap.floatValue() / (realStudents + madeupStudents);
+			}
 			WeightedCourseOffering w = new WeightedCourseOffering(r.getInstructionalOffering().getControllingCourseOffering(), weight);
 			for (WeightedStudentId s: demands) {
 				Set<WeightedCourseOffering> offerings = iGroupRequests.get(s.getStudentId());
@@ -126,8 +136,15 @@ public class StudentGroupCourseDemands implements StudentCourseDemands, NeedsStu
 				Set<WeightedStudentId> demands = iGroupDemands.get(gr.getGroup().getUniqueId());
 				if (demands == null)
 					demands = load(gr.getGroup());
+				float weight = 1.0f;
 				if (r.getLimit() != null) {
-					float weight = r.getLimit().floatValue() / demands.size();
+					weight = r.getLimit().floatValue() / demands.size();
+				} else {
+					Integer cap = r.getLimitCap();
+					if (cap != null)
+						weight = cap.floatValue() / demands.size();
+				}
+				if (Math.abs(weight - 1.0f) > 0.001f) {
 					for (WeightedStudentId student: demands)
 						ret.add(new WeightedStudentId(student, weight));
 				} else {
