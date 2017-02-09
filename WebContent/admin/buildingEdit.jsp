@@ -52,9 +52,9 @@
 	<html:hidden property="uniqueId"/>
 	<html:hidden property="sessionId"/>
 
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="2">
 		<TR>
-			<TD colspan="3">
+			<TD colspan="2">
 			<tt:section-header>
 					<tt:section-title>
 						<logic:equal name="buildingEditForm" property="op" value="Save">
@@ -85,11 +85,6 @@
 				<html:text property="name" size="100" maxlength="80"/>
 				&nbsp;<html:errors property="name"/>
 			</TD>
-			<tt:propertyEquals name="unitime.coordinates.googlemap" value="true">
-				<TD rowspan="4">
-					<div id="map_canvas" style="width: 600px; height: 400px; border: 1px solid #9CB0CE;"></div>
-				</TD>
-			</tt:propertyEquals>
 		</TR>
 
 		<TR>
@@ -107,7 +102,7 @@
 				&nbsp;<html:errors property="externalId"/>
 			</TD>
 		</TR>
-
+		
 		<TR>
 			<TD>Coordinates:</TD>
 			<TD>
@@ -119,19 +114,22 @@
 			</TD>
 		</TR>
 
-		<tr>
-			<td valign="middle" colspan="3">
-				<tt:section-title/>
-			</td>
-		</tr>
-		
+		<tt:propertyEquals name="unitime.coordinates.googlemap" value="true">
+			<TR>
+				<TD valign="top">Map:</TD>
+				<TD>
+					<div id="map_canvas" style="width: 600px; height: 400px; border: 1px solid #9CB0CE;"></div>
+				</TD>
+			</TR>
+		</tt:propertyEquals>
+
 		<TR>
-			<TD align="left" colspan="2">
+			<TD colspan='2'>
+				<table width="100%" border="0" cellspacing="0" cellpadding="2" style="border-top: 1px solid #9CB0CE;"><tr><td align='left'>
 				<logic:equal name="buildingEditForm" property="op" value="Update">
 					<html:checkbox property="updateRoomCoordinates"><i>Update room coordinates to match the building coordinates.</i></html:checkbox>
 				</logic:equal>
-			</TD>
-			<TD align="right">
+				</td><td align='right'>
 				<logic:equal name="buildingEditForm" property="op" value="Save">
 					<html:submit property="op" value="Save" title="Save (Alt+S)" accesskey="S"/> 
 				</logic:equal>
@@ -142,6 +140,8 @@
 					</sec:authorize> 
 				</logic:equal>
 				<html:submit property="op" value="Back" title="Back (Alt+B)" accesskey="B"/> 
+				</td></tr>
+				</table>
 			</TD>
 		</TR>
 	</TABLE>
@@ -188,7 +188,7 @@
 		controltxtbox.setAttribute("type", "text");
 		controltxtbox.setAttribute("value", "");
 		controltxtbox.style.height = '22px';
-		controltxtbox.style.width = '450px';
+		controltxtbox.style.width = '400px';
 		controltxtbox.style.marginRight = '2px';
 		controlUI.appendChild(controltxtbox);
 		var controlbtn = document.createElement('input');
@@ -207,7 +207,7 @@
 			}
 			return true;
 		};
-		map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(controlDiv);
+		map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(controlDiv);
 		return controltxtbox;
 	}
 	
