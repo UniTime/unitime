@@ -126,7 +126,12 @@
 		</tr>
 		
 		<TR>
-			<TD align="right" colspan="3">
+			<TD align="left" colspan="2">
+				<logic:equal name="buildingEditForm" property="op" value="Update">
+					<html:checkbox property="updateRoomCoordinates"><i>Update room coordinates to match the building coordinates.</i></html:checkbox>
+				</logic:equal>
+			</TD>
+			<TD align="right">
 				<logic:equal name="buildingEditForm" property="op" value="Save">
 					<html:submit property="op" value="Save" title="Save (Alt+S)" accesskey="S"/> 
 				</logic:equal>

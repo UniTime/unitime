@@ -21,6 +21,7 @@ package org.unitime.timetable.action;
 
 import java.text.DecimalFormat;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,6 +32,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -230,6 +232,24 @@ public class BuildingEditAction extends Action {
                 (form.getUniqueId() == null ? ChangeLog.Operation.CREATE : ChangeLog.Operation.UPDATE), 
                 null, 
                 null);
+        if (Boolean.TRUE.equals(form.getUpdateRoomCoordinates()) && form.getUniqueId() != null) {
+        	for (Room room: (List<Room>)hibSession.createQuery("from Room r where r.building.uniqueId = :buildingId").setLong("buildingId", building.getUniqueId()).list()) {
+        		if (!ToolBox.equals(room.getCoordinateX(), building.getCoordinateX()) || !ToolBox.equals(room.getCoordinateY(), building.getCoordinateY())) {
+        			room.setCoordinateX(building.getCoordinateX());
+        			room.setCoordinateY(building.getCoordinateY());
+        			hibSession.update(room);
+        			ChangeLog.addChange(
+        	                hibSession, 
+        	                sessionContext, 
+        	                room,
+        	                room.getLabel() + " moved to " + room.getCoordinateX() + "," + room.getCoordinateY(),
+        	                ChangeLog.Source.BUILDING_EDIT, 
+        	                ChangeLog.Operation.UPDATE, 
+        	                null, 
+        	                null);
+        		}
+        	}
+        }
     }
     
     public void delete(BuildingEditForm form, org.hibernate.Session hibSession) {

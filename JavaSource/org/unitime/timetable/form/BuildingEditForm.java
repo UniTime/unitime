@@ -45,6 +45,7 @@ public class BuildingEditForm extends ActionForm {
     private String iName = null;
     private String iAbbreviation = null;
     private String iCoordX = null, iCoordY = null;
+    private Boolean iUpdateRoomCoordinates = null;
     
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		if (iSessionId == null || iSessionId <= 0) {
@@ -90,6 +91,7 @@ public class BuildingEditForm extends ActionForm {
         iUniqueId = null; iAbbreviation = null;
 		iOp = null; iExternalId = null; iName = null;
         iCoordX = null; iCoordY = null;
+        iUpdateRoomCoordinates = null;
 	}
 	
 	public String getOp() { return iOp; }
@@ -109,6 +111,9 @@ public class BuildingEditForm extends ActionForm {
     
     public Long getSessionId() { return iSessionId; }
     public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+    
+    public void setUpdateRoomCoordinates(Boolean updateRoomCoordinates) { iUpdateRoomCoordinates = updateRoomCoordinates; }
+    public Boolean getUpdateRoomCoordinates() { return iUpdateRoomCoordinates; }
 
     public void load(Building building) {
         setOp("Update");
@@ -119,6 +124,7 @@ public class BuildingEditForm extends ActionForm {
         setAbbreviation(building.getAbbreviation());
         setCoordX(building.getCoordinateX()==null ? null : building.getCoordinateX().toString());
         setCoordY(building.getCoordinateY()==null ? null : building.getCoordinateY().toString());
+        setUpdateRoomCoordinates(false);
     }
 
 }
