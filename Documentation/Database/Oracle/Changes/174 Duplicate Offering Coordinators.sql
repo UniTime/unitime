@@ -21,16 +21,16 @@
 alter table offering_coordinator add uniqueid number(20);
 update offering_coordinator set uniqueid = pref_group_seq.nextval;
 alter table offering_coordinator add constraint nn_offering_coord_id check (uniqueid is not null);
-alter table offering_coordinator drop constraint pk_offering_coordinator;
+alter table offering_coordinator drop primary key drop index;
 alter table offering_coordinator add constraint pk_offering_coordinator primary key (uniqueid);
 
 alter table offering_coordinator add percent_share number(3,0);
 update offering_coordinator set percent_share = 0;
-alter table offering_coordinator add constraint nn_offering_coord_share (percent_share is not null);
+alter table offering_coordinator add constraint nn_offering_coord_share check (percent_share is not null);
 
 alter table teaching_request add percent_share number(3,0);
 update teaching_request set percent_share = 0;
-alter table teaching_request add constraint nn_teachreq_share (percent_share is not null);
+alter table teaching_request add constraint nn_teachreq_share check (percent_share is not null);
 
 /*
  * Update database version
