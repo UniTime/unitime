@@ -41,6 +41,7 @@ public class TeachingRequestInterface implements IsSerializable {
 		private List<Preference> iInstructorPreferences;
 		private List<Preference> iAttributePreferences;
 		private boolean iAssignCoordinator = false;
+		private int iPercentShare = 0;
 		
 		public Request() {}
 		
@@ -72,6 +73,8 @@ public class TeachingRequestInterface implements IsSerializable {
 		
 		public boolean isAssignCoordinator() { return iAssignCoordinator; }
 		public void setAssignCoordinator(boolean assign) { iAssignCoordinator = assign; }
+		public int getPercentShare() { return iPercentShare; }
+		public void setPercentShare(Integer percentShare) { iPercentShare = (percentShare == null ? 0 : percentShare.intValue()); }
 	}
 
 	public static class MultiRequest extends Request {

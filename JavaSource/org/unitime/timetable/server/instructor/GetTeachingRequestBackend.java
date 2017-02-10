@@ -182,6 +182,7 @@ public class GetTeachingRequestBackend implements GwtRpcImplementation<GetReques
 				if (req == null) {
 					req = new MultiRequest();
 					req.setAssignCoordinator(false);
+					req.setPercentShare(0);
 					req.setSameCommonPreference(r.getSameCommonPart() == null ? null : r.getSameCommonPart().getUniqueId());
 					req.setSameCoursePreference(r.getSameCoursePreference() == null ? null : r.getSameCoursePreference().getUniqueId());
 					req.setTeachingLoad(r.getTeachingLoad());
@@ -227,6 +228,7 @@ public class GetTeachingRequestBackend implements GwtRpcImplementation<GetReques
 				req.setInstructorIds(toInstructorIds(r));
 				req.setNbrInstructors(r.getNbrInstructors());
 				req.setAssignCoordinator(r.isAssignCoordinator());
+				req.setPercentShare(r.getPercentShare());
 				req.setSameCommonPreference(r.getSameCommonPart() == null ? null : r.getSameCommonPart().getUniqueId());
 				req.setSameCoursePreference(r.getSameCoursePreference() == null ? null : r.getSameCoursePreference().getUniqueId());
 				req.setTeachingLoad(r.getTeachingLoad());

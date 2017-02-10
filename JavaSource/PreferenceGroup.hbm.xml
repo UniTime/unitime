@@ -1193,6 +1193,12 @@
                 <key column="request_id" foreign-key="fk_teachreq_crequest"/>
                 <one-to-many class="TeachingClassRequest"/>
             </set>
+	        <property
+    	        name="percentShare"
+        	    column="percent_share"
+            	type="java.lang.Integer"
+            	not-null="true"
+            	length="3"/>
         </union-subclass>
     </class>
 </hibernate-mapping>

@@ -1251,6 +1251,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Assign Coordinator:")
 	String propAssignCoordinator();
 	
+	@DefaultMessage("Coordinator Percent Share:")
+	String propCoordinatorPercentShare();
+	
 	@DefaultMessage("Include Subparts:")
 	String propIncludeSubparts();
 	

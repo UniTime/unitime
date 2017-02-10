@@ -37,7 +37,6 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 
@@ -83,6 +82,7 @@ public class CourseOfferingEditForm extends ActionForm {
     private Boolean byReservationOnly;
     private List instructors;
     private List responsibilities;
+    private List percentShares;
     private String wkEnroll, wkChange, wkDrop;
     private Integer wkEnrollDefault, wkChangeDefault, wkDropDefault;
     private String weekStartDayOfWeek;
@@ -145,11 +145,13 @@ public class CourseOfferingEditForm extends ActionForm {
 			
 			for (int i = 0; i < instructors.size(); i++) {
 				String id1 = (String)instructors.get(i);
-				if (Constants.BLANK_OPTION_VALUE.equals(id1)) continue;
+				String r1 = (String)responsibilities.get(i);
+				if (Preference.BLANK_PREF_VALUE.equals(id1)) continue;
 				
 				for (int j = i + 1; j < instructors.size(); j++) {
 					String id2 = (String)instructors.get(j);
-					if (id1.equals(id2)) {
+					String r2 = (String)responsibilities.get(j);
+					if (id1.equals(id2) && r1.equals(r2)) {
 						errors.add("duplicateCoordinator", new ActionMessage("errors.generic", MSG.errorDuplicateCoordinator()));
 					}
 				}
@@ -192,6 +194,11 @@ public class CourseOfferingEditForm extends ActionForm {
         catalogLinkLocation = null;
         instructors = DynamicList.getInstance(new ArrayList(), factory);
         responsibilities = DynamicList.getInstance(new ArrayList(), factory);
+        percentShares = DynamicList.getInstance(new ArrayList(), new DynamicListObjectFactory() {
+            public Object create() {
+                return "";
+            }
+        });
         byReservationOnly = false;
         wkEnroll = null; wkChange = null; wkDrop = null;
         wkEnrollDefault = null; wkChangeDefault = null; wkDropDefault = null;
@@ -376,6 +383,11 @@ public class CourseOfferingEditForm extends ActionForm {
     public String getResponsibilities(int key) { return responsibilities.get(key).toString(); }
     public void setResponsibilities(int key, Object value) { this.responsibilities.set(key, value); }
     public void setResponsibilities(List responsibilities) { this.responsibilities = responsibilities; }
+
+    public List getPercentShares() { return percentShares; }
+    public String getPercentShares(int key) { return percentShares.get(key).toString(); }
+    public void setPercentShares(int key, Object value) { this.percentShares.set(key, value); }
+    public void setPercentShares(List percentShares) { this.percentShares = percentShares; }
 
     public boolean isByReservationOnly() { return byReservationOnly; }
     public void setByReservationOnly(boolean byReservationOnly) { this.byReservationOnly = byReservationOnly; }

@@ -34,18 +34,33 @@ import org.unitime.timetable.model.TeachingResponsibility;
 public abstract class BaseOfferingCoordinator implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	private Long iUniqueId;
+	private Integer iPercentShare;
+
 	private DepartmentalInstructor iInstructor;
 	private InstructionalOffering iOffering;
-
 	private TeachingResponsibility iResponsibility;
 	private TeachingRequest iTeachingRequest;
 
+	public static String PROP_UNIQUEID = "uniqueId";
+	public static String PROP_PERCENT_SHARE = "percentShare";
 
 	public BaseOfferingCoordinator() {
 		initialize();
 	}
 
+	public BaseOfferingCoordinator(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
+	}
+
 	protected void initialize() {}
+
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public Integer getPercentShare() { return iPercentShare; }
+	public void setPercentShare(Integer percentShare) { iPercentShare = percentShare; }
 
 	public DepartmentalInstructor getInstructor() { return iInstructor; }
 	public void setInstructor(DepartmentalInstructor instructor) { iInstructor = instructor; }
@@ -61,27 +76,27 @@ public abstract class BaseOfferingCoordinator implements Serializable {
 
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof OfferingCoordinator)) return false;
-		OfferingCoordinator offeringCoordinator = (OfferingCoordinator)o;
-		if (getInstructor() == null || offeringCoordinator.getInstructor() == null || !getInstructor().equals(offeringCoordinator.getInstructor())) return false;
-		if (getOffering() == null || offeringCoordinator.getOffering() == null || !getOffering().equals(offeringCoordinator.getOffering())) return false;
-		return true;
+		if (getUniqueId() == null || ((OfferingCoordinator)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((OfferingCoordinator)o).getUniqueId());
 	}
 
 	public int hashCode() {
-		if (getInstructor() == null || getOffering() == null) return super.hashCode();
-		return getInstructor().hashCode() ^ getOffering().hashCode();
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
 	public String toString() {
-		return "OfferingCoordinator[" + getInstructor() + ", " + getOffering() + "]";
+		return "OfferingCoordinator["+getUniqueId()+"]";
 	}
 
 	public String toDebugString() {
 		return "OfferingCoordinator[" +
 			"\n	Instructor: " + getInstructor() +
 			"\n	Offering: " + getOffering() +
+			"\n	PercentShare: " + getPercentShare() +
 			"\n	Responsibility: " + getResponsibility() +
 			"\n	TeachingRequest: " + getTeachingRequest() +
+			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}
 }

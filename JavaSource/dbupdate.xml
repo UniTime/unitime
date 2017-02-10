@@ -12285,4 +12285,43 @@
 		<mysql>alter table %SCHEMA%.student_group add expected_size int(10)</mysql>
 		<plsql>alter table %SCHEMA%.student_group add expected_size number(10,0)</plsql>
 	</update>
+	<update version="174" date="10-Feb-2017" comment="Duplicate Offering Coordinators">
+		<mysql>alter table %SCHEMA%.offering_coordinator add uniqueid decimal(20,0)</mysql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql>update %SCHEMA%.offering_coordinator o join (
+			select @uid:=@uid+1 uid, offering_id, instructor_id from %SCHEMA%.offering_coordinator cross join (select @uid:=%ID%) x
+			) as r on (o.offering_id = r.offering_id and o.instructor_id = r.instructor_id) set o.uniqueid = r.uid
+		</mysql>
+		<mysql>alter table %SCHEMA%.offering_coordinator modify uniqueid decimal(20,0) not null</mysql>
+		<mysql>alter table %SCHEMA%.offering_coordinator drop foreign key fk_offering_coord_instructor</mysql>
+		<mysql>alter table %SCHEMA%.offering_coordinator drop foreign key fk_offering_coord_offering</mysql>
+		<mysql>alter table %SCHEMA%.offering_coordinator drop primary key</mysql>
+		<mysql>alter table %SCHEMA%.offering_coordinator add primary key (uniqueid)</mysql>
+		<mysql>
+			alter table %SCHEMA%.offering_coordinator add constraint fk_offering_coord_offering foreign key (offering_id)
+			references %SCHEMA%.instructional_offering (uniqueid) on delete cascade
+		</mysql>
+		<mysql>
+			alter table %SCHEMA%.offering_coordinator add constraint fk_offering_coord_instructor foreign key (instructor_id)
+			references %SCHEMA%.departmental_instructor (uniqueid) on delete cascade
+		</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
+		<mysql>alter table %SCHEMA%.offering_coordinator add percent_share int(3)</mysql>
+		<mysql>update %SCHEMA%.offering_coordinator set percent_share = 0</mysql>
+		<mysql>alter table %SCHEMA%.offering_coordinator modify percent_share int(3) not null</mysql>
+		<mysql>alter table %SCHEMA%.teaching_request add percent_share int(3)</mysql>
+		<mysql>update %SCHEMA%.teaching_request set percent_share = 0</mysql>
+		<mysql>alter table %SCHEMA%.teaching_request modify percent_share int(3) not null</mysql>
+		<plsql>alter table %SCHEMA%.offering_coordinator add uniqueid number(20)</plsql>
+		<plsql>update %SCHEMA%.offering_coordinator set uniqueid = pref_group_seq.nextval</plsql>
+		<plsql>alter table %SCHEMA%.offering_coordinator add constraint nn_offering_coord_id check (uniqueid is not null)</plsql>
+		<plsql>alter table %SCHEMA%.offering_coordinator drop constraint pk_offering_coordinator</plsql>
+		<plsql>alter table %SCHEMA%.offering_coordinator add constraint pk_offering_coordinator primary key (uniqueid)</plsql>
+		<plsql>alter table %SCHEMA%.offering_coordinator add percent_share number(3,0)</plsql>
+		<plsql>update %SCHEMA%.offering_coordinator set percent_share = 0</plsql>
+		<plsql>alter table %SCHEMA%.offering_coordinator add constraint nn_offering_coord_share (percent_share is not null)</plsql>
+		<plsql>alter table %SCHEMA%.teaching_request add percent_share number(3,0)</plsql>
+		<plsql>update %SCHEMA%.teaching_request set percent_share = 0</plsql>
+		<plsql>alter table %SCHEMA%.teaching_request add constraint nn_teachreq_share (percent_share is not null)</plsql>
+	</update>
 </dbupdate>

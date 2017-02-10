@@ -201,6 +201,7 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
 					oc.setInstructor(instructor);
 					oc.setOffering(r.getOffering());
 					oc.setResponsibility(r.getResponsibility());
+					oc.setPercentShare(r.getPercentShare());
 					oc.setTeachingRequest(r);
 					r.getOffering().getOfferingCoordinators().add(oc);
 					changedOfferings.add(r.getOffering());

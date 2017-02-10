@@ -213,6 +213,7 @@ public class InstructorAssignmentBackend extends InstructorSchedulingBackendHelp
 				oc.setOffering(request.getOffering());
 				oc.setResponsibility(request.getResponsibility());
 				oc.setTeachingRequest(request);
+				oc.setPercentShare(request.getPercentShare());
 				request.getOffering().getOfferingCoordinators().add(oc);
 				hibSession.save(oc);
 			}

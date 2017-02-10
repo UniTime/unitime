@@ -2390,6 +2390,7 @@ public class SessionRollForward {
 						toOfferingCoordinator.setInstructor(toInstructor);
 						toOfferingCoordinator.setOffering(toInstructionalOffering);
 						toOfferingCoordinator.setResponsibility(fromOfferingCoordinator.getResponsibility());
+						toOfferingCoordinator.setPercentShare(fromOfferingCoordinator.getPercentShare());
 						toInstructionalOffering.addToofferingCoordinators(toOfferingCoordinator);
 						OfferingCoordinatorDAO.getInstance().saveOrUpdate(toOfferingCoordinator);
 					}
@@ -3125,6 +3126,7 @@ public class SessionRollForward {
 					TeachingRequest toRequest = new TeachingRequest();
 					toRequest.setOffering(toInstructionalOffering);
 					toRequest.setAssignCoordinator(fromRequest.isAssignCoordinator());
+					toRequest.setPercentShare(fromRequest.getPercentShare());
 					toRequest.setClassRequests(new HashSet<TeachingClassRequest>());
 					toRequest.setNbrInstructors(fromRequest.getNbrInstructors());
 					toRequest.setResponsibility(fromRequest.getResponsibility());

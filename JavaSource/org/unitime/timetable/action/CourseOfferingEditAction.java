@@ -217,6 +217,7 @@ public class CourseOfferingEditAction extends Action {
                 if (deleteId>=0) {
                     frm.getInstructors().remove(deleteId);
                     frm.getResponsibilities().remove(deleteId);
+                    frm.getPercentShares().remove(deleteId);
                 }
             } catch (Exception e) {}
             doReload(request, frm);
@@ -275,7 +276,9 @@ public class CourseOfferingEditAction extends Action {
 		        int idx = 0;
 		        for (Iterator i = frm.getInstructors().iterator();i.hasNext();) {
 		            String instructorId = (String)i.next();
-		            String responsibilityId = frm.getResponsibilities(idx++);
+		            String responsibilityId = frm.getResponsibilities(idx);
+		            String percShare = frm.getPercentShares(idx);
+		            idx++;
 		            if (!Constants.BLANK_OPTION_VALUE.equals(instructorId) && !Preference.BLANK_PREF_VALUE.equals(instructorId)) {
 		                DepartmentalInstructor instructor = new DepartmentalInstructorDAO().get(Long.valueOf(instructorId));
 		                TeachingResponsibility responsibility = (Constants.BLANK_OPTION_VALUE.equals(responsibilityId) || Preference.BLANK_PREF_VALUE.equals(responsibilityId) ? null : TeachingResponsibilityDAO.getInstance().get(Long.valueOf(responsibilityId)));
@@ -299,6 +302,11 @@ public class CourseOfferingEditAction extends Action {
 		                		}
 		                	}
 		                	coordinator.setResponsibility(responsibility);
+		                	try {
+		                		coordinator.setPercentShare(percShare == null ? 0 : Integer.parseInt(percShare));
+		                	} catch (NumberFormatException e) {
+		                		coordinator.setPercentShare(0);
+		                	}
 		                	io.getOfferingCoordinators().add(coordinator);
 		                	instructor.getOfferingCoordinators().add(coordinator);
 		                	hibSession.saveOrUpdate(coordinator);
@@ -527,7 +535,9 @@ public class CourseOfferingEditAction extends Action {
             int idx = 0;
 	        for (Iterator i = frm.getInstructors().iterator();i.hasNext();) {
 	            String instructorId = (String)i.next();
-	            String responsibilityId = frm.getResponsibilities(idx++);
+	            String responsibilityId = frm.getResponsibilities(idx);
+	            String percShare = frm.getPercentShares(idx);
+	            idx++;
 	            if (!Constants.BLANK_OPTION_VALUE.equals(instructorId) && !Preference.BLANK_PREF_VALUE.equals(instructorId)) {
 	                DepartmentalInstructor instructor = new DepartmentalInstructorDAO().get(Long.valueOf(instructorId));
 	                TeachingResponsibility responsibility = (Constants.BLANK_OPTION_VALUE.equals(responsibilityId) || Preference.BLANK_PREF_VALUE.equals(responsibilityId) ? null : TeachingResponsibilityDAO.getInstance().get(Long.valueOf(responsibilityId)));
@@ -536,6 +546,11 @@ public class CourseOfferingEditAction extends Action {
 	                	coordinator.setInstructor(instructor);
 	                	coordinator.setOffering(io);
 	                	coordinator.setResponsibility(responsibility);
+	                	try {
+	                		coordinator.setPercentShare(percShare == null ? 0 : Integer.parseInt(percShare));
+	                	} catch (NumberFormatException e) {
+	                		coordinator.setPercentShare(0);
+	                	}
 	                	io.getOfferingCoordinators().add(coordinator);
 	                	instructor.getOfferingCoordinators().add(coordinator);
 	                }
@@ -695,6 +710,7 @@ public class CourseOfferingEditAction extends Action {
         for (OfferingCoordinator coordinator: new TreeSet<OfferingCoordinator>(io.getOfferingCoordinators())) {
             frm.getInstructors().add(coordinator.getInstructor().getUniqueId().toString());
             frm.getResponsibilities().add(coordinator.getResponsibility() == null ? Constants.BLANK_OPTION_VALUE : coordinator.getResponsibility().getUniqueId().toString());
+            frm.getPercentShares().add(coordinator.getPercentShare() == null ? "0" : coordinator.getPercentShare().toString());
         }
 
         if (sessionContext.hasPermission(crsOfferingId, "CourseOffering", Right.EditCourseOfferingCoordinators) ||

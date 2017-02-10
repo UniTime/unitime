@@ -206,6 +206,8 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 		private int iClassesRow;
 		private CheckBox iCoordinator;
 		private int iCoordinatorRow;
+		private NumberBox iPercentShare;
+		private int iPercentShareRow;
 		private UniTimeTable<Subpart> iSubparts;
 		private int iSubpartsLine;
 		private Map<String, UniTimeTable<Preference>> iAttributes;
@@ -262,6 +264,13 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 			});
 			iCoordinatorRow = addRow(MESSAGES.propAssignCoordinator(), iCoordinator);
 			getRowFormatter().setVisible(iCoordinatorRow, request != null && request instanceof SingleRequest);
+			iPercentShare = new NumberBox();
+			iPercentShare.setDecimal(false); iPercentShare.setNegative(false);
+			iPercentShare.setMaxLength(3); iPercentShare.setWidth("50px");
+			if (request != null)
+				iPercentShare.setValue(request.getPercentShare());
+			iPercentShareRow = addRow(MESSAGES.propCoordinatorPercentShare(), iPercentShare);
+			getRowFormatter().setVisible(iPercentShareRow, getRowFormatter().isVisible(iCoordinatorRow) && iCoordinator.getValue());
 			if (!iProperties.getResponsibilities().isEmpty()) {
 				iResponsibility = new ListBox();
 				iResponsibilityRow = addRow(MESSAGES.propTeachingResponsibility(), iResponsibility);
@@ -516,6 +525,8 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 				}
 				getRowFormatter().setVisible(iResponsibilityRow, iResponsibility.getItemCount() > 1);
 			}
+			if (iPercentShare != null)
+				getRowFormatter().setVisible(iPercentShareRow, coordinator);
 		}
 		
 		protected void simpleChanged() {
@@ -816,6 +827,7 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 				}
 				r.setNbrInstructors(iNbrInstructors.toInteger() == null ? 1 : iNbrInstructors.toInteger());
 				r.setAssignCoordinator(iCoordinator.getValue());
+				r.setPercentShare(iPercentShare.toInteger());
 				for (int i = 1; i < iClasses.getRowCount(); i++) {
 					Clazz clazz = iClasses.getData(i);
 					if (clazz == null) continue;
@@ -842,6 +854,7 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 				if (iSubpart.getSelectedIndex() == 0) return null;
 				MultiRequest r = new MultiRequest();
 				r.setAssignCoordinator(false);
+				r.setPercentShare(0);
 				for (int i = 1; i < iClasses.getRowCount(); i++) {
 					Clazz clazz = iClasses.getData(i);
 					if (clazz == null) continue;

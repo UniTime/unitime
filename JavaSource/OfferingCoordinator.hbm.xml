@@ -23,20 +23,28 @@
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="OfferingCoordinator" table="offering_coordinator">
         <cache include="non-lazy" usage="transactional"/>
-        <composite-id>
-        	<key-many-to-one
-        		name="instructor"
-        		class="DepartmentalInstructor"
-        		foreign-key="fk_offering_coord_instructor"
-        		column="instructor_id" 
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">pref_group_seq</param>
+            </generator>
+        </id>
+        
+        <many-to-one
+        	name="instructor"
+        	class="DepartmentalInstructor"
+        	foreign-key="fk_offering_coord_instructor"
+        	column="instructor_id"
         	/>
-        	<key-many-to-one
-        		name="offering"
-        		class="InstructionalOffering"
-        		column="offering_id"
-                foreign-key="fk_offering_coord_offering"
+        	
+        <many-to-one
+        	name="offering"
+        	class="InstructionalOffering"
+        	column="offering_id"
+            foreign-key="fk_offering_coord_offering"
             />
-        </composite-id>
         
         <many-to-one
             name="responsibility"
@@ -51,5 +59,12 @@
             column="request_id"
             foreign-key="fk_coord_request"
             not-null="false"/>
+
+        <property
+            name="percentShare"
+            column="percent_share"
+            type="java.lang.Integer"
+            not-null="true"
+            length="3"/>
     </class>
 </hibernate-mapping>

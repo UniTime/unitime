@@ -41,6 +41,7 @@ public abstract class BaseTeachingRequest extends PreferenceGroup implements Ser
 	private Integer iNbrInstructors;
 	private Float iTeachingLoad;
 	private Boolean iAssignCoordinator;
+	private Integer iPercentShare;
 
 	private InstructionalOffering iOffering;
 	private PreferenceLevel iSameCoursePreference;
@@ -52,6 +53,7 @@ public abstract class BaseTeachingRequest extends PreferenceGroup implements Ser
 	public static String PROP_NBR_INSTRUCTORS = "nbrInstructors";
 	public static String PROP_TEACHING_LOAD = "teachingLoad";
 	public static String PROP_ASSIGN_COORDINATOR = "assignCoordinator";
+	public static String PROP_PERCENT_SHARE = "percentShare";
 
 	public BaseTeachingRequest() {
 		initialize();
@@ -73,6 +75,9 @@ public abstract class BaseTeachingRequest extends PreferenceGroup implements Ser
 	public Boolean isAssignCoordinator() { return iAssignCoordinator; }
 	public Boolean getAssignCoordinator() { return iAssignCoordinator; }
 	public void setAssignCoordinator(Boolean assignCoordinator) { iAssignCoordinator = assignCoordinator; }
+
+	public Integer getPercentShare() { return iPercentShare; }
+	public void setPercentShare(Integer percentShare) { iPercentShare = percentShare; }
 
 	public InstructionalOffering getOffering() { return iOffering; }
 	public void setOffering(InstructionalOffering offering) { iOffering = offering; }
@@ -120,6 +125,7 @@ public abstract class BaseTeachingRequest extends PreferenceGroup implements Ser
 			"\n	AssignCoordinator: " + getAssignCoordinator() +
 			"\n	NbrInstructors: " + getNbrInstructors() +
 			"\n	Offering: " + getOffering() +
+			"\n	PercentShare: " + getPercentShare() +
 			"\n	Responsibility: " + getResponsibility() +
 			"\n	SameCommonPart: " + getSameCommonPart() +
 			"\n	SameCoursePreference: " + getSameCoursePreference() +

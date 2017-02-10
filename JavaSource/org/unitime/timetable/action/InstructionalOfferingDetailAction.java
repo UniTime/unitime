@@ -407,7 +407,10 @@ public class InstructionalOfferingDetailAction extends Action {
         for (OfferingCoordinator coordinator: new TreeSet<OfferingCoordinator>(io.getOfferingCoordinators())) {
         	if (!coordinators.isEmpty()) coordinators += "<br>";
         	coordinators += "<a href='instructorDetail.do?instructorId=" + coordinator.getInstructor().getUniqueId() + "' class='noFancyLinks'>" +
-        			coordinator.getInstructor().getName(instructorNameFormat) + (coordinator.getResponsibility() == null ? "" : " (" + coordinator.getResponsibility().getLabel() + ")") + 
+        			coordinator.getInstructor().getName(instructorNameFormat) +
+        			(coordinator.getResponsibility() == null ? 
+        					(coordinator.getPercentShare() != 0 ? " (" + coordinator.getPercentShare() + "%)" : "") :
+        					" (" + coordinator.getResponsibility().getLabel() + (coordinator.getPercentShare() > 0 ? ", " + coordinator.getPercentShare() + "%" : "") + ")") + 
         			"</a>";
         }
         frm.setCoordinators(coordinators);

@@ -161,6 +161,7 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 						tr.setNbrInstructors(rc.getNbrInstructors());
 						fillRequestInfo(r, tr, hibSession);
 						tr.setAssignCoordinator(false);
+						tr.setPercentShare(0);
 						List<TeachingClassRequest> remains = new ArrayList<TeachingClassRequest>(tr.getClassRequests());
 						for (IncludeLine line: multi.getSubparts()) {
 							for (Class_ c: getClasses(clazz, line.getOwnerId(), hibSession)) {
@@ -285,6 +286,7 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 								oc.setInstructor(instructor);
 								oc.setOffering(offering);
 								oc.setResponsibility(tr.getResponsibility());
+								oc.setPercentShare(tr.getPercentShare());
 								oc.setTeachingRequest(tr);
 								offering.getOfferingCoordinators().add(oc);
 								hibSession.save(oc);
@@ -330,6 +332,7 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 	
 	protected void fillRequestInfo(Request r, TeachingRequest tr, org.hibernate.Session hibSession) {
 		tr.setAssignCoordinator(r.isAssignCoordinator());
+		tr.setPercentShare(r.getPercentShare());
 		tr.setTeachingLoad(r.getTeachingLoad());
 		tr.setResponsibility(r.getTeachingResponsibility() == null ? null : TeachingResponsibilityDAO.getInstance().get(r.getTeachingResponsibility().getId(), hibSession));
 		tr.setSameCoursePreference(r.getSameCoursePreference() == null ? null : PreferenceLevelDAO.getInstance().get(r.getSameCoursePreference(), hibSession));

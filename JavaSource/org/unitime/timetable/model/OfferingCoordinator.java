@@ -30,6 +30,10 @@ public class OfferingCoordinator extends BaseOfferingCoordinator implements Comp
 
 	@Override
 	public int compareTo(OfferingCoordinator o) {
-		return getInstructor().compareTo(o.getInstructor());
+		int cmp = getInstructor().compareTo(o.getInstructor());
+		if (cmp != 0) return cmp;
+		cmp = (getResponsibility() == null ? "" : getResponsibility().getAbbreviation()).compareTo(o.getResponsibility() == null ? "" : o.getResponsibility().getAbbreviation());
+		if (cmp != 0) return cmp;
+		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(o.getUniqueId() == null ? -1 : o.getUniqueId());
 	}
 }

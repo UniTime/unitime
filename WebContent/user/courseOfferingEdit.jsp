@@ -443,6 +443,15 @@
 				<TD valign="top"><loc:message name="propertyCoordinators"/> </TD>
 				<TD nowrap>
 				<table border='0'>
+					<tr>
+						<td>&nbsp;<i><loc:message name="columnInstructorName"/></i>&nbsp;</td>
+						<td>&nbsp;<i><loc:message name="columnInstructorShare"/></i>&nbsp;</td>
+						<td>
+						<logic:notEmpty name="responsibilities" scope="request">
+							&nbsp;<i><loc:message name="columnTeachingResponsibility"/></i>&nbsp;
+						</logic:notEmpty>
+						</td><td></td>
+					</tr>
 				<logic:iterate name="courseOfferingEditForm" property="instructors" id="instructor" indexId="ctr">
 					<tr><td>
 					<html:select style="width:200px;"
@@ -450,6 +459,9 @@
 						<html:option value="-">-</html:option>
 						<html:options collection="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME%>" property="value" labelProperty="label" />
 					</html:select>
+					</td><td align="center">
+						<html:text property='<%= "percentShares[" + ctr + "]" %>' size="3" maxlength="3" style="text-align: right;"/>
+					</td><td>
 					<logic:notEmpty name="responsibilities" scope="request">
 						<html:select
 							property='<%= "responsibilities[" + ctr + "]" %>'>
@@ -460,6 +472,7 @@
 					<logic:empty name="responsibilities" scope="request">
 						<html:hidden property='<%= "responsibilities[" + ctr + "]" %>'/>
 					</logic:empty>
+					</td><td>
 					<html:submit property="op" 
 								styleClass="btn"
 								onclick="<%= \"javascript: doDel('coordinator', '\" + ctr + \"');\"%>">
@@ -467,7 +480,7 @@
 					</html:submit>
 					</td></tr>
    				</logic:iterate>
-   				<tr><td>
+   				<tr><td colspan='4'>
 					<html:submit property="op" 
 						styleClass="btn" 
 						accesskey="<%=MSG.accessAddCoordinator() %>" 
