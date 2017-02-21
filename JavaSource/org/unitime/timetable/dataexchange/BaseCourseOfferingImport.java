@@ -1779,6 +1779,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 							break;
 						}
 					}
+					clazz.setClassInstructors(new HashSet<ClassInstructor>());
 					addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' matching class not found adding new class");
 					changed = true;
 				}
