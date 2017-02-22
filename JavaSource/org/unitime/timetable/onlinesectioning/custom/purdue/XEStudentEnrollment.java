@@ -263,9 +263,11 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				resource.addQueryParameter("altPin", pin);
 				helper.getAction().addOptionBuilder().setKey("pin").setValue(pin);
 			}
+			long t0 = System.currentTimeMillis();
 			try {
 				resource.get(MediaType.APPLICATION_JSON);
 			} catch (ResourceException exception) {
+				helper.getAction().setApiException(exception.getMessage());
 				try {
 					XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject();
 					helper.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
@@ -280,10 +282,13 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						throw exception;
 					}
 				} catch (SectioningException e) {
+					helper.getAction().setApiException(e.getMessage());
 					throw e;
 				} catch (Throwable t) {
 					throw exception;
 				}
+			} finally {
+				helper.getAction().setApiGetTime(System.currentTimeMillis() - t0);
 			}
 			List<XEInterface.RegisterResponse> current = new GsonRepresentation<List<XEInterface.RegisterResponse>>(resource.getResponseEntity(), XEInterface.RegisterResponse.TYPE_LIST).getObject();
 			helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(current));
@@ -453,9 +458,11 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				resource.addQueryParameter("altPin", pin);
 				helper.getAction().addOptionBuilder().setKey("pin").setValue(pin);
 			}
+			long t0 = System.currentTimeMillis();
 			try {
 				resource.get(MediaType.APPLICATION_JSON);
 			} catch (ResourceException exception) {
+				helper.getAction().setApiException(exception.getMessage());
 				try {
 					XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject();
 					helper.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
@@ -470,10 +477,13 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						throw exception;
 					}
 				} catch (SectioningException e) {
+					helper.getAction().setApiException(e.getMessage());
 					throw e;
 				} catch (Throwable t) {
 					throw exception;
 				}
+			} finally {
+				helper.getAction().setApiGetTime(System.currentTimeMillis() - t0);
 			}
 			List<XEInterface.RegisterResponse> current = new GsonRepresentation<List<XEInterface.RegisterResponse>>(resource.getResponseEntity(), XEInterface.RegisterResponse.TYPE_LIST).getObject();
 			helper.getAction().addOptionBuilder().setKey("original").setValue(gson.toJson(current));
@@ -666,9 +676,11 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				return fails;
 			}
 
+			long t1 = System.currentTimeMillis();
 			try {
 				resource.post(new GsonRepresentation<XEInterface.RegisterRequest>(req));
 			} catch (ResourceException exception) {
+				helper.getAction().setApiException(exception.getMessage());
 				try {
 					XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject();
 					helper.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
@@ -683,10 +695,13 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						throw exception;
 					}
 				} catch (SectioningException e) {
+					helper.getAction().setApiException(e.getMessage());
 					throw e;
 				} catch (Throwable t) {
  					throw exception;
 				}
+			} finally {
+				helper.getAction().setApiGetTime(System.currentTimeMillis() - t1);
 			}
 			
 			// Finally, check the response
@@ -904,10 +919,12 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			sectioningRequest.getAction().addOptionBuilder().setKey("term").setValue(term);
 			sectioningRequest.getAction().addOptionBuilder().setKey("bannerId").setValue(getBannerId(student));
 			Gson gson = getGson(helper);
-
+			
+			long t0 = System.currentTimeMillis();
 			try {
 				resource.get(MediaType.APPLICATION_JSON);
 			} catch (ResourceException exception) {
+				helper.getAction().setApiException(exception.getMessage());
 				try {
 					XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject();
 					sectioningRequest.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
@@ -922,10 +939,13 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						throw exception;
 					}
 				} catch (SectioningException e) {
+					helper.getAction().setApiException(e.getMessage());
 					throw e;
 				} catch (Throwable t) {
 					throw exception;
 				}
+			} finally {
+				sectioningRequest.getAction().setApiGetTime(System.currentTimeMillis() - t0);
 			}
 			List<XEInterface.RegisterResponse> current = new GsonRepresentation<List<XEInterface.RegisterResponse>>(resource.getResponseEntity(), XEInterface.RegisterResponse.TYPE_LIST).getObject();
 			sectioningRequest.getAction().addOptionBuilder().setKey("original").setValue(gson.toJson(current));
@@ -984,9 +1004,11 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				return enrollment;
 			}
 
+			long t1 = System.currentTimeMillis();
 			try {
 				resource.post(new GsonRepresentation<XEInterface.RegisterRequest>(req));
 			} catch (ResourceException exception) {
+				helper.getAction().setApiException(exception.getMessage());
 				try {
 					XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject();
 					sectioningRequest.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
@@ -1001,10 +1023,13 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						throw exception;
 					}
 				} catch (SectioningException e) {
+					helper.getAction().setApiException(e.getMessage());
 					throw e;
 				} catch (Throwable t) {
 					throw exception;
 				}
+			} finally {
+				helper.getAction().setApiGetTime(System.currentTimeMillis() - t1);
 			}
 			
 			// Finally, check the response

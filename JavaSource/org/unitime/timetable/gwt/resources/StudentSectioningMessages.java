@@ -1085,6 +1085,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Date")
 	String colTimeStamp();
 	
+	@DefaultMessage("Time [s]")
+	String colExecutionTime();
+	
 	@DefaultMessage("Result")
 	String colResult();
 
@@ -1099,6 +1102,18 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("CPU Time [s]")
 	String colCpuTime();
+	
+	@DefaultMessage("Execution Time [s]")
+	String colWallTime();
+	
+	@DefaultMessage("API GET Time [s]")
+	String colApiGetTime();
+	
+	@DefaultMessage("API POST Time [s]")
+	String colApiPostTime();
+	
+	@DefaultMessage("API Exception")
+	String colApiException();
 	
 	@DefaultMessage("Change log for {0}")
 	String dialogChangeLog(String student);

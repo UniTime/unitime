@@ -74,6 +74,7 @@ import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -99,6 +100,7 @@ public class EnrollmentTable extends Composite {
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	private static DateTimeFormat sDF = DateTimeFormat.getFormat(CONSTANTS.requestDateFormat());
 	private static DateTimeFormat sTSF = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
+	private static NumberFormat sNF = NumberFormat.getFormat(CONSTANTS.executionTimeFormat());
 	private Long iOfferingId = null;
 
 	protected static final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
@@ -573,6 +575,7 @@ public class EnrollmentTable extends Composite {
 				table.addRow(null,
 						new UniTimeTableHeader(MESSAGES.colOperation()),
 						new UniTimeTableHeader(MESSAGES.colTimeStamp()),
+						new UniTimeTableHeader(MESSAGES.colExecutionTime()),
 						new UniTimeTableHeader(MESSAGES.colResult()),
 						new UniTimeTableHeader(MESSAGES.colUser()),
 						new UniTimeTableHeader(MESSAGES.colMessage()));
@@ -581,6 +584,7 @@ public class EnrollmentTable extends Composite {
 					table.addRow(log,
 							new TopCell(log.getOperation()),
 							new TopCell(sTSF.format(log.getTimeStamp())),
+							new TopCell(log.getWallTime() == null ? "" : sNF.format(0.001 * log.getWallTime())),
 							new TopCell(log.getResult()),
 							new TopCell(log.getUser() == null ? "" : log.getUser()),
 							new HTML(log.getMessage() == null ? "" : log.getMessage())

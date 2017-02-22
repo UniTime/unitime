@@ -121,6 +121,7 @@ public class SectioningStatusPage extends Composite {
 	public static final GwtConstants GWT_CONSTANTS = GWT.create(GwtConstants.class);
 	private static DateTimeFormat sDF = DateTimeFormat.getFormat(CONSTANTS.requestDateFormat());
 	private static DateTimeFormat sTSF = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
+	private static NumberFormat sNF = NumberFormat.getFormat(CONSTANTS.executionTimeFormat());
 
 	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
 
@@ -1505,6 +1506,10 @@ public class SectioningStatusPage extends Composite {
 		header.add(hTimeStamp);
 		addSortOperation(hTimeStamp, ChangeLogComparator.SortBy.TIME_STAMP, MESSAGES.colTimeStamp());
 		
+		UniTimeTableHeader hExecTime = new UniTimeTableHeader(MESSAGES.colExecutionTime());
+		header.add(hExecTime);
+		addSortOperation(hExecTime, ChangeLogComparator.SortBy.EXEC_TIME, MESSAGES.colExecutionTime());
+		
 		UniTimeTableHeader hResult = new UniTimeTableHeader(MESSAGES.colResult());
 		header.add(hResult);
 		addSortOperation(hResult, ChangeLogComparator.SortBy.RESULT, MESSAGES.colResult());
@@ -1524,6 +1529,7 @@ public class SectioningStatusPage extends Composite {
 					new TopCell(log.getStudent().getName()),
 					new TopCell(log.getOperation()),
 					new TopCell(sTSF.format(log.getTimeStamp())),
+					new TopCell(log.getWallTime() == null ? "" : sNF.format(0.001 * log.getWallTime())),
 					new TopCell(log.getResult()),
 					new TopCell(log.getUser() == null ? "" : log.getUser()),
 					new HTML(log.getMessage() == null ? "" : log.getMessage())
@@ -2015,6 +2021,7 @@ public class SectioningStatusPage extends Composite {
 			RESULT,
 			USER,
 			MESSAGE,
+			EXEC_TIME,
 			;
 		}
 		
@@ -2032,6 +2039,8 @@ public class SectioningStatusPage extends Composite {
 				return e1.getOperation().compareTo(e2.getOperation());
 			case TIME_STAMP:
 				return - e1.getTimeStamp().compareTo(e2.getTimeStamp());
+			case EXEC_TIME:
+				return - (e1.getWallTime() == null ? new Long(0) : e1.getWallTime()).compareTo(e2.getWallTime() == null ? 0 : e2.getWallTime());
 			case RESULT:
 				return (e1.getResult() == null ? "" : e1.getResult()).compareTo(e2.getResult() == null ? "" : e2.getResult());
 			case MESSAGE:

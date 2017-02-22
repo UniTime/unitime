@@ -12324,4 +12324,18 @@
 		<plsql>update %SCHEMA%.teaching_request set percent_share = 0</plsql>
 		<plsql>alter table %SCHEMA%.teaching_request add constraint nn_teachreq_share check (percent_share is not null)</plsql>
 	</update>
+	<update version="175" date="22-Feb-2017" comment="Additional Columns for the Online Student Scheduling Log">
+		<mysql>alter table %SCHEMA%.sectioning_log add cpu_time bigint(20)</mysql>
+		<mysql>alter table %SCHEMA%.sectioning_log add wall_time bigint(20)</mysql>
+		<mysql>alter table %SCHEMA%.sectioning_log add message varchar(255)</mysql>
+		<mysql>alter table %SCHEMA%.sectioning_log add api_get_time bigint(20)</mysql>
+		<mysql>alter table %SCHEMA%.sectioning_log add api_post_time bigint(20)</mysql>
+		<mysql>alter table %SCHEMA%.sectioning_log add api_exception varchar(255)</mysql>
+		<plsql>alter table %SCHEMA%.sectioning_log add cpu_time number(20)</plsql>
+		<plsql>alter table %SCHEMA%.sectioning_log add wall_time number(20)</plsql>
+		<plsql>alter table %SCHEMA%.sectioning_log add message varchar2(255 char)</plsql>
+		<plsql>alter table %SCHEMA%.sectioning_log add api_get_time number(20)</plsql>
+		<plsql>alter table %SCHEMA%.sectioning_log add api_post_time number(20)</plsql>
+		<plsql>alter table %SCHEMA%.sectioning_log add api_exception varchar2(255 char)</plsql>
+	</update>
 </dbupdate>

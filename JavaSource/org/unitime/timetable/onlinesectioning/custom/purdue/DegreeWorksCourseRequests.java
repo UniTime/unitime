@@ -260,7 +260,16 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 			if (effectiveOnly != null)
 				helper.getAction().addOptionBuilder().setKey("effectiveOnly").setValue(effectiveOnly);
 			
-			List<XEInterface.DegreePlan> current = getDegreePlans(term, studentId, effectiveOnly, getDegreeWorksNrAttempts());
+			List<XEInterface.DegreePlan> current = null;
+			long t0 = System.currentTimeMillis();
+			try {
+				current = getDegreePlans(term, studentId, effectiveOnly, getDegreeWorksNrAttempts());
+			} catch (SectioningException e) {
+				helper.getAction().setApiException(e.getMessage());
+				throw e;
+			} finally {
+				helper.getAction().setApiGetTime(System.currentTimeMillis() - t0);
+			}
 
 			if (current != null && !current.isEmpty()) {
 				Gson gson = getGson(helper);
@@ -464,7 +473,16 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 			if (effectiveOnly != null)
 				helper.getAction().addOptionBuilder().setKey("effectiveOnly").setValue(effectiveOnly);
 
-			List<XEInterface.DegreePlan> current = getDegreePlans(term, studentId, effectiveOnly, getDegreeWorksNrAttempts());
+			List<XEInterface.DegreePlan> current = null;
+			long t0 = System.currentTimeMillis();
+			try {
+				current = getDegreePlans(term, studentId, effectiveOnly, getDegreeWorksNrAttempts());
+			} catch (SectioningException e) {
+				helper.getAction().setApiException(e.getMessage());
+				throw e;
+			} finally {
+				helper.getAction().setApiGetTime(System.currentTimeMillis() - t0);
+			}
 			if (current == null)
 				throw new SectioningException(getDegreeWorksNoPlansMessage()).withTypeInfo();
 			

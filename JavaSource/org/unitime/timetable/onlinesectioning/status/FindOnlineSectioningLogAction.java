@@ -79,7 +79,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 		try {
 			List<SectioningAction> ret = new ArrayList<SectioningAction>();
 			DateFormat df = Localization.getDateFormat(CONST.timeStampFormat());
-			NumberFormat nf = Localization.getNumberFormat("0.00");
+			NumberFormat nf = Localization.getNumberFormat(CONST.executionTimeFormat());
 			AcademicSessionInfo session = server.getAcademicSession();
 			
 			org.hibernate.Query q = helper.getHibSession().createQuery(
@@ -129,6 +129,8 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					OnlineSectioningLog.Action action = OnlineSectioningLog.Action.parseFrom(log.getAction());
 					if (action.hasCpuTime())
 						a.setCpuTime(action.getCpuTime());
+					if (action.hasStartTime() && action.hasEndTime())
+						a.setWallTime(action.getEndTime() - action.getStartTime());
 					if (action.hasUser())
 						a.setUser(action.getUser().getName());
 					if (action.hasResult())
@@ -154,6 +156,18 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					}
 					if (action.hasCpuTime()) {
 						html += "<tr><td><b>" + MSG.colCpuTime() + ":</b></td><td>" + nf.format(0.000000001 * action.getCpuTime()) + "</td></tr>";
+					}
+					if (action.hasStartTime() && action.hasEndTime()) {
+						html += "<tr><td nowrap><b>" + MSG.colWallTime() + ":</b></td><td>" + nf.format(0.001 * (action.getEndTime() - action.getStartTime())) + "</td></tr>";
+					}
+					if (action.hasApiGetTime()) {
+						html += "<tr><td nowrap><b>" + MSG.colApiGetTime() + ":</b></td><td>" + nf.format(0.001 * action.getApiGetTime()) + "</td></tr>";
+					}
+					if (action.hasApiPostTime()) {
+						html += "<tr><td nowrap><b>" + MSG.colApiPostTime() + ":</b></td><td>" + nf.format(0.001 * action.getApiPostTime()) + "</td></tr>";
+					}
+					if (action.hasApiException()) {
+						html += "<tr><td nowrap><b>" + MSG.colApiException() + ":</b></td><td>" + action.getApiException() + "</td></tr>";
 					}
 					
 					if (!action.getRequestList().isEmpty()) {
@@ -336,6 +350,38 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					return "s.sectioningStatus is null";
 				else
 					return "s.sectioningStatus.reference = '" + body.toLowerCase() + "'";
+			} else if ("over".equalsIgnoreCase(attr)) {
+				try {
+					return "l.wallTime >= " + 1000 * Integer.parseInt(body.trim());
+				} catch (Exception e) {
+					return "1 = 1";
+				}
+			} else if ("under".equalsIgnoreCase(attr)) {
+				try {
+					return "l.wallTime <= " + 1000 * Integer.parseInt(body.trim());
+				} catch (Exception e) {
+					return "1 = 1";
+				}
+			} else if ("api".equalsIgnoreCase(attr)) {
+				try {
+					return "l.apiGetTime >= " + 1000 * Integer.parseInt(body.trim()) + "or l.apiPostTime >= " + 1000 * Integer.parseInt(body.trim()) + " or (l.apiGetTime + l.apiPostTime) >= " + 1000 * Integer.parseInt(body.trim());
+				} catch (Exception e) {
+					return "l.apiException like '%" + body + "%'";
+				}
+			} else if ("message".equalsIgnoreCase(attr)) {
+				return "l.message like '%" + body + "%' or l.apiException like '%" + body + "%'";
+			} else if ("get".equalsIgnoreCase(attr)) {
+				try {
+					return "l.apiGetTime >= " + 1000 * Integer.parseInt(body.trim());
+				} catch (Exception e) {
+					return "1 = 1";
+				}
+			} else if ("post".equalsIgnoreCase(attr)) {
+				try {
+					return "l.apiPostTime >= " + 1000 * Integer.parseInt(body.trim());
+				} catch (Exception e) {
+					return "1 = 1";
+				}
 			} else if (!body.isEmpty()) {
 				return "lower(s.firstName || ' ' || s.middleName || ' ' || s.lastName) like '%" + body.toLowerCase() + "%'";
 			} else {

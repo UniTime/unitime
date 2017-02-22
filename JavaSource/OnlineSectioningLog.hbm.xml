@@ -77,5 +77,43 @@
             type="java.lang.String"
             not-null="false"
             length="40"/>
+            
+        <property
+            name="cpuTime"
+            column="cpu_time"
+            type="java.lang.Long"
+            not-null="false"/>
+            
+         <property
+            name="wallTime"
+            column="wall_time"
+            type="java.lang.Long"
+            not-null="false"/>
+            
+         <property
+            name="message"
+            column="message"
+            type="java.lang.String"
+            not-null="false"
+            length="255"/>
+
+        <property
+            name="apiGetTime"
+            column="api_get_time"
+            type="java.lang.Long"
+            not-null="false"/>
+
+        <property
+            name="apiPostTime"
+            column="api_post_time"
+            type="java.lang.Long"
+            not-null="false"/>
+
+		<property
+            name="apiException"
+            column="api_exception"
+            type="java.lang.String"
+            not-null="false"
+            length="255"/>
     </class>
 </hibernate-mapping>

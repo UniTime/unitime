@@ -1099,6 +1099,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private String iProto;
 		private String iResult;
 		private Long iCpuTime;
+		private Long iWallTime;
 		
 		public SectioningAction() {
 		}
@@ -1123,6 +1124,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public Long getCpuTime() { return iCpuTime; }
 		public void setCpuTime(Long cpuTime) { iCpuTime = cpuTime; }
+		
+		public Long getWallTime() { return iWallTime; }
+		public void setWallTime(Long wallTime) { iWallTime = wallTime; }
 
 		public String getProto() { return iProto; }
 		public void setProto(String proto) { iProto = proto; }

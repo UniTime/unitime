@@ -39,6 +39,12 @@ public abstract class BaseOnlineSectioningLog implements Serializable {
 	private byte[] iAction;
 	private Integer iResult;
 	private String iUser;
+	private Long iCpuTime;
+	private Long iWallTime;
+	private String iMessage;
+	private Long iApiGetTime;
+	private Long iApiPostTime;
+	private String iApiException;
 
 	private Session iSession;
 
@@ -49,6 +55,12 @@ public abstract class BaseOnlineSectioningLog implements Serializable {
 	public static String PROP_ACTION = "action";
 	public static String PROP_RESULT = "result";
 	public static String PROP_USER_ID = "user";
+	public static String PROP_CPU_TIME = "cpuTime";
+	public static String PROP_WALL_TIME = "wallTime";
+	public static String PROP_MESSAGE = "message";
+	public static String PROP_API_GET_TIME = "apiGetTime";
+	public static String PROP_API_POST_TIME = "apiPostTime";
+	public static String PROP_API_EXCEPTION = "apiException";
 
 	public BaseOnlineSectioningLog() {
 		initialize();
@@ -82,6 +94,24 @@ public abstract class BaseOnlineSectioningLog implements Serializable {
 	public String getUser() { return iUser; }
 	public void setUser(String user) { iUser = user; }
 
+	public Long getCpuTime() { return iCpuTime; }
+	public void setCpuTime(Long cpuTime) { iCpuTime = cpuTime; }
+
+	public Long getWallTime() { return iWallTime; }
+	public void setWallTime(Long wallTime) { iWallTime = wallTime; }
+
+	public String getMessage() { return iMessage; }
+	public void setMessage(String message) { iMessage = message; }
+
+	public Long getApiGetTime() { return iApiGetTime; }
+	public void setApiGetTime(Long apiGetTime) { iApiGetTime = apiGetTime; }
+
+	public Long getApiPostTime() { return iApiPostTime; }
+	public void setApiPostTime(Long apiPostTime) { iApiPostTime = apiPostTime; }
+
+	public String getApiException() { return iApiException; }
+	public void setApiException(String apiException) { iApiException = apiException; }
+
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
@@ -103,6 +133,11 @@ public abstract class BaseOnlineSectioningLog implements Serializable {
 	public String toDebugString() {
 		return "OnlineSectioningLog[" +
 			"\n	Action: " + getAction() +
+			"\n	ApiException: " + getApiException() +
+			"\n	ApiGetTime: " + getApiGetTime() +
+			"\n	ApiPostTime: " + getApiPostTime() +
+			"\n	CpuTime: " + getCpuTime() +
+			"\n	Message: " + getMessage() +
 			"\n	Operation: " + getOperation() +
 			"\n	Result: " + getResult() +
 			"\n	Session: " + getSession() +
@@ -110,6 +145,7 @@ public abstract class BaseOnlineSectioningLog implements Serializable {
 			"\n	TimeStamp: " + getTimeStamp() +
 			"\n	UniqueId: " + getUniqueId() +
 			"\n	User: " + getUser() +
+			"\n	WallTime: " + getWallTime() +
 			"]";
 	}
 }

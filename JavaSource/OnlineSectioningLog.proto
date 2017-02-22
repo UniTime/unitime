@@ -124,6 +124,10 @@ message Action {
 	
 	optional Entity user = 12;
 	repeated Property option = 13;
+	
+	optional int64 api_get_time = 14;
+	optional int64 api_post_time = 15;
+	optional string api_exception = 16;
 }
 
 message Message {

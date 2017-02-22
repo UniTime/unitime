@@ -207,4 +207,8 @@ public interface StudentSectioningConstants extends Constants {
 	@DefaultBooleanValue(false)
 	@DoNotTranslate
 	boolean checkLastResult();
+	
+	@DefaultStringValue("0.000")
+	@DoNotTranslate
+	String executionTimeFormat();
 }

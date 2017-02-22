@@ -7540,6 +7540,38 @@ public final class OnlineSectioningLog {
      */
     org.unitime.timetable.onlinesectioning.OnlineSectioningLog.PropertyOrBuilder getOptionOrBuilder(
         int index);
+
+    /**
+     * <code>optional int64 api_get_time = 14;</code>
+     */
+    boolean hasApiGetTime();
+    /**
+     * <code>optional int64 api_get_time = 14;</code>
+     */
+    long getApiGetTime();
+
+    /**
+     * <code>optional int64 api_post_time = 15;</code>
+     */
+    boolean hasApiPostTime();
+    /**
+     * <code>optional int64 api_post_time = 15;</code>
+     */
+    long getApiPostTime();
+
+    /**
+     * <code>optional string api_exception = 16;</code>
+     */
+    boolean hasApiException();
+    /**
+     * <code>optional string api_exception = 16;</code>
+     */
+    java.lang.String getApiException();
+    /**
+     * <code>optional string api_exception = 16;</code>
+     */
+    com.google.protobuf.ByteString
+        getApiExceptionBytes();
   }
   /**
    * Protobuf type {@code Action}
@@ -7702,6 +7734,22 @@ public final class OnlineSectioningLog {
                 mutable_bitField0_ |= 0x00001000;
               }
               option_.add(input.readMessage(org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Property.PARSER, extensionRegistry));
+              break;
+            }
+            case 112: {
+              bitField0_ |= 0x00000100;
+              apiGetTime_ = input.readInt64();
+              break;
+            }
+            case 120: {
+              bitField0_ |= 0x00000200;
+              apiPostTime_ = input.readInt64();
+              break;
+            }
+            case 130: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000400;
+              apiException_ = bs;
               break;
             }
           }
@@ -8208,6 +8256,78 @@ public final class OnlineSectioningLog {
       return option_.get(index);
     }
 
+    public static final int API_GET_TIME_FIELD_NUMBER = 14;
+    private long apiGetTime_;
+    /**
+     * <code>optional int64 api_get_time = 14;</code>
+     */
+    public boolean hasApiGetTime() {
+      return ((bitField0_ & 0x00000100) == 0x00000100);
+    }
+    /**
+     * <code>optional int64 api_get_time = 14;</code>
+     */
+    public long getApiGetTime() {
+      return apiGetTime_;
+    }
+
+    public static final int API_POST_TIME_FIELD_NUMBER = 15;
+    private long apiPostTime_;
+    /**
+     * <code>optional int64 api_post_time = 15;</code>
+     */
+    public boolean hasApiPostTime() {
+      return ((bitField0_ & 0x00000200) == 0x00000200);
+    }
+    /**
+     * <code>optional int64 api_post_time = 15;</code>
+     */
+    public long getApiPostTime() {
+      return apiPostTime_;
+    }
+
+    public static final int API_EXCEPTION_FIELD_NUMBER = 16;
+    private java.lang.Object apiException_;
+    /**
+     * <code>optional string api_exception = 16;</code>
+     */
+    public boolean hasApiException() {
+      return ((bitField0_ & 0x00000400) == 0x00000400);
+    }
+    /**
+     * <code>optional string api_exception = 16;</code>
+     */
+    public java.lang.String getApiException() {
+      java.lang.Object ref = apiException_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          apiException_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string api_exception = 16;</code>
+     */
+    public com.google.protobuf.ByteString
+        getApiExceptionBytes() {
+      java.lang.Object ref = apiException_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        apiException_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private void initFields() {
       operation_ = "";
       session_ = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.getDefaultInstance();
@@ -8222,6 +8342,9 @@ public final class OnlineSectioningLog {
       result_ = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Action.ResultType.SUCCESS;
       user_ = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.getDefaultInstance();
       option_ = java.util.Collections.emptyList();
+      apiGetTime_ = 0L;
+      apiPostTime_ = 0L;
+      apiException_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -8329,6 +8452,15 @@ public final class OnlineSectioningLog {
       for (int i = 0; i < option_.size(); i++) {
         output.writeMessage(13, option_.get(i));
       }
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+        output.writeInt64(14, apiGetTime_);
+      }
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+        output.writeInt64(15, apiPostTime_);
+      }
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+        output.writeBytes(16, getApiExceptionBytes());
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -8389,6 +8521,18 @@ public final class OnlineSectioningLog {
       for (int i = 0; i < option_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(13, option_.get(i));
+      }
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(14, apiGetTime_);
+      }
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(15, apiPostTime_);
+      }
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(16, getApiExceptionBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -8573,6 +8717,12 @@ public final class OnlineSectioningLog {
         } else {
           optionBuilder_.clear();
         }
+        apiGetTime_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00002000);
+        apiPostTime_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00004000);
+        apiException_ = "";
+        bitField0_ = (bitField0_ & ~0x00008000);
         return this;
       }
 
@@ -8690,6 +8840,18 @@ public final class OnlineSectioningLog {
         } else {
           result.option_ = optionBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00002000) == 0x00002000)) {
+          to_bitField0_ |= 0x00000100;
+        }
+        result.apiGetTime_ = apiGetTime_;
+        if (((from_bitField0_ & 0x00004000) == 0x00004000)) {
+          to_bitField0_ |= 0x00000200;
+        }
+        result.apiPostTime_ = apiPostTime_;
+        if (((from_bitField0_ & 0x00008000) == 0x00008000)) {
+          to_bitField0_ |= 0x00000400;
+        }
+        result.apiException_ = apiException_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -8861,6 +9023,17 @@ public final class OnlineSectioningLog {
               optionBuilder_.addAllMessages(other.option_);
             }
           }
+        }
+        if (other.hasApiGetTime()) {
+          setApiGetTime(other.getApiGetTime());
+        }
+        if (other.hasApiPostTime()) {
+          setApiPostTime(other.getApiPostTime());
+        }
+        if (other.hasApiException()) {
+          bitField0_ |= 0x00008000;
+          apiException_ = other.apiException_;
+          onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -10696,6 +10869,146 @@ public final class OnlineSectioningLog {
           option_ = null;
         }
         return optionBuilder_;
+      }
+
+      private long apiGetTime_ ;
+      /**
+       * <code>optional int64 api_get_time = 14;</code>
+       */
+      public boolean hasApiGetTime() {
+        return ((bitField0_ & 0x00002000) == 0x00002000);
+      }
+      /**
+       * <code>optional int64 api_get_time = 14;</code>
+       */
+      public long getApiGetTime() {
+        return apiGetTime_;
+      }
+      /**
+       * <code>optional int64 api_get_time = 14;</code>
+       */
+      public Builder setApiGetTime(long value) {
+        bitField0_ |= 0x00002000;
+        apiGetTime_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 api_get_time = 14;</code>
+       */
+      public Builder clearApiGetTime() {
+        bitField0_ = (bitField0_ & ~0x00002000);
+        apiGetTime_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private long apiPostTime_ ;
+      /**
+       * <code>optional int64 api_post_time = 15;</code>
+       */
+      public boolean hasApiPostTime() {
+        return ((bitField0_ & 0x00004000) == 0x00004000);
+      }
+      /**
+       * <code>optional int64 api_post_time = 15;</code>
+       */
+      public long getApiPostTime() {
+        return apiPostTime_;
+      }
+      /**
+       * <code>optional int64 api_post_time = 15;</code>
+       */
+      public Builder setApiPostTime(long value) {
+        bitField0_ |= 0x00004000;
+        apiPostTime_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 api_post_time = 15;</code>
+       */
+      public Builder clearApiPostTime() {
+        bitField0_ = (bitField0_ & ~0x00004000);
+        apiPostTime_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object apiException_ = "";
+      /**
+       * <code>optional string api_exception = 16;</code>
+       */
+      public boolean hasApiException() {
+        return ((bitField0_ & 0x00008000) == 0x00008000);
+      }
+      /**
+       * <code>optional string api_exception = 16;</code>
+       */
+      public java.lang.String getApiException() {
+        java.lang.Object ref = apiException_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            apiException_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string api_exception = 16;</code>
+       */
+      public com.google.protobuf.ByteString
+          getApiExceptionBytes() {
+        java.lang.Object ref = apiException_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          apiException_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string api_exception = 16;</code>
+       */
+      public Builder setApiException(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00008000;
+        apiException_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string api_exception = 16;</code>
+       */
+      public Builder clearApiException() {
+        bitField0_ = (bitField0_ & ~0x00008000);
+        apiException_ = getDefaultInstance().getApiException();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string api_exception = 16;</code>
+       */
+      public Builder setApiExceptionBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00008000;
+        apiException_ = value;
+        onChanged();
+        return this;
       }
 
       // @@protoc_insertion_point(builder_scope:Action)
@@ -15531,7 +15844,7 @@ public final class OnlineSectioningLog {
       "\022\031\n\007section\030\002 \003(\0132\010.Section\022\r\n\005value\030\003 \001" +
       "(\001\"q\n\016EnrollmentType\022\r\n\tREQUESTED\020\000\022\014\n\010C" +
       "OMPUTED\020\001\022\014\n\010PREVIOUS\020\002\022\n\n\006STORED\020\003\022\014\n\010A",
-      "PPROVED\020\004\022\014\n\010REJECTED\020\005\022\014\n\010EXTERNAL\020\006\"\223\003" +
+      "PPROVED\020\004\022\014\n\010REJECTED\020\005\022\014\n\010EXTERNAL\020\006\"\327\003" +
       "\n\006Action\022\021\n\toperation\030\001 \002(\t\022\030\n\007session\030\002" +
       " \002(\0132\007.Entity\022\030\n\007student\030\003 \001(\0132\007.Entity\022" +
       "\022\n\nstart_time\030\004 \001(\003\022\020\n\010end_time\030\005 \001(\003\022\020\n" +
@@ -15540,22 +15853,24 @@ public final class OnlineSectioningLog {
       "ther\030\t \003(\0132\007.Entity\022\031\n\007message\030\n \003(\0132\010.M" +
       "essage\022\"\n\006result\030\013 \001(\0162\022.Action.ResultTy" +
       "pe\022\025\n\004user\030\014 \001(\0132\007.Entity\022\031\n\006option\030\r \003(" +
-      "\0132\t.Property\"E\n\nResultType\022\013\n\007SUCCESS\020\000\022",
-      "\013\n\007FAILURE\020\001\022\010\n\004TRUE\020\002\022\t\n\005FALSE\020\003\022\010\n\004NUL" +
-      "L\020\004\"\233\001\n\007Message\022\035\n\005level\030\001 \002(\0162\016.Message" +
-      ".Level\022\014\n\004text\030\002 \002(\t\022\021\n\texception\030\003 \001(\t\022" +
-      "\022\n\ntime_stamp\030\004 \001(\003\"<\n\005Level\022\t\n\005DEBUG\020\000\022" +
-      "\010\n\004INFO\020\001\022\010\n\004WARN\020\002\022\t\n\005ERROR\020\003\022\t\n\005FATAL\020" +
-      "\004\"&\n\010Property\022\013\n\003key\030\001 \002(\t\022\r\n\005value\030\002 \002(" +
-      "\t\"9\n\003Log\022\027\n\006action\030\001 \003(\0132\007.Action\022\031\n\007mes" +
-      "sage\030\002 \003(\0132\010.Message\"\304\001\n\023CourseRequestOp" +
-      "tion\022-\n\004type\030\001 \002(\0162\037.CourseRequestOption" +
-      ".OptionType\022\031\n\007section\030\002 \003(\0132\010.Section\022$",
-      "\n\023instructionalMethod\030\003 \003(\0132\007.Entity\"=\n\n" +
-      "OptionType\022\027\n\023ORIGINAL_ENROLLMENT\020\000\022\026\n\022R" +
-      "EQUEST_PREFERENCE\020\001\"7\n\013ExportedLog\022\017\n\007st" +
-      "udent\030\001 \002(\t\022\027\n\006action\030\002 \003(\0132\007.ActionB(\n&" +
-      "org.unitime.timetable.onlinesectioning"
+      "\0132\t.Property\022\024\n\014api_get_time\030\016 \001(\003\022\025\n\rap",
+      "i_post_time\030\017 \001(\003\022\025\n\rapi_exception\030\020 \001(\t" +
+      "\"E\n\nResultType\022\013\n\007SUCCESS\020\000\022\013\n\007FAILURE\020\001" +
+      "\022\010\n\004TRUE\020\002\022\t\n\005FALSE\020\003\022\010\n\004NULL\020\004\"\233\001\n\007Mess" +
+      "age\022\035\n\005level\030\001 \002(\0162\016.Message.Level\022\014\n\004te" +
+      "xt\030\002 \002(\t\022\021\n\texception\030\003 \001(\t\022\022\n\ntime_stam" +
+      "p\030\004 \001(\003\"<\n\005Level\022\t\n\005DEBUG\020\000\022\010\n\004INFO\020\001\022\010\n" +
+      "\004WARN\020\002\022\t\n\005ERROR\020\003\022\t\n\005FATAL\020\004\"&\n\010Propert" +
+      "y\022\013\n\003key\030\001 \002(\t\022\r\n\005value\030\002 \002(\t\"9\n\003Log\022\027\n\006" +
+      "action\030\001 \003(\0132\007.Action\022\031\n\007message\030\002 \003(\0132\010" +
+      ".Message\"\304\001\n\023CourseRequestOption\022-\n\004type",
+      "\030\001 \002(\0162\037.CourseRequestOption.OptionType\022" +
+      "\031\n\007section\030\002 \003(\0132\010.Section\022$\n\023instructio" +
+      "nalMethod\030\003 \003(\0132\007.Entity\"=\n\nOptionType\022\027" +
+      "\n\023ORIGINAL_ENROLLMENT\020\000\022\026\n\022REQUEST_PREFE" +
+      "RENCE\020\001\"7\n\013ExportedLog\022\017\n\007student\030\001 \002(\t\022" +
+      "\027\n\006action\030\002 \003(\0132\007.ActionB(\n&org.unitime." +
+      "timetable.onlinesectioning"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -15604,7 +15919,7 @@ public final class OnlineSectioningLog {
     internal_static_Action_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_Action_descriptor,
-        new java.lang.String[] { "Operation", "Session", "Student", "StartTime", "EndTime", "CpuTime", "Request", "Enrollment", "Other", "Message", "Result", "User", "Option", });
+        new java.lang.String[] { "Operation", "Session", "Student", "StartTime", "EndTime", "CpuTime", "Request", "Enrollment", "Other", "Message", "Result", "User", "Option", "ApiGetTime", "ApiPostTime", "ApiException", });
     internal_static_Message_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_Message_fieldAccessorTable = new

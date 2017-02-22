@@ -151,6 +151,26 @@ public class OnlineSectioningLogger extends Thread {
 									log.setResult(q.getResult().getNumber());
 								if (q.hasUser() && q.getUser().hasExternalId())
 									log.setUser(q.getUser().getExternalId());
+								if (q.hasCpuTime())
+									log.setCpuTime(q.getCpuTime());
+								if (q.hasStartTime() && q.hasEndTime())
+									log.setWallTime(q.getEndTime() - q.getStartTime());
+								if (q.hasApiGetTime())
+									log.setApiGetTime(q.getApiGetTime());
+								if (q.hasApiPostTime())
+									log.setApiPostTime(q.getApiPostTime());
+								if (q.hasApiException())
+									log.setApiException(q.getApiException() != null && q.getApiException().length() > 255 ? q.getApiException().substring(0, 255) : q.getApiException());
+								if (!q.getMessageList().isEmpty()) {
+									String message = null; int level = 0;
+									for (OnlineSectioningLog.Message m: q.getMessageList()) {
+										if (message != null && !message.isEmpty() && (!m.hasLevel() || level < m.getLevel().getNumber())) continue;
+										if (m.hasText()) { message = m.getText(); level = m.getLevel().getNumber(); }
+										else if (m.hasException()) { message = m.getException(); level = m.getLevel().getNumber(); }
+									}
+									if (message != null && !message.isEmpty())
+										log.setMessage(message.length() > 255 ? message.substring(0, 255) : message);
+								}
 								Long sessionId = q.getSession().getUniqueId();
 								Session session = sessions.get(sessionId);
 								if (session == null) {
