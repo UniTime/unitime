@@ -19,9 +19,6 @@
 */
 package org.unitime.timetable.solver.curricula.students;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.heuristics.NeighbourSelection;
 import org.cpsolver.ifs.model.Neighbour;
@@ -47,8 +44,6 @@ public class CurHillClimber implements NeighbourSelection<CurVariable, CurValue>
 	public Neighbour<CurVariable, CurValue> selectNeighbour(Solution<CurVariable, CurValue> solution) {
 		CurModel model = (CurModel)solution.getModel();
 		Assignment<CurVariable, CurValue> assignment = solution.getAssignment();
-		List<CurValue> best = new ArrayList<CurValue>();
-		double bestValue = 0;
 		int ix = ToolBox.random(model.variables().size());
 		for (int i = 0; i < model.variables().size(); i++) {
 			CurVariable course = model.variables().get((ix + i) % model.variables().size());
@@ -64,19 +59,9 @@ public class CurHillClimber implements NeighbourSelection<CurVariable, CurValue>
 						> course.getCourse().getMaxSize()) continue;
 				if (current != null && course.getCourse().getSize(assignment) + student.getStudent().getWeight() - current.getStudent().getWeight()
 						< course.getCourse().getMaxSize() - model.getMinStudentWidth()) continue;
-				double value = student.toDouble(assignment);
-				if (best.isEmpty() || value < bestValue) {
-					if (value < 0.0) return new CurSimpleAssignment(student);
-					best.clear();
-					best.add(student);
-					bestValue = value;
-				} else if (value == bestValue) {
-					best.add(student);
-				}
+				return new CurSimpleAssignment(student);
 			}
 		}
-		CurValue student = ToolBox.random(best);
-		if (bestValue > 0.0 && !student.variable().getCourse().isComplete(assignment)) return null;
-		return (student == null ? null : new CurSimpleAssignment(student));
+		return null;
 	}
 }
