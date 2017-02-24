@@ -217,7 +217,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     	        	"where x.clazz.uniqueId=:classId and x.student=e.student and " + // only look among students of the given class 
     	        	"e.clazz=c.clazz and " + // link ClassEvent c with StudentClassEnrollment e
             		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
-            		"m.meetingDate in ("+datesStr+")")
+            		"m.meetingDate in ("+datesStr+") and m.approvalStatus = 1")
             .setLong("classId",classId)
             .setInteger("startSlot", startSlot)
             .setInteger("endSlot", startSlot + length);

@@ -64,7 +64,8 @@ public class ClassAssignmentInfo extends ClassAssignment implements Serializable
 			if (getClassId().equals(entry.getKey())) continue;
 			if (assignmentTable!=null && assignmentTable.containsKey(entry.getKey())) continue;
 			Class_ clazz = Class_DAO.getInstance().get(entry.getKey());
-			iStudentConflicts.add(new StudentConflict(new ClassAssignment(clazz.getCommittedAssignment()), entry.getValue()));
+			if (clazz.getCommittedAssignment() != null)
+				iStudentConflicts.add(new StudentConflict(new ClassAssignment(clazz.getCommittedAssignment()), entry.getValue()));
 		}
 		if (assignmentTable!=null) for (Map.Entry<Long, ClassAssignment> entry: assignmentTable.entrySet()) {
 			if (getClassId().equals(entry.getKey())) continue;
