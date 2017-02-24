@@ -75,6 +75,13 @@
 				<line>Also, do now show student conflicts with canceled classes / meetings.</line>
 			</description>
 		</item>
+		<item>
+			<name>Time Pattern Icons</name>
+			<description>
+				<line>Fixed an issue that was causing a "Coordinate out of bounds!" error when a time pattern icon for a pattern with more than 7 day combinations was being rendered.</line>
+				<line>The issue was introduced by a recent change allowing Room Sharing and Instructor Time Preferences grid to run over Sunday.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>

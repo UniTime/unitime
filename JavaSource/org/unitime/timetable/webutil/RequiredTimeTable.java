@@ -466,7 +466,10 @@ public class RequiredTimeTable {
                 }
             }
             if (day == maxDay) break;
-            day = (1 + day) % 7;
+            if (minDay <= maxDay)
+            	day ++;
+            else
+            	day = (1 + day) % 7;
             idx ++;
         }
         return image;
