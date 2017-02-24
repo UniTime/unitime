@@ -371,10 +371,10 @@ public class CurModel extends ModelWithContext<CurVariable, CurValue, CurModel.C
 			Neighbour<CurVariable, CurValue> n = sw.selectNeighbour(solution);
 			if (n == null) break;
 			double value = n.value(assignment);
-			if (value < 0.0) {
+			if (value < -0.00001) {
 				idle = 0;
 				n.assign(assignment, it);
-			} else if (value == 0.0) {
+			} else if (value <= 0.0) {
 				n.assign(assignment, it);
 			}
 			if (getTotalValue(assignment) < best) {
@@ -394,20 +394,20 @@ public class CurModel extends ModelWithContext<CurVariable, CurValue, CurModel.C
 		double best = total;
 		CurHillClimber hc = new CurHillClimber(cfg);
 		Solution<CurVariable, CurValue> solution = new Solution<CurVariable, CurValue>(this, assignment);
-		while (idle < maxIdle) {
+		while (idle < maxIdle && total > 0.0001) {
 			Neighbour<CurVariable, CurValue> n = hc.selectNeighbour(solution);
 			if (n == null) break;
-			if (nrUnassignedVariables(assignment) == 0 && n.value(assignment) >= -1e7f) break;
-			total += n.value(assignment);
-			n.assign(assignment, it);
-			if (total < best) {
-				best = total;
-				idle = 0;
-				sLog.debug("  -- best value: " + toString(assignment));
-			} else {
-				idle++;
+			double value = n.value(assignment);
+			if (value <= 0.0) {
+				n.assign(assignment, it);
+				total += value;
+				if (best - total > 0.00001) {
+					best = total; idle = 0;
+					saveBest(assignment);
+					sLog.debug("  -- best value: " + toString(assignment));
+				}
 			}
-			it++;
+			it++; idle++;
 		}
 		// cfg.setProperty("Curriculum.HC.Iters", String.valueOf(it));
 		// cfg.setProperty("Curriculum.HC.Value", String.valueOf(getTotalValue(assignment)));
@@ -426,7 +426,7 @@ public class CurModel extends ModelWithContext<CurVariable, CurValue, CurModel.C
 		CurStudentSwap sw = new CurStudentSwap(cfg);
 		Solution<CurVariable, CurValue> solution = new Solution<CurVariable, CurValue>(this, assignment);
 		saveBest(assignment);
-		while (!getSwapCourses().isEmpty() && bound > lb * total && total > 0) {
+		while (!getSwapCourses().isEmpty() && bound > lb * total && total > 0.0001) {
 			Neighbour<CurVariable, CurValue> n = sw.selectNeighbour(solution);
 			if (n != null) {
 				double value = n.value(assignment);
@@ -461,11 +461,11 @@ public class CurModel extends ModelWithContext<CurVariable, CurValue, CurModel.C
 			Neighbour<CurVariable, CurValue> n = m.selectNeighbour(solution);
     		if (n != null) {
         		double value = n.value(assignment);
-    			if (value < 0.0) {
+    			if (value < -0.00001) {
     				idle = 0;
 					n.assign(assignment, it);
     				total += value;
-    			} else if (value == 0.0) {
+    			} else if (value <= 0.0) {
 					n.assign(assignment, it);
     			}
     		}

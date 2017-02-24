@@ -82,6 +82,12 @@
 				<line>The issue was introduced by a recent change allowing Room Sharing and Instructor Time Preferences grid to run over Sunday.</line>
 			</description>
 		</item>
+		<item>
+			<name>Curriculum Course Demands: Precision Fix</name>
+			<description>
+				<line>Make sure that the computation of the curriculum-based student course demands does not get stuck due to the floating point precision inaccuracy.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>
