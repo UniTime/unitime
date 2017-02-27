@@ -45,6 +45,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
 import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.ifs.util.ProgressWriter;
+import org.cpsolver.ifs.util.ToolBox;
 import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
@@ -55,6 +56,7 @@ import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.BinaryType;
 import org.hibernate.type.CollectionType;
+import org.hibernate.type.ComponentType;
 import org.hibernate.type.CustomType;
 import org.hibernate.type.DateType;
 import org.hibernate.type.EmbeddedComponentType;
@@ -273,6 +275,21 @@ public class SessionBackup implements SessionBackupInterface {
             			
             			// Get unique identifier
             			Serializable id = meta.getIdentifier(object, (SessionImplementor)iHibSession);
+            			if (meta.getIdentifierType().isComponentType()) {
+            				ComponentType cid = (ComponentType)meta.getIdentifierType();
+            				Object[] ids = new Object[cid.getPropertyNames().length];
+            				for (int i = 0; i < cid.getPropertyNames().length; i++) {
+            					Type type = meta.getPropertyType(cid.getPropertyNames()[i]);
+                				Object value = cid.getPropertyValue(object, i);
+                				if (value == null) continue;
+                				if (type.isEntityType()) {
+                					ids[i] = iHibSessionFactory.getClassMetadata(type.getReturnedClass()).getIdentifier(value, (SessionImplementor)iHibSession); 
+                				} else {
+                					ids[i] = value;
+                				}
+            				}
+            				id = new CompositeId(ids);
+            			}
             			
             			// Check if already exported
             			Set<Serializable> exportedIds = allExportedIds.get(meta.getEntityName());
@@ -346,7 +363,34 @@ public class SessionBackup implements SessionBackupInterface {
             					continue;
             				}
             				record.addElement(element.build());
-            				
+            			}
+            			if (meta.getIdentifierType().isComponentType()) {
+            				ComponentType cid = (ComponentType)meta.getIdentifierType();
+            				for (int i = 0; i < cid.getPropertyNames().length; i++) {
+            					String property = cid.getPropertyNames()[i];
+            					Type type = cid.getSubtypes()[i];
+                				Object value = ((CompositeId)id).iId[i];
+                				if (value == null) continue;
+                				TableData.Element.Builder element = TableData.Element.newBuilder();
+                				element.setName(property);
+                				if (type instanceof PrimitiveType) {
+                					element.addValue(((PrimitiveType)type).toString(value));
+                				} else if (type instanceof StringType) {	
+                					element.addValue(((StringType)type).toString((String)value));
+                				} else if (type instanceof BinaryType) {	
+                					element.addValueBytes(ByteString.copyFrom((byte[])value));
+                				} else if (type instanceof TimestampType) {
+                					element.addValue(((TimestampType)type).toString((Date)value));
+                				} else if (type instanceof DateType) {
+                					element.addValue(((DateType)type).toString((Date)value));
+                				} else if (type instanceof EntityType) {
+                    				element.addValue(value.toString());
+                				} else {
+                					iProgress.warn("Not-supported composite key data type: " + type + " (property " + meta.getEntityName() + "." + property + ", class " + value.getClass() + ")");
+                					continue;
+                				}
+                				record.addElement(element.build());
+            				}
             			}
             			table.addRecord(record.build());
             			iHibSession.evict(object);
@@ -491,11 +535,28 @@ public class SessionBackup implements SessionBackupInterface {
 					iExclude.put(name(), ids);
 				}
 				size = 0;
-				for (Serializable id: (List<Serializable>)iHibSession.createQuery(
-						"select distinct " + hqlName() + "." + meta().getIdentifierPropertyName() + " from " + hqlFrom() + " where " + hqlWhere()
-						).setLong("sessionId", iSessionId).list()) {
-					if (ids.add(id)) size++;
-				}				
+				if (meta().getIdentifierType().isComponentType()) {
+					ComponentType type = (ComponentType)meta().getIdentifierType();
+					String select = "";
+					for (int i = 0; i < type.getPropertyNames().length; i++) {
+						ClassMetadata meta = iHibSessionFactory.getClassMetadata(type.getSubtypes()[i].getReturnedClass());
+						if (meta == null)
+							select += (i > 0 ? ", " : "") + hqlName() + "." + type.getPropertyNames()[i];
+						else
+							select += (i > 0 ? ", " : "") + hqlName() + "." + type.getPropertyNames()[i] + "." + meta.getIdentifierPropertyName();
+					}
+					for (Object[] id: (List<Object[]>)iHibSession.createQuery(
+							"select distinct " + select +  " from " + hqlFrom() + " where " + hqlWhere()
+							).setLong("sessionId", iSessionId).list()) {
+						if (ids.add(new CompositeId(id))) size++;
+					}
+				} else {
+					for (Serializable id: (List<Serializable>)iHibSession.createQuery(
+							"select distinct " + hqlName() + "." + meta().getIdentifierPropertyName() + " from " + hqlFrom() + " where " + hqlWhere()
+							).setLong("sessionId", iSessionId).list()) {
+						if (ids.add(id)) size++;
+					}
+				}
 			}
 			return size;
 		}
@@ -537,6 +598,7 @@ public class SessionBackup implements SessionBackupInterface {
 			if (relation == null) {
 				Type type = meta().getPropertyType(property);
 				String idProperty = null;
+				int composite = 0;
 				if (!data) {
 					ClassMetadata meta = null;
 					if (type instanceof CollectionType)
@@ -545,6 +607,17 @@ public class SessionBackup implements SessionBackupInterface {
 						meta = iHibSessionFactory.getClassMetadata(type.getReturnedClass());
 					if (meta == null) {
 						data = true;
+					} else if (meta.getIdentifierType().isComponentType()) {
+						ComponentType idtype = (ComponentType)meta.getIdentifierType();
+						idProperty = "";
+						for (int i = 0; i < idtype.getPropertyNames().length; i++) {
+							ClassMetadata idmeta = iHibSessionFactory.getClassMetadata(idtype.getSubtypes()[i].getReturnedClass());
+							if (idmeta == null)
+								idProperty += (i > 0 ? ", p." : "") + idtype.getPropertyNames()[i];
+							else
+								idProperty += (i > 0 ? ", p." : "") + idtype.getPropertyNames()[i] + "." + idmeta.getIdentifierPropertyName();
+						}
+						composite = idtype.getPropertyNames().length;
 					} else {
 						idProperty = meta.getIdentifierPropertyName();
 						if (name().equals(LastLikeCourseDemand.class.getName()) && "student".equals(property))
@@ -552,16 +625,54 @@ public class SessionBackup implements SessionBackupInterface {
 					}
 				}
 				relation = new HashMap<Serializable, List<Object>>();
-				for (Object[] o: (List<Object[]>)iHibSession.createQuery(
-						"select distinct " + hqlName() + "." + meta().getIdentifierPropertyName() + (data ? ", p" : ", p." + idProperty) + 
-						" from " + hqlFrom() + " inner join " + hqlName() + "." + property + " p where " + hqlWhere()
-						).setLong("sessionId", iSessionId).list()) {
-					List<Object> list = relation.get((Serializable)o[0]);
-					if (list == null) {
-						list = new ArrayList<Object>();
-						relation.put((Serializable)o[0], list);
+				if (meta().getIdentifierType().isComponentType()) {
+					ComponentType idtype = (ComponentType)meta().getIdentifierType();
+					String select = "";
+					for (int i = 0; i < idtype.getPropertyNames().length; i++) {
+						ClassMetadata meta = iHibSessionFactory.getClassMetadata(idtype.getSubtypes()[i].getReturnedClass());
+						if (meta == null)
+							select += (i > 0 ? ", " : "") + hqlName() + "." + idtype.getPropertyNames()[i];
+						else
+							select += (i > 0 ? ", " : "") + hqlName() + "." + idtype.getPropertyNames()[i] + "." + meta.getIdentifierPropertyName();
 					}
-					list.add(o[1]);
+					for (Object[] o: (List<Object[]>)iHibSession.createQuery(
+							"select distinct " + select + (data ? ", p" : ", p." + idProperty) + " from " + hqlFrom() + " inner join " + hqlName() + "." + property + " p where " + hqlWhere()
+							).setLong("sessionId", iSessionId).list()) {
+						Object[] cid = new Object[idtype.getPropertyNames().length];
+						for (int i = 0; i < idtype.getPropertyNames().length; i++)
+							cid[i] = o[i];
+						Object obj = o[idtype.getPropertyNames().length];
+						List<Object> list = relation.get(new CompositeId(cid));
+						if (list == null) {
+							list = new ArrayList<Object>();
+							relation.put(new CompositeId(cid), list);
+						}
+						if (composite > 1) {
+							Object[] oid = new Object[composite];
+							for (int i = 0; i < composite; i++) oid[i] = o[idtype.getPropertyNames().length + i];
+							list.add(new CompositeId(oid));
+						} else {
+							list.add(obj);
+						}
+					}
+				} else {
+					for (Object[] o: (List<Object[]>)iHibSession.createQuery(
+							"select distinct " + hqlName() + "." + meta().getIdentifierPropertyName() + (data ? ", p" : ", p." + idProperty) + 
+							" from " + hqlFrom() + " inner join " + hqlName() + "." + property + " p where " + hqlWhere()
+							).setLong("sessionId", iSessionId).list()) {
+						List<Object> list = relation.get((Serializable)o[0]);
+						if (list == null) {
+							list = new ArrayList<Object>();
+							relation.put((Serializable)o[0], list);
+						}
+						if (composite > 1) {
+							Object[] oid = new Object[composite];
+							for (int i = 0; i < composite; i++) oid[i] = o[1 + i];
+							list.add(new CompositeId(oid));
+						} else {
+							list.add(o[1]);
+						}
+					}
 				}
 				iRelationCache.put(property, relation);
 				// iProgress.info("Fetched " + property + " (" + cnt + (data ? " items" : " ids") + ")");
@@ -625,6 +736,43 @@ public class SessionBackup implements SessionBackupInterface {
             
 		} catch (Exception e) {
 			sLog.fatal("Backup failed: " + e.getMessage(), e);
+		}
+	}
+	
+	public static class CompositeId implements Serializable {
+		private static final long serialVersionUID = 1L;
+		private Serializable[] iId;
+		
+		public CompositeId(Object... id) {
+			iId = new Serializable[id.length];
+			for (int i = 0; i < iId.length; i++)
+				iId[i] = (Serializable)id[i];
+		}
+		
+		@Override
+		public int hashCode() {
+			int hashCode = (iId[0] == null ? 0 : iId[0].hashCode());
+			for (int i = 1; i < iId.length; i++)
+				if (iId[i] != null) hashCode = hashCode ^ iId[i].hashCode();
+			return hashCode;
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof CompositeId)) return false;
+			CompositeId id = (CompositeId)o;
+			if (id.iId.length != iId.length) return false;
+			for (int i = 0; i < iId.length; i++)
+				if (!ToolBox.equals(iId[i], id.iId[i])) return false;
+			return true;
+		}
+		
+		@Override
+		public String toString() {
+			String ret = "";
+			for (int i = 0; i < iId.length; i++)
+				ret += (i > 0 ? "|" : "") + (iId[i] == null ? "" : iId[i].toString());
+			return ret;
 		}
 	}
 

@@ -48,6 +48,7 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
 import org.hibernate.CacheMode;
+import org.hibernate.EntityMode;
 import org.hibernate.FlushMode;
 import org.hibernate.NonUniqueResultException;
 import org.hibernate.SessionFactory;
@@ -61,6 +62,7 @@ import org.hibernate.type.BooleanType;
 import org.hibernate.type.ByteType;
 import org.hibernate.type.CharacterType;
 import org.hibernate.type.CollectionType;
+import org.hibernate.type.ComponentType;
 import org.hibernate.type.CustomType;
 import org.hibernate.type.DateType;
 import org.hibernate.type.DoubleType;
@@ -515,6 +517,18 @@ public class SessionRestore implements SessionRestoreInterface {
 					if (value == null || !iHibSession.contains(value)) return getMetaData().getPropertyNames()[i];
 				}
 			}
+			if (getMetaData().getIdentifierType().isComponentType()) {
+				ComponentType cid = (ComponentType)getMetaData().getIdentifierType();
+				for (int i = 0; i < cid.getPropertyNames().length; i++) {
+					Type type = cid.getSubtypes()[i];
+					if (type instanceof EntityType) {
+						TableData.Element element = getElement(cid.getPropertyNames()[i]);
+						if (element == null) continue;
+						Object value = get(type.getReturnedClass(), element.getValue(0));
+						if (value == null || !iHibSession.contains(value)) return cid.getPropertyNames()[i];
+					}
+				}
+			}
 			return null;
 		}
 		
@@ -534,6 +548,56 @@ public class SessionRestore implements SessionRestoreInterface {
 							getMetaData().setPropertyValue(getObject(), getMetaData().getPropertyNames()[i], value);
 					}
 				}
+			}
+			if (getMetaData().getIdentifierType().isComponentType()) {
+				ComponentType cid = (ComponentType)getMetaData().getIdentifierType();
+				Object[] id = new Object[cid.getPropertyNames().length];
+				for (int i = 0; i < cid.getPropertyNames().length; i++) {
+					String property = cid.getPropertyNames()[i];
+					Type type = cid.getSubtypes()[i];
+					TableData.Element element = getElement(cid.getPropertyNames()[i]);
+					if (element == null) continue;
+					Object value = null;
+					if (type instanceof PrimitiveType) {
+						if (type instanceof BooleanType) {
+							value = new Boolean("true".equals(element.getValue(0)));
+						} else if (type instanceof ByteType) {
+							value = Byte.valueOf(element.getValue(0));
+						} else if (type instanceof CharacterType) {
+							value = Character.valueOf(element.getValue(0).charAt(0));
+						} else if (type instanceof DoubleType) {
+							value = Double.valueOf(element.getValue(0));
+						} else if (type instanceof FloatType) {
+							value = Float.valueOf(element.getValue(0));
+						} else if (type instanceof IntegerType) {
+							value = Integer.valueOf(element.getValue(0));
+						} else if (type instanceof LongType) {
+							value = Long.valueOf(element.getValue(0));
+						} else if (type instanceof ShortType) {
+							value = Short.valueOf(element.getValue(0));
+						}
+					} else if (type instanceof DateType) {
+						try {
+							value = new SimpleDateFormat("dd MMMM yyyy", Localization.getJavaLocale()).parse(element.getValue(0));
+						} catch (ParseException e) {
+							value  = new DateType().fromStringValue(element.getValue(0));
+						}
+					} else if (type instanceof TimestampType) {
+						value = new TimestampType().fromStringValue(element.getValue(0));
+					} else if (type instanceof StringType) {
+						value = element.getValue(0);
+					} else if (type instanceof BinaryType) {
+						value = element.getValueBytes(0).toByteArray();
+					} else if (type instanceof EntityType) {
+						value = get(type.getReturnedClass(), element.getValue(0));
+						if (value != null && !iHibSession.contains(value))
+							message("Required " + getAbbv() + "." + property + " has transient value", getId() + "-" + element.getValue(0));
+					} else {
+						message("Not-supported composite key type " + type.getClass().getName() + " (property " + getMetaData().getEntityName() + "." + property + ", class " + type.getReturnedClass() + ")", getId());
+					}
+					id[i] = value;
+				}
+				cid.setPropertyValues(getObject(), id, EntityMode.POJO);
 			}
 			if (getObject() instanceof Class_) {
 				Class_ clazz = (Class_)getObject();
