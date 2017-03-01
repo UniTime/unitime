@@ -360,6 +360,10 @@ public class CurModel extends ModelWithContext<CurVariable, CurValue, CurModel.C
 		return new Solution<CurVariable, CurValue>(m, a);
     }
     
+    protected boolean canContinue() {
+    	return !Thread.currentThread().isInterrupted();
+    }
+    
     public void naive(DataProperties cfg, Assignment<CurVariable, CurValue> assignment) {
     	int maxIdle = cfg.getPropertyInt("Curriculum.Naive.MaxIdle", 1000);
     	sLog.debug("  -- running naive");
@@ -367,7 +371,7 @@ public class CurModel extends ModelWithContext<CurVariable, CurValue, CurModel.C
 		double best = getTotalValue(assignment);
 		CurStudentSwap sw = new CurStudentSwap(cfg);
 		Solution<CurVariable, CurValue> solution = new Solution<CurVariable, CurValue>(this, assignment);
-		while (!getSwapCourses().isEmpty() && idle < maxIdle) {
+		while (!getSwapCourses().isEmpty() && idle < maxIdle && canContinue()) {
 			Neighbour<CurVariable, CurValue> n = sw.selectNeighbour(solution);
 			if (n == null) break;
 			double value = n.value(assignment);
@@ -394,7 +398,7 @@ public class CurModel extends ModelWithContext<CurVariable, CurValue, CurModel.C
 		double best = total;
 		CurHillClimber hc = new CurHillClimber(cfg);
 		Solution<CurVariable, CurValue> solution = new Solution<CurVariable, CurValue>(this, assignment);
-		while (idle < maxIdle && total > 0.0001) {
+		while (idle < maxIdle && total > 0.0001 && canContinue()) {
 			Neighbour<CurVariable, CurValue> n = hc.selectNeighbour(solution);
 			if (n == null) break;
 			double value = n.value(assignment);
@@ -426,7 +430,7 @@ public class CurModel extends ModelWithContext<CurVariable, CurValue, CurModel.C
 		CurStudentSwap sw = new CurStudentSwap(cfg);
 		Solution<CurVariable, CurValue> solution = new Solution<CurVariable, CurValue>(this, assignment);
 		saveBest(assignment);
-		while (!getSwapCourses().isEmpty() && bound > lb * total && total > 0.0001) {
+		while (!getSwapCourses().isEmpty() && bound > lb * total && total > 0.0001 && canContinue()) {
 			Neighbour<CurVariable, CurValue> n = sw.selectNeighbour(solution);
 			if (n != null) {
 				double value = n.value(assignment);
@@ -457,7 +461,7 @@ public class CurModel extends ModelWithContext<CurVariable, CurValue, CurModel.C
 		double best = total;
 		CurSimpleMove m = new CurSimpleMove(cfg);
 		Solution<CurVariable, CurValue> solution = new Solution<CurVariable, CurValue>(this, assignment);
-		while (idle < maxIdle) {
+		while (idle < maxIdle && canContinue()) {
 			Neighbour<CurVariable, CurValue> n = m.selectNeighbour(solution);
     		if (n != null) {
         		double value = n.value(assignment);
@@ -490,7 +494,7 @@ public class CurModel extends ModelWithContext<CurVariable, CurValue, CurModel.C
 		Solution<CurVariable, CurValue> solution = new Solution<CurVariable, CurValue>(this, assignment);
     	sLog.debug("  -- creating initial assignment");
     	boolean precise = cfg.getPropertyBoolean("Curriculum.Initial.PreciseSelection", true);
-    	while (nrUnassignedVariables(assignment) > 0) {
+    	while (nrUnassignedVariables(assignment) > 0 && canContinue()) {
     		CurVariable course = var.selectVariable(solution);
     		if (course.getCourse().isComplete(assignment)) {
     			sLog.debug("    -- all complete");

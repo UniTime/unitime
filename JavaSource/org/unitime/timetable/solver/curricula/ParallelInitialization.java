@@ -48,6 +48,8 @@ public class ParallelInitialization {
 				task.execute();
 				task.teardown(hibSession);
 				progress.incProgress();
+				if (Thread.currentThread().isInterrupted())
+					throw new RuntimeException("The load was interrupted.");
 			}
 		} else {
 			Iterator<? extends Task> iterator = iTasks.iterator();
@@ -57,10 +59,13 @@ public class ParallelInitialization {
 	        	executor.start();
 	        	executors.add(executor);
 	        }
-	        for (Executor executor: executors) {
-	        	try {
-	        		executor.join();
-	        	} catch (InterruptedException e) {}
+        	try {
+        		for (Executor executor: executors)
+        			executor.join();
+        	} catch (InterruptedException e) {
+        		for (Executor executor: executors)
+        			if (executor.isAlive()) executor.interrupt();
+        		Thread.currentThread().interrupt();
 	        }
 	        for (Executor executor: executors)
 	        	if (executor.getException() != null) 
@@ -92,7 +97,7 @@ public class ParallelInitialization {
 		@Override
 		public void run() {
 			try {
-				for (;;) {
+				while (!isInterrupted()) {
 					Task task = iIterator.next();
 					
 					// setup task (one at a time)
