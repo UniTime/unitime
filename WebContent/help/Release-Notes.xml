@@ -117,6 +117,15 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Session Roll Forward: Fixed bug with Subject Area Roll Forward</name>
+			<description>
+				<line>The roll forward has been updated to fail when rolling subject areas forward into a session that does not have departments that match the departments the subject areas should be attached to.</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>
