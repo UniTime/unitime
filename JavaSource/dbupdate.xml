@@ -12338,4 +12338,30 @@
 		<plsql>alter table %SCHEMA%.sectioning_log add api_post_time number(20)</plsql>
 		<plsql>alter table %SCHEMA%.sectioning_log add api_exception varchar2(255 char)</plsql>
 	</update>
+	<update version="176" date="23-Feb-2017" comment="Point In Time Data CHAR">
+		<plsql>alter table %SCHEMA%.point_in_time_data modify name varchar2(100 char)</plsql>
+		<plsql>alter table %SCHEMA%.point_in_time_data modify note varchar2(1000 char)</plsql>
+		<plsql>alter table %SCHEMA%.pit_instr_offering modify external_uid varchar2(40 char)</plsql>
+		<plsql>alter table %SCHEMA%.pit_course_offering modify course_nbr varchar2(40 char)</plsql>
+		<plsql>alter table %SCHEMA%.pit_course_offering modify perm_id varchar2(20 char)</plsql>
+		<plsql>alter table %SCHEMA%.pit_course_offering modify title varchar2(200 char)</plsql>
+		<plsql>alter table %SCHEMA%.pit_course_offering modify external_uid varchar2(40 char)</plsql>
+		<plsql>alter table %SCHEMA%.pit_instr_offer_config modify name varchar2(10 char)</plsql>
+		<plsql>alter table %SCHEMA%.pit_sched_subpart modify subpart_suffix varchar2(5 char)</plsql>
+		<plsql>alter table %SCHEMA%.pit_class modify class_suffix varchar2(10 char)</plsql>
+		<plsql>alter table %SCHEMA%.pit_class modify external_uid varchar2(40 char)</plsql>
+		<plsql>alter table %SCHEMA%.pit_student modify external_uid varchar2(40 char)</plsql>
+		<plsql>alter table %SCHEMA%.pit_student modify first_name varchar2(100 char)</plsql>
+		<plsql>alter table %SCHEMA%.pit_student modify middle_name varchar2(100 char)</plsql>
+		<plsql>alter table %SCHEMA%.pit_student modify last_name varchar2(100 char)</plsql>
+		<plsql>alter table %SCHEMA%.pit_student modify email varchar2(200 char)</plsql>
+		<plsql>alter table %SCHEMA%.pit_student_class_enrl modify changed_by varchar2(40 char)</plsql>
+		<plsql>alter table %SCHEMA%.pit_dept_instructor modify external_uid varchar2(40 char)</plsql>
+		<plsql>alter table %SCHEMA%.pit_dept_instructor modify career_acct varchar2(20 char)</plsql>
+		<plsql>alter table %SCHEMA%.pit_dept_instructor modify lname varchar2(100 char)</plsql>
+		<plsql>alter table %SCHEMA%.pit_dept_instructor modify fname varchar2(100 char)</plsql>
+		<plsql>alter table %SCHEMA%.pit_dept_instructor modify mname varchar2(100 char)</plsql>
+		<plsql>alter table %SCHEMA%.pit_dept_instructor modify email varchar2(200 char)</plsql>
+		<plsql>alter table %SCHEMA%.pit_class_event modify event_name varchar2(100 char)</plsql>
+	</update>
 </dbupdate>
