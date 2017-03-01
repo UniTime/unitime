@@ -924,6 +924,7 @@ public class SessionRollForward {
 								continue;
 							}
 							toSubjectArea = (SubjectArea)fromSubjectArea.clone();
+							toSubjectArea.setDepartment(null);
 							if (!toSubject.equals(fromSubject)){
 								toSubjectArea.setSubjectAreaAbbreviation(toSubject);
 							}
@@ -1014,6 +1015,7 @@ public class SessionRollForward {
 					fromSubjectArea = (SubjectArea) it.next();
 					if (fromSubjectArea != null){
 						toSubjectArea = (SubjectArea)fromSubjectArea.clone();
+						toSubjectArea.setDepartment(null);
 						toSubjectArea.setSession(toSession);
 						toSession.addTosubjectAreas(toSubjectArea);
 						if (fromSubjectArea.getDepartment() != null) {
