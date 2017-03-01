@@ -90,12 +90,6 @@
             lazy="true"
             formula="(select /*+ RULE */ count(distinct e.pit_student_id) from %SCHEMA%.pit_student_class_enrl e inner join %SCHEMA%.pit_course_offering co on co.uniqueid = e.pit_course_offering_id where co.pit_instr_offr_id = uniqueid)"/>
 
-        <property
-            name="ctrlCourseId"
-            type="java.lang.Integer"
-            formula=" (select /*+ RULE */ co.uniqueid from %SCHEMA%.pit_course_offering co where co.pit_instr_offr_id = uniqueid and co.is_control = 1) "/>
-
-
         <set
             name="pitCourseOfferings"
             inverse="true"

@@ -43,7 +43,6 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	private Boolean iNotOffered;
 	private Integer iDemand;
 	private Integer iEnrollment;
-	private Integer iCtrlCourseId;
 	private Integer iLimit;
 	private Long iUniqueIdRolledForwardFrom;
 	private String iExternalUniqueId;
@@ -95,9 +94,6 @@ public abstract class BaseInstructionalOffering implements Serializable {
 
 	public Integer getEnrollment() { return iEnrollment; }
 	public void setEnrollment(Integer enrollment) { iEnrollment = enrollment; }
-
-	public Integer getCtrlCourseId() { return iCtrlCourseId; }
-	public void setCtrlCourseId(Integer ctrlCourseId) { iCtrlCourseId = ctrlCourseId; }
 
 	public Integer getLimit() { return iLimit; }
 	public void setLimit(Integer limit) { iLimit = limit; }

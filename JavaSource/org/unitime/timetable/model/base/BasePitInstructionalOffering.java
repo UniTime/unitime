@@ -43,7 +43,6 @@ public abstract class BasePitInstructionalOffering implements Serializable {
 	private Long iUniqueIdRolledForwardFrom;
 	private String iExternalUniqueId;
 	private Integer iEnrollment;
-	private Integer iCtrlCourseId;
 
 	private PointInTimeData iPointInTimeData;
 	private InstructionalOffering iInstructionalOffering;
@@ -88,9 +87,6 @@ public abstract class BasePitInstructionalOffering implements Serializable {
 
 	public Integer getEnrollment() { return iEnrollment; }
 	public void setEnrollment(Integer enrollment) { iEnrollment = enrollment; }
-
-	public Integer getCtrlCourseId() { return iCtrlCourseId; }
-	public void setCtrlCourseId(Integer ctrlCourseId) { iCtrlCourseId = ctrlCourseId; }
 
 	public PointInTimeData getPointInTimeData() { return iPointInTimeData; }
 	public void setPointInTimeData(PointInTimeData pointInTimeData) { iPointInTimeData = pointInTimeData; }

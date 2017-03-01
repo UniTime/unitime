@@ -66,11 +66,6 @@
             formula="(select /*+ RULE */ count(distinct e.student_id) from %SCHEMA%.student_class_enrl e inner join %SCHEMA%.course_offering co on co.uniqueid = e.course_offering_id where co.instr_offr_id = uniqueid)"/>
 
         <property
-            name="ctrlCourseId"
-            type="java.lang.Integer"
-            formula=" (select /*+ RULE */ co.uniqueid from %SCHEMA%.course_offering co where co.instr_offr_id = uniqueid and co.is_control = 1) "/>
-
-        <property
             name="limit"
             type="java.lang.Integer"
             formula=" ( select /*+ RULE */ sum(ioc.config_limit) from %SCHEMA%.instr_offering_config ioc where ioc.instr_offr_id = uniqueid ) "/>

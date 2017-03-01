@@ -482,7 +482,7 @@ public abstract class PreferencesAction extends Action {
 		frm2.setSubjectAreaIds(new String[] {co.getSubjectArea().getUniqueId().toString()});
         frm2.setSubjectAreaAbbv(co.getSubjectAreaAbbv());
         frm2.setCourseNbr(co.getCourseNbr());
-        frm2.setCtrlInstrOfferingId(io.getCtrlCourseId().toString());
+        frm2.setCtrlInstrOfferingId(co.getUniqueId().toString());
         frm2.setIsControl(co.isIsControl());
 
         request.setAttribute("subjectAreaId", co.getSubjectArea().getUniqueId().toString());
