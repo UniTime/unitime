@@ -1428,6 +1428,11 @@ public enum ApplicationProperty {
 	@DefaultValue("0")
 	@Description("Session Start/End Month: add a given number of days to the first / last day of a session")
 	SessionNrExcessDays("unitime.session.nrExcessDays"),
+	
+	@Type(Integer.class)
+	@DefaultValue("0")
+	@Description("Session Default Computation: shift current date by the given number of days")
+	SessionDefaultShiftDays("unitime.session.defaultSessionShiftDays"),
 
 	@Type(Integer.class)
 	@DefaultValue("3")
