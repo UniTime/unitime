@@ -253,7 +253,7 @@ public class InstructorDetailAction extends PreferencesAction {
 		    					null,
 		    					new String[] {MSG.columnClass(), MSG.columnInstructorCheckConflicts(), MSG.columnInstructorShare(), MSG.columnTeachingResponsibility(),
 		    							MSG.columnLimit(), MSG.columnManager()},
-		    					new String[] {"left", "left","left", "left", "left"},
+		    					new String[] {"left", "left","left", "left", "left", "left"},
 		    					null )
 			    	);
 			    
