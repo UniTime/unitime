@@ -43,18 +43,8 @@ public class HQLQueriesBackend implements GwtRpcImplementation<HQLQueriesRpcRequ
 	@PreAuthorize("checkPermission('HQLReports')")
 	public GwtRpcResponseList<Query> execute(HQLQueriesRpcRequest request, SessionContext context) {
 		SavedHQL.Flag ap = getAppearanceFlag(request.getAppearance());
-		switch (ap) {
-		case APPEARANCE_ADMINISTRATION:
-			sessionContext.checkPermission(Right.HQLReportsAdministration); break;
-		case APPEARANCE_COURSES:
-			sessionContext.checkPermission(Right.HQLReportsCourses); break;
-		case APPEARANCE_EXAMS:
-			sessionContext.checkPermission(Right.HQLReportsExaminations); break;
-		case APPEARANCE_SECTIONING:
-			sessionContext.checkPermission(Right.HQLReportsStudents); break;
-		case APPEARANCE_EVENTS:
-			sessionContext.checkPermission(Right.HQLReportsEvents); break;
-		}
+		if (ap.getPermission() != null)
+			sessionContext.checkPermission(ap.getPermission());
 		GwtRpcResponseList<SavedHQLInterface.Query> ret = new GwtRpcResponseList<SavedHQLInterface.Query>(); 
 		for (SavedHQL hql: SavedHQL.listAll(null, ap, sessionContext.hasPermission(Right.HQLReportsAdminOnly))) {
 			SavedHQLInterface.Query query = new SavedHQLInterface.Query();

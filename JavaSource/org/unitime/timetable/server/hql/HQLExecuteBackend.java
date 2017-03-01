@@ -33,6 +33,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface.HQLExecuteRpcRequest;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface.Table;
+import org.unitime.timetable.model.dao.SavedHQLDAO;
 import org.unitime.timetable.security.SessionContext;
 
 /**
@@ -75,7 +76,7 @@ public class HQLExecuteBackend implements GwtRpcImplementation<HQLExecuteRpcRequ
 				public void close() throws IOException {}
 			};
 			SavedHqlExportToCSV.execute(sessionContext.getUser(), out, 
-					request.getQuery(),
+					request.getQuery().getQuery() == null ? SavedHQLDAO.getInstance().get(request.getQuery().getId()).getQuery() : request.getQuery().getQuery(),
 					request.getOptions(),
 					request.getFromRow(),
 					request.getMaxRows());
