@@ -72,7 +72,6 @@
 <!ATTLIST classInstructor lead ( false | true ) #IMPLIED >
 <!ATTLIST classInstructor responsibilityUniqueId CDATA #IMPLIED >
 <!ATTLIST classInstructor share NMTOKEN #REQUIRED >
-<!ATTLIST classInstructor normalizedPercentShare NMTOKEN #REQUIRED >
 
 <!ELEMENT courseTypes ( courseType* ) >
 
@@ -122,6 +121,7 @@
 <!ATTLIST teachingResponsibility abbreviation CDATA #REQUIRED >
 <!ATTLIST teachingResponsibility instructor ( false | true ) #REQUIRED >
 <!ATTLIST teachingResponsibility coordinator ( false | true ) #REQUIRED >
+<!ATTLIST teachingResponsibility options CDATA #IMPLIED >
 
 <!ELEMENT datePatterns ( datePattern* ) >
 

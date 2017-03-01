@@ -24,12 +24,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.dom4j.Element;
+import org.unitime.commons.Debug;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
@@ -1287,7 +1289,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		
 		pci.setPitDepartmentalInstructor(pitDepartmentInstructors.get(new Long(getRequiredStringAttribute(classInstructorElement, PointInTimeDataExport.sDepartmentalInstructorUniqueIdAttribute, PointInTimeDataExport.sClassInstructorElementName))));
 		pci.setPercentShare(getRequiredIntegerAttribute(classInstructorElement, PointInTimeDataExport.sShareAttribute, PointInTimeDataExport.sClassInstructorElementName));
-		pci.setNormalizedPercentShare(getRequiredIntegerAttribute(classInstructorElement, PointInTimeDataExport.sNormalizedPercentShareAttribute,  PointInTimeDataExport.sClassInstructorElementName));
+		pci.setNormalizedPercentShare(new Integer(0));
 		String responsibilityId = getOptionalStringAttribute(classInstructorElement, PointInTimeDataExport.sResponsibilityUniqueIdAttribute);
 		if (responsibilityId != null) {
 			pci.setResponsibility(teachingResponsibilities.get(new Long(responsibilityId)));
@@ -1459,6 +1461,8 @@ public class PointInTimeDataImport extends EventRelatedImports {
         	elementClassInstructor(classInstructorElement, pc);
         }
         
+        updateNormalizedPercentShare(pc);
+        
         @SuppressWarnings("unchecked")
 		Iterator<Element> classEventElementIt = classElement.elementIterator(PointInTimeDataExport.sClassEventElementName);
         while (classEventElementIt.hasNext()){
@@ -1468,6 +1472,57 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	
 	}
 	
+	private void updateNormalizedPercentShare(PitClass pc) {
+		ArrayList<PitClassInstructor> ciList = new ArrayList<PitClassInstructor>();
+		if (pc.getPitClassInstructors() == null || pc.getPitClassInstructors().isEmpty()){
+			return;
+		}
+		for(PitClassInstructor pci : pc.getPitClassInstructors()){
+			if (pci.getResponsibility() == null || !pci.getResponsibility().hasOption(TeachingResponsibility.Option.auxiliary)){
+				if (pci.getPercentShare().intValue() > 0) {
+					ciList.add(pci);
+				}
+			}
+		}
+		if (ciList.size() == 0){
+			return;
+		}
+		if (ciList.size() == 1){
+			ciList.get(0).setNormalizedPercentShare(new Integer(100));
+		} else {
+			int totalShare = 0;
+			for (PitClassInstructor pci : ciList){
+				if (pci.getPercentShare() != null) {
+					totalShare += pci.getPercentShare().intValue();
+				}
+			}
+			int totalNormalizedShare = 0;
+			for (PitClassInstructor pci : ciList){
+				if (pci.getPercentShare() != null) {
+					pci.setNormalizedPercentShare(new Integer(100*pci.getPercentShare().intValue()/totalShare));
+					totalNormalizedShare += pci.getNormalizedPercentShare().intValue();
+				}
+			}
+			
+			if (totalNormalizedShare != 100){
+				int difference = 100 - totalNormalizedShare;
+				int checkNormalizedShare = 0;
+				int numToAddToAll = difference / ciList.size();
+				int remainderToSpreadUntilGone = difference % ciList.size();
+				for (PitClassInstructor pci : ciList){
+					if (pci.getPercentShare() != null) {
+						pci.setNormalizedPercentShare(new Integer(pci.getNormalizedPercentShare().intValue() + numToAddToAll + (remainderToSpreadUntilGone > 0? 1 : (remainderToSpreadUntilGone < 0) ? -1 : 0 )));
+						checkNormalizedShare += pci.getNormalizedPercentShare().intValue();
+						remainderToSpreadUntilGone += (remainderToSpreadUntilGone > 0 ? -1 : (remainderToSpreadUntilGone < 0 ? 1 : 0));
+					}
+				}
+				if (checkNormalizedShare != 100) {
+					Debug.info(pc.getUniqueId().toString() + ":  Normalized percent share for class instructors does not equal 100:  " + checkNormalizedShare);
+				}
+			}
+		}
+	}
+
 	@SuppressWarnings("unchecked")
 	private void elementClassEvent(Element classEventElement, PitClass pc) throws Exception {
 		PitClassEvent pce = new PitClassEvent();

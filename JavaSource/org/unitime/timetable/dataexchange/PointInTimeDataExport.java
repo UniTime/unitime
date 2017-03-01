@@ -318,7 +318,8 @@ public class PointInTimeDataExport extends BaseExport {
 		       .append(" left join fetch ca.timePattern as tp")
 		       .append(" left join fetch ca.rooms as r")
 		       .append(" where io.session.uniqueId = :sessId" )
-		       .append(" and cco.uniqueId = io.ctrlCourseId")
+		       .append(" and cco.instructionalOffering.uniqueId = io.uniqueId")
+		       .append(" and cco.isControl = true")
 		       .append(" and sa.uniqueId = :saId " )
 		       .append(" and c.cancelled is false " )
 		       .append(" and c.studentEnrollments is not empty")
@@ -1240,39 +1241,10 @@ public class PointInTimeDataExport extends BaseExport {
     		}
     		instructorElement.addAttribute(sResponsibilityUniqueIdAttribute, instructor.getResponsibility().getUniqueId().toString());
     	}
-    	instructorElement.addAttribute(sNormalizedPercentShareAttribute, Integer.toString(calculateNormalizedPercentShareForInstructor(instructor)));
         if (instructor.getPercentShare()!=null)
         	instructorElement.addAttribute("share", instructor.getPercentShare().toString());
         instructorElement.addAttribute("lead", instructor.isLead()?"true":"false");
     }
-	
-	private int calculateNormalizedPercentShareForInstructor(ClassInstructor classInstructor){
-		if (classInstructor.getPercentShare() == null || classInstructor.getPercentShare().intValue() == 0){
-			return(0);
-		} else {
-			if (classInstructor.getClassInstructing().getClassInstructors().size() == 1) {
-				return(100);
-			} else {
-				int total = 0;
-				for(ClassInstructor ci : classInstructor.getClassInstructing().getClassInstructors()){
-					if(ci.getPercentShare() != null) {
-						if ((classInstructor.getResponsibility() == null && ci.getResponsibility() == null)
-							    || (classInstructor.getResponsibility() != null && ci.getResponsibility() != null
-							        && classInstructor.getResponsibility().equals(ci.getResponsibility()))) {
-							total += ci.getPercentShare().intValue();
-						}
-					}
-				}
-				if (total == 100) {
-					return(classInstructor.getPercentShare().intValue());
-				} else {
-					return(classInstructor.getPercentShare().intValue()*100/total);
-				}
-			}
-		}
-		
-	}
-
     
     private void exportTeachingResponsibility(TeachingResponsibility responsibility) {
     	Element responsibilityElement = teachingResponsibilitiesElement.addElement(sTeachingResponsibilityElementName);
