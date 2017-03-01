@@ -30,6 +30,8 @@ import org.hibernate.CacheMode;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserAuthority;
+import org.unitime.timetable.security.UserContext;
 
 /**
  * @author Tomas Muller
@@ -47,8 +49,23 @@ public abstract class AbstractApiHelper implements ApiHelper {
 		iResponse = response;
 		iContext = context;
 		iCacheMode = cacheMode;
+
+		// select academic session if needed
+		UserContext user = (iContext == null ? null : iContext.getUser());
+		Long sessionId = getAcademicSessionId();
+		if (user != null && sessionId != null && !sessionId.equals(user.getCurrentAcademicSessionId())) {
+			String role = (user.getCurrentAuthority() == null ? null : user.getCurrentAuthority().getRole());
+			if (getParameter("role") != null) role = getParameter("role");
+			UserAuthority best = null;
+			for (UserAuthority authority: user.getAuthorities()) {
+				if (authority.getAcademicSession() != null && authority.getAcademicSession().getQualifierId().equals(sessionId)) {
+					if (best == null || authority.getRole().equals(role)) best = authority;
+				}
+			}
+			if (best != null) user.setCurrentAuthority(best);
+		}
 	}
-			
+
 	@Override
 	public void sendError(int code, String message) throws IOException {
 		iResponse.sendError(code, message);
