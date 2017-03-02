@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<script name="Import Solver Configuration" permission="Solver Configurations" engine="ECMAScript" created="Thu Mar 02 15:09:00 CET 2017">
+  <description><![CDATA[This script imports solver configuration as it is exported on the Edit Solver Configuration]]></description>
+  <parameter name="reference" label="Reference" type="text"/>
+  <parameter name="file" label="Solver Configuration File" type="file"/>
+  <parameter name="name" label="Name" type="text"/>
+  <parameter name="appearance" label="Appearance" type="enum(Timetables,Solver,Examination Solver,Student Sectioning Solver,Instructor Scheduling Solver)" default="Solver"/>
+  <body><![CDATA[var configName = file.getName().substring(0, file.getName().lastIndexOf('.'));
+log.info('Importing configuration ' + configName);
+var properties = new java.util.Properties();
+properties.load(file.getInputStream());
+if (!reference) reference = file.getName().substring(0, file.getName().lastIndexOf('.'));
+log.info('Reference: ' + reference);
+
+var config = org.unitime.timetable.model.SolverPredefinedSetting.findByName(reference);
+if (config == null) {
+  config = new org.unitime.timetable.model.SolverPredefinedSetting();
+  config.setName(reference);
+  if (name) config.setDescription(name);
+  else config.setDescription(reference);
+  for (var i = 0; i < org.unitime.timetable.model.SolverPredefinedSetting.sAppearances.length; i++)
+    if (org.unitime.timetable.model.SolverPredefinedSetting.sAppearances[i].equals(appearance))
+      config.setAppearance(i);
+  config.setParameters(new java.util.HashSet());
+} else {
+  config.getParameters().clear();
+  if (name) config.setDescription(name);
+}
+
+var type = 0;
+if (config.getAppearance() == 2)
+  type = 1;
+else if (config.getAppearance() == 3)
+  type = 2;
+else if (config.getAppearance() == 4)
+  type = 3;
+
+var parameterDefs = hibSession.createQuery('from SolverParameterDef where group.type = :type and visible = true').setInteger('type', type).list();
+for (var i = parameterDefs.iterator(); i.hasNext(); ) {
+  var def = i.next();
+  if (def.getName().equals("Extensions.Classes")) continue;
+  var defValue = def.getDefault();
+  if (defValue.startsWith('%') && defValue.endsWith('%'))
+    defValue = properties.getProperty(defValue.substring(1, defValue.length() - 1));
+  var value = properties.getProperty(def.getName(), def.getDefault());
+  if (!value.equals(defValue)) {
+    var param = new org.unitime.timetable.model.SolverParameter();
+    param.setValue(value);
+    param.setDefinition(def);
+    config.getParameters().add(param);
+    log.info(def.getName() + '=' + value + ' (' + defValue + ')');
+  }
+}
+
+hibSession.saveOrUpdate(config);]]></body>
+</script>
