@@ -513,6 +513,32 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 				shortCommentNoColor = lecture.minRoomUse()+(lecture.maxRoomUse()!=lecture.minRoomUse()?" - "+lecture.maxRoomUse():"")+" / "+
 						(minRoomSize == Integer.MAX_VALUE ? "-" : String.valueOf(minRoomSize)) +" / "+roomSize;
 			}
+		} else if (bgMode==sBgModeStudentGroups) {
+			TimetableModel model = (TimetableModel)solver.currentSolution().getModel();
+			if (!model.getStudentGroups().isEmpty()) {
+				int nrGroups = 0; double value = 0;
+				int allAssigned = 0, grandTotal = 0;
+				for (StudentGroup group: model.getStudentGroups()) {
+					int total = 0, assigned = 0;
+					if (getResourceType() == sResourceTypeStudentGroup && getResourceId() != group.getId()) continue;
+					for (Student student: group.getStudents()) {
+						if (!student.hasOffering(lecture.getConfiguration().getOfferingId())) continue;
+						total ++;
+						if (lecture.students().contains(student)) assigned ++;
+					}
+					if (total > 1 && assigned > 0) {
+						allAssigned += assigned; grandTotal += total;
+						int limit = Math.max(lecture.students().size(), lecture.classLimit(assignment));
+						if (total > limit) total = limit;
+						nrGroups ++; value += ((double)assigned) / total;
+					}
+		        }
+				if (nrGroups > 0) {
+					background = TimetableGridCell.percentage2color((int)Math.round(100.0 * value / nrGroups));
+					shortCommentNoColor = (nrGroups == 1 ? allAssigned + " of " + grandTotal : nrGroups + " groups");
+					shortComment = "<span style='color:rgb(200,200,200)'>" + shortCommentNoColor + "</span>";
+				}
+			}
 		}
 		
 		if (bgMode!=sBgModeNotAvailable) {

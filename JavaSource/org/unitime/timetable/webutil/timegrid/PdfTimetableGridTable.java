@@ -705,6 +705,11 @@ public class PdfTimetableGridTable {
             addLegendRow(TimetableGridCell.pref2color(PreferenceLevel.sNeutral), "Assigned room is not more than 25% bigger than the smallest avaialable room");
             addLegendRow(TimetableGridCell.pref2color(PreferenceLevel.sDiscouraged), "Assigned room is not more than 50% bigger than the smallest avaialable room");
             addLegendRow(TimetableGridCell.pref2color(PreferenceLevel.sStronglyDiscouraged), "Assigned room is more than 50% bigger than the smallest avaialable room");
+        } else if (iTable.getBgMode()==TimetableGridModel.sBgModeStudentGroups) {
+        	addLegendRow(TimetableGridCell.percentage2color(100), "All students of the group are in this class");
+        	for (int p = 95; p >= 5; p -= 5)
+        		addLegendRow(TimetableGridCell.percentage2color(p), "More than " + p + "% students of the group are in this class");
+        	addLegendRow(TimetableGridCell.percentage2color(0), "Less than 5% students of the group are in this class");
         } 
 		PdfPCell c = createCellNoBorder();
 		c.setColspan(2);

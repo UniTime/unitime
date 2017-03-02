@@ -508,8 +508,25 @@ public class SolutionGridModel extends TimetableGridModel {
 			TimetableGridCell cell = init(assignment, hibSession, context.getFirstDay(), context.getBgMode());
 			StudentGroupInfo.ClassInfo ci = g.getGroupAssignment(assignment.getClassId());
 			if (ci != null) {
+				int total = g.countStudentsOfOffering(assignment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId());
 				while (cell != null) {
 					cell.setRoomName(cell.getRoomName() + " (" + Math.round(ci.countStudentsWeight()) + ")");
+					if (ci.getStudents() != null && !ci.getStudents().isEmpty() && total > 1) {
+						int assigned = ci.getStudents().size();
+						int minLimit = assignment.getClazz().getExpectedCapacity();
+	                	int maxLimit = assignment.getClazz().getMaxExpectedCapacity();
+	                	int limit = maxLimit;
+	                	if (minLimit < maxLimit) {
+	                		int roomLimit = (int) Math.floor(assignment.getPlacement().getRoomSize() / (assignment.getClazz().getRoomRatio() == null ? 1.0f : assignment.getClazz().getRoomRatio()));
+	                		// int roomLimit = Math.round((c.getRoomRatio() == null ? 1.0f : c.getRoomRatio()) * p.getRoomSize());
+	                		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
+	                	}
+	                    if (assignment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment() || limit >= 9999) limit = Integer.MAX_VALUE;
+						int p = 100 * assigned / Math.min(limit, total);
+						cell.setBackground(TimetableGridCell.percentage2color(p));
+						cell.setShortComment("<span style='color:rgb(200,200,200)'>" + assigned + " of " + total + "</span>");
+						cell.setShortCommentNoColors(assigned + " of " + total);
+					}
 					cell = cell.getParent();
 				}
 			}
@@ -644,6 +661,13 @@ public class SolutionGridModel extends TimetableGridModel {
 							(minRoomSize == Integer.MAX_VALUE ? "-" : String.valueOf(minRoomSize))+" / "+
 							roomSize+(assignmentInfo.getNrRoomLocations()==1?"</u>":"")+"</span>";
 					shortCommentNoColor = roomCap+" / "+(minRoomSize == Integer.MAX_VALUE ? "-" : String.valueOf(minRoomSize))+" / "+roomSize;
+				}
+			} else if (bgMode==sBgModeStudentGroups) {
+				if (assignmentInfo.getStudentGroupPercent() != null)
+					background = TimetableGridCell.percentage2color(assignmentInfo.getStudentGroupPercent());
+				if (assignmentInfo.getStudentGroupComment() != null) {
+					shortCommentNoColor = assignmentInfo.getStudentGroupComment();
+					shortComment = "<span style='color:rgb(200,200,200)'>" + shortCommentNoColor + "</span>";
 				}
 			}
 			

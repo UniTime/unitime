@@ -66,6 +66,7 @@ public abstract class TimetableGridModel implements Serializable {
 	public static final int sBgModeHardConflicts = 8;
 	public static final int sBgModeDepartmentalBalancing = 9;
 	public static final int sBgModeTooBigRooms = 10;
+	public static final int sBgModeStudentGroups = 11;
 	
 	public static String[] sBgModes = new String[] {
 		"None",
@@ -78,7 +79,8 @@ public abstract class TimetableGridModel implements Serializable {
 		"Perturbation Penalty",
 		"Hard Conflicts",
 		"Departmental Balancing Penalty",
-		"Too Big Rooms"
+		"Too Big Rooms",
+		"Student Groups"
 	};
 	public static String[] sResourceTypes = new String[] {
 		"Room", "Instructor", "Department", "Curriculum", "Subject Area", "Student Group"

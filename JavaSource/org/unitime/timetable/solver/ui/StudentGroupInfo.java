@@ -107,6 +107,24 @@ public class StudentGroupInfo implements TimetableInfo, Serializable {
 		return null;
 	}
 	
+	public int countStudentsOfConfiguration(Long configId) {
+		Set<Long> studentIds = new HashSet<Long>();
+		for (ClassInfo clazz: iClasses)
+			if (configId.equals(clazz.getConfigId()))
+				for (StudentInfo student: clazz.getStudents())
+					studentIds.add(student.getStudentId());
+		return studentIds.size();
+	}
+	
+	public int countStudentsOfOffering(Long offeringId) {
+		Set<Long> studentIds = new HashSet<Long>();
+		for (ClassInfo clazz: iClasses)
+			if (offeringId.equals(clazz.getOfferingId()))
+				for (StudentInfo student: clazz.getStudents())
+					studentIds.add(student.getStudentId());
+		return studentIds.size();
+	}
+	
 	public int countStudents() {
 		Set<Long> studentIds = new HashSet<Long>();
 		for (ClassInfo clazz: iClasses)
@@ -134,22 +152,32 @@ public class StudentGroupInfo implements TimetableInfo, Serializable {
 	
 	public static class ClassInfo {
 		private Long iClassId;
+		private Long iConfigId;
+		private Long iOfferingId;
 		private List<StudentInfo> iStudents = new ArrayList<StudentInfo>();
 		
 		public ClassInfo(Lecture clazz, Collection<Student> students) {
 			iClassId = clazz.getClassId();
+			iConfigId = clazz.getConfiguration().getConfigId();
+			iOfferingId = clazz.getConfiguration().getOfferingId();
 			for (Student student: students)
 				iStudents.add(new StudentInfo(clazz, student));
 		}
 		
 		public ClassInfo(Element e) {
 			iClassId = Long.valueOf(e.attributeValue("id"));
+			String configId = e.attributeValue("configId");
+			iConfigId = (configId == null ? null : Long.valueOf(configId));
+			String offeringId = e.attributeValue("offeringId");
+			iOfferingId = (offeringId == null ? null : Long.valueOf(offeringId));
 			for (Iterator i = e.elementIterator("student"); i.hasNext(); ) {
 				iStudents.add(new StudentInfo((Element)i.next()));
 			}
 		}
 		
 		public Long getClassId() { return iClassId; }
+		public Long getOfferingId() { return iOfferingId; }
+		public Long getConfigId() { return iConfigId; }
 		public List<StudentInfo> getStudents() { return iStudents; }
 		public double countStudentsWeight() {
 			double weight = 0.0;
@@ -160,6 +188,10 @@ public class StudentGroupInfo implements TimetableInfo, Serializable {
 		
 		public void save(Element element) {
 			element.addAttribute("id", String.valueOf(iClassId));
+			if (iConfigId != null)
+				element.addAttribute("configId", String.valueOf(iConfigId));
+			if (iOfferingId != null)
+				element.addAttribute("offeringId", String.valueOf(iOfferingId));
 			for (StudentInfo student: iStudents) {
 				student.save(element.addElement("student"));
 			}

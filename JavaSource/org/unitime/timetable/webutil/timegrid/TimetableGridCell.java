@@ -118,10 +118,13 @@ public class TimetableGridCell implements Serializable, Comparable {
 	
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
+	public void setShortComment(String comment) { iShortComment = comment; }
 	public String getShortComment() { return iShortComment; }
+	public void setShortCommentNoColors(String comment) { iShortCommentNoColors = comment; }
 	public String getShortCommentNoColors() { return iShortCommentNoColors; }
 	public String getOnClick() { return iOnClick; }
 	public String getTitle() { return iTitle; }
+	public void setBackground(String background) { iBackground = background; }
 	public String getBackground() {
 		return (iBackground==null?sBgColorEmpty:iBackground); 
 	}
@@ -163,7 +166,26 @@ public class TimetableGridCell implements Serializable, Comparable {
         if (nrConflicts==1) return "rgb(240,210,60)";
         if (nrConflicts==2) return "rgb(240,120,60)";
         return "rgb(220,50,40)";
-    }    
+    }
+    
+    private static int gradient(int min, int v1, int max, int v2, int value) {
+    	return (value <= min ? v1 : value >= max ? v2 : v1 + (v2 - v1) * (value - min) / (max - min));
+    }
+    
+    public static String percentage2color(int p) {
+    	int[] points = new int[] {   0,  20,  40,  60,  80, 100 };
+    	int[] r = new int[] {      220, 240, 240, 240,  70,  30 };
+    	int[] g = new int[] {       50, 120, 210, 240, 230, 160 };
+    	int[] b = new int[] {       40,  60,  60, 240,  30,  60 };
+    	for (int i = 1; i < points.length; i++) {
+    		if (p <= points[i])
+    			return
+    				"rgb(" + gradient(points[i-1], r[i-1], points[i], r[i], p) + "," +
+    				gradient(points[i-1], g[i-1], points[i], g[i], p) + "," +
+    				gradient(points[i-1], b[i-1], points[i], b[i], p) + ")";
+    	}
+    	return "rgb(" + r[points.length - 1] + "," + g[points.length - 1] + "," + b[points.length - 1] + ")"; 
+    }
     
     public BitSet getWeekCode() { return iWeekCode; }
     

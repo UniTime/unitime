@@ -36,6 +36,9 @@ import org.cpsolver.coursett.criteria.UselessHalfHours;
 import org.cpsolver.coursett.model.Lecture;
 import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.RoomLocation;
+import org.cpsolver.coursett.model.Student;
+import org.cpsolver.coursett.model.StudentGroup;
+import org.cpsolver.coursett.model.TimetableModel;
 import org.cpsolver.coursett.preference.PreferenceCombination;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.model.Constraint;
@@ -79,6 +82,8 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 	private double iMaxSpreadPenalty = 0;
 	private int iGroupConstraintPref = 0;
 	private int iDatePatternPref = 0;
+	private Integer iStudentGroupPercent = null;
+	private String iStudentGroupComment = null;
 	
 	public AssignmentPreferenceInfo() {
 		super();
@@ -95,6 +100,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 	public AssignmentPreferenceInfo(Solver solver, Placement placement, boolean includeConflictInfo, boolean ofTheSameProblem) {
 		super();
 		Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
+		TimetableModel model = (TimetableModel)solver.currentSolution().getModel();
 		Lecture lecture=(Lecture)placement.variable();
 		setBestNormalizedTimePreference(lecture.getBestTimePreference());
 		setNormalizedTimePreference(placement.getTimeLocation().getNormalizedPreference());
@@ -184,6 +190,28 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 		if (solver!=null && solver.getPerturbationsCounter()!=null)
 			setPerturbationPenalty(solver.getPerturbationsCounter().getPerturbationPenalty(assignment, lecture.getModel(), placement, new Vector(0)));
 		setDatePatternPref(placement.getTimeLocation().getDatePatternPreference());
+		if (!model.getStudentGroups().isEmpty()) {
+			int nrGroups = 0; double value = 0;
+			int allAssigned = 0, grandTotal = 0;
+			for (StudentGroup group: model.getStudentGroups()) {
+				int total = 0, assigned = 0;
+				for (Student student: group.getStudents()) {
+					if (!student.hasOffering(lecture.getConfiguration().getOfferingId())) continue;
+					total ++;
+					if (lecture.students().contains(student)) assigned ++;
+				}
+				if (total > 1 && assigned > 0) {
+					allAssigned += assigned; grandTotal += total;
+					int limit = Math.max(lecture.students().size(), lecture.classLimit(assignment));
+					if (total > limit) total = limit;
+					nrGroups ++; value += ((double)assigned) / total;
+				}
+	        }
+			if (nrGroups > 0) {
+				iStudentGroupPercent = (int)Math.round(100.0 * value / nrGroups);
+				iStudentGroupComment = (nrGroups == 1 ? allAssigned + " of " + grandTotal : nrGroups + " groups");
+			}
+		}
 	}
 	
 	public double getNormalizedTimePreference() { return iNormalizedTimePreference; }
@@ -260,6 +288,11 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 	public int getDatePatternPref() { return iDatePatternPref; }
 	public void setDatePatternPref(int datePatternPref) { iDatePatternPref = datePatternPref; }
 	
+	public Integer getStudentGroupPercent() { return iStudentGroupPercent; }
+	public void setStudentGroupPercent(Integer percent) { iStudentGroupPercent = percent; }
+	public String getStudentGroupComment() { return iStudentGroupComment; }
+	public void setStudentGroupComment(String comment) { iStudentGroupComment = comment; }
+	
 	public void load(Element root) {
 		int version = Integer.parseInt(root.attributeValue("version"));
 		if (version==sVersion) {
@@ -303,6 +336,9 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 				iMaxDeptBalancPenalty = (int)iDeptBalancPenalty;
 			if (root.elementText("datePref") != null)
 				iDatePatternPref = Integer.parseInt(root.elementText("datePref"));
+			if (root.elementText("studentGroupPercent") != null)
+				iStudentGroupPercent = Integer.valueOf(root.elementText("studentGroupPercent"));
+			iStudentGroupComment = root.elementText("studentGroupComment");
 		}
 	}
 	
@@ -341,6 +377,10 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 		root.addElement("spread").setText(String.valueOf(iSpreadPenalty));
 		root.addElement("maxSpread").setText(String.valueOf(iMaxSpreadPenalty));
 		root.addElement("datePref").setText(String.valueOf(iDatePatternPref));
+		if (iStudentGroupPercent != null)
+			root.addElement("studentGroupPercent").setText(String.valueOf(iStudentGroupPercent));
+		if (iStudentGroupComment != null)
+			root.addElement("studentGroupComment").setText(iStudentGroupComment);
 	}
 	
 	public boolean saveToFile() {
@@ -378,6 +418,8 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
             "  spread = "+iSpreadPenalty+"\n"+
             "  maxSpread = "+iMaxSpreadPenalty+"\n"+
             "  datePatterPref = "+iDatePatternPref+"\n"+
+            "  studentGroupPercent = "+iStudentGroupPercent+"\n"+
+            "  studentGroupComment = "+iStudentGroupComment+"\n"+
             "}";
     }
 }
