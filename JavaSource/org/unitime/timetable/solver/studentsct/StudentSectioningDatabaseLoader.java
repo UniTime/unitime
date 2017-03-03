@@ -48,6 +48,7 @@ import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.RoomLocation;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.IdGenerator;
 import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.studentsct.StudentSectioningLoader;
 import org.cpsolver.studentsct.StudentSectioningModel;
@@ -210,6 +211,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	} else {
         		iProgress.info("Projected demands: None");
         	}
+        }
+        if (iStudentCourseDemands != null && iStudentCourseDemands instanceof StudentCourseDemands.NeedsStudentIdGenerator) {
+        	((StudentCourseDemands.NeedsStudentIdGenerator)iStudentCourseDemands).setStudentIdGenerator(new IdGenerator());
         }
         
         String query = model.getProperties().getProperty("Load.StudentQuery", null);
