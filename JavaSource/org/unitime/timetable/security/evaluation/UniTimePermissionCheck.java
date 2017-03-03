@@ -36,6 +36,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.SecurityMessages;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.SubjectArea;
@@ -152,6 +153,22 @@ public class UniTimePermissionCheck implements PermissionCheck, InitializingBean
 				
 				if (firstDenial != null) throw firstDenial;
 				throw new AccessDeniedException(MSG.noSolverGroup(right.toString()));
+			}
+			
+			if (targetId == null && DepartmentalInstructor.class.getName().equals(className)) {
+				AccessDeniedException firstDenial = null;
+				List<DepartmentalInstructor> instructors = DepartmentalInstructor.getUserInstructors(user);
+				if (instructors != null)
+					for (DepartmentalInstructor i: instructors) {
+						try {
+							checkPermission(user, i, right);
+							return;
+						} catch (AccessDeniedException e) {
+							if (firstDenial == null) firstDenial = e;
+						}
+					}
+				if (firstDenial != null) throw firstDenial;
+				throw new AccessDeniedException(MSG.noDepartmentalInstructor(right.toString()));
 			}
 			
 			if (targetId == null) {
@@ -383,6 +400,15 @@ public class UniTimePermissionCheck implements PermissionCheck, InitializingBean
 			if (targetId == null && SolverGroup.class.getName().equals(className)) {
 				for (SolverGroup g: SolverGroup.getUserSolverGroups(user))
 					if (hasPermission(user, g, right)) return true;
+				
+				return false;
+			}
+			
+			if (targetId == null && DepartmentalInstructor.class.getName().equals(className)) {
+				List<DepartmentalInstructor> instructors = DepartmentalInstructor.getUserInstructors(user);
+				if (instructors != null)
+					for (DepartmentalInstructor i: instructors)
+						if (hasPermission(user, i, right)) return true;
 				
 				return false;
 			}

@@ -88,6 +88,9 @@ public class InstructorPermissions {
 		
 		@Override
 		public boolean check(UserContext user, DepartmentalInstructor source) {
+			if (!user.getCurrentAuthority().hasRight(Right.HasRole) &&
+				(source.getExternalUniqueId() == null || !source.getExternalUniqueId().equals(user.getExternalUserId()))) return false; 
+				
 			return permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerView);
 		}
 
@@ -103,6 +106,9 @@ public class InstructorPermissions {
 		
 		@Override
 		public boolean check(UserContext user, DepartmentalInstructor source) {
+			if (!user.getCurrentAuthority().hasRight(Right.HasRole) &&
+					(source.getExternalUniqueId() == null || !source.getExternalUniqueId().equals(user.getExternalUserId()))) return false; 
+			
 			return permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerLimitedEdit);
 		}
 
@@ -130,6 +136,9 @@ public class InstructorPermissions {
 		
 		@Override
 		public boolean check(UserContext user, DepartmentalInstructor source) {
+			if (!user.getCurrentAuthority().hasRight(Right.HasRole) &&
+					(source.getExternalUniqueId() == null || !source.getExternalUniqueId().equals(user.getExternalUserId()))) return false; 
+
 			return permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerEdit);
 		}
 

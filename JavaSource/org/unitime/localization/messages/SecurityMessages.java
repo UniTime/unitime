@@ -65,6 +65,9 @@ public interface SecurityMessages extends Messages {
 	@DefaultMessage("Access denied for {0}: user has no solver group.")
 	String noSolverGroup(String right);
 	
+	@DefaultMessage("Access denied for {0}: user is no instructor.")
+	String noDepartmentalInstructor(String right);
+	
 	@DefaultMessage("Access denied for {0}: academic session check failed for {1}.")
 	String sessionCheckFailed(String right, String domainObject);
 

@@ -22,6 +22,7 @@ package org.unitime.timetable.form;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,6 +36,7 @@ import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
 import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.util.IdValue;
 
 
 /** 
@@ -96,6 +98,7 @@ public class InstructorEditForm extends PreferencesForm  {
 	private String maxLoad;
 	private String teachingPreference;
 	private Map<Long, Boolean> attributes;
+	private List<IdValue> departments;
     
 	// --------------------------------------------------------- Methods
     
@@ -402,5 +405,8 @@ public class InstructorEditForm extends PreferencesForm  {
 	public void setLookupEnabled(Boolean lookupEnabled) {
 		this.lookupEnabled = lookupEnabled;
 	}
+	
+	public List<IdValue> getDepartments() { return departments; }
+	public void setDepartments(List<IdValue> departments) { this.departments = departments; }
 }
 

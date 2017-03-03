@@ -102,6 +102,7 @@ public class InstructorListAction extends Action {
 		
 		//get deptCode from request - for user with only one department
 		String deptId = (String)request.getAttribute("deptId");
+		if (deptId == null) deptId = request.getParameter("deptId");
 		if (deptId != null) {
 			instructorSearchForm.setDeptUniqueId(deptId);
 		}

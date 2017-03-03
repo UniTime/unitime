@@ -42,7 +42,9 @@
 		<tt:section-header>
 			<tt:section-title>
 				<html:form action="instructorList">
+				<TABLE border="0" cellspacing="0" cellpadding="0" align="right"><TR><TD>
 				<B><loc:message name="propertyDepartment"/></B>
+				</TD><TD style="padding-left: 3px;">
 				<html:select property="deptUniqueId"
 					onchange="displayLoading(); submit()">
 					<loc:bundle name="ConstantsMessages" id="CONST">
@@ -51,12 +53,14 @@
 					<html:options collection="<%=Department.DEPT_ATTR_NAME%>" 
 						property="value" labelProperty="label"/>
 				</html:select>
+				</TD><TD style="padding-left: 3px;">
 				<html:submit property='op' onclick="displayLoading();" 
 						accesskey="<%=MSG.accessSearchInstructors() %>" 
 						styleClass="btn" 
 						title="<%=MSG.titleSearchInstructors(MSG.accessSearchInstructors()) %>">
 					<loc:message name="actionSearchInstructors" />
 				</html:submit>
+				</TD></TR></TABLE>
 				</html:form>
 			</tt:section-title>
 			<logic:notEmpty name="<%=frmName%>" property="deptUniqueId">
