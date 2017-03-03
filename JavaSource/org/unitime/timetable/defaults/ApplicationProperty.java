@@ -511,6 +511,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Data Exchange: export default date pattern in course offering export")
 	DataExchangeIncludeDefaultDatePattern("tmtbl.export.defaultDatePattern"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Data Exchange: export individual class meetings in course offering export")
+	DataExchangeIncludeMeetings("tmtbl.export.classMeetings"),
 
 	@Description("Data Exchange: default import timetabling manager (e.g., if executed from command line)")
 	DataExchangeXmlManager("unitime.xml.manager"),
