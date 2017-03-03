@@ -20,6 +20,7 @@
 package org.unitime.timetable.dataexchange;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -30,10 +31,13 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 
@@ -56,6 +60,19 @@ public class CourseTimetableExport extends CourseOfferingExport {
             root.addAttribute("dateFormat", sDateFormat.toPattern());
             root.addAttribute("timeFormat", sTimeFormat.toPattern());
             root.addAttribute("created", new Date().toString());
+            
+            if (ApplicationProperty.DataExchangeIncludeMeetings.isTrue()) {
+            	iClassEvents = new HashMap<Long, ClassEvent>();
+            	for (ClassEvent e: (List<ClassEvent>)getHibSession().createQuery("from ClassEvent e where e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
+            			.setLong("sessionId", session.getUniqueId()).list()) {
+            		iClassEvents.put(e.getClazz().getUniqueId(), e);
+            	}
+            	iMeetingLocations = new HashMap<Long, Location>();
+                for (Location l: (List<Location>)getHibSession().createQuery("from Location l where l.session.uniqueId = :sessionId")
+                		.setLong("sessionId", session.getUniqueId()).list()) {
+                	iMeetingLocations.put(l.getPermanentId(), l);
+            	}
+            }
             
             List<CourseOffering> courses = (List<CourseOffering>)getHibSession().createQuery(
                     "select c from CourseOffering as c where " +

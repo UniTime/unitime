@@ -19,7 +19,10 @@
 */
 package org.unitime.timetable.dataexchange;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -39,6 +42,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ArrangeCreditUnitConfig;
 import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
@@ -76,6 +80,8 @@ public class CourseOfferingExport extends BaseExport {
     protected static Formats.Format<Date> sDateFormat = Formats.getDateFormat("yyyy/M/d");
     protected static Formats.Format<Date> sTimeFormat = Formats.getDateFormat("HHmm");
     protected Hashtable<Long, TreeSet<Exam>> iExams = null;
+    protected Map<Long, ClassEvent> iClassEvents = null;
+    protected Map<Long, Location> iMeetingLocations = null;
     protected boolean iExportAssignments = true;
     protected Integer iDefaultMaxNbrRooms = null;
     
@@ -101,6 +107,19 @@ public class CourseOfferingExport extends BaseExport {
             SolverParameterDef maxRoomsParam = SolverParameterDef.findByNameType(getHibSession(), "Exams.MaxRooms", SolverParameterGroup.sTypeExam);
             if (maxRoomsParam != null && maxRoomsParam.getDefault() != null) 
             	iDefaultMaxNbrRooms = Integer.valueOf(maxRoomsParam.getDefault());
+            
+            if (iExportAssignments && ApplicationProperty.DataExchangeIncludeMeetings.isTrue()) {
+            	iClassEvents = new HashMap<Long, ClassEvent>();
+            	for (ClassEvent e: (List<ClassEvent>)getHibSession().createQuery("from ClassEvent e where e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
+            			.setLong("sessionId", session.getUniqueId()).list()) {
+            		iClassEvents.put(e.getClazz().getUniqueId(), e);
+            	}
+            	iMeetingLocations = new HashMap<Long, Location>();
+                for (Location l: (List<Location>)getHibSession().createQuery("from Location l where l.session.uniqueId = :sessionId")
+                		.setLong("sessionId", session.getUniqueId()).list()) {
+                	iMeetingLocations.put(l.getPermanentId(), l);
+            	}
+            }
             
             if (examsOnly) {
                 if ("all".equals(parameters.getProperty("tmtbl.export.exam.type", "all")) || "final".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))) {
@@ -346,7 +365,8 @@ public class CourseOfferingExport extends BaseExport {
         exportDatePattern(classElement, assignment.getDatePattern(), session);
         exportTimeLocation(classElement, assignment, session);
         exportRooms(classElement, assignment, session);
-        //if (assignment.getEvent()!=null) exportEvent(classElement, assignment.getEvent(), session);
+        if (iClassEvents != null)
+        	exportEvent(classElement, iClassEvents.get(assignment.getClassId()), session);
     }
     
     protected void exportTimeLocation(Element classElement, Assignment assignment, Session session) {
@@ -574,13 +594,30 @@ public class CourseOfferingExport extends BaseExport {
     }
     
     protected void exportEvent(Element classElement, Event event, Session session) {
-        for (Iterator i=event.getMeetings().iterator();i.hasNext();) {
-            Meeting meeting = (Meeting)i.next();
+    	if (event == null) return;
+    	List<Meeting> meetings = new ArrayList<Meeting>(event.getMeetings());
+    	Collections.sort(meetings, new Comparator<Meeting>() {
+			@Override
+			public int compare(Meeting m1, Meeting m2) {
+				if (m1.equals(m2)) return 0;
+				int cmp = m1.getMeetingDate().compareTo(m2.getMeetingDate());
+				if (cmp != 0) return cmp;
+				cmp = m1.getStartPeriod().compareTo(m2.getStartPeriod());
+				if (cmp != 0) return cmp;
+				Location l1 = (m1.getLocationPermanentId() == null ? null : iMeetingLocations.get(m1.getLocationPermanentId()));
+				Location l2 = (m2.getLocationPermanentId() == null ? null : iMeetingLocations.get(m2.getLocationPermanentId()));
+				cmp = (l1 == null ? "" : l1.getLabel()).compareTo(l2 == null ? "" : l2.getLabel());
+				if (cmp != 0) return cmp;
+				return m1.getUniqueId().compareTo(m2.getUniqueId());
+			}
+		});
+        for (Meeting meeting: meetings) {
+            if (meeting.getStatus() != Meeting.Status.APPROVED) continue;
             Element meetingElement = classElement.addElement("meeting");
             meetingElement.addAttribute("startDate", sDateFormat.format(meeting.getMeetingDate()));
             meetingElement.addAttribute("endDate", sDateFormat.format(meeting.getMeetingDate()));
-            meetingElement.addAttribute("startTime", sDateFormat.format(meeting.getStartTime()));
-            meetingElement.addAttribute("endTime", sDateFormat.format(meeting.getStopTime()));
+            meetingElement.addAttribute("startTime", sTimeFormat.format(meeting.getStartTime()));
+            meetingElement.addAttribute("endTime", sTimeFormat.format(meeting.getStopTime()));
             Calendar c = Calendar.getInstance(Locale.US); c.setTime(meeting.getMeetingDate());
             switch (c.get(Calendar.DAY_OF_WEEK)) {
                 case Calendar.MONDAY : meetingElement.addAttribute("days","M"); break;
@@ -591,12 +628,13 @@ public class CourseOfferingExport extends BaseExport {
                 case Calendar.SATURDAY : meetingElement.addAttribute("days","S"); break;
                 case Calendar.SUNDAY : meetingElement.addAttribute("days","U"); break;
             }
-            if (meeting.getLocation()==null) {
-            } else if (meeting.getLocation() instanceof Room) {
-                meetingElement.addAttribute("building", ((Room)meeting.getLocation()).getBuildingAbbv());
-                meetingElement.addAttribute("room", ((Room)meeting.getLocation()).getRoomNumber());
+            Location location = (meeting.getLocationPermanentId() == null ? null : iMeetingLocations.get(meeting.getLocationPermanentId()));
+            if (location==null) {
+            } else if (location instanceof Room) {
+                meetingElement.addAttribute("building", ((Room)location).getBuildingAbbv());
+                meetingElement.addAttribute("room", ((Room)location).getRoomNumber());
             } else {
-                meetingElement.addAttribute("location", meeting.getLocation().getLabel());
+                meetingElement.addAttribute("location", location.getLabel());
             }
         }
     }
@@ -629,5 +667,5 @@ public class CourseOfferingExport extends BaseExport {
 			return clazz.getExternalUniqueId();
 		else
 			return clazz.getClassLabel();
-	}    
+	}
 }

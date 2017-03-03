@@ -125,6 +125,13 @@
 				<line>The roll forward has been updated to fail when rolling subject areas forward into a session that does not have departments that match the departments the subject areas should be attached to.</line>
 			</description>
 		</item>
+		<item>
+			<name>Data Exchange: Course Offerings and Course Timetable Exports</name>
+			<description>
+				<line>Added ability to include individual class meetings in the course offerings and course timetable exports.</line>
+				<line>This feature can be enabled by setting the tmtbl.export.classMeetings application property to true (defaults to false).</line>
+			</description>
+		</item>
 	</category>
 </release>
 
@@ -378,7 +385,7 @@
 				<line>This is to ensure that no button is pressed multiple times.</line>
 			</description>
 		</item>
-	</category>	
+	</category>
 </release>
 
 <release>
