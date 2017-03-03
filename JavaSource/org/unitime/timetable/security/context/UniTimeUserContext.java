@@ -243,6 +243,9 @@ public class UniTimeUserContext extends AbstractUserContext {
 		cal.set(Calendar.MINUTE, 0);
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
+		Integer shift = ApplicationProperty.SessionDefaultShiftDays.intValue();
+		if (shift != null && shift.intValue() != 0)
+			cal.add(Calendar.DAY_OF_YEAR, shift);
 		Date today = cal.getTime();
 
         for (Session session: sessions) {

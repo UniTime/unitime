@@ -143,6 +143,14 @@
 					DEPARTMENT=&lt;deptCode&gt;, SUBJECT=&lt;abbreviation&gt;, ROOM=&lt;name&gt;, or RoomType=&lt;reference&gt;.</line>
 			</description>
 		</item>
+		<item>
+			<name>User Context: Default Academic Session</name>
+			<description>
+				<line>Added ability to shift current date by a given number of days when computing default academic session.</line>
+				<line>Application property unitime.session.defaultSessionShiftDays, defaults to 0.</line>
+				<line>This could be used, e.g., to start showing users the next academic session two weeks before the classes / events start.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
