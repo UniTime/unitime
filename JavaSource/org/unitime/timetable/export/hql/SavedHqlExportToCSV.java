@@ -37,6 +37,7 @@ import org.hibernate.type.CollectionType;
 import org.hibernate.type.Type;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.events.EventAction.EventContext;
 import org.unitime.timetable.export.BufferedPrinter;
 import org.unitime.timetable.export.CSVPrinter;
 import org.unitime.timetable.export.ExportHelper;
@@ -46,10 +47,14 @@ import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SavedHQLException;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface;
 import org.unitime.timetable.model.SavedHQL;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SavedHQLDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.AccessDeniedException;
 
 /**
  * @author Tomas Muller
@@ -66,29 +71,36 @@ public class SavedHqlExportToCSV implements Exporter {
 
 	@Override
 	public void export(ExportHelper helper) throws IOException {
+		Long sessionId = helper.getAcademicSessionId();
+		if (sessionId == null)
+			throw new IllegalArgumentException("Academic session not provided, please set the term parameter.");
+		
+		Session session = SessionDAO.getInstance().get(sessionId);
+		if (session == null)
+			throw new IllegalArgumentException("Given academic session no longer exists.");
+
 		// Check rights
-		helper.getSessionContext().checkPermission(Right.HQLReports);
+		SessionContext context = new EventContext(helper.getSessionContext(), helper.getAcademicSessionId());
+		context.checkPermission(helper.getAcademicSessionId(), Right.HQLReports);
 		
 		// Retrive report
 		String report = helper.getParameter("report");
 		if (report == null) throw new IllegalArgumentException("No report provided, please set the report parameter.");
-		SavedHQL hql = SavedHQLDAO.getInstance().get(Long.valueOf(report));
+		SavedHQL hql = null;
+		try {
+			hql = SavedHQLDAO.getInstance().get(Long.valueOf(report));
+		} catch (NumberFormatException e) {}
+		if (hql == null)
+			hql = (SavedHQL)SavedHQLDAO.getInstance().getSession().createQuery("from SavedHQL where name = :name").setString("name", report).setMaxResults(1).uniqueResult();
 		if (hql == null) throw new IllegalArgumentException("Report " + report + " does not exist.");
-		
-		SavedHQLInterface.Query q = new SavedHQLInterface.Query();
-		q.setName(hql.getName());
-		q.setId(hql.getUniqueId());
-		q.setQuery(hql.getQuery());
-		q.setFlags(hql.getType());
-		q.setDescription(hql.getDescription());
-		
+				
 		List<SavedHQLInterface.IdValue> params = new ArrayList<SavedHQLInterface.IdValue>();
 		if (helper.getParameter("params") != null) {
 			String[] p = helper.getParameter("params").split(":");
 			int i = 0;
 			for (SavedHQL.Option o: SavedHQL.Option.values()) {
 				if (!o.allowSingleSelection() && !o.allowMultiSelection()) continue;
-				if (q.getQuery().contains("%" + o.name() + "%")) {
+				if (hql.getQuery().contains("%" + o.name() + "%")) {
 					SavedHQLInterface.IdValue v = new SavedHQLInterface.IdValue();
 					v.setValue(o.name());
 					v.setText(i < p.length ? p[i] : "");
@@ -97,11 +109,57 @@ public class SavedHqlExportToCSV implements Exporter {
 				}
 			}
 		}
+		for (SavedHQL.Option option: SavedHQL.Option.values()) {
+			if (!hql.getQuery().contains("%" + option.name() + "%")) continue;
+			if (option.allowMultiSelection()) {
+				String[] values = helper.getParameterValues(option.name());
+				if (values != null && values.length > 0) {
+					SavedHQLInterface.IdValue v = new SavedHQLInterface.IdValue();
+					v.setValue(option.name());
+					String text = "";
+					for (String value: values) {
+						Long id = option.lookupValue(context.getUser(), value);
+						if (id == null) {
+							try {
+								id = Long.valueOf(value);
+							} catch (NumberFormatException e) {}
+						}
+						if (id != null)
+							text += (text.isEmpty() ? "" : ",") + id;
+					}
+					v.setText(text);
+					params.add(v);
+				}
+			} else {
+				String value = helper.getParameter(option.name());
+				SavedHQLInterface.IdValue v = new SavedHQLInterface.IdValue();
+				v.setValue(option.name());
+				Long id = option.lookupValue(context.getUser(), value);
+				if (id == null) {
+					try {
+						id = Long.valueOf(value);
+					} catch (NumberFormatException e) {}
+				}
+				v.setText(id == null ? "" : id.toString());
+				params.add(v);
+			}
+		}
+		
+		boolean hasAppearancePermission = false;
+		for (SavedHQL.Flag flag: SavedHQL.Flag.values()) {
+			if (hql.isSet(flag)) {
+				if (flag.getAppearance() != null && !hasAppearancePermission && (flag.getPermission() == null || context.hasPermission(flag.getPermission())))
+					hasAppearancePermission = true;
+				if (flag.getAppearance() == null && flag.getPermission() != null)
+					context.checkPermission(flag.getPermission());
+			}
+		}
+		if (!hasAppearancePermission) throw new AccessDeniedException();
 		
 		BufferedPrinter out = new BufferedPrinter(new CSVPrinter(helper.getWriter(), false));
-		helper.setup(out.getContentType(), q.getName().replace('/', '-').replace('\\', '-').replace(':', '-') + ".csv", false);
+		helper.setup(out.getContentType(), hql.getName().replace('/', '-').replace('\\', '-').replace(':', '-') + ".csv", false);
 		
-		execute(helper.getSessionContext().getUser(), out, q, params, 0, -1);
+		execute(context.getUser(), out, hql.getQuery(), params, 0, -1);
 		
 		String sort = helper.getParameter("sort");
 		if (sort != null && !"0".equals(sort)) {
@@ -131,9 +189,8 @@ public class SavedHqlExportToCSV implements Exporter {
 		out.close();
 	}
 	
-	public static void execute(UserContext user, Printer out, SavedHQLInterface.Query query, List<SavedHQLInterface.IdValue> options, int fromRow, int maxRows) throws SavedHQLException, PageAccessException {
+	public static void execute(UserContext user, Printer out, String hql, List<SavedHQLInterface.IdValue> options, int fromRow, int maxRows) throws SavedHQLException, PageAccessException {
 		try {
-			String hql = query.getQuery();
 			for (SavedHQL.Option o: SavedHQL.Option.values()) {
 				if (hql.indexOf("%" + o.name() + "%") >= 0) {
 					String value = null;

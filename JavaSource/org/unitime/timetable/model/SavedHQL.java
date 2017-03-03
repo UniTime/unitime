@@ -27,6 +27,7 @@ import org.unitime.timetable.model.base.BaseSavedHQL;
 import org.unitime.timetable.model.dao.SavedHQLDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.rights.Right;
 
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
@@ -39,25 +40,28 @@ public class SavedHQL extends BaseSavedHQL {
 	}
 	
 	public static enum Flag {
-		APPEARANCE_COURSES("Appearance: Courses", "courses"),
-		APPEARANCE_EXAMS("Appearance: Examinations", "exams"),
-		APPEARANCE_SECTIONING("Appearance: Student Sectioning", "sectioning"),
-		APPEARANCE_EVENTS("Appearance: Events", "events"),
-		APPEARANCE_ADMINISTRATION("Appearance: Administration", "administration"),
-		ADMIN_ONLY("Restrictions: Administrator Only")
+		APPEARANCE_COURSES("Appearance: Courses", Right.HQLReportsCourses, "courses"),
+		APPEARANCE_EXAMS("Appearance: Examinations", Right.HQLReportsExaminations, "exams"),
+		APPEARANCE_SECTIONING("Appearance: Student Sectioning", Right.HQLReportsStudents, "sectioning"),
+		APPEARANCE_EVENTS("Appearance: Events", Right.HQLReportsEvents, "events"),
+		APPEARANCE_ADMINISTRATION("Appearance: Administration", Right.HQLReportsAdministration, "administration"),
+		ADMIN_ONLY("Restrictions: Administrator Only", Right.HQLReportsAdminOnly)
 		;
 		private String iDescription;
 		private String iAppearance;
-		Flag(String desc, String appearance) { iDescription = desc; iAppearance = appearance; }
-		Flag(String desc) { this(desc, null); }
+		private Right iRight;
+		Flag(String desc, Right right, String appearance) { iDescription = desc; iRight = right; iAppearance = appearance; }
+		Flag(String desc, Right right) { this(desc, right, null); }
 		public int flag() { return 1 << ordinal(); }
 		public boolean isSet(int type) { return (type & flag()) != 0; }
 		public String description() { return iDescription; }
 		public String getAppearance() { return iAppearance; }
+		public Right getPermission() { return iRight; }
 	}
 	
 	private static interface OptionImplementation {
 		public Map<Long, String> getValues(UserContext user);
+		public Long lookupValue(UserContext user, String value);
 	}
 
 	private static class RefTableOptions implements OptionImplementation {
@@ -65,9 +69,15 @@ public class SavedHQL extends BaseSavedHQL {
 		RefTableOptions(Class<? extends RefTableEntry> reference) { iReference = reference; }
 		public Map<Long, String> getValues(UserContext user) {
 			Map<Long, String> ret = new Hashtable<Long, String>();
-			for (RefTableEntry ref: (List<RefTableEntry>)SessionDAO.getInstance().getSession().createCriteria(iReference).list())
+			for (RefTableEntry ref: (List<RefTableEntry>)SessionDAO.getInstance().getSession().createCriteria(iReference).setCacheable(true).list())
 				ret.put(ref.getUniqueId(), ref.getLabel());
 			return ret;
+		}
+		@Override
+		public Long lookupValue(UserContext user, String value) {
+			for (RefTableEntry ref: (List<RefTableEntry>)SessionDAO.getInstance().getSession().createCriteria(iReference).setCacheable(true).list())
+				if (value.equalsIgnoreCase(ref.getReference())) return ref.getUniqueId();
+			return null;
 		}
 	}
 
@@ -81,6 +91,15 @@ public class SavedHQL extends BaseSavedHQL {
 				Map<Long, String> ret = new Hashtable<Long, String>();
 				ret.put(session.getUniqueId(), session.getLabel());
 				return ret;
+			}
+
+			@Override
+			public Long lookupValue(UserContext user, String value) {
+				return (Long)SessionDAO.getInstance().getSession().createQuery(
+						"select s.uniqueId from Session s where " +
+						"s.academicTerm || s.academicYear = :term or " +
+						"s.academicTerm || s.academicYear || s.academicInitiative = :term").
+						setString("term", value).setMaxResults(1).uniqueResult();
 			}
 		}),
 		DEPARTMENT("Department", true, false, new OptionImplementation() {
@@ -96,6 +115,13 @@ public class SavedHQL extends BaseSavedHQL {
 					ret.put(d.getUniqueId(), d.htmlLabel());
 				return ret;
 			}
+
+			@Override
+			public Long lookupValue(UserContext user, String value) {
+				for (Department d: Department.getUserDepartments(user))
+					if (value.equalsIgnoreCase(d.getDeptCode())) return d.getUniqueId();
+				return null;
+			}
 		}),
 		DEPARTMENTS("Departments", true, true, DEPARTMENT.iImplementation),
 		SUBJECT("Subject Area", true, false, new OptionImplementation() {
@@ -108,6 +134,13 @@ public class SavedHQL extends BaseSavedHQL {
 					}
 				} catch (Exception e) { return null; }
 				return ret;
+			}
+			
+			@Override
+			public Long lookupValue(UserContext user, String value) {
+				for (SubjectArea s: SubjectArea.getUserSubjectAreas(user))
+					if (value.equalsIgnoreCase(s.getSubjectAreaAbbreviation())) return s.getUniqueId();
+				return null;
 			}
 		}),
 		SUBJECTS("Subject Areas", true, true, SUBJECT.iImplementation),
@@ -123,6 +156,15 @@ public class SavedHQL extends BaseSavedHQL {
 					ret.put(b.getUniqueId(), b.getAbbrName());
 				return ret;
 			}
+			
+			@Override
+			public Long lookupValue(UserContext user, String value) {
+				Map<Long, String> values = getValues(user);
+				if (values != null)
+					for (Map.Entry<Long, String> e: values.entrySet())
+						if (value.equalsIgnoreCase(e.getValue())) return e.getKey();
+				return null;
+			}
 		}),
 		BUILDINGS("Buildings", true, true, BUILDING.iImplementation),
 		ROOM("Room", true, false, new OptionImplementation() {
@@ -137,6 +179,15 @@ public class SavedHQL extends BaseSavedHQL {
 					ret.put(r.getUniqueId(), r.getLabel());
 				}
 				return ret;
+			}
+			
+			@Override
+			public Long lookupValue(UserContext user, String value) {
+				Map<Long, String> values = getValues(user);
+				if (values != null)
+					for (Map.Entry<Long, String> e: values.entrySet())
+						if (value.equalsIgnoreCase(e.getValue())) return e.getKey();
+				return null;
 			}
 		}),
 		ROOMS("Rooms", true, true, ROOM.iImplementation),
@@ -172,7 +223,7 @@ public class SavedHQL extends BaseSavedHQL {
 		String iName;
 		OptionImplementation iImplementation;
 		boolean iAllowSelection, iMultiSelect;
-		Option(String name, boolean allowSelection, boolean multiSelect ,OptionImplementation impl) {
+		Option(String name, boolean allowSelection, boolean multiSelect, OptionImplementation impl) {
 			iName = name;
 			iAllowSelection = allowSelection; iMultiSelect = multiSelect;
 			iImplementation = impl;
@@ -187,6 +238,7 @@ public class SavedHQL extends BaseSavedHQL {
 		public boolean allowSingleSelection() { return iAllowSelection; }
 		public boolean allowMultiSelection() { return iAllowSelection && iMultiSelect; }
 		public Map<Long, String> values(UserContext user) { return iImplementation.getValues(user); }
+		public Long lookupValue(UserContext user, String value) { return iImplementation.lookupValue(user, value); }
 	}
 	
 	public static void main(String args[]) {

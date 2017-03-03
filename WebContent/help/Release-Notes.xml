@@ -132,6 +132,17 @@
 				<line>This feature can be enabled by setting the tmtbl.export.classMeetings application property to true (defaults to false).</line>
 			</description>
 		</item>
+		<item>
+			<name>HQL Reports: Export HQL</name>
+			<description>
+				<line>Improved the ability to download a particular HQL report, using UniTime/export?output=hql-report.csv URL.</line>
+				<line>Academic session can be selected using term parameter.</line>
+				<line>HQL appearance and admin-only permissions are checked (the user must have the appropriate permissions to be able to get the report).</line>
+				<line>Report parameter can contain name of the report (instead of unique id).</line>
+				<line>Individual report parameters can be looked up (no need to retrieve unique ids first), for example:
+					DEPARTMENT=&lt;deptCode&gt;, SUBJECT=&lt;abbreviation&gt;, ROOM=&lt;name&gt;, or RoomType=&lt;reference&gt;.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
