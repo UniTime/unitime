@@ -556,6 +556,14 @@
 					<html:hidden property="weekStartDayOfWeek"/>
 				</TD>
 			</TR>
+			
+			<!-- Requests / Notes -->
+			<TR>
+				<TD valign="top"><loc:message name="propertyRequestsNotes"/></TD>
+				<TD align="left">
+				<html:textarea property="notes" rows="4" cols="57"></html:textarea>
+				</TD>
+			</TR>
 		</sec:authorize>
 		<sec:authorize access="!(not #courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) and 
 							!(#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
@@ -609,6 +617,7 @@
 			<html:hidden property="wkDrop"/>
 			<html:hidden property="wkDropDefault"/>
 			<html:hidden property="weekStartDayOfWeek"/>
+			<html:hidden property="notes"/>
 		</sec:authorize>		
 	</logic:equal>
 

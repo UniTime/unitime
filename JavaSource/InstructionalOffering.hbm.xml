@@ -189,6 +189,13 @@
 			<key column="offering_id" foreign-key="fk_teachreq_offering"/>
 			<one-to-many class="TeachingRequest"/>
 		</set>
+
+        <property
+        	name="notes"
+            column="notes"
+            type="java.lang.String"
+            not-null="false"
+            length="2000"/>
 	</class>
 	
 	

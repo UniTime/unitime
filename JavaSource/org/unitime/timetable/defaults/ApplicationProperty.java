@@ -2192,6 +2192,12 @@ public enum ApplicationProperty {
 	@Description("Point In Time Data: number of weeks in a term used in standard reporting.  This is 15 weeks in the US"
 			+ ".  Defaults to 15.")
 	StandardWeeksInReportingTerm("unitime.pointInTimeData.standardWeeksInReportingTerm"),
+	
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Instructional Offering: show class notes")
+	OfferingShowClassNotes("unitime.offering.showClassNotes"),
 	;
 
 	String iKey;

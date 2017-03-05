@@ -90,6 +90,7 @@ public class CourseOfferingEditForm extends ActionForm {
     private String externalId;
     private Long alternativeCourseOfferingId;
     private boolean allowAlternativeCourseOfferings;
+    private String notes;
 
     // --------------------------------------------------------- Methods
 
@@ -207,6 +208,7 @@ public class CourseOfferingEditForm extends ActionForm {
         add = false;
         externalId = null;
         alternativeCourseOfferingId = null;
+        notes = null;
     }
     
     public boolean isAdd() { return add; }
@@ -421,4 +423,7 @@ public class CourseOfferingEditForm extends ActionForm {
     
     public boolean getAllowAlternativeCourseOfferings() { return allowAlternativeCourseOfferings; }
     public void setAllowAlternativeCourseOfferings(boolean allowAlternativeCourseOfferings) { this.allowAlternativeCourseOfferings = allowAlternativeCourseOfferings; }
+    
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
 }

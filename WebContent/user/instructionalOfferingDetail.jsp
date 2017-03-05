@@ -480,6 +480,16 @@
 				</TD>
 			</TR>
 		</logic:equal>
+		<logic:notEmpty name="instructionalOfferingDetailForm" property="notes">
+			<TR>
+				<TD valign="top"><loc:message name="propertyRequestsNotes"/></TD>
+				<TD>
+					<div class='unitime-ScrollTableCell'>
+						<span style='white-space: pre-wrap;'><bean:write name="instructionalOfferingDetailForm" property="notes" filter="false"/></span>
+					</div>
+				</TD>
+			</TR>
+		</logic:notEmpty>
 		
 		<sec:authorize access="hasPermission(null, 'Session', 'CurriculumView')">
 		<TR>

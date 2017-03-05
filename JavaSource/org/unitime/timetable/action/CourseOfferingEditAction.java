@@ -445,6 +445,7 @@ public class CourseOfferingEditAction extends Action {
 			        } catch (Exception e) {
 			        	io.setLastWeekToDrop(null);
 			        }
+			        io.setNotes(frm.getNotes() == null || frm.getNotes().length() <= 2000 ? frm.getNotes() : frm.getNotes().substring(0, 2000));
 
 			        hibSession.update(io);
 		        }
@@ -588,6 +589,8 @@ public class CourseOfferingEditAction extends Action {
 	        } catch (Exception e) {
 	        	io.setLastWeekToDrop(null);
 	        }
+	        
+	        io.setNotes(frm.getNotes() == null || frm.getNotes().length() <= 2000 ? frm.getNotes() : frm.getNotes().substring(0, 2000));
 
 	        if (ApplicationProperty.CourseOfferingEditExternalIds.isTrue())
 	        	co.setExternalUniqueId(frm.getExternalId() == null || frm.getExternalId().isEmpty() ? null : frm.getExternalId());
@@ -682,6 +685,7 @@ public class CourseOfferingEditAction extends Action {
         frm.setCourseOfferingId(courseOfferingId);
         frm.setInstrOfferingId(io.getUniqueId());
         frm.setScheduleBookNote(co.getScheduleBookNote());
+        frm.setNotes(io.getNotes());
         frm.setSubjectAreaId(subjectAreaId);
         frm.setTitle(co.getTitle());
         frm.setIsControl(co.getIsControl());

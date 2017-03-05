@@ -50,6 +50,7 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	private Integer iLastWeekToEnroll;
 	private Integer iLastWeekToChange;
 	private Integer iLastWeekToDrop;
+	private String iNotes;
 
 	private Session iSession;
 	private Set<CourseOffering> iCourseOfferings;
@@ -67,6 +68,7 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	public static String PROP_WK_ENROLL = "lastWeekToEnroll";
 	public static String PROP_WK_CHANGE = "lastWeekToChange";
 	public static String PROP_WK_DROP = "lastWeekToDrop";
+	public static String PROP_NOTES = "notes";
 
 	public BaseInstructionalOffering() {
 		initialize();
@@ -116,6 +118,9 @@ public abstract class BaseInstructionalOffering implements Serializable {
 
 	public Integer getLastWeekToDrop() { return iLastWeekToDrop; }
 	public void setLastWeekToDrop(Integer lastWeekToDrop) { iLastWeekToDrop = lastWeekToDrop; }
+
+	public String getNotes() { return iNotes; }
+	public void setNotes(String notes) { iNotes = notes; }
 
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
@@ -179,6 +184,7 @@ public abstract class BaseInstructionalOffering implements Serializable {
 			"\n	LastWeekToDrop: " + getLastWeekToDrop() +
 			"\n	LastWeekToEnroll: " + getLastWeekToEnroll() +
 			"\n	NotOffered: " + getNotOffered() +
+			"\n	Notes: " + getNotes() +
 			"\n	Session: " + getSession() +
 			"\n	UniqueId: " + getUniqueId() +
 			"\n	UniqueIdRolledForwardFrom: " + getUniqueIdRolledForwardFrom() +

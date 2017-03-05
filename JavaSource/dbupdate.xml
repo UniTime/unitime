@@ -12364,4 +12364,8 @@
 		<plsql>alter table %SCHEMA%.pit_dept_instructor modify email varchar2(200 char)</plsql>
 		<plsql>alter table %SCHEMA%.pit_class_event modify event_name varchar2(100 char)</plsql>
 	</update>
+	<update version="177" date="3-Mar-2017" comment="Offering Notes">
+		<mysql>alter table %SCHEMA%.instructional_offering add notes varchar(2000)</mysql>
+		<plsql>alter table %SCHEMA%.instructional_offering add notes varchar2(2000 char)</plsql>
+	</update>
 </dbupdate>

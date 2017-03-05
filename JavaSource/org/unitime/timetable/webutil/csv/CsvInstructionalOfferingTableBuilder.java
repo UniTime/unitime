@@ -597,6 +597,20 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	
         return cell;
     }
+    
+    private CSVField csvBuildNote(InstructionalOffering c, boolean isEditable, UserContext user){
+    	CSVField cell = createCell();
+
+    	if (c.getNotes()!=null) {
+			if (c.getNotes().length() <= 30  || user == null || CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))){
+				addText(cell, c.getNotes(), true);
+			} else {
+				addText(cell, c.getNotes().substring(0, 30) + "...", true);
+			}
+		}
+    	
+        return cell;
+    }
 
     private CSVField csvBuildManager(PreferenceGroup prefGroup, boolean isEditable){
     	CSVField cell = createCell();
@@ -1195,7 +1209,7 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		line.add(csvBuildSchedulePrintNote(io, isEditable, context.getUser()));     		
     	}
     	if (isShowNote()){
-    		line.add(createCell());     		
+    		line.add(csvBuildNote(io, isEditable, context.getUser()));
     	}
         if (isShowExam()) {
             TreeSet exams = new TreeSet(Exam.findAll(ExamOwner.sOwnerTypeOffering,io.getUniqueId()));

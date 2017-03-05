@@ -34,6 +34,7 @@ import java.util.Vector;
 
 import javax.servlet.jsp.JspWriter;
 
+import org.springframework.web.util.HtmlUtils;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.commons.web.htmlgen.TableHeaderCell;
@@ -1089,13 +1090,33 @@ public class WebInstructionalOfferingTableBuilder {
     				cell = initNormalCell(c.getNotes().replaceAll("\n","<br>"), isEditable);
         			cell.setAlign("left");
     			} else {
-    	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasNoteToMgr() + "' title='" + c.getNotes() + "' align='absmiddle' src='images/note.png'>", isEditable);
+    	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasNoteToMgr() + "' title='" + HtmlUtils.htmlEscape(c.getNotes()) + "' align='absmiddle' src='images/note.png'>", isEditable);
     	    		cell.setAlign("center");
     			}
     		} else { 
         		cell = this.initNormalCell("&nbsp;" ,isEditable);
         	}
     	} else { 
+    		cell = this.initNormalCell("&nbsp;" ,isEditable);
+    	}
+        return(cell);
+    }
+    
+    private TableCell buildNote(InstructionalOffering offering, boolean isEditable, UserContext user){
+    	TableCell cell = null;
+		if (offering.getNotes() != null && !offering.getNotes().trim().isEmpty()) {
+			if (CommonValues.NoteAsShortText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))) {
+				String note = (offering.getNotes().length() <= 20 ? offering.getNotes() : offering.getNotes().substring(0, 20) + "...");
+				cell = initNormalCell(note.replaceAll("\n","<br>"), isEditable);
+    			cell.setAlign("left");
+			} else if (CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))) {
+				cell = initNormalCell(offering.getNotes().replaceAll("\n","<br>"), isEditable);
+    			cell.setAlign("left");
+			} else {
+	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasNoteToMgr() + "' title='" + HtmlUtils.htmlEscape(offering.getNotes()) + "' align='absmiddle' src='images/note.png'>", isEditable);
+	    		cell.setAlign("center");
+			}
+		} else { 
     		cell = this.initNormalCell("&nbsp;" ,isEditable);
     	}
         return(cell);
@@ -1359,7 +1380,7 @@ public class WebInstructionalOfferingTableBuilder {
             row.addContent(this.buildSchedulePrintNote(prefGroup, isEditable, context.getUser()));     		
     	} 
     	if (isShowNote()){
-            row.addContent(this.buildNote(prefGroup, isEditable, context.getUser()));     		
+            row.addContent(this.buildNote(prefGroup, isEditable, context.getUser()));
     	}
     	if (isShowExam()) {
     	    if (prefGroup instanceof Class_) {
@@ -1844,7 +1865,7 @@ public class WebInstructionalOfferingTableBuilder {
             row.addContent(buildSchedulePrintNote(io, isEditable, context.getUser()));     		
     	}
     	if (isShowNote()){
-            row.addContent(initNormalCell("", isEditable));     		
+            row.addContent(buildNote(io, isEditable, context.getUser()));
     	}
         if (isShowExam()) {
             TreeSet exams = new TreeSet(Exam.findAll(ExamOwner.sOwnerTypeOffering,io.getUniqueId()));

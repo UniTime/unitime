@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
@@ -65,8 +66,10 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.TeachingRequest;
+import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
+import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -402,6 +405,35 @@ public class InstructionalOfferingDetailAction extends Action {
         frm.setWkDrop(io.getLastWeekToDrop() == null ? "" : io.getLastWeekToDrop().toString());
         frm.setWeekStartDayOfWeek(Localization.getDateFormat("EEEE").format(io.getSession().getSessionBeginDateTime()));
         frm.setHasConflict(hasConflicts(request, io));
+        if (ApplicationProperty.OfferingShowClassNotes.isTrue()) {
+        	StringBuffer notes = new StringBuffer();
+        	List<InstrOfferingConfig> configs = new ArrayList<InstrOfferingConfig>(io.getInstrOfferingConfigs());
+        	Collections.sort(configs, new InstrOfferingConfigComparator(io.getControllingCourseOffering().getSubjectArea().getUniqueId()));
+        	for (InstrOfferingConfig config: configs) {
+        		List<SchedulingSubpart> subparts = new ArrayList<SchedulingSubpart>(config.getSchedulingSubparts());
+        		Collections.sort(subparts, new SchedulingSubpartComparator());
+        		for (SchedulingSubpart subpart: subparts) {
+        			List<Class_> classes = new ArrayList<Class_>(subpart.getClasses());
+        			Collections.sort(classes, new ClassComparator(ClassComparator.COMPARE_BY_ITYPE));
+        			for (Class_ clazz: classes) {
+        				if (clazz.getNotes() != null && !clazz.getNotes().isEmpty()) {
+        					notes.append("<tr><th valign='top' align='left' nowrap>" + subpart.getItypeDesc().trim() + " " + clazz.getSectionNumberString() + "</th><td>" + clazz.getNotes() + "</td></tr>");
+        				}
+        			}
+        		}
+        	}
+        	if (notes.length() == 0) {
+        		frm.setNotes(io.getNotes());
+        	} else {
+        		frm.setNotes(
+        				"<table border='0' cellspacing='2' cellpadding='0'>" +
+        				(io.getNotes() != null && !io.getNotes().isEmpty() ? "<tr><th valign='top' align='left' nowrap>" + io.getControllingCourseOffering().getCourseName() + "&nbsp;</th><td>" + io.getNotes() + "</td></tr>" : "") +
+        				notes +
+        				"</table>");
+        	}
+        } else {
+        	frm.setNotes(io.getNotes());
+        }
         String coordinators = "";
         String instructorNameFormat = sessionContext.getUser().getProperty(UserProperty.NameFormat);
         for (OfferingCoordinator coordinator: new TreeSet<OfferingCoordinator>(io.getOfferingCoordinators())) {

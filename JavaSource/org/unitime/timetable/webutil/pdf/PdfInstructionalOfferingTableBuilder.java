@@ -915,6 +915,21 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	
         return cell;
     }
+    
+    private PdfPCell pdfBuildNote(InstructionalOffering c, boolean isEditable, UserContext user){
+    	Color color = (isEditable?sEnableColor:sDisableColor);
+    	PdfPCell cell = createCell();
+
+    	if (c.getNotes()!=null) {
+			if (c.getNotes().length() <= 30  || user == null || CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))){
+				addText(cell, c.getNotes(), false, false, Element.ALIGN_LEFT, color, true);
+			} else {
+				addText(cell, c.getNotes().substring(0, 30) + "...", false, false, Element.ALIGN_LEFT, color, true);
+			}
+		}
+    	
+        return cell;
+    }
 
     private PdfPCell pdfBuildManager(PreferenceGroup prefGroup, boolean isEditable){
     	Color color = (isEditable?sEnableColor:sDisableColor);
@@ -1216,7 +1231,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		iPdfTable.addCell(pdfBuildSchedulePrintNote(prefGroup, isEditable, context.getUser()));     		
     	} 
     	if (isShowNote()){
-    		iPdfTable.addCell(pdfBuildNote(prefGroup, isEditable, context.getUser()));     		
+    		iPdfTable.addCell(pdfBuildNote(prefGroup, isEditable, context.getUser()));
     	}
         if (isShowExam()) {
             TreeSet exams = new TreeSet();
@@ -1555,7 +1570,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		iPdfTable.addCell(pdfBuildSchedulePrintNote(io, isEditable, context.getUser()));     		
     	}
     	if (isShowNote()){
-    		iPdfTable.addCell(createCell());     		
+    		iPdfTable.addCell(pdfBuildNote(io, isEditable, context.getUser()));
     	}
         if (isShowExam()) {
             TreeSet exams = new TreeSet(Exam.findAll(ExamOwner.sOwnerTypeOffering,io.getUniqueId()));

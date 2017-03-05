@@ -81,6 +81,7 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     private String weekStartDayOfWeek;
     private String accommodation;
     private boolean hasConflict;
+    private String notes;
 
 
     // --------------------------------------------------------- Classes
@@ -139,6 +140,7 @@ public class InstructionalOfferingDetailForm extends ActionForm {
         weekStartDayOfWeek = null;
         accommodation = null;
         hasConflict = false;
+        notes = null;
     }
     
     public List getCourseOfferings() {
@@ -381,4 +383,7 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     	}
     	return false;
     }
+    
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
 }
