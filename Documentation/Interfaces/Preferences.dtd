@@ -1,0 +1,113 @@
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+
+<!ELEMENT preferences ((department|instructor|subpart|class)*) >
+<!ATTLIST preferences campus CDATA #REQUIRED >
+<!ATTLIST preferences term CDATA #REQUIRED >
+<!ATTLIST preferences year CDATA #REQUIRED >
+<!ATTLIST preferences created CDATA #IMPLIED >
+<!ATTLIST preferences timeFormat CDATA #IMPLIED >
+<!ATTLIST preferences dateFormat CDATA #IMPLIED >
+
+<!ELEMENT department ((timePref|roomPref|buildingPref|groupPref|featurePref|datePref|distributionPref)*) >
+<!ATTLIST department code CDATA #REQUIRED >
+
+<!ELEMENT instructor ((timePref|roomPref|buildingPref|groupPref|featurePref|datePref|distributionPref|coursePref|teachingPref)*) >
+<!ATTLIST instructor externalId CDATA #IMPLIED >
+<!ATTLIST instructor firstName CDATA #IMPLIED >
+<!ATTLIST instructor lastName CDATA #IMPLIED >
+<!ATTLIST instructor middleName CDATA #IMPLIED >
+<!ATTLIST instructor department CDATA #REQUIRED >
+<!ATTLIST instructor email CDATA #IMPLIED >
+<!ATTLIST instructor title CDATA #IMPLIED >
+
+<!ELEMENT subpart ((timePref|roomPref|buildingPref|groupPref|featurePref|datePref)*) >
+<!ATTLIST subpart subject CDATA #REQUIRED >
+<!ATTLIST subpart course CDATA #REQUIRED >
+<!ATTLIST subpart config CDATA #IMPLIED >
+<!ATTLIST subpart type CDATA #IMPLIED >
+<!ATTLIST subpart suffix CDATA #IMPLIED >
+<!ATTLIST subpart pattern CDATA #IMPLIED >
+
+<!ELEMENT class ((timePref|roomPref|buildingPref|groupPref|featurePref|datePref)*) >
+<!ATTLIST class subject CDATA #REQUIRED >
+<!ATTLIST class course CDATA #REQUIRED >
+<!ATTLIST class externalId CDATA #IMPLIED >
+<!ATTLIST class type CDATA #IMPLIED >
+<!ATTLIST class suffix CDATA #IMPLIED >
+<!ATTLIST class pattern CDATA #IMPLIED >
+
+<!ELEMENT roomPref EMPTY >
+<!ATTLIST roomPref level ( R | -2 | -1 | 0 | 1 | 2 | P ) #REQUIRED >
+<!ATTLIST roomPref building CDATA #IMPLIED >
+<!ATTLIST roomPref room CDATA #IMPLIED >
+<!ATTLIST roomPref location CDATA #IMPLIED >
+
+<!ELEMENT buildingPref EMPTY >
+<!ATTLIST buildingPref level ( R | -2 | -1 | 0 | 1 | 2 | P ) #REQUIRED >
+<!ATTLIST buildingPref building CDATA #REQUIRED >
+
+<!ELEMENT groupPref EMPTY >
+<!ATTLIST groupPref level ( R | -2 | -1 | 0 | 1 | 2 | P ) #REQUIRED >
+<!ATTLIST groupPref group CDATA #REQUIRED >
+<!ATTLIST groupPref department CDATA #IMPLIED >
+
+<!ELEMENT featurePref EMPTY >
+<!ATTLIST featurePref level ( R | -2 | -1 | 0 | 1 | 2 | P ) #REQUIRED >
+<!ATTLIST featurePref feature CDATA #REQUIRED >
+<!ATTLIST featurePref department CDATA #IMPLIED >
+
+<!ELEMENT datePref EMPTY >
+<!ATTLIST datePref level ( R | -2 | -1 | 0 | 1 | 2 | P ) #REQUIRED >
+<!ATTLIST datePref pattern CDATA #REQUIRED >
+
+<!ELEMENT distributionPref ((class|subpart)*) >
+<!ATTLIST distributionPref level ( R | -2 | -1 | 0 | 1 | 2 | P ) #REQUIRED >
+<!ATTLIST distributionPref type CDATA #REQUIRED >
+<!ATTLIST distributionPref structure (AllClasses|Progressive|GroupsOfTwo|GroupsOfThree|GroupsOfFour|GroupsOfFive|Pairwise|OneOfEach) #IMPLIED >
+
+<!ELEMENT timePref (pref*) >
+<!ATTLIST timePref level ( R | -2 | -1 | 0 | 1 | 2 | P ) #REQUIRED >
+<!ATTLIST timePref pattern CDATA #IMPLIED >
+
+<!ELEMENT pref EMPTY >
+<!ATTLIST pref level ( R | -2 | -1 | 0 | 1 | 2 | P ) #REQUIRED >
+<!ATTLIST pref day CDATA #IMPLIED >
+<!ATTLIST pref days CDATA #IMPLIED >
+<!ATTLIST pref start CDATA #IMPLIED >
+<!ATTLIST pref stop CDATA #IMPLIED >
+<!ATTLIST pref time CDATA #IMPLIED >
+
+<!ELEMENT coursePref EMPTY >
+<!ATTLIST coursePref level ( R | -2 | -1 | 0 | 1 | 2 | P ) #REQUIRED >
+<!ATTLIST coursePref subject CDATA #REQUIRED >
+<!ATTLIST coursePref course CDATA #REQUIRED >
+
+<!ELEMENT attributePref EMPTY >
+<!ATTLIST attributePref level ( R | -2 | -1 | 0 | 1 | 2 | P ) #REQUIRED >
+<!ATTLIST attributePref attribute CDATA #REQUIRED >
+
+<!ELEMENT instructorPref EMPTY >
+<!ATTLIST instructorPref level ( R | -2 | -1 | 0 | 1 | 2 | P ) #REQUIRED >
+<!ATTLIST instructorPref instructor CDATA #REQUIRED >
+
+<!ELEMENT teachingPref EMPTY >
+<!ATTLIST teachingPref level ( R | -2 | -1 | 0 | 1 | 2 | P ) #REQUIRED >
+<!ATTLIST teachingPref maxLoad CDATA #REQUIRED >

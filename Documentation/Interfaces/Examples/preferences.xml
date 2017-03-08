@@ -1,0 +1,469 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE preferences PUBLIC "-//UniTime//UniTime Preferences/EN" "http://www.unitime.org/interface/Preferences.dtd">
+
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+ <preferences term="Fal" year="2010" campus="woebegon" dateFormat="yyyy/M/d" timeFormat="HHmm" created="Wed Mar 08 08:56:15 CET 2017">
+  <department code="0100">
+    <roomPref building="THTR" room="101" level="P"/>
+    <roomPref building="EDUC" room="101" level="0"/>
+  </department>
+  <department code="0101">
+    <distributionPref type="SAME_ROOM" structure="Progressive" level="-1">
+      <subpart subject="CHM" course="101" type="Lec"/>
+      <subpart subject="CHM" course="101" type="Lab"/>
+      <subpart subject="CHM" course="101" type="Rec"/>
+    </distributionPref>
+    <distributionPref type="SAME_DAYS" structure="AllClasses" level="-2">
+      <class subject="CHM" course="101" type="Rec" suffix="1"/>
+      <class subject="CHM" course="101" type="Rec" suffix="2"/>
+      <class subject="CHM" course="101" type="Rec" suffix="5"/>
+    </distributionPref>
+    <roomPref building="EDUC" room="103" level="0"/>
+    <roomPref building="EDUC" room="102" level="0"/>
+    <roomPref building="EDUC" room="105" level="P"/>
+    <distributionPref type="PRECEDENCE" structure="AllClasses" level="R">
+      <subpart subject="COM" course="101" type="Lec"/>
+    </distributionPref>
+    <roomPref building="EDUC" room="104" level="0"/>
+    <roomPref building="EDUC" room="108" level="0"/>
+    <roomPref building="EDUC" room="106" level="0"/>
+    <roomPref building="THTR" room="101" level="2"/>
+    <roomPref building="EDUC" room="107" level="0"/>
+    <roomPref building="EDUC" room="101" level="0"/>
+  </department>
+  <department code="0102">
+    <roomPref location="MALL" level="0"/>
+  </department>
+  <instructor externalId="100" firstName="JOE" lastName="DOE" department="0101">
+  	<teachingPref maxLoad="20.0" level="0"/>
+    <featurePref feature="Comp" level="-2"/>
+    <timePref level="R">
+      <pref level="P" day="M" start="0730" stop="0830"/>
+      <pref level="-2" day="M" start="0930" stop="1430"/>
+      <pref level="P" day="T" start="0730" stop="0830"/>
+      <pref level="2" day="T" start="0830" stop="1830"/>
+      <pref level="P" day="W" start="0730" stop="0830"/>
+      <pref level="-2" day="W" start="0930" stop="1430"/>
+      <pref level="P" day="R" start="0730" stop="0830"/>
+      <pref level="2" day="R" start="0830" stop="1830"/>
+      <pref level="P" day="F" start="0730" stop="0830"/>
+      <pref level="-2" day="F" start="0930" stop="1430"/>
+      <pref level="P" day="F" start="1600" stop="1830"/>
+    </timePref>
+    <distributionPref type="MAX_HRS_DAY(6)" structure="AllClasses" level="-2"/>
+    <coursePref subject="ALG" course="101" level="-2"/>
+  </instructor>
+  <instructor externalId="101" firstName="GEORGE" lastName="NEWMAN" department="0101">
+    <timePref level="R">
+      <pref level="2" day="M" start="0730" stop="0830"/>
+      <pref level="1" day="M" start="0830" stop="1830"/>
+      <pref level="P" day="M" start="2300" stop="2400"/>
+      <pref level="2" day="T" start="0730" stop="0830"/>
+      <pref level="-2" day="T" start="0930" stop="1330"/>
+      <pref level="2" day="W" start="0730" stop="0830"/>
+      <pref level="-1" day="W" start="0930" stop="1330"/>
+      <pref level="2" day="R" start="0730" stop="0830"/>
+      <pref level="-2" day="R" start="0930" stop="1330"/>
+      <pref level="2" day="F" start="0730" stop="0830"/>
+      <pref level="1" day="F" start="0830" stop="1830"/>
+    </timePref>
+    <buildingPref building="EDUC" level="-2"/>
+    <featurePref feature="ThtrSeat" level="P"/>
+    <distributionPref type="_MaxDays:3_" structure="AllClasses" level="R"/>
+  </instructor>
+  <instructor externalId="102" firstName="JOHN" middleName="WILLIAM" lastName="SMITH" department="0101">
+    <timePref level="R">
+      <pref level="2" day="M" start="0730" stop="0830"/>
+      <pref level="1" day="M" start="1630" stop="1830"/>
+      <pref level="2" day="T" start="0730" stop="0830"/>
+      <pref level="1" day="T" start="1630" stop="1830"/>
+      <pref level="2" day="W" start="0730" stop="0830"/>
+      <pref level="1" day="W" start="1630" stop="1830"/>
+      <pref level="2" day="R" start="0730" stop="0830"/>
+      <pref level="1" day="R" start="1630" stop="1830"/>
+      <pref level="2" day="F" start="0730" stop="0830"/>
+      <pref level="1" day="F" start="1630" stop="1830"/>
+    </timePref>
+  </instructor>
+  <instructor firstName="JOHN" lastName="STUDENT" department="0101"/>
+  <instructor firstName="STEVEN" lastName="STUDENT" department="0101"/>
+  <subpart subject="ALG" course="101" type="Lec">
+    <groupPref group="Classroom" level="R"/>
+    <timePref pattern="2 x 75" level="R">
+      <pref level="P" days="TR" time="0730"/>
+      <pref level="P" days="TR" time="0900"/>
+      <pref level="P" days="TR" time="1030"/>
+      <pref level="P" days="TR" time="1200"/>
+      <pref level="P" days="TR" time="1330"/>
+      <pref level="P" days="TR" time="1500"/>
+      <pref level="P" days="TR" time="1630"/>
+    </timePref>
+    <timePref pattern="3 x 50" level="R"/>
+  </subpart>
+  <class subject="ALG" course="101" type="Lec" suffix="1"/>
+  <subpart subject="BAND" course="101" type="Lec">
+    <timePref pattern="5 x 100" level="R">
+      <pref level="-2" days="MTWRF" time="1530"/>
+    </timePref>
+  </subpart>
+  <class subject="BAND" course="101" type="Lec" suffix="1"/>
+  <subpart subject="BIOL" course="101" type="Lec">
+    <timePref pattern="2 x 50" level="R"/>
+  </subpart>
+  <class subject="BIOL" course="101" type="Lec" suffix="1"/>
+  <class subject="BIOL" course="101" type="Lec" suffix="2"/>
+  <class subject="BIOL" course="101" type="Lec" suffix="3"/>
+  <subpart subject="BIOL" course="101" type="Lab">
+    <timePref pattern="1 x 100" level="R">
+      <pref level="P" days="M" time="0730"/>
+      <pref level="P" days="M" time="0930"/>
+      <pref level="P" days="M" time="1130"/>
+      <pref level="P" days="M" time="1330"/>
+      <pref level="P" days="M" time="1530"/>
+      <pref level="P" days="T" time="0730"/>
+      <pref level="P" days="T" time="0930"/>
+      <pref level="P" days="T" time="1130"/>
+      <pref level="P" days="T" time="1330"/>
+      <pref level="P" days="T" time="1530"/>
+    </timePref>
+    <groupPref group="Biol Labs" department="0101" level="R"/>
+  </subpart>
+  <class subject="BIOL" course="101" type="Lab" suffix="1"/>
+  <class subject="BIOL" course="101" type="Lab" suffix="2"/>
+  <class subject="BIOL" course="101" type="Lab" suffix="3"/>
+  <class subject="BIOL" course="101" type="Lab" suffix="4"/>
+  <class subject="BIOL" course="101" type="Lab" suffix="5"/>
+  <class subject="BIOL" course="101" type="Lab" suffix="6"/>
+  <class subject="BIOL" course="101" type="Lab" suffix="7"/>
+  <class subject="BIOL" course="101" type="Lab" suffix="8"/>
+  <class subject="BIOL" course="101" type="Lab" suffix="9"/>
+  <class subject="BIOL" course="101" type="Lab" suffix="10"/>
+  <class subject="BIOL" course="101" type="Lab" suffix="11"/>
+  <subpart subject="BIOL" course="101" type="Rec">
+    <groupPref group="Classroom" level="R"/>
+    <timePref pattern="1 x 50" level="R"/>
+  </subpart>
+  <class subject="BIOL" course="101" type="Rec" suffix="1"/>
+  <class subject="BIOL" course="101" type="Rec" suffix="2"/>
+  <class subject="BIOL" course="101" type="Rec" suffix="3"/>
+  <class subject="BIOL" course="101" type="Rec" suffix="4"/>
+  <class subject="BIOL" course="101" type="Rec" suffix="5"/>
+  <class subject="BIOL" course="101" type="Rec" suffix="6"/>
+  <class subject="BIOL" course="101" type="Rec" suffix="7"/>
+  <class subject="BIOL" course="101" type="Rec" suffix="8"/>
+  <class subject="BIOL" course="101" type="Rec" suffix="9"/>
+  <class subject="BIOL" course="101" type="Rec" suffix="10"/>
+  <class subject="BIOL" course="101" type="Rec" suffix="11"/>
+  <subpart subject="BIOL" course="101" type="Pso">
+    <timePref pattern="1 x 50" level="R"/>
+  </subpart>
+  <class subject="BIOL" course="101" type="Pso" suffix="1"/>
+  <class subject="BIOL" course="101" type="Pso" suffix="2"/>
+  <class subject="BIOL" course="101" type="Pso" suffix="3"/>
+  <subpart subject="BIOL" course="201" type="Lec">
+    <groupPref group="Classroom" level="R"/>
+    <timePref pattern="2 x 50" level="R"/>
+  </subpart>
+  <subpart subject="BIOL" course="201" type="Lab">
+    <timePref pattern="1 x 100" level="R">
+      <pref level="P" days="M" time="0730"/>
+      <pref level="P" days="T" time="0730"/>
+      <pref level="P" days="W" time="0730"/>
+      <pref level="P" days="R" time="0730"/>
+      <pref level="P" days="F" time="0730"/>
+    </timePref>
+    <groupPref group="Classroom" level="R"/>
+  </subpart>
+  <subpart subject="C S" course="101" type="Lab">
+    <groupPref group="Comp Labs" department="0101" level="R"/>
+    <timePref pattern="1 x 100" level="R"/>
+  </subpart>
+  <class subject="C S" course="101" type="Lab" suffix="1"/>
+  <class subject="C S" course="101" type="Lab" suffix="2"/>
+  <class subject="C S" course="101" type="Lab" suffix="3"/>
+  <class subject="C S" course="101" type="Lab" suffix="4"/>
+  <subpart subject="C S" course="101" type="Lec">
+    <timePref pattern="2 x 50" level="R"/>
+    <groupPref group="Classroom" level="R"/>
+  </subpart>
+  <class subject="C S" course="101" type="Lec" suffix="1"/>
+  <class subject="C S" course="101" type="Lec" suffix="2"/>
+  <subpart subject="CALC" course="101" type="Lec">
+    <timePref pattern="3 x 50" level="R"/>
+  </subpart>
+  <class subject="CALC" course="101" type="Lec" suffix="1"/>
+  <class subject="CALC" course="101" type="Lec" suffix="2"/>
+  <class subject="CALC" course="101" type="Lec" suffix="3"/>
+  <subpart subject="CALC" course="101" type="Rec">
+    <groupPref group="Classroom" level="R"/>
+    <timePref pattern="1 x 50" level="R"/>
+  </subpart>
+  <class subject="CALC" course="101" type="Rec" suffix="1"/>
+  <class subject="CALC" course="101" type="Rec" suffix="9"/>
+  <class subject="CALC" course="101" type="Rec" suffix="5"/>
+  <class subject="CALC" course="101" type="Rec" suffix="10"/>
+  <class subject="CALC" course="101" type="Rec" suffix="2"/>
+  <class subject="CALC" course="101" type="Rec" suffix="6"/>
+  <class subject="CALC" course="101" type="Rec" suffix="11"/>
+  <class subject="CALC" course="101" type="Rec" suffix="7"/>
+  <class subject="CALC" course="101" type="Rec" suffix="3"/>
+  <class subject="CALC" course="101" type="Rec" suffix="12"/>
+  <class subject="CALC" course="101" type="Rec" suffix="4"/>
+  <class subject="CALC" course="101" type="Rec" suffix="8"/>
+  <subpart subject="CHIN" course="201" type="Lec">
+    <timePref pattern="3 x 50" level="R"/>
+    <timePref pattern="2 x 75" level="R"/>
+    <groupPref group="Classroom" level="R"/>
+  </subpart>
+  <subpart subject="CHIN" course="201" type="Lab">
+    <groupPref group="Classroom" level="R"/>
+    <timePref pattern="1 x 50" level="R"/>
+  </subpart>
+  <subpart subject="CHM" course="101" type="Lec">
+    <timePref pattern="2 x 50" level="R"/>
+  </subpart>
+  <class subject="CHM" course="101" type="Lec" suffix="1"/>
+  <class subject="CHM" course="101" type="Lec" suffix="2"/>
+  <class subject="CHM" course="101" type="Lec" suffix="3"/>
+  <subpart subject="CHM" course="101" type="Lab">
+    <timePref pattern="1 x 150" level="R">
+      <pref level="P" days="M" time="0730"/>
+      <pref level="P" days="M" time="0830"/>
+      <pref level="P" days="M" time="1030"/>
+      <pref level="P" days="M" time="1130"/>
+      <pref level="P" days="M" time="1330"/>
+      <pref level="P" days="M" time="1430"/>
+      <pref level="P" days="M" time="1500"/>
+      <pref level="P" days="T" time="0830"/>
+      <pref level="P" days="T" time="1030"/>
+      <pref level="P" days="T" time="1330"/>
+      <pref level="P" days="T" time="1430"/>
+      <pref level="P" days="W" time="0830"/>
+      <pref level="P" days="W" time="1030"/>
+      <pref level="P" days="W" time="1330"/>
+      <pref level="P" days="W" time="1430"/>
+      <pref level="P" days="R" time="0830"/>
+      <pref level="P" days="R" time="1030"/>
+      <pref level="P" days="R" time="1330"/>
+      <pref level="P" days="R" time="1430"/>
+      <pref level="P" days="F" time="0830"/>
+      <pref level="P" days="F" time="1030"/>
+      <pref level="P" days="F" time="1330"/>
+      <pref level="P" days="F" time="1430"/>
+    </timePref>
+  </subpart>
+  <class subject="CHM" course="101" type="Lab" suffix="5"/>
+  <class subject="CHM" course="101" type="Lab" suffix="1"/>
+  <class subject="CHM" course="101" type="Lab" suffix="6"/>
+  <class subject="CHM" course="101" type="Lab" suffix="7"/>
+  <class subject="CHM" course="101" type="Lab" suffix="9"/>
+  <class subject="CHM" course="101" type="Lab" suffix="8"/>
+  <class subject="CHM" course="101" type="Lab" suffix="2"/>
+  <class subject="CHM" course="101" type="Lab" suffix="3"/>
+  <class subject="CHM" course="101" type="Lab" suffix="4"/>
+  <class subject="CHM" course="101" type="Lab" suffix="10"/>
+  <class subject="CHM" course="101" type="Lab" suffix="11"/>
+  <class subject="CHM" course="101" type="Lab" suffix="12"/>
+  <subpart subject="CHM" course="101" type="Rec">
+    <groupPref group="Classroom" level="R"/>
+    <timePref pattern="1 x 50" level="R"/>
+  </subpart>
+  <class subject="CHM" course="101" type="Rec" suffix="6"/>
+  <class subject="CHM" course="101" type="Rec" suffix="7"/>
+  <class subject="CHM" course="101" type="Rec" suffix="10"/>
+  <class subject="CHM" course="101" type="Rec" suffix="9"/>
+  <class subject="CHM" course="101" type="Rec" suffix="2"/>
+  <class subject="CHM" course="101" type="Rec" suffix="8"/>
+  <class subject="CHM" course="101" type="Rec" suffix="4"/>
+  <class subject="CHM" course="101" type="Rec" suffix="1"/>
+  <class subject="CHM" course="101" type="Rec" suffix="11"/>
+  <class subject="CHM" course="101" type="Rec" suffix="12"/>
+  <class subject="CHM" course="101" type="Rec" suffix="5"/>
+  <class subject="CHM" course="101" type="Rec" suffix="3"/>
+  <subpart subject="COM" course="101" type="Lec">
+    <groupPref group="Classroom" level="R"/>
+    <timePref pattern="2 x 75" level="R"/>
+  </subpart>
+  <class subject="COM" course="101" type="Lec" suffix="1"/>
+  <class subject="COM" course="101" type="Lec" suffix="2"/>
+  <class subject="COM" course="101" type="Lec" suffix="3"/>
+  <class subject="COM" course="101" type="Lec" suffix="4"/>
+  <class subject="COM" course="101" type="Lec" suffix="5"/>
+  <class subject="COM" course="101" type="Lec" suffix="6"/>
+  <class subject="COM" course="101" type="Lec" suffix="7"/>
+  <class subject="COM" course="101" type="Lec" suffix="8"/>
+  <class subject="COM" course="101" type="Lec" suffix="9"/>
+  <subpart subject="ECON" course="101" type="Lec">
+    <timePref pattern="3 x 50" level="R"/>
+    <timePref pattern="2 x 75" level="R"/>
+  </subpart>
+  <class subject="ECON" course="101" type="Lec" suffix="1"/>
+  <subpart subject="ENGL" course="101" type="Lec">
+    <timePref pattern="3 x 50" level="R"/>
+    <groupPref group="Classroom" level="R"/>
+  </subpart>
+  <class subject="ENGL" course="101" type="Lec" suffix="1"/>
+  <class subject="ENGL" course="101" type="Lec" suffix="2"/>
+  <class subject="ENGL" course="101" type="Lec" suffix="3"/>
+  <class subject="ENGL" course="101" type="Lec" suffix="4"/>
+  <class subject="ENGL" course="101" type="Lec" suffix="5"/>
+  <class subject="ENGL" course="101" type="Lec" suffix="6"/>
+  <class subject="ENGL" course="101" type="Lec" suffix="7"/>
+  <class subject="ENGL" course="101" type="Lec" suffix="8"/>
+  <class subject="ENGL" course="101" type="Lec" suffix="9"/>
+  <class subject="ENGL" course="101" type="Lec" suffix="10"/>
+  <subpart subject="ENGL" course="101" type="Lab">
+    <timePref pattern="1 x 50" level="R"/>
+    <groupPref group="Comp Labs" department="0101" level="R"/>
+  </subpart>
+  <class subject="ENGL" course="101" type="Lab" suffix="7"/>
+  <class subject="ENGL" course="101" type="Lab" suffix="8"/>
+  <class subject="ENGL" course="101" type="Lab" suffix="1"/>
+  <class subject="ENGL" course="101" type="Lab" suffix="5"/>
+  <class subject="ENGL" course="101" type="Lab" suffix="6"/>
+  <class subject="ENGL" course="101" type="Lab" suffix="9"/>
+  <class subject="ENGL" course="101" type="Lab" suffix="2"/>
+  <class subject="ENGL" course="101" type="Lab" suffix="4"/>
+  <class subject="ENGL" course="101" type="Lab" suffix="10"/>
+  <class subject="ENGL" course="101" type="Lab" suffix="3"/>
+  <subpart subject="ENGR" course="101" type="Lab">
+    <timePref pattern="1 x 100" level="R"/>
+    <groupPref group="Comp Labs" department="0101" level="R"/>
+  </subpart>
+  <class subject="ENGR" course="101" type="Lab" suffix="1"/>
+  <class subject="ENGR" course="101" type="Lab" suffix="2"/>
+  <class subject="ENGR" course="101" type="Lab" suffix="3"/>
+  <subpart subject="ENGR" course="101" type="Lec">
+    <groupPref group="Classroom" level="R"/>
+    <timePref pattern="2 x 50" level="R"/>
+  </subpart>
+  <class subject="ENGR" course="101" type="Lec" suffix="1"/>
+  <subpart subject="GER" course="101" type="Lec">
+    <groupPref group="Classroom" level="R"/>
+    <timePref pattern="3 x 50" level="R"/>
+  </subpart>
+  <class subject="GER" course="101" type="Lec" suffix="1"/>
+  <class subject="GER" course="101" type="Lec" suffix="2"/>
+  <subpart subject="GER" course="101" type="Lab">
+    <groupPref group="Comp Labs" department="0101" level="R"/>
+    <timePref pattern="1 x 50" level="R"/>
+  </subpart>
+  <class subject="GER" course="101" type="Lab" suffix="3"/>
+  <class subject="GER" course="101" type="Lab" suffix="4"/>
+  <class subject="GER" course="101" type="Lab" suffix="1"/>
+  <class subject="GER" course="101" type="Lab" suffix="2"/>
+  <subpart subject="HIST" course="101" type="Lec">
+    <timePref pattern="2 x 75" level="R"/>
+    <timePref pattern="3 x 50" level="R"/>
+    <groupPref group="Classroom" level="R"/>
+  </subpart>
+  <class subject="HIST" course="101" type="Lec" suffix="1"/>
+  <class subject="HIST" course="101" type="Lec" suffix="2"/>
+  <subpart subject="LING" course="101" type="Lec">
+    <groupPref group="Classroom" level="R"/>
+    <timePref pattern="3 x 50" level="R"/>
+  </subpart>
+  <class subject="LING" course="101" type="Lec" suffix="1"/>
+  <subpart subject="MBIO" course="101" type="Lec">
+    <timePref pattern="2 x 50" level="R"/>
+  </subpart>
+  <class subject="MBIO" course="101" type="Lec" suffix="1"/>
+  <subpart subject="MBIO" course="101" type="Lab">
+    <timePref pattern="1 x 100" level="R">
+      <pref level="R" days="M" time="0930"/>
+      <pref level="R" days="M" time="1130"/>
+      <pref level="R" days="M" time="1330"/>
+      <pref level="R" days="M" time="1530"/>
+    </timePref>
+    <groupPref group="Biol Labs" department="0101" level="R"/>
+  </subpart>
+  <class subject="MBIO" course="101" type="Lab" suffix="1"/>
+  <class subject="MBIO" course="101" type="Lab" suffix="2"/>
+  <class subject="MBIO" course="101" type="Lab" suffix="3"/>
+  <subpart subject="PHAR" course="101" type="Lec">
+    <timePref pattern="1 x 50" level="R"/>
+  </subpart>
+  <class subject="PHAR" course="101" type="Lec" suffix="1"/>
+  <subpart subject="PHIL" course="101" type="Lec">
+    <groupPref group="Classroom" level="R"/>
+    <timePref pattern="2 x 75" level="R"/>
+    <timePref pattern="3 x 50" level="R"/>
+  </subpart>
+  <class subject="PHIL" course="101" type="Lec" suffix="1"/>
+  <subpart subject="PHYS" course="101" type="Lec">
+    <groupPref group="Classroom" level="R"/>
+    <timePref pattern="2 x 50" level="R"/>
+  </subpart>
+  <class subject="PHYS" course="101" type="Lec" suffix="1"/>
+  <class subject="PHYS" course="101" type="Lec" suffix="2"/>
+  <subpart subject="PHYS" course="101" type="Rec">
+    <groupPref group="Classroom" level="R"/>
+    <timePref pattern="1 x 50" level="R"/>
+  </subpart>
+  <class subject="PHYS" course="101" type="Rec" suffix="3"/>
+  <class subject="PHYS" course="101" type="Rec" suffix="1"/>
+  <class subject="PHYS" course="101" type="Rec" suffix="4"/>
+  <class subject="PHYS" course="101" type="Rec" suffix="5"/>
+  <class subject="PHYS" course="101" type="Rec" suffix="2"/>
+  <subpart subject="PHYS" course="101" type="Lab">
+    <groupPref group="Comp Labs" department="0101" level="R"/>
+    <timePref pattern="1 x 100" level="R"/>
+  </subpart>
+  <class subject="PHYS" course="101" type="Lab" suffix="5"/>
+  <class subject="PHYS" course="101" type="Lab" suffix="3"/>
+  <class subject="PHYS" course="101" type="Lab" suffix="1"/>
+  <class subject="PHYS" course="101" type="Lab" suffix="4"/>
+  <class subject="PHYS" course="101" type="Lab" suffix="2"/>
+  <subpart subject="POL" course="101" type="Lec">
+    <timePref pattern="2 x 75" level="R"/>
+    <timePref pattern="3 x 50" level="R"/>
+    <groupPref group="Classroom" level="R"/>
+  </subpart>
+  <class subject="POL" course="101" type="Lec" suffix="1"/>
+  <class subject="POL" course="101" type="Lec" suffix="2"/>
+  <subpart subject="PSY" course="101" type="Lec">
+    <timePref pattern="3 x 50" level="R"/>
+    <timePref pattern="2 x 75" level="R"/>
+  </subpart>
+  <class subject="PSY" course="101" type="Lec" suffix="1"/>
+  <subpart subject="SOC" course="101" type="Lec">
+    <timePref pattern="3 x 50" level="R"/>
+    <groupPref group="Classroom" level="R"/>
+    <timePref pattern="2 x 75" level="R"/>
+  </subpart>
+  <class subject="SOC" course="101" type="Lec" suffix="1"/>
+  <class subject="SOC" course="101" type="Lec" suffix="2"/>
+  <subpart subject="SPAN" course="101" type="Lec">
+    <timePref pattern="3 x 50" level="R"/>
+    <groupPref group="Classroom" level="R"/>
+    <timePref pattern="2 x 75" level="R"/>
+  </subpart>
+  <class subject="SPAN" course="101" type="Lec" suffix="1"/>
+  <class subject="SPAN" course="101" type="Lec" suffix="2"/>
+  <subpart subject="SPAN" course="101" type="Lab">
+    <timePref pattern="1 x 50" level="R"/>
+    <groupPref group="Comp Labs" department="0101" level="R"/>
+  </subpart>
+  <class subject="SPAN" course="101" type="Lab" suffix="3"/>
+  <class subject="SPAN" course="101" type="Lab" suffix="4"/>
+  <class subject="SPAN" course="101" type="Lab" suffix="1"/>
+  <class subject="SPAN" course="101" type="Lab" suffix="2"/>
+</preferences>

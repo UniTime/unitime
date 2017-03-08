@@ -128,7 +128,8 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
         OFFERING_DETAIL("Instructional Offering Detail"),
         INSTRUCTOR_ATTRIBUTE_EDIT("Instructor Attribute Edit"),
         INSTRUCTOR_ASSIGNMENT_PREF_EDIT("Instructor Assignment Preferences"),
-        INSTRUCTOR_ASSIGNMENT("Instructor Assignment")
+        INSTRUCTOR_ASSIGNMENT("Instructor Assignment"),
+        DATA_IMPORT_PREFERENCES("Data Import: Prerefences"),
         ;
         
         private String iTitle;

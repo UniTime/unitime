@@ -81,6 +81,7 @@ public class DataImportForm extends ActionForm {
     	TRAVELTIMES("traveltimes", "Travel Times"),
     	ROOM_SHARING("roomSharing", "Room Sharing"),
     	POINT_IN_TIME_DATA("pointInTimeData", "Point-In-Time Data"),
+    	PREFERENCES("preferences", "Course Timetabling Preferences"),
     	;
     	
     	private String iType, iLabel;
