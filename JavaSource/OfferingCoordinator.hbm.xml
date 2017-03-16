@@ -36,6 +36,7 @@
         	name="instructor"
         	class="DepartmentalInstructor"
         	foreign-key="fk_offering_coord_instructor"
+        	not-null="true"
         	column="instructor_id"
         	/>
         	
@@ -43,6 +44,7 @@
         	name="offering"
         	class="InstructionalOffering"
         	column="offering_id"
+        	not-null="true"
             foreign-key="fk_offering_coord_offering"
             />
         
