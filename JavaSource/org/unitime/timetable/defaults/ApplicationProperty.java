@@ -2157,7 +2157,7 @@ public enum ApplicationProperty {
 	LegacyRooms("unitime.legacy.rooms"),
 	
 	@Type(Boolean.class)
-	@DefaultValue("true")
+	@DefaultValue("false")
 	@Description("Solver: switch the user interface back to the old (Struts-based) solver pages")
 	LegacySolver("unitime.legacy.solver"),
 		
@@ -2193,11 +2193,33 @@ public enum ApplicationProperty {
 			+ ".  Defaults to 15.")
 	StandardWeeksInReportingTerm("unitime.pointInTimeData.standardWeeksInReportingTerm"),
 	
-	
 	@Type(Boolean.class)
 	@DefaultValue("true")
 	@Description("Instructional Offering: show class notes")
 	OfferingShowClassNotes("unitime.offering.showClassNotes"),
+
+	@Parameter("index")
+	@Description("Time Grid: defines %-th days of week (starting with 1, format is bitmap|name, e.g., 1010100|Monday & Wednesday & Friday for MWF)")
+	TimeGridDays("unitime.timeGrid.days%"),
+	
+	@Parameter("index")
+	@Description("Time Grid: defines %-th times (starting with 1, format is name|first slot|last slot|increment, e.g., Daytime|90|222|6 means starting at 7:30 am, ending at 6:30 pm, in half-hour increments)")
+	TimeGridTimes("unitime.timeGrid.times%"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Time Grid: show cross-listed course names")
+	TimeGridShowCrosslists("unitime.timeGrid.crossList"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Time Grid: show instructors of committed classes when showing solver data")
+	TimeGridFixInstructors("unitime.timeGrid.fixInstructors"),
+	
+	@Type(Integer.class)
+	@DefaultValue("0")
+	@Description("Time Grid: first day of week (0 is Monday, 1 is Tuesday, etc.)")
+	TimeGridFirstDayOfWeek("unitime.timeGrid.startDay"),
 	;
 
 	String iKey;

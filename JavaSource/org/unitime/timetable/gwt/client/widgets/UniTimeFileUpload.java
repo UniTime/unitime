@@ -28,6 +28,10 @@ import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.logical.shared.HasValueChangeHandlers;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.FileUpload;
 import com.google.gwt.user.client.ui.FormPanel;
@@ -35,7 +39,7 @@ import com.google.gwt.user.client.ui.FormPanel;
 /**
  * @author Tomas Muller
  */
-public class UniTimeFileUpload extends FormPanel {
+public class UniTimeFileUpload extends FormPanel implements HasValueChangeHandlers<String> {
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private FileUpload iUpload;
 	
@@ -64,6 +68,7 @@ public class UniTimeFileUpload extends FormPanel {
 					reset();
 				} else {
 					UniTimeNotifications.info(message);
+					ValueChangeEvent.fire(UniTimeFileUpload.this, iUpload.getFilename());
 				}
 			}
 		});
@@ -136,5 +141,10 @@ public class UniTimeFileUpload extends FormPanel {
 		public boolean hasFile() { return iName != null; }
 		public String getFileName() { return iName; }
 		
+	}
+
+	@Override
+	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
+		return addHandler(handler, ValueChangeEvent.getType());
 	}
 }

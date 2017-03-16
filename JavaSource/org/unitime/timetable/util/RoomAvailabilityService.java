@@ -426,8 +426,13 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
 		private static final long serialVersionUID = -2466335111767360325L;
 		private String iEventName, iEventType;
         private Date iStartTime, iEndTime;
+        private Long iEventId;
         
         public EventTimeBlock(Element eventElement, SimpleDateFormat dateFormat, SimpleDateFormat timeFormat) throws ParseException {
+        	String id = eventElement.attributeValue("id");
+        	try {
+        		iEventId = (id == null ? null : Long.valueOf(id));
+        	} catch (NumberFormatException e) {}
             iEventName = eventElement.attributeValue("name");
             iEventType = eventElement.attributeValue("type");
             Calendar c = Calendar.getInstance(Locale.US);
@@ -448,6 +453,7 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
             }
         }
         
+        public Long getEventId() { return iEventId; }
         public String getEventName() { return iEventName; }
         public String getEventType() { return iEventType; }
         public Date getStartTime() { return iStartTime; }

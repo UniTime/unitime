@@ -31,6 +31,7 @@ import com.google.gwt.user.client.Cookies;
 public class SolverCookie {
 	private static SolverCookie sInstance = null;
 	private int iLogLevel = ProgressLogLevel.INFO.ordinal();
+	private boolean iTimeGridFilter = true;
 	
 	private SolverCookie() {
 		try {
@@ -39,13 +40,14 @@ public class SolverCookie {
 				String[] params = cookie.split("\\|");
 				int idx = 0;
 				iLogLevel = Integer.valueOf(params[idx++]);
+				iTimeGridFilter = "1".equals(params[idx++]);
 			}
 		} catch (Exception e) {
 		}
 	}
 	
 	private void save() {
-		String cookie = iLogLevel + "";
+		String cookie = iLogLevel + "|" + (iTimeGridFilter ? "1" : "0");
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:Solver", cookie, expires);
 	}
@@ -60,5 +62,9 @@ public class SolverCookie {
 	public void setLogLevel(int level) {
 		iLogLevel = level; save();
 	}
-
+	
+	public boolean isTimeGridFilter() { return iTimeGridFilter; }
+	public void setTimeGridFilter(boolean filter) {
+		iTimeGridFilter = filter; save();
+	}
 }

@@ -5326,3 +5326,155 @@ unitime-RoomSharingWidget .legend .blank {
 	text-overflow: ellipsis;
 	overflow: hidden;
 }
+
+.unitime-TimetableGrid {
+	text-align: center;
+	font-size: x-small;
+	white-space: nowrap;
+}
+
+.unitime-TimetableGrid .grid-name {
+	font-weight: bold;
+	border-top: 1px solid #DDD;
+	border-left: 1px solid #DDD;
+}
+
+.unitime-TimetableGrid .horizontal-header {
+	font-weight: bold;
+}
+
+.unitime-TimetableGrid .horizontal-header .header-interval {
+	height: 100%;
+	padding-top: 2px;
+	border-top: 1px solid #DDD;
+	border-left: 1px solid #DDD;
+}
+
+.unitime-TimetableGrid .horizontal-header .header-double-interval {
+	height: 100%;
+	padding-top: 2px;
+	border-top: 1px solid #DDD;
+	border-left: 1px solid black;
+}
+
+
+.unitime-TimetableGrid .vertical-header {
+	font-weight: bold;
+}
+
+.unitime-TimetableGrid .vertical-header .header-interval {
+	width: 100%;
+	border-top: 1px solid #DDD;
+	border-left: 1px solid #DDD;
+}
+
+.unitime-TimetableGrid .timetable-panel {
+}
+
+.unitime-TimetableGrid .vertical-separator {
+	height: 100%;
+	position: absolute;
+	border-left: 1px solid #DDD;
+	z-index: 20;
+}
+
+.unitime-TimetableGrid .vertical-double-separator {
+	height: 100%;
+	position: absolute;
+	border-left: 1px solid #DDD;
+	border-right: 1px solid #DDD;
+	width: 3px;
+	background-color: white;
+	z-index: 20;
+}
+
+.unitime-TimetableGrid .horizontal-separator {
+	width: 100%;
+	position: absolute;
+	border-top: 1px solid #DDD;
+	z-index: 20;
+}
+
+.unitime-TimetableGrid .meeting {
+	background-color: white;
+	cursor: pointer;
+	cursor: hand;
+	border: 1px solid black;
+	z-index: 30;
+}
+
+.unitime-TimetableGrid .meeting .header {
+	background-color: rgba(0, 0, 0, 0.1);
+}
+
+.unitime-TimetableGrid .meeting .footer {
+	padding: 0px;
+}
+
+.unitime-TimetableGrid .background {
+	z-index: 10;
+}
+
+.unitime-TimetablePage .scroll-panel {
+	max-width: 99vw;
+	overflow: auto;
+	overflow-x: scroll;	
+}
+
+.unitime-TimetablePage .legend .box {
+	width: 40px;
+	height: 20px;
+	vertical-align: middle;
+	display: inline-block;
+	border: 1px solid black;
+	margin: 1px 5px 0px 10px;
+}
+
+.unitime-TimetablePage .legend .text {
+	display: inline-block;
+	vertical-align: middle;
+}
+
+@media print {
+	.unitime-TimetableGrid .meeting {
+		-webkit-print-color-adjust: exact;
+	}
+	.unitime-TimetableGrid .background {
+		-webkit-print-color-adjust: exact;
+	}
+	.unitime-TimetableGrid .meeting .header {
+		background-color: rgba(0, 0, 0, 0.05);
+	}
+	
+	.unitime-TimetableGrid .grid-name {
+		border-top: 1px solid black;
+		border-left: 1px solid black;
+	}
+	
+	.unitime-TimetableGrid .horizontal-header .header-interval {
+		border-top: 1px solid black;
+		border-left: 1px solid black;
+	}
+	
+	.unitime-TimetableGrid .horizontal-header .header-double-interval {
+		border-top: 1px solid black;
+	}
+	
+	.unitime-TimetableGrid .vertical-header .header-interval {
+		border-top: 1px solid black;
+		border-left: 1px solid black;
+	}
+	
+	.unitime-TimetableGrid .vertical-separator {
+		border-left: 1px solid black;
+	}
+	
+	.unitime-TimetableGrid .vertical-double-separator {
+		border-left: 1px solid black;
+		border-right: 1px solid black;
+	}
+	
+	.unitime-TimetableGrid .horizontal-separator {
+		border-top: 1px solid black;
+	}
+}

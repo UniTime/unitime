@@ -58,6 +58,9 @@ public interface GwtConstants extends Constants {
 	@DefaultStringValue("EEE MM/dd")
 	String examPeriodDateFormat();
 	
+	@DefaultStringValue("EEE MM/dd")
+	String timetableGridDateFormat();
+	
 	@DefaultStringArrayValue({ "EEE", "MM/dd" })
 	String[] examPeriodPreferenceDateFormat();
 	
@@ -375,4 +378,73 @@ public interface GwtConstants extends Constants {
 	
 	@DefaultStringValue(", ")
 	String itemSeparator();
+	
+	@DefaultStringArrayValue({
+		"Room", "Instructor", "Department", "Curriculum", "Subject Area", "Student Group"
+	})
+	String[] timeGridResource();
+	
+	@DefaultStringArrayValue({
+		"1111111|All",
+		"1111100|All except Weekend",
+		"1000000|Monday",
+		"0100000|Tuesday",
+		"0010000|Wednesday",
+		"0001000|Thursday",
+		"0000100|Friday",
+		"0000010|Saturday",
+		"0000001|Sunday",
+		"1111000|Monday - Thursday",
+		"0000110|Friday & Saturday",
+		"1010100|Monday, Wednesday, Friday",
+		"0101000|Tuesday, Thursday"
+	})
+	String[] timeGridDays();
+	
+	@DefaultStringArrayValue({
+		"Daytime|90|210|6",
+		"Evening|210|276|6",
+		"Daytime & Evening|90|276|6",
+		"All|0|288|6"
+	})
+	String[] timeGridTimes();
+	
+	@DefaultStringArrayValue({
+		"In Row [horizontal]",
+		"Per Week [horizontal]",
+		"Per Week [vertical]",
+		"Per Date [horizontal]"
+	})
+	String[] timeGridDisplayMode();
+	
+	@DefaultStringArrayValue({
+		"None",
+		"Time Preferences",
+		"Room Preferences",
+		"Student Conflicts",
+		"Instructor Back-to-Back Preferences",
+		"Distribution Preferences",
+		"Perturbations",
+		"Perturbation Penalty",
+		"Hard Conflicts",
+		"Departmental Balancing Penalty",
+		"Too Big Rooms",
+		"Student Groups"
+	})
+	String[] timeGridBackground();
+	
+	@DefaultStringArrayValue({
+		"Name [asc]", 
+		"Name [desc]", 
+		"Size [asc]", 
+		"Size [desc]",
+        "Type [asc]",
+        "Type [desc]",
+        "Utilization [asc]",
+        "Utilization [desc]"
+	})
+	String[] timeGridOrderBy();
+	
+	@DefaultStringValue("##0.00")
+	String utilizationFormat();
 }

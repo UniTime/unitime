@@ -1557,6 +1557,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Teaching Assignments")
 	String sectTeachingAssignments();
 	
+	@DefaultMessage("Timetables")
+	String sectTimetables();
+	
+	@DefaultMessage("Legend")
+	String sectLegend();
+	
 	@DefaultMessage("Loading {0}...")
 	String waitLoading(String name);
 	
@@ -2006,6 +2012,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Failed to compute suggestions: {0}")
 	String failedToComputeSuggestions(String reason);
+	
+	@DefaultMessage("Failed to load timetables: {0}")
+	String failedToLoadTimetableGrid(String reason);
 
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
@@ -2315,6 +2324,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Invalid solver type {0}")
 	String errorSolverInvalidType(String type);
+	
+	@DefaultMessage("Neither a solver is started nor solution is selected.")
+	String errorTimetableGridNoSolution();
+	
+	@DefaultMessage("No resource matches the above criteria (or there is no resource at all).")
+	String errorTimetableGridNoDataReturned();
 	
 	@DefaultMessage("Solver is not started.")
 	String warnSolverNotStarted();
@@ -3051,7 +3066,11 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Point In Time Data Snapshots")
 	@DoNotTranslate
 	String pagePointInTimeDataSnapshots();
-
+	
+	@DefaultMessage("Timetable")
+	@DoNotTranslate
+	String pageTimetableGrid();
+	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	
@@ -3135,6 +3154,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Edit Group")
 	String dialogEditGroup();
+	
+	@DefaultMessage("Suggestions")
+	String dialogSuggestions();
 	
 	@DefaultMessage("Selected")
 	String legendSelected();
@@ -3650,6 +3672,84 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Distribution Preferences:")
 	String propDistributionPreferences();
+	
+	@DefaultMessage("Week:")
+	String propTimeGridWeek();
+	
+	@DefaultMessage("Resource:")
+	String propTimeGridResource();
+	
+	@DefaultMessage("Filter:")
+	String propTimeGridFilter();
+	
+	@DefaultMessage("Days:")
+	String propTimeGridDays();
+	
+	@DefaultMessage("Times:")
+	String propTimeGridTimes();
+	
+	@DefaultMessage("Display Mode:")
+	String propTimeGridDisplayMode();
+	
+	@DefaultMessage("Background:")
+	String propTimeGridBackground();
+	
+	@DefaultMessage("Show Discouraged Free Times:")
+	String propTimeGridShowFreeTimes();
+	
+	@DefaultMessage("Show Preferences:")
+	String propTimeGridShowPreferences();
+	
+	@DefaultMessage("Show Instructors:")
+	String propTimeGridShowInstructors();
+	
+	@DefaultMessage("Show Events:")
+	String propTimeGridShowEvents();
+	
+	@DefaultMessage("Show Times:")
+	String propTimeGridShowTimes();
+	
+	@DefaultMessage("Order By:")
+	String propTimeGridOrderBy();
+	
+	@DefaultMessage("Time:")
+	String propTimeGridTime();
+	
+	@DefaultMessage("Date:")
+	String propTimeGridDate();
+	
+	@DefaultMessage("Room:")
+	String propTimeGridLocation();
+	
+	@DefaultMessage("Instructor:")
+	String propTimeGridInstructor();
+	
+	@DefaultMessage("Student Conflicts:")
+	String propTimeGridStudentConflicts();
+	
+	@DefaultMessage("{0} [committed: {1}, distance: {2}, hard: {3}]")
+	String formatStudentConflicts(String total, String committed, String distance, String hard);
+	
+	@DefaultMessage("Room Preferences:")
+	String propTimeGridRoomPreferences();
+	
+	@DefaultMessage("Time Preferences:")
+	String propTimeGridTimePreferences();
+	
+	@DefaultMessage("Distribution Preferences:")
+	String propTimeGridDistributionPreferences();
+	
+	@DefaultMessage("Initial Assignment:")
+	String propTimeGridInitialAssignment();
+	
+	@DefaultMessage("Perturbation Penalty:")
+	String propTimeGridPerturbationPenalty();
+	
+	@DefaultMessage("Department Balance:")
+	String propTimeGridDepartmentBalance();
+	
+	@DefaultMessage("Non-Conflicting Placements:")
+	String propTimeGridNonConflictingPlacements();
 	
 	@DefaultMessage("{0} ({1})")
 	String label(String name, String type);
@@ -4902,4 +5002,172 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Please wait ...")
 	String waitPlease();
+	
+	@DefaultMessage("All weeks")
+	String weekAll();
+	
+	@DefaultMessage("Assigned Classes:")
+	String legendAssignedClasses();
+	
+	@DefaultMessage("Free Times:")
+	String legendFreeTimes();
+	
+	@DefaultMessage("Required time")
+	String legendRequiredTime();
+	
+	@DefaultMessage("Strongly preferred time")
+	String legendStronglyPreferredTime();
+	
+	@DefaultMessage("Preferred time")
+	String legendPreferredTime();
+	
+	@DefaultMessage("No time preference")
+	String legendNoTimePreference();
+	
+	@DefaultMessage("Discouraged time")
+	String legendDiscouragedTime();
+	
+	@DefaultMessage("Stringly discouraged time")
+	String legendStronglyDiscouragedTime();
+	
+	@DefaultMessage("Prohibited time")
+	String legendProhibitedTime();
+	
+	@DefaultMessage("Time not available")
+	String legendTimeNotAvailable();
+	
+	@DefaultMessage("No preference")
+	String legendNoPreference();
+	
+	@DefaultMessage("Required room")
+	String legendRequiredRoom();
+	
+	@DefaultMessage("Strongly preferred room")
+	String legendStronglyPreferredRoom();
+	
+	@DefaultMessage("Preferred room")
+	String legendPreferredRoom();
+	
+	@DefaultMessage("No room preference")
+	String legendNoRoomPreference();
+	
+	@DefaultMessage("Discouraged room")
+	String legendDiscouragedRoom();
+	
+	@DefaultMessage("Stringly discouraged room")
+	String legendStronglyDiscouragedRoom();
+	
+	@DefaultMessage("Prohibited room")
+	String legendProhibitedRoom();	
+	
+	@DefaultMessage("{0} student conflicts")
+	String legendStudentConflicts(String number);
+	
+	@DefaultMessage("{0} or more student conflicts")
+	String legendStudentConflictsOrMore(String number);
+	
+	@DefaultMessage("No instructor back-to-back preference <it>(distance = 0m)</it>")
+	String legendInstructorBTBNoPreference();
+	
+	@DefaultMessage("Discouraged back-to-back <it>(0m < distance <= 50m)</it>")
+	String legendInstructorBTBDiscouraged();
+	
+	@DefaultMessage("Strongly discouraged back-to-back <it>(50m < distance <= 200m)</it>")
+	String legendInstructorBTBStronglyDiscouraged();
+	
+	@DefaultMessage("Prohibited back-to-back <it>(200m < distance)</it>")
+	String legendInstructorBTBProhibited();
+	
+	@DefaultMessage("No violated constraint")
+	String legendDistributionNoViolation();
+	
+	@DefaultMessage("Discouraged/preferred constraint violated")
+	String legendDistributionDiscouraged();
+	
+	@DefaultMessage("Strongly discouraged/preferred constraint violated")
+	String legendDistributionStronglyDiscouraged();
+	
+	@DefaultMessage("Required/prohibited constraint violated")
+	String legendDistributionProhibited();
+	
+	@DefaultMessage("No change")
+	String legendPerturbationNoChange();
+	
+	@DefaultMessage("No initial assignment")
+	String legendPerturbationNoInitial();
+	
+	@DefaultMessage("Room changed")
+	String legendPerturbationRoomChanged();
+	
+	@DefaultMessage("Time changed")
+	String legendPerturbationTimeChanged();
+	
+	@DefaultMessage("Both time and room changed")
+	String legendPerturbationBothChanged();
+	
+	@DefaultMessage("Zero perturbation penalty")
+	String legendPerturbationNoPenalty();
+	
+	@DefaultMessage("Perturbation penalty below or equal to {0}")
+	String legendPerturbationPenaltyBelow(String number);
+	
+	@DefaultMessage("Perturbation penalty above {0}")
+	String legendPerturbationPenaltyAbove(String number);
+	
+	@DefaultMessage("Required time and room")
+	String legendBothRequired();
+	
+	@DefaultMessage("Required time and room")
+	String legendHardRequired();
+	
+	@DefaultMessage("Can be moved in room with no hard conflict")
+	String legendHardStronglyPreferred();
+	
+	@DefaultMessage("Can be moved in room (but there is a hard conflict), can be moved in time with no conflict")
+	String legendHardPreferred();
+	
+	@DefaultMessage("Can be moved in room (but there is a hard conflict)")
+	String legendHardNeutral();
+	
+	@DefaultMessage("Can be moved in time with no hard conflict, cannot be moved in room")
+	String legendHardDiscouraged();
+	
+	@DefaultMessage("Can be moved in time (but there is a hard conflict), cannot be moved in room")
+	String legendHardStronglyDiscouraged();
+
+	@DefaultMessage("Zero penalty")
+	String legendNoPenalty();
+	
+	@DefaultMessage("Penalty equal to {0}")
+	String legendPenaltyEqual(String number);
+	
+	@DefaultMessage("Penalty equal or above {0}")
+	String legendPenaltyEqualAbove(String number);
+
+	@DefaultMessage("Assigned room is smaller than room limit of a class")
+	String legendTooBigRoomsRequired();
+	
+	@DefaultMessage("Assigned room is not more than 25% bigger than the smallest avaialable room")
+	String legendTooBigRoomsNeutral();
+	
+	@DefaultMessage("Assigned room is not more than 50% bigger than the smallest avaialable room")
+	String legendTooBigRoomsDiscouraged();
+	
+	@DefaultMessage("Assigned room is more than 50% bigger than the smallest avaialable room")
+	String legendTooBigRoomsStronglyDiscouraged();
+	
+	@DefaultMessage("{0}% students of the group are in the same class")
+	String legendStudentGroups(String percentage);
+	
+	@DefaultMessage("Standard (MWF or TTh) time pattern is broken (time cannot be used for MW, WF, MF or TTh class)")
+	String legendFreeTimeDiscouraged();
+	
+	@DefaultMessage("Useless half-hour")
+	String legendFreeTimeStronglyDiscouraged();
+	
+	@DefaultMessage("Useless half-hour and broken standard time pattern")
+	String legendFreeTimeProhibited();
+	
+	@DefaultMessage("current assignment")
+	String initialAssignmentCurrent();
 }

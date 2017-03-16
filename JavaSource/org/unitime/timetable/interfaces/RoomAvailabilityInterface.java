@@ -44,6 +44,7 @@ public interface RoomAvailabilityInterface {
     public void stopService();
     
     public interface TimeBlock extends Serializable {
+    	public Long getEventId();
         public String getEventName();
         public String getEventType();
         public Date getStartTime();

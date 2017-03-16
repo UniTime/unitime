@@ -166,6 +166,13 @@
 			<item name="Timetable Grid" page="timetable.do">
 				<condition>
 					<hasPermission name="TimetableGrid"/>
+					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="true"/>
+				</condition>
+			</item>
+			<item name="Timetable Grid" page="timetableGrid" type="gwt">
+				<condition>
+					<hasPermission name="TimetableGrid"/>
+					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="true"/>
 				</condition>
 			</item>
 			<separator/>

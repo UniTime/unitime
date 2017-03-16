@@ -664,6 +664,11 @@ public class DatePattern extends BaseDatePattern implements Comparable {
             if (endDate == null || endDate.compareTo(dp.getEndDate())<0)
                 endDate = dp.getEndDate();
         }
+        if (startDate == null) {
+        	Session session = SessionDAO.getInstance().get(sessionId);
+        	startDate = DateUtils.getDate(1, session.getStartMonth(), session.getSessionStartYear());
+        	endDate = DateUtils.getDate(0, session.getEndMonth() + 1, session.getSessionStartYear());
+        }
         Calendar startDateCal = Calendar.getInstance(Locale.US);
         startDateCal.setTime(startDate);
         startDateCal.set(Calendar.HOUR_OF_DAY, 0);

@@ -22,10 +22,12 @@ package org.unitime.timetable.solver;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
 import org.cpsolver.ifs.util.CSVFile;
+import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridModel;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 import org.unitime.timetable.solver.interactive.Hint;
 import org.unitime.timetable.solver.interactive.Suggestions;
@@ -57,6 +59,7 @@ public interface SolverProxy extends ClassAssignmentProxy, CommonSolverInterface
 
 	public SolverUnassignedClassesModel getUnassignedClassesModel(String prefix);
 	public Vector getTimetableGridTables(TimetableGridContext context);
+	public List<TimetableGridModel> getTimetableGridTables(org.unitime.timetable.server.solver.TimetableGridContext context);
 	public ClassAssignmentDetails getClassAssignmentDetails(Long classId, boolean includeConstraints);
 	public Suggestions getSuggestions(SuggestionsModel model);
 	public void assign(Collection hints);

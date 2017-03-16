@@ -297,6 +297,7 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
             c.set(Calendar.MINUTE, min%60);
             iD2 = c.getTime();
     	}
+    	public Long getEventId() { return null; }
     	public String getEventName() { return "Dummy event"; }
     	public String getEventType() { return RoomAvailabilityInterface.sClassType; }
     	public Date getStartTime() { return iD1; }
