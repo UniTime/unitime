@@ -80,11 +80,13 @@ import org.hibernate.type.Type;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamType;
@@ -94,6 +96,7 @@ import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.ManagerRole;
 import org.unitime.timetable.model.OfferingConsentType;
+import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.OnlineSectioningLog;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RefTableEntry;
@@ -424,6 +427,7 @@ public class SessionRestore implements SessionRestoreInterface {
     		
     		iProgress.setPhase("Saving (not-null)", iAllEntitites.size());
     		List<Entity> save = new ArrayList<Entity>(iAllEntitites);
+    		List<Object> otherObjectsToSave = new ArrayList<Object>();
     		boolean saved = true;
     		while (!save.isEmpty() && saved) {
     			saved = false;
@@ -431,7 +435,7 @@ public class SessionRestore implements SessionRestoreInterface {
     				Entity e = i.next();
     				if (e.canSave() == null) {
     					iProgress.incProgress();
-    					e.fixRelationsNullOnly();
+    					e.fixRelationsNullOnly(otherObjectsToSave);
     					iHibSession.save(e.getObject());
     					i.remove();
     					saved = true;
@@ -439,6 +443,9 @@ public class SessionRestore implements SessionRestoreInterface {
     			}
     			iHibSession.flush();
     		}
+    		for (Object object: otherObjectsToSave)
+    			iHibSession.save(object);
+    		iHibSession.flush();
 
     		iProgress.setPhase("Saving (all)", iAllEntitites.size());
     		for (Entity e: iAllEntitites) {
@@ -530,6 +537,25 @@ public class SessionRestore implements SessionRestoreInterface {
 				}
 			}
 			return null;
+		}
+		
+		public void fixRelationsNullOnly(List<Object> otherObjectsToSave) {
+			fixRelationsNullOnly();
+			if (getObject() instanceof InstructionalOffering) {
+				TableData.Element element = getElement("coordinators");
+				if (element != null) {
+					InstructionalOffering io = (InstructionalOffering)getObject();
+					for (int i = 0; i < element.getValueCount(); i++) {
+						DepartmentalInstructor instructor = (DepartmentalInstructor)get(DepartmentalInstructor.class, element.getValue(i));
+						if (instructor != null) {
+							OfferingCoordinator oc = new OfferingCoordinator();
+							oc.setInstructor(instructor); oc.setOffering(io); oc.setPercentShare(0);
+							io.addToofferingCoordinators(oc);
+							otherObjectsToSave.add(oc);
+						}
+					}
+				}
+			}
 		}
 		
 		public void fixRelationsNullOnly() {
@@ -770,7 +796,8 @@ public class SessionRestore implements SessionRestoreInterface {
 
             FileInputStream in = new FileInputStream(args[0]);
             
-            SessionRestore restore = new SessionRestore();
+            sLog.info("Using " + ApplicationProperty.SessionRestoreInterface.value());
+            SessionRestore restore = (SessionRestore)Class.forName(ApplicationProperty.SessionRestoreInterface.value()).newInstance();
             
             PrintWriter debug = null;
             if (args.length >= 2) {
