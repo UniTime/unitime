@@ -57,6 +57,7 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.NonUniversityLocation;
+import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.PositionType;
@@ -74,6 +75,7 @@ import org.unitime.timetable.model.TimePatternTime;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
 import org.unitime.timetable.model.comparators.InstructionalOfferingComparator;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 
 /**
@@ -230,6 +232,7 @@ public class PointInTimeDataExport extends BaseExport {
 	public static String sNumberExpectedStudentsAttribute = "numberExpectedStudents";
 	public static String sLastlikeDemandAttribute = "lastlikeDemand";
 	public static String sCourseTypeIdAttribute = "courseTypeId";
+	public static String sOfferingCoordinatorElementName = "offeringCoordinator";
 	public static String sConfigElementName = "config";
 	public static String sUnlimitedEnrollmentAttributeName = "unlimitedEnrollment";
 	public static String sInstructionalMethodAttribute = "instructionalMethod";
@@ -292,12 +295,18 @@ public class PointInTimeDataExport extends BaseExport {
 		       .append(" join fetch io.courseOfferings as co")
 		       .append(" join fetch cco.subjectArea as sa")
 		       .append(" join fetch sa.department as sad")
+		       .append(" left join fetch io.offeringCoordinators as oc")
+		       .append(" left join fetch oc.instructor as oci")
+		       .append(" left join fetch oci.department as ocid")
+		       .append(" left join fetch oci.positionType as ocipt")
+		       .append(" left join fetch oc.responsibility as tr")
 		       .append(" join fetch io.instrOfferingConfigs as ioc")
 		       .append(" join fetch ioc.schedulingSubparts as ss")
 		       .append(" join fetch ss.itype as it")
 		       .append(" join fetch ss.classes as c")
 		       .append(" left join fetch co.courseType as ct")
 		       .append(" left join fetch ioc.instructionalMethod as cim")
+		       .append(" left join fetch ioc.classDurationType")
 		       .append(" left join fetch ss.childSubparts as cs")
 		       .append(" left join fetch ss.datePattern as sdp")
 		       .append(" left join fetch ss.creditConfigs as scc")
@@ -645,10 +654,31 @@ public class PointInTimeDataExport extends BaseExport {
             		exportConfig(offeringElement.addElement(sConfigElementName), config, session);
             	}
             }
+            if (offering.getOfferingCoordinators() != null) {
+	            for (OfferingCoordinator oc : offering.getOfferingCoordinators()){
+	            	exportOfferingCoordinator(offeringElement.addElement(sOfferingCoordinatorElementName), oc, session);
+	            }
+            }
         }
     }
     
-    private void exportCredit(Element subpartElement, CourseCreditUnitConfig credit) {
+    private void exportOfferingCoordinator(Element offeringCoordinatorElement, OfferingCoordinator oc, Session session) {
+    	if (!departmentalInstructorElements.containsKey(oc.getInstructor().getUniqueId())){
+ 	       exportDepartmentalInstructor(oc.getInstructor());   		
+     	}
+    	offeringCoordinatorElement.addAttribute(sDepartmentalInstructorUniqueIdAttribute, oc.getInstructor().getUniqueId().toString());
+     	if (oc.getResponsibility() != null) {
+     		if (!teachingResponsibilityElements.containsKey(oc.getResponsibility().getUniqueId())) {
+     			exportTeachingResponsibility(oc.getResponsibility());
+     		}
+     		offeringCoordinatorElement.addAttribute(sResponsibilityUniqueIdAttribute, oc.getResponsibility().getUniqueId().toString());
+     	}
+         if (oc.getPercentShare()!=null){
+        	 offeringCoordinatorElement.addAttribute("share", oc.getPercentShare().toString());
+         }
+	}
+
+	private void exportCredit(Element subpartElement, CourseCreditUnitConfig credit) {
     	/* This only exports the minimum credit number as the credit for variable credit subparts. 
     	 *    UniTime currently stores no information about the number of credits a student is 
     	 *    enrolled to received for a sections.  Point in time data will treat all enrollments
@@ -756,7 +786,7 @@ public class PointInTimeDataExport extends BaseExport {
     	classDurationTypeElement.addAttribute(sImplementationAttribute, classDurationType.getImplementation());
     	classDurationTypeElement.addAttribute(sParameterAttribute, classDurationType.getParameter());
     	classDurationTypeElement.addAttribute(sVisibleAttribute, (classDurationType.getVisible()?"true":"false"));
-    	courseTypeElements.put(classDurationType.getUniqueId(), classDurationTypeElement);
+    	classDurationTypeElements.put(classDurationType.getUniqueId(), classDurationTypeElement);
     }
 
     private void exportInstructionalMethod(InstructionalMethod instructionalMethod){
@@ -1031,15 +1061,15 @@ public class PointInTimeDataExport extends BaseExport {
 	}
     
     private int calcTotalMinPerMeeting(Meeting meeting) {
-    	return(meeting.getStopPeriod().intValue() - meeting.getStartPeriod().intValue()) * 5 - ( meeting.getStartOffset() == null ? 0 : meeting.getStartOffset()) + ( meeting.getStopOffset() == null ? 0 : meeting.getStopOffset().intValue());
+    	return(meeting.getStopPeriod().intValue() - meeting.getStartPeriod().intValue()) * Constants.SLOT_LENGTH_MIN - ( meeting.getStartOffset() == null ? 0 : meeting.getStartOffset()) + ( meeting.getStopOffset() == null ? 0 : meeting.getStopOffset().intValue());
     }
     
 	private void exportClassMeetingUtilPeriods(Element classMeetingElement, Meeting meeting, Class_ clazz){
 
-		int firstPeriod = ((meeting.getStartPeriod().intValue() * 5) 
-							+ (meeting.getStartOffset() != null ? meeting.getStartOffset().intValue() : 0)) / 5;
-		int lastPeriod = (new Double(Math.ceil(((meeting.getStopPeriod().doubleValue() * (double) 5) 
-				+ (meeting.getStopOffset() != null ? meeting.getStopOffset().doubleValue() : (double) 0)) / (double) 5))).intValue();
+		int firstPeriod = ((meeting.getStartPeriod().intValue() * Constants.SLOT_LENGTH_MIN) 
+							+ (meeting.getStartOffset() != null ? meeting.getStartOffset().intValue() : 0)) / Constants.SLOT_LENGTH_MIN;
+		int lastPeriod = (new Double(Math.ceil(((meeting.getStopPeriod().doubleValue() * (double) Constants.SLOT_LENGTH_MIN) 
+				+ (meeting.getStopOffset() != null ? meeting.getStopOffset().doubleValue() : (double) 0)) / (double) Constants.SLOT_LENGTH_MIN))).intValue();
 		
 		int totalMinPerMeeting = calcTotalMinPerMeeting(meeting); 
 		int timePatMinPerMtg;
@@ -1048,7 +1078,7 @@ public class PointInTimeDataExport extends BaseExport {
 		} else {
 			timePatMinPerMtg = clazz.getCommittedAssignment().getMinutesPerMeeting();
 		}
-		int totalTimePeriodsNeeded = (new Double(Math.ceil((double)timePatMinPerMtg / (double) 5))).intValue();
+		int totalTimePeriodsNeeded = (new Double(Math.ceil((double)timePatMinPerMtg / (double) Constants.SLOT_LENGTH_MIN))).intValue();
 		int meetPeriodsCount = 0;
 		int extraPeriodsCount = 0;
 		if (totalMinPerMeeting <= timePatMinPerMtg) {
@@ -1066,13 +1096,13 @@ public class PointInTimeDataExport extends BaseExport {
 			int totalIncorporatedBreakTime = totalMinPerMeeting - timePatMinPerMtg;
 			int numIncorporatedBreaks = (new Double(Math.ceil((double)timePatMinPerMtg / ApplicationProperty.StandardClassMeetingLengthInMinutes.doubleValue()))).intValue() - 1;
 			int minPerHourOfIncorporatedBreaks = (numIncorporatedBreaks == 0 ? 0 : totalIncorporatedBreakTime / numIncorporatedBreaks);
-			int numBreakPeriods = minPerHourOfIncorporatedBreaks/5;
-			int numPeriodsPerStandardHour = (new Double(Math.ceil(ApplicationProperty.StandardClassMeetingLengthInMinutes.doubleValue()/5))).intValue();
+			int numBreakPeriods = minPerHourOfIncorporatedBreaks/Constants.SLOT_LENGTH_MIN;
+			int numPeriodsPerStandardHour = (new Double(Math.ceil(ApplicationProperty.StandardClassMeetingLengthInMinutes.doubleValue()/Constants.SLOT_LENGTH_MIN))).intValue();
 			boolean markAsMeeting = true;
 			int meetCount = 0;
 			int skipCount = 0;
 			if ((lastPeriod - firstPeriod) < totalTimePeriodsNeeded) {
-				Debug.info("Warning - Not enough 5 minute periods will be stored for meeting: " + meeting.getUniqueId().toString());
+				Debug.info("Warning - Not enough " + Constants.SLOT_LENGTH_MIN + " minute periods will be stored for meeting: " + meeting.getUniqueId().toString());
 			}
 			for(int i = firstPeriod; i < lastPeriod; i++) {
 				if (meetPeriodsCount < totalTimePeriodsNeeded) {
@@ -1098,7 +1128,7 @@ public class PointInTimeDataExport extends BaseExport {
 			}
 		}
 		if (extraPeriodsCount > 0){
-			Debug.info("Info - More than enough 5 minute periods for meeting:  " + meeting.getUniqueId().toString() + " the last " + extraPeriodsCount + " were not marked as meeting.");					
+			Debug.info("Info - More than enough "+ Constants.SLOT_LENGTH_MIN + " minute periods for meeting:  " + meeting.getUniqueId().toString() + " the last " + extraPeriodsCount + " were not marked as meeting.");					
 		}
 
 	}
@@ -1271,8 +1301,7 @@ public class PointInTimeDataExport extends BaseExport {
         	departmentalInstructorElement.addAttribute(sFirstNameAttribute, instructor.getFirstName());
         if (instructor.getMiddleName()!=null)
         	departmentalInstructorElement.addAttribute(sMiddleNameAttribute, instructor.getMiddleName());
-        if (instructor.getLastName()!=null)
-        	departmentalInstructorElement.addAttribute(sLastNameAttribute, instructor.getLastName());
+    	departmentalInstructorElement.addAttribute(sLastNameAttribute, (instructor.getLastName() == null?"NULL":instructor.getLastName()));
         if (instructor.getCareerAcct() != null)
         	departmentalInstructorElement.addAttribute(sCareerAcctAttribute, instructor.getCareerAcct());
         if (instructor.getEmail() != null)

@@ -24,7 +24,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -62,6 +61,7 @@ import org.unitime.timetable.model.PitCourseOffering;
 import org.unitime.timetable.model.PitDepartmentalInstructor;
 import org.unitime.timetable.model.PitInstrOfferingConfig;
 import org.unitime.timetable.model.PitInstructionalOffering;
+import org.unitime.timetable.model.PitOfferingCoordinator;
 import org.unitime.timetable.model.PitSchedulingSubpart;
 import org.unitime.timetable.model.PitStudent;
 import org.unitime.timetable.model.PitStudentAcadAreaMajorClassification;
@@ -349,6 +349,8 @@ public class PointInTimeDataImport extends EventRelatedImports {
         		elementCourse(element, pio);
         	} else if (PointInTimeDataExport.sConfigElementName.equals(element.getName())){
         		elementInstrOffrConfig(element, pio);
+        	} else if (PointInTimeDataExport.sOfferingCoordinatorElementName.equals(element.getName())){
+        		elementOfferingCoordinator(element, pio);
         	}
         }
 	}
@@ -1061,10 +1063,8 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			if (middleName != null) { 
 				pitDeptInstr.setMiddleName(middleName);
 			}
-			String lastName = getOptionalStringAttribute(departmentalInstructorElement, PointInTimeDataExport.sLastNameAttribute);
-			if (lastName != null) { 
-				pitDeptInstr.setLastName(lastName);
-			}
+			String lastName = getRequiredStringAttribute(departmentalInstructorElement, PointInTimeDataExport.sLastNameAttribute, PointInTimeDataExport.sDeptInstructorElementName);
+			pitDeptInstr.setLastName(lastName);
 			DepartmentalInstructor di = departmentalInstructorsByName.get(
 					(lastName == null? "":lastName)
 					+ (firstName == null? "" : firstName)
@@ -1301,6 +1301,21 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		
 	}
 	
+	private void elementOfferingCoordinator(Element classInstructorElement, PitInstructionalOffering pitInstructionalOffering) throws Exception {
+		PitOfferingCoordinator pci = new PitOfferingCoordinator();
+		pci.setPitInstructionalOffering(pitInstructionalOffering);
+		pitInstructionalOffering.addTopitOfferingCoordinators(pci);
+		
+		pci.setPitDepartmentalInstructor(pitDepartmentInstructors.get(new Long(getRequiredStringAttribute(classInstructorElement, PointInTimeDataExport.sDepartmentalInstructorUniqueIdAttribute, PointInTimeDataExport.sClassInstructorElementName))));
+		pci.setPercentShare(getRequiredIntegerAttribute(classInstructorElement, PointInTimeDataExport.sShareAttribute, PointInTimeDataExport.sClassInstructorElementName));
+		String responsibilityId = getOptionalStringAttribute(classInstructorElement, PointInTimeDataExport.sResponsibilityUniqueIdAttribute);
+		if (responsibilityId != null) {
+			pci.setResponsibility(teachingResponsibilities.get(new Long(responsibilityId)));
+		}
+		
+		pci.setUniqueId((Long)getHibSession().save(pci));
+		
+	}
 		
 	private void elementCourse(Element courseElement, PitInstructionalOffering pitInstructionalOffering) throws Exception{
 		if (courseElement.getName().equals(PointInTimeDataExport.sCourseElementName)){

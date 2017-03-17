@@ -73,6 +73,11 @@
 <!ATTLIST classInstructor responsibilityUniqueId CDATA #IMPLIED >
 <!ATTLIST classInstructor share NMTOKEN #REQUIRED >
 
+<!ELEMENT offeringCoordinator EMPTY >
+<!ATTLIST offeringCoordinator departmentalInstructorUniqueId CDATA #REQUIRED >
+<!ATTLIST offeringCoordinator responsibilityUniqueId CDATA #IMPLIED >
+<!ATTLIST offeringCoordinator share NMTOKEN #REQUIRED >
+
 <!ELEMENT courseTypes ( courseType* ) >
 
 <!ELEMENT courseType EMPTY >
@@ -186,7 +191,7 @@
 <!ATTLIST departmentalInstructor externalId CDATA #IMPLIED >
 <!ATTLIST departmentalInstructor firstName CDATA #IMPLIED >
 <!ATTLIST departmentalInstructor middleName CDATA #IMPLIED >
-<!ATTLIST departmentalInstructor lastName CDATA #IMPLIED >
+<!ATTLIST departmentalInstructor lastName CDATA #REQUIRED >
 <!ATTLIST departmentalInstructor careerAcct CDATA #IMPLIED >
 <!ATTLIST departmentalInstructor email CDATA #IMPLIED > 
 <!ATTLIST departmentalInstructor positionTypeUniqueId CDATA #IMPLIED >
@@ -227,7 +232,7 @@
 
 <!ELEMENT offerings ( offering* ) >
 
-<!ELEMENT offering ( course+, config+ ) >
+<!ELEMENT offering ( course+, config+, offeringCoordinator* ) >
 <!ATTLIST offering uniqueId CDATA #REQUIRED >
 <!ATTLIST offering permanentId CDATA #REQUIRED >
 <!ATTLIST offering demand CDATA #REQUIRED >
