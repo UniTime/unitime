@@ -12368,4 +12368,36 @@
 		<mysql>alter table %SCHEMA%.instructional_offering add notes varchar(2000)</mysql>
 		<plsql>alter table %SCHEMA%.instructional_offering add notes varchar2(2000 char)</plsql>
 	</update>
+	<update version="178" date="13-Mar-2017" comment="Point In Time Offering Coordinator">
+		<mysql>
+			create table %SCHEMA%.pit_offering_coord (
+				uniqueid decimal(20,0) primary key not null,
+				pit_offering_id decimal(20,0) not null,
+				pit_dept_instr_id decimal(20,0) not null,
+				responsibility_id decimal(20,0) default null,
+				percent_share int(3) not null
+			) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.pit_offering_coord (
+				uniqueid number(20,0) primary key not null,
+				pit_offering_id number(20,0) not null,
+				pit_dept_instr_id number(20,0) not null,
+				responsibility_id number(20,0) default null,
+				percent_share number(3,0) not null
+			)
+		</plsql>
+		<sql>
+			alter table %SCHEMA%.pit_offering_coord add constraint fk_pit_ofr_coord_pit_offr foreign key (pit_offering_id)
+				references %SCHEMA%.pit_instr_offering (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.pit_offering_coord add constraint fk_pit_ofr_coord_pit_dept_inst foreign key (pit_dept_instr_id)
+				references %SCHEMA%.pit_dept_instructor (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.pit_offering_coord add constraint fk_pit_coord_resp foreign key (responsibility_id)
+				references %SCHEMA%.teaching_responsibility (uniqueid) on delete set null
+		</sql>
+	</update>
 </dbupdate>

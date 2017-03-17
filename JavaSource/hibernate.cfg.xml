@@ -232,6 +232,7 @@
 	<mapping resource="PitClassEvent.hbm.xml"/>
 	<mapping resource="PitClassMeeting.hbm.xml"/>
 	<mapping resource="PitClassMeetingUtilPeriod.hbm.xml"/>
+	<mapping resource="PitOfferingCoordinator.hbm.xml"/>
 
 </session-factory>
 </hibernate-configuration>

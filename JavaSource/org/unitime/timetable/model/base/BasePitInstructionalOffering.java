@@ -27,6 +27,7 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PitCourseOffering;
 import org.unitime.timetable.model.PitInstrOfferingConfig;
 import org.unitime.timetable.model.PitInstructionalOffering;
+import org.unitime.timetable.model.PitOfferingCoordinator;
 import org.unitime.timetable.model.PointInTimeData;
 
 /**
@@ -48,6 +49,7 @@ public abstract class BasePitInstructionalOffering implements Serializable {
 	private InstructionalOffering iInstructionalOffering;
 	private Set<PitCourseOffering> iPitCourseOfferings;
 	private Set<PitInstrOfferingConfig> iPitInstrOfferingConfigs;
+	private Set<PitOfferingCoordinator> iPitOfferingCoordinators;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_INSTR_OFFERING_PERM_ID = "instrOfferingPermId";
@@ -106,6 +108,13 @@ public abstract class BasePitInstructionalOffering implements Serializable {
 	public void addTopitInstrOfferingConfigs(PitInstrOfferingConfig pitInstrOfferingConfig) {
 		if (iPitInstrOfferingConfigs == null) iPitInstrOfferingConfigs = new HashSet<PitInstrOfferingConfig>();
 		iPitInstrOfferingConfigs.add(pitInstrOfferingConfig);
+	}
+
+	public Set<PitOfferingCoordinator> getPitOfferingCoordinators() { return iPitOfferingCoordinators; }
+	public void setPitOfferingCoordinators(Set<PitOfferingCoordinator> pitOfferingCoordinators) { iPitOfferingCoordinators = pitOfferingCoordinators; }
+	public void addTopitOfferingCoordinators(PitOfferingCoordinator pitOfferingCoordinator) {
+		if (iPitOfferingCoordinators == null) iPitOfferingCoordinators = new HashSet<PitOfferingCoordinator>();
+		iPitOfferingCoordinators.add(pitOfferingCoordinator);
 	}
 
 	public boolean equals(Object o) {
