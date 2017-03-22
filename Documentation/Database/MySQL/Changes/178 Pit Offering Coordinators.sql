@@ -38,6 +38,6 @@ alter table pit_offering_coord add constraint fk_pit_coord_resp foreign key (res
  * Update database version
  */
 
-update application_config set value='76' where name='tmtbl.db.version';
+update application_config set value='178' where name='tmtbl.db.version';
 
 commit;
