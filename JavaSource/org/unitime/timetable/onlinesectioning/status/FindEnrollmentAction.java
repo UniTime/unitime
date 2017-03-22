@@ -38,7 +38,7 @@ import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.model.XAcademicAreaCode;
+import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
@@ -120,12 +120,10 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 			st.setCanRegister(iCanRegister);
 			st.setCanUseAssistant(iCanUseAssistant);
 			st.setName(student.getName());
-			for (XAcademicAreaCode ac: student.getAcademicAreaClasiffications()) {
-				st.addArea(ac.getArea());
-				st.addClassification(ac.getCode());
-			}
-			for (XAcademicAreaCode ac: student.getMajors()) {
-				st.addMajor(ac.getCode());
+			for (XAreaClassificationMajor acm: student.getMajors()) {
+				st.addArea(acm.getArea());
+				st.addClassification(acm.getClassification());
+				st.addMajor(acm.getMajor());
 			}
 			for (String gr: student.getGroups()) {
 				st.addGroup(gr);

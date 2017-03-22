@@ -81,6 +81,8 @@ import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.model.AcademicArea;
+import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -98,6 +100,8 @@ import org.unitime.timetable.model.ManagerRole;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.OnlineSectioningLog;
+import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RefTableEntry;
 import org.unitime.timetable.model.RelatedCourseInfo;
@@ -110,6 +114,8 @@ import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.SolverParameterGroup;
 import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentAreaClassificationMajor;
+import org.unitime.timetable.model.StudentAreaClassificationMinor;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao._RootDAO;
@@ -130,6 +136,7 @@ public class SessionRestore implements SessionRestoreInterface {
 	private List<Entity> iAllEntitites = new ArrayList<Entity>();
 	private Map<String, Student> iStudents = new Hashtable<String, Student>();
 	private PrintWriter iDebug = null;
+	private Map<String, TableData.Table> iSkippedTables = new Hashtable<String, TableData.Table>();
 
 	private InputStream iIn;
 
@@ -207,9 +214,21 @@ public class SessionRestore implements SessionRestoreInterface {
 		}
 	}
 	
+	protected Entity lookupSkippedRecord(String tableName, String id) {
+		TableData.Table table = iSkippedTables.get(tableName);
+		if (table == null) return null;
+		for (TableData.Record record: table.getRecordList()) {
+			if (id.equals(record.getId()) && record.getElementCount() > 0) return new Entity(null, record, null, id);
+		}
+		return null;
+	}
+	
 	public void create(TableData.Table table) throws InstantiationException, IllegalAccessException, DocumentException {
 		ClassMetadata metadata = iHibSessionFactory.getClassMetadata(table.getName());
-		if (metadata == null) return;
+		if (metadata == null) {
+			iSkippedTables.put(table.getName(), table);
+			return;
+		}
 		PersistentClass mapping = _RootDAO.getConfiguration().getClassMapping(table.getName());
 		Map<String, Integer> lengths = new HashMap<String, Integer>();
 		for (String property: metadata.getPropertyNames()) {
@@ -321,6 +340,14 @@ public class SessionRestore implements SessionRestoreInterface {
 				iProgress.info(message + ": " + list);
 			}
 		}
+	}
+	
+	protected Entity getEntity(Class clazz, String id) {
+		Map<String, Entity> entities = iEntities.get(clazz.getName());
+		if (entities != null) {
+			return entities.get(id);
+		}
+		return null;
 	}
 	
 	protected Object get(Class clazz, String id) {
@@ -445,6 +472,7 @@ public class SessionRestore implements SessionRestoreInterface {
     		}
     		for (Object object: otherObjectsToSave)
     			iHibSession.save(object);
+    		otherObjectsToSave.clear();
     		iHibSession.flush();
 
     		iProgress.setPhase("Saving (all)", iAllEntitites.size());
@@ -452,13 +480,16 @@ public class SessionRestore implements SessionRestoreInterface {
     			iProgress.incProgress();
     			String property = e.canSave();
     			if (property == null) {
-    				e.fixRelations();
+    				e.fixRelations(otherObjectsToSave);
     				iHibSession.update(e.getObject());
     			} else {
     				message("Skipping " + e.getAbbv() + " (missing not-null relation " + property + ")", e.getId());
     				continue;
     			}
     		}
+    		for (Object object: otherObjectsToSave)
+    			iHibSession.save(object);
+    		otherObjectsToSave.clear();
     		
     		iProgress.setPhase("Flush", 1);
     		iHibSession.flush();
@@ -658,6 +689,69 @@ public class SessionRestore implements SessionRestoreInterface {
 			}
 		}
 		
+		public void fixRelations(List<Object> otherObjectsToSave) {
+			fixRelations();
+			if (getObject() instanceof Student) {
+				TableData.Element ac = getElement("academicAreaClassifications");
+				TableData.Element mj = getElement("posMajors");
+				TableData.Element mn = getElement("posMinors");
+				if (ac != null && mj != null) {
+					Student student = (Student)getObject();
+					for (String majorId: mj.getValueList()) {
+						Entity majorEntity = getEntity(PosMajor.class, majorId);
+						if (majorEntity == null) continue;
+						List<String> areaIds = majorEntity.getElement("academicAreas").getValueList();
+						PosMajor major = (PosMajor)majorEntity.getObject();
+						for (String aacId: ac.getValueList()) {
+							Entity aac = lookupSkippedRecord("org.unitime.timetable.model.AcademicAreaClassification", aacId);
+							if (aac == null) continue;
+							String areaId = aac.getElement("academicArea").getValue(0);
+							String clasfId = aac.getElement("academicClassification").getValue(0);
+							if (!areaIds.contains(areaId)) continue;
+							AcademicArea area = (AcademicArea)get(AcademicArea.class, areaId);
+							AcademicClassification clasf = (AcademicClassification)get(AcademicClassification.class, clasfId);
+							if (area != null && clasf != null) {
+								StudentAreaClassificationMajor acm = new StudentAreaClassificationMajor();
+								acm.setAcademicArea(area);
+								acm.setStudent(student);
+								acm.setAcademicClassification(clasf);
+								acm.setMajor(major);
+								student.addToareaClasfMajors(acm);
+								otherObjectsToSave.add(acm);
+							}
+						}
+					}
+				}
+				if (ac != null && mn != null) {
+					Student student = (Student)getObject();
+					for (String minorId: mn.getValueList()) {
+						Entity minorEntity = getEntity(PosMinor.class, minorId);
+						if (minorEntity == null) continue;
+						List<String> areaIds = minorEntity.getElement("academicAreas").getValueList();
+						PosMinor minor = (PosMinor)minorEntity.getObject();
+						for (String aacId: ac.getValueList()) {
+							Entity aac = lookupSkippedRecord("org.unitime.timetable.model.AcademicAreaClassification", aacId);
+							if (aac == null) continue;
+							String areaId = aac.getElement("academicArea").getValue(0);
+							String clasfId = aac.getElement("academicClassification").getValue(0);
+							if (!areaIds.contains(areaId)) continue;
+							AcademicArea area = (AcademicArea)get(AcademicArea.class, areaId);
+							AcademicClassification clasf = (AcademicClassification)get(AcademicClassification.class, clasfId);
+							if (area != null && clasf != null) {
+								StudentAreaClassificationMinor acm = new StudentAreaClassificationMinor();
+								acm.setAcademicArea(area);
+								acm.setStudent(student);
+								acm.setAcademicClassification(clasf);
+								acm.setMinor(minor);
+								student.addToareaClasfMinors(acm);
+								otherObjectsToSave.add(acm);
+							}
+						}
+					}
+				}
+			}			
+		}
+		
 		public void fixRelations() {
 			for (int i = 0; i < getMetaData().getPropertyNames().length; i++) {
 				String property = getMetaData().getPropertyNames()[i];
@@ -676,13 +770,14 @@ public class SessionRestore implements SessionRestoreInterface {
 				} else if (type instanceof CollectionType) {
 					TableData.Element element = getElement(property);
 					if (element == null) continue;
-					Class clazz = ((CollectionType)type).getElementType((SessionFactoryImplementor)iHibSessionFactory).getReturnedClass();
+					Type elementType =((CollectionType)type).getElementType((SessionFactoryImplementor)iHibSessionFactory);
+					Class clazz = elementType.getReturnedClass();
 					if (type instanceof SetType) {
 						Set<Object> set = new HashSet<Object>();
 						for (String id: element.getValueList()) {
 							Object v = get(clazz, id);
 							if (v != null) {
-								if (!iHibSession.contains(v)) 
+								if (elementType instanceof EntityType && !iHibSession.contains(v)) 
 									message("Collection " + getAbbv() + "." + property + " has transient value", getId() + "-" + id);
 								else
 									set.add(v);
@@ -694,7 +789,7 @@ public class SessionRestore implements SessionRestoreInterface {
 						for (String id: element.getValueList()) {
 							Object v = get(clazz, id);
 							if (v != null) {
-								if (!iHibSession.contains(v))
+								if (elementType instanceof EntityType && !iHibSession.contains(v))
 									message("Collection " + getAbbv() + "." + property + " has transient value", getId() + "-" + id);
 								else
 									set.add(v);

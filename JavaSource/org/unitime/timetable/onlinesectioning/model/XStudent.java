@@ -32,22 +32,23 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.studentsct.model.AcademicAreaCode;
+import org.cpsolver.studentsct.model.AreaClassificationMajor;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.FreeTimeRequest;
 import org.cpsolver.studentsct.model.Request;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
-import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
+import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentNote;
@@ -59,8 +60,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 @SerializeWith(XStudent.XStudentSerializer.class)
 public class XStudent extends XStudentId implements Externalizable {
 	private static final long serialVersionUID = 1L;
-    private List<XAcademicAreaCode> iAcadAreaClassifs = new ArrayList<XAcademicAreaCode>();
-    private List<XAcademicAreaCode> iMajors = new ArrayList<XAcademicAreaCode>();
+    private Set<XAreaClassificationMajor> iMajors = new TreeSet<XAreaClassificationMajor>();
     private List<String> iGroups = new ArrayList<String>();
     private List<String> iAccomodations = new ArrayList<String>();
     private List<XRequest> iRequests = new ArrayList<XRequest>();
@@ -88,11 +88,8 @@ public class XStudent extends XStudentId implements Externalizable {
     	iStatus = student.getSectioningStatus() == null ? null : student.getSectioningStatus().getReference();
     	iEmail = student.getEmail();
     	iEmailTimeStamp = student.getScheduleEmailedDate() == null ? null : student.getScheduleEmailedDate();
-        for (AcademicAreaClassification aac: student.getAcademicAreaClassifications()) {
-        	iAcadAreaClassifs.add(new XAcademicAreaCode(aac.getAcademicArea().getAcademicAreaAbbreviation(), aac.getAcademicClassification().getCode()));
-            for (PosMajor major: aac.getAcademicArea().getPosMajors())
-            	if (student.getPosMajors().contains(major))
-            		iMajors.add(new XAcademicAreaCode(aac.getAcademicArea().getAcademicAreaAbbreviation(), major.getCode()));
+        for (StudentAreaClassificationMajor acm: student.getAreaClasfMajors()) {
+        	iMajors.add(new XAreaClassificationMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode()));
         }
         for (StudentGroup group: student.getGroups())
         	iGroups.add(group.getGroupAbbreviation());
@@ -152,7 +149,6 @@ public class XStudent extends XStudentId implements Externalizable {
     	iStatus = student.getStatus();
     	iEmail = student.getEmail();
     	iEmailTimeStamp = student.getEmailTimeStamp();
-    	iAcadAreaClassifs.addAll(student.getAcademicAreaClasiffications());
     	iMajors.addAll(student.getMajors());
     	iGroups.addAll(student.getGroups());
     	iAccomodations.addAll(student.getAccomodations());
@@ -164,7 +160,6 @@ public class XStudent extends XStudentId implements Externalizable {
     	iStatus = student.getStatus();
     	iEmail = student.getEmail();
     	iEmailTimeStamp = student.getEmailTimeStamp();
-    	iAcadAreaClassifs.addAll(student.getAcademicAreaClasiffications());
     	iMajors.addAll(student.getMajors());
     	iGroups.addAll(student.getGroups());
     	iAccomodations.addAll(student.getAccomodations());
@@ -208,10 +203,12 @@ public class XStudent extends XStudentId implements Externalizable {
     	super(student);
     	iStatus = student.getStatus();
     	iEmailTimeStamp = (student.getEmailTimeStamp() == null ? null : new Date(student.getEmailTimeStamp()));
-    	for (AcademicAreaCode aac: student.getAcademicAreaClasiffications())
-    		iAcadAreaClassifs.add(new XAcademicAreaCode(aac.getArea(), aac.getCode()));
-    	for (AcademicAreaCode aac: student.getMajors())
-    		iMajors.add(new XAcademicAreaCode(aac.getArea(), aac.getCode()));
+    	for (AreaClassificationMajor acm: student.getAreaClassificationMajors()) {
+    		iMajors.add(new XAreaClassificationMajor(acm.getArea(), acm.getClassification(), acm.getMajor()));
+    	}
+    	for (int i = 0; i < Math.min(student.getAcademicAreaClasiffications().size(), student.getMajors().size()); i++) {
+    		iMajors.add(new XAreaClassificationMajor(student.getMajors().get(i).getArea(), student.getAcademicAreaClasiffications().get(i).getCode(), student.getMajors().get(i).getCode()));
+    	}
     	for (AcademicAreaCode aac: student.getMinors()) {
     		if ("A".equals(aac.getArea()))
 				iAccomodations.add(aac.getCode());
@@ -242,17 +239,9 @@ public class XStudent extends XStudentId implements Externalizable {
     }
 
     /**
-     * List of academic area - classification codes ({@link AcademicAreaCode})
-     * for the given student
+     * List of academic area, classification, and major codes ({@link XAreaClassificationMajor}) for the given student
      */
-    public List<XAcademicAreaCode> getAcademicAreaClasiffications() {
-        return iAcadAreaClassifs;
-    }
-
-    /**
-     * List of major codes ({@link AcademicAreaCode}) for the given student
-     */
-    public List<XAcademicAreaCode> getMajors() {
+    public Set<XAreaClassificationMajor> getMajors() {
         return iMajors;
     }
 
@@ -328,15 +317,10 @@ public class XStudent extends XStudentId implements Externalizable {
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 		super.readExternal(in);
 		
-		int nrAcadAreClassifs = in.readInt();
-		iAcadAreaClassifs.clear();
-		for (int i = 0; i < nrAcadAreClassifs; i++)
-			iAcadAreaClassifs.add(new XAcademicAreaCode(in));
-		
 		int nrMajors = in.readInt();
 		iMajors.clear();
 		for (int i = 0; i < nrMajors; i++)
-			iMajors.add(new XAcademicAreaCode(in));
+			iMajors.add(new XAreaClassificationMajor(in));
 		
 		int nrGroups = in.readInt();
 		iGroups.clear();
@@ -365,12 +349,8 @@ public class XStudent extends XStudentId implements Externalizable {
 	public void writeExternal(ObjectOutput out) throws IOException {
 		super.writeExternal(out);
 		
-		out.writeInt(iAcadAreaClassifs.size());
-		for (XAcademicAreaCode aac: iAcadAreaClassifs)
-			aac.writeExternal(out);
-		
 		out.writeInt(iMajors.size());
-		for (XAcademicAreaCode major: iMajors)
+		for (XAreaClassificationMajor major: iMajors)
 			major.writeExternal(out);
 		
 		out.writeInt(iGroups.size());

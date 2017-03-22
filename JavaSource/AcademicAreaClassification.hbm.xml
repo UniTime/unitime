@@ -21,7 +21,7 @@
  * 
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
-    <class name="AcademicAreaClassification" table="student_acad_area">
+    <class name="StudentAreaClassificationMajor" table="student_area_clasf_major">
         <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
@@ -32,33 +32,71 @@
             </generator>
         </id>
 
-        <!-- 
-		<composite-id>
-        	<key-property name="student"/>
-	        <key-property name="acadClasification"/>
-	        <key-property name="acadArea"/>
-		</composite-id> 		
-		-->
         <many-to-one
             name="student"
             class="Student"
             column="student_id"
             not-null="true"
-            foreign-key="fk_student_acad_area_student"/>
-
-        <many-to-one
-            name="academicClassification"
-            class="AcademicClassification"
-            column="acad_clasf_id"
-            not-null="true"
-            foreign-key="fk_student_acad_area_clasf"/>
+            foreign-key="fk_student_acmaj_student"/>
 
         <many-to-one
             name="academicArea"
             class="AcademicArea"
             column="acad_area_id"
             not-null="true"
-            foreign-key="fk_student_acad_area_area"/>
+            foreign-key="fk_student_acmaj_area"/>
+            
+        <many-to-one
+            name="academicClassification"
+            class="AcademicClassification"
+            column="acad_clasf_id"
+            not-null="true"
+            foreign-key="fk_student_acmaj_clasf"/>
 
+        <many-to-one
+            name="major"
+            class="PosMajor"
+            column="major_id"
+            not-null="true"
+            foreign-key="fk_student_acmaj_major"/>
     </class>
+    <class name="StudentAreaClassificationMinor" table="student_area_clasf_minor">
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">pref_group_seq</param>
+            </generator>
+        </id>
+
+        <many-to-one
+            name="student"
+            class="Student"
+            column="student_id"
+            not-null="true"
+            foreign-key="fk_student_acmin_student"/>
+
+        <many-to-one
+            name="academicArea"
+            class="AcademicArea"
+            column="acad_area_id"
+            not-null="true"
+            foreign-key="fk_student_acmin_area"/>
+            
+        <many-to-one
+            name="academicClassification"
+            class="AcademicClassification"
+            column="acad_clasf_id"
+            not-null="true"
+            foreign-key="fk_student_acmin_clasf"/>
+
+        <many-to-one
+            name="minor"
+            class="PosMinor"
+            column="minor_id"
+            not-null="true"
+            foreign-key="fk_student_acmin_minor"/>
+    </class>    
 </hibernate-mapping>

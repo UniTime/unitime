@@ -19,18 +19,10 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseAcademicAreaClassificationDAO;
+import org.unitime.timetable.model.base.BaseStudentAreaClassificationMajorDAO;
 
+public class StudentAreaClassificationMajorDAO extends BaseStudentAreaClassificationMajorDAO {
 
-/**
- * @author Tomas Muller
- */
-public class AcademicAreaClassificationDAO extends BaseAcademicAreaClassificationDAO {
-
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public AcademicAreaClassificationDAO () {}
-
+	public StudentAreaClassificationMajorDAO() {}
 
 }

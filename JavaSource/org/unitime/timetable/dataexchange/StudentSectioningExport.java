@@ -25,15 +25,14 @@ import java.util.TreeSet;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
-import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseRequest;
-import org.unitime.timetable.model.PosMajor;
-import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
+import org.unitime.timetable.model.StudentAreaClassificationMajor;
+import org.unitime.timetable.model.StudentAreaClassificationMinor;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.util.Constants;
@@ -69,27 +68,18 @@ public class StudentSectioningExport extends BaseExport {
 	        		nameEl.addAttribute("middle", student.getMiddleName());
 	        	if (student.getLastName() != null)
 	        		nameEl.addAttribute("last", student.getLastName());
-	        	for (AcademicAreaClassification aac: student.getAcademicAreaClassifications()) {
+	        	for (StudentAreaClassificationMajor acm: student.getAreaClasfMajors()) {
 	        		Element acadAreaEl = demographicsEl.addElement("acadArea");
-	        		acadAreaEl.addAttribute("abbv", aac.getAcademicArea().getAcademicAreaAbbreviation());
-	        		acadAreaEl.addAttribute("classification", aac.getAcademicClassification().getCode());
-	        		for (PosMajor m: student.getPosMajors()) {
-	        			if (m.getAcademicAreas().contains(aac.getAcademicArea()))
-	        				acadAreaEl.addElement("major").addAttribute("code", m.getCode());
-	        		}
-	        		for (PosMinor m: student.getPosMinors()) {
-	        			if (m.getAcademicAreas().contains(aac.getAcademicArea()))
-	        				acadAreaEl.addElement("minor").addAttribute("code", m.getCode());
-	        		}
+	        		acadAreaEl.addAttribute("abbv", acm.getAcademicArea().getAcademicAreaAbbreviation());
+	        		acadAreaEl.addAttribute("classification", acm.getAcademicClassification().getCode());
+	        		acadAreaEl.addElement("major").addAttribute("code", acm.getMajor().getCode());
 	        	}
-        		for (PosMajor m: student.getPosMajors()) {
-        			if (m.getAcademicAreas().isEmpty())
-        				demographicsEl.addElement("major").addAttribute("code", m.getCode());
-        		}
-        		for (PosMinor m: student.getPosMinors()) {
-        			if (m.getAcademicAreas().isEmpty())
-        				demographicsEl.addElement("minor").addAttribute("code", m.getCode());
-        		}
+	        	for (StudentAreaClassificationMinor acm: student.getAreaClasfMinors()) {
+	        		Element acadAreaEl = demographicsEl.addElement("acadArea");
+	        		acadAreaEl.addAttribute("abbv", acm.getAcademicArea().getAcademicAreaAbbreviation());
+	        		acadAreaEl.addAttribute("classification", acm.getAcademicClassification().getCode());
+	        		acadAreaEl.addElement("minor").addAttribute("code", acm.getMinor().getCode());
+	        	}
 	        	for (StudentGroup group: student.getGroups())
 	        		demographicsEl.addElement("groupAffiliation").addAttribute("code", group.getGroupAbbreviation());
 	        	for (StudentAccomodation acc: student.getAccomodations())

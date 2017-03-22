@@ -97,9 +97,11 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 		}
 		Hashtable<String, Double> curriculum2nrStudents = new Hashtable<String, Double>();
 		for (Student student: jc.first().sameStudents(jc.second())) {
-			if (student.getCurriculum() == null) continue;
-			Double nrStudents = curriculum2nrStudents.get(student.getCurriculum());
-			curriculum2nrStudents.put(student.getCurriculum(), jc.getJenrlWeight(student) + (nrStudents == null ? 0.0 : nrStudents));
+			if (student.getCurriculum() == null || student.getCurriculum().isEmpty()) continue;
+			for (String c: student.getCurriculum().split("\\|")) {
+				Double nrStudents = curriculum2nrStudents.get(c);
+				curriculum2nrStudents.put(student.getCurriculum(), jc.getJenrlWeight(student) + (nrStudents == null ? 0.0 : nrStudents));
+			}
 		}
 		if (!curriculum2nrStudents.isEmpty()) {
 			iCurriculum2nrStudents = new TreeSet<CurriculumInfo>();
@@ -142,14 +144,16 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 						info.setDistance(Placement.getDistanceInMeters(((TimetableModel)lecture.getModel()).getDistanceMetric(),placement,pl));
 					ret.put(pl.getAssignmentId(),info);
 				}
-				if (student.getCurriculum() != null) {
+				if (student.getCurriculum() != null && !student.getCurriculum().isEmpty()) {
 					Hashtable<String, Double> curriculum2nrStudents = assignment2curriculum2nrStudents.get(pl.getAssignmentId());
 					if (curriculum2nrStudents == null) {
 						curriculum2nrStudents = new Hashtable<String, Double>();
 						assignment2curriculum2nrStudents.put(pl.getAssignmentId(), curriculum2nrStudents);
 					}
-					Double nrStudents = curriculum2nrStudents.get(student.getCurriculum());
-					curriculum2nrStudents.put(student.getCurriculum(), student.getJenrlWeight(lecture, pl.variable()) + (nrStudents == null ? 0.0 : nrStudents));
+					for (String c: student.getCurriculum().split("\\|")) {
+						Double nrStudents = curriculum2nrStudents.get(c);
+						curriculum2nrStudents.put(student.getCurriculum(), student.getJenrlWeight(lecture, pl.variable()) + (nrStudents == null ? 0.0 : nrStudents));
+					}
 				}
 				info.setJenrl(info.getJenrl() + student.getJenrlWeight(lecture, pl.variable()));
 			}

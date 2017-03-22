@@ -22,30 +22,32 @@ package org.unitime.timetable.model.base;
 import java.io.Serializable;
 
 import org.unitime.timetable.model.AcademicArea;
-import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.AcademicClassification;
+import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentAreaClassificationMinor;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public abstract class BaseAcademicAreaClassification implements Serializable {
+public abstract class BaseStudentAreaClassificationMinor implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Long iUniqueId;
 
 	private Student iStudent;
-	private AcademicClassification iAcademicClassification;
 	private AcademicArea iAcademicArea;
+	private AcademicClassification iAcademicClassification;
+	private PosMinor iMinor;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 
-	public BaseAcademicAreaClassification() {
+	public BaseStudentAreaClassificationMinor() {
 		initialize();
 	}
 
-	public BaseAcademicAreaClassification(Long uniqueId) {
+	public BaseStudentAreaClassificationMinor(Long uniqueId) {
 		setUniqueId(uniqueId);
 		initialize();
 	}
@@ -58,16 +60,19 @@ public abstract class BaseAcademicAreaClassification implements Serializable {
 	public Student getStudent() { return iStudent; }
 	public void setStudent(Student student) { iStudent = student; }
 
-	public AcademicClassification getAcademicClassification() { return iAcademicClassification; }
-	public void setAcademicClassification(AcademicClassification academicClassification) { iAcademicClassification = academicClassification; }
-
 	public AcademicArea getAcademicArea() { return iAcademicArea; }
 	public void setAcademicArea(AcademicArea academicArea) { iAcademicArea = academicArea; }
 
+	public AcademicClassification getAcademicClassification() { return iAcademicClassification; }
+	public void setAcademicClassification(AcademicClassification academicClassification) { iAcademicClassification = academicClassification; }
+
+	public PosMinor getMinor() { return iMinor; }
+	public void setMinor(PosMinor minor) { iMinor = minor; }
+
 	public boolean equals(Object o) {
-		if (o == null || !(o instanceof AcademicAreaClassification)) return false;
-		if (getUniqueId() == null || ((AcademicAreaClassification)o).getUniqueId() == null) return false;
-		return getUniqueId().equals(((AcademicAreaClassification)o).getUniqueId());
+		if (o == null || !(o instanceof StudentAreaClassificationMinor)) return false;
+		if (getUniqueId() == null || ((StudentAreaClassificationMinor)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((StudentAreaClassificationMinor)o).getUniqueId());
 	}
 
 	public int hashCode() {
@@ -76,13 +81,14 @@ public abstract class BaseAcademicAreaClassification implements Serializable {
 	}
 
 	public String toString() {
-		return "AcademicAreaClassification["+getUniqueId()+"]";
+		return "StudentAreaClassificationMinor["+getUniqueId()+"]";
 	}
 
 	public String toDebugString() {
-		return "AcademicAreaClassification[" +
+		return "StudentAreaClassificationMinor[" +
 			"\n	AcademicArea: " + getAcademicArea() +
 			"\n	AcademicClassification: " + getAcademicClassification() +
+			"\n	Minor: " + getMinor() +
 			"\n	Student: " + getStudent() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";

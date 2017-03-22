@@ -106,23 +106,12 @@ public class XCurriculumReservation extends XReservation {
      */
     @Override
     public boolean isApplicable(XStudent student) {
-        boolean match = false;
-        if (student.getAcademicAreaClasiffications() == null) return false;
-        for (XAcademicAreaCode aac: student.getAcademicAreaClasiffications()) {
-            if (getAcademicArea().equals(aac.getArea())) {
-                if (getClassifications().isEmpty() || getClassifications().contains(aac.getCode())) {
-                    match = true; break;
-                }
-            }
+        for (XAreaClassificationMajor acm: student.getMajors()) {
+            if (getAcademicArea().equals(acm.getArea()) &&
+            	(getClassifications().isEmpty() || getClassifications().contains(acm.getClassification())) &&
+            	(getMajors().isEmpty() || getMajors().contains(acm.getMajor()))) return true;
         }
-        if (!match) return false;
-        for (XAcademicAreaCode aac: student.getMajors()) {
-            if (getAcademicArea().equals(aac.getArea())) {
-                if (getMajors().isEmpty() || getMajors().contains(aac.getCode()))
-                    return true;
-            }
-        }
-        return getMajors().isEmpty();
+        return false;
     }
     
     @Override

@@ -24,14 +24,13 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.LastLikeCourseDemand;
-import org.unitime.timetable.model.PosMajor;
-import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
+import org.unitime.timetable.model.StudentAreaClassificationMajor;
+import org.unitime.timetable.model.StudentAreaClassificationMinor;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentNote;
@@ -57,9 +56,8 @@ public abstract class BaseStudent implements Serializable {
 
 	private Session iSession;
 	private StudentSectioningStatus iSectioningStatus;
-	private Set<AcademicAreaClassification> iAcademicAreaClassifications;
-	private Set<PosMajor> iPosMajors;
-	private Set<PosMinor> iPosMinors;
+	private Set<StudentAreaClassificationMajor> iAreaClasfMajors;
+	private Set<StudentAreaClassificationMinor> iAreaClasfMinors;
 	private Set<StudentAccomodation> iAccomodations;
 	private Set<StudentGroup> iGroups;
 	private Set<WaitList> iWaitlists;
@@ -122,25 +120,18 @@ public abstract class BaseStudent implements Serializable {
 	public StudentSectioningStatus getSectioningStatus() { return iSectioningStatus; }
 	public void setSectioningStatus(StudentSectioningStatus sectioningStatus) { iSectioningStatus = sectioningStatus; }
 
-	public Set<AcademicAreaClassification> getAcademicAreaClassifications() { return iAcademicAreaClassifications; }
-	public void setAcademicAreaClassifications(Set<AcademicAreaClassification> academicAreaClassifications) { iAcademicAreaClassifications = academicAreaClassifications; }
-	public void addToacademicAreaClassifications(AcademicAreaClassification academicAreaClassification) {
-		if (iAcademicAreaClassifications == null) iAcademicAreaClassifications = new HashSet<AcademicAreaClassification>();
-		iAcademicAreaClassifications.add(academicAreaClassification);
+	public Set<StudentAreaClassificationMajor> getAreaClasfMajors() { return iAreaClasfMajors; }
+	public void setAreaClasfMajors(Set<StudentAreaClassificationMajor> areaClasfMajors) { iAreaClasfMajors = areaClasfMajors; }
+	public void addToareaClasfMajors(StudentAreaClassificationMajor studentAreaClassificationMajor) {
+		if (iAreaClasfMajors == null) iAreaClasfMajors = new HashSet<StudentAreaClassificationMajor>();
+		iAreaClasfMajors.add(studentAreaClassificationMajor);
 	}
 
-	public Set<PosMajor> getPosMajors() { return iPosMajors; }
-	public void setPosMajors(Set<PosMajor> posMajors) { iPosMajors = posMajors; }
-	public void addToposMajors(PosMajor posMajor) {
-		if (iPosMajors == null) iPosMajors = new HashSet<PosMajor>();
-		iPosMajors.add(posMajor);
-	}
-
-	public Set<PosMinor> getPosMinors() { return iPosMinors; }
-	public void setPosMinors(Set<PosMinor> posMinors) { iPosMinors = posMinors; }
-	public void addToposMinors(PosMinor posMinor) {
-		if (iPosMinors == null) iPosMinors = new HashSet<PosMinor>();
-		iPosMinors.add(posMinor);
+	public Set<StudentAreaClassificationMinor> getAreaClasfMinors() { return iAreaClasfMinors; }
+	public void setAreaClasfMinors(Set<StudentAreaClassificationMinor> areaClasfMinors) { iAreaClasfMinors = areaClasfMinors; }
+	public void addToareaClasfMinors(StudentAreaClassificationMinor studentAreaClassificationMinor) {
+		if (iAreaClasfMinors == null) iAreaClasfMinors = new HashSet<StudentAreaClassificationMinor>();
+		iAreaClasfMinors.add(studentAreaClassificationMinor);
 	}
 
 	public Set<StudentAccomodation> getAccomodations() { return iAccomodations; }

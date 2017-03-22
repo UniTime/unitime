@@ -431,7 +431,7 @@ public class ReservationServlet implements ReservationService {
 			((ReservationInterface.CurriculumReservation) r).setCurriculum(curriculum);
 			Number enrollment = (Number)hibSession.createQuery(
 					"select count(distinct e.student) " +
-					"from StudentClassEnrollment e inner join e.student.academicAreaClassifications a inner join e.student.posMajors m where " +
+					"from StudentClassEnrollment e inner join e.student.areaClasfMajors a inner join a.major m where " +
 					"e.courseOffering.instructionalOffering.uniqueId = :offeringId " +
 					"and a.academicArea.uniqueId = :areaId" + 
 					(mjIds.isEmpty() ? "" : " and m.uniqueId in (" + mjIds + ")") +
@@ -443,7 +443,7 @@ public class ReservationServlet implements ReservationService {
 			/*
 			Number lastLike = (Number)hibSession.createQuery(
 					"select count(distinct s) from " +
-					"LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a inner join s.posMajors m " +
+					"LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.major m " +
 					"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co where " +
 					"x.subjectArea.session.uniqueId = :sessionId and co.instructionalOffering.uniqueId = :offeringId and "+
 					"co.subjectArea.uniqueId = x.subjectArea.uniqueId and " +
@@ -461,7 +461,7 @@ public class ReservationServlet implements ReservationService {
 			Hashtable<String,HashMap<String, Float>> rules = getRules(hibSession, cr.getArea().getUniqueId());
 			for (Object[] o: (List<Object[]>)hibSession.createQuery(
 					"select count(distinct s), m.code, f.code from " +
-					"LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a inner join s.posMajors m " +
+					"LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.major m " +
 					"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co left outer join co.demandOffering do where " +
 					"x.subjectArea.session.uniqueId = :sessionId and co.instructionalOffering.uniqueId = :offeringId and "+
 					"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+

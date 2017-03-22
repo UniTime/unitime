@@ -19,18 +19,18 @@
 */
 package org.unitime.timetable.dataexchange;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
-import org.unitime.timetable.model.AcademicArea;
-import org.unitime.timetable.model.AcademicAreaClassification;
-import org.unitime.timetable.model.PosMajor;
-import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
+import org.unitime.timetable.model.StudentAreaClassificationMajor;
+import org.unitime.timetable.model.StudentAreaClassificationMinor;
 import org.unitime.timetable.model.StudentGroup;
 
 /**
@@ -78,30 +78,40 @@ public class StudentExport extends BaseExport {
     	if (student.getEmail() != null)
     		studentEl.addAttribute("email", student.getEmail());
     	
-    	if (!student.getAcademicAreaClassifications().isEmpty()) {
+    	if (!student.getAreaClasfMajors().isEmpty() || !student.getGroups().isEmpty()) {
     		Element e = studentEl.addElement("studentAcadAreaClass");
-        	for (AcademicAreaClassification aac: student.getAcademicAreaClassifications()) {
-        		e.addElement("acadAreaClass")
-        			.addAttribute("academicArea", aac.getAcademicArea().getAcademicAreaAbbreviation())
-        			.addAttribute("academicClass", aac.getAcademicClassification().getCode());
-        	}
+    		Set<String> ac = new HashSet<String>();
+    		for (StudentAreaClassificationMajor aac: student.getAreaClasfMajors()) {
+    			if (ac.add(aac.getAcademicArea().getAcademicAreaAbbreviation() + "|" + aac.getAcademicClassification().getCode()))
+            		e.addElement("acadAreaClass")
+            		.addAttribute("academicArea", aac.getAcademicArea().getAcademicAreaAbbreviation())
+            		.addAttribute("academicClass", aac.getAcademicClassification().getCode());
+    		}
+    		for (StudentAreaClassificationMinor aac: student.getAreaClasfMinors()) {
+    			if (ac.add(aac.getAcademicArea().getAcademicAreaAbbreviation() + "|" + aac.getAcademicClassification().getCode()))
+            		e.addElement("acadAreaClass")
+            		.addAttribute("academicArea", aac.getAcademicArea().getAcademicAreaAbbreviation())
+            		.addAttribute("academicClass", aac.getAcademicClassification().getCode());
+    		}
     	}
     	
-    	if (!student.getPosMajors().isEmpty()) {
+    	if (!student.getAreaClasfMajors().isEmpty()) {
     		Element e = studentEl.addElement("studentMajors");
-        	for (PosMajor major: student.getPosMajors()) {
-        		for (AcademicArea area: major.getAcademicAreas()) {
-	        		e.addElement("major").addAttribute("academicArea", area.getAcademicAreaAbbreviation()).addAttribute("code", major.getCode());
-        		}
+        	for (StudentAreaClassificationMajor aac: student.getAreaClasfMajors()) {
+        		e.addElement("major")
+        		.addAttribute("academicArea", aac.getAcademicArea().getAcademicAreaAbbreviation())
+        		.addAttribute("academicClass", aac.getAcademicClassification().getCode())
+        		.addAttribute("code", aac.getMajor().getCode());
         	}
     	}
-    	
-    	if (!student.getPosMinors().isEmpty()) {
+
+    	if (!student.getAreaClasfMinors().isEmpty()) {
     		Element e = studentEl.addElement("studentMinors");
-        	for (PosMinor minor: student.getPosMinors()) {
-        		for (AcademicArea area: minor.getAcademicAreas()) {
-	        		e.addElement("minor").addAttribute("academicArea", area.getAcademicAreaAbbreviation()).addAttribute("code", minor.getCode());
-        		}
+        	for (StudentAreaClassificationMinor aac: student.getAreaClasfMinors()) {
+        		e.addElement("minor")
+        		.addAttribute("academicArea", aac.getAcademicArea().getAcademicAreaAbbreviation())
+        		.addAttribute("academicClass", aac.getAcademicClassification().getCode())
+        		.addAttribute("code", aac.getMinor().getCode());
         	}
     	}
     	

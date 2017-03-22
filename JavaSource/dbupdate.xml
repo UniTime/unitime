@@ -12292,6 +12292,8 @@
 			select @uid:=@uid+1 uid, offering_id, instructor_id from %SCHEMA%.offering_coordinator cross join (select @uid:=%ID%) x
 			) as r on (o.offering_id = r.offering_id and o.instructor_id = r.instructor_id) set o.uniqueid = r.uid
 		</mysql>
+		<mysql into="ID">select ifnull(1 + max(uniqueid), %ID%) from %SCHEMA%.offering_coordinator</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi = 1 + (%ID% div 32767)</mysql>		
 		<mysql>alter table %SCHEMA%.offering_coordinator modify uniqueid decimal(20,0) not null</mysql>
 		<mysql>alter table %SCHEMA%.offering_coordinator drop foreign key fk_offering_coord_instructor</mysql>
 		<mysql>alter table %SCHEMA%.offering_coordinator drop foreign key fk_offering_coord_offering</mysql>
@@ -12305,7 +12307,6 @@
 			alter table %SCHEMA%.offering_coordinator add constraint fk_offering_coord_instructor foreign key (instructor_id)
 			references %SCHEMA%.departmental_instructor (uniqueid) on delete cascade
 		</mysql>
-		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
 		<mysql>alter table %SCHEMA%.offering_coordinator add percent_share int(3)</mysql>
 		<mysql>update %SCHEMA%.offering_coordinator set percent_share = 0</mysql>
 		<mysql>alter table %SCHEMA%.offering_coordinator modify percent_share int(3) not null</mysql>
@@ -12399,5 +12400,152 @@
 			alter table %SCHEMA%.pit_offering_coord add constraint fk_pit_coord_resp foreign key (responsibility_id)
 				references %SCHEMA%.teaching_responsibility (uniqueid) on delete set null
 		</sql>
+	</update>
+	<update version="179" date="17-Mar-2017" comment="Student Academic Area-Classification-Major Tables">
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql>
+			insert into %SCHEMA%.pos_major (uniqueid, code, name, external_uid, session_id)
+			select @uid:=@uid+1, '-', 'No Major', a.uniqueid, a.session_id
+				from %SCHEMA%.academic_area a cross join (select @uid:=%ID%) x
+				where a.uniqueid in (select sa.acad_area_id from %SCHEMA%.student_acad_area sa where (select count(*) from %SCHEMA%.student_major m where m.student_id = sa.student_id) = 0)
+		</mysql>
+		<mysql into="ID">select greatest(ifnull(1 + max(uniqueid), %ID%), %ID%) from %SCHEMA%.pos_major</mysql>
+		<mysql>
+			insert into %SCHEMA%.pos_acad_area_major (major_id, academic_area_id)
+			select m.uniqueid, m.external_uid from %SCHEMA%.pos_major m
+				where m.code = '-' and m.name = 'No Major' and m.external_uid in (select a.uniqueid from %SCHEMA%.academic_area a)
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.student_major(student_id, major_id)
+			select s.uniqueid, m.uniqueid
+				from %SCHEMA%.student_acad_area a, %SCHEMA%.student s, %SCHEMA%.pos_major m
+				where s.uniqueid = a.student_id and (select count(*) from %SCHEMA%.student_major m where m.student_id = s.uniqueid) = 0
+				and m.external_uid = a.acad_area_id and m.code = '-'
+		</mysql>
+		<mysql>
+			update %SCHEMA%.pos_major m set m.external_uid = '-' where m.code = '-' and m.name = 'No Major' and m.external_uid in (select a.uniqueid from %SCHEMA%.academic_area a)
+		</mysql>
+		<plsql>
+			insert into %SCHEMA%.pos_major (uniqueid, code, name, external_uid, session_id)
+			select %SCHEMA%.pos_major_seq.nextval, '-', 'No Major', a.uniqueid, a.session_id
+			from %SCHEMA%.academic_area a
+			where a.uniqueid in (select sa.acad_area_id from %SCHEMA%.student_acad_area sa where (select count(*) from %SCHEMA%.student_major m where m.student_id = sa.student_id) = 0)
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.pos_acad_area_major (major_id, academic_area_id)
+			select m.uniqueid, m.external_uid from %SCHEMA%.pos_major m
+			where m.code = '-' and m.name = 'No Major' and m.external_uid in (select a.uniqueid from %SCHEMA%.academic_area a)
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.student_major(student_id, major_id)
+			select s.uniqueid, m.uniqueid
+				from %SCHEMA%.student_acad_area a, %SCHEMA%.student s, %SCHEMA%.pos_major m
+				where s.uniqueid = a.student_id and (select count(*) from %SCHEMA%.student_major m where m.student_id = s.uniqueid) = 0
+				and m.external_uid = a.acad_area_id and m.code = '-'
+		</plsql>
+		<plsql>
+			update %SCHEMA%.pos_major m set m.external_uid = '-' where m.code = '-' and m.name = 'No Major' and m.external_uid in (select a.uniqueid from %SCHEMA%.academic_area a)
+		</plsql>
+		<plsql>
+			create table %SCHEMA%.student_area_clasf_major (
+				uniqueid number(20,0) constraint nn_student_acmaj_id not null,
+				student_id number(20,0) constraint nn_student_acmaj_student not null,
+				acad_area_id number(20,0) constraint nn_student_acmaj_area not null,
+				acad_clasf_id number(20,0) constraint nn_student_acmaj_clasf not null,
+				major_id number(20,0) constraint nn_student_acmaj_major not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.student_area_clasf_major add constraint pk_student_area_clasf_major primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.student_area_clasf_major (
+				uniqueid decimal(20,0) primary key not null,
+				student_id decimal(20,0) not null,
+				acad_area_id decimal(20,0) not null,
+				acad_clasf_id decimal(20,0) not null,
+				major_id decimal(20,0) not null
+			) engine = INNODB
+		</mysql>
+		<plsql>create unique index %SCHEMA%.uk_student_area_clasf_major on %SCHEMA%.student_area_clasf_major(student_id, acad_area_id, acad_clasf_id, major_id)</plsql>
+		<mysql>create unique index uk_student_area_clasf_major on %SCHEMA%.student_area_clasf_major(student_id, acad_area_id, acad_clasf_id, major_id)</mysql>
+		<sql>
+			alter table %SCHEMA%.student_area_clasf_major add constraint fk_student_acmaj_student foreign key (student_id)
+			references %SCHEMA%.student (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.student_area_clasf_major add constraint fk_student_acmaj_area foreign key (acad_area_id)
+			references %SCHEMA%.academic_area (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.student_area_clasf_major add constraint fk_student_acmaj_clasf foreign key (acad_clasf_id)
+			references %SCHEMA%.academic_classification (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.student_area_clasf_major add constraint fk_student_acmaj_major foreign key (major_id)
+			references %SCHEMA%.pos_major (uniqueid) on delete cascade
+		</sql>
+		<mysql>
+			insert into %SCHEMA%.student_area_clasf_major (uniqueid, student_id, acad_area_id, acad_clasf_id, major_id)
+			select @uid:=@uid+1 unique_id, a.student_id, a.acad_area_id, a.acad_clasf_id, m.major_id
+			from %SCHEMA%.student_acad_area a, %SCHEMA%.student_major m, %SCHEMA%.pos_acad_area_major am cross join (select @uid:=%ID%) x
+			where m.student_id = a.student_id and am.academic_area_id = a.acad_area_id and am.major_id = m.major_id
+		</mysql>
+		<mysql into="ID">select ifnull(1 + max(uniqueid), %ID%) from %SCHEMA%.student_area_clasf_major</mysql>
+		<plsql>
+			insert into %SCHEMA%.student_area_clasf_major (uniqueid, student_id, acad_area_id, acad_clasf_id, major_id)
+			select pref_group_seq.nextval, a.student_id, a.acad_area_id, a.acad_clasf_id, m.major_id
+			from %SCHEMA%.student_acad_area a, %SCHEMA%.student_major m, %SCHEMA%.pos_acad_area_major am
+			where m.student_id = a.student_id and am.academic_area_id = a.acad_area_id and am.major_id = m.major_id
+		</plsql>
+		<plsql>
+			create table %SCHEMA%.student_area_clasf_minor (
+				uniqueid number(20,0) constraint nn_student_acmin_id not null,
+				student_id number(20,0) constraint nn_student_acmin_student not null,
+				acad_area_id number(20,0) constraint nn_student_acmin_area not null,
+				acad_clasf_id number(20,0) constraint nn_student_acmin_clasf not null,
+				minor_id number(20,0) constraint nn_student_acmin_minor not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.student_area_clasf_minor add constraint pk_student_area_clasf_minor primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.student_area_clasf_minor (
+				uniqueid decimal(20,0) primary key not null,
+				student_id decimal(20,0) not null,
+				acad_area_id decimal(20,0) not null,
+				acad_clasf_id decimal(20,0) not null,
+				minor_id decimal(20,0) not null
+			) engine = INNODB
+		</mysql>
+		<plsql>create unique index %SCHEMA%.uk_student_area_clasf_minor on %SCHEMA%.student_area_clasf_minor(student_id, acad_area_id, acad_clasf_id, minor_id)</plsql>
+		<mysql>create unique index uk_student_area_clasf_minor on %SCHEMA%.student_area_clasf_minor(student_id, acad_area_id, acad_clasf_id, minor_id)</mysql>
+		<sql>
+			alter table %SCHEMA%.student_area_clasf_minor add constraint fk_student_acmin_student foreign key (student_id)
+			references %SCHEMA%.student (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.student_area_clasf_minor add constraint fk_student_acmin_area foreign key (acad_area_id)
+			references %SCHEMA%.academic_area (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.student_area_clasf_minor add constraint fk_student_acmin_clasf foreign key (acad_clasf_id)
+			references %SCHEMA%.academic_classification (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.student_area_clasf_minor add constraint fk_student_acmin_minor foreign key (minor_id)
+			references %SCHEMA%.pos_minor (uniqueid) on delete cascade
+		</sql>
+		<mysql>
+			insert into %SCHEMA%.student_area_clasf_minor (uniqueid, student_id, acad_area_id, acad_clasf_id, minor_id)
+			select @uid:=@uid+1 unique_id, a.student_id, a.acad_area_id, a.acad_clasf_id, m.minor_id
+			from %SCHEMA%.student_acad_area a, %SCHEMA%.student_minor m, %SCHEMA%.pos_acad_area_minor am cross join (select @uid:=%ID%) x
+			where m.student_id = a.student_id and am.academic_area_id = a.acad_area_id and am.minor_id = m.minor_id
+		</mysql>
+		<plsql>
+			insert into %SCHEMA%.student_area_clasf_minor (uniqueid, student_id, acad_area_id, acad_clasf_id, minor_id)
+			select pref_group_seq.nextval, a.student_id, a.acad_area_id, a.acad_clasf_id, m.minor_id
+			from %SCHEMA%.student_acad_area a, %SCHEMA%.student_minor m, %SCHEMA%.pos_acad_area_minor am
+			where m.student_id = a.student_id and am.academic_area_id = a.acad_area_id and am.minor_id = m.minor_id
+		</plsql>
+		<mysql into="ID">select ifnull(1 + max(uniqueid), %ID%) from %SCHEMA%.student_area_clasf_minor</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi = 1 + (%ID% div 32767)</mysql>
 	</update>
 </dbupdate>

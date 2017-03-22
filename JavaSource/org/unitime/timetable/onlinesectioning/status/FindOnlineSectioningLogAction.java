@@ -43,7 +43,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.model.XAcademicAreaCode;
+import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.util.Constants;
 
@@ -84,9 +84,8 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 			
 			org.hibernate.Query q = helper.getHibSession().createQuery(
 					"select l, s.uniqueId from OnlineSectioningLog l, Student s " +
-					(getQuery().hasAttribute("area", "clasf", "classification") ? "left outer join s.academicAreaClassifications a " : "") +
-					(getQuery().hasAttribute("major") ? "left outer join s.posMajors m " : "") + 
-					(getQuery().hasAttribute("minor") ? "left outer join s.posMinors n " : "") + 
+					(getQuery().hasAttribute("area", "clasf", "classification", "major") ? "left outer join s.areaClasfMajors m " : "") +
+					(getQuery().hasAttribute("minor") ? "left outer join s.areaClasfMinors n " : "") + 
 					(getQuery().hasAttribute("group") ? "left outer join s.groups g " : "") + 
 					(getQuery().hasAttribute("accommodation") ? "left outer join s.accomodations a " : "") + 
 					"where l.session.uniqueId = :sessionId and l.session = s.session and l.student = s.externalUniqueId " +
@@ -108,12 +107,10 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					st.setSessionId(session.getUniqueId());
 					st.setExternalId(student.getExternalId());
 					st.setName(student.getName());
-					for (XAcademicAreaCode ac: student.getAcademicAreaClasiffications()) {
-						st.addArea(ac.getArea());
-						st.addClassification(ac.getCode());
-					}
-					for (XAcademicAreaCode ac: student.getMajors()) {
-						st.addMajor(ac.getCode());
+					for (XAreaClassificationMajor acm: student.getMajors()) {
+						st.addArea(acm.getArea());
+						st.addClassification(acm.getClassification());
+						st.addMajor(acm.getMajor());
 					}
 					for (String acc: student.getAccomodations()) {
 						st.addAccommodation(acc);
@@ -324,13 +321,13 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 			} else if ("limit".equalsIgnoreCase(attr)) {
 				return "1 = 1";
 			} else if ("area".equalsIgnoreCase(attr)) {
-				return "lower(a.academicArea.academicAreaAbbreviation) = '" + body.toLowerCase() + "'";
+				return "lower(m.academicArea.academicAreaAbbreviation) = '" + body.toLowerCase() + "'";
 			} else if ("clasf".equalsIgnoreCase(attr) || "classification".equalsIgnoreCase(attr)) {
-				return "lower(a.academicClassification.code) = '" + body.toLowerCase() + "'";
+				return "lower(m.academicClassification.code) = '" + body.toLowerCase() + "'";
 			} else if ("major".equalsIgnoreCase(attr)) {
-				return "lower(m.code) = '" + body.toLowerCase() + "'";
+				return "lower(m.major.code) = '" + body.toLowerCase() + "'";
 			} else if ("minor".equalsIgnoreCase(attr)) {
-				return "lower(n.code) = '" + body.toLowerCase() + "'";
+				return "lower(n.minor.code) = '" + body.toLowerCase() + "'";
 			} else if ("group".equalsIgnoreCase(attr)) {
 				return "lower(g.groupAbbreviation) = '" + body.toLowerCase() + "'";
 			} else if ("accommodation".equalsIgnoreCase(attr)) {

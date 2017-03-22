@@ -27,11 +27,10 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.api.ApiConnector;
 import org.unitime.timetable.api.ApiHelper;
-import org.unitime.timetable.model.AcademicAreaClassification;
-import org.unitime.timetable.model.PosMajor;
-import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
+import org.unitime.timetable.model.StudentAreaClassificationMajor;
+import org.unitime.timetable.model.StudentAreaClassificationMinor;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.dao.StudentGroupDAO;
 import org.unitime.timetable.security.rights.Right;
@@ -76,6 +75,25 @@ public class StudentGroupsConnector extends ApiConnector {
 		}
 	}
 	
+	static class CurriculumInfo {
+		String iArea;
+		String iClassification;
+		String iMajor;
+		String iMinor;
+		
+		CurriculumInfo(StudentAreaClassificationMajor acm) {
+			iArea = acm.getAcademicArea().getAcademicAreaAbbreviation();
+			iClassification = acm.getAcademicClassification().getCode();
+			iMajor = acm.getMajor().getCode();
+		}
+		
+		CurriculumInfo(StudentAreaClassificationMinor acm) {
+			iArea = acm.getAcademicArea().getAcademicAreaAbbreviation();
+			iClassification = acm.getAcademicClassification().getCode();
+			iMinor = acm.getMinor().getCode();
+		}
+	}
+	
 	static class StudentInfo {
 		Long iStudentId;
 		String iExternalId;
@@ -85,6 +103,7 @@ public class StudentGroupsConnector extends ApiConnector {
 		String iTitle;
 		String iEmail;
 		String iSectioningStatus;
+		List<CurriculumInfo> iCurriculum;
 		List<String> iArea;
 		List<String> iClassification;
 		List<String> iMajor;
@@ -112,18 +131,20 @@ public class StudentGroupsConnector extends ApiConnector {
 			iEmail = student.getEmail();
 			if (student.getSectioningStatus() != null)
 				iSectioningStatus = student.getSectioningStatus().getReference();
-			for (AcademicAreaClassification aac: student.getAcademicAreaClassifications()) {
+			for (StudentAreaClassificationMajor aac: student.getAreaClasfMajors()) {
 				if (iArea == null) { iArea = new ArrayList<String>(); iClassification = new ArrayList<String>(); }
+				if (iMajor == null) iMajor = new ArrayList<String>();
 				iArea.add(aac.getAcademicArea().getAcademicAreaAbbreviation());
 				iClassification.add(aac.getAcademicClassification().getCode());
+				iMajor.add(aac.getMajor().getCode());
+				if (iCurriculum == null) iCurriculum = new ArrayList<CurriculumInfo>();
+				iCurriculum.add(new CurriculumInfo(aac));
 			}
-			for (PosMajor major: student.getPosMajors()) {
-				if (iMajor == null) iMajor = new ArrayList<String>();
-				iMajor.add(major.getCode());
-			}
-			for (PosMinor minor: student.getPosMinors()) {
+			for (StudentAreaClassificationMinor minor: student.getAreaClasfMinors()) {
 				if (iMinor == null) iMinor = new ArrayList<String>();
-				iMinor.add(minor.getCode());
+				iMinor.add(minor.getMinor().getCode());
+				if (iCurriculum == null) iCurriculum = new ArrayList<CurriculumInfo>();
+				iCurriculum.add(new CurriculumInfo(minor));
 			}
 			for (StudentGroup group: student.getGroups()) {
 				if (iGroup == null) iGroup = new ArrayList<String>();

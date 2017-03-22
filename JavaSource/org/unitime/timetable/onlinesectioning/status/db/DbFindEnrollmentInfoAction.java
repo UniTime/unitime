@@ -40,7 +40,6 @@ import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
-import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.ClassInstructor;
@@ -52,11 +51,11 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
-import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
+import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
@@ -668,18 +667,18 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			if ("limit".equals(attr)) return true;
 			
 			if ("area".equals(attr)) {
-				for (AcademicAreaClassification ac: student().getAcademicAreaClassifications())
-					if (eq(ac.getAcademicArea().getAcademicAreaAbbreviation(), term)) return true;
+				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
+					if (eq(acm.getAcademicArea().getAcademicAreaAbbreviation(), term)) return true;
 			}
 			
 			if ("clasf".equals(attr) || "classification".equals(attr)) {
-				for (AcademicAreaClassification ac: student().getAcademicAreaClassifications())
-					if (eq(ac.getAcademicClassification().getCode(), term)) return true;
+				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
+					if (eq(acm.getAcademicClassification().getCode(), term)) return true;
 			}
 			
 			if ("major".equals(attr)) {
-				for (PosMajor mj: student().getPosMajors())
-					if (eq(mj.getCode(), term)) return true;
+				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
+					if (eq(acm.getMajor().getCode(), term)) return true;
 			}
 			
 			if ("group".equals(attr)) {
@@ -951,14 +950,14 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			if (attr == null && term.isEmpty()) return true;
 			if ("limit".equals(attr)) return true;
 			if ("area".equals(attr)) {
-				for (AcademicAreaClassification ac: student().getAcademicAreaClassifications())
-					if (eq(ac.getAcademicArea().getAcademicAreaAbbreviation(), term)) return true;
+				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
+					if (eq(acm.getAcademicArea().getAcademicAreaAbbreviation(), term)) return true;
 			} else if ("clasf".equals(attr) || "classification".equals(attr)) {
-				for (AcademicAreaClassification ac: student().getAcademicAreaClassifications())
-					if (eq(ac.getAcademicClassification().getCode(), term)) return true;
+				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
+					if (eq(acm.getAcademicClassification().getCode(), term)) return true;
 			} else if ("major".equals(attr)) {
-				for (PosMajor mj: student().getPosMajors())
-					if (eq(mj.getCode(), term)) return true;
+				for (StudentAreaClassificationMajor acm: student().getAreaClasfMajors())
+					if (eq(acm.getMajor().getCode(), term)) return true;
 			} else if ("group".equals(attr)) {
 				for (StudentGroup group: student().getGroups())
 					if (eq(group.getGroupAbbreviation(), term)) return true;

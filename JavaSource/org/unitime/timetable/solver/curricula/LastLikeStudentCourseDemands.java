@@ -73,7 +73,7 @@ public class LastLikeStudentCourseDemands implements StudentCourseDemands, Proje
 		iDemandsForSubjectCourseNbr.put(subject.getUniqueId(), demandsForCourseNbr);
 		for (Object[] d: (List<Object[]>)iHibSession.createQuery(
 				"select distinct d.courseNbr, d.coursePermId, s " +
-				"from LastLikeCourseDemand d inner join d.student s left join fetch s.academicAreaClassifications left join fetch s.posMajors where " +
+				"from LastLikeCourseDemand d inner join d.student s left join fetch s.areaClasfMajors where " +
 				"d.subjectArea.uniqueId = :subjectAreaId")
 				.setLong("subjectAreaId", subject.getUniqueId()).setCacheable(true).list()) {
 			String courseNbr = (String)d[0];
@@ -132,7 +132,7 @@ public class LastLikeStudentCourseDemands implements StudentCourseDemands, Proje
 			iStudentRequests = new Hashtable<Long, Set<WeightedCourseOffering>>();
 			for (Object[] o : (List<Object[]>)iHibSession.createQuery(
 					"select distinct s, co " +
-					"from LastLikeCourseDemand x inner join x.student s left join fetch s.academicAreaClassifications left join fetch s.posMajors, CourseOffering co left outer join co.demandOffering do where " +
+					"from LastLikeCourseDemand x inner join x.student s left join fetch s.areaClasfMajors, CourseOffering co left outer join co.demandOffering do where " +
 					"x.subjectArea.session.uniqueId = :sessionId and " +
 					"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
 					"(do is not null and do.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and do.permId=x.coursePermId) or (x.coursePermId is null and do.courseNbr=x.courseNbr))))")

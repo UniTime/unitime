@@ -77,7 +77,6 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
-import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
@@ -98,7 +97,6 @@ import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
-import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.Room;
@@ -129,6 +127,7 @@ import org.unitime.timetable.solver.course.weights.ClassWeightProvider;
 import org.unitime.timetable.solver.course.weights.DefaultClassWeights;
 import org.unitime.timetable.solver.curricula.LastLikeStudentCourseDemands;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands;
+import org.unitime.timetable.solver.curricula.StudentCourseDemands.AreaClasfMajor;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.Group;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedCourseOffering;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedStudentId;
@@ -2919,23 +2918,14 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         				if (reservation instanceof CourseReservation) continue;
         				if (reservation instanceof CurriculumReservation) {
         					CurriculumReservation cr = (CurriculumReservation)reservation;
-        					if (studentId.getArea() == null) continue;
-        					if (!studentId.hasArea(cr.getArea().getAcademicAreaAbbreviation())) continue;
-        					if (!cr.getClassifications().isEmpty()) {
-        						boolean match = false;
-        						for (AcademicClassification clasf: cr.getClassifications()) {
-        							if (studentId.hasClassification(cr.getArea().getAcademicAreaAbbreviation(), clasf.getCode())) { match = true; break; }
+        					boolean match = false;
+        					for (AreaClasfMajor acm: studentId.getMajors()) {
+        						if (cr.hasArea(acm.getArea()) && cr.hasClassification(acm.getClasf()) && cr.hasMajor(acm.getMajor())) {
+        							match = true;
+        							break;
         						}
-        						if (!match) continue;
         					}
-        					if (!cr.getMajors().isEmpty()) {
-        						if (studentId.getMajor() == null) continue;
-        						boolean match = false;
-        						for (PosMajor major: cr.getMajors()) {
-        							if (studentId.hasMajor(cr.getArea().getAcademicAreaAbbreviation(), major.getCode())) { match = true; break; }
-        						}
-    							if (!match) continue;
-        					}
+        					if (!match) continue;
         				} else if (reservation instanceof StudentGroupReservation) {
         					StudentGroupReservation gr = (StudentGroupReservation)reservation;
         					if (gr.getGroup() == null) continue;

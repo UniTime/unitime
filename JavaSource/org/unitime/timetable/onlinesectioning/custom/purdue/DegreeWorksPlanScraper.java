@@ -57,7 +57,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningTestFwk;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
-import org.unitime.timetable.onlinesectioning.model.XAcademicAreaCode;
+import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 
@@ -262,8 +262,7 @@ public class DegreeWorksPlanScraper extends OnlineSectioningTestFwk {
                 "left join fetch cd.courseRequests as cr " +
                 "left join fetch cr.classWaitLists as cwl " + 
                 "left join fetch s.classEnrollments as e " +
-                "left join fetch s.academicAreaClassifications as a " +
-                "left join fetch s.posMajors as mj " +
+                "left join fetch s.areaClasfMajors acm " +
                 "left join fetch s.waitlists as w " +
                 "left join fetch s.groups as g " +
                 "where s.session.uniqueId=:sessionId").
@@ -340,15 +339,13 @@ public class DegreeWorksPlanScraper extends OnlineSectioningTestFwk {
 									inc("Request Succeeded [Matching Term]", nrMatching);
 								ret = nrActive;
 								
-								for (XAcademicAreaCode aac: student.getAcademicAreaClasiffications())
-									for (XAcademicAreaCode m: student.getMajors())
-										if (m.getArea().equals(aac.getArea())) {
-											inc("students-curricula", aac.getArea() + "/" + m.getCode() + " " + aac.getCode(), "Students", 1);
-											inc("students-curricula", aac.getArea() + "/" + m.getCode() + " " + aac.getCode(), "Plans", current.size());
-											inc("students-curricula", aac.getArea() + "/" + m.getCode() + " " + aac.getCode(), "Active", nrActive);
-											inc("students-curricula", aac.getArea() + "/" + m.getCode() + " " + aac.getCode(), "Locked", nrLocked);
-											inc("students-curricula", aac.getArea() + "/" + m.getCode() + " " + aac.getCode(), "Matching", nrMatching);
-										}
+								for (XAreaClassificationMajor acm: student.getMajors()) {
+									inc("students-curricula", acm.getArea() + "/" + acm.getMajor() + " " + acm.getClassification(), "Students", 1);
+									inc("students-curricula", acm.getArea() + "/" + acm.getMajor() + " " + acm.getClassification(), "Plans", current.size());
+									inc("students-curricula", acm.getArea() + "/" + acm.getMajor() + " " + acm.getClassification(), "Active", nrActive);
+									inc("students-curricula", acm.getArea() + "/" + acm.getMajor() + " " + acm.getClassification(), "Locked", nrLocked);
+									inc("students-curricula", acm.getArea() + "/" + acm.getMajor() + " " + acm.getClassification(), "Matching", nrMatching);
+								}
 								
 								inc("students-withplans", student.getExternalId(), "Total", current.size());
 								inc("students-withplans", student.getExternalId(), "Active", nrActive);

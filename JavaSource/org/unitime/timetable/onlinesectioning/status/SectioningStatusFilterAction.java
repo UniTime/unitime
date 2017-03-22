@@ -99,9 +99,8 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		
 		if (iRequest.hasOption("area")) {
 			List<Entity> majors = new ArrayList<Entity>();
-			for (Object[] o: (List<Object[]>)query.select("m.uniqueId, m.code, m.name, count(distinct s)")
-					.from("PosMajor m").where("m in elements(s.posMajors)")
-					.order("m.code, m.name").group("m.uniqueId, m.code, m.name")
+			for (Object[] o: (List<Object[]>)query.select("aac.major.uniqueId, aac.major.code, aac.major.name, count(distinct s)")
+					.order("aac.major.code, aac.major.name").group("aac.major.uniqueId, aac.major.code, aac.major.name")
 					.exclude("major").query(helper.getHibSession()).list()) {
 				Entity m = new Entity(
 						(Long)o[0],
@@ -328,7 +327,6 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		}
 
 		if (request.hasOptions("major")) {
-			query.addFrom("major", "PosMajor m");
 			String major = "";
 			int id = 0;
 			for (String m: request.getOptions("major")) {
@@ -336,7 +334,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				query.addParameter("major", "Xmj" + id, m);
 				id++;
 			}
-			query.addWhere("major", "m in elements(s.posMajors) and m.code in (" + major + ")");
+			query.addWhere("major", "aac.major.code in (" + major + ")");
 		}
 		
 		if (request.hasOptions("group")) {
@@ -522,7 +520,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			public String query() {
 				return
 					"select " + (iSelect == null ? "distinct s" : iSelect) +
-					" from " + iType + " s left outer join s.academicAreaClassifications aac " +  (iFrom == null ? "" : iFrom.trim().toLowerCase().startsWith("inner join") ? " " + iFrom : ", " + iFrom) + getFrom(iExclude) +
+					" from " + iType + " s left outer join s.areaClasfMajors aac " +  (iFrom == null ? "" : iFrom.trim().toLowerCase().startsWith("inner join") ? " " + iFrom : ", " + iFrom) + getFrom(iExclude) +
 					" where s.session.uniqueId = :sessionId" +
 					getWhere(iExclude) + (iWhere == null ? "" : " and (" + iWhere + ")") +
 					(iGroupBy == null ? "" : " group by " + iGroupBy) +
@@ -610,7 +608,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				public String query() {
 					return
 							"select " + (iSelect == null ? "distinct co" : iSelect) +
-							" from CourseRequest cr inner join cr.courseOffering co inner join cr.courseDemand cd inner join cd.student s left outer join s.academicAreaClassifications aac " + 
+							" from CourseRequest cr inner join cr.courseOffering co inner join cr.courseDemand cd inner join cd.student s left outer join s.areaClasfMajors aac " + 
 							(iFrom == null ? "" : iFrom.trim().toLowerCase().startsWith("inner join") ? " " + iFrom : ", " + iFrom) + getFrom(iExclude) +
 							" where s.session.uniqueId = :sessionId" + getWhere(iExclude) + (iWhere == null ? "" : " and (" + iWhere + ")") +
 							(iGroupBy == null ? "" : " group by " + iGroupBy) +

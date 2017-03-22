@@ -651,19 +651,20 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     			boolean hasCurricula = false;
     			HashSet<String> ignore = new HashSet<String>(), tested = new HashSet<String>();
     			for (Student student: model.getAllStudents()) {
-    				if (student.getCurriculum() != null && student.getAcademicClassification() != null) {
+    				if (student.getCurriculum() != null && !student.getCurriculum().isEmpty()) {
     					if (!hasCurricula) {
     						curricula.clear(); hasCurricula = true;
     					}
-    					String c = student.getCurriculum() + " " + student.getAcademicClassification();
-    					if (tested.add(c) && !match(q, c)) ignore.add(c);
-    					if (ignore.contains(c)) continue;
-    					List<Student> students = curricula.get(c);
-    					if (students == null) {
-    						students = new ArrayList<Student>();
-    						curricula.put(c, students);
+    					for (String c: student.getCurriculum().split("\\|")) {
+        					if (tested.add(c) && !match(q, c)) ignore.add(c);
+        					if (ignore.contains(c)) continue;
+        					List<Student> students = curricula.get(c);
+        					if (students == null) {
+        						students = new ArrayList<Student>();
+        						curricula.put(c, students);
+        					}
+        					students.add(student);
     					}
-    					students.add(student);
     				} else if (!hasCurricula && student.getAcademicArea() != null && student.getAcademicClassification() != null) {
     					String c = student.getAcademicArea() + (student.getMajor() == null ? "" : " " + student.getMajor()) + " " + student.getAcademicClassification();
     					if (tested.add(c) && !match(q, c)) ignore.add(c);
@@ -1503,21 +1504,22 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     			boolean hasCurricula = false;
     			HashSet<String> ignore = new HashSet<String>(), tested = new HashSet<String>();
     			for (Student student: model.getAllStudents()) {
-    				if (student.getCurriculum() != null && student.getAcademicClassification() != null) {
+    				if (student.getCurriculum() != null && !student.getCurriculum().isEmpty()) {
     					if (!hasCurricula) {
     						curricula.clear(); hasCurricula = true;
     					}
-    					String c = student.getCurriculum() + " " + student.getAcademicClassification();
-    					if (tested.add(c) && !match(q, c)) ignore.add(c);
-    					if (ignore.contains(c)) continue;
-    					List<Student> students = curricula.get(c);
-    					if (students == null) {
-    						students = new ArrayList<Student>();
-    						curricula.put(c, students);
+    					for (String c: student.getCurriculum().split("\\|")) {
+        					if (tested.add(c) && !match(q, c)) ignore.add(c);
+        					if (ignore.contains(c)) continue;
+        					List<Student> students = curricula.get(c);
+        					if (students == null) {
+        						students = new ArrayList<Student>();
+        						curricula.put(c, students);
+        					}
+        					students.add(student);
     					}
-    					students.add(student);
     				} else if (!hasCurricula && student.getAcademicArea() != null && student.getAcademicClassification() != null) {
-    					String c = student.getAcademicArea() + (student.getMajor() == null ? "" : " " + student.getMajor()) + " " + student.getAcademicClassification();
+    					String c = student.getAcademicArea() + (student.getMajor() == null ? "" : "/" + student.getMajor()) + " " + student.getAcademicClassification();
     					if (tested.add(c) && !match(q, c)) ignore.add(c);
     					if (ignore.contains(c)) continue;
     					List<Student> students = curricula.get(c);

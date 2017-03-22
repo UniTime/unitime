@@ -56,16 +56,6 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
 
 /*[CONSTRUCTOR MARKER END]*/
 
-	public void addToPosMajors (org.unitime.timetable.model.PosMajor major) {
-		if (null == getPosMajors()) setPosMajors(new java.util.HashSet());
-		getPosMajors().add(major);
-	}
-	
-	public void addToPosMinors (org.unitime.timetable.model.PosMinor minor) {
-		if (null == getPosMinors()) setPosMinors(new java.util.HashSet());
-		getPosMinors().add(minor);
-	}
-    
     public static List findAll(Long sessionId) {
         return new StudentDAO().
             getSession().
@@ -92,9 +82,8 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
             		"left join fetch s.courseDemands as cd " +
                     "left join fetch cd.courseRequests as cr " +
                     "left join fetch s.classEnrollments as e " +
-                    "left join fetch s.academicAreaClassifications " +
-                    "left join fetch s.posMajors " +
-                    "left join fetch s.posMinors " +
+                    "left join fetch s.areaClasfMajors " +
+                    "left join fetch s.areaClasfMinors " +
             		"where "+
                     "s.session.uniqueId=:sessionId and "+
                     "s.externalUniqueId=:externalId").

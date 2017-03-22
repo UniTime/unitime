@@ -53,6 +53,7 @@ import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.studentsct.StudentSectioningLoader;
 import org.cpsolver.studentsct.StudentSectioningModel;
 import org.cpsolver.studentsct.model.AcademicAreaCode;
+import org.cpsolver.studentsct.model.AreaClassificationMajor;
 import org.cpsolver.studentsct.model.Choice;
 import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
@@ -82,7 +83,6 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ReservationInterface.OverrideType;
-import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
@@ -108,6 +108,7 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentAccomodation;
+import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
@@ -127,6 +128,7 @@ import org.unitime.timetable.solver.TimetableDatabaseLoader;
 import org.unitime.timetable.solver.curricula.LastLikeStudentCourseDemands;
 import org.unitime.timetable.solver.curricula.ProjectedStudentCourseDemands;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands;
+import org.unitime.timetable.solver.curricula.StudentCourseDemands.AreaClasfMajor;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedStudentId;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
@@ -601,18 +603,11 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     				applicable = course.equals(((CourseReservation)r).getCourse());
     			} else if (r instanceof CurriculumReservation) {
     				CurriculumReservation c = (CurriculumReservation)r;
-    				aac: for (AcademicAreaClassification aac: s.getAcademicAreaClassifications()) {
-    					if (aac.getAcademicArea().equals(c.getAcademicArea())) {
-    						if (c.getClassifications().isEmpty() || c.getClassifications().contains(aac.getAcademicClassification().getCode())) {
-    							if (c.getMajors().isEmpty()) {
-    								applicable = true; break aac;
-    							}
-    							for (PosMajor major: aac.getAcademicArea().getPosMajors()) {
-    								if (s.getPosMajors().contains(major) && c.getMajors().contains(major.getCode())) {
-    									applicable = true; break aac;        									
-    								}
-    							}
-    		                }
+    				for (StudentAreaClassificationMajor aac: s.getAreaClasfMajors()) {
+    					if (aac.getAcademicArea().equals(c.getAcademicArea()) &&
+    						(c.getClassifications().isEmpty() || c.getClassifications().contains(aac.getAcademicClassification().getCode())) &&
+    						(c.getMajors().isEmpty() || c.getMajors().contains(aac.getMajor().getCode()))) {
+    							applicable = true; break;
     					}
     				}
     			}
@@ -1021,21 +1016,18 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     }
     
     private String curriculum(Student student) {
+    	if (!student.getAreaClassificationMajors().isEmpty()) {
+    		AreaClassificationMajor acm = student.getAreaClassificationMajors().get(0);
+    		return acm.getArea() + ":" + acm.getClassification() + ":" + acm.getMajor();
+    	}
     	return (student.getAcademicAreaClasiffications().isEmpty() ? "" : student.getAcademicAreaClasiffications().get(0).getArea() + ":" + student.getAcademicAreaClasiffications().get(0).getCode()) + ":" +
 			(student.getMajors().isEmpty() ? "" : student.getMajors().get(0).getCode());
     }
     
     private String curriculum(org.unitime.timetable.model.Student student) {
     	String curriculum = "";
-    	for (AcademicAreaClassification aac: student.getAcademicAreaClassifications()) {
-    		curriculum = aac.getAcademicArea().getAcademicAreaAbbreviation() + ":" + aac.getAcademicClassification().getCode();
-    		for (PosMajor major: aac.getAcademicArea().getPosMajors()) {
-    			if (student.getPosMajors().contains(major)) {
-    				curriculum += ":" + major.getCode();
-    				break;
-    			}
-    		}
-    		break;
+    	for (StudentAreaClassificationMajor aac: student.getAreaClasfMajors()) {
+    		return aac.getAcademicArea().getAcademicAreaAbbreviation() + ":" + aac.getAcademicClassification().getCode() + ":" + aac.getMajor().getCode();
     	}
     	return curriculum;
     }
@@ -1212,18 +1204,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     
     
     public void loadStudentInfo(Student student, org.unitime.timetable.model.Student s) {
-        for (Iterator i=s.getAcademicAreaClassifications().iterator();i.hasNext();) {
-            AcademicAreaClassification aac = (AcademicAreaClassification)i.next();
-            student.getAcademicAreaClasiffications().add(
-                    new AcademicAreaCode(aac.getAcademicArea().getAcademicAreaAbbreviation(),aac.getAcademicClassification().getCode()));
-            for (Iterator j=aac.getAcademicArea().getPosMajors().iterator();j.hasNext();) {
-                PosMajor major = (PosMajor)j.next();
-                if (s.getPosMajors().contains(major)) {
-                    student.getMajors().add(
-                            new AcademicAreaCode(aac.getAcademicArea().getAcademicAreaAbbreviation(),major.getCode()));
-                }
-                    
-            }
+        for (StudentAreaClassificationMajor acm: s.getAreaClasfMajors()) {
+            // student.getAcademicAreaClasiffications().add(new AcademicAreaCode(acm.getAcademicArea().getAcademicAreaAbbreviation(),acm.getAcademicClassification().getCode()));
+            // student.getMajors().add(new AcademicAreaCode(acm.getAcademicArea().getAcademicAreaAbbreviation(),acm.getMajor().getCode()));
+        	student.getAreaClassificationMajors().add(new AreaClassificationMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode()));
         }
         for (StudentGroup g: s.getGroups())
         	student.getMinors().add(new AcademicAreaCode("", g.getGroupAbbreviation()));
@@ -1512,7 +1496,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     "left join fetch cr.classWaitLists as cw " +
                     "left join fetch s.classEnrollments as e " +
                     "left join fetch s.waitlists as w " +
-                    (iLoadStudentInfo ? "left join fetch s.academicAreaClassifications as a left join fetch s.posMajors as mj left join fetch s.groups as g " : "") +
+                    (iLoadStudentInfo ? "left join fetch s.areaClasfMajors as a left join fetch s.groups as g " : "") +
                     "where s.session.uniqueId=:sessionId").
                     setLong("sessionId",session.getUniqueId().longValue()).
                     setFetchSize(1000).list();
@@ -1673,11 +1657,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             	        Student student = (Student)students.get(demand.getStudentId());
             	        if (student == null) {
             	            student = new Student(demand.getStudentId(), true);
-            	            if (demand.getArea() != null && demand.getClasf() != null)
-            	            	student.getAcademicAreaClasiffications().add(new AcademicAreaCode(demand.getArea(), demand.getClasf()));
-            	            if (demand.getArea() != null && demand.getMajor() != null && !demand.getMajor().isEmpty())
-            	            	for (String mj: demand.getMajor().split("\\|"))
-            	            		student.getMajors().add(new AcademicAreaCode(demand.getArea(), mj));
+            	            for (AreaClasfMajor acm: demand.getMajors())
+            	            	student.getAreaClassificationMajors().add(new AreaClassificationMajor(acm.getArea(), acm.getClasf(), acm.getMajor()));
             	            students.put(demand.getStudentId(), student);
             	        }
             	        List<Course> courses = new ArrayList<Course>();

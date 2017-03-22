@@ -173,11 +173,12 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands, Nee
 	private Map<CourseOffering, Set<WeightedStudentId>> loadCourseRegistrations(org.hibernate.Session hibSession, CurriculumClassification cc) {
 		List<Object[]> lines = null;
 		String select = "distinct co, s";
-		String from = "CourseRequest r inner join r.courseOffering co inner join r.courseDemand.student s inner join s.academicAreaClassifications a";
+		String from = "CourseRequest r inner join r.courseOffering co inner join r.courseDemand.student s inner join s.areaClasfMajors a";
 		String where = "s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :acadAreaId and a.academicClassification.uniqueId = :clasfId";
 		if (cc.getCurriculum().getMajors().isEmpty()) {
 			// students with no major
-			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + (cc.getCurriculum().isMultipleMajors() ? " and s.posMajors is empty" : ""))
+			if (!cc.getCurriculum().isMultipleMajors())
+				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where)
 					.setLong("sessionId", cc.getCurriculum().getAcademicArea().getSessionId())
 					.setLong("acadAreaId", cc.getCurriculum().getAcademicArea().getUniqueId())
 					.setLong("clasfId", cc.getAcademicClassification().getUniqueId())
@@ -187,7 +188,7 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands, Nee
 			for (PosMajor major: cc.getCurriculum().getMajors())
 				majorIds.add(major.getUniqueId());
 			// students with one major
-			lines = hibSession.createQuery("select " + select + " from " + from + " inner join s.posMajors m where " + where + " and m.uniqueId in :majorIds")
+			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and a.major.uniqueId in :majorIds")
 					.setLong("sessionId", cc.getCurriculum().getAcademicArea().getSessionId())
 					.setLong("acadAreaId", cc.getCurriculum().getAcademicArea().getUniqueId())
 					.setLong("clasfId", cc.getAcademicClassification().getUniqueId())
@@ -196,10 +197,14 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands, Nee
 		} else {
 			// students with multiple majors
 			Map<String, Long> params = new HashMap<String, Long>();
-			int idx = 1;
+			int idx = 0;
 			for (PosMajor major: cc.getCurriculum().getMajors()) {
-				from += " inner join s.posMajors m" + idx;
-				where += " and m" + idx + ".uniqueId = :m" + idx;
+				if (idx == 0) {
+					where += " and a.major.uniqueId = :m" + idx;
+				} else {
+					from += " inner join s.areaClasfMajors a" + idx;
+					where += " and a" + idx + ".academicArea.uniqueId = :acadAreaId and a" + idx + ".academicClassification.uniqueId = :clasfId and a" + idx + ".major.uniqueId = :m" + idx;
+				}
 				params.put("m" + idx, major.getUniqueId());
 				idx ++;
 			}
@@ -212,20 +217,21 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands, Nee
 			lines = q.setCacheable(true).list();
 		}
 		Map<CourseOffering, Set<WeightedStudentId>> course2req = new HashMap<CourseOffering,Set<WeightedStudentId>>();
-		for (Object[] o : lines) {
-			CourseOffering course = (CourseOffering)o[0];
-			Student student = (Student)o[1];
-			
-			WeightedStudentId studentId = new WeightedStudentId(student);
-			studentId.setCurriculum(cc.getCurriculum().getAbbv());
+		if (lines != null)
+			for (Object[] o : lines) {
+				CourseOffering course = (CourseOffering)o[0];
+				Student student = (Student)o[1];
+				
+				WeightedStudentId studentId = new WeightedStudentId(student);
+				studentId.setCurriculum(cc.getCurriculum().getAbbv() + " " + cc.getAcademicClassification().getCode());
 
-			Set<WeightedStudentId> students = course2req.get(course);
-			if (students == null) {
-				students = new HashSet<WeightedStudentId>();
-				course2req.put(course, students);
+				Set<WeightedStudentId> students = course2req.get(course);
+				if (students == null) {
+					students = new HashSet<WeightedStudentId>();
+					course2req.put(course, students);
+				}
+				students.add(studentId);
 			}
-			students.add(studentId);
-		}
 		
 		return course2req;
 	}
@@ -305,10 +311,10 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands, Nee
 					demands.addAll(other);
 				} else {
 					other: for (WeightedStudentId student: other) {
-						// if (student.getAreas().isEmpty()) continue; // ignore students w/o academic area
-						for (AreaCode area: student.getAreas()) {
-							Set<String> majors = iLoadedCurricula.get(area.getArea() + ":" + area.getCode());
-							if (majors != null && (majors.contains("") || student.match(area.getArea(), majors))) continue other; // all majors or match
+						// if (student.getMajors().isEmpty()) continue; // ignore students w/o academic area
+						for (AreaClasfMajor acm: student.getMajors()) {
+							Set<String> majors = iLoadedCurricula.get(acm.getArea());
+							if (majors != null && (majors.contains("") || student.match(acm.getArea(), majors))) continue other; // all majors or match
 						}
 						demands.add(student);
 					}

@@ -53,7 +53,6 @@ import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Subpart;
 import org.hibernate.Transaction;
 import org.unitime.timetable.defaults.ApplicationProperty;
-import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -65,13 +64,12 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.LastLikeCourseDemand;
 import org.unitime.timetable.model.Location;
-import org.unitime.timetable.model.PosMajor;
-import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
@@ -463,47 +461,11 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
     }
     
     public void loadStudentInfo(Student student, org.unitime.timetable.model.Student s) {
-        HashSet majors = new HashSet();
-        HashSet minors = new HashSet();
-        for (Iterator i=s.getAcademicAreaClassifications().iterator();i.hasNext();) {
-            AcademicAreaClassification aac = (AcademicAreaClassification)i.next();
-            student.getAcademicAreaClasiffications().add(
-                    new AcademicAreaCode(aac.getAcademicArea().getAcademicAreaAbbreviation(),aac.getAcademicClassification().getCode()));
+        for (StudentAreaClassificationMajor aac: s.getAreaClasfMajors()) {
+            student.getAcademicAreaClasiffications().add(new AcademicAreaCode(aac.getAcademicArea().getAcademicAreaAbbreviation(),aac.getAcademicClassification().getCode()));
             sLog.debug("  -- aac: "+aac.getAcademicArea().getAcademicAreaAbbreviation()+":"+aac.getAcademicClassification().getCode());
-            for (Iterator j=aac.getAcademicArea().getPosMajors().iterator();j.hasNext();) {
-                PosMajor major = (PosMajor)j.next();
-                if (s.getPosMajors().contains(major)) {
-                    student.getMajors().add(
-                            new AcademicAreaCode(aac.getAcademicArea().getAcademicAreaAbbreviation(),major.getCode()));
-                    majors.add(major);
-                    sLog.debug("  -- mj: "+aac.getAcademicArea().getAcademicAreaAbbreviation()+":"+major.getCode());
-                }
-                    
-            }
-            for (Iterator j=aac.getAcademicArea().getPosMinors().iterator();j.hasNext();) {
-                PosMinor minor = (PosMinor)j.next();
-                if (s.getPosMinors().contains(minor)) {
-                    student.getMinors().add(
-                            new AcademicAreaCode(aac.getAcademicArea().getAcademicAreaAbbreviation(),minor.getCode()));
-                    minors.add(minor);
-                    sLog.debug("  -- mn: "+aac.getAcademicArea().getAcademicAreaAbbreviation()+":"+minor.getCode());
-                }
-                    
-            }
-        }
-        for (Iterator i=s.getPosMajors().iterator();i.hasNext();) {
-            PosMajor major = (PosMajor)i.next();
-            if (!majors.contains(major)) {
-                student.getMajors().add(new AcademicAreaCode(null,major.getCode()));
-                sLog.debug("  -- mj: "+major.getCode());
-            }
-        }
-        for (Iterator i=s.getPosMinors().iterator();i.hasNext();) {
-            PosMinor minor = (PosMinor)i.next();
-            if (!minors.contains(minor)) {
-                student.getMajors().add(new AcademicAreaCode(null,minor.getCode()));
-                sLog.debug("  -- mj: "+minor.getCode());
-            }
+            student.getMajors().add(new AcademicAreaCode(aac.getAcademicArea().getAcademicAreaAbbreviation(), aac.getMajor().getCode()));
+            sLog.debug("  -- mj: "+aac.getAcademicArea().getAcademicAreaAbbreviation()+":"+aac.getMajor().getCode());
         }
     }
 

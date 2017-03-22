@@ -34,13 +34,10 @@ public class CurriculumReservation extends BaseCurriculumReservation {
 
 	@Override
 	public boolean isApplicable(Student student, CourseRequest request) {
-		for (AcademicAreaClassification aac: student.getAcademicAreaClassifications()) {
-			if (aac.getAcademicArea().equals(getArea())) {
-				if (getClassifications().isEmpty() || getClassifications().contains(aac.getAcademicClassification())) {
-					if (getMajors().isEmpty()) return true;
-					else for (PosMajor major: getMajors()) {
-						if (student.getPosMajors().contains(major)) return true;
-					}
+		for (StudentAreaClassificationMajor acm: student.getAreaClasfMajors()) {
+			if (acm.getAcademicArea().equals(getArea())) {
+				if (getClassifications().isEmpty() || getClassifications().contains(acm.getAcademicClassification())) {
+					if (getMajors().isEmpty() || getMajors().contains(acm.getMajor())) return true;
 				}
 			}
 		}
@@ -65,5 +62,23 @@ public class CurriculumReservation extends BaseCurriculumReservation {
 	@Override
 	public boolean isAllowOverlap() {
 		return ApplicationProperty.ReservationAllowOverlapCurriculum.isTrue();
+	}
+	
+	public boolean hasArea(String areaAbbv) {
+		return getArea() != null && getArea().getAcademicAreaAbbreviation().equals(areaAbbv);
+	}
+	
+	public boolean hasClassification(String classificationCode) {
+		if (getClassifications().isEmpty()) return true;
+		for (AcademicClassification c: getClassifications())
+			if (c.getCode().equals(classificationCode)) return true;
+		return false;
+	}
+	
+	public boolean hasMajor(String majorCode) {
+		if (getMajors().isEmpty()) return true;
+		for (PosMajor c: getMajors())
+			if (c.getCode().equals(majorCode)) return true;
+		return false;
 	}
 }

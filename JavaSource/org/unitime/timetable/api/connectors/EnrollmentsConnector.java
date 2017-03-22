@@ -28,16 +28,15 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.api.ApiConnector;
 import org.unitime.timetable.api.ApiHelper;
-import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
-import org.unitime.timetable.model.PosMajor;
-import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.StudentAccomodation;
+import org.unitime.timetable.model.StudentAreaClassificationMajor;
+import org.unitime.timetable.model.StudentAreaClassificationMinor;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.dao.Class_DAO;
@@ -132,6 +131,25 @@ public class EnrollmentsConnector extends ApiConnector {
 		return converted;
 	}
 	
+	static class CurriculumInfo {
+		String iArea;
+		String iClassification;
+		String iMajor;
+		String iMinor;
+		
+		CurriculumInfo(StudentAreaClassificationMajor acm) {
+			iArea = acm.getAcademicArea().getAcademicAreaAbbreviation();
+			iClassification = acm.getAcademicClassification().getCode();
+			iMajor = acm.getMajor().getCode();
+		}
+		
+		CurriculumInfo(StudentAreaClassificationMinor acm) {
+			iArea = acm.getAcademicArea().getAcademicAreaAbbreviation();
+			iClassification = acm.getAcademicClassification().getCode();
+			iMinor = acm.getMinor().getCode();
+		}
+	}
+	
 	static class ClassEnrollmentInfo {
 		Long iStudentId;
 		String iExternalId;
@@ -147,6 +165,7 @@ public class EnrollmentsConnector extends ApiConnector {
 		List<String> iMinor;
 		List<String> iGroup;
 		List<String> iAccomodation;
+		List<CurriculumInfo> iCurriculum;
 		Long iCourseId;
 		String iSubjectArea;
 		String iCourseNumber;
@@ -168,18 +187,20 @@ public class EnrollmentsConnector extends ApiConnector {
 			iEmail = enrollment.getStudent().getEmail();
 			if (enrollment.getStudent().getSectioningStatus() != null)
 				iSectioningStatus = enrollment.getStudent().getSectioningStatus().getReference();
-			for (AcademicAreaClassification aac: enrollment.getStudent().getAcademicAreaClassifications()) {
+			for (StudentAreaClassificationMajor aac: enrollment.getStudent().getAreaClasfMajors()) {
 				if (iArea == null) { iArea = new ArrayList<String>(); iClassification = new ArrayList<String>(); }
+				if (iMajor == null) iMajor = new ArrayList<String>();
 				iArea.add(aac.getAcademicArea().getAcademicAreaAbbreviation());
 				iClassification.add(aac.getAcademicClassification().getCode());
+				iMajor.add(aac.getMajor().getCode());
+				if (iCurriculum == null) iCurriculum = new ArrayList<CurriculumInfo>();
+				iCurriculum.add(new CurriculumInfo(aac));
 			}
-			for (PosMajor major: enrollment.getStudent().getPosMajors()) {
-				if (iMajor == null) iMajor = new ArrayList<String>();
-				iMajor.add(major.getCode());
-			}
-			for (PosMinor minor: enrollment.getStudent().getPosMinors()) {
+			for (StudentAreaClassificationMinor minor: enrollment.getStudent().getAreaClasfMinors()) {
 				if (iMinor == null) iMinor = new ArrayList<String>();
-				iMinor.add(minor.getCode());
+				iMinor.add(minor.getMinor().getCode());
+				if (iCurriculum == null) iCurriculum = new ArrayList<CurriculumInfo>();
+				iCurriculum.add(new CurriculumInfo(minor));
 			}
 			for (StudentGroup group: enrollment.getStudent().getGroups()) {
 				if (iGroup == null) iGroup = new ArrayList<String>();

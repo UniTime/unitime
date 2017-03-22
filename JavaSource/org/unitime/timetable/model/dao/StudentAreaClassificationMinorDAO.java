@@ -17,31 +17,12 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.model;
+package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseAcademicAreaClassification;
+import org.unitime.timetable.model.base.BaseStudentAreaClassificationMinorDAO;
 
+public class StudentAreaClassificationMinorDAO extends BaseStudentAreaClassificationMinorDAO {
 
-
-/**
- * @author Tomas Muller
- */
-public class AcademicAreaClassification extends BaseAcademicAreaClassification {
-	private static final long serialVersionUID = 1L;
-
-/*[CONSTRUCTOR MARKER BEGIN]*/
-	public AcademicAreaClassification () {
-		super();
-	}
-
-	/**
-	 * Constructor for primary key
-	 */
-	public AcademicAreaClassification (java.lang.Long uniqueId) {
-		super(uniqueId);
-	}
-
-/*[CONSTRUCTOR MARKER END]*/
-
+	public StudentAreaClassificationMinorDAO() {}
 
 }

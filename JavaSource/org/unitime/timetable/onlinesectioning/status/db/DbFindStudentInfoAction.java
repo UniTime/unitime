@@ -27,16 +27,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.StudentInfo;
-import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
-import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
+import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentNote;
@@ -97,12 +97,10 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					st.setCanRegister(iCanRegister);
 					st.setCanUseAssistant(iCanUseAssistant);
 					st.setName(helper.getStudentNameFormat().format(student));
-					for (AcademicAreaClassification ac: student.getAcademicAreaClassifications()) {
-						st.addArea(ac.getAcademicArea().getAcademicAreaAbbreviation());
-						st.addClassification(ac.getAcademicClassification().getCode());
-					}
-					for (PosMajor mj: student.getPosMajors()) {
-						st.addMajor(mj.getCode());
+					for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(student.getAreaClasfMajors())) {
+						st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation());
+						st.addClassification(acm.getAcademicClassification().getCode());
+						st.addMajor(acm.getMajor().getCode());
 					}
 					for (StudentAccomodation acc: student.getAccomodations()) {
 						st.addAccommodation(acc.getAbbreviation());
@@ -243,12 +241,10 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 			st.setCanRegister(iCanRegister);
 			st.setCanUseAssistant(iCanUseAssistant);
 			st.setName(helper.getStudentNameFormat().format(student));
-			for (AcademicAreaClassification ac: student.getAcademicAreaClassifications()) {
-				st.addArea(ac.getAcademicArea().getAcademicAreaAbbreviation());
-				st.addClassification(ac.getAcademicClassification().getCode());
-			}
-			for (PosMajor mj: student.getPosMajors()) {
-				st.addMajor(mj.getCode());
+			for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(student.getAreaClasfMajors())) {
+				st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation());
+				st.addClassification(acm.getAcademicClassification().getCode());
+				st.addMajor(acm.getMajor().getCode());
 			}
 			for (StudentAccomodation acc: student.getAccomodations()) {
 				st.addAccommodation(acc.getAbbreviation());

@@ -57,7 +57,7 @@
             name="session"
             class="Session"
             column="session_id"
-            foreign-key="fk_student_session"
+            foreign-key="fk_pos_major_session"
             not-null="true"/>
 
         <set

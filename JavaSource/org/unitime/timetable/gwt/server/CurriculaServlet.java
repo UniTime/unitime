@@ -3273,12 +3273,13 @@ public class CurriculaServlet implements CurriculaService {
 	private Hashtable<Long, Integer> loadClasf2enrl(org.hibernate.Session hibSession, Curriculum c) {
 		List<Object[]> lines = null;
 		String select = "a.academicClassification.uniqueId, count(distinct s)";
-		String from = "StudentClassEnrollment e inner join e.student s inner join s.academicAreaClassifications a";
+		String from = "StudentClassEnrollment e inner join e.student s inner join s.areaClasfMajors a";
 		String where = "s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :areaId";
 		String group = "a.academicClassification.uniqueId";
 		if (c.getMajors().isEmpty()) {
-			// students with no major
-			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + (c.isMultipleMajors() ? " and s.posMajors is empty" : "") + " group by " + group)
+			// students with all majors
+			if (!c.isMultipleMajors())
+				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " group by " + group)
 					.setLong("sessionId", c.getAcademicArea().getSessionId()).setLong("areaId", c.getAcademicArea().getUniqueId())
 					.setCacheable(true).list();
 		} else if (!c.isMultipleMajors() || c.getMajors().size() == 1) {
@@ -3286,17 +3287,21 @@ public class CurriculaServlet implements CurriculaService {
 			List<Long> majorIds = new ArrayList<Long>();
 			for (PosMajor major: c.getMajors())
 				majorIds.add(major.getUniqueId());
-			lines = hibSession.createQuery("select " + select + " from " + from + " inner join s.posMajors m where " + where + " and m.uniqueId in :majorIds group by " + group)
+			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and a.major.uniqueId in :majorIds group by " + group)
 					.setLong("sessionId", c.getAcademicArea().getSessionId()).setLong("areaId", c.getAcademicArea().getUniqueId())
 					.setParameterList("majorIds", majorIds)
 					.setCacheable(true).list();
 		} else {
 			// students with multiple majors
 			Map<String, Long> params = new HashMap<String, Long>();
-			int idx = 1;
+			int idx = 0;
 			for (PosMajor major: c.getMajors()) {
-				from += " inner join s.posMajors m" + idx;
-				where += " and m" + idx + ".uniqueId = :m" + idx;
+				if (idx == 0) {
+					where += " and a.major.uniqueId = :m" + idx;
+				} else {
+					from += " inner join s.areaClasfMajors a" + idx;
+					where += " and a" + idx + ".academicArea.uniqueId = :areaId and a" + idx + ".major.uniqueId = :m" + idx;
+				}
 				params.put("m" + idx, major.getUniqueId());
 				idx ++;
 			}
@@ -3307,38 +3312,44 @@ public class CurriculaServlet implements CurriculaService {
 			lines = q.setCacheable(true).list();
 		}
 		Hashtable<Long, Integer> clasf2enrl = new Hashtable<Long, Integer>();
-		for (Object[] o : lines) {
-			Long clasfId = (Long)o[0];
-			int enrl = ((Number)o[1]).intValue();
-			if (clasfId != null)
-				clasf2enrl.put(clasfId, enrl);
-		}
+		if (lines != null)
+			for (Object[] o : lines) {
+				Long clasfId = (Long)o[0];
+				int enrl = ((Number)o[1]).intValue();
+				if (clasfId != null)
+					clasf2enrl.put(clasfId, enrl);
+			}
 		return clasf2enrl;
 	}
 	
 	private Hashtable<Long, Set<Long>> loadClasf2enrl(org.hibernate.Session hibSession, Long acadAreaId, Collection<Long> majors, boolean multipleMajors) {
 		List<Object[]> lines = null;
 		String select = "a.academicClassification.uniqueId, s.uniqueId";
-		String from = "StudentClassEnrollment e inner join e.student s inner join s.academicAreaClassifications a";
+		String from = "StudentClassEnrollment e inner join e.student s inner join s.areaClasfMajors a";
 		String where = "s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :areaId";
 		if (majors.isEmpty()) {
-			// students with no major
-			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + (multipleMajors ? " and s.posMajors is empty" : ""))
+			// students with all majors
+			if (!multipleMajors)
+				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where)
 					.setLong("sessionId", getAcademicSessionId()).setLong("areaId", acadAreaId)
 					.setCacheable(true).list();
 		} else if (!multipleMajors || majors.size() == 1) {
 			// students with one major
-			lines = hibSession.createQuery("select " + select + " from " + from + " inner join s.posMajors m where " + where + " and m.uniqueId in :majorIds")
+			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and a.major.uniqueId in :majorIds")
 					.setLong("sessionId", getAcademicSessionId()).setLong("areaId", acadAreaId)
 					.setParameterList("majorIds", majors)
 					.setCacheable(true).list();
 		} else {
 			// students with multiple majors
 			Map<String, Long> params = new HashMap<String, Long>();
-			int idx = 1;
+			int idx = 0;
 			for (Long major: majors) {
-				from += " inner join s.posMajors m" + idx;
-				where += " and m" + idx + ".uniqueId = :m" + idx;
+				if (idx == 0) {
+					where += " and a.major.uniqueId = :m" + idx;
+				} else {
+					from += " inner join s.areaClasfMajors a" + idx;
+					where += " and a" + idx + ".academicArea.uniqueId = :areaId and a" + idx + ".major.uniqueId = :m" + idx;
+				}
 				params.put("m" + idx, major);
 				idx ++;
 			}
@@ -3349,38 +3360,41 @@ public class CurriculaServlet implements CurriculaService {
 			lines = q.setCacheable(true).list();
 		}
 		Hashtable<Long, Set<Long>> clasf2enrl = new Hashtable<Long, Set<Long>>();
-		for (Object[] o : lines) {
-			Long clasfId = (Long)o[0];
-			Long studentId = (Long)o[1];
-			Set<Long> students = clasf2enrl.get(clasfId);
-			if (students == null) {
-				students = new HashSet<Long>();
-				clasf2enrl.put(clasfId, students);
+		if (lines != null)
+			for (Object[] o : lines) {
+				Long clasfId = (Long)o[0];
+				Long studentId = (Long)o[1];
+				Set<Long> students = clasf2enrl.get(clasfId);
+				if (students == null) {
+					students = new HashSet<Long>();
+					clasf2enrl.put(clasfId, students);
+				}
+				students.add(studentId);
 			}
-			students.add(studentId);
-		}
 		return clasf2enrl;
 	}
 	
 	private Hashtable<String, Hashtable<String, Integer>> loadClasfMajor2ll(org.hibernate.Session hibSession, Curriculum c) {
 		List<Object[]> lines = null;
 		String select = "f.code, m.code, count(distinct s)";
-		String from = "LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a inner join a.academicClassification f";
+		String from = "LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.academicClassification f inner join a.major m";
 		String where = "x.subjectArea.session.uniqueId = :sessionId and a.academicArea.academicAreaAbbreviation = :acadAbbv";
 		String group = "f.code, m.code";
 		if (c.getMajors().isEmpty()) {
-			// students with no major
-			select = "f.code, '', count(distinct s)";
-			group = "f.code";
-			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + (c.isMultipleMajors() ? " and s.posMajors is empty" : "") + " group by " + group)
-					.setLong("sessionId", c.getAcademicArea().getSessionId()).setString("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation())
-					.setCacheable(true).list();
+			// students with all majors
+			if (!c.isMultipleMajors()) {
+				select = "f.code, '', count(distinct s)";
+				group = "f.code";
+				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " group by " + group)
+						.setLong("sessionId", c.getAcademicArea().getSessionId()).setString("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation())
+						.setCacheable(true).list();
+			}
 		} else if (!c.isMultipleMajors() || c.getMajors().size() == 1) {
 			// students with one major
 			List<String> majorCodes = new ArrayList<String>();
 			for (PosMajor major: c.getMajors())
 				majorCodes.add(major.getCode());
-			lines = hibSession.createQuery("select " + select + " from " + from + " inner join s.posMajors m where " + where + " and m.code in :majorCodes group by " + group)
+			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and m.code in :majorCodes group by " + group)
 					.setLong("sessionId", c.getAcademicArea().getSessionId()).setString("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation())
 					.setParameterList("majorCodes", majorCodes)
 					.setCacheable(true).list();
@@ -3389,10 +3403,14 @@ public class CurriculaServlet implements CurriculaService {
 			select = "f.code, '', count(distinct s)";
 			group = "f.code";
 			Map<String, String> params = new HashMap<String, String>();
-			int idx = 1;
+			int idx = 0;
 			for (PosMajor major: c.getMajors()) {
-				from += " inner join s.posMajors m" + idx;
-				where += " and m" + idx + ".code = :m" + idx;
+				if (idx == 0) {
+					where += " and m.code = :m" + idx;
+				} else {
+					from += " inner join s.areaClasfMajors a" + idx;
+					where += " and a" + idx + ".academicArea.academicAreaAbbreviation = :acadAbbv and a" + idx + ".major.code = :m" + idx;
+				}
 				params.put("m" + idx, major.getCode());
 				idx ++;
 			}
@@ -3403,30 +3421,32 @@ public class CurriculaServlet implements CurriculaService {
 			lines = q.setCacheable(true).list();
 		}
 		Hashtable<String, Hashtable<String, Integer>> clasfMajor2ll = new Hashtable<String, Hashtable<String,Integer>>();
-		for (Object[] o: lines) {
-			String clasfCode = (String)o[0];
-			if (clasfCode == null) continue;
-			String majorCode = (String)o[1];
-			int enrl = ((Number)o[2]).intValue();
-			Hashtable<String, Integer> major2ll = clasfMajor2ll.get(clasfCode);
-			if (major2ll == null) {
-				major2ll = new Hashtable<String, Integer>();
-				clasfMajor2ll.put(clasfCode, major2ll);
+		if (lines != null)
+			for (Object[] o: lines) {
+				String clasfCode = (String)o[0];
+				if (clasfCode == null) continue;
+				String majorCode = (String)o[1];
+				int enrl = ((Number)o[2]).intValue();
+				Hashtable<String, Integer> major2ll = clasfMajor2ll.get(clasfCode);
+				if (major2ll == null) {
+					major2ll = new Hashtable<String, Integer>();
+					clasfMajor2ll.put(clasfCode, major2ll);
+				}
+				major2ll.put(majorCode, enrl);
 			}
-			major2ll.put(majorCode, enrl);
-		}
 		return clasfMajor2ll;
 	}
 	
 	private Hashtable<String, Integer> loadClasf2ll(org.hibernate.Session hibSession, Curriculum c) {
 		List<Object[]> lines = null;
 		String select = "f.code, count(distinct s)";
-		String from = "LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a inner join a.academicClassification f";
+		String from = "LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.academicClassification f";
 		String where = "x.subjectArea.session.uniqueId = :sessionId and a.academicArea.academicAreaAbbreviation = :acadAbbv";
 		String group = "f.code";
 		if (c.getMajors().isEmpty()) {
-			// students with no major
-			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + (c.isMultipleMajors() ? " and s.posMajors is empty" : "") + " group by " + group)
+			// students with all majors
+			if (!c.isMultipleMajors())
+				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " group by " + group)
 					.setLong("sessionId", c.getAcademicArea().getSessionId()).setString("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation())
 					.setCacheable(true).list();
 		} else if (!c.isMultipleMajors() || c.getMajors().size() == 1) {
@@ -3434,17 +3454,21 @@ public class CurriculaServlet implements CurriculaService {
 			List<String> majorCodes = new ArrayList<String>();
 			for (PosMajor major: c.getMajors())
 				majorCodes.add(major.getCode());
-			lines = hibSession.createQuery("select " + select + " from " + from + " inner join s.posMajors m where " + where + " and m.code in :majorCodes group by " + group)
+			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and a.major.code in :majorCodes group by " + group)
 					.setLong("sessionId", c.getAcademicArea().getSessionId()).setString("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation())
 					.setParameterList("majorCodes", majorCodes)
 					.setCacheable(true).list();
 		} else {
 			// students with multiple majors
 			Map<String, String> params = new HashMap<String, String>();
-			int idx = 1;
+			int idx = 0;
 			for (PosMajor major: c.getMajors()) {
-				from += " inner join s.posMajors m" + idx;
-				where += " and m" + idx + ".code = :m" + idx;
+				if (idx == 0) {
+					where += " and a.major.code = :m" + idx;
+				} else {
+					from += " inner join s.areaClasfMajors a" + idx;
+					where += " and a" + idx + ".academicArea.academicAreaAbbreviation = :acadAbbv and a" + idx + ".major.code = :m" + idx;
+				}
 				params.put("m" + idx, major.getCode());
 				idx ++;
 			}
@@ -3455,32 +3479,35 @@ public class CurriculaServlet implements CurriculaService {
 			lines = q.setCacheable(true).list();
 		}
 		Hashtable<String, Integer> clasf2ll = new Hashtable<String, Integer>();
-		for (Object[] o: lines) {
-			String clasfCode = (String)o[0];
-			int enrl = ((Number)o[1]).intValue();
-			if (clasfCode != null)
-				clasf2ll.put(clasfCode, enrl);
-		}
+		if (lines != null)
+			for (Object[] o: lines) {
+				String clasfCode = (String)o[0];
+				int enrl = ((Number)o[1]).intValue();
+				if (clasfCode != null)
+					clasf2ll.put(clasfCode, enrl);
+			}
 		return clasf2ll;
 	}
 	
 	private Hashtable<String, HashMap<String, Set<Long>>> loadClasfMajor2ll(org.hibernate.Session hibSession, String acadAreaAbbv, Collection<PosMajor> majors, boolean multipleMajors) {
 		List<Object[]> lines = null;
 		String select = "f.code, m.code, s.uniqueId";
-		String from = "LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a inner join a.academicClassification f";
+		String from = "LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.academicClassification f inner join a.major m";
 		String where = "x.subjectArea.session.uniqueId = :sessionId and a.academicArea.academicAreaAbbreviation = :acadAbbv";
 		if (majors.isEmpty()) {
-			// students with no major
-			select = "f.code, '', s.uniqueId";
-			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + (multipleMajors ? " and s.posMajors is empty" : ""))
-					.setLong("sessionId", getAcademicSessionId()).setString("acadAbbv", acadAreaAbbv)
-					.setCacheable(true).list();
+			// students with all majors
+			if (!multipleMajors) {
+				select = "f.code, '', s.uniqueId";
+				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where)
+						.setLong("sessionId", getAcademicSessionId()).setString("acadAbbv", acadAreaAbbv)
+						.setCacheable(true).list();
+			}
 		} else if (!multipleMajors || majors.size() == 1) {
 			List<String> codes = new ArrayList<String>();
 			for (PosMajor major: majors)
 				codes.add(major.getCode());
 			// students with one major
-			lines = hibSession.createQuery("select " + select + " from " + from + " inner join s.posMajors m where " + where + " and m.code in :majorCodes")
+			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and m.code in :majorCodes")
 					.setLong("sessionId", getAcademicSessionId()).setString("acadAbbv", acadAreaAbbv)
 					.setParameterList("majorCodes", codes)
 					.setCacheable(true).list();
@@ -3488,10 +3515,14 @@ public class CurriculaServlet implements CurriculaService {
 			// students with multiple majors
 			select = "f.code, '', s.uniqueId";
 			Map<String, String> params = new HashMap<String, String>();
-			int idx = 1;
+			int idx = 0;
 			for (PosMajor major: majors) {
-				from += " inner join s.posMajors m" + idx;
-				where += " and m" + idx + ".code = :m" + idx;
+				if (idx == 0) {
+					where += " and m.code = :m" + idx;
+				} else {
+					from += " inner join s.areaClasfMajors a" + idx;
+					where += " and a" + idx + ".academicArea.academicAreaAbbreviation = :acadAbbv and a" + idx + ".major.code = :m" + idx;
+				}
 				params.put("m" + idx, major.getCode());
 				idx ++;
 			}
@@ -3502,22 +3533,23 @@ public class CurriculaServlet implements CurriculaService {
 			lines = q.setCacheable(true).list();
 		}
 		Hashtable<String, HashMap<String, Set<Long>>> clasf2ll = new Hashtable<String, HashMap<String, Set<Long>>>();
-		for (Object[] o : lines) {
-			String clasfCode = (String)o[0];
-			String majorCode = (String)o[1];
-			Long studentId = (Long)o[2];
-			HashMap<String, Set<Long>> major2students = clasf2ll.get(clasfCode);
-			if (major2students == null) {
-				major2students = new HashMap<String, Set<Long>>();
-				clasf2ll.put(clasfCode, major2students);
+		if (lines != null)
+			for (Object[] o : lines) {
+				String clasfCode = (String)o[0];
+				String majorCode = (String)o[1];
+				Long studentId = (Long)o[2];
+				HashMap<String, Set<Long>> major2students = clasf2ll.get(clasfCode);
+				if (major2students == null) {
+					major2students = new HashMap<String, Set<Long>>();
+					clasf2ll.put(clasfCode, major2students);
+				}
+				Set<Long> students = major2students.get(majorCode);
+				if (students == null) {
+					students = new HashSet<Long>();
+					major2students.put(majorCode, students);
+				}
+				students.add(studentId);
 			}
-			Set<Long> students = major2students.get(majorCode);
-			if (students == null) {
-				students = new HashSet<Long>();
-				major2students.put(majorCode, students);
-			}
-			students.add(studentId);
-		}
 		
 		return clasf2ll;
 	}
@@ -3525,12 +3557,13 @@ public class CurriculaServlet implements CurriculaService {
 	private Hashtable<Long, Hashtable<Long, Integer>> loadClasfCourse2enrl(org.hibernate.Session hibSession, Curriculum c) {
 		List<Object[]> lines = null;
 		String select = "a.academicClassification.uniqueId, e.courseOffering.uniqueId, count(distinct s)";
-		String from = "StudentClassEnrollment e inner join e.student s inner join s.academicAreaClassifications a";
+		String from = "StudentClassEnrollment e inner join e.student s inner join s.areaClasfMajors a inner join a.major m";
 		String where = "s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :areaId";
 		String group = "a.academicClassification.uniqueId, e.courseOffering.uniqueId";
 		if (c.getMajors().isEmpty()) {
 			// students with no major
-			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + (c.isMultipleMajors() ? " and s.posMajors is empty" : "") + " group by " + group)
+			if (!c.isMultipleMajors())
+				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " group by " + group)
 					.setLong("sessionId", c.getAcademicArea().getSessionId()).setLong("areaId", c.getAcademicArea().getUniqueId())
 					.setCacheable(true).list();
 		} else if (!c.isMultipleMajors() || c.getMajors().size() == 1) {
@@ -3538,17 +3571,22 @@ public class CurriculaServlet implements CurriculaService {
 			List<Long> majorIds = new ArrayList<Long>();
 			for (PosMajor major: c.getMajors())
 				majorIds.add(major.getUniqueId());
-			lines = hibSession.createQuery("select " + select + " from " + from + " inner join s.posMajors m where " + where + " and m.uniqueId in :majorIds group by " + group)
+			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and m.uniqueId in :majorIds group by " + group)
 					.setLong("sessionId", c.getAcademicArea().getSessionId()).setLong("areaId", c.getAcademicArea().getUniqueId())
 					.setParameterList("majorIds", majorIds)
 					.setCacheable(true).list();
 		} else {
 			// students with multiple majors
 			Map<String, Long> params = new HashMap<String, Long>();
-			int idx = 1;
+			int idx = 0;
 			for (PosMajor major: c.getMajors()) {
-				from += " inner join s.posMajors m" + idx;
-				where += " and m" + idx + ".uniqueId = :m" + idx;
+				if (idx == 0) {
+					where += " and m.uniqueId = :m" + idx;
+				} else {
+					from += " inner join s.areaClasfMajors a" + idx;
+					where += " and a" + idx + ".academicArea.uniqueId = :areaId and a" + idx + ".major.uniqueId = :m" + idx;
+					
+				}
 				params.put("m" + idx, major.getUniqueId());
 				idx ++;
 			}
@@ -3559,44 +3597,50 @@ public class CurriculaServlet implements CurriculaService {
 			lines = q.setCacheable(true).list();
 		}
 		Hashtable<Long, Hashtable<Long, Integer>> clasf2course2enrl = new Hashtable<Long, Hashtable<Long,Integer>>();
-		for (Object[] o : lines) {
-			Long clasfId = (Long)o[0];
-			if (clasfId == null) continue;
-			Long courseId = (Long)o[1];
-			int enrl = ((Number)o[2]).intValue();
-			Hashtable<Long, Integer> course2enrl = clasf2course2enrl.get(clasfId);
-			if (course2enrl == null) {
-				course2enrl = new Hashtable<Long, Integer>();
-				clasf2course2enrl.put(clasfId, course2enrl);
-			}
-			course2enrl.put(courseId, enrl);
-		}
+		if (lines != null)
+			for (Object[] o : lines) {
+				Long clasfId = (Long)o[0];
+				if (clasfId == null) continue;
+				Long courseId = (Long)o[1];
+				int enrl = ((Number)o[2]).intValue();
+				Hashtable<Long, Integer> course2enrl = clasf2course2enrl.get(clasfId);
+				if (course2enrl == null) {
+					course2enrl = new Hashtable<Long, Integer>();
+					clasf2course2enrl.put(clasfId, course2enrl);
+				}
+				course2enrl.put(courseId, enrl);
+			}		
 		return clasf2course2enrl;
 	}
 	
 	private Hashtable<Long, Hashtable<CourseInterface, Set<Long>>> loadClasfCourse2enrl(org.hibernate.Session hibSession, Long acadAreaId, Collection<Long> majors, boolean multipleMajors) {
 		List<Object[]> lines = null;
 		String select = "a.academicClassification.uniqueId, e.courseOffering.uniqueId, e.courseOffering.subjectArea.subjectAreaAbbreviation || ' ' || e.courseOffering.courseNbr, s.uniqueId";
-		String from = "StudentClassEnrollment e inner join e.student s inner join s.academicAreaClassifications a";
+		String from = "StudentClassEnrollment e inner join e.student s inner join s.areaClasfMajors a inner join a.major m";
 		String where = "s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :areaId";
 		if (majors.isEmpty()) {
 			// students with no major
-			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + (multipleMajors ? " and s.posMajors is empty" : ""))
+			if (!multipleMajors)
+				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where)
 					.setLong("sessionId", getAcademicSessionId()).setLong("areaId", acadAreaId)
 					.setCacheable(true).list();
 		} else if (!multipleMajors || majors.size() == 1) {
 			// students with one major
-			lines = hibSession.createQuery("select " + select + " from " + from + " inner join s.posMajors m where " + where + " and m.uniqueId in :majorIds")
+			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and m.uniqueId in :majorIds")
 					.setLong("sessionId", getAcademicSessionId()).setLong("areaId", acadAreaId)
 					.setParameterList("majorIds", majors)
 					.setCacheable(true).list();
 		} else {
 			// students with multiple majors
 			Map<String, Long> params = new HashMap<String, Long>();
-			int idx = 1;
+			int idx = 0;
 			for (Long major: majors) {
-				from += " inner join s.posMajors m" + idx;
-				where += " and m" + idx + ".uniqueId = :m" + idx;
+				if (idx == 0) {
+					where += " and m.uniqueId = :m" + idx;
+				} else {
+					from += " inner join s.areaClasfMajors a" + idx;
+					where += " and a" + idx + ".academicArea.uniqueId = :areaId and a" + idx + ".major.uniqueId = :m" + idx;
+				}
 				params.put("m" + idx, major);
 				idx ++;
 			}
@@ -3607,26 +3651,27 @@ public class CurriculaServlet implements CurriculaService {
 			lines = q.setCacheable(true).list();
 		}
 		Hashtable<Long, Hashtable<CourseInterface, Set<Long>>> clasf2course2enrl = new Hashtable<Long, Hashtable<CourseInterface,Set<Long>>>();
-		for (Object[] o : lines) {
-			Long clasfId = (Long)o[0];
-			Long courseId = (Long)o[1];
-			String courseName = (String)o[2];
-			Long studentId = (Long)o[3];
-			CourseInterface course = new CourseInterface();
-			course.setId(courseId);
-			course.setCourseName(courseName);
-			Hashtable<CourseInterface, Set<Long>> course2enrl = clasf2course2enrl.get(clasfId);
-			if (course2enrl == null) {
-				course2enrl = new Hashtable<CourseInterface, Set<Long>>();
-				clasf2course2enrl.put(clasfId, course2enrl);
+		if (lines != null)
+			for (Object[] o : lines) {
+				Long clasfId = (Long)o[0];
+				Long courseId = (Long)o[1];
+				String courseName = (String)o[2];
+				Long studentId = (Long)o[3];
+				CourseInterface course = new CourseInterface();
+				course.setId(courseId);
+				course.setCourseName(courseName);
+				Hashtable<CourseInterface, Set<Long>> course2enrl = clasf2course2enrl.get(clasfId);
+				if (course2enrl == null) {
+					course2enrl = new Hashtable<CourseInterface, Set<Long>>();
+					clasf2course2enrl.put(clasfId, course2enrl);
+				}
+				Set<Long> students = course2enrl.get(course);
+				if (students == null) {
+					students = new HashSet<Long>();
+					course2enrl.put(course, students);
+				}
+				students.add(studentId);
 			}
-			Set<Long> students = course2enrl.get(course);
-			if (students == null) {
-				students = new HashSet<Long>();
-				course2enrl.put(course, students);
-			}
-			students.add(studentId);
-		}
 		
 		return clasf2course2enrl;
 	}
@@ -3634,24 +3679,26 @@ public class CurriculaServlet implements CurriculaService {
 	private Hashtable<String, Hashtable<String, Hashtable<Long, Integer>>> loadClasfMajorCourse2ll(org.hibernate.Session hibSession, Curriculum c) {
 		List<Object[]> lines = null;
 		String select = "f.code, m.code, co.uniqueId, count(distinct s)";
-		String from = "CourseOffering co left outer join co.demandOffering do, LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a inner join a.academicClassification f";
+		String from = "CourseOffering co left outer join co.demandOffering do, LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.academicClassification f inner join a.major m";
 		String where = "x.subjectArea.session.uniqueId = :sessionId and a.academicArea.academicAreaAbbreviation = :acadAbbv and " +
 				"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
 				"(do is not null and do.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and do.permId=x.coursePermId) or (x.coursePermId is null and do.courseNbr=x.courseNbr))))";
 		String group = "f.code, m.code, co.uniqueId";
 		if (c.getMajors().isEmpty()) {
 			// students with no major
-			select = "f.code, '', co.uniqueId, count(distinct s)";
-			group = "f.code, co.uniqueId";
-			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + (c.isMultipleMajors() ? " and s.posMajors is empty" : "") + " group by " + group)
-					.setLong("sessionId", c.getAcademicArea().getSessionId()).setString("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation())
-					.setCacheable(true).list();
+			if (!c.isMultipleMajors()) {
+				select = "f.code, '', co.uniqueId, count(distinct s)";
+				group = "f.code, co.uniqueId";
+				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " group by " + group)
+						.setLong("sessionId", c.getAcademicArea().getSessionId()).setString("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation())
+						.setCacheable(true).list();
+			}
 		} else if (!c.isMultipleMajors() || c.getMajors().size() == 1) {
 			// students with one major
 			List<String> majorCodes = new ArrayList<String>();
 			for (PosMajor major: c.getMajors())
 				majorCodes.add(major.getCode());
-			lines = hibSession.createQuery("select " + select + " from " + from + " inner join s.posMajors m where " + where + " and m.code in :majorCodes group by " + group)
+			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and m.code in :majorCodes group by " + group)
 					.setLong("sessionId", c.getAcademicArea().getSessionId()).setString("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation())
 					.setParameterList("majorCodes", majorCodes)
 					.setCacheable(true).list();
@@ -3660,10 +3707,14 @@ public class CurriculaServlet implements CurriculaService {
 			select = "f.code, '', co.uniqueId, count(distinct s)";
 			group = "f.code, co.uniqueId";
 			Map<String, String> params = new HashMap<String, String>();
-			int idx = 1;
+			int idx = 0;
 			for (PosMajor major: c.getMajors()) {
-				from += " inner join s.posMajors m" + idx;
-				where += " and m" + idx + ".code = :m" + idx;
+				if (idx == 0) {
+					where += " and m.code = :m" + idx;
+				} else {
+					from += " inner join s.areaClasfMajors a" + idx;
+					where += " and a" + idx + ".academicArea.academicAreaAbbreviation = :acadAbbv and a" + idx + ".major.code = :m" + idx;
+				}
 				params.put("m" + idx, major.getCode());
 				idx ++;
 			}
@@ -3674,46 +3725,49 @@ public class CurriculaServlet implements CurriculaService {
 			lines = q.setCacheable(true).list();
 		}
 		Hashtable<String, Hashtable<String, Hashtable<Long, Integer>>> clasfMajor2course2ll = new Hashtable<String, Hashtable<String, Hashtable<Long,Integer>>>();
-		for (Object[] o: lines) {
-			String clasfCode = (String)o[0];
-			if (clasfCode == null) continue;
-			String majorCode = (String)o[1];
-			Long courseId = (Long)o[2];
-			int enrl = ((Number)o[3]).intValue();
-			Hashtable<String, Hashtable<Long, Integer>> major2course2ll = clasfMajor2course2ll.get(clasfCode);
-			if (major2course2ll == null) {
-				major2course2ll = new Hashtable<String, Hashtable<Long,Integer>>();
-				clasfMajor2course2ll.put(clasfCode, major2course2ll);
+		if (lines != null)
+			for (Object[] o: lines) {
+				String clasfCode = (String)o[0];
+				if (clasfCode == null) continue;
+				String majorCode = (String)o[1];
+				Long courseId = (Long)o[2];
+				int enrl = ((Number)o[3]).intValue();
+				Hashtable<String, Hashtable<Long, Integer>> major2course2ll = clasfMajor2course2ll.get(clasfCode);
+				if (major2course2ll == null) {
+					major2course2ll = new Hashtable<String, Hashtable<Long,Integer>>();
+					clasfMajor2course2ll.put(clasfCode, major2course2ll);
+				}
+				Hashtable<Long, Integer> course2enrl = major2course2ll.get(majorCode);
+				if (course2enrl == null) {
+					course2enrl = new Hashtable<Long, Integer>();
+					major2course2ll.put(majorCode, course2enrl);
+				}
+				course2enrl.put(courseId, enrl);
 			}
-			Hashtable<Long, Integer> course2enrl = major2course2ll.get(majorCode);
-			if (course2enrl == null) {
-				course2enrl = new Hashtable<Long, Integer>();
-				major2course2ll.put(majorCode, course2enrl);
-			}
-			course2enrl.put(courseId, enrl);
-		}
 		return clasfMajor2course2ll;
 	}
 	
 	private Hashtable<String, Hashtable<CourseInterface, HashMap<String, Set<Long>>>> loadClasfCourseMajor2ll(org.hibernate.Session hibSession, String acadAreaAbbv, Collection<PosMajor> majors, boolean multipleMajors) {
 		List<Object[]> lines = null;
 		String select = "f.code, co.uniqueId, co.subjectArea.subjectAreaAbbreviation || ' ' || co.courseNbr, m.code, s.uniqueId";
-		String from = "CourseOffering co left outer join co.demandOffering do, LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a inner join a.academicClassification f";
+		String from = "CourseOffering co left outer join co.demandOffering do, LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.academicClassification f inner join a.major m";
 		String where = "x.subjectArea.session.uniqueId = :sessionId and a.academicArea.academicAreaAbbreviation = :acadAbbv and " +
 				"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
 				"(do is not null and do.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and do.permId=x.coursePermId) or (x.coursePermId is null and do.courseNbr=x.courseNbr))))";
 		if (majors.isEmpty()) {
 			// students with no major
-			select = "f.code, co.uniqueId, co.subjectArea.subjectAreaAbbreviation || ' ' || co.courseNbr, '', s.uniqueId";
-			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + (multipleMajors ? " and s.posMajors is empty" : ""))
-					.setLong("sessionId", getAcademicSessionId()).setString("acadAbbv", acadAreaAbbv)
-					.setCacheable(true).list();
+			if (!multipleMajors) {
+				select = "f.code, co.uniqueId, co.subjectArea.subjectAreaAbbreviation || ' ' || co.courseNbr, '', s.uniqueId";
+				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where)
+						.setLong("sessionId", getAcademicSessionId()).setString("acadAbbv", acadAreaAbbv)
+						.setCacheable(true).list();
+			}
 		} else if (!multipleMajors || majors.size() == 1) {
 			List<String> codes = new ArrayList<String>();
 			for (PosMajor major: majors)
 				codes.add(major.getCode());
 			// students with one major
-			lines = hibSession.createQuery("select " + select + " from " + from + " inner join s.posMajors m where " + where + " and m.code in :majorCodes")
+			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and m.code in :majorCodes")
 					.setLong("sessionId", getAcademicSessionId()).setString("acadAbbv", acadAreaAbbv)
 					.setParameterList("majorCodes", codes)
 					.setCacheable(true).list();
@@ -3721,10 +3775,14 @@ public class CurriculaServlet implements CurriculaService {
 			// students with multiple majors
 			select = "f.code, co.uniqueId, co.subjectArea.subjectAreaAbbreviation || ' ' || co.courseNbr, '', s.uniqueId";
 			Map<String, String> params = new HashMap<String, String>();
-			int idx = 1;
+			int idx = 0;
 			for (PosMajor major: majors) {
-				from += " inner join s.posMajors m" + idx;
-				where += " and m" + idx + ".code = :m" + idx;
+				if (idx == 0) {
+					where += " and m.code = :m" + idx;
+				} else {
+					from += " inner join s.areaClasfMajors a" + idx;
+					where += " and a" + idx + ".academicArea.academicAreaAbbreviation = :acadAbbv and a" + idx + ".major.code = :m" + idx;
+				}
 				params.put("m" + idx, major.getCode());
 				idx ++;
 			}
@@ -3735,43 +3793,44 @@ public class CurriculaServlet implements CurriculaService {
 			lines = q.setCacheable(true).list();
 		}
 		Hashtable<String, Hashtable<CourseInterface, HashMap<String, Set<Long>>>> clasf2course2ll = new Hashtable<String, Hashtable<CourseInterface,HashMap<String,Set<Long>>>>();
-		for (Object[] o : lines) {
-			String clasfCode = (String)o[0];
-			Long courseId = (Long)o[1];
-			String courseName = (String)o[2];
-			String majorCode = (String)o[3];
-			Long studentId = (Long)o[4];
-			CourseInterface course = new CourseInterface();
-			course.setId(courseId);
-			course.setCourseName(courseName);
-			Hashtable<CourseInterface, HashMap<String,Set<Long>>> course2ll = clasf2course2ll.get(clasfCode);
-			if (course2ll == null) {
-				course2ll = new Hashtable<CourseInterface, HashMap<String,Set<Long>>>();
-				clasf2course2ll.put(clasfCode, course2ll);
-			}
-			HashMap<String,Set<Long>> major2students = course2ll.get(course);
-			if (major2students == null) {
-				major2students = new HashMap<String, Set<Long>>();
-				course2ll.put(course, major2students);
-			}
-			if (multipleMajors && majors.size() > 1) {
-				for (PosMajor major: majors) {
-					Set<Long> students = major2students.get(major.getCode());
+		if (lines != null)
+			for (Object[] o : lines) {
+				String clasfCode = (String)o[0];
+				Long courseId = (Long)o[1];
+				String courseName = (String)o[2];
+				String majorCode = (String)o[3];
+				Long studentId = (Long)o[4];
+				CourseInterface course = new CourseInterface();
+				course.setId(courseId);
+				course.setCourseName(courseName);
+				Hashtable<CourseInterface, HashMap<String,Set<Long>>> course2ll = clasf2course2ll.get(clasfCode);
+				if (course2ll == null) {
+					course2ll = new Hashtable<CourseInterface, HashMap<String,Set<Long>>>();
+					clasf2course2ll.put(clasfCode, course2ll);
+				}
+				HashMap<String,Set<Long>> major2students = course2ll.get(course);
+				if (major2students == null) {
+					major2students = new HashMap<String, Set<Long>>();
+					course2ll.put(course, major2students);
+				}
+				if (multipleMajors && majors.size() > 1) {
+					for (PosMajor major: majors) {
+						Set<Long> students = major2students.get(major.getCode());
+						if (students == null) {
+							students = new HashSet<Long>();
+							major2students.put(major.getCode(), students);
+						}
+						students.add(studentId);
+					}
+				} else {
+					Set<Long> students = major2students.get(majorCode);
 					if (students == null) {
 						students = new HashSet<Long>();
-						major2students.put(major.getCode(), students);
+						major2students.put(majorCode, students);
 					}
 					students.add(studentId);
 				}
-			} else {
-				Set<Long> students = major2students.get(majorCode);
-				if (students == null) {
-					students = new HashSet<Long>();
-					major2students.put(majorCode, students);
-				}
-				students.add(studentId);
 			}
-		}
 		
 		return clasf2course2ll;
 	}
@@ -3780,7 +3839,7 @@ public class CurriculaServlet implements CurriculaService {
 		Map<Long, Map<Long, Map<Long, Set<Long>>>> area2major2clasf2enrl = new HashMap<Long, Map<Long, Map<Long, Set<Long>>>>();
 		for (Object[] o : (List<Object[]>)hibSession.createQuery(
 				"select distinct a.academicArea.uniqueId, m.uniqueId, a.academicClassification.uniqueId, e.student.uniqueId " +
-				"from StudentClassEnrollment e inner join e.student.academicAreaClassifications a left outer join e.student.posMajors m where " +
+				"from StudentClassEnrollment e inner join e.student.areaClasfMajors a left outer join a.major m where " +
 				"e.courseOffering.uniqueId = :courseId")
 				.setLong("courseId", courseOfferingId)
 				.setCacheable(true).list()) {
@@ -3813,7 +3872,7 @@ public class CurriculaServlet implements CurriculaService {
 		Map<String, Map<String, Map<String, Set<Long>>>> area2major2clasf2ll = new HashMap<String, Map<String, Map<String, Set<Long>>>>();
 		for (Object[] o : (List<Object[]>)hibSession.createQuery(
 				"select distinct r.academicAreaAbbreviation, m.code, f.code, s.uniqueId from " +
-				"LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a left outer join s.posMajors m " +
+				"LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a left outer join a.major m " +
 				"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co left outer join co.demandOffering do where " +
 				"x.subjectArea.session.uniqueId = :sessionId and co.uniqueId = :courseId and "+
 				"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
@@ -3850,8 +3909,8 @@ public class CurriculaServlet implements CurriculaService {
 		Hashtable<String, Hashtable<String, Hashtable<String, Integer>>> area2major2clasf2ll = new Hashtable<String, Hashtable<String,Hashtable<String,Integer>>>();
 		for (Object[] o : (List<Object[]>)hibSession.createQuery(
 				"select a.academicAreaAbbreviation, m.code, f.code, count(distinct s) from LastLikeCourseDemand x inner join x.student s " +
-				"inner join s.academicAreaClassifications ac inner join ac.academicClassification f inner join ac.academicArea a " +
-				"inner join s.posMajors m where x.subjectArea.session.uniqueId = :sessionId " +
+				"inner join s.areaClasfMajors ac inner join ac.academicClassification f inner join ac.academicArea a " +
+				"inner join ac.major m where x.subjectArea.session.uniqueId = :sessionId " +
 				"group by a.academicAreaAbbreviation, m.code, f.code")
 				.setLong("sessionId", getAcademicSessionId())
 				.setCacheable(true).list()) {
@@ -3878,7 +3937,7 @@ public class CurriculaServlet implements CurriculaService {
 		Map<Long, Map<String, Map<String, Map<String, Set<Long>>>>> course2area2major2clasf2ll = new HashMap<Long, Map<String, Map<String, Map<String, Set<Long>>>>>();
 		for (Object[] o : (List<Object[]>)hibSession.createQuery(
 				"select distinct co.uniqueId, r.academicAreaAbbreviation, m.code, f.code, s.uniqueId from " +
-				"LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a left outer join s.posMajors m " +
+				"LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.major m " +
 				"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co left outer join co.demandOffering do where " +
 				"x.subjectArea.session.uniqueId = :sessionId and co.subjectArea.session.uniqueId = :sessionId and "+
 				"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
@@ -3919,12 +3978,13 @@ public class CurriculaServlet implements CurriculaService {
 	private Hashtable<Long, Integer> loadClasf2req(org.hibernate.Session hibSession, Curriculum c) {
 		List<Object[]> lines = null;
 		String select = "a.academicClassification.uniqueId, count(distinct s)";
-		String from = "CourseRequest r inner join r.courseDemand.student s inner join s.academicAreaClassifications a";
+		String from = "CourseRequest r inner join r.courseDemand.student s inner join s.areaClasfMajors a inner join a.major m";
 		String where = "s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :areaId";
 		String group = "a.academicClassification.uniqueId";
 		if (c.getMajors().isEmpty()) {
 			// students with no major
-			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + (c.isMultipleMajors() ? " and s.posMajors is empty" : "") + " group by " + group)
+			if (!c.isMultipleMajors())
+				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where  + " group by " + group)
 					.setLong("sessionId", c.getAcademicArea().getSessionId()).setLong("areaId", c.getAcademicArea().getUniqueId())
 					.setCacheable(true).list();
 		} else if (!c.isMultipleMajors() || c.getMajors().size() == 1) {
@@ -3932,17 +3992,21 @@ public class CurriculaServlet implements CurriculaService {
 			List<Long> majorIds = new ArrayList<Long>();
 			for (PosMajor major: c.getMajors())
 				majorIds.add(major.getUniqueId());
-			lines = hibSession.createQuery("select " + select + " from " + from + " inner join s.posMajors m where " + where + " and m.uniqueId in :majorIds  group by " + group)
+			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and m.uniqueId in :majorIds  group by " + group)
 					.setLong("sessionId", c.getAcademicArea().getSessionId()).setLong("areaId", c.getAcademicArea().getUniqueId())
 					.setParameterList("majorIds", majorIds)
 					.setCacheable(true).list();
 		} else {
 			// students with multiple majors
 			Map<String, Long> params = new HashMap<String, Long>();
-			int idx = 1;
+			int idx = 0;
 			for (PosMajor major: c.getMajors()) {
-				from += " inner join s.posMajors m" + idx;
-				where += " and m" + idx + ".uniqueId = :m" + idx;
+				if (idx == 0) {
+					where += " and m.uniqueId = :m" + idx;
+				} else {
+					from += " inner join s.areaClasfMajors a" + idx;
+					where += " and a" + idx + ".academicArea.uniqueId = :areaId and a" + idx + ".major.uniqueId = :m" + idx;
+				}
 				params.put("m" + idx, major.getUniqueId());
 				idx ++;
 			}
@@ -3953,38 +4017,44 @@ public class CurriculaServlet implements CurriculaService {
 			lines = q.setCacheable(true).list();
 		}
 		Hashtable<Long, Integer> clasf2enrl = new Hashtable<Long, Integer>();
-		for (Object[] o: lines) {
-			Long clasfId = (Long)o[0];
-			int enrl = ((Number)o[1]).intValue();
-			if (clasfId != null)
-				clasf2enrl.put(clasfId, enrl);
-		}
+		if (lines != null)
+			for (Object[] o: lines) {
+				Long clasfId = (Long)o[0];
+				int enrl = ((Number)o[1]).intValue();
+				if (clasfId != null)
+					clasf2enrl.put(clasfId, enrl);
+			}
 		return clasf2enrl;
 	}
 	
 	private Hashtable<Long, Set<Long>> loadClasf2req(org.hibernate.Session hibSession, Long acadAreaId, Collection<Long> majors, boolean multipleMajors) {
 		List<Object[]> lines = null;
 		String select = "a.academicClassification.uniqueId, s.uniqueId";
-		String from = "CourseRequest r inner join r.courseDemand.student s inner join s.academicAreaClassifications a";
+		String from = "CourseRequest r inner join r.courseDemand.student s inner join s.areaClasfMajors a inner join a.major m";
 		String where = "s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :areaId";
 		if (majors.isEmpty()) {
 			// students with no major
-			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + (multipleMajors ? " and s.posMajors is empty" : ""))
+			if (!multipleMajors)
+				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where)
 					.setLong("sessionId", getAcademicSessionId()).setLong("areaId", acadAreaId)
 					.setCacheable(true).list();
 		} else if (!multipleMajors || majors.size() == 1) {
 			// students with one major
-			lines = hibSession.createQuery("select " + select + " from " + from + " inner join s.posMajors m where " + where + " and m.uniqueId in :majorIds")
+			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and m.uniqueId in :majorIds")
 					.setLong("sessionId", getAcademicSessionId()).setLong("areaId", acadAreaId)
 					.setParameterList("majorIds", majors)
 					.setCacheable(true).list();
 		} else {
 			// students with multiple majors
 			Map<String, Long> params = new HashMap<String, Long>();
-			int idx = 1;
+			int idx = 0;
 			for (Long major: majors) {
-				from += " inner join s.posMajors m" + idx;
-				where += " and m" + idx + ".uniqueId = :m" + idx;
+				if (idx == 0) {
+					where += " and m.uniqueId = :m" + idx;
+				} else {
+					from += " inner join s.areaClasfMajors a" + idx;
+					where += " and a" + idx + ".academicArea.uniqueId = :areaId and a" + idx + ".major.uniqueId = :m" + idx;
+				}
 				params.put("m" + idx, major);
 				idx ++;
 			}
@@ -3995,28 +4065,30 @@ public class CurriculaServlet implements CurriculaService {
 			lines = q.setCacheable(true).list();
 		}
 		Hashtable<Long, Set<Long>> clasf2enrl = new Hashtable<Long, Set<Long>>();
-		for (Object[] o : lines) {
-			Long clasfId = (Long)o[0];
-			Long studentId = (Long)o[1];
-			Set<Long> students = clasf2enrl.get(clasfId);
-			if (students == null) {
-				students = new HashSet<Long>();
-				clasf2enrl.put(clasfId, students);
+		if (lines != null)
+			for (Object[] o : lines) {
+				Long clasfId = (Long)o[0];
+				Long studentId = (Long)o[1];
+				Set<Long> students = clasf2enrl.get(clasfId);
+				if (students == null) {
+					students = new HashSet<Long>();
+					clasf2enrl.put(clasfId, students);
+				}
+				students.add(studentId);
 			}
-			students.add(studentId);
-		}
 		return clasf2enrl;
 	}
 	
 	private Hashtable<Long, Hashtable<Long, Integer>> loadClasfCourse2req(org.hibernate.Session hibSession, Curriculum c) {
 		List<Object[]> lines = null;
 		String select = "a.academicClassification.uniqueId, r.courseOffering.uniqueId, count(distinct s)";
-		String from = "CourseRequest r inner join r.courseDemand.student s inner join s.academicAreaClassifications a";
+		String from = "CourseRequest r inner join r.courseDemand.student s inner join s.areaClasfMajors a inner join a.major m";
 		String where = "s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :areaId";
 		String group = "a.academicClassification.uniqueId, r.courseOffering.uniqueId";
 		if (c.getMajors().isEmpty()) {
 			// students with no major
-			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + (c.isMultipleMajors() ? " and s.posMajors is empty" : "") + " group by " + group)
+			if (!c.isMultipleMajors())
+				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " group by " + group)
 					.setLong("sessionId", c.getAcademicArea().getSessionId()).setLong("areaId", c.getAcademicArea().getUniqueId())
 					.setCacheable(true).list();
 		} else if (!c.isMultipleMajors() || c.getMajors().size() == 1) {
@@ -4024,17 +4096,21 @@ public class CurriculaServlet implements CurriculaService {
 			List<Long> majorIds = new ArrayList<Long>();
 			for (PosMajor major: c.getMajors())
 				majorIds.add(major.getUniqueId());
-			lines = hibSession.createQuery("select " + select + " from " + from + " inner join s.posMajors m where " + where + " and m.uniqueId in :majorIds group by " + group)
+			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and m.uniqueId in :majorIds group by " + group)
 					.setLong("sessionId", c.getAcademicArea().getSessionId()).setLong("areaId", c.getAcademicArea().getUniqueId())
 					.setParameterList("majorIds", majorIds)
 					.setCacheable(true).list();
 		} else {
 			// students with multiple majors
 			Map<String, Long> params = new HashMap<String, Long>();
-			int idx = 1;
+			int idx = 0;
 			for (PosMajor major: c.getMajors()) {
-				from += " inner join s.posMajors m" + idx;
-				where += " and m" + idx + ".uniqueId = :m" + idx;
+				if (idx == 0) {
+					where += " and m.uniqueId = :m" + idx;
+				} else {
+					from += " inner join s.areaClasfMajors a" + idx;
+					where += " and a" + idx + ".academicArea.uniqueId = :areaId and a" + idx + ".major.uniqueId = :m" + idx;
+				}
 				params.put("m" + idx, major.getUniqueId());
 				idx ++;
 			}
@@ -4045,44 +4121,50 @@ public class CurriculaServlet implements CurriculaService {
 			lines = q.setCacheable(true).list();
 		}
 		Hashtable<Long, Hashtable<Long, Integer>> clasf2course2enrl = new Hashtable<Long, Hashtable<Long,Integer>>();
-		for (Object[] o: lines) {
-			Long clasfId = (Long)o[0];
-			if (clasfId == null) continue;
-			Long courseId = (Long)o[1];
-			int enrl = ((Number)o[2]).intValue();
-			Hashtable<Long, Integer> course2enrl = clasf2course2enrl.get(clasfId);
-			if (course2enrl == null) {
-				course2enrl = new Hashtable<Long, Integer>();
-				clasf2course2enrl.put(clasfId, course2enrl);
+		if (lines != null)
+			for (Object[] o: lines) {
+				Long clasfId = (Long)o[0];
+				if (clasfId == null) continue;
+				Long courseId = (Long)o[1];
+				int enrl = ((Number)o[2]).intValue();
+				Hashtable<Long, Integer> course2enrl = clasf2course2enrl.get(clasfId);
+				if (course2enrl == null) {
+					course2enrl = new Hashtable<Long, Integer>();
+					clasf2course2enrl.put(clasfId, course2enrl);
+				}
+				course2enrl.put(courseId, enrl);
 			}
-			course2enrl.put(courseId, enrl);
-		}
 		return clasf2course2enrl;
 	}
 	
 	private Hashtable<Long, Hashtable<CourseInterface, Set<Long>>> loadClasfCourse2req(org.hibernate.Session hibSession, Long acadAreaId, Collection<Long> majors, boolean multipleMajors) {
 		List<Object[]> lines = null;
 		String select = "a.academicClassification.uniqueId, r.courseOffering.uniqueId, r.courseOffering.subjectArea.subjectAreaAbbreviation || ' ' || r.courseOffering.courseNbr, s.uniqueId";
-		String from = "CourseRequest r inner join r.courseDemand.student s inner join s.academicAreaClassifications a";
+		String from = "CourseRequest r inner join r.courseDemand.student s inner join s.areaClasfMajors a inner join a.major m";
 		String where = "s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :areaId";
 		if (majors.isEmpty()) {
 			// students with no major
-			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + (multipleMajors ? " and s.posMajors is empty" : ""))
+			if (!multipleMajors)
+				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where)
 					.setLong("sessionId", getAcademicSessionId()).setLong("areaId", acadAreaId)
 					.setCacheable(true).list();
 		} else if (!multipleMajors || majors.size() == 1) {
 			// students with one major
-			lines = hibSession.createQuery("select " + select + " from " + from + " inner join s.posMajors m where " + where + " and m.uniqueId in :majorIds")
+			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and m.uniqueId in :majorIds")
 					.setLong("sessionId", getAcademicSessionId()).setLong("areaId", acadAreaId)
 					.setParameterList("majorIds", majors)
 					.setCacheable(true).list();
 		} else {
 			// students with multiple majors
 			Map<String, Long> params = new HashMap<String, Long>();
-			int idx = 1;
+			int idx = 0;
 			for (Long major: majors) {
-				from += " inner join s.posMajors m" + idx;
-				where += " and m" + idx + ".uniqueId = :m" + idx;
+				if (idx == 0) {
+					where += " and m.uniqueId = :m" + idx;
+				} else {
+					from += " inner join s.areaClasfMajors a" + idx;
+					where += " and a.academicArea.uniqueId = :areaId and a" + idx + ".major.uniqueId = :m" + idx;
+				}
 				params.put("m" + idx, major);
 				idx ++;
 			}
@@ -4093,26 +4175,27 @@ public class CurriculaServlet implements CurriculaService {
 			lines = q.setCacheable(true).list();
 		}
 		Hashtable<Long, Hashtable<CourseInterface, Set<Long>>> clasf2course2enrl = new Hashtable<Long, Hashtable<CourseInterface,Set<Long>>>();
-		for (Object[] o : lines) {
-			Long clasfId = (Long)o[0];
-			Long courseId = (Long)o[1];
-			String courseName = (String)o[2];
-			Long studentId = (Long)o[3];
-			CourseInterface course = new CourseInterface();
-			course.setId(courseId);
-			course.setCourseName(courseName);
-			Hashtable<CourseInterface, Set<Long>> course2enrl = clasf2course2enrl.get(clasfId);
-			if (course2enrl == null) {
-				course2enrl = new Hashtable<CourseInterface, Set<Long>>();
-				clasf2course2enrl.put(clasfId, course2enrl);
+		if (lines != null)
+			for (Object[] o : lines) {
+				Long clasfId = (Long)o[0];
+				Long courseId = (Long)o[1];
+				String courseName = (String)o[2];
+				Long studentId = (Long)o[3];
+				CourseInterface course = new CourseInterface();
+				course.setId(courseId);
+				course.setCourseName(courseName);
+				Hashtable<CourseInterface, Set<Long>> course2enrl = clasf2course2enrl.get(clasfId);
+				if (course2enrl == null) {
+					course2enrl = new Hashtable<CourseInterface, Set<Long>>();
+					clasf2course2enrl.put(clasfId, course2enrl);
+				}
+				Set<Long> students = course2enrl.get(course);
+				if (students == null) {
+					students = new HashSet<Long>();
+					course2enrl.put(course, students);
+				}
+				students.add(studentId);
 			}
-			Set<Long> students = course2enrl.get(course);
-			if (students == null) {
-				students = new HashSet<Long>();
-				course2enrl.put(course, students);
-			}
-			students.add(studentId);
-		}
 		
 		return clasf2course2enrl;
 	}
@@ -4121,7 +4204,7 @@ public class CurriculaServlet implements CurriculaService {
 		Map<Long, Map<Long, Map<Long, Set<Long>>>> area2major2clasf2enrl = new HashMap<Long, Map<Long, Map<Long, Set<Long>>>>();
 		for (Object[] o : (List<Object[]>)hibSession.createQuery(
 				"select distinct a.academicArea.uniqueId, m.uniqueId, a.academicClassification.uniqueId, s.uniqueId " +
-				"from CourseRequest r inner join r.courseDemand.student s inner join s.academicAreaClassifications a left outer join s.posMajors m where " +
+				"from CourseRequest r inner join r.courseDemand.student s inner join s.areaClasfMajors a inner join a.major m where " +
 				"r.courseOffering.uniqueId = :courseId")
 				.setLong("courseId", courseOfferingId)
 				.setCacheable(true).list()) {

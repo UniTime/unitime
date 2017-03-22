@@ -219,10 +219,10 @@ public class CurriculaCourseDemands implements StudentCourseDemands, NeedsStuden
 				demands.addAll(other);
 			} else {
 				other: for (WeightedStudentId student: other) {
-					// if (student.getAreas().isEmpty()) continue; // ignore students w/o academic area
-					for (AreaCode area: student.getAreas()) {
-						Set<String> majors = curricula.get(area.getArea());
-						if (majors != null && (majors.contains("") || student.match(area.getArea(), majors))) continue other; // all majors or match
+					// if (student.getMajors().isEmpty()) continue; // ignore students w/o academic area
+					for (AreaClasfMajor acm: student.getMajors()) {
+						Set<String> majors = curricula.get(acm.getArea());
+						if (majors != null && (majors.contains("") || student.match(acm.getArea(), majors))) continue other; // all majors or match
 					}
 					demands.add(student);
 				}

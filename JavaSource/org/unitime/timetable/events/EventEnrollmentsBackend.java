@@ -40,7 +40,6 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Conflict;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
 import org.unitime.timetable.gwt.shared.EventInterface.EventEnrollmentsRpcRequest;
-import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
@@ -51,8 +50,8 @@ import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.Meeting;
-import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.StudentAccomodation;
+import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.TimetableManager;
@@ -511,12 +510,10 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
     			st.setCanRegister(canRegister);
     			st.setCanUseAssistant(canUseAssistant);
     			st.setName(enrollment.getStudent().getName(ApplicationProperty.OnlineSchedulingStudentNameFormat.value()));
-    			for (AcademicAreaClassification ac: enrollment.getStudent().getAcademicAreaClassifications()) {
-    				st.addArea(ac.getAcademicArea().getAcademicAreaAbbreviation());
-    				st.addClassification(ac.getAcademicClassification().getCode());
-    			}
-    			for (PosMajor m: enrollment.getStudent().getPosMajors()) {
-    				st.addMajor(m.getCode());
+    			for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(enrollment.getStudent().getAreaClasfMajors())) {
+    				st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation());
+    				st.addClassification(acm.getAcademicClassification().getCode());
+    				st.addMajor(acm.getMajor().getCode());
     			}
     			for (StudentGroup g: enrollment.getStudent().getGroups()) {
     				st.addGroup(g.getGroupAbbreviation());

@@ -18,16 +18,21 @@
  * 
  -->
 
+<!-- Element acadAreaClass is deprecated in UniTime 4.2, use major.academicClass and minor.academicClass instead. -->
 <!ELEMENT acadAreaClass EMPTY >
 <!ATTLIST acadAreaClass academicArea CDATA #REQUIRED >
 <!ATTLIST acadAreaClass academicClass CDATA #REQUIRED >
 
 <!ELEMENT major EMPTY >
 <!ATTLIST major academicArea CDATA #REQUIRED >
+<!-- Attribute major.academicClass since UniTime 4.2 -->
+<!ATTLIST major academicClass CDATA #IMPLIED >
 <!ATTLIST major code CDATA #REQUIRED >
 
 <!ELEMENT minor EMPTY >
 <!ATTLIST minor academicArea CDATA #REQUIRED >
+<!-- Attribute minor.academicClass since UniTime 4.2 -->
+<!ATTLIST minor academicClass CDATA #IMPLIED >
 <!ATTLIST minor code CDATA #REQUIRED >
 
 <!ELEMENT studentGroup EMPTY >
@@ -36,7 +41,7 @@
 <!ELEMENT studentAccomodation EMPTY >
 <!ATTLIST studentAccomodation accomodation CDATA #REQUIRED >
 
-<!ELEMENT student ( studentAcadAreaClass, studentMajors, studentMinors?, studentGroups?, studentAccomodations? ) >
+<!ELEMENT student ( studentAcadAreaClass?, studentMajors, studentMinors?, studentGroups?, studentAccomodations? ) >
 <!ATTLIST student externalId CDATA #REQUIRED >
 <!ATTLIST student firstName CDATA #REQUIRED >
 <!ATTLIST student lastName CDATA #REQUIRED >

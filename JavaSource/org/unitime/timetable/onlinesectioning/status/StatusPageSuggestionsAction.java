@@ -62,7 +62,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.model.XAcademicAreaCode;
+import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -636,18 +636,18 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			if ("limit".equals(attr)) return true;
 			
 			if ("area".equals(attr)) {
-				for (XAcademicAreaCode ac: student().getAcademicAreaClasiffications())
-					if (eq(ac.getArea(), term)) return true;
+				for (XAreaClassificationMajor acm: student().getMajors())
+					if (eq(acm.getArea(), term)) return true;
 			}
 			
 			if ("clasf".equals(attr) || "classification".equals(attr)) {
-				for (XAcademicAreaCode ac: student().getAcademicAreaClasiffications())
-					if (eq(ac.getCode(), term)) return true;
+				for (XAreaClassificationMajor acm: student().getMajors())
+					if (eq(acm.getClassification(), term)) return true;
 			}
 			
 			if ("major".equals(attr)) {
-				for (XAcademicAreaCode ac: student().getMajors())
-					if (eq(ac.getCode(), term)) return true;
+				for (XAreaClassificationMajor acm: student().getMajors())
+					if (eq(acm.getMajor(), term)) return true;
 			}
 			
 			if ("group".equals(attr)) {
@@ -932,14 +932,14 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			if (attr == null && term.isEmpty()) return true;
 			if ("limit".equals(attr)) return true;
 			if ("area".equals(attr)) {
-				for (XAcademicAreaCode ac: student().getAcademicAreaClasiffications())
-					if (eq(ac.getArea(), term)) return true;
+				for (XAreaClassificationMajor acm: student().getMajors())
+					if (eq(acm.getArea(), term)) return true;
 			} else if ("clasf".equals(attr) || "classification".equals(attr)) {
-				for (XAcademicAreaCode ac: student().getAcademicAreaClasiffications())
-					if (eq(ac.getCode(), term)) return true;
+				for (XAreaClassificationMajor acm: student().getMajors())
+					if (eq(acm.getClassification(), term)) return true;
 			} else if ("major".equals(attr)) {
-				for (XAcademicAreaCode ac: student().getMajors())
-					if (eq(ac.getCode(), term)) return true;
+				for (XAreaClassificationMajor acm: student().getMajors())
+					if (eq(acm.getMajor(), term)) return true;
 			} else if ("group".equals(attr)) {
 				for (String group: student().getGroups())
 					if (eq(group, term)) return true;

@@ -58,7 +58,7 @@ public class StudentCourseRequests implements StudentCourseDemands {
 		Hashtable<Long, Set<WeightedStudentId>> demands = new Hashtable<Long, Set<WeightedStudentId>>();
 		for (Object[] o: (List<Object[]>) iHibSession.createQuery(
 					"select distinct s, r.courseOffering.uniqueId, r.courseDemand.priority, r.courseDemand.alternative, r.order from " +
-					"CourseRequest r inner join r.courseDemand.student s left join fetch s.academicAreaClassifications left join fetch s.posMajors where " +
+					"CourseRequest r inner join r.courseDemand.student s left join fetch s.areaClasfMajors where " +
 					"r.courseOffering.subjectArea.uniqueId = :subjectId")
 					.setLong("subjectId", subjectArea.getUniqueId()).setCacheable(true).list()) {
 			Student s = (Student)o[0];

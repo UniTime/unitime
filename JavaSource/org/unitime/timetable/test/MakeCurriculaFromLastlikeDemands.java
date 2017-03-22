@@ -37,7 +37,6 @@ import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.AcademicArea;
-import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Curriculum;
@@ -48,6 +47,7 @@ import org.unitime.timetable.model.CurriculumProjectionRule;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.Constants;
 
@@ -78,11 +78,11 @@ public class MakeCurriculaFromLastlikeDemands {
     public Hashtable<AcademicArea, Hashtable<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>>> loadLastLikeCurricula(org.hibernate.Session hibSession) {
         Hashtable<AcademicArea, Hashtable<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>>> curricula = new Hashtable();
         List demands = (List)hibSession.createQuery(
-                "select a2, f2, m2, c, d.student.uniqueId from LastLikeCourseDemand d inner join d.student.academicAreaClassifications a inner join d.student.posMajors m, CourseOffering c," +
+                "select a2, f2, m2, c, d.student.uniqueId from LastLikeCourseDemand d inner join d.student.areaClasfMajors acm, CourseOffering c," +
                 "AcademicArea a2, AcademicClassification f2, PosMajor m2 where "+
-                "a2.session.uniqueId=:sessionId and a2.academicAreaAbbreviation=a.academicArea.academicAreaAbbreviation and "+
-                "f2.session.uniqueId=:sessionId and f2.code=a.academicClassification.code and " +
-                "m2.session.uniqueId=:sessionId and m2.code=m.code and " +
+                "a2.session.uniqueId=:sessionId and a2.academicAreaAbbreviation=acm.academicArea.academicAreaAbbreviation and "+
+                "f2.session.uniqueId=:sessionId and f2.code=acm.academicClassification.code and " +
+                "m2.session.uniqueId=:sessionId and m2.code=acm.major.code and " +
                 "d.subjectArea.session.uniqueId=:sessionId and c.subjectArea=d.subjectArea and "+
                 "((d.coursePermId=null and c.courseNbr=d.courseNbr) or "+
                 " (d.coursePermId!=null and d.coursePermId=c.permId))")
@@ -125,8 +125,8 @@ public class MakeCurriculaFromLastlikeDemands {
     public Hashtable<AcademicArea, Hashtable<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>>> loadRealCurricula(org.hibernate.Session hibSession) {
         Hashtable<AcademicArea, Hashtable<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>>> curricula = new Hashtable();
         List demands = (List)hibSession.createQuery(
-        		"select distinct a, m, c, s.uniqueId from CourseRequest r inner join r.courseDemand.student s inner join s.academicAreaClassifications a " +
-                "inner join s.posMajors m inner join r.courseOffering c where "+
+        		"select distinct a, c, s.uniqueId from CourseRequest r inner join r.courseDemand.student s inner join s.areaClasfMajors a " +
+                "inner join r.courseOffering c where "+
                 "s.session.uniqueId=:sessionId")
                 .setLong("sessionId", iSessionId)
                 .setFetchSize(1000)
@@ -134,19 +134,18 @@ public class MakeCurriculaFromLastlikeDemands {
         sLog.info("Processing "+demands.size()+" demands...");
         for (Iterator i=demands.iterator();i.hasNext();) {
             Object o[] = (Object[])i.next();
-            AcademicAreaClassification a = (AcademicAreaClassification)o[0];
-            PosMajor m = (PosMajor)o[1];
-            CourseOffering c = (CourseOffering)o[2];
-            Long s = (Long)o[3];
+            StudentAreaClassificationMajor a = (StudentAreaClassificationMajor)o[0];
+            CourseOffering c = (CourseOffering)o[1];
+            Long s = (Long)o[2];
             Hashtable<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>> curacad = curricula.get(a.getAcademicArea());
             if (curacad==null) {
             	curacad = new Hashtable();
             	curricula.put(a.getAcademicArea(), curacad);
             }
-            Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>> clasf = curacad.get(m);
+            Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>> clasf = curacad.get(a.getMajor());
             if (clasf==null) {
                 clasf = new Hashtable();
-                curacad.put(m, clasf);
+                curacad.put(a.getMajor(), clasf);
             }
             Hashtable<CourseOffering, Set<Long>> courses = clasf.get(a.getAcademicClassification());
             if (courses==null) {

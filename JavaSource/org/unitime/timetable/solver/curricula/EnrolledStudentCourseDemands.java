@@ -52,7 +52,7 @@ public class EnrolledStudentCourseDemands implements StudentCourseDemands {
 	public void init(org.hibernate.Session hibSession, Progress progress, Session session, Collection<InstructionalOffering> offerings) {
 		for (Object[] o: (List<Object[]>)hibSession.createQuery(
 				"select distinct e.courseOffering, s " +
-				"from StudentClassEnrollment e inner join e.student s left join fetch s.academicAreaClassifications left join fetch s.posMajors where " +
+				"from StudentClassEnrollment e inner join e.student s left join fetch s.areaClasfMajors where " +
 				"e.courseOffering.subjectArea.session.uniqueId = :sessionId").setLong("sessionId", session.getUniqueId()).list()) {
 			CourseOffering course = (CourseOffering)o[0];
 			Student student = (Student)o[1];

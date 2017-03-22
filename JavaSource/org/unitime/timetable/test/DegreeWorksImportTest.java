@@ -53,9 +53,9 @@ public class DegreeWorksImportTest {
 	
 	public static int guessEnrollmentFromLastLike(org.hibernate.Session hibSession, Session session, String area, String major, String classification) {
 		return ((Number)hibSession.createQuery(
-				"select count(distinct d.student) from LastLikeCourseDemand d inner join d.student.academicAreaClassifications aac " +
-				"inner join d.student.posMajors m where d.subjectArea.session = :sessionId and " +
-				"m.code=:major and aac.academicArea.academicAreaAbbreviation = :area and aac.academicClassification.code = :clasf")
+				"select count(distinct d.student) from LastLikeCourseDemand d inner join d.student.areaClasfMajors acm " +
+				"where d.subjectArea.session = :sessionId and " +
+				"acm.major.code=:major and acm.academicArea.academicAreaAbbreviation = :area and acm.academicClassification.code = :clasf")
 				.setLong("sessionId", session.getUniqueId())
 				.setString("area", area)
 				.setString("major", major)
@@ -65,9 +65,9 @@ public class DegreeWorksImportTest {
 	
 	public static int guessEnrollmentFromReal(org.hibernate.Session hibSession, Session session, String area, String major, String classification) {
 		return ((Number)hibSession.createQuery(
-				"select count(distinct e.student) from StudentClassEnrollment e inner join e.student.academicAreaClassifications aac " +
-				"inner join e.student.posMajors m where e.student.session = :sessionId and " +
-				"m.code=:major and aac.academicArea.academicAreaAbbreviation = :area and aac.academicClassification.code = :clasf")
+				"select count(distinct e.student) from StudentClassEnrollment e inner join e.student.areaClasfMajors acm " +
+				"where e.student.session = :sessionId and " +
+				"acm.major.code=:major and acm.academicArea.academicAreaAbbreviation = :area and acm.academicClassification.code = :clasf")
 				.setLong("sessionId", session.getUniqueId())
 				.setString("area", area)
 				.setString("major", major)
@@ -78,9 +78,9 @@ public class DegreeWorksImportTest {
 	public static int guessEnrollmentFromLastLike(org.hibernate.Session hibSession, CourseOffering co, String area, String major, String classification) {
 		if (co.getPermId() == null)
 			return ((Number)hibSession.createQuery(
-					"select count(distinct d.student) from LastLikeCourseDemand d inner join d.student.academicAreaClassifications aac " +
-					"inner join d.student.posMajors m where d.subjectArea.uniqueId = :subjectId and d.courseNbr = :courseNbr and "+
-					"m.code=:major and aac.academicArea.academicAreaAbbreviation = :area and aac.academicClassification.code = :clasf")
+					"select count(distinct d.student) from LastLikeCourseDemand d inner join d.student.areaClasfMajors acm " +
+					"where d.subjectArea.uniqueId = :subjectId and d.courseNbr = :courseNbr and "+
+					"acm.major.code=:major and acm.academicArea.academicAreaAbbreviation = :area and acm.academicClassification.code = :clasf")
 					.setLong("subjectId", co.getSubjectArea().getUniqueId())
 					.setString("courseNbr", co.getCourseNbr())
 					.setString("area", area)
@@ -89,9 +89,9 @@ public class DegreeWorksImportTest {
 					.uniqueResult()).intValue();
 		else
 			return ((Number)hibSession.createQuery(
-					"select count(distinct d.student) from LastLikeCourseDemand d inner join d.student.academicAreaClassifications aac " +
-					"inner join d.student.posMajors m where d.subjectArea.session.uniqueId = :subjectId and d.coursePermId = :permId and " +
-					"m.code=:major and aac.academicArea.academicAreaAbbreviation = :area and aac.academicClassification.code = :clasf")
+					"select count(distinct d.student) from LastLikeCourseDemand d inner join d.student.areaClasfMajors acm " +
+					"where d.subjectArea.session.uniqueId = :subjectId and d.coursePermId = :permId and " +
+					"acm.major.code=:major and acm.academicArea.academicAreaAbbreviation = :area and acm.academicClassification.code = :clasf")
 					.setLong("sessionId", co.getSubjectArea().getSessionId())
 					.setString("permId", co.getPermId())
 					.setString("area", area)
@@ -102,9 +102,9 @@ public class DegreeWorksImportTest {
 	
 	public static int guessEnrollmentFromReal(org.hibernate.Session hibSession, CourseOffering co, String area, String major, String classification) {
 		return ((Number)hibSession.createQuery(
-				"select count(distinct e.student) from StudentClassEnrollment e inner join e.student.academicAreaClassifications aac " +
-				"inner join e.student.posMajors m where e.courseOffering.uniqueId = :courseId and " +
-				"m.code=:major and aac.academicArea.academicAreaAbbreviation = :area and aac.academicClassification.code = :clasf")
+				"select count(distinct e.student) from StudentClassEnrollment e inner join e.student.areaClasfMajors acm " +
+				"where e.courseOffering.uniqueId = :courseId and " +
+				"acm.major.code=:major and acm.academicArea.academicAreaAbbreviation = :area and acm.academicClassification.code = :clasf")
 				.setLong("courseId", co.getUniqueId())
 				.setString("area", area)
 				.setString("major", major)

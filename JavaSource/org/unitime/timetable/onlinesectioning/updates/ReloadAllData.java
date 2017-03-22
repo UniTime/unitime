@@ -149,8 +149,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 	                    "left join fetch cd.courseRequests as cr " +
 	                    "left join fetch cr.classWaitLists as cwl " + 
 	                    "left join fetch s.classEnrollments as e " +
-	                    "left join fetch s.academicAreaClassifications as a " +
-	                    "left join fetch s.posMajors as mj " +
+	                    "left join fetch s.areaClasfMajors as acm " +
 	                    "left join fetch s.waitlists as w " +
 	                    "left join fetch s.groups as g " +
 	                    "left join fetch s.notes as n " +

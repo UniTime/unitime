@@ -21,12 +21,12 @@ package org.unitime.timetable.onlinesectioning.status.db;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
-import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -38,10 +38,10 @@ import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
-import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
+import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentEnrollmentMessage;
 import org.unitime.timetable.model.StudentGroup;
@@ -97,12 +97,10 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 			st.setCanRegister(iCanRegister);
 			st.setCanUseAssistant(iCanUseAssistant);
 			st.setName(helper.getStudentNameFormat().format(student));
-			for (AcademicAreaClassification ac: student.getAcademicAreaClassifications()) {
-				st.addArea(ac.getAcademicArea().getAcademicAreaAbbreviation());
-				st.addClassification(ac.getAcademicClassification().getCode());
-			}
-			for (PosMajor mj: student.getPosMajors()) {
-				st.addMajor(mj.getCode());
+			for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(student.getAreaClasfMajors())) {
+				st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation());
+				st.addClassification(acm.getAcademicClassification().getCode());
+				st.addMajor(acm.getMajor().getCode());
 			}
 			for (StudentAccomodation acc: student.getAccomodations()) {
 				st.addAccommodation(acc.getAbbreviation());

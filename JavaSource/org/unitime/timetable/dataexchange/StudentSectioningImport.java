@@ -37,7 +37,6 @@ import org.dom4j.Element;
 import org.unitime.timetable.dataexchange.StudentEnrollmentImport.Pair;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.AcademicArea;
-import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
@@ -51,6 +50,8 @@ import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
+import org.unitime.timetable.model.StudentAreaClassificationMajor;
+import org.unitime.timetable.model.StudentAreaClassificationMinor;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentEnrollmentMessage;
 import org.unitime.timetable.model.StudentGroup;
@@ -271,9 +272,8 @@ public class StudentSectioningImport extends BaseImport {
 		            Element email = demographicsElement.element("email");
 		            if (email != null)
 		                student.setEmail(email.attributeValue("value"));
-		            student.setAcademicAreaClassifications(new HashSet<AcademicAreaClassification>());
-		            student.setPosMajors(new HashSet<PosMajor>());
-		            student.setPosMinors(new HashSet<PosMinor>());
+		            student.setAreaClasfMajors(new HashSet<StudentAreaClassificationMajor>());
+		            student.setAreaClasfMinors(new HashSet<StudentAreaClassificationMinor>());
 		            student.setGroups(new HashSet<StudentGroup>());
 		            student.setAccomodations(new HashSet<StudentAccomodation>());
             	} else if (demographicsElement != null) {
@@ -302,83 +302,124 @@ public class StudentSectioningImport extends BaseImport {
 		            }
             	}
             	if (demographicsElement != null) {
-                	Map<String, AcademicAreaClassification> sAreaClasf = new Hashtable<String, AcademicAreaClassification>();
-                	for (AcademicAreaClassification aac: student.getAcademicAreaClassifications())
-                		sAreaClasf.put(aac.getAcademicArea().getAcademicAreaAbbreviation() + ":" + aac.getAcademicClassification().getCode(), aac);
-                	
-                	Map<String, PosMajor> sMajors = new Hashtable<String, PosMajor>();
-                	for (PosMajor major: student.getPosMajors())
-                		for (AcademicArea area: major.getAcademicAreas())
-                			sMajors.put(area.getAcademicAreaAbbreviation() + ":" + major.getCode(), major);
+                	Map<String, StudentAreaClassificationMajor> sMajors = new Hashtable<String, StudentAreaClassificationMajor>();
+                	for (StudentAreaClassificationMajor major: student.getAreaClasfMajors())
+                		sMajors.put(major.getAcademicArea().getAcademicAreaAbbreviation() + ":" + major.getAcademicClassification().getCode() + ":" + major.getMajor().getCode(), major);
 
-                	Map<String, PosMinor> sMinors = new Hashtable<String, PosMinor>();
-                	for (PosMinor minor: student.getPosMinors())
-                		for (AcademicArea area: minor.getAcademicAreas())
-                			sMinors.put(area.getAcademicAreaAbbreviation() + ":" + minor.getCode(), minor);
+                	Map<String, StudentAreaClassificationMinor> sMinors = new Hashtable<String, StudentAreaClassificationMinor>();
+                	for (StudentAreaClassificationMinor minor: student.getAreaClasfMinors())
+                		sMinors.put(minor.getAcademicArea().getAcademicAreaAbbreviation() + ":" + minor.getAcademicClassification().getCode() + ":" + minor.getMinor().getCode(), minor);
                 	
-                	for (Iterator i2 = demographicsElement.elementIterator("acadArea"); i2.hasNext();) {
-    	    			Element e = (Element) i2.next();
-    	    			String area = e.attributeValue("abbv");
+        			for (Iterator i2 = demographicsElement.elementIterator("acadArea"); i2.hasNext();) {
+            			Element e = (Element) i2.next();
+            			
+            			String area = e.attributeValue("abbv");
+            			AcademicArea a = abbv2area.get(area);
+            			if (a == null) {
+            				warn("Academic area " + area + " not known.");
+	    					continue;
+            			}
+            			
     	    			String clasf = e.attributeValue("classification");
-    	    			if (sAreaClasf.remove(area + ":" + clasf) == null) {
-    	    				AcademicAreaClassification aac = new AcademicAreaClassification();
-    	    				if (abbv2area.get(area) == null) {
-    	    					warn("Academic area " + area + " not known.");
-    	    					continue;
-    	    				}
-    	    				aac.setAcademicArea(abbv2area.get(area));
-    	    				if (code2clasf.get(clasf) == null) {
-    	    					warn("Academic classification " + clasf + " not known.");
-    	    					continue;
-    	    				}
-    	    				aac.setAcademicClassification(code2clasf.get(clasf));
-    	    				aac.setStudent(student);
-    	    				student.getAcademicAreaClassifications().add(aac);
-                    		if (student.getUniqueId() != null)
-                    			updatedStudents.add(student.getUniqueId());
+    	    			AcademicClassification f = code2clasf.get(clasf);
+    	    			if (f == null) {
+    	    				warn("Academic classification " + clasf + " not known.");
+	    					continue;
     	    			}
     	    			
                     	for (Iterator i3 = e.elementIterator("major"); i3.hasNext();) {
-        	    			Element f = (Element) i3.next();
-        	    			String code = f.attributeValue("code");
-        	    			if (sMajors.remove(area + ":" + code) == null) {
-        	    				PosMajor major = code2major.get(area + ":" + code);
-        	    				if (major == null) {
+        	    			Element g = (Element) i3.next();
+        	    			String code = g.attributeValue("code");
+        	    			if (sMajors.remove(area + ":" + clasf + ":" + code) == null) {
+        	    				PosMajor m = code2major.get(area + ":" + code);
+        	    				if (m == null) {
         	    					warn("Major " + area + " " + code + " not known.");
         	    					continue;
         	    				}
-        	    				student.getPosMajors().add(major);
-                        		if (student.getUniqueId() != null)
+        	    				StudentAreaClassificationMajor acm = new StudentAreaClassificationMajor();
+    	        				acm.setAcademicArea(a);
+    	        				acm.setAcademicClassification(f);
+    	        				acm.setMajor(m);
+    	        				acm.setStudent(student);
+    	        				student.getAreaClasfMajors().add(acm);
+    	        				if (student.getUniqueId() != null)
                         			updatedStudents.add(student.getUniqueId());
         	    			}
+                    	}
+                    	if (e.element("major") == null && e.element("minor") == null) {
+                    		boolean noMajor = true;
+                        	for (Iterator i3 = demographicsElement.elementIterator("major"); i3.hasNext();) {
+            	    			String code = ((Element) i3.next()).attributeValue("code");
+            	    			if (code2major.get(area + ":" + code) != null) { noMajor = false; break; }
+                        	}
+                        	if (noMajor) {
+                        		String code = "-";
+                        		if (sMajors.remove(area + ":" + clasf + ":" + code) == null) {
+                            		PosMajor m = code2major.get(area + ":" + code);
+                        			if (m == null) {
+                        				m = new PosMajor();
+                        				m.addToacademicAreas(a);
+                        				m.setExternalUniqueId("-");
+                        				m.setCode("-");
+                        				m.setName("No Major");
+                        				m.setSession(a.getSession());
+                        				a.addToposMajors(m);
+                        				getHibSession().saveOrUpdate(m);
+                        				code2major.put(area + ":" + code, m);
+                        			}
+            	    				StudentAreaClassificationMajor acm = new StudentAreaClassificationMajor();
+        	        				acm.setAcademicArea(a);
+        	        				acm.setAcademicClassification(f);
+        	        				acm.setMajor(m);
+        	        				acm.setStudent(student);
+        	        				student.getAreaClasfMajors().add(acm);
+        	        				if (student.getUniqueId() != null)
+                            			updatedStudents.add(student.getUniqueId());
+                        		}
+                        	}
                     	}
                     	
                     	for (Iterator i3 = e.elementIterator("minor"); i3.hasNext();) {
-        	    			Element f = (Element) i3.next();
-        	    			String code = f.attributeValue("code");
-        	    			if (sMinors.remove(area + ":" + code) == null) {
-        	    				PosMinor minor = code2minor.get(area + ":" + code);
-        	    				if (minor == null) {
+        	    			Element g = (Element) i3.next();
+        	    			String code = g.attributeValue("code");
+        	    			if (sMinors.remove(area + ":" + clasf + ":" + code) == null) {
+        	    				PosMinor m = code2minor.get(area + ":" + code);
+        	    				if (m == null) {
         	    					warn("Minor " + area + " " + code + " not known.");
         	    					continue;
         	    				}
-        	    				student.getPosMinors().add(minor);
-                        		if (student.getUniqueId() != null)
+        	    				StudentAreaClassificationMinor acm = new StudentAreaClassificationMinor();
+    	        				acm.setAcademicArea(a);
+    	        				acm.setAcademicClassification(f);
+    	        				acm.setMinor(m);
+    	        				acm.setStudent(student);
+    	        				student.getAreaClasfMinors().add(acm);
+    	        				if (student.getUniqueId() != null)
                         			updatedStudents.add(student.getUniqueId());
         	    			}
                     	}
-    	            }
+        			}
                 	for (Iterator i2 = demographicsElement.elementIterator("major"); i2.hasNext();) {
     	    			Element e = (Element) i2.next();
     	    			String code = e.attributeValue("code");
     	    			for (Iterator i3 = demographicsElement.elementIterator("acadArea"); i3.hasNext();) {
-    	    				Element f = (Element) i3.next();
-        	    			String area = f.attributeValue("abbv");
-        	    			PosMajor major = code2major.get(area + ":" + code);
-        	    			if (major == null) continue;
-        	    			if (sMajors.remove(area + ":" + code) == null) {
-        	    				student.getPosMajors().add(major);
-                        		if (student.getUniqueId() != null)
+    	    				Element g = (Element) i3.next();
+        	    			String area = g.attributeValue("abbv");
+        	    			PosMajor m = code2major.get(area + ":" + code);
+        	    			if (m == null) continue;
+                			AcademicArea a = abbv2area.get(area);
+                			if (a == null) continue;
+        	    			String clasf = g.attributeValue("classification");
+        	    			AcademicClassification f = code2clasf.get(clasf);
+        	    			if (f == null) continue;
+        	    			if (sMajors.remove(area + ":" + clasf + ":" + code) == null) {
+        	    				StudentAreaClassificationMajor acm = new StudentAreaClassificationMajor();
+    	        				acm.setAcademicArea(a);
+    	        				acm.setAcademicClassification(f);
+    	        				acm.setMajor(m);
+    	        				acm.setStudent(student);
+    	        				student.getAreaClasfMajors().add(acm);
+    	        				if (student.getUniqueId() != null)
                         			updatedStudents.add(student.getUniqueId());
         	    			}
     	    			}
@@ -387,31 +428,36 @@ public class StudentSectioningImport extends BaseImport {
     	    			Element e = (Element) i2.next();
     	    			String code = e.attributeValue("code");
     	    			for (Iterator i3 = demographicsElement.elementIterator("acadArea"); i3.hasNext();) {
-    	    				Element f = (Element) i3.next();
-        	    			String area = f.attributeValue("abbv");
-        	    			PosMinor minor = code2minor.get(area + ":" + code);
-        	    			if (minor == null) continue;
-        	    			if (sMinors.remove(area + ":" + code) == null) {
-        	    				student.getPosMinors().add(minor);
-                        		if (student.getUniqueId() != null)
+    	    				Element g = (Element) i3.next();
+        	    			String area = g.attributeValue("abbv");
+        	    			PosMinor m = code2minor.get(area + ":" + code);
+        	    			if (m == null) continue;
+                			AcademicArea a = abbv2area.get(area);
+                			if (a == null) continue;
+        	    			String clasf = g.attributeValue("classification");
+        	    			AcademicClassification f = code2clasf.get(clasf);
+        	    			if (f == null) continue;
+        	    			if (sMinors.remove(area + ":" + clasf + ":" + code) == null) {
+        	    				StudentAreaClassificationMinor acm = new StudentAreaClassificationMinor();
+    	        				acm.setAcademicArea(a);
+    	        				acm.setAcademicClassification(f);
+    	        				acm.setMinor(m);
+    	        				acm.setStudent(student);
+    	        				student.getAreaClasfMinors().add(acm);
+    	        				if (student.getUniqueId() != null)
                         			updatedStudents.add(student.getUniqueId());
         	    			}
     	    			}
                 	}
-
-                	for (AcademicAreaClassification aac: sAreaClasf.values()) {
-                		student.getAcademicAreaClassifications().remove(aac);
-                		getHibSession().delete(aac);
+                	for (StudentAreaClassificationMajor major: sMajors.values()) {
+                		student.getAreaClasfMajors().remove(major);
+                		getHibSession().delete(major);
                 		if (student.getUniqueId() != null)
                 			updatedStudents.add(student.getUniqueId());
                 	}
-                	for (PosMajor major: sMajors.values()) {
-                		student.getPosMajors().remove(major);
-                		if (student.getUniqueId() != null)
-                			updatedStudents.add(student.getUniqueId());
-                	}
-                	for (PosMinor minor: sMinors.values()) {
-                		student.getPosMinors().remove(minor);
+                	for (StudentAreaClassificationMinor minor: sMinors.values()) {
+                		student.getAreaClasfMinors().remove(minor);
+                		getHibSession().delete(minor);
                 		if (student.getUniqueId() != null)
                 			updatedStudents.add(student.getUniqueId());
                 	}            		

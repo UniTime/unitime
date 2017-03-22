@@ -34,7 +34,6 @@ import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.AcademicArea;
-import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.ArrangeCreditUnitConfig;
 import org.unitime.timetable.model.Building;
@@ -66,6 +65,8 @@ import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentAreaClassificationMajor;
+import org.unitime.timetable.model.StudentAreaClassificationMinor;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TeachingResponsibility;
@@ -447,9 +448,8 @@ public class PointInTimeDataExport extends BaseExport {
 		       .append(" join fetch sce.clazz as c")
 		       .append(" join fetch sce.courseOffering as co")
 		       .append(" left join fetch co.subjectArea as sa")
-		       .append(" left join fetch s.academicAreaClassifications as aac")
-		       .append(" left join fetch s.posMajors as ma")
-		       .append(" left join fetch s.posMinors as mi")
+		       .append(" left join fetch s.areaClasfMajors as ma")
+		       .append(" left join fetch s.areaClasfMinors as mi")
 		       .append(" left join fetch aac.academicArea as aa")
 		       .append(" left join fetch aac.academicClassification as ac")
 		       .append(" where s.session.uniqueId = :sessId" )
@@ -952,54 +952,42 @@ public class PointInTimeDataExport extends BaseExport {
     	studentElement.addAttribute(sMiddleNameAttribute, student.getMiddleName());
     	studentElement.addAttribute(sLastNameAttribute, student.getLastName());
     	studentElements.put(student.getUniqueId(), studentElement);
-    	for(PosMajor major : student.getPosMajors()){
-    		for(AcademicAreaClassification aac : student.getAcademicAreaClassifications()){
-    			if (aac.getAcademicArea().getPosMajors().contains(major)) {
-    				exportAcadAreaMajorClassification(studentElement.addElement(sAcadAreaMajorClassificationElementName), aac, major);
-    				break;
-    			}
-    		}
-    	}
-    	for(PosMinor minor : student.getPosMinors()){
-    		for(AcademicAreaClassification aac : student.getAcademicAreaClassifications()){
-    			if (aac.getAcademicArea().getPosMinors().contains(minor)) {
-    				exportAcadAreaMinorClassification(studentElement.addElement(sAcadAreaMinorClassificationElementName), aac, minor);
-    				break;
-    			}
-    		}
-    	}
+    	for (StudentAreaClassificationMajor major: student.getAreaClasfMajors())
+    		exportAcadAreaMajorClassification(studentElement.addElement(sAcadAreaMajorClassificationElementName), major);
+    	for (StudentAreaClassificationMinor minor : student.getAreaClasfMinors())
+    		exportAcadAreaMinorClassification(studentElement.addElement(sAcadAreaMinorClassificationElementName), minor);
     }
     
     private void exportAcadAreaMajorClassification(Element acadAreaMajorClassificationElement,
-			AcademicAreaClassification academicAreaClassification, PosMajor major) {
-    	if (!majorElements.containsKey(major.getUniqueId())){
-    		exportMajor(major);
+			StudentAreaClassificationMajor acm) {
+    	if (!majorElements.containsKey(acm.getMajor().getUniqueId())){
+    		exportMajor(acm.getMajor());
     	}
-    	if (!academicAreaElements.containsKey(academicAreaClassification.getAcademicArea().getUniqueId())){
-    		exportAcademicArea(academicAreaClassification.getAcademicArea());
+    	if (!academicAreaElements.containsKey(acm.getAcademicArea().getUniqueId())){
+    		exportAcademicArea(acm.getAcademicArea());
     	}
-    	if (!academicClassificationElements.containsKey(academicAreaClassification.getAcademicClassification().getUniqueId())){
-    		exportAcademicClassification(academicAreaClassification.getAcademicClassification());
+    	if (!academicClassificationElements.containsKey(acm.getAcademicClassification().getUniqueId())){
+    		exportAcademicClassification(acm.getAcademicClassification());
     	}
-    	acadAreaMajorClassificationElement.addAttribute(sAcademicAreaUniqueIdAttribute, academicAreaClassification.getAcademicArea().getUniqueId().toString());
-    	acadAreaMajorClassificationElement.addAttribute(sAcademicClassificationUniqueIdAttribute, academicAreaClassification.getAcademicClassification().getUniqueId().toString());
-    	acadAreaMajorClassificationElement.addAttribute(sMajorUniqueIdAttribute, major.getUniqueId().toString());
+    	acadAreaMajorClassificationElement.addAttribute(sAcademicAreaUniqueIdAttribute, acm.getAcademicArea().getUniqueId().toString());
+    	acadAreaMajorClassificationElement.addAttribute(sAcademicClassificationUniqueIdAttribute, acm.getAcademicClassification().getUniqueId().toString());
+    	acadAreaMajorClassificationElement.addAttribute(sMajorUniqueIdAttribute, acm.getMajor().getUniqueId().toString());
 	}
 
     private void exportAcadAreaMinorClassification(Element acadAreaMinorClassificationElement,
-			AcademicAreaClassification academicAreaClassification, PosMinor minor) {
-    	if (!majorElements.containsKey(minor.getUniqueId())){
-    		exportMinor(minor);
+    		StudentAreaClassificationMinor acm) {
+    	if (!majorElements.containsKey(acm.getMinor().getUniqueId())){
+    		exportMinor(acm.getMinor());
     	}
-    	if (!academicAreaElements.containsKey(academicAreaClassification.getAcademicArea().getUniqueId())){
-    		exportAcademicArea(academicAreaClassification.getAcademicArea());
+    	if (!academicAreaElements.containsKey(acm.getAcademicArea().getUniqueId())){
+    		exportAcademicArea(acm.getAcademicArea());
     	}
-    	if (!academicClassificationElements.containsKey(academicAreaClassification.getAcademicClassification().getUniqueId())){
-    		exportAcademicClassification(academicAreaClassification.getAcademicClassification());
+    	if (!academicClassificationElements.containsKey(acm.getAcademicClassification().getUniqueId())){
+    		exportAcademicClassification(acm.getAcademicClassification());
     	}
-    	acadAreaMinorClassificationElement.addAttribute(sAcademicAreaUniqueIdAttribute, academicAreaClassification.getAcademicArea().getUniqueId().toString());
-    	acadAreaMinorClassificationElement.addAttribute(sAcademicClassificationUniqueIdAttribute, academicAreaClassification.getAcademicClassification().getUniqueId().toString());
-    	acadAreaMinorClassificationElement.addAttribute(sMinorUniqueIdAttribute, minor.getUniqueId().toString());
+    	acadAreaMinorClassificationElement.addAttribute(sAcademicAreaUniqueIdAttribute, acm.getAcademicArea().getUniqueId().toString());
+    	acadAreaMinorClassificationElement.addAttribute(sAcademicClassificationUniqueIdAttribute, acm.getAcademicClassification().getUniqueId().toString());
+    	acadAreaMinorClassificationElement.addAttribute(sMinorUniqueIdAttribute, acm.getMinor().getUniqueId().toString());
 	}
 
 	private void exportMajor(PosMajor major) {
