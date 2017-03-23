@@ -177,6 +177,7 @@ public class SessionRollForward {
 	
 	private boolean classPrefsPushUp;
 	private boolean classRollForward;
+	private DistributionMode rollForwardDistributions = DistributionMode.MIXED;
 	
 	private CancelledClassAction cancelledClassAction = CancelledClassAction.REOPEN;
 
@@ -191,6 +192,13 @@ public class SessionRollForward {
 		REOPEN,
 		KEEP,
 		SKIP
+	}
+	
+	public static enum DistributionMode {
+		ALL,
+		MIXED,
+		SUBPART,
+		NONE,
 	}
 	
 	
@@ -232,6 +240,10 @@ public class SessionRollForward {
 			classPrefsPushUp = false;
 			classRollForward = false;
 		}
+	}
+	
+	public void setRollForwardDistributions(String rollForwardDistributions) {
+		this.rollForwardDistributions = (rollForwardDistributions == null ? DistributionMode.MIXED : DistributionMode.valueOf(rollForwardDistributions));
 	}
 	
 	public void setCancelledClassActionRollForwardParameter(String cancelledClassAction){
@@ -1586,7 +1598,7 @@ public class SessionRollForward {
 	}
 
 	protected void rollForwardDistributionPrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession, org.hibernate.Session hibSession){
-		if (fromPrefGroup.getDistributionObjects() != null && !fromPrefGroup.getDistributionObjects().isEmpty() && (!(fromPrefGroup instanceof Class_) || isClassRollForward())){
+		if (fromPrefGroup.getDistributionObjects() != null && !fromPrefGroup.getDistributionObjects().isEmpty()){
 			DistributionObject fromDistObj = null;
 			DistributionObject toDistObj = null;
 			DistributionPref fromDistributionPref = null;
@@ -1595,6 +1607,7 @@ public class SessionRollForward {
 				fromDistObj = (DistributionObject) it.next();
 				toDistObj = new DistributionObject();
 				fromDistributionPref = fromDistObj.getDistributionPref();
+				if (!isRollForwardDistributions(fromDistributionPref)) continue;
 				toDistributionPref = DistributionPref.findByIdRolledForwardFrom(fromDistributionPref.getUniqueId(), toSession.getUniqueId());
 				if (toDistributionPref == null){
 					toDistributionPref = new DistributionPref();
@@ -2051,6 +2064,7 @@ public class SessionRollForward {
 			instrOffrRollFwd.setClassPrefRollForwardParameter(rollForwardSessionForm.getClassPrefsAction());
 			instrOffrRollFwd.setSubpartLocationPrefRollForwardParameters(rollForwardSessionForm.getSubpartLocationPrefsAction());
 			instrOffrRollFwd.setSubpartTimePrefRollForwardParameters(rollForwardSessionForm.getSubpartTimePrefsAction());
+			instrOffrRollFwd.setRollForwardDistributions(rollForwardSessionForm.getRollForwardDistributions());
 			instrOffrRollFwd.setCancelledClassActionRollForwardParameter(rollForwardSessionForm.getCancelledClassAction());
 			for (Iterator saIt = subjects.iterator(); saIt.hasNext();){
 				subjectArea = (SubjectArea) saIt.next();
@@ -3187,6 +3201,29 @@ public class SessionRollForward {
 	
 	public boolean isClassRollForward() {
 		return classRollForward;
+	}
+	
+	public boolean isRollForwardDistributions() {
+		return rollForwardDistributions != DistributionMode.NONE;
+	}
+	
+	public boolean isRollForwardDistributions(DistributionPref dp) {
+		switch (rollForwardDistributions) {
+		case ALL:
+			return true;
+		case NONE:
+			return false;
+		case SUBPART: // there are no classes
+			for (DistributionObject distObj: dp.getDistributionObjects())
+				if (distObj.getPrefGroup() instanceof Class_) return false;
+			return true;
+		case MIXED: // there is at least one subpart
+			for (DistributionObject distObj: dp.getDistributionObjects())
+				if (distObj.getPrefGroup() instanceof SchedulingSubpart) return true;
+			return false;
+		default:
+			return false;
+		}
 	}
 	
 	public CancelledClassAction getCancelledClassAction() {

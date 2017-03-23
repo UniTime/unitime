@@ -110,6 +110,7 @@ public class RollForwardSessionForm extends ActionForm {
 	private String subpartLocationPrefsAction;
 	private String subpartTimePrefsAction;
 	private String classPrefsAction;
+	private String rollForwardDistributions;
 	private String cancelledClassAction;
 	private Boolean rollForwardCurricula;
 	private Long sessionToRollCurriculaForwardFrom;
@@ -233,6 +234,13 @@ public class RollForwardSessionForm extends ActionForm {
 					&& !getClassPrefsAction().equalsIgnoreCase(SessionRollForward.PUSH_UP_ACTION)
 					&& !getClassPrefsAction().equalsIgnoreCase(SessionRollForward.ROLL_PREFS_ACTION)){
 				errors.add("invalidClassAction", new ActionMessage("errors.generic", "Invalid class preference roll forward action:  " + getClassPrefsAction()));
+			}
+			if (getRollForwardDistributions() != null
+					&& !getRollForwardDistributions().equalsIgnoreCase(SessionRollForward.DistributionMode.ALL.name())
+					&& !getRollForwardDistributions().equalsIgnoreCase(SessionRollForward.DistributionMode.MIXED.name())
+					&& !getRollForwardDistributions().equalsIgnoreCase(SessionRollForward.DistributionMode.SUBPART.name())
+					&& !getRollForwardDistributions().equalsIgnoreCase(SessionRollForward.DistributionMode.NONE.name())){
+				errors.add("invalidDistributionAction", new ActionMessage("errors.generic", "Invalid roll forward distribution preferences action:  " + getCancelledClassAction()));
 			}
 			if (getCancelledClassAction() != null
 					&& !getCancelledClassAction().equalsIgnoreCase(SessionRollForward.CancelledClassAction.KEEP.name())
@@ -392,6 +400,7 @@ public class RollForwardSessionForm extends ActionForm {
 		subpartLocationPrefsAction = null;
 		subpartTimePrefsAction = null;
 		classPrefsAction = null;
+		rollForwardDistributions = null;
 		cancelledClassAction = null;
 		rollForwardCurricula = false;
 		sessionToRollCurriculaForwardFrom = null;
@@ -836,6 +845,9 @@ public class RollForwardSessionForm extends ActionForm {
 	public void setClassPrefsAction(String classPrefsAction) {
 		this.classPrefsAction = classPrefsAction;
 	}
+	
+	public String getRollForwardDistributions() { return rollForwardDistributions; }
+	public void setRollForwardDistributions(String rollForwardDistributions) { this.rollForwardDistributions = rollForwardDistributions; }
 
 	public String getCancelledClassAction() { return cancelledClassAction; }
 	public void setCancelledClassAction(String cancelledClassAction) { this.cancelledClassAction = cancelledClassAction; }
@@ -936,6 +948,7 @@ public class RollForwardSessionForm extends ActionForm {
 		form.rollForwardOfferingCoordinatorsSubjectIds = rollForwardOfferingCoordinatorsSubjectIds; 
 		form.rollForwardTeachingRequests = rollForwardTeachingRequests;
 		form.rollForwardTeachingRequestsSubjectIds = rollForwardTeachingRequestsSubjectIds;
+		form.rollForwardDistributions = rollForwardDistributions;
 	}
 	
 	public Boolean getRollForwardTeachingRequests() {

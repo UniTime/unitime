@@ -197,6 +197,12 @@
 			<tt:propertyEquals name="unitime.rollforward.allowClassPrefs" value="true">
 				<tr><td></td><td><html:radio property="classPrefsAction" value="<%= SessionRollForward.ROLL_PREFS_ACTION %>"> Roll forward class level preferences</html:radio></td></tr>
 			</tt:propertyEquals>
+			<tr><td style="padding-top: 20px;" rowspan="4" valign="top">Distribution Preferences:</td>
+				<td style="padding-top: 20px;"><html:radio property="rollForwardDistributions" value="<%= SessionRollForward.DistributionMode.ALL.name() %>"> Roll forward all distribution preferences</html:radio></td></tr>
+			</td></tr>
+			<tr><td><html:radio property="rollForwardDistributions" value="<%= SessionRollForward.DistributionMode.MIXED.name() %>"> Roll forward all distribution preferences, except those that are put solely on classes</html:radio></td></tr>
+			<tr><td><html:radio property="rollForwardDistributions" value="<%= SessionRollForward.DistributionMode.SUBPART.name() %>"> Roll forward only distribution preferences that are put solely on subparts</html:radio></td></tr>
+			<tr><td><html:radio property="rollForwardDistributions" value="<%= SessionRollForward.DistributionMode.NONE.name() %>"> Do not roll forward distribution preferences</html:radio></td></tr>
 			<tr><td style="padding-top: 20px;" rowspan="3" valign="top">Cancelled Classes:</td>
 				<td style="padding-top: 20px;"><html:radio property="cancelledClassAction" value="<%= SessionRollForward.CancelledClassAction.KEEP.name() %>"> Roll forward cancelled classes as they are (keep)</html:radio></td></tr>
 			<tr><td><html:radio property="cancelledClassAction" value="<%= SessionRollForward.CancelledClassAction.REOPEN.name() %>"> Roll forward cancelled classes as offered (reopen)</html:radio></td></tr>
