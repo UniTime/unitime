@@ -20,6 +20,7 @@
 package org.unitime.timetable.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -43,6 +44,9 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
+import org.unitime.timetable.model.comparators.ClassComparator;
+import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
+import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.ItypeDescDAO;
@@ -200,7 +204,9 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			InstrOfferingConfig fromInstrOffrConfig = null;
 			InstrOfferingConfig toInstrOffrConfig = null;
 			if (fromInstructionalOffering.getInstrOfferingConfigs() != null && fromInstructionalOffering.getInstrOfferingConfigs().size() > 0){
-				for (Iterator it = fromInstructionalOffering.getInstrOfferingConfigs().iterator(); it.hasNext();){
+				List<InstrOfferingConfig> fromInstrOffrConfigs = new ArrayList<InstrOfferingConfig>(fromInstructionalOffering.getInstrOfferingConfigs());
+				Collections.sort(fromInstrOffrConfigs, new InstrOfferingConfigComparator(null));
+				for (Iterator it = fromInstrOffrConfigs.iterator(); it.hasNext();){
 					fromInstrOffrConfig = (InstrOfferingConfig) it.next();
 					toInstrOffrConfig = new InstrOfferingConfig();
 					toInstrOffrConfig.setLimit(fromInstrOffrConfig.getLimit());
@@ -356,11 +362,14 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			parentSubpart.getToSubpart().addTochildSubparts(toSubpart);
 		}
 				
+		hibSession.save(toSubpart);
 		hibSession.update(toInstrOffrConfig);
 		if (fromSubpart.getClasses() != null && fromSubpart.getClasses().size() > 0){
+			List<Class_> classes = new ArrayList<Class_>(fromSubpart.getClasses());
+			Collections.sort(classes, new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
 			Class_ fromClass = null;
 			Class_ toClass = null;
-			for (Iterator it = fromSubpart.getClasses().iterator(); it.hasNext();){
+			for (Iterator it = classes.iterator(); it.hasNext();){
 				fromClass = (Class_) it.next();
 				if (CancelledClassAction.SKIP == getCancelledClassAction() && fromClass.isCancelled()) continue;
 				toClass = rollForwardClass(fromClass, toSubpart, toSession, hibSession);
@@ -380,6 +389,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 					toClass.setParentClass(parentClass);
 					parentClass.addTochildClasses(toClass);
 				}
+				hibSession.save(toClass);
 			}
 		}
 		hibSession.update(toInstrOffrConfig);
@@ -390,8 +400,10 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		rollForwardRoomFeaturePrefs(fromSubpart, toSubpart, toSession);
 		if (isRollForwardDistributions()) rollForwardDistributionPrefs(fromSubpart, toSubpart, toSession, hibSession);
 		if (fromSubpart.getChildSubparts() != null && fromSubpart.getChildSubparts().size() > 0){
+			List<SchedulingSubpart> childSubparts = new ArrayList<SchedulingSubpart>(fromSubpart.getChildSubparts());
+			Collections.sort(childSubparts, new SchedulingSubpartComparator());
 			SchedulingSubpart childSubpart = null;
-			for(Iterator it = fromSubpart.getChildSubparts().iterator(); it.hasNext();){
+			for(Iterator it = childSubparts.iterator(); it.hasNext();){
 				childSubpart = (SchedulingSubpart) it.next();
 				rollForwardSchedulingSubpart(toInstrOffrConfig, childSubpart, rfSs, hibSession,toSession);
 			}
@@ -402,7 +414,9 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 	private void rollForwardSchedSubpartsForAConfig(InstrOfferingConfig ioc, InstrOfferingConfig newIoc, org.hibernate.Session hibSession, Session toSession) throws Exception{
 		if (ioc.getSchedulingSubparts() != null && ioc.getSchedulingSubparts().size() > 0){
 			SchedulingSubpart ss = null;
-			for(Iterator it = ioc.getSchedulingSubparts().iterator(); it.hasNext();){
+			List<SchedulingSubpart> subparts = new ArrayList<SchedulingSubpart>(ioc.getSchedulingSubparts());
+			Collections.sort(subparts, new SchedulingSubpartComparator());
+			for(Iterator it = subparts.iterator(); it.hasNext();){
 				ss = (SchedulingSubpart) it.next();
 				if (ss.getParentSubpart() == null){
 					rollForwardSchedulingSubpart(newIoc, ss, null, hibSession,toSession);
