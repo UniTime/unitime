@@ -180,6 +180,8 @@ public class SessionRollForward {
 	private DistributionMode rollForwardDistributions = DistributionMode.MIXED;
 	
 	private CancelledClassAction cancelledClassAction = CancelledClassAction.REOPEN;
+	
+	private boolean resetClassSuffix;
 
 	public static String ROLL_PREFS_ACTION = "rollUnchanged";
 	public static String DO_NOT_ROLL_ACTION = "doNotRoll";
@@ -204,6 +206,7 @@ public class SessionRollForward {
 	
 	public SessionRollForward(Log log) {
 		iLog = log;
+		resetClassSuffix = ApplicationProperty.RollForwardResetClassSuffix.isTrue();
 	}
 
 	public void setSubpartLocationPrefRollForwardParameters(String subpartLocationPrefsAction){
@@ -3228,5 +3231,9 @@ public class SessionRollForward {
 	
 	public CancelledClassAction getCancelledClassAction() {
 		return cancelledClassAction;
+	}
+	
+	public boolean isResetClassSuffix() {
+		return resetClassSuffix;
 	}
 }

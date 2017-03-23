@@ -290,6 +290,10 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		toClass.setSchedulePrintNote(fromClass.getSchedulePrintNote());
 		toClass.setSchedulingSubpart(toSubpart);
 		toClass.setUniqueIdRolledForwardFrom(fromClass.getUniqueId());
+		if (!isResetClassSuffix()) {
+			toClass.setClassSuffix(fromClass.getClassSuffix());
+			toClass.setExternalUniqueId(fromClass.getExternalUniqueId());
+		}
 		if (CancelledClassAction.KEEP == getCancelledClassAction()) {
 			toClass.setCancelled(fromClass.isCancelled());
 		} else {

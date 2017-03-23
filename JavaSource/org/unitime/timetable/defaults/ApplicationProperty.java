@@ -1840,6 +1840,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Session Roll Forward: allow roll forward of class preferences")
 	RollForwardAllowClassPreferences("unitime.rollforward.allowClassPrefs"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Session Roll Forward: reset class suffixes and external ids")
+	RollForwardResetClassSuffix("unitime.rollforward.resetClassSufix"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
