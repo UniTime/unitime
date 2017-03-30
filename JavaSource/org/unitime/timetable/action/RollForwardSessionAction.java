@@ -45,8 +45,10 @@ import org.unitime.timetable.form.RollForwardSessionForm;
 import org.unitime.timetable.gwt.command.server.GwtRpcServlet;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.PointInTimeData;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.dao.PointInTimeDataDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
@@ -118,6 +120,7 @@ public class RollForwardSessionAction extends Action {
 		setToFromSessionsInForm(rollForwardSessionForm);
 		rollForwardSessionForm.setSubjectAreas(getSubjectAreas(rollForwardSessionForm.getSessionToRollForwardTo()));
 		rollForwardSessionForm.setDepartments(getDepartments(rollForwardSessionForm.getSessionToRollForwardTo()));
+		rollForwardSessionForm.setFromPointInTimeDataSnapshots(getPointInTimeDataSnapshots(rollForwardSessionForm.getSessionToRollForwardTo()));
 		if (op == null)
 			setExpirationDates(rollForwardSessionForm);
 		if (rollForwardSessionForm.getSubpartLocationPrefsAction() == null){
@@ -280,10 +283,6 @@ public class RollForwardSessionAction extends Action {
         		sessionRollForward.rollSubjectAreasForward(iErrors, iForm);
         	}
 	        iProgress++;
-//TODO: remove these lines of code once testing is complete	        
-//			if (iErrors.isEmpty()){
-//				iForm.validateInstructorDataRollForward(toAcadSession, iErrors);
-//			}
         	if (iErrors.isEmpty() && iForm.getRollForwardInstructorData()) {
 				setStatus("Instructors ...");
         		sessionRollForward.rollInstructorDataForward(iErrors, iForm);
@@ -490,6 +489,28 @@ public class RollForwardSessionAction extends Action {
 		
 		if (session != null) departments = session.getDepartments();
 		return(departments);
+	}
+
+	protected Set<PointInTimeData> getPointInTimeDataSnapshots(Long selectedSessionId) {
+		Set<PointInTimeData> pointInTimeDataSnapshots = new TreeSet<PointInTimeData>();
+		Session session = null;
+		if (selectedSessionId != null){
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append("from PointInTimeData pitd where pitd.session.uniqueId in (select distinct rfio.session ")
+			  .append(" from InstructionalOffering rfio, Session s inner join s.instructionalOfferings as io ")
+			  .append(" where s.uniqueId = :sessId ")
+              .append(" and rfio.uniqueId = io.uniqueIdRolledForwardFrom )")
+              .append(" and pitd.savedSuccessfully = true ");
+			pointInTimeDataSnapshots.addAll((List<PointInTimeData>)PointInTimeDataDAO.getInstance()
+					.getSession()
+					.createQuery(sb.toString())
+					.setLong("sessId", selectedSessionId.longValue())
+					.list());
+		}
+		
+		return(pointInTimeDataSnapshots);
+
 	}
 
 	protected void setExpirationDates(RollForwardSessionForm form) {

@@ -37,6 +37,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.OfferingCoordinator;
+import org.unitime.timetable.model.PointInTimeData;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePattern;
@@ -77,6 +78,7 @@ public class RollForwardSessionForm extends ActionForm {
 	private String buttonAction;
 	private Collection<Session> toSessions;
 	private Collection<Session> fromSessions;
+	private Collection<PointInTimeData> fromPointInTimeDataSnapshots;
 	private Long sessionToRollForwardTo;
 	private Boolean rollForwardDatePatterns;
 	private Long sessionToRollDatePatternsForwardFrom;
@@ -106,7 +108,8 @@ public class RollForwardSessionForm extends ActionForm {
 	private Boolean rollForwardMidtermExams;
 	private Boolean rollForwardFinalExams;
 	private Boolean rollForwardStudents;
-	private Integer rollForwardStudentsMode;
+	private String rollForwardStudentsMode;
+	private Long pointInTimeSnapshotToRollCourseEnrollmentsForwardFrom;
 	private String subpartLocationPrefsAction;
 	private String subpartTimePrefsAction;
 	private String classPrefsAction;
@@ -240,7 +243,7 @@ public class RollForwardSessionForm extends ActionForm {
 					&& !getRollForwardDistributions().equalsIgnoreCase(SessionRollForward.DistributionMode.MIXED.name())
 					&& !getRollForwardDistributions().equalsIgnoreCase(SessionRollForward.DistributionMode.SUBPART.name())
 					&& !getRollForwardDistributions().equalsIgnoreCase(SessionRollForward.DistributionMode.NONE.name())){
-				errors.add("invalidDistributionAction", new ActionMessage("errors.generic", "Invalid roll forward distribution preferences action:  " + getCancelledClassAction()));
+				errors.add("invalidDistributionAction", new ActionMessage("errors.generic", "Invalid roll forward distribution preferences action:  " + getRollForwardDistributions()));
 			}
 			if (getCancelledClassAction() != null
 					&& !getCancelledClassAction().equalsIgnoreCase(SessionRollForward.CancelledClassAction.KEEP.name())
@@ -312,15 +315,20 @@ public class RollForwardSessionForm extends ActionForm {
 
 	public void validateLastLikeDemandRollForward(Session toAcadSession,ActionErrors errors){
 		if (getRollForwardStudents().booleanValue()) {
-		    if (getRollForwardStudentsMode().intValue()==0) {
+		    if (getRollForwardStudentsMode().equals(SessionRollForward.StudentEnrollmentMode.LAST_LIKE.name())) {
 		        validateRollForwardSessionHasNoDataOfType(errors, toAcadSession, "Last-like Student Course Requests", 
 		                LastLikeCourseDemandDAO.getInstance().getQuery("from LastLikeCourseDemand d where d.subjectArea.session.uniqueId = " + toAcadSession.getUniqueId().toString()).list());
-		    } else if (getRollForwardStudentsMode().intValue()==1) {
+		    } else if (getRollForwardStudentsMode().equals(SessionRollForward.StudentEnrollmentMode.STUDENT_CLASS_ENROLLMENTS.name())) {
 		        validateRollForwardSessionHasNoDataOfType(errors, toAcadSession, "Student Class Enrollments", 
 		                StudentClassEnrollmentDAO.getInstance().getQuery("from StudentClassEnrollment d where d.courseOffering.subjectArea.session.uniqueId = " + toAcadSession.getUniqueId().toString()).list());
-		    } else {
+		    } else if (getRollForwardStudentsMode().equals(SessionRollForward.StudentEnrollmentMode.STUDENT_COURSE_REQUESTS.name())) {
                 validateRollForwardSessionHasNoDataOfType(errors, toAcadSession, "Course Requests", 
                         CourseRequestDAO.getInstance().getQuery("from CourseRequest r where r.courseOffering.subjectArea.session.uniqueId = " + toAcadSession.getUniqueId().toString()).list());
+		    } else if (getRollForwardStudentsMode().equals(SessionRollForward.StudentEnrollmentMode.POINT_IN_TIME_CLASS_ENROLLMENTS.name())) {
+		        validateRollForwardSessionHasNoDataOfType(errors, toAcadSession, "Point In Time Data Student Class Enrollments", 
+		                StudentClassEnrollmentDAO.getInstance().getQuery("from PitStudentClassEnrollment d where d.pitCourseOffering.subjectArea.session.uniqueId = " + toAcadSession.getUniqueId().toString()).list());
+		    } else {
+				errors.add("invalidCancelAction", new ActionMessage("errors.generic", "Invalid last like course demand roll forward action:  " + getRollForwardStudentsMode()));
 		    }
 		}
 	}
@@ -396,7 +404,9 @@ public class RollForwardSessionForm extends ActionForm {
 		rollForwardMidtermExams = new Boolean(false);
 		rollForwardFinalExams = new Boolean(false);
 		rollForwardStudents = new Boolean(false);
-		rollForwardStudentsMode = new Integer(0);
+		rollForwardStudentsMode = null;
+		pointInTimeSnapshotToRollCourseEnrollmentsForwardFrom = null;
+		setFromPointInTimeDataSnapshots(new ArrayList<PointInTimeData>());
 		subpartLocationPrefsAction = null;
 		subpartTimePrefsAction = null;
 		classPrefsAction = null;
@@ -586,6 +596,15 @@ public class RollForwardSessionForm extends ActionForm {
 		return departments;
 	}
 
+	public void setFromPointInTimeDataSnapshots(
+			Collection<PointInTimeData> fromPointInTimeDataSnapshots) {
+		this.fromPointInTimeDataSnapshots = fromPointInTimeDataSnapshots;
+	}
+
+	public Collection<PointInTimeData> getFromPointInTimeDataSnapshots() {
+		return fromPointInTimeDataSnapshots;
+	}
+
 	public void setDepartments(
 			Collection<Department> departments) {
 		this.departments = departments;
@@ -758,12 +777,20 @@ public class RollForwardSessionForm extends ActionForm {
 	    this.rollForwardStudents = rollForwardStudents;
 	}
 	
-    public Integer getRollForwardStudentsMode() {
+    public String getRollForwardStudentsMode() {
         return rollForwardStudentsMode;
     }
     
-    public void setRollForwardStudentsMode(Integer rollForwardStudentsMode) {
+    public void setRollForwardStudentsMode(String rollForwardStudentsMode) {
         this.rollForwardStudentsMode = rollForwardStudentsMode;
+    }
+    
+    public Long getPointInTimeSnapshotToRollCourseEnrollmentsForwardFrom() {
+    	return(this.pointInTimeSnapshotToRollCourseEnrollmentsForwardFrom);
+    }
+    
+    public void setPointInTimeSnapshotToRollCourseEnrollmentsForwardFrom(Long pointInTimeSnapshotToRollCourseEnrollmentsForwardFrom) {
+    	this.pointInTimeSnapshotToRollCourseEnrollmentsForwardFrom = pointInTimeSnapshotToRollCourseEnrollmentsForwardFrom;
     }
     
     public Boolean getRollForwardCurricula() {
@@ -924,6 +951,8 @@ public class RollForwardSessionForm extends ActionForm {
 		form.rollForwardFinalExams = rollForwardFinalExams;
 		form.rollForwardStudents = rollForwardStudents;
 		form.rollForwardStudentsMode = rollForwardStudentsMode;
+		form.pointInTimeSnapshotToRollCourseEnrollmentsForwardFrom = pointInTimeSnapshotToRollCourseEnrollmentsForwardFrom;
+		form.fromPointInTimeDataSnapshots = fromPointInTimeDataSnapshots;
 		form.subpartLocationPrefsAction = subpartLocationPrefsAction;
 		form.subpartTimePrefsAction = subpartTimePrefsAction;
 		form.classPrefsAction = classPrefsAction;

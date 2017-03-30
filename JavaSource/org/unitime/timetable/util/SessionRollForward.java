@@ -203,6 +203,13 @@ public class SessionRollForward {
 		NONE,
 	}
 	
+	public static enum StudentEnrollmentMode {
+		LAST_LIKE,
+		STUDENT_CLASS_ENROLLMENTS,
+		STUDENT_COURSE_REQUESTS,
+		POINT_IN_TIME_CLASS_ENROLLMENTS
+	}
+	
 	
 	public SessionRollForward(Log log) {
 		iLog = log;
@@ -2469,27 +2476,29 @@ public class SessionRollForward {
         
         String[] query = null;
         
-        switch (rollForwardSessionForm.getRollForwardStudentsMode().intValue()) {
-        case 0 : // Last-like Course Demands
-             query = new String[] {
+        if (rollForwardSessionForm.getRollForwardStudentsMode().equals(StudentEnrollmentMode.LAST_LIKE.name())) {
+            query = new String[] {
                      "select distinct d.student, co, d.priority from LastLikeCourseDemand d, CourseOffering co, CourseOffering last "+
                      "where co.subjectArea.session.uniqueId=:toSessionId and co.uniqueIdRolledForwardFrom=last.uniqueId and "+
                      "((d.coursePermId is null and d.subjectArea.uniqueId = last.subjectArea.uniqueId and d.courseNbr=last.courseNbr) or " +
                      "(d.coursePermId is not null and d.coursePermId=last.permId))"};
-             break;
-        case 1 : // Student Class Enrollments
+        } else if (rollForwardSessionForm.getRollForwardStudentsMode().equals(StudentEnrollmentMode.STUDENT_CLASS_ENROLLMENTS.name())) {
             query = new String[] {
                     "select distinct e.student, co, e.courseRequest.courseDemand.priority from StudentClassEnrollment e, CourseOffering co "+
                     "where co.subjectArea.session.uniqueId=:toSessionId and co.uniqueIdRolledForwardFrom=e.courseOffering.uniqueId",
                     "select distinct e.student, co, -1 from StudentClassEnrollment e, CourseOffering co "+
                     "where co.subjectArea.session.uniqueId=:toSessionId and co.uniqueIdRolledForwardFrom=e.courseOffering.uniqueId and "+
                     "e.courseRequest is null"};
-            break;
-        case 2 : // Course Requests
+        } else if (rollForwardSessionForm.getRollForwardStudentsMode().equals(StudentEnrollmentMode.STUDENT_COURSE_REQUESTS.name())) {
             query = new String[] {
                     "select r.courseDemand.student, co, r.courseDemand.priority from CourseRequest r, CourseOffering co "+
                     "where co.subjectArea.session.uniqueId=:toSessionId and co.uniqueIdRolledForwardFrom=r.courseOffering.uniqueId and " +
                     "r.order=0 and r.courseDemand.alternative=false"};
+        } else if (rollForwardSessionForm.getRollForwardStudentsMode().equals(StudentEnrollmentMode.POINT_IN_TIME_CLASS_ENROLLMENTS.name())) {
+            query = new String[] {
+                    "select distinct psce.pitStudent.student, co, -1 from PitStudentClassEnrollment psce, CourseOffering co "+
+                    "where co.subjectArea.session.uniqueId=:toSessionId and co.uniqueIdRolledForwardFrom=psce.pitCourseOffering.courseOffering.uniqueId and "+
+                    "psce.pitStudent.pointInTimeData.uniqueId = " + rollForwardSessionForm.getPointInTimeSnapshotToRollCourseEnrollmentsForwardFrom().toString() };
         }
         
         org.hibernate.Session hibSession = LastLikeCourseDemandDAO.getInstance().getSession();

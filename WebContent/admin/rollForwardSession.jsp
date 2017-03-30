@@ -281,11 +281,24 @@
 		</tr>
 		<tr>
 			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardStudents"/> Import Last-Like Course Demands
-				<html:select property="rollForwardStudentsMode">
-					<html:option value="0">Copy Last-like Course Demands From Previous Session</html:option>
-					<html:option value="1">Import Last-like Course Demands From Student Class Enrollments Of Previous Session</html:option>
-					<html:option value="2">Import Last-like Course Demands From Course Requests Of Previous Session</html:option>
-				</html:select>
+			<table style="margin-left: 50px;">
+				<tr><td><html:radio property="rollForwardStudentsMode" value="<%= SessionRollForward.StudentEnrollmentMode.LAST_LIKE.name() %>"> Copy Last-like Course Demands From Previous Session</html:radio></td></tr>
+				<tr><td><html:radio property="rollForwardStudentsMode" value="<%= SessionRollForward.StudentEnrollmentMode.STUDENT_CLASS_ENROLLMENTS.name() %>"> Import Last-like Course Demands From Student Class Enrollments Of Previous Session</html:radio></td></tr>
+				<tr><td><html:radio property="rollForwardStudentsMode" value="<%= SessionRollForward.StudentEnrollmentMode.STUDENT_COURSE_REQUESTS.name() %>"> Import Last-like Course Demands From Course Requests Of Previous Session</html:radio></td></tr>
+				<tr><td><html:radio property="rollForwardStudentsMode" value="<%= SessionRollForward.StudentEnrollmentMode.POINT_IN_TIME_CLASS_ENROLLMENTS.name() %>"> Import Last-like Course Demands From a Point In Time Snapshot of Student Class Enrollments Of Previous Session</html:radio>
+				<table style="margin-left: 50px;"><tr>
+				    <tr>
+				    	<td valign="top">Point In Time Data Snapshot To Use:
+							<html:select property="pointInTimeSnapshotToRollCourseEnrollmentsForwardFrom">
+								<html:optionsCollection property="fromPointInTimeDataSnapshots" value="uniqueId" label="name" />
+							</html:select>
+						</td>
+					</tr>
+				</table>
+				</td></tr>
+			</table>
+			</td>		
+
 			</td>		
 		</tr>
 		<tr>
