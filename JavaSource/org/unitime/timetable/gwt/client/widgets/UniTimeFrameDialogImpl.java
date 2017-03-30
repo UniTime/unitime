@@ -117,19 +117,23 @@ public class UniTimeFrameDialogImpl extends UniTimeDialogBox implements UniTimeF
 	}
 	
 	@Override
-	public void openDialog(String title, String source, String width, String height) {
+	public void openDialog(String title, String source, String width, String height, boolean noCacheTS) {
 		if (isShowing()) hide();
 		GwtHint.hideHint();
 		
 		LoadingWidget.getInstance().show("Loading " + title + " ...");
 		setText(title);
-		String hash = null;
-		int hashIdx = source.lastIndexOf('#');
-		if (hashIdx >= 0) {
-			hash = source.substring(hashIdx);
-			source = source.substring(0, hashIdx);
+		if (noCacheTS) {
+			String hash = null;
+			int hashIdx = source.lastIndexOf('#');
+			if (hashIdx >= 0) {
+				hash = source.substring(hashIdx);
+				source = source.substring(0, hashIdx);
+			}
+			iFrame.setUrl(source + (source.indexOf('?') >= 0 ? "&" : "?") + "noCacheTS=" + new Date().getTime() + (hash == null ? "" : hash));
+		} else {
+			iFrame.setUrl(source);
 		}
-		iFrame.setUrl(source + (source.indexOf('?') >= 0 ? "&" : "?") + "noCacheTS=" + new Date().getTime() + (hash == null ? "" : hash));
 		String w = (width == null || width.isEmpty() ? String.valueOf(Window.getClientWidth() * 3 / 4) : width);
 		String h = (height == null || height.isEmpty() ? String.valueOf(Window.getClientHeight() * 3 / 4) : height);
 		if (w.endsWith("%")) w = String.valueOf(Integer.parseInt(w.substring(0, w.length() - 1)) * Window.getClientWidth() / 100);

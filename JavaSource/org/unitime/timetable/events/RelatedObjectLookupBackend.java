@@ -106,6 +106,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 						related.setType(RelatedObjectInterface.RelatedObjectType.Offering);
 						related.setUniqueId(course.getInstructionalOffering().getUniqueId());
 						related.setName(course.getCourseName());
+						related.addCourseId(course.getUniqueId());
 						related.addCourseName(course.getCourseName());
 						related.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 						related.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId()});
@@ -116,6 +117,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 						related.setType(RelatedObjectInterface.RelatedObjectType.Course);
 						related.setUniqueId(course.getUniqueId());
 						related.setName(course.getCourseName());
+						related.addCourseId(course.getUniqueId());
 						related.addCourseName(course.getCourseName());
 						related.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 						related.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId()});
@@ -161,6 +163,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 						relatedOffering.setUniqueId(course.getInstructionalOffering().getUniqueId());
 						relatedOffering.setName(course.getCourseName());
 						relatedOffering.setNote(course.getScheduleBookNote());
+						relatedOffering.addCourseId(course.getUniqueId());
 						relatedOffering.addCourseName(course.getCourseName());
 						relatedOffering.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 						relatedOffering.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId()});
@@ -178,6 +181,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 					relatedCourse.setUniqueId(course.getUniqueId());
 					relatedCourse.setName(course.getCourseName());
 					relatedCourse.setNote(course.getScheduleBookNote());
+					relatedCourse.addCourseId(course.getUniqueId());
 					relatedCourse.addCourseName(course.getCourseName());
 					relatedCourse.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 					relatedCourse.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId()});
@@ -200,6 +204,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 						relatedConfig.setType(RelatedObjectInterface.RelatedObjectType.Config);
 						relatedConfig.setUniqueId(config.getUniqueId());
 						relatedConfig.setName(config.getName() + (config.getInstructionalMethod() == null ? "" : " (" + config.getInstructionalMethod().getLabel() + ")"));
+						relatedConfig.addCourseId(course.getUniqueId());
 						relatedConfig.addCourseName(course.getCourseName());
 						relatedConfig.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 						relatedConfig.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId(), config.getUniqueId()});
@@ -276,6 +281,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 		    		if (clazz.getSchedulePrintNote() != null && !clazz.getSchedulePrintNote().isEmpty())
 		    			note = (note == null || note.isEmpty() ? "" : note + "\n") + clazz.getSchedulePrintNote();
 					relatedClass.setNote(note);
+					relatedClass.addCourseId(course.getUniqueId());
 					relatedClass.addCourseName(course.getCourseName());
 					relatedClass.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 					relatedClass.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId(), clazz.getSchedulingSubpart().getUniqueId(), clazz.getUniqueId()});
@@ -326,6 +332,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 					related.setType(RelatedObjectInterface.RelatedObjectType.Offering);
 					related.setUniqueId(course.getInstructionalOffering().getUniqueId());
 					related.setName(course.getCourseName());
+					related.addCourseId(course.getUniqueId());
 					related.addCourseName(course.getCourseName());
 					related.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 					related.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId()});
@@ -336,6 +343,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 					related.setType(RelatedObjectInterface.RelatedObjectType.Course);
 					related.setUniqueId(course.getUniqueId());
 					related.setName(course.getCourseName());
+					related.addCourseId(course.getUniqueId());
 					related.addCourseName(course.getCourseName());
 					related.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 					related.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId()});
@@ -360,6 +368,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 				relatedOffering.setUniqueId(course.getInstructionalOffering().getUniqueId());
 				relatedOffering.setName(course.getCourseName());
 				relatedOffering.setNote(course.getScheduleBookNote());
+				relatedOffering.addCourseId(course.getUniqueId());
 				relatedOffering.addCourseName(course.getCourseName());
 				relatedOffering.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 				relatedOffering.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId()});
@@ -377,6 +386,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 			relatedCourse.setUniqueId(course.getUniqueId());
 			relatedCourse.setName(course.getCourseName());
 			relatedCourse.setNote(course.getScheduleBookNote());
+			relatedCourse.addCourseId(course.getUniqueId());
 			relatedCourse.addCourseName(course.getCourseName());
 			relatedCourse.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 			relatedCourse.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId()});
@@ -403,6 +413,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 					relatedConfig.setType(RelatedObjectInterface.RelatedObjectType.Config);
 					relatedConfig.setUniqueId(config.getUniqueId());
 					relatedConfig.setName(config.getName() + (config.getInstructionalMethod() == null ? "" : " (" + config.getInstructionalMethod().getLabel() + ")"));
+					relatedConfig.addCourseId(course.getUniqueId());
 					relatedConfig.addCourseName(course.getCourseName());
 					relatedConfig.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 					relatedConfig.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId(), config.getUniqueId()});
@@ -457,6 +468,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 	    		if (clazz.getSchedulePrintNote() != null && !clazz.getSchedulePrintNote().isEmpty())
 	    			note = (note == null || note.isEmpty() ? "" : note + "\n") + clazz.getSchedulePrintNote();
 				relatedClass.setNote(note);
+				relatedClass.addCourseId(course.getUniqueId());
 				relatedClass.addCourseName(course.getCourseName());
 				relatedClass.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 				relatedClass.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId(), subpart.getUniqueId(), clazz.getUniqueId()});

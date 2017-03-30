@@ -117,6 +117,7 @@ public class ExaminationScheduleBackend implements GwtRpcImplementation<Examinat
     		related.setType(RelatedObjectInterface.RelatedObjectType.Examination);
     		related.setUniqueId(x.getUniqueId());
     		related.setName(x.getName() == null ? x.generateName() : x.getName());
+    		related.addCourseId(co.getUniqueId());
     		related.addCourseName(co.getCourseName());
     		related.addCourseTitle(co.getTitle());
     		related.setInstruction(x.getExamType().getLabel());

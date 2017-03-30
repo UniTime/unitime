@@ -1472,6 +1472,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    			break;
 				    		}
 				    		courses.remove(correctedOffering);
+				    		event.addCourseId(correctedOffering.getUniqueId());
 				    		event.addCourseName(correctedOffering.getCourseName());
 				    		event.addCourseTitle(correctedOffering.getTitle() == null ? "" : correctedOffering.getTitle());
 				    		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
@@ -1486,6 +1487,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    			event.setName(correctedOffering.getCourseName() + " " + clazz.getClassSuffix(correctedOffering));
 				    		}
 			    			for (CourseOffering co: courses) {
+			    				event.addCourseId(co.getUniqueId());
 					    		event.addCourseName(co.getCourseName());
 					    		event.addCourseTitle(co.getTitle() == null ? "" : co.getTitle());
 					    		if (clazz.getClassSuffix(co) != null)
@@ -1558,6 +1560,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    			if ((!instructing || !course.isIsControl()) && !curriculumCourses.contains(course.getUniqueId())) continue courses;
 						    			break;
 						    		}
+						    		event.addCourseId(course.getUniqueId());
 						    		event.addCourseName(course.getCourseName());
 						    		event.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 						    		name = course.getCourseName();
@@ -1637,6 +1640,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    			if ((!instructing || !course.isIsControl()) && !curriculumCourses.contains(course.getUniqueId())) continue courses;
 						    			break;
 						    		}
+						    		event.addCourseId(course.getUniqueId());
 						    		event.addCourseName(course.getCourseName());
 						    		event.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 				    				switch (owner.getOwnerType()) {
@@ -2114,6 +2118,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    		}
 						    		*/
 						    		courses.remove(correctedOffering);
+						    		event.addCourseId(correctedOffering.getUniqueId());
 						    		event.addCourseName(correctedOffering.getCourseName());
 						    		event.addCourseTitle(correctedOffering.getTitle() == null ? "" : correctedOffering.getTitle());
 						    		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
@@ -2128,6 +2133,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    			event.setName(correctedOffering.getCourseName() + " " + clazz.getClassSuffix(correctedOffering));
 						    		}
 					    			for (CourseOffering co: courses) {
+					    				event.addCourseId(co.getUniqueId());
 							    		event.addCourseName(co.getCourseName());
 							    		event.addCourseTitle(co.getTitle() == null ? "" : co.getTitle());
 							    		if (clazz.getClassSuffix(co) != null)
@@ -2182,6 +2188,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    				if (label.startsWith(courseName)) {
 						    					label = label.substring(courseName.length());
 						    				}
+						    				event.addCourseId(course.getUniqueId());
 						    				event.addCourseName(course.getCourseName());
 						    				event.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 						    				event.addExternalId(label.trim());
@@ -2227,6 +2234,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    				if (label.startsWith(courseName)) {
 						    					label = label.substring(courseName.length());
 						    				}
+						    				event.addCourseId(course.getUniqueId());
 						    				event.addCourseName(course.getCourseName());
 						    				event.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 						    				event.addExternalId(label.trim());
@@ -2433,6 +2441,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					    			break;
 					    		}
 					    		courses.remove(correctedOffering);
+					    		event.addCourseId(correctedOffering.getUniqueId());
 					    		event.addCourseName(correctedOffering.getCourseName());
 					    		event.addCourseTitle(correctedOffering.getTitle() == null ? "" : correctedOffering.getTitle());
 					    		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
@@ -2447,6 +2456,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					    			event.setName(correctedOffering.getCourseName() + " " + clazz.getClassSuffix(correctedOffering));
 					    		}
 				    			for (CourseOffering co: courses) {
+				    				event.addCourseId(co.getUniqueId());
 						    		event.addCourseName(co.getCourseName());
 						    		event.addCourseTitle(co.getTitle() == null ? "" : co.getTitle());
 						    		if (clazz.getClassSuffix(co) != null)

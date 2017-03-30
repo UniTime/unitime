@@ -96,7 +96,7 @@ public class MobileUniTimeFrameDialogImpl implements UniTimeFrameDialogDisplay {
 	}
 
 	@Override
-	public void openDialog(String title, String source, String width, String height) {
+	public void openDialog(String title, String source, String width, String height, boolean noCacheTS) {
 		if (isShowing()) hideDialog();
 		GwtHint.hideHint();
 		
@@ -105,13 +105,17 @@ public class MobileUniTimeFrameDialogImpl implements UniTimeFrameDialogDisplay {
 
 		LoadingWidget.getInstance().show("Loading " + title + " ...");
 		setText(title);
-		String hash = null;
-		int hashIdx = source.lastIndexOf('#');
-		if (hashIdx >= 0) {
-			hash = source.substring(hashIdx);
-			source = source.substring(0, hashIdx);
+		if (noCacheTS) {
+			String hash = null;
+			int hashIdx = source.lastIndexOf('#');
+			if (hashIdx >= 0) {
+				hash = source.substring(hashIdx);
+				source = source.substring(0, hashIdx);
+			}
+			iFrame.setUrl(source + (source.indexOf('?') >= 0 ? "&" : "?") + "noCacheTS=" + new Date().getTime() + (hash == null ? "" : hash));
+		} else {
+			iFrame.setUrl(source);
 		}
-		iFrame.setUrl(source + (source.indexOf('?') >= 0 ? "&" : "?") + "noCacheTS=" + new Date().getTime() + (hash == null ? "" : hash));
 		iCheckLoadingWidgetIsShowing.schedule(30000);
 		
 		History.newItem(title, false);

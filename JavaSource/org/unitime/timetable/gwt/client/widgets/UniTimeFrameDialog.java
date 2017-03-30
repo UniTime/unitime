@@ -41,17 +41,21 @@ public class UniTimeFrameDialog {
 	}-*/;
 	
 	public static void openDialog(String title, String source) {
-		openDialog(title, source, null, null);
+		openDialog(title, source, null, null, true);
 	}
 	
 	public static void openDialog(String title, String source, String width, String height) {
+		openDialog(title, source, width, height, true);
+	}
+	
+	public static void openDialog(String title, String source, String width, String height, boolean noCacheTS) {
 		if (sDialog == null) {
 			if (Window.getClientWidth() <= 800)
 				sDialog = GWT.create(UniTimeFrameDialogDisplay.Mobile.class);
 			else
 				sDialog = GWT.create(UniTimeFrameDialogDisplay.class);
 		}
-		sDialog.openDialog(title, source, width, height);
+		sDialog.openDialog(title, source, width, height, noCacheTS);
 	}
 	
 	public static void hideDialog() {

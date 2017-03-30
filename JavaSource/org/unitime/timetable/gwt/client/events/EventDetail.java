@@ -22,11 +22,14 @@ package org.unitime.timetable.gwt.client.events;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.GwtHint;
 import org.unitime.timetable.gwt.client.events.EventAdd.EventPropertiesProvider;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.EventMeetingRow;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
+import org.unitime.timetable.gwt.client.sectioning.CourseDetailsWidget.CourseDetailsRpcRequest;
+import org.unitime.timetable.gwt.client.sectioning.CourseDetailsWidget.CourseDetailsRpcResponse;
 import org.unitime.timetable.gwt.client.widgets.ImageLink;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
@@ -59,6 +62,10 @@ import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcResp
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.MouseOutEvent;
+import com.google.gwt.event.dom.client.MouseOutHandler;
+import com.google.gwt.event.dom.client.MouseOverEvent;
+import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
@@ -439,19 +446,21 @@ public class EventDetail extends Composite {
 		if (iEvent.hasRelatedObjects()) {
 			for (RelatedObjectInterface obj: iEvent.getRelatedObjects()) {
 				List<Widget> row = new ArrayList<Widget>();
-				String course = "";
+				P course = new P("multiple-lines");
 				if (obj.hasCourseNames()) {
+					int idx = 0;
 					for (String cn: obj.getCourseNames()) {
-						if (course.isEmpty()) {
-							course += cn;
+						Long courseId = obj.getCourseId(idx++);
+						if (course.getWidgetCount() == 0) {
+							course.add(new CourseName(courseId, cn));
 						} else {
-							course += "<span class='cross-list'>" + cn + "</span>";
+							course.add(new CourseName(courseId, cn, "cross-list"));
 						}
 					}
 				} else {
-					course = obj.getName();
+					course.add(new CourseName(null, obj.getName()));
 				}
-				row.add(new HTML(course, false));
+				row.add(course);
 				
 				String section = "";
 				if (obj.hasExternalIds()) {
@@ -576,5 +585,84 @@ public class EventDetail extends Composite {
 	}
 	
 	public EventInterface getEvent() { return iEvent; }
+	
+	private class CourseName extends P {
+		private CourseDetailsRpcResponse iDetails = null;
+
+		public CourseName(final Long id, String name, String... styles) {
+			super(styles);
+			setText(name);
+			if (id != null) {
+				addMouseOverHandler(new MouseOverHandler() {
+					@Override
+					public void onMouseOver(MouseOverEvent event) {
+						if (iDetails == null) {
+							RPC.execute(new CourseDetailsRpcRequest(id), new AsyncCallback<CourseDetailsRpcResponse>() {
+								@Override
+								public void onFailure(Throwable caught) {
+									iDetails = new CourseDetailsRpcResponse();
+								}
+
+								@Override
+								public void onSuccess(CourseDetailsRpcResponse result) {
+									iDetails = result; showDetails();
+								}
+							});
+						} else {
+							showDetails();
+						}
+					}
+				});
+				addMouseOutHandler(new MouseOutHandler() {
+					@Override
+					public void onMouseOut(MouseOutEvent event) {
+						hideDetails();
+					}
+				});
+				addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						if (iDetails == null) {
+							RPC.execute(new CourseDetailsRpcRequest(id), new AsyncCallback<CourseDetailsRpcResponse>() {
+								@Override
+								public void onFailure(Throwable caught) {
+									iDetails = new CourseDetailsRpcResponse();
+								}
+
+								@Override
+								public void onSuccess(CourseDetailsRpcResponse result) {
+									iDetails = result; openLink();
+								}
+							});
+						} else {
+							openLink();
+						}
+						event.stopPropagation();
+					}
+				});
+			}
+		}
+		
+		protected void showDetails() {
+			if (iDetails != null && iDetails.hasDetails()) {
+				HTML details = new HTML(iDetails.getDetails());
+				details.setStyleName("unitime-CourseDetailsPopup");
+				GwtHint.showHint(getElement(), details);
+			}
+		}
+		
+		protected void hideDetails() {
+			if (iDetails != null && iDetails.hasDetails())
+				GwtHint.hideHint();
+		}
+		
+		protected void openLink() {
+			if (iDetails != null && iDetails.hasLink()) {
+				iOwners.clearHover();
+				GwtHint.hideHint();
+				UniTimeFrameDialog.openDialog(MESSAGES.courseCatalogDialog(getText()), iDetails.getLink(), null, null, false);
+			}
+		}
+	}	
 
 }

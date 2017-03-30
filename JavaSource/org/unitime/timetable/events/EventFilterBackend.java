@@ -630,5 +630,11 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 			}
 		}
 	}
+	
+	public static void main(String[] args) {
+		System.out.println("XstClass = " + Status.ReportClasses.toInt());
+		System.out.println("XstFinal = " + Status.ReportExamsFinal.toInt());
+		System.out.println("XstMidtr = " + Status.ReportExamsMidterm.toInt());
+	}
 
 }

@@ -2656,6 +2656,10 @@ div.gwt-MenuBarPopup {
 	}
 }
 
+.unitime-EventMeetings .multiple-lines {
+	white-space: nowrap;
+}
+
 .unitime-EventMeetings .no-control {
 	color: gray;
 	padding-left: 5px;
@@ -2704,6 +2708,10 @@ div.gwt-MenuBarPopup {
 
 .unitime-EventOwners .remove {
 	cursor: pointer;
+}
+
+.unitime-EventOwners .multiple-lines {
+	white-space: nowrap;
 }
 
 .unitime-EventOwners .cross-list {

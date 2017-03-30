@@ -56,6 +56,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	private TreeSet<NoteInterface> iNotes;
 	private Date iExpirationDate = null;
 	
+	private List<Long> iCourseIds = null;
 	private List<String> iCourseNames = null;
 	private List<String> iCourseTitles = null;
 	private String iInstruction = null;
@@ -277,6 +278,17 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	public TreeSet<MeetingInterface> getMeetings() { return iMeetings; }
 	public void setMeetings(TreeSet<MeetingInterface> meetings) { iMeetings = meetings; }
 	
+	public boolean hasCourseIds() { return iCourseIds != null && !iCourseIds.isEmpty(); }
+	public void addCourseId(Long id) {
+		if (iCourseIds == null) iCourseIds = new ArrayList<Long>();
+		iCourseIds.add(id);
+	}
+	public List<Long> getCourseIds() {
+		return iCourseIds;
+	}
+	public Long getCourseId(int index) {
+		return (iCourseIds != null && index < iCourseIds.size() ? iCourseIds.get(index) : null);
+	}
 	public boolean hasCourseNames() { return iCourseNames != null && !iCourseNames.isEmpty(); }
 	public void addCourseName(String name) {
 		if (iCourseNames == null) iCourseNames = new ArrayList<String>();
@@ -392,6 +404,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		conflict.setInstruction(event.getInstruction());
 		conflict.setInstructionType(event.getInstructionType());
 		conflict.setSectionNumber(event.getSectionNumber());
+		if (event.hasCourseIds())
+			for (Long courseId: event.getCourseIds())
+				conflict.addCourseId(courseId);
 		if (event.hasCourseNames())
 			for (String courseName: event.getCourseNames())
 				conflict.addCourseName(courseName);
@@ -1214,6 +1229,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     public static class RelatedObjectInterface implements IsSerializable, Comparable<RelatedObjectInterface> {
     	private Long iUniqueId;
     	private RelatedObjectType iType;
+    	private List<Long> iCourseIds = null;
     	private List<String> iCourseNames = null;
     	private List<String> iCourseTitles = null;
     	private String iName;
@@ -1253,6 +1269,17 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	public String getDetailPage() { return iDetailPage; }
     	public void setDetailPage(String page) { iDetailPage = page; }
     	
+    	public boolean hasCourseIds() { return iCourseIds != null && !iCourseIds.isEmpty(); }
+    	public void addCourseId(Long id) {
+    		if (iCourseIds == null) iCourseIds = new ArrayList<Long>();
+    		iCourseIds.add(id);
+    	}
+    	public List<Long> getCourseIds() {
+    		return iCourseIds;
+    	}
+    	public Long getCourseId(int index) {
+    		return (iCourseIds != null && index < iCourseIds.size() ? iCourseIds.get(index) : null);
+    	}
     	public boolean hasCourseNames() { return iCourseNames != null && !iCourseNames.isEmpty(); }
     	public void addCourseName(String name) {
     		if (iCourseNames == null) iCourseNames = new ArrayList<String>();

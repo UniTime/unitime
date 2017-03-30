@@ -29,18 +29,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.unitime.timetable.gwt.client.GwtHint;
 import org.unitime.timetable.gwt.client.events.EventAdd.EventPropertiesProvider;
 import org.unitime.timetable.gwt.client.events.EventComparator.EventMeetingSortBy;
+import org.unitime.timetable.gwt.client.sectioning.CourseDetailsWidget.CourseDetailsRpcRequest;
+import org.unitime.timetable.gwt.client.sectioning.CourseDetailsWidget.CourseDetailsRpcResponse;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
+import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
+import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.TimeSelector.TimeUtils;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.AriaOperation;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
+import org.unitime.timetable.gwt.command.client.GwtRpcService;
+import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -58,10 +65,15 @@ import org.unitime.timetable.gwt.shared.EventInterface.SessionMonth;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.MouseOutEvent;
+import com.google.gwt.event.dom.client.MouseOutHandler;
+import com.google.gwt.event.dom.client.MouseOverEvent;
+import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -76,6 +88,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
+	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static DateTimeFormat sDateFormatApproval = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 	private static DateTimeFormat sDateFormatExpiration = ServerDateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 	private static DateTimeFormat sDateFormatShort = ServerDateTimeFormat.getFormat(CONSTANTS.eventDateFormatShort());
@@ -878,18 +891,21 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		
 		if (event != null && event.getType() != null) {
 			if (event.hasCourseNames()) {
-				List<String> name = new ArrayList<String>();
+				List<P> name = new ArrayList<P>();
 				List<String> section = new ArrayList<String>();
 				List<String> title = new ArrayList<String>();
-				if (event.getType() == EventType.Course) { name.add(event.getName()); section.add("&nbsp;"); }
-				for (String cn: event.getCourseNames())
+				if (event.getType() == EventType.Course) { name.add(new CourseName(null, event.getName())); section.add("&nbsp;"); }
+				int idx = 0;
+				for (String cn: event.getCourseNames()) {
+					Long courseId = event.getCourseId(idx++);
 					if (name.isEmpty()) {
-						name.add(cn);
+						name.add(new CourseName(courseId, cn));
 					} else if (event.getInstruction() != null || event.getType() == EventType.Course) {
-						name.add("<span class='no-control'>" + cn + "</span>");
+						name.add(new CourseName(courseId, cn, "no-control"));
 					} else {
-						name.add(cn);
+						name.add(new CourseName(courseId, cn));
 					}
+				}
 				if (event.hasExternalIds())
 					for (String ex: event.getExternalIds()) {
 						if (section.isEmpty()) {
@@ -919,12 +935,12 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 						}
 					}
 				}
-				row.add(new MultiLineCell(name));
+				row.add(new MultiLinePCell(name));
 				row.add(new MultiLineNumberCell(section));
 				row.add(new Label(event.getInstruction() == null ? event.getType().getAbbreviation(CONSTANTS) : event.getInstruction(), false));
-				row.add(new MultiLineCell(title));
+				row.add(new MultiLineStringCell(title));
 				if (event.hasEventNote() && getMode().hasFlag(ModeFlag.ShowEventDetails)) {
-					MultiLineCell note = new MultiLineCell(event.getEventNote("\n").split("\\n"));
+					MultiLineStringCell note = new MultiLineStringCell(event.getEventNote("\n").split("\\n"));
 					note.setTitle(event.getEventNote("\n"));
 					note.addStyleName("note");
 					row.add(note);
@@ -943,7 +959,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				row.add(new Label(event.getType().getAbbreviation(CONSTANTS), false));
 				row.add(new HTML("&nbsp;"));
 				if (event.hasEventNote() && getMode().hasFlag(ModeFlag.ShowEventDetails)) {
-					MultiLineCell note = new MultiLineCell(event.getEventNote("\n").split("\\n"));
+					MultiLineStringCell note = new MultiLineStringCell(event.getEventNote("\n").split("\\n"));
 					note.setTitle(event.getEventNote("\n"));
 					note.addStyleName("note");
 					row.add(note);
@@ -1143,7 +1159,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				List<String> names = new ArrayList<String>();
 				for (ContactInterface instructor: event.getInstructors())
 					names.add(instructor.getName(MESSAGES));
-				row.add(new MultiLineCell(names));
+				row.add(new MultiLineStringCell(names));
 			} else {
 				row.add(new HTML(event.getInstructorNames("<br>", MESSAGES), false));
 			}
@@ -2026,17 +2042,21 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		}
 	}
 	
-	private static class MultiLineCell extends HTML {
+	private static interface MultiLineCell {
+		public void showLine(int line, boolean hasNext);
+	}
+	
+	private static class MultiLineStringCell extends HTML implements MultiLineCell {
 		List<String> iValue;
 		
-		public MultiLineCell(List<String> value) {
+		public MultiLineStringCell(List<String> value) {
 			super();
 			setWordWrap(false);
 			iValue = value;
 			showLine(0, false);
 		}
 		
-		public MultiLineCell(String... values) {
+		public MultiLineStringCell(String... values) {
 			super();
 			setWordWrap(false);
 			iValue = new ArrayList<String>();
@@ -2055,7 +2075,34 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		}
 	}
 	
-	private static class MultiLineNumberCell extends MultiLineCell implements HasCellAlignment {
+	private static class MultiLinePCell extends P implements MultiLineCell {
+		List<P> iValue;
+		
+		public MultiLinePCell(List<P> value) {
+			super("multiple-lines");
+			iValue = value;
+			showLine(0, false);
+		}
+		
+		public MultiLinePCell(P... values) {
+			super("multiple-lines");
+			iValue = new ArrayList<P>();
+			for (P value: values)
+				iValue.add(value);
+			showLine(0, false);
+		}
+		
+		public void showLine(int line, boolean hasNext) {
+			clear();
+			add(line >= 0 && line < iValue.size() ? iValue.get(line) : new P("blank-line"));
+			if (!hasNext && line >= 0 && line + 1 < iValue.size()) {
+				for (int i = line + 1; i < iValue.size(); i++)
+					add(iValue.get(i));
+			}
+		}
+	}
+	
+	private static class MultiLineNumberCell extends MultiLineStringCell implements HasCellAlignment {
 		public MultiLineNumberCell(List<String> value) {
 			super(value);
 		}
@@ -2085,6 +2132,85 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		}
 		@Override
 		public int getColSpan() { return iColspan; }
+	}
+	
+	private class CourseName extends P {
+		private CourseDetailsRpcResponse iDetails = null;
+
+		public CourseName(final Long id, String name, String... styles) {
+			super(styles);
+			setText(name);
+			if (id != null) {
+				addMouseOverHandler(new MouseOverHandler() {
+					@Override
+					public void onMouseOver(MouseOverEvent event) {
+						if (iDetails == null) {
+							RPC.execute(new CourseDetailsRpcRequest(id), new AsyncCallback<CourseDetailsRpcResponse>() {
+								@Override
+								public void onFailure(Throwable caught) {
+									iDetails = new CourseDetailsRpcResponse();
+								}
+
+								@Override
+								public void onSuccess(CourseDetailsRpcResponse result) {
+									iDetails = result; showDetails();
+								}
+							});
+						} else {
+							showDetails();
+						}
+					}
+				});
+				addMouseOutHandler(new MouseOutHandler() {
+					@Override
+					public void onMouseOut(MouseOutEvent event) {
+						hideDetails();
+					}
+				});
+				addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						if (iDetails == null) {
+							RPC.execute(new CourseDetailsRpcRequest(id), new AsyncCallback<CourseDetailsRpcResponse>() {
+								@Override
+								public void onFailure(Throwable caught) {
+									iDetails = new CourseDetailsRpcResponse();
+								}
+
+								@Override
+								public void onSuccess(CourseDetailsRpcResponse result) {
+									iDetails = result; openLink();
+								}
+							});
+						} else {
+							openLink();
+						}
+						event.stopPropagation();
+					}
+				});
+			}
+		}
+		
+		protected void showDetails() {
+			if (iDetails != null && iDetails.hasDetails()) {
+				HTML details = new HTML(iDetails.getDetails());
+				details.setStyleName("unitime-CourseDetailsPopup");
+				GwtHint.showHint(getElement(), details);
+			}
+		}
+		
+		protected void hideDetails() {
+			if (iDetails != null && iDetails.hasDetails())
+				GwtHint.hideHint();
+		}
+		
+		protected void openLink() {
+			if (iDetails != null && iDetails.hasLink()) {
+				clearHover();
+				GwtHint.hideHint();
+				UniTimeFrameDialog.openDialog(MESSAGES.courseCatalogDialog(getText()), iDetails.getLink(), null, null, false);
+			}
+		}
 	}
 	
 }

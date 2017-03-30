@@ -4595,6 +4595,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("View")
 	String courseCatalogLink();
 	
+	@DefaultMessage("Details of {0}")
+	String courseCatalogDialog(String course);
+	
 	@DefaultMessage("Student Sectioning Solver")
 	String solverStudent();
 	

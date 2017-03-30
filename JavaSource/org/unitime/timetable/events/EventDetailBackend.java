@@ -217,6 +217,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				related.setDetailPage("classDetail.do?cid=" + clazz.getUniqueId());
 
     		CourseOffering courseOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
+    		related.addCourseId(courseOffering.getUniqueId());
     		related.addCourseName(courseOffering.getCourseName());
     		related.addCourseTitle(courseOffering.getTitle() == null ? "" : courseOffering.getTitle());
     		related.setSectionNumber(clazz.getSectionNumberString(hibSession));
@@ -228,6 +229,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		related.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
     		for (CourseOffering co: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings()) {
 				if (!co.isIsControl()) {
+					related.addCourseId(co.getUniqueId());
 					related.addCourseName(co.getCourseName());
 					related.addCourseTitle(co.getTitle() == null ? "" : co.getTitle());
 					if (clazz.getClassSuffix(co) != null)
@@ -274,6 +276,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		}
     		event.addRelatedObject(related);
     		
+    		event.addCourseId(courseOffering.getUniqueId());
     		event.addCourseName(courseOffering.getCourseName());
     		event.addCourseTitle(courseOffering.getTitle() == null ? "" : courseOffering.getTitle());
     		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
@@ -289,6 +292,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		}
 			for (CourseOffering co: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings()) {
 				if (!co.isIsControl()) {
+					event.addCourseId(co.getUniqueId());
 					event.addCourseName(co.getCourseName());
 					event.addCourseTitle(co.getTitle() == null ? "" : co.getTitle());
 					if (clazz.getClassSuffix(co) != null)
@@ -360,6 +364,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				related.setType(RelatedObjectInterface.RelatedObjectType.values()[owner.getOwnerType()]);
 				related.setUniqueId(owner.getOwnerId());
 				related.setName(owner.getLabel());
+				related.addCourseId(owner.getCourse().getUniqueId());
 				related.addCourseName(owner.getCourse().getCourseName());
 				related.addCourseTitle(owner.getCourse().getTitle() == null ? "" : owner.getCourse().getTitle());
 				if (owner.getOwnerType() != ExamOwner.sOwnerTypeClass && context != null && context.hasPermission(owner.getCourse().getInstructionalOffering(), Right.InstructionalOfferingDetail))
@@ -375,6 +380,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    		related.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
 		    		for (CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
 						if (!course.isIsControl()) {
+							related.addCourseId(course.getUniqueId());
 							related.addCourseName(course.getCourseName());
 							related.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 							if (clazz.getClassSuffix(course) != null)
@@ -424,6 +430,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				} else if (owner.getOwnerType() == ExamOwner.sOwnerTypeOffering) {
 		    		for (CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
 		    			if (!course.isIsControl()) {
+							related.addCourseId(course.getUniqueId());
 							related.addCourseName(course.getCourseName());
 							related.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 		    			}
@@ -468,6 +475,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				RelatedObjectInterface related = new RelatedObjectInterface();
 				related.setType(RelatedObjectInterface.RelatedObjectType.values()[owner.getOwnerType()]);
 				related.setUniqueId(owner.getOwnerId());
+				related.addCourseId(owner.getCourse().getUniqueId());
 				related.addCourseName(owner.getCourse().getCourseName());
 				related.addCourseTitle(owner.getCourse().getTitle() == null ? "" : owner.getCourse().getTitle());
 				related.setName(owner.getLabel());
@@ -486,6 +494,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    		related.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
 		    		for (CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
 						if (!course.isIsControl()) {
+							related.addCourseId(course.getUniqueId());
 							related.addCourseName(course.getCourseName());
 							related.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 							if (clazz.getClassSuffix(course) != null)
@@ -535,6 +544,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				} else if (owner.getOwnerType() == ExamOwner.sOwnerTypeOffering) {
 		    		for (CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
 		    			if (!course.isIsControl()) {
+							related.addCourseId(course.getUniqueId());
 							related.addCourseName(course.getCourseName());
 							related.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 		    			}
@@ -735,6 +745,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				    		}
 				    		CourseOffering correctedOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
 				    		List<CourseOffering> courses = new ArrayList<CourseOffering>(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings());
+				    		confEvent.addCourseId(correctedOffering.getUniqueId());
 				    		confEvent.addCourseName(correctedOffering.getCourseName());
 				    		confEvent.addCourseTitle(correctedOffering.getTitle() == null ? "" : correctedOffering.getTitle());
 				    		confEvent.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
@@ -749,6 +760,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				    			confEvent.setName(correctedOffering.getCourseName() + " " + clazz.getClassSuffix(correctedOffering));
 				    		}
 			    			for (CourseOffering co: courses) {
+			    				confEvent.addCourseId(co.getUniqueId());
 					    		confEvent.addCourseName(co.getCourseName());
 					    		confEvent.addCourseTitle(co.getTitle() == null ? "" : co.getTitle());
 					    		if (clazz.getClassSuffix(co) != null)
@@ -775,6 +787,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				    				if (label.startsWith(courseName)) {
 				    					label = label.substring(courseName.length());
 				    				}
+				    				confEvent.addCourseId(course.getUniqueId());
 				    				confEvent.addCourseName(course.getCourseName());
 				    				confEvent.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 				    				confEvent.addExternalId(label.trim());
@@ -793,6 +806,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				    				if (label.startsWith(courseName)) {
 				    					label = label.substring(courseName.length());
 				    				}
+				    				confEvent.addCourseId(course.getUniqueId());
 				    				confEvent.addCourseName(course.getCourseName());
 				    				confEvent.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 				    				confEvent.addExternalId(label.trim());
@@ -906,6 +920,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		}
 		CourseOffering correctedOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
 		List<CourseOffering> courses = new ArrayList<CourseOffering>(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings());
+		event.addCourseId(correctedOffering.getUniqueId());
 		event.addCourseName(correctedOffering.getCourseName());
 		event.addCourseTitle(correctedOffering.getTitle() == null ? "" : correctedOffering.getTitle());
 		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
@@ -920,6 +935,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 			event.setName(correctedOffering.getCourseName() + " " + clazz.getClassSuffix(correctedOffering));
 		}
 		for (CourseOffering co: courses) {
+			event.addCourseId(co.getUniqueId());
     		event.addCourseName(co.getCourseName());
     		event.addCourseTitle(co.getTitle() == null ? "" : co.getTitle());
     		if (clazz.getClassSuffix(co) != null)
@@ -973,6 +989,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 			related.setDetailPage("classDetail.do?cid=" + clazz.getUniqueId());
 
 		CourseOffering courseOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
+		related.addCourseId(courseOffering.getUniqueId());
 		related.addCourseName(courseOffering.getCourseName());
 		related.addCourseTitle(courseOffering.getTitle() == null ? "" : courseOffering.getTitle());
 		related.setSectionNumber(clazz.getSectionNumberString(hibSession));
@@ -984,6 +1001,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		related.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
 		for (CourseOffering co: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings()) {
 			if (!co.isIsControl()) {
+				related.addCourseId(co.getUniqueId());
 				related.addCourseName(co.getCourseName());
 				related.addCourseTitle(co.getTitle() == null ? "" : co.getTitle());
 				if (clazz.getClassSuffix(co) != null)
