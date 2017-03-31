@@ -113,7 +113,8 @@ public class ExamPeriodChartReport extends PdfLegacyExamReport {
                 for (Iterator<Integer> f = new TreeSet<Integer>(days.keySet()).iterator(); f.hasNext(); idx++) {
                     int day =  f.next();
                     String dayStr = days.get(day);
-                    if (idx<dIdx || (firstDay!=null && (dayStr.startsWith("Mon") || day>=firstDayOffset+7)) || nrCols==(iCompact?iTotals?6:5:4)) continue;
+                    if (idx<dIdx || nrCols==(iCompact?iTotals?6:5:4)) continue;
+                    if (firstDay!=null && (dayStr.startsWith("Mon") || day>=firstDayOffset+7)) break;
                     if (firstDay==null) {
                         firstDay = dayStr; firstDayOffset = day;
                         Calendar c = Calendar.getInstance(Locale.US);
