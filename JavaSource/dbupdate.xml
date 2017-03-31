@@ -12548,4 +12548,20 @@
 		<mysql into="ID">select ifnull(1 + max(uniqueid), %ID%) from %SCHEMA%.student_area_clasf_minor</mysql>
 		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi = 1 + (%ID% div 32767)</mysql>
 	</update>
+	<update version="180" date="31" comment="Student Sectioning Solver Parameter">
+		<sql><![CDATA[
+			update %SCHEMA%.solver_parameter_def set
+				name = 'General.StudentSectioning',
+				default_value='Default',
+				description = 'Student Sectioning',
+				type = 'enum(Default,Deterministic,Branch & Bound,Local Search,B&B Groups)'
+				where name = 'General.DeterministicStudentSectioning'
+		]]></sql>
+		<sql>update %SCHEMA%.solver_parameter set value='Default'
+			where solver_param_def_id = (select uniqueid from solver_parameter_def where name = 'General.StudentSectioning')
+			and value = 'false'</sql>
+		<sql>update %SCHEMA%.solver_parameter set value='Deterministic'
+			where solver_param_def_id = (select uniqueid from solver_parameter_def where name = 'General.StudentSectioning')
+			and value = 'true'</sql>
+	</update>
 </dbupdate>

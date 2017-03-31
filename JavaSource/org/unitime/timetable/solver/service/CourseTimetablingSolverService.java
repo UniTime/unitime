@@ -36,6 +36,9 @@ import org.cpsolver.coursett.criteria.additional.InstructorStudentHardConflict;
 import org.cpsolver.coursett.criteria.additional.RoomSizePenalty;
 import org.cpsolver.coursett.custom.DeterministicStudentSectioning;
 import org.cpsolver.coursett.heuristics.FixCompleteSolutionNeighbourSelection;
+import org.cpsolver.coursett.model.DefaultStudentSectioning;
+import org.cpsolver.coursett.sectioning.SctSectioning;
+import org.cpsolver.coursett.sectioning.StudentSwapSectioning;
 import org.cpsolver.ifs.algorithms.SimpleSearch;
 import org.cpsolver.ifs.extension.ConflictStatistics;
 import org.cpsolver.ifs.extension.SearchIntensification;
@@ -246,8 +249,21 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
         if (properties.getPropertyDouble("Comparator.RoomSizeWeight", 0.0) != 0.0)
         	properties.setProperty("General.AdditionalCriteria", properties.getProperty("General.AdditionalCriteria") + ";" + RoomSizePenalty.class.getName());
         
-        if (properties.getPropertyBoolean("General.DeterministicStudentSectioning", false))
+        if (properties.getPropertyBoolean("General.DeterministicStudentSectioning", false)) {
         	properties.setProperty("StudentSectioning.Class", DeterministicStudentSectioning.class.getName());
+        } else if ("Deterministic".equalsIgnoreCase(properties.getProperty("General.StudentSectioning"))) {
+        	properties.setProperty("StudentSectioning.Class", DeterministicStudentSectioning.class.getName());
+        } else if ("Branch & Bound".equalsIgnoreCase(properties.getProperty("General.StudentSectioning"))) {
+        	properties.setProperty("StudentSectioning.Class", SctSectioning.class.getName());
+        	properties.setProperty("SctSectioning.GroupFirst", "false");
+        } else if ("Local-Search".equalsIgnoreCase(properties.getProperty("General.StudentSectioning")) || "Local Search".equalsIgnoreCase(properties.getProperty("General.StudentSectioning"))) {
+        	properties.setProperty("StudentSectioning.Class", StudentSwapSectioning.class.getName());
+        } else if ("B&B Groups".equalsIgnoreCase(properties.getProperty("General.StudentSectioning"))) {
+        	properties.setProperty("StudentSectioning.Class", SctSectioning.class.getName());
+        	properties.setProperty("SctSectioning.GroupFirst", "true");
+        } else if ("Legacy".equalsIgnoreCase(properties.getProperty("General.StudentSectioning")) || "Default".equalsIgnoreCase(properties.getProperty("General.StudentSectioning"))) {
+        	properties.setProperty("StudentSectioning.Class", DefaultStudentSectioning.class.getName());
+        }
         
         if (properties.getProperty("Parallel.NrSolvers") == null) {
         	properties.setProperty("Parallel.NrSolvers", String.valueOf(Math.max(1, Runtime.getRuntime().availableProcessors() / 2)));
