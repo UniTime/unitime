@@ -413,7 +413,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			}
 			@Override
 			public boolean isEmpty() {
-				return iMatchingRooms.isEmpty();
+				return iMatchingWeeks.isEmpty();
 			}
 		});
 		iRoomPanel = new RoomSelector();
@@ -1375,7 +1375,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		if (iWeekPanel.getValue() != null && !iWeekPanel.getValue().isAll()) {
 			int firstDayOfYear = iWeekPanel.getValue().getFirst().getDayOfYear();
 			int lastDayOfYear = (iWeekPanel.getValue().isOne() ? iWeekPanel.getValue().getFirst() : iWeekPanel.getValue().getLast()).getDayOfYear() + 6;
-			if (meeting.getDayOfYear() < firstDayOfYear || meeting.getDayOfYear() > lastDayOfYear)
+			if (meeting.getMeetingDate() == null || meeting.getDayOfYear() < firstDayOfYear || meeting.getDayOfYear() > lastDayOfYear)
 				return true;
 		}
 		if (iRoomPanel.getValue() != null && !iRoomPanel.getValue().isAll()) {
