@@ -224,7 +224,6 @@ public interface StudentCourseDemands {
 					iMajors.add(new AreaClasfMajor(curriculum.getAcademicArea().getAcademicAreaAbbreviation(), cc.getAcademicClassification().getCode(), major.getCode()));
 			}
 			iCurricula.add(curriculum.getAbbv() + " " + cc.getAcademicClassification().getCode());
-			iGroups.add(new Group(-cc.getUniqueId(), cc.getCurriculum().getAbbv() + " " + cc.getAcademicClassification().getCode())); 
 		}
 
 		public WeightedStudentId(Long studentId) {

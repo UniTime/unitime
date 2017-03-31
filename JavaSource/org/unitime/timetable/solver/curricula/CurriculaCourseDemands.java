@@ -71,6 +71,7 @@ public class CurriculaCourseDemands implements StudentCourseDemands, NeedsStuden
 	private HashSet<Long> iCheckedCourses = new HashSet<Long>();
 	private boolean iIncludeOtherStudents = true;
 	private boolean iSetStudentCourseLimits = false;
+	private boolean iCreateStudentGroups = true;
 	private CurriculumEnrollmentPriorityProvider iEnrollmentPriorityProvider = null;
 	private DataProperties iProperties = null;
 
@@ -80,6 +81,7 @@ public class CurriculaCourseDemands implements StudentCourseDemands, NeedsStuden
 			iFallback = new ProjectedStudentCourseDemands(properties);
 		iIncludeOtherStudents = properties.getPropertyBoolean("CurriculaCourseDemands.IncludeOtherStudents", iIncludeOtherStudents);
 		iSetStudentCourseLimits = properties.getPropertyBoolean("CurriculaCourseDemands.SetStudentCourseLimits", iSetStudentCourseLimits);
+		iCreateStudentGroups = properties.getPropertyBoolean("CurriculaCourseDemands.CreateStudentGroups", iCreateStudentGroups);
 		iEnrollmentPriorityProvider = new DefaultCurriculumEnrollmentPriorityProvider(properties);
 		if (properties.getProperty("CurriculaCourseDemands.CurriculumEnrollmentPriorityProvider") != null) {
 			try {
@@ -369,6 +371,8 @@ public class CurriculaCourseDemands implements StudentCourseDemands, NeedsStuden
 			}
 			for (CurStudent s: iModel.getStudents()) {
 				WeightedStudentId student = new WeightedStudentId(- iLastStudentId.newId(), iClassification);
+				if (iCreateStudentGroups)
+					student.getGroups().add(new Group(-iClassification.getUniqueId(), iClassification.getCurriculum().getAbbv() + " " + iClassification.getAcademicClassification().getCode()));
 				Set<WeightedCourseOffering> studentCourses = new HashSet<WeightedCourseOffering>();
 				iStudentRequests.put(student.getStudentId(), studentCourses);
 				Hashtable<Long, Double> priorities = new Hashtable<Long, Double>(); iEnrollmentPriorities.put(student.getStudentId(), priorities);

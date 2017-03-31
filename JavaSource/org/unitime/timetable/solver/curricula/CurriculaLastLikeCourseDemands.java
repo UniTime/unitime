@@ -77,6 +77,7 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands, Nee
 	private boolean iIncludeOtherStudents = true;
 	private boolean iIncludeOtherCourses = true;
 	private boolean iSetStudentCourseLimits = false;
+	private boolean iCreateStudentGroups = true;
 	private CurriculumEnrollmentPriorityProvider iEnrollmentPriorityProvider = null;
 	private DataProperties iProperties = null;
 
@@ -86,6 +87,7 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands, Nee
 		iIncludeOtherStudents = config.getPropertyBoolean("CurriculaCourseDemands.IncludeOtherStudents", iIncludeOtherStudents);
 		iIncludeOtherCourses = config.getPropertyBoolean("CurriculaCourseDemands.IncludeOtherCourses", config.getPropertyBoolean("CurriculaCourseDemands.IncludeOtherStudents", iIncludeOtherCourses));
 		iSetStudentCourseLimits = config.getPropertyBoolean("CurriculaCourseDemands.SetStudentCourseLimits", iSetStudentCourseLimits);
+		iCreateStudentGroups = config.getPropertyBoolean("CurriculaCourseDemands.CreateStudentGroups", iCreateStudentGroups);
 		iEnrollmentPriorityProvider = new DefaultCurriculumEnrollmentPriorityProvider(config);
 		if (config.getProperty("CurriculaCourseDemands.CurriculumEnrollmentPriorityProvider") != null) {
 			try {
@@ -226,6 +228,8 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands, Nee
 				
 				WeightedStudentId studentId = new WeightedStudentId(student, iProjectedDemands);
 				studentId.setCurriculum(cc.getCurriculum().getAbbv() + " " + cc.getAcademicClassification().getCode());
+				if (iCreateStudentGroups)
+					studentId.getGroups().add(new Group(-cc.getUniqueId(), cc.getCurriculum().getAbbv() + " " + cc.getAcademicClassification().getCode()));
 
 				Set<WeightedStudentId> students = course2ll.get(course);
 				if (students == null) {
@@ -402,6 +406,8 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands, Nee
 				}
 				for (int i = 0; i < studentsToMakeUp; i++) {
 					WeightedStudentId student = new WeightedStudentId(-iLastStudentId.newId(), iClassification);
+					if (iCreateStudentGroups)
+						student.getGroups().add(new Group(-iClassification.getUniqueId(), iClassification.getCurriculum().getAbbv() + " " + iClassification.getAcademicClassification().getCode()));
 					iStudents.put(student, new HashSet<CourseOffering>());
 					iMadeUpStudents.add(student);
 				}
