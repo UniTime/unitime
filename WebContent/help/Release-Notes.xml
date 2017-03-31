@@ -116,6 +116,23 @@
 				<line>Fixed an issue introduced by commit 8d552bf: OfferingCoordinator is not mapped error is shown when looking up a coordinator schedule (role:Coordinator in the event filter).</line>
 			</description>
 		</item>
+		<item>
+			<name>Event Timetable: Arrange Hours Classes</name>
+			<description>
+				<line>Do not show Arrange Hours classes on the week of January 1.</line>
+				<line>That is, when a week containing January 1 is selected in the Filter, not All Weeks or All Matching Weeks.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Examinations</title>
+		<item>
+			<name>PDF Reports: Period Chart</name>
+			<description>
+				<line>Period Chart report: corrected breaking of the report over the week's end.</line>
+				<line>This fixes an issue of not printing Monday periods in some cases.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>
