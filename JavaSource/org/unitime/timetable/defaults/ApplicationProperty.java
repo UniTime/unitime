@@ -2225,6 +2225,11 @@ public enum ApplicationProperty {
 	@DefaultValue("0")
 	@Description("Time Grid: first day of week (0 is Monday, 1 is Tuesday, etc.)")
 	TimeGridFirstDayOfWeek("unitime.timeGrid.startDay"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Events: show academic sessions in the reverse order (latest first)")
+	ListSessionsReverse("unitime.events.listSessionsLatestFirst")
 	;
 
 	String iKey;

@@ -19,11 +19,13 @@
 */
 package org.unitime.timetable.events;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox;
 import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox.AcademicSession;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
@@ -74,6 +76,22 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 			permission = Right.valueOf(command.getSource());
 		
 		TreeSet<Session> sessions = new TreeSet<Session>();
+		
+		if (ApplicationProperty.ListSessionsReverse.isTrue()) {
+			sessions = new TreeSet<Session>(new Comparator<Session>() {
+				@Override
+				public int compare(Session s1, Session s2) {
+					int cmp = s1.getAcademicInitiative().compareTo(s2.getAcademicInitiative());
+					if (cmp!=0) return cmp;
+					
+					cmp = s2.getSessionBeginDateTime().compareTo(s1.getSessionBeginDateTime());
+					if (cmp!=0) return cmp;
+					
+					return s1.getUniqueId().compareTo(s2.getUniqueId());
+				}
+			});
+		}
+		
 		for (Session session: (List<Session>)hibSession.createQuery("select s from Session s").list()) {
 			if (session.getStatusType() == null || session.getStatusType().isTestSession()) continue;
 			if (!context.hasPermissionAnyAuthority(permission, new SimpleQualifier("Session", session.getUniqueId()))) continue;
