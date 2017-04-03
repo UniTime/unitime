@@ -858,7 +858,8 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		for (int i = iIndex; i < iIndex + iStep && i < getRooms().size(); i++) {
 			final Entity room = getRooms().get(i);
 			final P p = new P("room");
-			p.setHTML(MESSAGES.singleRoomSelection(room.getName(), room.getProperty("type", null), room.getProperty("capacity", null)));
+			String displayName = room.getProperty("display", null);
+			p.setHTML(MESSAGES.singleRoomSelection(room.getName() + (displayName != null && !displayName.isEmpty() ? "<br>" + displayName : ""), room.getProperty("type", null), room.getProperty("capacity", null)));
 			if ("1".equals(room.getProperty("ignoreRoomCheck", "0")))
 				p.addStyleName("unitime-IgnoreRoomCheck");
 			p.addMouseOverHandler(new MouseOverHandler() {
@@ -1084,7 +1085,8 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 			
 			final Entity room = getRooms().get(ri);
 			final P prm = new P("date");
-			prm.setHTML(MESSAGES.singleRoomSelection(room.getName(), room.getProperty("type", null), room.getProperty("capacity", null)));
+			String displayName = room.getProperty("display", null);
+			prm.setHTML(MESSAGES.singleRoomSelection(room.getName() + (displayName != null && !displayName.isEmpty() ? "<br>" + displayName : ""), room.getProperty("type", null), room.getProperty("capacity", null)));
 			if ("1".equals(room.getProperty("ignoreRoomCheck", "0")))
 				prm.addStyleName("unitime-IgnoreRoomCheck");
 			prm.addMouseOverHandler(new MouseOverHandler() {

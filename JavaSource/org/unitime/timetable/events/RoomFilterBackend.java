@@ -337,7 +337,8 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 
 		Map<Long, Double> distances = new HashMap<Long, Double>();
 		for (Location location: locations(request.getSessionId(), request.getOptions(), new Query(suggestionQuery(request.getText())), 20, distances, null, context)) {
-			String hint = location.getRoomTypeLabel() + (location.getCapacity() == null ? "" : ", " + MESSAGES.hintRoomCapacity(location.getCapacity().toString()));
+			String hint = (location.getDisplayName() == null || location.getDisplayName().isEmpty() ? "" : location.getDisplayName() + ", ") +
+					location.getRoomTypeLabel() + (location.getCapacity() == null ? "" : ", " + MESSAGES.hintRoomCapacity(location.getCapacity().toString()));
 			Double dist = distances.get(location.getUniqueId());
 			if (dist != null) hint += ", " + MESSAGES.hintRoomDistance(String.valueOf(Math.round(dist)));
 			response.addSuggestion(location.getLabel(), location.getLabel(), "(" + hint + ")");
@@ -362,7 +363,8 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 					"overbook", context.hasPermission(location, Right.EventLocationOverbook) ? "1" : "0",
 					"breakTime", String.valueOf(location.getEffectiveBreakTime()),
 					"message", location.getEventMessage(),
-					"ignoreRoomCheck", location.isIgnoreRoomCheck() ? "1" : "0"
+					"ignoreRoomCheck", location.isIgnoreRoomCheck() ? "1" : "0",
+					"display", location.getDisplayName()
 					));
 		}
 	}
@@ -442,7 +444,8 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 			} else if ("room".equals(attr)) {
 				return has(getLocation().getLabel(), term) || has(getLocation().getDisplayName(), term);
 			} else if ("starts".equals(attr)) {
-				return getLocation().getLabel().toLowerCase().startsWith(term.toLowerCase()) || (getLocation() instanceof Room && ((Room)getLocation()).getRoomNumber().toLowerCase().startsWith(term.toLowerCase()));
+				return getLocation().getLabel().toLowerCase().startsWith(term.toLowerCase()) || (getLocation() instanceof Room && ((Room)getLocation()).getRoomNumber().toLowerCase().startsWith(term.toLowerCase())) ||
+						(getLocation().getDisplayName() != null && getLocation().getDisplayName().toLowerCase().startsWith(term.toLowerCase()));
 			} else if ("contains".equals(attr)) {
 				return getLocation().getLabel().toLowerCase().contains(term.toLowerCase()) || (getLocation() instanceof Room && ((Room)getLocation()).getRoomNumber().toLowerCase().contains(term.toLowerCase()));
 			} else if ("building".equals(attr) || "bldg".equals(attr)) {

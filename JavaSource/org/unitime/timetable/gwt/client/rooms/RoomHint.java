@@ -103,6 +103,9 @@ public class RoomHint {
 		if (room.hasArea())
 			form.addRow(MESSAGES.propRoomArea(), new HTML(room.getArea(), false));
 		
+		if (room.hasRoomTypeLabel())
+			form.addRow(MESSAGES.propRoomType(), new HTML(room.getRoomTypeLabel(), false));
+		
 		if (room.hasFeatures(null)) {
 			P features = new P("features");
 			for (Iterator<FeatureInterface> i = room.getFeatures(null).iterator(); i.hasNext(); ) {

@@ -459,6 +459,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private int iBreakTime = 0;
 		private String iMessage = null;
 		private boolean iIgnoreRoomCheck = false;
+		private String iDisplayName = null;
 
 		public ResourceInterface() {}
 		public ResourceInterface(FilterRpcResponse.Entity room) {
@@ -474,6 +475,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			setBreakTime(Integer.parseInt(room.getProperty("breakTime" ,"0")));
 			setMessage(room.getProperty("message", null));
 			setIgnoreRoomCheck("1".equals(room.getProperty("ignoreRoomCheck", "0")));
+			setDisplayName(room.getProperty("display", null)); 
 		}
 		
 		public ResourceType getType() { return iResourceType; }
@@ -507,19 +509,23 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public String getMessage() { return iMessage; }
 		public boolean isIgnoreRoomCheck() { return iIgnoreRoomCheck; }
 		public void setIgnoreRoomCheck(boolean ignoreRoomCheck) { iIgnoreRoomCheck = ignoreRoomCheck; }
+		public boolean hasDisplayName() { return iDisplayName != null && !iDisplayName.isEmpty(); }
+		public String getDisplayName() { return iDisplayName; }
+		public void setDisplayName(String name) { iDisplayName = name; }
 		
 		public String getNameWithHint() {
 			if (iResourceName == null || iResourceName.isEmpty()) return "";
 			return "<span onmouseover=\"showGwtRoomHint(this, '" + iResourceId + "', '', '" + (iDistance != null ? Math.round(iDistance) : "") + "');\" " +
 					(isIgnoreRoomCheck() ? "class='unitime-IgnoreRoomCheck' " : "") +
-					"onmouseout=\"hideGwtRoomHint();\">" + iResourceName + "</span>";
+					"onmouseout=\"hideGwtRoomHint();\">" + iResourceName + (hasDisplayName() ? " (" + getDisplayName() + ")" : "") + "</span>";
 		}
 		
 		public String getNameWithSizeAndHint() {
 			if (iResourceName == null || iResourceName.isEmpty()) return "";
 			return "<span onmouseover=\"showGwtRoomHint(this, '" + iResourceId + "', '', '" + (iDistance != null ? Math.round(iDistance) : "") + "');\" " +
 					(isIgnoreRoomCheck() ? "class='unitime-IgnoreRoomCheck' " : "") +
-					"onmouseout=\"hideGwtRoomHint();\">" + iResourceName + (iSize != null && iSize > 0 ? " (" + iSize + ")" : "")+ "</span>";
+					"onmouseout=\"hideGwtRoomHint();\">" + iResourceName + 
+					(hasDisplayName() ? " (" + getDisplayName() + (iSize != null && iSize > 0 ? ", " + iSize : "") + ")" : (iSize != null && iSize > 0 ? " (" + iSize + ")" : "")) + "</span>";
 		}
 		
 		public String toString() {

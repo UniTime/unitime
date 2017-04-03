@@ -393,6 +393,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 		resource.setBreakTime(location.getEffectiveBreakTime());
 		resource.setMessage(location.getEventMessage());
 		resource.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
+		resource.setDisplayName(location.getDisplayName());
 		
 		Calendar calendar = Calendar.getInstance();
         for (int day = 0; day < Constants.DAY_CODES.length; day++)
@@ -452,6 +453,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 		resource.setBreakTime(location.getEffectiveBreakTime());
 		resource.setMessage(location.getEventMessage());
 		resource.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
+		resource.setDisplayName(location.getDisplayName());
 		
 		int day = meeting.getDayOfWeek();
 		for (int startTime = 0; startTime < Constants.SLOTS_PER_DAY; ) {

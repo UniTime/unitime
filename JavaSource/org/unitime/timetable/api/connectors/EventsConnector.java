@@ -293,6 +293,7 @@ public class EventsConnector extends ApiConnector {
 						location.setBreakTime(m.getLocation().getEffectiveBreakTime());
 						location.setMessage(m.getLocation().getEventMessage());
 						location.setIgnoreRoomCheck(m.getLocation().isIgnoreRoomCheck());
+						location.setDisplayName(m.getLocation().getDisplayName());
 						meeting.setLocation(location);
 					}
 				}
@@ -308,6 +309,7 @@ public class EventsConnector extends ApiConnector {
 						location.setBreakTime(l.getEffectiveBreakTime());
 						location.setMessage(l.getEventMessage());
 						location.setIgnoreRoomCheck(l.isIgnoreRoomCheck());
+						location.setDisplayName(l.getDisplayName());
 						meeting.setLocation(location);
 					}
 				}

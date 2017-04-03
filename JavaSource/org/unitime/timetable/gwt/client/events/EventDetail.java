@@ -513,7 +513,7 @@ public class EventDetail extends Composite {
 				String location = "";
 				if (obj.hasLocations()) {
 					for (ResourceInterface loc: obj.getLocations()) {
-						location += (location.isEmpty() ? "" : "<br>") + loc.getName();
+						location += (location.isEmpty() ? "" : "<br>") + loc.getNameWithHint();
 					}
 				}
 				row.add(new HTML(location, false));

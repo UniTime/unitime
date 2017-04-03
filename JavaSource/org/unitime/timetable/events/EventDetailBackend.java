@@ -271,6 +271,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     				location.setBreakTime(r.getEffectiveBreakTime());
     				location.setMessage(r.getEventMessage());
     				location.setIgnoreRoomCheck(r.isIgnoreRoomCheck());
+    				location.setDisplayName(r.getDisplayName());
     				related.addLocation(location);
     			}
     		}
@@ -344,6 +345,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				location.setBreakTime(r.getEffectiveBreakTime());
 				location.setMessage(r.getEventMessage());
 				location.setIgnoreRoomCheck(r.isIgnoreRoomCheck());
+				location.setDisplayName(r.getDisplayName());
 				related.addLocation(location);
     		}
     		for (DepartmentalInstructor i: xe.getExam().getInstructors()) {
@@ -404,6 +406,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    				location.setBreakTime(r.getEffectiveBreakTime());
 		    				location.setMessage(r.getEventMessage());
 		    				location.setIgnoreRoomCheck(r.isIgnoreRoomCheck());
+		    				location.setDisplayName(r.getDisplayName());
 		    				related.addLocation(location);
 		    			}
 		    		}
@@ -518,6 +521,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    				location.setBreakTime(r.getEffectiveBreakTime());
 		    				location.setMessage(r.getEventMessage());
 		    				location.setIgnoreRoomCheck(r.isIgnoreRoomCheck());
+		    				location.setDisplayName(r.getDisplayName());
 		    				related.addLocation(location);
 		    			}
 		    		}
@@ -646,6 +650,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				location.setBreakTime(m.getLocation().getEffectiveBreakTime());
 				location.setMessage(m.getLocation().getEventMessage());
 				location.setIgnoreRoomCheck(m.getLocation().isIgnoreRoomCheck());
+				location.setDisplayName(m.getLocation().getDisplayName());
 				meeting.setLocation(location);
 				if ((e instanceof SpecialEvent || e instanceof CourseEvent) && (meeting.getApprovalStatus() == ApprovalStatus.Approved || meeting.getApprovalStatus() == ApprovalStatus.Pending)) {
 					if (m.getLocation().getEventDepartment() != null && m.getLocation().getEventDepartment().isAllowEvents()) {
@@ -967,6 +972,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 			location.setBreakTime(rp.getRoom().getEffectiveBreakTime());
 			location.setMessage(rp.getRoom().getEventMessage());
 			location.setIgnoreRoomCheck(rp.getRoom().isIgnoreRoomCheck());
+			location.setDisplayName(rp.getRoom().getDisplayName());
 			meeting.setLocation(location);
 			event.addMeeting(meeting);
 			locations.add(location);
