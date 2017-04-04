@@ -53,7 +53,7 @@ public class XRoom implements Serializable, Externalizable {
 	public XRoom(Location location) {
 		iUniqueId = location.getUniqueId();
 		iExternalId = location.getExternalUniqueId();
-		iName = location.getLabel();
+		iName = location.getLabelWithDisplayName();
 		iIgnoreTooFar = location.isIgnoreTooFar();
 		iX = location.getCoordinateX();
 		iY = location.getCoordinateY();

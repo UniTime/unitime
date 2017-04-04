@@ -77,6 +77,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
@@ -400,6 +401,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					a.setBreakTime(p.getTimeLocation().getBreakTime());
 					a.setDatePattern(p.getTimeLocation().getDatePatternName());
 				}
+				if (ass != null)
+					for (Location loc: ass.getRooms())
+						a.addRoom(loc.getUniqueId(), loc.getLabelWithDisplayName());
+				/*
 				if (p != null && p.getRoomLocations() != null) {
 					for (RoomLocation rm: p.getRoomLocations()) {
 						a.addRoom(rm.getId(), rm.getName());
@@ -408,6 +413,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (p != null && p.getRoomLocation() != null) {
 					a.addRoom(p.getRoomLocation().getId(), p.getRoomLocation().getName());
 				}
+				*/
 				if (!clazz.getClassInstructors().isEmpty()) {
 					for (Iterator<ClassInstructor> i = clazz.getClassInstructors().iterator(); i.hasNext(); ) {
 						ClassInstructor instr = i.next();
@@ -1292,12 +1298,17 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 									clazz.setBreakTime(placement.getTimeLocation().getBreakTime());
 									clazz.setDatePattern(placement.getTimeLocation().getDatePatternName());
 								}
+								if (enrollment.getClazz().getCommittedAssignment() != null)
+									for (Location loc: enrollment.getClazz().getCommittedAssignment().getRooms())
+										clazz.addRoom(loc.getUniqueId(), loc.getLabelWithDisplayName());
+								/*
 								if (placement.getNrRooms() == 1) {
 									clazz.addRoom(placement.getRoomLocation().getId(), placement.getRoomLocation().getName());
 								} else if (placement.getNrRooms() > 1) {
 									for (RoomLocation rm: placement.getRoomLocations())
 										clazz.addRoom(rm.getId(), rm.getName());
 								}
+								*/
 							}
 							if (enrollment.getClazz().getDisplayInstructor())
 								for (ClassInstructor ci : enrollment.getClazz().getClassInstructors()) {

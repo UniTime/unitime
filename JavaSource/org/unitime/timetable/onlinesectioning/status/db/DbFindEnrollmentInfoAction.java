@@ -465,7 +465,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				}
 				if (assignment != null && !assignment.getRooms().isEmpty()) {
 					for (Location rm: assignment.getRooms()) {
-						a.addRoom(rm.getUniqueId(), rm.getLabel());
+						a.addRoom(rm.getUniqueId(), rm.getLabelWithDisplayName());
 					}
 				}
 				if (section.isDisplayInstructor() && !section.getClassInstructors().isEmpty()) {
