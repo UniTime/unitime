@@ -393,7 +393,7 @@ public class EventsExportEventsToICal extends EventsExporter {
 			if (iEnd.getSecondOfMinute() != 0) iEnd = iEnd.minusSeconds(iEnd.getSecondOfMinute());
 			if (iStart.getMillisOfSecond() != 0) iStart = iStart.minusMillis(iStart.getMillisOfSecond());
 			if (iEnd.getMillisOfSecond() != 0) iEnd = iEnd.minusMillis(iEnd.getMillisOfSecond());
-			iLocation = meeting.getLocationName();
+			iLocation = meeting.getLocationName(MESSAGES);
 			iStatus = (status != null ? status : meeting.isApproved() ? Status.confirmed() : Status.tentative());
 		}
 		

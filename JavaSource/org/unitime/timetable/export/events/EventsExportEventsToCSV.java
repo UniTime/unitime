@@ -40,7 +40,7 @@ import org.unitime.timetable.util.Formats;
  * @author Tomas Muller
  */
 @Service("org.unitime.timetable.export.Exporter:events.csv")
-public class EventsExportEventsToCSV extends EventsExporter {	
+public class EventsExportEventsToCSV extends EventsExporter {
 	@Override
 	public String reference() {
 		return "events.csv";
@@ -122,7 +122,7 @@ public class EventsExportEventsToCSV extends EventsExporter {
 					meeting.isArrangeHours() ? "" : meeting.getEndTime(CONSTANTS, false),
 					meeting.isArrangeHours() ? "" : String.valueOf(meeting.getStartOffset()),
 					meeting.isArrangeHours() ? "" : String.valueOf(-meeting.getEndOffset()),
-					meeting.getLocationName(),
+					meeting.getLocationName(MESSAGES),
 					meeting.hasLocation() && meeting.getLocation().hasSize() ? meeting.getLocation().getSize().toString() : null,
 					event.hasEnrollment() ? event.getEnrollment().toString() : null,
 					event.hasMaxCapacity() ? event.getMaxCapacity().toString() : null,		

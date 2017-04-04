@@ -5173,4 +5173,13 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("current assignment")
 	String initialAssignmentCurrent();
+	
+	@DefaultMessage("{0} ({1})")
+	String roomLabelWithDisplayName(String label, String displayName);
+	
+	@DefaultMessage("{0} ({1})")
+	String roomLabelWithSize(String label, Integer size);
+	
+	@DefaultMessage("{0} ({1}, {2})")
+	String roomLabelWithDisplayNameAndSize(String label, String displayName, Integer size);
 }

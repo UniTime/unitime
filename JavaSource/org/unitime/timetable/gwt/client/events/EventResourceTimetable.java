@@ -1348,7 +1348,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				resource = MESSAGES.resourceRoom();
 			}
 		} else {
-			resource = iResource.getNameWithHint();
+			resource = iResource.getNameWithHint(MESSAGES);
 		}
 		String session = iSession.getAcademicSessionName();
 		if (iWeekPanel.getValue() != null && !iWeekPanel.getValue().isAll())

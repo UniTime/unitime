@@ -116,7 +116,7 @@ public class EventsExportEventsToPDF extends EventsExporter {
 					meeting.getAllocatedTime(CONSTANTS),
 					String.valueOf(meeting.getStartOffset()),
 					String.valueOf(-meeting.getEndOffset()),
-					meeting.getLocationName(),
+					meeting.getLocationName(MESSAGES),
 					meeting.hasLocation() && meeting.getLocation().hasSize() ? meeting.getLocation().getSize().toString() : null,
 					event.hasEnrollment() ? event.getEnrollment().toString() : null,
 					event.hasMaxCapacity() ? event.getMaxCapacity().toString() : null,

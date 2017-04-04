@@ -126,7 +126,7 @@ public class EventsExportMeetingsToCSV extends EventsExporter {
 					meeting.isArrangeHours() ? "" : meeting.getEndTime(CONSTANTS, false),
 					meeting.isArrangeHours() ? "" : String.valueOf(meeting.getStartOffset()),
 					meeting.isArrangeHours() ? "" : String.valueOf(-meeting.getEndOffset()),
-					meeting.getLocationName(),
+					meeting.getLocationName(MESSAGES),
 					meeting.hasLocation() && meeting.getLocation().hasSize() ? meeting.getLocation().getSize().toString() : null,
 					event.hasMaxCapacity() ? event.getMaxCapacity().toString() : null,
 					event.hasEnrollment() ? event.getEnrollment().toString() : null,

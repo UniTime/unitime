@@ -700,13 +700,13 @@ public class TimeGrid extends Composite {
 					meeting = m;
 					prev = m;
 					dates.add(m);
-					if (m.getLocation() != null) rooms.add(m.getLocation().getName());
+					if (m.getLocation() != null) rooms.add(m.getLocation().getNameWithDisplayName(MESSAGES));
 					i.remove();
 				} else if (meeting.getStartSlot() == m.getStartSlot() && meeting.getEndSlot() == m.getEndSlot() &&
 						meeting.getGridIndex() == m.getGridIndex() && meeting.getStartOffset() == m.getStartOffset() && meeting.getEndOffset() == m.getEndOffset()) {
 					if (iMode == Mode.OVERLAP && (weekIndex(prev) != weekIndex(m) && weekIndex(prev) + 1 != weekIndex(m))) continue;
 					dates.add(m);
-					if (m.getLocation() != null) rooms.add(m.getLocation().getName());
+					if (m.getLocation() != null) rooms.add(m.getLocation().getNameWithDisplayName(MESSAGES));
 					prev = m;
 					i.remove();
 				}

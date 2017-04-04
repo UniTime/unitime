@@ -513,19 +513,39 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public String getDisplayName() { return iDisplayName; }
 		public void setDisplayName(String name) { iDisplayName = name; }
 		
-		public String getNameWithHint() {
+		public String getNameWithHint(GwtMessages msg) {
 			if (iResourceName == null || iResourceName.isEmpty()) return "";
 			return "<span onmouseover=\"showGwtRoomHint(this, '" + iResourceId + "', '', '" + (iDistance != null ? Math.round(iDistance) : "") + "');\" " +
 					(isIgnoreRoomCheck() ? "class='unitime-IgnoreRoomCheck' " : "") +
-					"onmouseout=\"hideGwtRoomHint();\">" + iResourceName + (hasDisplayName() ? " (" + getDisplayName() + ")" : "") + "</span>";
+					"onmouseout=\"hideGwtRoomHint();\">" + getNameWithDisplayName(msg) + "</span>";
 		}
 		
-		public String getNameWithSizeAndHint() {
+		public String getNameWithSizeAndHint(GwtMessages msg) {
 			if (iResourceName == null || iResourceName.isEmpty()) return "";
 			return "<span onmouseover=\"showGwtRoomHint(this, '" + iResourceId + "', '', '" + (iDistance != null ? Math.round(iDistance) : "") + "');\" " +
 					(isIgnoreRoomCheck() ? "class='unitime-IgnoreRoomCheck' " : "") +
-					"onmouseout=\"hideGwtRoomHint();\">" + iResourceName + 
-					(hasDisplayName() ? " (" + getDisplayName() + (iSize != null && iSize > 0 ? ", " + iSize : "") + ")" : (iSize != null && iSize > 0 ? " (" + iSize + ")" : "")) + "</span>";
+					"onmouseout=\"hideGwtRoomHint();\">" + getNameWithSize(msg) + "</span>";
+		}
+		
+		public String getNameWithDisplayName(GwtMessages msg) {
+			if (!hasDisplayName())
+				return getName();
+			else
+				return (msg == null ? getName() + " (" + getDisplayName() + ")" : msg.roomLabelWithDisplayName(getName(), getDisplayName()));
+		}
+		
+		public String getNameWithSize(GwtMessages msg) {
+			if (hasDisplayName()) {
+				if (hasSize() && getSize() > 0) {
+					return (msg == null ? getName() + " (" + getDisplayName() + ", " + getSize() + ")" : msg.roomLabelWithDisplayNameAndSize(getName(), getDisplayName(), getSize()));
+				} else {
+					return (msg == null ? getName() + " (" + getDisplayName() + ")" : msg.roomLabelWithDisplayName(getName(), getDisplayName()));
+				}
+			} else if (hasSize() && getSize() > 0) {
+				return (msg == null ? getName() + " (" + getSize() + ")" : msg.roomLabelWithSize(getName(), getSize()));
+			} else {
+				return getName();
+			}
 		}
 		
 		public String toString() {
@@ -711,8 +731,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public ResourceInterface getLocation() { return iLocation; }
 		public boolean hasLocation() { return iLocation != null; }
 		public String getLocationName() { return (iLocation == null ? "" : iLocation.getName()); }
-		public String getLocationNameWithHint() {
-			return (iLocation == null ? "" : iLocation.getNameWithHint());
+		public String getLocationName(GwtMessages msg) { return (iLocation == null ? "" : iLocation.getNameWithDisplayName(msg)); }
+		public String getLocationNameWithHint(GwtMessages msg) {
+			return (iLocation == null ? "" : iLocation.getNameWithHint(msg));
 		}
 		public void setLocation(ResourceInterface resource) { iLocation = resource; }
 		public boolean isPast() { return iPast; }
@@ -958,9 +979,13 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	    public String getLocationName() {
 	    	return iMeetings.first().getLocationName();
 	    }
+	    
+	    public String getLocationName(GwtMessages msg) {
+	    	return iMeetings.first().getLocationName(msg);
+	    }
 
-	    public String getLocationNameWithHint() {
-	    	return iMeetings.first().getLocationNameWithHint();
+	    public String getLocationNameWithHint(GwtMessages msg) {
+	    	return iMeetings.first().getLocationNameWithHint(msg);
 	    }
 	    
 	    public String getLocationCapacity() {

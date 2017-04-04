@@ -670,7 +670,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 								m.getMeetings().first().getAllocatedTime(CONSTANTS),
 								String.valueOf(m.getMeetings().first().getStartOffset()),
 								String.valueOf(- m.getMeetings().first().getEndOffset()),
-								m.getLocationNameWithHint(),
+								m.getLocationNameWithHint(MESSAGES),
 								(m.getMeetings().first().getLocation() == null ? "" : m.getMeetings().first().getLocation().hasSize() ? m.getMeetings().first().getLocation().getSize().toString() : MESSAGES.notApplicable())
 								};
 						if (!m.isArrangeHours() && !m.isPast()) {
@@ -1047,14 +1047,14 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			}
 			if (meeting.getLocation() == null) {
 				if (data.hasParent() && data.getParent().hasMeeting() && data.getParent().getMeeting().getLocation() != null) {
-					row.add(new HTML(data.getParent().getMeeting().getLocationNameWithHint(), false));
+					row.add(new HTML(data.getParent().getMeeting().getLocationNameWithHint(MESSAGES), false));
 					row.add(new NumberCell(data.getParent().getMeeting().getLocation().getSize() == null ? MESSAGES.notApplicable() : data.getParent().getMeeting().getLocation().getSize().toString()));
 				} else {
 					row.add(new Label(""));
 					row.add(new Label(""));
 				}
 			} else {
-				row.add(new HTML(meeting.getLocationNameWithHint(), false));
+				row.add(new HTML(meeting.getLocationNameWithHint(MESSAGES), false));
 				row.add(new NumberCell(meeting.getLocation().getSize() == null ? MESSAGES.notApplicable() : meeting.getLocation().getSize().toString()));
 			}
 			if (meeting.isPast() || (data.hasParent() && data.getParent().hasMeeting() && data.getParent().getMeeting().isPast()))
@@ -1074,7 +1074,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 						m.getMeetings().first().getAllocatedTime(CONSTANTS),
 						String.valueOf(m.getMeetings().first().getStartOffset()),
 						String.valueOf(- m.getMeetings().first().getEndOffset()),
-						m.getLocationNameWithHint(),
+						m.getLocationNameWithHint(MESSAGES),
 						(m.getMeetings().first().getLocation() == null ? "" : m.getMeetings().first().getLocation().hasSize() ? m.getMeetings().first().getLocation().getSize().toString() : MESSAGES.notApplicable())
 						};
 				if (!m.isArrangeHours() && !m.isPast()) {

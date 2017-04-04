@@ -115,7 +115,7 @@
 							<#if event.type != 'FinalExam' && event.type != 'MidtermExam'>
 							<td>${meeting.getAllocatedTime(const)}</td>
 							</#if>
-							<td>${meeting.getLocationName()}</td>
+							<td>${meeting.getLocationName(msg)}</td>
 							<#switch meeting.getApprovalStatus().name()>
 								<#case "Pending">
 									<#if meeting.isPast()>
@@ -168,7 +168,7 @@
 							<#if event.type != 'FinalExam' && event.type != 'MidtermExam'>
 							<td>${meeting.getAllocatedTime(const)}</td>
 							</#if>
-							<td>${meeting.getLocationName()}</td>
+							<td>${meeting.getLocationName(msg)}</td>
 						</tr>
 						<#if meeting.locationMessage??><tr style="background-color: #FFF0A5; font-style: italic;"><td colspan='5' style="padding-left:5px;">${meeting.getLocationMessage()}</td></tr></#if>
 					</#list>
@@ -194,7 +194,7 @@
 							<#if event.type != 'FinalExam' && event.type != 'MidtermExam'>
 							<td>${meeting.getAllocatedTime(const)}</td>
 							</#if>
-							<td>${meeting.getLocationName()}</td>
+							<td>${meeting.getLocationName(msg)}</td>
 						</tr>
 						<#if meeting.locationMessage??><tr style="background-color: #FFF0A5; font-style: italic;"><td colspan='5' style="padding-left:5px;">${meeting.getLocationMessage()}</td></tr></#if>
 					</#list>
@@ -246,7 +246,7 @@
 							<#if event.type != 'FinalExam' && event.type != 'MidtermExam'>
 							<td>${meeting.getAllocatedTime(const)}</td>
 							</#if>
-							<td>${meeting.getLocationName()}</td>
+							<td>${meeting.getLocationName(msg)}</td>
 							<#switch meeting.getApprovalStatus().name()>
 								<#case "Pending">
 									<#if meeting.isPast()>
@@ -327,7 +327,7 @@
 								<#if event.type != 'FinalExam' && event.type != 'MidtermExam'>
 								<td>${meeting.getAllocatedTime(const)}</td>
 								</#if>
-								<td>${meeting.getLocationName()}</td>
+								<td>${meeting.getLocationName(msg)}</td>
 								<#switch meeting.getApprovalStatus().name()>
 									<#case "Pending">
 										<#if meeting.isPast()>

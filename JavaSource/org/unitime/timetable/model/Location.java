@@ -42,6 +42,7 @@ import org.hibernate.type.LongType;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.model.base.BaseLocation;
 import org.unitime.timetable.model.dao.ExamLocationPrefDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
@@ -57,7 +58,8 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  * @author Tomas Muller
  */
 public abstract class Location extends BaseLocation implements Comparable {
-	public static final CourseMessages MSG = Localization.create(CourseMessages.class); 
+	public static final CourseMessages MSG = Localization.create(CourseMessages.class);
+	public static final GwtMessages GWT_MSG = Localization.create(GwtMessages.class);
 	public static final String AVAILABLE_LOCATIONS_ATTR = "availableLocations";
 	private static final long serialVersionUID = 1L;
 
@@ -1141,5 +1143,12 @@ public abstract class Location extends BaseLocation implements Comparable {
 				locations.remove(id);
 		
 		return locations.values();
+	}
+	
+	public String getLabelWithDisplayName() {
+		if (getDisplayName() == null || getDisplayName().isEmpty())
+			return getLabel();
+		else
+			return GWT_MSG.roomLabelWithDisplayName(getLabel(), getDisplayName());
 	}
 }

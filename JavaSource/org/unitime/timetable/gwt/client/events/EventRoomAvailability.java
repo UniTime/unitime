@@ -977,7 +977,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 			List<WeekInterface> weeks = new ArrayList<WeekInterface>(); weeks.add(week);
 			for (ResourceInterface room: iSelectedRooms) {
 				P hp = new P("unitime-RoomAvailabilityHeader");
-				HTML name = new HTML(room.getNameWithSizeAndHint(), false); name.setStyleName("name");
+				HTML name = new HTML(room.getNameWithSizeAndHint(MESSAGES), false); name.setStyleName("name");
 				hp.add(name);
 				HTML type = new HTML(room.getRoomType(), false); type.setStyleName("type");
 				hp.add(type);
