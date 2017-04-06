@@ -295,7 +295,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
                             Location location = (permId==null?null:(iLocations==null?meeting.getMeetings().first().getLocation():iLocations.get(permId)));
                             if (location==null && iLocations!=null && !hasSubjectArea(subject))
                             	location = meeting.getMeetings().first().getLocation();
-                            String loc = (location==null?rpad("",11):formatRoom(location.getLabel()));
+                            String loc = (location==null?rpad("",11):formatRoom(location));
                             if (last==null || !loc.equals(lastLoc)) {
                                 line += loc + " ";
                             } else {
@@ -349,7 +349,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
                             lpad(!firstRoom || iPeriodPrinted?"":section.getSection(), 9)+" "+
                             rpad(!firstRoom?"":getMeetingTime(section),36)+" "+
                             rpad(!firstRoom?"":(section.getExamAssignment()==null?"":section.getExamAssignment().getPeriodNameFixedLength()),30)+" "+
-                            formatRoom(room.getName()));
+                            formatRoom(room));
                     firstRoom = false;
                 }
             }

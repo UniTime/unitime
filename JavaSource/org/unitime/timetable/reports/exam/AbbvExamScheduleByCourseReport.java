@@ -157,7 +157,7 @@ public class AbbvExamScheduleByCourseReport extends PdfLegacyExamReport {
                 if (exam.getRooms()==null || exam.getRooms().isEmpty()) {
                     rooms.add(rpad(iNoRoom,11));
                 } else for (ExamRoomInfo room : exam.getRooms()) {
-                    rooms.add(formatRoom(room.getName()));
+                    rooms.add(formatRoom(room));
                 }
                 Vector<ExamSectionInfo> sections = new Vector(exam.getSectionsIncludeCrosslistedDummies());
                 Collections.sort(sections, new Comparator<ExamSectionInfo>() {

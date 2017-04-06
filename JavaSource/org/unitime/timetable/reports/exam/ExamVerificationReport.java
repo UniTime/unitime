@@ -298,7 +298,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                         } else if (exam.getMaxRooms()>0) {
                             if (pref instanceof RoomPref) {
                                 RoomPref rp = (RoomPref)pref;
-                                rooms.add(pf+formatRoom(rp.getRoom().getLabel())+" "+
+                                rooms.add(pf+formatRoom(rp.getRoom())+" "+
                                         lpad(""+rp.getRoom().getCapacity(),4)+" "+
                                         lpad(""+rp.getRoom().getExamCapacity(),5));
                             } else if (pref instanceof BuildingPref) {
@@ -336,7 +336,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                 if (exam.getRooms()==null || exam.getRooms().isEmpty()) {
                     rooms.add(" "+rpad(iNoRoom, 22));
                 } else for (ExamRoomInfo room : exam.getRooms()) {
-                    rooms.add(" "+formatRoom(room.getName())+" "+
+                    rooms.add(" "+formatRoom(room)+" "+
                             lpad(""+room.getCapacity(),4)+" "+
                             lpad(""+room.getExamCapacity(),5));
                 }
@@ -566,7 +566,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                                 } else if (exam.getMaxRooms()>0) {
                                     if (pref instanceof RoomPref) {
                                         RoomPref rp = (RoomPref)pref;
-                                        rooms.add(pf+formatRoom(rp.getRoom().getLabel())+" "+
+                                        rooms.add(pf+formatRoom(rp.getRoom())+" "+
                                                 lpad(""+rp.getRoom().getCapacity(),4)+" "+
                                                 lpad(""+rp.getRoom().getExamCapacity(),5));
                                     } else if (pref instanceof BuildingPref) {
@@ -604,7 +604,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                         if (exam.getRooms()==null || exam.getRooms().isEmpty()) {
                             rooms.add(" "+rpad(iNoRoom, 22));
                         } else for (ExamRoomInfo room : exam.getRooms()) {
-                            rooms.add(" "+formatRoom(room.getName())+" "+
+                            rooms.add(" "+formatRoom(room)+" "+
                                     lpad(""+room.getCapacity(),4)+" "+
                                     lpad(""+room.getExamCapacity(),5));
                         }

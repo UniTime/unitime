@@ -35,7 +35,6 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.cpsolver.coursett.model.Placement;
-import org.cpsolver.coursett.model.RoomLocation;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;

@@ -327,7 +327,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                             Location location = (permId==null?null:(iLocations==null?meeting.getMeetings().first().getLocation():iLocations.get(permId)));
                             if (location==null && iLocations!=null && !hasSubjectArea(subject))
                             	location = meeting.getMeetings().first().getLocation();
-                            String loc = (location==null?"":formatRoom(location.getLabel()));
+                            String loc = (location==null?"":formatRoom(location));
                             if (last==null || !loc.equals(lastLoc)) {
                                 line += rpad(loc, 12);
                             } else {
@@ -401,7 +401,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                 rpad(!firstRoom?"":getMeetingTime(section),36)+" "+
                                 lpad(!firstRoom?"":String.valueOf(section.getNrStudents()),5)+"  "+
                                 rpad(!firstRoom?"":(section.getExamAssignment()==null?"":section.getExamAssignment().getPeriodNameFixedLength()),30)+" "+
-                                formatRoom(room.getName())+" "+
+                                formatRoom(room)+" "+
                                 lpad(""+room.getCapacity(),5)+" "+
                                 lpad(""+room.getExamCapacity(),5)
                                 );

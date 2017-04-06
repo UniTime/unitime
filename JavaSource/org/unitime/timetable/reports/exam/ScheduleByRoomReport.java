@@ -116,7 +116,7 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
                             }
                             if (lastPeriod!=null && !lastPeriod.getDateOffset().equals(period.getDateOffset()) && !iNewPage) println("");
                             lastPeriod = period;
-                            println((iPeriodPrinted?rpad("",11):formatRoom(room.getName()))+" "+
+                            println((iPeriodPrinted?rpad("",11):formatRoom(room))+" "+
                                     lpad(iPeriodPrinted?"":String.valueOf(room.getCapacity()),8)+" "+
                                     lpad(iPeriodPrinted?"":String.valueOf(room.getExamCapacity()),6)+" "+
                                     lpad(iStudentPrinted?"":String.valueOf(periods.indexOf(period)+1),6)+" "+

@@ -61,6 +61,7 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamType;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
@@ -74,6 +75,7 @@ import org.unitime.timetable.reports.PdfLegacyReport;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo;
+import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.Parameters;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
@@ -116,6 +118,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     protected boolean iMeetingTimeUseEvents = false;
     protected boolean iDispNote = false;
     protected boolean iCompact = false;
+    protected boolean iRoomDisplayNames = false;
     
     protected static DecimalFormat sDF = new DecimalFormat("0.0");
     
@@ -165,6 +168,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         iDispLimits = "true".equals(System.getProperty("verlimit","true"));
         iClassSchedule = "true".equals(System.getProperty("cschedule", ApplicationProperty.ExaminationPdfReportsIncludeClassSchedule.value()));
         iDispFullTermDates = "true".equals(System.getProperty("fullterm","false"));
+        iRoomDisplayNames = "true".equals(System.getProperty("roomDispNames", "true"));
         iFullTermCheckDatePattern = ApplicationProperty.ExaminationPdfReportsFullTermCheckDatePattern.isTrue();
         iMeetingTimeUseEvents = ApplicationProperty.ExaminationPdfReportsUseEventsForMeetingTimes.isTrue();
         if (System.getProperty("since")!=null) {
@@ -190,6 +194,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     public void setClassSchedule(boolean classSchedule) { iClassSchedule = classSchedule; }
     public void setSince(Date since) { iSince = since; }
     public void setDispFullTermDates(boolean dispFullTermDates) { iDispFullTermDates = dispFullTermDates; }
+    public void setUseRoomDisplayNames(boolean roomDispNames) { iRoomDisplayNames = roomDispNames; }
     public void setRoomCode(String roomCode) {
         if (roomCode==null || roomCode.length()==0) {
             iRoomCodes = null;
@@ -491,13 +496,34 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         String stop = time.substring(idx+1).trim();
         return lpad(start,'0',6)+" - "+lpad(stop,'0',6);
     }
-
+    
     public String formatRoom(String room) {
         String r = room.trim();
         int idx = r.lastIndexOf(' '); 
         if (idx>=0 && idx<=5 && r.length()-idx-1<=5)
-            return rpad(r.substring(0, idx),5)+" "+rpad(room.substring(idx+1),5);
-        return rpad(room,11);
+            return rpad(r.substring(0, idx),5)+" "+rpad(r.substring(idx+1),5);
+        return rpad(r, 11);
+    }
+
+    public String formatRoom(ExamRoomInfo roomInfo) {
+    	if (roomInfo == null) return rpad("",11);
+    	if (iRoomDisplayNames) {
+    		Location location = roomInfo.getLocation();
+    		String dispName = (location == null ? null : location.getDisplayName());
+    		if (dispName != null && !dispName.isEmpty())
+    			return rpad(dispName, 11);
+    	}
+    	return formatRoom(roomInfo.getName());
+    }
+    
+    public String formatRoom(Location location) {
+    	if (location == null) return rpad("",11);
+    	if (iRoomDisplayNames) {
+    		String dispName = location.getDisplayName();
+    		if (dispName != null && !dispName.isEmpty())
+    			return rpad(dispName, 11);
+    	}
+    	return formatRoom(location.getLabel());
     }
     
     public String formatPeriod(ExamPeriod period) {

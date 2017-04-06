@@ -114,7 +114,7 @@ public class ScheduleByPeriodReport extends PdfLegacyExamReport {
                                         lpad(!firstRoom?"":section.getSection(),9)+" "+
                                         rpad(!firstRoom?"":getMeetingTime(section),38)+" "+
                                         lpad(!firstRoom?"":String.valueOf(section.getNrStudents()),5)+" "+
-                                        formatRoom(room.getName())+" "+
+                                        formatRoom(room)+" "+
                                         lpad(""+room.getCapacity(),5)+" "+
                                         lpad(""+room.getExamCapacity(),5)
                                         );
