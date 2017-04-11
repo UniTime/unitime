@@ -149,7 +149,7 @@ public class PageNameGenerator {
 	}
 	
 	public void checkOnlineHelp() throws IOException, DocumentException {
-		URL url = new URL("https://sites.google.com/feeds/content/unitime.org/help41?kind=webpage");
+		URL url = new URL("https://sites.google.com/feeds/content/unitime.org/help42?kind=webpage");
 		while (url != null) {
 			Element feed = readHelpContentFeed(url).getRootElement();
 			url = null;
