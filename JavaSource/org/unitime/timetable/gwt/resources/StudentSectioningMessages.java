@@ -968,6 +968,12 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("<sup><font color='#2066CE'>w)</font></sup>")
 	String htmlWaitListSign();
 	
+	@DefaultMessage(" (r)")
+	String csvReservationSign();
+	
+	@DefaultMessage(" (w)")
+	String csvWaitListSign();
+	
 	@DefaultMessage("No results matching filter {0} found.")
 	String exceptionNoMatchingResultsFound(String filter);
 	
@@ -1006,6 +1012,9 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("<sup><font color='#2066CE'>({0}p)</font></sup>")
 	String firstWaitListedPrioritySign(int priority);
+	
+	@DefaultMessage(" ({0}p)")
+	String csvFirstWaitListedPrioritySign(int priority);
 	
 	@DefaultMessage("r) Space available only with a reservation.<br>w) Wait-listed requests.")
 	String sectioningStatusReservationHint();

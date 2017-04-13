@@ -991,8 +991,11 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public void setLevel(int level) { iLevel = level; }
 		public void incLevel() { iLevel ++; }
 		public String getIndent() {
+			return getIndent("&nbsp;&nbsp;");
+		}
+		public String getIndent(String ind) {
 			String indent = "";
-			for (int i = 0; i < iLevel; i++) indent += "&nbsp;&nbsp;";
+			for (int i = 0; i < iLevel; i++) indent += ind;
 			return indent;
 		}
 	}

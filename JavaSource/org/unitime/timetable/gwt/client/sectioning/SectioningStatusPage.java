@@ -47,6 +47,8 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
+import org.unitime.timetable.gwt.command.client.GwtRpcService;
+import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasCellAlignment;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -61,6 +63,9 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.StudentInfo;
+import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
 
 import com.google.gwt.core.client.GWT;
@@ -122,12 +127,14 @@ public class SectioningStatusPage extends Composite {
 	private static DateTimeFormat sDF = DateTimeFormat.getFormat(CONSTANTS.requestDateFormat());
 	private static DateTimeFormat sTSF = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
 	private static NumberFormat sNF = NumberFormat.getFormat(CONSTANTS.executionTimeFormat());
+	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 
 	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
 
 	private SectioningStatusFilterBox iFilter;
 
 	private Button iSearch = null;
+	private Button iExport = null;
 	private Image iLoadingImage = null;
 
 	private VerticalPanel iSectioningPanel = null;
@@ -156,6 +163,7 @@ public class SectioningStatusPage extends Composite {
 	private UniTimeWidget<ListBox> iStatus;
 	private TextArea iMessage, iNote;
 	private Set<Long> iSelectedStudentIds = new HashSet<Long>();
+	private Set<Long> iSelectedCourseIds = new HashSet<Long>();
 	private boolean iOnline; 
 	
 	public SectioningStatusPage(boolean online) {
@@ -175,11 +183,17 @@ public class SectioningStatusPage extends Composite {
 		iFilterPanel.add(iFilter);
 		
 		iSearch = new Button(MESSAGES.buttonSearch());
-		iSearch.setAccessKey('s');
+		iSearch.setAccessKey(UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonSearch()));
 		iSearch.addStyleName("unitime-NoPrint");
 		iFilterPanel.add(iSearch);		
 		iFilterPanel.setCellVerticalAlignment(iSearch, HasVerticalAlignment.ALIGN_TOP);
 		
+		iExport = new Button(MESSAGES.buttonExport());
+		iExport.setAccessKey(UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonExport()));
+		iExport.addStyleName("unitime-NoPrint");
+		iFilterPanel.add(iExport);
+		iFilterPanel.setCellVerticalAlignment(iExport, HasVerticalAlignment.ALIGN_TOP);
+
 		iLoadingImage = new Image(RESOURCES.loading_small());
 		iLoadingImage.setVisible(false);
 		iFilterPanel.add(iLoadingImage);
@@ -256,6 +270,12 @@ public class SectioningStatusPage extends Composite {
 		iSearch.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				loadData();
+			}
+		});
+		
+		iExport.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				exportData();
 			}
 		});
 		
@@ -563,6 +583,7 @@ public class SectioningStatusPage extends Composite {
 	private void setLoading(boolean loading) {
 		iLoadingImage.setVisible(loading);
 		iSearch.setVisible(!loading);
+		iExport.setVisible(!loading);
 	}
 	
 	private void loadData() {
@@ -695,6 +716,39 @@ public class SectioningStatusPage extends Composite {
 		}
 	}
 	
+	private void exportData() {
+		int tab = iTabIndex;
+		if (tab < 0)
+			tab = SectioningStatusCookie.getInstance().getTab(iOnline);
+		
+		String query = "output=student-dashboard.csv&online=" + (iOnline ? 1 : 0) + "&tab=" + tab + "&sort=" + SectioningStatusCookie.getInstance().getSortBy(iOnline, tab);
+		if (tab == 0)
+			for (Long courseId: iSelectedCourseIds)
+				query += "&c=" + courseId;
+		query += "&query=" + URL.encodeQueryString(iFilter.getValue());
+		FilterRpcRequest req = iFilter.getElementsRequest();
+		if (req.hasOptions()) {
+			for (Map.Entry<String, Set<String>> option: req.getOptions().entrySet()) {
+				for (String value: option.getValue()) {
+					query += "&f:" + option.getKey() + "=" + URL.encodeQueryString(value);
+				}
+			}
+		}
+		if (req.getText() != null && !req.getText().isEmpty()) {
+			query += "&f:text=" + URL.encodeQueryString(req.getText());
+		}
+		
+		RPC.execute(EncodeQueryRpcRequest.encode(query), new AsyncCallback<EncodeQueryRpcResponse>() {
+			@Override
+			public void onFailure(Throwable caught) {
+			}
+			@Override
+			public void onSuccess(EncodeQueryRpcResponse result) {
+				ToolBox.open(GWT.getHostPageBaseURL() + "export?q=" + result.getQuery());
+			}
+		});
+	}
+	
 	private List<Widget> line(final EnrollmentInfo e) {
 		List<Widget> line = new ArrayList<Widget>();
 		if (e.getConfigId() == null) {
@@ -719,6 +773,7 @@ public class SectioningStatusPage extends Composite {
 
 								@Override
 								public void onSuccess(List<EnrollmentInfo> result) {
+									iSelectedCourseIds.add(e.getCourseId());
 									setLoading(false);
 									int r = row + 1;
 									for (EnrollmentInfo e: result) {
@@ -733,7 +788,12 @@ public class SectioningStatusPage extends Composite {
 								if (iCourseTable.getData(r).getConfigId() == null) break;
 								iCourseTable.getRowFormatter().setVisible(r, !iCourseTable.getRowFormatter().isVisible(r));
 							}
-							showDetails.setResource(RESOURCES.treeClosed());
+							if (iSelectedCourseIds.remove(e.getCourseId())) {
+								showDetails.setResource(RESOURCES.treeClosed());
+							} else {
+								iSelectedCourseIds.add(e.getCourseId());
+								showDetails.setResource(RESOURCES.treeOpen());
+							}
 						}
 						event.getNativeEvent().stopPropagation();
 						event.getNativeEvent().preventDefault();
@@ -768,6 +828,7 @@ public class SectioningStatusPage extends Composite {
 	}
 	
 	public void populateCourseTable(List<EnrollmentInfo> result) {
+		iSelectedCourseIds.clear();
 		List<Widget> header = new ArrayList<Widget>();
 
 		UniTimeTableHeader hOperations = new UniTimeTableHeader("");
