@@ -3426,6 +3426,7 @@ public class CurriculaServlet implements CurriculaService {
 				String clasfCode = (String)o[0];
 				if (clasfCode == null) continue;
 				String majorCode = (String)o[1];
+				if (majorCode == null) majorCode = "";
 				int enrl = ((Number)o[2]).intValue();
 				Hashtable<String, Integer> major2ll = clasfMajor2ll.get(clasfCode);
 				if (major2ll == null) {
@@ -3537,6 +3538,7 @@ public class CurriculaServlet implements CurriculaService {
 			for (Object[] o : lines) {
 				String clasfCode = (String)o[0];
 				String majorCode = (String)o[1];
+				if (majorCode == null) majorCode = "";
 				Long studentId = (Long)o[2];
 				HashMap<String, Set<Long>> major2students = clasf2ll.get(clasfCode);
 				if (major2students == null) {
@@ -3730,6 +3732,7 @@ public class CurriculaServlet implements CurriculaService {
 				String clasfCode = (String)o[0];
 				if (clasfCode == null) continue;
 				String majorCode = (String)o[1];
+				if (majorCode == null) majorCode = "";
 				Long courseId = (Long)o[2];
 				int enrl = ((Number)o[3]).intValue();
 				Hashtable<String, Hashtable<Long, Integer>> major2course2ll = clasfMajor2course2ll.get(clasfCode);
@@ -3799,6 +3802,7 @@ public class CurriculaServlet implements CurriculaService {
 				Long courseId = (Long)o[1];
 				String courseName = (String)o[2];
 				String majorCode = (String)o[3];
+				if (majorCode == null) majorCode = "";
 				Long studentId = (Long)o[4];
 				CourseInterface course = new CourseInterface();
 				course.setId(courseId);
