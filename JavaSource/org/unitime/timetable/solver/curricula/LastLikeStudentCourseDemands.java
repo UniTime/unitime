@@ -130,22 +130,27 @@ public class LastLikeStudentCourseDemands implements StudentCourseDemands, Proje
 	public Set<WeightedCourseOffering> getCourses(Long studentId) {
 		if (iStudentRequests == null) {
 			iStudentRequests = new Hashtable<Long, Set<WeightedCourseOffering>>();
-			for (Object[] o : (List<Object[]>)iHibSession.createQuery(
-					"select distinct s, co " +
-					"from LastLikeCourseDemand x inner join x.student s left join fetch s.areaClasfMajors, CourseOffering co left outer join co.demandOffering do where " +
-					"x.subjectArea.session.uniqueId = :sessionId and " +
-					"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
-					"(do is not null and do.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and do.permId=x.coursePermId) or (x.coursePermId is null and do.courseNbr=x.courseNbr))))")
-					.setLong("sessionId", iSessionId)
-					.setCacheable(true).list()) {
-				Student student = (Student)o[0];
-				CourseOffering co = (CourseOffering)o[1];
-				Set<WeightedCourseOffering> courses = iStudentRequests.get(student.getUniqueId());
-				if (courses == null) {
-					courses = new HashSet<WeightedCourseOffering>();
-					iStudentRequests.put(student.getUniqueId(), courses);
+			String[] checks = new String[] {
+					"x.subjectArea.session.uniqueId = :sessionId and co.subjectArea.uniqueId = x.subjectArea.uniqueId and x.coursePermId is not null and co.permId=x.coursePermId",
+					"x.subjectArea.session.uniqueId = :sessionId and co.subjectArea.uniqueId = x.subjectArea.uniqueId and x.coursePermId is null and co.courseNbr=x.courseNbr",
+					"x.subjectArea.session.uniqueId = :sessionId and co.demandOffering.subjectArea.uniqueId = x.subjectArea.uniqueId and x.coursePermId is not null and co.demandOffering.permId=x.coursePermId",
+					"x.subjectArea.session.uniqueId = :sessionId and co.demandOffering.subjectArea.uniqueId = x.subjectArea.uniqueId and x.coursePermId is null and co.demandOffering.courseNbr=x.courseNbr"
+			};
+			for (String where: checks) {
+				for (Object[] o : (List<Object[]>)iHibSession.createQuery(
+						"select distinct s, co " +
+						"from LastLikeCourseDemand x inner join x.student s left join fetch s.areaClasfMajors, CourseOffering co left outer join co.demandOffering do where " + where)
+						.setLong("sessionId", iSessionId)
+						.setCacheable(true).list()) {
+					Student student = (Student)o[0];
+					CourseOffering co = (CourseOffering)o[1];
+					Set<WeightedCourseOffering> courses = iStudentRequests.get(student.getUniqueId());
+					if (courses == null) {
+						courses = new HashSet<WeightedCourseOffering>();
+						iStudentRequests.put(student.getUniqueId(), courses);
+					}
+					courses.add(new WeightedCourseOffering(co, new WeightedStudentId(student, this).getWeight()));
 				}
-				courses.add(new WeightedCourseOffering(co, new WeightedStudentId(student, this).getWeight()));
 			}
 		}
 		return iStudentRequests.get(studentId);
