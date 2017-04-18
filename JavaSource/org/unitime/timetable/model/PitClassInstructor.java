@@ -52,7 +52,7 @@ public class PitClassInstructor extends BasePitClassInstructor {
 
 	private float calculateAllWCH(Float standardMinutesInReportingHour, Float standardWeeksInReportingTerm) {
 		if (this.getNormalizedPercentShare().intValue() > 0){
-			return(this.getPitClassInstructing().getAllWeeklyContactHours(standardMinutesInReportingHour, standardWeeksInReportingTerm) * this.getNormalizedPercentShare().intValue() / 100);
+			return(this.getPitClassInstructing().getAllWeeklyClassHours(standardMinutesInReportingHour, standardWeeksInReportingTerm) * this.getNormalizedPercentShare().intValue() / 100);
 		} else {
 			return 0;
 		}
@@ -60,7 +60,7 @@ public class PitClassInstructor extends BasePitClassInstructor {
 
 	private float calculateOrganizedWCH(Float standardMinutesInReportingHour, Float standardWeeksInReportingTerm) {
 		if (this.getNormalizedPercentShare().intValue() > 0){
-			return(this.getPitClassInstructing().getOrganizedWeeklyContactHours(standardMinutesInReportingHour, standardWeeksInReportingTerm) * this.getNormalizedPercentShare().intValue() / 100);
+			return(this.getPitClassInstructing().getOrganizedWeeklyClassHours(standardMinutesInReportingHour, standardWeeksInReportingTerm) * this.getNormalizedPercentShare().intValue() / 100);
 		} else {
 			return 0;
 		}

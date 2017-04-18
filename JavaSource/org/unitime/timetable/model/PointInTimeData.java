@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import org.unitime.timetable.model.base.BasePointInTimeData;
 import org.unitime.timetable.model.dao.PointInTimeDataDAO;
 
-public class PointInTimeData extends BasePointInTimeData {
+public class PointInTimeData extends BasePointInTimeData implements Comparable<Object>{
 
 	/**
 	 * 
@@ -58,6 +58,44 @@ public class PointInTimeData extends BasePointInTimeData {
 				.setLong("sessionId", acadSessionUniqueId.longValue())
 				.list());
 	}
+
+	public static ArrayList<PointInTimeData> findAllSavedSuccessfullyForSession(Long acadSessionUniqueId){
+		return(findAllSavedSuccessfullyForSession(acadSessionUniqueId, null));
+	}
+
+	@SuppressWarnings("unchecked")
+	public static ArrayList<PointInTimeData> findAllSavedSuccessfullyForSession(Long acadSessionUniqueId, org.hibernate.Session hibSession){
+		org.hibernate.Session hibSess = hibSession;
+		if (hibSess == null){
+			hibSess = PointInTimeDataDAO.getInstance().getSession();
+		}
+		
+		return((ArrayList<PointInTimeData>) hibSess
+				.createQuery("from PointInTimeData pitd where pitd.session.uniqueId = :sessionId and savedSuccessfully = true")
+				.setLong("sessionId", acadSessionUniqueId.longValue())
+				.list());
+	}
+
+	@Override
+	public int compareTo(Object o) {
+		if (o == null || !(o instanceof PointInTimeData)) return -1;
+		PointInTimeData pitd = (PointInTimeData) o;
+		int cmp = 0;
+		if (getTimestamp() != null && pitd.getTimestamp() != null) {
+			cmp = getTimestamp().compareTo(pitd.getTimestamp());
+		}
+		if (cmp != 0) {
+			return(cmp);
+		}
+		cmp = (getName() == null ? "" : getName()).compareTo(pitd.getName() == null ? "" : pitd.getName());
+		if (cmp != 0) {
+			return(cmp);
+		}
+		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(pitd.getUniqueId() == null ? -1 : pitd.getUniqueId());
+		
+	}
+
+
 	
 	
 }

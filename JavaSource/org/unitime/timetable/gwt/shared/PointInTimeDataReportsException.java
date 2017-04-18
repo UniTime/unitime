@@ -17,31 +17,28 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.model;
+package org.unitime.timetable.gwt.shared;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
+import org.unitime.timetable.gwt.command.client.GwtRpcException;
 
-import org.unitime.timetable.model.base.BasePitClassMeetingUtilPeriod;
-import org.unitime.timetable.util.Constants;
+import com.google.gwt.user.client.rpc.IsSerializable;
 
-public class PitClassMeetingUtilPeriod extends BasePitClassMeetingUtilPeriod {
+/**
+ * @author Stephanie Schluttenhofer
+ */
+public class PointInTimeDataReportsException extends GwtRpcException implements IsSerializable{
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -6064155179953261071L;
-	public PitClassMeetingUtilPeriod() {
+	private static final long serialVersionUID = -2085908923406361751L;
+
+	public PointInTimeDataReportsException() {
 		super();
 	}
-
-	public Date periodDateTime() {
-	        Calendar c = Calendar.getInstance(Locale.US);
-	        c.setTime(this.getPitClassMeeting().getMeetingDate());
-	        int min = (this.getTimeSlot().intValue()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN);
-	        c.set(Calendar.HOUR, min/60);
-	        c.set(Calendar.MINUTE, min%60);
-	        return c.getTime();
+	
+	public PointInTimeDataReportsException(String message) {
+		super(message);
 	}
+
 }

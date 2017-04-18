@@ -21,16 +21,18 @@ package org.unitime.timetable.security.permissions;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.EventDateMapping;
 import org.unitime.timetable.model.ItypeDesc;
+import org.unitime.timetable.model.PointInTimeData;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SavedHQL;
-import org.unitime.timetable.model.User;
 import org.unitime.timetable.model.SavedHQL.Flag;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SponsoringOrganization;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.User;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.ItypeDescDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -330,6 +332,21 @@ public class AdministrationPermissions {
 	@PermissionForRight(Right.HQLReportsAdminOnly)
 	public static class HQLReportsAdminOnly extends HQLReports {}
 	
+	@PermissionForRight(Right.PointInTimeDataReports)
+	public static class PointInTimeDataReports extends SimpleSessionPermission {
+		@Override
+		public boolean check(UserContext user, Session session, DepartmentStatusType.Status... status) {
+			if (!super.check(user, session, status)){
+				return(false);
+			}
+			if (PointInTimeData.findAllForSession(session).isEmpty()){
+				return(false);
+			}
+			return(true);
+		}
+
+	}
+
 	@PermissionForRight(Right.AcademicAreas)
 	public static class AcademicAreas extends SimpleSessionPermission {}
 

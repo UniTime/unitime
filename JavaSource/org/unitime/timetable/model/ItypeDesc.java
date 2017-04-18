@@ -30,7 +30,7 @@ import org.unitime.timetable.model.dao.ItypeDescDAO;
 /**
  * @author Tomas Muller
  */
-public class ItypeDesc extends BaseItypeDesc implements Comparable {
+public class ItypeDesc extends BaseItypeDesc implements Comparable<Object> {
 	private static final long serialVersionUID = 1L;
 
     public static String[] sBasicTypes = new String[] {"Extended","Basic"}; 
@@ -48,8 +48,9 @@ public class ItypeDesc extends BaseItypeDesc implements Comparable {
     /**
      * @return Returns the itypes.
      */
-    public static TreeSet findAll(boolean basic) {
-        return new TreeSet(
+    @SuppressWarnings("unchecked")
+	public static TreeSet<ItypeDesc> findAll(boolean basic) {
+        return new TreeSet<ItypeDesc>(
                 new ItypeDescDAO().
                 getSession().
                 createQuery("select i from ItypeDesc i"+(basic?" where i.basic=1":"")).

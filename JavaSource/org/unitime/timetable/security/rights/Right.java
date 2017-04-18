@@ -553,6 +553,7 @@ public enum Right {
 	
 	PointInTimeData,
 	PointInTimeDataEdit,
+    PointInTimeDataReports(Session.class),
 
 	/** Administration: Defaults */
 	

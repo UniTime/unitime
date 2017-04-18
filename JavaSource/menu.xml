@@ -274,6 +274,11 @@
 				<hasPermission name="HQLReportsCourses"/>
 			</condition>
 		</item>
+		<item name="Point In Time Data Reports" page="pointInTimeDataReports" type="gwt">
+			<condition>
+				<hasPermission name="PointInTimeDataReports"/>
+			</condition>
+		</item>
 	</menu>
 	<menu name="Curricula" title="Curriculum Timetabling">
 		<condition>

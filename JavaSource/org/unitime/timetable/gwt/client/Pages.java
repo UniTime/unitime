@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.client.instructor.SetupTeachingRequestsPage;
 import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsChangesPage;
 import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsPage;
 import org.unitime.timetable.gwt.client.instructor.TeachingRequestsPage;
+import org.unitime.timetable.gwt.client.pointintimedata.PointInTimeDataReportsPage;
 import org.unitime.timetable.gwt.client.reservations.ReservationEdit;
 import org.unitime.timetable.gwt.client.reservations.ReservationsPage;
 import org.unitime.timetable.gwt.client.rooms.RoomFeaturesPage;
@@ -200,6 +201,10 @@ public enum Pages {
 	timetableGrid(new PageFactory() {
 		public Widget create() { return new TimetablePage(); }
 		public String name(GwtMessages messages) { return messages.pageTimetableGrid(); }
+		}),
+	pointInTimeDataReports(new PageFactory() {
+		public Widget create() { return new PointInTimeDataReportsPage(); }
+		public String name(GwtMessages messages) { return messages.pageCourseReports(); }
 		}),
 	;
 	

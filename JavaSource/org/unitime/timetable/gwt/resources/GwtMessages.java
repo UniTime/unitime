@@ -3067,6 +3067,10 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pagePointInTimeDataSnapshots();
 	
+	@DefaultMessage("Point In Time Data Reports")
+	@DoNotTranslate
+	String pagePointInTimeDataReports();
+
 	@DefaultMessage("Timetable")
 	@DoNotTranslate
 	String pageTimetableGrid();
@@ -4339,6 +4343,24 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Rooms")
 	String optionRooms();
 	
+	@DefaultMessage("Point In Time Data")
+	String optionPointInTimeData();
+
+	@DefaultMessage("Point In Time Data Comparison")
+	String optionPointInTimeDataComparison();
+
+	@DefaultMessage("Minutes in Reporting Hour")
+	String optionMinutesInReportingHour();
+
+	@DefaultMessage("Weeks in Reporting Term")
+	String optionWeeksInReportingTerm();
+
+	@DefaultMessage("Minimum Location Capacity")
+	String optionMinimumLocationCapacity();
+
+	@DefaultMessage("Maximum Location Capacity")
+	String optionMaximumLocationCapacity();
+
 	@DefaultMessage("Distribution Type")
 	String optionDistributionType();
 

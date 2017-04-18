@@ -20,8 +20,10 @@
 package org.unitime.timetable.model;
 
 import org.unitime.timetable.model.base.BasePitDepartmentalInstructor;
+import org.unitime.timetable.util.NameFormat;
+import org.unitime.timetable.util.NameInterface;
 
-public class PitDepartmentalInstructor extends BasePitDepartmentalInstructor {
+public class PitDepartmentalInstructor extends BasePitDepartmentalInstructor implements NameInterface {
 
 	/**
 	 * 
@@ -72,5 +74,13 @@ public class PitDepartmentalInstructor extends BasePitDepartmentalInstructor {
 		return(this.allWeeklyStudentContactHours);
 	}
 
+	@Override
+	public String getAcademicTitle() {
+		return null;
+	}
+
+	public String getName(String instructorNameFormat) {
+		return NameFormat.fromReference(instructorNameFormat).format(this);
+	}
 
 }

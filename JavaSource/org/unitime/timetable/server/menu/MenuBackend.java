@@ -47,6 +47,7 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.MenuInterface;
 import org.unitime.timetable.gwt.shared.MenuInterface.MenuRpcRequest;
+import org.unitime.timetable.model.PointInTimeData;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SavedHQL;
 import org.unitime.timetable.model.SolverGroup;
@@ -361,6 +362,8 @@ public class MenuBackend implements GwtRpcImplementation<MenuRpcRequest, GwtRpcR
 					return sessionContext.hasPermission(Right.HQLReportsEvents) && SavedHQL.hasQueries(SavedHQL.Flag.APPEARANCE_EVENTS, sessionContext.hasPermission(Right.HQLReportsAdminOnly));
 				} else if ("hasStudentReports".equals(right)) {
 					return sessionContext.hasPermission(Right.HQLReportsStudents) && SavedHQL.hasQueries(SavedHQL.Flag.APPEARANCE_SECTIONING, sessionContext.hasPermission(Right.HQLReportsAdminOnly));
+				} else if ("hasPointInTimeDataReports".equals(right)  && !PointInTimeData.findAllForSession(sessionContext.getUser().getCurrentAcademicSessionId()).isEmpty()) {
+					return sessionContext.hasPermission(Right.PointInTimeDataReports);					
 				}
 			}
 			sLog.warn("Unknown right " + right + ".");
