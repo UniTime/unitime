@@ -437,6 +437,7 @@ public class TeachingRequestsFilterBackend extends FilterBoxBackend<TeachingRequ
 				if (!hasTeachingPreference) continue;
 				query.addParameter("owner", "Xdpt" + id, d.getUniqueId());
 				department += (department.isEmpty() ? "" : ",") + ":Xdpt" + id;
+				id++;
 			}
 			if (id > 0)
 				query.addWhere("owner", "c.subjectArea.department.uniqueId in (" + department + ")");
