@@ -67,7 +67,7 @@ public class TimetableGrid extends Composite {
 	public static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static DateTimeFormat sDateFormatMeeting = ServerDateTimeFormat.getFormat(CONSTANTS.timetableGridDateFormat());
 	protected static NumberFormat sUtilizationFormat = NumberFormat.getFormat(CONSTANTS.utilizationFormat());
-	private static int sHeaderWidth = 60;
+	private static int sHeaderWidth = 100;
 	private static int sLineHeight = 15;
 	
 	private P iContainer;
@@ -209,6 +209,8 @@ public class TimetableGrid extends Composite {
 						RoomHint.hideHint();
 					}
 				});
+	        } else {
+	        	hi.setTitle(model.getName() + (comment != null && !comment.isEmpty() ? "\n" + comment : ""));
 	        }
 	        verticalHeader.add(hi, 0, 0);
 	        
@@ -290,6 +292,8 @@ public class TimetableGrid extends Composite {
 						RoomHint.hideHint();
 					}
 				});
+	        } else {
+	        	name.setTitle(model.getName() + (comment != null && !comment.isEmpty() ? "\n" + comment : ""));
 	        }
 			iContainer.add(name);
 			
@@ -412,6 +416,8 @@ public class TimetableGrid extends Composite {
 						RoomHint.hideHint();
 					}
 				});
+	        } else {
+				name.setTitle(model.getName() + (comment != null && !comment.isEmpty() ? "\n" + comment : ""));
 	        }
 			iContainer.add(name);
 			
@@ -535,6 +541,8 @@ public class TimetableGrid extends Composite {
 						RoomHint.hideHint();
 					}
 				});
+	        } else {
+				name.setTitle(model.getName() + (comment != null && !comment.isEmpty() ? "\n" + comment : ""));
 	        }
 			iContainer.add(name);
 			
