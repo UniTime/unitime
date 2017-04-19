@@ -1,0 +1,506 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE scripts PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/Script.dtd">
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<scripts created="Wed 19 Apr 15:00 CEST 2017">
+<script name="Instructor Scheduling: Import Instructors" permission="Instructor Attributes" engine="python" created="Wed Apr 19 12:31:06 EDT 2017">
+  <description><![CDATA[This script imports instructor attributes and other teaching preferences. File format:
+<pre>
+ID , Name    , Max Load, Preference, B2B, Course  , Skill     , Performance, ..., M730, M830, ...
+100, Joe Doe , 20      ,          0,  -2, ALG 101 , Algorithms, Beginner   , ...,    1,    0, ...
+102, W Smith , 20      ,          0,   0,         , Calculus  , Expert     , ....,   1,    1, ...
+101, G Newman, 10      ,         -2,   0, "BIOL 101,COM 101", "Communication,Biology", Advanced, ... 
+</pre>
+Each line contains:<ul>
+<li>Instructor external id, name, or both.
+<li>Maximal teaching load.
+<li>Teaching preference (optional, in prolog format: P for prohibited, 0 for neutral, etc.)
+<li>Back-to-Back preference (optional, in prolog format)
+<li>Course preference (optional, comma separated list of courses)
+<li>Attributes of given type or types (e.g., Skill, Qualification, etc.)
+<li>Unavailabilities (optional, day and time starting at half hours, M730, M830; zero when not available)
+</ul>
+</pre>]]></description>
+  <parameter name="department" label="Department" type="Department"/>
+  <parameter name="file" label="Students CSV" type="file"/>
+  <parameter name="position" label="Position Type" type="reference(PositionType)" default="GRAD_TEACH_ASST"/>
+  <body><![CDATA[import csv
+
+from difflib import SequenceMatcher
+from org.unitime.timetable.model import PreferenceLevel, DepartmentalInstructor, Department, InstructorCoursePref, PositionType, TimePref, DistributionPref, DistributionType, InstructorAttribute
+from org.unitime.timetable.model.dao import DepartmentDAO
+from org.unitime.timetable.util import Constants
+from java.util import HashSet, ArrayList
+
+def lookupInstructorByName(name):
+    best = None
+    ratio = 0.0
+    instructors = hibSession.createQuery(
+        'from DepartmentalInstructor where lastName = :lname and department.session.uniqueId = :sessionId and department.uniqueId = :deptId'
+        ).setString('lname', name.split(',')[0].strip()).setLong("sessionId", session.getUniqueId()).setLong('deptId', department.getUniqueId()).list()
+    if not instructors:
+        instructors = hibSession.createQuery(
+            'from DepartmentalInstructor where department.session.uniqueId = :sessionId and department.uniqueId = :deptId').setLong("sessionId", session.getUniqueId()).setLong('deptId', department.getUniqueId()).list()
+    for instructor in instructors:
+        r = SequenceMatcher(None, name, instructor.getName('last-first-middle')).ratio()
+        if not best or r > ratio:
+            best = instructor
+            ratio = r
+    if best:
+        return best
+    else:
+        return None
+    
+def lookupInstructorById(extId):
+    instructor = hibSession.createQuery(
+        'from DepartmentalInstructor where externalUniqueId = :extId and department.session.uniqueId = :sessionId and department.uniqueId = :deptId'
+        ).setString('extId', extId).setLong("sessionId", session.getUniqueId()).setLong('deptId', department.getUniqueId()).uniqueResult()
+    if not instructor:
+        student = hibSession.createQuery(
+            'from Student where externalUniqueId = :extId and session.uniqueId = :sessionId'
+            ).setString('extId', extId).setLong("sessionId", session.getUniqueId()).uniqueResult()
+        if not student: return None
+        instructor = DepartmentalInstructor()
+        instructor.setExternalUniqueId(student.getExternalUniqueId())
+        instructor.setFirstName(student.getFirstName())
+        instructor.setMiddleName(student.getMiddleName())
+        instructor.setLastName(student.getLastName())
+        instructor.setEmail(student.getEmail())
+        instructor.setPositionType(PositionType.findByRef(position))
+        instructor.setAttributes(HashSet())
+        instructor.setPreferences(HashSet())
+        instructor.setDepartment(department)
+        instructor.setIgnoreToFar(False)
+        department.getInstructors().add(instructor)
+    return instructor
+    
+def lookupCourse(course):
+    co = hibSession.createQuery(
+        "from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId and (c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course"
+        ).setLong("sessionId", session.getUniqueId()).setString("course", course).uniqueResult()
+    if not co:
+        co = hibSession.createQuery(
+        "from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.uniqueId = :deptId and c.courseNbr = :course"
+        ).setLong("sessionId", session.getUniqueId()).setString("course", course).setLong("deptId", department.getUniqueId()).uniqueResult()
+    return co
+
+attributes = {}
+for t in hibSession.createQuery('from InstructorAttributeType').list():
+    attributes[t.getReference()] = {}
+for a in hibSession.createQuery(
+    'from InstructorAttribute a where a.session.uniqueId = :sessionId and (a.department is null or a.department.uniqueId = :deptId)'
+    ).setLong("sessionId", session.getUniqueId()).setLong("deptId", department.getUniqueId()).list():
+    type = a.getType().getReference()
+    if type not in attributes:
+        attributes[type] = {}
+    attributes[type][a.getCode()] = a
+
+times = {}
+days = ['M', 'T', 'W', 'R', 'F']
+for d in range(0, len(days)):
+    for t in range(7, 17):
+        s = t * 12 + 6
+        times['%s%02d30' % (days[d], t)] = (d, s, 12)
+print times
+
+lines = csv.reader(file.getString('utf-8').split('\n'), delimiter=",", quotechar='"')
+head = None
+for line in lines:
+    if not line: continue
+    if not head:
+        head = line
+        continue
+    
+    instructor = None
+    maxLoad = 20
+    preference = "0"
+    attr = {}
+    courses = {}
+    unavailability = {}
+    back2back = 0
+    for i in range(0, min(len(head), len(line))):
+        key = head[i]
+        value = line[i]
+        if key and key == "Qualification":
+            if not value: value = '00000'
+            else: value = ('00000, %s' % value)
+        if not key or not value: continue
+        if "PUID" == key or "ID" == key:
+            instructor = lookupInstructorById(value)
+        elif "Name" == key:
+            instructor = lookupInstructorByName(value)
+        elif key in ("MaxLoad", "Max Load", "Hours"):
+            maxLoad = float(value)
+        elif "Preference" == key or "Teaching Preference" == key:
+            preference = value
+        elif key in attributes:
+            if not key in attr: attr[key] = []
+            for a in value.split(','):
+                attribute = a.strip()
+                if not attribute: continue
+                if attribute in attr[key]: continue
+                if not attribute in attributes[key]:
+                    x = InstructorAttribute()
+                    x.setDepartment(department)
+                    x.setCode(attribute)
+                    x.setName(attribute)
+                    x.setInstructors(HashSet())
+                    x.setSession(session)
+                    x.setType(hibSession.createQuery("from InstructorAttributeType where reference = :reference").setString("reference", key).uniqueResult())
+                    hibSession.save(x)
+                    attributes[key][attribute] = x
+                attr[key].append(attribute)
+        elif "Course" == key:
+            if "Qualification" in attributes:
+                if "Qualification" not in attr: attr["Qualification"] = []
+                for a in value.split(','):
+                    attribute = a.strip()
+                    if not attribute: continue
+                    if attribute[0] == "!": attribute = attribute[1:]
+                    if attribute in attr["Qualification"]: continue
+                    if not attribute in attributes["Qualification"]:
+                        x = InstructorAttribute()
+                        x.setDepartment(department)
+                        x.setCode(attribute)
+                        x.setName(attribute)
+                        x.setInstructors(HashSet())
+                        x.setSession(session)
+                        x.setType(hibSession.createQuery("from InstructorAttributeType where reference = :reference").setString("reference", "Qualification").uniqueResult())
+                        hibSession.save(x)
+                        attributes["Qualification"][attribute] = x
+                    attr["Qualification"].append(attribute)
+            count = len(value.split(','))
+            for a in value.split(','):
+                course = a.strip()
+                if not course: continue
+                if course[0] == "!":
+                    courses[course[1:]] = "R"
+                elif count > 2:
+                    courses[course] = "-1"
+                else:
+                    courses[course] = "-2"
+        elif key in ("Pref1", "Pref2", "Pref3"):
+            courses[value] = "-1"
+            if key == "Pref1":
+                courses[value] = "-2"
+        elif key == "Math_Grad" and value == "No":
+            preference = "2"
+        elif key in times and value == "0":
+            unavailability[key] = times[key]
+        elif key == "B2B":
+            back2back = int(value)
+
+    log.debug(','.join(line))
+    if not instructor:
+        log.error("No instructor found.")
+        continue
+    log.info('%s: %s' % (instructor.getExternalUniqueId(), instructor.getName('last-first-middle')))
+    log.info('Teaching Preference: %s' % preference)
+    log.info('Maximal Load: %0.2f' % maxLoad)
+    log.info('Attributes: %s' % ', '.join(['%s: %s' % (k, v) for (k, v) in attr.items()]))
+    log.info('Courses: %s' % ', '.join(['%s: %s' % (k, v) for (k, v) in courses.items()]))
+    log.info('Not available: %s' % ', '.join(sorted(unavailability.keys())))
+    log.info('Back to back: %d' % back2back)
+    instructor.setTeachingPreference(PreferenceLevel.getPreferenceLevel(preference))
+    instructor.setMaxLoad(maxLoad)
+
+    instructor.getAttributes().clear()
+    for (key, value) in attr.items():
+        for a in value:
+            instructor.getAttributes().add(attributes[key][a])
+    
+    for p in ArrayList(instructor.getPreferences()):
+        if isinstance(p, InstructorCoursePref):
+            instructor.getPreferences().remove(p)
+        if unavailability and isinstance(p, TimePref):
+            instructor.getPreferences().remove(p)
+        if isinstance(p, DistributionPref) and p.getDistributionType().getReference() in ("BTB", "BTB_TIME"):
+            instructor.getPreferences().remove(p)
+    for (key, value) in courses.items():
+        course = lookupCourse(key)
+        if course:
+            p = InstructorCoursePref()
+            p.setCourse(course)
+            p.setOwner(instructor)
+            p.setPrefLevel(PreferenceLevel.getPreferenceLevel(value))
+            instructor.getPreferences().add(p)
+        else:
+            log.warn('Course %s not found.' % key)
+    
+    if unavailability:
+        p = TimePref()
+        m = p.getTimePatternModel()
+        for (d, s, l) in unavailability.values():
+            for i in range(0, l):
+                m.setPreference(d, s + i, 'P')
+        p.setPreference(m.getPreferences())
+        p.setOwner(instructor)
+        p.setPrefLevel(PreferenceLevel.getPreferenceLevel('R'))
+        instructor.getPreferences().add(p)
+        
+    if back2back != 0:
+        p = DistributionPref()
+        p.setDistributionType(hibSession.createQuery("from DistributionType where reference='BTB_TIME'").uniqueResult())
+        if back2back == 1:
+            p.setPrefLevel(PreferenceLevel.getPreferenceLevel('-1'))
+        else:
+            p.setPrefLevel(PreferenceLevel.getPreferenceLevel('1'))
+        p.setOwner(instructor)
+        instructor.getPreferences().add(p)
+
+    hibSession.saveOrUpdate(instructor)
+]]></body>
+</script>
+<script name="Instructor Scheduling: Import Teaching Requests" permission="Instructor Assignment Preferences" engine="python" created="Wed Apr 19 12:31:19 EDT 2017">
+  <description><![CDATA[This script imports teaching requests. File format:
+<pre>
+Course  , Subparts, Div, TA, Super, Skill        , Performance
+ALG 101 , Lec     ,    ,  1,     0, Algorithms   , "Beginner,Expert"
+BIOL 101,"Rec,Lab",  10,   ,     0, Biology      , Advanced
+CALC 101,"Lec,Rec",  10,  1,     1, Calculus     ,
+COM 101 , Lec     ,  10,   ,     0, Communication, Advanced
+</pre>
+Each line contains:<ul>
+<li>Course for which the teaching requests are to be created
+<li>Scheduling subparts that need an instructor assigned
+<li>Number of students per 1 instructor (divide enrollment by the given number, optional)
+<li>How many instructors are needed on each class (only needed when Div is not provided)
+<li>How many supervisors (course coordinators) are needed
+<li>Required attributes
+</ul>]]></description>
+  <parameter name="department" label="Department" type="Department"/>
+  <parameter name="file" label="Courses CSV" type="file"/>
+  <body><![CDATA[import csv, math
+from org.unitime.timetable.model import InstructorAttributePref, PreferenceLevel, TeachingRequest, TeachingClassRequest
+from java.util import HashSet
+
+def lookupCourse(course):
+    co = hibSession.createQuery(
+        "from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId and (c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course"
+        ).setLong("sessionId", session.getUniqueId()).setString("course", course).uniqueResult()
+    if not co:
+        co = hibSession.createQuery(
+        "from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.uniqueId = :deptId and c.courseNbr = :course"
+        ).setLong("sessionId", session.getUniqueId()).setString("course", course).setLong("deptId", department.getUniqueId()).uniqueResult()
+    return co
+
+attributes = {}
+for t in hibSession.createQuery('from InstructorAttributeType').list():
+    attributes[t.getReference()] = {}
+for a in hibSession.createQuery(
+    'from InstructorAttribute a where a.session.uniqueId = :sessionId and (a.department is null or a.department.uniqueId = :deptId)'
+    ).setLong("sessionId", session.getUniqueId()).setLong("deptId", department.getUniqueId()).list():
+    type = a.getType().getReference()
+    if type not in attributes:
+        attributes[type] = {}
+    attributes[type][a.getCode()] = a
+
+perfPrefs = ['-2', '-1', '-1', '-1']
+qualPrefs = {'00000' : '-1',
+             'OTHER' : '-2',
+             }
+
+lines = csv.reader(file.getString('utf-8').split('\n'), delimiter=",", quotechar='"')
+head = None
+for line in lines:
+    if not line: continue
+    if line[0] == "Course" and not head:
+        head = line
+        continue
+    if not line[0]: continue
+    course = lookupCourse(line[0])
+    if not course:
+        log.error('Course %s not found.' % line[0])
+    log.info(course.getCourseNameWithTitle())
+    subparts = {}
+    for subpart in line[1].split(','):
+        subparts[subpart.strip()] = True
+    div = None
+    if line[2] and line[2].strip(): div = float(line[2].strip())
+    ta = 0
+    if line[3] and line[3].strip(): ta = int(line[3])
+    elif div: ta = 1
+    load = 1.0
+    super = 0
+    if line[4]: super = int(line[4])
+    
+    for request in course.instructionalOffering.teachingRequests:
+        for tcr in request.classRequests:
+            tcr.teachingClass.getTeachingRequests().remove(tcr)
+        hibSession.delete(request)
+    course.instructionalOffering.getTeachingRequests().clear()
+    
+    for config in course.instructionalOffering.instrOfferingConfigs:
+        for subpart in config.schedulingSubparts:
+            if ta > 0 and subpart.getItypeDesc().strip().upper() in subparts and subpart.getChildSubparts().isEmpty():
+                for clazz in subpart.classes:
+                    if clazz.isCancelled() or (not clazz.isEnabledForStudentScheduling() and clazz.getEnrollment() == 0):
+                        log.debug('No teaching requests for %s to %d' % (clazz.getClassLabel(), 0))
+                        continue
+                    r = TeachingRequest()
+                    r.setAssignCoordinator(False)
+                    r.setNbrInstructors(ta)
+                    if div and int(math.ceil(float(clazz.getEnrollment()) / div)) != ta:
+                        r.setNbrInstructors(int(math.ceil(float(clazz.getEnrollment()) / div)))
+                        log.debug('Adjusting number of instructors for %s to %d' % (clazz.getClassLabel(), r.getNbrInstructors()))
+                    r.setOffering(course.instructionalOffering)
+                    r.setPreferences(HashSet())
+                    r.setTeachingLoad(load)
+                    r.setPercentShare(100)
+                    r.setSameCoursePreference(PreferenceLevel.getPreferenceLevel('R'))
+                    r.setSameCommonPart(PreferenceLevel.getPreferenceLevel('R'))
+                    r.setClassRequests(HashSet())
+                    c = clazz
+                    while c:
+                        tcr = TeachingClassRequest()
+                        tcr.setCanOverlap(False)
+                        if c.getSchedulingSubpart().getItypeDesc().strip().upper() in subparts:
+                            tcr.setLead(True)
+                            tcr.setAssignInstructor(True)
+                            tcr.setPercentShare(100)
+                            tcr.setCommon(False)
+                        else:
+                            tcr.setLead(False)
+                            tcr.setAssignInstructor(False)
+                            tcr.setPercentShare(0)
+                            tcr.setCommon(True)
+                        tcr.setTeachingClass(c)
+                        c.getTeachingRequests().add(tcr)
+                        tcr.setTeachingRequest(r)
+                        r.getClassRequests().add(tcr)
+                        c = c.parentClass
+                    for s in config.schedulingSubparts:
+                        if s.getItypeDesc().strip() == 'Lec' and not s.isParentOf(subpart):
+                            for c in s.classes:
+                                tcr = TeachingClassRequest()
+                                tcr.setCanOverlap(True)
+                                tcr.setLead(False)
+                                tcr.setAssignInstructor(False)
+                                tcr.setPercentShare(0)
+                                tcr.setCommon(True)
+                                tcr.setTeachingClass(c)
+                                c.getTeachingRequests().add(tcr)
+                                tcr.setTeachingRequest(r)
+                                r.getClassRequests().add(tcr)
+                    course.instructionalOffering.getTeachingRequests().add(r)
+                    hibSession.save(r)
+                    for i in range(5, min(len(head), len(line))):
+                        key = head[i]
+                        value = line[i]
+                        if not key or not value: continue
+                        if key in attributes:
+                            index = 0
+                            for a in value.split(','):
+                                attribute = a.strip()
+                                if not attribute: continue
+                                if not attribute in attributes[key]:
+                                    log.error("Attribute %s (%s) does not exist." % (attribute, key))
+                                    continue
+                                p = InstructorAttributePref()
+                                p.setAttribute(attributes[key][attribute])
+                                p.setOwner(r)
+                                pref = 'R'
+                                if key == 'Qualification':
+                                    if attribute in qualPrefs:
+                                        pref = qualPrefs[attribute]
+                                    else:
+                                        pref = qualPrefs['OTHER']
+                                elif key == 'Performance':
+                                    pref = perfPrefs[index]
+                                p.setPrefLevel(PreferenceLevel.getPreferenceLevel(pref))
+                                r.getPreferences().add(p)
+                                index = index + 1
+                    if 'TA' in attributes['Role']:
+                        p = InstructorAttributePref()
+                        p.setAttribute(attributes['Role']['TA'])
+                        p.setOwner(r)
+                        p.setPrefLevel(PreferenceLevel.getPreferenceLevel('R'))
+                        r.getPreferences().add(p)
+                    hibSession.saveOrUpdate(r)
+    if super > 0:
+        r = TeachingRequest()
+        r.setAssignCoordinator(True)
+        r.setNbrInstructors(super)
+        r.setOffering(course.instructionalOffering)
+        r.setPreferences(HashSet())
+        r.setTeachingLoad(load)
+        r.setPercentShare(100)
+        r.setSameCoursePreference(PreferenceLevel.getPreferenceLevel('R'))
+        r.setSameCommonPart(PreferenceLevel.getPreferenceLevel('R'))
+        r.setClassRequests(HashSet())
+        for config in course.instructionalOffering.instrOfferingConfigs:
+            for s in config.schedulingSubparts:
+                if s.getItypeDesc().strip() == 'Lec':
+                    for c in s.classes:
+                        tcr = TeachingClassRequest()
+                        if len(s.classes) <= 1:
+                            tcr.setCanOverlap(False)
+                        else:
+                            tcr.setCanOverlap(True)
+                        tcr.setLead(False)
+                        tcr.setCommon(True)
+                        tcr.setAssignInstructor(False)
+                        tcr.setPercentShare(0)
+                        tcr.setTeachingClass(c)
+                        c.getTeachingRequests().add(tcr)
+                        tcr.setTeachingRequest(r)
+                        r.getClassRequests().add(tcr)            
+        course.instructionalOffering.getTeachingRequests().add(r)
+        hibSession.save(r)
+        for i in range(5, min(len(head), len(line))):
+            key = head[i]
+            value = line[i]
+            if not key or not value: continue
+            if key in attributes:
+                index = 0
+                for a in value.split(','):
+                    attribute = a.strip()
+                    if not attribute: continue
+                    if not attribute in attributes[key]:
+                        log.error("Attribute %s (%s) does not exist." % (attribute, key))
+                        continue
+                    if ta > 0 and key == "Qualification" and attribute == "00000": continue
+                    if ta > 0 and key == "Performance" and attribute == "1": continue
+                    p = InstructorAttributePref()
+                    p.setAttribute(attributes[key][attribute])
+                    p.setOwner(r)
+                    pref = 'R'
+                    if key == 'Qualification':
+                        if attribute in qualPrefs:
+                            pref = qualPrefs[attribute]
+                        else:
+                            pref = qualPrefs['OTHER']
+                    elif key == 'Performance':
+                        pref = perfPrefs[index]
+                    p.setPrefLevel(PreferenceLevel.getPreferenceLevel(pref))
+                    r.getPreferences().add(p)
+                    index = index + 1
+        if 'TA SUPER' in attributes['Role']:
+            p = InstructorAttributePref()
+            p.setAttribute(attributes['Role']['TA SUPER'])
+            p.setOwner(r)
+            p.setPrefLevel(PreferenceLevel.getPreferenceLevel('R'))
+            r.getPreferences().add(p)
+        hibSession.saveOrUpdate(r)
+    hibSession.saveOrUpdate(course.instructionalOffering)
+    hibSession.flush()
+]]></body>
+</script>
+ </scripts>
