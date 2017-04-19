@@ -138,11 +138,11 @@ public class TeachingRequestDetails extends SimpleForm implements HasValue<Integ
 		getRowFormatter().setVisible(iObjectivesRow, !request.getValues().isEmpty());
 		
 		iInstructorsTable.clearTable(1);
-		int instrIndex = 1;
-		if (request.hasInstructors()) {
-			for (InstructorInfo instructor: request.getInstructors()) {
+		for (int i = 0; i < request.getNrInstructors(); i++) {
+			InstructorInfo instructor = request.getInstructor(i);
+			if (instructor != null) {
 				List<Widget> instructorLine = new ArrayList<Widget>();
-				instructorLine.add(new Label((instrIndex++) + "."));
+				instructorLine.add(new Label((1 + i) + "."));
 				instructorLine.add(new InstructorExternalIdCell(iProperties, instructor));
 				instructorLine.add(new InstructorNameCell(iProperties, instructor));
 				instructorLine.add(new Label(sTeachingLoadFormat.format(instructor.getAssignedLoad()) + " / " + sTeachingLoadFormat.format(instructor.getMaxLoad())));
@@ -152,13 +152,12 @@ public class TeachingRequestDetails extends SimpleForm implements HasValue<Integ
 				instructorLine.add(new PreferenceCell(iProperties, instructor.getDistributionPreferences()));
 				instructorLine.add(new ObjectivesCell(iProperties, instructor.getValues()));
 				iInstructorsTable.addRow(instructor, instructorLine);
+			} else {
+				List<Widget> instructorLine = new ArrayList<Widget>();
+				instructorLine.add(new Label((1 + i) + "."));
+				instructorLine.add(new NotAssignedInstructor(8));
+				iInstructorsTable.addRow(null, instructorLine);
 			}
-		}
-		for (int i = request.getNrAssignedInstructors(); i < request.getNrInstructors(); i++) {
-			List<Widget> instructorLine = new ArrayList<Widget>();
-			instructorLine.add(new Label((instrIndex++) + "."));
-			instructorLine.add(new NotAssignedInstructor(8));
-			iInstructorsTable.addRow(null, instructorLine);
 		}
 		if (request.getNrInstructors() <= 1)
 			iInstructorsTable.setColumnVisible(0, false);

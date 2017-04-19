@@ -581,7 +581,7 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 					TeachingRequestInfo request = null;
 					List<AssignmentInfo> conflicts = new ArrayList<AssignmentInfo>();
 					for (AssignmentInfo assignment: suggestion.getAssignments()) {
-						if (iInstructor.equals(assignment.getInstructor()))
+						if (iInstructor.equals(assignment.getInstructor()) && request == null)
 							request = assignment.getRequest();
 						if (assignment.getInstructor() == null)
 							conflicts.add(assignment);
