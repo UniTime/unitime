@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.gwt.client.solver;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
@@ -38,6 +40,7 @@ import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HasValue;
@@ -54,15 +57,17 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private UniTimeHeaderPanel iHeader, iFooter;
 	private FilterInterface iFilter;
-	int iFilterHeaderRow = -1, iFilterLastRow = -1;
+	private int iFilterHeaderRow = -1, iFilterLastRow = -1;
+	private List<Integer> iCollapsibleRows = new ArrayList<Integer>();
 	
 	public PageFilter() {
+		addStyleName("unitime-PageFilter");
 		iHeader = new UniTimeHeaderPanel(MESSAGES.sectFilter());
 		iHeader.setCollapsible(true);
 		iHeader.addCollapsibleHandler(new ValueChangeHandler<Boolean>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
-				for (int row = iFilterHeaderRow + 1; row <= iFilterLastRow; row++) {
+				for (int row: iCollapsibleRows) {
 					getRowFormatter().setVisible(row, event.getValue());
 				}
 			}
@@ -82,7 +87,9 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 			if (!param.isMultiSelect()) list.addItem(MESSAGES.itemSelect());
 			for (ListItem item: param.getOptions()) {
 				list.addItem(item.getText(), item.getValue());
-				if (param.getDefaultValue() != null && param.getDefaultValue().equalsIgnoreCase(item.getValue()))
+				if (param.isMultiSelect())
+					list.setItemSelected(list.getItemCount() - 1, param.isDefaultItem(item));
+				else if (param.isDefaultItem(item))
 					list.setSelectedIndex(list.getItemCount() - 1);
 			}
 			list.addChangeHandler(new ChangeHandler() {
@@ -239,14 +246,31 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 		iFilter = filter;
 		for (int row = getRowCount() - 1; row > iFilterHeaderRow; row--)
 			removeRow(row);
+		iCollapsibleRows.clear();
 		for (final FilterParameterInterface param: filter.getParameters()) {
 			Widget w = getWidget(param);
-			iFilterLastRow = addRow(param.getLabel(), w);
-			if (!iHeader.isCollapsible())
+			int row = addRow(param.getLabel(), w);
+			if (param.isCollapsible()) iCollapsibleRows.add(row);
+			iFilterLastRow = row;
+			if (iHeader.isCollapsible() != null && !iHeader.isCollapsible() && param.isCollapsible())
 				getRowFormatter().setVisible(iFilterLastRow, false);
 		}
+		if (iCollapsibleRows.isEmpty())
+			iHeader.setCollapsible(null);
+		else if (iHeader.isCollapsible() == null)
+			iHeader.setCollapsible(false);
 		addBottomRow(iFooter);
 		if (fireEvents)
 			ValueChangeEvent.fire(this, iFilter);
+	}
+	
+	public String getQuery() {
+		String query = "";
+		for (FilterParameterInterface param: iFilter.getParameters()) {
+			String value = param.getValue();
+			if (value != null)
+				query += "&" + param.getName() + "=" + URL.encodeQueryString(value);
+		}
+		return query;
 	}
 }

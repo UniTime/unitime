@@ -39,6 +39,7 @@
     </tt:hasProperty>
     <link rel="shortcut icon" href="images/timetabling.ico">
     <title>UniTime <%=Constants.VERSION%>| University Timetabling Application</title>
+    <script language="JavaScript" type="text/javascript" src="scripts/rtt.js"></script>
   </head>
   <body class="unitime-Body">
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>

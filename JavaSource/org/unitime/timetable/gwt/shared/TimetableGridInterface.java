@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
+import org.unitime.timetable.gwt.shared.SolverInterface.HasPageMessages;
 import org.unitime.timetable.gwt.shared.SolverInterface.PageMessage;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
@@ -55,7 +56,7 @@ public class TimetableGridInterface implements GwtRpcResponse {
 		public void setFilter(FilterInterface filter) { iFilter = filter; }
 	}
 	
-	public static class TimetableGridResponse implements GwtRpcResponse, Serializable {
+	public static class TimetableGridResponse implements GwtRpcResponse, Serializable, HasPageMessages {
 		private static final long serialVersionUID = 0l;
 		private List<TimetableGridModel> iModels = new ArrayList<TimetableGridModel>();
 		private String iDefaultDatePatternName;

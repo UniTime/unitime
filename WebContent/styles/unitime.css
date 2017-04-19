@@ -332,6 +332,14 @@ h1 {
 	white-space: nowrap;
 }
 
+.unitime-MainTable .label-td {
+	width: 19%;
+}
+
+.unitime-MainTable .widget-td {
+	width: 80%;
+}
+
 .unitime-MainTable .scroll {
 	max-height: 200px;
 }
@@ -5485,4 +5493,65 @@ unitime-RoomSharingWidget .legend .blank {
 	.unitime-TimetableGrid .horizontal-separator {
 		border-top: 1px solid black;
 	}
+}
+
+.unitime-DataTable {
+	white-space: nowrap;
+}
+
+.unitime-DataTable .collection {
+	white-space: normal;
+}
+
+.unitime-DataTable .collection .item {
+	display: inline-block;
+	white-space: nowrap;
+	padding-right: 3px;
+}
+
+.unitime-DataTable .collection .alternative {
+	display: block;
+	white-space: nowrap;
+	padding-left: 10px;
+	color: #777777;
+}
+
+.unitime-DataTable .multi .chunk {
+	display: inline;
+	white-space: pre-wrap;
+}
+
+.unitime-NotAssignedClassesPage .table-note-top {
+	font-style: italic;
+	max-width: 800px;
+}
+
+.unitime-NotAssignedClassesPage .table-note-bottom {
+	font-style: italic;
+	max-width: 800px;
+}
+
+.unitime-PreferenceLegend {
+	border-top: 1px dashed #9CB0CE;
+	text-align: center;
+}
+
+.unitime-PreferenceLegend .legend-line {
+	display: inline-block;
+	white-space: nowrap;
+}
+
+.unitime-PreferenceLegend .box {
+	width: 25px;
+	height: 13px;
+	vertical-align: middle;
+	display: inline-block;
+	border: 1px solid black;
+	margin: 1px 5px 0px 10px;
+}
+
+.unitime-PreferenceLegend .text {
+	display: inline-block;
+	vertical-align: middle;
+	font-size: 80%;
 }

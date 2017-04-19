@@ -108,7 +108,7 @@
 		<java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler" dir="${temp.dir}">
 			<classpath refid="build.classpath" />
 			<classpath path="${build.dir}"/>
-			<jvmarg value="-Xmx1g"/>
+			<jvmarg value="-Xmx2g"/>
 			<jvmarg value="${macJvmArgs}"/>
 			<jvmarg value="-Dgwt.persistentunitcache=false"/>
 			<jvmarg value="-Duser.language=en"/>
@@ -432,7 +432,7 @@
 			<classpath refid="build.classpath" />
 			<classpath path="JavaSource"/>
 			<classpath path="${env.TOMCAT_HOME}/webapps/UniTime/WEB-INF/classes"/>
-			<jvmarg value="-Xmx1g"/>
+			<jvmarg value="-Xmx2g"/>
 			<jvmarg value="${macJvmArgs}"/>
 			<jvmarg value="-Duser.language=en"/>
 			<arg value="-war"/>
@@ -458,7 +458,7 @@
 			<classpath refid="build.classpath" />
 			<classpath path="JavaSource"/>
 			<classpath path="${env.TOMCAT_HOME}/webapps/UniTime/WEB-INF/classes"/>
-			<jvmarg value="-Xmx1g"/>
+			<jvmarg value="-Xmx2g"/>
 			<jvmarg value="${macJvmArgs}"/>
 			<jvmarg value="-Duser.language=en"/>
 			<arg value="-war"/>

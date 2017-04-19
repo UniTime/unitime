@@ -40,6 +40,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.shared.SolverInterface.HasPageMessages;
 import org.unitime.timetable.gwt.shared.SolverInterface.PageMessage;
 import org.unitime.timetable.gwt.shared.SolverInterface.PageMessageType;
 import org.unitime.timetable.gwt.shared.SolverInterface.ProgressLogLevel;
@@ -576,7 +577,11 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 	}
 	
 	protected void fillSolverWarnings(SessionContext context, CommonSolverInterface solver, SolverPageRequest request, SolverPageResponse response) {
-		switch (request.getType()) {
+		fillSolverWarnings(context, solver, request.getType(), response);
+	}
+	
+	public static void fillSolverWarnings(SessionContext context, CommonSolverInterface solver, SolverType solverType, HasPageMessages response) {
+		switch (solverType) {
 		case EXAM:
 			if (solver != null) {
 				ExamType type = ExamTypeDAO.getInstance().get(solver.getProperties().getPropertyLong("Exam.Type", null));

@@ -900,6 +900,45 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Common")
 	String colCommonPart();
 	
+	@DefaultMessage("Students")
+	String colNrStudentConflicts();
+	
+	@DefaultMessage("Std")
+	String colShortStudentConflicts();
+	
+	@DefaultMessage("Tm")
+	String colShortTimePref();
+	
+	@DefaultMessage("Rm")
+	String colShortRoomPref();
+	
+	@DefaultMessage("Gr")
+	String colShortDistPref();
+	
+	@DefaultMessage("Ins")
+	String colShortInstructorBtbPref();
+	
+	@DefaultMessage("Usl")
+	String colShortUselessHalfHours();
+	
+	@DefaultMessage("Big")
+	String colShortTooBigRooms();
+	
+	@DefaultMessage("Dept")
+	String colShortDepartmentBalance();
+	
+	@DefaultMessage("Subp")
+	String colShortSameSubpartBalance();
+	
+	@DefaultMessage("Pert")
+	String colShortPerturbations();
+	
+	@DefaultMessage("Students")
+	String colNrAssignedStudents();
+	
+	@DefaultMessage("Initial Assignment")
+	String colInitialAssignment();
+	
 	@DefaultMessage("pending")
 	String approvalNotApproved();
 	
@@ -1560,6 +1599,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Timetables")
 	String sectTimetables();
 	
+	@DefaultMessage("Assigned Classes")
+	String sectAssignedClasses();
+	
+	@DefaultMessage("Not-Assigned Classes")
+	String sectNotAssignedClasses();
+	
 	@DefaultMessage("Legend")
 	String sectLegend();
 	
@@ -2015,6 +2060,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Failed to load timetables: {0}")
 	String failedToLoadTimetableGrid(String reason);
+	
+	@DefaultMessage("Failed to load assigned classes: {0}")
+	String failedToLoadAssignedClasses(String reason);
+	
+	@DefaultMessage("Failed to load unassigned classes: {0}")
+	String failedToLoadNotAssignedClasses(String reason);
 
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
@@ -2328,8 +2379,20 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Neither a solver is started nor solution is selected.")
 	String errorTimetableGridNoSolution();
 	
+	@DefaultMessage("Neither a solver is started nor solution is selected.")
+	String errorAssignedClassesNoSolution();
+	
+	@DefaultMessage("Neither a solver is started nor solution is selected.")
+	String errorNotAssignedClassesNoSolution();
+	
 	@DefaultMessage("No resource matches the above criteria (or there is no resource at all).")
 	String errorTimetableGridNoDataReturned();
+	
+	@DefaultMessage("No assigned class.")
+	String errorAssignedClassesNoDataReturned();
+	
+	@DefaultMessage("All classes are assigned.")
+	String errorNotAssignedClassesNoDataReturned();
 	
 	@DefaultMessage("Solver is not started.")
 	String warnSolverNotStarted();
@@ -3075,6 +3138,14 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageTimetableGrid();
 	
+	@DefaultMessage("Assigned Classes")
+	@DoNotTranslate
+	String pageAssignedClasses();
+	
+	@DefaultMessage("Not-Assigned Classes")
+	@DoNotTranslate
+	String pageNotAssignedClasses();
+	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	
@@ -3754,6 +3825,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Non-Conflicting Placements:")
 	String propTimeGridNonConflictingPlacements();
+	
+	@DefaultMessage("Simplified Mode:")
+	String propCourseTimetablingSolverSimplifiedMode();
 	
 	@DefaultMessage("{0} ({1})")
 	String label(String name, String type);
@@ -5204,4 +5278,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("{0} ({1}, {2})")
 	String roomLabelWithDisplayNameAndSize(String label, String displayName, Integer size);
+	
+	@DefaultMessage("NOTE: Only classes that are loaded into the solver are displayed in the below list. This means that classes that are assigned to other " +
+			"timetabling managers (e.g., LLR or LAB) as well as classes that are not loaded into the solver (e.g., Arrange Hours classes) are excluded. " +
+			"For the full list of classes see <a href='classShowSearch.do'>Classes</a> or <a href='classAssignmentsReportShowSearch.do'>Class Assignments</a> page.")
+	String notAssignedClassesNote();
 }

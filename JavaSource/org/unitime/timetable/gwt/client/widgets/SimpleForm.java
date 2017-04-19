@@ -114,13 +114,16 @@ public class SimpleForm extends FlexTable {
 		header.addStyleName("label-cell");
 		int row = getRowCount();
 		setWidget(row, 0, header);
+		getCellFormatter().setStyleName(row, 0, "label-td");
 		if (widget instanceof HasMobileScroll) {
 			ScrollPanel scroll = new ScrollPanel(widget);
 			scroll.addStyleName("table-cell");
 			setWidget(row, 1, scroll);
+			getCellFormatter().setStyleName(row, 1, "table-td");
 		} else {
 			widget.addStyleName("widget-cell");
 			setWidget(row, 1, widget);
+			getCellFormatter().setStyleName(row, 1, "widget-td");
 		}
 		if (colSpan != 1)
 			getFlexCellFormatter().setColSpan(row, 1, colSpan);

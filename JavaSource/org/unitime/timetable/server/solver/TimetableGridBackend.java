@@ -45,6 +45,7 @@ import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridResp
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.gwt.shared.SolverInterface.PageMessage;
 import org.unitime.timetable.gwt.shared.SolverInterface.PageMessageType;
+import org.unitime.timetable.gwt.shared.SolverInterface.SolverType;
 import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridCell;
 import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridModel;
 import org.unitime.timetable.model.ConstraintInfo;
@@ -111,6 +112,7 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
     	response.setWeekOffset(cx.getWeekOffset());
     	
     	SolverProxy solver = courseTimetablingSolverService.getSolver();
+    	SolverPageBackend.fillSolverWarnings(context, solver, SolverType.COURSE, response);
     	if (solver != null) {
     		cx.setInstructorNameFormat(solver.getProperties().getProperty("General.InstructorFormat", cx.getInstructorNameFormat()));
     		boolean fixInstructors = ApplicationProperty.TimeGridFixInstructors.isTrue() && cx.isShowInstructor();

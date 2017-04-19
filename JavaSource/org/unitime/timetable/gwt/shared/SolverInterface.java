@@ -222,7 +222,13 @@ public class SolverInterface implements IsSerializable {
 		public void setUrl(String url) { iUrl = url; }
 	}
 	
-	public static class SolverPageResponse implements GwtRpcResponse {
+	public interface HasPageMessages {
+		public boolean hasPageMessages();
+		public List<PageMessage> getPageMessages();
+		public void addPageMessage(PageMessage message);
+	}
+	
+	public static class SolverPageResponse implements GwtRpcResponse, HasPageMessages {
 		private Date iLoadDate;
 		private SolverType iSolverType;
 		private SolverOperation iOperation;

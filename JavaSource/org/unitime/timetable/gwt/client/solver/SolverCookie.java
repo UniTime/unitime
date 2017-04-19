@@ -32,6 +32,10 @@ public class SolverCookie {
 	private static SolverCookie sInstance = null;
 	private int iLogLevel = ProgressLogLevel.INFO.ordinal();
 	private boolean iTimeGridFilter = true;
+	private boolean iAssignedClassesFilter = true;
+	private int iAssignedClassesSort = 0;
+	private boolean iNotAssignedClassesFilter = true;
+	private int iNotAssignedClassesSort = 0;
 	
 	private SolverCookie() {
 		try {
@@ -41,13 +45,19 @@ public class SolverCookie {
 				int idx = 0;
 				iLogLevel = Integer.valueOf(params[idx++]);
 				iTimeGridFilter = "1".equals(params[idx++]);
+				iAssignedClassesFilter = "1".equals(params[idx++]);
+				iAssignedClassesSort = Integer.parseInt(params[idx++]);
+				iNotAssignedClassesFilter = "1".equals(params[idx++]);
+				iNotAssignedClassesSort = Integer.parseInt(params[idx++]);
 			}
 		} catch (Exception e) {
 		}
 	}
 	
 	private void save() {
-		String cookie = iLogLevel + "|" + (iTimeGridFilter ? "1" : "0");
+		String cookie = iLogLevel + "|" + (iTimeGridFilter ? "1" : "0")
+				+ "|" + (iAssignedClassesFilter ? "1" : "0") + "|" + iAssignedClassesSort
+				+ "|" + (iNotAssignedClassesFilter ? "1" : "0") + "|" + iNotAssignedClassesSort;
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:Solver", cookie, expires);
 	}
@@ -66,5 +76,25 @@ public class SolverCookie {
 	public boolean isTimeGridFilter() { return iTimeGridFilter; }
 	public void setTimeGridFilter(boolean filter) {
 		iTimeGridFilter = filter; save();
+	}
+	
+	public boolean isAssignedClassesFilter() { return iAssignedClassesFilter; }
+	public void setAssignedClassesFilter(boolean filter) {
+		iAssignedClassesFilter = filter; save();
+	}
+	
+	public int getAssignedClassesSort() { return iAssignedClassesSort; }
+	public void setAssignedClassesSort(int sort) {
+		iAssignedClassesSort = sort; save();
+	}
+	
+	public boolean isNotAssignedClassesFilter() { return iNotAssignedClassesFilter; }
+	public void setNotAssignedClassesFilter(boolean filter) {
+		iNotAssignedClassesFilter = filter; save();
+	}
+	
+	public int getNotAssignedClassesSort() { return iNotAssignedClassesSort; }
+	public void setNotAssignedClassesSort(int sort) {
+		iNotAssignedClassesSort = sort; save();
 	}
 }

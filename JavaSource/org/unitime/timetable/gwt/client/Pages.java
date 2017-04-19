@@ -44,6 +44,8 @@ import org.unitime.timetable.gwt.client.rooms.TravelTimes;
 import org.unitime.timetable.gwt.client.sectioning.SectioningReports;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusPage;
 import org.unitime.timetable.gwt.client.sectioning.StudentSectioningPage;
+import org.unitime.timetable.gwt.client.solver.AssignedClassesPage;
+import org.unitime.timetable.gwt.client.solver.NotAssignedClassesPage;
 import org.unitime.timetable.gwt.client.solver.SolverLogPage;
 import org.unitime.timetable.gwt.client.solver.SolverPage;
 import org.unitime.timetable.gwt.client.solver.TimetablePage;
@@ -205,6 +207,14 @@ public enum Pages {
 	pointInTimeDataReports(new PageFactory() {
 		public Widget create() { return new PointInTimeDataReportsPage(); }
 		public String name(GwtMessages messages) { return messages.pageCourseReports(); }
+		}),
+	assignedClasses(new PageFactory() {
+		public Widget create() { return new AssignedClassesPage(); }
+		public String name(GwtMessages messages) { return messages.pageAssignedClasses(); }
+		}),
+	notAssignedClasses(new PageFactory() {
+		public Widget create() { return new NotAssignedClassesPage(); }
+		public String name(GwtMessages messages) { return messages.pageNotAssignedClasses(); }
 		}),
 	;
 	

@@ -203,23 +203,47 @@ public class PDFPrinter implements Printer {
 			
 			if (f.hasChunks()) {
 				boolean underline = false;
-				for (A g: f.getChunks()) {
-					if (g.hasImage()) {
-						try {
-							cell.addElement(new Chunk(g.getImage(), 0f, 0f));
-							iMaxWidth[idx] = Math.max(iMaxWidth[idx], g.getImage().getScaledWidth());
-						} catch (Exception e) {}
+				if (f.has(F.INLINE)) {
+					Paragraph parent = new Paragraph();
+					int width = 0;
+					for (A g: f.getChunks()) {
+						if (g.hasImage()) {
+							try {
+								cell.addElement(new Chunk(g.getImage(), 0f, 0f));
+								width += g.getImage().getScaledWidth();
+							} catch (Exception e) {}
+						}
+						if (g.hasText()) {
+							Font font = PdfFont.getFont(g.has(F.BOLD), g.has(F.ITALIC));
+							if (g.getColor() != null) font.setColor(g.getColor());
+							if (g.has(F.UNDERLINE)) font.setStyle(Font.UNDERLINE);
+							Chunk ch = new Chunk(g.getText(), font);
+							parent.add(ch);
+							width += g.getWidth(font) + rpad;
+							underline = g.has(F.UNDERLINE);
+						}
 					}
-					if (g.hasText()) {
-						Font font = PdfFont.getFont(g.has(F.BOLD), g.has(F.ITALIC));
-						if (g.getColor() != null) font.setColor(g.getColor());
-						if (g.has(F.UNDERLINE)) font.setStyle(Font.UNDERLINE);
-						Paragraph ch = new Paragraph(g.getText(), font);
-						ch.setLeading(0f, underline ? 1.4f : 1.0f);
-						cell.addElement(ch);
-						float width = g.getWidth(font);
-						iMaxWidth[idx] = Math.max(iMaxWidth[idx], width + rpad);
-						underline = g.has(F.UNDERLINE);
+					iMaxWidth[idx] = Math.max(iMaxWidth[idx], width);
+					cell.addElement(parent);
+				} else {
+					for (A g: f.getChunks()) {
+						if (g.hasImage()) {
+							try {
+								cell.addElement(new Chunk(g.getImage(), 0f, 0f));
+								iMaxWidth[idx] = Math.max(iMaxWidth[idx], g.getImage().getScaledWidth());
+							} catch (Exception e) {}
+						}
+						if (g.hasText()) {
+							Font font = PdfFont.getFont(g.has(F.BOLD), g.has(F.ITALIC));
+							if (g.getColor() != null) font.setColor(g.getColor());
+							if (g.has(F.UNDERLINE)) font.setStyle(Font.UNDERLINE);
+							Paragraph ch = new Paragraph(g.getText(), font);
+							ch.setLeading(0f, underline ? 1.4f : 1.0f);
+							cell.addElement(ch);
+							float width = g.getWidth(font);
+							iMaxWidth[idx] = Math.max(iMaxWidth[idx], width + rpad);
+							underline = g.has(F.UNDERLINE);
+						}
 					}
 				}
 			}
@@ -291,6 +315,10 @@ public class PDFPrinter implements Printer {
 		}
 		public boolean hasColor() { return iColor != null && !iColor.isEmpty(); }
 		public Color getColor() {
+			if ("green".equals(iColor)) return Color.GREEN;
+			if ("red".equals(iColor)) return Color.RED;
+			if ("blue".equals(iColor)) return Color.BLUE;
+			if ("black".equals(iColor)) return Color.BLACK;
 			try {
 				return hasColor() ? new Color(Integer.parseInt(iColor,16)) : Color.BLACK; 
 			} catch (Exception e) {
@@ -335,6 +363,7 @@ public class PDFPrinter implements Printer {
 		public A color(String color) { setColor(color); return this; }
 		public A center() { set(F.CENTER); return this; }
 		public A right() { set(F.RIGHT); return this; }
+		public A inline() { set(F.INLINE); return this; }
 		
 		public boolean hasMaxWidth() { return iMaxWidth != null; }
 		public A maxWidth(Float maxWidth) { iMaxWidth = maxWidth; return this; }
@@ -362,7 +391,7 @@ public class PDFPrinter implements Printer {
 	} 
 	
 	public static enum F {
-		ITALIC, BOLD, UNDERLINE, RIGHT, CENTER, NOSEPARATOR,
+		ITALIC, BOLD, UNDERLINE, RIGHT, CENTER, NOSEPARATOR, INLINE,
 		;
 		
 		public int flag() { return 1 << ordinal(); }

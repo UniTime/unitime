@@ -179,11 +179,25 @@
 			<item name="Assigned Classes" page="assignedClasses.do">
 				<condition>
 					<hasPermission name="AssignedClasses"/>
+					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
+				</condition>
+			</item>
+			<item name="Assigned Classes" page="assignedClasses" type="gwt">
+				<condition>
+					<hasPermission name="AssignedClasses"/>
+					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Not-assigned Classes" page="unassigned.do">
 				<condition>
 					<hasPermission name="NotAssignedClasses"/>
+					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
+				</condition>
+			</item>
+			<item name="Not-assigned Classes" page="notAssignedClasses" type="gwt">
+				<condition>
+					<hasPermission name="NotAssignedClasses"/>
+					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Changes" page="solutionChanges.do">

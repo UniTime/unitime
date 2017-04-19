@@ -502,7 +502,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     }    
     
     @Override
-    public SolverUnassignedClassesModel getUnassignedClassesModel(String prefix) {
+    public SolverUnassignedClassesModel getUnassignedClassesModel(String... prefix) {
     	Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
 		try {
@@ -1039,29 +1039,19 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 	}
 	
     @Override
-	public Vector getAssignedClasses() {
-		Vector ret = new Vector();
+	public List<ClassAssignmentDetails> getAssignedClasses(String... prefix) {
+    	List<ClassAssignmentDetails> ret = new ArrayList<ClassAssignmentDetails>();
 		Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
 		try {
 			for (Lecture lecture: currentSolution().getAssignment().assignedVariables()) {
-				ret.addElement(new ClassAssignmentDetails(this,lecture,false));
-			}
-		} finally {
-			lock.unlock();
-		}
-		return ret;
-	}
-	
-    @Override
-	public Vector getAssignedClasses(String prefix) {
-		Vector ret = new Vector();
-		Lock lock = currentSolution().getLock().readLock();
-		lock.lock();
-		try {
-			for (Lecture lecture: currentSolution().getAssignment().assignedVariables()) {
-				if (prefix == null || lecture.getName().startsWith(prefix))
-					ret.addElement(new ClassAssignmentDetails(this,lecture,false));
+				if (prefix != null && prefix.length > 0) {
+					boolean hasPrefix = false;
+					for (String p: prefix)
+						if (p == null || lecture.getName().startsWith(p)) { hasPrefix = true; break; }
+					if (!hasPrefix) continue;
+				}
+				ret.add(new ClassAssignmentDetails(this,lecture,false));
 			}
 		} finally {
 			lock.unlock();

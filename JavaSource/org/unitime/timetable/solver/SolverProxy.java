@@ -57,7 +57,7 @@ public interface SolverProxy extends ClassAssignmentProxy, CommonSolverInterface
     public boolean hasFinalSectioning();
 	public void finalSectioning();
 
-	public SolverUnassignedClassesModel getUnassignedClassesModel(String prefix);
+	public SolverUnassignedClassesModel getUnassignedClassesModel(String... prefix);
 	public Vector getTimetableGridTables(TimetableGridContext context);
 	public List<TimetableGridModel> getTimetableGridTables(org.unitime.timetable.server.solver.TimetableGridContext context);
 	public ClassAssignmentDetails getClassAssignmentDetails(Long classId, boolean includeConstraints);
@@ -73,8 +73,7 @@ public interface SolverProxy extends ClassAssignmentProxy, CommonSolverInterface
 	public Vector getChangesToInitial();
 	public Vector getChangesToBest();
 	public Vector getChangesToSolution(Long solutionId);
-	public Vector getAssignedClasses();
-	public Vector getAssignedClasses(String prefix);
+	public List<ClassAssignmentDetails> getAssignedClasses(String... prefix);
 	
 	public RoomReport getRoomReport(BitSet sessionDays, int startDayDayOfWeek, Long roomType, Float nrWeeks);
 	public DeptBalancingReport getDeptBalancingReport();

@@ -20,51 +20,57 @@
 package org.unitime.timetable.solver.ui;
 
 import java.io.Serializable;
+import java.util.List;
 
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.comparators.ClassComparator;
 
-
 /**
  * @author Tomas Muller
  */
-public class UnassignedClassRow implements Serializable, Comparable {
+public class UnassignedClassRow implements Serializable, Comparable<UnassignedClassRow> {
 	private static final long serialVersionUID = 1L;
-	private String iOnClick = null;
+	private Long iId = null;
 	private String iName = null;
-	private String iInstructor = null;
+	private List<String> iInstructors = null;
 	private int iNrStudents = 0;
 	private String iInitial = null;
 	private int iOrd = -1;
 	private transient Class_ iClazz = null;
 	
-	public UnassignedClassRow(String onClick, String name, String instructor, int nrStudents, String initial, int ord) {
-		iOnClick = onClick;
+	public UnassignedClassRow(Long id, String name, List<String> instructors, int nrStudents, String initial, int ord) {
+		iId = id;
 		iName = name;
 		iNrStudents = nrStudents;
-		iInstructor = instructor;
+		iInstructors = instructors;
 		iInitial = initial;
 		iOrd = ord;
 	}
 	
-	public UnassignedClassRow(String onClick, String name, String instructor, int nrStudents, String initial, Class_ clazz) {
-		iOnClick = onClick;
+	public UnassignedClassRow(Long id, String name, List<String> instructors, int nrStudents, String initial, Class_ clazz) {
+		iId = id;
 		iName = name;
 		iNrStudents = nrStudents;
-		iInstructor = instructor;
+		iInstructors = instructors;
 		iInitial = initial;
 		iClazz = clazz;
 	}
-
-	public String getOnClick() { return iOnClick; }
+	
+	public Long getId() { return iId; }
+	public String getOnClick() { return iId == null ? null : "showGwtDialog('Suggestions', 'suggestions.do?id="+iId+"&op=Reset','900','90%');"; }
 	public String getName() { return iName; }
-	public String getInstructor() { return iInstructor; }
+	public String getInstructor() {
+		String instructors = "";
+		if (iInstructors != null)
+			for (String instructor: iInstructors)
+				instructors += (instructors.isEmpty() ? "" : ", ") + instructor;
+		return instructors;
+	}
+	public List<String> getInstructors() { return iInstructors; }
 	public int getNrStudents() { return iNrStudents; }
 	public String getInitial() { return iInitial; }
 
-	public int compareTo(Object o) {
-		if (o==null || !(o instanceof UnassignedClassRow)) return -1;
-		UnassignedClassRow ucr = (UnassignedClassRow)o;
+	public int compareTo(UnassignedClassRow ucr) {
 		if (iOrd>=0 && ucr.iOrd>=0) {
 			int cmp = Double.compare(iOrd, ucr.iOrd);
 			if (cmp!=0) return cmp;
@@ -72,6 +78,6 @@ public class UnassignedClassRow implements Serializable, Comparable {
 			int cmp = (new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY)).compare(iClazz, ucr.iClazz);
 			if (cmp!=0) return cmp;
 		}
-		return getName().compareTo(((UnassignedClassRow)o).getName());
+		return getName().compareTo(ucr.getName());
 	}
 }

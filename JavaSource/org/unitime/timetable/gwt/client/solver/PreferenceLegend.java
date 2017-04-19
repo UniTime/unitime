@@ -17,22 +17,35 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.solver.ui;
+package org.unitime.timetable.gwt.client.solver;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
+
+import org.unitime.timetable.gwt.client.widgets.P;
+import org.unitime.timetable.gwt.shared.RoomInterface.PreferenceInterface;
 
 /**
  * @author Tomas Muller
  */
-public abstract class UnassignedClassesModel implements Serializable {
-	private static final long serialVersionUID = 1L;
-	private List<UnassignedClassRow> iRows = new ArrayList<UnassignedClassRow>();
+public class PreferenceLegend extends P {
 	
-	public List<UnassignedClassRow> rows() { return iRows; }
-	public int getNrRows() { return iRows.size(); }
-	public UnassignedClassRow getRow(int row) {
-		return (UnassignedClassRow)iRows.get(row);
+	public PreferenceLegend(List<PreferenceInterface> preferences) {
+		super("unitime-PreferenceLegend");
+		for (PreferenceInterface pref: preferences) {
+			add(new PreferenceCell(pref));
+		}
 	}
+	
+	public static class PreferenceCell extends P {
+		
+		public PreferenceCell(PreferenceInterface pref) {
+			super("legend-line");
+			P box = new P("box"); box.getElement().getStyle().setBackgroundColor(pref.getColor());
+			add(box);
+			P text = new P("text"); text.setText(pref.getName());
+			add(text);
+		}
+		
+	}
+
 }

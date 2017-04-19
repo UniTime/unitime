@@ -241,7 +241,7 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands, Nee
 						course2ll.put(course, students);
 					}
 					students.add(studentId);
-				}			
+				}
 		}
 		return course2ll;
 	}

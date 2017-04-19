@@ -20,12 +20,12 @@
 package org.unitime.timetable.action;
 
 import java.text.DecimalFormat;
-import java.util.Enumeration;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -120,7 +120,7 @@ public class AssignedClassesAction extends Action {
         	myForm.setSubjectArea(((SubjectArea)myForm.getSubjectAreas().iterator().next()).getUniqueId());
         }
         
-        Vector assignedClasses = null;
+        List<ClassAssignmentDetails> assignedClasses = null;
         if (myForm.getSubjectArea() != null && myForm.getSubjectArea() != 0) {
         	String prefix = myForm.getSubjectArea() > 0 ? myForm.getSubjectAreaAbbv() + " " : null;
             SolverProxy solver = courseTimetablingSolverService.getSolver();
@@ -129,7 +129,7 @@ public class AssignedClassesAction extends Action {
             } else {
             	String instructorNameFormat = UserProperty.NameFormat.get(sessionContext.getUser());
             	String solutionIdsStr = (String)request.getSession().getAttribute("Solver.selectedSolutionId");
-            	assignedClasses = new Vector();
+            	assignedClasses = new ArrayList<ClassAssignmentDetails>();
     			if (solutionIdsStr!=null && solutionIdsStr.length()>0) {
     				SolutionDAO dao = new SolutionDAO();
     				org.hibernate.Session hibSession = dao.getSession();
@@ -207,7 +207,7 @@ public class AssignedClassesAction extends Action {
 	    return prefix + sDF.format(0.0);
 	}
 	
-	public PdfWebTable exportPdf(boolean simple, HttpServletRequest request, String name, Vector assignedClasses) {
+	public PdfWebTable exportPdf(boolean simple, HttpServletRequest request, String name, List<ClassAssignmentDetails> assignedClasses) {
     	if (assignedClasses==null || assignedClasses.isEmpty()) return null;
         PdfWebTable webTable =
         	(simple?
@@ -223,8 +223,7 @@ public class AssignedClassesAction extends Action {
         			null ));
         
         try {
-        	for (Enumeration e=assignedClasses.elements();e.hasMoreElements();) {
-        		ClassAssignmentDetails ca = (ClassAssignmentDetails)e.nextElement();
+        	for (ClassAssignmentDetails ca: assignedClasses) {
         		AssignmentPreferenceInfo ci = ca.getInfo(); 
 
         		StringBuffer sb = new StringBuffer();
@@ -325,7 +324,7 @@ public class AssignedClassesAction extends Action {
         return null;
 	}
 
-    public String getAssignmentTable(boolean simple, HttpServletRequest request, String name, Vector assignedClasses) {
+    public String getAssignmentTable(boolean simple, HttpServletRequest request, String name, List<ClassAssignmentDetails> assignedClasses) {
     	if (assignedClasses==null || assignedClasses.isEmpty()) return null;
 		WebTable.setOrder(sessionContext,"assignedClasses.ord",request.getParameter("ord"),1);
         WebTable webTable =
@@ -342,8 +341,7 @@ public class AssignedClassesAction extends Action {
         			null ));
         webTable.setRowStyle("white-space:nowrap");
         try {
-        	for (Enumeration e=assignedClasses.elements();e.hasMoreElements();) {
-        		ClassAssignmentDetails ca = (ClassAssignmentDetails)e.nextElement();
+        	for (ClassAssignmentDetails ca: assignedClasses) {
         		AssignmentPreferenceInfo ci = ca.getInfo(); 
 
         		StringBuffer sb = new StringBuffer();

@@ -62,6 +62,7 @@ public class FilterInterface implements GwtRpcResponse, Serializable {
 		private String iName, iLabel, iType, iValue, iDefault;
 		private List<ListItem> iOptions = null;
 		private boolean iMultiSelect = false;
+		private boolean iCollapsible = true;
 		
 		public FilterParameterInterface() {}
 		
@@ -80,10 +81,20 @@ public class FilterInterface implements GwtRpcResponse, Serializable {
 		public String getDefaultValue() { return iDefault; }
 		public void setDefaultValue(String defaultValue) {
 			iDefault = defaultValue;
-			if (hasOptions() && defaultValue != null) {
+			if (hasOptions() && defaultValue != null && !isMultiSelect()) {
 				for (ListItem option: getOptions())
 					if (defaultValue.equals(option.getValue())) return;
 				iDefault = getOptions().get(0).getValue();
+			}
+		}
+		public boolean isDefaultItem(ListItem item) {
+			if (iDefault == null) return false;
+			if (isMultiSelect()) {
+				for (String val: iDefault.split(","))
+					if (val.equalsIgnoreCase(item.getValue())) return true;
+				return false;
+			} else {
+				return iDefault.equalsIgnoreCase(item.getValue());
 			}
 		}
 		
@@ -94,9 +105,18 @@ public class FilterInterface implements GwtRpcResponse, Serializable {
 			iOptions.add(new ListItem(value, text));
 		}
 		public List<ListItem> getOptions() { return iOptions; }
+		public String getOptionText(String value) {
+			if (iOptions == null) return null;
+			for (ListItem option: getOptions())
+				if (value.equals(option.getValue())) return option.getText();
+			return null;
+		}
 		
 		public boolean isMultiSelect() { return iMultiSelect; }
 		public void setMultiSelect(boolean multiSelect) { iMultiSelect = multiSelect; }
+		
+		public boolean isCollapsible() { return iCollapsible; }
+		public void setCollapsible(boolean collapsible) { iCollapsible = collapsible; }
 		
 		@Override
 		public String toString() {
