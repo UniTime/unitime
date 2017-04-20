@@ -108,7 +108,7 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 				throw new GwtRpcException(MESSAGES.errorAssignedClassesNoSolution());
 		}
 		
-		List<ClassAssignmentDetails> assignedClasses = new ArrayList<>();
+		List<ClassAssignmentDetails> assignedClasses = new ArrayList<ClassAssignmentDetails>();
 		if (subjects == null || subjects.isEmpty() || subjects.equals(Constants.ALL_OPTION_VALUE)) {
 			if (solver != null) {
 				assignedClasses = solver.getAssignedClasses();
