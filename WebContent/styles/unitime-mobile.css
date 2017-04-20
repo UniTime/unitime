@@ -127,7 +127,7 @@
 }
 
 .unitime-MobileFrameDialog .frame {
-	width: 100vw;
+	width: calc(100vw - 4px);
 	height: 100vh;
 	padding: 0px;
 	margin: 0px;
@@ -248,7 +248,7 @@
 	}
 	
 	.unitime-Page .footer {
-		max-width: 100vw;
+		max-width: calc(100vw - 4px);
 	}
 	
 	.top-menu {
@@ -273,7 +273,7 @@
 		display: block;
 		text-align: center;
 		border-top: 1px solid #9CB0CE;
-		width: 100vw;
+		width: calc(100vw - 4px);
 	}
 	
 	.unitime-Footer .cell {
@@ -319,38 +319,38 @@
 
 	.unitime-CourseRequests .line .course .unitime-FilterBox {
 		width: 70vw;
-		width: calc(99vw - 165px);
+		width: calc(99vw - 169px);
 		min-width: 150px;
 	}
 
 	.unitime-CourseRequests .alt-line .course .unitime-FilterBox {
 		width: 70vw;
-		width: calc(99vw - 215px);
+		width: calc(99vw - 219px);
 		min-width: 100px;
 	}
 	
 	.unitime-CourseRequests .nowaitlist .line .course .unitime-FilterBox {
-		width: calc(99vw - 140px);
+		width: calc(99vw - 144px);
 	}
 
 	.unitime-CourseRequests .nowaitlist .alt-line .course .unitime-FilterBox {
-		width: calc(99vw - 190px);
+		width: calc(99vw - 194px);
 	}
 
 	.unitime-CourseRequests .noarrows .line .course .unitime-FilterBox {
-		width: calc(99vw - 105px);
+		width: calc(99vw - 109px);
 	}
 
 	.unitime-CourseRequests .noarrows .alt-line .course .unitime-FilterBox {
-		width: calc(99vw - 155px);
+		width: calc(99vw - 159px);
 	}
 	
 	.unitime-CourseRequests .noarrowswaitlist .line .course .unitime-FilterBox {
-		width: calc(99vw - 85px);
+		width: calc(99vw - 89px);
 	}
 
 	.unitime-CourseRequests .noarrowswaitlist .alt-line .course .unitime-FilterBox {
-		width: calc(99vw - 135px);
+		width: calc(99vw - 139px);
 	}
 
 	.unitime-CourseRequests .tip {
@@ -372,11 +372,11 @@
 	}
 	
 	.unitime-ClassScheduleTabPanel {
-		width: 100vw;
+		width: calc(100vw - 4px);
 	}
 	
 	.unitime-SchedulingAssistantButtons {
-		width: 100vw;
+		width: calc(100vw - 4px);
 	}
 	
 	.unitime-SuggestionsBox .panel {
@@ -444,7 +444,7 @@
 	}
 	
 	.unitime-MainTable .table-row {
-		width: 99vw;
+		width: calc(99vw - 8px);
 		min-width: 100%;
 	}
 	
@@ -454,21 +454,21 @@
 	
 	.unitime-MainTable .label-cell {
 		white-space: normal;
-		max-width: 19vw;
+		max-width: calc(19vw - 4px);
 		text-overflow: ellipsis;
 		overflow: hidden;
 	}
 	
 	.unitime-MainTable .widget-cell {
-		max-width: 80vw;
+		max-width: calc(80vw - 4px);
 	}
 	
 	.unitime-MainTable .widget-cell .unitime-TextBox {
-		max-width: 80vw;
+		max-width: calc(80vw - 4px);
 	}
 	
 	.unitime-MainTable .widget-cell textarea {
-		max-width: 80vw;
+		max-width: calc(80vw - 4px);
 	}
 	
 	.unitime-ApproveDialog .unitime-MainTable .table-row {
@@ -532,7 +532,7 @@
 	
 	.unitime-ScrollTable {
 		min-width: 100%;
-		width: 100vw;
+		width: calc(99vw - 8px);
 	}
 	
 	.unitime-ScrollTableCell {
@@ -541,7 +541,7 @@
 	
 	.unitime-LegacyWebTable {
 		min-width: 100%;
-		width: 100vw;
+		width: calc(100vw - 8px);
 	}
 	
 	.unitime-CurriculumProjectionRulesDialog .unitime-ScrollTable {
@@ -550,7 +550,11 @@
 	}
 	
 	.unitime-FilterPanel .filter-left .unitime-FilterBox {
-		width: 99vw;
+		width: calc(99vw - 8px);
+	}
+	
+	.unitime-ScheduleStatus {
+		width: calc(100vw - 4px);
 	}
 }
 
