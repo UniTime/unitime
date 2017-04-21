@@ -21,6 +21,7 @@ package org.unitime.timetable.server.rooms;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -59,12 +60,15 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.DepartmentStatusType;
+import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.EventNote;
 import org.unitime.timetable.model.ExamLocationPref;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.LocationPicture;
+import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.NonUniversityLocationPicture;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -234,6 +238,38 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
                 hibSession.saveOrUpdate(a);
                 i.remove();
             }
+			Map<Event, List<Meeting>> deletedMeetings = new HashMap<Event, List<Meeting>>();
+			for (Meeting meeting: (List<Meeting>)hibSession.createQuery(
+					"select m from Meeting m, Location l where " +
+					"l.uniqueId = :locId and m.locationPermanentId = l.permanentId " +
+					"and m.meetingDate >= l.session.eventBeginDate and m.meetingDate <= l.session.eventEndDate").setLong("locId", location.getUniqueId()).list()) {
+				Event event = meeting.getEvent();
+				event.getMeetings().remove(meeting);
+				List<Meeting> deleted = deletedMeetings.get(event);
+				if (deleted == null) {
+					deleted = new ArrayList<Meeting>();
+					deletedMeetings.put(event, deleted);
+				}
+				deleted.add(meeting);
+			}
+			for (Map.Entry<Event, List<Meeting>> entry: deletedMeetings.entrySet()) {
+				Event event = entry.getKey();
+				List<Meeting> meetings = entry.getValue();
+				if (event.getMeetings().isEmpty()) {
+					hibSession.delete(event);
+				} else {
+					EventNote note = new EventNote();
+					note.setEvent(event);
+					note.setNoteType(EventNote.sEventNoteTypeDeletion);
+					note.setTimeStamp(new Date());
+					note.setUser(context.getUser().getTrueName());
+					note.setUserId(context.getUser().getTrueExternalUserId());
+					note.setTextNote(MESSAGES.eventNoteRoomDeleted(location.getLabel()));
+					note.setMeetingCollection(meetings);
+					event.getNotes().add(note);
+					hibSession.saveOrUpdate(event);
+				}
+			}
 			hibSession.delete(location);
 			tx.commit(); tx = null;
 			return permId;

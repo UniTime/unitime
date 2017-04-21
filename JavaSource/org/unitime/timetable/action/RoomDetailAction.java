@@ -20,9 +20,13 @@
 package org.unitime.timetable.action;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -49,8 +53,11 @@ import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
+import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.EventNote;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.LocationPicture;
+import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
@@ -368,6 +375,38 @@ public class RoomDetailAction extends Action {
                     hibSession.saveOrUpdate(a);
                     i.remove();
                 }
+    			Map<Event, List<Meeting>> deletedMeetings = new HashMap<Event, List<Meeting>>();
+    			for (Meeting meeting: (List<Meeting>)hibSession.createQuery(
+    					"select m from Meeting m, Location l where " +
+    					"l.uniqueId = :locId and m.locationPermanentId = l.permanentId " +
+    					"and m.meetingDate >= l.session.eventBeginDate and m.meetingDate <= l.session.eventEndDate").setLong("locId", location.getUniqueId()).list()) {
+    				Event event = meeting.getEvent();
+    				event.getMeetings().remove(meeting);
+    				List<Meeting> deleted = deletedMeetings.get(event);
+    				if (deleted == null) {
+    					deleted = new ArrayList<Meeting>();
+    					deletedMeetings.put(event, deleted);
+    				}
+    				deleted.add(meeting);
+    			}
+    			for (Map.Entry<Event, List<Meeting>> entry: deletedMeetings.entrySet()) {
+    				Event event = entry.getKey();
+    				List<Meeting> meetings = entry.getValue();
+    				if (event.getMeetings().isEmpty()) {
+    					hibSession.delete(event);
+    				} else {
+    					EventNote note = new EventNote();
+    					note.setEvent(event);
+    					note.setNoteType(EventNote.sEventNoteTypeDeletion);
+    					note.setTimeStamp(new Date());
+    					note.setUser(sessionContext.getUser().getTrueName());
+    					note.setUserId(sessionContext.getUser().getTrueExternalUserId());
+    					note.setTextNote(location.getLabel() + " has been deleted.");
+    					note.setMeetingCollection(meetings);
+    					event.getNotes().add(note);
+    					hibSession.saveOrUpdate(event);
+    				}
+    			}
                 hibSession.delete(location);
 			}
 			tx.commit();

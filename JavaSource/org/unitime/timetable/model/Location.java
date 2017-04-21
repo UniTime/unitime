@@ -1027,7 +1027,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     	Number nrMeetings = (Number)LocationDAO.getInstance().getSession().createQuery(
     			"select count(m) from Meeting m, Location l where " +
     			"l.uniqueId = :locId and m.locationPermanentId = l.permanentId " +
-    			"and m.meetingDate >= l.session.eventBeginDate and m.meetingDate <= l.session.eventEndDate") // and m.approvedDate is not null
+    			"and m.meetingDate >= l.session.eventBeginDate and m.meetingDate <= l.session.eventEndDate and m.approvalStatus <= 1") // and m.approvedDate is not null
     			.setLong("locId", getUniqueId())
     			.setCacheable(true).uniqueResult();
     	return nrMeetings.intValue() > 0;

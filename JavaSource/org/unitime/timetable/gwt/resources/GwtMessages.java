@@ -5283,4 +5283,7 @@ public interface GwtMessages extends Messages {
 			"timetabling managers (e.g., LLR or LAB) as well as classes that are not loaded into the solver (e.g., Arrange Hours classes) are excluded. " +
 			"For the full list of classes see <a href='classShowSearch.do'>Classes</a> or <a href='classAssignmentsReportShowSearch.do'>Class Assignments</a> page.")
 	String notAssignedClassesNote();
+	
+	@DefaultMessage("{0} has been deleted.")
+	String eventNoteRoomDeleted(String room);
 }
