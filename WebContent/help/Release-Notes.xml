@@ -47,7 +47,7 @@
 				<line>This is only enabled when deterministic student sectioning is used.</line>
 				<line>The list of constraints that are to be posted (together with their preferences) is given by solver parameter General.AutomaticStudentConstraints.
 					<line>Contains a comma delimited list of &lt;preference&gt; &lt;constraint&gt;, for example:</line>
-					<line>Preferred Max 1 Break, Strongly Preferred Ay Most 6 Hrs, Required 8h Work-Day</line>
+					<line>Preferred Max 1 Break, Strongly Preferred At Most 6 Hrs, Required 8h Work-Day</line>
 				</line>
 				<line>By default, the given constraints are posted on every set of classes that are attended by at least 5 students (must be all classes those 5 students are attending).
 					<line>This can be changed by General.AutomaticStudentConstraints.StudentLimit solver parameter (defaults to 5).</line>
@@ -61,9 +61,10 @@
 			</description>
 		</item>
 		<item>
-			<name>Curricula: Last-Like Course Demands</name>
+			<name>Curricula</name>
 			<description>
-				<line>Consinder demand offering (Take Course Demands from Offering parameter on a course) when showing last-like enrollments and when Curricula Last Like Course Demands are used.</line>
+				<line>Last-Like Course Demands: Consider demand offering (Take Course Demands from Offering parameter on a course) when showing last-like enrollments and when Curricula Last Like Course Demands are used.</line>
+				<line>Multiple Majors: Fixed a null exception thrown when there are last-like or real students matching multiple majors of a multi-major curriculum on Oracle.</line>
 			</description>
 		</item>
 		<item>
