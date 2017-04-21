@@ -206,12 +206,14 @@
 		<put name="body" value="/user/instructorDetail.jsp" />
 		<put name="showNavigation" value="true" />
 		<put name="showSolverWarnings" value="assignment" />
+		<put name="checkRole" value="false" />
   	</definition>
   	
   	<definition	name="instructorInfoEditTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Edit Instructor"/>
 		<put name="body" value="/user/instructorInfoEdit.jsp" />
 		<put name="showNavigation" value="true" />
+		<put name="checkRole" value="false" />
   	</definition>  
   	
   	<definition	name="instructorAddTile" extends="pageLayoutDef">
@@ -224,6 +226,7 @@
 		<put name="title" type="string" value="Instructor Preferences"/>
 		<put name="body" value="/user/instructorPrefsEdit.jsp" />
 		<put name="showNavigation" value="true" />
+		<put name="checkRole" value="false" />
   	</definition>	
   	
 	<definition	name="instructorListUpdateTile" extends="pageLayoutDef">
@@ -528,6 +531,7 @@
 		<put name="action" value="classAssignmentsReportSearch" />
 		<put name="showNavigation" value="true" />
 		<put name="showSolverWarnings" value="assignment" />
+		<put name="checkRole" value="false" />
   	</definition>
   	
   	<definition	name="classAssignmentsReportListTile" extends="classAssignmentsReportSearchTile">

@@ -148,6 +148,8 @@ public class CourseTimetablingPermissions {
 			// Has a solver running -> can see assignments
 			if (courseTimetablingSolverService.getSolver() != null) return true;
 			
+			if (!user.getCurrentAuthority().hasRight(Right.HasRole) && !permissionSession.check(user, source, DepartmentStatusType.Status.ReportClasses)) return false;
+			
 			// Check for a department with a committed solution or for my department with a solution
 			for (Department department: source.getDepartments()) {
 				if (department.getSolverGroup() == null) continue;

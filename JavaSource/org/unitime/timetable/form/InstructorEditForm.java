@@ -21,6 +21,7 @@ package org.unitime.timetable.form;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -32,6 +33,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
 import org.unitime.timetable.model.PositionType;
+import org.unitime.timetable.util.IdValue;
 
 
 /** 
@@ -89,6 +91,7 @@ public class InstructorEditForm extends PreferencesForm  {
     
     private boolean ignoreDist;
 	private Boolean lookupEnabled;
+	private List<IdValue> departments;
     
 	// --------------------------------------------------------- Methods
     
@@ -360,5 +363,8 @@ public class InstructorEditForm extends PreferencesForm  {
 	public void setLookupEnabled(Boolean lookupEnabled) {
 		this.lookupEnabled = lookupEnabled;
 	}
+	
+	public List<IdValue> getDepartments() { return departments; }
+	public void setDepartments(List<IdValue> departments) { this.departments = departments; }
 }
 

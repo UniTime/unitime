@@ -38,6 +38,7 @@ import org.unitime.timetable.model.base.BaseDepartmentalInstructor;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.NameFormat;
@@ -520,4 +521,12 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
         	lookup = (ExternalUidLookup)Class.forName(className).newInstance();
         return (lookup == null ? null : lookup.doLookup(externalId));
     }
+
+	public static List<DepartmentalInstructor> getUserInstructors(UserContext user) {
+		if (user == null || user.getCurrentAcademicSessionId() == null || user.getExternalUserId() == null) return null;
+		return (List<DepartmentalInstructor>)DepartmentalInstructorDAO.getInstance().getSession().createQuery(
+				"from DepartmentalInstructor i where i.department.session.uniqueId = :sessionId and i.externalUniqueId = :externalId " +
+				"order by i.department.deptCode").setLong("sessionId", user.getCurrentAcademicSessionId())
+				.setString("externalId", user.getExternalUserId()).setCacheable(true).list();
+	}
 }

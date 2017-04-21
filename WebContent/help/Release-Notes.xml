@@ -89,6 +89,15 @@
 				<line>Make sure that the computation of the curriculum-based student course demands does not get stuck due to the floating point precision inaccuracy.</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructor Preferences</name>
+			<description>
+				<line>Added ability for an instructor to edit his/her preferences, using Courses > Input Data > Instructor Detail page.</line>
+				<line>Permissions needed: Instructor Detail and Instructor Preferences, but NEVER HasRole permission (which should be reserved for manager roles).</line>
+				<line>Session/department statuses needed: Owner View (to see the detail page) and Owner Edit (for the ability to edit preferences).</line>
+				<line>If an instructor exists in two or more departments, there is a Department drop-down on the Instructor Detail page allowing the user to switch departments.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>

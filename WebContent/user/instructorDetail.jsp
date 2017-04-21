@@ -42,7 +42,7 @@
 
 <html:form action="instructorDetail">
   	<loc:bundle name="CourseMessages"> 
-	<html:hidden property="instructorId"/>
+	<logic:empty name="<%=frmName%>" property="departments"><html:hidden property="instructorId"/></logic:empty>
 	<html:hidden property="nextId"/>
 	<html:hidden property="previousId"/>
 	<html:hidden property="deptCode"/>
@@ -120,6 +120,25 @@
 			<TD><loc:message name="propertyExternalId"></loc:message></TD>
 			<TD> <bean:write name="<%=frmName%>" property="puId" /></TD>
 		</TR>
+		<logic:notEmpty name="<%=frmName%>" property="departments">
+			<TR>
+				<TD><loc:message name="propertyDepartment"></loc:message></TD>
+				<TD>
+					<html:select property='instructorId' onchange="submit();">
+						<html:optionsCollection name="<%=frmName%>" property="departments" value="id" label="value"/>
+					</html:select>
+				</TD>
+			</TR>
+		</logic:notEmpty>
+		<logic:empty name="<%=frmName%>" property="departments"><logic:notEmpty name="<%=frmName%>" property="deptName">
+			<TR>
+				<TD><loc:message name="propertyDepartment"></loc:message></TD>
+				<TD>
+					<bean:write name="<%=frmName%>" property="deptName" />
+				</TD>
+			</TR>
+		</logic:notEmpty></logic:empty>
+		
 		<logic:notEmpty name="<%=frmName%>" property="careerAcct">
 			<TR>
 				<TD><loc:message name="propertyAccountName"></loc:message></TD>

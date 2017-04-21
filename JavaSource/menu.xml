@@ -30,6 +30,8 @@
 				<hasPermission name="InstructionalOfferings"/>
 				<hasPermission name="Classes"/>
 				<hasPermission name="HQLReportsCourses"/>
+				<hasPermission name="ClassAssignments"/>
+				<hasPermission name="InstructorDetail"/>
 			</or>
 		</condition>
 		<menu name="Input Data" title="Course Timetabling Input Data">
@@ -58,6 +60,14 @@
 			<item name="Instructors" page="instructorSearch.do">
 				<condition>
 					<hasPermission name="Instructors"/>
+				</condition>
+			</item>
+			<item name="Instructor Detail" page="instructorDetail.do">
+				<condition>
+					<hasPermission name="InstructorDetail"/>
+					<not>
+						<hasPermission name="Instructors"/>
+					</not>
 				</condition>
 			</item>
 			<separator/>

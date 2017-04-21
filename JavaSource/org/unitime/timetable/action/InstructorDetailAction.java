@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.action;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -74,6 +75,7 @@ import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DefaultRoomAvailabilityService;
 import org.unitime.timetable.util.Formats;
+import org.unitime.timetable.util.IdValue;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.NameFormat;
 import org.unitime.timetable.util.RoomAvailability;
@@ -134,7 +136,26 @@ public class InstructorDetailAction extends PreferencesAction {
 							                ? null
 							                : request.getAttribute("instructorId").toString()
 									: request.getParameter("instructorId");
-							                
+
+		    if (instructorId == null) {
+		    	List<DepartmentalInstructor> instructors = DepartmentalInstructor.getUserInstructors(sessionContext.getUser());
+		    	if (instructors != null) {
+		    		String deptId = (String)request.getSession().getAttribute(Constants.DEPT_ID_ATTR_NAME);
+		    		if (deptId != null)
+		    			for (DepartmentalInstructor i: instructors)
+			    			if (i.getDepartment().getUniqueId().toString().equals(deptId) && sessionContext.hasPermission(i, Right.InstructorDetail)) {
+			    				instructorId = i.getUniqueId().toString();
+			    				break;
+			    			}
+		    		if (instructorId == null)
+			    		for (DepartmentalInstructor i: instructors)
+			    			if (sessionContext.hasPermission(i, Right.InstructorDetail)) {
+			    				instructorId = i.getUniqueId().toString();
+			    				break;
+			    			}
+		    	}
+		    }
+
 		    sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorDetail);
 	        
 		    String op = frm.getOp();
@@ -216,7 +237,7 @@ public class InstructorDetailAction extends PreferencesAction {
 	        		request,
 	        		"instructorDetail.do?instructorId=" + instructorId,
 	        		MSG.backInstructor(frm.getName()==null?"null":frm.getName().trim()),
-	        		true, false);
+	        		true, sessionContext.hasPermission(Right.HasRole) ? false : true);
 
 	        //load class assignments
             Set allClasses = new HashSet();
@@ -461,7 +482,21 @@ public class InstructorDetailAction extends PreferencesAction {
 			frm.setPreviousId(previous==null?null:previous.getUniqueId().toString());
 			DepartmentalInstructor next = inst.getNextDepartmentalInstructor(sessionContext, Right.InstructorDetail);
 			frm.setNextId(next==null?null:next.getUniqueId().toString());
-		
+			
+			if (inst.getExternalUniqueId() != null && !inst.getExternalUniqueId().isEmpty()) {
+				List<IdValue> departments = new ArrayList<IdValue>();
+				for (DepartmentalInstructor di: (List<DepartmentalInstructor>)DepartmentalInstructorDAO.getInstance().getSession().createQuery(
+						"from DepartmentalInstructor i where i.department.session.uniqueId = :sessionId and i.externalUniqueId = :externalId " +
+						"order by i.department.deptCode").setLong("sessionId", sessionContext.getUser().getCurrentAcademicSessionId())
+						.setString("externalId", inst.getExternalUniqueId()).setCacheable(true).list()) {
+					if (sessionContext.hasPermission(di, Right.InstructorDetail)) {
+						departments.add(new IdValue(di.getUniqueId(), di.getDepartment().getLabel()));
+					}
+				}
+				if (departments.size() > 1)
+					frm.setDepartments(departments);
+			}
+			
 	        return mapping.findForward("showInstructorDetail");
 		
 		} catch (Exception e) {
@@ -485,6 +520,8 @@ public class InstructorDetailAction extends PreferencesAction {
 		frm.setName(nameFormat.format(inst));
 		
 		frm.setEmail(inst.getEmail());
+		frm.setDeptCode(inst.getDepartment().getDeptCode());
+		frm.setDeptName(inst.getDepartment().getLabel());
 		
 		String puid = inst.getExternalUniqueId();
 		if (puid != null) {
