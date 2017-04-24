@@ -773,9 +773,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 	CourseOffering alt = co.getAlternativeOffering();
                 	if (alt != null) {
                 		// there is an alternative, but it is already requested -> do nothing
-                    	for (CourseDemand d: demands)
+                    	demands: for (CourseDemand d: demands)
                     		for (org.unitime.timetable.model.CourseRequest r: d.getCourseRequests())
-                    			if (alt.equals(r.getCourseOffering())) { alt = null; break; } 
+                    			if (alt.equals(r.getCourseOffering())) { alt = null; break demands; } 
                 	}
                 	if (alt != null && alternatives.add(alt)) {
                 		// there is an alternative, not requested -> add the alternative
