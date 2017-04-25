@@ -44,7 +44,10 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.OfferingCoordinator;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.TeachingClassRequest;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.solver.jgroups.SolverServerImplementation;
 import org.unitime.timetable.util.NameFormat;
@@ -115,6 +118,17 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
             	iProgress.incProgress();
             } catch (Exception e) {
                 iProgress.warn("Unable to refresh solution, reason:" + e.getMessage(),e);
+            }
+            
+            if (!iUpdatedOfferings.isEmpty() || !iUpdatedConfigs.isEmpty()) {
+            	Session session = SessionDAO.getInstance().get(iSessionId, hibSession);
+                if (!session.getStatusType().isTestSession() && (session.getStatusType().canOnlineSectionStudents() || session.getStatusType().canSectionAssistStudents())) {
+                	Set<Long> offeringIds = new HashSet<Long>();
+                	for (InstructionalOffering io: iUpdatedOfferings) offeringIds.add(io.getUniqueId());
+                	for (InstrOfferingConfig config: iUpdatedConfigs) offeringIds.add(config.getInstructionalOffering().getUniqueId());
+                	StudentSectioningQueue.offeringChanged(hibSession, null, iSessionId, offeringIds);
+                	hibSession.flush();
+                }
             }
         } catch (Exception e) {
             if (tx!=null) tx.rollback();

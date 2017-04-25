@@ -19,8 +19,12 @@
 */
 package org.unitime.timetable.server.instructor;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.Transaction;
@@ -47,9 +51,12 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.OfferingCoordinator;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.TeachingClassRequest;
 import org.unitime.timetable.model.TeachingRequest;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.TeachingRequestDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -78,6 +85,7 @@ public class InstructorAssignmentBackend extends InstructorSchedulingBackendHelp
 		Set<DepartmentalInstructor> updateInstructors = new HashSet<DepartmentalInstructor>();
 		Set<InstrOfferingConfig> updateConfigs = new HashSet<InstrOfferingConfig>();
 		Set<InstructionalOffering> updateOfferings = new HashSet<InstructionalOffering>();
+		Map<Long, List<Long>> touchedOfferingIds = new Hashtable<Long, List<Long>>();
 		
 		org.hibernate.Session hibSession = DepartmentalInstructorDAO.getInstance().getSession();
 		Transaction tx = hibSession.beginTransaction();
@@ -110,7 +118,13 @@ public class InstructorAssignmentBackend extends InstructorSchedulingBackendHelp
 						updateOfferings.add(c.getTeachingRequest().getOffering());
 					for (TeachingClassRequest tcr: c.getTeachingRequest().getClassRequests()) {
 						if (tcr.isAssignInstructor()) {
-							updateConfigs.add(tcr.getTeachingClass().getSchedulingSubpart().getInstrOfferingConfig()); break;
+							updateConfigs.add(tcr.getTeachingClass().getSchedulingSubpart().getInstrOfferingConfig());
+							List<Long> classIds = touchedOfferingIds.get(c.getTeachingRequest().getOffering().getUniqueId());
+			                if (classIds == null) {
+			                	classIds = new ArrayList<Long>();
+			                	touchedOfferingIds.put(c.getTeachingRequest().getOffering().getUniqueId(), classIds);
+			                }
+			                classIds.add(tcr.getTeachingClass().getUniqueId());
 						}
 					}
 				}
@@ -124,14 +138,17 @@ public class InstructorAssignmentBackend extends InstructorSchedulingBackendHelp
 						updateOfferings.add(a.getTeachingRequest().getOffering());
 					for (TeachingClassRequest tcr: a.getTeachingRequest().getClassRequests()) {
 						if (tcr.isAssignInstructor()) {
-							updateConfigs.add(tcr.getTeachingClass().getSchedulingSubpart().getInstrOfferingConfig()); break;
+							updateConfigs.add(tcr.getTeachingClass().getSchedulingSubpart().getInstrOfferingConfig());
+							List<Long> classIds = touchedOfferingIds.get(a.getTeachingRequest().getOffering().getUniqueId());
+			                if (classIds == null) {
+			                	classIds = new ArrayList<Long>();
+			                	touchedOfferingIds.put(a.getTeachingRequest().getOffering().getUniqueId(), classIds);
+			                }
+			                classIds.add(tcr.getTeachingClass().getUniqueId());
 						}
 					}
 				}
 			}
-			
-			for (DepartmentalInstructor instructor: updateInstructors)
-				hibSession.saveOrUpdate(instructor);
 			
 			for (InstructorAssignment c: conflicts)
 				changelog(hibSession, c.getTeachingRequest(), c.getAssigment(), null, cx);
@@ -172,6 +189,27 @@ public class InstructorAssignmentBackend extends InstructorSchedulingBackendHelp
     		}
 		}
 		
+		if (!touchedOfferingIds.isEmpty()) {
+			Long sessionId = context.getUser().getCurrentAcademicSessionId();
+	        Session session = SessionDAO.getInstance().get(sessionId, hibSession);
+	        if (!session.getStatusType().isTestSession()) {
+	            if (session.getStatusType().canOnlineSectionStudents()) {
+	            	List<Long> unlockedOfferings = new ArrayList<Long>();
+	            	for (Long offeringId: touchedOfferingIds.keySet())
+	            		if (!session.isOfferingLocked(offeringId))
+	            			unlockedOfferings.add(offeringId);
+	            	if (!unlockedOfferings.isEmpty())
+	            		StudentSectioningQueue.offeringChanged(hibSession, context.getUser(), sessionId, unlockedOfferings);
+	            } else if (session.getStatusType().canSectionAssistStudents()) {
+	            	for (Map.Entry<Long, List<Long>> entry: touchedOfferingIds.entrySet()) {
+	            		if (!session.isOfferingLocked(entry.getKey()))
+	            			StudentSectioningQueue.classAssignmentChanged(hibSession, context.getUser(), sessionId, entry.getValue());
+	            	}
+	            }
+	        }
+	        hibSession.flush();
+		}
+		
 		return new GwtRpcResponseNull();
 	}
 	
@@ -196,7 +234,6 @@ public class InstructorAssignmentBackend extends InstructorSchedulingBackendHelp
 					ci.getClassInstructing().getClassInstructors().remove(ci);
 					i.remove();
 					hibSession.delete(ci);
-					break;
 				}
 			}
 		}
