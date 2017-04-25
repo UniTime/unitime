@@ -527,12 +527,13 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 				ca.setTitle(course.getTitle());
 				ca.setTeachingAssignment(true);
 				
+				Set<Long> added = new HashSet<Long>();
 		    	for (XConfig config: offering.getConfigs())
 					for (XSubpart subpart: config.getSubparts())
 						for (XSection section: subpart.getSections()) {
 							if (!section.isCancelled())
 								for (XInstructor instructor: section.getAllInstructors())
-									if (student.getExternalId().equals(instructor.getExternalId())) {
+									if (student.getExternalId().equals(instructor.getExternalId()) && added.add(section.getSectionId())) {
 										if (eb != null)
 											eb.addSection(OnlineSectioningHelper.toProto(section, null));
 										ClassAssignmentInterface.ClassAssignment a = ca.addClassAssignment();

@@ -654,12 +654,13 @@ public class XOffering implements Serializable, Externalizable {
     
     public void fillInUnavailabilities(Student student) {
     	if (student.getExternalId() == null || student.getExternalId().isEmpty()) return;
+    	Set<Long> sections = new HashSet<Long>();
     	for (XConfig config: getConfigs())
 			for (XSubpart subpart: config.getSubparts())
 				for (XSection section: subpart.getSections()) {
 					if (section.getTime() != null && !section.isCancelled())
 						for (XInstructor instructor: section.getAllInstructors())
-							if (student.getExternalId().equals(instructor.getExternalId())) {
+							if (student.getExternalId().equals(instructor.getExternalId()) && sections.add(section.getSectionId())) {
 								new Unavailability(student,
 										new Section(section.getSectionId(), section.getLimit(), getName() + " " + subpart.getName() + " " + section.getName(), null, section.toPlacement(), null),
 										instructor.isAllowOverlap());
