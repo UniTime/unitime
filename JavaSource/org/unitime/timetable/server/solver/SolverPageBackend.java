@@ -172,7 +172,6 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 	        			);
 				break;
 			case EXAM:
-				if (solver.bestSolutionInfo() != null) solver.restoreBest();
 				solver.save();
 				break;
 			case STUDENT:
@@ -180,12 +179,10 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 	        	if (statusToSet != null) {
 	        		solver.setProperty("Save.StudentSectioningStatusToSet", request.getParameter(statusToSet.getUniqueId()));
 	        	}
-	        	if (solver.bestSolutionInfo() != null) solver.restoreBest();
 				solver.save();
 				break;
 			case INSTRUCTOR:
 				solver.setProperty("Save.Commit", (request.getOperation() == SolverOperation.SAVE_AS_NEW_COMMIT || request.getOperation() == SolverOperation.SAVE_COMMIT) ? "true" : "false");
-				if (solver.bestSolutionInfo() != null) solver.restoreBest();
 				solver.save();
         	}
         	break;
