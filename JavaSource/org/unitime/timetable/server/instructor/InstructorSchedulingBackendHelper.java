@@ -739,7 +739,7 @@ public class InstructorSchedulingBackendHelper {
 				if (a1 == null) continue;
 				for (TeachingClassRequest c2: other.getClassRequests()) {
 					if (c2.isCanOverlap()) continue;
-					if (c1.isCommon() && c2.isCommon() && c1.getTeachingClass().equals(c2.getTeachingClass())) continue;
+					if (c1.getTeachingClass().equals(c2.getTeachingClass())) continue; 
 					Assignment a2 = c2.getTeachingClass().getCommittedAssignment();
 					if (a2 == null) continue;
 					if (a1.getTimeLocation().hasIntersection(a2.getTimeLocation())) return true;
