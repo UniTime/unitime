@@ -32,6 +32,7 @@ import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
@@ -44,6 +45,8 @@ import org.unitime.timetable.gwt.shared.TeachingRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.TeachingRequestInterface.RequestedClass;
 import org.unitime.timetable.gwt.shared.TeachingRequestInterface.SaveRequestsRpcRequest;
 import org.unitime.timetable.gwt.shared.TeachingRequestInterface.SingleRequest;
+import org.unitime.timetable.interfaces.ExternalCourseOfferingEditAction;
+import org.unitime.timetable.interfaces.ExternalInstrOfferingConfigAssignInstructorsAction;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
@@ -55,6 +58,8 @@ import org.unitime.timetable.model.InstructorPref;
 import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.TeachingClassRequest;
 import org.unitime.timetable.model.TeachingRequest;
 import org.unitime.timetable.model.dao.Class_DAO;
@@ -82,6 +87,11 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 			throw new GwtRpcException(MESSAGES.errorOfferingDoesNotExist(request.getOfferingId().toString()));
 		boolean commit = Department.isInstructorSchedulingCommitted(offering.getDepartment().getUniqueId());
 		context.checkPermission(offering.getDepartment(), Right.InstructorAssignmentPreferences);
+		
+		Set<InstrOfferingConfig> updateConfigs = new HashSet<InstrOfferingConfig>();
+		boolean updateOffering = false;
+		Set<Long> updatedClassIds = new HashSet<Long>();
+
 		Transaction tx = hibSession.beginTransaction();
 		try {
 			Map<Long, TeachingRequest> requests = new HashMap<Long, TeachingRequest>();
@@ -211,6 +221,8 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 							ci.getInstructor().getClasses().remove(ci);
 							hibSession.delete(ci);
 							j.remove();
+							updateConfigs.add(cr.getTeachingClass().getSchedulingSubpart().getInstrOfferingConfig());
+							updatedClassIds.add(cr.getTeachingClass().getUniqueId());
 						}
 					}
 					cr.getTeachingClass().getTeachingRequests().remove(cr);
@@ -229,6 +241,7 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 						oc.getInstructor().getOfferingCoordinators().remove(oc);
 						hibSession.delete(oc);
 						i.remove();
+						updateOffering = true;
 					}
 				}
 				hibSession.delete(tr);
@@ -241,6 +254,7 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 					oc.getInstructor().getOfferingCoordinators().remove(oc);
 					hibSession.delete(oc);
 					i.remove();
+					updateOffering = true;
 				}
 			}
 			for (InstrOfferingConfig config: offering.getInstrOfferingConfigs())
@@ -259,6 +273,8 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 									ci.getInstructor().getClasses().remove(ci);
 									hibSession.delete(ci);
 									i.remove();
+									updateConfigs.add(config);
+									updatedClassIds.add(clazz.getUniqueId());
 								} else if (!ci.getPercentShare().equals(support.getPercentShare()) || !ci.isLead().equals(support.getLead()) ||
 										!ToolBox.equals(ci.getResponsibility(), support.getTeachingRequest().getResponsibility())) {
 									Debug.info(clazz.getClassLabel(hibSession) + ": UPDATE " + ci.getInstructor().getNameLastFirst());
@@ -266,6 +282,8 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 									ci.setLead(support.getLead());
 									ci.setResponsibility(support.getTeachingRequest().getResponsibility());
 									hibSession.saveOrUpdate(ci);
+									updateConfigs.add(config);
+									updatedClassIds.add(clazz.getUniqueId());
 								}
 							}
 						}
@@ -290,6 +308,7 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 								oc.setTeachingRequest(tr);
 								offering.getOfferingCoordinators().add(oc);
 								hibSession.save(oc);
+								updateOffering = true;
 							}
 						}
 					}
@@ -314,6 +333,8 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 									cr.getTeachingClass().getClassInstructors().add(ci);
 									instructor.getClasses().add(ci);
 									hibSession.saveOrUpdate(ci);
+									updateConfigs.add(cr.getTeachingClass().getSchedulingSubpart().getInstrOfferingConfig());
+									updatedClassIds.add(cr.getTeachingClass().getUniqueId());
 								}
 							}
 						}
@@ -327,6 +348,46 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 			if (tx != null && tx.isActive()) tx.rollback();
 			throw new GwtRpcException(e.getMessage(), e);
 		}
+		
+		if (!updateConfigs.isEmpty()) {
+    		try {
+            	String className = ApplicationProperty.ExternalActionInstrOfferingConfigAssignInstructors.value();
+            	if (className != null && className.trim().length() > 0) {
+            			ExternalInstrOfferingConfigAssignInstructorsAction assignAction = (ExternalInstrOfferingConfigAssignInstructorsAction) (Class.forName(className).newInstance());
+            			for (InstrOfferingConfig ioc: updateConfigs)
+            				assignAction.performExternalInstrOfferingConfigAssignInstructorsAction(ioc, hibSession);
+            	}
+    		} catch (Exception e) {
+    			Debug.error("Failed to call external action: " + e.getMessage(), e);
+    		}
+		}
+		
+		if (updateOffering) {
+    		try {
+            	String className = ApplicationProperty.ExternalActionCourseOfferingEdit.value();
+            	if (className != null && className.trim().length() > 0) {
+            			ExternalCourseOfferingEditAction editAction = (ExternalCourseOfferingEditAction) (Class.forName(className).newInstance());
+            			editAction.performExternalCourseOfferingEditAction(offering, hibSession);
+            	}
+    		} catch (Exception e) {
+    			Debug.error("Failed to call external action: " + e.getMessage(), e);
+    		}
+		}
+		
+		if (!updatedClassIds.isEmpty()) {
+	        Session session = offering.getSession();
+	        if (!session.getStatusType().isTestSession()) {
+	            if (session.getStatusType().canOnlineSectionStudents()) {
+	            	if (!session.isOfferingLocked(offering.getUniqueId()))
+	            		StudentSectioningQueue.offeringChanged(hibSession, context.getUser(), session.getUniqueId(), offering.getUniqueId());
+	            } else if (session.getStatusType().canSectionAssistStudents()) {
+	            	if (!session.isOfferingLocked(offering.getUniqueId()))
+	            		StudentSectioningQueue.classAssignmentChanged(hibSession, context.getUser(), session.getUniqueId(), updatedClassIds);
+	            }
+	        }
+	        hibSession.flush();
+		}
+		
 		return new GwtRpcResponseNull();
 	}
 	

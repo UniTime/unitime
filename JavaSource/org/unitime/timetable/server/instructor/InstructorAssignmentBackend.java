@@ -163,7 +163,7 @@ public class InstructorAssignmentBackend extends InstructorSchedulingBackendHelp
 			}
 		}
 		
-		if (updateConfigs.isEmpty()) {
+		if (!updateConfigs.isEmpty()) {
     		try {
             	String className = ApplicationProperty.ExternalActionInstrOfferingConfigAssignInstructors.value();
             	if (className != null && className.trim().length() > 0) {
@@ -176,7 +176,7 @@ public class InstructorAssignmentBackend extends InstructorSchedulingBackendHelp
     		}
 		}
 		
-		if (updateOfferings.isEmpty()) {
+		if (!updateOfferings.isEmpty()) {
     		try {
             	String className = ApplicationProperty.ExternalActionCourseOfferingEdit.value();
             	if (className != null && className.trim().length() > 0) {
