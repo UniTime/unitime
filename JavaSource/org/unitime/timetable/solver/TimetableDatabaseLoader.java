@@ -3606,7 +3606,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 					pref = p;
 					constraint = constraint.substring(p.getPrefProlog().length() + 1).trim();
 					break;
-				} else if (p.getPrefAbbv() != null && constraint.startsWith(p.getPrefAbbv().toLowerCase() + " ") || constraint.startsWith(p.getPrefAbbv().toLowerCase() + ":")) {
+				} else if (p.getPrefAbbv() != null && (constraint.startsWith(p.getPrefAbbv().toLowerCase() + " ") || constraint.startsWith(p.getPrefAbbv().toLowerCase() + ":"))) {
 					pref = p;
 					constraint = constraint.substring(p.getPrefAbbv().length() + 1).trim();
 					break;
