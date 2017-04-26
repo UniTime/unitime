@@ -45,7 +45,9 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
@@ -55,6 +57,7 @@ import org.unitime.timetable.security.rights.Right;
  * @author Tomas Muller
  */
 public class PageAccessFilter implements Filter {
+	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	private static Log sLog = LogFactory.getLog(PageAccessFilter.class);
 	private static DecimalFormat sDF = new DecimalFormat("0.00");
 	private ServletContext iContext;
@@ -118,23 +121,23 @@ public class PageAccessFilter implements Filter {
 								if (user == null) {
 									sLog.warn("Page "+r.getRequestURI()+" denied: user not logged in");
 									if (s.isNew()) 
-										x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=Your+timetabling+session+has+expired.+Please+log+in+again."));
+										x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=" + MESSAGES.authenticationExpired()));
 									else
-										x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=Login+is+required+to+use+timetabling+application."));
+										x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=" + MESSAGES.authenticationRequired()));
 									return;
 								}
 							}
 							if (c!=null && "true".equals(c.getAttribute("checkRole"))) {
 								if (user == null || user.getCurrentAuthority() == null || !user.getCurrentAuthority().hasRight(Right.HasRole)) {
 									sLog.warn("Page "+r.getRequestURI()+" denined: no role");
-									x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=Insufficient+user+privileges."));
+									x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=" + MESSAGES.authenticationInsufficient()));
 									return;
 								}
 							}
 							if (c!=null && "true".equals(c.getAttribute("checkAdmin"))) {
 								if (user == null || user.getCurrentAuthority() == null || !user.getCurrentAuthority().hasRight(Right.IsAdmin)) {
 									sLog.warn("Page "+r.getRequestURI()+" denied: user not admin");
-									x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=Insufficient+user+privileges."));
+									x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=" + MESSAGES.authenticationInsufficient()));
 									return;
 								}
 							}
@@ -220,11 +223,11 @@ public class PageAccessFilter implements Filter {
 						HttpSession s = r.getSession();
 						if (getUser() == null) {
 							if (s.isNew()) 
-								message = "Your timetabling session has expired. Please log in again.";
+								message = MESSAGES.authenticationExpired();
 							else
-								message = "Login is required to use this page.";
+								message = MESSAGES.authenticationRequired();
 						} else {
-							message = "Insufficient user privileges.";
+							message = MESSAGES.authenticationInsufficient();
 						}
 					}
 					x.sendRedirect(x.encodeURL(r.getContextPath() + "/loginRequired.do?message=" + message));

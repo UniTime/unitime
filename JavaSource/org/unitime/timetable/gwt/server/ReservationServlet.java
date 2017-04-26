@@ -812,11 +812,11 @@ public class ReservationServlet implements ReservationService {
 	private Long getAcademicSessionId() throws PageAccessException {
 		UserContext user = getSessionContext().getUser();
 		if (user == null) throw new PageAccessException(
-				getSessionContext().isHttpSessionNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+				getSessionContext().isHttpSessionNew() ? MESSAGES.authenticationExpired() : MESSAGES.authenticationRequired());
 		if (user.getCurrentAuthority() == null)
-			throw new PageAccessException("Insufficient user privileges.");
+			throw new PageAccessException(MESSAGES.authenticationInsufficient());
 		Long sessionId = user.getCurrentAcademicSessionId();
-		if (sessionId == null) throw new PageAccessException("No academic session is selecgted.");
+		if (sessionId == null) throw new PageAccessException(MESSAGES.authenticationNoSession());
 		return sessionId;
 	}
 

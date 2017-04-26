@@ -19,6 +19,9 @@
 --%>
 <%@ page import="org.unitime.timetable.util.AccessDeniedException"%>
 <%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
+<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
+<loc:bundle name="org.unitime.timetable.gwt.resources.GwtMessages">
 <sec:authorize access="!hasPermission(null, null, 'HasRole')">
-<% if (true) throw new AccessDeniedException("Insufficient user privileges."); %>
+<% if (true) throw new AccessDeniedException(MSG.authenticationInsufficient());%>
 </sec:authorize>
+</loc:bundle>

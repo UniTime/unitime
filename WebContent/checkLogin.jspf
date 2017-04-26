@@ -19,13 +19,16 @@
 --%>
 <%@ page import="org.unitime.timetable.util.AccessDeniedException"%>
 <%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
+<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
 <tt:session-context/>
+<loc:bundle name="org.unitime.timetable.gwt.resources.GwtMessages">
 <%
 	if (!sessionContext.isAuthenticated()) {
 		if (sessionContext.isHttpSessionNew()) {
-			throw new AccessDeniedException("Your timetabling session has expired. Please log in again.");
+			throw new AccessDeniedException(MSG.authenticationExpired());
 		} else {
-			throw new AccessDeniedException("Login is required to use timetabling application.");
+			throw new AccessDeniedException(MSG.authenticationRequired());
 		}
 	}
 %>
+</loc:bundle>
