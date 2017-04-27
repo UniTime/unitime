@@ -169,6 +169,8 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     		}
     		attribute = new Attribute(a.getUniqueId(), a.getCode(), type);
     		iAttributes.put(a.getUniqueId(), attribute);
+    		if (a.getParentAttribute() != null)
+    			attribute.setParentAttribute(getAttribute(a.getParentAttribute()));
     	}
     	return attribute;
     }

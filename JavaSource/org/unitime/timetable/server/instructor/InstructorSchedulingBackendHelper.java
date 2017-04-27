@@ -511,8 +511,14 @@ public class InstructorSchedulingBackendHelper {
 	
 	protected int getAttributePreference(DepartmentalInstructor instructor, TeachingRequest tr, InstructorAttributeType type) {
 		Set<InstructorAttribute> attributes = new HashSet<InstructorAttribute>();
-		for (InstructorAttribute a: instructor.getAttributes())
+		for (InstructorAttribute a: instructor.getAttributes()) {
 			if (a.getType().equals(type)) attributes.add(a);
+			InstructorAttribute p = a.getParentAttribute();
+			while (p != null) {
+				if (p.getType().equals(type)) attributes.add(p);
+				p = p.getParentAttribute();
+			}
+		}
         boolean hasReq = false, hasPref = false, needReq = false, hasType = false;
         PreferenceCombination ret = new SumPreferenceCombination();
         for (Iterator i = tr.getPreferences(InstructorAttributePref.class).iterator(); i.hasNext();) {
