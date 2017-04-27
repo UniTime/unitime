@@ -460,6 +460,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private String iMessage = null;
 		private boolean iIgnoreRoomCheck = false;
 		private String iDisplayName = null;
+		private boolean iShowMessageInGrid = false;
 
 		public ResourceInterface() {}
 		public ResourceInterface(FilterRpcResponse.Entity room) {
@@ -476,6 +477,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			setMessage(room.getProperty("message", null));
 			setIgnoreRoomCheck("1".equals(room.getProperty("ignoreRoomCheck", "0")));
 			setDisplayName(room.getProperty("display", null)); 
+			setShowMessageInGrid("1".equals(room.getProperty("gridNote", "0")));
 		}
 		
 		public ResourceType getType() { return iResourceType; }
@@ -512,6 +514,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public boolean hasDisplayName() { return iDisplayName != null && !iDisplayName.isEmpty(); }
 		public String getDisplayName() { return iDisplayName; }
 		public void setDisplayName(String name) { iDisplayName = name; }
+		public boolean isShowMessageInGrid() { return iShowMessageInGrid; }
+		public void setShowMessageInGrid(boolean showMessageInGrid) { iShowMessageInGrid = showMessageInGrid; }
 		
 		public String getNameWithHint(GwtMessages msg) {
 			if (iResourceName == null || iResourceName.isEmpty()) return "";

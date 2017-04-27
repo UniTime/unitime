@@ -288,7 +288,7 @@ public class TimeGrid extends Composite {
 		iRoomResources = roomResources;
 		if (isSingleRoom() && isShowRoomNote()) {
 			ResourceInterface r = iRoomResources.get(0);
-			iRoomNote.setHTML(r.hasMessage() ? r.getMessage() : "");
+			iRoomNote.setHTML(r.hasMessage() && r.isShowMessageInGrid() ? r.getMessage() : "");
 		} else {
 			iRoomNote.setHTML("");
 		}

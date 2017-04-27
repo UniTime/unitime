@@ -981,7 +981,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 				hp.add(name);
 				HTML type = new HTML(room.getRoomType(), false); type.setStyleName("type");
 				hp.add(type);
-				HTML warn = new HTML(room.hasMessage() ? room.getMessage() : ""); warn.setStyleName("warning");
+				HTML warn = new HTML(room.hasMessage() && room.isShowMessageInGrid() ? room.getMessage() : ""); warn.setStyleName("warning");
 				hp.add(warn);
 				if (iTables.getWidgetCount() > 0) hp.addStyleName("unitime-TopLineDash");
 				iTables.add(hp);

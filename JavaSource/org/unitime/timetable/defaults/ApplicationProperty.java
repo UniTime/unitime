@@ -1201,6 +1201,14 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Events Personal Schedule: show exams associated with classes that the person is teaching (not only exams where the person is directly listed as instructor)")
 	EventExamsConsiderClassInstructorAssignments("unitime.events.exams.considerClassInstructors"),
+	
+	@DefaultValue("always")
+	@Description("Events: this property defines when to show room note on the top of the room grid:\n" +
+			" never ... never show the room note on the top of the room grid,\n" +
+			" available ... only show the note when the user can request events in the room,\n" +
+			" always ... always show the room note"
+			)
+	EventGridShowRoomNote("unitime.events.roomGrid.showRoomNote"),
 
 	@Type(Class.class)
 	@Implements(Email.class)

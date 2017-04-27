@@ -347,6 +347,9 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 	@Override
 	public void enumarate(RoomFilterRpcRequest request, FilterRpcResponse response, EventContext context) {
 		fixRoomFeatureTypes(request);
+		String showRoomNote = ApplicationProperty.EventGridShowRoomNote.value();
+		boolean showRoomNoteWhenAvailable = "available".equals(showRoomNote) && (context.hasPermission(Right.EventAddSpecial) || context.hasPermission(Right.EventAddCourseRelated));
+		boolean showRoomNoteAlways = "always".equals(showRoomNote);
 
 		Map<Long, Double> distances = new HashMap<Long, Double>();
 		for (Location location: locations(request.getSessionId(), request.getOptions(), new Query(request.getText()), -1, distances, null, context)) {
@@ -363,7 +366,8 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 					"breakTime", String.valueOf(location.getEffectiveBreakTime()),
 					"message", location.getEventMessage(),
 					"ignoreRoomCheck", location.isIgnoreRoomCheck() ? "1" : "0",
-					"display", location.getDisplayName()
+					"display", location.getDisplayName(),
+					"gridNote", location.getEventMessage() != null && !location.getEventMessage().isEmpty() && (showRoomNoteAlways || (showRoomNoteWhenAvailable && context.hasPermission(location, Right.EventLocation))) ? "1" : "0"
 					));
 		}
 	}
