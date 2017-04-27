@@ -68,7 +68,7 @@ public class StudentEnrollmentExport extends BaseExport {
 	        			classEl.addAttribute("courseNbr", course.getCourseNbr());
 	        		}
 	        		classEl.addAttribute("type", clazz.getSchedulingSubpart().getItypeDesc().trim());
-	        		classEl.addAttribute("suffix", clazz.getSectionNumberString());
+	        		classEl.addAttribute("suffix", getClassSuffix(clazz));
 	        	}
 	        }
 	        

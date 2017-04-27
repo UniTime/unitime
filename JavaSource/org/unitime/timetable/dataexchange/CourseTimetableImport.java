@@ -130,7 +130,7 @@ public class CourseTimetableImport extends BaseImport {
 				String extId = clazz.getExternalId(course);
 				if (extId != null && !extId.isEmpty())
 					iExtId2class.put(extId, clazz);
-				String name = clazz.getClassLabel(course);
+				String name = course.getCourseName() + " " + clazz.getItypeDesc().trim() + " " + getClassSuffix(clazz);
 				iName2class.put(name, clazz);
 			}
 	 		

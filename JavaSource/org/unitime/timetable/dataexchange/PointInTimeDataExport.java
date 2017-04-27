@@ -932,7 +932,7 @@ public class PointInTimeDataExport extends BaseExport {
         	}
             classElement.addAttribute(sTimePatternUniqueIdAttribute, clazz.getCommittedAssignment().getTimePattern().getUniqueId().toString());        	
         }
-        classElement.addAttribute(sClassSuffixAttribute, (clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString()));
+        classElement.addAttribute(sClassSuffixAttribute, getClassSuffix(clazz));
         classElement.addAttribute(sSectionNumberAttribute, clazz.getSectionNumber().toString());
         if (!departmentElements.containsKey(clazz.getManagingDept().getUniqueId())){
         	exportDepartment(clazz.getManagingDept());
@@ -1330,11 +1330,4 @@ public class PointInTimeDataExport extends BaseExport {
             e.printStackTrace();
         }
     }
-    
-	private String getExternalUniqueId(Class_ clazz) {
-		if (clazz.getExternalUniqueId() != null)
-			return clazz.getExternalUniqueId();
-		else
-			return clazz.getClassLabel();
-	}    
 }

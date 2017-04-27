@@ -26,6 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.Document;
 import org.springframework.web.util.HtmlUtils;
+import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao._RootDAO;
@@ -281,5 +282,21 @@ public class DataExchangeHelper {
     
     public interface LogWriter {
     	public void println(String message);
+    }
+    
+    protected String getExternalUniqueId(Class_ clazz) {
+    	String externalId = clazz.getExternalUniqueId();
+    	if (externalId != null && !externalId.isEmpty()) return externalId;
+    	return getClassLabel(clazz);
+	}
+    
+    protected String getClassLabel(Class_ clazz) {
+    	return clazz.getCourseName() + " " + clazz.getItypeDesc().trim() + " " + getClassSuffix(clazz);
+    }
+    
+    protected String getClassSuffix(Class_ clazz) {
+    	String suffix = clazz.getClassSuffix();
+    	if (suffix != null && !suffix.isEmpty()) return suffix;
+    	return clazz.getSectionNumberString(getHibSession());
     }
 }

@@ -121,7 +121,7 @@ public class StudentSectioningExport extends BaseExport {
 	        	        		if (extId != null && !extId.isEmpty())
 	        	        			classEl.addAttribute("externalId", extId);
 	        	        		classEl.addAttribute("type", clazz.getSchedulingSubpart().getItypeDesc().trim());
-	        	        		classEl.addAttribute("suffix", clazz.getSectionNumberString());
+	        	        		classEl.addAttribute("suffix", getClassSuffix(clazz));
 	        				}
 	        				first = false;
 	        			}

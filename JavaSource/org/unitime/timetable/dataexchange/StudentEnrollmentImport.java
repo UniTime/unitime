@@ -104,7 +104,7 @@ public class StudentEnrollmentImport extends BaseImport {
 					}
 					sameExtIdClasses.add(clazz);
 				}
-				String name = clazz.getClassLabel(course);
+				String name = course.getCourseName() + " " + clazz.getItypeDesc().trim() + " " + getClassSuffix(clazz);
 				name2class.put(name, clazz);
 				name2course.put(name, course);
 				id2class.put(clazz.getUniqueId(), clazz);

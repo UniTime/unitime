@@ -100,7 +100,7 @@ public class ReservationExport extends BaseExport {
 	        		if (clazz.getExternalUniqueId() != null)
 	        			classEl.addAttribute("externalId", clazz.getExternalUniqueId());
 	        		classEl.addAttribute("type", clazz.getItypeDesc().trim());
-	        		classEl.addAttribute("suffix", clazz.getSectionNumberString(getHibSession()));
+	        		classEl.addAttribute("suffix", getClassSuffix(clazz));
 	        	}
 	        	
 	        	if (reservation instanceof OverrideReservation) {

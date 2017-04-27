@@ -3173,11 +3173,4 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			throw new Exception("Invalid time '"+timeString+"', did not meet format: " + timeFormat);
 		return slot;
 	}
-	
-	protected String getExternalUniqueId(Class_ clazz) {
-		if (clazz.getExternalUniqueId() != null)
-			return clazz.getExternalUniqueId();
-		else
-			return clazz.getClassLabel();
-	}
 }

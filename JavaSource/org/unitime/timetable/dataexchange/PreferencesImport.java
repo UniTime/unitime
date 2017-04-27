@@ -264,7 +264,7 @@ public class PreferencesImport  extends BaseImport {
     	for (Iterator<Class_> i = iClasses.iterator(); i.hasNext(); ) {
     		Class_ clazz = i.next();
     		if (type != null && !type.equals(clazz.getSchedulingSubpart().getItypeDesc().trim())) continue;
-    		if (suffix != null && !suffix.equals(clazz.getSectionNumberString())) continue;
+    		if (suffix != null && !suffix.equals(getClassSuffix(clazz))) continue;
     		for (CourseOffering co: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings()) {
     			if (externalId != null && !externalId.equals(clazz.getExternalId(co))) continue;
     			if (subject != null && !subject.equals(co.getSubjectAreaAbbv())) continue;

@@ -215,7 +215,7 @@ public class ReservationImport  extends BaseImport {
                 			if (itype != null && !itype.equals(s.getItypeDesc().trim())) continue;
                 			for (Class_ z: s.getClasses()) {
                 				if (extId != null && extId.equals(z.getExternalUniqueId())) { clazz = z; break search; }
-                				if (extId == null && suffix.equals(z.getSectionNumberString(getHibSession()))) { clazz = z; break search; } 
+                				if (extId == null && suffix != null && suffix.equals(getClassSuffix(z))) { clazz = z; break search; } 
                 			}
                 		}
                 	}

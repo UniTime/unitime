@@ -132,8 +132,7 @@ public class PreferencesExport extends BaseExport{
 			el.addAttribute("subject", course.getSubjectAreaAbbv());
 			el.addAttribute("course", course.getCourseNbr());
 			el.addAttribute("type", clazz.getSchedulingSubpart().getItypeDesc().trim());
-			if (!clazz.getSectionNumberString().isEmpty())
-				el.addAttribute("suffix", clazz.getSectionNumberString());
+			el.addAttribute("suffix", getClassSuffix(clazz));
 			String extId = clazz.getExternalId(course);
 			if (extId != null && !extId.isEmpty())
 				el.addAttribute("externalId", extId);
@@ -289,7 +288,7 @@ public class PreferencesExport extends BaseExport{
 					clEl.addAttribute("subject", course.getSubjectAreaAbbv());
 					clEl.addAttribute("course", course.getCourseNbr());
 					clEl.addAttribute("type", clazz.getSchedulingSubpart().getItypeDesc().trim());
-					clEl.addAttribute("suffix", clazz.getSectionNumberString());
+					clEl.addAttribute("suffix", getClassSuffix(clazz));
 					String extId = clazz.getExternalId(course);
 					if (extId != null && !extId.isEmpty())
 						clEl.addAttribute("externalId", extId);

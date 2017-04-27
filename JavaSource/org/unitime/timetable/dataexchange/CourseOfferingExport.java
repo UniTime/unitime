@@ -294,7 +294,7 @@ public class CourseOfferingExport extends BaseExport {
     protected void exportClass(Element classElement, Class_ clazz, Session session) {
         classElement.addAttribute("id", getExternalUniqueId(clazz));
         classElement.addAttribute("type", clazz.getItypeDesc().trim());
-        classElement.addAttribute("suffix", (clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString()));
+        classElement.addAttribute("suffix", getClassSuffix(clazz));
         if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment())
             classElement.addAttribute("limit", "inf");
         else
@@ -516,7 +516,7 @@ public class CourseOfferingExport extends BaseExport {
                 Element classElement = (courseElement == null ? examElement : courseElement).addElement("class");
                 classElement.addAttribute("id", getExternalUniqueId(clazz));
                 classElement.addAttribute("type", clazz.getItypeDesc().trim());
-                classElement.addAttribute("suffix", (clazz.getClassSuffix() !=null ? clazz.getClassSuffix() : clazz.getSectionNumberString()));
+                classElement.addAttribute("suffix", getClassSuffix(clazz));
             } else if (owner instanceof InstrOfferingConfig) {
                 InstrOfferingConfig config = (InstrOfferingConfig)owner;
                 CourseOffering course = config.getInstructionalOffering().getControllingCourseOffering();
@@ -542,7 +542,7 @@ public class CourseOfferingExport extends BaseExport {
                 		Element classElement = (courseElement == null ? examElement : courseElement).addElement("class");
                 		classElement.addAttribute("id", getExternalUniqueId(clazz));
                         classElement.addAttribute("type", clazz.getItypeDesc().trim());
-                        classElement.addAttribute("suffix", (clazz.getClassSuffix() !=null ? clazz.getClassSuffix() : clazz.getSectionNumberString()));
+                        classElement.addAttribute("suffix", getClassSuffix(clazz));
                 	}
             } else if (owner instanceof CourseOffering) {
                 CourseOffering course = (CourseOffering)owner;
@@ -663,11 +663,4 @@ public class CourseOfferingExport extends BaseExport {
             e.printStackTrace();
         }
     }
-    
-	protected String getExternalUniqueId(Class_ clazz) {
-		if (clazz.getExternalUniqueId() != null)
-			return clazz.getExternalUniqueId();
-		else
-			return clazz.getClassLabel();
-	}
 }

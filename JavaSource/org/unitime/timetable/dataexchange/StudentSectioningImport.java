@@ -196,7 +196,7 @@ public class StudentSectioningImport extends BaseImport {
 					}
 					sameExtIdClasses.add(clazz);
 				}
-				String name = clazz.getSchedulingSubpart().getItypeDesc().trim() + " " + clazz.getSectionNumberString();
+				String name = clazz.getSchedulingSubpart().getItypeDesc().trim() + " " + getClassSuffix(clazz);
 				Set<Class_> sameNameClasses = name2class.get(name);
 				if (sameNameClasses == null) {
 					sameNameClasses = new HashSet<Class_>();

@@ -104,7 +104,7 @@ public class CourseTimetableExport extends CourseOfferingExport {
         classElement.addAttribute("subject", course.getSubjectArea().getSubjectAreaAbbreviation());
         classElement.addAttribute("courseNbr", course.getCourseNbr());
         classElement.addAttribute("type", clazz.getItypeDesc().trim());
-        classElement.addAttribute("suffix", (clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString()));
+        classElement.addAttribute("suffix", getClassSuffix(clazz));
         if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment())
             classElement.addAttribute("limit", "inf");
         else
