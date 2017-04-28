@@ -563,7 +563,7 @@ public class PointInTimeDataExport extends BaseExport {
             root.addAttribute(sPointInTimeNameAttribute, name);
             root.addAttribute(sPointInTimeNoteAttribute, note);
                        
-            document.addDocType(sRootElementName, "-//UniTime//DTD University Course Timetabling/EN", "http://www.unitime.org/interface/PointInTmeData.dtd");
+            document.addDocType(sRootElementName, "-//UniTime//DTD University Course Timetabling/EN", "http://www.unitime.org/interface/PointInTimeData.dtd");
             
             info("Loading Data...");
             TreeSet<InstructionalOffering> offerings = findOfferingsWithClasses(session);
@@ -579,7 +579,6 @@ public class PointInTimeDataExport extends BaseExport {
             ArrayList<Object[]> eventMeetings = findClassEvents(session);
             info("Loaded " + eventMeetings.size() + " Class Events");
             info("Default Date Pattern:  " + session.getDefaultDatePatternNotNull());
-            commitTransaction();
             timePatterns.size();
             locations.size();
             Date endTransTimestamp = new Date();
@@ -633,7 +632,8 @@ public class PointInTimeDataExport extends BaseExport {
             info("XML creation for Point in Time Data ended at:  " + endProcessingTimestamp.toString());
             info("Milliseconds elapsed since data extract = " + (endProcessingTimestamp.getTime() - endTransTimestamp.getTime()));
 
-            
+            commitTransaction();
+
         } catch (Exception e) {
             fatal("Exception: "+e.getMessage(),e);
             rollbackTransaction();

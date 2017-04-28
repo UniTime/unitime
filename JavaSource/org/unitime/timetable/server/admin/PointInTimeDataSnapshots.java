@@ -58,9 +58,9 @@ public class PointInTimeDataSnapshots implements AdminTable {
 	@PreAuthorize("checkPermission('PointInTimeData')")
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
 		SimpleEditInterface data = new SimpleEditInterface(
-				new Field(MESSAGES.fieldName(), FieldType.text, 300, 100),
-				new Field(MESSAGES.fieldNote(), FieldType.textarea, 300, 1000),
-				new Field(MESSAGES.fieldSnapshotTimestamp(), FieldType.date, 300, Flag.READ_ONLY),
+				new Field(MESSAGES.fieldName(), FieldType.text, 200, 100),
+				new Field(MESSAGES.fieldNote(), FieldType.textarea, 100, 1000),
+				new Field(MESSAGES.fieldSnapshotTimestamp(), FieldType.date, 80, Flag.READ_ONLY),
 				new Field(MESSAGES.fieldSavedSuccessfully(), FieldType.toggle, 40, Flag.READ_ONLY));
 		data.setSortBy(1,2);
 		data.setAddable(false);
