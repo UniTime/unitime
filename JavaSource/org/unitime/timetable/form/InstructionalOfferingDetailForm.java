@@ -62,6 +62,7 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     private Long ctrlCrsOfferingId;
     private Integer projectedDemand;
     private Integer enrollment;
+    private Integer snapshotLimit;
     private Integer demand;
     private Integer limit;
     private Boolean unlimited;
@@ -124,6 +125,7 @@ public class InstructionalOfferingDetailForm extends ActionForm {
         instrOfferingId = null;
         ctrlCrsOfferingId = null;
         enrollment = null;
+        snapshotLimit = null;
         demand = null;
         projectedDemand = null;
         limit = null;
@@ -307,6 +309,14 @@ public class InstructionalOfferingDetailForm extends ActionForm {
 
 	public void setEnrollment(Integer enrollment) {
 		this.enrollment = enrollment;
+	}
+	
+	public Integer getSnapshotLimit() {
+		return snapshotLimit;
+	}
+
+	public void setSnapshotLimit(Integer snapshotLimit) {
+		this.snapshotLimit = snapshotLimit;
 	}
 	
 	public boolean isByReservationOnly() { return byReservationOnly; }

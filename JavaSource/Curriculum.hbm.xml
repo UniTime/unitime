@@ -149,6 +149,18 @@
             <key column="cur_clasf_id" foreign-key="fk_curriculum_course_clasf"/>
             <one-to-many class="CurriculumCourse"/>
         </set>
+        
+        <property
+            name="snapshotNrStudents"
+            column="snapshot_nr_students"
+            type="java.lang.Integer"
+            not-null="false"/>
+
+		<property
+            name="snapshotNrStudentsDate"
+            column="snapshot_nr_stu_date"
+            type="java.sql.Timestamp"
+            not-null="false"/>        
 
     </class>
     <class name="CurriculumCourse" table="curriculum_course">
@@ -198,8 +210,19 @@
                 class="org.unitime.timetable.model.CurriculumCourseGroup"
                 column="group_id"
                 foreign-key="fk_cur_course_group_group"/>
-
         </set>
+
+        <property
+            name="snapshotPercShare"
+            column="snapshot_pr_share"
+            type="java.lang.Float"
+            not-null="false"/>
+
+		<property
+            name="snapshotPercShareDate"
+            column="snapshot_pr_shr_date"
+            type="java.sql.Timestamp"
+            not-null="false"/>
 
     </class>
     <class name="CurriculumCourseGroup" table="curriculum_group">
@@ -279,5 +302,18 @@
             type="java.lang.Float"
             not-null="true"/>
 
+        <property
+            name="snapshotProjection"
+            column="snapshot_proj"
+            type="java.lang.Float"
+            not-null="true"/>
+
+		<property
+            name="snapshotProjectedDate"
+            column="snapshot_proj_date"
+            type="java.sql.Timestamp"
+            not-null="false"/>
+
     </class>
+    
 </hibernate-mapping>

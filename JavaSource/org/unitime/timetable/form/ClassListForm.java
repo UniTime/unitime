@@ -54,6 +54,7 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	private Boolean demandIsVisible;
 	private Boolean demand;
 	private Boolean limit;
+	private Boolean snapshotLimit;
 	private Boolean roomLimit;
 	private Boolean timePattern;
 	private Boolean datePattern;
@@ -167,6 +168,7 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 		demandIsVisible = new Boolean(false);
 		demand = new Boolean(false);
 		limit = new Boolean(false);
+		snapshotLimit = new Boolean(false);
 		roomLimit = new Boolean(false);
 		datePattern = new Boolean(false);
 		timePattern = new Boolean(false);
@@ -263,6 +265,18 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	 */
 	public void setLimit(Boolean limit) {
 		this.limit = limit;
+	}
+	/**
+	 * @return Returns the snapshotLimit.
+	 */
+	public Boolean getSnapshotLimit() {
+		return snapshotLimit;
+	}
+	/**
+	 * @param snapshotLimit The snapshotLimit to set.
+	 */
+	public void setSnapshotLimit(Boolean snapshotLimit) {
+		this.snapshotLimit = snapshotLimit;
 	}
 	/**
 	 * @return Returns the preferences.

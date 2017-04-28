@@ -20,6 +20,7 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,6 +39,8 @@ public abstract class BaseCurriculumCourse implements Serializable {
 	private Long iUniqueId;
 	private Float iPercShare;
 	private Integer iOrd;
+	private Float iSnapshotPercShare;
+	private Date iSnapshotPercShareDate;
 
 	private CurriculumClassification iClassification;
 	private CourseOffering iCourse;
@@ -46,6 +49,8 @@ public abstract class BaseCurriculumCourse implements Serializable {
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_PR_SHARE = "percShare";
 	public static String PROP_ORD = "ord";
+	public static String PROP_SNAPSHOT_PR_SHARE = "snapshotPercShare";
+	public static String PROP_SNAPSHOT_PR_SHR_DATE = "snapshotPercShareDate";
 
 	public BaseCurriculumCourse() {
 		initialize();
@@ -66,6 +71,12 @@ public abstract class BaseCurriculumCourse implements Serializable {
 
 	public Integer getOrd() { return iOrd; }
 	public void setOrd(Integer ord) { iOrd = ord; }
+
+	public Float getSnapshotPercShare() { return iSnapshotPercShare; }
+	public void setSnapshotPercShare(Float snapshotPercShare) { iSnapshotPercShare = snapshotPercShare; }
+
+	public Date getSnapshotPercShareDate() { return iSnapshotPercShareDate; }
+	public void setSnapshotPercShareDate(Date snapshotPercShareDate) { iSnapshotPercShareDate = snapshotPercShareDate; }
 
 	public CurriculumClassification getClassification() { return iClassification; }
 	public void setClassification(CurriculumClassification classification) { iClassification = classification; }
@@ -101,6 +112,8 @@ public abstract class BaseCurriculumCourse implements Serializable {
 			"\n	Course: " + getCourse() +
 			"\n	Ord: " + getOrd() +
 			"\n	PercShare: " + getPercShare() +
+			"\n	SnapshotPercShare: " + getSnapshotPercShare() +
+			"\n	SnapshotPercShareDate: " + getSnapshotPercShareDate() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

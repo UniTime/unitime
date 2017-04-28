@@ -100,6 +100,7 @@ public class CurriculaTable extends Composite {
 	private HashSet<Long> iSelectedCurricula = new HashSet<Long>();
 	
 	private boolean iIsAdmin = false;
+	private boolean iSessionHasSnapshotData = false;
 	
 	private EditClassificationHandler iEditClassificationHandler = null;
 	
@@ -142,6 +143,7 @@ public class CurriculaTable extends Composite {
 				List<Integer> rows = new ArrayList<Integer>();
 				CurriculumInterface last = null;
 				clasf: for (CurriculumClassificationInterface clasf: classifications) {
+					iSessionHasSnapshotData = clasf.isSessionHasSnapshotData();
 					if (last != null && last.getId().equals(clasf.getCurriculumId())) {
 						last.addClassification(clasf);
 						continue clasf;
@@ -169,6 +171,8 @@ public class CurriculaTable extends Composite {
 					}
 					((Label)iTable.getWidget(row, 8)).setText(c.getEnrollmentString());
 					((Label)iTable.getWidget(row, 9)).setText(c.getRequestedString());
+					((Label)iTable.getWidget(row, 10)).setText(!c.isSessionHasSnapshotData()?"":c.getSnapshotExpectedString());
+					((Label)iTable.getWidget(row, 11)).setText(!c.isSessionHasSnapshotData()?"":c.getSnapshotProjectionString());
 				}
 				List<Long> noEnrl = new ArrayList<Long>();
 				for (int row = 0; row < iTable.getRowCount(); row++) {
@@ -333,6 +337,7 @@ public class CurriculaTable extends Composite {
 		} else {
 			line.add(new Label(""));
 		}
+		iSessionHasSnapshotData = c.isSessionHasSnapshotData();
 		DisplayMode m = CurriculumCookie.getInstance().getCurriculaDisplayMode();
 		line.add(new Label(m.isCurriculumAbbv() ? c.getAbbv() : c.getName(), false));
 		line.add(new Label(m.isAreaAbbv() ? c.getAcademicArea().getAbbv() : c.getAcademicArea().getName(), false));
@@ -343,6 +348,8 @@ public class CurriculaTable extends Composite {
 		line.add(new Label(c.getExpected() == null ? "" : c.getExpectedString(), false));
 		line.add(new Label(c.getEnrollment() == null ? "" : c.getEnrollmentString(), false));
 		line.add(new Label(c.getRequested() == null ? "" : c.getRequestedString(), false));
+		line.add(new Label(!c.isSessionHasSnapshotData() ? "" : (c.getSnapshotExpected() == null ? "" : c.getSnapshotExpectedString()), false));
+		line.add(new Label(!c.isSessionHasSnapshotData() ? "" : (c.getSnapshotProjection() == null ? "" : c.getSnapshotProjectionString()), false));
 		iTable.setRow(row, c, line);
 		iTable.getCellFormatter().addStyleName(row, 0, "unitime-NoPrint");
 		iTable.getFlexCellFormatter().setHorizontalAlignment(row, 5, HasHorizontalAlignment.ALIGN_RIGHT);
@@ -350,6 +357,8 @@ public class CurriculaTable extends Composite {
 		iTable.getFlexCellFormatter().setHorizontalAlignment(row, 7, HasHorizontalAlignment.ALIGN_RIGHT);
 		iTable.getFlexCellFormatter().setHorizontalAlignment(row, 8, HasHorizontalAlignment.ALIGN_RIGHT);
 		iTable.getFlexCellFormatter().setHorizontalAlignment(row, 9, HasHorizontalAlignment.ALIGN_RIGHT);
+		iTable.getFlexCellFormatter().setHorizontalAlignment(row, 10, HasHorizontalAlignment.ALIGN_RIGHT);
+		iTable.getFlexCellFormatter().setHorizontalAlignment(row, 11, HasHorizontalAlignment.ALIGN_RIGHT);
 	}
 	
 	public void populate(TreeSet<CurriculumInterface> result, boolean editable) {
@@ -401,11 +410,13 @@ public class CurriculaTable extends Composite {
 		if (!ids.isEmpty())
 			iService.loadClassifications(ids, iLoadClassifications);
 		
-		iTable.setColumnVisible(iTable.getCellCount(0) - 5, CurriculumCookie.getInstance().isShowLast());
-		iTable.setColumnVisible(iTable.getCellCount(0) - 4, CurriculumCookie.getInstance().isShowProjected());
-		iTable.setColumnVisible(iTable.getCellCount(0) - 3, CurriculumCookie.getInstance().isShowExpected());
-		iTable.setColumnVisible(iTable.getCellCount(0) - 2, CurriculumCookie.getInstance().isShowEnrolled());
-		iTable.setColumnVisible(iTable.getCellCount(0) - 1, CurriculumCookie.getInstance().isShowRequested());
+		iTable.setColumnVisible(iTable.getCellCount(0) - 7, CurriculumCookie.getInstance().isShowLast());
+		iTable.setColumnVisible(iTable.getCellCount(0) - 6, CurriculumCookie.getInstance().isShowProjected());
+		iTable.setColumnVisible(iTable.getCellCount(0) - 5, CurriculumCookie.getInstance().isShowExpected());
+		iTable.setColumnVisible(iTable.getCellCount(0) - 4, CurriculumCookie.getInstance().isShowEnrolled());
+		iTable.setColumnVisible(iTable.getCellCount(0) - 3, CurriculumCookie.getInstance().isShowRequested());
+		iTable.setColumnVisible(iTable.getCellCount(0) - 2, (iSessionHasSnapshotData && CurriculumCookie.getInstance().isShowSnapshotExpected()));
+		iTable.setColumnVisible(iTable.getCellCount(0) - 1, (iSessionHasSnapshotData && CurriculumCookie.getInstance().isShowSnapshotProjected()));
 	}
 
 	public void query(CurriculumFilterRpcRequest filter, final AsyncCallback<TreeSet<CurriculumInterface>> callback) {
@@ -1171,6 +1182,8 @@ public class CurriculaTable extends Composite {
 		case PROJECTION:
 		case REQUESTED:
 		case ENROLLED:
+		case SNAPSHOT_REQUESTED:
+		case SNAPSHOT_PROJECTION:
 		case REGISTERED:
 			header.addOperation(new Operation() {
 				@Override
@@ -1188,12 +1201,12 @@ public class CurriculaTable extends Composite {
 				@Override
 				public void execute() {
 					boolean show = !CurriculumCookie.getInstance().isShowLast();
-					int col = iTable.getCellCount(0) - 5;
+					int col = iTable.getCellCount(0) - 7;
 					CurriculumCookie.getInstance().setShowLast(show);
 					iTable.setColumnVisible(col, show);
 					if (CurriculumCookie.getInstance().isAllHidden()) {
 						CurriculumCookie.getInstance().setShowExpected(true);
-						iTable.setColumnVisible(iTable.getCellCount(0) - 3, true);
+						iTable.setColumnVisible(iTable.getCellCount(0) - 5, true);
 					}
 				}
 			});
@@ -1213,12 +1226,12 @@ public class CurriculaTable extends Composite {
 				@Override
 				public void execute() {
 					boolean show = !CurriculumCookie.getInstance().isShowProjected();
-					int col = iTable.getCellCount(0) - 4;
+					int col = iTable.getCellCount(0) - 6;
 					CurriculumCookie.getInstance().setShowProjected(show);
 					iTable.setColumnVisible(col, show);
 					if (CurriculumCookie.getInstance().isAllHidden()) {
 						CurriculumCookie.getInstance().setShowExpected(true);
-						iTable.setColumnVisible(iTable.getCellCount(0) - 3, true);
+						iTable.setColumnVisible(iTable.getCellCount(0) - 5, true);
 					}
 				}
 			});
@@ -1238,12 +1251,12 @@ public class CurriculaTable extends Composite {
 				@Override
 				public void execute() {
 					boolean show = !CurriculumCookie.getInstance().isShowExpected();
-					int col = iTable.getCellCount(0) - 3;
+					int col = iTable.getCellCount(0) - 5;
 					CurriculumCookie.getInstance().setShowExpected(show);
 					iTable.setColumnVisible(col, show);
 					if (CurriculumCookie.getInstance().isAllHidden()) {
 						CurriculumCookie.getInstance().setShowLast(true);
-						iTable.setColumnVisible(iTable.getCellCount(0) - 5, true);
+						iTable.setColumnVisible(iTable.getCellCount(0) - 7, true);
 					}
 				}
 			});
@@ -1263,12 +1276,12 @@ public class CurriculaTable extends Composite {
 				@Override
 				public void execute() {
 					boolean show = !CurriculumCookie.getInstance().isShowEnrolled();
-					int col = iTable.getCellCount(0) - 2;
+					int col = iTable.getCellCount(0) - 4;
 					CurriculumCookie.getInstance().setShowEnrolled(show);
 					iTable.setColumnVisible(col, show);
 					if (CurriculumCookie.getInstance().isAllHidden()) {
 						CurriculumCookie.getInstance().setShowExpected(true);
-						iTable.setColumnVisible(iTable.getCellCount(0) - 3, true);
+						iTable.setColumnVisible(iTable.getCellCount(0) - 5, true);
 					}
 				}
 			});
@@ -1288,17 +1301,69 @@ public class CurriculaTable extends Composite {
 				@Override
 				public void execute() {
 					boolean show = !CurriculumCookie.getInstance().isShowRequested();
-					int col = iTable.getCellCount(0) - 1;
+					int col = iTable.getCellCount(0) - 3;
 					CurriculumCookie.getInstance().setShowRequested(show);
 					iTable.setColumnVisible(col, show);
 					if (CurriculumCookie.getInstance().isAllHidden()) {
 						CurriculumCookie.getInstance().setShowExpected(true);
-						iTable.setColumnVisible(iTable.getCellCount(0) - 3, true);
+						iTable.setColumnVisible(iTable.getCellCount(0) - 5, true);
+					}
+				}
+			});
+			header.addOperation(new Operation() {
+				@Override
+				public String getName() {
+					return CurriculumCookie.getInstance().isShowSnapshotExpected() ? MESSAGES.opHide(MESSAGES.fieldSnapshotRequestedEnrollment()) : MESSAGES.opShow(MESSAGES.fieldSnapshotRequestedEnrollment());
+				}
+				@Override
+				public boolean hasSeparator() {
+					return false;
+				}
+				@Override
+				public boolean isApplicable() {
+//					return true;
+					return(iSessionHasSnapshotData);
+				}
+				@Override
+				public void execute() {
+					boolean show = !(iSessionHasSnapshotData && CurriculumCookie.getInstance().isShowSnapshotExpected());
+					int col = iTable.getCellCount(0) - 2;
+					CurriculumCookie.getInstance().setShowExpected(show);
+					iTable.setColumnVisible(col, show);
+					if (CurriculumCookie.getInstance().isAllHidden()) {
+						CurriculumCookie.getInstance().setShowExpected(true);
+						iTable.setColumnVisible(iTable.getCellCount(0) - 5, true);
+					}
+				}
+			});
+			
+			header.addOperation(new Operation() {
+				@Override
+				public String getName() {
+					return CurriculumCookie.getInstance().isShowSnapshotProjected() ? MESSAGES.opHide(MESSAGES.fieldSnapshotProjectedByRule()) : MESSAGES.opShow(MESSAGES.fieldSnapshotProjectedByRule());
+				}
+				@Override
+				public boolean hasSeparator() {
+					return false;
+				}
+				@Override
+				public boolean isApplicable() {
+//					return true;
+					return(iSessionHasSnapshotData);
+				}
+				@Override
+				public void execute() {
+					boolean show = (iSessionHasSnapshotData && !CurriculumCookie.getInstance().isShowSnapshotProjected());
+					int col = iTable.getCellCount(0) - 1;
+					CurriculumCookie.getInstance().setShowSnapshotProjected(show);
+					iTable.setColumnVisible(col, show);
+					if (CurriculumCookie.getInstance().isAllHidden()) {
+						CurriculumCookie.getInstance().setShowExpected(true);
+						iTable.setColumnVisible(iTable.getCellCount(0) - 5, true);
 					}
 				}
 			});
 		}
-		
 		switch (column) {
 		case PROJECTION:
 			header.addOperation(new Operation() {
@@ -1375,6 +1440,10 @@ public class CurriculaTable extends Composite {
 			return MESSAGES.colCurrentEnrollment();
 		case REGISTERED:
 			return MESSAGES.colCourseRequests();
+		case SNAPSHOT_REQUESTED:
+			return MESSAGES.colSnapshotRequestedEnrollment();
+		case SNAPSHOT_PROJECTION:
+			return MESSAGES.colSnapshotProjectedByRule();
 		default:
 			return null;
 		}
@@ -1388,6 +1457,8 @@ public class CurriculaTable extends Composite {
 		case PROJECTION:
 		case REQUESTED:
 		case ENROLLED:
+		case SNAPSHOT_REQUESTED:
+		case SNAPSHOT_PROJECTION:
 		case REGISTERED:
 			return HasHorizontalAlignment.ALIGN_RIGHT;
 		default:
@@ -1409,6 +1480,8 @@ public class CurriculaTable extends Composite {
 		case PROJECTION:
 		case REQUESTED:
 		case ENROLLED:
+		case SNAPSHOT_REQUESTED:
+		case SNAPSHOT_PROJECTION:
 		case REGISTERED:
 			return "90px";
 		default:
@@ -1428,6 +1501,10 @@ public class CurriculaTable extends Composite {
 			return MESSAGES.fieldCurrentEnrollment();
 		case REGISTERED:
 			return MESSAGES.fieldCourseRequests();
+		case SNAPSHOT_REQUESTED:
+			return MESSAGES.fieldSnapshotRequestedEnrollment();
+		case SNAPSHOT_PROJECTION:
+			return MESSAGES.fieldSnapshotProjectedByRule();
 		default:
 			return getColumnName(column);
 		}
@@ -1443,7 +1520,9 @@ public class CurriculaTable extends Composite {
 		PROJECTION,
 		REQUESTED,
 		ENROLLED,
-		REGISTERED
+		REGISTERED,
+		SNAPSHOT_REQUESTED,
+		SNAPSHOT_PROJECTION
 		;
 		
 		public Comparator<CurriculumInterface> getComparator() {
@@ -1531,6 +1610,26 @@ public class CurriculaTable extends Composite {
 					public int compare(CurriculumInterface a, CurriculumInterface b) {
 						Integer e = (a.getRequested() == null ? -1 : a.getRequested());
 						Integer f = (b.getRequested() == null ? -1 : b.getRequested());
+						int cmp = f.compareTo(e);
+						if (cmp != 0) return cmp;
+						return a.compareTo(b);
+					}
+				};
+			case SNAPSHOT_REQUESTED:
+				return new Comparator<CurriculumInterface>() {
+					public int compare(CurriculumInterface a, CurriculumInterface b) {
+						Integer e = (a.getSnapshotExpected() == null ? -1 : a.getSnapshotExpected());
+						Integer f = (b.getSnapshotExpected() == null ? -1 : b.getSnapshotExpected());
+						int cmp = f.compareTo(e);
+						if (cmp != 0) return cmp;
+						return a.compareTo(b);
+					}
+				};
+			case SNAPSHOT_PROJECTION:
+				return new Comparator<CurriculumInterface>() {
+					public int compare(CurriculumInterface a, CurriculumInterface b) {
+						Integer e = (a.getSnapshotProjection() == null ? -1 : a.getSnapshotProjection());
+						Integer f = (b.getSnapshotProjection() == null ? -1 : b.getSnapshotProjection());
 						int cmp = f.compareTo(e);
 						if (cmp != 0) return cmp;
 						return a.compareTo(b);

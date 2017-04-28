@@ -277,6 +277,7 @@
 		
 		<html:hidden property="nbrRooms"/>
 		<html:hidden property="enrollment"/>
+		<html:hidden property="snapshotLimit"/>
 		<html:hidden property="expectedCapacity"/>
 		<html:hidden property="maxExpectedCapacity"/>
 		<html:hidden property="roomRatio"/>
@@ -285,8 +286,7 @@
 			<TD>
 				<bean:write name="<%=frmName%>" property="enrollment" />
 			</TD>
-		</TR>
-		
+		</TR>		
 		<logic:notEqual name="<%=frmName%>" property="nbrRooms" value="0">
 			<% if (frm.getExpectedCapacity().intValue()==frm.getMaxExpectedCapacity().intValue()) { %>
 				<TR>
@@ -309,6 +309,16 @@
 					</TD>
 				</TR>
 			<% } %>
+		</logic:notEqual>
+		<logic:notEqual name="<%=frmName%>" property="nbrRooms" value="0">
+			<logic:notEmpty name="<%=frmName%>" property="snapshotLimit">
+				<TR>
+					<TD><loc:message name="propertySnapshotLimit"/></TD>
+					<TD>
+						<bean:write name="<%=frmName%>" property="snapshotLimit" />
+					</TD>
+				</TR>
+			</logic:notEmpty>
 		</logic:notEqual>
 
 		<TR>

@@ -70,6 +70,15 @@
 							<loc:message name="columnLimit"/>
 						</TD>
 					</TR>
+					<logic:notEmpty name="<%=frmName%>" property="snapshotLimit">
+						<TR>
+							<TD></TD>
+							<TD colspan="2">
+								<html:checkbox property="snapshotLimit" />
+								<loc:message name="columnSnapshotLimit"/>
+							</TD>
+						</TR>
+					</logic:notEmpty>
 					<TR>
 						<TD></TD>
 						<TD>

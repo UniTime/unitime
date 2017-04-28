@@ -111,6 +111,8 @@ public class CourseCurriculaTable extends Composite {
 		LAST (MESSAGES.shortLastLikeEnrollment()),
 		PROJ (MESSAGES.shortProjectedByRule()),
 		REQ (MESSAGES.shortCourseRequests()),
+		SSEXP (MESSAGES.shortSnapshotRequestedEnrollment()),
+		SSPROJ (MESSAGES.shortSnapshotProjectedByRule()),
 		EXP2ENRL (MESSAGES.shortRequestedEnrollment() + " / " + MESSAGES.shortCurrentEnrollment()),
 		EXP2LAST (MESSAGES.shortRequestedEnrollment() + " / " + MESSAGES.shortLastLikeEnrollment()),
 		EXP2PROJ (MESSAGES.shortRequestedEnrollment() + " / " + MESSAGES.shortProjectedByRule()),
@@ -120,6 +122,8 @@ public class CourseCurriculaTable extends Composite {
 		LAST2REQ (MESSAGES.shortLastLikeEnrollment() + " / " + MESSAGES.shortCourseRequests()),
 		PROJ2REQ (MESSAGES.shortProjectedByRule() + " / " + MESSAGES.shortCourseRequests()),
 		ENRL2REQ (MESSAGES.shortCurrentEnrollment() + " / " + MESSAGES.shortCourseRequests()),
+		EXP2SSEXP (MESSAGES.shortRequestedEnrollment() + " / " + MESSAGES.shortSnapshotRequestedEnrollment()),
+		PROJ2SSPROJ (MESSAGES.shortProjectedByRule() + " / " + MESSAGES.shortSnapshotProjectedByRule()),
 		;
 
 		private String iName;
@@ -542,10 +546,10 @@ public class CourseCurriculaTable extends Composite {
 			iUsed[i] = false;
 		int[][] total = new int[iClassifications.size()][];
 		for (int i = 0; i <total.length; i++)
-			total[i] = new int[] {0, 0, 0, 0, 0};
+			total[i] = new int[] {0, 0, 0, 0, 0, 0, 0};
 		int[][] totalThisArea = new int[iClassifications.size()][];
 		for (int i = 0; i <totalThisArea.length; i++)
-			totalThisArea[i] = new int[] {0, 0, 0, 0, 0};
+			totalThisArea[i] = new int[] {0, 0, 0, 0, 0, 0, 0};
 		
 		for (final CurriculumInterface curriculum: curricula) {
 			for (CourseInterface course: curriculum.getCourses()) {
@@ -563,23 +567,27 @@ public class CourseCurriculaTable extends Composite {
 				iCurricula.getFlexCellFormatter().setColSpan(row, col, 3);
 				//iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_CENTER);
 				iCurricula.setWidget(row, col++, new HTML("<i>" + lastArea.get(0).getAcademicArea().getAbbv() + " - " + lastArea.get(0).getAcademicArea().getName() + " (" + lastArea.size() + ")</i>", false));
-				int tExp = 0, tLast = 0, tEnrl = 0, tProj = 0, tReq = 0;
+				int tExp = 0, tLast = 0, tEnrl = 0, tProj = 0, tReq = 0, tSsExp = 0, tSsProj = 0;
 				for (int clasfIdx = 0; clasfIdx < iClassifications.size(); clasfIdx++) {
 					int exp = totalThisArea[clasfIdx][0];
 					int last = totalThisArea[clasfIdx][1];
 					int enrl = totalThisArea[clasfIdx][2];
 					int proj = totalThisArea[clasfIdx][3];
 					int req = totalThisArea[clasfIdx][4];
+					int ssExp = totalThisArea[clasfIdx][5];
+					int ssProj = totalThisArea[clasfIdx][6];
 					tExp += exp;
 					tLast += last;
 					tEnrl += enrl;
 					tProj += proj;
 					tReq += req;
-					iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last, proj, req));
+					tSsExp += ssExp;
+					tSsProj += ssProj;
+					iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last, proj, req, ssExp, ssProj));
 					iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
 					col++;
 				}
-				iCurricula.setWidget(row, col, new MyLabel(tExp, tEnrl, tLast, tProj, tReq));
+				iCurricula.setWidget(row, col, new MyLabel(tExp, tEnrl, tLast, tProj, tReq, tSsExp, tSsProj));
 				iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
 				
 				final int finalRow = row;
@@ -606,7 +614,7 @@ public class CourseCurriculaTable extends Composite {
 				iRowAreaId.add(lastAreaId);
 				lastArea.clear();
 				for (int i = 0; i <totalThisArea.length; i++)
-					totalThisArea[i] = new int[] {0, 0, 0, 0, 0};
+					totalThisArea[i] = new int[] {0, 0, 0, 0, 0, 0, 0};
 				lastArea.add(curriculum);
 			}
 			col = 0; row++;
@@ -614,13 +622,13 @@ public class CourseCurriculaTable extends Composite {
 			iCurricula.setText(row, col++, curriculum.getAcademicArea().getAbbv());
 			iCurricula.setText(row, col++, curriculum.getMajorCodes(", "));
 			int clasfIdx = 0;
-			int tExp = 0, tLast = 0, tEnrl = 0, tProj = 0, tReq = 0;
+			int tExp = 0, tLast = 0, tEnrl = 0, tProj = 0, tReq = 0, tSsExp = 0, tSsProj = 0;
 			for (AcademicClassificationInterface clasf: iClassifications) {
 				CurriculumClassificationInterface f = null;
 				for (CurriculumClassificationInterface x: curriculum.getClassifications()) {
 					if (x.getAcademicClassification().getId().equals(clasf.getId())) { f = x; break; }
 				}
-				int exp = 0, last = 0, enrl = 0, proj = 0, req = 0;
+				int exp = 0, last = 0, enrl = 0, proj = 0, req = 0, ssExp = 0, ssProj = 0;
 				for (CourseInterface course: curriculum.getCourses()) {
 					CurriculumCourseInterface cx = course.getCurriculumCourse(clasfIdx);
 					if (cx != null) {
@@ -630,6 +638,8 @@ public class CourseCurriculaTable extends Composite {
 						enrl += (cx.getEnrollment() == null ? 0 : cx.getEnrollment());
 						proj += (cx.getProjection() == null ? 0 : cx.getProjection());
 						req += (cx.getRequested() == null ? 0 : cx.getRequested());
+						ssExp += (f == null || f.getSnapshotExpected() == null || !cx.isSessionHasSnapshotData() ? 0 : Math.round(f.getSnapshotExpected() * cx.getDisplayedShare()));
+						ssProj += (!cx.isSessionHasSnapshotData() || cx.getSnapshotProjection() == null ? 0 : cx.getSnapshotProjection());
 					}
 				}
 				total[clasfIdx][0] += exp;
@@ -637,22 +647,28 @@ public class CourseCurriculaTable extends Composite {
 				total[clasfIdx][2] += enrl;
 				total[clasfIdx][3] += proj;
 				total[clasfIdx][4] += req;
+				total[clasfIdx][5] += ssExp;
+				total[clasfIdx][6] += ssProj;
 				totalThisArea[clasfIdx][0] += exp;
 				totalThisArea[clasfIdx][1] += last;
 				totalThisArea[clasfIdx][2] += enrl;
 				totalThisArea[clasfIdx][3] += proj;
 				totalThisArea[clasfIdx][4] += req;
+				totalThisArea[clasfIdx][5] += ssExp;
+				totalThisArea[clasfIdx][6] += ssProj;
 				tExp += exp;
 				tLast += last;
 				tEnrl += enrl;
 				tProj += proj;
 				tReq += req;
-				iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last, proj, req));
+				tSsExp += ssExp;
+				tSsProj += ssProj;
+				iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last, proj, req, ssExp, ssProj));
 				iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
 				col++;
 				clasfIdx++;
 			}
-			iCurricula.setWidget(row, col, new MyLabel(tExp, tEnrl, tLast, tProj, tReq));
+			iCurricula.setWidget(row, col, new MyLabel(tExp, tEnrl, tLast, tProj, tReq, tSsExp, tSsProj));
 			iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
 			if (iEditable) {
 				iRowClicks.add(new ChainedCommand() {
@@ -711,23 +727,27 @@ public class CourseCurriculaTable extends Composite {
 			iCurricula.getFlexCellFormatter().setColSpan(row, col, 3);
 			//iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_CENTER);
 			iCurricula.setWidget(row, col++, new HTML("<i>" + lastArea.get(0).getAcademicArea().getAbbv() + " - " + lastArea.get(0).getAcademicArea().getName() + " (" + lastArea.size() + ")</i>", false));
-			int tExp = 0, tLast = 0, tEnrl = 0, tProj = 0, tReq = 0;
+			int tExp = 0, tLast = 0, tEnrl = 0, tProj = 0, tReq = 0, tSsExp = 0, tSsProj = 0;
 			for (int clasfIdx = 0; clasfIdx < iClassifications.size(); clasfIdx++) {
 				int exp = totalThisArea[clasfIdx][0];
 				int last = totalThisArea[clasfIdx][1];
 				int enrl = totalThisArea[clasfIdx][2];
 				int proj = totalThisArea[clasfIdx][3];
 				int req = totalThisArea[clasfIdx][4];
+				int ssExp = totalThisArea[clasfIdx][5];
+				int ssProj = totalThisArea[clasfIdx][6];
 				tExp += exp;
 				tLast += last;
 				tEnrl += enrl;
 				tProj += proj;
 				tReq += req;
-				iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last, proj, req));
+				tSsExp += ssExp;
+				tSsProj += ssProj;
+				iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last, proj, req, ssExp, ssProj));
 				iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
 				col++;
 			}
-			iCurricula.setWidget(row, col, new MyLabel(tExp, tEnrl, tLast, tProj, tReq));
+			iCurricula.setWidget(row, col, new MyLabel(tExp, tEnrl, tLast, tProj, tReq, tSsExp, tSsProj));
 			iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
 			final int finalRow = row;
 			final int lastAreas = lastArea.size();
@@ -756,7 +776,7 @@ public class CourseCurriculaTable extends Composite {
 		if (!otherCurricula.isEmpty()) {
 			int[][] totalOther = new int[iClassifications.size()][];
 			for (int i = 0; i <totalOther.length; i++)
-				totalOther[i] = new int[] {0, 0, 0, 0, 0};
+				totalOther[i] = new int[] {0, 0, 0, 0, 0, 0, 0};
 			for (CurriculumInterface other: otherCurricula) {
 				col = 0; row++;
 				iCurricula.getFlexCellFormatter().setColSpan(row, col, 3);
@@ -764,9 +784,9 @@ public class CourseCurriculaTable extends Composite {
 				iCurricula.setHTML(row, col, "<i>" + other.getAbbv() + " - " + other.getName() + "</i>");
 				iCurricula.getCellFormatter().setStyleName(row, col, "unitime-OtherRow");
 				col++;
-				int tExp = 0, tLast = 0, tEnrl = 0, tProj = 0, tReq = 0;
+				int tExp = 0, tLast = 0, tEnrl = 0, tProj = 0, tReq = 0, tSsExp = 0, tSsProj = 0;
 				for (int clasfIdx = 0; clasfIdx < iClassifications.size(); clasfIdx++) {
-					int exp = 0, last = 0, enrl = 0, proj = 0, req = 0;
+					int exp = 0, last = 0, enrl = 0, proj = 0, req = 0, ssExp = 0, ssProj = 0;
 					for (CourseInterface course: other.getCourses()) {
 						CurriculumCourseInterface cx = course.getCurriculumCourse(clasfIdx);
 						if (cx != null) {
@@ -776,6 +796,8 @@ public class CourseCurriculaTable extends Composite {
 							enrl += (cx.getEnrollment() == null ? 0 : cx.getEnrollment());
 							proj += (cx.getProjection() == null ? 0 : cx.getProjection());
 							req += (cx.getRequested() == null ? 0 : cx.getRequested());
+							ssExp += 0;
+							ssProj += (!cx.isSessionHasSnapshotData() || cx.getSnapshotProjection() == null ? 0 : cx.getSnapshotProjection());
 						}
 					}
 					total[clasfIdx][0] += exp;
@@ -783,22 +805,28 @@ public class CourseCurriculaTable extends Composite {
 					total[clasfIdx][2] += enrl;
 					total[clasfIdx][3] += proj;
 					total[clasfIdx][4] += req;
+					total[clasfIdx][5] += ssExp;
+					total[clasfIdx][6] += ssProj;
 					totalOther[clasfIdx][0] += exp;
 					totalOther[clasfIdx][1] += last;
 					totalOther[clasfIdx][2] += enrl;
 					totalOther[clasfIdx][3] += proj;
 					totalOther[clasfIdx][4] += req;
+					totalOther[clasfIdx][5] += ssExp;
+					totalOther[clasfIdx][6] += ssProj;
 					tExp += exp;
 					tLast += last;
 					tEnrl += enrl;
 					tProj += proj;
 					tReq += req;
-					iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last, proj, req));
+					tSsExp += ssExp;
+					tSsProj += ssProj;
+					iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last, proj, req, ssExp, ssProj));
 					iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
 					iCurricula.getCellFormatter().setStyleName(row, col, "unitime-OtherRow");
 					col++;
 				}
-				iCurricula.setWidget(row, col, new MyLabel(tExp, tEnrl, tLast, tProj, tReq));
+				iCurricula.setWidget(row, col, new MyLabel(tExp, tEnrl, tLast, tProj, tReq, tSsExp, tSsProj));
 				iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
 				iCurricula.getCellFormatter().setStyleName(row, col, "unitime-OtherRow");
 				iRowTypes.add(sRowTypeOtherArea);
@@ -834,24 +862,28 @@ public class CourseCurriculaTable extends Composite {
 			iCurricula.setWidget(row, col, new HTML("<i>" + MESSAGES.colOtherStudents() + "</i>", false));
 			iCurricula.getCellFormatter().setStyleName(row, col, "unitime-OtherRow");
 			col++;
-			int tExp = 0, tLast = 0, tEnrl = 0, tProj = 0, tReq = 0;
+			int tExp = 0, tLast = 0, tEnrl = 0, tProj = 0, tReq = 0, tSsExp = 0, tSsProj = 0;
 			for (int clasfIdx = 0; clasfIdx < iClassifications.size(); clasfIdx++) {
 				int exp = totalOther[clasfIdx][0];
 				int last = totalOther[clasfIdx][1];
 				int enrl = totalOther[clasfIdx][2];
 				int proj = totalOther[clasfIdx][3];
 				int req = totalOther[clasfIdx][4];
+				int ssExp = totalOther[clasfIdx][5];
+				int ssProj = totalOther[clasfIdx][6];
 				tExp += exp;
 				tLast += last;
 				tEnrl += enrl;
 				tProj += proj;
 				tReq += req;
-				iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last, proj, req));
+				tSsExp += ssExp;
+				tSsProj += ssProj;
+				iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last, proj, req, ssExp, ssProj));
 				iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
 				iCurricula.getCellFormatter().setStyleName(row, col, "unitime-OtherRow");
 				col++;
 			}
-			iCurricula.setWidget(row, col, new MyLabel(tExp, tEnrl, tLast, tProj, tReq));
+			iCurricula.setWidget(row, col, new MyLabel(tExp, tEnrl, tLast, tProj, tReq, tSsExp, tSsProj));
 			iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
 			iCurricula.getCellFormatter().setStyleName(row, col, "unitime-OtherRow");
 			final int finalRow = row;
@@ -915,16 +947,18 @@ public class CourseCurriculaTable extends Composite {
 			int enrl = total[clasfIdx][2];
 			int proj = total[clasfIdx][3];
 			int req = total[clasfIdx][4];
-			iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last, proj, req));
+			int ssExp = total[clasfIdx][5];
+			int ssProj = total[clasfIdx][6];
+			iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last, proj, req, ssExp, ssProj));
 			iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
 			iCurricula.getCellFormatter().setStyleName(row, col, "unitime-TotalRow");
 			col++;
 		}
-		int[] tx = new int[] {0, 0, 0, 0, 0};
+		int[] tx = new int[] {0, 0, 0, 0, 0, 0, 0};
 		for (int i = 0; i < total.length; i ++)
-			for (int j = 0; j < 5; j++)
+			for (int j = 0; j < 7; j++)
 				tx[j] += total[i][j];
-		iCurricula.setWidget(row, col, new MyLabel(tx[0], tx[2], tx[1], tx[3], tx[4]));
+		iCurricula.setWidget(row, col, new MyLabel(tx[0], tx[2], tx[1], tx[3], tx[4], tx[5], tx[6]));
 		iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
 		iCurricula.getCellFormatter().setStyleName(row, col, "unitime-TotalRow");
 		
@@ -1141,15 +1175,19 @@ public class CourseCurriculaTable extends Composite {
 			return label.getLastLike() > 0 && label.getRequested() > 0;
 		case PROJ2REQ:
 			return label.getProjected() > 0 && label.getRequested() > 0;
+		case EXP2SSEXP:
+			return label.getExpected() > 0 && label.getSnapshotExpected() > 0;
+		case PROJ2SSPROJ:
+			return label.getProjected() > 0 && label.getSnapshotProjected() > 0;
 		default:
 			return false;
 		}
 	}
 	
 	public class MyLabel extends HTML {
-		private int iExp, iLast, iEnrl, iProj, iReq;
+		private int iExp, iLast, iEnrl, iProj, iReq, iSsExp, iSsProj;
 		
-		public MyLabel(int exp, int enrl, int last, int proj, int req) {
+		public MyLabel(int exp, int enrl, int last, int proj, int req, int ssExp, int ssProj) {
 			//super(exp > 0 || enrl > 0 || last > 0 ? ((exp > 0 ? exp : "-") + " / " + (enrl > 0 ? enrl : "-") + " / " + (last > 0 ? last : "-")) : "", false);
 			super("&nbsp;", false);
 			iExp = exp;
@@ -1157,6 +1195,8 @@ public class CourseCurriculaTable extends Composite {
 			iEnrl = enrl;
 			iProj = proj;
 			iReq = req;
+			iSsExp = ssExp;
+			iSsProj = ssProj;
 			refresh();
 		}
 		
@@ -1165,9 +1205,15 @@ public class CourseCurriculaTable extends Composite {
 		public int getEnrolled() { return iEnrl; }
 		public int getProjected() { return iProj; }
 		public int getRequested() { return iReq; }
+		public int getSnapshotExpected() { return iSsExp; }
+		public int getSnapshotProjected() { return iSsProj; }
 		
 		public void showExpected() {
 			setHTML(iExp > 0 ? String.valueOf(iExp) : "&nbsp;");
+		}
+		
+		public void showSnapshotExpected() {
+			setHTML(iSsExp > 0 ? String.valueOf(iSsExp) : "&nbsp;");
 		}
 		
 		public void showEnrolled() {
@@ -1180,6 +1226,10 @@ public class CourseCurriculaTable extends Composite {
 		
 		public void showProjected() {
 			setHTML(iProj > 0 ? String.valueOf(iProj) : "&nbsp;");
+		}
+		
+		public void showSnapshotProjected() {
+			setHTML(iSsProj > 0 ? String.valueOf(iSsProj) : "&nbsp;");
 		}
 		
 		public void showRequested() {
@@ -1196,6 +1246,13 @@ public class CourseCurriculaTable extends Composite {
 		public void showExpectedLastLike() {
 			if (iExp > 0 || iLast > 0)
 				setHTML((iExp > 0 ? String.valueOf(iExp) : "-") + " / " + (iLast > 0 ? String.valueOf(iLast) : "-"));
+			else
+				setHTML("&nbsp;");
+		}
+
+		public void showExpectedSnapshotExpected() {
+			if (iExp > 0 || iSsExp > 0)
+				setHTML((iExp > 0 ? String.valueOf(iExp) : "-") + " / " + (iSsExp > 0 ? String.valueOf(iSsExp) : "-"));
 			else
 				setHTML("&nbsp;");
 		}
@@ -1217,6 +1274,13 @@ public class CourseCurriculaTable extends Composite {
 		public void showProjectedEnrolled() {
 			if (iProj > 0 || iEnrl > 0)
 				setHTML((iProj > 0 ? String.valueOf(iProj) : "-") + " / " + (iEnrl > 0 ? String.valueOf(iEnrl) : "-"));
+			else
+				setHTML("&nbsp;");
+		}
+		
+		public void showProjectedSnapshotProjected() {
+			if (iProj > 0 || iSsProj > 0)
+				setHTML((iProj > 0 ? String.valueOf(iProj) : "-") + " / " + (iSsProj > 0 ? String.valueOf(iSsProj) : "-"));
 			else
 				setHTML("&nbsp;");
 		}
@@ -1293,7 +1357,14 @@ public class CourseCurriculaTable extends Composite {
 			case PROJ2REQ:
 				showProjectedRequested();
 				break;
+			case EXP2SSEXP:
+				showExpectedSnapshotExpected();
+				break;
+			case PROJ2SSPROJ:
+				showProjectedSnapshotProjected();
+				break;
 			}
+
 		}
 		
 	}

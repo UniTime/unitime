@@ -554,6 +554,10 @@ public enum Right {
 	PointInTimeData,
 	PointInTimeDataEdit,
     PointInTimeDataReports(Session.class),
+    
+    /** Limit and Projection Snapshot Data*/
+    LimitAndProjectionSnapshot,
+    LimitAndProjectionSnapshotSave,
 
 	/** Administration: Defaults */
 	

@@ -95,6 +95,8 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 		PROJ (MESSAGES.abbvProjectedByRule(), MESSAGES.fieldProjectedByRule()),
 		ENRL (MESSAGES.abbvCurrentEnrollment(), MESSAGES.fieldCurrentEnrollment()),
 		REQ (MESSAGES.abbvCourseRequests(), MESSAGES.fieldCourseRequests()),
+		SSEXP (MESSAGES.abbvSnapshotRequestedEnrollment(), MESSAGES.fieldSnapshotRequestedEnrollment()),
+		SSPROJ (MESSAGES.abbvSnapshotProjectedByRule(), MESSAGES.fieldSnapshotProjectedByRule()),
 		NONE ("&nbsp;", "NONE");
 
 		private String iAbbv, iName;
@@ -167,7 +169,8 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 							c == null || c[col] == null ? null : c[col].getEnrollment(), 
 							c == null || c[col] == null ? null : c[col].getLastLike(),
 							c == null || c[col] == null ? null : c[col].getProjection(),
-							c == null || c[col] == null ? null : c[col].getRequested());
+							c == null || c[col] == null ? null : c[col].getRequested(),
+							c == null || c[col] == null ? null : (!c[col].isSessionHasSnapshotData() ? null : c[col].getSnapshotProjection()));
 				}
 				Element td = ((Widget)event.getSource()).getElement();
 				while (td != null && !td.getPropertyString("tagName").equalsIgnoreCase("td")) {
@@ -994,7 +997,13 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 					if (cci != null && cci.hasTemplates() && cci.getDefaultShare() != null)
 						ex.setTitle(MESSAGES.hintDefaultPercentShare(NF.format(100.0 * cci.getDefaultShare()) + "%", ToolBox.toString(cci.getTemplates())));
 					line.add(ex);
-					EnrollmentLabel note = new EnrollmentLabel(col, cci == null ? null : cci.getEnrollment(), cci == null ? null : cci.getLastLike(), cci == null ? null : cci.getProjection(), cci == null ? null : cci.getRequested());
+					EnrollmentLabel note = new EnrollmentLabel(col, 
+							cci == null ? null : cci.getEnrollment(),
+							cci == null ? null : cci.getLastLike(), 
+							cci == null ? null : cci.getProjection(), 
+							cci == null ? null : cci.getRequested(), 
+							cci == null ? null : !cci.isSessionHasSnapshotData() ? null : cci.getSnapshotShare() == null ? cci.getDefaultSnapshotShare() : cci.getSnapshotShare(),
+							cci == null ? null : !cci.isSessionHasSnapshotData() ? null : cci.getSnapshotProjection());
 					line.add(note);
 				}
 				int row = iTable.addRow(course.getCourseName(), line);
@@ -1138,7 +1147,7 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 			ShareTextBox ex = new ShareTextBox(col, null, null);
 			if (!iEditable) ex.setReadOnly(true);
 			line.add(ex);
-			EnrollmentLabel note = new EnrollmentLabel(col, null, null, null, null);
+			EnrollmentLabel note = new EnrollmentLabel(col, null, null, null, null, null, null);
 			line.add(note);
 		}
 		
@@ -1196,7 +1205,7 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 		return -1;
 	}
 	
-	public boolean setEnrollmentAndLastLike(String course, int clasf, Integer enrollment, Integer lastLike, Integer projection, Integer requested) {
+	public boolean setEnrollmentAndLastLike(String course, int clasf, Integer enrollment, Integer lastLike, Integer projection, Integer requested, Integer snapshotProjection) {
 		boolean changed = false;
 		for (int row = 1; row < iTable.getRowCount(); row++) {
 			String c = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getText();
@@ -1206,6 +1215,7 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 			note.iLastLike = lastLike;
 			note.iProjection = projection;
 			note.iRequested = requested;
+			note.iSnapshotProjection = snapshotProjection;
 			note.update();
 			changed = true;
 		}
@@ -1236,6 +1246,7 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 				note.iLastLike = (cc == null || cc[col] == null ? null : cc[col].getLastLike());
 				note.iProjection = (cc == null || cc[col] == null ? null : cc[col].getProjection());
 				note.iRequested = (cc == null || cc[col] == null ? null : cc[col].getRequested());
+				note.iSnapshotProjection = (cc == null || cc[col] == null ? null : (!cc[col].isSessionHasSnapshotData() ? null : cc[col].getSnapshotProjection()));
 				note.update();
 			}
 		}
@@ -1271,6 +1282,7 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 					if (a[i].getLastLike() > 0) return i;
 					if (a[i].getProjection() > 0) return i;
 					if (a[i].getRequested() > 0) return i;
+					if (a[i].getSnapshotProjection() > 0) return i;
 				}
 				return a.length;
 			}
@@ -1337,6 +1349,7 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 					note.iLastLike = (cc == null || cc[col] == null ? null : cc[col].getLastLike());
 					note.iProjection = (cc == null || cc[col] == null ? null : cc[col].getProjection());
 					note.iRequested = (cc == null || cc[col] == null ? null : cc[col].getRequested());
+					note.iSnapshotProjection = (cc == null || cc[col] == null ? null : (!cc[col].isSessionHasSnapshotData() ? null :cc[col].getSnapshotProjection()));
 					note.update();
 				}
 				if (iVisibleCourses!=null) {
@@ -1390,9 +1403,10 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 	
 	public class EnrollmentLabel extends Label implements HasCellAlignment {
 		private int iColumn;
-		private Integer iEnrollment, iLastLike, iProjection, iRequested;
+		private Integer iEnrollment, iLastLike, iProjection, iRequested, iSnapshotProjection;
+		private Float iSnapshotExpected;
 		
-		public EnrollmentLabel(int column, Integer enrollment, Integer lastLike, Integer projection, Integer requested) {
+		public EnrollmentLabel(int column, Integer enrollment, Integer lastLike, Integer projection, Integer requested, Float snapshotExpected, Integer snapshotProjection) {
 			super();
 			setStyleName("unitime-Label");
 			iColumn = column;
@@ -1400,6 +1414,8 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 			iLastLike = lastLike;
 			iProjection = projection;
 			iRequested = requested;
+			iSnapshotExpected = snapshotExpected;
+			iSnapshotProjection = snapshotProjection;
 			update();
 		}
 		
@@ -1448,6 +1464,26 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 					setText(iRequested.toString());
 				}
 				break;
+			case SSEXP: // Snapshot Expected
+				if (iSnapshotExpected == null || iSnapshotExpected == 0) {
+					setText("");
+				} else if (CurriculumCookie.getInstance().getCurriculaCoursesPercent()) {
+					Integer total = iClassifications.getSnapshotExpected(iColumn);
+					setText(total == null ? MESSAGES.notApplicable() : NF.format(100.0 * iSnapshotExpected / total) + "%");
+				} else {
+					setText(iSnapshotExpected.toString());
+				}
+				break;
+			case SSPROJ: // Snapshot Projection
+				if (iSnapshotProjection == null || iSnapshotProjection == 0) {
+					setText("");
+				} else if (CurriculumCookie.getInstance().getCurriculaCoursesPercent()) {
+					Integer total = iClassifications.getSnapshotProjection(iColumn);
+					setText(total == null ? MESSAGES.notApplicable() : NF.format(100.0 * iSnapshotProjection / total) + "%");
+				} else {
+					setText(iSnapshotProjection.toString());
+				}
+				break;
 			}
 		}
 		
@@ -1458,6 +1494,10 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 		public Integer getProjection() { return (iProjection == null || iProjection == 0 ? null : iProjection); }
 		
 		public Integer getRequested() { return (iRequested == null || iRequested == 0 ? null : iRequested); }
+
+		public Float getSnapshotExpected() { return (iSnapshotExpected == null || iSnapshotExpected == 0 ? null : iSnapshotExpected); }
+
+		public Integer getSnapshotProjection() { return (iSnapshotProjection == null || iSnapshotProjection == 0 ? null : iSnapshotProjection); }
 
 		public Float getLastLikePercent() { 
 			if (iLastLike == null || iLastLike == 0) return null;
@@ -1485,6 +1525,20 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 			Integer total = iClassifications.getRequested(iColumn);
 			if (total == null) return null;
 			return ((float)iRequested) / total;
+		}
+
+		public Float getSnapshotExpectedPercent() { 
+			if (iSnapshotExpected == null || iSnapshotExpected == 0) return null;
+			Integer total = iClassifications.getSnapshotExpected(iColumn);
+			if (total == null) return null;
+			return ((float)iSnapshotExpected) / total;
+		}
+
+		public Float getSnapshotProjectionPercent() { 
+			if (iSnapshotProjection == null || iSnapshotProjection == 0) return null;
+			Integer total = iClassifications.getSnapshotProjection(iColumn);
+			if (total == null) return null;
+			return ((float)iSnapshotProjection) / total;
 		}
 
 		@Override
@@ -1815,13 +1869,18 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 		private boolean iCanShow = false;
 		
 		private int count(CurriculumStudentsInterface c, Set<Long> students) {
-			if (CurriculumCookie.getInstance().getCurriculaCoursesMode() != Mode.PROJ || c == null) return students.size();
-			return c.countProjectedStudents(students);
+			if ((CurriculumCookie.getInstance().getCurriculaCoursesMode() != Mode.PROJ && CurriculumCookie.getInstance().getCurriculaCoursesMode() != Mode.SSPROJ) || c == null) return students.size();
+			if (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.PROJ) {
+				return c.countProjectedStudents(students);
+			} else {
+				return c.countSnapshotProjectedStudents(students);
+			}
+
 		}
 		
 		private StudentsTable(int currentRow) {
 			super();
-			
+			if (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.SSEXP) {	return;	}
 			String course = ((CurriculaCourseSelectionBox)iTable.getWidget(currentRow, 1)).getText();
 			
 			iP.add(new Label(MESSAGES.hintComparingStudentsWithOtherCourses(course + " " + CurriculumCookie.getInstance().getCurriculaCoursesMode().getName().toLowerCase().replace(" enrollment", ""))));

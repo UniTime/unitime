@@ -100,6 +100,7 @@ public class ClassEditForm extends PreferencesForm {
     private Integer minRoomLimit;
     private Boolean unlimitedEnroll;
     private Integer enrollment;
+    private Integer snapshotLimit;
     private Boolean isCrosslisted;
     private String accommodation;
     private Boolean isCancelled;
@@ -276,6 +277,7 @@ public class ClassEditForm extends PreferencesForm {
         instrPctShare= DynamicList.getInstance(new ArrayList(), factoryInstructors);
         assignments = null;
         enrollment = null;
+        snapshotLimit = null;
         accommodation = null;
         instrResponsibility = DynamicList.getInstance(new ArrayList(), factoryInstructors);
 
@@ -725,6 +727,14 @@ public class ClassEditForm extends PreferencesForm {
 
 	public void setEnrollment(Integer enrollment) {
 		this.enrollment = enrollment;
+	}
+	
+    public Integer getSnapshotLimit() {
+		return snapshotLimit;
+	}
+
+	public void setSnapshotLimit(Integer snapshotLimit) {
+		this.snapshotLimit = snapshotLimit;
 	}
 	
     public String getAccommodation() { return accommodation; }

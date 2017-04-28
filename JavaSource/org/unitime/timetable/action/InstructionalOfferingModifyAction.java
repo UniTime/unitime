@@ -330,6 +330,7 @@ public class InstructionalOfferingModifyAction extends Action {
 	    		cls = (Class_) it.next();
 	    		if (first){
 	    			frm.setDisplayEnrollment(new Boolean(StudentClassEnrollment.sessionHasEnrollments(sessionContext.getUser().getCurrentAcademicSessionId())));
+	    			frm.setDisplaySnapshotLimit(new Boolean(cls.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getSnapshotLimitDate() != null));
 	    			first = false;
 	    		}
 	    		if (!isReadOnly.booleanValue()){

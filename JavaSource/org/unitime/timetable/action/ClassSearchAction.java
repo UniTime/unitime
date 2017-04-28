@@ -139,6 +139,7 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 	    	sessionContext.getUser().setProperty("ClassList.demand",classListForm.getDemand() ? "1" : "0");
 	    	sessionContext.getUser().setProperty("ClassList.demandIsVisible",classListForm.getDemandIsVisible() ? "1" : "0");
 	    	sessionContext.getUser().setProperty("ClassList.limit",classListForm.getLimit() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.snapshotLimit",classListForm.getSnapshotLimit() ? "1" : "0");
 	    	sessionContext.getUser().setProperty("ClassList.roomLimit",classListForm.getRoomLimit() ? "1" : "0");
 	    	sessionContext.getUser().setProperty("ClassList.manager",classListForm.getManager() ? "1" : "0");
 		   	sessionContext.getUser().setProperty("ClassList.datePattern",classListForm.getDatePattern() ? "1" : "0");
@@ -249,6 +250,7 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 	public static void setupClassListSpecificFormFilters(SessionContext sessionContext, ClassListForm form){
 		form.setDivSec("1".equals(sessionContext.getUser().getProperty("ClassList.divSec", "0")));	
 		form.setLimit("1".equals(sessionContext.getUser().getProperty("ClassList.limit", "1")));
+		form.setSnapshotLimit("1".equals(sessionContext.getUser().getProperty("ClassList.snapshotLimit", "1")));
 		form.setRoomLimit("1".equals(sessionContext.getUser().getProperty("ClassList.roomLimit", "1")));
 		form.setManager("1".equals(sessionContext.getUser().getProperty("ClassList.manager", "1")));	
 		form.setDatePattern("1".equals(sessionContext.getUser().getProperty("ClassList.datePattern", "1")));

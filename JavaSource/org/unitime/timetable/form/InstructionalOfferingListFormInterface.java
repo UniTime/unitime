@@ -28,6 +28,7 @@ public interface InstructionalOfferingListFormInterface {
 	public Boolean getProjectedDemand();
 	public Boolean getMinPerWk();
 	public Boolean getLimit();
+	public Boolean getSnapshotLimit();
 	public Boolean getRoomLimit();
 	public Boolean getManager();
 	public Boolean getDatePattern();

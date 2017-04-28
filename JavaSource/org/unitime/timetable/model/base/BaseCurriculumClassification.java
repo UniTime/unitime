@@ -20,6 +20,7 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -40,6 +41,8 @@ public abstract class BaseCurriculumClassification implements Serializable {
 	private Integer iNrStudents;
 	private Integer iOrd;
 	private String iStudents;
+	private Integer iSnapshotNrStudents;
+	private Date iSnapshotNrStudentsDate;
 
 	private Curriculum iCurriculum;
 	private AcademicClassification iAcademicClassification;
@@ -50,6 +53,8 @@ public abstract class BaseCurriculumClassification implements Serializable {
 	public static String PROP_NR_STUDENTS = "nrStudents";
 	public static String PROP_ORD = "ord";
 	public static String PROP_STUDENTS = "students";
+	public static String PROP_SNAPSHOT_NR_STUDENTS = "snapshotNrStudents";
+	public static String PROP_SNAPSHOT_NR_STU_DATE = "snapshotNrStudentsDate";
 
 	public BaseCurriculumClassification() {
 		initialize();
@@ -76,6 +81,12 @@ public abstract class BaseCurriculumClassification implements Serializable {
 
 	public String getStudents() { return iStudents; }
 	public void setStudents(String students) { iStudents = students; }
+
+	public Integer getSnapshotNrStudents() { return iSnapshotNrStudents; }
+	public void setSnapshotNrStudents(Integer snapshotNrStudents) { iSnapshotNrStudents = snapshotNrStudents; }
+
+	public Date getSnapshotNrStudentsDate() { return iSnapshotNrStudentsDate; }
+	public void setSnapshotNrStudentsDate(Date snapshotNrStudentsDate) { iSnapshotNrStudentsDate = snapshotNrStudentsDate; }
 
 	public Curriculum getCurriculum() { return iCurriculum; }
 	public void setCurriculum(Curriculum curriculum) { iCurriculum = curriculum; }
@@ -112,6 +123,8 @@ public abstract class BaseCurriculumClassification implements Serializable {
 			"\n	Name: " + getName() +
 			"\n	NrStudents: " + getNrStudents() +
 			"\n	Ord: " + getOrd() +
+			"\n	SnapshotNrStudents: " + getSnapshotNrStudents() +
+			"\n	SnapshotNrStudentsDate: " + getSnapshotNrStudentsDate() +
 			"\n	Students: " + getStudents() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";

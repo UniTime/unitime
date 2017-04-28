@@ -136,6 +136,7 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 		    	sessionContext.getUser().setProperty("InstructionalOfferingList.projectedDemand", frm.getProjectedDemand() ? "1" : "0");
 		    	sessionContext.getUser().setProperty("InstructionalOfferingList.minPerWk", frm.getMinPerWk() ? "1" : "0");
 		    	sessionContext.getUser().setProperty("InstructionalOfferingList.limit", frm.getLimit() ? "1" : "0");
+		    	sessionContext.getUser().setProperty("InstructionalOfferingList.snapshotLimit", frm.getSnapshotLimit() ? "1" : "0");
 		    	sessionContext.getUser().setProperty("InstructionalOfferingList.roomLimit", frm.getRoomLimit() ? "1" : "0");
 		    	sessionContext.getUser().setProperty("InstructionalOfferingList.manager", frm.getManager() ? "1" : "0");
 			   	sessionContext.getUser().setProperty("InstructionalOfferingList.datePattern", frm.getDatePattern() ? "1" : "0");
@@ -265,6 +266,7 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 		frm.setProjectedDemand("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.projectedDemand", "1")));	
 		frm.setMinPerWk("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.minPerWk", "1")));	
 		frm.setLimit("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.limit", "1")));
+		frm.setSnapshotLimit("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.snapshotLimit", "1")));
 		frm.setRoomLimit("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.roomLimit", "1")));
 		frm.setManager("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.manager", "1")));	
 		frm.setDatePattern("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.datePattern", "1")));

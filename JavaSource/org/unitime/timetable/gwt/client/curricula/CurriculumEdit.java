@@ -687,6 +687,7 @@ public class CurriculumEdit extends Composite {
 									iCurriculumClasfTable.getWidget().setLastLike(col, x == null || x[col] == null ? null : x[col].getLastLike());
 									iCurriculumClasfTable.getWidget().setProjection(col, x == null || x[col] == null ? null : x[col].getProjection());
 									iCurriculumClasfTable.getWidget().setRequested(col, x == null || x[col] == null ? null : x[col].getRequested());
+									iCurriculumClasfTable.getWidget().setSnapshotProjection(col, x == null || x[col] == null ? null : (!x[col].isSessionHasSnapshotData()? null : x[col].getSnapshotProjection()));
 								}
 								iCurriculumCourses.updateEnrollmentsAndLastLike(result, showEmptyCourses);
 								if (iCurriculumClasfTable.isShowingAllColumns())
@@ -705,7 +706,8 @@ public class CurriculumEdit extends Composite {
 									iCurriculumClasfTable.getWidget().setLastLike(col, x == null || x[col] == null ? null : x[col].getLastLike());
 									iCurriculumClasfTable.getWidget().setProjection(col, x == null || x[col] == null ? null : x[col].getProjection());
 									iCurriculumClasfTable.getWidget().setRequested(col, x == null || x[col] == null ? null : x[col].getRequested());
-								}
+									iCurriculumClasfTable.getWidget().setSnapshotProjection(col, x == null || x[col] == null ? null : (!x[col].isSessionHasSnapshotData() ? null : x[col].getSnapshotProjection()));
+													}
 								iCurriculumCourses.updateEnrollmentsAndLastLike(result, showEmptyCourses);
 								if (iCurriculumClasfTable.isShowingAllColumns())
 									iCurriculumClasfTable.getWidget().showAllColumns();
@@ -722,6 +724,7 @@ public class CurriculumEdit extends Composite {
 							iCurriculumClasfTable.getWidget().setLastLike(col, x == null || x[col] == null ? null : x[col].getLastLike());
 							iCurriculumClasfTable.getWidget().setProjection(col, x == null || x[col] == null ? null : x[col].getProjection());
 							iCurriculumClasfTable.getWidget().setRequested(col, x == null || x[col] == null ? null : x[col].getRequested());
+							iCurriculumClasfTable.getWidget().setSnapshotProjection(col, x == null || x[col] == null ? null : (!x[col].isSessionHasSnapshotData() ? null : x[col].getSnapshotProjection()));
 						}
 						iCurriculumCourses.updateEnrollmentsAndLastLike(result, showEmptyCourses);
 						if (iCurriculumClasfTable.isShowingAllColumns())

@@ -40,6 +40,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 	private boolean iEditable = false;
 	private String iLastChange = null;
 	private boolean iMultipleMajors = false;
+	private boolean iSessionHasSnapshotData = false;
 	
 	private AcademicAreaInterface iAcademicArea;
 	private TreeSet<MajorInterface> iMajors;
@@ -67,6 +68,10 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 	
 	public boolean isMultipleMajors() { return iMultipleMajors; }
 	public void setMultipleMajors(boolean multipleMajors) { iMultipleMajors = multipleMajors; }
+	
+	public boolean isSessionHasSnapshotData() { return(iSessionHasSnapshotData); }
+	public void setSessionHasSnapshotData(boolean sessionHasSnapshotData) { iSessionHasSnapshotData = sessionHasSnapshotData; }
+
 	
 	public TreeSet<MajorInterface> getMajors() { return iMajors; }
 	public boolean hasMajors() { return iMajors != null && !iMajors.isEmpty(); }
@@ -181,6 +186,24 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		return ret;
 	}
 	
+	public Integer getSnapshotExpected() {
+		if (!isSessionHasSnapshotData()) return null;
+		if (!hasClassifications()) return null;
+		int ret = 0;
+		for (CurriculumClassificationInterface c: getClassifications())
+			ret += (c.getSnapshotExpected() == null ? 0 : c.getSnapshotExpected());
+		return ret;
+	}
+
+	public Integer getSnapshotProjection() {
+		if (!isSessionHasSnapshotData()) return null;
+		if (!hasClassifications()) return null;
+		int ret = 0;
+		for (CurriculumClassificationInterface c: getClassifications())
+			ret += (c.getSnapshotProjection() == null ? 0 : c.getSnapshotProjection());
+		return ret;
+	}
+
 	public Integer getRequested() {
 		if (!hasClassifications()) return null;
 		int ret = 0;
@@ -195,6 +218,12 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		return (count == null ? "N/A" : count.toString());
 	}
 
+	public String getSnapshotExpectedString() {
+		if (!hasClassifications()) return "?";
+		Integer count = getSnapshotExpected();
+		return (count == null ? "N/A" : count.toString());
+	}
+
 	public String getLastLikeString() {
 		if (!hasClassifications()) return "?";
 		Integer count = getLastLike();
@@ -204,6 +233,12 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 	public String getProjectionString() {
 		if (!hasClassifications()) return "?";
 		Integer count = getProjection();
+		return (count == null ? "N/A" : count.toString());
+	}
+
+	public String getSnapshotProjectionString() {
+		if (!hasClassifications()) return "?";
+		Integer count = getSnapshotProjection();
 		return (count == null ? "N/A" : count.toString());
 	}
 
@@ -373,9 +408,10 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 	public static class CurriculumClassificationInterface implements IsSerializable, Comparable<CurriculumClassificationInterface> {
 		private Long iCurriculumId, iClasfId;
 		private String iName;
-		private Integer iNrStudents = null, iEnrollment = null, iLastLike = null, iProjection = null, iRequested = null;
+		private Integer iNrStudents = null, iEnrollment = null, iLastLike = null, iProjection = null, iRequested = null, iSnapshotProjection = null, iSnapshotNrStudents = null;
 		private AcademicClassificationInterface iClasf;
 		private TreeSet<CurriculumCourseInterface> iCourses = null;
+		private boolean iSessionHasSnapshotData = false;
 		
 		public CurriculumClassificationInterface() {}
 		
@@ -391,6 +427,9 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		public Integer getExpected() { return iNrStudents; }
 		public void setExpected(Integer nrStudents) { iNrStudents = nrStudents; }
 		
+		public Integer getSnapshotExpected() { return iSnapshotNrStudents; }
+		public void setSnapshotExpected(Integer snapshotNrStudents) { iSnapshotNrStudents = snapshotNrStudents; }
+
 		public Integer getEnrollment() { return iEnrollment; }
 		public void setEnrollment(Integer enrollment) { iEnrollment = enrollment; }
 		
@@ -403,8 +442,14 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		public Integer getProjection() { return iProjection; }
 		public void setProjection(Integer projection) { iProjection = projection; }
 
+		public Integer getSnapshotProjection() { return iSnapshotProjection; }
+		public void setSnapshotProjection(Integer snapshotProjection) { iSnapshotProjection = snapshotProjection; }
+
 		public AcademicClassificationInterface getAcademicClassification() { return iClasf; }
 		public void setAcademicClassification(AcademicClassificationInterface clasf) { iClasf = clasf; }
+		
+		public boolean isSessionHasSnapshotData() { return(iSessionHasSnapshotData); }
+		public void setSessionHasSnapshotData(boolean sessionHasSnapshotData) { iSessionHasSnapshotData = sessionHasSnapshotData; }
 		
 		public TreeSet<CurriculumCourseInterface> getCourses() { return iCourses; }
 		public boolean hasCourses() { return iCourses != null && !iCourses.isEmpty(); }
@@ -525,6 +570,18 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 			return false;
 		}
 		
+		public boolean hasDefaultSnapshotShare() {
+			if (iCurriculumCourses == null) return false;
+			for (CurriculumCourseInterface c: iCurriculumCourses) {
+				if (!c.isSessionHasSnapshotData()) {
+					return(false);
+				}
+				if (c != null && c.getDefaultShare() != null)
+					return true;
+			}
+			return false;
+		}
+
 		public boolean hasTemplate() { 
 			if (iCurriculumCourses == null) return false;
 			for (CurriculumCourseInterface c: iCurriculumCourses)
@@ -579,8 +636,10 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		private Long iId, iCourseId, iClasfId;
 		private String iCourseName;
 		private Float iShare = null, iDefaultShare = null;
-		private Integer iLastLike = null, iEnrollment = null, iProjection = null, iRequested = null;
+		private Float iSnapshotShare = null, iDefaultSnapshotShare = null;
+		private Integer iLastLike = null, iEnrollment = null, iProjection = null, iRequested = null, iSnapshotProjection = null;
 		private TreeSet<String> iTemplates = null;
+		private boolean iSessionHasSnapshotData = false;
 		
 		public CurriculumCourseInterface() {}
 		
@@ -600,15 +659,25 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		public boolean hasShare() { return iShare != null; }
 		public void setShare(Float share) { iShare = share; }
 		
+		public Float getSnapshotShare() { return iSnapshotShare; }
+		public boolean hasSnapshotShare() { return iSnapshotShare != null; }
+		public void setSnapshotShare(Float snapshotShare) { iSnapshotShare = snapshotShare; }
+
 		public Float getDefaultShare() { return iDefaultShare; }
 		public void setDefaultShare(Float share) { iDefaultShare = share; }
 		
-		public TreeSet<String> getTemplates() { return iTemplates; }
+		public Float getDefaultSnapshotShare() { return iDefaultSnapshotShare; }
+		public void setDefaultSnapshotShare(Float snapshotShare) { iDefaultSnapshotShare = snapshotShare; }
+
+public TreeSet<String> getTemplates() { return iTemplates; }
 		public boolean hasTemplates() { return iTemplates != null && !iTemplates.isEmpty(); }
 		public void addTemplate(String template) {
 			if (iTemplates == null) iTemplates = new TreeSet<String>();
 			iTemplates.add(template);
 		}
+		
+		public boolean isSessionHasSnapshotData() { return(iSessionHasSnapshotData); }
+		public void setSessionHasSnapshotData(boolean sessionHasSnapshotData) { iSessionHasSnapshotData = sessionHasSnapshotData; }
 		
 		public float getDisplayedShare() {
 			return iShare != null ? iShare.floatValue() :  iDefaultShare != null ? iDefaultShare.floatValue() : 0.0f;
@@ -625,6 +694,9 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		
 		public Integer getProjection() { return iProjection; }
 		public void setProjection(Integer projection) { iProjection = projection; }
+
+		public Integer getSnapshotProjection() { return iSnapshotProjection; }
+		public void setSnapshotProjection(Integer snapshotProjection) { iSnapshotProjection = snapshotProjection; }
 
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof CurriculumCourseInterface)) return false;
@@ -678,6 +750,8 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		private Set<Long> iRequested = null;
 		private HashMap<Long, Set<String>> iLastLike = null;
 		private HashMap<String, Float> iProjection = null;
+		private HashMap<String, Float> iSnapshotProjection = null;
+		private boolean iSessionHasSnapshotData = false;
 		
 		public CurriculumStudentsInterface() {}
 		
@@ -689,6 +763,9 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 			return iLastLike.size();
 		}
 		
+		public boolean isSessionHasSnapshotData() { return(iSessionHasSnapshotData); }
+		public void setSessionHasSnapshotData(boolean sessionHasSnapshotData) { iSessionHasSnapshotData = sessionHasSnapshotData; }
+
 		public int getProjection() {
 			if (iLastLike == null || iLastLike.isEmpty()) return 0;
 			if (iProjection == null) return iLastLike.size();
@@ -708,6 +785,28 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 			return (int) Math.round(proj);
 		}
 		
+		public int getSnapshotProjection() {
+			if (!iSessionHasSnapshotData) {
+				return(0);
+			}
+			if (iLastLike == null || iLastLike.isEmpty()) return 0;
+			if (iSnapshotProjection == null) return iLastLike.size();
+			double ssProj = 0;
+			for (Map.Entry<Long, Set<String>> entry: iLastLike.entrySet()) {
+				double weight = 1.0;
+				int cnt = 0;
+				for (String major: entry.getValue()) {
+					Float f = iSnapshotProjection.get(major);
+					if (f == null) f = iSnapshotProjection.get("");
+					if (f != null) {
+						weight *= f; cnt ++;
+					}
+				}
+				ssProj += (cnt == 0 ? 1.0f : cnt == 1 ? weight : Math.pow(weight, 1.0 / cnt));
+			}
+			return (int) Math.round(ssProj);
+		}
+
 		public int getRequested() {
 			return (iRequested == null || iRequested.isEmpty() ? 0 : iRequested.size());
 		}
@@ -746,6 +845,30 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 			return (int) Math.round(proj);
 		}
 		
+		public int countSnapshotProjectedStudents(Set<Long> students) {
+			if (!iSessionHasSnapshotData) {
+				return(0);
+			}
+			if (iLastLike == null || iLastLike.isEmpty()) return 0;
+			if (iSnapshotProjection == null) return students.size();
+			double ssproj = 0;
+			for (Long student: students) {
+				Set<String> majors = iLastLike.get(student);
+				if (majors == null) continue;
+				double weight = 1.0;
+				int cnt = 0;
+				for (String major: majors) {
+					Float f = iSnapshotProjection.get(major);
+					if (f == null) f = iSnapshotProjection.get("");
+					if (f != null)
+						weight *= f;
+					cnt ++;
+				}
+				ssproj += (cnt == 0 ? 1.0f : cnt == 1 ? weight : Math.pow(weight, 1.0 / cnt));
+			}
+			return (int) Math.round(ssproj);
+		}
+
 		public Set<Long> getRequestedStudents() {
 			return iRequested;
 		}
@@ -771,6 +894,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		}
 		
 		public void setProjection(HashMap<String, Float> projection) { iProjection = projection; }
+		public void setSnapshotProjection(HashMap<String, Float> snapshotProjection) { iSnapshotProjection = snapshotProjection; }
 		
 		public void setRequestedStudents(Set<Long> students) { iRequested = students; }
 	}

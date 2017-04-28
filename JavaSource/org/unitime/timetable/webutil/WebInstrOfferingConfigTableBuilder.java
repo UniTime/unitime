@@ -20,6 +20,7 @@
 package org.unitime.timetable.webutil;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -59,18 +60,6 @@ public class WebInstrOfferingConfigTableBuilder extends
 	
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
-    private String[] COLUMNS = {LABEL,
-		MSG.columnExternalId(),
-		MSG.columnMinPerWk(),
-		MSG.columnLimit(),
-		MSG.columnRoomRatio(),
-		MSG.columnManager(),
-		MSG.columnDatePattern(),
-		MSG.columnTimePattern(),
-		MSG.columnPreferences(),
-		MSG.columnInstructor(),
-		MSG.columnTimetable(),
-		MSG.columnSubpartCredit()};
 
 	public WebInstrOfferingConfigTableBuilder() {
 		super();
@@ -200,24 +189,26 @@ public class WebInstrOfferingConfigTableBuilder extends
         			outputStream.write(this.buttonsTable(ioc, context));
         		} catch (IOException e) {}
 	        }
-	        if (StudentClassEnrollment.sessionHasEnrollments(context.getUser().getCurrentAcademicSessionId())) {
-	            String[] cols = {LABEL,
-	            		MSG.columnExternalId(),
-	            		MSG.columnMinPerWk(),
-	            		MSG.columnDemand(),
-	            		MSG.columnLimit(),
-	            		MSG.columnRoomRatio(),
-	            		MSG.columnManager(),
-	            		MSG.columnDatePattern(),
-	            		MSG.columnTimePattern(),
-	            		MSG.columnPreferences(),
-	            		MSG.columnInstructor(),
-	            		MSG.columnTimetable(),
-	            		MSG.columnSubpartCredit()};
-	            setVisibleColumns(cols);
-	        } else {
-		        setVisibleColumns(COLUMNS);	        	
-	        }
+
+	    	ArrayList<String> columnList = new ArrayList<String>();
+	    	columnList.add(LABEL);
+	    	columnList.add(MSG.columnExternalId());
+	    	columnList.add(MSG.columnMinPerWk());
+	    	if (StudentClassEnrollment.sessionHasEnrollments(context.getUser().getCurrentAcademicSessionId())) {
+	    		columnList.add(MSG.columnDemand());
+	    	}
+	    	columnList.add(MSG.columnLimit());
+	    	if (ioc.getInstructionalOffering().getSession().getCurrentSnapshotDate() != null) {
+	    	   	columnList.add(MSG.columnSnapshotLimit());
+	    	}
+	    	columnList.add(MSG.columnRoomRatio());
+    		columnList.add(MSG.columnManager());
+	    	columnList.add(MSG.columnDatePattern());
+	    	columnList.add(MSG.columnTimePattern());
+	    	columnList.add(MSG.columnPreferences());
+	    	columnList.add(MSG.columnInstructor());
+	    	columnList.add(MSG.columnTimetable());
+            setVisibleColumns(columnList);
 	        boolean hasInstructorAssignments = false;
 	        ss: for (SchedulingSubpart ss: ioc.getSchedulingSubparts()) {
 	        	if (ss.isInstructorAssignmentNeeded()) { hasInstructorAssignments = true; break; }

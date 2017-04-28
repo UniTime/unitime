@@ -123,6 +123,7 @@ public class WebInstructionalOfferingTableBuilder {
     										MSG.columnConsent(),
     										MSG.columnMinPerWk(),
     										MSG.columnLimit(),
+    										MSG.columnSnapshotLimit(),
     										MSG.columnRoomRatio(),
     										MSG.columnManager(),
     										MSG.columnDatePattern(),
@@ -136,6 +137,7 @@ public class WebInstructionalOfferingTableBuilder {
     										MSG.columnSchedulePrintNote(),
     										MSG.columnNote(),
     										MSG.columnExam()};
+    
     @Deprecated
     protected String[] TIMETABLE_COLUMN_ORDER = {
     		MSG.columnAssignedTime(),
@@ -148,6 +150,7 @@ public class WebInstructionalOfferingTableBuilder {
     private boolean showProjectedDemand;
     private boolean showMinPerWk;
     private boolean showLimit;
+    private boolean showSnapshotLimit;
     private boolean showRoomRatio;
     private boolean showManager;
     private boolean showDatePattern;
@@ -417,6 +420,10 @@ public class WebInstructionalOfferingTableBuilder {
     	}
     	if (isShowLimit()){
     		cell = this.headerCell(MSG.columnLimit(), 2, 1);
+    		row.addContent(cell);
+    	}
+    	if (isShowSnapshotLimit()){
+    		cell = this.headerCell(MSG.columnSnapshotLimit(), 2, 1);
     		row.addContent(cell);
     	}
     	if (isShowRoomRatio()){
@@ -797,6 +804,23 @@ public class WebInstructionalOfferingTableBuilder {
     	return(this.initNormalCell("&nbsp;", isEditable));
     }
     
+    private TableCell buildSnapshotLimit(PreferenceGroup prefGroup, boolean isEditable){
+    	if (prefGroup instanceof Class_) {
+    		Class_ c = (Class_)prefGroup;
+    		if (c.getSnapshotLimit() != null) {
+    			TableCell cell = null;
+    			if (c.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment()) {
+    				cell = initNormalCell("<font size=\"+1\">&infin;</font>", isEditable);
+    			} else {
+    				cell = initNormalCell(c.getSnapshotLimit().toString(), isEditable);
+    			}
+    			cell.setAlign("right");	
+    			return cell;
+    		}
+    	}
+    	return(this.initNormalCell("&nbsp;", isEditable));
+    }
+
     private TableCell buildLimit(ClassAssignmentProxy classAssignment, PreferenceGroup prefGroup, boolean isEditable){
     	TableCell cell = null;
     	boolean nowrap = false;
@@ -1311,6 +1335,7 @@ public class WebInstructionalOfferingTableBuilder {
     //		buildTableHeader, addInstrOffrRowsToTable, buildClassOrSubpartRow, and buildConfigRow
     protected void buildClassOrSubpartRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TableRow row, CourseOffering co, PreferenceGroup prefGroup, int indentSpaces, boolean isEditable, String prevLabel, String icon, SessionContext context){
     	boolean classLimitDisplayed = false;
+    	boolean snapshotLimitDisplayed = false;
     	if (isShowLabel()){
 	        row.addContent(this.buildPrefGroupLabel(co, prefGroup, indentSpaces, isEditable, prevLabel, icon));
     	} 
@@ -1327,7 +1352,11 @@ public class WebInstructionalOfferingTableBuilder {
     		classLimitDisplayed = true;
     		row.addContent(this.buildLimit(classAssignment, prefGroup, isEditable));
        	} 
-    	if (isShowRoomRatio()){
+    	if (isShowSnapshotLimit()){
+    		snapshotLimitDisplayed = true;
+    		row.addContent(this.buildSnapshotLimit(prefGroup, isEditable));
+       	} 
+     	if (isShowRoomRatio()){
     		row.addContent(this.buildRoomLimit(prefGroup, isEditable, classLimitDisplayed));
        	} 
     	if (isShowManager()){
@@ -1568,6 +1597,9 @@ public class WebInstructionalOfferingTableBuilder {
     		    cell.setAlign("right");
 	            row.addContent(cell);
         	} 
+        	if (isShowSnapshotLimit()){
+    			row.addContent(initNormalCell("", isEditable));
+        	} 
         	if (isShowRoomRatio()){
                 row.addContent(initNormalCell("", isEditable));
         	} 
@@ -1730,6 +1762,18 @@ public class WebInstructionalOfferingTableBuilder {
 				cell = initNormalCell("<font size=\"+1\">&infin;</font>", co.isIsControl().booleanValue());
 			else
 				cell = initNormalCell(io.getLimit() != null?io.getLimit().toString():"", isEditable && co.isIsControl().booleanValue());
+            cell.setAlign("right");
+            row.addContent(cell);
+    	} 
+    	if (isShowSnapshotLimit()){
+			boolean unlimited = false;
+			for (Iterator x=io.getInstrOfferingConfigs().iterator();!unlimited && x.hasNext();)
+				if ((((InstrOfferingConfig)x.next())).isUnlimitedEnrollment().booleanValue())
+					unlimited = true;
+			if (unlimited)
+				cell = initNormalCell("<font size=\"+1\">&infin;</font>", co.isIsControl().booleanValue());
+			else
+				cell = initNormalCell(io.getSnapshotLimit() != null?io.getSnapshotLimit().toString():"", isEditable && co.isIsControl().booleanValue());
             cell.setAlign("right");
             row.addContent(cell);
     	} 
@@ -2134,6 +2178,7 @@ public class WebInstructionalOfferingTableBuilder {
 		setShowProjectedDemand(form.getProjectedDemand().booleanValue());
 		setShowMinPerWk(form.getMinPerWk().booleanValue());
 		setShowLimit(form.getLimit().booleanValue());
+		setShowSnapshotLimit(form.getSnapshotLimit().booleanValue());
 		setShowRoomRatio(form.getRoomLimit().booleanValue());
 		setShowManager(form.getManager().booleanValue());
 		setShowDatePattern(form.getDatePattern().booleanValue());
@@ -2162,35 +2207,41 @@ public class WebInstructionalOfferingTableBuilder {
 		}
 	}
 	
-	protected void setVisibleColumns(String[] columns){
-		ArrayList a = new ArrayList();
-		for (int i = 0 ; i < columns.length; i++){
-			a.add(columns[i]);
-		}
+	protected void setVisibleColumns(ArrayList<String> columns){
 		
-		setShowLabel(a.contains(LABEL));
-		setShowDivSec(a.contains(MSG.columnExternalId()));
-		setShowDemand(a.contains(MSG.columnDemand()));
-		setShowProjectedDemand(a.contains(MSG.columnProjectedDemand()));
-		setShowMinPerWk(a.contains(MSG.columnMinPerWk()));
-		setShowLimit(a.contains(MSG.columnLimit()));
-		setShowRoomRatio(a.contains(MSG.columnRoomRatio()));
-		setShowManager(a.contains(MSG.columnManager()));
-		setShowDatePattern(a.contains(MSG.columnDatePattern()));
-		setShowTimePattern(a.contains(MSG.columnTimePattern()));
-		setShowPreferences(a.contains(MSG.columnPreferences()));
-		setShowInstructor(a.contains(MSG.columnInstructor()));
-		setShowTimetable(a.contains(MSG.columnTimetable()));
-		setShowCredit(a.contains(MSG.columnOfferingCredit()));
-		setShowSubpartCredit(a.contains(MSG.columnSubpartCredit()));
-		setShowSchedulePrintNote(a.contains(MSG.columnSchedulePrintNote()));
-		setShowNote(a.contains(MSG.columnNote()));
-		setShowConsent(a.contains(MSG.columnConsent()));
-		setShowTitle(a.contains(MSG.columnTitle()));
-		setShowExam(a.contains(MSG.columnExam()));
+		setShowLabel(columns.contains(LABEL));
+		setShowDivSec(columns.contains(MSG.columnExternalId()));
+		setShowDemand(columns.contains(MSG.columnDemand()));
+		setShowProjectedDemand(columns.contains(MSG.columnProjectedDemand()));
+		setShowMinPerWk(columns.contains(MSG.columnMinPerWk()));
+		setShowLimit(columns.contains(MSG.columnLimit()));
+		setShowSnapshotLimit(columns.contains(MSG.columnSnapshotLimit()));
+		setShowRoomRatio(columns.contains(MSG.columnRoomRatio()));
+		setShowManager(columns.contains(MSG.columnManager()));
+		setShowDatePattern(columns.contains(MSG.columnDatePattern()));
+		setShowTimePattern(columns.contains(MSG.columnTimePattern()));
+		setShowPreferences(columns.contains(MSG.columnPreferences()));
+		setShowInstructor(columns.contains(MSG.columnInstructor()));
+		setShowTimetable(columns.contains(MSG.columnTimetable()));
+		setShowCredit(columns.contains(MSG.columnOfferingCredit()));
+		setShowSubpartCredit(columns.contains(MSG.columnSubpartCredit()));
+		setShowSchedulePrintNote(columns.contains(MSG.columnSchedulePrintNote()));
+		setShowNote(columns.contains(MSG.columnNote()));
+		setShowConsent(columns.contains(MSG.columnConsent()));
+		setShowTitle(columns.contains(MSG.columnTitle()));
+		setShowExam(columns.contains(MSG.columnExam()));
 		
 	}
 	
+	protected void setVisibleColumns(String[] columns){
+		ArrayList<String> a = new ArrayList<String>();
+		for (int i = 0 ; i < columns.length; i++){
+			a.add(columns[i]);
+		}
+		setVisibleColumns(a);
+				
+	}
+
 	public boolean isShowCredit() {
 		return showCredit;
 	}
@@ -2226,6 +2277,12 @@ public class WebInstructionalOfferingTableBuilder {
 	}
 	public void setShowLimit(boolean showLimit) {
 		this.showLimit = showLimit;
+	}
+	public boolean isShowSnapshotLimit() {
+		return showSnapshotLimit;
+	}
+	public void setShowSnapshotLimit(boolean showSnapshotLimit) {
+		this.showSnapshotLimit = showSnapshotLimit;
 	}
 	public boolean isShowManager() {
 		return showManager;

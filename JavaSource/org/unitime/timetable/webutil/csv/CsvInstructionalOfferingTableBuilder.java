@@ -131,6 +131,7 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowDemand()) ret+=1;
     	if (isShowProjectedDemand()) ret+=1;
     	if (isShowLimit()) ret+=1;
+    	if (isShowSnapshotLimit()) ret+=1;
     	if (isShowRoomRatio()) ret+=1;
     	if (isShowManager()) ret+=1;
     	if (isShowDatePattern()) ret+=1;
@@ -175,6 +176,9 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	}
     	if (isShowLimit()) {
     		line.add(createCell(MSG.columnLimit()));
+    	}
+    	if (isShowSnapshotLimit()) {
+    		line.add(createCell(MSG.columnSnapshotLimit()));
     	}
     	if (isShowRoomRatio()) {
     		line.add(createCell(MSG.columnRoomRatio()));
@@ -481,6 +485,25 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
                     }
                 } else {
                     limitString = ""+aClass.getClassLimit(classAssignment);
+                }
+	    		addText(cell, limitString, true);
+	    	}
+    	} 
+    	
+        return cell;
+    }
+
+    private CSVField csvBuildSnapshotLimit(PreferenceGroup prefGroup, boolean isEditable){
+    	CSVField cell = createCell();
+    	if (prefGroup instanceof Class_){
+    		Class_ aClass = (Class_) prefGroup;
+	    	boolean unlimited = aClass.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment().booleanValue();
+	    	if (!unlimited) {
+	    		String limitString = null;
+                  if (aClass.getSnapshotLimit()==null) {
+                	  limitString = "";
+                  } else {
+                    limitString = aClass.getSnapshotLimit().toString();
                 }
 	    		addText(cell, limitString, true);
 	    	}
@@ -847,7 +870,12 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowLimit()){
     		classLimitDisplayed = true;
     		line.add(csvBuildLimit(classAssignment, prefGroup, isEditable));
+       	}
+    	if (isShowSnapshotLimit()){
+    		classLimitDisplayed = true;
+    		line.add(csvBuildSnapshotLimit(prefGroup, isEditable));
        	} 
+
     	if (isShowRoomRatio()){
     		line.add(csvBuildRoomLimit(prefGroup, isEditable, classLimitDisplayed));
        	} 
@@ -1001,6 +1029,9 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         	    addText(cell, (unlimited?"inf":ioc.getLimit().toString()), true);
         	    line.add(cell);
         	} 
+        	if (isShowSnapshotLimit()){
+        	    line.add(createCell());
+        	} 
         	if (isShowRoomRatio()){
         	    line.add(createCell());
         	} 
@@ -1141,6 +1172,23 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 					unlimited = true;
     	    CSVField cell = createCell();
     	    addText(cell, (unlimited?"inf":io.getLimit()==null?"0":io.getLimit().toString()), true);
+    	    line.add(cell);
+    	}
+    	if (isShowSnapshotLimit()){
+			boolean unlimited = false;
+			for (Iterator x=io.getInstrOfferingConfigs().iterator();!unlimited && x.hasNext();)
+				if ((((InstrOfferingConfig)x.next())).isUnlimitedEnrollment().booleanValue())
+					unlimited = true;
+    	    CSVField cell = createCell();
+    	    String limitText = null;
+    	    if (unlimited) {
+    	    	limitText = "inf";
+    	    } else if (io.getSnapshotLimit() == null) {
+    	    	limitText = "";
+    	    } else {
+    	    	limitText = io.getSnapshotLimit().toString();
+    	    }
+    	    addText(cell, limitText, true);
     	    line.add(cell);
     	}
     	int emptyCels = 0;

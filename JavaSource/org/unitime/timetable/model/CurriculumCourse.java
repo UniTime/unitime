@@ -87,6 +87,8 @@ public class CurriculumCourse extends BaseCurriculumCourse implements Comparable
 		cc.setOrd(getOrd());
 		cc.setClassification(getClassification());
 		cc.setCourse(newCourse);
+		cc.setSnapshotPercShare(getSnapshotPercShare());
+		cc.setSnapshotPercShareDate(getSnapshotPercShareDate());
 		cc.setGroups(new HashSet<CurriculumCourseGroup>(getGroups()));
 		return cc;
 	}

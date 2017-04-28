@@ -406,6 +406,19 @@
                 <key column="class_id" foreign-key="fk_teachreq_class"/>
                 <one-to-many class="TeachingClassRequest"/>
             </set>
+
+            <property
+	            name="snapshotLimit"
+	            column="snapshot_limit"
+	            type="java.lang.Integer"
+	            length="10"/>
+
+			<property
+	            name="snapshotLimitDate"
+	            column="snapshot_limit_date"
+	            type="java.sql.Timestamp"
+	            not-null="false"/>  
+	                      
         </union-subclass>
 
         <union-subclass

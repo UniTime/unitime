@@ -211,5 +211,17 @@
             column="alternative_offering_id"
             not-null="false"
             foreign-key="fk_course_offering_alternative_offr"/>
+        <property
+            name="snapshotProjectedDemand"
+            column="snapshot_proj_demand"
+            type="java.lang.Integer"
+            length="5"/>
+
+		<property
+            name="snapshotProjectedDemandDate"
+            column="snapshot_prj_dmd_date"
+            type="java.sql.Timestamp"
+            not-null="false"/>
+
     </class>
 </hibernate-mapping>

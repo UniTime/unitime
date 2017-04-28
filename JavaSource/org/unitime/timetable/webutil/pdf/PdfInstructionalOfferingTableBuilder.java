@@ -168,6 +168,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowDemand()) ret+=1;
     	if (isShowProjectedDemand()) ret+=1;
     	if (isShowLimit()) ret+=1;
+    	if (isShowSnapshotLimit()) ret+=1;
     	if (isShowRoomRatio()) ret+=1;
     	if (isShowManager()) ret+=1;
     	if (isShowDatePattern()) ret+=1;
@@ -198,6 +199,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowDemand()) width[idx++] = 60f;
     	if (isShowProjectedDemand()) width[idx++] = 65f;
     	if (isShowLimit()) width[idx++] = 50f;
+    	if (isShowSnapshotLimit()) width[idx++] = 50f;
     	if (isShowRoomRatio()) width[idx++] = 50f;
     	if (isShowManager()) width[idx++] = 75f;
     	if (isShowDatePattern()) width[idx++] = 100f;
@@ -275,6 +277,11 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowLimit()){
     		PdfPCell c = createCell();
     		addText(c, MSG.columnLimit(), true, Element.ALIGN_RIGHT);
+    		iPdfTable.addCell(c);
+    	}
+    	if (isShowSnapshotLimit()){
+    		PdfPCell c = createCell();
+    		addText(c, MSG.columnSnapshotLimit(), true, Element.ALIGN_RIGHT);
     		iPdfTable.addCell(c);
     	}
     	if (isShowRoomRatio()){
@@ -384,6 +391,11 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		iPdfTable.addCell(c);
     	}
     	if (isShowLimit()){
+    		PdfPCell c = createCell();
+    		c.setBorderWidthBottom(1);
+    		iPdfTable.addCell(c);
+    	}
+    	if (isShowSnapshotLimit()){
     		PdfPCell c = createCell();
     		c.setBorderWidthBottom(1);
     		iPdfTable.addCell(c);
@@ -780,7 +792,30 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	
         return cell;
     }
-    
+
+    private PdfPCell pdfBuildSnapshotLimit(PreferenceGroup prefGroup, boolean isEditable){
+    	Color color = (isEditable?sEnableColor:sDisableColor);
+
+    	PdfPCell cell = createCell();
+
+    	if (prefGroup instanceof Class_){
+    		Class_ aClass = (Class_) prefGroup;
+	    	boolean unlimited = aClass.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment().booleanValue();
+	    	if (!unlimited) {
+	    		String limitString = null;
+               
+                if (aClass.getSnapshotLimit() == null) {
+                        limitString = "";
+                } else {
+                    limitString = aClass.getSnapshotLimit().toString();
+                }
+	    		addText(cell, limitString, false, false, Element.ALIGN_RIGHT, color, true);
+	    	}
+    	} 
+    	
+        return cell;
+    }
+
     private PdfPCell pdfBuildDivisionSection(CourseOffering co, PreferenceGroup prefGroup, boolean isEditable){
     	Color color = (isEditable?sEnableColor:sDisableColor);
     	PdfPCell cell = createCell();
@@ -1178,6 +1213,10 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		classLimitDisplayed = true;
     		iPdfTable.addCell(pdfBuildLimit(classAssignment, prefGroup, isEditable));
        	} 
+    	if (isShowSnapshotLimit()){
+    		classLimitDisplayed = true;
+    		iPdfTable.addCell(pdfBuildSnapshotLimit(prefGroup, isEditable));
+       	} 
     	if (isShowRoomRatio()){
     		iPdfTable.addCell(pdfBuildRoomLimit(prefGroup, isEditable, classLimitDisplayed));
        	} 
@@ -1335,6 +1374,9 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         	    addText(cell, (unlimited?"inf":ioc.getLimit().toString()), false, false, Element.ALIGN_RIGHT, color, true);
         	    iPdfTable.addCell(cell);
         	} 
+        	if (isShowSnapshotLimit()){
+        	    iPdfTable.addCell(createCell());
+        	} 
         	if (isShowRoomRatio()){
         	    iPdfTable.addCell(createCell());
         	} 
@@ -1477,6 +1519,23 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 					unlimited = true;
     	    PdfPCell cell = createCell();
     	    addText(cell, (unlimited?"inf":io.getLimit()==null?"0":io.getLimit().toString()), false, false, Element.ALIGN_RIGHT, (co.isIsControl()?color:sDisableColor), true);
+    	    iPdfTable.addCell(cell);
+    	} 
+    	if (isShowSnapshotLimit()){
+			boolean unlimited = false;
+			for (Iterator x=io.getInstrOfferingConfigs().iterator();!unlimited && x.hasNext();)
+				if ((((InstrOfferingConfig)x.next())).isUnlimitedEnrollment().booleanValue())
+					unlimited = true;
+    	    PdfPCell cell = createCell();
+    	    String limitText = null;
+    	    if (unlimited) {
+    	    	limitText = "inf";
+    	    } else if (io.getSnapshotLimit() == null) {
+    	    	limitText = "";
+    	    } else {
+    	    	limitText = io.getSnapshotLimit().toString();
+    	    }
+    	    addText(cell, limitText, false, false, Element.ALIGN_RIGHT, (co.isIsControl()?color:sDisableColor), true);
     	    iPdfTable.addCell(cell);
     	} 
     	int emptyCels = 0;

@@ -137,6 +137,7 @@ public class CurriculaServlet implements CurriculaService {
 			Long s0 = System.currentTimeMillis();
 			TreeSet<CurriculumInterface> results = new TreeSet<CurriculumInterface>();
 			getSessionContext().setAttribute("Curricula.LastFilter", filter.toQueryString());
+			boolean hasSnapshotData = hasSnapshotData(CurriculumDAO.getInstance().getSession(), getAcademicSessionId());
 			for (Curriculum c: CurriculumFilterBackend.curricula(getSessionContext().getUser().getCurrentAcademicSessionId(), filter.getOptions(), new Query(filter.getText()), -1, null, Department.getUserDepartments(getSessionContext().getUser()))) {
 				CurriculumInterface ci = new CurriculumInterface();
 				ci.setId(c.getUniqueId());
@@ -144,6 +145,7 @@ public class CurriculaServlet implements CurriculaService {
 				ci.setName(c.getName());
 				ci.setEditable(getSessionContext().hasPermission(c, Right.CurriculumEdit));
 				ci.setMultipleMajors(c.isMultipleMajors());
+				ci.setSessionHasSnapshotData(hasSnapshotData);
 				DepartmentInterface di = new DepartmentInterface();
 				di.setId(c.getDepartment().getUniqueId());
 				di.setAbbv(c.getDepartment().getAbbreviation());
@@ -189,12 +191,17 @@ public class CurriculaServlet implements CurriculaService {
 			TreeSet<AcademicClassificationInterface> academicClassifications = loadAcademicClassifications();
 
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
+			boolean hasSnapshotData = hasSnapshotData(hibSession, getAcademicSessionId());;
 			try {
 				for (Long curriculumId: curriculumIds) {
 					Curriculum c = CurriculumDAO.getInstance().get(curriculumId, hibSession);
 					if (c == null) throw new CurriculaException(MESSAGES.errorCurriculumDoesNotExist(curriculumId == null ? "null" : curriculumId.toString()));
 					
 					Hashtable<String,HashMap<String, Float>> rules = getRules(hibSession, c.getAcademicArea().getUniqueId());
+					Hashtable<String,HashMap<String, Float>> snapshotRules = null;
+					if (hasSnapshotData) {
+						snapshotRules = getSnapshotRules(hibSession, c.getAcademicArea().getUniqueId());
+					}
 					
 					Hashtable<Long, Integer> clasf2enrl = loadClasf2enrl(hibSession, c);
 					
@@ -210,25 +217,43 @@ public class CurriculaServlet implements CurriculaService {
 						cfi.setCurriculumId(c.getUniqueId());
 						int lastLike = 0;
 						float proj = 0;
+						float snapshotProj = 0;
 						Hashtable<String, Integer> major2ll = clasfMajor2ll.get(clasf.getAcademicClassification().getCode());
 						if (major2ll != null) {
 							if (c.isMultipleMajors() && c.getMajors().size() > 1) {
 								double rule = 1.0f;
-								for (PosMajor m: c.getMajors())
+								double snapshotRule = 1.0f;
+								for (PosMajor m: c.getMajors()) {
 									rule *= getProjection(rules, m.getCode(), clasf.getAcademicClassification().getCode());
+									if(hasSnapshotData){
+										snapshotRule *= getSnapshotProjection(snapshotRules, m.getCode(), clasf.getAcademicClassification().getCode());
+									}
+								}
 								for (Integer ll: major2ll.values())
 									lastLike += ll;
 								proj = (float) (Math.pow(rule, 1.0 / c.getMajors().size()) * lastLike);
+								if(hasSnapshotData) {
+									snapshotProj = (float) (Math.pow(snapshotRule, 1.0 / c.getMajors().size()) * lastLike);
+								}
 							} else {
 								for (Map.Entry<String,Integer> m2l: major2ll.entrySet()) {
 									lastLike += m2l.getValue();
 									proj += getProjection(rules, m2l.getKey(), clasf.getAcademicClassification().getCode()) * m2l.getValue();
+									if (hasSnapshotData){
+										snapshotProj += getSnapshotProjection(snapshotRules, m2l.getKey(), clasf.getAcademicClassification().getCode()) * m2l.getValue();
+									}
 								}
 							}
 						}
 						cfi.setLastLike(lastLike == 0 ? null : lastLike);
 						cfi.setProjection(Math.round(proj) == 0 ? null : Math.round(proj));
 						cfi.setExpected(clasf.getNrStudents());
+						
+						cfi.setSessionHasSnapshotData(hasSnapshotData);
+						if (hasSnapshotData) {
+							cfi.setSnapshotProjection(Math.round(snapshotProj) == 0 ? null : Math.round(snapshotProj));
+							cfi.setSnapshotExpected(clasf.getSnapshotNrStudents());
+						}
 						cfi.setEnrollment(clasf2enrl.get(clasf.getAcademicClassification().getUniqueId()));
 						cfi.setRequested(clasf2req.get(clasf.getAcademicClassification().getUniqueId()));
 						AcademicClassificationInterface aci = new AcademicClassificationInterface();
@@ -247,25 +272,44 @@ public class CurriculaServlet implements CurriculaService {
 							cfi.setCurriculumId(c.getUniqueId());
 							int lastLike = 0;
 							float proj = 0;
+							float snapshotProj = 0;
 							Hashtable<String, Integer> major2ll = clasfMajor2ll.get(clasf.getCode());
 							if (major2ll != null) {
 								if (c.isMultipleMajors() && major2ll.size() > 1) {
 									double rule = 1.0f;
-									for (PosMajor m: c.getMajors())
+									double snapshotRule = 1.0f;
+									for (PosMajor m: c.getMajors()){
 										rule *= getProjection(rules, m.getCode(), clasf.getCode());
+										if (hasSnapshotData){
+											snapshotRule *= getSnapshotProjection(snapshotRules, m.getCode(), clasf.getCode());
+										}
+									}
 									for (Integer ll: major2ll.values())
 										lastLike += ll;
 									proj = (float) (Math.pow(rule, 1.0 / c.getMajors().size()) * lastLike);
+									if (hasSnapshotData){
+										snapshotProj = (float) (Math.pow(snapshotRule, 1.0 / c.getMajors().size()) * lastLike);
+									}
 								}
 								for (Map.Entry<String,Integer> m2l: major2ll.entrySet()) {
 									lastLike += m2l.getValue();
 									proj += getProjection(rules, m2l.getKey(), clasf.getCode()) * m2l.getValue();
+									if (hasSnapshotData){
+										snapshotProj += getSnapshotProjection(snapshotRules, m2l.getKey(), clasf.getCode()) * m2l.getValue();
+									}
 								}
 							}
 							cfi.setLastLike(lastLike == 0 ? null : lastLike);
 							cfi.setProjection(Math.round(proj) == 0 ? null : Math.round(proj));
 							cfi.setEnrollment(clasf2enrl.get(clasf.getId()));
 							cfi.setRequested(clasf2req.get(clasf.getId()));
+							
+							cfi.setSessionHasSnapshotData(hasSnapshotData);
+							if (hasSnapshotData){
+								cfi.setSnapshotProjection(Math.round(snapshotProj) == 0 ? null : Math.round(snapshotProj));
+							} else {
+								cfi.setSnapshotProjection(null);
+							}
 							AcademicClassificationInterface aci = new AcademicClassificationInterface();
 							aci.setId(clasf.getId());
 							aci.setName(clasf.getName());
@@ -304,16 +348,23 @@ public class CurriculaServlet implements CurriculaService {
 			}
 			
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
+			boolean hasSnapshotData = hasSnapshotData(hibSession, getAcademicSessionId());
 			try {
 				Curriculum c = CurriculumDAO.getInstance().get(curriculumId, hibSession);
 				if (c == null) throw new CurriculaException(MESSAGES.errorCurriculumDoesNotExist(curriculumId == null ? "null" : curriculumId.toString()));
 				Hashtable<String,HashMap<String, Float>> rules = getRules(hibSession, c.getAcademicArea().getUniqueId());
+				Hashtable<String,HashMap<String, Float>> snapshotRules = null;
+				if (hasSnapshotData) {
+					snapshotRules = getSnapshotRules(hibSession, c.getAcademicArea().getUniqueId());
+				}
+				
 				CurriculumInterface curriculumIfc = new CurriculumInterface();
 				curriculumIfc.setId(c.getUniqueId());
 				curriculumIfc.setAbbv(c.getAbbv());
 				curriculumIfc.setName(c.getName());
 				curriculumIfc.setEditable(getSessionContext().hasPermission(c, Right.CurriculumEdit));
 				curriculumIfc.setMultipleMajors(c.isMultipleMajors());
+				curriculumIfc.setSessionHasSnapshotData(hasSnapshotData);
 				DepartmentInterface deptIfc = new DepartmentInterface();
 				deptIfc.setId(c.getDepartment().getUniqueId());
 				deptIfc.setAbbv(c.getDepartment().getAbbreviation());
@@ -344,24 +395,43 @@ public class CurriculaServlet implements CurriculaService {
 					clasfIfc.setCurriculumId(c.getUniqueId());
 					int lastLike = 0;
 					float proj = 0;
+					float snapshotProj = 0;
 					Hashtable<String, Integer> major2ll = clasfMajor2ll.get(clasf.getCode());
 					if (major2ll != null) {
 						if (c.isMultipleMajors() && c.getMajors().size() > 1) {
 							double rule = 1.0f;
-							for (PosMajor m: c.getMajors())
+							double snapshotRule = 1.0f;
+							for (PosMajor m: c.getMajors()){
 								rule *= getProjection(rules, m.getCode(), clasf.getCode());
+								if (hasSnapshotData) {
+									snapshotRule *= getSnapshotProjection(snapshotRules, m.getCode(), clasf.getCode());
+								}
+							}
 							for (Integer ll: major2ll.values())
 								lastLike += ll;
 							proj = (float) (Math.pow(rule, 1.0 / c.getMajors().size()) * lastLike);
+							if (hasSnapshotData) {
+								snapshotProj = (float) (Math.pow(snapshotRule, 1.0 / c.getMajors().size()) * lastLike);
+							}
 						} else {
 							for (Map.Entry<String,Integer> m2l: major2ll.entrySet()) {
 								lastLike += m2l.getValue();
 								proj += getProjection(rules, m2l.getKey(), clasf.getCode()) * m2l.getValue();
+								if (hasSnapshotData) {
+									snapshotProj += getSnapshotProjection(snapshotRules, m2l.getKey(), clasf.getCode()) * m2l.getValue();
+								}	
 							}
 						}
 					}
 					clasfIfc.setLastLike(lastLike == 0 ? null : lastLike);
 					clasfIfc.setProjection(Math.round(proj) == 0 ? null : Math.round(proj));
+					
+					clasfIfc.setSessionHasSnapshotData(hasSnapshotData);
+					if (hasSnapshotData) {
+						clasfIfc.setSnapshotProjection(Math.round(snapshotProj) == 0 ? null : Math.round(snapshotProj));
+					} else {
+						clasfIfc.setSnapshotProjection(null);
+					}
 					clasfIfc.setEnrollment(clasf2enrl.get(clasf.getId()));
 					clasfIfc.setRequested(clasf2req.get(clasf.getId()));
 					AcademicClassificationInterface acadClasfIfc = new AcademicClassificationInterface();
@@ -389,6 +459,11 @@ public class CurriculaServlet implements CurriculaService {
 						for (CurriculumClassification clasf: x.getClassifications()) {
 							CurriculumClassificationInterface clasfIfc = curriculumIfc.getClassification(clasf.getAcademicClassification().getUniqueId());
 							clasfIfc.setExpected(0);
+							if (hasSnapshotData) {
+								clasfIfc.setSnapshotExpected(0);
+							} else {
+								clasfIfc.setSnapshotExpected(null);
+							}
 							idx = classifications.get(clasf.getAcademicClassification().getUniqueId());
 							for (CurriculumCourse course: clasf.getCourses()) {
 								CourseInterface courseIfc = curriculumIfc.getCourse(course.getCourse().getUniqueId());
@@ -404,11 +479,21 @@ public class CurriculaServlet implements CurriculaService {
 									curCourseIfc.setCourseOfferingId(course.getCourse().getUniqueId());
 									curCourseIfc.setCourseName(course.getCourse().getCourseName());
 									curCourseIfc.setDefaultShare(course.getPercShare());
+									curCourseIfc.setSessionHasSnapshotData(hasSnapshotData);
+									if (hasSnapshotData) {
+										curCourseIfc.setDefaultSnapshotShare(course.getSnapshotPercShare());
+									}
 									courseIfc.setCurriculumCourse(idx, curCourseIfc);
 									curCourseIfc.addTemplate(template);
-								} else if (course.getPercShare() >= curCourseIfc.getDefaultShare()) {
-									curCourseIfc.setDefaultShare(course.getPercShare());
-									curCourseIfc.addTemplate(template);
+								} else { 
+									if (course.getPercShare() >= curCourseIfc.getDefaultShare()) {
+										curCourseIfc.setDefaultShare(course.getPercShare());
+										curCourseIfc.addTemplate(template);
+									}
+									if (hasSnapshotData && course.getSnapshotPercShare() >= curCourseIfc.getDefaultSnapshotShare()) {
+										curCourseIfc.setDefaultSnapshotShare(course.getSnapshotPercShare());
+										curCourseIfc.addTemplate(template);
+									}
 								}
 								for (CurriculumCourseGroup group: course.getGroups()) {
 									CurriculumCourseGroupInterface g = groups.get(group.getUniqueId());
@@ -431,6 +516,11 @@ public class CurriculaServlet implements CurriculaService {
 					CurriculumClassificationInterface clasfIfc = curriculumIfc.getClassification(clasf.getAcademicClassification().getUniqueId());
 					clasfIfc.setId(clasf.getUniqueId());
 					clasfIfc.setExpected(clasf.getNrStudents());
+					if (hasSnapshotData) {
+						clasfIfc.setSnapshotExpected(clasf.getSnapshotNrStudents());
+					} else {
+						clasfIfc.setSnapshotExpected(null);
+					}
 					idx = classifications.get(clasf.getAcademicClassification().getUniqueId());
 					
 					for (CurriculumCourse course: clasf.getCourses()) {
@@ -446,6 +536,9 @@ public class CurriculaServlet implements CurriculaService {
 							curCourseIfc = new CurriculumCourseInterface();
 							curCourseIfc.setCourseOfferingId(course.getCourse().getUniqueId());
 							curCourseIfc.setShare(course.getPercShare());
+							if (hasSnapshotData) {
+								curCourseIfc.setSnapshotShare(course.getSnapshotPercShare());
+							}
 							curCourseIfc.setCourseName(course.getCourse().getCourseName());
 							courseIfc.setCurriculumCourse(idx, curCourseIfc);
 						}
@@ -453,6 +546,9 @@ public class CurriculaServlet implements CurriculaService {
 						curCourseIfc.setCurriculumClassificationId(clasf.getUniqueId());
 						curCourseIfc.setShare(course.getPercShare());
 						
+						if (hasSnapshotData) {
+							curCourseIfc.setSnapshotShare(course.getSnapshotPercShare());
+						}
 						for (CurriculumCourseGroup group: course.getGroups()) {
 							CurriculumCourseGroupInterface g = groups.get(group.getUniqueId());
 							if (g == null) {
@@ -485,6 +581,7 @@ public class CurriculaServlet implements CurriculaService {
 								curCourseIfc.setRequested(course2req == null ? null : course2req.get(courseIfc.getId()));
 								int courseLastLike = 0;
 								float courseProj = 0;
+								float courseSnapshotProj = 0;
 								if (c.isMultipleMajors() && c.getMajors().size() > 2) {
 									if (major2course2ll != null) {
 										for (Hashtable<Long,Integer> m2l: major2course2ll.values()) {
@@ -493,10 +590,18 @@ public class CurriculaServlet implements CurriculaService {
 												courseLastLike += ll;
 										}
 										double rule = 1.0;
-										for (PosMajor m: c.getMajors())
+										double snapshotRule = 1.0;
+										for (PosMajor m: c.getMajors()) {
 											rule *= getProjection(rules, m.getCode(), clasfIfc.getAcademicClassification().getCode());
+											if (hasSnapshotData) {
+												snapshotRule *= getSnapshotProjection(snapshotRules, m.getCode(), clasfIfc.getAcademicClassification().getCode());
+											}
+										}
 										courseProj = (float)(Math.pow(rule, 1.0 / c.getMajors().size()) * courseLastLike);
-									}									
+										if (hasSnapshotData) {
+											courseSnapshotProj = (float)(Math.pow(snapshotRule, 1.0 / c.getMajors().size()) * courseLastLike);
+										}
+									}
 								} else {
 									if (major2course2ll != null) {
 										for (Map.Entry<String,Hashtable<Long,Integer>> m2l: major2course2ll.entrySet()) {
@@ -504,12 +609,22 @@ public class CurriculaServlet implements CurriculaService {
 											if (ll != null) {
 												courseLastLike += ll;
 												courseProj += getProjection(rules, m2l.getKey(), clasfIfc.getAcademicClassification().getCode());
+												if (hasSnapshotData) {
+													courseSnapshotProj += getSnapshotProjection(snapshotRules, m2l.getKey(), clasfIfc.getAcademicClassification().getCode());
+												}
 											}
 										}
 									}
 								}
 								curCourseIfc.setLastLike(courseLastLike == 0 ? null : courseLastLike);
 								curCourseIfc.setProjection(Math.round(courseProj) == 0 ? null : Math.round(courseProj));
+								
+								curCourseIfc.setSessionHasSnapshotData(hasSnapshotData);
+								if (hasSnapshotData) {
+									curCourseIfc.setSnapshotProjection(Math.round(courseSnapshotProj) == 0 ? null : Math.round(courseSnapshotProj));
+								} else {
+									curCourseIfc.setSnapshotProjection(null);
+								}
 							}
 						}
 					}
@@ -547,6 +662,7 @@ public class CurriculaServlet implements CurriculaService {
 			}
 			
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
+			boolean hasSnapshotData = hasSnapshotData(hibSession, getAcademicSessionId());
 			try {
 				AcademicArea acadArea = AcademicAreaDAO.getInstance().get(acadAreaId, hibSession);
 				
@@ -574,6 +690,7 @@ public class CurriculaServlet implements CurriculaService {
 				for (AcademicClassificationInterface clasf: academicClassifications) {
 					CurriculumClassificationInterface clasfIfc = new CurriculumClassificationInterface();
 					clasfIfc.setName(clasf.getCode());
+					clasfIfc.setSessionHasSnapshotData(hasSnapshotData);
 					AcademicClassificationInterface acadClasfIfc = new AcademicClassificationInterface();
 					acadClasfIfc.setId(clasf.getId());
 					acadClasfIfc.setName(clasf.getName());
@@ -605,6 +722,11 @@ public class CurriculaServlet implements CurriculaService {
 					for (CurriculumClassification clasf: x.getClassifications()) {
 						CurriculumClassificationInterface clasfIfc = curriculumIfc.getClassification(clasf.getAcademicClassification().getUniqueId());
 						clasfIfc.setExpected(0);
+						if (hasSnapshotData) {
+							clasfIfc.setSnapshotExpected(0);
+						} else {
+							clasfIfc.setSnapshotExpected(null);
+						}
 						idx = classifications.get(clasf.getAcademicClassification().getUniqueId());
 						for (CurriculumCourse course: clasf.getCourses()) {
 							CourseInterface courseIfc = curriculumIfc.getCourse(course.getCourse().getUniqueId());
@@ -620,11 +742,21 @@ public class CurriculaServlet implements CurriculaService {
 								curCourseIfc.setCourseOfferingId(course.getCourse().getUniqueId());
 								curCourseIfc.setCourseName(course.getCourse().getCourseName());
 								curCourseIfc.setDefaultShare(course.getPercShare());
+								curCourseIfc.setSessionHasSnapshotData(hasSnapshotData);
+								if (hasSnapshotData){
+									curCourseIfc.setDefaultSnapshotShare(course.getSnapshotPercShare());
+								}
 								courseIfc.setCurriculumCourse(idx, curCourseIfc);
 								curCourseIfc.addTemplate(template);
-							} else if (course.getPercShare() >= curCourseIfc.getDefaultShare()) {
-								curCourseIfc.setDefaultShare(course.getPercShare());
-								curCourseIfc.addTemplate(template);
+							} else {
+								if (course.getPercShare() >= curCourseIfc.getDefaultShare()) {
+									curCourseIfc.setDefaultShare(course.getPercShare());
+									curCourseIfc.addTemplate(template);
+								}
+								if (hasSnapshotData && course.getSnapshotPercShare() >= curCourseIfc.getDefaultSnapshotShare()) {
+									curCourseIfc.setDefaultSnapshotShare(course.getSnapshotPercShare());
+									curCourseIfc.addTemplate(template);
+								}
 							}
 							for (CurriculumCourseGroup group: course.getGroups()) {
 								CurriculumCourseGroupInterface g = groups.get(group.getUniqueId());
@@ -1096,6 +1228,7 @@ public class CurriculaServlet implements CurriculaService {
 				ArrayList<Curriculum> merged = new ArrayList<Curriculum>();
 				
 				Boolean multipleMajors = null;
+				boolean hasSnapshotData = hasSnapshotData(hibSession, getAcademicSessionId());
 				for (Long curriculumId: curriculumIds) {
 					if (curriculumId == null) 
 						throw new CurriculaException(MESSAGES.errorCannotMergeUnsavedCurriculum());
@@ -1171,6 +1304,18 @@ public class CurriculaServlet implements CurriculaService {
 									(course.getPercShare() == null || clasf.getNrStudents() == null ? 0f : course.getPercShare() * clasf.getNrStudents())) / 
 									(mergedClasf.getNrStudents() + (clasf.getNrStudents() == null ? 0 : clasf.getNrStudents()))
 									);
+							
+							if (hasSnapshotData) {
+								mergedCourse.setSnapshotPercShare(
+										(mergedCourse.getSnapshotPercShare() * mergedClasf.getSnapshotNrStudents()
+												+ (course.getSnapshotPercShare() == null
+														|| clasf.getSnapshotNrStudents() == null ? 0f
+																: course.getSnapshotPercShare()
+																		* clasf.getSnapshotNrStudents()))
+												/ (mergedClasf.getSnapshotNrStudents()
+														+ (clasf.getSnapshotNrStudents() == null ? 0
+																: clasf.getSnapshotNrStudents())));
+							}
 
 							for (Iterator<CurriculumCourseGroup> k = course.getGroups().iterator(); k.hasNext(); ) {
 								CurriculumCourseGroup group = k.next();
@@ -1189,11 +1334,17 @@ public class CurriculaServlet implements CurriculaService {
 						}
 						
 						for (CurriculumCourse mergedCourse: remainingMergedCourses) {
-							if (clasf.getNrStudents() != null && clasf.getNrStudents() > 0)
+							if (clasf.getNrStudents() != null && clasf.getNrStudents() > 0) {
 								mergedCourse.setPercShare(
 										(mergedCourse.getPercShare() * mergedClasf.getNrStudents()) / 
 										(mergedClasf.getNrStudents() + clasf.getNrStudents())
 										);
+								if (hasSnapshotData) {
+									mergedCourse.setSnapshotPercShare((mergedCourse.getSnapshotPercShare()
+											* mergedClasf.getSnapshotNrStudents())
+											/ (mergedClasf.getSnapshotNrStudents() + clasf.getSnapshotNrStudents()));
+								}
+							}
 						}
 						
 						mergedClasf.setNrStudents(mergedClasf.getNrStudents() + (clasf.getNrStudents() == null ? 0 : clasf.getNrStudents()));
@@ -1316,6 +1467,7 @@ public class CurriculaServlet implements CurriculaService {
 			if (acadAreaId == null) return new HashMap<String, CurriculumStudentsInterface[]>();
 			Hashtable<Long, Integer> classificationIndex = new Hashtable<Long, Integer>();
 			int idx = 0;
+			boolean hasSnapshotData = hasSnapshotData(CurriculumDAO.getInstance().getSession(), getAcademicSessionId());
 			TreeSet<AcademicClassificationInterface> classifications = loadAcademicClassifications();
 			for (AcademicClassificationInterface clasf: classifications) {
 				classificationIndex.put(clasf.getId(), idx++);
@@ -1324,6 +1476,7 @@ public class CurriculaServlet implements CurriculaService {
 			HashMap<String, CurriculumStudentsInterface[]> results = new HashMap<String, CurriculumStudentsInterface[]>();
 			try {
 				Hashtable<String,HashMap<String, Float>> rules = getRules(hibSession, acadAreaId);
+				Hashtable<String, HashMap<String, Float>> snapshotRules = getSnapshotRules(hibSession, acadAreaId);
 
 				AcademicArea acadArea = AcademicAreaDAO.getInstance().get(acadAreaId, hibSession);
 				
@@ -1358,6 +1511,8 @@ public class CurriculaServlet implements CurriculaService {
 					x[col].setEnrolledStudents(clasf2enrl.get(clasf.getId()));
 					x[col].setLastLikeStudents(clasf2ll.get(clasf.getCode()));
 					x[col].setRequestedStudents(clasf2req.get(clasf.getId()));
+					x[col].setSnapshotProjection(snapshotRules.get(clasf.getCode()));
+					x[col].setSessionHasSnapshotData(hasSnapshotData);
 					
 					Hashtable<CourseInterface, HashMap<String, Set<Long>>> lastLike = clasf2course2ll.get(clasf.getCode());
 					Hashtable<CourseInterface, Set<Long>> enrollment = clasf2course2enrl.get(clasf.getId());
@@ -1391,6 +1546,8 @@ public class CurriculaServlet implements CurriculaService {
 						c[col].setEnrolledStudents(enrollment == null ? null : enrollment.get(co));
 						c[col].setLastLikeStudents(lastLike == null ? null : lastLike.get(co));
 						c[col].setRequestedStudents(requested == null ? null : requested.get(co));
+						c[col].setSnapshotProjection(snapshotRules == null ? null : snapshotRules.get(clasf.getCode()));
+						c[col].setSessionHasSnapshotData(hasSnapshotData);
 					}
 				}
 			} finally {
@@ -1427,6 +1584,8 @@ public class CurriculaServlet implements CurriculaService {
 		Hashtable<Long, CurriculumInterface> curricula = new Hashtable<Long, CurriculumInterface>();
 		Hashtable<Long, Hashtable<Long, Integer>> cur2clasf2enrl = new Hashtable<Long, Hashtable<Long, Integer>>();
 		Hashtable<Long, Hashtable<String, Integer>> cur2clasf2ll = new Hashtable<Long, Hashtable<String, Integer>>();
+		boolean hasSnapshotData = hasSnapshotData(CurriculumDAO.getInstance().getSession(), getAcademicSessionId());
+
 		for (CurriculumCourse course : (List<CurriculumCourse>)hibSession.createQuery(
 				"select c from CurriculumCourse c where c.course.uniqueId = :courseId")
 				.setLong("courseId", courseOffering.getUniqueId()).setCacheable(true).list()) {
@@ -1462,6 +1621,7 @@ public class CurriculaServlet implements CurriculaService {
 						curriculumIfc.setAbbv(child.getAbbv());
 						curriculumIfc.setName(child.getName());
 						curriculumIfc.setMultipleMajors(child.isMultipleMajors());
+						curriculumIfc.setSessionHasSnapshotData(hasSnapshotData);
 						AcademicAreaInterface areaIfc = new AcademicAreaInterface();
 						areaIfc.setId(child.getAcademicArea().getUniqueId());
 						areaIfc.setAbbv(child.getAcademicArea().getAcademicAreaAbbreviation());
@@ -1495,6 +1655,12 @@ public class CurriculaServlet implements CurriculaService {
 					curClasfIfc.setCurriculumId(child.getUniqueId());
 					curClasfIfc.setLastLike(cur2clasf2ll.get(child.getUniqueId()).get(childClasf.getAcademicClassification().getCode()));
 					curClasfIfc.setExpected(childClasf.getNrStudents());
+					curClasfIfc.setSessionHasSnapshotData(hasSnapshotData);
+					if (hasSnapshotData) {
+						curClasfIfc.setSnapshotExpected(childClasf.getSnapshotNrStudents());
+					} else {
+						curClasfIfc.setSnapshotExpected(null);
+					}
 					curClasfIfc.setEnrollment(cur2clasf2enrl.get(child.getUniqueId()).get(childClasf.getAcademicClassification().getUniqueId()));
 					AcademicClassificationInterface acadClasfIfc = new AcademicClassificationInterface();
 					acadClasfIfc.setId(childClasf.getAcademicClassification().getUniqueId());
@@ -1520,8 +1686,17 @@ public class CurriculaServlet implements CurriculaService {
 						curCourseIfc.setCurriculumClassificationId(childClasf.getUniqueId());
 						curCourseIfc.setDefaultShare(course.getPercShare());
 						curCourseIfc.setCourseName(course.getCourse().getCourseName());
-					} else if (curCourseIfc.getDefaultShare() < course.getPercShare()) {
-						curCourseIfc.setDefaultShare(course.getPercShare());
+						curCourseIfc.setSessionHasSnapshotData(hasSnapshotData);
+						if (hasSnapshotData) {
+							curCourseIfc.setDefaultSnapshotShare(course.getSnapshotPercShare());
+						}
+					} else {
+						if (curCourseIfc.getDefaultShare() < course.getPercShare()) {
+							curCourseIfc.setDefaultShare(course.getPercShare());
+						}
+						if (curCourseIfc.getDefaultSnapshotShare() < course.getSnapshotPercShare()) {
+							curCourseIfc.setDefaultSnapshotShare(course.getSnapshotPercShare());
+						}
 					}
 
 					courseIfc.setCurriculumCourse(classifications.get(childClasf.getAcademicClassification().getUniqueId()), curCourseIfc);
@@ -1536,6 +1711,7 @@ public class CurriculaServlet implements CurriculaService {
 				curriculumIfc.setAbbv(curriculum.getAbbv());
 				curriculumIfc.setName(curriculum.getName());
 				curriculumIfc.setMultipleMajors(curriculum.isMultipleMajors());
+				curriculumIfc.setSessionHasSnapshotData(hasSnapshotData);
 				AcademicAreaInterface areaIfc = new AcademicAreaInterface();
 				areaIfc.setId(curriculum.getAcademicArea().getUniqueId());
 				areaIfc.setAbbv(curriculum.getAcademicArea().getAcademicAreaAbbreviation());
@@ -1570,6 +1746,12 @@ public class CurriculaServlet implements CurriculaService {
 			curClasfIfc.setCurriculumId(curriculum.getUniqueId());
 			curClasfIfc.setLastLike(cur2clasf2ll.get(curriculum.getUniqueId()).get(clasf.getAcademicClassification().getCode()));
 			curClasfIfc.setExpected(clasf.getNrStudents());
+			curClasfIfc.setSessionHasSnapshotData(hasSnapshotData);
+			if (hasSnapshotData) {
+				curClasfIfc.setSnapshotExpected(clasf.getSnapshotNrStudents());
+			} else {
+				curClasfIfc.setSnapshotExpected(null);
+			}
 			curClasfIfc.setEnrollment(cur2clasf2enrl.get(curriculum.getUniqueId()).get(clasf.getAcademicClassification().getUniqueId()));
 			AcademicClassificationInterface acadClasfIfc = new AcademicClassificationInterface();
 			acadClasfIfc.setId(clasf.getAcademicClassification().getUniqueId());
@@ -1593,6 +1775,10 @@ public class CurriculaServlet implements CurriculaService {
 			curCourseIfc.setCourseOfferingId(course.getCourse().getUniqueId());
 			curCourseIfc.setCurriculumClassificationId(clasf.getUniqueId());
 			curCourseIfc.setShare(course.getPercShare());
+			curCourseIfc.setSessionHasSnapshotData(hasSnapshotData);
+			if (hasSnapshotData) {
+				curCourseIfc.setSnapshotShare(course.getSnapshotPercShare());
+			}
 			curCourseIfc.setCourseName(course.getCourse().getCourseName());
 			
 			courseIfc.setCurriculumCourse(classifications.get(clasf.getAcademicClassification().getUniqueId()), curCourseIfc);
@@ -1612,8 +1798,11 @@ public class CurriculaServlet implements CurriculaService {
 		
 		for (CurriculumInterface curriculumIfc: results) {
 			Hashtable<String,HashMap<String, Float>> rules = getRules(hibSession, curriculumIfc.getAcademicArea().getId());
-			for (AcademicClassificationInterface clasf: academicClassifications) {
-				
+			Hashtable<String, HashMap<String, Float>> snapshotRules = null;
+			if (hasSnapshotData) {
+				snapshotRules = getSnapshotRules(hibSession, curriculumIfc.getAcademicArea().getId());
+			}
+			for (AcademicClassificationInterface clasf : academicClassifications) {
 				int enrl = 0;
 				Map<Long, Map<Long, Set<Long>>> major2clasf2enrl = area2major2clasf2enrl.get(curriculumIfc.getAcademicArea().getId());
 				if (major2clasf2enrl != null) {
@@ -1683,6 +1872,7 @@ public class CurriculaServlet implements CurriculaService {
 				
 				int lastLike = 0;
 				float proj = 0.0f;
+				float snapshotProj = 0.0f;
 				Map<String, Map<String, Set<Long>>> major2clasf2ll = area2major2clasf2ll.get(curriculumIfc.getAcademicArea().getAbbv());
 				if (major2clasf2ll != null) {
 					if (!curriculumIfc.hasMajors()) {
@@ -1695,7 +1885,7 @@ public class CurriculaServlet implements CurriculaService {
 							}
 						} else {
 							Set<Long> s = new HashSet<Long>();
-							for (Map.Entry<String, Map<String, Set<Long>>> entry: major2clasf2ll.entrySet()) {
+							for (Map.Entry<String, Map<String, Set<Long>>> entry : major2clasf2ll.entrySet()) {
 								Map<String, Set<Long>> clasf2ll = entry.getValue();
 								Set<Long> e = (clasf2ll == null ? null : clasf2ll.get(clasf.getCode()));
 								if (e != null) {
@@ -1703,6 +1893,10 @@ public class CurriculaServlet implements CurriculaService {
 									for (Long id: e)
 										if (s.add(id)) add++;
 									proj += getProjection(rules, entry.getKey(), clasf.getCode()) * add;
+									if (hasSnapshotData) {
+										snapshotProj += getSnapshotProjection(snapshotRules, entry.getKey(),
+												clasf.getCode()) * add;
+									}
 									clasf2ll.remove(clasf.getId());
 								}
 							}
@@ -1712,7 +1906,8 @@ public class CurriculaServlet implements CurriculaService {
 						if (curriculumIfc.isMultipleMajors()) {
 							Set<Long> s = null;
 							float p = 1.0f;
-							for (MajorInterface m: curriculumIfc.getMajors()) {
+							float ssp = 1.0f;
+							for (MajorInterface m : curriculumIfc.getMajors()) {
 								Map<String, Set<Long>> clasf2ll = major2clasf2ll.get(m.getCode());
 								Set<Long> e = (clasf2ll == null ? null : clasf2ll.get(clasf.getCode()));
 								if (e == null) {
@@ -1727,10 +1922,16 @@ public class CurriculaServlet implements CurriculaService {
 										s.retainAll(e);
 								}
 								p *= getProjection(rules, m.getCode(), clasf.getCode());
+								if (hasSnapshotData) {
+									ssp *= getSnapshotProjection(snapshotRules, m.getCode(), clasf.getCode());
+								}
 							}
 							if (s != null && !s.isEmpty()) {
 								lastLike += s.size();
 								proj += Math.pow(p, 1.0 / curriculumIfc.getMajors().size()) * s.size();
+								if (hasSnapshotData) {
+									snapshotProj += Math.pow(ssp, 1.0 / curriculumIfc.getMajors().size()) * s.size();
+								}
 								for (MajorInterface m: curriculumIfc.getMajors()) {
 									Map<String, Set<Long>> clasf2ll = major2clasf2ll.get(m.getCode());
 									Set<Long> e = (clasf2ll == null ? null : clasf2ll.get(clasf.getCode()));
@@ -1751,6 +1952,10 @@ public class CurriculaServlet implements CurriculaService {
 									for (Long id: e)
 										if (s.add(id)) add ++;
 									proj += getProjection(rules, m.getCode(), clasf.getCode()) * add;
+									if (hasSnapshotData) {
+										snapshotProj += getSnapshotProjection(snapshotRules, m.getCode(),
+												clasf.getCode()) * add;
+									}
 									s.addAll(e);
 									clasf2ll.remove(clasf.getCode());
 								}
@@ -1856,6 +2061,14 @@ public class CurriculaServlet implements CurriculaService {
 					if (Math.round(proj) > 0)
 						curCourseIfc.setProjection(Math.round(proj));
 					
+					curCourseIfc.setSessionHasSnapshotData(hasSnapshotData);
+					if (hasSnapshotData) {
+						if (Math.round(snapshotProj) > 0)
+							curCourseIfc.setSnapshotProjection(Math.round(snapshotProj));
+					} else {
+						curCourseIfc.setSnapshotProjection(null);
+					}
+
 					if (req > 0)
 						curCourseIfc.setRequested(req);
 				}
@@ -1872,6 +2085,10 @@ public class CurriculaServlet implements CurriculaService {
 		}
 		for (Long areaId: areas) {
 			Hashtable<String,HashMap<String, Float>> rules = getRules(hibSession, areaId);
+			Hashtable<String, HashMap<String, Float>> snapshotRules = null;
+			if (hasSnapshotData) {
+				snapshotRules = getSnapshotRules(hibSession, areaId);
+			}
 			boolean empty = true;
 			CurriculumInterface otherCurriculumIfc = new CurriculumInterface();
 			CourseInterface otherCourseIfc = new CourseInterface();
@@ -1893,6 +2110,7 @@ public class CurriculaServlet implements CurriculaService {
 				
 				int lastLike = 0;
 				int proj = 0;
+				int snapshotProj = 0;
 				Map<String, Map<String, Set<Long>>> major2clasf2ll = area2major2clasf2ll.get(areasId2Abbv.get(areaId));
 				if (major2clasf2ll != null) {
 					Set<Long> s = new HashSet<Long>();
@@ -1904,6 +2122,9 @@ public class CurriculaServlet implements CurriculaService {
 							for (Long id: e)
 								if (s.add(id)) add++;
 							proj += Math.round(getProjection(rules, entry.getKey(), clasf.getCode()) * add);
+							if (hasSnapshotData) {
+								snapshotProj += Math.round(getSnapshotProjection(snapshotRules, entry.getKey(), clasf.getCode()) * add);
+							}
 						}
 					}
 					lastLike += s.size();
@@ -1921,7 +2142,7 @@ public class CurriculaServlet implements CurriculaService {
 					req += s.size();
 				}
 				
-				if (enrl > 0 || lastLike > 0 || proj > 0 || req > 0) {
+				if (enrl > 0 || lastLike > 0 || proj > 0 || req > 0 || snapshotProj > 0) {
 					CurriculumCourseInterface otherCurCourseIfc = new CurriculumCourseInterface();
 					otherCurCourseIfc.setCourseOfferingId(courseOffering.getUniqueId());
 					otherCurCourseIfc.setCourseName(courseOffering.getCourseName());
@@ -1933,6 +2154,14 @@ public class CurriculaServlet implements CurriculaService {
 						otherCurCourseIfc.setProjection(proj);
 					if (req > 0)
 						otherCurCourseIfc.setRequested(req);
+					otherCurCourseIfc.setSessionHasSnapshotData(hasSnapshotData);
+					if (hasSnapshotData) {
+						if (snapshotProj > 0) {
+							otherCurCourseIfc.setSnapshotProjection(snapshotProj);
+						}
+					} else {
+						otherCurCourseIfc.setSnapshotProjection(null);
+					}
 					otherCourseIfc.setCurriculumCourse(classifications.get(clasf.getId()), otherCurCourseIfc);
 					empty = false;
 				}
@@ -4269,7 +4498,15 @@ public class CurriculaServlet implements CurriculaService {
 		}
 		return null;
 	}
-	
+
+	private boolean hasSnapshotData(org.hibernate.Session hibSession, Long sessionId) {
+		Long cnt = (Long) hibSession
+				.createQuery(
+						"select count(1) from InstructionalOffering io where io.snapshotLimitDate is not null and io.session.uniqueId = :sessId")
+				.setLong("sessId", sessionId).setCacheable(true).uniqueResult();
+		return (cnt.longValue() > 0);
+	}
+
 	private Hashtable<String,HashMap<String, Float>> getRules(org.hibernate.Session hibSession, Long acadAreaId) {
 		Hashtable<String,HashMap<String, Float>> clasf2major2proj = new Hashtable<String, HashMap<String,Float>>();
 		for (CurriculumProjectionRule rule: (List<CurriculumProjectionRule>)hibSession.createQuery(
@@ -4311,7 +4548,56 @@ public class CurriculaServlet implements CurriculaService {
 		}
 		return area2clasf2major2proj;
 	}
-	
+
+	private Hashtable<String, HashMap<String, Float>> getSnapshotRules(org.hibernate.Session hibSession,
+			Long acadAreaId) {
+		Hashtable<String, HashMap<String, Float>> clasf2major2ssproj = new Hashtable<String, HashMap<String, Float>>();
+		if (hasSnapshotData(hibSession, getAcademicSessionId())) {
+			for (CurriculumProjectionRule rule : (List<CurriculumProjectionRule>) hibSession
+					.createQuery("select r from CurriculumProjectionRule r where r.academicArea.uniqueId=:acadAreaId")
+					.setLong("acadAreaId", acadAreaId).setCacheable(true).list()) {
+				String majorCode = (rule.getMajor() == null ? "" : rule.getMajor().getCode());
+				String clasfCode = rule.getAcademicClassification().getCode();
+				Float snapshotProjection = rule.getSnapshotProjection();
+				HashMap<String, Float> major2ssproj = clasf2major2ssproj.get(clasfCode);
+				if (major2ssproj == null) {
+					major2ssproj = new HashMap<String, Float>();
+					clasf2major2ssproj.put(clasfCode, major2ssproj);
+				}
+				major2ssproj.put(majorCode, snapshotProjection);
+			}
+		}
+		return clasf2major2ssproj;
+	}
+
+	private Hashtable<String, Hashtable<String, HashMap<String, Float>>> getSnapshotRules(
+			org.hibernate.Session hibSession) {
+		Hashtable<String, Hashtable<String, HashMap<String, Float>>> area2clasf2major2ssproj = new Hashtable<String, Hashtable<String, HashMap<String, Float>>>();
+		if (hasSnapshotData(hibSession, getAcademicSessionId())) {
+			for (CurriculumProjectionRule rule : (List<CurriculumProjectionRule>) hibSession
+					.createQuery(
+							"select r from CurriculumProjectionRule r where r.academicArea.session.uniqueId = :sessionId")
+					.setLong("sessionId", getAcademicSessionId()).setCacheable(true).list()) {
+				String areaAbbv = rule.getAcademicArea().getAcademicAreaAbbreviation();
+				String majorCode = (rule.getMajor() == null ? "" : rule.getMajor().getCode());
+				String clasfCode = rule.getAcademicClassification().getCode();
+				Float snapshotProjection = rule.getSnapshotProjection();
+				Hashtable<String, HashMap<String, Float>> clasf2major2ssproj = area2clasf2major2ssproj.get(areaAbbv);
+				if (clasf2major2ssproj == null) {
+					clasf2major2ssproj = new Hashtable<String, HashMap<String, Float>>();
+					area2clasf2major2ssproj.put(areaAbbv, clasf2major2ssproj);
+				}
+				HashMap<String, Float> major2ssproj = clasf2major2ssproj.get(clasfCode);
+				if (major2ssproj == null) {
+					major2ssproj = new HashMap<String, Float>();
+					clasf2major2ssproj.put(clasfCode, major2ssproj);
+				}
+				major2ssproj.put(majorCode, snapshotProjection);
+			}
+		}
+		return area2clasf2major2ssproj;
+	}
+
 	public float getProjection(Hashtable<String,HashMap<String, Float>> clasf2major2proj, String majorCode, String clasfCode) {
 		if (clasf2major2proj == null || clasf2major2proj.isEmpty()) return 1.0f;
 		HashMap<String, Float> major2proj = clasf2major2proj.get(clasfCode);
@@ -4321,4 +4607,18 @@ public class CurriculaServlet implements CurriculaService {
 			projection = major2proj.get("");
 		return (projection == null ? 1.0f : projection);
 	}
+
+	public float getSnapshotProjection(Hashtable<String, HashMap<String, Float>> clasf2major2ssproj, String majorCode,
+			String clasfCode) {
+		if (clasf2major2ssproj == null || clasf2major2ssproj.isEmpty())
+			return 1.0f;
+		HashMap<String, Float> major2ssproj = clasf2major2ssproj.get(clasfCode);
+		if (major2ssproj == null)
+			return 1.0f;
+		Float snapshotProjection = major2ssproj.get(majorCode);
+		if (snapshotProjection == null)
+			snapshotProjection = major2ssproj.get("");
+		return (snapshotProjection == null ? 1.0f : snapshotProjection);
+	}
+
 }

@@ -477,6 +477,7 @@ public class ClassEditAction extends PreferencesAction {
         frm.setPreviousId(previous==null?null:previous.getUniqueId().toString());
         frm.setMinRoomLimit(c.getMinRoomLimit());
         frm.setEnrollment(c.getEnrollment());
+        frm.setSnapshotLimit(c.getSnapshotLimit());
 
         // Load from class only for initial load or reload
         if(op.equals("init")) {

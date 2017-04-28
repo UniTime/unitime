@@ -31,7 +31,7 @@ public class CurriculumCookie {
 	private boolean iRulesPercent = true;
 	private boolean iRulesShowLastLike = false;
 	private boolean iCourseDetails = false;
-	private boolean iShowLast = true, iShowProjected = true, iShowExpected = true, iShowEnrolled = true, iShowRequested = false;
+	private boolean iShowLast = true, iShowProjected = true, iShowExpected = true, iShowEnrolled = true, iShowRequested = false, iShowSnapshotExpected = false, iShowSnapshotProjected = false;
 	private int iSortBy = 0;
 	private CurriculaTable.DisplayMode iCurMode = new CurriculaTable.DisplayMode() {
 		@Override
@@ -59,7 +59,9 @@ public class CurriculumCookie {
 				iShowExpected = !"F".equals(values[9]);
 				iShowEnrolled = !"F".equals(values[10]);
 				iShowRequested = "T".equals(values[11]);
-				iSortBy = Integer.parseInt(values[12]);
+				iShowSnapshotExpected = !"T".equals(values[12]);
+				iShowSnapshotProjected = !"T".equals(values[13]);
+				iSortBy = Integer.parseInt(values[14]);
 			}
 		} catch (Exception e) {
 		}
@@ -79,6 +81,8 @@ public class CurriculumCookie {
 			(iShowExpected ? "T" : "F") + ":" +
 			(iShowEnrolled ? "T" : "F") + ":" +
 			(iShowRequested ? "T" : "F") + ":" + 
+			(iShowSnapshotExpected ? "T" : "F") + ":" +
+			(iShowSnapshotProjected ? "T" : "F") + ":" +
 			iSortBy;
 			;
 		Cookies.setCookie("UniTime:Curriculum", cookie);
@@ -163,8 +167,14 @@ public class CurriculumCookie {
 	public boolean isShowRequested() { return iShowRequested; }
 	public void setShowRequested(boolean show) { iShowRequested = show; save(); }
 	
+	public boolean isShowSnapshotExpected() { return iShowSnapshotExpected; }
+	public void setShowSnapshotExpected(boolean show) { iShowSnapshotExpected = show; save(); }
+
+	public boolean isShowSnapshotProjected() { return iShowSnapshotProjected; }
+	public void setShowSnapshotProjected(boolean show) { iShowSnapshotProjected = show; save(); }
+
 	public boolean isAllHidden() {
-		return !iShowLast && !iShowProjected && !iShowExpected && !iShowEnrolled && !iShowRequested;
+		return !iShowLast && !iShowProjected && !iShowExpected && !iShowEnrolled && !iShowRequested && !iShowSnapshotExpected && !iShowSnapshotProjected;
 	}
 	
 	public int getSortBy() { return iSortBy; }

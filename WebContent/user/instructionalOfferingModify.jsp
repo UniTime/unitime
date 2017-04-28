@@ -127,6 +127,7 @@
 	<html:hidden property="displayMaxLimit"/>
 	<html:hidden property="displayOptionForMaxLimit"/>
 	<html:hidden property="displayEnrollment"/>
+	<html:hidden property="displaySnapshotLimit"/>
 	<html:hidden property="displayExternalId"/>
 	<html:hidden property="editExternalId"/>
 	<html:hidden property="displayDisplayInstructors"/>
@@ -316,6 +317,10 @@
 							<TD align="center" valign="bottom" rowSpan="2" class='WebTableHeader'><loc:message name="columnEnroll"/></TD>
 							<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
 						</logic:equal>
+						<logic:equal name="<%=frmName%>" property="displaySnapshotLimit" value="true" >
+							<TD align="center" valign="bottom" rowSpan="2" class='WebTableHeader'><loc:message name="columnSnapshotLimit"/></TD>
+							<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
+						</logic:equal>
 						<logic:notEqual name="<%=frmName%>" property="instrOffrConfigUnlimited" value="true">
 							<logic:equal name="<%=frmName%>" property="displayMaxLimit" value="true" >
 								<TD align="center" valign="bottom" colSpan="2" class='WebTableHeaderFirstRow'><loc:message name="columnLimit"/></TD>
@@ -399,6 +404,7 @@
 								<html:hidden property='<%= "canDelete[" + ctr + "]" %>'/>
 								<html:hidden property='<%= "canCancel[" + ctr + "]" %>'/>
 								<html:hidden property='<%= "isCancelled[" + ctr + "]" %>'/>
+								<html:hidden property='<%= "snapshotLimits[" + ctr + "]" %>'/>
 								<%=frm.getClassLabelIndents().get(ctr.intValue()).toString()%>
 								<bean:write name="<%=frmName%>" property='<%= "classLabels[" + ctr + "]" %>'/> 
 								&nbsp;
@@ -472,6 +478,10 @@
 							</TD>
 							<logic:equal name="<%=frmName%>" property="displayEnrollment" value="true" >
 								<TD align="right" valign="top" nowrap><bean:write name="<%=frmName%>" property='<%= "enrollments[" + ctr + "]" %>'/></TD>
+								<TD>&nbsp;</TD>
+							</logic:equal>
+							<logic:equal name="<%=frmName%>" property="displaySnapshotLimit" value="true" >
+								<TD align="right" valign="top" nowrap><bean:write name="<%=frmName%>" property='<%= "snapshotLimits[" + ctr + "]" %>'/></TD>
 								<TD>&nbsp;</TD>
 							</logic:equal>
 							<logic:equal name="<%=frmName%>" property='<%= "isCancelled[" + ctr + "]" %>' value="true" >

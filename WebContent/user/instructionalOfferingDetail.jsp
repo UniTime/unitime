@@ -398,6 +398,21 @@
 				</logic:equal>
 			</TD>
 		</TR>
+		<logic:equal name="instructionalOfferingDetailForm" property="unlimited" value="false">
+		<logic:notEmpty name="instructionalOfferingDetailForm" property="snapshotLimit">
+		<TR>
+			<TD><loc:message name="propertySnapshotLimit"/> </TD>
+			<TD>
+				<logic:equal name="instructionalOfferingDetailForm" property="unlimited" value="false">
+						<bean:write name="instructionalOfferingDetailForm" property="snapshotLimit" /> 
+				</logic:equal>
+				<logic:equal name="instructionalOfferingDetailForm" property="unlimited" value="true">
+					<span title="<%=MSG.titleUnlimitedEnrollment() %>"><font size="+1">&infin;</font></span>
+				</logic:equal>
+			</TD>
+		</TR>
+		</logic:notEmpty>
+		</logic:equal>
 
 		<logic:equal name="instructionalOfferingDetailForm" property="byReservationOnly" value="true">
 			<TR>

@@ -651,6 +651,18 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Course<br>Registrations")
 	String colCourseRequests();
 	
+	@DefaultMessage("Snapshot<br>Projected<br>by&nbsp;Rule")
+	String colSnapshotProjectedByRule();
+
+	@DefaultMessage("Snapshot<br>Requested<br>Enrollment")
+	String colSnapshotRequestedEnrollment();
+
+	@DefaultMessage("Snapshot Requested Enrollment:")
+	String propSnapshotRequestedEnrollment();
+
+	@DefaultMessage("Snapshot Projected by Rule:")
+	String propSnapshotProjectedByRule();
+	
 	@DefaultMessage("Instructional<br>Offering")
 	String colInstructionalOffering();
 	
@@ -1158,6 +1170,24 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Course Registrations:")
 	String propCourseRequests();
 	
+	@DefaultMessage("Snap Proj")
+	String abbvSnapshotProjectedByRule();
+
+	@DefaultMessage("Snapshot Projected")
+	String shortSnapshotProjectedByRule();
+
+	@DefaultMessage("Snapshot Projected by Rule")
+	String fieldSnapshotProjectedByRule();
+
+	@DefaultMessage("Snap Req")
+	String abbvSnapshotRequestedEnrollment();
+
+	@DefaultMessage("Snapshot Requested")
+	String shortSnapshotRequestedEnrollment();
+
+	@DefaultMessage("Snapshot Requested Enrollment")
+	String fieldSnapshotRequestedEnrollment();
+
 	@DefaultMessage("Filter:")
 	String propFilter();
 	
@@ -1749,6 +1779,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Loading room details...")
 	String waitLoadingRoomDetails();
 	
+	@DefaultMessage("Storing snapshot...")
+	String waitStoringSnapshot();
+
 	@DefaultMessage("Saving room ...")
 	String waitSavingRoom();
 	
@@ -2066,6 +2099,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Failed to load unassigned classes: {0}")
 	String failedToLoadNotAssignedClasses(String reason);
+
+	@DefaultMessage("Failed to store snapshot: {0}")
+	String failedToStoreSnapshot(String reason);
 
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
@@ -3145,6 +3181,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Not-Assigned Classes")
 	@DoNotTranslate
 	String pageNotAssignedClasses();
+	
+	@DefaultMessage("Limit and Projection Snapshot")
+	@DoNotTranslate
+	String pageLimitAndProjectionSnapshot();	
 	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -5286,4 +5326,10 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("{0} has been deleted.")
 	String eventNoteRoomDeleted(String room);
+	
+	@DefaultMessage("Current Snapshot Date:")
+	String labelCurrentSnapshotDate();
+
+	@DefaultMessage("<u>T</u>ake New Snapshot")
+	String buttonTakeNewSnapshot();
 }

@@ -20,6 +20,7 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -52,6 +53,8 @@ public abstract class BaseCourseOffering implements Serializable {
 	private String iScheduleBookNote;
 	private String iExternalUniqueId;
 	private Long iUniqueIdRolledForwardFrom;
+	private Integer iSnapshotProjectedDemand;
+	private Date iSnapshotProjectedDemandDate;
 
 	private SubjectArea iSubjectArea;
 	private InstructionalOffering iInstructionalOffering;
@@ -74,6 +77,8 @@ public abstract class BaseCourseOffering implements Serializable {
 	public static String PROP_SCHEDULE_BOOK_NOTE = "scheduleBookNote";
 	public static String PROP_EXTERNAL_UID = "externalUniqueId";
 	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
+	public static String PROP_SNAPSHOT_PROJ_DEMAND = "snapshotProjectedDemand";
+	public static String PROP_SNAPSHOT_PRJ_DMD_DATE = "snapshotProjectedDemandDate";
 
 	public BaseCourseOffering() {
 		initialize();
@@ -128,6 +133,12 @@ public abstract class BaseCourseOffering implements Serializable {
 
 	public Long getUniqueIdRolledForwardFrom() { return iUniqueIdRolledForwardFrom; }
 	public void setUniqueIdRolledForwardFrom(Long uniqueIdRolledForwardFrom) { iUniqueIdRolledForwardFrom = uniqueIdRolledForwardFrom; }
+
+	public Integer getSnapshotProjectedDemand() { return iSnapshotProjectedDemand; }
+	public void setSnapshotProjectedDemand(Integer snapshotProjectedDemand) { iSnapshotProjectedDemand = snapshotProjectedDemand; }
+
+	public Date getSnapshotProjectedDemandDate() { return iSnapshotProjectedDemandDate; }
+	public void setSnapshotProjectedDemandDate(Date snapshotProjectedDemandDate) { iSnapshotProjectedDemandDate = snapshotProjectedDemandDate; }
 
 	public SubjectArea getSubjectArea() { return iSubjectArea; }
 	public void setSubjectArea(SubjectArea subjectArea) { iSubjectArea = subjectArea; }
@@ -189,6 +200,8 @@ public abstract class BaseCourseOffering implements Serializable {
 			"\n	ProjectedDemand: " + getProjectedDemand() +
 			"\n	Reservation: " + getReservation() +
 			"\n	ScheduleBookNote: " + getScheduleBookNote() +
+			"\n	SnapshotProjectedDemand: " + getSnapshotProjectedDemand() +
+			"\n	SnapshotProjectedDemandDate: " + getSnapshotProjectedDemandDate() +
 			"\n	SubjectArea: " + getSubjectArea() +
 			"\n	Title: " + getTitle() +
 			"\n	UniqueId: " + getUniqueId() +

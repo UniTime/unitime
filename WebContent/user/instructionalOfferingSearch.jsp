@@ -54,7 +54,7 @@
 					<TR>
 						<TD></TD>
 						<TD colspan="2">
-							<html:checkbox property="enrollmentInformation" value="1" onclick="if (document.forms[0].enrollmentInformation.checked){document.forms[0].demand.checked = true;document.forms[0].projectedDemand.checked = true;document.forms[0].limit.checked = true;document.forms[0].roomLimit.checked = true;} else {document.forms[0].demand.checked = false;document.forms[0].projectedDemand.checked = false;document.forms[0].limit.checked = false;document.forms[0].roomLimit.checked = false;};"/>
+							<html:checkbox property="enrollmentInformation" value="1" onclick="if (document.forms[0].enrollmentInformation.checked){document.forms[0].demand.checked = true;document.forms[0].projectedDemand.checked = true;document.forms[0].limit.checked = true;document.forms[0].snapshotLimit.checked = true;document.forms[0].roomLimit.checked = true;} else {document.forms[0].demand.checked = false;document.forms[0].projectedDemand.checked = false;document.forms[0].limit.checked = false;document.forms[0].snapshotLimit.checked = false;document.forms[0].roomLimit.checked = false;};"/>
 							<loc:message name="columnEnrollmentInformation"/>
 						</TD>
 					</TR>
@@ -82,6 +82,16 @@
 							<loc:message name="columnLimit"/>
 						</TD>
 					</TR>
+					<logic:notEmpty name="instructionalOfferingListForm" property="snapshotLimit">
+						<TR>
+							<TD></TD>
+							<TD></TD>
+							<TD colspan="2">
+								<html:checkbox property="snapshotLimit" />
+								<loc:message name="columnSnapshotLimit"/>
+							</TD>
+						</TR>
+					</logic:notEmpty>
 					<TR>
 						<TD></TD>						
 						<TD></TD>

@@ -338,6 +338,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        							assignment.getClazz().getClassLabel(),
 	        							suffix == null ? "&nbsp;" : suffix,
 	        							assignment.getClazz().getEnrollment().toString(),
+	        							assignment.getClazz().getSnapshotLimit() == null ? "&nbsp;" : assignment.getClazz().getSnapshotLimit().toString(),
 	        							assignment.getClazz().instructorHtml(nameFormat),
 	        							dp == null ? "&nbsp;" : "<span title='" + dateFormat.format(dp.getStartDate()) + " - " + dateFormat.format(dp.getEndDate()) + "'>" + dp.getName() + "</span>",
 	        							time,
@@ -347,6 +348,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        							assignment.getClazz().getClassLabel(),
 	        							suffix == null ? "" : suffix,
 	        							assignment.getClazz().getEnrollment(),
+	        							assignment.getClazz().getSnapshotLimit() == null ? new Integer(0) :assignment.getClazz().getSnapshotLimit(),
 	        							assignment.getClazz().instructorText(nameFormat, ","),
 	        							dp == null ? "" : dp.getName(),
 	        							new MultiComparable(t == null ? 0 : t.getDayCode(), t == null ? 0 : t.getStartSlot()),
@@ -473,6 +475,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        // Load from class
 		    frm.setExpectedCapacity(c.getExpectedCapacity());
 		    frm.setEnrollment(c.getEnrollment());
+		    frm.setSnapshotLimit(c.getSnapshotLimit());
 	        frm.setDatePattern(c.getDatePattern()==null?new Long(-1):c.getDatePattern().getUniqueId());
 		    frm.setNbrRooms(c.getNbrRooms());
 		    if (c.getNotes()==null)

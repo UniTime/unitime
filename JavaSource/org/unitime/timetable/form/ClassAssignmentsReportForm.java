@@ -364,6 +364,9 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 	public Boolean getLimit() {
 		return (new Boolean(true));
 	}
+	public Boolean getSnapshotLimit() {
+		return (new Boolean(false));
+	}
 	public Boolean getRoomLimit() {
 		return (new Boolean(false));
 	}

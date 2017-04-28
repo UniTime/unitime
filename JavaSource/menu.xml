@@ -875,7 +875,13 @@
 				<condition>
 					<hasPermission name="PointInTimeData"/>
 				</condition>
-			</item>			
+			</item>
+			<item name="Limit and Projection Snapshot" page="limitAndProjectionSnapshot" type="gwt">
+				<condition>
+					<hasPermission name="LimitAndProjectionSnapshot"/>
+				</condition>
+			</item>
+						
 		</menu>
 		<menu name="Solver">
 			<item name="Manage Solvers" page="manageSolvers.do">

@@ -20,6 +20,7 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -54,6 +55,8 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	private String iExternalUniqueId;
 	private Integer iEnrollment;
 	private Boolean iCancelled;
+	private Integer iSnapshotLimit;
+	private Date iSnapshotLimitDate;
 
 	private Department iControllingDept;
 	private Department iManagingDept;
@@ -80,6 +83,8 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
 	public static String PROP_EXTERNAL_UID = "externalUniqueId";
 	public static String PROP_CANCELLED = "cancelled";
+	public static String PROP_SNAPSHOT_LIMIT = "snapshotLimit";
+	public static String PROP_SNAPSHOT_LIMIT_DATE = "snapshotLimitDate";
 
 	public BaseClass_() {
 		initialize();
@@ -136,6 +141,12 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	public Boolean isCancelled() { return iCancelled; }
 	public Boolean getCancelled() { return iCancelled; }
 	public void setCancelled(Boolean cancelled) { iCancelled = cancelled; }
+
+	public Integer getSnapshotLimit() { return iSnapshotLimit; }
+	public void setSnapshotLimit(Integer snapshotLimit) { iSnapshotLimit = snapshotLimit; }
+
+	public Date getSnapshotLimitDate() { return iSnapshotLimitDate; }
+	public void setSnapshotLimitDate(Date snapshotLimitDate) { iSnapshotLimitDate = snapshotLimitDate; }
 
 	public Department getControllingDept() { return iControllingDept; }
 	public void setControllingDept(Department controllingDept) { iControllingDept = controllingDept; }
@@ -223,6 +234,8 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 			"\n	SchedulePrintNote: " + getSchedulePrintNote() +
 			"\n	SchedulingSubpart: " + getSchedulingSubpart() +
 			"\n	SectionNumberCache: " + getSectionNumberCache() +
+			"\n	SnapshotLimit: " + getSnapshotLimit() +
+			"\n	SnapshotLimitDate: " + getSnapshotLimitDate() +
 			"\n	UniqueId: " + getUniqueId() +
 			"\n	UniqueIdRolledForwardFrom: " + getUniqueIdRolledForwardFrom() +
 			"]";

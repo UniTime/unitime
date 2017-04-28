@@ -77,6 +77,8 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 
 	private Boolean limit;
 
+	private Boolean snapshotLimit;
+
 	private Boolean roomLimit;
 
 	private Boolean manager;
@@ -219,6 +221,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 		projectedDemand = new Boolean(false);
 		minPerWk = new Boolean(false);
 		limit = new Boolean(false);
+		snapshotLimit = new Boolean(false);
 		roomLimit = new Boolean(false);
 		manager = new Boolean(false);
 		datePattern = new Boolean(false);
@@ -339,6 +342,14 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 
 	public void setLimit(Boolean limit) {
 		this.limit = limit;
+	}
+
+	public Boolean getSnapshotLimit() {
+		return snapshotLimit;
+	}
+
+	public void setSnapshotLimit(Boolean snapshotLimit) {
+		this.snapshotLimit = snapshotLimit;
 	}
 
 	public Boolean getManager() {
@@ -476,6 +487,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
         projectedDemand=null;
         minPerWk=null;
         limit=null;
+        snapshotLimit=null;
         roomLimit=null;
         manager=null;
         datePattern=null;
@@ -485,7 +497,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
         timetable=null;
         credit=null;
         subpartCredit=null;
-       schedulePrintNote=null;
+        schedulePrintNote=null;
         note=null;
         title=null;
         consent=null;

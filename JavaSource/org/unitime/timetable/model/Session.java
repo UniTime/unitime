@@ -38,6 +38,7 @@ import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseSession;
 import org.unitime.timetable.model.dao.ExamDAO;
+import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -727,5 +728,18 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 
     public boolean canNoRoleReport() {
         return canNoRoleReportClass() || canNoRoleReportExam();
+    }
+    
+    public Date getCurrentSnapshotDate() {
+    	Object o = InstructionalOfferingDAO.getInstance()
+				.getSession()
+				.createQuery("select max(io.snapshotLimitDate) from InstructionalOffering io where io.session.uniqueId = :sessId")
+				.setLong("sessId", getUniqueId().longValue())
+				.uniqueResult();
+    	Date snapshotDate = null;
+    	if (o != null) {
+    		snapshotDate = (Date) o;
+    	}
+    	return(snapshotDate);
     }
 }

@@ -322,6 +322,10 @@ public class ClassificationsEdit extends Composite {
 								t1 = (f.getRequested() == null ? 0 : f.getRequested());
 								t2 = (g.getRequested() == null ? 0 : g.getRequested());
 								break;
+							case SSPROJ:
+								t1 = (f.getSnapshotProjection() == null ? 0 : f.getSnapshotProjection());
+								t2 = (g.getSnapshotProjection() == null ? 0 : g.getSnapshotProjection());
+								break;
 							}
 							if (t2 > t1) return 1;
 							if (t1 > t2) return -1;
@@ -413,6 +417,12 @@ public class ClassificationsEdit extends Composite {
 								if (clasf.getRequested() != null) t1 += clasf.getRequested();
 							for (CurriculumClassificationInterface clasf: b.getClassifications())
 								if (clasf.getRequested() != null) t2 += clasf.getRequested();
+							break;
+						case SSPROJ:
+							for (CurriculumClassificationInterface clasf: a.getClassifications())
+								if (clasf.getSnapshotProjection() != null) t1 += clasf.getSnapshotProjection();
+							for (CurriculumClassificationInterface clasf: b.getClassifications())
+								if (clasf.getSnapshotProjection() != null) t2 += clasf.getSnapshotProjection();
 							break;
 						}
 						if (t2 > t1) return 1;
@@ -626,6 +636,14 @@ public class ClassificationsEdit extends Composite {
 				}
 				iRearLabel.setVisible(true);
 				break;
+			case SSPROJ: // Snapshot Projection
+				if (iClasf.getSnapshotProjection() == null || iClasf.getSnapshotProjection() == 0) {
+					iRearLabel.setHTML("");
+				} else {
+					iRearLabel.setHTML(iClasf.getSnapshotProjection().toString());
+				}
+				iRearLabel.setVisible(true);
+				break;
 			}
 		}
 		
@@ -719,6 +737,14 @@ public class ClassificationsEdit extends Composite {
 			return ret;
 		}
 
+		public int sumSnapshotProjection() {
+			int ret = 0;
+			for (MyCell c: iCells)
+				if (c.getClassification().getSnapshotProjection() != null)
+					ret += c.getClassification().getSnapshotProjection();
+			return ret;
+		}
+
 		public void update() {
 			iTextBox.setHTML(sumExpected() == 0 ? "" : String.valueOf(sumExpected()));
 			switch (CurriculumCookie.getInstance().getCurriculaCoursesMode()) {
@@ -740,6 +766,10 @@ public class ClassificationsEdit extends Composite {
 				break;
 			case REQ: // Course Requests
 				iRearLabel.setHTML(sumRequested() == 0 ? "" : String.valueOf(sumRequested()));
+				iRearLabel.setVisible(true);
+				break;
+			case SSPROJ: // Snapshot Projection
+				iRearLabel.setHTML(sumSnapshotProjection() == 0 ? "" : String.valueOf(sumSnapshotProjection()));
 				iRearLabel.setVisible(true);
 				break;
 			}

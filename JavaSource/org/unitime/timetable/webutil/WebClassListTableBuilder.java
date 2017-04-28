@@ -20,6 +20,7 @@
 package org.unitime.timetable.webutil;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.TreeSet;
 
@@ -194,32 +195,23 @@ public class WebClassListTableBuilder extends
     }
 	
     public void htmlTableForClasses(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, CourseOffering co, TreeSet classes, Long subjectAreaId, SessionContext context, JspWriter outputStream){
-    	String[] columns;
-         if (StudentClassEnrollment.sessionHasEnrollments(context.getUser().getCurrentAcademicSessionId())) {
-        	String[] tcolumns = {LABEL,
-        		MSG.columnDemand(),
-        		MSG.columnLimit(),
-        		MSG.columnRoomRatio(),
-        		MSG.columnDatePattern(),
-        		MSG.columnTimePattern(),
-        		MSG.columnPreferences(),
-				MSG.columnInstructor(),
-				MSG.columnTimetable(),
-				MSG.columnSchedulePrintNote()};
-        	columns = tcolumns;
-         } else  {
-         	String[] tcolumns = {LABEL,
-         			MSG.columnLimit(),
-         			MSG.columnRoomRatio(),
-         			MSG.columnDatePattern(),
-         			MSG.columnTimePattern(),
-         			MSG.columnPreferences(),
-        			MSG.columnInstructor(),
-        			MSG.columnTimetable(),
-        			MSG.columnSchedulePrintNote()};
-            columns = tcolumns;
-         };
-         setVisibleColumns(columns);
+    	ArrayList<String> columnList = new ArrayList<String>();
+    	columnList.add(LABEL);
+    	if (StudentClassEnrollment.sessionHasEnrollments(context.getUser().getCurrentAcademicSessionId())) {
+    		columnList.add(MSG.columnDemand());
+    	}
+    	columnList.add(MSG.columnLimit());
+    	if (co.getInstructionalOffering().getSession().getCurrentSnapshotDate() != null) {
+    	   	columnList.add(MSG.columnSnapshotLimit());
+    	}
+    	columnList.add(MSG.columnRoomRatio());
+    	columnList.add(MSG.columnDatePattern());
+    	columnList.add(MSG.columnTimePattern());
+    	columnList.add(MSG.columnPreferences());
+    	columnList.add(MSG.columnInstructor());
+    	columnList.add(MSG.columnTimetable());
+    	columnList.add(MSG.columnSchedulePrintNote());
+        setVisibleColumns(columnList);
 
         if (isShowTimetable()) {
         	boolean hasTimetable = false;

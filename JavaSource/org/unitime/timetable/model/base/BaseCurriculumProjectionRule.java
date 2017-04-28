@@ -20,6 +20,7 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
@@ -35,6 +36,8 @@ public abstract class BaseCurriculumProjectionRule implements Serializable {
 
 	private Long iUniqueId;
 	private Float iProjection;
+	private Float iSnapshotProjection;
+	private Date iSnapshotProjectedDate;
 
 	private AcademicArea iAcademicArea;
 	private PosMajor iMajor;
@@ -42,6 +45,8 @@ public abstract class BaseCurriculumProjectionRule implements Serializable {
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_PROJECTION = "projection";
+	public static String PROP_SNAPSHOT_PROJ = "snapshotProjection";
+	public static String PROP_SNAPSHOT_PROJ_DATE = "snapshotProjectedDate";
 
 	public BaseCurriculumProjectionRule() {
 		initialize();
@@ -59,6 +64,12 @@ public abstract class BaseCurriculumProjectionRule implements Serializable {
 
 	public Float getProjection() { return iProjection; }
 	public void setProjection(Float projection) { iProjection = projection; }
+
+	public Float getSnapshotProjection() { return iSnapshotProjection; }
+	public void setSnapshotProjection(Float snapshotProjection) { iSnapshotProjection = snapshotProjection; }
+
+	public Date getSnapshotProjectedDate() { return iSnapshotProjectedDate; }
+	public void setSnapshotProjectedDate(Date snapshotProjectedDate) { iSnapshotProjectedDate = snapshotProjectedDate; }
 
 	public AcademicArea getAcademicArea() { return iAcademicArea; }
 	public void setAcademicArea(AcademicArea academicArea) { iAcademicArea = academicArea; }
@@ -90,6 +101,8 @@ public abstract class BaseCurriculumProjectionRule implements Serializable {
 			"\n	AcademicClassification: " + getAcademicClassification() +
 			"\n	Major: " + getMajor() +
 			"\n	Projection: " + getProjection() +
+			"\n	SnapshotProjectedDate: " + getSnapshotProjectedDate() +
+			"\n	SnapshotProjection: " + getSnapshotProjection() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

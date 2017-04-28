@@ -20,6 +20,7 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -51,6 +52,8 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	private Integer iLastWeekToChange;
 	private Integer iLastWeekToDrop;
 	private String iNotes;
+	private Integer iSnapshotLimit;
+	private Date iSnapshotLimitDate;
 
 	private Session iSession;
 	private Set<CourseOffering> iCourseOfferings;
@@ -69,6 +72,8 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	public static String PROP_WK_CHANGE = "lastWeekToChange";
 	public static String PROP_WK_DROP = "lastWeekToDrop";
 	public static String PROP_NOTES = "notes";
+	public static String PROP_SNAPSHOT_LIMIT = "snapshotLimit";
+	public static String PROP_SNAPSHOT_LIMIT_DATE = "snapshotLimitDate";
 
 	public BaseInstructionalOffering() {
 		initialize();
@@ -121,6 +126,12 @@ public abstract class BaseInstructionalOffering implements Serializable {
 
 	public String getNotes() { return iNotes; }
 	public void setNotes(String notes) { iNotes = notes; }
+
+	public Integer getSnapshotLimit() { return iSnapshotLimit; }
+	public void setSnapshotLimit(Integer snapshotLimit) { iSnapshotLimit = snapshotLimit; }
+
+	public Date getSnapshotLimitDate() { return iSnapshotLimitDate; }
+	public void setSnapshotLimitDate(Date snapshotLimitDate) { iSnapshotLimitDate = snapshotLimitDate; }
 
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
@@ -186,6 +197,8 @@ public abstract class BaseInstructionalOffering implements Serializable {
 			"\n	NotOffered: " + getNotOffered() +
 			"\n	Notes: " + getNotes() +
 			"\n	Session: " + getSession() +
+			"\n	SnapshotLimit: " + getSnapshotLimit() +
+			"\n	SnapshotLimitDate: " + getSnapshotLimitDate() +
 			"\n	UniqueId: " + getUniqueId() +
 			"\n	UniqueIdRolledForwardFrom: " + getUniqueIdRolledForwardFrom() +
 			"]";

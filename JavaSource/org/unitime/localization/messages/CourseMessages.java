@@ -70,6 +70,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Enrollment:")
 	String propertyEnrollment();
 	
+	@DefaultMessage("Snapshot Limit:")
+	String propertySnapshotLimit();
+	
 	@DefaultMessage("Class Limit:")
 	String propertyClassLimit();
 	
@@ -657,6 +660,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Enrollment")
 	String columnEnrollment();
+	
+	@DefaultMessage("Snapshot Limit")
+	String columnSnapshotLimit();
 	
 	@DefaultMessage("Nbr<br>Rms")
 	String columnNbrRms();
