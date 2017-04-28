@@ -260,7 +260,7 @@ create table pit_dept_instructor (
 	) ;
 
 alter table pit_dept_instructor add constraint fk_pit_di_to_pitd foreign key (point_in_time_data_id)
-	references point_in_time_data (uniqueid) on delete cascade
+	references point_in_time_data (uniqueid) on delete cascade;
 
 alter table pit_dept_instructor add constraint fk_pit_di_to_di foreign key (dept_instructor_id)
 	references departmental_instructor (uniqueid) on delete set null;
