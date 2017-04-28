@@ -22,6 +22,7 @@ package org.unitime.timetable.model;
 import org.unitime.timetable.model.base.BasePitOfferingCoordinator;
 
 public class PitOfferingCoordinator extends BasePitOfferingCoordinator {
+	private static final long serialVersionUID = 1L;
 
 	public PitOfferingCoordinator() {
 		super();

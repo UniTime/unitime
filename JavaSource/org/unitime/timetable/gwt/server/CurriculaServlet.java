@@ -4570,34 +4570,6 @@ public class CurriculaServlet implements CurriculaService {
 		return clasf2major2ssproj;
 	}
 
-	private Hashtable<String, Hashtable<String, HashMap<String, Float>>> getSnapshotRules(
-			org.hibernate.Session hibSession) {
-		Hashtable<String, Hashtable<String, HashMap<String, Float>>> area2clasf2major2ssproj = new Hashtable<String, Hashtable<String, HashMap<String, Float>>>();
-		if (hasSnapshotData(hibSession, getAcademicSessionId())) {
-			for (CurriculumProjectionRule rule : (List<CurriculumProjectionRule>) hibSession
-					.createQuery(
-							"select r from CurriculumProjectionRule r where r.academicArea.session.uniqueId = :sessionId")
-					.setLong("sessionId", getAcademicSessionId()).setCacheable(true).list()) {
-				String areaAbbv = rule.getAcademicArea().getAcademicAreaAbbreviation();
-				String majorCode = (rule.getMajor() == null ? "" : rule.getMajor().getCode());
-				String clasfCode = rule.getAcademicClassification().getCode();
-				Float snapshotProjection = rule.getSnapshotProjection();
-				Hashtable<String, HashMap<String, Float>> clasf2major2ssproj = area2clasf2major2ssproj.get(areaAbbv);
-				if (clasf2major2ssproj == null) {
-					clasf2major2ssproj = new Hashtable<String, HashMap<String, Float>>();
-					area2clasf2major2ssproj.put(areaAbbv, clasf2major2ssproj);
-				}
-				HashMap<String, Float> major2ssproj = clasf2major2ssproj.get(clasfCode);
-				if (major2ssproj == null) {
-					major2ssproj = new HashMap<String, Float>();
-					clasf2major2ssproj.put(clasfCode, major2ssproj);
-				}
-				major2ssproj.put(majorCode, snapshotProjection);
-			}
-		}
-		return area2clasf2major2ssproj;
-	}
-
 	public float getProjection(Hashtable<String,HashMap<String, Float>> clasf2major2proj, String majorCode, String clasfCode) {
 		if (clasf2major2proj == null || clasf2major2proj.isEmpty()) return 1.0f;
 		HashMap<String, Float> major2proj = clasf2major2proj.get(clasfCode);

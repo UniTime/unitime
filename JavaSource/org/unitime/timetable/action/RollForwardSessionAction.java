@@ -493,7 +493,6 @@ public class RollForwardSessionAction extends Action {
 
 	protected Set<PointInTimeData> getPointInTimeDataSnapshots(Long selectedSessionId) {
 		Set<PointInTimeData> pointInTimeDataSnapshots = new TreeSet<PointInTimeData>();
-		Session session = null;
 		if (selectedSessionId != null){
 			StringBuilder sb = new StringBuilder();
 			

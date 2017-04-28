@@ -1335,7 +1335,6 @@ public class WebInstructionalOfferingTableBuilder {
     //		buildTableHeader, addInstrOffrRowsToTable, buildClassOrSubpartRow, and buildConfigRow
     protected void buildClassOrSubpartRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TableRow row, CourseOffering co, PreferenceGroup prefGroup, int indentSpaces, boolean isEditable, String prevLabel, String icon, SessionContext context){
     	boolean classLimitDisplayed = false;
-    	boolean snapshotLimitDisplayed = false;
     	if (isShowLabel()){
 	        row.addContent(this.buildPrefGroupLabel(co, prefGroup, indentSpaces, isEditable, prevLabel, icon));
     	} 
@@ -1353,7 +1352,6 @@ public class WebInstructionalOfferingTableBuilder {
     		row.addContent(this.buildLimit(classAssignment, prefGroup, isEditable));
        	} 
     	if (isShowSnapshotLimit()){
-    		snapshotLimitDisplayed = true;
     		row.addContent(this.buildSnapshotLimit(prefGroup, isEditable));
        	} 
      	if (isShowRoomRatio()){

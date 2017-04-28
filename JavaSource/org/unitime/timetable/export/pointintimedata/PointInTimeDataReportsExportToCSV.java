@@ -28,11 +28,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.dom4j.Document;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.CollectionType;
 import org.hibernate.type.Type;
@@ -256,104 +254,4 @@ public class PointInTimeDataReportsExportToCSV implements Exporter {
     	}
     	return len;
     }
-    
-    private static String format(String column) {
-    	if (column == null || column.isEmpty()) return "?";
-    	return column.substring(0, 1).toUpperCase() + column.substring(1);
-    }
-	
-	private static void header(String[] ret, Object o, String[] alias) {
-		if (o == null) {
-			if (alias != null && alias.length >= 1 && alias[0] != null && !alias[0].isEmpty())
-				ret[0] = alias[0];
-			else
-				ret[0] = "Result";
-		} else if (o instanceof Object[]) {
-			int a = 0, idx = 0;
-			for (Object x: (Object[])o) {
-				if (x == null) {
-					if (alias != null && alias.length > a && alias[a] != null && !alias[a].isEmpty())
-						ret[idx++] = alias[a];
-					else
-						ret[idx++] = "Column" + (a + 1);
-				} else {
-					ClassMetadata meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(x.getClass());
-					if (meta == null) {
-						if (alias != null && alias.length > a && alias[a] != null && !alias[a].isEmpty())
-							ret[idx++] = alias[a];
-						else
-							ret[idx++] = "Column" + (a + 1);
-					} else {
-						if (meta.getIdentifierPropertyName() != null)
-							ret[idx++] = meta.getIdentifierPropertyName();
-		                for (int i = 0; i < meta.getPropertyNames().length; i ++) {
-		                    if (!skip(meta.getPropertyTypes()[i], meta.getPropertyLaziness()[i]))
-		                    	ret[idx++] = format(meta.getPropertyNames()[i]);
-		                }
-					}
-				}
-				a++;					
-			}
-		} else {
-			ClassMetadata meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(o.getClass());
-			if (meta == null) {
-				if (alias != null && alias.length >= 1 && alias[0] != null && !alias[0].isEmpty())
-					ret[0] = alias[0];
-				else
-					ret[0] = "Result";
-			} else {
-				int idx = 0;
-				if (meta.getIdentifierPropertyName() != null)
-					ret[idx++] = meta.getIdentifierPropertyName();
-                for (int i = 0; i < meta.getPropertyNames().length; i ++) {
-                    if (!skip(meta.getPropertyTypes()[i], meta.getPropertyLaziness()[i]))
-                    	ret[idx++] = format(meta.getPropertyNames()[i]);
-                }
-			}
-		}
-	}
-	
-	private static String toString(Object o) {
-		if (o != null && o instanceof Document) return ((Document)o).asXML();
-		return (o == null ? "" : o.toString());
-	}
-	
-	private static void line(String[] ret, Object o, SessionImplementor session) {
-		if (o == null) {
-			ret[0] = "";
-		} else if (o instanceof Object[]) {
-			int idx = 0;
-			for (Object x: (Object[])o) {
-				if (x == null) {
-					ret[idx++] = "";
-				} else {
-					ClassMetadata meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(x.getClass());
-					if (meta == null) {
-						ret[idx++] = toString(x);
-					} else {
-						if (meta.getIdentifierPropertyName() != null)
-							ret[idx++] = toString(meta.getIdentifier(x, session));
-		                for (int i = 0; i < meta.getPropertyNames().length; i ++) {
-		                    if (!skip(meta.getPropertyTypes()[i], meta.getPropertyLaziness()[i]))
-		                    	ret[idx++] = toString(meta.getPropertyValue(x, meta.getPropertyNames()[i]));
-		                }
-					}
-				}
-			}
-		} else {
-			ClassMetadata meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(o.getClass());
-			if (meta == null) {
-				ret[0] = toString(o);
-			} else {
-				int idx = 0;
-				if (meta.getIdentifierPropertyName() != null)
-					ret[idx++] = toString(meta.getIdentifier(o, session));
-                for (int i = 0; i < meta.getPropertyNames().length; i ++) {
-                    if (!skip(meta.getPropertyTypes()[i], meta.getPropertyLaziness()[i]))
-                    	ret[idx++] = toString(meta.getPropertyValue(o, meta.getPropertyNames()[i]));
-                }
-			}
-		}
-	}
-
 }

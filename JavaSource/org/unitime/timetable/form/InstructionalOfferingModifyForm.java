@@ -934,6 +934,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 			it22.next();
 			it23.next();
 			it24.next();
+			it25.next();
 			if (cls1.equals(classId)){				
 				it1.remove();
 				it2.remove();
@@ -963,6 +964,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 				it22.remove();
 				it23.remove();
 				it24.remove();
+				it25.remove();
 			} else if (pCls1.equals(classId)){
 				classesToDel.add(cls1);
 			}

@@ -30,7 +30,6 @@ import org.unitime.timetable.gwt.services.LimitAndProjectionSnapshotService;
 import org.unitime.timetable.gwt.shared.LimitAndProjectionSnapshotException;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;

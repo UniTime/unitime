@@ -26,12 +26,10 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.struts.Globals;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
-import org.apache.struts.util.MessageResources;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.DistributionPref;
@@ -118,11 +116,6 @@ public class DistributionPrefsForm extends ActionForm {
         HttpServletRequest request) {
 
         ActionErrors errors = new ActionErrors();
-
-        // Get Message Resources
-        MessageResources rsc = 
-            (MessageResources) super.getServlet()
-            	.getServletContext().getAttribute(Globals.MESSAGES_KEY);
 
         // Distribution Type must be selected
         if(distType==null || distType.equals(Preference.BLANK_PREF_VALUE)) {

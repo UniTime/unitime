@@ -21,17 +21,14 @@
 package org.unitime.timetable.reports.pointintimedata;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.TreeSet;
 
 import org.hibernate.Session;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.PitClass;
 import org.unitime.timetable.model.PointInTimeData;
-import org.unitime.timetable.util.Constants;
 
 public class WSCHByDepartmentDayOfWeekHourOfDay extends WSCHByDayOfWeekAndHourOfDay {
 	

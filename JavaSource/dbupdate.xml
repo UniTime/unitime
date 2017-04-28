@@ -12566,76 +12566,76 @@
 	</update>
 	<update version="181" date="18-Apr-2017" comment="Limit and Projection Snapshot Data">
 		<mysql>
-			alter table class_ add snapshot_limit bigint(10) default null
+			alter table %SCHEMA%.class_ add snapshot_limit bigint(10) default null
 		</mysql>
 		<plsql>
-			alter table class_ add snapshot_limit number(10, 0) default null
+			alter table %SCHEMA%.class_ add snapshot_limit number(10, 0) default null
 		</plsql>
 		<mysql>
-			alter table class_ add snapshot_limit_date datetime default null
+			alter table %SCHEMA%.class_ add snapshot_limit_date datetime default null
 		</mysql>
 		<plsql>
-			alter table class_ add snapshot_limit_date timestamp default null
+			alter table %SCHEMA%.class_ add snapshot_limit_date timestamp default null
 		</plsql>
 		<mysql>
-			alter table instructional_offering add snapshot_limit bigint(10) default null
+			alter table %SCHEMA%.instructional_offering add snapshot_limit bigint(10) default null
 		</mysql>
 		<plsql>
-			alter table instructional_offering add snapshot_limit number(10, 0) default null
+			alter table %SCHEMA%.instructional_offering add snapshot_limit number(10, 0) default null
 		</plsql>
 		<mysql>
-			alter table instructional_offering add snapshot_limit_date datetime default null
+			alter table %SCHEMA%.instructional_offering add snapshot_limit_date datetime default null
 		</mysql>
 		<plsql>
-			alter table instructional_offering add snapshot_limit_date timestamp default null
+			alter table %SCHEMA%.instructional_offering add snapshot_limit_date timestamp default null
 		</plsql>
 		<mysql>
-			alter table course_offering add snapshot_proj_demand bigint(19) default null
+			alter table %SCHEMA%.course_offering add snapshot_proj_demand bigint(19) default null
 		</mysql>
 		<plsql>
-			alter table course_offering add snapshot_proj_demand number(19, 0) default null
+			alter table %SCHEMA%.course_offering add snapshot_proj_demand number(19, 0) default null
 		</plsql>
 		<mysql>
-			alter table course_offering add snapshot_prj_dmd_date datetime default null
+			alter table %SCHEMA%.course_offering add snapshot_prj_dmd_date datetime default null
 		</mysql>
 		<plsql>
-			alter table course_offering add snapshot_prj_dmd_date timestamp default null
+			alter table %SCHEMA%.course_offering add snapshot_prj_dmd_date timestamp default null
 		</plsql>
 		<mysql>
-			alter table curriculum_rule add snapshot_proj float default null
+			alter table %SCHEMA%.curriculum_rule add snapshot_proj float default null
 		</mysql>
 		<plsql>
-			alter table curriculum_rule add snapshot_proj float default null
+			alter table %SCHEMA%.curriculum_rule add snapshot_proj float default null
 		</plsql>
 		<mysql>
-			alter table curriculum_rule add snapshot_proj_date datetime default null
+			alter table %SCHEMA%.curriculum_rule add snapshot_proj_date datetime default null
 		</mysql>
 		<plsql>
-			alter table curriculum_rule add snapshot_proj_date timestamp default null
+			alter table %SCHEMA%.curriculum_rule add snapshot_proj_date timestamp default null
 		</plsql>
 		<mysql>
-			alter table curriculum_clasf add snapshot_nr_students bigint(10) default null
+			alter table %SCHEMA%.curriculum_clasf add snapshot_nr_students bigint(10) default null
 		</mysql>
 		<plsql>
-			alter table curriculum_clasf add snapshot_nr_students number(10, 0) default null
+			alter table %SCHEMA%.curriculum_clasf add snapshot_nr_students number(10, 0) default null
 		</plsql>
 		<mysql>
-			alter table curriculum_clasf add snapshot_nr_stu_date datetime default null
+			alter table %SCHEMA%.curriculum_clasf add snapshot_nr_stu_date datetime default null
 		</mysql>
 		<plsql>
-			alter table curriculum_clasf add snapshot_nr_stu_date timestamp default null
+			alter table %SCHEMA%.curriculum_clasf add snapshot_nr_stu_date timestamp default null
 		</plsql>
 		<mysql>
-			alter table curriculum_course add snapshot_pr_share float default null
+			alter table %SCHEMA%.curriculum_course add snapshot_pr_share float default null
 		</mysql>
 		<plsql>
-			alter table curriculum_course add snapshot_pr_share  float default null
+			alter table %SCHEMA%.curriculum_course add snapshot_pr_share  float default null
 		</plsql>
 		<mysql>
-			alter table curriculum_course add snapshot_pr_shr_date datetime default null
+			alter table %SCHEMA%.curriculum_course add snapshot_pr_shr_date datetime default null
 		</mysql>
 		<plsql>
-			alter table curriculum_course add snapshot_pr_shr_date timestamp default null
+			alter table %SCHEMA%.curriculum_course add snapshot_pr_shr_date timestamp default null
 		</plsql>
 		<sql>
 			insert into %SCHEMA%.rights (role_id, value)

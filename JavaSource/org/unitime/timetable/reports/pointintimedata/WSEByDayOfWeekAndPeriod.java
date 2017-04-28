@@ -292,10 +292,6 @@ public class WSEByDayOfWeekAndPeriod extends BasePointInTimeDataReports {
 			return this.iWeeklyStudentEnrollment;
 		}
 		
-		public String getLabel() {
-			return(dayOfWeekTimeLabelFor(getPeriod()));
-		}
-		
 		public String getDayOfWeekLabel() {
 			return(Localization.getDateFormat("EEEE").format(getPeriod()));
 		}

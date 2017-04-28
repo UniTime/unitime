@@ -58,7 +58,6 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
@@ -81,7 +80,6 @@ public class PointInTimeDataReportsPage extends Composite {
 	private HTML iDescription = null;
 	
 	private List<PointInTimeDataReportsInterface.Report> iReports = new ArrayList<PointInTimeDataReportsInterface.Report>();
-	private List<PointInTimeDataReportsInterface.Flag> iFlags = new ArrayList<PointInTimeDataReportsInterface.Flag>();
 	private List<PointInTimeDataReportsInterface.Parameter> iParameters = new ArrayList<PointInTimeDataReportsInterface.Parameter>();
 	private UniTimeTable<String[]> iTable = new UniTimeTable<String[]>();
 	private String iFirstField = null;
@@ -342,7 +340,6 @@ public class PointInTimeDataReportsPage extends Composite {
 
 			@Override
 			public void onSuccess(PITDParametersInterface result) {
-				iFlags = result.getFlags();
 				iParameters = result.getParameters();
 				for (int i = 0; i < iParameters.size(); i++) {
 					PointInTimeDataReportsInterface.Parameter parameter = iParameters.get(i);

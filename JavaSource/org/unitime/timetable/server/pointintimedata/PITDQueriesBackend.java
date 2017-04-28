@@ -28,7 +28,6 @@ import org.unitime.timetable.gwt.shared.PointInTimeDataReportsInterface;
 import org.unitime.timetable.gwt.shared.PointInTimeDataReportsInterface.PITDQueriesRpcRequest;
 import org.unitime.timetable.gwt.shared.PointInTimeDataReportsInterface.Parameter;
 import org.unitime.timetable.gwt.shared.PointInTimeDataReportsInterface.Report;
-import org.unitime.timetable.model.SavedHQL;
 import org.unitime.timetable.reports.pointintimedata.BasePointInTimeDataReports;
 import org.unitime.timetable.security.SessionContext;
 

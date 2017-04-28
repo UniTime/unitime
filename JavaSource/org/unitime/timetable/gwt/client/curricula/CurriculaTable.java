@@ -1326,9 +1326,9 @@ public class CurriculaTable extends Composite {
 				}
 				@Override
 				public void execute() {
-					boolean show = !(iSessionHasSnapshotData && CurriculumCookie.getInstance().isShowSnapshotExpected());
+					boolean show = (iSessionHasSnapshotData && !CurriculumCookie.getInstance().isShowSnapshotExpected());
 					int col = iTable.getCellCount(0) - 2;
-					CurriculumCookie.getInstance().setShowExpected(show);
+					CurriculumCookie.getInstance().setShowSnapshotExpected(show);
 					iTable.setColumnVisible(col, show);
 					if (CurriculumCookie.getInstance().isAllHidden()) {
 						CurriculumCookie.getInstance().setShowExpected(true);

@@ -19,18 +19,13 @@
 */
 package org.unitime.timetable.model;
 
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BasePitClass;
-import org.unitime.timetable.model.dao.LocationDAO;
-import org.unitime.timetable.reports.pointintimedata.BasePointInTimeDataReports;
 import org.unitime.timetable.util.Constants;
 
 public class PitClass extends BasePitClass {
@@ -108,9 +103,7 @@ public class PitClass extends BasePitClass {
 
 			uniquePeriods = new HashSet<java.util.Date>();
 			for(HashSet<java.util.Date> periods : locationPeriodUseMap.values()) {
-				for(java.util.Date period : periods){
-					uniquePeriods.addAll(periods);
-				}
+				uniquePeriods.addAll(periods);
 			}
 
 	}
