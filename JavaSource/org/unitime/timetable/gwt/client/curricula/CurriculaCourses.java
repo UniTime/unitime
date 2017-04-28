@@ -1468,10 +1468,10 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 				if (iSnapshotExpected == null || iSnapshotExpected == 0) {
 					setText("");
 				} else if (CurriculumCookie.getInstance().getCurriculaCoursesPercent()) {
-					Integer total = iClassifications.getSnapshotExpected(iColumn);
-					setText(total == null ? MESSAGES.notApplicable() : NF.format(100.0 * iSnapshotExpected / total) + "%");
+					setText(NF.format(100.0 * iSnapshotExpected) + "%");
 				} else {
-					setText(iSnapshotExpected.toString());
+					Integer total = iClassifications.getSnapshotExpected(iColumn);
+					setText(total == null ? MESSAGES.notApplicable() : String.valueOf(Math.round(total * iSnapshotExpected)));
 				}
 				break;
 			case SSPROJ: // Snapshot Projection

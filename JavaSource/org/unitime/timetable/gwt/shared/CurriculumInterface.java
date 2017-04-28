@@ -669,7 +669,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		public Float getDefaultSnapshotShare() { return iDefaultSnapshotShare; }
 		public void setDefaultSnapshotShare(Float snapshotShare) { iDefaultSnapshotShare = snapshotShare; }
 
-public TreeSet<String> getTemplates() { return iTemplates; }
+		public TreeSet<String> getTemplates() { return iTemplates; }
 		public boolean hasTemplates() { return iTemplates != null && !iTemplates.isEmpty(); }
 		public void addTemplate(String template) {
 			if (iTemplates == null) iTemplates = new TreeSet<String>();
