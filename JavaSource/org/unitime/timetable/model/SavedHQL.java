@@ -191,6 +191,29 @@ public class SavedHQL extends BaseSavedHQL {
 			}
 		}),
 		ROOMS("Rooms", true, true, ROOM.iImplementation),
+		PITD("Point In Time Data", true, false, new OptionImplementation() {
+			@Override
+			public Map<Long, String> getValues(UserContext user) {
+				Long sessionId = user.getCurrentAcademicSessionId();
+				Session session = (sessionId == null ? null : SessionDAO.getInstance().get(sessionId));
+				if (session == null) return null;
+				List<PointInTimeData> pitdList = PointInTimeData.findAllSavedSuccessfullyForSession(sessionId); 
+				Map<Long, String> ret = new Hashtable<Long, String>();
+				for (PointInTimeData pitd : pitdList){
+					ret.put(pitd.getUniqueId(), pitd.getName());
+				}
+				return(ret);
+			}
+			@Override
+			public Long lookupValue(UserContext user, String value) {
+				Map<Long, String> values = getValues(user);
+				if (values != null)
+					for (Map.Entry<Long, String> e: values.entrySet())
+						if (value.equalsIgnoreCase(e.getValue())) return e.getKey();
+				return null;
+			}
+		}),
+
 		
 		DistributionType(DistributionType.class, false),
 		DistributionTypes(DistributionType.class, true),

@@ -153,6 +153,8 @@ public class HQLOptionsBackend implements GwtRpcImplementation<HQLOptionsRpcRequ
 			return MESSAGES.optionCourseType();
 		case CourseTypes:
 			return MESSAGES.optionCourseTypes();
+		case PITD:
+			return MESSAGES.optionPointInTimeData();
 		default:
 			return option.text();
 		}
