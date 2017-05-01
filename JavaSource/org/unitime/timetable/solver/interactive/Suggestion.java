@@ -161,6 +161,7 @@ public class Suggestion implements Serializable, Comparable {
             iStudentConflictInfos = new Vector(jenrls.size());
             for (Iterator i=jenrls.iterator();i.hasNext();) {
             	JenrlConstraint jenrl = (JenrlConstraint)i.next();
+            	if (jenrl.jenrl() <= 0.0) continue;
             	Hint h1 = new Hint(solver, assignment.getValue(jenrl.first()));
             	Hint h2 = new Hint(solver, assignment.getValue(jenrl.second()));
             	int i1 = iDifferentAssignments.indexOf(h1);
@@ -203,7 +204,7 @@ public class Suggestion implements Serializable, Comparable {
             }
             for (Iterator i=fcs.iterator();i.hasNext();) {
             	FlexibleConstraint fc = (FlexibleConstraint)i.next();
-            	if (fc.isHard() || fc.getNrViolations(assignment, new HashSet<Placement>(unresolvedConflicts), new HashMap<Lecture, Placement>(initialAssignments)) == 0.0) continue;
+            	if (fc.isHard() || fc.getNrViolations(assignment, new HashSet<Placement>(), new HashMap<Lecture, Placement>()) == 0.0) continue;
 				DistributionInfo dist = new DistributionInfo(new GroupConstraintInfo(assignment, fc));
 				for (Lecture another: fc.variables()) {
 					Placement anotherPlacement = assignment.getValue(another);
@@ -319,9 +320,9 @@ public class Suggestion implements Serializable, Comparable {
         			curPref = gc.getCurrentPreference(assignment, dummyPlacement);
         			gc.setType(GroupConstraint.ConstraintType.SAME_STUDENTS);
         		}
-        		boolean sat = (gc.getPreference()<0 && curPref<0) || gc.getPreference()==0 || (gc.getPreference()>0 && curPref==0);
+        		boolean sat = (curPref <= 0);
         		if (sat) continue;
-        		iGlobalGroupConstraintPreference += Math.abs(curPref==0?gc.getPreference():curPref);
+        		iGlobalGroupConstraintPreference += curPref;
     			DistributionInfo dist = new DistributionInfo(new GroupConstraintInfo(assignment, gc));
     			for (Lecture another: gc.variables()) {
     				if (another.equals(lecture)) {
@@ -711,9 +712,16 @@ public class Suggestion implements Serializable, Comparable {
 					ClassAssignmentDetails other = hint.getDetails(context, solver, false);
 					if (other==null) continue;
 					sb.append(other.getClazz().toHtml(link)+" ");
-					if (other.getTime()!=null)
+					if (other.getAssignedTime()!=null)
+						sb.append(other.getAssignedTime().toHtml(false,false,true,false)+" ");
+					else if (other.getTime()!=null)
 						sb.append(other.getTime().toHtml(false,false,true,false)+" ");
-					if (other.getRoom()!=null)
+					if (other.getAssignedRoom() != null)
+						for (int i=0;i<other.getAssignedRoom().length;i++) {
+							if (i>0) sb.append(", ");
+							sb.append(other.getAssignedRoom()[i].toHtml(false,false,false));
+						}
+					else if (other.getRoom()!=null)
 						for (int i=0;i<other.getRoom().length;i++) {
 							if (i>0) sb.append(", ");
 							sb.append(other.getRoom()[i].toHtml(false,false,false));
