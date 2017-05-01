@@ -58,10 +58,6 @@ Protocol Buffer Java API (protobuf-java-2.6.1.jar)
 	under BSD or BSD-style License
 	https://developers.google.com/protocol-buffers/
 
-mgwt (mgwt-2.0.0.jar)
-	under Apache Software License (ASL), Version 2.0
-	http://www.m-gwt.com
-
 iText, a Free Java-PDF library (itext-2.1.7.jar)
 	under GNU Lesser General Public License (LGPL), Version 2.1
 	http://www.lowagie.com/iText/
@@ -372,7 +368,7 @@ spring-security-web (spring-security-web-3.2.8.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://spring.io/spring-security
 
-CPSolver (cpsolver-1.3-SNAPSHOT.jar)
+CPSolver (cpsolver-1.3.105.jar)
 	under GNU Lesser General Public License (LGPL), Version 3
 	http://www.cpsolver.org
 
