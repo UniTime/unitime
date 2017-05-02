@@ -2208,6 +2208,11 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("true")
+	@Description("Point In Time Data: Day and Time Reports - Use times that begin at the half hour.  If set to false the reports will use times that begin at the start of the hour.  Defaults to true.")
+	ReportsStartOnTheHalfHour("unitime.pointInTimeData.hourlyReportsStartOnTheHalfHour"),
+
+	@Type(Boolean.class)
+	@DefaultValue("true")
 	@Description("Instructional Offering: show class notes")
 	OfferingShowClassNotes("unitime.offering.showClassNotes"),
 

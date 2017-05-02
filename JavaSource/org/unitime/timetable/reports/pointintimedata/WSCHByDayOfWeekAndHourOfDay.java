@@ -28,7 +28,10 @@ import java.util.Locale;
 
 import org.hibernate.Session;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.model.PitClass;
 import org.unitime.timetable.model.PointInTimeData;
+import org.unitime.timetable.reports.pointintimedata.WSCHByDayOfWeekAndHourOfDay.PeriodEnrollment;
 import org.unitime.timetable.util.Constants;
 
 /**
@@ -37,7 +40,7 @@ import org.unitime.timetable.util.Constants;
  */
 public class WSCHByDayOfWeekAndHourOfDay extends BasePointInTimeDataReports {
 	protected HashMap<String, PeriodEnrollment> periodEnrollmentMap = new HashMap<String, PeriodEnrollment>();
-	protected static final boolean startOnHalfHour = true;
+	protected boolean startOnHalfHour;
 	
 	public static String dayOfWeekTimeLabelFor(java.util.Date date){
 		return(Localization.getDateFormat("EEEE, HH:mm").format(date));
@@ -45,6 +48,7 @@ public class WSCHByDayOfWeekAndHourOfDay extends BasePointInTimeDataReports {
 
 	public WSCHByDayOfWeekAndHourOfDay() {
 		super();
+		startOnHalfHour = ApplicationProperty.ReportsStartOnTheHalfHour.isTrue();
 	}
 
 	@Override
@@ -66,7 +70,19 @@ public class WSCHByDayOfWeekAndHourOfDay extends BasePointInTimeDataReports {
 		} 
 		return(id + " " + d.get(Calendar.DAY_OF_WEEK) + " " + hour + " " + minute);
 	}
-	
+
+	protected String getPeriodTag(Date period) {
+        Calendar d = Calendar.getInstance(Locale.US);
+        d.setTime(period);
+		int minuteOfHour = d.get(Calendar.MINUTE);
+		int hour = d.get(Calendar.HOUR_OF_DAY);
+		int minute = (startOnHalfHour? 30 : 0);
+		if (startOnHalfHour && minuteOfHour < 30) {
+			hour -= 1;
+		} 
+		return(d.get(Calendar.DAY_OF_WEEK) + " " + hour + " " + minute);
+	}
+
 	protected String getPeriodTag(String id, int dayOfWeek, int hourOfDay, int minute) {
 		return(id + " " + dayOfWeek + " " + (startOnHalfHour && minute < 30 ? hourOfDay - 1 : hourOfDay) + " " + (startOnHalfHour? 30 : 0));
 	}
@@ -74,7 +90,7 @@ public class WSCHByDayOfWeekAndHourOfDay extends BasePointInTimeDataReports {
 
 	protected void addTimeColumns(ArrayList<String> header) {
 		for(int hourOfDay = 0 ; hourOfDay < 24 ; hourOfDay++) {
-			if (startOnHalfHour) {
+			if (ApplicationProperty.ReportsStartOnTheHalfHour.isTrue()) {
 				StringBuilder sb = new StringBuilder();
 				sb.append(getTimeLabel(periodTime(hourOfDay, 30)))
                   .append(" - ");
@@ -170,7 +186,7 @@ public class WSCHByDayOfWeekAndHourOfDay extends BasePointInTimeDataReports {
 			PointInTimeData pointInTimeData, Session hibSession) {
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select distinct pc.uniqueId, pcm.meetingDate, pcmup.timeSlot, pc.enrollment")
+		sb.append("select distinct pc")
 		  .append("	from PitClass pc") 
 		  .append(" inner join pc.pitClassEvents as pce")
 		  .append(" inner join pce.pitClassMeetings as pcm")
@@ -178,22 +194,20 @@ public class WSCHByDayOfWeekAndHourOfDay extends BasePointInTimeDataReports {
 		  .append("	where pc.pitSchedulingSubpart.pitInstrOfferingConfig.pitInstructionalOffering.pointInTimeData.uniqueId = :sessId")
 		  .append("   and  pc.pitSchedulingSubpart.itype.organized = true");
 		
-		for (Object[] result : (List<Object[]>) hibSession.createQuery(sb.toString())
+		for (PitClass pc : (List<PitClass>) hibSession.createQuery(sb.toString())
 								.setLong("sessId", pointInTimeData.getUniqueId().longValue())
 								.setCacheable(true)
 								.list()) {
-			Date meetingDate = (Date) result[1];
-			Integer timeSlot = (Integer) result[2];
-			Integer enrollment = (Integer) result[3];
-			
-			String label = getPeriodTag(meetingDate, timeSlot);
-			PeriodEnrollment pe = periodEnrollmentMap.get(label);
-			if (pe == null) {
-				pe = new PeriodEnrollment(label, getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
-				periodEnrollmentMap.put(label, pe);
-			}
-			pe.addEnrollment(enrollment);
 
+			for (Date meetingPeriod : pc.getUniquePeriods()) {			
+				String label = getPeriodTag(meetingPeriod);
+				PeriodEnrollment pe = periodEnrollmentMap.get(label);
+				if (pe == null) {
+					pe = new PeriodEnrollment(label, getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
+					periodEnrollmentMap.put(label, pe);
+				}
+				pe.addEnrollment(pc.getEnrollment());
+			}
 
 		}
 				
