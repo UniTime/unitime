@@ -255,7 +255,7 @@ public class SolutionClassAssignmentProxy extends CommitedClassAssignmentProxy {
 				if (!instructor.isLead()) continue;
 				for (DepartmentalInstructor di: DepartmentalInstructor.getAllForInstructor(instructor.getInstructor())) {
 					for (ClassInstructor ci : di.getClasses()) {
-	            		if (ci.equals(instructor)) continue;
+	            		if (ci.equals(instructor) || ci.getClassInstructing().equals(clazz)) continue;
 	            		Assignment a = getAssignment(ci.getClassInstructing());
 	            		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a) && !clazz.canShareInstructor(a.getClazz()))
 	            			conflicts.add(a);
