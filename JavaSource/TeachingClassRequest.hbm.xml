@@ -51,13 +51,13 @@
             name="teachingRequest"
             class="TeachingRequest"
             column="request_id"
-            not-null="false"
+            not-null="true"
             foreign-key="fk_teachreq_crequest"/>
         <many-to-one
             name="teachingClass"
             class="Class_"
             column="class_id"
-            not-null="false"
+            not-null="true"
             foreign-key="fk_teachreq_class"/>
         <property
             name="assignInstructor"

@@ -45,7 +45,7 @@
             class="PitCourseOffering"
             column="pit_course_offering_id"
             foreign-key="fk_pit_sce_to_pit_co"
-            not-null="false"/>
+            not-null="true"/>
 
         <many-to-one
             name="pitClass"
