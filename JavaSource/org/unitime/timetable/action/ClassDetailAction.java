@@ -271,6 +271,7 @@ public class ClassDetailAction extends PreferencesAction {
         					MSG.columnClass(),
         					MSG.columnExternalId(),
         					MSG.columnDemand(),
+        					MSG.columnSnapshotLimit(),
         					MSG.columnInstructor(),
         					MSG.columnDatePattern(),
         					MSG.columnAssignedTime(),
@@ -280,12 +281,14 @@ public class ClassDetailAction extends PreferencesAction {
 	        				"left",
 	        				"left",
 	        				"right",
+	        				"right",
 	        				"left",
 	        				"left",
 	        				"left",
 	        				"left",
 	        				"left"
 	        			}, new boolean[] {
+	        				true,
 	        				true,
 	        				true,
 	        				true,
