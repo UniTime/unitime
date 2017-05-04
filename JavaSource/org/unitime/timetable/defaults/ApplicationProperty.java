@@ -1831,6 +1831,10 @@ public enum ApplicationProperty {
 	@DefaultValue("http://www.unitime.org/papers/ttman_solver.pdf")
 	@Description("Manuals: course timetabling solver manual")
 	ManualCourseSolver("tmtbl.help.manual.solver"),
+	
+	@DefaultValue("https://docs.google.com/document/d/1JksFtB9ecIoKpuyY0SDdl3dKnATe8UQAPKlGfBWi2JU")
+	@Description("Manuals: instructor scheduling manual")
+	ManualInstructorScheduling("tmtbl.help.manual.instructorScheduling"),
 
 	@DefaultValue("help/Release-Notes.xml")
 	@Description("Help: release notes")
