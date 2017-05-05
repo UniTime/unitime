@@ -1193,31 +1193,31 @@
 		</item>
 		<item name="Event Manual" page="tmtbl.help.manual.events" type="property" target="download">
 			<condition>
-				<hasPermission name="Events" authority="any"/>
+				<hasPermission name="Events" authority="any" check="false"/>
 			</condition>
 		</item>
 		<item name="Data Entry Manual" page="tmtbl.help.manual.input_data" type="property" target="download">
 			<condition>
 				<or>
-					<hasPermission name="InstructionalOfferings"/>
-					<hasPermission name="Classes"/>
+					<hasPermission name="InstructionalOfferings" check="false"/>
+					<hasPermission name="Classes" check="false"/>
 				</or>
 			</condition>
 		</item>
 		<item name="Solver Manual" page="tmtbl.help.manual.solver" type="property" target="download">
 			<condition>
 				<or>
-					<hasPermission name="CourseTimetabling"/>
-					<hasPermission name="CourseTimetablingAudit"/>
-					<hasPermission name="Timetables"/>
+					<hasPermission name="CourseTimetabling" check="false"/>
+					<hasPermission name="CourseTimetablingAudit" check="false"/>
+					<hasPermission name="Timetables" check="false"/>
 				</or>
 			</condition>
 		</item>
 		<item name="Instructor Scheduling Manual" page="tmtbl.help.manual.instructorScheduling" type="property" target="download">
 			<condition>
 				<or>
-					<hasPermission name="InstructorScheduling"/>
-					<hasPermission name="InstructorSchedulingSolver"/>
+					<hasPermission name="InstructorScheduling" check="false"/>
+					<hasPermission name="InstructorSchedulingSolver" check="false"/>
 				</or>
 			</condition>
 		</item>
