@@ -108,7 +108,8 @@
 %>		
 <tiles:importAttribute />
 <html:form action="/classEdit" focus="expectedCapacity">
-	<html:hidden property="classId"/>	
+	<html:hidden property="classId"/>
+	<html:hidden property="defaultTeachingResponsibilityId"/>	
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD valign="middle" colspan='2'>
@@ -465,6 +466,11 @@
 										<logic:equal name="<%=frmName%>" property='<%= "instrResponsibility[" + ctr + "]" %>' value="">
 											<html:option value="">-</html:option>
 										</logic:equal>
+										<logic:notEqual name="<%=frmName%>" property='<%= "instrResponsibility[" + ctr + "]" %>' value="">
+											<logic:empty name="<%=frmName%>" property='defaultTeachingResponsibilityId'>
+												<html:option value="">-</html:option>
+											</logic:empty>
+										</logic:notEqual>
 										<html:options collection="responsibilities" property="uniqueId" labelProperty="label" />
 									</html:select>
 								</TD>

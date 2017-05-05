@@ -202,7 +202,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 				this.instructorUids.add("");
 				this.percentShares.add("100");
 				this.leadFlags.add(new Boolean(true));
-				this.responsibilities.add("");
+				this.responsibilities.add(getDefaultTeachingResponsibilityId());
 			}
 			
 			this.allowDeletes.add(new Boolean(instructors.size() > 1));

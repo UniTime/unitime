@@ -106,6 +106,7 @@ public class ClassEditForm extends PreferencesForm {
     private String accommodation;
     private Boolean isCancelled;
     private List instrResponsibility;
+    private String defaultTeachingResponsibilityId;
     
     // --------------------------------------------------------- Classes
 
@@ -281,6 +282,8 @@ public class ClassEditForm extends PreferencesForm {
         snapshotLimit = null;
         accommodation = null;
         instrResponsibility = DynamicList.getInstance(new ArrayList(), factoryInstructors);
+        TeachingResponsibility tr = TeachingResponsibility.getDefaultInstructorTeachingResponsibility();
+    	defaultTeachingResponsibilityId = (tr == null ? "" : tr.getUniqueId().toString());
 
         super.reset(mapping, request);
     }
@@ -684,9 +687,7 @@ public class ClassEditForm extends PreferencesForm {
                 pctShare = "100";
                 isLead = true;
             }
-            TeachingResponsibility tr = TeachingResponsibility.getDefaultInstructorTeachingResponsibility();
-            if (tr != null)
-            	resp = tr.getUniqueId().toString();
+            resp = getDefaultTeachingResponsibilityId();
         }
  
         // Add row
@@ -751,4 +752,6 @@ public class ClassEditForm extends PreferencesForm {
     public String getInstrResponsibility(int key) { return instrResponsibility.get(key).toString(); }
     public void setInstrResponsibility(int key, Object value) { this.instrResponsibility.set(key, value); }
     public void setInstrResponsibility(List instrResponsibility) { this.instrResponsibility = instrResponsibility; }
+	public String getDefaultTeachingResponsibilityId() { return defaultTeachingResponsibilityId; }
+	public void setDefaultTeachingResponsibilityId(String defaultTeachingResponsibilityId) { this.defaultTeachingResponsibilityId = defaultTeachingResponsibilityId; }
 }

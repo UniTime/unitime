@@ -53,6 +53,7 @@
 	<html:hidden property="isControl"/>
 	<html:hidden property="courseName"/>
 	<html:hidden property="ioNotOffered"/>
+	<html:hidden property="defaultTeachingResponsibilityId"/>
 	
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
@@ -468,6 +469,11 @@
 							<logic:equal name="courseOfferingEditForm" property='<%= "responsibilities[" + ctr + "]" %>' value="">
 								<html:option value="">-</html:option>
 							</logic:equal>
+							<logic:notEqual name="courseOfferingEditForm" property='<%= "responsibilities[" + ctr + "]" %>' value="">
+								<logic:empty name="courseOfferingEditForm" property='defaultTeachingResponsibilityId'>
+									<html:option value="">-</html:option>
+								</logic:empty>
+							</logic:notEqual>
 							<html:options collection="responsibilities" property="uniqueId" labelProperty="label" />
 						</html:select>
 					</logic:notEmpty>

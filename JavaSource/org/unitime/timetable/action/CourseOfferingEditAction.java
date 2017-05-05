@@ -206,12 +206,10 @@ public class CourseOfferingEditAction extends Action {
 		}
 		
 		if (op.equals(MSG.actionAddCoordinator()) ) {
-            for (int i=0; i<Constants.PREF_ROWS_ADDED; i++)
+            for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
                 frm.getInstructors().add(Preference.BLANK_PREF_VALUE);
-            TeachingResponsibility tr = TeachingResponsibility.getDefaultCoordinatorTeachingResponsibility();
-            if (tr != null)
-            	for (int i=0; i<Constants.PREF_ROWS_ADDED; i++)
-                    frm.getResponsibilities().add(tr.getUniqueId().toString());
+                frm.getResponsibilities().add(frm.getDefaultTeachingResponsibilityId());
+            }
             doReload(request, frm);
 		}
 		
@@ -723,12 +721,10 @@ public class CourseOfferingEditAction extends Action {
 
         if (sessionContext.hasPermission(crsOfferingId, "CourseOffering", Right.EditCourseOfferingCoordinators) ||
         	sessionContext.hasPermission(crsOfferingId, "CourseOffering", Right.EditCourseOffering)) {
-        	for (int i=0;i<Constants.PREF_ROWS_ADDED;i++)
+        	for (int i=0;i<Constants.PREF_ROWS_ADDED;i++) {
         		frm.getInstructors().add(Constants.BLANK_OPTION_VALUE);
-        	TeachingResponsibility tr = TeachingResponsibility.getDefaultCoordinatorTeachingResponsibility();
-            if (tr != null)
-            	for (int i=0; i<Constants.PREF_ROWS_ADDED; i++)
-                    frm.getResponsibilities().add(tr.getUniqueId().toString());
+        		frm.getResponsibilities().add(frm.getDefaultTeachingResponsibilityId());
+        	}
         }
         
         if (frm.getCreditFormat() == null){

@@ -297,6 +297,11 @@
 											<logic:equal name="<%=frmName%>" property='<%= "responsibilities[" + ctr + "]" %>' value="">
 												<html:option value="">-</html:option>
 											</logic:equal>
+											<logic:notEqual name="<%=frmName%>" property='<%= "responsibilities[" + ctr + "]" %>' value="">
+												<logic:empty name="<%=frmName%>" property='defaultTeachingResponsibilityId'>
+													<html:option value="">-</html:option>
+												</logic:empty>
+											</logic:notEqual>
 											<html:options collection="responsibilities" property="uniqueId" labelProperty="label" />
 										</html:select>
 									</logic:equal>

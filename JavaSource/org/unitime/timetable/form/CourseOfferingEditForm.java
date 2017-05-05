@@ -36,6 +36,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
@@ -91,6 +92,7 @@ public class CourseOfferingEditForm extends ActionForm {
     private Long alternativeCourseOfferingId;
     private boolean allowAlternativeCourseOfferings;
     private String notes;
+    private String defaultTeachingResponsibilityId;
 
     // --------------------------------------------------------- Methods
 
@@ -209,6 +211,11 @@ public class CourseOfferingEditForm extends ActionForm {
         externalId = null;
         alternativeCourseOfferingId = null;
         notes = null;
+        TeachingResponsibility tr = TeachingResponsibility.getDefaultCoordinatorTeachingResponsibility();
+        if (tr != null)
+        	defaultTeachingResponsibilityId = tr.getUniqueId().toString();
+        else
+        	defaultTeachingResponsibilityId = "";
     }
     
     public boolean isAdd() { return add; }
@@ -426,4 +433,7 @@ public class CourseOfferingEditForm extends ActionForm {
     
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+    
+    public String getDefaultTeachingResponsibilityId() { return defaultTeachingResponsibilityId; }
+    public void setDefaultTeachingResponsibilityId(String defaultTeachingResponsibilityId) { this.defaultTeachingResponsibilityId = defaultTeachingResponsibilityId; }
 }
