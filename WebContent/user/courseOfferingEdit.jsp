@@ -465,7 +465,9 @@
 					<logic:notEmpty name="responsibilities" scope="request">
 						<html:select
 							property='<%= "responsibilities[" + ctr + "]" %>'>
-							<html:option value="-">-</html:option>
+							<logic:equal name="courseOfferingEditForm" property='<%= "responsibilities[" + ctr + "]" %>' value="">
+								<html:option value="">-</html:option>
+							</logic:equal>
 							<html:options collection="responsibilities" property="uniqueId" labelProperty="label" />
 						</html:select>
 					</logic:notEmpty>

@@ -42,6 +42,7 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.TeachingClassRequest;
+import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
@@ -71,6 +72,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 	private ClassAssignmentProxy proxy;
 	private String addInstructorId;
 	private Boolean displayExternalId;
+	private String defaultTeachingResponsibilityId;
 
 	private List classIds;
 	private List classLabels;
@@ -115,6 +117,8 @@ public class ClassInstructorAssignmentForm extends ActionForm {
     	instrOffrConfigId = new Long(0);
     	deletedInstrRowNum = null;
     	displayExternalId = new Boolean(false);
+    	TeachingResponsibility tr = TeachingResponsibility.getDefaultInstructorTeachingResponsibility();
+    	defaultTeachingResponsibilityId = (tr == null ? "" : tr.getUniqueId().toString());
     	proxy = null;	
     	resetLists();
 	}
@@ -252,7 +256,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 		this.allowDeletes.add(pos + 1, Boolean.TRUE);
 		this.externalIds.add(pos + 1, "");
 		this.leadFlags.add(pos + 1, this.leadFlags.get(pos));
-		this.responsibilities.add(pos + 1, "");
+		this.responsibilities.add(pos + 1, defaultTeachingResponsibilityId);
 	}
 
 	public void updateClasses() throws Exception {
@@ -584,4 +588,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 	public void setResponsibilities(List responsibilities) {
 		this.responsibilities = responsibilities;
 	}
+	
+	public String getDefaultTeachingResponsibilityId() { return defaultTeachingResponsibilityId; }
+	public void setDefaultTeachingResponsibilityId(String defaultTeachingResponsibilityId) { this.defaultTeachingResponsibilityId = defaultTeachingResponsibilityId; }
 }

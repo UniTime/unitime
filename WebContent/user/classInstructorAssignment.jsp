@@ -44,6 +44,8 @@
 <html:form action="/classInstructorAssignment">
 <html:hidden name="<%=frmName%>" property="instrOffrConfigId"/>
 <html:hidden property="instrOfferingId"/>	
+<html:hidden property="displayExternalId"/>
+<html:hidden property="defaultTeachingResponsibilityId"/>
 <INPUT type="hidden" name="deletedInstrRowNum" value = "">
 <INPUT type="hidden" name="addInstructorId" value = "">
 <INPUT type="hidden" name="hdnOp" value = "">
@@ -292,7 +294,9 @@
 									<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
 										<html:select tabindex="<%=java.lang.Integer.toString(8000 + ctr.intValue())%>"
 											property='<%= "responsibilities[" + ctr + "]" %>'>
-											<html:option value="-">-</html:option>
+											<logic:equal name="<%=frmName%>" property='<%= "responsibilities[" + ctr + "]" %>' value="">
+												<html:option value="">-</html:option>
+											</logic:equal>
 											<html:options collection="responsibilities" property="uniqueId" labelProperty="label" />
 										</html:select>
 									</logic:equal>

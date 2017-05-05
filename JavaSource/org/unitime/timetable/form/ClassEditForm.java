@@ -36,6 +36,7 @@ import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Preference;
+import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.util.DynamicList;
@@ -683,6 +684,9 @@ public class ClassEditForm extends PreferencesForm {
                 pctShare = "100";
                 isLead = true;
             }
+            TeachingResponsibility tr = TeachingResponsibility.getDefaultInstructorTeachingResponsibility();
+            if (tr != null)
+            	resp = tr.getUniqueId().toString();
         }
  
         // Add row

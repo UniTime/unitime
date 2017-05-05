@@ -64,7 +64,8 @@ public class TeachingResponsibilities implements AdminTable {
 				new Field(MESSAGES.fieldCoordinator(), FieldType.toggle, 40),
 				new Field(MESSAGES.fieldAuxiliaryNoReport(), FieldType.toggle, 40),
 				new Field(MESSAGES.fieldHideInEvents(), FieldType.toggle, 40),
-				new Field(MESSAGES.fieldNoExport(), FieldType.toggle, 40)
+				new Field(MESSAGES.fieldNoExport(), FieldType.toggle, 40),
+				new Field(MESSAGES.fieldDefault(), FieldType.toggle, 40)
 				);
 		data.setSortBy(1);
 		for (TeachingResponsibility responsibility: TeachingResponsibilityDAO.getInstance().findAll()) {
@@ -77,6 +78,7 @@ public class TeachingResponsibilities implements AdminTable {
 			r.setField(5, responsibility.hasOption(Option.auxiliary) ? "true" : "false");
 			r.setField(6, responsibility.hasOption(Option.noevents) ? "true" : "false");
 			r.setField(7, responsibility.hasOption(Option.noexport) ? "true" : "false");
+			r.setField(8, responsibility.hasOption(Option.isdefault) ? "true" : "false");
 			r.setDeletable(!responsibility.isUsed());
 		}
 		data.setEditable(context.hasPermission(Right.TeachingResponsibilityEdit));
@@ -102,6 +104,7 @@ public class TeachingResponsibilities implements AdminTable {
 		if ("true".equals(record.getField(5))) ret += Option.auxiliary.toggle();
 		if ("true".equals(record.getField(6))) ret += Option.noevents.toggle();
 		if ("true".equals(record.getField(7))) ret += Option.noexport.toggle();
+		if ("true".equals(record.getField(8))) ret += Option.isdefault.toggle();
 		return ret;
 	}
 

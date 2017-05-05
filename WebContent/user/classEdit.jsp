@@ -462,7 +462,9 @@
 								<TD>
 									<html:select
 										property='<%= "instrResponsibility[" + ctr + "]" %>'>
-										<html:option value="-">-</html:option>
+										<logic:equal name="<%=frmName%>" property='<%= "instrResponsibility[" + ctr + "]" %>' value="">
+											<html:option value="">-</html:option>
+										</logic:equal>
 										<html:options collection="responsibilities" property="uniqueId" labelProperty="label" />
 									</html:select>
 								</TD>

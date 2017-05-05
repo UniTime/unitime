@@ -33,6 +33,7 @@ public class TeachingResponsibility extends BaseTeachingResponsibility {
 		auxiliary("Do not report"),
 		noexport("Do not export"),
 		noevents("Do not show in events"),
+		isdefault("Default responsibility"),
 		;
 		
 		private String iName;
@@ -56,11 +57,23 @@ public class TeachingResponsibility extends BaseTeachingResponsibility {
 				).setCacheable(true).list();
     }
 	
+	public static TeachingResponsibility getDefaultInstructorTeachingResponsibility() {
+		for (TeachingResponsibility r: getInstructorTeachingResponsibilities())
+			if (r.hasOption(Option.isdefault)) return r;
+		return null;
+	}
+	
 	public static List<TeachingResponsibility> getCoordinatorTeachingResponsibilities() {
 		return (List<TeachingResponsibility>)TeachingResponsibilityDAO.getInstance().getSession().createQuery(
 				"from TeachingResponsibility where coordinator = true order by label"
 				).setCacheable(true).list();
     }
+	
+	public static TeachingResponsibility getDefaultCoordinatorTeachingResponsibility() {
+		for (TeachingResponsibility r: getCoordinatorTeachingResponsibilities())
+			if (r.hasOption(Option.isdefault)) return r;
+		return null;
+	}
     
 	public static TeachingResponsibility getTeachingResponsibility(String reference, org.hibernate.Session hibSession) {
 		if (reference == null || reference.isEmpty()) return null;

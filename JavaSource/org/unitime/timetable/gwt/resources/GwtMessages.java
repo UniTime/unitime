@@ -4073,6 +4073,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Expected Size")
 	String fieldExpectedSize();
 	
+	@DefaultMessage("Default")
+	String fieldDefault();
+	
 	@DefaultMessage("Access")
 	String toggleAccess();
 	
