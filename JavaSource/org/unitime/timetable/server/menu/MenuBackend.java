@@ -23,6 +23,7 @@ import java.io.File;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -307,17 +308,46 @@ public class MenuBackend implements GwtRpcImplementation<MenuRpcRequest, GwtRpcR
 			}
 			if (right == null) return false;
 			String authority = conditionElement.attributeValue("authority", "current");
-			if ("session".equals(authority)) {
-				Long sessionId = (sessionContext.isAuthenticated() ? sessionContext.getUser().getCurrentAcademicSessionId() : null);
-				return (sessionId == null ? false : sessionContext.hasPermissionAnyAuthority(right, new SimpleQualifier("Session", sessionId)));
-			} else if ("role".equals(authority)) {
-				UserAuthority ua = (sessionContext.isAuthenticated() ? sessionContext.getUser().getCurrentAuthority() : null);
-				String role = (ua != null ? ua.getRole() : null);
-				return (role == null ? false : sessionContext.hasPermissionAnyAuthority(right, new SimpleQualifier("Role", role)));
-			} else if ("any".equals(authority)) {
-				return sessionContext.hasPermissionAnyAuthority(right);
+			String check = conditionElement.attributeValue("check", "true");
+			if ("false".equals(check)) {
+				UserContext user = (sessionContext.isAuthenticated() ? sessionContext.getUser() : null);
+				if (user == null) return false;
+				if ("session".equals(authority)) {
+					Long sessionId = user.getCurrentAcademicSessionId();
+					Collection<? extends UserAuthority> authorities = user.getAuthorities();
+					if (authorities != null && sessionId != null)
+						for (UserAuthority ua: authorities)
+							if (sessionId.equals(ua.getAcademicSession() == null ? null : ua.getAcademicSession().getQualifierId()) && ua.hasRight(right))
+								return true;
+					return false;
+				} else if ("role".equals(authority)) {
+					String role = (user.getCurrentAuthority() != null ? user.getCurrentAuthority().getRole() : null);
+					Collection<? extends UserAuthority> authorities = (role == null ? null : user.getAuthorities(role));
+					if (authorities != null)
+						for (UserAuthority ua: authorities)
+							if (ua.hasRight(right)) return true;
+				} else if ("any".equals(authority)) {
+					Collection<? extends UserAuthority> authorities = user.getAuthorities();
+					if (authorities != null)
+						for (UserAuthority ua: authorities)
+							if (ua.hasRight(right)) return true;
+					return false;
+				} else {
+					return user.getCurrentAuthority() != null && user.getCurrentAuthority().hasRight(right);
+				}
 			} else {
-				return sessionContext.hasPermission(right);
+				if ("session".equals(authority)) {
+					Long sessionId = (sessionContext.isAuthenticated() ? sessionContext.getUser().getCurrentAcademicSessionId() : null);
+					return (sessionId == null ? false : sessionContext.hasPermissionAnyAuthority(right, new SimpleQualifier("Session", sessionId)));
+				} else if ("role".equals(authority)) {
+					UserAuthority ua = (sessionContext.isAuthenticated() ? sessionContext.getUser().getCurrentAuthority() : null);
+					String role = (ua != null ? ua.getRole() : null);
+					return (role == null ? false : sessionContext.hasPermissionAnyAuthority(right, new SimpleQualifier("Role", role)));
+				} else if ("any".equals(authority)) {
+					return sessionContext.hasPermissionAnyAuthority(right);
+				} else {
+					return sessionContext.hasPermission(right);
+				}
 			}
 		} else if ("hasRight".equals(cond)) {
 			String right = conditionElement.attributeValue("name", "unknown");
