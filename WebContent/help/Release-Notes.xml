@@ -28,11 +28,317 @@
 	<version>4.2.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
-		<title>First Release: planned mid 2017</title>
+		<title>First Release of UniTime 4.2 (planned June 2017)</title>
 		<item>
-			<name>No release notes are available yet.</name>
+			<name>Release Notes</name>
 			<description>
-				<line>See https://goo.gl/Bv1qQw for UniTime 4.2 specifications.</line>
+				<line>See https://goo.gl/4g1XQV for more details.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Instructor Scheduling</title>
+		<item>
+			<name>Description</name>
+			<description>
+				<line>In UniTime 4.2, a new component for automatic assignment of instructors to classes or courses has been created.</line>
+				<line>The instructors (e.g., teaching assistants) are expected to be assigned after the course timetabling and student
+					scheduling are done, using information from both course timetabling (course timetable) and student scheduling
+					(student availability).</line>
+				<line>See https://goo.gl/Zb2aES for more details.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Responsive Design</title>
+		<item>
+			<name>Description</name>
+			<description>
+				<line>All the existing new (GWT-based) pages have been made more mobile friendly.</line>
+				<line>This means that page closely follows the width of the window, making all the tables to fit or to have individual horizontal scroll bars.</line>
+				<line>A few changes have been also made to the common components that are used on the (old) Struts-based pages to increase their mobile friendliness.</line>
+				<line>When the page with is 800 pixels or less, there is also a new menu, which shows on top of the page.</line>
+				<line>The page takes the full page width (no surrounding blue box), and the page header and footers are reformatted to fit the screen.</line>
+				<line>Also, the GWT-based page notifications take the whole bottom part of the page (and disappear after a few seconds or when clicked on).</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Solver, Solver Log</name>
+			<description>
+				<line>All UniTime solvers are now based on the same common interface and there have been a number of redundancies removed.</line>
+				<line>With that, there is also a new GWT-based version of the Solver and the Solver Log page.</line>
+				<line>Old solver pages can be enabled by setting unitime.legacy.solver to true.</line>
+				<line>The solver can now be stopped during load, save, or student sectioning.</line>
+			</description>
+		</item>
+		<item>
+			<name>Teaching Responsibilities</name>
+			<description>
+				<line>Both instructors and coordinators can have a teaching responsibility defined (optional).</line>
+				<line>The teaching responsibilities are academic session independent and can be defined on Administration > Other > Teaching Responsibilities page.</line>
+				<line>Beside of reference, name, and abbreviation, there is a flag defining whether the responsibility can be used on an instructor (Instructor column), on a coordinator (Coordinator column), whether the assignment should be visible in the reports (Auxiliary), not visible in the event management (Hide in Events) or not exported / sent to an external system (No Export).</line>
+				<line>With this change, an instructor can be assigned to a class or to an offering (as course coordinator) multiple times, but with different responsibilities.</line>
+				<line>It is also possible to setup a default teaching responsibility (one for instructors and one for coordinators, see the Default column above), in which case there has to be a teaching responsibility selected for all the new instructor or coordinator assignments.</line>
+			</description>
+		</item>
+		<item>
+			<name>Highlight Class-level Preferences</name>
+			<description>
+				<line>Since UniTime 4.1, it is possible to highlight preferences that are set directly on classes with the unitime.preferences.highlightClassPrefs application property.</line>
+				<line>It is now possible to set whether class preferences are to be highlighted on a user level (using user settings). There is a new settings (named highlightClassPrefs) with the following values:
+					<line>yes (class preferences are to be highlighted)</line>
+					<line>no (class preferences are not to be highlighted)</line>
+					<line>not set (use the system default, as it is set using unitime.preferences.highlightClassPrefs application property)</line>
+				</line>
+				<line>For the users to be able to use this feature, the highlightClassPrefs user property needs to be created on the Administration > Defaults > User Settings page.</line>
+			</description>
+		</item>
+		<item>
+			<name>Departmental Status</name>
+			<description>
+				<line>Added ability to provide a different status for each controlling and external department pair.</line>
+				<line>This is to be able to change access to LLR classes for departments that are already done.</line>
+			</description>
+		</item>
+		<item>
+			<name>Show Class Suffixes</name>
+			<description>
+				<line>Added ability to show class external ids (class suffixes) in the course timetabling solver (next to the class section number).</line>
+				<line>To enable this, set the application configuration property unitime.solver.showClassSuffixes to true (defaults to false).</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Group Scheduling</name>
+			<description>
+				<line>Added ability to keep students of a certain student group or curriculum classification together as much as possible.</line>
+				<line>For this, there is a new resource on the Timetable grid page (Student Groups), a new criterion (Student Groups), and two new sectioning algorithms.</line>
+				<line>Also, student group reservations are now considered during the course timetabling.</line>
+				<line>It is also possible to use last-like enrollments for student group reservations, assuming that there is a student group with the same abbreviation (code) in the last-like data.</line>
+				<line>Student group can also have an expected size now, which can be used by the solver to make up student group course demands.</line>
+				<line>There is a new solver parameter General.StudentSectioning that allows the users to choose one of our student sectioning algorithm.</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Note</name>
+			<description>
+				<line>Added a note to the instructional offering, much like the requests / notes to schedule manager on the classes.</line>
+				<line>To be edited on the Edit Course Offering page of the controlling course.</line>
+				<line>Displayed on the Instructional Offering Detail page and in the Instructional Offerings table.</line>
+				<line>When application property unitime.offering.showClassNotes is set to true (which is also the default), class notes are also displayed on the Instructional Offering Detail page, showing all the notes and requests for an offering on one place.</line>
+			</description>
+		</item>
+		<item>
+			<name>Timetable Grid</name>
+			<description>
+				<line>Timetable grid page has been rewritten in GWT, with the following improvements:
+					<line>the page is now fully localizable, it is responsive and prints nicely</line>
+					<line>the Days and Times selections can be changed using application properties (see unitime.timeGrid.times and unitime.timeGrid.days properties)</line>
+					<line>it is now possible to include cross-listed names (by setting unitime.timeGrid.crossList to true)</line>
+					<line>when showing solver data, instructors of committed classes can be shown (by setting unitime.timeGrid.fixInstructors to true)</line>
+					<line>the view can start on any day of week (by setting unitime.timeGrid.startDay to a number between 0 for Monday and 6 for Sunday)</line>
+					<line>when there is no solution loaded or selected, the committed solution(s) of the user are shown instead</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Assigned / Not-Assigned Classes</name>
+			<description>
+				<line>Assigned Classes, Not-Assigned Classes pages have been rewritten in GWT, with the following improvements:
+					<line>the page is now fully localizable, it is responsive and prints nicely</line>
+					<line>it is now possible to include cross-listed names (by setting unitime.timeGrid.crossList to true)</line>
+					<line>when there is no solution loaded or selected, the committed solution(s) of the user are shown instead</line>
+					<line>multiple subject areas can be selected</line>
+					<line>when solver is not loaded in memory, show Class Detail page on click</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Default Alternative Course Offering</name>
+			<description>
+				<line>An ability to provide a (default) alternative course offering (Add/Edit Course Offering page) has been added.</line>
+				<line>When a course is requested without any alternatives provided, the default alternative course offering can be used as an alternative.</line>
+				<line>Set the application property unitime.sectioning.alternativeCourse to true to enable this feature (default is false).</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Groups</name>
+			<description>
+				<line>In the batch student scheduling, the ability to keep students of the same student group together has been greatly improved.</line>
+				<line>The feature can be enabled by setting the solver parameter solver parameter Load.RequestGroups to true (defaults to false).</line>
+				<line>There is also a new solver parameter Load.RequestGroupRegExp, containing a regular expression to be matched with student group name (when present).</line>
+			</description>
+		</item>
+		<item>
+			<name>Choice of Instructional Method or Individual Section(s)</name>
+			<description>
+				<line>Note: Instructional methods can be defined on Administration > Other > Instructional Metods page and can be used on the Instructional Offering Configuration page (each configuration can have an instructional method indicated).</line>
+				<line>On the Student Scheduling Assistant, it is now possible to select instructional method (Online, Hybrid, etc.) and/or the individual section.</line>
+				<line>The selection can be done through the Course Finder dialog or by typing in additional information in the course selection text field.</line>
+				<line>The selection of an instructional method and/or individual sections work as a preference.</line>
+				<line>If a student cannot be enrolled in the configuration or sections indicated, he/she may get some other available enrollment (not meeting the selected preference) instead.</line>
+				<line>These preferences can be also collected during the Course Requests phase (when student course requests are being collected, but the scheduling is not available yet, e.g., because the timetable is not finalized).</line>
+				<line>Both online and batch solvers do consider these preferences.</line>
+			</description>
+		</item>
+		<item>
+			<name>Responsive Design</name>
+			<description>
+				<line>The Student Scheduling Assistant is now more responsive.</line>
+				<line>This means that page closely follows the width of the window, making all the tables to fit or to have individual horizontal scroll bars.</line>
+				<line>Also, the component has been changed to better fit a smaller screen.</line>
+				<line>Course Requests table no longer show alternative course requests (the two extra text-boxes on each line), but they can be added if needed by pressing the + button (or Ctrl+A).</line>
+				<line>There is now more space for course request preferences (the course request component is much wider).</line>
+				<line>It is now possible to reorder the course with its alternatives.</line>
+				<line>With this change, there is no longer any limit on how many alternatives a course request can have.</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Note</name>
+			<description>
+				<line>A note can be set on a student.</line>
+				<line>This note is only available and can be edited on the Student Scheduling Dashboard page.</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Availability</name>
+			<description>
+				<line>A student may not be available during a particular time because he/she is teaching some other class.</line>
+				<line>Both batch and online solvers now consider this student/instructor availability.</line>
+				<line>A student can now see his/her teaching assignments in the Scheduling Assistant too.</line>
+			</description>
+		</item>
+		<item>
+			<name>No Arrows</name>
+			<description>
+				<line>Course Requests, Student Scheduling Assistant: added an option to hide the up and down arrows and the trash bin in the Course Requests table.</line>
+				<line>The buttons can be removed by setting the application property unitime.enrollment.hideCourseRequestArrows to true (defaults to false).</line>
+				<line>The remaining components are made larger when the buttons are not shown to fill in the gap.</line>
+				<line>When the X is clicked in the Course Request Box and there is nothing filled in, the line is removed and the courses below are shifted up (just like when the trash bin was clicked).</line>			 
+			</description>
+		</item>
+		<item>
+			<name>Logging</name>
+			<description>
+				<line>Additional columns have been added to the online scheduling log
+					<line>message (last message with the highest log level)</line>
+					<line>wall time (total execution time of the action)</line>
+					<line>cpu time (total cpu time of the action)</line>
+					<line>api get and post times (total execution times of the API calls)</line>
+					<line>api exception (last API exception)</line>
+				</line>
+				<line>The total execution time has been added on the Change Log tab of the Online Student Scheduling Dashboard.</line>
+				<line>The other new properties are listed in the Change message dialog, General section.</line>
+				<line>It is possible to filter change log message by execution time (over:seconds or under:seconds), api time or exception (api:min_seconds or api:message_substring) or by message (message:substring).</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Event Management</title>
+		<item>
+			<name>Academic Sessions</name>
+			<description>
+				<line>Added ability to list the academic sessions in the drop-down in the reverse order (latest session first).</line>
+				<line>This does not changes the order of the navigation arrows.</line>
+				<line>Change the order by setting unitime.events.listSessionsLatestFirst to true (defaults to false).</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Rooms</title>
+		<item>
+			<name>Room Display Name</name>
+			<description>
+				<line>Events: Show display name (if exists) next to the room name.</line>
+				<line>Room Filter can search by display name, and the display name shows in suggestions.</line>
+				<line>Also include display name in the event confirmation email and in the PDF/CSV/iCalendar exports.</line>
+				<line>Room display name is now also shown in the Examination PDF Reports and in the Scheduling Assistant.</line>
+			</description>
+		</item>
+		<item>
+			<name>Room Feature Description</name>
+			<description>
+				<line>Room feature has a new description field of up to 1000 characters.</line>
+				<line>Room feature and group descriptions now show in the room mouse-over and in the room filter.</line>
+			</description>
+		</item>
+		<item>
+			<name>Delete Room / Non-University Location</name>
+			<description>
+				<line>It is now possible to delete a room when all the meetings in it are either cancelled or rejected.</line>
+				<line>Cancelled / rejected meetings are also deleted with the room.</line>
+				<line>This change makes it possible to delete such a room as it is not possible to delete meetings that are cancelled or rejected otherwise.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Other Changes</title>
+		<item>
+			<name>Page Flow</name>
+			<description>
+				<line>For JSP-based pages, when showing the (old) loading icon in the page header, also use the GWT-like &quot;Loading page...&quot; notification (page grayed out with the blue message in the middle).</line>
+				<line>For all pages, when leaving the page (e.g., a button requesting a different page or submitting a button was pressed), show the &quot;Please wait...&quot; notification (page grayed out with the blue message in the middle).</line>
+				<line>This is to prevent the users from clicking on the same button (or on different buttons) multiple times and causing UniTime to respond even slower.</line>
+			</description>
+		</item>
+		<item>
+			<name>Export CSV</name>
+			<description>
+				<line>Export CSV capabilities have been added to Instructors page and to Student Scheduling Dashboard page.</line>
+			</description>
+		</item>
+		<item>
+			<name>Data Exchange</name>
+			<description>
+				<line>Added ability to import and export course timetabling preferences.</line> 
+				<line>Added ability to include individual class meeting in the course timetabling and course timetable exports.
+						<line>This feature can be enabled by setting the tmtbl.export.classMeetings application property to true (defaults to false).</line>
+				</line> 
+				<line>Unify the use of suffix attribute of a class element across all the imports and exports.</line> 
+				<line>Suffix attribute is set to class suffix, if it is not null and not empty class section number string (e.g., 1a) is used otherwise.</line>
+			</description>
+		</item>
+		<item>
+			<name>Data Model: Student Curriculum Information</name>
+			<description>
+				<line>Improving the student curriculum information data model to have a single table listing quaternions
+					<line>(student, academic area, classification, major) and</line>
+					<line>(student, academic araa, classification, minor)</line>
+				</line>
+				<line>instead of having three separate tables for
+					<line>(student, academic area, classification),</line>
+					<line>(student, major), and</line>
+					<line>(student, minor).</line>
+				</line>
+				<line>This is to overcome a problem when student has two majors from the same academic area.</line>
+				<line>The new tables are named student_area_clasf_major and student_area_clasf_minor, and they are replacing tables student_acad_area, student_major, and student_minor.</line>
+				<line>It is no longer possible for a student to have an academic area and classification without also having a major or a minor (a dummy No Major major is created during data update and imports when needed).</line>
+			</description>
+		</item>
+		<item>
+			<name>Roll Forward</name>
+			<description>
+				<line>Added ability to define which of the distribution preferences (that are set between classes and subparts) are going to be rolled forward.</line>
+				<line>This is to avoid cases where a distribution preference is only partially rolled, e.g., because preferences are rolled on subparts, but not on classes.</line>
+				<line>There are the following options:
+					<line>roll forward all distribution preferences</line>
+					<line>roll forward all distribution preferences, except those that are put solely on classes (this is the default)</line>
+					<line>roll forward only distribution preferences that are put solely on subparts</line>
+					<line>do not roll forward distribution preferences</line>
+				</line>
+				<line>Added ability to preserve class suffixes and external ids.
+					<line>Class suffix and external id is reset to null (not copied over to the next academic session) only when unitime.rollforward.resetClassSufix is set to true (defaults to false).</line>
+				</line>
+				<line>Roll configuration, subparts, and classes forward in their natural order (as they are displayed in UniTime).
+					<line>This is done in an attempt to preserve class labels (section numbers) as much as possible.</line>
+				</line>
+				<line>Added the ability to roll student class enrollments from point in time snapshots to the last like demand data roll forward.</line>
+				<line>Instructor attributes and instructor teaching preferences are rolled forward together with the instructors. There is a new option to roll forward teaching requests for selected subject area(s)</line>
 			</description>
 		</item>
 	</category>
