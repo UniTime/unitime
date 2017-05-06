@@ -304,6 +304,7 @@ public class EventDetail extends Composite {
 		iEvent = event;
 		
 		iApproveDialog.reset(iProperties.getProperties());
+		iMeetings.setShowMeetingContacts(iProperties.getProperties().isCanViewMeetingContacts());
 		
 		iForm.clear();
 

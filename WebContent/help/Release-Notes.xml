@@ -248,6 +248,16 @@
 				<line>Change the order by setting unitime.events.listSessionsLatestFirst to true (defaults to false).</line>
 			</description>
 		</item>
+		<item>
+			<name>Meeting Contacts</name>
+			<description>
+				<line>Added ability to associate contacts with individual meetings (Meeting Contacts, many-to-many relation).</line>
+				<line>The following two permissions are needed to enable this feature:
+					<line>Event Can View Meeting Contacts (Meeting Contact column is made visible in the Events)</line>
+  					<line>Event Can Edit Meeting Contacts (Add/Remove Meeting Contact operations are available on the Add/Edit Event page)</line>
+  				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Rooms</title>

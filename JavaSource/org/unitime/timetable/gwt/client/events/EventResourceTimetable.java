@@ -519,6 +519,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				final EventMeetingTable table = new EventMeetingTable(getSelectedTab() <= 1 ? EventMeetingTable.Mode.ListOfEvents : EventMeetingTable.Mode.ListOfMeetings, false, EventResourceTimetable.this);
 				table.setMeetingFilter(EventResourceTimetable.this);
 				table.setShowMainContact(iProperties != null && iProperties.isCanLookupMainContact());
+				table.setShowMeetingContacts(iProperties != null && iProperties.isCanViewMeetingContacts());
 				table.setEvents(iData);
 				table.setSortBy(iTable.getSortBy());
 				table.getElement().getStyle().setWidth(1040, Unit.PX);
@@ -1761,6 +1762,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		iProperties = null;
 		iSessionMonths = null;
 		iTable.setShowMainContact(false);
+		iTable.setShowMeetingContacts(false);
 		iFilterHeader.setEnabled("lookup", false);
 		iFilterHeader.setEnabled("add", false);
 		iFooter.setEnabled("add", false);
@@ -1838,6 +1840,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 							iFooter.setEnabled("add", result.isCanAddEvent() && "true".equals(iHistoryToken.getParameter("addEvent", "true")));
 							iEventAdd.setup(result);
 							iTable.setShowMainContact(result.isCanLookupMainContact());
+							iTable.setShowMeetingContacts(result.isCanViewMeetingContacts());
 							iApproveDialog.reset(result);
 							if (callback != null)
 								callback.onSuccess(result);

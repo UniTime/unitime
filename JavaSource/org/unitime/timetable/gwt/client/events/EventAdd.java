@@ -1187,6 +1187,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			for (SponsoringOrganizationInterface sponsor: properties.getSponsoringOrganizations())
 				iSponsors.addItem(sponsor.getName(), sponsor.getUniqueId().toString());
 		}
+		iMeetings.setShowMeetingContacts(properties.isCanViewMeetingContacts());
 		if (event != null) {
 			// Fix event type
 			if (event.getType() == EventType.Unavailabile && !properties.isCanAddUnavailableEvent())

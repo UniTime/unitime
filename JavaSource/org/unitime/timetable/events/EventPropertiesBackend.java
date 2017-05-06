@@ -77,6 +77,8 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		response.setCanAddUnavailableEvent(context.hasPermission(Right.EventAddUnavailable));
 		response.setCanSetExpirationDate(context.hasPermission(Right.EventSetExpiration));
 		response.setCanEditAcademicTitle(context.hasPermission(Right.EventCanEditAcademicTitle));
+		response.setCanViewMeetingContacts(context.hasPermission(Right.EventCanViewMeetingContacts));
+		response.setCanEditMeetingContacts(context.hasPermission(Right.EventCanEditMeetingContacts));
 		
 		response.setCanExportCSV(true);// rights.canSeeSchedule(null) || rights.canLookupContacts());
 		

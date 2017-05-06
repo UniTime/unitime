@@ -67,12 +67,13 @@ public class EventsExportMeetingsToCSV extends EventsExporter {
 		case SHOW_SETUP_TIME: out.hideColumn(10); break;
 		case SHOW_TEARDOWN_TIME: out.hideColumn(11); break;
 		case SHOW_CAPACITY: out.hideColumn(13); break;
-		case SHOW_ENROLLMENT: out.hideColumn(14); break;
-		case SHOW_LIMIT: out.hideColumn(15); break;
-		case SHOW_SPONSOR: out.hideColumn(16); out.hideColumn(17); break;
-		case SHOW_MAIN_CONTACT: out.hideColumn(18); out.hideColumn(19); break;
-		case SHOW_APPROVAL: out.hideColumn(20); break;
-		case SHOW_LAST_CHANGE: out.hideColumn(21); break;
+		case SHOW_MEETING_CONTACTS: out.hideColumn(14); break;
+		case SHOW_ENROLLMENT: out.hideColumn(15); break;
+		case SHOW_LIMIT: out.hideColumn(16); break;
+		case SHOW_SPONSOR: out.hideColumn(17); out.hideColumn(18); break;
+		case SHOW_MAIN_CONTACT: out.hideColumn(19); out.hideColumn(20); break;
+		case SHOW_APPROVAL: out.hideColumn(21); break;
+		case SHOW_LAST_CHANGE: out.hideColumn(22); break;
 		}
 	}
 	
@@ -92,14 +93,15 @@ public class EventsExportMeetingsToCSV extends EventsExporter {
 				/* 11 */ MESSAGES.colTeardownTimeShort(),
 				/* 12 */ MESSAGES.colLocation(),
 				/* 13 */ MESSAGES.colCapacity(),
-				/* 14 */ MESSAGES.colEnrollment(),
-				/* 15 */ MESSAGES.colLimit(),
-				/* 16 */ MESSAGES.colSponsorOrInstructor(),
-				/* 17 */ MESSAGES.colEmail(),
-				/* 18 */ MESSAGES.colMainContact(),
-				/* 19 */ MESSAGES.colEmail(),
-				/* 20 */ MESSAGES.colApproval(),
-				/* 21 */ MESSAGES.colLastChange());
+				/* 14 */ MESSAGES.colMeetingContacts(),
+				/* 15 */ MESSAGES.colEnrollment(),
+				/* 16 */ MESSAGES.colLimit(),
+				/* 17 */ MESSAGES.colSponsorOrInstructor(),
+				/* 18 */ MESSAGES.colEmail(),
+				/* 19 */ MESSAGES.colMainContact(),
+				/* 20 */ MESSAGES.colEmail(),
+				/* 21 */ MESSAGES.colApproval(),
+				/* 22 */ MESSAGES.colLastChange());
 		
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
 		EventInterface last = null;
@@ -128,6 +130,7 @@ public class EventsExportMeetingsToCSV extends EventsExporter {
 					meeting.isArrangeHours() ? "" : String.valueOf(-meeting.getEndOffset()),
 					meeting.getLocationName(MESSAGES),
 					meeting.hasLocation() && meeting.getLocation().hasSize() ? meeting.getLocation().getSize().toString() : null,
+					meeting.getMeetingContacts(CONSTANTS.meetingContactsSeparator(), MESSAGES),
 					event.hasMaxCapacity() ? event.getMaxCapacity().toString() : null,
 					event.hasEnrollment() ? event.getEnrollment().toString() : null,
 					event.hasInstructors() ? event.getInstructorNames("\n", MESSAGES) : event.hasSponsor() ? event.getSponsor().getName() : null,

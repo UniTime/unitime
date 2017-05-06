@@ -302,19 +302,19 @@ public class EventEmail {
 		input.put("event", event());
 		input.put("operation", request().getOperation() == null ? "NONE" : request().getOperation().name());
 		if (response().hasCreatedMeetings())
-			input.put("created", EventInterface.getMultiMeetings(response().getCreatedMeetings(), true));
+			input.put("created", EventInterface.getMultiMeetings(response().getCreatedMeetings(), true, false));
 		if (response().hasDeletedMeetings())
-			input.put("deleted", EventInterface.getMultiMeetings(response().getDeletedMeetings(), true));
+			input.put("deleted", EventInterface.getMultiMeetings(response().getDeletedMeetings(), true, false));
 		if (response().hasCancelledMeetings())
-			input.put("cancelled", EventInterface.getMultiMeetings(response().getCancelledMeetings(), true));
+			input.put("cancelled", EventInterface.getMultiMeetings(response().getCancelledMeetings(), true, false));
 		if (response().hasUpdatedMeetings())
-			input.put("updated", EventInterface.getMultiMeetings(response().getUpdatedMeetings(), true));
+			input.put("updated", EventInterface.getMultiMeetings(response().getUpdatedMeetings(), true, false));
 		if (request().hasMessage())
 			input.put("message", request().getMessage());
 		if (request().getEvent().getId() != null) {
-			if (event().hasMeetings())
-				input.put("meetings", EventInterface.getMultiMeetings(event().getMeetings(), true));
-			else
+			if (event().hasMeetings()) {
+				input.put("meetings", EventInterface.getMultiMeetings(event().getMeetings(), true, false));
+			} else
 				input.put("meetings", new TreeSet<MultiMeetingInterface>());
 		}
 		input.put("version", MESSAGES.pageVersion(Constants.getVersion(), Constants.getReleaseDate()));

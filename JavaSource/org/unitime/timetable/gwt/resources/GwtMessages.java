@@ -440,6 +440,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("<u>R</u>efresh")
 	String opSolverLogRefresh();
+	
+	@DefaultMessage("Add Meeting Contact ...")
+	String opAddMeetingContact();
+	
+	@DefaultMessage("Remove Meeting Contact ...")
+	String opRemoveMeetingContact();
  
 	@DefaultMessage("Press Ctrl + C to copy the selected URL, and Escape to hide this dialog.")
 	String hintCtrlCToCopy();
@@ -951,6 +957,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Initial Assignment")
 	String colInitialAssignment();
 	
+	@DefaultMessage("Meeting Contact")
+	String colMeetingContacts();
+	
 	@DefaultMessage("pending")
 	String approvalNotApproved();
 	
@@ -983,6 +992,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Setup / Teardown Times")
 	String dlgChangeOffsets();
+	
+	@DefaultMessage("Remove Meeting Contacts")
+	String dlgRemoveMeetingContacts();
 	
 	@DefaultMessage("Setup Time:")
 	String propSetupTime();
@@ -1331,6 +1343,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Assigned Instructor:")
 	String propAssignedInstructor();
+	
+	@DefaultMessage("Meeting Contact:")
+	String propMeetingContacts();
 
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
@@ -2135,6 +2150,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("{0} has no external id.")
 	String warnInstructorHasNoExternalId(String name);
+	
+	@DefaultMessage("Selected meetings have not meeting contacts.")
+	String warnSelectedMeetingsHaveNoMeetingContacts();
 
 	@DefaultMessage("No date is selected.")
 	String errorNoDateSelected();
@@ -3583,6 +3601,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("<u>R</u>emove All")
 	String buttonRemoveAll();
+	
+	@DefaultMessage("Remove <u>S</u>elected")
+	String buttonRemoveSelected();
 	
 	@DefaultMessage("Add Department...")
 	String dialogAddDepartment();
@@ -5335,4 +5356,7 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("<u>T</u>ake New Snapshot")
 	String buttonTakeNewSnapshot();
+	
+	@DefaultMessage("; ")
+	String meetingContactSeparator();
 }

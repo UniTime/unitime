@@ -136,6 +136,9 @@ public abstract class EventsExporter implements Exporter {
     		eventCookieFlags = EventFlag.SHOW_MAIN_CONTACT.clear(eventCookieFlags);
     		eventCookieFlags = EventFlag.SHOW_LAST_CHANGE.clear(eventCookieFlags);
     	}
+    	if (!context.hasPermission(Right.EventCanViewMeetingContacts)) {
+    		eventCookieFlags = EventFlag.SHOW_MEETING_CONTACTS.clear(eventCookieFlags);
+    	}
     	eventCookieFlags = EventFlag.SHOW_SECTION.set(eventCookieFlags);
     	
     	if (!"1".equals(helper.getParameter("ua"))) {

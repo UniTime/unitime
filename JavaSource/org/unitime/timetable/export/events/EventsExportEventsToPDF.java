@@ -53,7 +53,7 @@ public class EventsExportEventsToPDF extends EventsExporter {
 		Printer printer = new PDFPrinter(helper.getOutputStream(), true);
 		helper.setup(printer.getContentType(), reference(), false);
 		hideColumns(printer, events, eventCookieFlags);
-		print(printer, events);
+		print(printer, events, EventFlag.SHOW_MEETING_CONTACTS.in(eventCookieFlags));
 	}
 	
 	@Override
@@ -67,16 +67,17 @@ public class EventsExportEventsToPDF extends EventsExporter {
 		case SHOW_SETUP_TIME: out.hideColumn(8); break;
 		case SHOW_TEARDOWN_TIME: out.hideColumn(9); break;
 		case SHOW_CAPACITY: out.hideColumn(11); break;
-		case SHOW_ENROLLMENT: out.hideColumn(12); break;
-		case SHOW_LIMIT: out.hideColumn(13); break;
-		case SHOW_SPONSOR: out.hideColumn(14); break;
-		case SHOW_MAIN_CONTACT: out.hideColumn(15); break;
-		case SHOW_APPROVAL: out.hideColumn(16); break;
-		case SHOW_LAST_CHANGE: out.hideColumn(17); break;
+		case SHOW_MEETING_CONTACTS: out.hideColumn(12); break;
+		case SHOW_ENROLLMENT: out.hideColumn(13); break;
+		case SHOW_LIMIT: out.hideColumn(14); break;
+		case SHOW_SPONSOR: out.hideColumn(15); break;
+		case SHOW_MAIN_CONTACT: out.hideColumn(16); break;
+		case SHOW_APPROVAL: out.hideColumn(17); break;
+		case SHOW_LAST_CHANGE: out.hideColumn(18); break;
 		}
 	}
 
-	protected void print(Printer out, List<EventInterface> events) throws IOException {
+	protected void print(Printer out, List<EventInterface> events, boolean showMeetingContacts) throws IOException {
 		out.printHeader(
 				/*  0 */ MESSAGES.colName(),
 				/*  1 */ MESSAGES.colSection(),
@@ -90,19 +91,20 @@ public class EventsExportEventsToPDF extends EventsExporter {
 				/*  9 */ MESSAGES.colTeardownTimeShort(),
 				/* 10 */ MESSAGES.colLocation(),
 				/* 11 */ MESSAGES.colCapacity(),
-				/* 12 */ MESSAGES.colEnrollment(),
-				/* 13 */ MESSAGES.colLimit(),
-				/* 14 */ MESSAGES.colSponsorOrInstructor(),
-				/* 15 */ MESSAGES.colMainContact(),
-				/* 16 */ MESSAGES.colApproval(),
-				/* 17 */ MESSAGES.colLastChange());
+				/* 12 */ MESSAGES.colMeetingContacts(),
+				/* 13 */ MESSAGES.colEnrollment(),
+				/* 14 */ MESSAGES.colLimit(),
+				/* 15 */ MESSAGES.colSponsorOrInstructor(),
+				/* 16 */ MESSAGES.colMainContact(),
+				/* 17 */ MESSAGES.colApproval(),
+				/* 18 */ MESSAGES.colLastChange());
 		
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
 		Formats.Format<Date> dfLong = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_LONG);
 		Formats.Format<Date> dfShort = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
 		
 		for (EventInterface event: events) {
-			for (MultiMeetingInterface multi: EventInterface.getMultiMeetings(event.getMeetings(), false)) {
+			for (MultiMeetingInterface multi: EventInterface.getMultiMeetings(event.getMeetings(), false, showMeetingContacts)) {
 				MeetingInterface meeting = multi.getMeetings().first();
 				out.printLine(
 					getName(event),
@@ -118,6 +120,7 @@ public class EventsExportEventsToPDF extends EventsExporter {
 					String.valueOf(-meeting.getEndOffset()),
 					meeting.getLocationName(MESSAGES),
 					meeting.hasLocation() && meeting.getLocation().hasSize() ? meeting.getLocation().getSize().toString() : null,
+					meeting.getMeetingContacts(CONSTANTS.meetingContactsSeparator(), MESSAGES),
 					event.hasEnrollment() ? event.getEnrollment().toString() : null,
 					event.hasMaxCapacity() ? event.getMaxCapacity().toString() : null,
 					event.hasInstructors() ? event.getInstructorNames("\n", MESSAGES) : event.hasSponsor() ? event.getSponsor().getName() : null,

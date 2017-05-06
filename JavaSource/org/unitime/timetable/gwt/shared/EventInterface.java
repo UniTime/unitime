@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -646,6 +647,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private ApprovalStatus iApprovalStatus = ApprovalStatus.Pending;
 		private Long iStartTime, iStopTime;
 		private Set<MeetingConflictInterface> iConflicts;
+		private Set<ContactInterface> iMeetingContacts;
 		
 		public MeetingInterface() {}
 		
@@ -782,6 +784,44 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public Set<MeetingConflictInterface> getConflicts() { return iConflicts; }
 		public void setConflicts(Set<MeetingConflictInterface> conflicts) {
 			iConflicts = conflicts;
+		}
+		
+		public boolean hasMeetingContacts() {
+			return iMeetingContacts != null && !iMeetingContacts.isEmpty();
+		}
+		public void addMeetingContact(ContactInterface contact) {
+			if (iMeetingContacts == null) iMeetingContacts = new TreeSet<ContactInterface>();
+			iMeetingContacts.add(contact);
+		}
+		public Set<ContactInterface> getMeetingContacts() { return iMeetingContacts; }
+		public void setMeetingContacts(Set<ContactInterface> contacts) {
+			iMeetingContacts = contacts;
+		}
+		public boolean sameMeetingContacts(MeetingInterface m) {
+			if (hasMeetingContacts()) {
+				if (m.hasMeetingContacts()) {
+					Iterator<ContactInterface> i1 = getMeetingContacts().iterator();
+					Iterator<ContactInterface> i2 = m.getMeetingContacts().iterator();
+					while (i1.hasNext() && i2.hasNext()) {
+						ContactInterface c1 = i1.next();
+						ContactInterface c2 = i2.next();
+						if (!c1.equals(c2)) return false;
+					}
+					return !i1.hasNext() && !i2.hasNext();
+				} else {
+					return false;
+				}
+			} else {
+				return !m.hasMeetingContacts();
+			}
+		}
+		public String getMeetingContacts(String separator, GwtMessages msg) {
+			if (!hasMeetingContacts()) return "";
+			String ret = "";
+			for (ContactInterface c: getMeetingContacts()) {
+				ret += (ret.isEmpty() ? "" : separator) + c.getName(msg);
+			}
+			return ret;
 		}
 		
 		public int compareTo(MeetingInterface meeting) {
@@ -1013,13 +1053,25 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	    public ApprovalStatus getApprovalStatus() {
 	    	return iMeetings.first().getApprovalStatus();
 	    }
+	    
+	    public boolean hasMeetingContacts() {
+	    	return iMeetings.first().hasMeetingContacts();
+	    }
+	    
+	    public Set<ContactInterface> getMeetingContacts() {
+	    	return iMeetings.first().getMeetingContacts();
+	    }
+	    
+	    public String getMeetingContacts(String separator, GwtMessages msg) {
+	    	return iMeetings.first().getMeetingContacts(separator, msg);
+	    }
 	}
 	
-	public static TreeSet<MultiMeetingInterface> getMultiMeetings(Collection<MeetingInterface> meetings, boolean checkPast) {
-		return getMultiMeetings(meetings, checkPast, null, null);
+	public static TreeSet<MultiMeetingInterface> getMultiMeetings(Collection<MeetingInterface> meetings, boolean checkPast, boolean checkMeetingContacts) {
+		return getMultiMeetings(meetings, checkPast, null, null, checkMeetingContacts);
 	}
 	
-    public static TreeSet<MultiMeetingInterface> getMultiMeetings(Collection<MeetingInterface> meetings, boolean checkPast, DateFlagsProvider flags, EventType type) {
+    public static TreeSet<MultiMeetingInterface> getMultiMeetings(Collection<MeetingInterface> meetings, boolean checkPast, DateFlagsProvider flags, EventType type, boolean checkMeetingContacts) {
         TreeSet<MultiMeetingInterface> ret = new TreeSet<MultiMeetingInterface>();
         HashSet<MeetingInterface> meetingSet = new HashSet<MeetingInterface>(meetings);
         while (!meetingSet.isEmpty()) {
@@ -1034,6 +1086,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
             for (MeetingInterface m : meetingSet) {
             	if (m.getMeetingTime(null).equals(meeting.getMeetingTime(null)) &&
             		m.getLocationName().equals(meeting.getLocationName()) &&
+            		(!checkMeetingContacts || m.sameMeetingContacts(meeting)) &&
             		(!checkPast || m.isPast() == meeting.isPast()) && 
             		(m.getApprovalStatus() == meeting.getApprovalStatus()) &&
             		(flags == null || flag == flags.getDateFlag(type, m.getMeetingDate()))) {
@@ -1889,6 +1942,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private boolean iCanEditAcademicTitle = false;
 		private boolean iGridDisplayTitle = false;
 		private boolean iStudent = false;
+		private boolean iViewMeetingContacts = false, iEditMeetingContacts = false;;
 	
 		public EventPropertiesRpcResponse() {}
 		
@@ -1969,6 +2023,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		
 		public boolean isStudent() { return iStudent; }
 		public void setStudent(boolean student) { iStudent = student; }
+		
+		public boolean isCanViewMeetingContacts() { return iViewMeetingContacts || iEditMeetingContacts; }
+		public void setCanViewMeetingContacts(boolean viewMeetingContacts) { iViewMeetingContacts = viewMeetingContacts; }
+		public boolean isCanEditMeetingContacts() { return iEditMeetingContacts; }
+		public void setCanEditMeetingContacts(boolean editMeetingContacts) { iEditMeetingContacts = editMeetingContacts; }
 	}
 	
 	public static class EventDetailRpcRequest extends EventRpcRequest<EventInterface> {
@@ -2420,7 +2479,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     
     public static String toString(Collection<MeetingInterface> meetings, GwtConstants constants, String separator, DateFormatter df) {
     	String ret = "";
-    	for (MultiMeetingInterface m: getMultiMeetings(meetings, false)) {
+    	for (MultiMeetingInterface m: getMultiMeetings(meetings, false, false)) {
     		if (!ret.isEmpty()) ret += separator;
     		ret += (m.getDays(constants.shortDays(), constants.shortDays(), "") + " " +
     				(m.isArrangeHours() ? constants.arrangeHours() : m.getNrMeetings() == 1 ? df.formatLastDate(m.getFirstMeetingDate()) : df.formatFirstDate(m.getFirstMeetingDate()) + " - " + df.formatLastDate(m.getLastMeetingDate())) + " " +
@@ -2444,6 +2503,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		SHOW_APPROVAL,
 		SHOW_NOTE,
 		SHOW_LAST_CHANGE,
+		SHOW_MEETING_CONTACTS,
 		;
 		
 		public int flag() { return 1 << ordinal(); }
@@ -2464,7 +2524,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 				EventFlag.SHOW_SPONSOR.flag() +
 				EventFlag.SHOW_CAPACITY.flag() +
 				EventFlag.SHOW_TITLE.flag() + 
-				EventFlag.SHOW_APPROVAL.flag();
+				EventFlag.SHOW_APPROVAL.flag() +
+				EventFlag.SHOW_MEETING_CONTACTS.flag();
 	
 	public static class SessionMonth implements IsSerializable {
 		public static enum Flag implements IsSerializable {

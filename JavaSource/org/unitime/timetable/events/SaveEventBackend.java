@@ -225,6 +225,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 			TreeSet<Meeting> createdMeetings = new TreeSet<Meeting>();
 			Set<Meeting> cancelledMeetings = new TreeSet<Meeting>();
 			Set<Meeting> updatedMeetings = new TreeSet<Meeting>();
+			boolean updateMeetingContacts = context.hasPermission(Right.EventCanEditMeetingContacts);
 			for (MeetingInterface m: request.getEvent().getMeetings()) {
 				Meeting meeting = null; 
 				if (m.getApprovalStatus() == ApprovalStatus.Deleted) {
@@ -327,6 +328,36 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 						meeting.setStatus(Meeting.Status.APPROVED);
 						meeting.setApprovalDate(now);
 						break;
+					}
+				}
+				if (updateMeetingContacts) {
+					if (meeting.getMeetingContacts() == null) meeting.setMeetingContacts(new HashSet<EventContact>());
+					Set<EventContact> existingContacts = new HashSet<EventContact>(meeting.getMeetingContacts());
+					meeting.getMeetingContacts().clear();
+					if (m.hasMeetingContacts()) {
+						for (ContactInterface c: m.getMeetingContacts()) {
+							if (c.getExternalId() == null) continue;
+							EventContact contact = null;
+							for (EventContact x: existingContacts)
+								if (c.getExternalId().equals(x.getExternalUniqueId())) {  contact = x; break; }
+							if (contact == null) {
+								contact = (EventContact)hibSession.createQuery(
+										"from EventContact where externalUniqueId = :externalId")
+										.setString("externalId", c.getExternalId()).setMaxResults(1).uniqueResult();
+							}
+							if (contact == null) {
+								contact = new EventContact();
+								contact.setExternalUniqueId(c.getExternalId());
+								contact.setFirstName(c.getFirstName());
+								contact.setMiddleName(c.getMiddleName());
+								contact.setLastName(c.getLastName());
+								contact.setAcademicTitle(c.getAcademicTitle());
+								contact.setEmailAddress(c.getEmail());
+								contact.setPhone(c.getPhone());
+								hibSession.save(contact);
+							}
+							meeting.getMeetingContacts().add(contact);
+						}
 					}
 				}
 			}

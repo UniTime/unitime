@@ -447,4 +447,7 @@ public interface GwtConstants extends Constants {
 	
 	@DefaultStringValue("##0.00")
 	String utilizationFormat();
+	
+	@DefaultStringValue("; ")
+	String meetingContactsSeparator();
 }

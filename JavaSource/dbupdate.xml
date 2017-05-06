@@ -12647,6 +12647,29 @@
 			select distinct r.role_id, 'LimitAndProjectionSnapshotSave'
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'PointInTimeDataEdit'
 		</sql>
-		
+	</update>
+	<update version="182" date="6-May-2017" comment="Meeting Contacts">
+		<plsql>
+			create table %SCHEMA%.meeting_contact (
+				meeting_id number(20,0) constraint nn_meeting_contact_mtg not null,
+				contact_id number(20,0) constraint nn_meeting_contact_cont not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.meeting_contact add constraint pk_meeting_contact primary key (meeting_id, contact_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.meeting_contact (
+				meeting_id decimal(20,0) not null,
+				contact_id decimal(20,0) not null,
+				primary key (meeting_id, contact_id)
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.meeting_contact add constraint fk_meeting_contact_mtg foreign key (meeting_id)
+			references %SCHEMA%.meeting (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.meeting_contact add constraint fk_meeting_contact_cont foreign key (contact_id)
+			references %SCHEMA%.event_contact (uniqueid) on delete cascade
+		</sql>
 	</update>
 </dbupdate>

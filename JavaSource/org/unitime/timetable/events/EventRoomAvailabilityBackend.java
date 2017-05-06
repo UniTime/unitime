@@ -21,7 +21,9 @@ package org.unitime.timetable.events;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -46,6 +48,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
@@ -172,6 +175,26 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 					conflict.setEndSlot(m.getStopPeriod());
 					conflict.setApprovalDate(m.getApprovalDate());
 					conflict.setApprovalStatus(m.getApprovalStatus());
+
+					if (context.hasPermission(Right.EventCanViewMeetingContacts)) {
+						Map<Long, ContactInterface> contacts = new HashMap<Long, ContactInterface>();
+						for (EventContact c: m.getMeetingContacts()) {
+							ContactInterface contact = contacts.get(c.getUniqueId());
+							if (contact == null) {
+								contact = new ContactInterface();
+								contact.setFirstName(c.getFirstName());
+								contact.setMiddleName(c.getMiddleName());
+								contact.setLastName(c.getLastName());
+								contact.setAcademicTitle(c.getAcademicTitle());
+								contact.setExternalId(c.getExternalUniqueId());
+								contact.setPhone(c.getPhone());
+								contact.setEmail(c.getEmailAddress());
+								contact.setFormattedName(c.getName(nameFormat));
+								contacts.put(c.getUniqueId(), contact);
+							}
+							conflict.addMeetingContact(contact);
+						}
+					}
 					
 					response.addOverlap(CalendarUtils.date2dayOfYear(session.getSessionStartYear(), m.getMeetingDate()), m.getLocationPermanentId(), conflict);
 				}
@@ -317,6 +340,26 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 						conflict.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
 						conflict.setApprovalDate(m.getApprovalDate());
 						conflict.setApprovalStatus(m.getApprovalStatus());
+						
+						if (context.hasPermission(Right.EventCanViewMeetingContacts)) {
+							Map<Long, ContactInterface> contacts = new HashMap<Long, ContactInterface>();
+							for (EventContact c: m.getMeetingContacts()) {
+								ContactInterface contact = contacts.get(c.getUniqueId());
+								if (contact == null) {
+									contact = new ContactInterface();
+									contact.setFirstName(c.getFirstName());
+									contact.setMiddleName(c.getMiddleName());
+									contact.setLastName(c.getLastName());
+									contact.setAcademicTitle(c.getAcademicTitle());
+									contact.setExternalId(c.getExternalUniqueId());
+									contact.setPhone(c.getPhone());
+									contact.setEmail(c.getEmailAddress());
+									contact.setFormattedName(c.getName(nameFormat));
+									contacts.put(c.getUniqueId(), contact);
+								}
+								conflict.addMeetingContact(contact);
+							}
+						}
 						
 						meeting.addConflict(conflict);
 					}

@@ -101,6 +101,16 @@
             type="java.sql.Timestamp"
             not-null="false"/>
 
+		<set
+			name="meetingContacts"
+			table="meeting_contact"
+			inverse="false"
+	        lazy="true">
+	        
+	        <cache include="non-lazy" usage="transactional"/>
+	        <key column="meeting_id" foreign-key="fk_meeting_contact_mtg"/>
+	        <many-to-many class="EventContact" column="contact_id" foreign-key="fk_meeting_contact_cont"/>
+	    </set>
     </class>
 
 </hibernate-mapping>

@@ -21,8 +21,11 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.Meeting;
 
 /**
@@ -44,6 +47,7 @@ public abstract class BaseMeeting implements Serializable {
 	private Date iApprovalDate;
 
 	private Event iEvent;
+	private Set<EventContact> iMeetingContacts;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_MEETING_DATE = "meetingDate";
@@ -100,6 +104,13 @@ public abstract class BaseMeeting implements Serializable {
 
 	public Event getEvent() { return iEvent; }
 	public void setEvent(Event event) { iEvent = event; }
+
+	public Set<EventContact> getMeetingContacts() { return iMeetingContacts; }
+	public void setMeetingContacts(Set<EventContact> meetingContacts) { iMeetingContacts = meetingContacts; }
+	public void addTomeetingContacts(EventContact eventContact) {
+		if (iMeetingContacts == null) iMeetingContacts = new HashSet<EventContact>();
+		iMeetingContacts.add(eventContact);
+	}
 
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Meeting)) return false;

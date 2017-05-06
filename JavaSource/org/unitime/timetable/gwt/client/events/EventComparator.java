@@ -30,7 +30,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
  */
 public class EventComparator {
 	public static enum EventMeetingSortBy {
-		NAME, SECTION, TYPE, DATE, PUBLISHED_TIME, ALLOCATED_TIME, SETUP_TIME, TEARDOWN_TIME, LOCATION, CAPACITY, SPONSOR, MAIN_CONTACT, APPROVAL, LIMIT, ENROLLMENT, TITLE, NOTE, LAST_CHANGE
+		NAME, SECTION, TYPE, DATE, PUBLISHED_TIME, ALLOCATED_TIME, SETUP_TIME, TEARDOWN_TIME, LOCATION, CAPACITY, SPONSOR, MAIN_CONTACT, APPROVAL, LIMIT, ENROLLMENT, TITLE, NOTE, LAST_CHANGE, MEETING_CONTACTS
 	}
 
 	protected static int compareByName(EventInterface e1, EventInterface e2) {
@@ -191,6 +191,10 @@ public class EventComparator {
 	protected static int compareByCapacity(MeetingInterface m1, MeetingInterface m2) {
 		return (m1.getLocation() == null ? new Integer(-1) : m1.getLocation().getSize()).compareTo(m2.getLocation() == null ? new Integer(-1) : m2.getLocation().getSize());
 	}
+	
+	protected static int compareByMeetingContact(MeetingInterface m1, MeetingInterface m2) {
+		return m1.getMeetingContacts(";", null).compareTo(m2.getMeetingContacts(";", null));
+	}
 
 	public static int compareFallback(MeetingInterface m1, MeetingInterface m2) {
 		int cmp = compareByDate(m1, m2);
@@ -224,6 +228,8 @@ public class EventComparator {
 			return compareByLocation(m1, m2);
 		case CAPACITY:
 			return compareByCapacity(m1, m2);
+		case MEETING_CONTACTS:
+			return compareByMeetingContact(m1, m2);
 		}
 		return 0;
 	}

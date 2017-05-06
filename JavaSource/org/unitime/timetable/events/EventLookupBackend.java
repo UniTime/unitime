@@ -1747,6 +1747,25 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							}
 						}
 					}
+					if (context.hasPermission(Right.EventCanViewMeetingContacts)) {
+						Map<Long, ContactInterface> contacts = new HashMap<Long, ContactInterface>();
+						for (EventContact c: m.getMeetingContacts()) {
+							ContactInterface contact = contacts.get(c.getUniqueId());
+							if (contact == null) {
+								contact = new ContactInterface();
+								contact.setFirstName(c.getFirstName());
+								contact.setMiddleName(c.getMiddleName());
+								contact.setLastName(c.getLastName());
+								contact.setAcademicTitle(c.getAcademicTitle());
+								contact.setExternalId(c.getExternalUniqueId());
+								contact.setPhone(c.getPhone());
+								contact.setEmail(c.getEmailAddress());
+								contact.setFormattedName(c.getName(nameFormat));
+								contacts.put(c.getUniqueId(), contact);
+							}
+							meeting.addMeetingContact(contact);
+						}
+					}
 					event.addMeeting(meeting);
 				}
 				
@@ -2276,6 +2295,25 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								location.setIgnoreRoomCheck(m.getLocation().isIgnoreRoomCheck());
 								location.setDisplayName(m.getLocation().getDisplayName());
 								meeting.setLocation(location);
+							}
+							if (context.hasPermission(Right.EventCanViewMeetingContacts)) {
+								Map<Long, ContactInterface> contacts = new HashMap<Long, ContactInterface>();
+								for (EventContact c: m.getMeetingContacts()) {
+									ContactInterface contact = contacts.get(c.getUniqueId());
+									if (contact == null) {
+										contact = new ContactInterface();
+										contact.setFirstName(c.getFirstName());
+										contact.setMiddleName(c.getMiddleName());
+										contact.setLastName(c.getLastName());
+										contact.setAcademicTitle(c.getAcademicTitle());
+										contact.setExternalId(c.getExternalUniqueId());
+										contact.setPhone(c.getPhone());
+										contact.setEmail(c.getEmailAddress());
+										contact.setFormattedName(c.getName(nameFormat));
+										contacts.put(c.getUniqueId(), contact);
+									}
+									meeting.addMeetingContact(contact);
+								}
 							}
 							event.addMeeting(meeting);	
 							parent.addConflict(event);

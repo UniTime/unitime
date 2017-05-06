@@ -383,6 +383,8 @@ public enum Right {
     EventEditPast,
     EventSetExpiration,
     EventCanEditAcademicTitle,
+    EventCanViewMeetingContacts,
+    EventCanEditMeetingContacts,
     
     /** Administration: Academic Sessions */
     
