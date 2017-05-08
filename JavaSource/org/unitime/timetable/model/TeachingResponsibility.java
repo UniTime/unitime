@@ -115,9 +115,9 @@ public class TeachingResponsibility extends BaseTeachingResponsibility {
 	
 	public boolean isUsed() {
 		if (((Number)TeachingResponsibilityDAO.getInstance().getSession().createQuery("select count(ci) from ClassInstructor ci where ci.responsibility.uniqueId = :responsibilityId")
-			.setLong("responsibilityId", getUniqueId()).uniqueResult()).intValue() > 0) return false;
+			.setLong("responsibilityId", getUniqueId()).uniqueResult()).intValue() > 0) return true;
 		if (((Number)TeachingResponsibilityDAO.getInstance().getSession().createQuery("select count(oc) from OfferingCoordinator oc where oc.responsibility.uniqueId = :responsibilityId")
-				.setLong("responsibilityId", getUniqueId()).uniqueResult()).intValue() > 0) return false;
-		return true;
+				.setLong("responsibilityId", getUniqueId()).uniqueResult()).intValue() > 0) return true;
+		return false;
 	}
 }
