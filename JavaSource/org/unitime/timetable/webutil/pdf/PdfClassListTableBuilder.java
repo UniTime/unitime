@@ -24,6 +24,8 @@ import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.TreeSet;
 
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ClassListForm;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -37,6 +39,7 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
@@ -183,6 +186,29 @@ public class PdfClassListTableBuilder extends PdfInstructionalOfferingTableBuild
             ret.addAll(Exam.findAll(ExamOwner.sOwnerTypeCourse, co.getUniqueId()));
         }
         return ret;
+    }
+    
+    @Override
+    protected PdfPCell pdfBuildNote(PreferenceGroup prefGroup, boolean isEditable, UserContext user){
+    	Color color = (isEditable?sEnableColor:sDisableColor);
+    	PdfPCell cell = createCell();
+
+    	if (prefGroup instanceof Class_) {
+    		Class_ c = (Class_) prefGroup;
+    		String offeringNote = c.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getNotes();
+    		String classNote = c.getNotes();
+    		String note = (offeringNote == null || offeringNote.isEmpty() ? classNote : offeringNote + (classNote == null || classNote.isEmpty() ? "" : "\n" + classNote));
+    		if (note != null && !note.isEmpty()) {
+    			if (note.length() <= 30  || user == null || CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))){
+    				addText(cell, note, false, false, Element.ALIGN_LEFT, color, true);
+    			} else {
+    				if (classNote != null && !classNote.isEmpty()) note = classNote;
+    				addText(cell, (note.length() <= 30 ? note : note.substring(0, 30) + "..."), false, false, Element.ALIGN_LEFT, color, true);
+    			}
+    		}
+    	}
+    	
+        return cell;
     }
 
 }

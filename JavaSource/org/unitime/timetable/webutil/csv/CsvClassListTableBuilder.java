@@ -25,6 +25,8 @@ import java.util.TreeSet;
 
 import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ClassListForm;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -38,6 +40,7 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
@@ -148,6 +151,28 @@ public class CsvClassListTableBuilder extends CsvInstructionalOfferingTableBuild
             ret.addAll(Exam.findAll(ExamOwner.sOwnerTypeCourse, co.getUniqueId()));
         }
         return ret;
+    }
+    
+    @Override
+    protected CSVField csvBuildNote(PreferenceGroup prefGroup, boolean isEditable, UserContext user){
+    	CSVField cell = createCell();
+
+    	if (prefGroup instanceof Class_) {
+    		Class_ c = (Class_) prefGroup;
+    		String offeringNote = c.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getNotes();
+    		String classNote = c.getNotes();
+    		String note = (offeringNote == null || offeringNote.isEmpty() ? classNote : offeringNote + (classNote == null || classNote.isEmpty() ? "" : "\n" + classNote));
+    		if (note != null && !note.isEmpty()) {
+    			if (note.length() <= 30  || user == null || CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))){
+    				addText(cell, note, true);
+    			} else {
+    				if (classNote != null && !classNote.isEmpty()) note = classNote;
+    				addText(cell, (note.length() <= 30 ? note : note.substring(0, 30) + "..."), true);
+    			}
+    		}
+    	}
+    	
+        return cell;
     }
 
 }

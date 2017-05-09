@@ -26,6 +26,7 @@ import java.util.TreeSet;
 
 import javax.servlet.jsp.JspWriter;
 
+import org.springframework.web.util.HtmlUtils;
 import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.commons.web.htmlgen.TableStream;
 import org.unitime.localization.impl.Localization;
@@ -49,6 +50,7 @@ import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
@@ -301,6 +303,36 @@ public class WebClassListTableBuilder extends
             ret.addAll(Exam.findAll(ExamOwner.sOwnerTypeCourse, co.getUniqueId()));
         }
         return ret;
+    }
+    
+    @Override
+    protected TableCell buildNote(PreferenceGroup prefGroup, boolean isEditable, UserContext user){
+    	TableCell cell = null;
+    	if (prefGroup instanceof Class_) {
+    		Class_ c = (Class_) prefGroup;
+    		String offeringNote = c.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getNotes();
+    		String classNote = c.getNotes();
+    		String note = (offeringNote == null || offeringNote.isEmpty() ? classNote : offeringNote + (classNote == null || classNote.isEmpty() ? "" : "\n" + classNote));
+    		if (note != null && !note.isEmpty()) {
+    			if (CommonValues.NoteAsShortText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))) {
+    				if (classNote != null && !classNote.isEmpty()) note = classNote;
+    				if (note.length() > 20) note = note.substring(0, 20) + "...";
+    				cell = initNormalCell(note.replaceAll("\n","<br>"), isEditable);
+        			cell.setAlign("left");
+    			} else if (CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))) {
+    				cell = initNormalCell(note.replaceAll("\n","<br>"), isEditable);
+        			cell.setAlign("left");
+    			} else {
+    	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasNoteToMgr() + "' title='" + HtmlUtils.htmlEscape(note) + "' align='absmiddle' src='images/note.png'>", isEditable);
+    	    		cell.setAlign("center");
+    			}
+    		} else { 
+        		cell = this.initNormalCell("&nbsp;" ,isEditable);
+        	}
+    	} else { 
+    		cell = this.initNormalCell("&nbsp;" ,isEditable);
+    	}
+        return(cell);
     }
 
 }

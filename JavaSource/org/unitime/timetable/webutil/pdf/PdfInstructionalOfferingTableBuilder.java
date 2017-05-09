@@ -933,7 +933,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         return(cell);
     }    
     
-    private PdfPCell pdfBuildNote(PreferenceGroup prefGroup, boolean isEditable, UserContext user){
+    protected PdfPCell pdfBuildNote(PreferenceGroup prefGroup, boolean isEditable, UserContext user){
     	Color color = (isEditable?sEnableColor:sDisableColor);
     	PdfPCell cell = createCell();
 

@@ -1101,7 +1101,7 @@ public class WebInstructionalOfferingTableBuilder {
         return(cell);
     }
     
-    private TableCell buildNote(PreferenceGroup prefGroup, boolean isEditable, UserContext user){
+    protected TableCell buildNote(PreferenceGroup prefGroup, boolean isEditable, UserContext user){
     	TableCell cell = null;
     	if (prefGroup instanceof Class_) {
     		Class_ c = (Class_) prefGroup;

@@ -604,7 +604,7 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         return(cell);
     }    
     
-    private CSVField csvBuildNote(PreferenceGroup prefGroup, boolean isEditable, UserContext user){
+    protected CSVField csvBuildNote(PreferenceGroup prefGroup, boolean isEditable, UserContext user){
     	CSVField cell = createCell();
 
     	if (prefGroup instanceof Class_) {
