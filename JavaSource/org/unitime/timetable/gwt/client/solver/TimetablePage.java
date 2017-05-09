@@ -33,6 +33,8 @@ import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.FilterInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 import org.unitime.timetable.gwt.shared.SolverInterface.PageMessage;
 import org.unitime.timetable.gwt.shared.SolverInterface.PageMessageType;
 import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridFilterRequest;
@@ -95,6 +97,13 @@ public class TimetablePage extends Composite {
 			}
 		});
 		iFilter.getFooter().setEnabled("print", false);
+		iFilter.getFooter().addButton("export", MESSAGES.buttonExportPDF(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				exportData();
+			}
+		});
+		iFilter.getFooter().setEnabled("export", false);
 		iRootPanel = new SimplePanel(iPanel);
 		iRootPanel.addStyleName("unitime-TimetablePage");
 		initWidget(iRootPanel);
@@ -205,16 +214,31 @@ public class TimetablePage extends Composite {
 		ToolBox.print(pages);
 	}
 	
+	private void exportData() {
+		String query = "output=timetable.pdf" + iFilter.getQuery();
+		RPC.execute(EncodeQueryRpcRequest.encode(query), new AsyncCallback<EncodeQueryRpcResponse>() {
+			@Override
+			public void onFailure(Throwable caught) {
+			}
+			@Override
+			public void onSuccess(EncodeQueryRpcResponse result) {
+				ToolBox.open(GWT.getHostPageBaseURL() + "export?q=" + result.getQuery());
+			}
+		});
+	}
+	
 	protected void populate(FilterInterface filter, TimetableGridResponse response) {
 		iLastFilter = filter;
 		iLastResponse = response;
 		iFilter.getFooter().setEnabled("print", false);
+		iFilter.getFooter().setEnabled("export", false);
 		for (int row = iPanel.getRowCount() - 1; row > 0; row--)
 			iPanel.removeRow(row);
 		
 		if (response.getModels().isEmpty()) {
 			iFilter.getFooter().setMessage(MESSAGES.errorTimetableGridNoDataReturned());
 			iFilter.getFooter().setEnabled("print", false);
+			iFilter.getFooter().setEnabled("export", false);
 			return;
 		}
 		
@@ -232,6 +256,7 @@ public class TimetablePage extends Composite {
 		scroll.addStyleName("scroll-panel");
 		iPanel.addRow(scroll);
 		iFilter.getFooter().setEnabled("print", true);
+		iFilter.getFooter().setEnabled("export", true);
 		
 		if (!response.getAssignedLegend().isEmpty() || !response.getNotAssignedLegend().isEmpty()) {
 			iPanel.addHeaderRow(new UniTimeHeaderPanel(MESSAGES.sectLegend()));

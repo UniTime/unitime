@@ -184,7 +184,7 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
     	TimetableGridCell cell = new TimetableGridCell();
     	cell.setType(TimetableGridCell.Type.Class);
     	cell.setId(assignment.getClassId());
-    	cell.addName(assignment.getClassName());
+    	cell.addName(assignment.getClazz().getClassLabel(context.isShowClassSuffix()));
     	cell.setCommitted(notAvailable);
     	cell.setDay(day);
     	cell.setSlot(slot);

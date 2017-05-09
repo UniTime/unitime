@@ -98,6 +98,12 @@ public class Formats {
 		FILTER_DATE(new PatternHolder() {
 			public String getPattern() { return GWT_CONSTANTS.filterDateFormat(); }
 		}),
+		TIMETABLE_GRID_DATE(new PatternHolder() {
+			public String getPattern() { return GWT_CONSTANTS.timetableGridDateFormat(); }
+		}),
+		UTILIZATION(new PatternHolder() {
+			public String getPattern() { return GWT_CONSTANTS.utilizationFormat(); }
+		}),
 		;
 		
 		
