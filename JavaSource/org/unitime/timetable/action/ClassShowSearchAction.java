@@ -37,6 +37,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ClassListForm;
 import org.unitime.timetable.model.Department;
@@ -105,7 +106,7 @@ public class ClassShowSearchAction extends Action {
 			sas = ((SubjectArea)classListForm.getSubjectAreas().iterator().next()).getUniqueId().toString();
 			
         if (Constants.ALL_OPTION_VALUE.equals(sas)) sas=null;
-			
+
 	    // Subject Areas are saved to the session - Perform automatic search
 	    if(sas!=null && sas.toString().trim().length() > 0) {
 	        subjectAreaIds = sas.toString();
@@ -120,6 +121,12 @@ public class ClassShowSearchAction extends Action {
 		        
 		        classListForm.setSubjectAreaIds(subjectAreaIds.split(","));
 		        classListForm.setCourseNbr(courseNbr);
+		        
+		        Integer maxSubjectsToSearch = ApplicationProperty.MaxSubjectsToSearchAutomatically.intValue();
+		        if (maxSubjectsToSearch != null && maxSubjectsToSearch >= 0 && classListForm.getSubjectAreaIds().length > maxSubjectsToSearch) {
+		        	return mapping.findForward("showClassSearch");
+		        }
+		        
 				StringBuffer ids = new StringBuffer();
 				StringBuffer names = new StringBuffer();
 				StringBuffer subjIds = new StringBuffer();

@@ -2252,6 +2252,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Session Backup: include point in time data")
 	SessionBackupPointInTime("unitime.session_backup.pointInTimeData"),
+	
+	@Type(Integer.class)
+	@DefaultValue("1")
+	@Description("Instructional Offerings / Classes: maximal number of selected subject areas for the search to start automatically")
+	MaxSubjectsToSearchAutomatically("unitime.auto_search.maxSubjects"),
 	;
 
 	String iKey;

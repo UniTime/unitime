@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
 import org.unitime.timetable.model.SubjectArea;
@@ -103,6 +104,7 @@ public class InstructionalOfferingShowSearchAction extends Action {
 	    if (!sessionContext.hasPermission(Right.Examinations))
 	    	frm.setExams(null);
 
+	    Integer maxSubjectsToSearch = ApplicationProperty.MaxSubjectsToSearchAutomatically.intValue();
 	    // Subject Area is saved to the session - Perform automatic search
 	    if (sa != null) {
 	        try {
@@ -132,6 +134,12 @@ public class InstructionalOfferingShowSearchAction extends Action {
 		        frm.setSubjectAreaIds(sa.toString().split(","));
 		        frm.setCourseNbr(courseNbr);
 		        
+		        if (maxSubjectsToSearch != null && maxSubjectsToSearch >= 0 && frm.getSubjectAreaIds().length > maxSubjectsToSearch) {
+		        	frm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
+			    	frm.setInstructionalOfferings(null);
+			    	return mapping.findForward("showInstructionalOfferingSearch");
+		        }
+		        
 		        if(doSearch(request, frm)) {
 					BackTracker.markForBack(
 							request, 
@@ -156,7 +164,7 @@ public class InstructionalOfferingShowSearchAction extends Action {
 	        
 	        // Check if only 1 subject area exists
 	        Set s = (Set) frm.getSubjectAreas();
-	        if (s.size() == 1) {
+	        if (s.size() == 1 && (maxSubjectsToSearch == null || maxSubjectsToSearch != 0)) {
 	            Debug.debug("Exactly 1 subject area found ... ");
 	            frm.setSubjectAreaIds(new String[] {((SubjectArea) s.iterator().next()).getUniqueId().toString()});
 		        if(doSearch(request, frm)) {
