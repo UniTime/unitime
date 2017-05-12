@@ -94,6 +94,8 @@ public class UnasignedCourseRequests implements StudentSectioningReport {
 	            org.unitime.timetable.model.Student dbStudent = StudentDAO.getInstance().get(student.getId());
 	            if (dbStudent != null)
 	            	line.add(new CSVFile.CSVField(dbStudent.getEmail()));
+	            else
+	            	line.add(new CSVFile.CSVField(""));
 	            line.add(new CSVFile.CSVField(courseRequest.getCourses().get(0).getName()));
 	            
 				TreeSet<Enrollment> overlaps = new TreeSet<Enrollment>(new Comparator<Enrollment>() {

@@ -530,6 +530,12 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Wait-Listed")
 	String courseWaitListed();
 	
+	@DefaultMessage("Course is not requested.")
+	String courseNotRequested();
+	
+	@DefaultMessage("Reservation not used.")
+	String reservationNotUsed();
+	
 	@DefaultMessage("Conflicts with {0}")
 	String conflictWithFirst(String course);
 
@@ -1479,12 +1485,33 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Student\nEmail")
 	String reportStudentEmail();
 	
+	@DefaultMessage("Curriculum")
+	String reportStudentCurriculum();
+	
+	@DefaultMessage("Group")
+	String reportStudentGroup();
+	
 	@DefaultMessage("Course")
 	String reportUnassignedCourse();
+	
+	@DefaultMessage("Course")
+	String reportRequestedCourse();
 	
 	@DefaultMessage("Conflict")
 	String reportAssignmentConflict();
 	
 	@DefaultMessage("Not-Assigned Course Requests")
 	String reportUnassignedCourseRequests();
+	
+	@DefaultMessage("Not-Used Group Reservations")
+	String reportUnusedGroupReservations();
+	
+	@DefaultMessage("Not-Used Individual Reservations")
+	String reportUnusedIndividualReservations();
+	
+	@DefaultMessage("Not-Used Override Reservations")
+	String reportUnusedOverrideReservations();
+	
+	@DefaultMessage("Requested")
+	String reportRequestedPriority();
 }

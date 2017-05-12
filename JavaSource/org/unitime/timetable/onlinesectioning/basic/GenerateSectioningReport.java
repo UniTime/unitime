@@ -37,6 +37,8 @@ import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.studentsct.StudentSectioningModel;
 import org.cpsolver.studentsct.extension.DistanceConflict;
 import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
+import org.cpsolver.studentsct.model.AcademicAreaCode;
+import org.cpsolver.studentsct.model.AreaClassificationMajor;
 import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
@@ -64,6 +66,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.match.AnyCourseMatcher;
 import org.unitime.timetable.onlinesectioning.match.AnyStudentMatcher;
+import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -225,11 +228,14 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 				clonnedStudent.setExternalId(student.getExternalId());
 				clonnedStudent.setName(student.getName());
 				for (String g: student.getGroups()) {
+					clonnedStudent.getMinors().add(new AcademicAreaCode("", g));
 					List<GroupReservation> list = groups.get(g);
 					if (list != null)
 						for (GroupReservation gr: list)
 							gr.getStudentIds().add(student.getStudentId());
 				}
+				for (XAreaClassificationMajor acm: student.getMajors())
+					clonnedStudent.getAreaClassificationMajors().add(new AreaClassificationMajor(acm.getArea(), acm.getClassification(), acm.getMajor()));
 				for (XRequest r: student.getRequests()) {
 					if (r instanceof XFreeTimeRequest) {
 						XFreeTimeRequest ft = (XFreeTimeRequest)r;

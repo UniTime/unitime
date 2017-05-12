@@ -101,6 +101,9 @@ public class SectioningReports extends Composite {
 		TEACHING_CONFLICTS("Teaching Conflicts", "org.unitime.timetable.reports.studentsct.StudentAvailabilityConflicts"),
 		TEACHING_CONFLICTS_NA("Teaching Conflicts (Exclude Allowed)", "org.unitime.timetable.reports.studentsct.StudentAvailabilityConflicts", "includeAllowedOverlaps", "false"),
 		NOT_ASSIGNED_COURSE_REQUESTS(SCT_MSG.reportUnassignedCourseRequests(), "org.unitime.timetable.reports.studentsct.UnasignedCourseRequests"),
+		UNUSED_GROUP_RES(SCT_MSG.reportUnusedGroupReservations(), "org.unitime.timetable.reports.studentsct.UnusedReservations", "type", "group"),
+		UNUSED_INDIVIDUAL_RES(SCT_MSG.reportUnusedIndividualReservations(), "org.unitime.timetable.reports.studentsct.UnusedReservations", "type", "individual"),
+		UNUSED_OVERRIDE_RES(SCT_MSG.reportUnusedOverrideReservations(), "org.unitime.timetable.reports.studentsct.UnusedReservations", "type", "override"),
 		;
 		
 		String iName, iImplementation;
