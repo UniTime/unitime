@@ -2409,7 +2409,7 @@ public class CurriculaServlet implements CurriculaService {
 						.setString("q", query.toLowerCase())
 						.setLong("sessionId", sessionId)
 						.setCacheable(true).setMaxResults(limit == null || limit < 0 || checkDepartment? Integer.MAX_VALUE : limit).list()) {
-					if (checkDepartment && !permissionDepartment.check(getSessionContext().getUser(), c.getDepartment(), DepartmentStatusType.Status.OwnerEdit, DepartmentStatusType.Status.ManagerEdit))
+					if (checkDepartment && !permissionDepartment.check(getSessionContext().getUser(), c.getDepartment(), DepartmentStatusType.Status.OwnerLimitedEdit, DepartmentStatusType.Status.ManagerLimitedEdit))
 						continue;
 					CourseAssignment course = new CourseAssignment();
 					course.setCourseId(c.getUniqueId());

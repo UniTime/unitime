@@ -53,7 +53,7 @@ public class ReservationPermissions {
 
 		@Override
 		public boolean check(UserContext user, Department source) {
-			return permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerEdit, DepartmentStatusType.Status.ManagerEdit);
+			return permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerLimitedEdit, DepartmentStatusType.Status.ManagerLimitedEdit);
 		}
 
 		@Override
@@ -70,7 +70,7 @@ public class ReservationPermissions {
 		public boolean check(UserContext user, InstructionalOffering source) {
 			return !permissionOfferingLockNeeded.check(user, source) &&
 					!source.isNotOffered() &&
-					permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerEdit, DepartmentStatusType.Status.ManagerEdit);
+					permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerLimitedEdit, DepartmentStatusType.Status.ManagerLimitedEdit);
 		}
 
 		@Override
