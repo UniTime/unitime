@@ -183,13 +183,17 @@ public class SectioningStatusPage extends Composite {
 		iFilterPanel.add(iFilter);
 		
 		iSearch = new Button(MESSAGES.buttonSearch());
-		iSearch.setAccessKey(UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonSearch()));
+		Character searchAccessKey = UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonSearch());
+		if (searchAccessKey != null)
+		iSearch.setAccessKey(searchAccessKey);
 		iSearch.addStyleName("unitime-NoPrint");
 		iFilterPanel.add(iSearch);		
 		iFilterPanel.setCellVerticalAlignment(iSearch, HasVerticalAlignment.ALIGN_TOP);
 		
 		iExport = new Button(MESSAGES.buttonExport());
-		iExport.setAccessKey(UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonExport()));
+		Character exportAccessKey = UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonExport());
+		if (exportAccessKey != null)
+			iExport.setAccessKey(exportAccessKey);
 		iExport.addStyleName("unitime-NoPrint");
 		iFilterPanel.add(iExport);
 		iFilterPanel.setCellVerticalAlignment(iExport, HasVerticalAlignment.ALIGN_TOP);
