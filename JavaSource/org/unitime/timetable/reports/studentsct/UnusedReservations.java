@@ -248,11 +248,10 @@ public class UnusedReservations implements StudentSectioningReport {
 							}
 						}
 						if (!overlaps.isEmpty()) {
-							String overlap = "";
+							TreeSet<String> ts = new TreeSet<String>();
 							for (Enrollment q: overlaps) {
-								if (!overlap.isEmpty()) overlap += "\n";
 								if (q.getRequest() instanceof FreeTimeRequest) {
-									overlap += OnlineSectioningHelper.toString((FreeTimeRequest)q.getRequest());
+									ts.add(OnlineSectioningHelper.toString((FreeTimeRequest)q.getRequest()));
 								} else {
 									CourseRequest cr = (CourseRequest)q.getRequest();
 									Course o = q.getCourse();
@@ -263,10 +262,20 @@ public class UnusedReservations implements StudentSectioningReport {
 											ov += " " + s.getSubpart().getName();
 											if (i.hasNext()) ov += ",";
 										}
-									overlap += ov;
+									ts.add(ov);
 								}
 							}
-							line.add(new CSVFile.CSVField(MSG.conflictWithFirst(overlap)));
+							String message = "";
+							for (Iterator<String> i = ts.iterator(); i.hasNext();) {
+								String x = i.next();
+								if (message.isEmpty())
+									message += MSG.conflictWithFirst(x);
+								else if (!i.hasNext())
+									message += MSG.conflictWithLast(x);
+								else
+									message += MSG.conflictWithMiddle(x);
+							}
+							line.add(new CSVFile.CSVField(message));
 						} else {
 							if (courseRequest.getAssignment(assignment) == null)
 								line.add(new CSVFile.CSVField(MSG.courseNotAssigned()));
