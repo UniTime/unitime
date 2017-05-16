@@ -287,6 +287,60 @@
 		</item>
 	</category>
 	<category>
+		<title>Point in Time Reports</title>
+		<item>
+			<name>Point In Time Data Snapshots</name>
+			<description>
+				<line>UniTime now allows taking a snapshot of current state of students and their registration, class limits, and some other data.</line>
+				<line>Such a snapshot, e.g., taken at the census date, can be used for reporting, data analysis, and roll forward.</line>
+				<line>Multiple snapshots can be created for a term.</line>
+				<line>The Point in Time Data snapshots can be created (exported) and saved (imported) using the Data Exchange page.</line>
+				<line>There is a new administration page Point In Time Data Snapshots, which can be used to maintain imported snapshots.</line>
+			</description>
+		</item>
+		<item>
+			<name>Point In Time Data Reports</name>
+			<description>
+				<line>Point In Time Data Reports page contains a set of standard reports that are calculated from the static Point In Time Data snapshots for a session.</line>
+				<line>The following reports can be run from the Point In Time Data Reports Page:
+					<line>Weekly Student Class Hour Report For Department By Class
+						<line>This report lists organized, not organized and total class hours for each class that occur between the session start date and the session class end date for the selected department.</line>
+					</line>
+					<line>Weekly Student Class Hour Report For Department By Instructor Position
+						<line>This report lists organized, not organized and total class hours and student class hours for instructor position that occur between the session start date and the session class end date for the selected departments.</line>
+					</line>
+					<line>Weekly Student Class Hour Report For Department By Instructor
+						<line>This report lists organized, not organized and total class hours and student class hours for instructor that occur between the session start date and the session class end date for the selected departments.</line>
+					</line>
+					<line>Departmental Weekly Student Class Hour Report
+						<line>This report lists organized, not organized and total class and student class hours for each department that occur between the session start date and the session class end date.</line>
+					</line>
+					<line>Room Utilization
+						<line>This report lists organized, not organized and total room and student class hours for each location that is used between the session start date and the session class end date.</line>
+					</line>
+					<line>Weekly Student Enrollment by Day Of Week and Period
+						<line>This report lists organized, not organized and total student enrollments for each period collectively for all classes that meet the report criteria that fall between the session start date and the session class end date.</line>
+					</line>
+					<line>Organized Weekly Student Class Hours by Day Of Week and Hour of Day
+						<line>This report lists organized student class hours for each hour in the day collectively for all classes that fall between the session start date and the session class end date.</line>
+					</line>
+					<line>Organized Weekly Student Class Hours by Building by Day Of Week and Hour of Day
+						<line>This report lists organized student class hours by building for each hour in the day collectively for all classes that fall between the session start date and the session class end date.</line>
+					</line>
+					<line>Weekly Student Class Hours by Instructional Type by Day Of Week and Hour of Day
+						<line>This report lists student class hours by instructional type for each hour in the day collectively for all classes that fall between the session start date and the session class end date.</line>
+					</line>
+					<line>Organized Weekly Student Class Hours by Department by Day Of Week and Hour of Day
+						<line>This report lists organized student class hours by department for each hour in the day collectively for all classes that fall between the session start date and the session class end date.</line>
+					</line>
+					<line>Organized Weekly Student Class Hours by Subject Area by Day Of Week and Hour of Day
+						<line>This report lists organized student class hours by subject area for each hour in the day collectively for all classes that fall between the session start date and the session class end date.</line>
+					</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Other Changes</title>
 		<item>
 			<name>Page Flow</name>
