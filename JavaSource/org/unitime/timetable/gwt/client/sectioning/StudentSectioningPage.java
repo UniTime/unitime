@@ -99,7 +99,7 @@ public class StudentSectioningPage extends Composite {
 			}
 
 			public void onSuccess(SectioningProperties result) {
-				if (result.isAdmin()) {
+				if (result.isAdminOrAdvisor()) {
 					userAuthentication.setAllowLookup(true);
 					if (Window.Location.getParameter("session") != null)
 						sessionSelector.selectSession(Long.valueOf(Window.Location.getParameter("session")), new AsyncCallback<Boolean>() {
