@@ -178,7 +178,8 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     			}
     		}
     		if (pattern.getType() == sTypeExactTime) {
-    			if (includeExactTime) list.add(pattern);
+    			if (includeExactTime && (includeExtended || pattern.getDepartments().isEmpty() || (department != null && pattern.getDepartments().contains(department))))
+    				list.add(pattern);
     			continue;
     		}
     		if (model.isValidCombination(minutes, datePattern, pattern))
