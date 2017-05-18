@@ -106,7 +106,7 @@ public class TimetableGridFilterBackend implements GwtRpcImplementation<Timetabl
 			String mode = ApplicationProperty.TimeGridDays.value(String.valueOf(1 + i), i < CONSTANTS.timeGridDays().length ? CONSTANTS.timeGridDays()[i] : null);
 			if (mode == null || mode.isEmpty()) break;
 			String bitmap = mode.split("\\|")[0];
-			days.addOption(bitmap, mode.substring(bitmap.length() + 1));
+			days.addOption(bitmap, mode.substring(bitmap.length() + 1).replace("\\,", ","));
 		}
 		days.setDefaultValue(context.getUser().getProperty("TimetableGridTable.day", "1111100"));
 		response.addParameter(days);
