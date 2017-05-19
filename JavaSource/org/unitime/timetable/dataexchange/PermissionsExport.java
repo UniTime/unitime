@@ -46,7 +46,7 @@ public class PermissionsExport extends BaseExport {
             Element root = document.addElement("permissions");
             root.addAttribute("created", new Date().toString());
 
-            document.addDocType("curricula", "-//UniTime//DTD University Course Timetabling/EN", "http://www.unitime.org/interface/Permissions.dtd");
+            document.addDocType("permissions", "-//UniTime//DTD University Course Timetabling/EN", "http://www.unitime.org/interface/Permissions.dtd");
             
     		for (Roles role: RolesDAO.getInstance().findAll(getHibSession(), Order.asc("abbv"))) {
     			Element r = root.addElement("role");
