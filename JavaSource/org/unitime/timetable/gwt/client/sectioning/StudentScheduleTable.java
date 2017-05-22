@@ -61,10 +61,12 @@ public class StudentScheduleTable extends Composite {
 	private UniTimeHeaderPanel iHeader;
 	private WebTable iTable;
 	private ClassAssignmentInterface.Student iStudent;
+	private boolean iShowTeachingAssignments;
 	
-	public StudentScheduleTable(final boolean showHeader, boolean online) {
+	public StudentScheduleTable(final boolean showHeader, boolean online, boolean showTeachingAssignments) {
 		iOnline = online;
 		iPanel = new SimpleForm();
+		iShowTeachingAssignments = showTeachingAssignments;
 			
 		iHeader = new UniTimeHeaderPanel(showHeader ? MESSAGES.enrollmentsTable() : "&nbsp;");
 		iHeader.addCollapsibleHandler(new ValueChangeHandler<Boolean>() {
@@ -223,7 +225,10 @@ public class StudentScheduleTable extends Composite {
 				boolean firstClazz = true;
 				for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
 					String style = (firstClazz && !rows.isEmpty() ? "top-border-dashed": "");
-					if (clazz.isTeachingAssignment()) style += (clazz.isInstructing() ? " text-steelblue" : " text-steelblue-italic");
+					if (clazz.isTeachingAssignment()) {
+						if (!iShowTeachingAssignments) continue;
+						style += (clazz.isInstructing() ? " text-steelblue" : " text-steelblue-italic");
+					}
 					final WebTable.Row row = new WebTable.Row(
 							new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject() : ""),
 							new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr() : ""),
@@ -238,6 +243,8 @@ public class StudentScheduleTable extends Composite {
 							clazz.hasNote() ? new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), "") : new WebTable.Cell(""),
 							new WebTable.AbbvTextCell(clazz.getCredit()));
 					rows.add(row);
+					if (clazz.isTeachingAssignment())
+						row.setStyleName("teaching-assignment");
 					for (WebTable.Cell cell: row.getCells())
 						cell.setStyleName(style);
 					firstClazz = false;

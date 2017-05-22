@@ -77,7 +77,7 @@ public enum Components {
 	courseNumberSuggestions("UniTimeGWT:CourseNumberSuggestBox", true, new ComponentFactory() { public void insert(RootPanel panel) { CourseNumbersSuggestBox.insert(panel); } }),
 	periodPreferences("UniTimeGWT:PeriodPreferences", new ComponentFactory() { public void insert(RootPanel panel) { new PeriodPreferencesWidget(true).insert(panel); } }),
 	teachingRequests("UniTimeGWT:TeachingRequests", new ComponentFactory() { public void insert(RootPanel panel) { new TeachingRequestsWidget().insert(panel); } }),
-	studentEnrollments("UniTimeGWT:StudentEnrollments", new ComponentFactory() { public void insert(RootPanel panel) { new StudentScheduleTable(true, true).insert(panel); } }),
+	studentEnrollments("UniTimeGWT:StudentEnrollments", new ComponentFactory() { public void insert(RootPanel panel) { new StudentScheduleTable(true, true, false).insert(panel); } }),
 	teachingAssignments("UniTimeGWT:TeachingAssignments", new ComponentFactory() { public void insert(RootPanel panel) { new TeachingAssignmentsWidget().insert(panel); } }),
 	;
 	
