@@ -533,6 +533,7 @@ public class TimeGrid extends Composite {
 	}
 
 	public class Meeting extends AbsolutePanel {
+		private String iName;
 		private int iIndex, iColumn, iDay, iNrColumns;
 		private int iLeft, iWidth, iStartSlot;
 		private boolean iPinned = false;
@@ -550,6 +551,7 @@ public class TimeGrid extends Composite {
 			iStartSlot = start;
 			iColumn = column;
 			iNrColumns = nrColumns;
+			iName = name;
 	    	iHeaderPanel = new HorizontalPanel();
 	        iHeaderPanel.setStylePrimaryName("header");
 	        iPinned = pinned;
@@ -614,6 +616,7 @@ public class TimeGrid extends Composite {
 		
 		public void setInstructing(boolean instructing) {
 			iSaved.setResource(RESOURCES.isInstructing());
+			iSaved.setTitle(MESSAGES.instructing(iName));
 			iSaved.setVisible(instructing);
 		}
 		
