@@ -256,6 +256,8 @@ public class EnrollmentTable extends Composite {
 									clazz.hasNote() ? new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), "") : new WebTable.Cell(""),
 									new WebTable.AbbvTextCell(clazz.getCredit()),
 									new WebTable.Cell(clazz.getEnrolledDate() == null ? "" : sDF.format(clazz.getEnrolledDate())));
+							if (clazz.isTeachingAssignment())
+								row.setStyleName("teaching-assignment");
 							rows.add(row);
 							for (WebTable.Cell cell: row.getCells())
 								cell.setStyleName(style);
