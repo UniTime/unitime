@@ -260,7 +260,7 @@ public class WebTable extends Composite implements HasMobileScroll {
 			if (iRows[i] == null) continue;
 			iRows[i].setRowIdx(i);
 			iRows[i].setTable(this);
-			iTable.getRowFormatter().setStyleName(i+getHeaderRowsCount(), null);
+			iTable.getRowFormatter().setStyleName(i+getHeaderRowsCount(), iRows[i].getStyleName());
 			for (int j=0; j<iRows[i].getNrCells(); j++) {
 				Cell cell = iRows[i].getCell(j);
 				cell.setColIdx(j);
@@ -342,8 +342,10 @@ public class WebTable extends Composite implements HasMobileScroll {
 				String id = iRows[iSelectedRow].getId();
 				for (Row r: iRows) {
 					if (id.equals(r.getId()))
-						iTable.getRowFormatter().setStyleName(getHeaderRowsCount() + r.getRowIdx(), null);	
+						iTable.getRowFormatter().setStyleName(getHeaderRowsCount() + r.getRowIdx(), r.getStyleName());
 				}
+			} else if (iRows != null && iSelectedRow < iRows.length) {
+				iTable.getRowFormatter().setStyleName(iSelectedRow + getHeaderRowsCount(), iRows[iSelectedRow].getStyleName());
 			} else {
 				iTable.getRowFormatter().setStyleName(iSelectedRow + getHeaderRowsCount(), null);
 			}
@@ -392,6 +394,7 @@ public class WebTable extends Composite implements HasMobileScroll {
 		private WebTable iTable;
 		private boolean iSelectable = true;
 		private String iAriaLabel = null;
+		private String iStyleName = null;
 		public Row(Cell... cells) {
 			iCells = cells;
 		}
@@ -435,6 +438,8 @@ public class WebTable extends Composite implements HasMobileScroll {
 				t.getFlexCellFormatter().getElement(getRowIdx() + iTable.getHeaderRowsCount(), col).setTitle(cell.getTitle());
 			}
 		}
+		public String getStyleName() { return iStyleName; }
+		public void setStyleName(String styleName) { iStyleName = styleName; }
 		@Override
 		public String getAriaLabel() {
 			return iAriaLabel;
@@ -945,10 +950,10 @@ public class WebTable extends Composite implements HasMobileScroll {
 						String sid = getSelectedRowId();
 						for (Row r: iRows) {
 							if (id.equals(r.getId()))
-								getRowFormatter().setStyleName(getHeaderRowsCount() + r.getRowIdx(), (id.equals(sid)? "unitime-TableRowSelectedHover" : null));	
+								getRowFormatter().setStyleName(getHeaderRowsCount() + r.getRowIdx(), (id.equals(sid)? "unitime-TableRowSelectedHover" : r.getStyleName()));	
 						}
 					} else {
-						getRowFormatter().setStyleName(row, (row - getHeaderRowsCount() == iSelectedRow? "unitime-TableRowSelectedHover" : null));
+						getRowFormatter().setStyleName(row, (row - getHeaderRowsCount() == iSelectedRow? "unitime-TableRowSelectedHover" : iRows[row - getHeaderRowsCount()].getStyleName()));
 					}
 				}
 				if (row >= getHeaderRowsCount() && row < getHeaderRowsCount() + iRows.length) {

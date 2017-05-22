@@ -217,6 +217,12 @@ public interface GwtAriaMessages extends Messages {
 	@DefaultMessage("{0}: {1}")
 	String classAssignment(String clazz, String assignment);
 	
+	@DefaultMessage("teaching assignment {0}: {1}")
+	String teachingAssignment(String clazz, String assignment);
+	
+	@DefaultMessage("teaching assignment {0}: {1} that you are instructing")
+	String instructingAssignment(String clazz, String assignment);
+	
 	@DefaultMessage("Class {0} of {1}: {2}")
 	String classSelected(int index, int nbrSuggestions, String clazz);
 	

@@ -657,6 +657,10 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	font-style: italic;
 }
 
+.unitime-WebTable .teaching-assignment {
+	background-color: #eaf3fb;
+}
+
 .gwt-TabPanelBottom {
 	border: 2px solid #9CB0CE;
 	-webkit-border-radius: 5px;
