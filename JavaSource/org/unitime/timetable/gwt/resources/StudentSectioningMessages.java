@@ -1514,4 +1514,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Requested")
 	String reportRequestedPriority();
+	
+	@DefaultMessage("{0} (TA)")
+	String teachingAssignment(String className);
 }

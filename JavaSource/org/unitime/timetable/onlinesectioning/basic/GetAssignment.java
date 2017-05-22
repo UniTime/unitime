@@ -304,7 +304,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 							if (unavailabilities != null)
 								for (CourseSection cs: unavailabilities) {
 									if (section.getTime() != null && section.getTime().hasIntersection(cs.getSection().getTime())) {
-										overlap.add(MSG.clazz(cs.getCourse().getSubjectArea(), cs.getCourse().getCourseNumber(), cs.getSection().getSubpartName(), cs.getSection().getName(cs.getCourse().getCourseId())));
+										overlap.add(MSG.teachingAssignment(MSG.clazz(cs.getCourse().getSubjectArea(), cs.getCourse().getCourseNumber(), cs.getSection().getSubpartName(), cs.getSection().getName(cs.getCourse().getCourseId()))));
 									}
 								}
 							if (!overlap.isEmpty()) {

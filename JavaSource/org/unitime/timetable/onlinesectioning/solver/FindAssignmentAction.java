@@ -668,7 +668,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								for (Subpart subpart: config.getSubparts())
 									for (Section section: subpart.getSections()) {
 										if (unavailability.isOverlapping(section)) {
-											ca.addOverlap(unavailability.getSection().getName());
+											ca.addOverlap(MSG.teachingAssignment(unavailability.getSection().getName()));
 											continue unavailabilities;
 										}
 									}
