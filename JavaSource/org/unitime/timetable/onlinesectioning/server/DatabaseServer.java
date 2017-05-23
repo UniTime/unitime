@@ -271,6 +271,7 @@ public class DatabaseServer extends AbstractLockingServer {
 	public Collection<Long> getInstructedOfferings(String instructorExternalId) {
 		return (List<Long>)getCurrentHelper().getHibSession().createQuery(
 				"select distinct ci.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.uniqueId " +
+				"from ClassInstructor ci " +
 				"where ci.instructor.externalUniqueId = :instructorExternalId and ci.instructor.department.session.uniqueId = :sessionId")
 				.setLong("sessionId", getAcademicSession().getUniqueId())
 				.setString("instructorExternalId", instructorExternalId)
