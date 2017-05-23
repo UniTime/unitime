@@ -58,19 +58,20 @@ public class BusySessions {
 			return iTracker;
 		}
 		
-		protected void increment(ServletRequest request) {
+		protected String increment(ServletRequest request) {
 			if (request instanceof HttpServletRequest) {
 				Tracker tracker = getTracker(request);
 				if (tracker != null)
-					tracker.increment(((HttpServletRequest)request).getSession().getId());
+					return tracker.increment(((HttpServletRequest)request).getSession().getId());
 			}
+			return null;
 		}
 		
-		protected void decrement(ServletRequest request) {
-			if (request instanceof HttpServletRequest) {
+		protected void decrement(ServletRequest request, String id) {
+			if (request instanceof HttpServletRequest && id != null) {
 				Tracker tracker = getTracker(request);
 				if (tracker != null)
-					tracker.decrement(((HttpServletRequest)request).getSession().getId());
+					tracker.decrement(id);
 			}
 		}
 
@@ -79,11 +80,11 @@ public class BusySessions {
 
 		@Override
 		public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+			String id = increment(request);
 			try {
-				increment(request);
 				chain.doFilter(request, response);
 			} finally {
-				decrement(request);
+				decrement(request, id);
 			}
 		}
 
@@ -138,7 +139,7 @@ public class BusySessions {
 			}
 		}
 		
-		public void increment(String id) {
+		public String increment(String id) {
 			synchronized (iCounters) {
 				Counter counter = iCounters.get(id);
 				if (counter == null) {
@@ -147,6 +148,7 @@ public class BusySessions {
 				}
 				counter.increment();
 			}
+			return id;
 		}
 		
 		public void decrement(String id) {
