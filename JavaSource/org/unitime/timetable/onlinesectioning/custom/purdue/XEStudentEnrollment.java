@@ -701,7 +701,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
  					throw exception;
 				}
 			} finally {
-				helper.getAction().setApiGetTime(System.currentTimeMillis() - t1);
+				helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
 			}
 			
 			// Finally, check the response
@@ -1029,7 +1029,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					throw exception;
 				}
 			} finally {
-				helper.getAction().setApiGetTime(System.currentTimeMillis() - t1);
+				helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
 			}
 			
 			// Finally, check the response
