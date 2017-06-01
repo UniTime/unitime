@@ -458,9 +458,9 @@ public class HibernateUtil {
     
     public static String dayOfWeek(String field) {
     	if (isOracle())
-    		return "to_char(" + field + ",'D')";
+    		return "(trunc(" + field + ") - trunc(" + field + ", 'IW'))";
     	else
-    		return "dayofweek(" + field + ")";
+    		return "weekday(" + field + ")";
     }
     
     public static String date(Date date) {

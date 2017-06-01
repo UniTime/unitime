@@ -98,7 +98,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 		for (Object[] o: (List<Object[]>)query.select(HibernateUtil.dayOfWeek("m.meetingDate") + ", count(distinct e)")
 				.order(HibernateUtil.dayOfWeek("m.meetingDate")).group(HibernateUtil.dayOfWeek("m.meetingDate"))
 				.exclude("query").exclude("day").query(hibSession).list()) {
-			int type = Integer.parseInt(o[0].toString());
+			int type = ((Number)o[0]).intValue();
 			int count = ((Number)o[1]).intValue();
 			day2count.put(type, count);
 		}
@@ -106,13 +106,13 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 			String day = Constants.DAY_NAMES_FULL[i];
 			int type = 0;
 			switch (i) {
-			case Constants.DAY_SUN: type = 1; break;
-			case Constants.DAY_MON: type = 2; break;
-			case Constants.DAY_TUE: type = 3; break;
-			case Constants.DAY_WED: type = 4; break;
-			case Constants.DAY_THU: type = 5; break;
-			case Constants.DAY_FRI: type = 6; break;
-			case Constants.DAY_SAT: type = 7; break;
+			case Constants.DAY_MON: type = 0; break;
+			case Constants.DAY_TUE: type = 1; break;
+			case Constants.DAY_WED: type = 2; break;
+			case Constants.DAY_THU: type = 3; break;
+			case Constants.DAY_FRI: type = 4; break;
+			case Constants.DAY_SAT: type = 5; break;
+			case Constants.DAY_SUN: type = 6; break;
 			}
 			Integer count = day2count.get(type);
 			Entity e = new Entity(new Long(type), day, CONSTANTS.longDays()[i], "translated-value", CONSTANTS.longDays()[i]);
@@ -289,19 +289,19 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 			for (String day: request.getOptions("day")) {
 				if (!dow.isEmpty()) dow += ",";
 				if (Constants.DAY_NAMES_FULL[Constants.DAY_MON].equals(day))
-					dow += "2";
+					dow += "0";
 				if (Constants.DAY_NAMES_FULL[Constants.DAY_TUE].equals(day))
-					dow += "3";
-				if (Constants.DAY_NAMES_FULL[Constants.DAY_WED].equals(day))
-					dow += "4";
-				if (Constants.DAY_NAMES_FULL[Constants.DAY_THU].equals(day))
-					dow += "5";
-				if (Constants.DAY_NAMES_FULL[Constants.DAY_FRI].equals(day))
-					dow += "6";
-				if (Constants.DAY_NAMES_FULL[Constants.DAY_SAT].equals(day))
-					dow += "7";
-				if (Constants.DAY_NAMES_FULL[Constants.DAY_SUN].equals(day))
 					dow += "1";
+				if (Constants.DAY_NAMES_FULL[Constants.DAY_WED].equals(day))
+					dow += "2";
+				if (Constants.DAY_NAMES_FULL[Constants.DAY_THU].equals(day))
+					dow += "3";
+				if (Constants.DAY_NAMES_FULL[Constants.DAY_FRI].equals(day))
+					dow += "4";
+				if (Constants.DAY_NAMES_FULL[Constants.DAY_SAT].equals(day))
+					dow += "5";
+				if (Constants.DAY_NAMES_FULL[Constants.DAY_SUN].equals(day))
+					dow += "6";
 			}
         	if (dow.indexOf(',') >= 0)
         		query.addWhere("day", HibernateUtil.dayOfWeek("m.meetingDate") + " in (" + dow + ")");
