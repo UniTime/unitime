@@ -28,7 +28,7 @@
                 name="externalUniqueId"
                 column="external_uid"
                 type="java.lang.String"
-                length="12"/>
+                length="40"/>
 
             <key-property
                 name="name"

@@ -12672,4 +12672,8 @@
 			references %SCHEMA%.event_contact (uniqueid) on delete cascade
 		</sql>
 	</update>
+	<update version="183" date="1-Jun-2017" comment="User Data External Id Fix">
+		<plsql>alter table %SCHEMA%.user_data modify external_uid varchar2(40 char)</plsql>
+		<mysql>alter table %SCHEMA%.user_data modify external_uid varchar(40) not null</mysql>
+	</update>
 </dbupdate>
