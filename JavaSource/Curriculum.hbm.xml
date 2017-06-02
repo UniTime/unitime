@@ -306,7 +306,7 @@
             name="snapshotProjection"
             column="snapshot_proj"
             type="java.lang.Float"
-            not-null="true"/>
+            not-null="false"/>
 
 		<property
             name="snapshotProjectedDate"
