@@ -137,9 +137,10 @@ public class XStudent extends XStudentId implements Externalizable {
         Collections.sort(iRequests);
         
         StudentNote note = null;
-        for (StudentNote n: student.getNotes()) {
-        	if (note == null || note.compareTo(n) > 0) note = n;
-        }
+        if (student.getNotes() != null)
+            for (StudentNote n: student.getNotes()) {
+            	if (note == null || note.compareTo(n) > 0) note = n;
+            }
         if (note != null)
         	iLastNote = new XStudentNote(note);
     }
