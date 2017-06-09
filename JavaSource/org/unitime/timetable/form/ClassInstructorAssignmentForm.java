@@ -73,6 +73,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 	private String addInstructorId;
 	private Boolean displayExternalId;
 	private String defaultTeachingResponsibilityId;
+    private String coordinators;
 
 	private List classIds;
 	private List classLabels;
@@ -117,6 +118,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
     	instrOffrConfigId = new Long(0);
     	deletedInstrRowNum = null;
     	displayExternalId = new Boolean(false);
+    	coordinators = null;
     	TeachingResponsibility tr = TeachingResponsibility.getDefaultInstructorTeachingResponsibility();
     	defaultTeachingResponsibilityId = (tr == null ? "" : tr.getUniqueId().toString());
     	proxy = null;	
@@ -591,4 +593,8 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 	
 	public String getDefaultTeachingResponsibilityId() { return defaultTeachingResponsibilityId; }
 	public void setDefaultTeachingResponsibilityId(String defaultTeachingResponsibilityId) { this.defaultTeachingResponsibilityId = defaultTeachingResponsibilityId; }
+	
+	public String getCoordinators() { return coordinators; }
+	public void setCoordinators(String coordinators) { this.coordinators = coordinators; }
+
 }

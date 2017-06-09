@@ -156,6 +156,14 @@
 		</logic:messagesPresent>
 
 		<TR>
+			<TR>
+				<TD valign="top"><loc:message name="propertyCoordinators"/></TD>
+				<TD>
+					<bean:write name="classInstructorAssignmentForm" property="coordinators" filter="false"/>
+				</TD>
+			</TR>
+		</TR>
+		<TR>
 			<TD colspan="2" align="left">
 				<TABLE align="left" border="0" cellspacing="0" cellpadding="1">
 					<TR>

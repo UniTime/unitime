@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -49,6 +50,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.comparators.ClassComparator;
@@ -275,6 +277,20 @@ public class ClassInstructorAssignmentAction extends Action {
         		loadClasses(frm, ss.getClasses(), new String());
         	}
         }
+        
+        String coordinators = "";
+        String instructorNameFormat = sessionContext.getUser().getProperty(UserProperty.NameFormat);
+        for (OfferingCoordinator coordinator: new TreeSet<OfferingCoordinator>(io.getOfferingCoordinators())) {
+        	if (!coordinators.isEmpty()) coordinators += "<br>";
+        	coordinators += "<a href='instructorDetail.do?instructorId=" + coordinator.getInstructor().getUniqueId() + "' class='noFancyLinks'>" +
+        			coordinator.getInstructor().getName(instructorNameFormat) +
+        			(coordinator.getResponsibility() == null ? 
+        					(coordinator.getPercentShare() != 0 ? " (" + coordinator.getPercentShare() + "%)" : "") :
+        					" (" + coordinator.getResponsibility().getLabel() + (coordinator.getPercentShare() > 0 ? ", " + coordinator.getPercentShare() + "%" : "") + ")") + 
+        			"</a>";
+        }
+        frm.setCoordinators(coordinators);
+
     }
 
     private void loadClasses(ClassInstructorAssignmentForm frm, Set classes, String indent){
