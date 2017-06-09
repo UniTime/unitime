@@ -1307,7 +1307,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		pitInstructionalOffering.addTopitOfferingCoordinators(pci);
 		
 		pci.setPitDepartmentalInstructor(pitDepartmentInstructors.get(new Long(getRequiredStringAttribute(classInstructorElement, PointInTimeDataExport.sDepartmentalInstructorUniqueIdAttribute, PointInTimeDataExport.sClassInstructorElementName))));
-		pci.setPercentShare(getRequiredIntegerAttribute(classInstructorElement, PointInTimeDataExport.sShareAttribute, PointInTimeDataExport.sClassInstructorElementName));
+		pci.setPercentShare(getRequiredIntegerAttribute(classInstructorElement, PointInTimeDataExport.sShareAttribute, PointInTimeDataExport.sOfferingCoordinatorElementName));
 		String responsibilityId = getOptionalStringAttribute(classInstructorElement, PointInTimeDataExport.sResponsibilityUniqueIdAttribute);
 		if (responsibilityId != null) {
 			pci.setResponsibility(teachingResponsibilities.get(new Long(responsibilityId)));
