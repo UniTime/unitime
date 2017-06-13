@@ -60,21 +60,17 @@ import org.unitime.timetable.util.DateUtils;
 public class ClassInfoConnector extends ApiConnector {
 	@Override
 	public void doGet(ApiHelper helper) throws IOException {
-		Long sessionId = helper.getAcademicSessionId();
-		if (sessionId == null)
-			throw new IllegalArgumentException("Academic session not provided, please set the term parameter.");
-		
-		helper.getSessionContext().checkPermissionAnyAuthority(sessionId, "Session", Right.ApiRetrieveInstructorSchedule);
-		
 		String classId = helper.getParameter("id");
 		if (classId == null) classId = helper.getParameter("classId");
 		if (classId == null)
 			throw new IllegalArgumentException("Parameter ID not provided");
 
 		Class_ clazz = Class_DAO.getInstance().get(Long.valueOf(classId), helper.getHibSession());
+		
 		if (clazz == null)
 			throw new IllegalArgumentException("Class with the given ID does not exist.");
-		
+
+		helper.getSessionContext().checkPermissionAnyAuthority(clazz.getSession(), Right.ApiRetrieveClassInfo);
 		helper.setResponse(new ClassInfo(clazz));
 	}
 	
@@ -88,7 +84,8 @@ public class ClassInfoConnector extends ApiConnector {
 		PositionInfo iPosition;
 		String iEmail;
 		DepartmentInfo iDepartment;
-		String iResponsibility;
+		protected String iResponsibility;
+		protected Integer iPercentShare;
 		String iAcademicTitle;
 		
 		InstructorInfo(DepartmentalInstructor instructor) {
@@ -108,6 +105,7 @@ public class ClassInfoConnector extends ApiConnector {
 		InstructorInfo(OfferingCoordinator coordinator) {
 			this(coordinator.getInstructor());
 			iResponsibility = (coordinator.getResponsibility() == null ? null : coordinator.getResponsibility().getReference());
+			iPercentShare = coordinator.getPercentShare();
 		}
 
 	}
@@ -133,8 +131,6 @@ public class ClassInfoConnector extends ApiConnector {
 	
 	class InstructorAssignmentInfo extends InstructorInfo {
 		Boolean iLead;
-		Integer iPercentShare;
-		String iResponsibility;
 		
 		InstructorAssignmentInfo(ClassInstructor ci) {
 			super(ci.getInstructor());
