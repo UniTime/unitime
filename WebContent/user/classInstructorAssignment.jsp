@@ -160,6 +160,7 @@
 				<TD valign="top"><loc:message name="propertyCoordinators"/></TD>
 				<TD>
 					<bean:write name="classInstructorAssignmentForm" property="coordinators" filter="false"/>
+					<html:hidden property="coordinators"/>
 				</TD>
 			</TR>
 		</TR>
