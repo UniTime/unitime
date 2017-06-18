@@ -218,26 +218,6 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
                     ChangeLog.Operation.DELETE, 
                     null, 
                     location.getControllingDepartment());
-			List roomPrefs = hibSession.createCriteria(RoomPref.class).add(Restrictions.eq("room.uniqueId", location.getUniqueId())).list();
-			for (Iterator i=location.getRoomDepts().iterator();i.hasNext();) {
-				RoomDept rd = (RoomDept)i.next();
-				Department d = rd.getDepartment();
-				d.getRoomDepts().remove(rd);
-				hibSession.delete(rd);
-				hibSession.saveOrUpdate(d);
-			}
-			for (Iterator i=roomPrefs.iterator();i.hasNext();) {
-				RoomPref rp = (RoomPref)i.next();
-				rp.getOwner().getPreferences().remove(rp);
-				hibSession.delete(rp);
-				hibSession.saveOrUpdate(rp.getOwner());
-			}
-			for (Iterator i=location.getAssignments().iterator();i.hasNext();) {
-                Assignment a = (Assignment)i.next();
-                a.getRooms().remove(location);
-                hibSession.saveOrUpdate(a);
-                i.remove();
-            }
 			Map<Event, List<Meeting>> deletedMeetings = new HashMap<Event, List<Meeting>>();
 			for (Meeting meeting: (List<Meeting>)hibSession.createQuery(
 					"select m from Meeting m, Location l where " +
@@ -269,6 +249,26 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 					event.getNotes().add(note);
 					hibSession.saveOrUpdate(event);
 				}
+			}
+			List roomPrefs = hibSession.createCriteria(RoomPref.class).add(Restrictions.eq("room.uniqueId", location.getUniqueId())).list();
+			for (Iterator i=location.getRoomDepts().iterator();i.hasNext();) {
+				RoomDept rd = (RoomDept)i.next();
+				Department d = rd.getDepartment();
+				d.getRoomDepts().remove(rd);
+				hibSession.delete(rd);
+				hibSession.saveOrUpdate(d);
+			}
+			for (Iterator i=roomPrefs.iterator();i.hasNext();) {
+				RoomPref rp = (RoomPref)i.next();
+				rp.getOwner().getPreferences().remove(rp);
+				hibSession.delete(rp);
+				hibSession.saveOrUpdate(rp.getOwner());
+			}
+			for (Iterator i=location.getAssignments().iterator();i.hasNext();) {
+				Assignment a = (Assignment)i.next();
+				a.getRooms().remove(location);
+				hibSession.saveOrUpdate(a);
+				i.remove();
 			}
 			hibSession.delete(location);
 			tx.commit(); tx = null;
