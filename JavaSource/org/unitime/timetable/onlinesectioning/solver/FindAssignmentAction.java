@@ -473,7 +473,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				for (XEnrollment enrollment: enrollments.getEnrollmentsForReservation(reservation.getReservationId())) {
 					if (enrollment.getStudentId().equals(studentId)) { reservationLimit++; break; }
 				}
-				if (reservationLimit <= 0 && !reservation.mustBeUsed()) continue;
+				if (reservationLimit <= 0 && !(reservation.mustBeUsed() & !reservation.isExpired())) continue;
 			}
 			boolean applicable = originalStudent != null && reservation.isApplicable(originalStudent);
 			if (reservation instanceof XCourseReservation)
@@ -483,7 +483,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				for (XEnrollment enrollment: enrollments.getEnrollmentsForCourse(courseId))
 					if (enrollment.getStudentId().equals(studentId)) { applicable = true; break; }
 			}
-			if (applicable && reservation.mustBeUsed()) hasMustUse = true;
+			if (applicable && reservation.mustBeUsed() && !reservation.isExpired()) hasMustUse = true;
 			Reservation clonedReservation = new OnlineReservation(reservation.getType().ordinal(), reservation.getReservationId(), clonedOffering,
 					reservation.getPriority(), reservation.canAssignOverLimit(), reservationLimit, 
 					applicable, reservation.mustBeUsed(), reservation.isAllowOverlap(), reservation.isExpired());
