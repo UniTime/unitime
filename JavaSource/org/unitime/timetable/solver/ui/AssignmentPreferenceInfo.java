@@ -196,7 +196,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 			for (StudentGroup group: model.getStudentGroups()) {
 				int total = 0, assigned = 0;
 				for (Student student: group.getStudents()) {
-					if (!student.hasOffering(lecture.getConfiguration().getOfferingId())) continue;
+					if (lecture.getConfiguration() == null || !student.hasOffering(lecture.getConfiguration().getOfferingId())) continue;
 					total ++;
 					if (lecture.students().contains(student)) assigned ++;
 				}
