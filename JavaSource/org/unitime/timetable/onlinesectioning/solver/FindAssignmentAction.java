@@ -822,7 +822,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 						}
 					}
 					for (Unavailability unavailability: enrollment.getStudent().getUnavailabilities())
-						if (section.getTime() != null && section.getTime().hasIntersection(unavailability.getTime()))
+						if (section.getTime() != null && unavailability.getTime() != null && section.getTime().hasIntersection(unavailability.getTime()))
 							overlap.add(unavailability.getSection().getName());
 					if (!overlap.isEmpty()) {
 						String note = null;
