@@ -171,7 +171,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					return;
 				if (!iScheduleChanged || MESSAGES.warnScheduleChangedOnCourseRequest().equals(iStatus.getMessage())) {
 					courses: for (ClassAssignmentInterface.CourseAssignment course: iLastAssignment.getCourseAssignments()) {
-						if (!course.isAssigned() || course.isFreeTime()) continue;
+						if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
 						for (CourseRequestInterface.Request r: event.getValue().getCourses()) {
 							if (r.hasRequestedCourse(course)) continue courses;
 						}
@@ -769,7 +769,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			public void onClick(ClickEvent event) {
 				boolean allSaved = true;
 				for (ClassAssignmentInterface.ClassAssignment clazz: iLastResult) {
-					if (clazz != null && !clazz.isFreeTime() && !clazz.isSaved()) allSaved = false;
+					if (clazz != null && !clazz.isFreeTime() && !clazz.isTeachingAssignment() && !clazz.isSaved()) allSaved = false;
 				}
 				Widget w = iAssignments.getPrintWidget(0, 5, 15);
 				w.setWidth("100%");
@@ -1742,13 +1742,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		boolean empty = true;
 		if (iSavedAssignment != null)
 			courses: for (ClassAssignmentInterface.CourseAssignment course: iSavedAssignment.getCourseAssignments()) {
-				if (!course.isAssigned() || course.isFreeTime()) continue;
+				if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
 				for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
 					if (clazz.isSaved()) { empty = false; break courses; }
 				}
 			}
 		for (ClassAssignmentInterface.CourseAssignment course: iLastAssignment.getCourseAssignments()) {
-			if (!course.isAssigned() || course.isFreeTime()) continue;
+			if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
 			for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
 				if (!clazz.isSaved() && !clazz.hasError()) {
 					iScheduleChanged = true;
@@ -1762,7 +1762,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			}
 			if (iSavedAssignment != null)
 				for (ClassAssignmentInterface.CourseAssignment saved: iSavedAssignment.getCourseAssignments()) {
-					if (!saved.isAssigned() || saved.isFreeTime() || !course.getCourseId().equals(saved.getCourseId())) continue;
+					if (!saved.isAssigned() || saved.isFreeTime() || saved.isTeachingAssignment() || !course.getCourseId().equals(saved.getCourseId())) continue;
 					classes: for (ClassAssignmentInterface.ClassAssignment clazz: saved.getClassAssignments()) {
 						for (ClassAssignmentInterface.ClassAssignment x: course.getClassAssignments()) {
 							if (clazz.getClassId().equals(x.getClassId())) continue classes;
@@ -1777,7 +1777,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		}
 		if (iSavedAssignment != null)
 			courses: for (ClassAssignmentInterface.CourseAssignment course: iSavedAssignment.getCourseAssignments()) {
-				if (!course.isAssigned() || course.isFreeTime()) continue;
+				if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
 				for (ClassAssignmentInterface.CourseAssignment x: iLastAssignment.getCourseAssignments())
 					if (course.getCourseId().equals(x.getCourseId())) continue courses;
 				for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
@@ -1790,7 +1790,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			}
 		CourseRequestInterface request = iCourseRequests.getRequest();
 		courses: for (ClassAssignmentInterface.CourseAssignment course: iLastAssignment.getCourseAssignments()) {
-			if (!course.isAssigned() || course.isFreeTime()) continue;
+			if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
 			for (CourseRequestInterface.Request r: request.getCourses()) {
 				if (r.hasRequestedCourse(course)) continue courses;
 			}
@@ -1885,7 +1885,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		if (iLastAssignment != null && iSavedAssignment != null) {
 			List<String> ret = new ArrayList<String>();
 			courses: for (ClassAssignmentInterface.CourseAssignment course: iSavedAssignment.getCourseAssignments()) {
-				if (!course.isAssigned() || course.isFreeTime()) continue;
+				if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
 				for (ClassAssignmentInterface.CourseAssignment x: iLastAssignment.getCourseAssignments())
 					if (course.getCourseId().equals(x.getCourseId()) && x.isAssigned())
 						continue courses;
