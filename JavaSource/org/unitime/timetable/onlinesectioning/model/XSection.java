@@ -164,6 +164,10 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     	iNote = section.getNote();
     	iTime = section.getTime() == null ? null : new XTime(section.getTime());
     	iCancelled = section.isCancelled();
+    	if (section.getNameByCourse() != null)
+    		for (Map.Entry<Long, String> e: section.getNameByCourse().entrySet()) {
+    			iNameByCourse.put(e.getKey(), e.getValue());
+    		}
     	if (section.getNrRooms() > 0)
     		for (RoomLocation room: section.getRooms())
     			iRooms.add(new XRoom(room));
