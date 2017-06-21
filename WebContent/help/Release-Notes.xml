@@ -28,6 +28,20 @@
 	<version>4.2.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Room Edit: Google Map</name>
+			<description>
+				<line>When user cannot edit room coordinates: show marker that cannot be moved around.</line>
+				<line>When user cannot edit room coordinates and there are no coordinates: do not show the map at all.</line>
+			</description>
+		</item>
+	</category>
+</release>
+<release>
+	<version>4.2.154</version>
+	<release-date>Wed, 21 Jun 2017</release-date>
+	<category>
 		<title>First Release of UniTime 4.2 (planned June 2017)</title>
 		<item>
 			<name>Release Notes</name>

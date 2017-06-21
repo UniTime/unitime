@@ -91,6 +91,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -810,11 +811,17 @@ public class RoomEdit extends Composite {
 			iForm.addRow(MESSAGES.propRoomCheck(), iRoomCheck, 1);
 			if (iGoogleMapControl != null) iGoogleMapControl.setVisible(true);
 		} else {
-			if (iRoom.hasCoordinates())
+			if (iRoom.hasCoordinates()) {
+				P coordinates = new P("coordinates");
 				if (iProperties != null && iProperties.hasEllipsoid())
-					iForm.addRow(MESSAGES.propCoordinates(), new HTML(MESSAGES.coordinatesWithEllipsoid(iRoom.getX(), iRoom.getY(), iProperties.getEllipsoid())), 1);
+					coordinates.add(new HTML(MESSAGES.coordinatesWithEllipsoid(iRoom.getX(), iRoom.getY(), iProperties.getEllipsoid())));
 				else
-					iForm.addRow(MESSAGES.propCoordinates(), new HTML(MESSAGES.coordinates(iRoom.getX(), iRoom.getY())), 1);
+					coordinates.add(new HTML(MESSAGES.coordinates(iRoom.getX(), iRoom.getY())));
+				Hidden x = new Hidden(); x.getElement().setId("coordX"); x.setValue(iRoom.getX() == null ? "" : iRoom.getX().toString());
+				Hidden y = new Hidden(); y.getElement().setId("coordY"); y.setValue(iRoom.getY() == null ? "" : iRoom.getY().toString());
+				coordinates.add(x); coordinates.add(y);
+				iForm.addRow(MESSAGES.propCoordinates(), coordinates, 1);
+			}
 			if (iRoom.getArea() != null)
 				iForm.addRow(MESSAGES.propRoomArea(), new HTML(MESSAGES.roomArea(iRoom.getArea()) + " " + (iProperties != null && iProperties.isRoomAreaInMetricUnits() ? CONSTANTS.roomAreaMetricUnitsShort() : CONSTANTS.roomAreaUnitsShort())), 1);
 			if (iProperties.isCanSeeCourses()) {
@@ -1239,23 +1246,31 @@ public class RoomEdit extends Composite {
 		iLastScrollTop = Window.getScrollTop();
 		onShow();
 		Window.scrollTo(0, 0);
-		if (iGoogleMap != null && !iGoogleMapInitialized) {
-			iGoogleMapInitialized = true;
-			ScriptInjector.fromUrl("https://maps.googleapis.com/maps/api/js?" + (iProperties != null && iProperties.hasGoogleMapApiKey() ? "key=" + iProperties.getGoogleMapApiKey() + "&" : "") +
-					"sensor=false&callback=setupGoogleMap").setWindow(ScriptInjector.TOP_WINDOW).setCallback(
-					new Callback<Void, Exception>() {
-						@Override
-						public void onSuccess(Void result) {
-						}
-						@Override
-						public void onFailure(Exception e) {
-							UniTimeNotifications.error(e.getMessage(), e);
-							iGoogleMap = null;
-							iGoogleMapControl = null;
-						}
-					}).inject();
-		} else if (iGoogleMap != null) {
-			setMarker();
+		
+		if (iGoogleMap != null) {
+			if (isGoogleMapEditable() || iRoom.hasCoordinates()) {
+				iGoogleMap.setVisible(true);
+				if (!iGoogleMapInitialized) {
+					iGoogleMapInitialized = true;
+					ScriptInjector.fromUrl("https://maps.googleapis.com/maps/api/js?" + (iProperties != null && iProperties.hasGoogleMapApiKey() ? "key=" + iProperties.getGoogleMapApiKey() + "&" : "") +
+							"sensor=false&callback=setupGoogleMap").setWindow(ScriptInjector.TOP_WINDOW).setCallback(
+							new Callback<Void, Exception>() {
+								@Override
+								public void onSuccess(Void result) {
+								}
+								@Override
+								public void onFailure(Exception e) {
+									UniTimeNotifications.error(e.getMessage(), e);
+									iGoogleMap = null;
+									iGoogleMapControl = null;
+								}
+							}).inject();
+				} else if (iGoogleMap != null) {
+					setMarker();
+				}
+			} else {
+				iGoogleMap.setVisible(false);
+			}
 		}
 	}
 	
