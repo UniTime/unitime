@@ -1,0 +1,204 @@
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+
+<!ELEMENT sessionSetup ( session?, managers?, departments?, subjectAreas?, solverGroups?, datePatterns?, timePatterns?, examinationPeriods?, academicAreas?, academicClassifications?, posMajors?, posMinors?, studentGroups?, studentAccomodations? )  >
+<!ATTLIST sessionSetup term CDATA #REQUIRED >
+<!ATTLIST sessionSetup year CDATA #REQUIRED >
+<!ATTLIST sessionSetup campus CDATA #REQUIRED >
+<!ATTLIST sessionSetup dateFormat CDATA #IMPLIED >
+<!ATTLIST sessionSetup created CDATA #IMPLIED >
+
+<!ELEMENT session ( holidays? ) >
+<!ATTLIST session startDate CDATA #REQUIRED >
+<!ATTLIST session endDate CDATA #REQUIRED >
+<!ATTLIST session classEndDate CDATA #REQUIRED >
+<!ATTLIST session examStartDate CDATA #REQUIRED >
+<!ATTLIST session eventStartDate CDATA #IMPLIED >
+<!ATTLIST session eventEndDate CDATA #IMPLIED >
+
+<!ELEMENT holidays ((holiday|break)*) >
+
+<!ELEMENT holiday EMPTY >
+<!ATTLIST holiday date CDATA #REQUIRED >
+
+<!ELEMENT break EMPTY >
+<!ATTLIST break date CDATA #IMPLIED >
+<!ATTLIST break startDate CDATA #IMPLIED >
+<!ATTLIST break endDate CDATA #IMPLIED >
+
+<!ELEMENT managers ( manager* ) >
+<!ATTLIST managers incremental ( false | true ) #IMPLIED >
+
+<!ELEMENT manager ((department|role)*) >
+<!ATTLIST manager externalId CDATA #REQUIRED >
+<!ATTLIST manager firstName CDATA #IMPLIED >
+<!ATTLIST manager middleName CDATA #IMPLIED >
+<!ATTLIST manager lastName CDATA #IMPLIED >
+<!ATTLIST manager acadTitle CDATA #IMPLIED >
+<!ATTLIST manager email CDATA #IMPLIED >
+
+<!ELEMENT department (externalManager?,eventManagement?,studentScheduling?,required?,instructorPreferences?,distributionPreferences?) >
+<!ATTLIST department externalId CDATA #IMPLIED >
+<!ATTLIST department code CDATA #REQUIRED >
+<!ATTLIST department abbreviation CDATA #IMPLIED >
+<!ATTLIST department name CDATA #IMPLIED >
+
+<!ELEMENT role EMPTY >
+<!ATTLIST role reference CDATA #REQUIRED >
+<!ATTLIST role primary (true|false) #IMPLIED >
+<!ATTLIST role emails (true|false) #IMPLIED >
+
+<!ELEMENT departments ( department* ) >
+<!ATTLIST departments incremental ( false | true ) #IMPLIED >
+
+<!ELEMENT externalManager EMPTY>
+<!ATTLIST externalManager enabled ( false | true ) #IMPLIED >
+<!ATTLIST externalManager abbreviation CDATA #REQUIRED >
+<!ATTLIST externalManager label CDATA #REQUIRED >
+
+<!ELEMENT eventManagement EMPTY>
+<!ATTLIST eventManagement enabled ( false | true ) #REQUIRED >
+
+<!ELEMENT studentScheduling EMPTY>
+<!ATTLIST studentScheduling enabled ( false | true ) #REQUIRED >
+
+<!ELEMENT required EMPTY>
+<!ATTLIST required time ( false | true ) #REQUIRED >
+<!ATTLIST required room ( false | true ) #REQUIRED >
+<!ATTLIST required distribution ( false | true ) #REQUIRED >
+
+<!ELEMENT instructorPreferences EMPTY>
+<!ATTLIST instructorPreferences inherit ( false | true ) #REQUIRED >
+
+<!ELEMENT distributionPreferences EMPTY>
+<!ATTLIST distributionPreferences priority CDATA #IMPLIED >
+
+<!ELEMENT subjectAreas ( subjectArea* ) >
+<!ATTLIST subjectAreas incremental ( false | true ) #IMPLIED >
+
+<!ELEMENT subjectArea EMPTY>
+<!ATTLIST subjectArea abbreviation CDATA #REQUIRED >
+<!ATTLIST subjectArea externalId CDATA #IMPLIED >
+<!ATTLIST subjectArea title CDATA #REQUIRED >
+<!ATTLIST subjectArea department CDATA #REQUIRED >
+
+<!ELEMENT solverGroups ( solverGroup* ) >
+<!ATTLIST solverGroups incremental ( false | true ) #IMPLIED >
+
+<!ELEMENT solverGroup ((manager|department)*) >
+<!ATTLIST solverGroup abbreviation CDATA #REQUIRED >
+<!ATTLIST solverGroup name CDATA #REQUIRED >
+
+<!ELEMENT datePatterns ( datePattern* ) >
+<!ATTLIST datePatterns incremental ( false | true ) #IMPLIED >
+
+<!ELEMENT datePattern ((department|datePattern|dates)*) >
+<!ATTLIST datePattern name CDATA #REQUIRED >
+<!ATTLIST datePattern type CDATA #IMPLIED >
+<!ATTLIST datePattern visible (true|false) #IMPLIED >
+<!ATTLIST datePattern default (true|false) #IMPLIED >
+<!ATTLIST datePattern nbrWeeks CDATA #IMPLIED >
+
+<!ELEMENT dates EMPTY >
+<!ATTLIST dates fromDate CDATA #IMPLIED >
+<!ATTLIST dates toDate CDATA #IMPLIED >
+<!ATTLIST dates date CDATA #IMPLIED >
+
+<!ELEMENT timePatterns ( timePattern* ) >
+<!ATTLIST timePatterns incremental ( false | true ) #IMPLIED >
+
+<!ELEMENT timePattern ((department|days|time)*) >
+<!ATTLIST timePattern name CDATA #REQUIRED >
+<!ATTLIST timePattern type CDATA #REQUIRED >
+<!ATTLIST timePattern nbrMeetings CDATA #REQUIRED >
+<!ATTLIST timePattern minsPerMeeting CDATA #REQUIRED >
+<!ATTLIST timePattern visible (true|false) #IMPLIED >
+<!ATTLIST timePattern nbrSlotsPerMeeting CDATA #REQUIRED >
+<!ATTLIST timePattern breakTime CDATA #IMPLIED >
+
+<!ELEMENT days EMPTY >
+<!ATTLIST days code CDATA #IMPLIED >
+
+<!ELEMENT time EMPTY >
+<!ATTLIST time start CDATA #IMPLIED >
+
+<!ELEMENT examinationPeriods ( periods* ) >
+
+<!ELEMENT periods (period*)>
+<!ATTLIST periods type CDATA #REQUIRED >
+<!ATTLIST periods incremental ( false | true ) #IMPLIED >
+
+<!ELEMENT period EMPTY>
+<!ATTLIST period date CDATA #REQUIRED >
+<!ATTLIST period startTime CDATA #REQUIRED >
+<!ATTLIST period length CDATA #REQUIRED >
+<!ATTLIST period eventStartOffset CDATA #IMPLIED >
+<!ATTLIST period eventStopOffset CDATA #IMPLIED >
+<!ATTLIST period preference (-2|-1|0|1|2|P) #IMPLIED >
+
+<!ELEMENT academicAreas (academicArea*)>
+<!ATTLIST academicAreas incremental ( false | true ) #IMPLIED >
+
+<!ELEMENT academicArea EMPTY>
+<!ATTLIST academicArea externalId CDATA #IMPLIED >
+<!ATTLIST academicArea abbreviation CDATA #REQUIRED >
+<!ATTLIST academicArea title CDATA #REQUIRED >
+
+<!ELEMENT academicClassifications (academicClassification*)>
+<!ATTLIST academicClassifications incremental ( false | true ) #IMPLIED >
+
+<!ELEMENT academicClassification EMPTY>
+<!ATTLIST academicClassification externalId CDATA #IMPLIED >
+<!ATTLIST academicClassification code CDATA #REQUIRED >
+<!ATTLIST academicClassification name CDATA #REQUIRED >
+
+<!ELEMENT posMajors (posMajor*)>
+<!ATTLIST posMajors incremental ( false | true ) #IMPLIED >
+
+<!ELEMENT posMajor EMPTY>
+<!ATTLIST posMajor externalId CDATA #IMPLIED >
+<!ATTLIST posMajor code CDATA #REQUIRED >
+<!ATTLIST posMajor name CDATA #REQUIRED >
+<!ATTLIST posMajor academicArea CDATA #REQUIRED >
+
+<!ELEMENT posMinors (posMinor*)>
+<!ATTLIST posMinors incremental ( false | true ) #IMPLIED >
+
+<!ELEMENT posMinor EMPTY>
+<!ATTLIST posMinor externalId CDATA #IMPLIED >
+<!ATTLIST posMinor code CDATA #REQUIRED >
+<!ATTLIST posMinor name CDATA #REQUIRED >
+<!ATTLIST posMinor academicArea CDATA #REQUIRED >
+
+<!ELEMENT studentGroups (studentGroup*)>
+<!ATTLIST studentGroups incremental ( false | true ) #IMPLIED >
+
+<!ELEMENT studentGroup EMPTY>
+<!ATTLIST studentGroup externalId CDATA #IMPLIED >
+<!ATTLIST studentGroup code CDATA #REQUIRED >
+<!ATTLIST studentGroup name CDATA #REQUIRED >
+
+<!ELEMENT studentAccomodations (studentAccomodation*)>
+<!ATTLIST studentAccomodations incremental ( false | true ) #IMPLIED >
+
+<!ELEMENT studentAccomodation EMPTY>
+<!ATTLIST studentAccomodation externalId CDATA #IMPLIED >
+<!ATTLIST studentAccomodation code CDATA #REQUIRED >
+<!ATTLIST studentAccomodation name CDATA #REQUIRED >

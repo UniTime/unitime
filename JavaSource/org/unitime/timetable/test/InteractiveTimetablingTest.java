@@ -24,6 +24,7 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
 
 import org.cpsolver.coursett.TimetableLoader;
 import org.cpsolver.coursett.TimetableXMLLoader;
@@ -73,7 +74,8 @@ public class InteractiveTimetablingTest {
             
             solver.initSolver();
             
-            sLogger.info("Starting from: "+ToolBox.dict2string(model.getExtendedInfo(solver.currentSolution().getAssignment()),2));
+            Map<String,String> info = model.getExtendedInfo(solver.currentSolution().getAssignment());
+            sLogger.info("Starting from: "+ToolBox.dict2string(info,2));
             
             PrintWriter csv = new PrintWriter(new FileWriter(outDir.toString()+File.separator+"stat.csv"));
             csv.println("class,timeout,#sol,#comb,time,best,timeout,#sol,#comb,time,best");

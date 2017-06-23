@@ -130,7 +130,8 @@ public class DateUtils {
     private static Calendar calendarFor(int day, int month, int year){
     	Calendar cal = Calendar.getInstance(Locale.US);
     	cal.set(calculateActualYear(month, year),
-                (month < 0 ? (12 + (month%12)) : month % 12), day);
+                (month < 0 ? (12 + (month%12)) : month % 12), day, 0, 0, 0);
+    	cal.set(Calendar.MILLISECOND, 0);
         return(cal);
     }
     public static int getDayOfYear(int day, int month, int year) {

@@ -1,0 +1,1427 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sessionSetup PUBLIC "-//UniTime//UniTime Academic Session Setup/EN" "http://www.unitime.org/interface/AcademicSessionSetup.dtd">
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<sessionSetup term="Fal" year="2010" campus="TEST" dateFormat="yyyy/M/d" created="Fri Jun 23 15:21:28 CEST 2017">
+  <!-- Element session is optional, needed to create and/or update acedemic session information -->
+  <session startDate="2010/8/23" endDate="2010/12/19" classEndDate="2010/12/12" examStartDate="2010/12/13" eventStartDate="2010/7/19" eventEndDate="2011/1/16">
+    <holidays>
+      <holiday date="2010/9/6"/>
+      <break startDate="2010/10/11" endDate="2010/10/12"/>
+      <break startDate="2010/11/24" endDate="2010/11/27"/>
+    </holidays>
+  </session>
+  <!-- Element managers is optional, needed to create/update timetable managers (when incremental=true, managers not present in this file will not be deleted) -->
+  <managers incremental="true">
+    <manager externalId="7" firstName="Manager" lastName="Curriculum" email="demo@unitime.org">
+      <department code="0101"/>
+      <role reference="Curriculum Mgr" primary="true" emails="true"/>
+    </manager>
+    <manager externalId="4" firstName="Schedule" lastName="Deputy" email="demo@unitime.org">
+      <department code="0101"/>
+      <role reference="Dept Sched Mgr" primary="true" emails="true"/>
+    </manager>
+    <manager externalId="2" firstName="Adam" lastName="Guest" email="demo@unitime.org">
+      <department code="0102"/>
+      <role reference="View All" primary="true" emails="true"/>
+    </manager>
+    <manager externalId="6" firstName="Event" lastName="Manager" email="demo@unitime.org">
+      <department code="0101"/>
+      <department code="0100"/>
+      <department code="0102"/>
+      <role reference="Event Mgr" primary="true" emails="true"/>
+    </manager>
+    <manager externalId="3" firstName="Large" middleName="Lecture" lastName="Room" email="demo@unitime.org">
+      <department code="0100"/>
+      <role reference="Dept Sched Mgr" primary="true" emails="true"/>
+    </manager>
+    <manager externalId="1" firstName="Abraham" lastName="Root" email="demo@unitime.org">
+      <department code="0100"/>
+      <role reference="Administrator" primary="true" emails="true"/>
+    </manager>
+  </managers>
+  <departments>
+    <department code="0101" externalId="Woebegon Dept 0101" abbreviation="Instr" name="Student Instructional Planning">
+      <eventManagement enabled="true"/>
+      <required time="false" room="false" distribution="false"/>
+      <instructorPreferences inherit="true"/>
+    </department>
+    <department code="0102" abbreviation="Adm" name="Admission Office">
+      <eventManagement enabled="true"/>
+      <required time="false" room="false" distribution="false"/>
+      <instructorPreferences inherit="true"/>
+    </department>
+    <department code="0100" abbreviation="Centr" name="Central Office">
+      <externalManager enabled="true" abbreviation="LLR" label="Large Lecture Room"/>
+      <eventManagement enabled="true"/>
+      <required time="false" room="false" distribution="false"/>
+      <distributionPreferences priority="-1"/>
+    </department>
+  </departments>
+  <subjectAreas>
+    <subjectArea abbreviation="ALG" title="Algebra" department="0101"/>
+    <subjectArea abbreviation="BAND" title="Band" department="0101"/>
+    <subjectArea abbreviation="BIOL" title="Biology" department="0101"/>
+    <subjectArea abbreviation="CALC" title="Calculus" department="0101"/>
+    <subjectArea abbreviation="CHIN" title="Chinese" department="0101"/>
+    <subjectArea abbreviation="CHM" title="Chemistry" department="0101"/>
+    <subjectArea abbreviation="COM" title="Communications" department="0101"/>
+    <subjectArea abbreviation="C S" title="Computer Science" department="0101"/>
+    <subjectArea abbreviation="ECON" title="Economics" department="0101"/>
+    <subjectArea abbreviation="ENGL" title="English" department="0101"/>
+    <subjectArea abbreviation="ENGR" title="Engineering" department="0101"/>
+    <subjectArea abbreviation="GER" title="German" department="0101"/>
+    <subjectArea abbreviation="HIST" title="History" department="0101"/>
+    <subjectArea abbreviation="LING" title="Linguistics" department="0101"/>
+    <subjectArea abbreviation="MBIO" title="Microbiology" department="0101"/>
+    <subjectArea abbreviation="PHAR" title="Pharmacy" department="0101"/>
+    <subjectArea abbreviation="PHIL" title="Philosophy" department="0101"/>
+    <subjectArea abbreviation="PHYS" title="Physics" department="0101"/>
+    <subjectArea abbreviation="POL" title="Political Science" department="0101"/>
+    <subjectArea abbreviation="PSY" title="Psychology" department="0101"/>
+    <subjectArea abbreviation="SOC" title="Solciology" department="0101"/>
+    <subjectArea abbreviation="SPAN" title="Spanish" department="0101"/>
+  </subjectAreas>
+  <solverGroups>
+    <solverGroup abbreviation="Instr Plan" name="Instructional Planning">
+      <manager externalId="4"/>
+      <department code="0101"/>
+    </solverGroup>
+    <solverGroup abbreviation="LLR" name="Large Lecture Room">
+      <manager externalId="3"/>
+      <department code="0100"/>
+    </solverGroup>
+  </solverGroups>
+  <datePatterns>
+    <datePattern name="Full Term" type="Standard" visible="true" default="true">
+      <dates fromDate="2010/8/23" toDate="2010/8/28"/>
+      <dates fromDate="2010/8/30" toDate="2010/9/4"/>
+      <dates fromDate="2010/9/7" toDate="2010/9/11"/>
+      <dates fromDate="2010/9/13" toDate="2010/9/18"/>
+      <dates fromDate="2010/9/20" toDate="2010/9/25"/>
+      <dates fromDate="2010/9/27" toDate="2010/10/2"/>
+      <dates fromDate="2010/10/4" toDate="2010/10/9"/>
+      <dates fromDate="2010/10/13" toDate="2010/10/16"/>
+      <dates fromDate="2010/10/18" toDate="2010/10/23"/>
+      <dates fromDate="2010/10/25" toDate="2010/10/30"/>
+      <dates fromDate="2010/11/1" toDate="2010/11/6"/>
+      <dates fromDate="2010/11/8" toDate="2010/11/13"/>
+      <dates fromDate="2010/11/15" toDate="2010/11/20"/>
+      <dates fromDate="2010/11/22" toDate="2010/11/23"/>
+      <dates fromDate="2010/11/29" toDate="2010/12/4"/>
+      <dates fromDate="2010/12/6" toDate="2010/12/11"/>
+    </datePattern>
+    <datePattern name="Week 1-10" type="Standard" visible="true" default="false">
+      <dates fromDate="2010/8/23" toDate="2010/8/28"/>
+      <dates fromDate="2010/8/30" toDate="2010/9/4"/>
+      <dates fromDate="2010/9/7" toDate="2010/9/11"/>
+      <dates fromDate="2010/9/13" toDate="2010/9/18"/>
+      <dates fromDate="2010/9/20" toDate="2010/9/25"/>
+      <dates fromDate="2010/9/27" toDate="2010/10/2"/>
+      <dates fromDate="2010/10/4" toDate="2010/10/9"/>
+      <dates fromDate="2010/10/13" toDate="2010/10/16"/>
+      <dates fromDate="2010/10/18" toDate="2010/10/23"/>
+      <dates fromDate="2010/10/25" toDate="2010/10/30"/>
+      <dates fromDate="2010/11/1" toDate="2010/11/2"/>
+    </datePattern>
+    <datePattern name="Week 6-15" type="Standard" visible="true" default="false">
+      <dates fromDate="2010/9/27" toDate="2010/10/2"/>
+      <dates fromDate="2010/10/4" toDate="2010/10/9"/>
+      <dates fromDate="2010/10/13" toDate="2010/10/16"/>
+      <dates fromDate="2010/10/18" toDate="2010/10/23"/>
+      <dates fromDate="2010/10/25" toDate="2010/10/30"/>
+      <dates fromDate="2010/11/1" toDate="2010/11/6"/>
+      <dates fromDate="2010/11/8" toDate="2010/11/13"/>
+      <dates fromDate="2010/11/15" toDate="2010/11/20"/>
+      <dates fromDate="2010/11/22" toDate="2010/11/23"/>
+      <dates fromDate="2010/11/29" toDate="2010/12/4"/>
+      <dates fromDate="2010/12/6" toDate="2010/12/11"/>
+    </datePattern>
+    <datePattern name="Week 1-8" type="Standard" visible="true" default="false">
+      <dates fromDate="2010/8/23" toDate="2010/8/28"/>
+      <dates fromDate="2010/8/30" toDate="2010/9/4"/>
+      <dates fromDate="2010/9/7" toDate="2010/9/11"/>
+      <dates fromDate="2010/9/13" toDate="2010/9/18"/>
+      <dates fromDate="2010/9/20" toDate="2010/9/25"/>
+      <dates fromDate="2010/9/27" toDate="2010/10/2"/>
+      <dates fromDate="2010/10/4" toDate="2010/10/9"/>
+      <dates fromDate="2010/10/13" toDate="2010/10/16"/>
+      <dates fromDate="2010/10/18" toDate="2010/10/19"/>
+    </datePattern>
+    <datePattern name="Week 9-15" type="Standard" visible="true" default="false">
+      <dates fromDate="2010/10/20" toDate="2010/10/23"/>
+      <dates fromDate="2010/10/25" toDate="2010/10/30"/>
+      <dates fromDate="2010/11/1" toDate="2010/11/6"/>
+      <dates fromDate="2010/11/8" toDate="2010/11/13"/>
+      <dates fromDate="2010/11/15" toDate="2010/11/20"/>
+      <dates fromDate="2010/11/22" toDate="2010/11/23"/>
+      <dates fromDate="2010/11/29" toDate="2010/12/4"/>
+      <dates fromDate="2010/12/6" toDate="2010/12/11"/>
+    </datePattern>
+    <datePattern name="Week 1-5" type="Standard" visible="true" default="false">
+      <dates fromDate="2010/8/23" toDate="2010/8/28"/>
+      <dates fromDate="2010/8/30" toDate="2010/9/4"/>
+      <dates fromDate="2010/9/7" toDate="2010/9/11"/>
+      <dates fromDate="2010/9/13" toDate="2010/9/18"/>
+      <dates fromDate="2010/9/20" toDate="2010/9/25"/>
+    </datePattern>
+    <datePattern name="Week 6-10" type="Standard" visible="true" default="false">
+      <dates fromDate="2010/9/27" toDate="2010/10/2"/>
+      <dates fromDate="2010/10/4" toDate="2010/10/9"/>
+      <dates fromDate="2010/10/13" toDate="2010/10/16"/>
+      <dates fromDate="2010/10/18" toDate="2010/10/23"/>
+      <dates fromDate="2010/10/25" toDate="2010/10/30"/>
+      <dates fromDate="2010/11/1" toDate="2010/11/2"/>
+    </datePattern>
+    <datePattern name="Week 11-15" type="Standard" visible="true" default="false">
+      <dates fromDate="2010/11/3" toDate="2010/11/6"/>
+      <dates fromDate="2010/11/8" toDate="2010/11/13"/>
+      <dates fromDate="2010/11/15" toDate="2010/11/20"/>
+      <dates fromDate="2010/11/22" toDate="2010/11/23"/>
+      <dates fromDate="2010/11/29" toDate="2010/12/4"/>
+      <dates fromDate="2010/12/6" toDate="2010/12/11"/>
+    </datePattern>
+    <datePattern name="Odd Wks" type="Alternate Weeks" visible="true" default="false">
+      <dates fromDate="2010/8/23" toDate="2010/8/28"/>
+      <dates fromDate="2010/9/7" toDate="2010/9/11"/>
+      <dates fromDate="2010/9/20" toDate="2010/9/25"/>
+      <dates fromDate="2010/10/4" toDate="2010/10/9"/>
+      <dates fromDate="2010/10/20" toDate="2010/10/23"/>
+      <dates fromDate="2010/10/25" toDate="2010/10/26"/>
+      <dates fromDate="2010/11/3" toDate="2010/11/6"/>
+      <dates fromDate="2010/11/8" toDate="2010/11/9"/>
+      <dates fromDate="2010/11/17" toDate="2010/11/20"/>
+      <dates fromDate="2010/11/22" toDate="2010/11/23"/>
+      <dates fromDate="2010/12/6" toDate="2010/12/11"/>
+    </datePattern>
+    <datePattern name="Even Wks" type="Alternate Weeks" visible="true" default="false">
+      <dates fromDate="2010/8/30" toDate="2010/9/4"/>
+      <dates fromDate="2010/9/13" toDate="2010/9/18"/>
+      <dates fromDate="2010/9/27" toDate="2010/10/2"/>
+      <dates fromDate="2010/10/13" toDate="2010/10/16"/>
+      <dates fromDate="2010/10/18" toDate="2010/10/19"/>
+      <dates fromDate="2010/10/27" toDate="2010/10/30"/>
+      <dates fromDate="2010/11/1" toDate="2010/11/2"/>
+      <dates fromDate="2010/11/10" toDate="2010/11/13"/>
+      <dates fromDate="2010/11/15" toDate="2010/11/16"/>
+      <dates fromDate="2010/11/29" toDate="2010/12/4"/>
+    </datePattern>
+    <datePattern name="Week -1" type="Non-standard" visible="true" default="false">
+      <dates fromDate="2010/8/16" toDate="2010/8/22"/>
+    </datePattern>
+    <datePattern name="Week 1" type="Non-standard" visible="true" default="false">
+      <dates fromDate="2010/8/23" toDate="2010/8/29"/>
+    </datePattern>
+    <datePattern name="Week 2" type="Non-standard" visible="true" default="false">
+      <dates fromDate="2010/8/30" toDate="2010/9/5"/>
+    </datePattern>
+    <datePattern name="Week 2-15" type="Non-standard" visible="true" default="false">
+      <dates fromDate="2010/8/30" toDate="2010/9/4"/>
+      <dates fromDate="2010/9/7" toDate="2010/9/11"/>
+      <dates fromDate="2010/9/13" toDate="2010/9/18"/>
+      <dates fromDate="2010/9/20" toDate="2010/9/25"/>
+      <dates fromDate="2010/9/27" toDate="2010/10/2"/>
+      <dates fromDate="2010/10/4" toDate="2010/10/9"/>
+      <dates fromDate="2010/10/13" toDate="2010/10/16"/>
+      <dates fromDate="2010/10/18" toDate="2010/10/23"/>
+      <dates fromDate="2010/10/25" toDate="2010/10/30"/>
+      <dates fromDate="2010/11/1" toDate="2010/11/6"/>
+      <dates fromDate="2010/11/8" toDate="2010/11/13"/>
+      <dates fromDate="2010/11/15" toDate="2010/11/20"/>
+      <dates fromDate="2010/11/22" toDate="2010/11/23"/>
+      <dates fromDate="2010/11/29" toDate="2010/12/4"/>
+      <dates fromDate="2010/12/6" toDate="2010/12/11"/>
+    </datePattern>
+    <datePattern name="Week 3" type="Non-standard" visible="true" default="false">
+      <dates fromDate="2010/9/7" toDate="2010/9/12"/>
+    </datePattern>
+    <datePattern name="Week 4" type="Non-standard" visible="true" default="false">
+      <dates fromDate="2010/9/13" toDate="2010/9/19"/>
+    </datePattern>
+    <datePattern name="Week 5" type="Non-standard" visible="true" default="false">
+      <dates fromDate="2010/9/20" toDate="2010/9/26"/>
+    </datePattern>
+    <datePattern name="Week 6" type="Non-standard" visible="true" default="false">
+      <dates fromDate="2010/9/27" toDate="2010/10/3"/>
+    </datePattern>
+    <datePattern name="Week 7" type="Non-standard" visible="true" default="false">
+      <dates fromDate="2010/10/4" toDate="2010/10/10"/>
+    </datePattern>
+    <datePattern name="Week 8" type="Non-standard" visible="true" default="false">
+      <dates fromDate="2010/10/13" toDate="2010/10/19"/>
+    </datePattern>
+    <datePattern name="Week 9" type="Non-standard" visible="true" default="false">
+      <dates fromDate="2010/10/20" toDate="2010/10/26"/>
+    </datePattern>
+    <datePattern name="Week 10" type="Non-standard" visible="true" default="false">
+      <dates fromDate="2010/10/27" toDate="2010/11/2"/>
+    </datePattern>
+    <datePattern name="Week 11" type="Non-standard" visible="true" default="false">
+      <dates fromDate="2010/11/3" toDate="2010/11/9"/>
+    </datePattern>
+    <datePattern name="Week 12" type="Non-standard" visible="true" default="false">
+      <dates fromDate="2010/11/10" toDate="2010/11/16"/>
+    </datePattern>
+    <datePattern name="Week 13" type="Non-standard" visible="true" default="false">
+      <dates fromDate="2010/11/17" toDate="2010/11/23"/>
+    </datePattern>
+    <datePattern name="Week 14" type="Non-standard" visible="true" default="false">
+      <dates fromDate="2010/11/29" toDate="2010/12/5"/>
+    </datePattern>
+    <datePattern name="Week 15" type="Non-standard" visible="true" default="false">
+      <dates fromDate="2010/12/6" toDate="2010/12/12"/>
+    </datePattern>
+    <datePattern name="1x" type="Alternative Pattern Set">
+        <datePattern name="Week 1"/>
+        <datePattern name="Week 2"/>
+        <datePattern name="Week 3"/>
+        <datePattern name="Week 4"/>
+        <datePattern name="Week 5"/>
+        <datePattern name="Week 6"/>
+        <datePattern name="Week 7"/>
+        <datePattern name="Week 8"/>
+        <datePattern name="Week 9"/>
+        <datePattern name="Week 10"/>
+        <datePattern name="Week 11"/>
+        <datePattern name="Week 12"/>
+        <datePattern name="Week 13"/>
+        <datePattern name="Week 14"/>
+        <datePattern name="Week 15"/>
+    </datePattern>    
+  </datePatterns>
+  <timePatterns>
+    <timePattern name="5 x 50" nbrMeetings="5" minsPerMeeting="50" type="Standard" visible="true" nbrSlotsPerMeeting="12" breakTime="10">
+      <days code="MTWThF"/>
+      <time start="0730"/>
+      <time start="0830"/>
+      <time start="0930"/>
+      <time start="1030"/>
+      <time start="1130"/>
+      <time start="1230"/>
+      <time start="1330"/>
+      <time start="1430"/>
+      <time start="1530"/>
+      <time start="1630"/>
+    </timePattern>
+    <timePattern name="5 x 75" nbrMeetings="5" minsPerMeeting="75" type="Standard" visible="true" nbrSlotsPerMeeting="18" breakTime="15">
+      <days code="MTWThF"/>
+      <time start="0730"/>
+      <time start="0900"/>
+      <time start="1030"/>
+      <time start="1200"/>
+      <time start="1330"/>
+      <time start="1500"/>
+      <time start="1630"/>
+    </timePattern>
+    <timePattern name="5 x 100" nbrMeetings="5" minsPerMeeting="100" type="Standard" visible="true" nbrSlotsPerMeeting="24" breakTime="10">
+      <days code="MTWThF"/>
+      <time start="0730"/>
+      <time start="0830"/>
+      <time start="0930"/>
+      <time start="1030"/>
+      <time start="1130"/>
+      <time start="1230"/>
+      <time start="1330"/>
+      <time start="1430"/>
+      <time start="1500"/>
+      <time start="1530"/>
+    </timePattern>
+    <timePattern name="5 x 150" nbrMeetings="5" minsPerMeeting="150" type="Standard" visible="true" nbrSlotsPerMeeting="36" breakTime="10">
+      <days code="MTWThF"/>
+      <time start="0730"/>
+      <time start="0830"/>
+      <time start="0930"/>
+      <time start="1030"/>
+      <time start="1130"/>
+      <time start="1230"/>
+      <time start="1330"/>
+      <time start="1430"/>
+      <time start="1500"/>
+    </timePattern>
+    <timePattern name="5 x 180" nbrMeetings="5" minsPerMeeting="180" type="Standard" visible="true" nbrSlotsPerMeeting="42" breakTime="10">
+      <days code="MTWThF"/>
+      <time start="0700"/>
+      <time start="0830"/>
+      <time start="1030"/>
+      <time start="1200"/>
+      <time start="1400"/>
+    </timePattern>
+    <timePattern name="5 x 200" nbrMeetings="5" minsPerMeeting="200" type="Standard" visible="true" nbrSlotsPerMeeting="48" breakTime="10">
+      <days code="MTWThF"/>
+      <time start="0730"/>
+      <time start="0800"/>
+      <time start="0830"/>
+      <time start="0900"/>
+      <time start="0930"/>
+      <time start="1000"/>
+      <time start="1030"/>
+      <time start="1100"/>
+      <time start="1130"/>
+      <time start="1200"/>
+      <time start="1230"/>
+      <time start="1300"/>
+    </timePattern>
+    <timePattern name="4 x 50" nbrMeetings="4" minsPerMeeting="50" type="Standard" visible="true" nbrSlotsPerMeeting="12" breakTime="10">
+      <days code="MTWTh"/>
+      <days code="MTWF"/>
+      <days code="MTThF"/>
+      <days code="MWThF"/>
+      <days code="TWThF"/>
+      <time start="0730"/>
+      <time start="0830"/>
+      <time start="0930"/>
+      <time start="1030"/>
+      <time start="1130"/>
+      <time start="1230"/>
+      <time start="1330"/>
+      <time start="1430"/>
+      <time start="1530"/>
+      <time start="1630"/>
+    </timePattern>
+    <timePattern name="4 x 100" nbrMeetings="4" minsPerMeeting="100" type="Standard" visible="true" nbrSlotsPerMeeting="24" breakTime="10">
+      <days code="MTWTh"/>
+      <days code="MTWF"/>
+      <days code="MTThF"/>
+      <days code="MWThF"/>
+      <days code="TWThF"/>
+      <time start="0730"/>
+      <time start="0930"/>
+      <time start="1130"/>
+      <time start="1330"/>
+      <time start="1530"/>
+    </timePattern>
+    <timePattern name="3 x 20" nbrMeetings="3" minsPerMeeting="20" type="Standard" visible="true" nbrSlotsPerMeeting="6" breakTime="10">
+      <days code="MWF"/>
+      <time start="0730"/>
+      <time start="0800"/>
+      <time start="0830"/>
+      <time start="0900"/>
+      <time start="0930"/>
+      <time start="1000"/>
+      <time start="1030"/>
+      <time start="1100"/>
+      <time start="1130"/>
+      <time start="1200"/>
+      <time start="1230"/>
+      <time start="1300"/>
+      <time start="1330"/>
+      <time start="1400"/>
+      <time start="1430"/>
+      <time start="1500"/>
+      <time start="1530"/>
+      <time start="1600"/>
+      <time start="1630"/>
+      <time start="1700"/>
+    </timePattern>
+    <timePattern name="3 x 30" nbrMeetings="3" minsPerMeeting="30" type="Standard" visible="true" nbrSlotsPerMeeting="6" breakTime="0">
+      <days code="MWF"/>
+      <time start="0730"/>
+      <time start="0800"/>
+      <time start="0830"/>
+      <time start="0900"/>
+      <time start="0930"/>
+      <time start="1000"/>
+      <time start="1030"/>
+      <time start="1100"/>
+      <time start="1130"/>
+      <time start="1200"/>
+      <time start="1230"/>
+      <time start="1300"/>
+      <time start="1330"/>
+      <time start="1400"/>
+      <time start="1430"/>
+      <time start="1500"/>
+      <time start="1530"/>
+      <time start="1600"/>
+      <time start="1630"/>
+      <time start="1700"/>
+    </timePattern>
+    <timePattern name="3 x 50" nbrMeetings="3" minsPerMeeting="50" type="Standard" visible="true" nbrSlotsPerMeeting="12" breakTime="10">
+      <days code="MWF"/>
+      <time start="0730"/>
+      <time start="0830"/>
+      <time start="0930"/>
+      <time start="1030"/>
+      <time start="1130"/>
+      <time start="1230"/>
+      <time start="1330"/>
+      <time start="1430"/>
+      <time start="1530"/>
+      <time start="1630"/>
+    </timePattern>
+    <timePattern name="3 x 90" nbrMeetings="3" minsPerMeeting="90" type="Standard" visible="true" nbrSlotsPerMeeting="21" breakTime="15">
+      <days code="MWF"/>
+      <time start="0730"/>
+      <time start="0830"/>
+      <time start="0930"/>
+      <time start="1015"/>
+      <time start="1115"/>
+      <time start="1130"/>
+      <time start="1200"/>
+      <time start="1300"/>
+      <time start="1330"/>
+      <time start="1345"/>
+      <time start="1445"/>
+      <time start="1530"/>
+    </timePattern>
+    <timePattern name="3 x 100" nbrMeetings="3" minsPerMeeting="100" type="Standard" visible="true" nbrSlotsPerMeeting="24" breakTime="10">
+      <days code="MWF"/>
+      <time start="0730"/>
+      <time start="0930"/>
+      <time start="1130"/>
+      <time start="1330"/>
+      <time start="1530"/>
+    </timePattern>
+    <timePattern name="3 x 150" nbrMeetings="3" minsPerMeeting="150" type="Standard" visible="true" nbrSlotsPerMeeting="36" breakTime="10">
+      <days code="MWF"/>
+      <time start="0730"/>
+      <time start="0830"/>
+      <time start="1030"/>
+      <time start="1130"/>
+      <time start="1330"/>
+      <time start="1430"/>
+      <time start="1450"/>
+      <time start="1500"/>
+    </timePattern>
+    <timePattern name="3 x 200" nbrMeetings="3" minsPerMeeting="200" type="Standard" visible="true" nbrSlotsPerMeeting="48" breakTime="10">
+      <days code="MWF"/>
+      <time start="0730"/>
+      <time start="0830"/>
+      <time start="1230"/>
+      <time start="1330"/>
+    </timePattern>
+    <timePattern name="2 x 15" nbrMeetings="2" minsPerMeeting="15" type="Standard" visible="true" nbrSlotsPerMeeting="3" breakTime="0">
+      <days code="MW"/>
+      <days code="MF"/>
+      <days code="TTh"/>
+      <days code="WF"/>
+      <time start="0730"/>
+      <time start="0800"/>
+      <time start="0830"/>
+      <time start="0900"/>
+      <time start="0930"/>
+      <time start="1000"/>
+      <time start="1030"/>
+      <time start="1100"/>
+      <time start="1130"/>
+      <time start="1200"/>
+      <time start="1230"/>
+      <time start="1300"/>
+      <time start="1330"/>
+      <time start="1400"/>
+      <time start="1430"/>
+      <time start="1500"/>
+      <time start="1530"/>
+      <time start="1600"/>
+      <time start="1630"/>
+      <time start="1700"/>
+      <time start="1730"/>
+    </timePattern>
+    <timePattern name="2 x 15 Quarter" nbrMeetings="2" minsPerMeeting="15" type="Standard" visible="true" nbrSlotsPerMeeting="3" breakTime="0">
+      <days code="MW"/>
+      <days code="MF"/>
+      <days code="TTh"/>
+      <days code="WF"/>
+      <time start="0745"/>
+      <time start="0815"/>
+      <time start="0845"/>
+      <time start="0915"/>
+      <time start="0945"/>
+      <time start="1015"/>
+      <time start="1045"/>
+      <time start="1115"/>
+      <time start="1145"/>
+      <time start="1215"/>
+      <time start="1245"/>
+      <time start="1315"/>
+      <time start="1345"/>
+      <time start="1415"/>
+      <time start="1445"/>
+      <time start="1515"/>
+      <time start="1545"/>
+      <time start="1615"/>
+      <time start="1645"/>
+      <time start="1715"/>
+      <time start="1745"/>
+    </timePattern>
+    <timePattern name="2 x 20" nbrMeetings="2" minsPerMeeting="20" type="Standard" visible="true" nbrSlotsPerMeeting="6" breakTime="10">
+      <days code="MW"/>
+      <days code="MF"/>
+      <days code="TTh"/>
+      <days code="WF"/>
+      <time start="0730"/>
+      <time start="0800"/>
+      <time start="0830"/>
+      <time start="0900"/>
+      <time start="0930"/>
+      <time start="1000"/>
+      <time start="1030"/>
+      <time start="1100"/>
+      <time start="1130"/>
+      <time start="1200"/>
+      <time start="1230"/>
+      <time start="1300"/>
+      <time start="1330"/>
+      <time start="1400"/>
+      <time start="1430"/>
+      <time start="1500"/>
+      <time start="1530"/>
+      <time start="1600"/>
+      <time start="1630"/>
+      <time start="1700"/>
+    </timePattern>
+    <timePattern name="2 x 30" nbrMeetings="2" minsPerMeeting="30" type="Standard" visible="true" nbrSlotsPerMeeting="6" breakTime="0">
+      <days code="MW"/>
+      <days code="MF"/>
+      <days code="TTh"/>
+      <days code="WF"/>
+      <time start="0730"/>
+      <time start="0800"/>
+      <time start="0830"/>
+      <time start="0900"/>
+      <time start="0930"/>
+      <time start="1000"/>
+      <time start="1030"/>
+      <time start="1100"/>
+      <time start="1130"/>
+      <time start="1200"/>
+      <time start="1230"/>
+      <time start="1300"/>
+      <time start="1330"/>
+      <time start="1400"/>
+      <time start="1430"/>
+      <time start="1500"/>
+      <time start="1530"/>
+      <time start="1600"/>
+      <time start="1630"/>
+      <time start="1700"/>
+    </timePattern>
+    <timePattern name="2 x 50" nbrMeetings="2" minsPerMeeting="50" type="Standard" visible="true" nbrSlotsPerMeeting="12" breakTime="10">
+      <days code="MW"/>
+      <days code="MF"/>
+      <days code="TTh"/>
+      <days code="WF"/>
+      <time start="0730"/>
+      <time start="0830"/>
+      <time start="0930"/>
+      <time start="1030"/>
+      <time start="1130"/>
+      <time start="1230"/>
+      <time start="1330"/>
+      <time start="1430"/>
+      <time start="1530"/>
+      <time start="1630"/>
+    </timePattern>
+    <timePattern name="2 x 75" nbrMeetings="2" minsPerMeeting="75" type="Standard" visible="true" nbrSlotsPerMeeting="18" breakTime="15">
+      <days code="TTh"/>
+      <time start="0730"/>
+      <time start="0900"/>
+      <time start="1030"/>
+      <time start="1200"/>
+      <time start="1330"/>
+      <time start="1500"/>
+      <time start="1630"/>
+    </timePattern>
+    <timePattern name="2 x 90" nbrMeetings="2" minsPerMeeting="90" type="Standard" visible="true" nbrSlotsPerMeeting="21" breakTime="15">
+      <days code="MW"/>
+      <days code="MF"/>
+      <days code="TTh"/>
+      <days code="WF"/>
+      <time start="0730"/>
+      <time start="0830"/>
+      <time start="0930"/>
+      <time start="1015"/>
+      <time start="1115"/>
+      <time start="1130"/>
+      <time start="1200"/>
+      <time start="1300"/>
+      <time start="1330"/>
+      <time start="1345"/>
+      <time start="1445"/>
+      <time start="1530"/>
+    </timePattern>
+    <timePattern name="2 x 100" nbrMeetings="2" minsPerMeeting="100" type="Standard" visible="true" nbrSlotsPerMeeting="24" breakTime="10">
+      <days code="MW"/>
+      <days code="MF"/>
+      <days code="TTh"/>
+      <days code="WF"/>
+      <time start="0730"/>
+      <time start="0930"/>
+      <time start="1130"/>
+      <time start="1330"/>
+      <time start="1530"/>
+    </timePattern>
+    <timePattern name="2 x 120" nbrMeetings="2" minsPerMeeting="120" type="Standard" visible="true" nbrSlotsPerMeeting="30" breakTime="15">
+      <days code="MW"/>
+      <days code="MF"/>
+      <days code="TTh"/>
+      <days code="WF"/>
+      <time start="0800"/>
+      <time start="0830"/>
+      <time start="1030"/>
+      <time start="1100"/>
+      <time start="1300"/>
+      <time start="1330"/>
+      <time start="1530"/>
+      <time start="1600"/>
+    </timePattern>
+    <timePattern name="2 x 150" nbrMeetings="2" minsPerMeeting="150" type="Standard" visible="true" nbrSlotsPerMeeting="36" breakTime="10">
+      <days code="MW"/>
+      <days code="MF"/>
+      <days code="TTh"/>
+      <days code="WF"/>
+      <time start="0730"/>
+      <time start="0830"/>
+      <time start="0930"/>
+      <time start="1030"/>
+      <time start="1130"/>
+      <time start="1330"/>
+      <time start="1430"/>
+      <time start="1500"/>
+    </timePattern>
+    <timePattern name="2 x 200" nbrMeetings="2" minsPerMeeting="200" type="Standard" visible="true" nbrSlotsPerMeeting="48" breakTime="10">
+      <days code="MW"/>
+      <days code="MF"/>
+      <days code="TTh"/>
+      <days code="WF"/>
+      <time start="0730"/>
+      <time start="0830"/>
+      <time start="1230"/>
+      <time start="1330"/>
+    </timePattern>
+    <timePattern name="2 x 300" nbrMeetings="2" minsPerMeeting="300" type="Standard" visible="true" nbrSlotsPerMeeting="72" breakTime="10">
+      <days code="MW"/>
+      <days code="MF"/>
+      <days code="TTh"/>
+      <days code="WF"/>
+      <time start="0730"/>
+      <time start="0830"/>
+      <time start="0930"/>
+      <time start="1030"/>
+      <time start="1130"/>
+    </timePattern>
+    <timePattern name="1 x 20" nbrMeetings="1" minsPerMeeting="20" type="Standard" visible="true" nbrSlotsPerMeeting="6" breakTime="10">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="0730"/>
+      <time start="0800"/>
+      <time start="0830"/>
+      <time start="0900"/>
+      <time start="0930"/>
+      <time start="1000"/>
+      <time start="1030"/>
+      <time start="1100"/>
+      <time start="1130"/>
+      <time start="1200"/>
+      <time start="1230"/>
+      <time start="1300"/>
+      <time start="1330"/>
+      <time start="1400"/>
+      <time start="1430"/>
+      <time start="1500"/>
+      <time start="1530"/>
+      <time start="1600"/>
+      <time start="1630"/>
+      <time start="1700"/>
+    </timePattern>
+    <timePattern name="1 x 30" nbrMeetings="1" minsPerMeeting="30" type="Standard" visible="true" nbrSlotsPerMeeting="6" breakTime="0">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="0730"/>
+      <time start="0800"/>
+      <time start="0830"/>
+      <time start="0900"/>
+      <time start="0930"/>
+      <time start="1000"/>
+      <time start="1030"/>
+      <time start="1100"/>
+      <time start="1130"/>
+      <time start="1200"/>
+      <time start="1230"/>
+      <time start="1300"/>
+      <time start="1330"/>
+      <time start="1400"/>
+      <time start="1430"/>
+      <time start="1500"/>
+      <time start="1530"/>
+      <time start="1600"/>
+      <time start="1630"/>
+      <time start="1700"/>
+    </timePattern>
+    <timePattern name="1 x 50" nbrMeetings="1" minsPerMeeting="50" type="Standard" visible="true" nbrSlotsPerMeeting="12" breakTime="10">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="0730"/>
+      <time start="0830"/>
+      <time start="0930"/>
+      <time start="1030"/>
+      <time start="1130"/>
+      <time start="1230"/>
+      <time start="1330"/>
+      <time start="1430"/>
+      <time start="1530"/>
+      <time start="1630"/>
+    </timePattern>
+    <timePattern name="1 x 75" nbrMeetings="1" minsPerMeeting="75" type="Standard" visible="true" nbrSlotsPerMeeting="18" breakTime="15">
+      <days code="T"/>
+      <days code="Th"/>
+      <time start="0730"/>
+      <time start="0900"/>
+      <time start="1030"/>
+      <time start="1200"/>
+      <time start="1330"/>
+      <time start="1500"/>
+      <time start="1630"/>
+    </timePattern>
+    <timePattern name="1 x 80" nbrMeetings="1" minsPerMeeting="80" type="Standard" visible="true" nbrSlotsPerMeeting="18" breakTime="10">
+      <days code="T"/>
+      <days code="Th"/>
+      <time start="0730"/>
+      <time start="0900"/>
+      <time start="1030"/>
+      <time start="1200"/>
+      <time start="1330"/>
+      <time start="1500"/>
+      <time start="1630"/>
+    </timePattern>
+    <timePattern name="1 x 90" nbrMeetings="1" minsPerMeeting="90" type="Standard" visible="true" nbrSlotsPerMeeting="21" breakTime="15">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="0730"/>
+      <time start="0830"/>
+      <time start="0930"/>
+      <time start="1015"/>
+      <time start="1115"/>
+      <time start="1130"/>
+      <time start="1200"/>
+      <time start="1300"/>
+      <time start="1330"/>
+      <time start="1345"/>
+      <time start="1445"/>
+      <time start="1530"/>
+    </timePattern>
+    <timePattern name="1 x 100" nbrMeetings="1" minsPerMeeting="100" type="Standard" visible="true" nbrSlotsPerMeeting="24" breakTime="10">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="0730"/>
+      <time start="0930"/>
+      <time start="1130"/>
+      <time start="1330"/>
+      <time start="1530"/>
+    </timePattern>
+    <timePattern name="1 x 120" nbrMeetings="1" minsPerMeeting="120" type="Standard" visible="true" nbrSlotsPerMeeting="30" breakTime="15">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="0800"/>
+      <time start="0830"/>
+      <time start="1030"/>
+      <time start="1100"/>
+      <time start="1300"/>
+      <time start="1330"/>
+      <time start="1530"/>
+      <time start="1600"/>
+    </timePattern>
+    <timePattern name="1 x 150" nbrMeetings="1" minsPerMeeting="150" type="Standard" visible="true" nbrSlotsPerMeeting="36" breakTime="10">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="0730"/>
+      <time start="0830"/>
+      <time start="1030"/>
+      <time start="1130"/>
+      <time start="1330"/>
+      <time start="1430"/>
+      <time start="1500"/>
+    </timePattern>
+    <timePattern name="1 x 180" nbrMeetings="1" minsPerMeeting="180" type="Standard" visible="true" nbrSlotsPerMeeting="42" breakTime="10">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="0700"/>
+      <time start="1030"/>
+      <time start="1400"/>
+    </timePattern>
+    <timePattern name="1 x 200" nbrMeetings="1" minsPerMeeting="200" type="Standard" visible="true" nbrSlotsPerMeeting="48" breakTime="10">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="0730"/>
+      <time start="0830"/>
+      <time start="1230"/>
+      <time start="1330"/>
+    </timePattern>
+    <timePattern name="1 x 250" nbrMeetings="1" minsPerMeeting="250" type="Standard" visible="true" nbrSlotsPerMeeting="60" breakTime="10">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="0730"/>
+      <time start="0830"/>
+      <time start="0930"/>
+      <time start="1030"/>
+      <time start="1130"/>
+      <time start="1230"/>
+    </timePattern>
+    <timePattern name="1 x 300" nbrMeetings="1" minsPerMeeting="300" type="Standard" visible="true" nbrSlotsPerMeeting="72" breakTime="10">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="0730"/>
+      <time start="0830"/>
+      <time start="0930"/>
+      <time start="1030"/>
+      <time start="1130"/>
+    </timePattern>
+    <timePattern name="1 x 350" nbrMeetings="1" minsPerMeeting="350" type="Standard" visible="true" nbrSlotsPerMeeting="84" breakTime="10">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="0730"/>
+      <time start="0830"/>
+      <time start="0930"/>
+      <time start="1030"/>
+    </timePattern>
+    <timePattern name="1 x 400" nbrMeetings="1" minsPerMeeting="400" type="Standard" visible="true" nbrSlotsPerMeeting="96" breakTime="10">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="0730"/>
+      <time start="0800"/>
+      <time start="0830"/>
+      <time start="0900"/>
+      <time start="0930"/>
+      <time start="1000"/>
+    </timePattern>
+    <timePattern name="1 x 450" nbrMeetings="1" minsPerMeeting="450" type="Standard" visible="true" nbrSlotsPerMeeting="108" breakTime="10">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="0730"/>
+      <time start="0800"/>
+      <time start="0830"/>
+      <time start="0900"/>
+    </timePattern>
+    <timePattern name="1 x 600" nbrMeetings="1" minsPerMeeting="600" type="Standard" visible="true" nbrSlotsPerMeeting="144" breakTime="10">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="0730"/>
+      <time start="0830"/>
+      <time start="0900"/>
+    </timePattern>
+    <timePattern name="3 x 50 Evening" nbrMeetings="3" minsPerMeeting="50" type="Evening" visible="true" nbrSlotsPerMeeting="12" breakTime="10">
+      <days code="MWF"/>
+      <time start="1730"/>
+      <time start="1800"/>
+      <time start="1830"/>
+      <time start="1900"/>
+      <time start="1930"/>
+      <time start="2000"/>
+      <time start="2030"/>
+      <time start="2100"/>
+      <time start="2130"/>
+    </timePattern>
+    <timePattern name="2 x 50 Evening" nbrMeetings="2" minsPerMeeting="50" type="Evening" visible="true" nbrSlotsPerMeeting="12" breakTime="10">
+      <days code="MW"/>
+      <days code="MF"/>
+      <days code="TTh"/>
+      <days code="WF"/>
+      <time start="1730"/>
+      <time start="1800"/>
+      <time start="1830"/>
+      <time start="1900"/>
+      <time start="1930"/>
+      <time start="2000"/>
+      <time start="2030"/>
+      <time start="2100"/>
+      <time start="2130"/>
+    </timePattern>
+    <timePattern name="2 x 75 Evening" nbrMeetings="2" minsPerMeeting="75" type="Evening" visible="true" nbrSlotsPerMeeting="18" breakTime="15">
+      <days code="MW"/>
+      <days code="TTh"/>
+      <time start="1730"/>
+      <time start="1800"/>
+      <time start="1830"/>
+      <time start="1900"/>
+      <time start="1930"/>
+      <time start="2000"/>
+      <time start="2030"/>
+      <time start="2100"/>
+    </timePattern>
+    <timePattern name="2 x 100 Evening" nbrMeetings="2" minsPerMeeting="100" type="Evening" visible="true" nbrSlotsPerMeeting="24" breakTime="10">
+      <days code="MW"/>
+      <days code="MF"/>
+      <days code="TTh"/>
+      <days code="WF"/>
+      <time start="1600"/>
+      <time start="1630"/>
+      <time start="1700"/>
+      <time start="1730"/>
+      <time start="1800"/>
+      <time start="1830"/>
+      <time start="1900"/>
+      <time start="1930"/>
+      <time start="2000"/>
+      <time start="2030"/>
+    </timePattern>
+    <timePattern name="1 x 20 Evening" nbrMeetings="1" minsPerMeeting="20" type="Evening" visible="true" nbrSlotsPerMeeting="6" breakTime="10">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="1730"/>
+      <time start="1800"/>
+      <time start="1830"/>
+      <time start="1900"/>
+      <time start="1930"/>
+      <time start="2000"/>
+      <time start="2030"/>
+      <time start="2100"/>
+      <time start="2130"/>
+    </timePattern>
+    <timePattern name="1 x 30 Evening" nbrMeetings="1" minsPerMeeting="30" type="Evening" visible="true" nbrSlotsPerMeeting="6" breakTime="0">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="1730"/>
+      <time start="1800"/>
+      <time start="1830"/>
+      <time start="1900"/>
+      <time start="1930"/>
+      <time start="2000"/>
+      <time start="2030"/>
+      <time start="2100"/>
+      <time start="2130"/>
+    </timePattern>
+    <timePattern name="1 x 50 Evening" nbrMeetings="1" minsPerMeeting="50" type="Evening" visible="true" nbrSlotsPerMeeting="12" breakTime="10">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="1730"/>
+      <time start="1800"/>
+      <time start="1830"/>
+      <time start="1900"/>
+      <time start="1930"/>
+      <time start="2000"/>
+      <time start="2030"/>
+      <time start="2100"/>
+      <time start="2130"/>
+    </timePattern>
+    <timePattern name="1 x 75 Evening" nbrMeetings="1" minsPerMeeting="75" type="Evening" visible="true" nbrSlotsPerMeeting="18" breakTime="15">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="1730"/>
+      <time start="1800"/>
+      <time start="1830"/>
+      <time start="1900"/>
+      <time start="1930"/>
+      <time start="2000"/>
+      <time start="2030"/>
+      <time start="2100"/>
+    </timePattern>
+    <timePattern name="1 x 80 Evening" nbrMeetings="1" minsPerMeeting="80" type="Evening" visible="true" nbrSlotsPerMeeting="18" breakTime="10">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="1730"/>
+      <time start="1800"/>
+      <time start="1830"/>
+      <time start="1900"/>
+      <time start="1930"/>
+      <time start="2000"/>
+      <time start="2030"/>
+      <time start="2100"/>
+    </timePattern>
+    <timePattern name="1 x 100 Evening" nbrMeetings="1" minsPerMeeting="100" type="Evening" visible="true" nbrSlotsPerMeeting="24" breakTime="10">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="1600"/>
+      <time start="1630"/>
+      <time start="1700"/>
+      <time start="1730"/>
+      <time start="1800"/>
+      <time start="1830"/>
+      <time start="1900"/>
+      <time start="1930"/>
+      <time start="2000"/>
+      <time start="2030"/>
+    </timePattern>
+    <timePattern name="1 x 150 Evening" nbrMeetings="1" minsPerMeeting="150" type="Evening" visible="true" nbrSlotsPerMeeting="36" breakTime="10">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="1530"/>
+      <time start="1600"/>
+      <time start="1630"/>
+      <time start="1700"/>
+      <time start="1730"/>
+      <time start="1800"/>
+      <time start="1830"/>
+      <time start="1900"/>
+      <time start="1930"/>
+    </timePattern>
+    <timePattern name="1 x 180 Evening" nbrMeetings="1" minsPerMeeting="180" type="Evening" visible="true" nbrSlotsPerMeeting="42" breakTime="10">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="1500"/>
+      <time start="1530"/>
+      <time start="1600"/>
+      <time start="1630"/>
+      <time start="1700"/>
+      <time start="1730"/>
+      <time start="1800"/>
+    </timePattern>
+    <timePattern name="1 x 200 Evening" nbrMeetings="1" minsPerMeeting="200" type="Evening" visible="true" nbrSlotsPerMeeting="48" breakTime="10">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="1600"/>
+      <time start="1630"/>
+      <time start="1700"/>
+    </timePattern>
+    <timePattern name="1 x 250 Evening" nbrMeetings="1" minsPerMeeting="250" type="Evening" visible="true" nbrSlotsPerMeeting="60" breakTime="10">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="1330"/>
+      <time start="1400"/>
+      <time start="1430"/>
+      <time start="1500"/>
+      <time start="1530"/>
+      <time start="1600"/>
+      <time start="1630"/>
+      <time start="1700"/>
+    </timePattern>
+    <timePattern name="1 x 350 Evening" nbrMeetings="1" minsPerMeeting="350" type="Evening" visible="true" nbrSlotsPerMeeting="84" breakTime="10">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="1230"/>
+      <time start="1330"/>
+      <time start="1430"/>
+    </timePattern>
+    <timePattern name="3 x 50 TThS" nbrMeetings="3" minsPerMeeting="50" type="Saturday" visible="true" nbrSlotsPerMeeting="12" breakTime="10">
+      <days code="TThS"/>
+      <time start="0730"/>
+      <time start="0830"/>
+      <time start="0930"/>
+      <time start="1030"/>
+      <time start="1130"/>
+    </timePattern>
+    <timePattern name="3 x 100 TThS" nbrMeetings="3" minsPerMeeting="100" type="Saturday" visible="true" nbrSlotsPerMeeting="24" breakTime="10">
+      <days code="TThS"/>
+      <time start="0730"/>
+      <time start="0930"/>
+      <time start="1130"/>
+      <time start="1330"/>
+      <time start="1530"/>
+    </timePattern>
+    <timePattern name="2 x 100 WS" nbrMeetings="2" minsPerMeeting="100" type="Saturday" visible="true" nbrSlotsPerMeeting="24" breakTime="10">
+      <days code="WS"/>
+      <time start="0730"/>
+      <time start="0930"/>
+      <time start="1130"/>
+      <time start="1330"/>
+      <time start="1530"/>
+    </timePattern>
+    <timePattern name="1 x 50 Weekend" nbrMeetings="1" minsPerMeeting="50" type="Saturday" visible="true" nbrSlotsPerMeeting="12" breakTime="10">
+      <days code="S"/>
+      <days code="Su"/>
+      <time start="0730"/>
+      <time start="0830"/>
+      <time start="0930"/>
+      <time start="1030"/>
+      <time start="1130"/>
+    </timePattern>
+    <timePattern name="1 x 80 Weekend" nbrMeetings="1" minsPerMeeting="80" type="Saturday" visible="true" nbrSlotsPerMeeting="18" breakTime="10">
+      <days code="S"/>
+      <days code="Su"/>
+      <time start="0730"/>
+      <time start="0900"/>
+      <time start="1030"/>
+      <time start="1200"/>
+      <time start="1330"/>
+      <time start="1400"/>
+      <time start="1430"/>
+      <time start="1445"/>
+      <time start="1500"/>
+    </timePattern>
+    <timePattern name="1 x 100 Weekend" nbrMeetings="1" minsPerMeeting="100" type="Saturday" visible="true" nbrSlotsPerMeeting="24" breakTime="10">
+      <days code="S"/>
+      <days code="Su"/>
+      <time start="0730"/>
+      <time start="0830"/>
+      <time start="0930"/>
+      <time start="1030"/>
+    </timePattern>
+    <timePattern name="1 x 120 Weekend" nbrMeetings="1" minsPerMeeting="120" type="Saturday" visible="true" nbrSlotsPerMeeting="30" breakTime="15">
+      <days code="S"/>
+      <days code="Su"/>
+      <time start="0730"/>
+      <time start="1000"/>
+      <time start="1230"/>
+      <time start="1500"/>
+    </timePattern>
+    <timePattern name="1 x 150 Weekend" nbrMeetings="1" minsPerMeeting="150" type="Saturday" visible="true" nbrSlotsPerMeeting="36" breakTime="10">
+      <days code="S"/>
+      <days code="Su"/>
+      <time start="0730"/>
+      <time start="0800"/>
+      <time start="0830"/>
+      <time start="0900"/>
+      <time start="0930"/>
+    </timePattern>
+    <timePattern name="1 x 250 Weekend" nbrMeetings="1" minsPerMeeting="250" type="Saturday" visible="true" nbrSlotsPerMeeting="60" breakTime="10">
+      <days code="S"/>
+      <days code="Su"/>
+      <time start="0730"/>
+      <time start="0800"/>
+      <time start="0830"/>
+      <time start="0900"/>
+      <time start="0930"/>
+      <time start="1000"/>
+    </timePattern>
+    <timePattern name="1 x 300 Weekend" nbrMeetings="1" minsPerMeeting="300" type="Saturday" visible="true" nbrSlotsPerMeeting="72" breakTime="10">
+      <days code="S"/>
+      <days code="Su"/>
+      <time start="0730"/>
+      <time start="0800"/>
+      <time start="0830"/>
+      <time start="0900"/>
+      <time start="0930"/>
+      <time start="1000"/>
+    </timePattern>
+    <timePattern name="1 x 400 Weekend" nbrMeetings="1" minsPerMeeting="400" type="Saturday" visible="true" nbrSlotsPerMeeting="96" breakTime="10">
+      <days code="S"/>
+      <days code="Su"/>
+      <time start="0730"/>
+      <time start="0800"/>
+      <time start="0830"/>
+      <time start="0900"/>
+      <time start="0930"/>
+    </timePattern>
+    <timePattern name="3 x 50 Early AM" nbrMeetings="3" minsPerMeeting="50" type="Morning" visible="true" nbrSlotsPerMeeting="12" breakTime="10">
+      <days code="MWF"/>
+      <time start="0500"/>
+      <time start="0530"/>
+      <time start="0600"/>
+      <time start="0630"/>
+      <time start="0700"/>
+    </timePattern>
+    <timePattern name="1 x 50 Early AM" nbrMeetings="1" minsPerMeeting="50" type="Morning" visible="true" nbrSlotsPerMeeting="12" breakTime="10">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="0600"/>
+      <time start="0630"/>
+      <time start="0700"/>
+    </timePattern>
+    <timePattern name="1 x 100 Early AM" nbrMeetings="1" minsPerMeeting="100" type="Morning" visible="true" nbrSlotsPerMeeting="24" breakTime="10">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="0600"/>
+      <time start="0630"/>
+      <time start="0700"/>
+    </timePattern>
+    <timePattern name="1 x 250 Early AM" nbrMeetings="1" minsPerMeeting="250" type="Morning" visible="true" nbrSlotsPerMeeting="60" breakTime="10">
+      <days code="M"/>
+      <days code="T"/>
+      <days code="W"/>
+      <days code="Th"/>
+      <days code="F"/>
+      <time start="0600"/>
+      <time start="0630"/>
+      <time start="0700"/>
+    </timePattern>
+    <timePattern name="Exact Time" nbrMeetings="1" minsPerMeeting="0" type="Exact Time" visible="true" nbrSlotsPerMeeting="6" breakTime="10"/>
+  </timePatterns>
+  <examinationPeriods>
+    <periods type="final">
+      <period date="2010/12/13" startTime="0800" length="120"/>
+      <period date="2010/12/13" startTime="1130" length="60"/>
+      <period date="2010/12/13" startTime="1300" length="180"/>
+      <period date="2010/12/14" startTime="0800" length="120"/>
+      <period date="2010/12/14" startTime="1130" length="60"/>
+      <period date="2010/12/14" startTime="1300" length="180"/>
+      <period date="2010/12/15" startTime="0800" length="120"/>
+      <period date="2010/12/15" startTime="1130" length="60"/>
+      <period date="2010/12/15" startTime="1300" length="180" preference="1"/>
+      <period date="2010/12/16" startTime="0800" length="120" preference="2"/>
+      <period date="2010/12/16" startTime="1130" length="60" preference="2"/>
+    </periods>
+    <periods type="midterm">
+      <period date="2010/8/30" startTime="1830" length="60"/>
+      <period date="2010/8/30" startTime="2000" length="120"/>
+      <period date="2010/8/31" startTime="1830" length="60"/>
+      <period date="2010/8/31" startTime="2000" length="120"/>
+      <period date="2010/9/1" startTime="1830" length="60"/>
+      <period date="2010/9/1" startTime="2000" length="120"/>
+      <period date="2010/9/8" startTime="1830" length="60"/>
+      <period date="2010/9/8" startTime="2000" length="120"/>
+      <period date="2010/9/9" startTime="1830" length="60"/>
+      <period date="2010/9/9" startTime="2000" length="120"/>
+      <period date="2010/9/13" startTime="1830" length="60"/>
+      <period date="2010/9/13" startTime="2000" length="120"/>
+      <period date="2010/9/14" startTime="1830" length="60"/>
+      <period date="2010/9/14" startTime="2000" length="120"/>
+      <period date="2010/9/15" startTime="1830" length="60"/>
+      <period date="2010/9/15" startTime="2000" length="120"/>
+      <period date="2010/9/20" startTime="1830" length="60"/>
+      <period date="2010/9/20" startTime="2000" length="120"/>
+      <period date="2010/9/21" startTime="1830" length="60"/>
+      <period date="2010/9/21" startTime="2000" length="120"/>
+      <period date="2010/9/22" startTime="1830" length="60"/>
+      <period date="2010/9/22" startTime="2000" length="120"/>
+      <period date="2010/9/27" startTime="1830" length="60"/>
+      <period date="2010/9/27" startTime="2000" length="120"/>
+      <period date="2010/9/28" startTime="1830" length="60"/>
+      <period date="2010/9/28" startTime="2000" length="120"/>
+      <period date="2010/9/29" startTime="1830" length="60"/>
+      <period date="2010/9/29" startTime="2000" length="120"/>
+      <period date="2010/10/4" startTime="1830" length="60"/>
+      <period date="2010/10/4" startTime="2000" length="120"/>
+      <period date="2010/10/5" startTime="1830" length="60"/>
+      <period date="2010/10/5" startTime="2000" length="120"/>
+      <period date="2010/10/6" startTime="1830" length="60"/>
+      <period date="2010/10/6" startTime="2000" length="120"/>
+      <period date="2010/10/18" startTime="1830" length="60"/>
+      <period date="2010/10/18" startTime="2000" length="120"/>
+      <period date="2010/10/19" startTime="1830" length="60"/>
+      <period date="2010/10/19" startTime="2000" length="120"/>
+      <period date="2010/10/20" startTime="1830" length="60"/>
+      <period date="2010/10/20" startTime="2000" length="120"/>
+      <period date="2010/10/25" startTime="1830" length="60"/>
+      <period date="2010/10/25" startTime="2000" length="120"/>
+      <period date="2010/10/26" startTime="1830" length="60"/>
+      <period date="2010/10/26" startTime="2000" length="120"/>
+      <period date="2010/10/27" startTime="1830" length="60"/>
+      <period date="2010/10/27" startTime="2000" length="120"/>
+      <period date="2010/11/1" startTime="1830" length="60"/>
+      <period date="2010/11/1" startTime="2000" length="120"/>
+      <period date="2010/11/2" startTime="1830" length="60"/>
+      <period date="2010/11/2" startTime="2000" length="120"/>
+      <period date="2010/11/3" startTime="1830" length="60"/>
+      <period date="2010/11/3" startTime="2000" length="120"/>
+      <period date="2010/11/8" startTime="1830" length="60"/>
+      <period date="2010/11/8" startTime="2000" length="120"/>
+      <period date="2010/11/9" startTime="1830" length="60"/>
+      <period date="2010/11/9" startTime="2000" length="120"/>
+      <period date="2010/11/10" startTime="1830" length="60"/>
+      <period date="2010/11/10" startTime="2000" length="120"/>
+      <period date="2010/11/15" startTime="1830" length="60"/>
+      <period date="2010/11/15" startTime="2000" length="120"/>
+      <period date="2010/11/16" startTime="1830" length="60"/>
+      <period date="2010/11/16" startTime="2000" length="120"/>
+      <period date="2010/11/17" startTime="1830" length="60"/>
+      <period date="2010/11/17" startTime="2000" length="120"/>
+    </periods>
+  </examinationPeriods>
+  <academicAreas>
+    <academicArea externalId="A" abbreviation="A" title="The Woebegon's Only Academic Area"/>
+  </academicAreas>
+  <academicClassifications>
+    <academicClassification externalId="01" code="01" name="Junior Year"/>
+    <academicClassification externalId="02" code="02" name="Senior Year"/>
+  </academicClassifications>
+  <posMajors>
+    <posMajor code="M1" academicArea="A" externalId="M1" name="Major 1"/>
+    <posMajor code="M2" academicArea="A" externalId="M2" name="Major 2"/>
+    <posMajor code="M3" academicArea="A" externalId="M3" name="Major 3"/>
+  </posMajors>
+  <posMinors>
+    <posMinor code="m1" academicArea="A" externalId="m1" name="Minor 1"/>
+    <posMinor code="m2" academicArea="A" externalId="m2" name="Minor 2"/>
+    <posMinor code="m3" academicArea="A" externalId="m3" name="Minor 3"/>
+  </posMinors>
+  <studentGroups>
+  	<studentGroup code="G1" name="Group 1" externalId="g1"/>
+  	<studentGroup code="G2" name="Group 2" externalId="g2"/>
+  </studentGroups>
+  <studentAccomodations>
+    <studentAccomodation code="EC" name="Ergonomic Chair" externalId="ACC-EC"/>
+    <studentAccomodation code="NS" name="No Stairs" externalId="ACC-NS"/>
+    <studentAccomodation code="OT" name="Other" externalId="ACC-OT"/>
+    <studentAccomodation code="WC" name="Wheelchair" externalId="ACC-WC"/>
+  </studentAccomodations>
+</sessionSetup>

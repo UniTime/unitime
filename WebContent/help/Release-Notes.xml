@@ -37,6 +37,21 @@
 			</description>
 		</item>
 	</category>
+	<category>
+	    <title>Administration</title>
+	    <item>
+	        <name>Data Exchange: Academic Session Setup</name>
+	        <description>
+	            <line>Added and XML import/export that can
+	                <line>Create or update academic session (dates and holidays)</line>
+	                <line>Import or update departments, subject areas, managers, solver groups, date patterns, time patterns, examination periods,
+	                    academic areas, academic classifications, majors, minors, student groups, and/or student accomodations.</line>
+	                <line>The import can contain only certain sections (e.g., only date and time patterns).</line>
+	                <line>All items can be imported in an incremental mode (entities that are not present in the file are ignored). By default, entities that are not present in the file are deleted.</line>
+	            </line>
+	        </description>
+	    </item>
+	</category>
 </release>
 <release>
 	<version>4.2.154</version>
