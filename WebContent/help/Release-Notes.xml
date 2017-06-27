@@ -38,6 +38,15 @@
 		</item>
 	</category>
 	<category>
+		<title>Online Student Scheduling</title>
+		<item>
+			<name>Custom Student Enrollment Provider: Enroll Student</name>
+			<description>
+				<line>Avoid creating additional course requests for the same course when the custom student enrollment provider refuses to drop a course.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 	    <title>Administration</title>
 	    <item>
 	        <name>Data Exchange: Academic Session Setup</name>
