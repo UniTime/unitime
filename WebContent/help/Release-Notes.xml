@@ -45,6 +45,13 @@
 				<line>Avoid creating additional course requests for the same course when the custom student enrollment provider refuses to drop a course.</line>
 			</description>
 		</item>
+		<item>
+			<name>Online Student Scheduling Server: Release Master Lock</name>
+			<description>
+				<line>When there is no solver cluster (online student scheduling server runs within the Tomcat and there is no master lock), reload the server when requested.</line>
+				<line>This fixes an issue on the Manage Solvers page where the online scheduling server cannot be reloaded when the server is running locally (there is no cluster).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 	    <title>Administration</title>

@@ -47,6 +47,8 @@ import org.cpsolver.studentsct.online.expectations.AvoidUnbalancedWhenNoExpectat
 import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
 import org.cpsolver.studentsct.online.selection.StudentSchedulingAssistantWeights;
 import org.hibernate.CacheMode;
+import org.infinispan.manager.EmbeddedCacheManager;
+import org.jgroups.blocks.locking.LockService;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -288,8 +290,22 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	
 	@Override
 	public void releaseMasterLockIfHeld() {
-		if (iMasterThread != null)
+		if (iMasterThread != null) {
 			iMasterThread.release();
+		} else if (Boolean.TRUE.equals(getProperty("ReloadIsNeeded", Boolean.FALSE))) {
+			iLog.info("Reloading server...");
+			final Long sessionId = getAcademicSession().getUniqueId();
+			loadOnMaster(new OnlineSectioningServerContext() {
+				@Override
+				public Long getAcademicSessionId() { return sessionId; }
+				@Override
+				public boolean isWaitTillStarted() { return false; }
+				@Override
+				public EmbeddedCacheManager getCacheManager() { return null; }
+				@Override
+				public LockService getLockService() { return null; }
+			});
+		}
 	}
 	
 	@Override
