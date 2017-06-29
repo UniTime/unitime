@@ -12676,4 +12676,10 @@
 		<plsql>alter table %SCHEMA%.user_data modify external_uid varchar2(40 char)</plsql>
 		<mysql>alter table %SCHEMA%.user_data modify external_uid varchar(40) not null</mysql>
 	</update>
+	<update version="184" date="28-Jun-2017" comment="Longer configuration name and class suffix">
+	    <plsql>alter table %SCHEMA%.instr_offering_config modify name varchar2(20 char)</plsql>
+		<mysql>alter table %SCHEMA%.instr_offering_config modify name varchar(20)</mysql>
+		<plsql>alter table %SCHEMA%.class_ modify class_suffix varchar2(20 char)</plsql>
+		<mysql>alter table %SCHEMA%.class_ modify class_suffix varchar(20)</mysql>
+	</update>
 </dbupdate>

@@ -75,7 +75,7 @@
             column="name"
             type="java.lang.String"
             not-null="false"
-            length="10"
+            length="20"
             insert="true"
             update="true"/>
 

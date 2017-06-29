@@ -418,7 +418,7 @@
 								<TD align="left" valign="top" nowrap>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
 									<html:text name="<%=frmName%>" property='<%= "externalIds[" + ctr + "]" %>' tabindex="<%=java.lang.Integer.toString(1000 + ctr.intValue())%>" 
-										maxlength="10" size="10"/>
+										maxlength="20" size="20"/>
 								</logic:equal>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="true" >
 									<bean:write name="<%=frmName%>" property='<%= "externalIds[" + ctr + "]" %>'/>

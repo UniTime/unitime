@@ -190,7 +190,7 @@
 		<TR>
 			<TD><loc:message name="propertyConfigurationName"/></TD>
 			<TD>
-				<html:text property="name" size="10" maxlength="10" />
+				<html:text property="name" size="20" maxlength="20" />
 			</TD>
 		</TR>
 		

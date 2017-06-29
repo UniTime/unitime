@@ -36,6 +36,12 @@
 				<line>When user cannot edit room coordinates and there are no coordinates: do not show the map at all.</line>
 			</description>
 		</item>
+		<item>
+			<name>Longer Class Suffix and Configuration Name</name>
+			<description>
+				<line>Class suffix and configuration name fields are now up to 20 characters long (instead of 10).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Online Student Scheduling</title>
