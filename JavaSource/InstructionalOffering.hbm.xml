@@ -50,25 +50,25 @@
         <property
             name="demand"
             type="java.lang.Integer"
-            formula="(      select /*+ RULE */ sum( co.lastlike_demand +       (case when cox.lastlike_demand is null then 0 else cox.lastlike_demand end))      from %SCHEMA%.course_offering co left outer join %SCHEMA%.course_offering cox on co.demand_offering_id=cox.uniqueid       where co.instr_offr_id = uniqueid)"/>
+            formula="(      select sum( co.lastlike_demand +       (case when cox.lastlike_demand is null then 0 else cox.lastlike_demand end))      from %SCHEMA%.course_offering co left outer join %SCHEMA%.course_offering cox on co.demand_offering_id=cox.uniqueid       where co.instr_offr_id = uniqueid)"/>
 
 		<!-- 
         <property
             name="enrollment"
             type="java.lang.Integer"
-            formula="(      select /*+ RULE */ sum( co.enrollment +       (case when cox.enrollment is null then 0 else cox.enrollment end))      from %SCHEMA%.course_offering co left outer join %SCHEMA%.course_offering cox on co.demand_offering_id=cox.uniqueid       where co.instr_offr_id = uniqueid)"/>
+            formula="(      select sum( co.enrollment +       (case when cox.enrollment is null then 0 else cox.enrollment end))      from %SCHEMA%.course_offering co left outer join %SCHEMA%.course_offering cox on co.demand_offering_id=cox.uniqueid       where co.instr_offr_id = uniqueid)"/>
         -->
 
          <property
             name="enrollment"
             type="java.lang.Integer"
             lazy="true"
-            formula="(select /*+ RULE */ count(distinct e.student_id) from %SCHEMA%.student_class_enrl e inner join %SCHEMA%.course_offering co on co.uniqueid = e.course_offering_id where co.instr_offr_id = uniqueid)"/>
+            formula="(select count(distinct e.student_id) from %SCHEMA%.student_class_enrl e inner join %SCHEMA%.course_offering co on co.uniqueid = e.course_offering_id where co.instr_offr_id = uniqueid)"/>
 
         <property
             name="limit"
             type="java.lang.Integer"
-            formula=" ( select /*+ RULE */ sum(ioc.config_limit) from %SCHEMA%.instr_offering_config ioc where ioc.instr_offr_id = uniqueid ) "/>
+            formula=" ( select sum(ioc.config_limit) from %SCHEMA%.instr_offering_config ioc where ioc.instr_offr_id = uniqueid ) "/>
 
         <many-to-one
             name="session"

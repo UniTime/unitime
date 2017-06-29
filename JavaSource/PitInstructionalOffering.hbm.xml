@@ -88,7 +88,7 @@
             name="enrollment"
             type="java.lang.Integer"
             lazy="true"
-            formula="(select /*+ RULE */ count(distinct e.pit_student_id) from %SCHEMA%.pit_student_class_enrl e inner join %SCHEMA%.pit_course_offering co on co.uniqueid = e.pit_course_offering_id where co.pit_instr_offr_id = uniqueid)"/>
+            formula="(select count(distinct e.pit_student_id) from %SCHEMA%.pit_student_class_enrl e inner join %SCHEMA%.pit_course_offering co on co.uniqueid = e.pit_course_offering_id where co.pit_instr_offr_id = uniqueid)"/>
 
         <set
             name="pitCourseOfferings"

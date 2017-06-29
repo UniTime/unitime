@@ -388,7 +388,7 @@
             	name="enrollment"
             	type="java.lang.Integer"
             	lazy="true"
-            	formula="(select /*+ RULE */ count(e.student_id) from %SCHEMA%.student_class_enrl e where e.class_id = uniqueid)"/>
+            	formula="(select count(e.student_id) from %SCHEMA%.student_class_enrl e where e.class_id = uniqueid)"/>
 
             <property
                 name="cancelled"

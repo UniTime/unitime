@@ -102,7 +102,7 @@
             name="enrollment"
             type="java.lang.Integer"
             lazy="true"
-            formula="(select /*+ RULE */ count(distinct e.pit_student_id) from %SCHEMA%.pit_student_class_enrl e where e.pit_course_offering_id = uniqueid)"/>
+            formula="(select count(distinct e.pit_student_id) from %SCHEMA%.pit_student_class_enrl e where e.pit_course_offering_id = uniqueid)"/>
 
 
         <property

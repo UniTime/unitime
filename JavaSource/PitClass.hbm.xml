@@ -180,7 +180,7 @@
           	name="enrollment"
           	type="java.lang.Integer"
           	lazy="true"
-          	formula="(select /*+ RULE */ count(e.pit_student_id) from %SCHEMA%.pit_student_class_enrl e where e.pit_class_id = uniqueid)"/>
+          	formula="(select count(e.pit_student_id) from %SCHEMA%.pit_student_class_enrl e where e.pit_class_id = uniqueid)"/>
 
         <set
             name="pitClassEvents"
