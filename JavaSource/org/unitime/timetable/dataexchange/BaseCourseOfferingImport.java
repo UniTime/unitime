@@ -1368,9 +1368,11 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 							addNote("\tadded schedule book note: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
 							changed = true;
 						} else if (oco.getScheduleBookNote() != null && (nco.getScheduleBookNote() == null || nco.getScheduleBookNote().length() == 0)){
-							oco.setScheduleBookNote(null);
-							addNote("\tremoved schedule book note: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
-							changed = true;
+							if (!incremental) {
+								oco.setScheduleBookNote(null);
+								addNote("\tremoved schedule book note: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
+								changed = true;
+							}
 						} else if (oco.getScheduleBookNote() != null && nco.getScheduleBookNote() != null && !oco.getScheduleBookNote().equals(nco.getScheduleBookNote())){
 							oco.setScheduleBookNote(nco.getScheduleBookNote());
 							addNote("\tchanged schedule book note: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
@@ -1394,9 +1396,11 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 							addNote("\tadded consent: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
 							changed = true;
 						} else if (oco.getConsentType() != null && nco.getConsentType() == null) {
-							oco.setConsentType(null);
-							addNote("\tremoved consent: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
-							changed = true;
+							if (!incremental) {
+								oco.setConsentType(null);
+								addNote("\tremoved consent: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
+								changed = true;
+							}
 						} else if (oco.getConsentType() != null && nco.getConsentType() != null && !oco.getConsentType().equals(nco.getConsentType())) {
 							oco.setConsentType(nco.getConsentType());
 							addNote("\tchanged consent: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
@@ -1408,11 +1412,13 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 							addNote("\tadded credit: " + nco.getCredit().creditAbbv());
 							changed = true;
 						} else if (oco.getCredit() != null && nco.getCredit() == null) {
-							CourseCreditUnitConfig old = oco.getCredit();
-							getHibSession().delete(old);
-							oco.setCredit(null);
-							addNote("\tremoved credit: " + old);
-							changed = true;
+							if (!incremental) {
+								CourseCreditUnitConfig old = oco.getCredit();
+								getHibSession().delete(old);
+								oco.setCredit(null);
+								addNote("\tremoved credit: " + old);
+								changed = true;
+							}
 						} else  if (oco.getCredit() != null && !isSameCreditConfig(oco.getCredit(),nco.getCredit())) {
 							CourseCreditUnitConfig old = oco.getCredit();
 							getHibSession().delete(old);
@@ -1431,9 +1437,11 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 							addNote("\tadded reservation: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
 							changed = true;
 						} else if (oco.getReservation() != null && nco.getReservation() == null) {
-							oco.setReservation(null);
-							addNote("\tremoved reservation: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
-							changed = true;
+							if (!incremental) {
+								oco.setReservation(null);
+								addNote("\tremoved reservation: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
+								changed = true;
+							}
 						} else if (oco.getReservation() != null && nco.getReservation() != null && !oco.getReservation().equals(nco.getReservation())) {
 							oco.setReservation(nco.getReservation());
 							addNote("\tchanged reservation: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
@@ -1459,7 +1467,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					nco.setSubjectAreaAbbv(nco.getSubjectArea().getSubjectAreaAbbreviation());
 					nco.setInstructionalOffering(io);
 					if (nco.getCredit() != null)
-						addNote("\tadded credit: " + nco.getCredit().creditAbbv());					
+						addNote("\tadded credit: " + nco.getCredit().creditAbbv());
 					io.addTocourseOfferings(nco);
 					changed = true;
 					getHibSession().saveOrUpdate(io);
@@ -1587,7 +1595,14 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					this.getHibSession().saveOrUpdate(ioc);
 				}
 			}
-		} 
+		} else if (incremental) {
+			// No config elements & incremental mode -> make no changes
+			for (InstrOfferingConfig ioc: io.getInstrOfferingConfigs())
+				for (SchedulingSubpart subpart: ioc.getSchedulingSubparts())
+					for (Class_ clazz: subpart.getClasses())
+						existingClasses.remove(clazz.getUniqueId());
+			return changed;
+		}
 
 		if (existingConfigs.size() > 0){
 			for(Iterator<InstrOfferingConfig> cIt = existingConfigs.values().iterator(); cIt.hasNext();){
@@ -1912,7 +1927,13 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					ChangeLog.addChange(getHibSession(), getManager(), session, clazz, ChangeLog.Source.DATA_IMPORT_OFFERINGS, (isAdd?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), ioc.getControllingCourseOffering().getSubjectArea(), ioc.getDepartment());
 				}
 			}
-		} 
+		} else if (incremental && parentClass == null) {
+			// No class elements & incremental mode -> make no changes
+			for (SchedulingSubpart subpart: ioc.getSchedulingSubparts())
+				for (Class_ clazz: subpart.getClasses())
+					existingClasses.remove(clazz.getUniqueId());
+			return changed;
+		}
 		
 		if (possibleClassesAtThisLevel.size() > 0){
 			addNote("\t" + ioc.getCourseName() + " 'class' not all classes at this level had matches");
@@ -2299,7 +2320,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					ChangeLog.addChange(getHibSession(), getManager(), session, ss, ChangeLog.Source.DATA_IMPORT_OFFERINGS, (isAdd?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), ioc.getControllingCourseOffering().getSubjectArea(), ioc.getDepartment());
 				}
 			}
-		} 
+		} else if (incremental && parentSubpart == null) {
+			// No subpart elements & incremental mode -> make no changes
+			return changed;
+		}
 		if (!thisLevelSubparts.isEmpty()){
 			addNote("\tnot all subparts at this level had matches, deleted them");
 			for (Iterator<?> it = thisLevelSubparts.values().iterator(); it.hasNext();){
@@ -2956,7 +2980,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					}
 				}
 			}
-		} 
+		} else if (incremental) {
+			// No exam elements & incremental mode -> make no changes
+			return changed;
+		}
 
 		if (!exams.isEmpty() && !"none".equals(includeExams)) {
 			for(Iterator<Exam> i = exams.iterator(); i.hasNext();){
