@@ -45,8 +45,10 @@ import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.ConstraintInfo;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.CurriculumClassification;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
@@ -65,9 +67,13 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.SolverParameterGroup;
+import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
+import org.unitime.timetable.model.dao.CurriculumClassificationDAO;
+import org.unitime.timetable.model.dao.StudentGroupDAO;
+import org.unitime.timetable.solver.ui.StudentGroupInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
@@ -82,13 +88,14 @@ public class CourseOfferingExport extends BaseExport {
     protected Hashtable<Long, TreeSet<Exam>> iExams = null;
     protected Map<Long, ClassEvent> iClassEvents = null;
     protected Map<Long, Location> iMeetingLocations = null;
-    protected boolean iExportAssignments = true;
+    protected boolean iExportAssignments = true, iExportGroupInfos = false;
     protected Integer iDefaultMaxNbrRooms = null;
     
     public void saveXml(Document document, Session session, Properties parameters) throws Exception {
         try {
             beginTransaction();
             
+            iExportGroupInfos = ApplicationProperty.DataExchangeIncludeStudentGroups.isTrue();
             iExportAssignments= "true".equals(parameters.getProperty("tmtbl.export.timetable","true"));
             boolean examsOnly = "true".equals(parameters.getProperty("tmtbl.export.exam"));
             Element root = document.addElement(examsOnly?"exams":"offerings");
@@ -369,6 +376,8 @@ public class CourseOfferingExport extends BaseExport {
         exportRooms(classElement, assignment, session);
         if (iClassEvents != null)
         	exportEvent(classElement, iClassEvents.get(assignment.getClassId()), session);
+        if (iExportGroupInfos)
+        	exportGroupInfos(classElement, assignment, session);
     }
     
     protected void exportTimeLocation(Element classElement, Assignment assignment, Session session) {
@@ -639,6 +648,30 @@ public class CourseOfferingExport extends BaseExport {
                 meetingElement.addAttribute("location", location.getLabel());
             }
         }
+    }
+    
+    protected void exportGroupInfos(Element classElement, Assignment assignment, Session session) {
+    	for (ConstraintInfo ci: assignment.getConstraintInfo())
+        	if ("GroupInfo".equals(ci.getDefinition().getName())) {
+        		StudentGroupInfo info = (StudentGroupInfo)ci.getInfo();
+        		Element element = classElement.addElement("group-info");
+        		if (info.getGroupId() < 0) {
+        			CurriculumClassification cc = CurriculumClassificationDAO.getInstance().get(-info.getGroupId(), getHibSession());
+        			if (cc != null) {
+        				element.addAttribute("curriculum", cc.getCurriculum().getAbbv());
+        				element.addAttribute("classification", cc.getName() == null ? cc.getAcademicClassification().getCode() : cc.getName());
+        			}
+        		} else {
+        			StudentGroup group = StudentGroupDAO.getInstance().get(info.getGroupId(), getHibSession());
+        			if (group != null) {
+        				element.addAttribute("group", group.getGroupAbbreviation());
+        			}
+        		}
+        		element.addAttribute("name", info.getGroupName());
+        		List<StudentGroupInfo.StudentInfo> students = info.getStudentAssignments(assignment.getClassId());
+        		if (students != null)
+        			element.addAttribute("students", String.valueOf(students.size()));
+        	}
     }
     
     public static void main(String[] args) {

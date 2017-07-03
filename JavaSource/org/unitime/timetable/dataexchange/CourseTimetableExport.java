@@ -50,6 +50,8 @@ public class CourseTimetableExport extends CourseOfferingExport {
         try {
             beginTransaction();
             
+            iExportGroupInfos = ApplicationProperty.DataExchangeIncludeStudentGroups.isTrue();
+            
             document.addDocType("timetable","-//UniTime//DTD University Course Timetabling/EN","http://www.unitime.org/interface/CourseTimetable.dtd");
 
             Element root = document.addElement("timetable");

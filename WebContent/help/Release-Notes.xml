@@ -80,6 +80,12 @@
 	    		<line>Also, do not change credit or consent information when the course has no courseCredit or consent element respectively.</line>
 	    	</description>
 	    </item>
+	    <item>
+	    	<name>Data Exchange: Course Timetable/Offerings XML Export</name>
+	    	<description>
+	    		<line>Added ability to export student group assignments with the assignment (enable by setting tmtbl.export.studentGroups to true, defaults to false).</line>
+	    	</description>
+	    </item>
 	</category>
 </release>
 <release>
