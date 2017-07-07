@@ -768,7 +768,7 @@ public class Class_ extends BaseClass_ {
     }
     
     public String getClassLabel(boolean includeSuffix) {
-    	return getClassLabel(getSchedulingSubpart().getControllingCourseOffering(), false, false);
+    	return getClassLabel(getSchedulingSubpart().getControllingCourseOffering(), includeSuffix, false);
     }
 
     public String getClassLabel(org.hibernate.Session hibSession) {
