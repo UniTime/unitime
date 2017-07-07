@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE scripts PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/Script.dtd">
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<scripts created="Fri Jul 07 12:48:59 CEST 2017">
+<script name="Import Class Suffixes" permission="Multiple Class Setup Department" engine="ECMAScript">
+  <description><![CDATA[This script imports class suffixes from a CSV file.<br>
+File format:<ul>
+<table>
+<tr><th>Subject</th><th>CourseNbr</th><th>Type</th><th>Section</th><th>Suffix</th></tr>
+<tr><td>ALG</td><td>101</td><td>Lec</td><td>1</td><td>001</td></tr>
+<tr><td>ALG</td><td>201</td><td>Lec</td><td>1</td><td>001</td></tr>
+<tr><td>ALG</td><td>201</td><td>Lab</td><td>1</td><td>001A</td></tr>
+<tr><td>ALG</td><td>201</td><td>Lab</td><td>2</td><td>001B</td></tr>
+<tr><td>ALG</td><td>201</td><td>Lab</td><td>1a</td><td>001A</td></tr>
+<tr><td>ALG</td><td>201</td><td>Lab</td><td>2a</td><td>001B</td></tr>
+</table>
+</ul>]]></description>
+  <parameter name="file" label="CSV File" type="file"/>
+  <body><![CDATA[function csvSplitLine(line) {
+  var tokens = line.match(/("[^"]*")|[^,]+/g)
+  if (tokens)
+    for (var i = 0; i < tokens.length; i++)
+      tokens[i] = tokens[i].replaceAll("^\"|\"$", "");
+  return tokens;
+}
+
+var table = new java.util.HashMap();
+var allClasses = hibSession.createQuery(
+  "select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
+  "c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
+  .setLong("sessionId", session.getUniqueId()).list();
+for (var i = allClasses.iterator(); i.hasNext(); ) {
+  var o = i.next();
+  var clazz = o[0];
+  var course = o[1];
+  var name = course.getSubjectAreaAbbv() + " " + course.getCourseNbr() + " " + clazz.getItypeDesc().trim() + " " + clazz.getSectionNumberString();
+  var classes = table.get(name);
+  if (classes == null) {
+    classes = new java.util.ArrayList();
+    table.put(name, classes);
+  }
+  classes.add(clazz);
+}
+
+
+if (file != null) {
+  var lines = file.getString('utf-8').split('\n');
+  for (var i = 0; i < lines.length; i++) {
+    var tokens = csvSplitLine(lines[i]);
+    if (tokens == null || tokens.length < 5 || "Subject".equals(tokens[0])) continue;
+    var name = tokens[0] + " " + tokens[1] + " " + tokens[2] + " " + tokens[3];
+    var suffix = tokens[4];
+    var classes = table.get(name);
+    if (classes) {
+      for (var j = classes.iterator(); j.hasNext();) {
+        var clazz = j.next();
+        clazz.setClassSuffix(suffix);
+        hibSession.update(clazz);
+      }
+    } else {
+      log.warn("Class " + name + " was not found.");
+    }
+  }
+} else {
+  log.error('No file to read.', null);
+}]]></body>
+</script>
+<script name="Export Class Suffixes" permission="Instructional Offerings" engine="ECMAScript">
+  <description><![CDATA[This script exports class suffixes in CSV format. Only classes with not empty class suffix are exported.<br>
+File format:<ul>
+<table>
+<tr><th>Subject</th><th>CourseNbr</th><th>Type</th><th>Section</th><th>Suffix</th></tr>
+<tr><td>ALG</td><td>101</td><td>Lec</td><td>1</td><td>001</td></tr>
+<tr><td>ALG</td><td>201</td><td>Lec</td><td>1</td><td>001</td></tr>
+<tr><td>ALG</td><td>201</td><td>Lab</td><td>1</td><td>001A</td></tr>
+<tr><td>ALG</td><td>201</td><td>Lab</td><td>2</td><td>001B</td></tr>
+<tr><td>ALG</td><td>201</td><td>Lab</td><td>1a</td><td>001A</td></tr>
+<tr><td>ALG</td><td>201</td><td>Lab</td><td>2a</td><td>001B</td></tr>
+</table>
+</ul>]]></description>
+  <parameter name="subjects" label="Subject Areas" type="subjects"/>
+  <body><![CDATA[var file = log.createOutput('classSuffixes', 'csv');
+var out = new java.io.PrintWriter(new java.io.FileWriter(file));
+out.println("Subject,CourseNbr,Type,Section,Suffix");
+for (var i = subjects.iterator(); i.hasNext(); ) {
+  var subject = i.next();
+  var classes = hibSession.createQuery("select c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where co.isControl = true and co.subjectArea.uniqueId = :subject").setLong("subject", subject.getUniqueId()).list();
+  for (var j = classes.iterator(); j.hasNext(); ) {
+    var clazz = j.next();
+    if (clazz.getClassSuffix() == null || clazz.getClassSuffix().isEmpty()) continue;
+    out.println("\"" + clazz.getSchedulingSubpart().getControllingCourseOffering().getSubjectAreaAbbv() + "\",\"" +
+      clazz.getSchedulingSubpart().getControllingCourseOffering().getCourseNbr() + "\"," +
+      clazz.getSchedulingSubpart().getItypeDesc().trim() + "," +
+      clazz.getSectionNumberString() + ",\"" + clazz.getClassSuffix() + "\"");
+  }
+}
+out.flush(); out.close();]]></body>
+</script>
+ </scripts>
