@@ -103,6 +103,12 @@
 	    		<line>Added ability to export student group assignments with the assignment (enable by setting tmtbl.export.studentGroups to true, defaults to false).</line>
 	    	</description>
 	    </item>
+	    <item>
+	    	<name>HQL Reports: Navigation</name>
+	    	<description>
+	    		<line>Show Previous/Next buttons at the bottom of the page (below the table) too.</line>
+	    	</description>
+	    </item>
 	</category>
 </release>
 <release>

@@ -84,7 +84,7 @@ public class SavedHQLPage extends Composite {
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
 	private SimpleForm iForm = null;
-	private UniTimeHeaderPanel iHeader = null, iTableHeader = null;;
+	private UniTimeHeaderPanel iHeader = null, iTableHeader = null, iTableFooter = null;
 	private UniTimeWidget<ListBox> iQuerySelector = null;
 	private HTML iDescription = null;
 	
@@ -445,6 +445,9 @@ public class SavedHQLPage extends Composite {
 				iTableHeader.setEnabled("next", false);
 				iForm.addHeaderRow(iTableHeader);
 				iForm.addRow(iTable);
+				iTableFooter = iTableHeader.clonePanel("");
+				iTableFooter.setVisible(false);
+				iForm.addRow(iTableFooter);
 				iForm.addBottomRow(iHeader.clonePanel(""));
 				loadQueries(null, true);
 			}
@@ -719,6 +722,9 @@ public class SavedHQLPage extends Composite {
 	public void populate(Table result) {
 		if (result == null || result.size() <= 1) {
 			iTableHeader.setMessage(MESSAGES.errorNoResults());
+			iTableHeader.setEnabled("next", false);
+			iTableHeader.setEnabled("previous", false);
+			iTableFooter.setVisible(false);
 		} else {
 			for (int i = 0; i < result.size(); i++) {
 				String[] row = result.get(i);
@@ -776,6 +782,7 @@ public class SavedHQLPage extends Composite {
 				iTableHeader.setMessage(MESSAGES.infoShowingAllLines(result.size() - 1));
 			iTableHeader.setEnabled("next", result.size() > 101);
 			iTableHeader.setEnabled("previous", iFirstLine > 0);
+			iTableFooter.setVisible(iFirstLine > 0 || result.size() > 101);
 			if (iLastSort != 0) {
 				iTable.sort(iTable.getHeader(Math.abs(iLastSort) - 1), new Comparator<String[]>() {
 					@Override
