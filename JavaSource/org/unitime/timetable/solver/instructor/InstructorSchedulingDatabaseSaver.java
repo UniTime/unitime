@@ -63,7 +63,7 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
     private Set<InstructionalOffering> iUpdatedOfferings = new HashSet<InstructionalOffering>();
     private Progress iProgress = null;
     private boolean iTentative = true;
-    private boolean iShowClassSuffix = false;
+    private boolean iShowClassSuffix = false, iShowConfigName = false;
 
     public InstructorSchedulingDatabaseSaver(Solver solver) {
         super(solver);
@@ -74,6 +74,7 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
     	iTentative = !getModel().getProperties().getPropertyBoolean("Save.Commit", false);
     	iInstructorFormat = getModel().getProperties().getProperty("General.InstructorFormat", NameFormat.LAST_FIRST.reference());
     	iShowClassSuffix = ApplicationProperty.SolverShowClassSufix.isTrue();
+    	iShowConfigName = ApplicationProperty.SolverShowConfiguratioName.isTrue();
     }
 
 	@Override
@@ -140,7 +141,7 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
 	}
 	
     protected String toHtml(Class_ clazz) {
-    	return "<A href='classDetail.do?cid="+clazz.getUniqueId()+"'>"+clazz.getClassLabel(iShowClassSuffix)+"</A>";
+    	return "<A href='classDetail.do?cid="+clazz.getUniqueId()+"'>"+clazz.getClassLabel(iShowClassSuffix, iShowConfigName)+"</A>";
     }
     
     protected String toHtml(DepartmentalInstructor instructor) {

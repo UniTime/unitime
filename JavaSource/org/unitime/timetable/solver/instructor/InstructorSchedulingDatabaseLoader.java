@@ -86,7 +86,7 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
 	private Map<Long, Attribute> iDepartmentAttribute = new HashMap<Long, Attribute>();
 	private Map<Long, Instructor> iInstructors = new HashMap<Long, Instructor>();
 	private String iDefaultSameCourse = null, iDefaultSameCommon = null;
-	private boolean iShowClassSuffix = false;
+	private boolean iShowClassSuffix = false, iShowConfigName = false;
 	
     public InstructorSchedulingDatabaseLoader(InstructorSchedulingModel model, Assignment<TeachingRequest.Variable, TeachingAssignment> assignment) {
     	super(model, assignment);
@@ -98,6 +98,7 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     	iDefaultSameCourse = getModel().getProperties().getProperty("Defaults.SameCourse", "R");
     	iDefaultSameCommon = getModel().getProperties().getProperty("Defaults.SameCommon", "R");
     	iShowClassSuffix = ApplicationProperty.SolverShowClassSufix.isTrue();
+    	iShowConfigName = ApplicationProperty.SolverShowConfiguratioName.isTrue();
     }
     
     public void load() throws Exception {
@@ -396,7 +397,7 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     }
     
     protected String toHtml(Class_ clazz) {
-    	return "<A href='classDetail.do?cid="+clazz.getUniqueId()+"'>"+clazz.getClassLabel(iShowClassSuffix)+"</A>";
+    	return "<A href='classDetail.do?cid="+clazz.getUniqueId()+"'>"+clazz.getClassLabel(iShowClassSuffix, iShowConfigName)+"</A>";
     }
     
     protected String toHtml(DepartmentalInstructor instructor) {

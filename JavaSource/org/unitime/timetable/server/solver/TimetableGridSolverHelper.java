@@ -651,7 +651,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 			Class_ clazz = (Class_)o[0];
 			CourseOffering course = (CourseOffering)o[1];
 			for (TimetableGridCell cell: id2cells.get(clazz.getUniqueId()))
-				cell.addName(clazz.getClassLabel(course, context.isShowClassSuffix()));
+				cell.addName(clazz.getClassLabel(course, context.isShowClassSuffix(), context.isShowConfigName()));
 		}
 	}
 	

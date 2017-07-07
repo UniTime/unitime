@@ -140,7 +140,7 @@ public class NotAssignedClassesBackend implements GwtRpcImplementation<NotAssign
 		BackTracker.markForBack(context, "gwt.jsp?page=notAssignedClasses", MESSAGES.pageNotAssignedClasses(), true, true);
 		
 		if (ApplicationProperty.TimeGridShowCrosslists.isTrue())
-			AssignedClassesBackend.addCrosslistedNames(response, ApplicationProperty.SolverShowClassSufix.isTrue());
+			AssignedClassesBackend.addCrosslistedNames(response, ApplicationProperty.SolverShowClassSufix.isTrue(), ApplicationProperty.SolverShowConfiguratioName.isTrue());
 		
 		return response;
 	}

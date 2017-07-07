@@ -254,7 +254,7 @@ public class MakeAssignmentsForClassEvents {
             Department dept = clazz.getManagingDept();
             if (dept==null) dept = clazz.getSchedulingSubpart().getControllingDept();
             assignment.setSolution(getSolution(dept));
-            assignment.setClassName(clazz.getClassLabel(ApplicationProperty.SolverShowClassSufix.isTrue()));
+            assignment.setClassName(clazz.getClassLabel(ApplicationProperty.SolverShowClassSufix.isTrue(), ApplicationProperty.SolverShowConfiguratioName.isTrue()));
             assignment.setClassId(clazz.getUniqueId());
             clazz.setCommittedAssignment(assignment);
         }

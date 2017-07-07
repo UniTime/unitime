@@ -268,7 +268,7 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 		SolverPageBackend.fillSolverWarnings(context, solver, SolverType.COURSE, response);
 		
 		if (ApplicationProperty.TimeGridShowCrosslists.isTrue())
-			addCrosslistedNames(response, ApplicationProperty.SolverShowClassSufix.isTrue());
+			addCrosslistedNames(response, ApplicationProperty.SolverShowClassSufix.isTrue(), ApplicationProperty.SolverShowConfiguratioName.isTrue());
 		
 		return response;
 	}
@@ -281,7 +281,7 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 		return new TableCellInterface<Double>(value, sDF.format(value)).setColor(value < 0 ? "green" : value > 0 ? "red" : null);
 	}
 	
-	public static void addCrosslistedNames(TableInterface table, boolean showClassSuffix) {
+	public static void addCrosslistedNames(TableInterface table, boolean showClassSuffix, boolean showConfigNames) {
 		Map<Long, TableInterface.TableRowInterface> id2row = new HashMap<Long, TableInterface.TableRowInterface>();
 		for (TableInterface.TableRowInterface row: table.getRows()) {
 			if (row.hasId()) id2row.put(row.getId(), row);
@@ -294,7 +294,7 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 			CourseOffering course = (CourseOffering)o[1];
 			TableInterface.TableRowInterface row = id2row.get(clazz.getUniqueId());
 			if (row != null)
-				((TableInterface.TableCellClassName)row.getCell(0)).addAlternative(clazz.getClassLabel(course, showClassSuffix));
+				((TableInterface.TableCellClassName)row.getCell(0)).addAlternative(clazz.getClassLabel(course, showClassSuffix, showConfigNames));
 		}
 	}
 

@@ -51,7 +51,7 @@ public class ClassInfo implements Serializable, Comparable<ClassInfo> {
     
     public ClassInfo(Class_ clazz) {
     	iClassId = clazz.getUniqueId();
-    	iClassName = clazz.getClassLabel(ApplicationProperty.SolverShowClassSufix.isTrue());
+    	iClassName = clazz.getClassLabel(ApplicationProperty.SolverShowClassSufix.isTrue(), ApplicationProperty.SolverShowConfiguratioName.isTrue());
     	iClassTitle = clazz.getClassLabelWithTitle();
     	iClass = clazz;
     	iNrRooms = (clazz.getNbrRooms()==null?1:clazz.getNbrRooms().intValue());

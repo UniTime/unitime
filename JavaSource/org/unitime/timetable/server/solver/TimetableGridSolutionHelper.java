@@ -184,7 +184,7 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
     	TimetableGridCell cell = new TimetableGridCell();
     	cell.setType(TimetableGridCell.Type.Class);
     	cell.setId(assignment.getClassId());
-    	cell.addName(assignment.getClazz().getClassLabel(context.isShowClassSuffix()));
+    	cell.addName(assignment.getClazz().getClassLabel(context.isShowClassSuffix(), context.isShowConfigName()));
     	cell.setCommitted(notAvailable);
     	cell.setDay(day);
     	cell.setSlot(slot);
@@ -194,7 +194,7 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
     		if (courses.size() > 1) {
     			for (CourseOffering course: new TreeSet<CourseOffering>(courses)) {
     				if (course.isIsControl()) continue;
-    				cell.addName(assignment.getClazz().getClassLabel(course, context.isShowClassSuffix()));
+    				cell.addName(assignment.getClazz().getClassLabel(course, context.isShowClassSuffix(), context.isShowConfigName()));
     			}
     		}
     	}

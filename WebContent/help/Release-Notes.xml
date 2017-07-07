@@ -42,6 +42,13 @@
 				<line>Class suffix and configuration name fields are now up to 20 characters long (instead of 10).</line>
 			</description>
 		</item>
+		<item>
+			<name>Configuration Names</name>
+			<description>
+				<line>When the application property unitime.solver.showConfigurationNames is set to true (defaults to false), configuration name is added to the class name when the data are being loaded into the course timetabling solver.</line>
+				<line>This is only done when the course has two or more configurations.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Online Student Scheduling</title>

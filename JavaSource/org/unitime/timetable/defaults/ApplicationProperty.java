@@ -2152,6 +2152,12 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
+	@Description("Course Timetabling Solver: include configuration name in the class label when there are two or more configurations")
+	@Since(4.2)
+	SolverShowConfiguratioName("unitime.solver.showConfigurationNames"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
 	@Description("API: allow API tokens to be used for user authentication")
 	ApiCanUseAPIToken("unitime.api.canUseToken"),
 	

@@ -756,8 +756,19 @@ public class Class_ extends BaseClass_ {
     	}
     }
     
+    public String getClassLabel(CourseOffering course, boolean includeSuffix, boolean includeConfigName) {
+    	String label = getClassLabel(course, includeSuffix);
+    	if (includeConfigName && course.getInstructionalOffering().getInstrOfferingConfigs().size() > 1)
+    		return label + " (" + getSchedulingSubpart().getInstrOfferingConfig().getName() + ")";
+    	return label;
+    }
+    
+    public String getClassLabel(boolean includeSuffix, boolean includeConfigName) {
+    	return getClassLabel(getSchedulingSubpart().getControllingCourseOffering(), includeSuffix, includeConfigName);
+    }
+    
     public String getClassLabel(boolean includeSuffix) {
-    	return getClassLabel(getSchedulingSubpart().getControllingCourseOffering(), includeSuffix);
+    	return getClassLabel(getSchedulingSubpart().getControllingCourseOffering(), false, false);
     }
 
     public String getClassLabel(org.hibernate.Session hibSession) {
@@ -1445,7 +1456,7 @@ public class Class_ extends BaseClass_ {
             a.setSlotsPerMtg(assignment.getTime().getNrSlotsPerMeeting());
             a.setBreakTime(assignment.getTime().getBreakTime());
             a.setClazz(this);
-            a.setClassName(getClassLabel(ApplicationProperty.SolverShowClassSufix.isTrue()));
+            a.setClassName(getClassLabel(ApplicationProperty.SolverShowClassSufix.isTrue(), ApplicationProperty.SolverShowConfiguratioName.isTrue()));
             a.setClassId(getUniqueId());
             a.setDays(assignment.getTime().getDayCode());
             a.setRooms(new HashSet());

@@ -54,7 +54,7 @@ public class TimetableGridContext implements Serializable {
 	private Date iFirstDate;
 	private boolean iShowInstructor, iShowTime, iShowPreference, iShowFreeTimes, iShowDate;
 	private Date iSessionStartDate, iSessionEndDate;
-	private boolean iShowCrossLists, iShowClassSuffix;
+	private boolean iShowCrossLists, iShowClassSuffix, iShowConfigName;
 	private String iLocale;
 	private String iInstructorNameFormat = NameFormat.SHORT.reference();
 	private int iWeekOffset = 0;
@@ -134,6 +134,7 @@ public class TimetableGridContext implements Serializable {
         
         iShowCrossLists = ApplicationProperty.TimeGridShowCrosslists.isTrue();
         iShowClassSuffix = ApplicationProperty.SolverShowClassSufix.isTrue();
+        iShowConfigName = ApplicationProperty.SolverShowConfiguratioName.isTrue();
 	}
 	
 	public String getFilter() { return iFilter; }
@@ -179,6 +180,7 @@ public class TimetableGridContext implements Serializable {
 	
 	public boolean isShowCrossLists() { return iShowCrossLists; }
 	public boolean isShowClassSuffix() { return iShowClassSuffix; }
+	public boolean isShowConfigName() { return iShowConfigName; }
 	
 	public void ensureLocalizationIsSet() { Localization.setLocale(iLocale); }
 	

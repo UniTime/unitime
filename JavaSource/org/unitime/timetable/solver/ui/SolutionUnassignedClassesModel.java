@@ -45,7 +45,7 @@ public class SolutionUnassignedClassesModel extends UnassignedClassesModel {
 			Solution solution = (Solution)i.next();
 			for (Iterator j=solution.getOwner().getNotAssignedClasses(solution).iterator();j.hasNext();) {
 				Class_ clazz = (Class_)j.next();
-				String name = clazz.getClassLabel(ApplicationProperty.SolverShowClassSufix.isTrue());
+				String name = clazz.getClassLabel(ApplicationProperty.SolverShowClassSufix.isTrue(), ApplicationProperty.SolverShowConfiguratioName.isTrue());
 				if (prefix != null && prefix.length > 0) {
 					boolean hasPrefix = false;
 					for (String p: prefix)
