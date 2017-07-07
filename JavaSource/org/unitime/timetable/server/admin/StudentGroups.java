@@ -66,8 +66,8 @@ public class StudentGroups implements AdminTable {
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
 		SimpleEditInterface data = new SimpleEditInterface(
 				new Field(MESSAGES.fieldExternalId(), FieldType.text, 120, 40, Flag.READ_ONLY),
-				new Field(MESSAGES.fieldCode(), FieldType.text, 80, 10, Flag.UNIQUE),
-				new Field(MESSAGES.fieldName(), FieldType.text, 300, 50, Flag.UNIQUE),
+				new Field(MESSAGES.fieldCode(), FieldType.text, 200, 30, Flag.UNIQUE),
+				new Field(MESSAGES.fieldName(), FieldType.text, 500, 90, Flag.UNIQUE),
 				new Field(MESSAGES.fieldExpectedSize(), FieldType.number, 80, 10),
 				new Field(MESSAGES.fieldStudents(), FieldType.students, 200));
 		data.setSortBy(1,2);
