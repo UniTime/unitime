@@ -12682,4 +12682,11 @@
 		<plsql>alter table %SCHEMA%.class_ modify class_suffix varchar2(20 char)</plsql>
 		<mysql>alter table %SCHEMA%.class_ modify class_suffix varchar(20)</mysql>
 	</update>
+	<update version="185" date="7-Jul-2017" comment="Student Sectioning Solver Save">
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'StudentSectioningSolverSave'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'StudentSectioningSolver'
+		</sql>
+	</update>
 </dbupdate>

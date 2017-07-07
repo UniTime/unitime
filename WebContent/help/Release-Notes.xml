@@ -60,6 +60,16 @@
 		</item>
 	</category>
 	<category>
+		<title>Batch Student Scheduling</title>
+		<item>
+			<name>Student Scheduling Solver: Save</name>
+			<description>
+				<line>There is a new permission named Student Sectioning Solver Save that can be used to restrict who can save the student class enrollments.</line>
+				<line>By default, the Student Sectioning Solver Save permission is given to the role that have Student Sectioning Solver permission (that is all the roles, that can use the solver page).</line>
+			</description>
+		</item>
+	</category>
+	<category>
 	    <title>Administration</title>
 	    <item>
 	        <name>Data Exchange: Academic Session Setup</name>

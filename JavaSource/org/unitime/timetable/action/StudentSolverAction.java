@@ -113,6 +113,7 @@ public class StudentSolverAction extends Action {
         if (op.startsWith("Save")) {
         	if (solver==null) throw new Exception("Solver is not started.");
         	if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
+        	sessionContext.checkPermission(Right.StudentSectioningSolverSave);
         	SolverParameterDef statusToSet = SolverParameterDef.findByNameType("Save.StudentSectioningStatusToSet", SolverParameterGroup.SolverType.STUDENT);
         	if (statusToSet != null) {
         		DataProperties config = solver.getProperties();

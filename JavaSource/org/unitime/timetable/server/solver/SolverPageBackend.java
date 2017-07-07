@@ -175,6 +175,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 				solver.save();
 				break;
 			case STUDENT:
+				context.checkPermission(Right.StudentSectioningSolverSave);
 	        	SolverParameterDef statusToSet = SolverParameterDef.findByNameType("Save.StudentSectioningStatusToSet", SolverParameterGroup.SolverType.STUDENT);
 	        	if (statusToSet != null) {
 	        		solver.setProperty("Save.StudentSectioningStatusToSet", request.getParameter(statusToSet.getUniqueId()));
@@ -556,8 +557,10 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 					response.setCanExecute(SolverOperation.CLEAR);
 					if (context.hasPermission(Right.StudentSectioningSolutionExportXml))
 						response.setCanExecute(SolverOperation.EXPORT_XML);
-					hasSolution = Session.hasStudentSchedule(context.getUser().getCurrentAcademicSessionId());
-					response.setCanExecute(hasSolution ? SolverOperation.SAVE : SolverOperation.SAVE_AS_NEW);
+					if (context.hasPermission(Right.StudentSectioningSolverSave)) {
+						hasSolution = Session.hasStudentSchedule(context.getUser().getCurrentAcademicSessionId());
+						response.setCanExecute(hasSolution ? SolverOperation.SAVE : SolverOperation.SAVE_AS_NEW);
+					}
 					break;
 				case INSTRUCTOR:
 					response.setCanExecute(SolverOperation.CLEAR);

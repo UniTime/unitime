@@ -161,6 +161,7 @@ try {
 <% }
    if (solver!=null && !solver.isWorking()) { %>
 			<html:submit onclick="displayLoading();" property="op" value="Reload Input Data"/>
+			<sec:authorize access="hasPermission(null, 'Session', 'StudentSectioningSolverSave')">
 <%
 				if (hasSolution) {
 %>
@@ -172,6 +173,7 @@ try {
 <%
 				}
 %>
+			</sec:authorize>
 			<html:submit onclick="if (!confirmClear()) return false; displayLoading();" property="op" value="Clear"/>
 			<html:submit onclick="if (!confirmUnload()) return false; displayLoading();" property="op" value="Unload"/>
 <% } %>
