@@ -28,6 +28,20 @@
 	<version>4.1.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Online Student Scheduling Server: Release Master Lock</name>
+			<description>
+				<line>When there is no solver cluster (online student scheduling server runs within the Tomcat and there is no master lock), reload the server when requested.</line>
+				<line>This fixes an issue on the Manage Solvers page where the online scheduling server cannot be reloaded when the server is running locally (there is no cluster).</line>
+			</description>
+		</item>
+	</category>
+</release>
+<release>
+	<version>4.1.231</version>
+	<release-date>Fri, 28 Apr 2017</release-date>
+	<category>
 		<title>Course Timetabling</title>
 		<item>
 			<name>Automatic Hierarchical Constraints</name>
