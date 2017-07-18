@@ -1062,7 +1062,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						di.setDepartment(c.getSchedulingSubpart().getControllingDept());
 						di.setExternalUniqueId(id);
 						if (lastName == null){
-							Staff staffData = findStaffMember(id);
+							Staff staffData = findStaffMember(id, c.getSchedulingSubpart().getControllingDept());
 							if (staffData != null) {
 								firstName = staffData.getFirstName();
 								middleName = staffData.getMiddleName();
@@ -1118,13 +1118,23 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
         return(changed);
 	}
 
-	private Staff findStaffMember(String id) {
-		return(Staff) this.
-		getHibSession().
-		createQuery("select distinct s from Staff s where s.externalUniqueId=:externalId").
-		setString("externalId", id).
-		setCacheable(true).
-		uniqueResult();
+	private Staff findStaffMember(String id, Department department) {
+		if (department != null) {
+			Staff staff = (Staff)getHibSession().
+					createQuery("select distinct s from Staff s where s.externalUniqueId=:externalId and s.dept=:dept").
+					setString("externalId", id).
+					setString("dept", department.getDeptCode()).
+					setCacheable(true).
+					uniqueResult();
+			if (staff != null) return staff;
+		}
+		List<Staff> staffs = getHibSession().
+				createQuery("select distinct s from Staff s where s.externalUniqueId=:externalId").
+				setString("externalId", id).
+				setCacheable(true).
+				list();
+		if (!staffs.isEmpty()) return staffs.get(0);
+		return null;
 	}
 	
 	private void elementCourseCredit(Element element, CourseOffering co) throws Exception {
@@ -3041,7 +3051,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						di.setDepartment(offering.getControllingCourseOffering().getDepartment());
 						di.setExternalUniqueId(id);
 						if (lastNames.get(id) == null) {
-							Staff staffData = findStaffMember(id);
+							Staff staffData = findStaffMember(id, offering.getControllingCourseOffering().getDepartment());
 							if (staffData != null){
 								firstNames.put(id, staffData.getFirstName());
 								middleNames.put(id, staffData.getMiddleName());

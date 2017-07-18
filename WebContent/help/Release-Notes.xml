@@ -95,6 +95,7 @@
 	    	<description>
 	    		<line>In the incremental mode (incremental=&quot;true&quot;), do not delete configurations, subparts, or classes when there are no config, subpart, or class elements present.</line>
 	    		<line>Also, do not change credit or consent information when the course has no courseCredit or consent element respectively.</line>
+	    		<line>Staff lookup: avoid exceptions when the same person is listed under multiple departments, lookup under the controlling department first.</line>
 	    	</description>
 	    </item>
 	    <item>
