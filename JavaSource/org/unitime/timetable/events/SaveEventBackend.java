@@ -300,6 +300,10 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 						meeting.setStatus(Meeting.Status.APPROVED);
 						meeting.setApprovalDate(now);
 					}
+					if (location.getEffectiveEventStatus().isAutomaticApproval()) {
+						meeting.setStatus(Meeting.Status.APPROVED);
+						meeting.setApprovalDate(now);
+					}
 					if (context.isPastOrOutside(m.getMeetingDate()))
 						throw new GwtRpcException(MESSAGES.failedSaveEventPastOrOutside(getDateFormat().format(m.getMeetingDate())));
 					if (!context.hasPermission(location, Right.EventLocationOverbook)) {

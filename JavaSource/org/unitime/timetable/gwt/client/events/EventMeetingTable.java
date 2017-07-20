@@ -950,9 +950,9 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				EventCookie.getInstance().setAutomaticallyApproveNewMeetings(!EventCookie.getInstance().isAutomaticallyApproveNewMeetings());
 				for (int row = 1; row < getRowCount(); row++) {
 					EventMeetingRow data = getData(row);
-					if (data.hasMeeting() && data.getMeeting().getId() == null && data.getMeeting().isCanApprove() && data.hasEvent() && (data.getEvent().getType() == EventType.Special || data.getEvent().getType() == EventType.Course)) {
+					if (data.hasMeeting() && data.getMeeting().getId() == null && (data.getMeeting().isCanApprove() || data.getMeeting().isAutomaticallyApproved()) && data.hasEvent() && (data.getEvent().getType() == EventType.Special || data.getEvent().getType() == EventType.Course)) {
 						HTML approval = (HTML)getWidget(row, getHeader(MESSAGES.colApproval()).getColumn());
-						if (EventCookie.getInstance().isAutomaticallyApproveNewMeetings()) {
+						if (EventCookie.getInstance().isAutomaticallyApproveNewMeetings() || data.getMeeting().isAutomaticallyApproved()) {
 							approval.setStyleName("new-approved-meeting");
 							approval.setText(MESSAGES.approvelNewApprovedMeeting());
 						} else {
@@ -1372,7 +1372,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 					meeting.getMeetingDate() == null ? "" :
 					meeting.getId() == null ? event != null && event.getType() == EventType.Unavailabile ? event.getId() != null && event.getId() < 0l ? "" : "<span class='new-meeting'>" + MESSAGES.approvalNewUnavailabiliyMeeting() + "</span>" :
 					event != null && (event.getType() == EventType.Class || event.getType() == EventType.FinalExam || event.getType() == EventType.MidtermExam) ? "<span class='new-approved-meeting'>" + MESSAGES.approvelNewApprovedMeeting() + "</span>" :
-					meeting.isCanApprove() && EventCookie.getInstance().isAutomaticallyApproveNewMeetings() ? "<span class='new-approved-meeting'>" + MESSAGES.approvelNewApprovedMeeting() + "</span>" : "<span class='new-meeting'>" + MESSAGES.approvalNewMeeting() + "</span>" :
+					meeting.isAutomaticallyApproved() || (meeting.isCanApprove() && EventCookie.getInstance().isAutomaticallyApproveNewMeetings()) ? "<span class='new-approved-meeting'>" + MESSAGES.approvelNewApprovedMeeting() + "</span>" : "<span class='new-meeting'>" + MESSAGES.approvalNewMeeting() + "</span>" :
 					meeting.isApproved() ? 
 							past ? "<span class='past-meeting'>" + sDateFormatApproval.format(meeting.getApprovalDate()) + "</span>" : sDateFormatApproval.format(meeting.getApprovalDate()) :
 							past ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" : 
@@ -2138,7 +2138,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		public boolean hasMeeting() { return iMeeting != null; }
 		public MeetingInterface getMeeting() {
 			if (iMeeting != null && iMeeting.getId() == null) {
-				if (EventCookie.getInstance().isAutomaticallyApproveNewMeetings() && iMeeting.isCanApprove())
+				if (iMeeting.isAutomaticallyApproved() || (EventCookie.getInstance().isAutomaticallyApproveNewMeetings() && iMeeting.isCanApprove()))
 					iMeeting.setApprovalStatus(ApprovalStatus.Approved);
 				else
 					iMeeting.setApprovalStatus(ApprovalStatus.Pending);

@@ -540,6 +540,10 @@ public class EventPermissions {
 			case Event.sEventTypeSpecial:
 			case Event.sEventTypeCourse:
 				// Only pending meetings can be deleted
+				if (source.getStatus() == Meeting.Status.APPROVED) {
+					Location location = source.getLocation();
+					if (location == null || location.getEffectiveEventStatus().isAutomaticApproval()) return true;
+				}
 				if (source.getStatus() != Meeting.Status.PENDING) return false;
 				break;
 			case Event.sEventTypeUnavailable:

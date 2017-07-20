@@ -50,21 +50,29 @@ public class RoomTypeOption extends BaseRoomTypeOption {
 		AuthenticatedUsersCanRequestEventsNoApproval(true, true, true, false),
 		DepartmentalUsersCanRequestEventsNoApproval(false, true, true, false),
 		EventManagersCanRequestEventsNoApproval(false, false, true, false),
+		AuthenticatedUsersCanRequestAutomaticApproval(true, true, true, true, true),
+		DepartmentalUsersCanRequestAutomaticApproval(false, true, true, true, true),
+		EventManagersCanRequestAutomaticApproval(false, false, true, true, true),
 		;
 		
-		private boolean iUserRequest, iDeptRequest, iMgrRequest, iMgrApproval;
+		private boolean iUserRequest, iDeptRequest, iMgrRequest, iMgrApproval, iAutoApproval;
 		
-		Status(boolean userRequest, boolean deptRequest, boolean mgrRequest, boolean mgrApproval) {
+		Status(boolean userRequest, boolean deptRequest, boolean mgrRequest, boolean mgrApproval, boolean autoApproval) {
 			iUserRequest = userRequest;
 			iDeptRequest = deptRequest;
 			iMgrRequest = mgrRequest;
 			iMgrApproval = mgrApproval;
+			iAutoApproval = autoApproval;
+		}
+		Status(boolean userRequest, boolean deptRequest, boolean mgrRequest, boolean mgrApproval) {
+			this(userRequest, deptRequest, mgrRequest, mgrApproval, false);
 		}
 		
 		public boolean isAuthenticatedUsersCanRequestEvents() { return iUserRequest; }
 		public boolean isDepartmentalUsersCanRequestEvents() { return iDeptRequest; }
 		public boolean isEventManagersCanApprove() { return iMgrApproval; }
 		public boolean isEventManagersCanRequestEvents() { return iMgrRequest; }
+		public boolean isAutomaticApproval() { return iAutoApproval; }
 		
 		@Override
 		public String toString() { return name().replaceAll("(\\p{Ll})(\\p{Lu})","$1 $2"); }

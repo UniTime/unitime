@@ -238,6 +238,9 @@ public interface GwtConstants extends Constants {
 		"Authenticated Users Can Request Events No Approval",
 		"Departmental Users Can Request Events No Approval",
 		"Event Managers Can Request Events No Approval",
+		"Authenticated Users Can Request Events Automatically Approved",
+		"Departmental Users Can Request Events Automatically Approved",
+		"Event Managers Can Request Events Automatically Approved",
 	})
 	String[] eventStatusName();
 	

@@ -641,7 +641,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private int iStartOffset = 0, iEndOffset = 0;
 		private int iDayOfWeek;
 		private int iDayOfYear;
-		private boolean iPast = false, iCanEdit = false, iCanDelete = false, iCanCancel = false, iCanApprove = false, iCanInquire = false;
+		private boolean iPast = false, iCanEdit = false, iCanDelete = false, iCanCancel = false, iCanApprove = false, iCanInquire = false, iAutomaticApproval = false;
 		private Integer iGridIndex = null;
 		private Date iApprovalDate = null;
 		private ApprovalStatus iApprovalStatus = ApprovalStatus.Pending;
@@ -755,6 +755,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setCanCancel(boolean canCancel) { iCanCancel = canCancel; }
 		public boolean isCanApprove() { return iCanApprove; }
 		public void setCanApprove(boolean canApprove) { iCanApprove = canApprove; }
+		public boolean isAutomaticallyApproved() { return iAutomaticApproval; }
+		public void setAutomaticallyApproved(boolean automaticApproval) { iAutomaticApproval = automaticApproval; }
 		public boolean isApproved() { return iApprovalStatus == ApprovalStatus.Approved; }
 		public boolean isCanInquire() { return iCanInquire; }
 		public void setCanInquire(boolean canInquire) { iCanInquire = canInquire; }

@@ -273,6 +273,8 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 				Location location = LocationDAO.getInstance().get(meeting.getLocation().getId());
 				boolean available = true;
 				
+				meeting.setAutomaticallyApproved(location != null && location.getEffectiveEventStatus().isAutomaticApproval());
+				
 				if (location == null || !context.hasPermission(location, Right.EventLocation)) {
 					MeetingConflictInterface conflict = new MeetingConflictInterface();
 					if (location == null || location.getEventDepartment() == null || !location.getEventDepartment().isAllowEvents())
