@@ -106,6 +106,7 @@
 						<td style="white-space: nowrap; font-weight: bold;">${msg.colAllocatedTime()}</td>
 						</#if>
 						<td style="white-space: nowrap; font-weight: bold;">${msg.colLocation()}</td>
+						<td style="white-space: nowrap; font-weight: bold;" align="right">${msg.colCapacity()}</td>
 						<td style="white-space: nowrap; font-weight: bold;">${msg.colStatus()}</td>
 					</tr>
 					<#list created as meeting>
@@ -116,6 +117,7 @@
 							<td>${meeting.getAllocatedTime(const)}</td>
 							</#if>
 							<td>${meeting.getLocationName(msg)}</td>
+							<td align="right">${meeting.getLocationCapacity()}</td>
 							<#switch meeting.getApprovalStatus().name()>
 								<#case "Pending">
 									<#if meeting.isPast()>
@@ -160,6 +162,7 @@
 						<td style="white-space: nowrap; font-weight: bold;">${msg.colAllocatedTime()}</td>
 						</#if>
 						<td style="white-space: nowrap; font-weight: bold;">${msg.colLocation()}</td>
+						<td style="white-space: nowrap; font-weight: bold;" align="right">${msg.colCapacity()}</td>
 					</tr>
 					<#list deleted as meeting>
 						<tr>
@@ -169,6 +172,7 @@
 							<td>${meeting.getAllocatedTime(const)}</td>
 							</#if>
 							<td>${meeting.getLocationName(msg)}</td>
+							<td align="right">${meeting.getLocationCapacity()}</td>
 						</tr>
 						<#if meeting.locationMessage??><tr style="background-color: #FFF0A5; font-style: italic;"><td colspan='5' style="padding-left:5px;">${meeting.getLocationMessage()}</td></tr></#if>
 					</#list>
@@ -186,6 +190,7 @@
 						<td style="white-space: nowrap; font-weight: bold;">${msg.colAllocatedTime()}</td>
 						</#if>
 						<td style="white-space: nowrap; font-weight: bold;">${msg.colLocation()}</td>
+						<td style="white-space: nowrap; font-weight: bold;" align="right">${msg.colCapacity()}</td>
 					</tr>
 					<#list cancelled as meeting>
 						<tr>
@@ -195,6 +200,7 @@
 							<td>${meeting.getAllocatedTime(const)}</td>
 							</#if>
 							<td>${meeting.getLocationName(msg)}</td>
+							<td align="right">${meeting.getLocationCapacity()}</td>
 						</tr>
 						<#if meeting.locationMessage??><tr style="background-color: #FFF0A5; font-style: italic;"><td colspan='5' style="padding-left:5px;">${meeting.getLocationMessage()}</td></tr></#if>
 					</#list>
@@ -229,6 +235,7 @@
 						<td style="white-space: nowrap; font-weight: bold;">${msg.colAllocatedTime()}</td>
 						</#if>
 						<td style="white-space: nowrap; font-weight: bold;">${msg.colLocation()}</td>
+						<td style="white-space: nowrap; font-weight: bold;" align="right">${msg.colCapacity()}</td>
 						<td style="white-space: nowrap; font-weight: bold;">${msg.colStatus()}</td>
 					</tr>
 					<#list updated as meeting>
@@ -247,6 +254,7 @@
 							<td>${meeting.getAllocatedTime(const)}</td>
 							</#if>
 							<td>${meeting.getLocationName(msg)}</td>
+							<td align="right">${meeting.getLocationCapacity()}</td>
 							<#switch meeting.getApprovalStatus().name()>
 								<#case "Pending">
 									<#if meeting.isPast()>
@@ -310,6 +318,7 @@
 						<td style="white-space: nowrap; font-weight: bold;">${msg.colAllocatedTime()}</td>
 						</#if>
 						<td style="white-space: nowrap; font-weight: bold;">${msg.colLocation()}</td>
+						<td style="white-space: nowrap; font-weight: bold;" align="right">${msg.colCapacity()}</td>
 						<td style="white-space: nowrap; font-weight: bold;">${msg.colApproval()}</td>
 					</tr>
 					<#assign empty = true>
@@ -328,6 +337,7 @@
 								<td>${meeting.getAllocatedTime(const)}</td>
 								</#if>
 								<td>${meeting.getLocationName(msg)}</td>
+								<td align="right">${meeting.getLocationCapacity()}</td>
 								<#switch meeting.getApprovalStatus().name()>
 									<#case "Pending">
 										<#if meeting.isPast()>

@@ -741,6 +741,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public String getLocationNameWithHint(GwtMessages msg) {
 			return (iLocation == null ? "" : iLocation.getNameWithHint(msg));
 		}
+		public String getLocationCapacity() {
+			return (iLocation == null ? "" : iLocation.getSize() == null ? "" : iLocation.getSize().toString());
+		}
 		public void setLocation(ResourceInterface resource) { iLocation = resource; }
 		public boolean isPast() { return iPast; }
 		public void setPast(boolean past) { iPast = past; }
@@ -1039,6 +1042,14 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	    public String getLocationMessage() {
 	    	ResourceInterface location = iMeetings.first().getLocation();
 	    	return location == null || !location.hasMessage() ? null : location.getMessage();
+	    }
+	    
+	    public boolean hasLocation() {
+	    	return iMeetings.first().hasLocation();
+	    }
+	    
+	    public ResourceInterface getLocation() {
+	    	return iMeetings.first().getLocation();
 	    }
 	    
 	    public Date getApprovalDate() {
