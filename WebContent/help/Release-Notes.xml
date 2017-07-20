@@ -77,6 +77,16 @@
 		</item>
 	</category>
 	<category>
+		<title>Instructor Scheduling</title>
+		<item>
+			<name>Setup Teaching Requests</name>
+			<description>
+				<line>Do not show course title if it is not set (null).</line>
+				<line>Show Include Subparts section even when there is only one subpart to show (it may be still important to set percentage share etc.).</line>
+			</description>
+		</item>
+	</category>
+	<category>
 	    <title>Administration</title>
 	    <item>
 	        <name>Data Exchange: Academic Session Setup</name>

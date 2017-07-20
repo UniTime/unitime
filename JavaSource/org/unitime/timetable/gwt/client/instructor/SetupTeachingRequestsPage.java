@@ -160,7 +160,7 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 			public void onSuccess(GetRequestsRpcResponse result) {
 				LoadingWidget.getInstance().hide();
 				iProperties = result;
-				iHeader.setHeaderTitle(result.getOffering().getAbbv() + " - " + result.getOffering().getName());
+				iHeader.setHeaderTitle(result.getOffering().getAbbv() + (result.getOffering().getName() == null ? "" : " - " + result.getOffering().getName()));
 				for (Request req: result.getRequests()) {
 					RequestPanel rp = new RequestPanel(req, iRequests.size() + 1);
 					iRequests.add(rp);
@@ -800,7 +800,7 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 								});
 								iSubparts.addRow(s, line);
 							}
-							getRowFormatter().setVisible(iSubpartsLine, config.getSubparts().size() > 1);
+							getRowFormatter().setVisible(iSubpartsLine, !config.getSubparts().isEmpty());
 							getRowFormatter().setVisible(iSameCommonRow, hasSameCommon);
 						}
 					}
