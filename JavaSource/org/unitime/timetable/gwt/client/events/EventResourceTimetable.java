@@ -117,6 +117,7 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.TakesValue;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -1116,19 +1117,27 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				iEventAdd.setEvent(null);
 				iEventAdd.show();
 			} else {
-				Long eventId = Long.valueOf(iHistoryToken.getParameter("event"));
-				LoadingWidget.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), eventId), new AsyncCallback<EventInterface>() {
+				new Timer() {
 					@Override
-					public void onFailure(Throwable caught) {
-						UniTimeNotifications.error(MESSAGES.failedLoad(MESSAGES.anEvent(), caught.getMessage()), caught);
+					public void run() {
+						if (iProperties == null) {
+							schedule(500); return;
+						}
+						Long eventId = Long.valueOf(iHistoryToken.getParameter("event"));
+						LoadingWidget.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), eventId), new AsyncCallback<EventInterface>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								UniTimeNotifications.error(MESSAGES.failedLoad(MESSAGES.anEvent(), caught.getMessage()), caught);
+							}
+							@Override
+							public void onSuccess(EventInterface result) {
+								LoadingWidget.getInstance().hide();
+								iEventDetail.setEvent(result);
+								iEventDetail.show();
+							}
+						}, MESSAGES.waitLoading(MESSAGES.anEvent()));		
 					}
-					@Override
-					public void onSuccess(EventInterface result) {
-						LoadingWidget.getInstance().hide();
-						iEventDetail.setEvent(result);
-						iEventDetail.show();
-					}
-				}, MESSAGES.waitLoading(MESSAGES.anEvent()));
+				}.schedule(200);
 			}
 		} else {
 			iRootPanel.setWidget(iPanel);
