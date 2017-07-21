@@ -1594,8 +1594,15 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         					for (ClassInstructor ci: clazz.getClassInstructors()) {
         						if (ci.getInstructor().getExternalUniqueId() == null || ci.getInstructor().getExternalUniqueId().isEmpty()) continue;
         						Student student = ext2student.get(ci.getInstructor().getExternalUniqueId());
-        						if (student != null)
-        							new Unavailability(student, section, false);
+        						if (student != null) {
+        							boolean canOverlap = !ci.isLead();
+        							if (ci.getTeachingRequest() != null)
+        								for (TeachingClassRequest tcr: ci.getTeachingRequest().getClassRequests())
+        									if (tcr.getTeachingClass().equals(ci.getClassInstructing())) {
+        										canOverlap = tcr.isCanOverlap(); break;
+        									}
+        							new Unavailability(student, section, canOverlap);
+        						}
         			        }
         			        for (TeachingClassRequest tcr: clazz.getTeachingRequests()) {
         			        	if (!tcr.isAssignInstructor() && tcr.getTeachingRequest().isCommitted()) {

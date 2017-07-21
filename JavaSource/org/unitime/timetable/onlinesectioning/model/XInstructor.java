@@ -58,7 +58,7 @@ public class XInstructor implements Serializable, Externalizable {
 		iName = helper.getInstructorNameFormat().format(instructor.getInstructor());
 		iEmail = instructor.getInstructor().getEmail();
 		iDisplay = instructor.getClassInstructing().isDisplayInstructor();
-		iAllowOverlap = false;
+		iAllowOverlap = !instructor.isLead();
 		iInstructing = true;
 		if (instructor.getTeachingRequest() != null)
 			for (TeachingClassRequest tcr: instructor.getTeachingRequest().getClassRequests())

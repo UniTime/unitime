@@ -65,6 +65,12 @@
 				<line>This fixes an issue on the Manage Solvers page where the online scheduling server cannot be reloaded when the server is running locally (there is no cluster).</line>
 			</description>
 		</item>
+		<item>
+			<name>Teaching Assignments</name>
+			<description>
+				<line>Instructor assignments that do not check conflicts (Check Conflicts toggle is not checked) can overlap with class enrollments.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Batch Student Scheduling</title>
