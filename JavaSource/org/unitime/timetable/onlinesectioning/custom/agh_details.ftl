@@ -57,10 +57,10 @@
 		</tr>
 	</#if>
 	
-	<#if course.instructionalOffering.offeringCoordinators?size != 0>
+	<#if utCourse.instructionalOffering.offeringCoordinators?size != 0>
 		<tr>
 			<td>${msg.colCoordinator()}:</td><td>
-				<#list course.instructionalOffering.offeringCoordinators as coordinator>
+				<#list utCourse.instructionalOffering.offeringCoordinators as coordinator>
 					<#if coordinator.instructor.email??>
 						<a href='mailto:${coordinator.instructor.email}' class='unitime-NoFancyLink'><div>${coordinator.instructor.getName('last-first-middle')}<#if coordinator.responsibility??> (${coordinator.responsibility.abbreviation})</#if></div></a>
 					<#else>
