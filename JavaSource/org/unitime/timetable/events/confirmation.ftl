@@ -302,7 +302,7 @@
 				<#default>${msg.emailMessageUpdate()}
 				</#switch>
 				</td></tr>
-				<tr><td>${message?replace("\n", "<br>")}</td></tr>
+				<tr><td style="background-color: #d7e5ff; padding: 2px;">${message?replace("\n", "<br>")}</td></tr>
 			</#if>
 			<#if meetings??>
 				<!-- meetings -->
@@ -370,7 +370,7 @@
 			<#if event.hasNotes()>
 				<!-- notes -->
 				<tr><td style="width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 10px; font-size: large; font-weight: bold; color: black; text-align: left;">${msg.emailNotes(event.name)}</td></tr>
-				<tr><td><table width=\"100%\" cellspacing='0' cellpadding='3'>
+				<tr><td><table width="100%" cellspacing='0' cellpadding='3'>
 					<tr>
 						<td style="white-space: nowrap; font-weight: bold;">${msg.colDate()}</td>
 						<td style="white-space: nowrap; font-weight: bold;">${msg.colUser()}</td>
