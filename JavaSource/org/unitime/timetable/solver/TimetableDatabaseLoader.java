@@ -158,6 +158,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 	private Hashtable<Long, Lecture> iLectures = new Hashtable<Long, Lecture>();
 	private Hashtable<Long, SchedulingSubpart> iSubparts = new Hashtable<Long, SchedulingSubpart>();
 	private Hashtable<Long, Student> iStudents = new Hashtable<Long, Student>();
+	private Hashtable<Long, WeightedStudentId> iWeightedStudents = new Hashtable<Long, WeightedStudentId>();
 	private Hashtable<Long, String> iDeptNames = new Hashtable<Long, String>();
 	private Hashtable<Long, Class_> iClasses = new Hashtable<Long, Class_>();
 	private Set<DatePattern> iAllUsedDatePatterns = new HashSet<DatePattern>();
@@ -208,6 +209,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private ClassWeightProvider iClassWeightProvider = null;
     private boolean iUseAmPm = true;
     private boolean iShowClassSuffix = false, iShowConfigName = false;
+    private boolean iLoadCommittedReservations = false;
 
     public static enum CommittedStudentConflictsMode {
     		Ignore,
@@ -309,6 +311,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	iProgress.message(msglevel("badClassWeightProvider", Progress.MSGLEVEL_WARN), "Failed to load custom class weight provider, using the default one instead.",e);
         	iClassWeightProvider = new DefaultClassWeights(getModel().getProperties());
         }
+        iLoadCommittedReservations = getModel().getProperties().getPropertyBoolean("General.LoadCommittedReservations", iLoadCommittedReservations);
         
         iUseAmPm = getModel().getProperties().getPropertyBoolean("General.UseAmPm", iUseAmPm);
         iShowClassSuffix = ApplicationProperty.SolverShowClassSufix.isTrue();
@@ -2278,6 +2281,82 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	if (!hasSomethingCommitted) return false;
     	if (!iOfferings.containsKey(course.getInstructionalOffering()))
 			iOfferings.put(course.getInstructionalOffering(), loadOffering(course.getInstructionalOffering(), true));
+    	
+    	if (iLoadCommittedReservations) {
+        	InstructionalOffering offering = course.getInstructionalOffering();
+        	Set<Long> reservedClasses = new HashSet<Long>();
+    		for (Reservation reservation: offering.getReservations()) {
+    			if (reservation.getClasses().isEmpty() && reservation.getConfigurations().isEmpty()) continue;
+    			if (reservation instanceof CourseReservation) {
+    				CourseReservation cr = (CourseReservation)reservation;
+    				if (!course.equals(cr.getCourse())) continue;
+    			} else if (reservation instanceof CurriculumReservation) {
+    				WeightedStudentId studentId = iWeightedStudents.get(student.getId());
+    				if (studentId == null) continue;
+    				CurriculumReservation cr = (CurriculumReservation)reservation;
+    				boolean match = false;
+    				for (AreaClasfMajor acm: studentId.getMajors()) {
+    					if (cr.hasArea(acm.getArea()) && cr.hasClassification(acm.getClasf()) && cr.hasMajor(acm.getMajor())) {
+    						match = true;
+    						break;
+    					}
+    				}
+    				if (!match) continue;
+    			} else if (reservation instanceof StudentGroupReservation) {
+    				WeightedStudentId studentId = iWeightedStudents.get(student.getId());
+    				if (studentId == null) continue;
+    				StudentGroupReservation gr = (StudentGroupReservation)reservation;
+    				if (gr.getGroup() == null) continue;
+    				Group g = studentId.getGroup(gr.getGroup().getGroupAbbreviation());
+    				if (g == null || g.getId() < 0) continue;
+    			} else continue;
+    			for (Class_ clazz: reservation.getClasses()) {
+    				propagateReservedClasses(clazz, reservedClasses);
+    				Class_ parent = clazz.getParentClass();
+    				while (parent != null) {
+    					reservedClasses.add(parent.getUniqueId());
+    					parent = parent.getParentClass();
+    				}
+    			}
+    			for (InstrOfferingConfig config: reservation.getConfigurations()) {
+    				for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+    					for (Class_ clazz: subpart.getClasses())
+        					reservedClasses.add(clazz.getUniqueId());
+    			}
+    		}
+    		
+    		if (!reservedClasses.isEmpty()) {
+    			iProgress.debug(course.getCourseName() + ": Student " + student.getId() + " has reserved classes " + reservedClasses);
+    			Set<Lecture> prohibited = new HashSet<Lecture>();
+                for (InstrOfferingConfig config: course.getInstructionalOffering().getInstrOfferingConfigs()) {
+            		boolean hasConfigReservation = false;
+                	subparts: for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+                		for (Class_ clazz: subpart.getClasses())
+                			if (reservedClasses.contains(clazz.getUniqueId())) {
+                				hasConfigReservation = true; break subparts;
+                			}
+            		for (SchedulingSubpart subpart: config.getSchedulingSubparts()) {
+                		boolean hasSubpartReservation = false;
+                		for (Class_ clazz: subpart.getClasses())
+                			if (reservedClasses.contains(clazz.getUniqueId())) {
+                    			hasSubpartReservation = true; break;
+                			}
+                		// !hasConfigReservation >> all lectures are cannot attend (there is a reservation on a different config)
+                		// otherwise if !hasSubpartReservation >> there is reservation on some other subpart --> can attend any of the classes of this subpart
+                		if (!hasConfigReservation || hasSubpartReservation)
+                    		for (Class_ clazz: subpart.getClasses()) {
+                    			if (reservedClasses.contains(clazz.getUniqueId())) continue;
+                    			Lecture lecture = iLectures.get(clazz.getUniqueId());
+                    			if (lecture != null)
+                    				prohibited.add(lecture);
+                    		}
+                	}
+                }
+    			iProgress.debug(course.getCourseName() + ": Student " + student.getId() + " cannot attend classes " + prohibited);
+    			student.addCanNotEnroll(offering.getUniqueId(), prohibited);
+    		}
+    	}
+    	
     	student.addOffering(course.getInstructionalOffering().getUniqueId(), weight, priority);
         Set<Student> students = iCourse2students.get(course);
         if (students==null) {
@@ -2864,12 +2943,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                             			hasSubpartReservation = true; break;
                         			}
                         		// !hasConfigReservation >> all lectures are cannot attend (there is a reservation on a different config)
-                        		// otherwise if !hasSubpartReservation >> there is reservation on some other subpoart --> can attend any of the classes of this subpart
+                        		// otherwise if !hasSubpartReservation >> there is reservation on some other subpart --> can attend any of the classes of this subpart
                         		if (!hasConfigReservation || hasSubpartReservation)
                             		for (Class_ clazz: subpart.getClasses()) {
                             			if (reservedClasses.contains(clazz.getUniqueId())) continue;
                             			Lecture lecture = iLectures.get(clazz.getUniqueId());
-                            			if (lecture != null && !lecture.isCommitted())
+                            			if (lecture != null && (iLoadCommittedReservations || !lecture.isCommitted()))
                             				cannotAttendLectures.add(lecture);
                             		}
                         	}
@@ -2891,6 +2970,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         				student.setCurriculum(studentId.getCurriculum());
         				getModel().addStudent(student);
         				iStudents.put(studentId.getStudentId(), student);
+        				iWeightedStudents.put(studentId.getStudentId(), studentId);
         				for (Group g: studentId.getGroups()) {
         					StudentGroup group = iGroups.get(g.getId());
         					if (group == null) {
@@ -2965,12 +3045,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                             			hasSubpartReservation = true; break;
                         			}
                         		// !hasConfigReservation >> all lectures are cannot attend (there is a reservation on a different config)
-                        		// otherwise if !hasSubpartReservation >> there is reservation on some other subpoart --> can attend any of the classes of this subpart
+                        		// otherwise if !hasSubpartReservation >> there is reservation on some other subpart --> can attend any of the classes of this subpart
                         		if (!hasConfigReservation || hasSubpartReservation)
                             		for (Class_ clazz: subpart.getClasses()) {
                             			if (reservedClasses.contains(clazz.getUniqueId())) continue;
                             			Lecture lecture = iLectures.get(clazz.getUniqueId());
-                            			if (lecture != null && !lecture.isCommitted())
+                            			if (lecture != null && (iLoadCommittedReservations || !lecture.isCommitted()))
                             				prohibited.add(lecture);
                             		}
                         	}

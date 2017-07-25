@@ -49,6 +49,13 @@
 				<line>This is only done when the course has two or more configurations.</line>
 			</description>
 		</item>
+		<item>
+			<name>Reservations</name>
+			<description>
+				<line>Added ability to consider reservations that are set on other problems (on committed classes).</line>
+				<line>To enable this feature, set solver parameter General.LoadCommittedReservations to true.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Online Student Scheduling</title>
