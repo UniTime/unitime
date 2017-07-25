@@ -132,7 +132,7 @@ public class CommitedClassAssignmentProxy implements ClassAssignmentProxy {
 							if (!instructor.isLead()) continue;
 							for (DepartmentalInstructor di: DepartmentalInstructor.getAllForInstructor(instructor.getInstructor())) {
 								for (ClassInstructor ci : di.getClasses()) {
-				            		if (ci.equals(instructor)) continue;
+									if (ci.equals(instructor) || ci.getClassInstructing().equals(clazz) || !ci.isLead()) continue;
 				            		Assignment a = getAssignment(ci.getClassInstructing());
 				            		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a) && !clazz.canShareInstructor(a.getClazz()))
 				            			return true;
@@ -262,7 +262,7 @@ public class CommitedClassAssignmentProxy implements ClassAssignmentProxy {
 				if (!instructor.isLead()) continue;
 				for (DepartmentalInstructor di: DepartmentalInstructor.getAllForInstructor(instructor.getInstructor())) {
 					for (ClassInstructor ci : di.getClasses()) {
-						if (ci.equals(instructor) || ci.getClassInstructing().equals(clazz)) continue;
+						if (ci.equals(instructor) || ci.getClassInstructing().equals(clazz) || !ci.isLead()) continue;
 	            		Assignment a = getAssignment(ci.getClassInstructing());
 	            		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a) && !clazz.canShareInstructor(a.getClazz()))
 	            			conflicts.add(a);

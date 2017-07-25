@@ -56,6 +56,13 @@
 				<line>To enable this feature, set solver parameter General.LoadCommittedReservations to true.</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructional Offering Detail, Class Detail: Class/Offering Conflicts</name>
+			<description>
+				<line>If an instructor is assigned to a class two (or more) times with different responsibility, do not show that as an instructor conflict.</line>
+				<line>Only show an instructor conflict between two classes, if the instructor is lead on both classes.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Online Student Scheduling</title>
