@@ -52,6 +52,7 @@ import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApproveEventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventEnrollmentsRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.EventServiceProviderInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MessageInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
@@ -384,6 +385,19 @@ public class EventDetail extends Composite {
 		
 		if (iEvent.hasExpirationDate() && iEvent.hasPendingMeetings()) {
 			iForm.addRow(MESSAGES.propExpirationDate(), new Label(sEventDateFormat.format(iEvent.getExpirationDate())));
+		}
+		
+		if (iEvent.hasRequestedServices()) {
+			P providers = new P("unitime-EventRequestedServices");
+			for (EventServiceProviderInterface p: iEvent.getRequestedServices()) {
+				P label = new P("label"); label.setText(p.getLabel());
+				providers.add(label);
+				if (p.hasMessage()) {
+					P msg = new P("description"); msg.setHTML(p.getMessage());
+					providers.add(msg);
+				}
+			}
+			iForm.addRow(MESSAGES.propEventRequestedServices(), providers); 
 		}
 		
 		if (iEvent.hasLastChange()) {

@@ -36,6 +36,7 @@ import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
 import org.unitime.timetable.gwt.client.widgets.FlowForm;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
+import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload;
@@ -62,6 +63,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.DateFlagsProvider;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcResponse;
+import org.unitime.timetable.gwt.shared.EventInterface.EventServiceProviderInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventEnrollmentsRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
@@ -168,6 +170,8 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	private UniTimeFileUpload iFileUpload;
 	private List<MeetingInterface> iSelection = null;
 	private CheckBox iShowDeleted;
+	private P iRequestedServicesPanel;
+	private int iRequestedServicesRow;
 			
 	public EventAdd(AcademicSessionSelectionBox session, EventPropertiesProvider properties) {
 		iSession = session;
@@ -575,6 +579,10 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		UniTimeWidget<TextArea> emailsWithHint = new UniTimeWidget<TextArea>(iEmails);
 		emailsWithHint.setHint(MESSAGES.hintAdditionalEmails());
 		iForm.addRow(MESSAGES.propAdditionalEmails(), emailsWithHint);
+		
+		iRequestedServicesPanel = new P("unitime-EventRequestedServices");
+		iRequestedServicesRow = iForm.addRow(MESSAGES.propEventRequestedServices(), iRequestedServicesPanel);
+		iForm.getRowFormatter().setVisible(iRequestedServicesRow, false);
 		
 		iStandardNotes = new ListBox();
 		iStandardNotes.setVisibleItemCount(10);
@@ -1125,6 +1133,13 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			iEvent.setMaxCapacity(null);
 		}
 		
+		if (iEvent.hasRequestedServices())
+			iEvent.getRequestedServices().clear();
+		for (int i = 0; i < iRequestedServicesPanel.getWidgetCount(); i++) {
+			RequestedServiceToggle toggle = (RequestedServiceToggle)iRequestedServicesPanel.getWidget(i);
+			if (toggle.getValue()) iEvent.addRequestedService(toggle.getProvider());
+		}
+		
 		return iEvent;
 	}
 	
@@ -1461,6 +1476,18 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			UniTimeNotifications.warn(MESSAGES.warnCannotAddEvent(iSession.getAcademicSessionName()));
 		iHeader.setEnabled("update", iEvent.getId() != null);
 		checkMainContactChanged();
+		
+		iRequestedServicesPanel.clear();
+		if (getProperties() != null && getProperties().hasEventServiceProviders()) {
+			for (EventServiceProviderInterface p: getProperties().getEventServiceProviders()) {
+				RequestedServiceToggle toggle = new RequestedServiceToggle(p);
+				toggle.setValue(iEvent.hasRequestedService(p.getId()));
+				iRequestedServicesPanel.add(toggle);
+			}
+			iForm.getRowFormatter().setVisible(iRequestedServicesRow, true);
+		} else {
+			iForm.getRowFormatter().setVisible(iRequestedServicesRow, false);
+		}
 	}
 	
 	public static class CourseRelatedObjectLine {
@@ -1975,6 +2002,36 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	@Override
 	public boolean accept(AcademicSession session) {
 		return session.has(AcademicSession.Flag.CanAddEvents);
+	}
+	
+	private static class RequestedServiceToggle extends P {
+		private EventServiceProviderInterface iProvider;
+		private CheckBox iCheckbox;
+		private P iDescription;
+		
+		public RequestedServiceToggle(EventServiceProviderInterface provider) {
+			super("toggle");
+			iProvider = provider;
+			iCheckbox = new CheckBox(provider.getLabel());
+			add(iCheckbox);
+			if (provider.hasMessage()) {
+				iDescription = new P("description");
+				iDescription.setHTML(provider.getMessage());
+				iCheckbox.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+					@Override
+					public void onValueChange(ValueChangeEvent<Boolean> event) {
+						iDescription.setVisible(event.getValue());
+					}
+				});
+				iDescription.setVisible(false);
+				add(iDescription);
+			}
+		}
+		
+		public EventServiceProviderInterface getProvider() { return iProvider; }
+		
+		public Boolean getValue() { return iCheckbox.getValue(); }
+		public void setValue(Boolean value) { iCheckbox.setValue(value, true); }
 	}
 
 }

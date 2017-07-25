@@ -960,6 +960,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Meeting Contact")
 	String colMeetingContacts();
 	
+	@DefaultMessage("Requested Services")
+	String colRequestedServices();
+	
 	@DefaultMessage("pending")
 	String approvalNotApproved();
 	
@@ -1346,6 +1349,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Meeting Contact:")
 	String propMeetingContacts();
+	
+	@DefaultMessage("Requested Services:")
+	String propEventRequestedServices();
 
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
@@ -3202,7 +3208,15 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Limit and Projection Snapshot")
 	@DoNotTranslate
-	String pageLimitAndProjectionSnapshot();	
+	String pageLimitAndProjectionSnapshot();
+	
+	@DefaultMessage("Event Service Provider")
+	@DoNotTranslate
+	String pageServiceProvider();
+	
+	@DefaultMessage("Event Service Providers")
+	@DoNotTranslate
+	String pageServiceProviders();
 	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -4096,6 +4110,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Default")
 	String fieldDefault();
+	
+	@DefaultMessage("Email")
+	String fieldEmailAddress();
 	
 	@DefaultMessage("Access")
 	String toggleAccess();
@@ -5051,6 +5068,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("instructor")
 	String tagInstructor();
+	
+	@DefaultMessage("service")
+	String tagService();
 	
 	@DefaultMessage("All Sessions")
 	String attrFlagAllSessions();

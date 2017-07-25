@@ -52,11 +52,14 @@ import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.server.UploadServlet;
 import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
 import org.unitime.timetable.gwt.shared.EventInterface.ApproveEventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.EventServiceProviderInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MultiMeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcRequest.Operation;
 import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcResponse;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Meeting;
@@ -150,6 +153,36 @@ public class EventEmail {
 						email.addRecipientCC(contact.getEmail(), contact.getName(MESSAGES));
 				}
 			}
+			
+			Set<EventServiceProviderInterface> providers = new TreeSet<EventServiceProviderInterface>();
+			if (response().hasRemovedServices() && (event().hasMeetingsOfStatus(ApprovalStatus.Approved) || response().hasCancelledMeetings())) {
+				// service no longer needed and there are approved meetings -> notify
+				providers.addAll(response().getRemovedServices());
+			}
+			if (response().hasAddedServices() && event().hasMeetingsOfStatus(ApprovalStatus.Approved)) {
+				// new service and there are approved meetings -> notify
+				providers.addAll(response().getAddedServices());
+			}
+			if (event().hasRequestedServices() && (request().getOperation() == Operation.APPROVE || request().getOperation() == Operation.CANCEL)) {
+				// meeting approved or cancelled -> notify
+				providers.addAll(event().getRequestedServices());
+			}
+			if (event().hasRequestedServices() && response().hasCreatedMeetings()) {
+				// new meetings automatically approved -> notify
+				for (MeetingInterface meeting: response().getCreatedMeetings()) {
+					if (meeting.isApproved()) {
+						providers.addAll(event().getRequestedServices());
+						break;
+					}
+				}
+			}
+			if (event().hasRequestedServices() && response().hasCancelledMeetings()) {
+				// meetings cancelled -> notify
+				providers.addAll(event().getRequestedServices());
+			}
+			for (EventServiceProviderInterface provider: providers)
+				if (provider.hasEmail())
+					email.addRecipientCC(provider.getEmail(), provider.getLabel());
 			
 			if (ApplicationProperty.EmailConfirmationEventManagers.isTrue()) {
 				Set<Long> locationIds = new HashSet<Long>();

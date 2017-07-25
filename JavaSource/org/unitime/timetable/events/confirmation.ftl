@@ -35,9 +35,9 @@
 			<!-- event name -->
 			<tr><td style="width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;">${event.name}</td></tr>
 			<!-- event details -->
-			<tr><td><table>
+			<tr><td><table width="100%">
 				<tr><td>${msg.propEventType()}</td><td>${event.getType().getName(const)}</td></tr>
-				<tr><td>${msg.propContacts()}</td><td>
+				<tr><td valign='top'>${msg.propContacts()}</td><td>
 				<table width="100%"><tr>
 					<td style="white-space: nowrap; font-weight: bold;">${msg.colName()}</td>
 					<td style="white-space: nowrap; font-weight: bold;">${msg.colEmail()}</td>
@@ -93,6 +93,16 @@
 				</#if>
 				<#if event.hasExpirationDate()>
 					<tr><td>${msg.propExpirationDate()}</td><td>${event.expirationDate?string(const.eventDateFormat())}</td></tr>
+				</#if>
+				<#if event.hasRequestedServices()>
+					<tr><td valign='top'>${msg.propEventRequestedServices()}</td><td><span style='width: 100%;'>
+						<#list event.getRequestedServices() as service>
+							<div style='font-weight: bold;'>${service.getLabel()}</div>
+							<#if service.hasMessage()>
+								<div style='padding-left: 20px; background-color: #d7e5ff;'>${service.getMessage()}</div>
+							</#if>
+						</#list>
+					</span></td></tr>
 				</#if>
 			</table></td></tr>
 			<#if created??>

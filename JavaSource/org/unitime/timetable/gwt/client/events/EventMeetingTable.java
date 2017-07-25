@@ -60,6 +60,7 @@ import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventFlag;
+import org.unitime.timetable.gwt.shared.EventInterface.EventServiceProviderInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
@@ -757,6 +758,9 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 
 		UniTimeTableHeader hSponsor = new UniTimeTableHeader(MESSAGES.colSponsorOrInstructor());
 		header.add(hSponsor);
+		
+		UniTimeTableHeader hRequestedServices = new UniTimeTableHeader(MESSAGES.colRequestedServices());
+		header.add(hRequestedServices);
 
 		UniTimeTableHeader hContact = new UniTimeTableHeader(MESSAGES.colMainContact());
 		header.add(hContact);
@@ -795,6 +799,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		addHideOperation(hEnrollment, EventFlag.SHOW_ENROLLMENT);
 		addHideOperation(hLimit, EventFlag.SHOW_LIMIT);
 		addHideOperation(hSponsor, EventFlag.SHOW_SPONSOR);
+		addHideOperation(hRequestedServices, EventFlag.SHOW_REQUESTED_SERVICES);
 		addHideOperation(hContact, EventFlag.SHOW_MAIN_CONTACT);
 		addHideOperation(hApproval, EventFlag.SHOW_APPROVAL);
 		addHideOperation(hLastChange, EventFlag.SHOW_LAST_CHANGE);
@@ -940,6 +945,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		addSortByOperation(hEnrollment, EventMeetingSortBy.ENROLLMENT);
 		addSortByOperation(hLimit, EventMeetingSortBy.LIMIT);
 		addSortByOperation(hSponsor, EventMeetingSortBy.SPONSOR);
+		addSortByOperation(hRequestedServices, EventMeetingSortBy.SERVICES);
 		addSortByOperation(hContact, EventMeetingSortBy.MAIN_CONTACT);
 		addSortByOperation(hApproval, EventMeetingSortBy.APPROVAL);
 		addSortByOperation(hLastChange, EventMeetingSortBy.LAST_CHANGE);
@@ -1348,6 +1354,22 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			row.add(new HTML("&nbsp;"));
 		}
 		
+		if (event != null && event.hasRequestedServices()) {
+			if (getMode().hasFlag(ModeFlag.ShowEventDetails)) {
+				List<String> names = new ArrayList<String>();
+				for (EventServiceProviderInterface service: event.getRequestedServices())
+					names.add(service.getLabel());
+				row.add(new MultiLineStringCell(names));
+			} else {
+				row.add(new HTML(event.getRequestedServices("<br>"), false));
+			}
+			if (!isColumnVisible(getHeader(MESSAGES.colRequestedServices()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_REQUESTED_SERVICES) && getMode().hasFlag(ModeFlag.ShowOptionalColumns)) {
+				setColumnVisible(getHeader(MESSAGES.colRequestedServices()).getColumn(), true);
+			}
+		} else {
+			row.add(new HTML("&nbsp;"));
+		}
+		
 		if (event != null && iShowMainContact) {
 			row.add(new HTML(event.hasContact() ? event.getContact().getName(MESSAGES) : "&nbsp;"));
 			if (!isColumnVisible(getHeader(MESSAGES.colMainContact()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_MAIN_CONTACT) && getMode().hasFlag(ModeFlag.ShowOptionalColumns)) {
@@ -1461,6 +1483,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		cols.add(getHeader(MESSAGES.colEnrollment()).getColumn());
 		cols.add(getHeader(MESSAGES.colLimit()).getColumn());
 		cols.add(getHeader(MESSAGES.colSponsorOrInstructor()).getColumn());
+		cols.add(getHeader(MESSAGES.colRequestedServices()).getColumn());
 		cols.add(getHeader(MESSAGES.colMainContact()).getColumn());
 		cols.add(getHeader(MESSAGES.colLastChange()).getColumn());
 		return cols;
@@ -1475,6 +1498,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			setColumnVisible(getHeader(MESSAGES.colMainContact()).getColumn(), false);
 			setColumnVisible(getHeader(MESSAGES.colApproval()).getColumn(), getMode().hasFlag(ModeFlag.MustShowApproval));
 			setColumnVisible(getHeader(MESSAGES.colLastChange()).getColumn(), false);
+			setColumnVisible(getHeader(MESSAGES.colRequestedServices()).getColumn(), false);
 			setColumnVisible(getHeader(MESSAGES.colMeetingContacts()).getColumn(), false);
 		}
 		setColumnVisible(getHeader(MESSAGES.colName()).getColumn(), getMode().hasFlag(ModeFlag.ShowEventDetails));
@@ -1498,6 +1522,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			setColumnVisible(getHeader(MESSAGES.colEnrollment()).getColumn(), false);
 			setColumnVisible(getHeader(MESSAGES.colCapacity()).getColumn(), false);
 			setColumnVisible(getHeader(MESSAGES.colSponsorOrInstructor()).getColumn(), false);
+			setColumnVisible(getHeader(MESSAGES.colRequestedServices()).getColumn(), false);
 			setColumnVisible(getHeader(MESSAGES.colMainContact()).getColumn(), false);
 			setColumnVisible(getHeader(MESSAGES.colTitle()).getColumn(), false);
 			setColumnVisible(getHeader(MESSAGES.colNote()).getColumn(), false);
@@ -1585,6 +1610,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				case SHOW_ENROLLMENT:
 				case SHOW_SPONSOR:
 				case SHOW_NOTE:
+				case SHOW_REQUESTED_SERVICES:
 					return getMode().hasFlag(ModeFlag.ShowEventDetails);
 				case SHOW_TITLE:
 					return isColumnVisible(getHeader(MESSAGES.colSection()).getColumn());
@@ -1724,6 +1750,9 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				break;
 			case MEETING_CONTACTS:
 				header = getHeader(MESSAGES.colMeetingContacts());
+				break;
+			case SERVICES:
+				header = getHeader(MESSAGES.colRequestedServices()); 
 				break;
 			}
 			sort(header, new Comparator<EventMeetingRow>() {

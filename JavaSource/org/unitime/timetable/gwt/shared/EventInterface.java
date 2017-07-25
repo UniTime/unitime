@@ -71,6 +71,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	private String iMessage = null;
 	private Date iTimeStamp = null;
 	private int iSequence = 0;
+	private Set<EventServiceProviderInterface> iRequestedServices = null;
 	
 	public static enum ResourceType implements IsSerializable {
 		ROOM("Room Timetable","room", true),
@@ -278,6 +279,12 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	}
 	public TreeSet<MeetingInterface> getMeetings() { return iMeetings; }
 	public void setMeetings(TreeSet<MeetingInterface> meetings) { iMeetings = meetings; }
+	public boolean hasMeetingsOfStatus(ApprovalStatus status) {
+		if (iMeetings == null) return false;
+		for (MeetingInterface meeting: iMeetings)
+			if (status == meeting.getApprovalStatus()) return true;
+		return false;
+	}
 	
 	public boolean hasCourseIds() { return iCourseIds != null && !iCourseIds.isEmpty(); }
 	public void addCourseId(Long id) {
@@ -357,6 +364,28 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	public boolean hasTimeStamp() { return iTimeStamp != null; }
 	public Date getTimeStamp() { return iTimeStamp; }
 	public void setTimeStamp(Date timeStamp) { iTimeStamp = timeStamp; }
+	
+	public boolean hasRequestedServices() { return iRequestedServices != null && !iRequestedServices.isEmpty(); }
+	public Set<EventServiceProviderInterface> getRequestedServices() { return iRequestedServices; }
+	public void addRequestedService(EventServiceProviderInterface service) {
+		if (iRequestedServices == null) iRequestedServices = new TreeSet<EventServiceProviderInterface>();
+		iRequestedServices.add(service);
+	}
+	public boolean hasRequestedService(Long id) {
+		if (iRequestedServices == null) return false;
+		for (EventServiceProviderInterface service: iRequestedServices) {
+			if (service.getId().equals(id)) return true;
+		}
+		return false;
+	}
+	public String getRequestedServices(String separator) {
+		if (!hasRequestedServices()) return "";
+		String ret = "";
+		for (EventServiceProviderInterface service: getRequestedServices()) {
+			ret += (ret.isEmpty() ? "" : separator) + service.getLabel();
+		}
+		return ret;
+	}
 	
 	public int hashCode() { return getId().hashCode(); }
 	public boolean equals(Object o) {
@@ -1942,6 +1971,49 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		}
 	}
 	
+	public static class EventServiceProviderInterface implements IsSerializable, Comparable<EventServiceProviderInterface> {
+		private Long iId;
+		private String iReference, iLabel, iMessage, iEmail;
+		private Integer iOptions;
+		
+		public EventServiceProviderInterface() {}
+		
+		public Long getId() { return iId; }
+		public void setId(Long id) { iId = id; }
+		
+		public String getReference() { return iReference; }
+		public void setReference(String reference) { iReference = reference; }
+		
+		public String getLabel() { return iLabel; }
+		public void setLabel(String label) { iLabel = label; }
+
+		public boolean hasMessage() { return iMessage != null && !iMessage.isEmpty(); }
+		public String getMessage() { return iMessage; }
+		public void setMessage(String message) { iMessage = message; }
+
+		public boolean hasEmail() { return iEmail != null && !iEmail.isEmpty(); }
+		public String getEmail() { return iEmail; }
+		public void setEmail(String email) { iEmail = email; }
+
+		public boolean hasOptions() { return iOptions != null; }
+		public Integer getOptions() { return iOptions; }
+		public void setOptions(Integer options) { iOptions = options; }
+		
+		@Override
+		public String toString() { return getReference() + ": " + getLabel(); }
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof EventServiceProviderInterface)) return false;
+			EventServiceProviderInterface n = (EventServiceProviderInterface)o;
+			return getId().equals(n.getId());
+		}
+		
+		public int compareTo(EventServiceProviderInterface n) {
+			return toString().compareToIgnoreCase(n.toString());
+		}
+	}
+	
 	public static class EventPropertiesRpcResponse implements GwtRpcResponse {
 		private boolean iCanLookupPeople = false, iCanLookupMainContact = false, iCanLookupAdditionalContacts = false,
 				iCanAddEvent = false, iCanAddCourseEvent = false, iCanAddUnavailableEvent = false, iCanExportCSV = false, iCanSetExpirationDate = false;
@@ -1955,7 +2027,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private boolean iCanEditAcademicTitle = false;
 		private boolean iGridDisplayTitle = false;
 		private boolean iStudent = false;
-		private boolean iViewMeetingContacts = false, iEditMeetingContacts = false;;
+		private boolean iViewMeetingContacts = false, iEditMeetingContacts = false;
+		private Set<EventServiceProviderInterface> iEventServiceProviders = null;
 	
 		public EventPropertiesRpcResponse() {}
 		
@@ -2041,6 +2114,13 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setCanViewMeetingContacts(boolean viewMeetingContacts) { iViewMeetingContacts = viewMeetingContacts; }
 		public boolean isCanEditMeetingContacts() { return iEditMeetingContacts; }
 		public void setCanEditMeetingContacts(boolean editMeetingContacts) { iEditMeetingContacts = editMeetingContacts; }
+		
+		public boolean hasEventServiceProviders() { return iEventServiceProviders != null && !iEventServiceProviders.isEmpty(); }
+		public Set<EventServiceProviderInterface> getEventServiceProviders() { return iEventServiceProviders; }
+		public void addEventServiceProvider(EventServiceProviderInterface provider) {
+			if (iEventServiceProviders == null) iEventServiceProviders = new TreeSet<EventServiceProviderInterface>();
+			iEventServiceProviders.add(provider);
+		}
 	}
 	
 	public static class EventDetailRpcRequest extends EventRpcRequest<EventInterface> {
@@ -2396,6 +2476,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private List<MessageInterface> iMessages = null;
 		private List<NoteInterface> iNotes = null;
 		private TreeSet<MeetingInterface> iUpdatedMeetings = null, iCreatedMeetings = null, iDeletedMeetings = null, iCancelledMeetings = null;
+		private TreeSet<EventServiceProviderInterface> iAddedServices = null, iRemovedServices = null;
 		
 		public SaveOrApproveEventRpcResponse() {}
 		
@@ -2448,7 +2529,22 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			iCancelledMeetings.add(meeting);
 		}
 		public TreeSet<MeetingInterface> getCancelledMeetings() { return iCancelledMeetings; }
-}
+		
+		public boolean hasAddedServices() { return iAddedServices != null && !iAddedServices.isEmpty(); }
+		public void addService(EventServiceProviderInterface service) {
+			if (iAddedServices == null) iAddedServices = new TreeSet<EventServiceProviderInterface>();
+			iAddedServices.add(service);
+		}
+		public TreeSet<EventServiceProviderInterface> getAddedServices() { return iAddedServices; }
+		
+		public boolean hasRemovedServices() { return iRemovedServices != null && !iRemovedServices.isEmpty(); }
+		public void removeService(EventServiceProviderInterface service) {
+			if (iRemovedServices == null) iRemovedServices = new TreeSet<EventServiceProviderInterface>();
+			iRemovedServices.add(service);
+		}
+		public TreeSet<EventServiceProviderInterface> getRemovedServices() { return iRemovedServices; }
+
+	}
 	
 	public static class ApproveEventRpcRequest extends SaveOrApproveEventRpcRequest {
 		private Operation iOperation;
@@ -2517,6 +2613,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		SHOW_NOTE,
 		SHOW_LAST_CHANGE,
 		SHOW_MEETING_CONTACTS,
+		SHOW_REQUESTED_SERVICES,
 		;
 		
 		public int flag() { return 1 << ordinal(); }
@@ -2538,7 +2635,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 				EventFlag.SHOW_CAPACITY.flag() +
 				EventFlag.SHOW_TITLE.flag() + 
 				EventFlag.SHOW_APPROVAL.flag() +
-				EventFlag.SHOW_MEETING_CONTACTS.flag();
+				EventFlag.SHOW_MEETING_CONTACTS.flag() +
+				EventFlag.SHOW_REQUESTED_SERVICES.flag();
 	
 	public static class SessionMonth implements IsSerializable {
 		public static enum Flag implements IsSerializable {

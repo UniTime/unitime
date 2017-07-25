@@ -30,7 +30,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
  */
 public class EventComparator {
 	public static enum EventMeetingSortBy {
-		NAME, SECTION, TYPE, DATE, PUBLISHED_TIME, ALLOCATED_TIME, SETUP_TIME, TEARDOWN_TIME, LOCATION, CAPACITY, SPONSOR, MAIN_CONTACT, APPROVAL, LIMIT, ENROLLMENT, TITLE, NOTE, LAST_CHANGE, MEETING_CONTACTS
+		NAME, SECTION, TYPE, DATE, PUBLISHED_TIME, ALLOCATED_TIME, SETUP_TIME, TEARDOWN_TIME, LOCATION, CAPACITY, SPONSOR, MAIN_CONTACT, APPROVAL, LIMIT, ENROLLMENT, TITLE, NOTE, LAST_CHANGE, MEETING_CONTACTS, SERVICES
 	}
 
 	protected static int compareByName(EventInterface e1, EventInterface e2) {
@@ -57,6 +57,10 @@ public class EventComparator {
 		int cmp = compare(e1.getInstructorNames("|", null), e2.getInstructorNames("|", null));
 		if (cmp != 0) return cmp;
 		return compare(e1.hasSponsor() ? e1.getSponsor().getName() : null, e2.hasSponsor() ? e2.getSponsor().getName() : null);
+	}
+	
+	protected static int compareByServices(EventInterface e1, EventInterface e2) {
+		return compare(e1.getRequestedServices("|"), e2.getRequestedServices("|"));
 	}
 	
 	protected static int compareByMainContact(EventInterface e1, EventInterface e2) {
@@ -131,6 +135,8 @@ public class EventComparator {
 			return compareByNote(e1, e2);
 		case LAST_CHANGE:
 			return compareByLastChange(e1, e2);
+		case SERVICES:
+			return compareByServices(e1, e2);
 		}
 		return 0;
 	}

@@ -42,6 +42,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.EventServiceProviderInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
@@ -52,6 +53,7 @@ import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.EventNote;
+import org.unitime.timetable.model.EventServiceProvider;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Meeting.Status;
@@ -62,6 +64,7 @@ import org.unitime.timetable.model.UnavailableEvent;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.EventDAO;
+import org.unitime.timetable.model.dao.EventServiceProviderDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
@@ -196,6 +199,37 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 						}
 						event.getAdditionalContacts().add(contact);
 					}				
+			}
+			if (event.getRequestedServices() == null) {
+				event.setRequestedServices(new HashSet<EventServiceProvider>());
+			}
+			Set<EventServiceProvider> services = new HashSet<EventServiceProvider>(event.getRequestedServices());
+			if (request.getEvent().hasRequestedServices()) {
+				providers: for (EventServiceProviderInterface provider: request.getEvent().getRequestedServices()) {
+					if (provider.getId() == null) continue;
+					for (Iterator<EventServiceProvider> i = services.iterator(); i.hasNext(); ) {
+						EventServiceProvider p = i.next();
+						if (p.getUniqueId().equals(provider.getId())) {
+							i.remove(); continue providers;
+						}
+					}
+					EventServiceProvider p = EventServiceProviderDAO.getInstance().get(provider.getId(), hibSession);
+					if (p != null) {
+						event.getRequestedServices().add(p);
+						response.addService(provider);
+					}
+				}
+			}
+			for (EventServiceProvider p: services) {
+				EventServiceProviderInterface provider = new EventServiceProviderInterface();
+				provider.setId(p.getUniqueId());
+				provider.setReference(p.getReference());
+				provider.setLabel(p.getLabel());
+				provider.setMessage(p.getNote());
+				provider.setEmail(p.getEmail());
+				provider.setOptions(p.getOptions());
+				response.removeService(provider);
+				event.getRequestedServices().remove(p);
 			}
 			
 			EventContact main = event.getMainContact();

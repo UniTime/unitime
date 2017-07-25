@@ -985,6 +985,12 @@
 					<hasPermission name="StandardEventNotes"/>
 				</condition>
 			</item>
+			<item name="Service Providers" page="admin" type="gwt">
+				<parameter name="type">serviceProviders</parameter>
+				<condition>
+					<hasPermission name="EventServiceProviders"/>
+				</condition>
+			</item>			
 			<item name="Attachment Types" page="admin" type="gwt">
 				<parameter name="type">attachmentType</parameter>
 				<condition>
@@ -1154,6 +1160,15 @@
 				<hasPermission name="StandardEventNotes"/>
 			</condition>
 		</item>
+		<item name="Service Providers" page="admin" type="gwt">
+			<parameter name="type">serviceProviders</parameter>
+			<condition>
+			    <not>
+					<hasPermission name="IsAdmin"/>
+				</not>
+				<hasPermission name="EventServiceProviders"/>
+			</condition>
+		</item>			
 		<item name="Scripts" page="scripts" type="gwt">
 			<condition>
 				<not>

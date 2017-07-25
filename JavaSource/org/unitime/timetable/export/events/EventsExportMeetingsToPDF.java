@@ -70,9 +70,10 @@ public class EventsExportMeetingsToPDF extends EventsExporter {
 		case SHOW_ENROLLMENT: out.hideColumn(13); break;
 		case SHOW_LIMIT: out.hideColumn(14); break;
 		case SHOW_SPONSOR: out.hideColumn(15); break;
-		case SHOW_MAIN_CONTACT: out.hideColumn(16); break;
-		case SHOW_APPROVAL: out.hideColumn(17); break;
-		case SHOW_LAST_CHANGE: out.hideColumn(18); break;
+		case SHOW_REQUESTED_SERVICES: out.hideColumn(16); break;
+		case SHOW_MAIN_CONTACT: out.hideColumn(17); break;
+		case SHOW_APPROVAL: out.hideColumn(18); break;
+		case SHOW_LAST_CHANGE: out.hideColumn(19); break;
 		}
 	}
 	
@@ -94,9 +95,10 @@ public class EventsExportMeetingsToPDF extends EventsExporter {
 				/* 13 */ MESSAGES.colEnrollment(),
 				/* 14 */ MESSAGES.colLimit(),
 				/* 15 */ MESSAGES.colSponsorOrInstructor(),
-				/* 16 */ MESSAGES.colMainContact(),
-				/* 17 */ MESSAGES.colApproval(),
-				/* 18 */ MESSAGES.colLastChange());
+				/* 16 */ MESSAGES.colRequestedServices(),
+				/* 17 */ MESSAGES.colMainContact(),
+				/* 18 */ MESSAGES.colApproval(),
+				/* 19 */ MESSAGES.colLastChange());
 		
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
 		Formats.Format<Date> dfMeeting = Formats.getDateFormat(Formats.Pattern.DATE_MEETING);
@@ -128,6 +130,7 @@ public class EventsExportMeetingsToPDF extends EventsExporter {
 					event.hasEnrollment() ? event.getEnrollment().toString() : null,
 					event.hasMaxCapacity() ? event.getMaxCapacity().toString() : null,
 					event.hasInstructors() ? event.getInstructorNames("\n", MESSAGES) : event.hasSponsor() ? event.getSponsor().getName() : null,
+					event.hasRequestedServices() ? event.getRequestedServices("\n") : null,
 					event.hasContact() ? event.getContact().getName(MESSAGES) : null,
 					event.getType() == EventType.Unavailabile ? "" :
 					meeting.getApprovalStatus() == ApprovalStatus.Approved ? df.format(meeting.getApprovalDate()) :

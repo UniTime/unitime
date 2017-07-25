@@ -187,6 +187,16 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 			response.add("sponsor", sponsor);
 		}
 		
+		for (Object[] org: (List<Object[]>)query.select("p.uniqueId, p.reference, p.label, count(distinct e)").from("inner join e.requestedServices p")
+				.group("p.uniqueId, p.reference, p.label").order("p.label").exclude("query").exclude("service").query(hibSession).list()) {
+			Long id = (Long)org[0];
+			String abbv = (String)org[1];
+			String name = (String)org[2];
+			int count = ((Number)org[3]).intValue();
+			Entity provider = new Entity(id, abbv, name); provider.setCount(count);
+			response.add("service", provider);
+		}
+		
 		if (context.hasPermission(Right.EventLookupSchedule)) {
 			if (context.hasPermission(Right.CanLookupStudents))
 				response.add("role", new Entity(1l, "Student", CONSTANTS.eventRole()[1], "translated-value", CONSTANTS.eventRole()[1]));
@@ -380,6 +390,12 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 				id++;
 			}
 			query.addWhere("sponsor", "e.sponsoringOrganization.name in (" + sponsor + ")");
+		}
+		
+		if (request.hasOption("service")) {
+			query.addFrom("service", "EventServiceProvider Xesp");
+			query.addWhere("service", "Xesp.reference = :Xesp and Xesp in elements(e.requestedServices)");
+			query.addParameter("service", "Xesp", request.getOption("service"));
 		}
 		
 		if (request.hasOption("mode")) {

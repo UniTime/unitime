@@ -89,6 +89,7 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 	private FilterBox.CustomFilter iOther = null;
 	private AriaSuggestBox iRequested;
 	private Chip iLastRequested = null;
+	private ListBox iServices;
 	
 	public EventFilterBox(AcademicSessionProvider session) {
 		super(session);
@@ -209,6 +210,55 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 				else if ("contact".equalsIgnoreCase(text))
 					translatedValue = CONSTANTS.eventRole()[4];
 				callback.onSuccess(new Chip(getCommand(), text).withTranslatedCommand(getLabel()).withTranslatedValue(translatedValue));
+			}
+		});
+		
+		iServices = new ListBox();
+		iServices.setMultipleSelect(false);
+		iServices.setWidth("100%");
+		
+		addFilter(new FilterBox.CustomFilter("service", MESSAGES.tagService(), iServices) {
+			@Override
+			public void getSuggestions(List<Chip> chips, String text, AsyncCallback<Collection<Suggestion>> callback) {
+				if (text.isEmpty()) {
+					callback.onSuccess(null);
+				} else {
+					List<Suggestion> suggestions = new ArrayList<Suggestion>();
+					for (int i = 0; i < iServices.getItemCount(); i++) {
+						Chip chip = new Chip("service", iServices.getValue(i)).withTranslatedCommand(MESSAGES.tagService());
+						String name = iServices.getItemText(i);
+						if (iServices.getValue(i).toLowerCase().startsWith(text.toLowerCase())) {
+							suggestions.add(new Suggestion(name, chip));
+						} else if (text.length() > 2 && name.toLowerCase().contains(" " + text.toLowerCase())) {
+							suggestions.add(new Suggestion(name, chip));
+						}
+					}
+					callback.onSuccess(suggestions);
+				}
+			}
+			@Override
+			public boolean isVisible() {
+				return iServices.getItemCount() > 0;
+			}
+		});
+		iServices.addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				boolean changed = false;
+				for (int i = 1; i < iServices.getItemCount(); i++) {
+					Chip chip = new Chip("service", iServices.getValue(i)).withTranslatedCommand(MESSAGES.tagService());
+					if (iServices.isItemSelected(i)) {
+						if (!hasChip(chip)) {
+							addChip(chip, false); changed = true;
+						}
+					} else {
+						if (hasChip(chip)) {
+							removeChip(chip, false); changed = true;
+						}
+					}
+				}
+				if (changed)
+					fireValueChangeEvent();
 			}
 		});
 		
@@ -633,6 +683,12 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 						String value = iSponsors.getValue(i);
 						iSponsors.setItemSelected(i, hasChip(new Chip("sponsor", value)));
 					}
+					for (int i = 1; i < iServices.getItemCount(); i++) {
+						String value = iServices.getValue(i);
+						if (hasChip(new Chip("service", value))) {
+							iServices.setSelectedIndex(i); break;
+						}
+					}
 					Chip chFrom = getChip("from");
 					if (chFrom != null)
 						m1.setDate(sDateFormat.parse(chFrom.getValue()));
@@ -686,6 +742,20 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 			for (int i = 0; i < iSponsors.getItemCount(); i++) {
 				String value = iSponsors.getValue(i);
 				iSponsors.setItemSelected(i, hasChip(new Chip("sponsor", value)));
+			}
+			return true;
+		} else if ("service".equals(filter.getCommand())) {
+			iServices.clear();
+			if (entities != null) {
+				iServices.addItem(MESSAGES.itemSelect(), "");
+				for (FilterRpcResponse.Entity entity: entities)
+					iServices.addItem(entity.getName() + (entity.getCount() <= 0 ? "" : " (" + entity.getCount() + ")"), entity.getAbbreviation());
+			}
+			for (int i = 1; i < iServices.getItemCount(); i++) {
+				String value = iServices.getValue(i);
+				if (hasChip(new Chip("service", value))) {
+					iServices.setSelectedIndex(i); break;
+				}
 			}
 			return true;
 		} else return super.populateFilter(filter, entities);

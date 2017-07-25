@@ -70,9 +70,10 @@ public class EventsExportEventsToCSV extends EventsExporter {
 		case SHOW_ENROLLMENT: out.hideColumn(17); break;
 		case SHOW_LIMIT: out.hideColumn(18); break;
 		case SHOW_SPONSOR: out.hideColumn(19); out.hideColumn(20); break;
-		case SHOW_MAIN_CONTACT: out.hideColumn(21); out.hideColumn(22); break;
-		case SHOW_APPROVAL: out.hideColumn(23); break;
-		case SHOW_LAST_CHANGE: out.hideColumn(24); break;
+		case SHOW_REQUESTED_SERVICES: out.hideColumn(21); break;
+		case SHOW_MAIN_CONTACT: out.hideColumn(22); out.hideColumn(23); break;
+		case SHOW_APPROVAL: out.hideColumn(24); break;
+		case SHOW_LAST_CHANGE: out.hideColumn(25); break;
 		}
 	}
 	
@@ -99,10 +100,11 @@ public class EventsExportEventsToCSV extends EventsExporter {
 				/* 18 */ MESSAGES.colLimit(),
 				/* 19 */ MESSAGES.colSponsorOrInstructor(),
 				/* 20 */ MESSAGES.colEmail(),
-				/* 21 */ MESSAGES.colMainContact(),
-				/* 22 */ MESSAGES.colEmail(),
-				/* 23 */ MESSAGES.colApproval(),
-				/* 24 */ MESSAGES.colLastChange());
+				/* 21 */ MESSAGES.colRequestedServices(),
+				/* 22 */ MESSAGES.colMainContact(),
+				/* 23 */ MESSAGES.colEmail(),
+				/* 24 */ MESSAGES.colApproval(),
+				/* 25 */ MESSAGES.colLastChange());
 		
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
 		
@@ -131,6 +133,7 @@ public class EventsExportEventsToCSV extends EventsExporter {
 					event.hasMaxCapacity() ? event.getMaxCapacity().toString() : null,		
 					event.hasInstructors() ? event.getInstructorNames("\n", MESSAGES) : event.hasSponsor() ? event.getSponsor().getName() : null,
 					event.hasInstructors() ? event.getInstructorEmails("\n") : event.hasSponsor() ? event.getSponsor().getEmail() : null,
+					event.hasRequestedServices() ? event.getRequestedServices("\n") : null,
 					event.hasContact() ? event.getContact().getName(MESSAGES) : null,
 					event.hasContact() ? event.getContact().getEmail() : null,
 					event.getType() == EventType.Unavailabile ? "" :

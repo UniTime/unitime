@@ -27,6 +27,7 @@ import java.util.Set;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.EventNote;
+import org.unitime.timetable.model.EventServiceProvider;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.SponsoringOrganization;
 
@@ -51,6 +52,7 @@ public abstract class BaseEvent implements Serializable {
 	private Set<EventContact> iAdditionalContacts;
 	private Set<EventNote> iNotes;
 	private Set<Meeting> iMeetings;
+	private Set<EventServiceProvider> iRequestedServices;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_EVENT_NAME = "eventName";
@@ -119,6 +121,13 @@ public abstract class BaseEvent implements Serializable {
 	public void addTomeetings(Meeting meeting) {
 		if (iMeetings == null) iMeetings = new HashSet<Meeting>();
 		iMeetings.add(meeting);
+	}
+
+	public Set<EventServiceProvider> getRequestedServices() { return iRequestedServices; }
+	public void setRequestedServices(Set<EventServiceProvider> requestedServices) { iRequestedServices = requestedServices; }
+	public void addTorequestedServices(EventServiceProvider eventServiceProvider) {
+		if (iRequestedServices == null) iRequestedServices = new HashSet<EventServiceProvider>();
+		iRequestedServices.add(eventServiceProvider);
 	}
 
 	public boolean equals(Object o) {

@@ -5559,3 +5559,12 @@ unitime-RoomSharingWidget .legend .blank {
 	vertical-align: middle;
 	font-size: 80%;
 }
+
+.unitime-EventRequestedServices .label {
+	font-weight: bold;
+}
+
+.unitime-EventRequestedServices .description {
+	padding-left: 20px;
+	background-color: #d0e4f6;
+}

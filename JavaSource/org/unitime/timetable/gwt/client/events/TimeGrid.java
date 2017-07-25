@@ -1118,6 +1118,8 @@ public class TimeGrid extends Composite {
 					iHint.addRow(MESSAGES.propInstructor(), new HTML(iEvent.getInstructorNames("<br>", MESSAGES), false));
 				if (iEvent.hasSponsor())
 					iHint.addRow(MESSAGES.propSponsor(), new Label(iEvent.getSponsor().getName(), false));
+				if (iEvent.hasRequestedServices())
+					iHint.addRow(MESSAGES.propEventRequestedServices(), new HTML(iEvent.getRequestedServices("<br>"), false));
 				iHint.addRow(MESSAGES.propApproved(), new HTML(
 						iMeeting.getApprovalStatus() == ApprovalStatus.Deleted ? "<span class='deleted-meeting'>" + MESSAGES.approvalDeleted() + "</span>":
 						iMeeting.getApprovalStatus() == ApprovalStatus.Cancelled ? "<span class='cancelled-meeting'>" + MESSAGES.approvalCancelled() + "</span>":

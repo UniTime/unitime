@@ -45,6 +45,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.EventFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventLookupRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.EventServiceProviderInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
@@ -63,6 +64,7 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.EventNote;
+import org.unitime.timetable.model.EventServiceProvider;
 import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -1518,6 +1520,16 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							event.setSponsor(sponsor);
 						}
 						event.setExpirationDate(m.getEvent().getExpirationDate());
+						for (EventServiceProvider p: m.getEvent().getRequestedServices()) {
+							EventServiceProviderInterface provider = new EventServiceProviderInterface();
+							provider.setId(p.getUniqueId());
+							provider.setReference(p.getReference());
+							provider.setLabel(p.getLabel());
+							provider.setMessage(p.getNote());
+							provider.setEmail(p.getEmail());
+							provider.setOptions(p.getOptions());
+							event.addRequestedService(provider);
+						}
 						
 				    	if (Event.sEventTypeClass == m.getEvent().getEventType()) {
 				    		ClassEvent ce = ClassEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
@@ -2253,6 +2265,16 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									sponsor.setName(m.getEvent().getSponsoringOrganization().getName());
 									sponsor.setUniqueId(m.getEvent().getSponsoringOrganization().getUniqueId());
 									event.setSponsor(sponsor);
+								}
+								for (EventServiceProvider p: m.getEvent().getRequestedServices()) {
+									EventServiceProviderInterface provider = new EventServiceProviderInterface();
+									provider.setId(p.getUniqueId());
+									provider.setReference(p.getReference());
+									provider.setLabel(p.getLabel());
+									provider.setMessage(p.getNote());
+									provider.setEmail(p.getEmail());
+									provider.setOptions(p.getOptions());
+									event.addRequestedService(provider);
 								}
 								String note = null;
 								for (EventNote n: m.getEvent().getNotes()) {

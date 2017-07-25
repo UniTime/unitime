@@ -12689,4 +12689,59 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'StudentSectioningSolver'
 		</sql>
 	</update>
+	<update version="186" date="24-Jul-2017" comment="Event Service Providers">
+		<plsql>
+			create table %SCHEMA%.service_provider (
+				uniqueid number(20,0) constraint nn_service_provider_id not null,
+				reference varchar2(20 char) constraint nn_service_provider_ref not null,
+				label varchar2(60 char) constraint nn_service_provider_label not null,
+				note varchar2(1000 char),
+				email varchar2(200 char),
+				options number(10,0) constraint nn_service_provider_opt not null default 0
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.service_provider add constraint pk_service_provider primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.service_provider (
+				uniqueid decimal(20,0) primary key not null,
+				reference varchar(20) not null,
+				label varchar(60) not null,
+				note varchar(1000),
+				email varchar(200),
+				options int(10) not null default 0
+			) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.event_service_provider (
+				event_id number(20,0) constraint nn_evt_service_event not null,
+				provider_id number(20,0) constraint nn_evt_service_provider not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.event_service_provider add constraint pk_event_service_provider primary key (exam_id, location_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.event_service_provider (
+				event_id decimal(20,0) not null,
+				provider_id decimal(20,0) not null,
+				primary key (event_id, provider_id)
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.event_service_provider add constraint fk_evt_service_event foreign key (event_id)
+			references %SCHEMA%.event (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.event_service_provider add constraint fk_evt_service_provider foreign key (provider_id)
+			references %SCHEMA%.service_provider (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'EventServiceProviders'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'SponsoringOrganizations'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'EventServiceProviderEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'SponsoringOrganizationEdit'
+		</sql>
+	</update>	
 </dbupdate>

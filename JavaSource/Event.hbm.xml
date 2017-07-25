@@ -132,6 +132,15 @@
 			lazy="true"
 			formula=" ( select sa.department_uniqueid from %SCHEMA%.class_ c, %SCHEMA%.scheduling_subpart ss, %SCHEMA%.instr_offering_config ioc, %SCHEMA%.instructional_offering io, %SCHEMA%.course_offering co, %SCHEMA%.subject_area sa where c.uniqueid = class_id and ss.uniqueid = c.subpart_id and ioc.uniqueid = ss.config_id and io.uniqueid = ioc.instr_offr_id and co.instr_offr_id = io.uniqueid and co.is_control = 1 and sa.uniqueid = co.subject_area_id ) "
 		/>
+		
+		<set
+            name="requestedServices"
+            table="event_service_provider"
+            inverse="false">
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="event_id" foreign-key="fk_evt_service_event"/>
+            <many-to-many class="EventServiceProvider" column="provider_id" foreign-key="fk_evt_service_provider"/>
+        </set>
 
         <subclass
             name="ClassEvent"

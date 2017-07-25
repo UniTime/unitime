@@ -31,10 +31,12 @@ import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcResponse;
+import org.unitime.timetable.gwt.shared.EventInterface.EventServiceProviderInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.SponsoringOrganizationInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.StandardEventNoteInterface;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.EventContact;
+import org.unitime.timetable.model.EventServiceProvider;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SponsoringOrganization;
@@ -43,6 +45,7 @@ import org.unitime.timetable.model.StandardEventNote;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.EventContactDAO;
+import org.unitime.timetable.model.dao.EventServiceProviderDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StandardEventNoteDepartmentDAO;
 import org.unitime.timetable.model.dao.StandardEventNoteGlobalDAO;
@@ -90,6 +93,8 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		
 		setupSponsoringOrganizations(session,  response);
 		
+		setupEventServiceProviders(session, response);
+		
 		if (context.getUser() != null)
 			response.setMainContact(lookupMainContact(request.getSessionId(), context));
 		
@@ -119,6 +124,19 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 			sponsor.setName(s.getName());
 			sponsor.setEmail(s.getEmail());
 			response.addSponsoringOrganization(sponsor);
+		}
+	}
+	
+	public void setupEventServiceProviders(Session session, EventPropertiesRpcResponse response) {
+		for (EventServiceProvider p: EventServiceProviderDAO.getInstance().findAll()) {
+			EventServiceProviderInterface provider = new EventServiceProviderInterface();
+			provider.setId(p.getUniqueId());
+			provider.setReference(p.getReference());
+			provider.setLabel(p.getLabel());
+			provider.setMessage(p.getNote());
+			provider.setEmail(p.getEmail());
+			provider.setOptions(p.getOptions());
+			response.addEventServiceProvider(provider);
 		}
 	}
 	

@@ -376,5 +376,26 @@
                 type="java.lang.Integer"
                 not-null="true"/>
         </union-subclass>
+        
+        <union-subclass name="EventServiceProvider" table="service_provider" abstract="false">
+        	<property
+            	name="note"
+            	column="note"
+            	type="string"
+            	not-null="false"
+            	length="1000"
+            	unique="true"/>
+        	<property
+            	name="email"
+            	column="email"
+            	type="string"
+            	not-null="false"
+            	length="200"/>
+            <property
+                name="options"
+                column="options"
+                type="java.lang.Integer"
+                not-null="true"/>
+        </union-subclass>
     </class>
 </hibernate-mapping>
