@@ -24,7 +24,7 @@ create table service_provider (
 	label varchar2(60 char) constraint nn_service_provider_label not null,
 	note varchar2(1000 char),
 	email varchar2(200 char),
-	options number(10,0) constraint nn_service_provider_opt not null default 0
+	options number(10,0) default 0 constraint nn_service_provider_opt not null
 );
 alter table service_provider add constraint pk_service_provider primary key (uniqueid);
 
@@ -32,7 +32,7 @@ create table event_service_provider (
 	event_id number(20,0) constraint nn_evt_service_event not null,
 	provider_id number(20,0) constraint nn_evt_service_provider not null
 );
-alter table event_service_provider add constraint pk_event_service_provider primary key (exam_id, location_id);
+alter table event_service_provider add constraint pk_event_service_provider primary key (event_id, provider_id);
 
 alter table event_service_provider add constraint fk_evt_service_event foreign key (event_id)
 	references event (uniqueid) on delete cascade;

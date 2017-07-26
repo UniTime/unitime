@@ -12697,7 +12697,7 @@
 				label varchar2(60 char) constraint nn_service_provider_label not null,
 				note varchar2(1000 char),
 				email varchar2(200 char),
-				options number(10,0) constraint nn_service_provider_opt not null default 0
+				options number(10,0) default 0 constraint nn_service_provider_opt not null
 			)
 		</plsql>
 		<plsql>alter table %SCHEMA%.service_provider add constraint pk_service_provider primary key (uniqueid)</plsql>
@@ -12717,7 +12717,7 @@
 				provider_id number(20,0) constraint nn_evt_service_provider not null
 			)
 		</plsql>
-		<plsql>alter table %SCHEMA%.event_service_provider add constraint pk_event_service_provider primary key (exam_id, location_id)</plsql>
+		<plsql>alter table %SCHEMA%.event_service_provider add constraint pk_event_service_provider primary key (event_id, provider_id)</plsql>
 		<mysql>
 			create table %SCHEMA%.event_service_provider (
 				event_id decimal(20,0) not null,
