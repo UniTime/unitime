@@ -118,7 +118,9 @@
 		<TR><TD nowrap>Online Sectioning:</TD><TD><html:checkbox property="canOnlineSectionStudents"/></TD>
 			<TD><i>Online student sectioning is fully enabled (e.g., courses must be locked before a change, conflicting students are automatically re-sectioned).</i></TD></TR>
 
-		<TR><TD colspan='3'><tt:section-title><br>No-Role Reports</tt:section-title></TD></TR>
+		<TR><TD colspan='3'><tt:section-title><br>Event Management</tt:section-title></TD></TR>
+		<TR><TD nowrap>Events:</TD><TD><html:checkbox property="eventManagement"/></TD>
+			<TD><i>Event management is available to non-administrative users (when not set, all rooms are treated as with No Event Management status).</i></TD></TR>
 		<TR><TD>Class Schedule:</TD><TD><html:checkbox property="canNoRoleReportClass"/></TD>
 			<TD><i>Class schedule can be presented to unauthenticated users or authenticated users without a role.</i></TD></TR>
 		<TR><TD>Final Examination Schedule:</TD><TD><html:checkbox property="canNoRoleReportExamFin"/></TD>

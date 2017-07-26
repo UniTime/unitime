@@ -67,6 +67,7 @@ public class DeptStatusTypeEditForm extends ActionForm {
     private boolean iTestSession = false;
     private boolean iAllowNoRole = false;
     private boolean iAllowRollForward = false;
+    private boolean iEventManagement = false;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
@@ -117,6 +118,7 @@ public class DeptStatusTypeEditForm extends ActionForm {
         iTestSession            = false;
         iAllowNoRole = false;
         iAllowRollForward = false;
+        iEventManagement = false;
 	}
     
     public void setOp(String op) { iOp = op; }
@@ -183,6 +185,8 @@ public class DeptStatusTypeEditForm extends ActionForm {
     public boolean getAllowNoRole() { return iAllowNoRole; }
     public void setAllowRollForward(boolean allowRollForward) { iAllowRollForward = allowRollForward; }
     public boolean getAllowRollForward() { return iAllowRollForward; }
+    public void setEventManagement(boolean eventManagement) { iEventManagement = eventManagement; }
+    public boolean getEventManagement() { return iEventManagement; }
 
 
     public int getRights() {
@@ -208,6 +212,7 @@ public class DeptStatusTypeEditForm extends ActionForm {
         if (getTestSession()) rights += DepartmentStatusType.Status.TestSession.toInt();
         if (getAllowNoRole()) rights += DepartmentStatusType.Status.AllowNoRole.toInt();
         if (getAllowRollForward()) rights += DepartmentStatusType.Status.AllowRollForward.toInt();
+        if (getEventManagement()) rights += DepartmentStatusType.Status.EventManagement.toInt();
         return rights;
     }
     public void setRights(int rights) {
@@ -232,6 +237,7 @@ public class DeptStatusTypeEditForm extends ActionForm {
         setTestSession(DepartmentStatusType.Status.TestSession.has(rights));
         setAllowNoRole(DepartmentStatusType.Status.AllowNoRole.has(rights));
         setAllowRollForward(DepartmentStatusType.Status.AllowRollForward.has(rights));
+        setEventManagement(DepartmentStatusType.Status.EventManagement.has(rights));
     }
 	
 	public void load(DepartmentStatusType s) {

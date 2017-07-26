@@ -321,6 +321,10 @@ public class DeptStatusTypeEditAction extends Action {
                 if (rights.length()>0) rights+="; ";
                 rights += "registration";
             }
+            if (s.isEventManagement()) {
+            	if (rights.length()>0) rights+="; ";
+                rights += "events";
+            }
             if (s.isAllowNoRole() || s.canNoRoleReportExamFinal() || s.canNoRoleReportExamMidterm() || s.canNoRoleReportClass()) {
                 if (rights.length()>0) rights+="; ";
                 rights += "no-role";

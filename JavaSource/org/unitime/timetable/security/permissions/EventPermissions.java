@@ -115,6 +115,14 @@ public class EventPermissions {
 		}
 		
 		protected List<Long> locations(Long sessionId, UserContext user) {
+			if (sessionId == null) return new ArrayList<Long>();
+			return locations(SessionDAO.getInstance().get(sessionId), user);
+		}
+		
+		protected List<Long> locations(Session session, UserContext user) {
+			if (session == null || !permissionSession.check(user, session, DepartmentStatusType.Status.EventManagement))
+				return new ArrayList<Long>();
+			
 			String anyRequest = "";
 			String deptRequest = "";
 			String mgrRequest = "";
@@ -131,7 +139,7 @@ public class EventPermissions {
 			Set<Serializable> roleDeptIds = new HashSet<Serializable>(), mgrDeptIds = new HashSet<Serializable>();
 			if (!user.getCurrentAuthority().hasRight(Right.DepartmentIndependent)) {
 				for (UserAuthority a: user.getAuthorities()) {
-					if (!sessionId.equals(a.getAcademicSession().getQualifierId())) continue;
+					if (!session.getUniqueId().equals(a.getAcademicSession().getQualifierId())) continue;
 					for (UserQualifier q: a.getQualifiers("Department")) {
 						roleDeptIds.add(q.getQualifierId());
 						if (a.hasRight(Right.EventMeetingApprove))
@@ -144,8 +152,6 @@ public class EventPermissions {
 				roleDept = (roleDept == null ? "" : roleDept + ",") + id;
 			for (Serializable id: mgrDeptIds)
 				mgrDept = (mgrDept == null ? "" : mgrDept + ",") + id;
-			
-			if (sessionId == null) return new ArrayList<Long>();
 			
 			return (List<Long>) SessionDAO.getInstance().getSession().createQuery(
 					"select distinct l.uniqueId " +
@@ -163,7 +169,7 @@ public class EventPermissions {
 							: " or ((l.eventStatus in (" + mgrRequest + ") or (l.eventStatus is null and o.status in (" + mgrRequest + ") and o.roomType = l.roomType and o.department = l.eventDepartment)) and l.eventDepartment.uniqueId in (" + mgrDept + "))"
 					) +
 					")")
-					.setLong("sessionId", sessionId).setCacheable(true).list();
+					.setLong("sessionId", session.getUniqueId()).setCacheable(true).list();
 		}
 	}
 	
@@ -171,7 +177,7 @@ public class EventPermissions {
 	public static class Events extends EventPermission<Session> {
 		@Override
 		public boolean check(UserContext user, Session source) {
-			return source.getStatusType().canNoRoleReport() || (user.getCurrentAuthority().hasRight(Right.EventAnyLocation) || !locations(source.getUniqueId(), user).isEmpty());
+			return source.getStatusType().canNoRoleReport() || (user.getCurrentAuthority().hasRight(Right.EventAnyLocation) || !locations(source, user).isEmpty());
 		}
 		
 		@Override
@@ -183,7 +189,7 @@ public class EventPermissions {
 		@Override
 		public boolean check(UserContext user, Session source) {
 			return (!isPast(end(source)) || user.getCurrentAuthority().hasRight(Right.EventEditPast)) &&
-					(user.getCurrentAuthority().hasRight(Right.EventAnyLocation) || !locations(source.getUniqueId(), user).isEmpty());
+					(user.getCurrentAuthority().hasRight(Right.EventAnyLocation) || !locations(source, user).isEmpty());
 		}
 		
 		@Override

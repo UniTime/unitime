@@ -55,7 +55,7 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 		TestSession,
 		AllowNoRole,
 		AllowRollForward,
-		InstructorScheduling,
+		EventManagement,
 		;
 		
 		public int toInt() { return 1 << ordinal(); }
@@ -256,8 +256,8 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 		return can(Status.AllowRollForward);
 	}
 	
-	public boolean isAllowInstructorScheduling() {
-		return can(Status.InstructorScheduling);
+	public boolean isEventManagement() {
+		return can(Status.EventManagement);
 	}
 	
 	/** Status is active when someone can edit, timetable or commit*/
@@ -267,5 +267,10 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 	
 	public boolean canLockOfferings() {
 		return !isTestSession() && (canOnlineSectionStudents() || canSectionAssistStudents());
+	}
+	
+	public static void main(String[] args) {
+		for (Status s: Status.values())
+			System.out.println(s.name() + ": " + s.toInt());
 	}
 }

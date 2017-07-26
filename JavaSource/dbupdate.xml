@@ -12743,5 +12743,11 @@
 			select distinct r.role_id, 'EventServiceProviderEdit'
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'SponsoringOrganizationEdit'
 		</sql>
+	</update>
+	<update version="187" date="26" comment="Event Management Session Status">
+	    <mysql><![CDATA[
+	        update %SCHEMA%.dept_status_type set status = status + 2097152 where apply = 1 and reference not in ('initial', 'finished') and (status & 262144 = 0)
+	    ]]></mysql>
+	    <plsql>update %SCHEMA%.dept_status_type set status = status + 2097152 where apply = 1 and reference not in ('initial', 'finished') and bitand(status,262144) = 0</plsql> 
 	</update>	
 </dbupdate>

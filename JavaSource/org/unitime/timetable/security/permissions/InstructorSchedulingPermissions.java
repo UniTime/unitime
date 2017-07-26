@@ -40,7 +40,7 @@ public class InstructorSchedulingPermissions {
 		@Override
 		public boolean check(UserContext user, SolverGroup source) {
 			for (Department department: source.getDepartments()) {
-				if (!permissionDepartment.check(user, department, DepartmentStatusType.Status.InstructorScheduling, DepartmentStatusType.Status.OwnerLimitedEdit))
+				if (!permissionDepartment.check(user, department, DepartmentStatusType.Status.OwnerLimitedEdit))
 					return false;
 			}
 			for (Department department: source.getDepartments()) {
