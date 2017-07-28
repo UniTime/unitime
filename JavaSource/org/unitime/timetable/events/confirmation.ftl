@@ -156,7 +156,7 @@
 									<#break>
 							</#switch>
 						</tr>
-						<#if meeting.locationMessage??><tr style="background-color: #FFF0A5; font-style: italic;"><td colspan='5' style="padding-left:5px;">${meeting.getLocationMessage()}</td></tr></#if>
+						<#if meeting.locationMessage??><tr style="background-color: #FFF0A5; font-style: italic;"><td colspan='6' style="padding-left:5px;">${meeting.getLocationMessage()}</td></tr></#if>
 					</#list>
 					</table>
 				</td></tr>
@@ -184,7 +184,7 @@
 							<td>${meeting.getLocationName(msg)}</td>
 							<td align="right">${meeting.getLocationCapacity()}</td>
 						</tr>
-						<#if meeting.locationMessage??><tr style="background-color: #FFF0A5; font-style: italic;"><td colspan='5' style="padding-left:5px;">${meeting.getLocationMessage()}</td></tr></#if>
+						<#if meeting.locationMessage??><tr style="background-color: #FFF0A5; font-style: italic;"><td colspan='6' style="padding-left:5px;">${meeting.getLocationMessage()}</td></tr></#if>
 					</#list>
 					</table>
 				</td></tr>
@@ -212,7 +212,7 @@
 							<td>${meeting.getLocationName(msg)}</td>
 							<td align="right">${meeting.getLocationCapacity()}</td>
 						</tr>
-						<#if meeting.locationMessage??><tr style="background-color: #FFF0A5; font-style: italic;"><td colspan='5' style="padding-left:5px;">${meeting.getLocationMessage()}</td></tr></#if>
+						<#if meeting.locationMessage??><tr style="background-color: #FFF0A5; font-style: italic;"><td colspan='6' style="padding-left:5px;">${meeting.getLocationMessage()}</td></tr></#if>
 					</#list>
 					</table>
 				</td></tr>
@@ -293,7 +293,7 @@
 									<#break>
 							</#switch>		
 						</tr>
-						<#if meeting.locationMessage??><tr style="background-color: #FFF0A5; font-style: italic;"><td colspan='5' style="padding-left:5px;">${meeting.getLocationMessage()}</td></tr></#if>
+						<#if meeting.locationMessage??><tr style="background-color: #FFF0A5; font-style: italic;"><td colspan='6' style="padding-left:5px;">${meeting.getLocationMessage()}</td></tr></#if>
 					</#list>
 					</table>
 				</td></tr>
@@ -367,11 +367,11 @@
 										<#break>
 									</#switch>		
 								</tr>
-								<#if meeting.locationMessage??><tr style="background-color: #FFF0A5; font-style: italic;"><td colspan='5' style="padding-left:5px;">${meeting.getLocationMessage()}</td></tr></#if>
+								<#if meeting.locationMessage??><tr style="background-color: #FFF0A5; font-style: italic;"><td colspan='6' style="padding-left:5px;">${meeting.getLocationMessage()}</td></tr></#if>
 							</#switch>
 						</#list>
 						<#if empty>
-							<tr><td colspan='5'><i>${msg.emailEventNoMeetings()}</i></td></tr>
+							<tr><td colspan='6'><i>${msg.emailEventNoMeetings()}</i></td></tr>
 						</#if>
 					</table>
 				</#if>
