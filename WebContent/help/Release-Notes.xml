@@ -63,6 +63,17 @@
 				<line>Only show an instructor conflict between two classes, if the instructor is lead on both classes.</line>
 			</description>
 		</item>
+		<item>
+			<name>Last-Like Student Course Demands</name>
+			<description>
+				<line>Added ability to consider last-like student course demand priorities.</line>
+				<line>Enable using solver parameter LastLikeStudentCourseDemands.UsePriorities = true (defaults to false).</line>
+				<line>Enrollment importance is computed as base ^ priority.
+					<line>Where base is defined using solver parameter LastLikeStudentCourseDemands.BasePriorityWeight, defaults to 0.9.</line>
+					<line>Priority 0 has importance of 1.0, priority 1 of 0.9, priority 2 of 0.9^2 = 0.81, etc.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Online Student Scheduling</title>
