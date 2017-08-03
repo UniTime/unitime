@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="EventServiceProvider" abstract="false" table="service_provider">
+        <cache include="non-lazy" usage="transactional"/>
+        
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">ref_table_seq</param>
+            </generator>
+        </id>
+        
+        <property
+            name="reference"
+            column="reference"
+            type="string"
+            not-null="true"
+            length="20"
+            unique="true"/>
+
+        <property
+            name="label"
+            column="label"
+            type="string"
+            not-null="false"
+            length="60"
+            unique="true"/>
+        
+        <property
+            name="note"
+            column="note"
+            type="string"
+            not-null="false"
+            length="1000"
+            unique="true"/>
+        
+        <property
+            name="email"
+            column="email"
+            type="string"
+            not-null="false"
+            length="200"/>
+        
+        <property
+            name="allRooms"
+            column="all_rooms"
+            type="java.lang.Boolean"
+            not-null="true"/>
+        
+        <property
+            name="visible"
+            column="visible"
+            type="java.lang.Boolean"
+            not-null="true"/>
+        
+	    <many-to-one
+		    name="session"
+		    class="Session"
+	    	column="session_id"
+		    not-null="false"
+		    foreign-key="fk_service_provider_session"/>
+
+	    <many-to-one
+		   	name="department"
+		   	class="Department"
+	   		column="department_id"
+		   	not-null="false"
+	        foreign-key="fk_service_provider_dept"/>
+    </class>
+
+</hibernate-mapping>

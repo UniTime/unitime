@@ -41,6 +41,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.shared.EventInterface.EventServiceProviderInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.BuildingInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.FeatureInterface;
@@ -62,6 +63,7 @@ import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventNote;
+import org.unitime.timetable.model.EventServiceProvider;
 import org.unitime.timetable.model.ExamLocationPref;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamType;
@@ -83,6 +85,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.AttachmentTypeDAO;
 import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
+import org.unitime.timetable.model.dao.EventServiceProviderDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.NonUniversityLocationPictureDAO;
 import org.unitime.timetable.model.dao.PreferenceLevelDAO;
@@ -361,6 +364,21 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
             	if (!future)
             		location.setEventStatus(room.getEventStatus());
             	location.setNote(room.getEventNote() == null ? "" : room.getEventNote().length() > 2048 ? room.getEventNote().substring(0, 2048) : room.getEventNote());
+            	Set<EventServiceProvider> services = new HashSet<EventServiceProvider>(location.getAllowedServices());
+            	if (room.hasServices()) {
+            		for (EventServiceProviderInterface service: room.getServices()) {
+            			EventServiceProvider provider = lookupService(hibSession, service, future, location.getSession().getUniqueId());
+            			if (provider != null && !services.remove(provider))
+            				location.getAllowedServices().add(provider);
+            		}
+            	}
+            	for (EventServiceProvider service: services) {
+            		if (future) {
+            			EventServiceProvider current = service.findInSession(hibSession, room.getSessionId());
+            			if (current == null || current.isAllRooms() || !current.isVisible()) continue;
+            		}
+            		location.getAllowedServices().remove(service);
+            	}
             }
 			
 			if (canEdit && context.hasPermission(location, Right.RoomEditChangeExaminationStatus) && FutureOperation.EXAM_PROPERTIES.in(flags)) {
@@ -897,6 +915,14 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
             	if (!future)
             		location.setEventStatus(room.getEventStatus());
             	location.setNote(room.getEventNote() == null ? "" : room.getEventNote().length() > 2048 ? room.getEventNote().substring(0, 2048) : room.getEventNote());
+            	location.setAllowedServices(new HashSet<EventServiceProvider>());
+            	if (room.hasServices()) {
+            		for (EventServiceProviderInterface service: room.getServices()) {
+            			EventServiceProvider provider = lookupService(hibSession, service, future, location.getSession().getUniqueId());
+            			if (provider != null)
+            				location.getAllowedServices().add(provider);
+            		}
+            	}
             }
 			
 			if (context.hasPermission(location, Right.RoomEditChangeExaminationStatus) && FutureOperation.EXAM_PROPERTIES.in(flags)) {
@@ -1179,6 +1205,15 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 		} else {
 			return DepartmentDAO.getInstance().get(original.getId(), hibSession);
 		}
+	}
+	
+	protected EventServiceProvider lookupService(org.hibernate.Session hibSession, EventServiceProviderInterface original, boolean future, Long sessionId) {
+		if (original == null) return null;
+		EventServiceProvider service = EventServiceProviderDAO.getInstance().get(original.getId());
+		if (future && service != null)
+			return service.findInSession(sessionId);
+		else
+			return service;
 	}
 	
 	protected RoomFeature lookupFeature(org.hibernate.Session hibSession, FeatureInterface original, boolean future, Long sessionId) {

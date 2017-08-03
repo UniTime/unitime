@@ -45,7 +45,6 @@ import org.unitime.timetable.model.StandardEventNote;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.EventContactDAO;
-import org.unitime.timetable.model.dao.EventServiceProviderDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StandardEventNoteDepartmentDAO;
 import org.unitime.timetable.model.dao.StandardEventNoteGlobalDAO;
@@ -128,14 +127,14 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 	}
 	
 	public void setupEventServiceProviders(Session session, EventPropertiesRpcResponse response) {
-		for (EventServiceProvider p: EventServiceProviderDAO.getInstance().findAll()) {
+		for (EventServiceProvider p: EventServiceProvider.findAll(session.getUniqueId())) {
 			EventServiceProviderInterface provider = new EventServiceProviderInterface();
 			provider.setId(p.getUniqueId());
 			provider.setReference(p.getReference());
 			provider.setLabel(p.getLabel());
 			provider.setMessage(p.getNote());
 			provider.setEmail(p.getEmail());
-			provider.setOptions(p.getOptions());
+			provider.setLocationIds(p.getLocationIds(session.getUniqueId()));
 			response.addEventServiceProvider(provider);
 		}
 	}

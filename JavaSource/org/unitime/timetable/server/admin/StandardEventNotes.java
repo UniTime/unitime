@@ -79,7 +79,7 @@ public class StandardEventNotes implements AdminTable {
 			Record r = data.addRecord(note.getUniqueId());
 			r.setField(0, note.getReference(), editGlobal);
 			r.setField(1, note.getNote(), editGlobal);
-			r.setField(2, editGlobal ? "_global" : "Global", false);
+			r.setField(2, editGlobal ? "_global" : MESSAGES.levelGlobal(), false);
 			r.setDeletable(editGlobal);
 		}
 		

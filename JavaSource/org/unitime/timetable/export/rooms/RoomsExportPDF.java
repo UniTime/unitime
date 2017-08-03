@@ -33,6 +33,7 @@ import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.PDFPrinter;
 import org.unitime.timetable.export.PDFPrinter.A;
 import org.unitime.timetable.export.PDFPrinter.F;
+import org.unitime.timetable.gwt.shared.EventInterface.EventServiceProviderInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.AttachmentTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.ExamTypeInterface;
@@ -247,6 +248,14 @@ public class RoomsExportPDF extends RoomsExporter {
 				return features(room.getFeatures(), null, context);
 			else
 				return features(room.getFeatures(), context.getRoomFeatureTypes().get(column.getIndex() - 1), context);
+			
+		case SERVICES:
+			if (!room.hasServices()) return new A();
+			a = new A();
+			for (EventServiceProviderInterface s: room.getServices()) {
+				a.add(new A(s.getLabel() + (s.getDepartmentId() == null || room.getEventDepartment() == null ? "" : " (" + context.dept2string(room.getEventDepartment(), true) + ")")));
+			}
+			return a;
 		
 		default:
 			return null;

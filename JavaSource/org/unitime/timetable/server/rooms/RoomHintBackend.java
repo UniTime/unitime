@@ -20,6 +20,7 @@
 package org.unitime.timetable.server.rooms;
 
 import java.text.DecimalFormat;
+import java.util.List;
 import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
@@ -29,6 +30,7 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.shared.EventInterface.EventServiceProviderInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.FeatureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.FeatureTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.GroupInterface;
@@ -37,6 +39,7 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomHintResponse;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
 import org.unitime.timetable.model.AttachmentType;
 import org.unitime.timetable.model.Building;
+import org.unitime.timetable.model.EventServiceProvider;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.LocationPicture;
@@ -130,6 +133,34 @@ public class RoomHintBackend implements GwtRpcImplementation<RoomHintRequest, Ro
 	    				!AttachmentType.VisibilityFlag.SHOW_ROOM_TOOLTIP.in(picture.getType().getVisibility())
 	    				)) continue;
 	    		response.addPicture(new RoomPictureInterface(picture.getUniqueId(), picture.getFileName(), picture.getContentType(), picture.getTimeStamp().getTime(), RoomPicturesBackend.getPictureType(picture.getType())));
+	    	}
+	    	
+	    	if (location.getEventDepartment() != null) {
+		    	for (EventServiceProvider p: location.getAllowedServices()) {
+		    		if (!p.isVisible() || p.isAllRooms()) continue;
+		    		EventServiceProviderInterface provider = new EventServiceProviderInterface();
+		    		provider.setId(p.getUniqueId());
+					provider.setReference(p.getReference());
+					provider.setLabel(p.getLabel());
+					provider.setMessage(p.getNote());
+					provider.setEmail(p.getEmail());
+		    		if (p.getDepartment() != null)
+		    			provider.setDepartmentId(p.getDepartment().getUniqueId());
+		    		response.addService(provider);
+		    	}
+		    	for (EventServiceProvider p: (List<EventServiceProvider>)LocationDAO.getInstance().getSession().createQuery(
+		    		"from EventServiceProvider where visible = true and allRooms = true and (session is null or session = :sessionId) and (department is null or department = :departmentId)"
+		    		).setLong("sessionId", location.getSession().getUniqueId()).setLong("departmentId", location.getEventDepartment().getUniqueId()).setCacheable(true).list()) {
+		    		EventServiceProviderInterface provider = new EventServiceProviderInterface();
+		    		provider.setId(p.getUniqueId());
+					provider.setReference(p.getReference());
+					provider.setLabel(p.getLabel());
+					provider.setMessage(p.getNote());
+					provider.setEmail(p.getEmail());
+		    		if (p.getDepartment() != null)
+		    			provider.setDepartmentId(p.getDepartment().getUniqueId());
+		    		response.addService(provider);
+		    	}
 	    	}
 	    	
 	    	return response;

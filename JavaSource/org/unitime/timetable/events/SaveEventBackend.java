@@ -227,7 +227,6 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				provider.setLabel(p.getLabel());
 				provider.setMessage(p.getNote());
 				provider.setEmail(p.getEmail());
-				provider.setOptions(p.getOptions());
 				response.removeService(provider);
 				event.getRequestedServices().remove(p);
 			}

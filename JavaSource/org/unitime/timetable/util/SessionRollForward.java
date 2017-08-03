@@ -62,6 +62,7 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
+import org.unitime.timetable.model.EventServiceProvider;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamLocationPref;
 import org.unitime.timetable.model.ExamOwner;
@@ -525,6 +526,12 @@ public class SessionRollForward {
 					toRoom.addTopictures(toPicture);
 					rDao.getSession().saveOrUpdate(toPicture);
 				}
+				
+				for (EventServiceProvider fromProvider: fromRoom.getAllowedServices()) {
+					EventServiceProvider toProvider = fromProvider.findInSession(toSession.getUniqueId());
+					if (toProvider != null)
+						toRoom.addToallowedServices(toProvider);
+				}
 
 				rDao.getSession().flush();
 				// rDao.getSession().evict(toRoom); -- commented out to prevent NonUniqueObjectException
@@ -632,6 +639,12 @@ public class SessionRollForward {
 				toPicture.setLocation(toNonUniversityLocation);
 				toNonUniversityLocation.addTopictures(toPicture);
 				nulDao.getSession().saveOrUpdate(toPicture);
+			}
+			
+			for (EventServiceProvider fromProvider: fromNonUniversityLocation.getAllowedServices()) {
+				EventServiceProvider toProvider = fromProvider.findInSession(toSession.getUniqueId());
+				if (toProvider != null)
+					toNonUniversityLocation.addToallowedServices(toProvider);
 			}
 
 			if (fromNonUniversityLocation.getRoomDepts() != null && !fromNonUniversityLocation.getRoomDepts().isEmpty()){
@@ -2866,6 +2879,34 @@ public class SessionRollForward {
         		newOption.setStatus(RoomTypeOption.getDefaultStatus());
         		hibSession.save(newOption);
         	}
+        }
+        
+        // remove old service providers
+        for (EventServiceProvider provider: (List<EventServiceProvider>)hibSession.createQuery(
+        		"from EventServiceProvider where session.uniqueId = :sessionId"
+        		).setLong("sessionId", toSession.getUniqueId()).list()) {
+        	hibSession.delete(provider);
+        }
+        
+        // create new service providers
+        for (EventServiceProvider provider: (List<EventServiceProvider>)hibSession.createQuery(
+        		"from EventServiceProvider where session.uniqueId = :sessionId"
+        		).setLong("sessionId", fromSession.getUniqueId()).list()) {
+        	if (!provider.isVisible()) continue; // do not roll-forward providers that are marked as not visible
+        	EventServiceProvider newProvider = new EventServiceProvider();
+        	newProvider.setReference(provider.getReference());
+        	newProvider.setLabel(provider.getLabel());
+        	newProvider.setEmail(provider.getEmail());
+        	newProvider.setNote(provider.getNote());
+        	newProvider.setAllRooms(provider.getAllRooms());
+        	newProvider.setVisible(provider.getVisible());
+        	newProvider.setSession(toSession);
+        	if (provider.getDepartment() != null) {
+        		Department newDepartment = provider.getDepartment().findSameDepartmentInSession(toSession);
+        		if (newDepartment == null) continue;
+        		newProvider.setDepartment(newDepartment);
+        	}
+        	hibSession.save(newProvider);
         }
         
         // roll forward global instructor attributes

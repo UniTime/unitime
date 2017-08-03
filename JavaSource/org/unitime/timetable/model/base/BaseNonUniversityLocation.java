@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.unitime.timetable.model.EventServiceProvider;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.NonUniversityLocationPicture;
@@ -39,6 +40,7 @@ public abstract class BaseNonUniversityLocation extends Location implements Seri
 
 	private RoomType iRoomType;
 	private Set<NonUniversityLocationPicture> iPictures;
+	private Set<EventServiceProvider> iAllowedServices;
 
 	public static String PROP_NAME = "name";
 
@@ -64,6 +66,13 @@ public abstract class BaseNonUniversityLocation extends Location implements Seri
 	public void addTopictures(NonUniversityLocationPicture nonUniversityLocationPicture) {
 		if (iPictures == null) iPictures = new HashSet<NonUniversityLocationPicture>();
 		iPictures.add(nonUniversityLocationPicture);
+	}
+
+	public Set<EventServiceProvider> getAllowedServices() { return iAllowedServices; }
+	public void setAllowedServices(Set<EventServiceProvider> allowedServices) { iAllowedServices = allowedServices; }
+	public void addToallowedServices(EventServiceProvider eventServiceProvider) {
+		if (iAllowedServices == null) iAllowedServices = new HashSet<EventServiceProvider>();
+		iAllowedServices.add(eventServiceProvider);
 	}
 
 	public boolean equals(Object o) {

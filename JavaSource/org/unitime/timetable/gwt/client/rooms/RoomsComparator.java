@@ -98,6 +98,10 @@ public class RoomsComparator implements Comparator<RoomDetailInterface> {
 		return compare(r1.getBreakTime(), r2.getBreakTime());
 	}
 	
+	public int compareByServices(RoomDetailInterface r1, RoomDetailInterface r2) {
+		return compare(r1.getServices("|"), r2.getServices("|"));
+	}
+	
 	protected int compareByColumn(RoomDetailInterface r1, RoomDetailInterface r2) {
 		switch (iColumn) {
 		case NAME: return compareByName(r1, r2);
@@ -112,6 +116,7 @@ public class RoomsComparator implements Comparator<RoomDetailInterface> {
 		case EVENT_STATUS: return compareByEventStatus(r1, r2);
 		case EVENT_MESSAGE: return compareByEventMessage(r1, r2);
 		case BREAK_TIME: return compareByBreakTime(r1, r2);
+		case SERVICES: return compareByServices(r1, r2);
 		default: return compareByName(r1, r2);
 		}
 	}
@@ -160,6 +165,7 @@ public class RoomsComparator implements Comparator<RoomDetailInterface> {
 		case EVENT_STATUS:
 		case EVENT_MESSAGE:
 		case BREAK_TIME:
+		case SERVICES:
 			return true;
 		default:
 			return false;

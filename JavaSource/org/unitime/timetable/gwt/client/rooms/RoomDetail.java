@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.rooms;
 
 import java.util.List;
+import java.util.Set;
 
 import org.unitime.timetable.gwt.client.GwtHint;
 import org.unitime.timetable.gwt.client.ToolBox;
@@ -34,6 +35,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
+import org.unitime.timetable.gwt.shared.EventInterface.EventServiceProviderInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.ExamTypeInterface;
@@ -225,6 +227,9 @@ public class RoomDetail extends Composite {
 			if (iRoom.getBreakTime() == null) bt.addStyleName("default");
 			iForm.addRow(MESSAGES.propBreakTime(), bt, 1);
 		}
+		if (events && iRoom.hasServices()) {
+			iForm.addRow(MESSAGES.propAvailableServices(), new ServicesCell(iRoom.getServices(), iRoom.getEventDepartment()));
+		}
 		if (courses && iRoom.hasPreference())
 			iForm.addRow(MESSAGES.propPreference(), new PreferenceCell(iRoom.getDepartments()), 1);
 		List<GroupInterface> globalGroups = iRoom.getGlobalGroups();
@@ -386,6 +391,25 @@ public class RoomDetail extends Composite {
 				if (feature.getTitle() != null) p.setTitle(feature.getTitle());
 				if (feature.getDepartment() != null)
 					p.setText(feature.getLabel() + " (" + RoomDetail.toString(feature.getDepartment()) + ")");
+				add(p);
+			}
+		}
+	}
+	
+	static class ServicesCell extends P {
+		ServicesCell(Set<? extends EventServiceProviderInterface> services) {
+			this(services, null);
+		}
+		
+		ServicesCell(Set<? extends EventServiceProviderInterface> services, DepartmentInterface department) {
+			super();
+			setStyleName("services");
+			for (EventServiceProviderInterface service: services) {
+				P p = new P("service");
+				p.setText(service.getLabel());
+				if (service.hasMessage()) p.setTitle(service.getMessage());
+				if (service.getDepartmentId() != null && department != null)
+					p.setText(service.getLabel() + " (" + RoomDetail.toString(department) + ")");
 				add(p);
 			}
 		}

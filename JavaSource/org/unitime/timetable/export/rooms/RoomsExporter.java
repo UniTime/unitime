@@ -37,6 +37,7 @@ import org.unitime.timetable.export.Exporter;
 import org.unitime.timetable.gwt.client.rooms.RoomsComparator;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.shared.EventInterface.EventServiceProviderInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
@@ -216,6 +217,7 @@ public abstract class RoomsExporter implements Exporter {
 		case FEATURES:
 			if (column.getIndex() == 0) return MESSAGES.colFeatures();
 			else return ec.getRoomFeatureTypes().get(column.getIndex() - 1).getAbbreviation();
+		case SERVICES: return MESSAGES.colAvailableServices();
 		default: return column.getColumn().name();
 		}
 	}
@@ -334,6 +336,15 @@ public abstract class RoomsExporter implements Exporter {
 			String ret = "";
 			for (GroupInterface g: groups) {
 				ret += (ret.isEmpty() ? "" : getSeparator()) + g.getLabel() + (g.getDepartment() == null ? "" : " (" + dept2string(g.getDepartment(), true) + ")");
+			}
+			return ret;
+		}
+		
+		protected String services2string(Collection<EventServiceProviderInterface> services, DepartmentInterface eventDept) {
+			if (services == null || services.isEmpty()) return "";
+			String ret = "";
+			for (EventServiceProviderInterface s: services) {
+				ret += (ret.isEmpty() ? "" : getSeparator()) + s.getLabel() + (s.getDepartmentId() == null || eventDept == null ? "" : " (" + dept2string(eventDept, true) + ")");
 			}
 			return ret;
 		}

@@ -963,6 +963,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Requested Services")
 	String colRequestedServices();
 	
+	@DefaultMessage("Available<br>Services")
+	String colAvailableServices();
+	
 	@DefaultMessage("pending")
 	String approvalNotApproved();
 	
@@ -3904,6 +3907,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Simplified Mode:")
 	String propCourseTimetablingSolverSimplifiedMode();
 	
+	@DefaultMessage("Available Services:")
+	String propAvailableServices();
+	
 	@DefaultMessage("{0} ({1})")
 	String label(String name, String type);
 
@@ -4113,6 +4119,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Email")
 	String fieldEmailAddress();
+	
+	@DefaultMessage("All Rooms")
+	String fieldAllRooms();
 	
 	@DefaultMessage("Access")
 	String toggleAccess();
@@ -5379,4 +5388,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("; ")
 	String meetingContactSeparator();
+	
+	@DefaultMessage("Departmental")
+	String serviceProviderDepartmental();
 }

@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
+import org.unitime.timetable.gwt.shared.EventInterface.EventServiceProviderInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
@@ -424,9 +425,10 @@ public class RoomInterface implements IsSerializable {
 		private String iEventDepartment = null;
 		private String iNote = null;
 		private boolean iIgnoreRoomCheck = false;
-		
+
 		private List<FeatureInterface> iFeatures = null;
 		private List<RoomPictureInterface> iPictures = null;
+		private Set<EventServiceProviderInterface> iServices = null;
 		
 		public RoomHintResponse() {
 		}
@@ -533,6 +535,22 @@ public class RoomInterface implements IsSerializable {
 			iPictures.add(picture);
 		}
 		public List<RoomPictureInterface> getPictures() { return iPictures; }
+		
+		public boolean hasServices() { return iServices != null && !iServices.isEmpty(); }
+		public void addService(EventServiceProviderInterface service) {
+			if (iServices == null)
+				iServices = new TreeSet<EventServiceProviderInterface>();
+			iServices.add(service);
+		}
+		public Set<EventServiceProviderInterface> getServices() { return iServices; }
+		public String getServices(String separator) {
+			if (!hasServices()) return "";
+			String ret = "";
+			for (EventServiceProviderInterface service: getServices()) {
+				ret += (ret.isEmpty() ? "" : separator) + service.getLabel();
+			}
+			return ret;
+		}
 	}
 	
 	public static class RoomHintRequest implements GwtRpcRequest<RoomHintResponse> {
@@ -1203,6 +1221,7 @@ public class RoomInterface implements IsSerializable {
 		private List<FutureRoomInterface> iFutureRooms = null;
 		private Long iSessionId = null;
 		private String iSessionName = null;
+		private Set<EventServiceProviderInterface> iServices = null;
 		
 		public RoomDetailInterface() {}
 		
@@ -1538,6 +1557,25 @@ public class RoomInterface implements IsSerializable {
 		public boolean hasSessionName() { return iSessionName != null; }
 		public String getSessionName() { return iSessionName; }
 		public void setSessionName(String sessionName) { iSessionName = sessionName; }
+		
+		public boolean hasServices() { return iServices != null && !iServices.isEmpty(); }
+		public void addService(EventServiceProviderInterface service) {
+			if (iServices == null)
+				iServices = new TreeSet<EventServiceProviderInterface>();
+			iServices.add(service);
+		}
+		public Set<EventServiceProviderInterface> getServices() { return iServices; }
+		public void clearServices() {
+			if (iServices != null) iServices.clear();
+		}
+		public String getServices(String separator) {
+			if (!hasServices()) return "";
+			String ret = "";
+			for (EventServiceProviderInterface service: getServices()) {
+				ret += (ret.isEmpty() ? "" : separator) + service.getLabel();
+			}
+			return ret;
+		}
 	}
 	
 	public static class RoomDetailsRequest implements GwtRpcRequest<GwtRpcResponseList<RoomDetailInterface>> {
@@ -1945,6 +1983,7 @@ public class RoomInterface implements IsSerializable {
 		private boolean iRoomAreaMetricUnits = false;
 		private boolean iCanSaveFilterDefaults = false;
 		private Map<String, String> iFilterDefaults = null;
+		private Set<EventServiceProviderInterface> iEventServiceProviders = null;
 		
 		public RoomPropertiesInterface() {}
 		
@@ -2185,6 +2224,13 @@ public class RoomInterface implements IsSerializable {
 		public String getFilterDefault(String name) {
 			return (iFilterDefaults == null ? null : iFilterDefaults.get(name));
 		}
+		
+		public boolean hasEventServiceProviders() { return iEventServiceProviders != null && !iEventServiceProviders.isEmpty(); }
+		public Set<EventServiceProviderInterface> getEventServiceProviders() { return iEventServiceProviders; }
+		public void addEventServiceProvider(EventServiceProviderInterface provider) {
+			if (iEventServiceProviders == null) iEventServiceProviders = new TreeSet<EventServiceProviderInterface>();
+			iEventServiceProviders.add(provider);
+		}
 	}
 	
 	public static enum RoomsColumn {
@@ -2210,6 +2256,7 @@ public class RoomInterface implements IsSerializable {
 		EVENT_AVAILABILITY,
 		EVENT_MESSAGE,
 		BREAK_TIME,
+		SERVICES,
 		GROUPS,
 		FEATURES,
 		;

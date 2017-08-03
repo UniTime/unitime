@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.model.base;
 
+import java.util.List;
+
 import org.unitime.timetable.model.EventServiceProvider;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.EventServiceProviderDAO;
@@ -38,5 +40,15 @@ public abstract class BaseEventServiceProviderDAO extends _RootDAO<EventServiceP
 
 	public Class<EventServiceProvider> getReferenceClass() {
 		return EventServiceProvider.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<EventServiceProvider> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from EventServiceProvider x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<EventServiceProvider> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
+		return hibSession.createQuery("from EventServiceProvider x where x.department.uniqueId = :departmentId").setLong("departmentId", departmentId).list();
 	}
 }

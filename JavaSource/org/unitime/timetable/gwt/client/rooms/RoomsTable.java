@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.unitime.timetable.gwt.client.GwtHint;
 import org.unitime.timetable.gwt.client.ToolBox;
@@ -42,6 +43,7 @@ import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
+import org.unitime.timetable.gwt.shared.EventInterface.EventServiceProviderInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.AttachmentTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.ExamTypeInterface;
@@ -421,6 +423,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		case FEATURES:
 			if (idx == 0) return MESSAGES.colFeatures();
 			else return getFeatureType(idx - 1).getAbbreviation();
+		case SERVICES: return MESSAGES.colAvailableServices();
 		default: return column.name();
 		}
 	}
@@ -497,6 +500,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		case EVENT_STATUS:
 		case EVENT_MESSAGE:
 		case BREAK_TIME:
+		case SERVICES:
 			return RoomsColumn.EVENT_DEPARTMENT;
 		case EXAM_TYPES:
 		case PERIOD_PREF:
@@ -652,6 +656,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			case EVENT_AVAILABILITY:
 			case EVENT_STATUS:
 			case BREAK_TIME:
+			case SERVICES:
 				return null;
 			}
 		}
@@ -805,6 +810,9 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 				if (featuresOfType.isEmpty()) return null;
 				return new FeaturesCell(featuresOfType);
 			}
+		case SERVICES:
+			if (!room.hasServices()) return null;
+			return new ServicesCell(room.getServices(), room.getEventDepartment());
 		}
 		return null;
 	}
@@ -1034,6 +1042,37 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		}
 	}
 	
+	public static class ServicesCell extends P implements HasRefresh {
+		Map<EventServiceProviderInterface, P> iServices = new HashMap<EventServiceProviderInterface, P>();
+		DepartmentInterface iDepartment;
+		
+		public ServicesCell(Set<? extends EventServiceProviderInterface> services, DepartmentInterface department) {
+			super();
+			iDepartment = department;
+			setStyleName("services");
+			for (EventServiceProviderInterface service: services) {
+				P p = new P("group");
+				p.setText(service.getLabel());
+				if (service.hasMessage()) p.setTitle(service.getMessage());
+				if (service.getDepartmentId() != null && department != null) {
+					p.setText(service.getLabel() + " (" + RoomsTable.toString(department, true) + ")");
+				}
+				iServices.put(service, p);
+				add(p);
+			}
+		}
+		
+		@Override
+		public void refresh() {
+			for (Map.Entry<EventServiceProviderInterface, P> e: iServices.entrySet()) {
+				P p = e.getValue();
+				EventServiceProviderInterface service = e.getKey();
+				if (service.getDepartmentId() != null && iDepartment != null)
+					p.setText(service.getLabel() + " (" + RoomsTable.toString(iDepartment, true) + ")");
+			}
+		}
+	}
+	
 	public static class NoteCell extends P {
 		public NoteCell(String note, String defaultNote) {
 			super("note");
@@ -1056,7 +1095,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 				setTitle(CONSTANTS.eventStatusName()[status]);
 			} else if (defaultStatus != null) {
 				addStyleName("default");
-				setText(CONSTANTS.eventStatusAbbv()[defaultStatus]);
+				setHTML(CONSTANTS.eventStatusAbbv()[defaultStatus]);
 				setTitle(CONSTANTS.eventStatusName()[defaultStatus]);
 			} else {
 				setHTML(CONSTANTS.eventStatusAbbv()[0]);

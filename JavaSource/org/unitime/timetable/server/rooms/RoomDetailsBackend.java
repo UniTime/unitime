@@ -45,6 +45,7 @@ import org.unitime.timetable.events.RoomFilterBackend;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.server.Query;
+import org.unitime.timetable.gwt.shared.EventInterface.EventServiceProviderInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.RoomInterface.AcademicSessionInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.BuildingInterface;
@@ -64,6 +65,7 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.DepartmentStatusType;
+import org.unitime.timetable.model.EventServiceProvider;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.LocationPicture;
@@ -326,6 +328,18 @@ public class RoomDetailsBackend extends RoomFilterBackend {
             	response.setDefaultEventStatus(rto.getStatus());
             	response.setDefaultBreakTime(rto.getBreakTime());
             	response.setDefaultEventNote(rto.getMessage());
+            	for (EventServiceProvider p: location.getAllowedServices()) {
+		    		if (!p.isVisible() || p.isAllRooms()) continue;
+		    		EventServiceProviderInterface provider = new EventServiceProviderInterface();
+		    		provider.setId(p.getUniqueId());
+					provider.setReference(p.getReference());
+					provider.setLabel(p.getLabel());
+					provider.setMessage(p.getNote());
+					provider.setEmail(p.getEmail());
+		    		if (p.getDepartment() != null)
+		    			provider.setDepartmentId(p.getDepartment().getUniqueId());
+		    		response.addService(provider);
+		    	}
         	} else {
         		response.setDefaultEventStatus(RoomTypeOption.Status.NoEventManagement.ordinal());
         	}

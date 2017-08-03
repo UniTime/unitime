@@ -3992,6 +3992,14 @@ unitime-RoomSharingWidget .legend .blank {
     text-overflow: ellipsis;
 }
 
+.unitime-RoomEdit .services .service {
+	display: inline-block;
+	width: 33%;
+	white-space: nowrap;
+    overflow:hidden !important;
+    text-overflow: ellipsis;
+}
+
 .unitime-RoomEdit .check-enabled .message {
 	font-style: italic;
 	padding-left: 5px;

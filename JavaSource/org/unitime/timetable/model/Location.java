@@ -1151,4 +1151,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 		else
 			return GWT_MSG.roomLabelWithDisplayName(getLabel(), getDisplayName());
 	}
+	
+	public abstract Set<EventServiceProvider> getAllowedServices();
+	public abstract void setAllowedServices(Set<EventServiceProvider> services);
 }

@@ -46,6 +46,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 		FLOAT,
 		NEGATIVE,
 		SHOW_PARENT_IF_EMPTY,
+		DEFAULT_CHECKED,
 		;
 		
 		public int toInt() { return 1 << ordinal(); }
@@ -382,6 +383,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 		public boolean isAllowFloatingPoint() { return Flag.FLOAT.has(iFlags); }
 		public boolean isAllowNegative() { return Flag.NEGATIVE.has(iFlags); }
 		public boolean isShowParentWhenEmpty() { return Flag.SHOW_PARENT_IF_EMPTY.has(iFlags); }
+		public boolean isCheckedByDefault() { return Flag.DEFAULT_CHECKED.has(iFlags); }
 		
 		public int hashCode() {
 			return getName().hashCode();

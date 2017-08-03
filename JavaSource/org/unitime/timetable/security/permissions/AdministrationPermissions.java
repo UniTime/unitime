@@ -538,4 +538,11 @@ public class AdministrationPermissions {
 	
 	@PermissionForRight(Right.ApiRetrieveStudentGroups)
 	public static class ApiRetrieveStudentGroups extends SimpleSessionPermission {}
+	
+	@PermissionForRight(Right.EventServiceProviderEditSession)
+	public static class EventServiceProviderEditSession extends SimpleSessionPermission {} 
+
+	@PermissionForRight(Right.EventServiceProviderEditDepartment)
+	public static class EventServiceProviderEditDepartment extends SimpleDepartmentPermission {}
+
 }

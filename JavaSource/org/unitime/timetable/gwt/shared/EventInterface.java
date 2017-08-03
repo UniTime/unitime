@@ -1974,7 +1974,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	public static class EventServiceProviderInterface implements IsSerializable, Comparable<EventServiceProviderInterface> {
 		private Long iId;
 		private String iReference, iLabel, iMessage, iEmail;
-		private Integer iOptions;
+		private Long iDepartmentId;
+		private Set<Long> iLocationIds = null;
 		
 		public EventServiceProviderInterface() {}
 		
@@ -1995,9 +1996,13 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public String getEmail() { return iEmail; }
 		public void setEmail(String email) { iEmail = email; }
 
-		public boolean hasOptions() { return iOptions != null; }
-		public Integer getOptions() { return iOptions; }
-		public void setOptions(Integer options) { iOptions = options; }
+		public void setDepartmentId(Long departmentId) { iDepartmentId = departmentId; }
+		public Long getDepartmentId() { return iDepartmentId; }
+		
+		public boolean hasLocationIds() { return iLocationIds != null; }
+		public void setLocationIds(Set<Long> locationIds) { iLocationIds = locationIds; }
+		public boolean hasLocation(Long id) { return iLocationIds == null || (id != null && iLocationIds.contains(id)); }
+		public boolean hasLocation(ResourceInterface location) { return location != null && hasLocation(location.getId()); }
 		
 		@Override
 		public String toString() { return getReference() + ": " + getLabel(); }

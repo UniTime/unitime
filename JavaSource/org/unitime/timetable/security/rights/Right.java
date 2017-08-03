@@ -554,7 +554,9 @@ public enum Right {
 	TeachingResponsibilityEdit,
 	
 	EventServiceProviders,
-	EventServiceProviderEdit,
+	EventServiceProviderEditGlobal,
+	EventServiceProviderEditSession(Session.class),
+	EventServiceProviderEditDepartment(Department.class),
 
 	/** Point In Time Data */
 	

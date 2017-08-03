@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.RoomInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.EventServiceProviderInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.AcademicSessionInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.BuildingInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
@@ -48,6 +49,7 @@ import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.DepartmentStatusType;
+import org.unitime.timetable.model.EventServiceProvider;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -211,6 +213,21 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 
 		for (AttachmentType type: AttachmentType.listTypes(AttachmentType.VisibilityFlag.ROOM_PICTURE_TYPE)) {
 			response.addPictureType(RoomPicturesBackend.getPictureType(type));
+		}
+		
+		if (request.hasSessionId()) {
+			for (EventServiceProvider p: EventServiceProvider.findAll(request.getSessionId())) {
+				if (p.isAllRooms()) continue;
+				EventServiceProviderInterface provider = new EventServiceProviderInterface();
+				provider.setId(p.getUniqueId());
+				provider.setReference(p.getReference());
+				provider.setLabel(p.getLabel());
+				provider.setMessage(p.getNote());
+				provider.setEmail(p.getEmail());
+				if (p.getDepartment() != null)
+					provider.setDepartmentId(p.getDepartment().getUniqueId());
+				response.addEventServiceProvider(provider);
+			}
 		}
 
 		DistanceMetric.Ellipsoid ellipsoid = DistanceMetric.Ellipsoid.valueOf(ApplicationProperty.DistanceEllipsoid.value());

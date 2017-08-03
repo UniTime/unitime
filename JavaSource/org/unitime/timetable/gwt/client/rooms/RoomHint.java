@@ -171,6 +171,10 @@ public class RoomHint {
 			form.addRow(note);
 		}
 		
+		if (room.hasServices()) {
+			form.addRow(MESSAGES.propAvailableServices(), new Label(room.getServices(CONSTANTS.itemSeparator())));
+		}
+		
 		if (room.isIgnoreRoomCheck())
 			form.addRow(new HTML(MESSAGES.ignoreRoomCheck()));
 		

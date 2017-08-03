@@ -20,8 +20,11 @@
 package org.unitime.timetable.server.admin;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-
+import java.util.Map;
+import java.util.Set;
 
 import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
@@ -39,6 +42,7 @@ import org.unitime.timetable.gwt.shared.SimpleEditInterface.PageName;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Record;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.EventServiceProvider;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.Room;
@@ -46,6 +50,7 @@ import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.RoomTypeOption;
 import org.unitime.timetable.model.ChangeLog.Operation;
 import org.unitime.timetable.model.ChangeLog.Source;
+import org.unitime.timetable.model.dao.EventServiceProviderDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -69,15 +74,28 @@ public class EventStatuses implements AdminTable {
 		for (RoomTypeOption.Status state: RoomTypeOption.Status.values()) {
 			states.add(new ListItem(String.valueOf(state.ordinal()), state.toString()));
 		}
-		SimpleEditInterface data = new SimpleEditInterface(
-				new Field("&otimes;", FieldType.parent, 50, Flag.READ_ONLY),
-				new Field(MESSAGES.fieldDepartment() + "|" + MESSAGES.fieldType(), FieldType.text, 160, Flag.READ_ONLY),
-				new Field(MESSAGES.fieldRoomType() + "|" + MESSAGES.fieldRoom(), FieldType.text, 100, Flag.READ_ONLY),
-				new Field(MESSAGES.fieldEventStatus(), FieldType.list, 300, states, Flag.PARENT_NOT_EMPTY, Flag.SHOW_PARENT_IF_EMPTY),
-				new Field(MESSAGES.fieldRoomNote(), FieldType.textarea, 50, 3, 2048, Flag.SHOW_PARENT_IF_EMPTY),
-				new Field(MESSAGES.fieldBreakTime(), FieldType.number, 50, 10, Flag.SHOW_PARENT_IF_EMPTY),
-				new Field(MESSAGES.fieldSortOrder(), FieldType.text, 80, 10, Flag.READ_ONLY, Flag.HIDDEN)
-				);
+		List<EventServiceProvider> providers = new ArrayList<EventServiceProvider>(EventServiceProvider.getServiceProviders(context.getUser()));
+		List<Field> extra = new ArrayList<Field>();
+		Map<Integer, Long> index2service = new HashMap<Integer, Long>();
+		Map<Integer, EventServiceProvider> index2provider = new HashMap<Integer, EventServiceProvider>();
+		for (EventServiceProvider provider: providers) {
+			if (provider.isAllRooms()) continue;
+			index2service.put(extra.size(), provider.getUniqueId());
+			index2provider.put(extra.size(), provider);
+			extra.add(new Field(provider.getReference(), FieldType.toggle, 40));
+		}
+		context.setAttribute("EventStatuses.Services", index2service);
+		Field[] fields = new Field[7 + extra.size()];
+		fields[0] = new Field("&otimes;", FieldType.parent, 50, Flag.READ_ONLY);
+		fields[1] = new Field(MESSAGES.fieldDepartment() + "|" + MESSAGES.fieldType(), FieldType.text, 160, Flag.READ_ONLY);
+		fields[2] = new Field(MESSAGES.fieldRoomType() + "|" + MESSAGES.fieldRoom(), FieldType.text, 100, Flag.READ_ONLY);
+		fields[3] = new Field(MESSAGES.fieldEventStatus(), FieldType.list, 300, states, Flag.PARENT_NOT_EMPTY, Flag.SHOW_PARENT_IF_EMPTY);
+		fields[4] = new Field(MESSAGES.fieldRoomNote(), FieldType.textarea, 50, 3, 2048, Flag.SHOW_PARENT_IF_EMPTY);
+		fields[5] = new Field(MESSAGES.fieldBreakTime(), FieldType.number, 50, 10, Flag.SHOW_PARENT_IF_EMPTY);
+		fields[6] = new Field(MESSAGES.fieldSortOrder(), FieldType.text, 80, 10, Flag.READ_ONLY, Flag.HIDDEN);
+		for (int i = 0; i < extra.size(); i++)
+			fields[7 + i] = extra.get(i);
+		SimpleEditInterface data = new SimpleEditInterface(fields);
 		data.setSortBy(6);
 		data.setAddable(false);
 		long id = 0;
@@ -95,6 +113,8 @@ public class EventStatuses implements AdminTable {
 				r.setField(4, option.getMessage() == null ? "" : option.getMessage());
 				r.setField(5, option.getBreakTime() == null ? "0" : option.getBreakTime().toString());
 				r.setField(6, department.getDeptCode() + ":" + roomType.getOrd());
+				for (int i = 0; i < extra.size(); i++)
+					r.setField(7 + i, MESSAGES.notApplicable(), false);
 				for (Room room: (List<Room>)hibSession.createQuery(
 						"select r from Room r where r.roomType.uniqueId = :roomTypeId and r.eventDepartment.uniqueId = :departmentId order by r.building.abbreviation, r.roomNumber")
 						.setLong("departmentId", department.getUniqueId()).setLong("roomTypeId", roomType.getUniqueId()).setCacheable(true).list()) {
@@ -106,6 +126,11 @@ public class EventStatuses implements AdminTable {
 					r.setField(4, room.getNote() == null ? "" : room.getNote());
 					r.setField(5, room.getBreakTime() == null ? "" : room.getBreakTime().toString());
 					r.setField(6, department.getDeptCode() + ":" + roomType.getOrd() + ":" + room.getLabel());
+					for (int i = 0; i < extra.size(); i++) {
+						EventServiceProvider provider = index2provider.get(i);
+						boolean hasToggle = provider.getDepartment() == null || provider.getDepartment().equals(department);
+						r.setField(7 + i, !hasToggle ? MESSAGES.notApplicable() : room.getAllowedServices().contains(provider) ? "true" : "false", hasToggle);
+					}
 				}
 			}
 			for (RoomType roomType: (List<RoomType>)hibSession.createQuery(
@@ -120,6 +145,8 @@ public class EventStatuses implements AdminTable {
 				r.setField(4, option.getMessage() == null ? "" : option.getMessage());
 				r.setField(5, option.getBreakTime() == null ? "0" : option.getBreakTime().toString());
 				r.setField(6, department.getDeptCode() + ":" + roomType.getOrd());
+				for (int i = 0; i < extra.size(); i++)
+					r.setField(7 + i, MESSAGES.notApplicable(), false);
 				for (NonUniversityLocation room: (List<NonUniversityLocation>)hibSession.createQuery(
 						"select r from NonUniversityLocation r where r.roomType.uniqueId = :roomTypeId and r.eventDepartment.uniqueId = :departmentId order by r.name")
 						.setLong("departmentId", department.getUniqueId()).setLong("roomTypeId", roomType.getUniqueId()).setCacheable(true).list()) {
@@ -131,6 +158,11 @@ public class EventStatuses implements AdminTable {
 					r.setField(4, room.getNote() == null ? "" : room.getNote());
 					r.setField(5, room.getBreakTime() == null ? "" : room.getBreakTime().toString());
 					r.setField(6, department.getDeptCode() + ":" + roomType.getOrd() + ":" + room.getLabel());
+					for (int i = 0; i < extra.size(); i++) {
+						EventServiceProvider provider = index2provider.get(i);
+						boolean hasToggle = provider.getDepartment() == null || provider.getDepartment().equals(department);
+						r.setField(7 + i, !hasToggle ? MESSAGES.notApplicable() : room.getAllowedServices().contains(provider) ? "true" : "false", hasToggle);
+					}
 				}
 			}
 		}
@@ -219,6 +251,34 @@ public class EventStatuses implements AdminTable {
 		throw new GwtRpcException(MESSAGES.errorOperationNotSupported());
 	}
 	
+	protected boolean sameServiceProviders(Location location, SessionContext context, Record record) {
+		Set<Long> services = new HashSet<Long>();
+		if (location.getAllowedServices() != null)
+			for (EventServiceProvider service: location.getAllowedServices())
+				services.add(service.getUniqueId());
+		Map<Integer,Long> index2service = (Map<Integer,Long>)context.getAttribute("EventStatuses.Services");
+		for (Map.Entry<Integer, Long> e: index2service.entrySet()) {
+			if ("true".equals(record.getField(7 + e.getKey()))) {
+				if (!services.contains(e.getValue())) return false;
+			} else {
+				if (services.contains(e.getValue())) return false;
+			}
+		}
+		return true;
+	}
+	
+	protected void setServiceProviders(Location location, SessionContext context, Record record) {
+		if (location.getAllowedServices() == null)
+			location.setAllowedServices(new HashSet<EventServiceProvider>());
+		Map<Integer,Long> index2service = (Map<Integer,Long>)context.getAttribute("EventStatuses.Services");
+		for (Map.Entry<Integer, Long> e: index2service.entrySet()) {
+			if ("true".equals(record.getField(7 + e.getKey()))) 
+				location.getAllowedServices().add(EventServiceProviderDAO.getInstance().get(e.getValue()));
+			else
+				location.getAllowedServices().remove(EventServiceProviderDAO.getInstance().get(e.getValue()));
+		}
+	}
+	
 	protected void update(Location location, Record record, SessionContext context, Session hibSession) {
 		if (location == null) return;
 		Integer status = record.getField(3) == null || record.getField(3).isEmpty() ? null : Integer.parseInt(record.getField(3));
@@ -229,11 +289,13 @@ public class EventStatuses implements AdminTable {
 		} catch (NumberFormatException e) {}
 		if (ToolBox.equals(location.getEventStatus(), status) &&
 				ToolBox.equals(location.getNote(), note) &&
-				ToolBox.equals(location.getBreakTime(), breakTime)) return;
+				ToolBox.equals(location.getBreakTime(), breakTime) &&
+				sameServiceProviders(location, context, record)) return;
 		boolean noteChanged = !ToolBox.equals(location.getNote(), note);
 		location.setEventStatus(status);
 		location.setNote(note);
 		location.setBreakTime(breakTime);
+		setServiceProviders(location, context, record);
 		hibSession.saveOrUpdate(location);
 		ChangeLog.addChange(hibSession,
 				context,

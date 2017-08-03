@@ -43,6 +43,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
+import org.unitime.timetable.gwt.shared.EventInterface.EventServiceProviderInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.AcademicSessionInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.AttachmentTypeInterface;
@@ -161,6 +162,10 @@ public class RoomEdit extends Composite {
 	private UniTimeHeaderPanel iApplyToHeader;
 	private UniTimeTable<FutureRoomInterface> iApplyTo;
 	private RoomsPageMode iMode = null;
+	
+	private Map<Long, CheckBox> iServices = new HashMap<Long, CheckBox>();
+	private P iServicesPanel;
+	private int iServicesRow;
 	
 	public RoomEdit(RoomsPageMode mode) {
 		iMode = mode;
@@ -405,6 +410,15 @@ public class RoomEdit extends Composite {
 			public void onChange(ChangeEvent event) {
 				iEventAvailabilityHeader.setVisible(isEventRoom());
 				iEventAvailability.setVisible(isEventRoom());
+				if (iProperties != null && iProperties.hasEventServiceProviders()) {
+					Long deptId = Long.valueOf(iEventDepartment.getValue(iEventDepartment.getSelectedIndex()));
+					for (EventServiceProviderInterface service: iProperties.getEventServiceProviders()) {
+						if (service.getDepartmentId() != null) {
+							iServices.get(service.getId()).setVisible(service.getDepartmentId().equals(deptId));
+						}
+					}
+					iForm.getRowFormatter().setVisible(iServicesRow, deptId >= 0);
+				}
 			}
 		});
 		
@@ -430,6 +444,8 @@ public class RoomEdit extends Composite {
 		P f = new P("note");
 		f.setText(MESSAGES.useDefaultBreakTimeWhenEmpty());
 		iBreakTimePanel.add(f);
+		
+		iServicesPanel = new P("services"); iServicesPanel.setWidth("100%");
 		
 		iRoomSharingHeader = new UniTimeHeaderPanel(MESSAGES.headerRoomSharing());
 		iRoomSharing = new RoomSharingWidget(true, true);
@@ -570,6 +586,20 @@ public class RoomEdit extends Composite {
 					}
 				}
 			});
+		}
+		
+		iServices.clear();
+		iServicesPanel.clear();
+		if (iProperties.hasEventServiceProviders()) {
+			for (EventServiceProviderInterface service: iProperties.getEventServiceProviders()) {
+				final CheckBox ch = new CheckBox(service.getLabel() + (service.getDepartmentId() == null ? "" : " (" + MESSAGES.serviceProviderDepartmental() + ")"));
+				if (service.hasMessage()) ch.setTitle(service.getMessage());
+				ch.addStyleName("service");
+				iServices.put(service.getId(), ch);
+				iServicesPanel.add(ch);
+				ch.setValue(false);
+				if (service.getDepartmentId() != null) ch.setVisible(false);
+			}
 		}
 		
 		if (iProperties.isGoogleMap() && iGoogleMap == null) {
@@ -878,6 +908,21 @@ public class RoomEdit extends Composite {
 			iForm.addRow(MESSAGES.propEventNote(), iNote, 1);
 			iBreakTime.setValue(iRoom.getBreakTime());
 			iForm.addRow(MESSAGES.propBreakTime(), iBreakTimePanel, 1);
+			for (Map.Entry<Long, CheckBox> e: iServices.entrySet())
+				e.getValue().setValue(false);
+			if (iRoom.hasServices())
+				for (EventServiceProviderInterface service: iRoom.getServices())
+					iServices.get(service.getId()).setValue(true);
+			if (iProperties.hasEventServiceProviders()) {
+				Long deptId = Long.valueOf(iEventDepartment.getValue(iEventDepartment.getSelectedIndex()));
+				for (EventServiceProviderInterface service: iProperties.getEventServiceProviders()) {
+					if (service.getDepartmentId() != null) {
+						iServices.get(service.getId()).setVisible(service.getDepartmentId().equals(deptId));
+					}
+				}
+				iServicesRow = iForm.addRow(MESSAGES.propAvailableServices(), iServicesPanel, 1);
+				iForm.getRowFormatter().setVisible(iServicesRow, deptId >= 0);
+			}
 		} else if (iProperties.isCanSeeEvents()) {
 			if (iRoom.getEventDepartment() != null)
 				iForm.addRow(MESSAGES.propEventDepartment(), new Label(RoomDetail.toString(iRoom.getEventDepartment(), true)), 1);
@@ -896,6 +941,8 @@ public class RoomEdit extends Composite {
 				if (iRoom.getBreakTime() == null) bt.addStyleName("default");
 				iForm.addRow(MESSAGES.propBreakTime(), bt, 1);
 			}
+			if (iRoom.hasServices())
+				iForm.addRow(MESSAGES.propAvailableServices(), new RoomDetail.ServicesCell(iRoom.getServices(), iRoom.getEventDepartment()), 1);
 		}
 		
 		if (iProperties.isGoogleMap()) {
@@ -1505,6 +1552,12 @@ public class RoomEdit extends Composite {
 				result = false;
 			}
 			iRoom.setBreakTime(iBreakTime.toInteger());
+			iRoom.clearServices();
+			if (iProperties.hasEventServiceProviders() && iRoom.getEventDepartment() != null)
+				for (EventServiceProviderInterface service: iProperties.getEventServiceProviders())
+					if ((service.getDepartmentId() == null || service.getDepartmentId().equals(iRoom.getEventDepartment().getId())) && iServices.get(service.getId()).getValue()) {
+						iRoom.addService(service);
+					}
 		}
 		
 		if ((iRoom.getUniqueId() == null && iProperties.isCanChangeGroups()) || iRoom.isCanChangeGroups()) {

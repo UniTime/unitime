@@ -12744,10 +12744,89 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'SponsoringOrganizationEdit'
 		</sql>
 	</update>
-	<update version="187" date="26" comment="Event Management Session Status">
+	<update version="187" date="26-Jul-2017" comment="Event Management Session Status">
 	    <mysql><![CDATA[
 	        update %SCHEMA%.dept_status_type set status = status + 2097152 where apply = 1 and reference not in ('initial', 'finished') and (status & 262144 = 0)
 	    ]]></mysql>
 	    <plsql>update %SCHEMA%.dept_status_type set status = status + 2097152 where apply = 1 and reference not in ('initial', 'finished') and bitand(status,262144) = 0</plsql> 
-	</update>	
+	</update>
+	<update version="188" date="1-Aug-2017" comment="Event Service Provider">
+		<sql>alter table %SCHEMA%.service_provider drop column options</sql>
+	    <plsql>alter table %SCHEMA%.service_provider add session_id number(20,0)</plsql>
+		<mysql>alter table %SCHEMA%.service_provider add session_id decimal(20,0)</mysql>
+		<plsql>alter table %SCHEMA%.service_provider add department_id number(20,0)</plsql>
+		<mysql>alter table %SCHEMA%.service_provider add department_id decimal(20,0)</mysql>
+		<plsql>alter table %SCHEMA%.service_provider add all_rooms number(1) default 1</plsql>
+		<mysql>alter table %SCHEMA%.service_provider add all_rooms int(1) default 1</mysql>
+		<plsql>alter table %SCHEMA%.service_provider add visible number(1) default 1</plsql>
+		<mysql>alter table %SCHEMA%.service_provider add visible int(1) default 1</mysql>
+		<sql>
+			alter table %SCHEMA%.service_provider add constraint fk_service_provider_session foreign key (session_id)
+			references %SCHEMA%.sessions (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.service_provider add constraint fk_service_provider_dept foreign key (department_id)
+			references %SCHEMA%.department (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'EventServiceProviderEditGlobal'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'StandardEventNotesGlobalEdit'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'EventServiceProviderEditSession'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'SponsoringOrganizationEdit'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'EventServiceProviderEditDepartment'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'EventMeetingApprove'
+		</sql>
+		<sql>delete from %SCHEMA%.rights where value = 'EventServiceProviderEdit'</sql>
+		<plsql>
+			create table %SCHEMA%.room_service_provider (
+				location_id number(20,0) constraint nn_room_service_location not null,
+				provider_id number(20,0) constraint nn_room_service_provider not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.room_service_provider add constraint pk_room_service_provider primary key (location_id, provider_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.room_service_provider (
+				location_id decimal(20,0) not null,
+				provider_id decimal(20,0) not null,
+				primary key (location_id, provider_id)
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.room_service_provider add constraint fk_room_service_loc foreign key (location_id)
+			references %SCHEMA%.room (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.room_service_provider add constraint fk_room_service_provider foreign key (provider_id)
+			references %SCHEMA%.service_provider (uniqueid) on delete cascade
+		</sql>
+		<plsql>
+			create table %SCHEMA%.location_service_provider (
+				location_id number(20,0) constraint nn_loc_service_location not null,
+				provider_id number(20,0) constraint nn_loc_service_provider not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.location_service_provider add constraint pk_location_service_provider primary key (location_id, provider_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.location_service_provider (
+				location_id decimal(20,0) not null,
+				provider_id decimal(20,0) not null,
+				primary key (location_id, provider_id)
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.location_service_provider add constraint fk_location_service_loc foreign key (location_id)
+			references %SCHEMA%.non_university_location (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.location_service_provider add constraint fk_location_service_provider foreign key (provider_id)
+			references %SCHEMA%.service_provider (uniqueid) on delete cascade
+		</sql>
+	</update>
 </dbupdate>

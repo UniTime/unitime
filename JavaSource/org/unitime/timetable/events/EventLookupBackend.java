@@ -1521,13 +1521,13 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						}
 						event.setExpirationDate(m.getEvent().getExpirationDate());
 						for (EventServiceProvider p: m.getEvent().getRequestedServices()) {
+							if (!p.isVisible()) continue;
 							EventServiceProviderInterface provider = new EventServiceProviderInterface();
 							provider.setId(p.getUniqueId());
 							provider.setReference(p.getReference());
 							provider.setLabel(p.getLabel());
 							provider.setMessage(p.getNote());
 							provider.setEmail(p.getEmail());
-							provider.setOptions(p.getOptions());
 							event.addRequestedService(provider);
 						}
 						
@@ -2267,13 +2267,13 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									event.setSponsor(sponsor);
 								}
 								for (EventServiceProvider p: m.getEvent().getRequestedServices()) {
+									if (!p.isVisible()) continue;
 									EventServiceProviderInterface provider = new EventServiceProviderInterface();
 									provider.setId(p.getUniqueId());
 									provider.setReference(p.getReference());
 									provider.setLabel(p.getLabel());
 									provider.setMessage(p.getNote());
 									provider.setEmail(p.getEmail());
-									provider.setOptions(p.getOptions());
 									event.addRequestedService(provider);
 								}
 								String note = null;

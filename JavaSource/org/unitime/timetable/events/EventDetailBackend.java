@@ -165,12 +165,12 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		
 		for (EventServiceProvider p: e.getRequestedServices()) {
 			EventServiceProviderInterface provider = new EventServiceProviderInterface();
+			if (!p.isVisible()) continue;
 			provider.setId(p.getUniqueId());
 			provider.setReference(p.getReference());
 			provider.setLabel(p.getLabel());
 			provider.setMessage(p.getNote());
 			provider.setEmail(p.getEmail());
-			provider.setOptions(p.getOptions());
 			event.addRequestedService(provider);
 		}
 		

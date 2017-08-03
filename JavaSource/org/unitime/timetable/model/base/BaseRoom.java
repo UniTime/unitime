@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.unitime.timetable.model.Building;
+import org.unitime.timetable.model.EventServiceProvider;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomPicture;
@@ -43,6 +44,7 @@ public abstract class BaseRoom extends Location implements Serializable {
 	private RoomType iRoomType;
 	private Building iBuilding;
 	private Set<RoomPicture> iPictures;
+	private Set<EventServiceProvider> iAllowedServices;
 
 	public static String PROP_ROOM_NUMBER = "roomNumber";
 	public static String PROP_CLASSIFICATION = "classification";
@@ -78,6 +80,13 @@ public abstract class BaseRoom extends Location implements Serializable {
 	public void addTopictures(RoomPicture roomPicture) {
 		if (iPictures == null) iPictures = new HashSet<RoomPicture>();
 		iPictures.add(roomPicture);
+	}
+
+	public Set<EventServiceProvider> getAllowedServices() { return iAllowedServices; }
+	public void setAllowedServices(Set<EventServiceProvider> allowedServices) { iAllowedServices = allowedServices; }
+	public void addToallowedServices(EventServiceProvider eventServiceProvider) {
+		if (iAllowedServices == null) iAllowedServices = new HashSet<EventServiceProvider>();
+		iAllowedServices.add(eventServiceProvider);
 	}
 
 	public boolean equals(Object o) {

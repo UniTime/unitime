@@ -252,6 +252,9 @@ public interface GwtConstants extends Constants {
 		"Enabled<br>No Approval",
 		"Only Department<br>No Approval",
 		"Only Managers<br>No Approval",
+		"Enabled<br>Auto-Approved",
+		"Only Department<br>Auto-Approved",
+		"Only Managers<br>Auto-Approved",
 	})
 	String[] eventStatusAbbv();
 	

@@ -1363,7 +1363,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			} else {
 				row.add(new HTML(event.getRequestedServices("<br>"), false));
 			}
-			if (!isColumnVisible(getHeader(MESSAGES.colRequestedServices()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_REQUESTED_SERVICES) && getMode().hasFlag(ModeFlag.ShowOptionalColumns)) {
+			if (!isColumnVisible(getHeader(MESSAGES.colRequestedServices()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_REQUESTED_SERVICES) && getMode().hasFlag(ModeFlag.ShowEventDetails)) {
 				setColumnVisible(getHeader(MESSAGES.colRequestedServices()).getColumn(), true);
 			}
 		} else {

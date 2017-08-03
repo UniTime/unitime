@@ -1137,7 +1137,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			iEvent.getRequestedServices().clear();
 		for (int i = 0; i < iRequestedServicesPanel.getWidgetCount(); i++) {
 			RequestedServiceToggle toggle = (RequestedServiceToggle)iRequestedServicesPanel.getWidget(i);
-			if (toggle.getValue()) iEvent.addRequestedService(toggle.getProvider());
+			if (toggle.isAllowed() && toggle.getValue()) iEvent.addRequestedService(toggle.getProvider());
 		}
 		
 		return iEvent;
@@ -1469,14 +1469,6 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			}
 			if (!hasAMeetingToCancel) canCancel = false;
 		}
-		iHeader.setEnabled("delete", canDelete);
-		iHeader.setEnabled("cancel", canCancel);
-		showCreateButtonIfApplicable();
-		if (iEvent.getId() == null && (getProperties() == null || !getProperties().isCanAddEvent()))
-			UniTimeNotifications.warn(MESSAGES.warnCannotAddEvent(iSession.getAcademicSessionName()));
-		iHeader.setEnabled("update", iEvent.getId() != null);
-		checkMainContactChanged();
-		
 		iRequestedServicesPanel.clear();
 		if (getProperties() != null && getProperties().hasEventServiceProviders()) {
 			for (EventServiceProviderInterface p: getProperties().getEventServiceProviders()) {
@@ -1484,10 +1476,14 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				toggle.setValue(iEvent.hasRequestedService(p.getId()));
 				iRequestedServicesPanel.add(toggle);
 			}
-			iForm.getRowFormatter().setVisible(iRequestedServicesRow, true);
-		} else {
-			iForm.getRowFormatter().setVisible(iRequestedServicesRow, false);
 		}
+		iHeader.setEnabled("delete", canDelete);
+		iHeader.setEnabled("cancel", canCancel);
+		showCreateButtonIfApplicable();
+		if (iEvent.getId() == null && (getProperties() == null || !getProperties().isCanAddEvent()))
+			UniTimeNotifications.warn(MESSAGES.warnCannotAddEvent(iSession.getAcademicSessionName()));
+		iHeader.setEnabled("update", iEvent.getId() != null);
+		checkMainContactChanged();
 	}
 	
 	public static class CourseRelatedObjectLine {
@@ -1948,6 +1944,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	}
 	
 	private void showCreateButtonIfApplicable() {
+		updateServicesVisibility();
 		iHeader.setEnabled("create", iEvent.getId() == null && getProperties() != null && getProperties().isCanAddEvent() && iMeetings.getRowCount() > 1);
 		if (iEvent.getId() == null && getProperties() != null && getProperties().isCanAddEvent() && getProperties().hasEmailConfirmation()) {
 			iEmailConfirmationHeader.setVisible(iMeetings.getRowCount() > 1);
@@ -2004,7 +2001,20 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		return session.has(AcademicSession.Flag.CanAddEvents);
 	}
 	
-	private static class RequestedServiceToggle extends P {
+	public void updateServicesVisibility() {
+		boolean visible = false;
+		for (int i = 0; i < iRequestedServicesPanel.getWidgetCount(); i++) {
+			RequestedServiceToggle toggle = (RequestedServiceToggle)iRequestedServicesPanel.getWidget(i);
+			if (toggle.isAllowed()) {
+				toggle.setVisible(true); visible = true;
+			} else {
+				toggle.setVisible(false);
+			}
+		}
+		iForm.getRowFormatter().setVisible(iRequestedServicesRow, visible);
+	}
+	
+	private class RequestedServiceToggle extends P {
 		private EventServiceProviderInterface iProvider;
 		private CheckBox iCheckbox;
 		private P iDescription;
@@ -2032,6 +2042,15 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		
 		public Boolean getValue() { return iCheckbox.getValue(); }
 		public void setValue(Boolean value) { iCheckbox.setValue(value, true); }
+		
+		public boolean isAllowed() {
+			if (!iProvider.hasLocationIds()) return true;
+			for (MeetingInterface meeting: iMeetings.getMeetings()) {
+				if (meeting.getApprovalStatus() == ApprovalStatus.Rejected || meeting.getApprovalStatus() == ApprovalStatus.Cancelled || meeting.getApprovalStatus() == ApprovalStatus.Deleted) continue;
+				if (iProvider.hasLocation(meeting.getLocation())) return true;
+			}
+			return false;
+		}
 	}
 
 }

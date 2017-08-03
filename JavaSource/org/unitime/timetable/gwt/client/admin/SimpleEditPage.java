@@ -1178,6 +1178,7 @@ public class SimpleEditPage extends Composite {
 				case toggle:
 					final CheckBox check = new CheckBox();
 					check.setValue(record.getField(index) == null ? null : "true".equalsIgnoreCase(record.getField(index)));
+					if (record.getField(index) == null && field.isCheckedByDefault()) check.setValue(true);
 					check.addClickHandler(new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
@@ -1343,7 +1344,10 @@ public class SimpleEditPage extends Composite {
 			} else {
 				switch (field.getType()) {
 				case toggle:
-					Image image = new Image(record.getField(index) != null && "true".equalsIgnoreCase(record.getField(index)) ? RESOURCES.on() : RESOURCES.off());
+					if (record.getField(index) != null && !"true".equals(record.getField(index)) && !"false".equals(record.getField(index))) {
+						initWidget(new HTML(record.getField(index), false)); break;
+					}
+					Image image = new Image((record.getField(index) == null && field.isCheckedByDefault()) || (record.getField(index) != null && "true".equalsIgnoreCase(record.getField(index))) ? RESOURCES.on() : RESOURCES.off());
 					initWidget(image);
 					break;
 				case students:
@@ -1578,7 +1582,7 @@ public class SimpleEditPage extends Composite {
 						}
 						break;
 					case textarea:
-						if (value.length() > field.getLength()) {
+						if (value != null && value.length() > field.getLength()) {
 							widget.setError(MESSAGES.errorTooLong(field.getName()));
 							if (valid == null && detailRecord == null) {
 								valid = MESSAGES.errorTooLong(field.getName());
@@ -1644,7 +1648,7 @@ public class SimpleEditPage extends Composite {
 						}
 						break;
 					case textarea:
-						if (value.length() > field.getLength()) {
+						if (value != null && value.length() > field.getLength()) {
 							widget.setError(MESSAGES.errorTooLong(field.getName()));
 							if (valid == null) {
 								valid = MESSAGES.errorTooLong(field.getName());
