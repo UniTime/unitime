@@ -118,6 +118,15 @@
 		</item>
 	</category>
 	<category>
+		<title>Event Management</title>
+		<item>
+			<name>Rooms: Export PDF/CSV</name>
+			<description>
+				<line>Event status may contain line breaks -- change &lt;br&gt; to a new line.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 	    <title>Administration</title>
 	    <item>
 	        <name>Data Exchange: Academic Session Setup</name>

@@ -223,7 +223,7 @@ public class RoomsExportPDF extends RoomsExporter {
 			return new A(context.dept2string(room.getEventDepartment(), false)).color(room.getEventDepartment() == null ? null : room.getEventDepartment().getColor());
 			
 		case EVENT_STATUS:
-			return room.getEventStatus() != null ? new A(CONSTANTS.eventStatusAbbv()[room.getEventStatus()]) : room.getDefaultEventStatus() != null ? new A(CONSTANTS.eventStatusAbbv()[room.getDefaultEventStatus()]).italic() : new A();
+			return room.getEventStatus() != null ? new A(CONSTANTS.eventStatusAbbv()[room.getEventStatus()], F.FIX_BR) : room.getDefaultEventStatus() != null ? new A(CONSTANTS.eventStatusAbbv()[room.getDefaultEventStatus()], F.FIX_BR).italic() : new A();
 			
 		case EVENT_AVAILABILITY:
 			return availability(room, true, context);

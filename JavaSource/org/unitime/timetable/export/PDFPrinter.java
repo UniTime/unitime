@@ -291,6 +291,8 @@ public class PDFPrinter implements Printer {
 			iText = text;
 			for (F f: flags)
 				iFlag = f.set(iFlag);
+			if (has(F.FIX_BR))
+				iText = (text == null ? null : text.replace("<br>", "\n")); 
 		}
 		
 		public A(A... chunks) {
@@ -391,7 +393,7 @@ public class PDFPrinter implements Printer {
 	} 
 	
 	public static enum F {
-		ITALIC, BOLD, UNDERLINE, RIGHT, CENTER, NOSEPARATOR, INLINE,
+		ITALIC, BOLD, UNDERLINE, RIGHT, CENTER, NOSEPARATOR, INLINE, FIX_BR
 		;
 		
 		public int flag() { return 1 << ordinal(); }

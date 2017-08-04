@@ -141,7 +141,7 @@ public class RoomsExportCSV extends RoomsExporter {
 		case EVENT_DEPARTMENT:
 			return context.dept2string(room.getEventDepartment(), false);
 		case EVENT_STATUS:
-			return room.getEventStatus() != null ? CONSTANTS.eventStatusAbbv()[room.getEventStatus()] : room.getDefaultEventStatus() != null ? CONSTANTS.eventStatusAbbv()[room.getDefaultEventStatus()] : "";
+			return (room.getEventStatus() != null ? CONSTANTS.eventStatusAbbv()[room.getEventStatus()] : room.getDefaultEventStatus() != null ? CONSTANTS.eventStatusAbbv()[room.getDefaultEventStatus()] : "").replace("<br>", "\n");
 		case EVENT_AVAILABILITY:
 			return room.getEventAvailability();
 		case EVENT_MESSAGE:
