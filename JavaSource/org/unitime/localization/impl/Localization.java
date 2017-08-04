@@ -28,6 +28,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Locale;
@@ -209,6 +210,28 @@ public class Localization {
 			return value;
 		}
 		
+		private String[] fixStringArray(String[] value, String[] defaults) {
+			if (value != null && value.length < defaults.length) {
+				String[] fixed = Arrays.copyOf(value, defaults.length);
+				for (int i = value.length; i < defaults.length; i++)
+					fixed[i] = defaults[i];
+				return fixed;
+			}
+			return value;
+		}
+		
+		private Map<String, String> fixStringMap(Map<String, String> value, Map<String, String> defaults) {
+			if (value != null && !value.keySet().equals(defaults.keySet())) {
+				Map<String, String> fixed = new HashMap<String, String>(value);
+				for (Map.Entry<String, String> e: defaults.entrySet()) {
+					if (!value.containsKey(e.getKey()))
+						fixed.put(e.getKey(), e.getValue());
+				}
+				return fixed;
+			}
+			return value;
+		}
+		
 		@Override
 		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 			if ("getStrutsActions".equals(method.getName()) && method.getParameterTypes().length == 1)
@@ -218,8 +241,20 @@ public class Localization {
 				return (value == null ? (String) args[1] : fillArgumentsIn(value, args, 2));
 			}
 			String value = getProperty(method.getName());
-			if (value != null) 
-				return type(fillArgumentsIn(value, args, 0), method.getReturnType());
+			if (value != null) {
+				Object ret = type(fillArgumentsIn(value, args, 0), method.getReturnType());
+				if (String[].class.equals(method.getReturnType())) {
+					Constants.DefaultStringArrayValue dsa = method.getAnnotation(Constants.DefaultStringArrayValue.class);
+					if (dsa != null)
+						return fixStringArray((String[])ret, dsa.value());
+				}
+				if (Map.class.equals(method.getReturnType())) {
+					Constants.DefaultStringMapValue dsm = method.getAnnotation(Constants.DefaultStringMapValue.class);
+					if (dsm != null)
+						return fixStringMap((Map<String, String>)ret, array2map(dsm.value()));
+				}
+				return ret;
+			}
 			Messages.DefaultMessage dm = method.getAnnotation(Messages.DefaultMessage.class);
 			if (dm != null)
 				return fillArgumentsIn(dm.value(), args, 0);
