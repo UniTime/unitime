@@ -78,6 +78,10 @@
 			<name>Solver Page</name>
 			<description>
 				<line>Parameters: Recognize &quot;on&quot; as a true value for boolean parameters.</line>
+				<line>Interactive: When an interactive configuration is used (the solver was loaded on the Timetables page),
+					make sure that the configuration that is being used is available in the Solver Configuration drop down.
+					<line>This also fixes an issue of an unwanted configuration change when the solver is reloaded on the Solver page.</line>
+				</line>
 			</description>
 		</item>
 	</category>

@@ -496,6 +496,20 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 			} catch (Exception e) {}
 			DataProperties config = solver.getProperties();
 			response.setConfigurationId(config.getPropertyLong("General.SettingsId", null));
+			if (response.getConfigurationId() != null && response.getConfiguration(response.getConfigurationId()) == null && response.getSolverType() == SolverType.COURSE) {
+				SolverPredefinedSetting cfg = SolverPredefinedSettingDAO.getInstance().get(response.getConfigurationId());
+				if (cfg != null && cfg.getAppearance() == SolverPredefinedSetting.APPEARANCE_TIMETABLES) {
+					SolverConfiguration c = new SolverConfiguration();
+					c.setId(cfg.getUniqueId());
+					c.setName(cfg.getDescription());
+					for (org.unitime.timetable.model.SolverParameter p: cfg.getParameters()) {
+						if (p.getDefinition().isVisible() && p.getDefinition().getGroup().getType() == SolverParameterGroup.SolverType.COURSE.ordinal() && "Basic".equals(p.getDefinition().getGroup().getName())) {
+							c.addParameter(p.getDefinition().getUniqueId(), p.getValue());
+						}
+					}
+					response.addConfiguration(c);
+				}
+			}
 			if (response.hasParameters()) {
 				for (SolverParameter p :response.getParameters())
 					p.setValue(config.getProperty(p.getKey()));

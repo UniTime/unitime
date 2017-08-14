@@ -266,6 +266,12 @@ public class SolverInterface implements IsSerializable {
 		public void setConfigurationId(Long configId) { iConfigurationId = configId; }
 		
 		public boolean hasConfigurations() { return iConfigurations != null && !iConfigurations.isEmpty(); }
+		public SolverConfiguration getConfiguration(Long id) {
+			if (iConfigurations == null) return null;
+			for (SolverConfiguration config: iConfigurations)
+				if (id.equals(config.getId())) return config;
+			return null;
+		}
 		public List<SolverConfiguration> getConfigurations() { return iConfigurations; }
 		public void addConfiguration(SolverConfiguration config) {
 			if (iConfigurations == null) iConfigurations = new ArrayList<SolverConfiguration>();
