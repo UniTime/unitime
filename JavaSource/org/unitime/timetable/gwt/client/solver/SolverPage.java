@@ -642,7 +642,7 @@ public class SolverPage extends SimpleForm {
 
 		@Override
 		public void setParameterValue(String value) {
-			setValue("true".equalsIgnoreCase(value));
+			setValue("true".equalsIgnoreCase(value) || "on".equalsIgnoreCase(value));
 		}
 
 		@Override

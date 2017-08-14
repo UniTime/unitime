@@ -74,6 +74,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Solver Page</name>
+			<description>
+				<line>Parameters: Recognize &quot;on&quot; as a true value for boolean parameters.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Online Student Scheduling</title>
