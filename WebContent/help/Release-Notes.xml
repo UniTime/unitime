@@ -125,6 +125,14 @@
 				<line>Event status may contain line breaks -- change &lt;br&gt; to a new line.</line>
 			</description>
 		</item>
+		<item>
+			<name>Room Pictures: Sorting</name>
+			<description>
+				<line>Compare room pictures with the same time stamp by name and/or unique id.
+					<line>This fixes an issue of not showing some pictures if they have the same time stamp.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 	    <title>Administration</title>

@@ -51,7 +51,11 @@ public abstract class LocationPicture extends BaseLocationPicture implements Com
 				if (cmp != 0) return cmp;
 			}
 		}
-		return getTimeStamp().compareTo(other.getTimeStamp());
+		int cmp = getTimeStamp().compareTo(other.getTimeStamp());
+		if (cmp != 0) return cmp;
+		cmp = getFileName().compareTo(other.getFileName());
+		if (cmp != 0) return cmp;
+		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(other.getUniqueId() == null ? -1 : other.getUniqueId());
 	}
 	
 	public boolean isImage() {
