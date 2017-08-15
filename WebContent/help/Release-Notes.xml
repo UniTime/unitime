@@ -106,6 +106,12 @@
 				<line>Instructor assignments that do not check conflicts (Check Conflicts toggle is not checked) can overlap with class enrollments.</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Requests: Eligibility Check</name>
+			<description>
+				<line>Allow for collecting registrations when the academic status does not have any default student status selected (all should be enabled).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Batch Student Scheduling</title>
