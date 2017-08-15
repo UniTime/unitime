@@ -149,6 +149,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Curriculum Timetable: Multiple Majors</name>
+			<description>
+				<line>Include inherited courses when showing a multiple-major curriculum, do not show courses with zero percent share.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 	    <title>Administration</title>
