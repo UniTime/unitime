@@ -84,6 +84,13 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Solver, Solver Log: Page Navigation</name>
+			<description>
+				<line>New GWT-based solver pages: Mark the visited solver / solver log page in navigation so that if a link is followed (e.g., to see Class Detail page),
+					Back button appears and goes back to the solver / solver log page.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Online Student Scheduling</title>

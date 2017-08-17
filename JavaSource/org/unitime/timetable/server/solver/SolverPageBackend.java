@@ -80,6 +80,7 @@ import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.solver.ui.LogInfo;
 import org.unitime.timetable.solver.ui.PropertiesInfo;
+import org.unitime.timetable.webutil.BackTracker;
 
 /**
  * @author Tomas Muller
@@ -126,6 +127,21 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 		fillSolverStatus(context, solver, request, response);
 		fillAvailableOperations(context, solver, request, response);
 		fillSolverWarnings(context, solver, request, response);
+		
+		switch (request.getType()) {
+		case COURSE:
+			BackTracker.markForBack(context, "gwt.jsp?page=solver&type=course", MESSAGES.pageCourseTimetablingSolver(), true, true);
+			break;
+		case EXAM:
+			BackTracker.markForBack(context, "gwt.jsp?page=solver&type=exam", MESSAGES.pageExaminationTimetablingSolver(), true, true);
+			break;
+		case INSTRUCTOR:
+			BackTracker.markForBack(context, "gwt.jsp?page=solver&type=instructor", MESSAGES.pageInstructorSchedulingSolver(), true, true);
+			break;
+		case STUDENT:
+			BackTracker.markForBack(context, "gwt.jsp?page=solver&type=student", MESSAGES.pageStudentSchedulingSolver(), true, true);
+			break;
+		}
 
 		return response;
 	}

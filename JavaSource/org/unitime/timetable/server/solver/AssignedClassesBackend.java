@@ -63,6 +63,7 @@ import org.unitime.timetable.solver.interactive.ClassAssignmentDetails.TimeInfo;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.webutil.BackTracker;
 
 /**
  * @author Tomas Muller
@@ -266,6 +267,7 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 					new TableHeaderIterface(MESSAGES.colShortPerturbations()));
 		
 		SolverPageBackend.fillSolverWarnings(context, solver, SolverType.COURSE, response);
+		BackTracker.markForBack(context, "gwt.jsp?page=assignedClasses", MESSAGES.pageAssignedClasses(), true, true);
 		
 		if (ApplicationProperty.TimeGridShowCrosslists.isTrue())
 			addCrosslistedNames(response, ApplicationProperty.SolverShowClassSufix.isTrue(), ApplicationProperty.SolverShowConfiguratioName.isTrue());

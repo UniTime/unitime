@@ -46,6 +46,7 @@ import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.solver.ui.LogInfo;
+import org.unitime.timetable.webutil.BackTracker;
 
 /**
  * @author Tomas Muller
@@ -113,6 +114,21 @@ public class SolverLogPageBackend implements GwtRpcImplementation<SolverLogPageR
 		if (log != null)
 			for (Progress.Message m: log)
 				response.addMessage(m.getLevel(), m.getDate(), m.getMessage(), m.getTrace());
+		
+		switch (request.getType()) {
+		case COURSE:
+			BackTracker.markForBack(context, "gwt.jsp?page=solverlog&type=course", MESSAGES.pageCourseTimetablingSolverLog(), true, true);
+			break;
+		case EXAM:
+			BackTracker.markForBack(context, "gwt.jsp?page=solverlog&type=exam", MESSAGES.pageExaminationTimetablingSolverLog(), true, true);
+			break;
+		case INSTRUCTOR:
+			BackTracker.markForBack(context, "gwt.jsp?page=solverlog&type=instructor", MESSAGES.pageInstructorSchedulingSolverLog(), true, true);
+			break;
+		case STUDENT:
+			BackTracker.markForBack(context, "gwt.jsp?page=solverlog&type=student", MESSAGES.pageStudentSchedulingSolverLog(), true, true);
+			break;
+		}
 
 		return response;
 	}
