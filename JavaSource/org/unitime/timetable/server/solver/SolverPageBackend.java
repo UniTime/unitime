@@ -567,9 +567,11 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 							}
 						}
 					}
-					response.setCanExecute(SolverOperation.SAVE_AS_NEW);
-					if (hasSolution && canOverwrite)
-						response.setCanExecute(SolverOperation.SAVE);
+					if (context.hasPermission(owners, "SolverGroup", Right.SolverSolutionSave)) {
+						response.setCanExecute(SolverOperation.SAVE_AS_NEW);
+						if (hasSolution && canOverwrite)
+							response.setCanExecute(SolverOperation.SAVE);
+					}
 					if (context.hasPermission(owners, "SolverGroup", Right.TimetablesSolutionCommit)) {
 						response.setCanExecute(SolverOperation.SAVE_AS_NEW_COMMIT);
 						if (hasSolution)

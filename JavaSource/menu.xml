@@ -241,6 +241,14 @@
 			<item name="Solver" page="solver.do">
 				<condition>
 					<hasPermission name="Solver"/>
+					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
+				</condition>
+			</item>
+			<item name="Solver" page="solver" type="gwt">
+				<parameter name="type">course</parameter>
+				<condition>
+					<hasPermission name="Solver"/>
+					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Conflict Statistics" page="cbs.do">
@@ -251,6 +259,14 @@
 			<item name="Solver Log" page="solverLog.do">
 				<condition>
 					<hasPermission name="SolverLog"/>
+					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
+				</condition>
+			</item>
+			<item name="Solver Log" page="solverlog" type="gwt">
+				<parameter name="type">course</parameter>
+				<condition>
+					<hasPermission name="SolverLog"/>
+					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Reports" page="solutionReport.do">

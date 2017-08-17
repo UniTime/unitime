@@ -91,6 +91,12 @@
 					Back button appears and goes back to the solver / solver log page.</line>
 			</description>
 		</item>
+		<item>
+			<name>Menu: Course Audit</name>
+			<description>
+				<line>Link the new Solver and Solver Log pages from the Course Audit menu (unless unitime.legacy.solver is set to true).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Online Student Scheduling</title>
