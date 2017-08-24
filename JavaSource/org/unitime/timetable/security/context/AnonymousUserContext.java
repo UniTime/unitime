@@ -22,8 +22,10 @@ package org.unitime.timetable.security.context;
 import java.util.List;
 import java.util.TreeSet;
 
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.security.UserAuthority;
@@ -41,6 +43,11 @@ public class AnonymousUserContext extends AbstractUserContext {
 		try {
 			TreeSet<Session> sessions = new TreeSet<Session>();
 			
+			for (Settings setting: (List<Settings>)hibSession.createQuery("from Settings").list()) {
+				if (setting.getDefaultValue() != null)
+					setProperty(setting.getKey(), setting.getDefaultValue());
+			}
+			
 			Roles anonRole = Roles.getRole(Roles.ROLE_ANONYMOUS, hibSession);
 			if (anonRole != null && anonRole.isEnabled()) {
 				for (Session session: new TreeSet<Session>(SessionDAO.getInstance().findAll(hibSession))) {
@@ -56,7 +63,7 @@ public class AnonymousUserContext extends AbstractUserContext {
 			}
 			
 			if (getCurrentAuthority() == null) {
-				Session session = UniTimeUserContext.defaultSession(sessions, null);
+				Session session = UniTimeUserContext.defaultSession(sessions, null, getProperty(UserProperty.PrimaryCampus.key()));
 				if (session != null) {
 					List<? extends UserAuthority> authorities = getAuthorities(null, new SimpleQualifier("Session", session.getUniqueId()));
 					if (!authorities.isEmpty())

@@ -129,7 +129,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 				}
 				
 				if (sessionId == null && primary != null) {
-					Session session = defaultSession(primarySessions, primary);
+					Session session = defaultSession(primarySessions, primary, getProperty(UserProperty.PrimaryCampus.key()));
 					if (session != null) sessionId = session.getUniqueId();
 				}
 				if (sessionId != null && primary != null) {
@@ -186,7 +186,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 			}
 			
 			if (sessionId == null) {
-				Session session = defaultSession(sessions, null);
+				Session session = defaultSession(sessions, null, getProperty(UserProperty.PrimaryCampus.key()));
 				if (session != null) sessionId = session.getUniqueId();
 			}
 			if (getCurrentAuthority() == null && sessionId != null) {
@@ -215,7 +215,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 			}
 			
 			if (getCurrentAuthority() == null) {
-				Session session = defaultSession(sessions, null);
+				Session session = defaultSession(sessions, null, getProperty(UserProperty.PrimaryCampus.key()));
 				if (session != null) {
 					List<? extends UserAuthority> authorities = getAuthorities(null, new SimpleQualifier("Session", session.getUniqueId()));
 					if (!authorities.isEmpty())
@@ -229,7 +229,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 		if (iName == null) iName = iLogin;
 	}
 	
-	public static Session defaultSession(TreeSet<Session> sessions, HasRights role) {
+	public static Session defaultSession(TreeSet<Session> sessions, HasRights role, String primaryCampus) {
 		if (sessions==null || sessions.isEmpty()) return null; // no session -> no default
 		
 		//try to pick among active sessions first (check that all active sessions are of the same initiative)
@@ -237,6 +237,7 @@ public class UniTimeUserContext extends AbstractUserContext {
         Session lastActive = null;
         Session currentActive = null;
         Session firstFutureSession = null;
+        boolean multipleInitiatives = false;
         
 		Calendar cal = Calendar.getInstance(Localization.getJavaLocale());
 		cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -252,14 +253,27 @@ public class UniTimeUserContext extends AbstractUserContext {
             if (session.getStatusType() == null || !session.getStatusType().isActive() || session.getStatusType().isTestSession()) continue;
             if (initiative==null)
             	initiative = session.getAcademicInitiative();
-            else if (!initiative.equals(session.getAcademicInitiative()))
-                return null; // multiple initiatives -> no default
+            else if (!initiative.equals(session.getAcademicInitiative())) {
+            	if (initiative.equals(primaryCampus)) {
+            		continue; // skip other campuses
+            	} else if (session.getAcademicInitiative().equals(primaryCampus)) {
+            		initiative = session.getAcademicInitiative();
+            		currentActive = null;
+            		firstFutureSession = null;
+            		lastActive = null;
+            	} else {
+            		multipleInitiatives = true;
+            		currentActive = null;
+            		firstFutureSession = null;
+            		lastActive = null;
+            		continue;
+            	}
+            }
             
             Date begin = session.getEventBeginDate();
 			cal.setTime(session.getEventEndDate());
 			cal.add(Calendar.DAY_OF_YEAR, 1);
 			Date end = cal.getTime();
-
             
             if (currentActive == null && !begin.after(today) && today.before(end))
             	currentActive = session;
@@ -273,6 +287,8 @@ public class UniTimeUserContext extends AbstractUserContext {
             lastActive = session;
         }
         
+        // multiple initiatives & no matching primary -> no default
+        if (multipleInitiatives && lastActive == null) return null;
         
         if (role != null && role.hasRight(Right.SessionDefaultFirstFuture)) {
         	if (firstFutureSession != null) return firstFutureSession;

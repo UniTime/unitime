@@ -31,6 +31,7 @@ import org.hibernate.HibernateException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.web.WebTable;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -92,7 +93,7 @@ public class SessionListAction extends Action {
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.SESSION_DATE);
 		
 		TreeSet<Session> sessions = new TreeSet<Session>(SessionDAO.getInstance().findAll());
-		Session defaultSession = UniTimeUserContext.defaultSession(sessions, sessionContext.getUser().getCurrentAuthority());
+		Session defaultSession = UniTimeUserContext.defaultSession(sessions, sessionContext.getUser().getCurrentAuthority(), UserProperty.PrimaryCampus.get(sessionContext.getUser()));
 
 		for (Session s: SessionDAO.getInstance().findAll()) {
 			Calendar ce = Calendar.getInstance(Locale.US); ce.setTime(s.getSessionBeginDateTime());

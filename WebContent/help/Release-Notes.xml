@@ -210,6 +210,15 @@
 	    		<line>Show Previous/Next buttons at the bottom of the page (below the table) too.</line>
 	    	</description>
 	    </item>
+	    <item>
+	    	<name>User Settings: Primary Academic Initiative</name>
+	    	<description>
+	    		<line>Added ability to define a primary academic initiative as a user settings (Preferences > Settings).</line>
+	    		<line>When a user has access to multiple initiatives (campuses), primary academic initiative can be used to determine the default academic session.</line>
+	    		<line>To enable this, define a new manager setting (Administration > Defaults > User Settings) with reference primaryAcademicInitiative,
+	    			default value Not Set, and allowed values containing &quot;Not Set&quot; and the existing academic initiatives that users can choose from.</line>
+	    	</description>
+	    </item>
 	</category>
 </release>
 <release>

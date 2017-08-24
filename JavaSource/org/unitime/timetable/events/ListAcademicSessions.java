@@ -26,6 +26,7 @@ import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox;
 import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox.AcademicSession;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
@@ -102,7 +103,7 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 			throw new GwtRpcException(MESSAGES.noSessionAvailable());
 		
 		if (selected == null || !sessions.contains(selected))
-			selected = UniTimeUserContext.defaultSession(sessions, null);
+			selected = UniTimeUserContext.defaultSession(sessions, null, UserProperty.PrimaryCampus.get(context.getUser()));
 		if (selected == null)
 			selected = sessions.last();
 		
@@ -116,7 +117,7 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 				else if (context.hasPermissionAnyAuthority(session, Right.EventAddUnavailable, new SimpleQualifier("Session", session.getUniqueId())))
 					preferred.add(session);
 			if (!preferred.isEmpty()) {
-				Session defaultSession = UniTimeUserContext.defaultSession(preferred, null);
+				Session defaultSession = UniTimeUserContext.defaultSession(preferred, null, UserProperty.PrimaryCampus.get(context.getUser()));
 				if (defaultSession != null) selected = defaultSession;
 			}
 		}
