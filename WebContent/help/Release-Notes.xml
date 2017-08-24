@@ -97,6 +97,13 @@
 				<line>Link the new Solver and Solver Log pages from the Course Audit menu (unless unitime.legacy.solver is set to true).</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructional Offering Configuration: Delete Incompatible Time Preferences</name>
+			<description>
+				<line>Added an ability to delete incompatible time preferences after a class duration change.</line>
+				<line>Set application property unitime.instrOfferingConfig.deleteIncompatibleTimePrefs to true (defaults to false).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Online Student Scheduling</title>

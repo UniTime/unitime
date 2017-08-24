@@ -683,6 +683,11 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Instructional Offering Config: check limits")
 	ConfigEditCheckLimits("unitime.instrOfferingConfig.checkConfigLimit"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Instructional Offering Config: delete incompatible time preferences after a class duration change")
+	ConfigEditDeleteTimePrefs("unitime.instrOfferingConfig.deleteIncompatibleTimePrefs"),
 
 	@Type(Boolean.class)
 	@DefaultValue("true")

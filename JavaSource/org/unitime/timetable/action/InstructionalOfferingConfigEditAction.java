@@ -64,6 +64,7 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.ItypeDesc;
+import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroup;
@@ -88,6 +89,7 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.AccessDeniedException;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
+import org.unitime.timetable.util.duration.DurationModel;
 import org.unitime.timetable.webutil.SchedulingSubpartTableBuilder;
 
 
@@ -1358,31 +1360,31 @@ public class InstructionalOfferingConfigEditAction extends Action {
 		            subpart.setMinutesPerWk(new Integer(mpw));
 	            }
 	            
-	            /*
-	            DurationModel model = subpart.getInstrOfferingConfig().getDurationModel();
-	            for (Iterator i=subpart.getPreferences().iterator(); i.hasNext(); ) {
-	                Preference pref = (Preference) i.next();
-	                if (pref instanceof TimePref && !model.isValidCombination(mpw, subpart.effectiveDatePattern(), ((TimePref)pref).getTimePattern())) {
-		                pref.setOwner(null);
-		                hibSession.delete(pref);
-		                i.remove();
-	                }
-	            }
-
-	            for (Iterator i=classes.iterator(); i.hasNext(); ) {
-	                Class_ c = (Class_) i.next();
-		            Set cPrefs = c.getPreferences();
-		            for (Iterator j=cPrefs.iterator(); j.hasNext(); ) {
-		                Preference pref = (Preference) j.next();
-		                if (pref instanceof TimePref && !model.isValidCombination(mpw, c.effectiveDatePattern(), ((TimePref)pref).getTimePattern())) {
+	            if (ApplicationProperty.ConfigEditDeleteTimePrefs.isTrue()) {
+		            DurationModel model = subpart.getInstrOfferingConfig().getDurationModel();
+		            for (Iterator i=subpart.getPreferences().iterator(); i.hasNext(); ) {
+		                Preference pref = (Preference) i.next();
+		                if (pref instanceof TimePref && !model.isValidCombination(mpw, subpart.effectiveDatePattern(), ((TimePref)pref).getTimePattern())) {
 			                pref.setOwner(null);
 			                hibSession.delete(pref);
-			                j.remove();
+			                i.remove();
 		                }
 		            }
-	                hibSession.saveOrUpdate(c);
+
+		            for (Iterator i=classes.iterator(); i.hasNext(); ) {
+		                Class_ c = (Class_) i.next();
+			            Set cPrefs = c.getPreferences();
+			            for (Iterator j=cPrefs.iterator(); j.hasNext(); ) {
+			                Preference pref = (Preference) j.next();
+			                if (pref instanceof TimePref && !model.isValidCombination(mpw, c.effectiveDatePattern(), ((TimePref)pref).getTimePattern())) {
+				                pref.setOwner(null);
+				                hibSession.delete(pref);
+				                j.remove();
+			                }
+			            }
+		                hibSession.saveOrUpdate(c);
+		            }
 	            }
-	            */
 
 	            // Manager changed
 	            boolean managerChanged = false;
