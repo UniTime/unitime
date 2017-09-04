@@ -132,6 +132,14 @@
 				<line>Allow for collecting registrations when the academic status does not have any default student status selected (all should be enabled).</line>
 			</description>
 		</item>
+		<item>
+			<name>Online Student Scheduling Server: Generic Updater</name>
+			<description>
+				<line>Check for new servers: when the best node refuses to load the online student scheduling server for some reason
+					(typically because canCreateSolver(sessionId) returns false), continue with the next available server.</line>
+				<line>This change fixes the case when the generic updater thread keeps on trying the same node over and over, never leaving the loop.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Batch Student Scheduling</title>

@@ -202,6 +202,7 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 									bestUsage = entry.getValue();
 								}
 							}
+							usages.remove(bestAddress);
 							
 							Boolean created = iContainer.getDispatcher().callRemoteMethod(
 									bestAddress,
