@@ -183,6 +183,13 @@
 				<line>Include inherited courses when showing a multiple-major curriculum, do not show courses with zero percent share.</line>
 			</description>
 		</item>
+		<item>
+			<name>Add/Edit Event: Add Meetings</name>
+			<description>
+				<line>Fixed room availability check when the room filter returns more than 1000 rooms.</line>
+				<line>This fixes the ORA-00936: missing expression and SQLGrammarException: could not extract ResultSet.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 	    <title>Administration</title>

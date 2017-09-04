@@ -86,7 +86,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 					dates += (dates.isEmpty() ? "" : ",") + ":d" + i;
 				
 				String locations = "";
-				for (int i = idx; i + idx < request.getLocations().size() && i < 1000; i++)
+				for (int i = 0; i + idx < request.getLocations().size() && i < 1000; i++)
 					locations += (locations.isEmpty() ? "" : ",") + ":l" + i;
 				
 				Query query = EventDAO.getInstance().getSession().createQuery(
@@ -102,7 +102,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 					Date date = CalendarUtils.dateOfYear2date(session.getSessionStartYear(), request.getDates().get(i));
 					query.setDate("d" + i, date);
 				}
-				for (int i = idx; i + idx < request.getLocations().size() && i < 1000; i++)
+				for (int i = 0; i + idx < request.getLocations().size() && i < 1000; i++)
 					query.setLong("l" + i, request.getLocations().get(idx + i));
 				
 				for (Meeting m: (List<Meeting>)query.list()) {
@@ -201,7 +201,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 				
 				query = EventDAO.getInstance().getSession().createQuery(
 						"from Location where session.uniqueId = :sessionId and permanentId in (" + locations + ")");
-				for (int i = idx; i + idx < request.getLocations().size() && i < 1000; i++)
+				for (int i = 0; i + idx < request.getLocations().size() && i < 1000; i++)
 					query.setLong("l" + i, request.getLocations().get(idx + i));
 
 				for (Location location: (List<Location>)query.setLong("sessionId", request.getSessionId()).setCacheable(true).list()) {
