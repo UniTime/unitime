@@ -104,6 +104,19 @@
 				<line>Set application property unitime.instrOfferingConfig.deleteIncompatibleTimePrefs to true (defaults to false).</line>
 			</description>
 		</item>
+		<item>
+			<name>Solver: Group Constraint</name>
+			<description>
+				<line>Do not use forward-checking when checking for hard conflicts during an assignments.</line>
+				<line>This fixes an issue on the Suggestion page (a conflict may not be shown) and during solution restore.</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver: Student Groups</name>
+			<description>
+				<line>When computing Student Groups solution info, avoid a Null exception when there is a class with no configuration.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Online Student Scheduling</title>
