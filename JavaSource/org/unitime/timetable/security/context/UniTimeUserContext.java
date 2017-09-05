@@ -316,6 +316,10 @@ public class UniTimeUserContext extends AbstractUserContext {
         return lastNoTest;
 	}
 	
+	public static Session defaultSession(TreeSet<Session> sessions, HasRights role) {
+		return defaultSession(sessions, role, null);
+	}
+	
 	@Override
 	public void setCurrentAuthority(UserAuthority authority) {
 		super.setCurrentAuthority(authority);
