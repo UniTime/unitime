@@ -261,6 +261,13 @@ public class DepartmentEditForm extends ActionForm {
         iDependentDepartments.remove(idx);
         iDependentStatuses.remove(idx);
 	}
+	
+	public void deleteAllDependentDepartments() {
+        iDependentDepartments.clear();
+        iDependentStatuses.clear();
+        addBlankDependentDepartment();
+        addBlankDependentDepartment();
+	}
 
 	public void save(SessionContext context) throws Exception {
 		DepartmentDAO dao = new DepartmentDAO();

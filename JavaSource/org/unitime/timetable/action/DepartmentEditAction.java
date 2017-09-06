@@ -113,6 +113,11 @@ public class DepartmentEditAction extends Action {
 	        	myForm.addBlankDependentDepartment();
 	        	return mapping.findForward(myForm.getId() == null ? "add" : "edit");
 	        }
+	        
+	        if ("Delete All".equals(op)) {
+	        	myForm.deleteAllDependentDepartments();
+	        	return mapping.findForward(myForm.getId() == null ? "add" : "edit");
+	        }
 
 	        if ("Delete".equals(op) && request.getParameter("deleteId") != null && !request.getParameter("deleteId").isEmpty()) {
 	        	myForm.deleteDependentDepartment(Integer.parseInt(request.getParameter("deleteId")));

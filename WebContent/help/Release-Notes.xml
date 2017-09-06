@@ -117,6 +117,12 @@
 				<line>When computing Student Groups solution info, avoid a Null exception when there is a class with no configuration.</line>
 			</description>
 		</item>
+		<item>
+			<name>Add/Edit Department: Departmental Status</name>
+			<description>
+				<line>Added Delete All button that clears the table of Controlling Department Statuses.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Online Student Scheduling</title>

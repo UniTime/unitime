@@ -232,7 +232,8 @@
 				<TD valign="middle" colspan='2'>
 					<A name='ExternalDepartmentStatuses'></A>
 					<tt:section-header title="Controlling Department Statuses">
-						<html:submit property="op" styleClass="btn" accesskey="A" title="Add Controlling Department Status (Alt+A)">Add Status</html:submit> 			
+						<html:submit property="op" styleClass="btn" accesskey="A" title="Add Controlling Department Status (Alt+A)">Add Status</html:submit>
+						<html:submit property="op" styleClass="btn" accesskey="X" title="Delete All Controlling Department Statuses (Alt+X)">Delete All</html:submit> 			
 					</tt:section-header>
 				</TD>
 			</TR>
