@@ -32,6 +32,7 @@ import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.Constants;
 
 /**
  * @author Tomas Muller
@@ -58,6 +59,7 @@ public class AssignedClassesFilterBackend implements GwtRpcImplementation<Assign
 		subjectArea.setMultiSelect(true);
 		subjectArea.setCollapsible(false);
 		subjectArea.setLabel(MESSAGES.propSubjectArea());
+		subjectArea.addOption(Constants.ALL_OPTION_VALUE, MESSAGES.itemAllSubjectAreas());
 		for (SubjectArea subject: SubjectArea.getUserSubjectAreas(context.getUser()))
 			subjectArea.addOption(subject.getUniqueId().toString(), subject.getSubjectAreaAbbreviation());
 		subjectArea.setDefaultValue((String)context.getAttribute(SessionAttribute.OfferingsSubjectArea));

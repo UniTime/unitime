@@ -74,6 +74,13 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 	protected static DecimalFormat sDF = new DecimalFormat("0.###",new java.text.DecimalFormatSymbols(Locale.US));
 	
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
+	
+	public static boolean isAllSubjects(String subjects) {
+		if (subjects == null || subjects.isEmpty() || subjects.equals(Constants.ALL_OPTION_VALUE)) return true;
+		for (String id: subjects.split(","))
+			if (Constants.ALL_OPTION_VALUE.equals(id)) return true;
+		return false;
+	}
 
 	@Override
 	public AssignedClassesResponse execute(AssignedClassesRequest request, SessionContext context) {
@@ -81,7 +88,6 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 		AssignedClassesResponse response = new AssignedClassesResponse();
 		
 		context.getUser().setProperty("SuggestionsModel.simpleMode", request.getFilter().getParameterValue("simpleMode"));
-		context.setAttribute(SessionAttribute.OfferingsSubjectArea, request.getFilter().getParameterValue("subjectArea"));
 		boolean simple = "1".equals(request.getFilter().getParameterValue("simpleMode"));
 		SuggestionsModel model = (SuggestionsModel)context.getAttribute("Suggestions.model");
 		if (model != null)
@@ -89,8 +95,9 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 		
 		SolverProxy solver = courseTimetablingSolverService.getSolver();
 		String subjects = request.getFilter().getParameterValue("subjectArea");
+		context.setAttribute(SessionAttribute.OfferingsSubjectArea, isAllSubjects(subjects) ? Constants.ALL_OPTION_VALUE : request.getFilter().getParameterValue("subjectArea"));
 		String instructorNameFormat = UserProperty.NameFormat.get(context.getUser());
-		
+
 		String solutionIdsStr = (String)context.getAttribute(SessionAttribute.SelectedSolution);
 		if (solver == null) {
 	    	if (solutionIdsStr == null || solutionIdsStr.isEmpty()) {
@@ -110,7 +117,7 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 		}
 		
 		List<ClassAssignmentDetails> assignedClasses = new ArrayList<ClassAssignmentDetails>();
-		if (subjects == null || subjects.isEmpty() || subjects.equals(Constants.ALL_OPTION_VALUE)) {
+		if (isAllSubjects(subjects)) {
 			if (solver != null) {
 				assignedClasses = solver.getAssignedClasses();
 			} else {

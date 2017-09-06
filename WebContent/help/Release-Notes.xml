@@ -123,6 +123,12 @@
 				<line>Added Delete All button that clears the table of Controlling Department Statuses.</line>
 			</description>
 		</item>
+		<item>
+			<name>Assigned / Not-Assigned Classes</name>
+			<description>
+				<line>Subject Area: added &quot;All Subjects&quot; option.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Online Student Scheduling</title>

@@ -68,10 +68,9 @@ public class NotAssignedClassesBackend implements GwtRpcImplementation<NotAssign
 		context.checkPermission(Right.NotAssignedClasses);
 		NotAssignedClassesResponse response = new NotAssignedClassesResponse();
 		
-		context.setAttribute(SessionAttribute.OfferingsSubjectArea, request.getFilter().getParameterValue("subjectArea"));
-		
 		SolverProxy solver = courseTimetablingSolverService.getSolver();
 		String subjects = request.getFilter().getParameterValue("subjectArea");
+		context.setAttribute(SessionAttribute.OfferingsSubjectArea, AssignedClassesBackend.isAllSubjects(subjects) ? Constants.ALL_OPTION_VALUE : request.getFilter().getParameterValue("subjectArea"));
 		String instructorNameFormat = UserProperty.NameFormat.get(context.getUser());
 		
 		String solutionIdsStr = (String)context.getAttribute(SessionAttribute.SelectedSolution);
@@ -94,7 +93,7 @@ public class NotAssignedClassesBackend implements GwtRpcImplementation<NotAssign
 		
 		UnassignedClassesModel model = null;
 		String[] prefixes = null;
-		if (subjects != null && !subjects.isEmpty() && !subjects.equals(Constants.ALL_OPTION_VALUE)) {
+		if (!AssignedClassesBackend.isAllSubjects(subjects)) {
 			List<String> list = new ArrayList<String>();
 			for (String id: subjects.split(",")) {
 				list.add(request.getFilter().getParameter("subjectArea").getOptionText(id) + " ");

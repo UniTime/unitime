@@ -3210,7 +3210,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("All Departments")
 	String itemAllDepartments();
 	
-	@DefaultMessage("All Subject Areas")
+	@DefaultMessage("All Subjects")
 	String itemAllSubjectAreas();
 	
 	@DefaultMessage("None")
