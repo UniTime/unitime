@@ -403,6 +403,7 @@ public enum Right {
     DepartmentAdd(Session.class),
     DepartmentEdit(Department.class),
     DepartmentEditChangeExternalManager(Department.class),
+    DepartmentLimitedEdit(Department.class),
     DepartmentDelete(Department.class),
 
     SolverGroups(Session.class),

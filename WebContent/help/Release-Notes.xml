@@ -121,6 +121,7 @@
 			<name>Add/Edit Department: Departmental Status</name>
 			<description>
 				<line>Added Delete All button that clears the table of Controlling Department Statuses.</line>
+				<line>Added Department Limited Edit permission that can be used for users (External Schedule Managers) that are only allowed to edit Controlling Department Statuses.</line>
 			</description>
 		</item>
 		<item>

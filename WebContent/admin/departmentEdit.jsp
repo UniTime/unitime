@@ -47,6 +47,7 @@
 <html:form action="/departmentEdit">
 	<html:hidden property="id"/>
 	<html:hidden property="sessionId"/>
+	<html:hidden property="fullyEditable"/>
 
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 
@@ -107,7 +108,133 @@
 			<TD>Academic Session: </TD>
 			<TD><%= sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel() %></TD>
 		</TR>
+		
+	<logic:equal name="departmentEditForm" property="fullyEditable" value="false">
+		<TR>
+			<TD width='10%'>Code:</TD>
+			<TD>
+				<html:hidden property="deptCode"/>
+				<bean:write name="departmentEditForm" property="deptCode"/>
+			</TD>
+		</TR>
+		
+		<TR>
+			<TD>Abbreviation:</TD>
+			<TD>
+				<html:hidden property="abbv"/>
+				<bean:write name="departmentEditForm" property="abbv"/>
+			</TD>
+		</TR>
 
+		<TR>
+			<TD>Name:</TD>
+			<TD>
+				<html:hidden property="name"/>
+				<bean:write name="departmentEditForm" property="name"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD nowrap>Department Status:</TD>
+			<TD>
+				<html:hidden property="statusType"/>
+				<logic:empty name="departmentEditForm" property="statusType"><i>Session Default</i></logic:empty>
+				<logic:iterate name="departmentEditForm" property="statusOptions" id="statusOption">
+					<bean:define id="reference" name="statusOption" property="reference" type="java.lang.String"/>
+					<logic:equal name="departmentEditForm" property="statusType" value="<%=reference%>">
+						<bean:write name="statusOption" property="label"/>
+						</logic:equal>
+				</logic:iterate>
+			</TD>
+		</TR>
+		
+		<html:hidden property="externalId"/>
+		<logic:notEmpty name="departmentEditForm" property="externalId">
+		<TR>
+			<TD>External ID:</TD>
+			<TD>
+				<bean:write name="departmentEditForm" property="externalId"/>
+			</TD>
+		</TR>
+		</logic:notEmpty>
+		
+		<html:hidden property="isExternal"/>
+		<html:hidden property="extAbbv"/>
+		<html:hidden property="extName"/>
+		<logic:equal name="departmentEditForm" property="isExternal" value="true">
+			<TR>
+				<TD nowrap>External Manager Abbreviation:</TD>
+				<TD><bean:write name="departmentEditForm" property="extAbbv"/></TD>
+			</TR>
+			<TR>
+				<TD nowrap>External Manager Name:</TD>
+				<TD><bean:write name="departmentEditForm" property="extName"/></TD>
+			</TR>		
+		</logic:equal>
+		
+		<TR>
+			<TD nowrap>Distribution Preference Priority:</TD>
+			<TD>
+				<html:hidden property="distPrefPriority"/>
+				<bean:write name="departmentEditForm" property="distPrefPriority"/>
+			</TD>
+		</TR>
+		
+		<TR>
+			<TD nowrap>Allow Required Time:</TD>
+			<TD>
+				<html:hidden property="allowReqTime"/>
+				<logic:equal name="departmentEditForm" property="allowReqTime" value="true"><img src="images/accept.png" border="0"></logic:equal>
+				<logic:notEqual name="departmentEditForm" property="allowReqTime" value="true"><img src="images/cross.png" border="0"></logic:notEqual>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD nowrap>Allow Required Room:</TD>
+			<TD>
+				<html:hidden property="allowReqRoom"/>
+				<logic:equal name="departmentEditForm" property="allowReqRoom" value="true"><img src="images/accept.png" border="0"></logic:equal>
+				<logic:notEqual name="departmentEditForm" property="allowReqRoom" value="true"><img src="images/cross.png" border="0"></logic:notEqual>
+			</TD>
+		</TR>
+		
+		<TR>
+			<TD nowrap>Allow Required Distribution:</TD>
+			<TD>
+				<html:hidden property="allowReqDist"/>
+				<logic:equal name="departmentEditForm" property="allowReqDist" value="true"><img src="images/accept.png" border="0"></logic:equal>
+				<logic:notEqual name="departmentEditForm" property="allowReqDist" value="true"><img src="images/cross.png" border="0"></logic:notEqual>
+			</TD>
+		</TR>
+		
+		<TR>
+			<TD nowrap>Inherit Instructor Preferences:</TD>
+			<TD>
+				<html:hidden property="inheritInstructorPreferences"/>
+				<logic:equal name="departmentEditForm" property="inheritInstructorPreferences" value="true"><img src="images/accept.png" border="0"></logic:equal>
+				<logic:notEqual name="departmentEditForm" property="inheritInstructorPreferences" value="true"><img src="images/cross.png" border="0"></logic:notEqual>
+			</TD>
+		</TR>
+		
+		<TR>
+			<TD nowrap>Event Management:</TD>
+			<TD>
+				<html:hidden property="allowEvents"/>
+				<logic:equal name="departmentEditForm" property="allowEvents" value="true"><img src="images/accept.png" border="0"></logic:equal>
+				<logic:notEqual name="departmentEditForm" property="allowEvents" value="true"><img src="images/cross.png" border="0"></logic:notEqual>
+			</TD>
+		</TR>
+		
+		<TR>
+			<TD nowrap>Student Scheduling:</TD>
+			<TD>
+				<html:hidden property="allowStudentScheduling"/>
+				<logic:equal name="departmentEditForm" property="allowStudentScheduling" value="true"><img src="images/accept.png" border="0"></logic:equal>
+				<logic:notEqual name="departmentEditForm" property="allowStudentScheduling" value="true"><img src="images/cross.png" border="0"></logic:notEqual>
+			</TD>
+		</TR>
+	</logic:equal>
+	<logic:equal name="departmentEditForm" property="fullyEditable" value="true">
 		<TR>
 			<TD width='10%'>Code:</TD>
 			<TD>
@@ -225,6 +352,7 @@
 				<html:checkbox property="allowStudentScheduling"/>
 			</TD>
 		</TR>
+	</logic:equal>
 		
 		<logic:notEmpty name="departmentEditForm" property="dependentDepartments">
 			<TR><TD colspan='2'>&nbsp;</TD></TR>

@@ -71,6 +71,7 @@ public class DepartmentEditForm extends ActionForm {
     public boolean iAllowStudentScheduling = false;
     private List iDependentDepartments;
     private List iDependentStatuses;
+    private boolean iFullyEditable = false;
     
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
@@ -151,6 +152,7 @@ public class DepartmentEditForm extends ActionForm {
                 return new String("");
             }
         });
+        iFullyEditable = false;
 	}
 
 	public Long getId() { return iId; }
@@ -287,21 +289,23 @@ public class DepartmentEditForm extends ActionForm {
 			department = dao.get(getId(), session);
 		}
 		if (department!=null) {
-			department.setStatusType(getStatusType()==null || getStatusType().length()==0 ? null : DepartmentStatusType.findByRef(getStatusType()));
-			department.setName(getName());
-			department.setDeptCode(getDeptCode());
-			department.setAbbreviation(getAbbv());
-			department.setExternalUniqueId(getExternalId());
-			department.setDistributionPrefPriority(new Integer(getDistPrefPriority()));
-			department.setExternalManager(new Boolean(getIsExternal()));
-			department.setExternalMgrLabel(getExtName());
-			department.setExternalMgrAbbv(getExtAbbv());
-            department.setAllowReqRoom(new Boolean(getAllowReqRoom()));
-            department.setAllowReqTime(new Boolean(getAllowReqTime()));
-            department.setAllowReqDistribution(new Boolean(getAllowReqDist()));
-            department.setAllowEvents(getAllowEvents());
-            department.setAllowStudentScheduling(getAllowStudentScheduling());
-            department.setInheritInstructorPreferences(getInheritInstructorPreferences());
+			if (isFullyEditable()) {
+				department.setStatusType(getStatusType()==null || getStatusType().length()==0 ? null : DepartmentStatusType.findByRef(getStatusType()));
+				department.setName(getName());
+				department.setDeptCode(getDeptCode());
+				department.setAbbreviation(getAbbv());
+				department.setExternalUniqueId(getExternalId());
+				department.setDistributionPrefPriority(new Integer(getDistPrefPriority()));
+				department.setExternalManager(new Boolean(getIsExternal()));
+				department.setExternalMgrLabel(getExtName());
+				department.setExternalMgrAbbv(getExtAbbv());
+	            department.setAllowReqRoom(new Boolean(getAllowReqRoom()));
+	            department.setAllowReqTime(new Boolean(getAllowReqTime()));
+	            department.setAllowReqDistribution(new Boolean(getAllowReqDist()));
+	            department.setAllowEvents(getAllowEvents());
+	            department.setAllowStudentScheduling(getAllowStudentScheduling());
+	            department.setInheritInstructorPreferences(getInheritInstructorPreferences());
+			}
             
             List<ExternalDepartmentStatusType> statuses = new ArrayList<ExternalDepartmentStatusType>(department.getExternalStatusTypes());
             if (department.isExternalManager()) {
@@ -350,4 +354,7 @@ public class DepartmentEditForm extends ActionForm {
 			}
 		}
 	}
+	
+	public boolean isFullyEditable() { return iFullyEditable; }
+	public void setFullyEditable(boolean fullyEditable) { iFullyEditable = fullyEditable; }
 }

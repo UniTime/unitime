@@ -71,6 +71,14 @@ public class AdministrationPermissions {
 	@PermissionForRight(Right.DepartmentEdit)
 	public static class DepartmentEdit extends SimpleDepartmentPermission {}
 	
+	@PermissionForRight(Right.DepartmentLimitedEdit)
+	public static class DepartmentEditControllingDepartmentStatuses extends DepartmentEdit {
+		@Override
+		public boolean check(UserContext user, Department source) {
+			return super.check(user, source) && source.isExternalManager();
+		}
+	}
+	
 	@PermissionForRight(Right.DepartmentDelete)
 	public static class DepartmentDelete implements Permission<Department> {
 		@Autowired Permission<Department> permissionDepartment;

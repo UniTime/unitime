@@ -73,7 +73,12 @@ public class DepartmentEditAction extends Action {
 	            String id = request.getParameter("id");
 	            Department department = (new DepartmentDAO()).get(Long.valueOf(id));
 	            if (department!=null) {
-	            	sessionContext.checkPermission(department, Right.DepartmentEdit);
+	            	if (sessionContext.hasPermission(department, Right.DepartmentLimitedEdit)) {
+	            		myForm.setFullyEditable(false);
+	            	} else {
+	            		myForm.setFullyEditable(true);
+	            		sessionContext.checkPermission(department, Right.DepartmentEdit);
+	            	}
 	            	myForm.load(department);
 	            	return mapping.findForward("edit");
 	            }
@@ -85,6 +90,7 @@ public class DepartmentEditAction extends Action {
             	myForm.setSessionId(sessionContext.getUser().getCurrentAcademicSessionId());
             	myForm.setInheritInstructorPreferences(true);
             	myForm.setAllowStudentScheduling(true);
+            	myForm.setFullyEditable(true);
         		sessionContext.checkPermission(Right.DepartmentAdd);
             	return mapping.findForward("add");
 	        }
@@ -103,6 +109,8 @@ public class DepartmentEditAction extends Action {
 	            } else {
 	            	if (myForm.getId() == null || myForm.getId().equals(0l))
 	            		sessionContext.checkPermission(Right.DepartmentAdd);
+	            	else if (!myForm.isFullyEditable())
+	            		sessionContext.checkPermission(myForm.getId(), "Department", Right.DepartmentLimitedEdit);
 	            	else
 	            		sessionContext.checkPermission(myForm.getId(), "Department", Right.DepartmentEdit);
 	            	myForm.save(sessionContext);

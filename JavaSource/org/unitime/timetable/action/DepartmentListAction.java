@@ -275,9 +275,11 @@ public class DepartmentListAction extends Action {
                 			dependentStatuses += "<br>" + t.getDepartment().getDeptCode() + ": " + t.getStatusType().getLabel();
                 	}
                 }
+                
+                boolean editable = sessionContext.hasPermission(d, Right.DepartmentEdit) || sessionContext.hasPermission(d, Right.DepartmentLimitedEdit);
 
     			webTable.addLine(
-    				"onClick=\"document.location='departmentEdit.do?op=Edit&id=" + d.getUniqueId() + "';\"",
+    				(editable ? "onClick=\"document.location='departmentEdit.do?op=Edit&id=" + d.getUniqueId() + "';\"" : null),
     				new String[] {
     						d.getDeptCode(),
     						d.getAbbreviation()==null ? "&nbsp;" : d.getAbbreviation(),
