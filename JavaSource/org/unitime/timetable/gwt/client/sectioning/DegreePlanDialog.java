@@ -228,11 +228,8 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 				}
 		} else {
 			CourseAssignment course = (CourseAssignment)data;
-			String courseName = MESSAGES.courseName(course.getSubject(), course.getCourseNbr());
-			if (CONSTANTS.showCourseTitle() && course.hasTitle())
-				courseName = MESSAGES.courseNameWithTitle(course.getSubject(), course.getCourseNbr(), course.getTitle());
 			for (CourseFinderCourseDetails detail: iDetails)
-				detail.setValue(courseName);
+				detail.setValue(course);
 		}
 	}
 	

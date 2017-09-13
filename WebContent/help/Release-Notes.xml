@@ -28,6 +28,21 @@
 	<version>4.2.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Online Student Scheduling</title>
+		<item>
+			<name>Student Scheduling Assistant: Degree Plan</name>
+			<description>
+				<line>Fixed a ClassCastException thrown when a course is selected that was introduced in commit c3e4935 (UniTime 4.2).</line>
+				<line>This fixes the issue of the Details and the List of classes tabs not being populated when a course is selected.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.2.175</version>
+	<release-date>Sat, 9 Sep 2017</release-date>
+	<category>
 		<title>Course Timetabling</title>
 		<item>
 			<name>Room Edit: Google Map</name>
