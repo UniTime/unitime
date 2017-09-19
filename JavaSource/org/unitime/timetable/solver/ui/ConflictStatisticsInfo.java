@@ -24,7 +24,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -70,10 +70,10 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 	public static final int sConstraintTypeClassLimit = 7;
 	public static final int sConstraintTypeMinNrGroupsOfTime = 8;
 	public static final int sConstraintTypeJoinEnrollment = 9;
-	private Hashtable iVariables = new Hashtable();
+	private Map<Long, CBSVariable> iVariables = new HashMap<Long, CBSVariable>();
 	
-	public Collection getCBS() { return iVariables.values(); } 
-	public CBSVariable getCBS(Long classId) { return (CBSVariable)iVariables.get(classId); }
+	public Collection<CBSVariable> getCBS() { return iVariables.values(); } 
+	public CBSVariable getCBS(Long classId) { return iVariables.get(classId); }
 	
 	public void load(Solver<Lecture, Placement> solver, ConflictStatistics cbs) {
 		load(solver, cbs, null);
@@ -83,7 +83,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		ConflictStatisticsInfo ret = new ConflictStatisticsInfo();
 		for (Iterator e=variables.iterator();e.hasNext();) {
 			Lecture lecture = (Lecture)e.next();
-			CBSVariable var = (CBSVariable)iVariables.get(lecture.getClassId());
+			CBSVariable var = iVariables.get(lecture.getClassId());
 			if (var!=null)
 				ret.iVariables.put(lecture.getClassId(),var);
 		}
@@ -216,17 +216,17 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		}
 	}
 	
-	public static interface Counter {
+	public static interface Counter extends Comparable<Counter> {
 		public int getCounter();
 		public void incCounter(int value);
 	}
 	
-	public static class CBSVariable implements Counter, Comparable, Serializable {
+	public static class CBSVariable implements Counter, Serializable {
 		private static final long serialVersionUID = 1L;
 		int iCounter = 0;
 		long iClassId;
 		String iName;
-		HashSet iValues = new HashSet();
+		Set<CBSValue> iValues = new HashSet<CBSValue>();
 		CBSConstraint iConstraint = null;
 		String iPref = null;
 		
@@ -257,7 +257,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			iCounter+=value;
 			if (iConstraint!=null) iConstraint.incCounter(value);
 		}
-		public Set values() { return iValues; }
+		public Set<CBSValue> values() { return iValues; }
 		public int hashCode() {
 			return (new Long(iClassId)).hashCode();
 		}
@@ -265,9 +265,8 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			if (o==null || !(o instanceof CBSVariable)) return false;
 			return ((CBSVariable)o).getId()==getId();
 		}
-		public int compareTo(Object o) {
-			if (o==null || !(o instanceof CBSVariable)) return -1;
-			int ret = -(new Integer(iCounter)).compareTo(new Integer(((CBSVariable)o).getCounter()));
+		public int compareTo(Counter o) {
+			int ret = -(new Integer(iCounter)).compareTo(o.getCounter());
 			if (ret!=0) return ret;
 			return toString().compareTo(o.toString());
 		}
@@ -281,31 +280,31 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			element.addAttribute("name", iName);
 			if (iPref!=null)
 				element.addAttribute("pref", iPref);
-			for (Iterator i=iValues.iterator();i.hasNext();)
-				((CBSValue)i.next()).save(element.addElement("val"));
+			for (CBSValue v: iValues)
+				v.save(element.addElement("val"));
 		}
 	}
 
-	public static class CBSValue implements Counter, Comparable, Serializable {
+	public static class CBSValue implements Counter, Serializable {
 		private static final long serialVersionUID = 1L;
 		int iCounter = 0;
 		int iDays;
 		int iStartSlot;
-		List iRoomIds;
+		List<Long> iRoomIds;
 		String iInstructorName = null;
-		List iRoomNames;
-		List iRoomPrefs;
+		List<String> iRoomNames;
+		List<Integer> iRoomPrefs;
 		int iTimePref;
 		CBSVariable iVariable = null;
-		HashSet iConstraints = new HashSet();
-		HashSet iAssignments = new HashSet();
+		HashSet<CBSConstraint> iConstraints = new HashSet<CBSConstraint>();
+		HashSet<CBSAssignment> iAssignments = new HashSet<CBSAssignment>();
 		int iLength;
 		int iBreakTime;
 		Long iDatePatternId = null;
 		String iDatePatternName = null;
 		Long iPatternId = null;
 		
-		CBSValue(CBSVariable var, String instructorName, List roomNames, int days, int startSlot, List roomIds, int timePref, List roomPrefs, int length, String datePatternName, Long patternId, int breakTime, Long datePatternId) {
+		CBSValue(CBSVariable var, String instructorName, List<String> roomNames, int days, int startSlot, List<Long> roomIds, int timePref, List<Integer> roomPrefs, int length, String datePatternName, Long patternId, int breakTime, Long datePatternId) {
 			iStartSlot = startSlot; iDays = days; iRoomIds = roomIds;
 			iVariable = var; iInstructorName = instructorName; iRoomNames = roomNames; iTimePref = timePref; iRoomPrefs = roomPrefs;
 			iDatePatternName = datePatternName; iLength = length; iBreakTime = breakTime;
@@ -320,7 +319,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			iRoomPrefs = new ArrayList();
 			for (Iterator i=element.elementIterator("room");i.hasNext();) {
 				Element r = (Element)i.next();
-				iRoomIds.add(Integer.valueOf(r.attributeValue("id")));
+				iRoomIds.add(Long.valueOf(r.attributeValue("id")));
 				iRoomNames.add(r.attributeValue("name"));
 				iRoomPrefs.add(Integer.valueOf(r.attributeValue("pref")));
 			}
@@ -363,10 +362,10 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		public Long getDatePatternId() {
 			return iDatePatternId;
 		}
-		public List getRoomNames() { return iRoomNames; }
+		public List<String> getRoomNames() { return iRoomNames; }
 		public String getInstructorName() { return iInstructorName; }
 		public int getTimePref() { return iTimePref; }
-		public List getRoomPrefs() { return iRoomPrefs; }
+		public List<Integer> getRoomPrefs() { return iRoomPrefs; }
 		public String toString() {
 			//return getDays()+" "+getStartTime()+" "+getRoom().getRoomLabel();
 			return getDays()+" "+getStartTime()+" "+iRoomNames+(iInstructorName==null?"":" "+iInstructorName);
@@ -376,11 +375,11 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			iCounter+=value;
 			if (iVariable!=null) iVariable.incCounter(value);
 		}
-		public List getRoomIds() {
+		public List<Long> getRoomIds() {
 			return iRoomIds;
 		}
-		public Set constraints() { return iConstraints; }
-		public Set assignments() { return iAssignments; }
+		public Set<CBSConstraint> constraints() { return iConstraints; }
+		public Set<CBSAssignment> assignments() { return iAssignments; }
 		public int hashCode() {
 			return combine(combine(iRoomIds==null?0:iRoomIds.hashCode(),combine(iStartSlot,iDays)),combine(iPatternId==null?0:iPatternId.intValue(),iDatePatternId==null?0:iDatePatternId.intValue()));
 		}
@@ -392,9 +391,8 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			CBSValue v = (CBSValue)o;
 			return v.getRoomIds().equals(getRoomIds()) && v.getDayCode()==getDayCode() && v.getStartSlot()==getStartSlot() && v.getPatternId().equals(getPatternId()) && v.getDatePatternId().equals(getDatePatternId());
 		}
-		public int compareTo(Object o) {
-			if (o==null || !(o instanceof CBSValue)) return -1;
-			int ret = -(new Integer(iCounter)).compareTo(new Integer(((CBSValue)o).getCounter()));
+		public int compareTo(Counter o) {
+			int ret = -(new Integer(iCounter)).compareTo(o.getCounter());
 			if (ret!=0) return ret;
 			return toString().compareTo(o.toString());
 		}
@@ -421,15 +419,15 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		}
 	}
 	
-	public static class CBSConstraint implements Counter, Comparable, Serializable {
+	public static class CBSConstraint implements Counter, Serializable {
 		private static final long serialVersionUID = 1L;
 		CBSValue iValue;
 		int iCounter = 0;
 		long iId;
 		String iName = null;
 		int iType;
-		HashSet iAssignments = new HashSet();
-		HashSet iVariables = new HashSet();
+		HashSet<CBSAssignment> iAssignments = new HashSet<CBSAssignment>();
+		HashSet<CBSVariable> iVariables = new HashSet<CBSVariable>();
 		String iPref;
 
 		CBSConstraint(int type, long id, String name, String pref) {
@@ -459,8 +457,8 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		public int getType() { return iType; }
 		public String getName() { return iName; }
 		public CBSValue value() { return iValue; }
-		public Set variables() { return iVariables; }
-		public Set assignments() { return iAssignments; }
+		public Set<CBSVariable> variables() { return iVariables; }
+		public Set<CBSAssignment> assignments() { return iAssignments; }
 		public String getPref() { return iPref; }
 		public int getCounter() { return iCounter; }
 		public void incCounter(int value) { 
@@ -475,9 +473,8 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			CBSConstraint c = (CBSConstraint)o;
 			return c.getId()==getId() && c.getType()==getType();
 		}
-		public int compareTo(Object o) {
-			if (o==null || !(o instanceof CBSConstraint)) return -1;
-			int ret = -(new Integer(iCounter)).compareTo(new Integer(((CBSConstraint)o).getCounter()));
+		public int compareTo(Counter o) {
+			int ret = -(new Integer(iCounter)).compareTo(o.getCounter());
 			if (ret!=0) return ret;
 			return toString().compareTo(o.toString());
 		}
@@ -493,19 +490,19 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		}
 	}
 
-	public static class CBSAssignment implements Counter, Comparable, Serializable {
+	public static class CBSAssignment implements Counter, Serializable {
 		private static final long serialVersionUID = 1L;
 		CBSConstraint iConstraint;
 		long iClassId;
 		int iDays;
 		int iStartSlot;
-		List iRoomIds;
+		List<Long> iRoomIds;
 		int iCounter = 0;
 		String iVarName, iInstructorName;
 		String iPref;
 		int iTimePref;
-		List iRoomPrefs;
-		List iRoomNames;
+		List<Integer> iRoomPrefs;
+		List<String> iRoomNames;
 		int iLength;
 		int iBreakTime;
 		String iDatePatternName = null;
@@ -525,12 +522,12 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			iClassId = Long.parseLong(element.attributeValue("class"));
 			iStartSlot = Integer.parseInt(element.attributeValue("slot"));
 			iDays = Integer.parseInt(element.attributeValue("days"));
-			iRoomIds = new ArrayList();
-			iRoomNames = new ArrayList();
-			iRoomPrefs = new ArrayList();
+			iRoomIds = new ArrayList<Long>();
+			iRoomNames = new ArrayList<String>();
+			iRoomPrefs = new ArrayList<Integer>();
 			for (Iterator i=element.elementIterator("room");i.hasNext();) {
 				Element r = (Element)i.next();
-				iRoomIds.add(Integer.valueOf(r.attributeValue("id")));
+				iRoomIds.add(Long.valueOf(r.attributeValue("id")));
 				iRoomNames.add(r.attributeValue("name"));
 				iRoomPrefs.add(Integer.valueOf(r.attributeValue("pref")));
 			}
@@ -572,9 +569,9 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			return iVarName+" "+getDays()+" "+getStartTime()+" "+iRoomNames+(iInstructorName==null?"":" "+iInstructorName);
 		}
 		public String getVariableName() { return iVarName; }
-		public List getRoomNames() { return iRoomNames; }
+		public List<String> getRoomNames() { return iRoomNames; }
 		public String getInstructorName() { return iInstructorName; }
-		public List getRoomIds() {
+		public List<Long> getRoomIds() {
 			return iRoomIds;
 		}
 		public String getPref() { return iPref; }
@@ -605,9 +602,8 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			CBSAssignment a = (CBSAssignment)o;
 			return a.getId()==getId() && a.getRoomIds().equals(getRoomIds()) && a.getDayCode()==getDayCode() && a.getStartSlot()==getStartSlot() && a.getPatternId().equals(getPatternId()) && a.getDatePatternId().equals(getDatePatternId());
 		}
-		public int compareTo(Object o) {
-			if (o==null || !(o instanceof CBSAssignment)) return -1;
-			int ret = -(new Integer(iCounter)).compareTo(new Integer(((CBSAssignment)o).getCounter()));
+		public int compareTo(Counter o) {
+			int ret = -(new Integer(iCounter)).compareTo(o.getCounter());
 			if (ret!=0) return ret;
 			return toString().compareTo(o.toString());
 		}
@@ -794,19 +790,19 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
         out.flush();
     }
     
-    private List filter(Collection counters, double limit) {
-    	List cnt = new ArrayList(counters);
+    public static <E extends Counter> List<E> filter(Collection<E> counters, double limit) {
+    	List<E> cnt = new ArrayList<E>(counters);
     	Collections.sort(cnt);
     	int total = 0;
-    	for (Iterator e=cnt.iterator();e.hasNext();)
-    		total += ((Counter)e.next()).getCounter();
+    	for (Iterator<E> e=cnt.iterator();e.hasNext();)
+    		total += e.next().getCounter();
     	
     	int totalLimit = (int)Math.ceil(limit*total);
     	int current = 0;
     	
-    	List ret = new ArrayList();
-    	for (Iterator e=cnt.iterator();e.hasNext();) {
-    		Counter c = (Counter)e.next();
+    	List<E> ret = new ArrayList<E>();
+    	for (Iterator<E> e=cnt.iterator();e.hasNext();) {
+    		E c = e.next();
     		ret.add(c);
     		current += c.getCounter();
     		if (current>=totalLimit) break;
@@ -889,8 +885,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
             }
         } else if (type == TYPE_CONSTRAINT_BASED) {
         	Hashtable constraints = new Hashtable();
-            for (Enumeration e1 = iVariables.elements(); e1.hasMoreElements();) {
-            	CBSVariable variable = (CBSVariable)e1.nextElement();
+            for (CBSVariable variable: iVariables.values()) {
             	if (classId!=null && classId.longValue()!=variable.getId())
             		continue;
             	for (Iterator e2=variable.values().iterator();e2.hasNext();) {
@@ -959,5 +954,37 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 
 	public boolean saveToFile() {
 		return ApplicationProperty.ConflictStatisticsSaveToFile.isTrue();
+	}
+	
+	public static Collection<CBSConstraint> transpose(Collection<CBSVariable> variables, Long classId) {
+		Map<String, CBSConstraint> constraints = new HashMap<String, CBSConstraint>();
+        for (CBSVariable variable: variables) {
+        	if (classId != null && !classId.equals(variable.getId())) continue;
+        	for (CBSValue value: variable.values())
+        		for (CBSConstraint constraint: value.constraints()) {
+        			CBSConstraint xConstraint = constraints.get(constraint.getType()+"."+constraint.getId());
+        			if (xConstraint == null) {
+        				xConstraint = new CBSConstraint(constraint.getType(), constraint.getId(), constraint.getName(), constraint.getPref());
+        				constraints.put(constraint.getType()+"."+constraint.getId(), xConstraint);
+        			}
+        			CBSVariable xVariable = null;
+        			for (CBSVariable v: xConstraint.variables()) {
+        				if (v.getId() == variable.getId()) {
+        					xVariable = v; break;
+        				}
+        			}
+        			if (xVariable==null) {
+        				xVariable = new CBSVariable(xConstraint,variable.getId() ,variable.getName(), variable.getPref()); 
+        				xConstraint.variables().add(xVariable);
+        			}
+        			CBSValue xValue = new CBSValue(xVariable,value.getInstructorName(), value.getRoomNames(), value.getDayCode(),value.getStartSlot(),value.getRoomIds(),value.getTimePref(),value.getRoomPrefs(),value.getLength(),value.getDatePatternName(),value.getPatternId(),value.getBreakTime(),value.getDatePatternId());
+        			xVariable.values().add(xValue);
+        			for (CBSAssignment assignment: constraint.assignments()) {
+        				xValue.assignments().add(assignment);
+        				xValue.incCounter(assignment.getCounter());
+        			}
+        		}
+        	}
+        return constraints.values();
 	}
 }

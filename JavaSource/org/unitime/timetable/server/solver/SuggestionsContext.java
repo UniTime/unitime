@@ -17,35 +17,19 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.gwt.client.solver;
+package org.unitime.timetable.server.solver;
 
-import java.util.List;
+import java.io.Serializable;
 
-import org.unitime.timetable.gwt.client.widgets.P;
-import org.unitime.timetable.gwt.shared.RoomInterface.PreferenceInterface;
+import org.unitime.timetable.util.NameFormat;
 
 /**
  * @author Tomas Muller
  */
-public class PreferenceLegend extends P {
+public class SuggestionsContext implements Serializable {
+	private static final long serialVersionUID = 1L;
+	private String iInstructorNameFormat = NameFormat.SHORT.reference();
 	
-	public PreferenceLegend(List<? extends PreferenceInterface> preferences) {
-		super("unitime-PreferenceLegend");
-		for (PreferenceInterface pref: preferences) {
-			add(new PreferenceCell(pref));
-		}
-	}
-	
-	public static class PreferenceCell extends P {
-		
-		public PreferenceCell(PreferenceInterface pref) {
-			super("legend-line");
-			P box = new P("box"); box.getElement().getStyle().setBackgroundColor(pref.getColor());
-			add(box);
-			P text = new P("text"); text.setText(pref.getName());
-			add(text);
-		}
-		
-	}
-
+	public String getInstructorNameFormat() { return iInstructorNameFormat; }
+	public void setInstructorNameFormat(String format) { iInstructorNameFormat = format; }
 }

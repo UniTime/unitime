@@ -51,6 +51,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -126,7 +127,7 @@ public class TimetablePage extends Composite {
 				iFilter.setValue(result);
 				iFilter.getFooter().setEnabled("search", true);
 				createTriggers();
-				if (!iFilter.getHeader().isCollapsible())
+				if (!iFilter.getHeader().isCollapsible() || "1".equals(Location.getParameter("search")))
 					search(null);
 			}
 		});

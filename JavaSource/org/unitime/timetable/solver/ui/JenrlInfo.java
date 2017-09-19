@@ -192,6 +192,7 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 	public void setDistance(double distance) { iDistance = distance; }
 	
 	public boolean hasCurricula() { return iCurriculum2nrStudents != null; }
+	public TreeSet<CurriculumInfo> getCurricula() { return iCurriculum2nrStudents; }
 	public String getCurriculumText() {
 		if (!hasCurricula()) return "";
 		int top = 0;

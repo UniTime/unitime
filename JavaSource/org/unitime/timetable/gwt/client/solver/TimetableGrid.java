@@ -702,7 +702,7 @@ public class TimetableGrid extends Composite {
 		    switch (DOM.eventGetType(event)) {
 			case Event.ONCLICK:
 				if (getCell().hasId() && getCell().getType() == TimetableGridCell.Type.Class) {
-					UniTimeFrameDialog.openDialog(MESSAGES.dialogSuggestions(), "suggestions.do?id=" + getCell().getId() + "&op=Reset","900","90%");
+					UniTimeFrameDialog.openDialog(MESSAGES.dialogSuggestions(), "gwt.jsp?page=suggestions&menu=hide&id=" + getCell().getId(),"900","90%");
 					select(false);
 				}
 				break;

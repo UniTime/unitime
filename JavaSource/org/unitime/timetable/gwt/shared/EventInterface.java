@@ -36,6 +36,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -1781,7 +1782,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 				} else if (e.getUniqueId() < 0) return 1;
 				int cmp = getProperty("order", "").compareTo(e.getProperty("order", ""));
 				if (cmp != 0) return cmp;
-				return getName().compareToIgnoreCase(e.getName());
+				return NaturalOrderComparator.compare(getName(), e.getName());
 			}
 			public String toString() { return getName(); }
 		}

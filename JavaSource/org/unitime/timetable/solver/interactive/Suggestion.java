@@ -356,7 +356,7 @@ public class Suggestion implements Serializable, Comparable {
     public void assign(SolverProxy solver) {
     	if (solver != null) solver.assign(iDifferentAssignments);
     }
-    public Hashtable conflictInfo(SolverProxy solver) {
+    public Map<Long, String> conflictInfo(SolverProxy solver) {
     	return solver.conflictInfo(iDifferentAssignments);
     }
     public int compareTo(Object o) {

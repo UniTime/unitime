@@ -36,6 +36,12 @@ public class SolverCookie {
 	private int iAssignedClassesSort = 0;
 	private boolean iNotAssignedClassesFilter = true;
 	private int iNotAssignedClassesSort = 0;
+	private int iSelectedAssignmentsSort = 0, iConflictingAssignmentsSort = 0, iSuggestionsSort = 0, iPlacementsSort = 0, iConflictsSort = 0;
+	private boolean iShowSuggestions = true;
+	private String iSuggestionsFilter = "";
+	private boolean iShowConflicts = false;
+	private boolean iShowAllStudentConflicts = false, iShowAllDistributionConflicts = false;
+	private boolean iShowCBS = false;
 	
 	private SolverCookie() {
 		try {
@@ -49,6 +55,17 @@ public class SolverCookie {
 				iAssignedClassesSort = Integer.parseInt(params[idx++]);
 				iNotAssignedClassesFilter = "1".equals(params[idx++]);
 				iNotAssignedClassesSort = Integer.parseInt(params[idx++]);
+				iSelectedAssignmentsSort = Integer.parseInt(params[idx++]);
+				iConflictingAssignmentsSort = Integer.parseInt(params[idx++]);
+				iSuggestionsSort = Integer.parseInt(params[idx++]);
+				iPlacementsSort = Integer.parseInt(params[idx++]);
+				iShowSuggestions = "1".equals(params[idx++]);
+				iShowConflicts = "1".equals(params[idx++]);
+				iConflictsSort = Integer.parseInt(params[idx++]);
+				iShowAllStudentConflicts = "1".equals(params[idx++]);
+				iShowAllDistributionConflicts = "1".equals(params[idx++]);
+				iShowCBS = "1".equals(params[idx++]);
+				iSuggestionsFilter = params[idx++];
 			}
 		} catch (Exception e) {
 		}
@@ -57,7 +74,14 @@ public class SolverCookie {
 	private void save() {
 		String cookie = iLogLevel + "|" + (iTimeGridFilter ? "1" : "0")
 				+ "|" + (iAssignedClassesFilter ? "1" : "0") + "|" + iAssignedClassesSort
-				+ "|" + (iNotAssignedClassesFilter ? "1" : "0") + "|" + iNotAssignedClassesSort;
+				+ "|" + (iNotAssignedClassesFilter ? "1" : "0") + "|" + iNotAssignedClassesSort
+				+ "|" + iSelectedAssignmentsSort + "|" + iConflictingAssignmentsSort
+				+ "|" + iSuggestionsSort + "|" + iPlacementsSort
+				+ "|" + (iShowSuggestions ? "1" : "0")
+				+ "|" + (iShowConflicts ? "1" : "0") + "|" + iConflictsSort
+				+ "|" + (iShowAllStudentConflicts ? "1" : "0") + "|" + (iShowAllDistributionConflicts ? "1" : "0")
+				+ "|" + (iShowCBS ? "1" : "0")
+				+ "|" + (iSuggestionsFilter == null ? "" : iSuggestionsFilter);
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:Solver", cookie, expires);
 	}
@@ -97,4 +121,46 @@ public class SolverCookie {
 	public void setNotAssignedClassesSort(int sort) {
 		iNotAssignedClassesSort = sort; save();
 	}
+	
+	public int getSelectedAssignmentsSort() { return iSelectedAssignmentsSort; }
+	public void setSelectedAssignmentsSort(int sort) {
+		iSelectedAssignmentsSort = sort; save();
+	}
+
+	public int getConflictingAssignmentsSort() { return iConflictingAssignmentsSort; }
+	public void setConflictingAssignmentsSort(int sort) {
+		iConflictingAssignmentsSort = sort; save();
+	}
+	
+	public int getSuggestionsSort() { return iSuggestionsSort; }
+	public void setSuggestionsSort(int sort) {
+		iSuggestionsSort = sort; save();
+	}
+	
+	public int getPlacementsSort() { return iPlacementsSort; }
+	public void setPlacementsSort(int sort) {
+		iPlacementsSort = sort; save();
+	}
+	
+	public boolean isShowSuggestions() { return iShowSuggestions; }
+	public void setShowSuggestions(boolean showSuggestions) { iShowSuggestions = showSuggestions; save(); }
+	
+	public String getSuggestionsFilter() { return iSuggestionsFilter == null ? "" : iSuggestionsFilter; }
+	public void setSuggestionsFilter(String filter) { iSuggestionsFilter = filter; save(); }
+	
+	public boolean isShowConflicts() { return iShowConflicts; }
+	public void setShowConflicts(boolean showConflicts) { iShowConflicts = showConflicts; save(); }
+	
+	public int getConflictsSort() { return iConflictsSort; }
+	public void setConflictsSort(int sort) {
+		iConflictsSort = sort; save();
+	}
+	
+	public boolean isShowAllStudentConflicts() { return iShowAllStudentConflicts; }
+	public void setShowAllStudentConflicts(boolean showAllStudentConflicts) { iShowAllStudentConflicts = showAllStudentConflicts; save(); }
+	public boolean isShowAllDistributionConflicts() { return iShowAllDistributionConflicts; }
+	public void setShowAllDistributionConflicts(boolean showAllDistributionConflicts) { iShowAllDistributionConflicts = showAllDistributionConflicts; save(); }
+	
+	public boolean isShowCBS() { return iShowCBS; }
+	public void setShowCBS(boolean showCBS) { iShowCBS = showCBS; save(); }
 }

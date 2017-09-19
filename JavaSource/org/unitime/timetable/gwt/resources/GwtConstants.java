@@ -385,6 +385,12 @@ public interface GwtConstants extends Constants {
 	@DefaultStringValue(", ")
 	String itemSeparator();
 	
+	@DefaultStringValue(", ...")
+	String itemMore();
+	
+	@DefaultStringValue("...")
+	String selectionMore();
+	
 	@DefaultStringArrayValue({
 		"Room", "Instructor", "Department", "Curriculum", "Subject Area", "Student Group"
 	})

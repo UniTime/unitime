@@ -965,6 +965,15 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Available<br>Services")
 	String colAvailableServices();
+
+	@DefaultMessage("Constraint")
+	String colConflictingConstraint();
+	
+	@DefaultMessage("Student Conflicts")
+	String colStudentConflicts();
+	
+	@DefaultMessage("Distribution Conflicts")
+	String colDistributionConflicts();
 	
 	@DefaultMessage("pending")
 	String approvalNotApproved();
@@ -1355,6 +1364,39 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Requested Services:")
 	String propEventRequestedServices();
+
+	@DefaultMessage("Date:")
+	String propAssignedDate();
+	
+	@DefaultMessage("Time:")
+	String propAssignedTime();
+	
+	@DefaultMessage("Room:")
+	String propAssignedRooms();
+	
+	@DefaultMessage("Initial Assignment:")
+	String propInitialAssignment();
+	
+	@DefaultMessage("Violated Constraints:")
+	String propViolatedConstraints();
+	
+	@DefaultMessage("Minimum Room Size:")
+	String propMinimumRoomSize();
+	
+	@DefaultMessage("Available Rooms:")
+	String propRoomLocations();
+	
+	@DefaultMessage("Available Times:")
+	String propTimeLocations();
+	
+	@DefaultMessage("Available Dates:")
+	String propDateLocations();
+	
+	@DefaultMessage("Not-Assigned Classes:")
+	String propNotAssignedClasses();
+	
+	@DefaultMessage("Overall Solution Value:")
+	String propOverallSolutionValue();
 	
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
@@ -1554,6 +1596,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<u>A</u>ssign")
 	String buttonAssign();
 	
+	@DefaultMessage("<u>U</u>nassign")
+	String buttonUnassign();
+	
 	@DefaultMessage("<u>A</u>dd Request")
 	String buttonAddTeachingRequest();
 	
@@ -1565,6 +1610,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Setup Teaching Requests")
 	String buttonSetupTeachingRequests();
+	
+	@DefaultMessage("Apply")
+	String buttonApply();
 
 	@DefaultMessage("Filter")
 	String sectFilter();
@@ -1869,6 +1917,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Loading teaching request detail ...")
 	String waitLoadTeachingRequestDetail();
 	
+	@DefaultMessage("Loading class details ...")
+	String waitLoadClassDetails();
+	
 	@DefaultMessage("Saving teaching requests for {0} ...")
 	String waitSaveTeachingRequests(String offering);
 
@@ -2118,6 +2169,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Failed to compute suggestions: {0}")
 	String failedToComputeSuggestions(String reason);
 	
+	@DefaultMessage("Selected placement not valid: {0}")
+	String failedToComputeSelectedAssignment(String reason);
+	
 	@DefaultMessage("Failed to load timetables: {0}")
 	String failedToLoadTimetableGrid(String reason);
 	
@@ -2129,6 +2183,15 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Failed to store snapshot: {0}")
 	String failedToStoreSnapshot(String reason);
+	
+	@DefaultMessage("Failed to load class details: {0}.")
+	String failedToLoadClassDetails(String message);
+	
+	@DefaultMessage("Failed to assing: {0}")
+	String failedToAssign(String reason);
+	
+	@DefaultMessage("Failed to compute conflicts: {0}")
+	String failedToComputeConflicts(String reason);
 
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
@@ -2498,6 +2561,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("There is no {0} solution committed, {1} departmental classes are not considered.")
 	String warnSolverNoCommittedSolutionDepartmental(String owner, String subjects);
+	
+	@DefaultMessage("Solver is not loaded in memory.")
+	String warnSolverNotLoaded();
 
 	@DefaultMessage("Success (no row returned)")
 	String infoTestSucceededNoResults();
@@ -3223,6 +3289,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Event Service Providers")
 	@DoNotTranslate
 	String pageServiceProviders();
+
+	@DefaultMessage("Suggestions")
+	@DoNotTranslate
+	String pageSuggestions();
 	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -4306,11 +4376,23 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Selected Assignment")
 	String headerSelectedAssignment();
 	
+	@DefaultMessage("Conflicting Assignments")
+	String headerConflictingAssignments();
+	
 	@DefaultMessage("Instructor")
 	String headerInstructor();
 	
 	@DefaultMessage("Available Assignments")
 	String headerAvailableAssignments();
+	
+	@DefaultMessage("Current Assignment of {0}")
+	String headerCurrentAssignment(String className);
+	
+	@DefaultMessage("Conflicts")
+	String headerConflicts();
+	
+	@DefaultMessage("Conflict Statistics")
+	String headerCBS();
 	
 	@DefaultMessage("The selected offering has no curricula.")
 	String offeringHasNoCurricula();
@@ -5087,6 +5169,21 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("service")
 	String tagService();
 	
+	@DefaultMessage("flag")
+	String tagFlag();
+	
+	@DefaultMessage("mode")
+	String tagMode();
+	
+	@DefaultMessage("depth")
+	String tagSuggestionsDepth();
+	
+	@DefaultMessage("timeout")
+	String tagSuggestionsTimeLimit();
+	
+	@DefaultMessage("results")
+	String tagSuggestionsResults();
+	
 	@DefaultMessage("All Sessions")
 	String attrFlagAllSessions();
 	
@@ -5430,4 +5527,76 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Send email when finished")
 	String scriptSendEmailCheckbox();
+
+	@DefaultMessage("Not assigned.")
+	String classNotAssigned();
+	
+	@DefaultMessage("committed")
+	String studentConflictCommitted();
+
+	@DefaultMessage("fixed")
+	String studentConflictFixed();
+
+	@DefaultMessage("hard")
+	String studentConflictHard();
+
+	@DefaultMessage("distance")
+	String studentConflictDistance();
+
+	@DefaultMessage("important")
+	String studentConflictImportant();
+
+	@DefaultMessage("instructor")
+	String studentConflictInstructor();
+
+	@DefaultMessage("Back-To-Back Instructor")
+	String btbInstructorConflictConstraint();
+	
+	@DefaultMessage("not-assigned")
+	String unassignment();
+	
+	@DefaultMessage("Remove {0} class assignment from the selection.")
+	String titleRemoveSelectedClassAssignment(String className);
+	
+	@DefaultMessage("Same Time")
+	String suggestionsSameTime();
+	
+	@DefaultMessage("Same Room")
+	String suggestionsSameRoom();
+	
+	@DefaultMessage("Allow Break Hard")
+	String suggestionsAllowBreakHard();
+	
+	@DefaultMessage("Placements")
+	String suggestionsPlacements();
+	
+	@DefaultMessage("Suggestions")
+	String suggestionsSuggestions();
+	
+	@DefaultMessage("Show All Conflicts")
+	String opShowAllConflicts();
+	
+	@DefaultMessage("Hide All Conflicts")
+	String opHideAllConflicts();
+	
+	@DefaultMessage("Balancing of department {0}")
+	String constraintDeptSpread(String department);
+	
+	@DefaultMessage("Same subpart spread {0}")
+	String constraintSameSubpartSpread(String course);
+	
+	@DefaultMessage("Distribution {0}")
+	String constraintDistribution(String constraint);
+	
+	@DefaultMessage("Instructor {0}")
+	String constraintInstructor(String instructor);
+	
+	@DefaultMessage("Room {0}")
+	String constraintRoom(String room);
+	
+	@DefaultMessage("Class limit {0}")
+	String constraintClassLimit(String clazz);
+	
+	@DefaultMessage("Unknown")
+	String constraintUnknown();
 }
