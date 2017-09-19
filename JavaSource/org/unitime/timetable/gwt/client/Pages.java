@@ -49,6 +49,7 @@ import org.unitime.timetable.gwt.client.solver.AssignedClassesPage;
 import org.unitime.timetable.gwt.client.solver.NotAssignedClassesPage;
 import org.unitime.timetable.gwt.client.solver.SolverLogPage;
 import org.unitime.timetable.gwt.client.solver.SolverPage;
+import org.unitime.timetable.gwt.client.solver.SuggestionsPage;
 import org.unitime.timetable.gwt.client.solver.TimetablePage;
 import org.unitime.timetable.gwt.client.test.OnlineSectioningTest;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -221,7 +222,10 @@ public enum Pages {
 		public Widget create() { return new LimitAndProjectionSnapshotPage(); }
 		public String name(GwtMessages messages) { return messages.pageLimitAndProjectionSnapshot(); }
 		}),
-
+	suggestions(new PageFactory() {
+		public Widget create() { return new SuggestionsPage(); }
+		public String name(GwtMessages messages) { return messages.pageSuggestions(); }
+		}),
 	;
 	
 	private PageFactory iFactory;

@@ -120,7 +120,7 @@ public class NotAssignedClassesBackend implements GwtRpcImplementation<NotAssign
 				boolean showClassDetail = (solver == null && context.hasPermission(ucr.getId(), "Class_", Right.ClassDetail));
 				response.addRow(new TableRowInterface(
 						ucr.getId(),
-						(showClassDetail ? "classDetail.do?cid="+ucr.getId() : "suggestions.do?id="+ucr.getId()+"&op=Reset"),
+						(showClassDetail ? "classDetail.do?cid="+ucr.getId() : "gwt.jsp?page=suggestions&menu=hide&id="+ucr.getId()),
 						(showClassDetail ? null : MESSAGES.dialogSuggestions()),
 	    	    		new TableInterface.TableCellClassName(ucr.getName()),
 	    	    		new TableInterface.TableCellItems(ucr.getInstructors()),

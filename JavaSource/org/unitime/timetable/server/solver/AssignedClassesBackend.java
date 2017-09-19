@@ -213,7 +213,7 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
     	    if (simple)
     	    	response.addRow(new TableRowInterface(
     	    			ca.getClazz().getClassId(),
-    	    			(showClassDetail ? "classDetail.do?cid=" + ca.getClazz().getClassId() : "suggestions.do?id="+ca.getClazz().getClassId()+"&op=Reset"),
+    	    			(showClassDetail ? "classDetail.do?cid=" + ca.getClazz().getClassId() : "gwt.jsp?page=suggestions&menu=hide&id="+ca.getClazz().getClassId()),
     	    			(showClassDetail ? null : MESSAGES.dialogSuggestions()),
     	    			new TableInterface.TableCellClassName(ca.getClazz().getName()).setColor(PreferenceLevel.prolog2color(ca.getClazz().getPref())),
     	    			new TableCellInterface(time.getDatePatternName()).setColor(PreferenceLevel.int2color(time.getDatePatternPreference())),
@@ -226,7 +226,7 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
     	    else
     	    	response.addRow(new TableRowInterface(
     	    			ca.getClazz().getClassId(),
-    	    			(showClassDetail ? "classDetail.do?cid=" + ca.getClazz().getClassId() : "suggestions.do?id="+ca.getClazz().getClassId()+"&op=Reset"),
+    	    			(showClassDetail ? "classDetail.do?cid=" + ca.getClazz().getClassId() : "gwt.jsp?page=suggestions&menu=hide&id="+ca.getClazz().getClassId()),
         	    		(showClassDetail ? null : MESSAGES.dialogSuggestions()),
         	    		new TableInterface.TableCellClassName(ca.getClazz().getName()).setColor(PreferenceLevel.prolog2color(ca.getClazz().getPref())),
         	    		new TableCellInterface(time.getDatePatternName()).setColor(PreferenceLevel.int2color(time.getDatePatternPreference())),

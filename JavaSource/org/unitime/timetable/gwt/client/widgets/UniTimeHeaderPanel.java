@@ -175,6 +175,8 @@ public class UniTimeHeaderPanel extends P {
 	public String getHeaderTitle() {
 		return iTitle.getHTML();
 	}
+	
+	public P getHeaderTitlePanel() { return iTitle; }
 
 	public UniTimeHeaderPanel() {
 		this("&nbsp;");

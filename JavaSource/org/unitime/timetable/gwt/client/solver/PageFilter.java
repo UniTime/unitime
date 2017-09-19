@@ -42,6 +42,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.ListBox;
@@ -248,6 +249,8 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 			removeRow(row);
 		iCollapsibleRows.clear();
 		for (final FilterParameterInterface param: filter.getParameters()) {
+			String value = Location.getParameter(param.getName());
+			if (value != null) param.setDefaultValue(value);
 			Widget w = getWidget(param);
 			int row = addRow(param.getLabel(), w);
 			if (param.isCollapsible()) iCollapsibleRows.add(row);

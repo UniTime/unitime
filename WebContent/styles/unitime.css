@@ -5576,3 +5576,257 @@ unitime-RoomSharingWidget .legend .blank {
 	padding-left: 20px;
 	background-color: #d0e4f6;
 }
+
+.unitime-SuggestionsPage .assignment .date {
+	display: inline-block;
+	padding-right: 5px;
+}
+
+.unitime-SuggestionsPage .assignment .time {
+	display: inline-block;
+	padding-right: 5px;
+}
+
+.unitime-SuggestionsPage .assignment .room {
+	display: inline-block;
+	white-space: pre-line;
+}
+
+.unitime-SuggestionsPage .rooms .room {
+	display: inline-block;
+	white-space: pre-line;
+}
+
+.unitime-SuggestionsPage .instructors .instructor {
+	display: inline-block;
+	padding-right: 3px;
+}
+
+.unitime-SuggestionsPage .conflict {
+	vertical-align: middle;
+	border-spacing: 0px;
+	padding-bottom: 1px;
+}
+
+.unitime-SuggestionsPage .conflict  td {
+	padding: 0px 1px 0px 1px;
+}
+
+.unitime-SuggestionsPage .conflict .class-assignment * {
+	display: inline;
+	padding: 0px 1px 0px 1px;
+}
+
+.unitime-SuggestionsPage .conflict .properties {
+	font-style: italic;	
+	vertical-align: middle;
+}
+
+.unitime-SuggestionsPage .conflict .curricula {
+	font-style: italic;
+	vertical-align: middle;
+}
+
+.unitime-SuggestionsPage .conflict .class {
+	cursor: pointer;
+  	cursor: hand;
+}
+
+.unitime-SuggestionsPage .conflict .counter {
+	vertical-align: middle;
+}
+
+.unitime-SuggestionsPage .constraint {
+}
+
+.unitime-SuggestionsPage .constraint .preference {
+	display: inline;
+	padding-right: 3px;
+}
+
+.unitime-SuggestionsPage .constraint .name {
+	display: inline;
+}
+
+.unitime-SuggestionsPage .constraint .other {
+	padding-left: 10px;
+}
+
+.unitime-SuggestionsPage .constraint .other * {
+	display: inline;
+	padding-right: 3px;
+}
+
+.unitime-SuggestionsPage .constraint .other .class {
+	cursor: pointer;
+  	cursor: hand;
+}
+
+.unitime-SuggestionsPage .selection {
+	line-height: 100%;
+}
+
+
+.unitime-SuggestionsPage .selection .item {
+	display: inline-block;
+	white-space: nowrap;
+	cursor: pointer;
+  	cursor: hand;
+  	padding: 2px 0px 2px 0px;
+}
+
+.unitime-SuggestionsPage .separator {
+	display: inline-block;
+	padding-right: 3px;
+	white-space: pre-wrap;
+}
+
+.unitime-SuggestionsPage .composite {
+	display: inline-block;
+	line-height: 100%;
+	white-space: nowrap;
+}
+
+.unitime-SuggestionsPage .selection .more {
+	display: inline-block;
+	white-space: nowrap;
+	cursor: pointer;
+  	cursor: hand;
+  	padding: 2px 0px 2px 0px;
+}
+
+.unitime-SuggestionsPage .selection .selected {
+	padding: 1px;
+	border: 1px dashed black;
+}
+
+.unitime-SuggestionsPage .not-assigned {
+	font-style: italic;
+}
+
+.unitime-SuggestionsPage .error-message {
+	font-style: italic;
+	color: red;
+	text-align: center;
+}
+
+.unitime-ClassAssignmentTable .time {
+	white-space: nowrap;
+}
+
+.unitime-ClassAssignmentTable .date {
+	white-space: nowrap;
+}
+
+.unitime-ClassAssignmentTable .room {
+	white-space: nowrap !important;
+	display: inline-block;
+}
+
+.unitime-ClassAssignmentTable .new {
+	display: inline-block;
+}
+
+.unitime-ClassAssignmentTable .arrow {
+	display: inline-block;
+	padding: 0px 2px 0px 2px;
+}
+
+.unitime-ClassAssignmentTable .old {
+	display: inline-block;
+}
+
+.unitime-ClassAssignmentTable .not-assigned {
+	display: inline-block;
+	font-style: italic;
+	color: red;
+	padding-right: 2px;
+}
+
+.unitime-ClassAssignmentTable .class {
+	white-space: nowrap;
+}
+
+.unitime-ClassAssignmentTable .class * {
+	display: inline-block;
+}
+
+.unitime-ClassAssignmentTableSuggestions td {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-ClassAssignmentTable .class .delete {
+	cursor: pointer;
+	cursor: hand;
+	padding-right: 1px;
+}
+
+.unitime-ClassAssignmentTable .classes .label {
+	white-space: nowrap;
+	height: 22px;
+}
+
+.unitime-ClassAssignmentTable .dates .date {
+	white-space: nowrap;
+	height: 22px;
+}
+
+.unitime-ClassAssignmentTable .times .time {
+	white-space: nowrap;
+	height: 22px;
+}
+
+.unitime-ClassAssignmentTable .dates .date {
+	white-space: nowrap;
+	height: 22px;
+}
+
+.unitime-ClassAssignmentTable .rooms .rooms {
+	white-space: nowrap;
+	height: 22px;
+}
+
+.unitime-ClassAssignmentTable .objectives .objective {
+	white-space: nowrap;
+}
+
+.unitime-SuggestionsPage .info-message {
+	font-style: italic;
+	text-align: center;	
+}
+
+.unitime-ClassAssignmentTableConflicts .conflicts .number {
+	display: inline-block;
+	vertical-align: top;
+	padding-right: 2px;
+}
+
+.unitime-ClassAssignmentTableConflicts .conflicts .dots {
+	display: inline-block;
+	vertical-align: top;
+}
+
+.unitime-ClassAssignmentTableConflicts .conflicts .list {
+	display: inline-block;
+}
+
+.unitime-ConflictBasedStatistics .gwt-TreeItem {
+	padding: 0px 0px 0px 0px;
+}
+
+.unitime-ConflictBasedStatistics .cbs-node {
+	white-space: nowrap;
+}
+
+.unitime-ConflictBasedStatistics table {
+	border-spacing: 0px;
+}
+
+.unitime-ConflictBasedStatistics td {
+	padding: 0px;
+}
+
+.unitime-ConflictBasedStatistics .cbs-node * {
+	display: inline;
+	padding-right: 3px;
+}

@@ -21,7 +21,6 @@ package org.unitime.timetable.solver.ui;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
@@ -56,7 +55,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 	private double iNormalizedTimePreference = 0.0;
 	private double iBestNormalizedTimePreference = 0.0;
 	private int iTimePreference = 0;
-	private Hashtable iRoomPreference = new Hashtable();
+	private Map<Long, Integer> iRoomPreference = new HashMap<Long, Integer>();
 	private int iBestRoomPreference = 0;
 	private int iNrStudentConflicts = 0;
 	private int iNrHardStudentConflicts = 0;
@@ -236,6 +235,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 			p.addPreferenceInt(((Integer)i.next()).intValue());
 	    return p.getPreferenceInt();
 	}
+	public Map<Long,Integer> getRoomPreference() { return iRoomPreference; }
 	public void setRoomPreference(Long roomId, int roomPreference) { iRoomPreference.put(roomId,new Integer(roomPreference)); }
 	public int getBestRoomPreference() { return iBestRoomPreference; }
 	public void setBestRoomPreference(int bestRoomPreference) { iBestRoomPreference = bestRoomPreference; }
