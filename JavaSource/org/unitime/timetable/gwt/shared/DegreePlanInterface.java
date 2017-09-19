@@ -194,13 +194,13 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 			String ret = "";
 			if (iCourses != null)
 				for (DegreeCourseInterface course: iCourses)
-					ret += (ret.isEmpty() ? "" : iChoice ? " and " : " or ") + course;
+					ret += (ret.isEmpty() ? "" : iChoice ? " or " : " and ") + course;
 			if (iGroups != null)
 				for (DegreeGroupInterface group: iGroups)
-					ret += (ret.isEmpty() ? "" : iChoice ? " and " : " or ") + "(" + group + ")";
+					ret += (ret.isEmpty() ? "" : iChoice ? " or " : " and ") + "(" + group + ")";
 			if (iPlaceHolders != null)
 				for (DegreePlaceHolderInterface ph: iPlaceHolders)
-					ret += (ret.isEmpty() ? "" : iChoice ? " and " : " or ") + ph;
+					ret += (ret.isEmpty() ? "" : iChoice ? " or " : " and ") + ph;
 			return ret;
 		}
 		
