@@ -302,7 +302,8 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 				for (CourseFinderCourseDetails detail: iDetails) {
 					detail.setValue(null);
 				}
-			AriaStatus.getInstance().setHTML(ARIA.courseFinderNoCourse());
+			if (isVisible() && isAttached())
+				AriaStatus.getInstance().setHTML(ARIA.courseFinderNoCourse());
 			iInstructionalMethodsPanel.clear();
 			iInstructionalMethods.clear();
 		} else {
@@ -321,7 +322,6 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 					AriaStatus.getInstance().setHTML(ARIA.courseFinderSelected(iCourses.getSelectedRow(), iCourses.getRowCount() - 1, record.getSubject(), record.getCourseNbr()));
 				}
 			}
-			AriaStatus.getInstance().setHTML(ARIA.courseFinderNoCourse());
 			iInstructionalMethodsPanel.clear();
 			iInstructionalMethods.clear();
 			if (record.hasInstructionalMethodSelection()) {

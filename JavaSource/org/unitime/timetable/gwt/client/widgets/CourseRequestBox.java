@@ -219,6 +219,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 		iFilter.getValueBox().addBlurHandler(new BlurHandler() {
 			public void onBlur(BlurEvent event) {
 				if (getText().isEmpty() && iError.isVisible()) iError.setVisible(false);
+				hideSuggestionList();
 			}
 		});
 		iFilter.getValueBox().addFocusHandler(new FocusHandler() {

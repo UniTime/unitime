@@ -67,6 +67,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.TextAlign;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -430,6 +431,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		
 		ScrollPanel assignmentsPanel = new ScrollPanel(iAssignments);
 		assignmentsPanel.setStyleName("body");
+		assignmentsPanel.getElement().getStyle().setOverflowY(Overflow.HIDDEN);
 		
 		final P panel = new P("unitime-Panel");
 		panel.add(assignmentsPanel);
