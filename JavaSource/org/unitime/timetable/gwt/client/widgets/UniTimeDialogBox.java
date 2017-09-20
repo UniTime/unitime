@@ -43,7 +43,7 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class UniTimeDialogBox extends AriaDialogBox implements HasOpenHandlers<UniTimeDialogBox> {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
+	protected static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private FlowPanel iContainer, iControls;
 	private Anchor iClose;
 	private boolean iEscapeToHide = false;

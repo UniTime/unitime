@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.widgets;
 
 import org.unitime.timetable.gwt.client.aria.AriaButton;
+import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 
@@ -61,12 +62,14 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 	private AriaButton iYes, iNo;
 	private Command iCommand;
 	private P iError = null;
+	private String iMessage;
 
 	protected UniTimeConfirmationDialog(Type type, String message, String question, String answer, Command command) {
 		super(true, true);
 		this.setText(type.getTitle());
 		iAnswer = answer;
 		iCommand = command;
+		iMessage = message;
 		
 		P panel = new P("unitime-ConfirmationPanel");
 		setEscapeToHide(true);
@@ -151,6 +154,8 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 	@Override
 	public void center() {
 		super.center();
+		if (iMessage != null && !iMessage.isEmpty())
+			AriaStatus.getInstance().setText(ARIA.dialogOpened(getText()) + " " + iMessage + (iNo == null ? "" : " " + ARIA.confirmationEnterToAcceptEscapeToReject()));
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			@Override
 			public void execute() {

@@ -498,4 +498,7 @@ public interface GwtAriaMessages extends Messages {
 
 	@DefaultMessage("Choice {0} is selected.")
 	String degreeCourseSelected(String name);
+	
+	@DefaultMessage("Press Enter to accept, Escape to reject.")
+	String confirmationEnterToAcceptEscapeToReject();
 }

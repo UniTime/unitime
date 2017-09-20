@@ -36,6 +36,13 @@
 				<line>This fixes the issue of the Details and the List of classes tabs not being populated when a course is selected.</line>
 			</description>
 		</item>
+		<item>
+			<name>Confirmation Dialog: Accessibility</name>
+			<description>
+				<line>Improved accessibility by adding the info / confirmation message to the ARIA status.</line>
+				<line>When in confirmation mode, also include the Enter to accept and Escape to reject the status message.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
