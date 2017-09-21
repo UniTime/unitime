@@ -32,6 +32,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
@@ -61,6 +62,7 @@ import org.unitime.timetable.security.rights.Right;
 @Service("gwtAdminTable[type=eventStatus]")
 public class EventStatuses implements AdminTable {
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	protected static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	
 	@Override
 	public PageName name() {
@@ -72,7 +74,7 @@ public class EventStatuses implements AdminTable {
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
 		List<ListItem> states = new ArrayList<ListItem>();
 		for (RoomTypeOption.Status state: RoomTypeOption.Status.values()) {
-			states.add(new ListItem(String.valueOf(state.ordinal()), state.toString()));
+			states.add(new ListItem(String.valueOf(state.ordinal()), CONSTANTS.eventStatusName()[state.ordinal()].replace("\\,", ",")));
 		}
 		List<EventServiceProvider> providers = new ArrayList<EventServiceProvider>(EventServiceProvider.getServiceProviders(context.getUser()));
 		List<Field> extra = new ArrayList<Field>();
