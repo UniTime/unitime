@@ -48,6 +48,7 @@ import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.solver.service.SolverService;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.BackTracker;
 
 
@@ -112,6 +113,8 @@ public class ClassAssignmentsReportShowSearchAction extends Action {
 		Object sas = sessionContext.getAttribute(SessionAttribute.ClassAssignmentsSubjectAreas);
 		if (sas == null)
 			sas = sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea);
+		if (Constants.ALL_OPTION_VALUE.equals(sas))
+			sas = null;
 	    if(sas!=null && sas.toString().trim().length() > 0) {
 	    	String subjectAreaIds = sas.toString();
 	        try {
