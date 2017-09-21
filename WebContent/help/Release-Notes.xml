@@ -52,6 +52,55 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Event Management</title>
+		<item>
+			<name>Event Confirmation Emails</name>
+			<description>
+				<line>Room Capacity: Include room capacity in the event confirmation emails.</line>
+				<line>Note: Highlight current note (additional information) with a light-blue background.</line>
+				<line>Event Link: Make sure that the Event Detail page gets opened when the link (from the event confirmation email) is clicked.
+					<line>Term parameter has academic session reference instead of unique id.</line>
+					<line>Events page checks that the event properties for the academic session have been loaded (and it waits for a little bit if not).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Event Status: Automatic Approval</name>
+			<description>
+				<line>Added the following automatic approval event statuses:
+					<line>Authenticated Users Can Request Events Automatically Approved</line>
+					<line>Departmental Users Can Request Events Automatically Approved</line>
+					<line>Event Managers Can Request Events Automatically Approved</line>
+				</line>
+				<line>Special and course related events requested in rooms with this status will get automatically approved.</line>
+				<line>It is also possible to delete an automatically approved meeting (meetings that require approval can be only cancelled).</line>
+			</description>
+		</item>
+		<item>
+			<name>Event Management: Services</name>
+			<description>
+				<line>Added Event Service Providers: each provider has a name, a description, and an email.</line>
+				<line>An event can request multiple services.</line>
+				<line>If a service provider has an email, event confirmation is sent to the email address when there is a meeting approved or cancelled.</line>
+				<line>Service providers are global (for all the sessions), session-dependent (for a particular session), and departmental (for a particular department).</line>
+				<line>It is also possible to define available services only for particular rooms: Available services can be defined on the Event Statuses page or on the Edit/Add Room page.
+					<line>Only applicable services will appear on the Add/Edit Event page for the user to request.</line>
+					<line>Session-dependent and departmental service providers roll forward (with the session configuration). Available services of a room also roll forward, with the rooms.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Academic Session Status: Event Management</name>
+			<description>
+				<line>Added Event Management status toggle.</line>
+				<line>By default, all session statues have the Event Management enabled, except of test sessions, Initial Data Load and Session Finished statuses.</line>
+				<line>When not set, all rooms are treated as with No Event Management status.
+					<line>Academic session in the Initial Data Load and/or Session Finished Status does not show in the list of academic sessions on the Event pages, regardless the event statuses on individual rooms.</line>
+				</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>
