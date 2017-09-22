@@ -90,6 +90,7 @@ import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.EventContact;
+import org.unitime.timetable.model.EventServiceProvider;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -198,6 +199,7 @@ public class SessionRestore implements SessionRestoreInterface {
 		if (entity.getObject() instanceof OnlineSectioningLog) { save = false; lookup = false; }
 		if (entity.getObject() instanceof Settings && lookup(entity, "key", ((Settings)entity.getObject()).getKey())) save = false;
 		if (entity.getObject() instanceof EventContact && lookup(entity, "externalUniqueId", ((EventContact)entity.getObject()).getExternalUniqueId())) save = false;
+		if (entity.getObject() instanceof EventServiceProvider && entity.getElement("session") == null && lookup(entity, "reference", ((EventServiceProvider)entity.getObject()).getReference())) save = false;
 		if (save)
 			iAllEntitites.add(entity);
 		if (lookup) {
