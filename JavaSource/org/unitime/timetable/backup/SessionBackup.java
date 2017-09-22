@@ -736,7 +736,8 @@ public class SessionBackup implements SessionBackupInterface {
             
             Progress progress = Progress.getInstance();
             
-            SessionBackup backup = new SessionBackup();
+            sLog.info("Using " + ApplicationProperty.SessionBackupInterface.value());
+            SessionBackup backup = (SessionBackup)Class.forName(ApplicationProperty.SessionBackupInterface.value()).newInstance();
 
             PrintWriter debug = null;
             if (args.length >= 2) {
