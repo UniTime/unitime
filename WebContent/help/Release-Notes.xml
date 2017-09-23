@@ -51,6 +51,13 @@
 				<line>Course Finder box: hide suggestion list when focus is lost.</line>
 			</description>
 		</item>
+		<item>
+			<name>Online Student Scheduling Server: Reload All Data</name>
+			<description>
+				<line>Fixed an exception when a controlling course of a cross-list is not allowed for student scheduling (via departmental settings),
+					but the other course (or courses) of the cross-list is allowed.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Event Management</title>
