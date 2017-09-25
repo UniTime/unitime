@@ -23,6 +23,7 @@ package org.unitime.timetable.reports.pointintimedata;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -33,6 +34,7 @@ import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.PitClass;
 import org.unitime.timetable.model.PointInTimeData;
 import org.unitime.timetable.model.Room;
+import org.unitime.timetable.model.SubjectArea;
 
 public class WSCHByBuildingDayOfWeekHourOfDay extends WSCHByDayOfWeekAndHourOfDay {
 	
@@ -106,31 +108,41 @@ public class WSCHByBuildingDayOfWeekHourOfDay extends WSCHByDayOfWeekAndHourOfDa
 		  .append(" inner join pc.pitClassEvents as pce")
 		  .append(" inner join pce.pitClassMeetings as pcm")
 		  .append(" inner join pcm.pitClassMeetingUtilPeriods as pcmup")
+		  .append("	inner join pc.pitSchedulingSubpart.pitInstrOfferingConfig.pitInstructionalOffering.pitCourseOfferings as pco")
 		  .append("	where pc.pitSchedulingSubpart.pitInstrOfferingConfig.pitInstructionalOffering.pointInTimeData.uniqueId = :sessId")
-		  .append(" and pc.pitSchedulingSubpart.itype.organized = true");
+		  .append(" and pc.pitSchedulingSubpart.itype.organized = true")
+		  .append(" and pco.subjectArea.uniqueId = :saId")
+		  .append("	and pco.isControl = true");
 		
-		for (PitClass pc : (List<PitClass>) hibSession.createQuery(sb.toString())
+		HashSet<Long> processedClasses = new HashSet<Long>();
+		for (SubjectArea subjectArea : pointInTimeData.getSession().getSubjectAreas()){
+			for (PitClass pc : (List<PitClass>) hibSession.createQuery(sb.toString())
 								.setLong("sessId", pointInTimeData.getUniqueId().longValue())
+								.setLong("saId", subjectArea.getUniqueId().longValue())
 								.setCacheable(true)
 								.list()) {
-			
-			for(Long roomPermanentId : pc.getLocationPeriodUseMap().keySet()) {
-				if (permIdToBuilding.get(roomPermanentId) == null) {
+				if (processedClasses.contains(pc.getUniqueId())){
 					continue;
 				}
-				for(Date period : pc.getLocationPeriodUseMap().get(roomPermanentId)) {
-					String label = getPeriodTag(permIdToBuilding.get(roomPermanentId).getUniqueId().toString(), period);
-					usedBuildings.add(permIdToBuilding.get(roomPermanentId));
-					PeriodEnrollment pe = periodEnrollmentMap.get(label);
-					if (pe == null) {
-						pe = new PeriodEnrollment(label, getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
-						periodEnrollmentMap.put(label, pe);
+				processedClasses.add(pc.getUniqueId());
+			
+				for(Long roomPermanentId : pc.getLocationPeriodUseMap().keySet()) {
+					if (permIdToBuilding.get(roomPermanentId) == null) {
+						continue;
 					}
-					pe.addEnrollment((1.0f * pc.getEnrollment()) / pc.countRoomsForPeriod(period));
+					for(Date period : pc.getLocationPeriodUseMap().get(roomPermanentId)) {
+						String label = getPeriodTag(permIdToBuilding.get(roomPermanentId).getUniqueId().toString(), period);
+						usedBuildings.add(permIdToBuilding.get(roomPermanentId));
+						PeriodEnrollment pe = periodEnrollmentMap.get(label);
+						if (pe == null) {
+							pe = new PeriodEnrollment(label, getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
+							periodEnrollmentMap.put(label, pe);
+						}
+						pe.addEnrollment((1.0f * pc.getEnrollment()) / pc.countRoomsForPeriod(period));
+					}
 				}
+	
 			}
-
 		}
-
 	}
 }

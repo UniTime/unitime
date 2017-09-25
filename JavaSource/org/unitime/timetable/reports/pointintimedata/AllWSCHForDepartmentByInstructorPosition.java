@@ -22,7 +22,7 @@ package org.unitime.timetable.reports.pointintimedata;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 
 import org.hibernate.Session;
 import org.unitime.timetable.model.Department;
@@ -88,41 +88,50 @@ public class AllWSCHForDepartmentByInstructorPosition extends WSCHByDepartment {
 
 	@Override
 	public void createWeeklyStudentContactHoursByDepartmentReportFor(PointInTimeData pointInTimeData, Session hibSession) {
+		HashSet<Long> processedClasses = new HashSet<Long>();
 		for(Long deptId : getDepartmentIds()){
 			Department d = (Department) hibSession.createQuery("from Department d where d.uniqueId = :id").setLong("id", deptId).setCacheable(true).uniqueResult();
 			HashMap<PositionType, PositionHours> positionClassHours = new HashMap<PositionType, PositionHours>();
-			List<PitClass> pitClassesForDept = findAllPitClassesWithContactHoursForDepartment(pointInTimeData, d, hibSession);
-			for(PitClass pc : pitClassesForDept) {
-				if (pc.getPitClassInstructors() == null || pc.getPitClassInstructors().isEmpty()) {
-					PositionHours ph = positionClassHours.get(null);
-					if (ph == null) {
-						ph = new PositionHours(null, getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
-						positionClassHours.put(null, ph);
+			for (Long pioUid : findAllPitInstructionalOfferingUniqueIdsForDepartment(pointInTimeData, deptId, hibSession)) {
+				for(PitClass pc : findAllPitClassesForPitInstructionalOfferingId(pointInTimeData, pioUid, hibSession)) {
+					if (processedClasses.contains(pc.getUniqueId())){
+						continue;
 					}
-					ph.addClassHours(null, pc);
-				} else {
-					int numInstructors = 0;
-					for(PitClassInstructor pci : pc.getPitClassInstructors()) {
-						PositionHours ph = positionClassHours.get(pci.getPitDepartmentalInstructor().getPositionType());
-						if (ph == null) {
-							ph = new PositionHours(pci.getPitDepartmentalInstructor().getPositionType(), getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
-							positionClassHours.put(pci.getPitDepartmentalInstructor().getPositionType(), ph);
-						}
-						if(ph.addClassHours(pci, pc)) {
-							numInstructors++;
-						}
-					}
-					if (numInstructors == 0){
+					processedClasses.add(pc.getUniqueId());
+
+					if (pc.getPitClassInstructors() == null || pc.getPitClassInstructors().isEmpty()) {
 						PositionHours ph = positionClassHours.get(null);
 						if (ph == null) {
 							ph = new PositionHours(null, getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
 							positionClassHours.put(null, ph);
 						}
 						ph.addClassHours(null, pc);
+					} else {
+						int numInstructors = 0;
+						for(PitClassInstructor pci : pc.getPitClassInstructors()) {
+							PositionHours ph = positionClassHours.get(pci.getPitDepartmentalInstructor().getPositionType());
+							if (ph == null) {
+								ph = new PositionHours(pci.getPitDepartmentalInstructor().getPositionType(), getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
+								positionClassHours.put(pci.getPitDepartmentalInstructor().getPositionType(), ph);
+							}
+							if(ph.addClassHours(pci, pc)) {
+								numInstructors++;
+							}
+						}
+						if (numInstructors == 0){
+							PositionHours ph = positionClassHours.get(null);
+							if (ph == null) {
+								ph = new PositionHours(null, getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
+								positionClassHours.put(null, ph);
+							}
+							ph.addClassHours(null, pc);
+						}
+	
 					}
-
 				}
-			}	
+			}
+
+			
 			for(PositionType pt : positionClassHours.keySet()) {
 				PositionHours ph = positionClassHours.get(pt);
 				ArrayList<String> row = new ArrayList<String>();

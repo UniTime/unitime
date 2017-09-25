@@ -22,12 +22,14 @@ package org.unitime.timetable.reports.pointintimedata;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 import org.hibernate.Session;
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.PitClass;
 import org.unitime.timetable.model.PointInTimeData;
+import org.unitime.timetable.model.SubjectArea;
 
 public class WSCHByItypeDayOfWeekHourOfDay extends WSCHByDayOfWeekAndHourOfDay {
 	
@@ -83,26 +85,38 @@ public class WSCHByItypeDayOfWeekHourOfDay extends WSCHByDayOfWeekAndHourOfDay {
 		  .append(" inner join pc.pitClassEvents as pce")
 		  .append(" inner join pce.pitClassMeetings as pcm")
 		  .append(" inner join pcm.pitClassMeetingUtilPeriods as pcmup")
-		  .append("	where pc.pitSchedulingSubpart.pitInstrOfferingConfig.pitInstructionalOffering.pointInTimeData.uniqueId = :sessId");
+		  .append("	inner join pc.pitSchedulingSubpart.pitInstrOfferingConfig.pitInstructionalOffering.pitCourseOfferings as pco")
+		  .append("	where pc.pitSchedulingSubpart.pitInstrOfferingConfig.pitInstructionalOffering.pointInTimeData.uniqueId = :sessId")
+		  .append(" and pco.subjectArea.uniqueId = :saId")
+		  .append("	and pco.isControl = true");
+
+		HashSet<Long> processedClasses = new HashSet<Long>();
 		
-		for (Object[] result : (List<Object[]>) hibSession.createQuery(sb.toString())
+		for (SubjectArea subjectArea : pointInTimeData.getSession().getSubjectAreas()){
+			for (Object[] result : (List<Object[]>) hibSession.createQuery(sb.toString())
 								.setLong("sessId", pointInTimeData.getUniqueId().longValue())
+								.setLong("saId", subjectArea.getUniqueId().longValue())
 								.setCacheable(true)
 								.list()) {
 			
-			ItypeDesc itype = (ItypeDesc) result[0];
-			PitClass pc = (PitClass) result[1];
-			for (Date meetingPeriod : pc.getUniquePeriods()) {			
-				String label = getPeriodTag((itype.getParent() == null ? itype.getAbbv() : itype.getParent().getAbbv()), meetingPeriod);
-				PeriodEnrollment pe = periodEnrollmentMap.get(label);
-				if (pe == null) {
-					pe = new PeriodEnrollment(label, getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
-					periodEnrollmentMap.put(label, pe);
+				ItypeDesc itype = (ItypeDesc) result[0];
+				PitClass pc = (PitClass) result[1];
+				if (processedClasses.contains(pc.getUniqueId())){
+					continue;
 				}
+				processedClasses.add(pc.getUniqueId());
 				
-				pe.addEnrollment(pc.getEnrollment());
+				for (Date meetingPeriod : pc.getUniquePeriods()) {			
+					String label = getPeriodTag((itype.getParent() == null ? itype.getAbbv() : itype.getParent().getAbbv()), meetingPeriod);
+					PeriodEnrollment pe = periodEnrollmentMap.get(label);
+					if (pe == null) {
+						pe = new PeriodEnrollment(label, getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
+						periodEnrollmentMap.put(label, pe);
+					}
+					
+					pe.addEnrollment(pc.getEnrollment());
+				}
 			}
-
 		}
 
 	}

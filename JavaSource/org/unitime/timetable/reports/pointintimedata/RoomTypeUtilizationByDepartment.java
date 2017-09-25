@@ -87,15 +87,20 @@ public class RoomTypeUtilizationByDepartment extends RoomUtilization {
 
 	public void createRoomUtilizationReportFor(PointInTimeData pointInTimeData, Session hibSession) {
 		HashMap<Long, RoomTypeUtilizationByDepartment.LocationHours> locationUtilization = new HashMap<Long, RoomTypeUtilizationByDepartment.LocationHours>();
-		HashSet<PitClass> pitClasses = findAllPitClassesWithContactHoursForRoomDepartmentsAndRoomTypes(pointInTimeData, hibSession);
-		for(PitClass pc : pitClasses) {
-			for(Long locationPermanentId : pc.getLocationPermanentIdList()) {
-				LocationHours lh = locationUtilization.get(locationPermanentId);
-				if (lh == null) {
-					lh = new LocationHours(locationPermanentId, getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
-					locationUtilization.put(locationPermanentId, lh);
+		HashSet<Long> processedClassIds = new HashSet<Long>();
+		for(Long deptId : getDepartmentIds()) {
+			for(PitClass pc : findAllPitClassesWithContactHoursForRoomDepartmentAndRoomTypes(deptId, pointInTimeData, hibSession)) {
+				if (!processedClassIds.contains(pc.getUniqueId())) {
+					processedClassIds.add(pc.getUniqueId());
+					for(Long locationPermanentId : pc.getLocationPermanentIdList()) {
+						LocationHours lh = locationUtilization.get(locationPermanentId);
+						if (lh == null) {
+							lh = new LocationHours(locationPermanentId, getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
+							locationUtilization.put(locationPermanentId, lh);
+						}
+						lh.addRoomHours(pc);
+					}
 				}
-				lh.addRoomHours(pc);
 			}
 		}
 		HashMap<Department, HashMap<RoomType, DepartmentRoomTypeHours>> departmentRoomTypeHours = new HashMap<Department, HashMap<RoomType,DepartmentRoomTypeHours>>(); 

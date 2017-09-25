@@ -20,6 +20,7 @@
 package org.unitime.timetable.reports.pointintimedata;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import org.hibernate.Session;
@@ -74,23 +75,32 @@ public class AllWSCHByDepartment extends WSCHByDepartment {
 
 	@Override
 	public void createWeeklyStudentContactHoursByDepartmentReportFor(PointInTimeData pointInTimeData, Session hibSession) {
+		HashSet<Long> processedClasses = new HashSet<Long>();
 		for(Department d : pointInTimeData.getSession().getDepartments()) {
-			float deptTotalWsch = 0;
-			float deptTotalWch = 0;
-			float deptTotalOrgWsch = 0;
-			float deptTotalOrgWch = 0;
-			float deptTotalNotOrgWsch = 0;
-			float deptTotalNotOrgWch = 0;
-			List<PitClass> pitClassesForDept = findAllPitClassesWithContactHoursForDepartment(pointInTimeData, d, hibSession);
-			for(PitClass pc : pitClassesForDept) {
-				deptTotalWch += weeklyClassHours(pc);
-				deptTotalWsch += weeklyStudentClassHours(pc);
-				deptTotalOrgWsch += pc.getOrganizedWeeklyStudentClassHours(getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
-				deptTotalOrgWch += pc.getOrganizedWeeklyClassHours(getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
-				deptTotalNotOrgWsch += pc.getNotOrganizedWeeklyStudentClassHours(getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
-				deptTotalNotOrgWch += pc.getNotOrganizedWeeklyClassHours(getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
-			}
 			if (!d.getSubjectAreas().isEmpty()) {
+				float deptTotalWsch = 0;
+				float deptTotalWch = 0;
+				float deptTotalOrgWsch = 0;
+				float deptTotalOrgWch = 0;
+				float deptTotalNotOrgWsch = 0;
+				float deptTotalNotOrgWch = 0;
+					
+				for (Long pioUid : findAllPitInstructionalOfferingUniqueIdsForDepartment(pointInTimeData, d.getUniqueId(), hibSession)) {
+					for(PitClass pc : findAllPitClassesForPitInstructionalOfferingId(pointInTimeData, pioUid, hibSession)) {
+						if (processedClasses.contains(pc.getUniqueId())){
+							continue;
+						}
+						processedClasses.add(pc.getUniqueId());
+						
+						deptTotalWch += weeklyClassHours(pc);
+						deptTotalWsch += weeklyStudentClassHours(pc);
+						deptTotalOrgWsch += pc.getOrganizedWeeklyStudentClassHours(getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
+						deptTotalOrgWch += pc.getOrganizedWeeklyClassHours(getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
+						deptTotalNotOrgWsch += pc.getNotOrganizedWeeklyStudentClassHours(getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
+						deptTotalNotOrgWch += pc.getNotOrganizedWeeklyClassHours(getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
+					}
+				}
+
 				ArrayList<String> row = new ArrayList<String>();
 				row.add(d.getDeptCode());
 				row.add(d.getAbbreviation());

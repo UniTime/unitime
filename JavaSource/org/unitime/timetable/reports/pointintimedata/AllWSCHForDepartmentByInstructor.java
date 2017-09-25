@@ -22,6 +22,7 @@ package org.unitime.timetable.reports.pointintimedata;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import org.hibernate.Session;
@@ -90,41 +91,48 @@ public class AllWSCHForDepartmentByInstructor extends WSCHByDepartment {
 
 	@Override
 	public void createWeeklyStudentContactHoursByDepartmentReportFor(PointInTimeData pointInTimeData, Session hibSession) {
+		HashSet<Long> processedClasses = new HashSet<Long>();
 		for(Long deptId : getDepartmentIds()){
 			Department d = (Department) hibSession.createQuery("from Department d where d.uniqueId = :id").setLong("id", deptId).setCacheable(true).uniqueResult();
 			HashMap<PitDepartmentalInstructor, InstructorHours> positionClassHours = new HashMap<PitDepartmentalInstructor, InstructorHours>();
-			List<PitClass> pitClassesForDept = findAllPitClassesWithContactHoursForDepartment(pointInTimeData, d, hibSession);
-			for(PitClass pc : pitClassesForDept) {
-				if (pc.getPitClassInstructors() == null || pc.getPitClassInstructors().isEmpty()) {
-					InstructorHours ih = positionClassHours.get(null);
-					if (ih == null) {
-						ih = new InstructorHours(null, getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
-						positionClassHours.put(null, ih);
+			for (Long pioUid : findAllPitInstructionalOfferingUniqueIdsForDepartment(pointInTimeData, deptId, hibSession)) {
+				for(PitClass pc : findAllPitClassesForPitInstructionalOfferingId(pointInTimeData, pioUid, hibSession)) {
+					if (processedClasses.contains(pc.getUniqueId())){
+						continue;
 					}
-					ih.addClassHours(null, pc);
-				} else {
-					int numInstructors = 0;
-					for(PitClassInstructor pci : pc.getPitClassInstructors()) {
-						InstructorHours ih = positionClassHours.get(pci.getPitDepartmentalInstructor());
-						if (ih == null) {
-							ih = new InstructorHours(pci.getPitDepartmentalInstructor(), getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
-							positionClassHours.put(pci.getPitDepartmentalInstructor(), ih);
-						}
-						if(ih.addClassHours(pci, pc)) {
-							numInstructors++;
-						}
-					}
-					if (numInstructors == 0){
+					processedClasses.add(pc.getUniqueId());
+
+					if (pc.getPitClassInstructors() == null || pc.getPitClassInstructors().isEmpty()) {
 						InstructorHours ih = positionClassHours.get(null);
 						if (ih == null) {
 							ih = new InstructorHours(null, getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
 							positionClassHours.put(null, ih);
 						}
 						ih.addClassHours(null, pc);
+					} else {
+						int numInstructors = 0;
+						for(PitClassInstructor pci : pc.getPitClassInstructors()) {
+							InstructorHours ih = positionClassHours.get(pci.getPitDepartmentalInstructor());
+							if (ih == null) {
+								ih = new InstructorHours(pci.getPitDepartmentalInstructor(), getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
+								positionClassHours.put(pci.getPitDepartmentalInstructor(), ih);
+							}
+							if(ih.addClassHours(pci, pc)) {
+								numInstructors++;
+							}
+						}
+						if (numInstructors == 0){
+							InstructorHours ih = positionClassHours.get(null);
+							if (ih == null) {
+								ih = new InstructorHours(null, getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
+								positionClassHours.put(null, ih);
+							}
+							ih.addClassHours(null, pc);
+						}
 					}
-				}
-			}	
-			     
+				}	
+			   
+			}
 			for(PitDepartmentalInstructor pdi : positionClassHours.keySet()) {
 				InstructorHours ih = positionClassHours.get(pdi);
 				ArrayList<String> row = new ArrayList<String>();

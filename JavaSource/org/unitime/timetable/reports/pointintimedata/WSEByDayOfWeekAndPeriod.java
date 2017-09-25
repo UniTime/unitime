@@ -23,14 +23,15 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.TreeSet;
 
 import org.hibernate.Session;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PitClass;
 import org.unitime.timetable.model.PointInTimeData;
+import org.unitime.timetable.model.SubjectArea;
 
 /**
  * @author says
@@ -90,24 +91,49 @@ public class WSEByDayOfWeekAndPeriod extends BasePointInTimeDataReports {
 			}
 		}
 		
-		HashSet<PitClass> pitClasses = findAllPitClassesWithContactHoursForDepartmentsAndSubjectAreas(pointInTimeData, hibSession);
 		ArrayList<Long> positionIds = null;
 		if (BasePointInTimeDataReports.Parameter.PositionTypes.values(null).size() != getPositionTypeIds().size()){
 			positionIds = getPositionTypeIds();
 		}
 		
-		for(PitClass pc : pitClasses){
-			HashMap<java.util.Date, Float> datePeriodEnrollments = pc.findPeriodEnrollmentsForCriteria(validRoomPermanentIds, positionIds);
-			for(java.util.Date date : datePeriodEnrollments.keySet()) {
-				String label = dayOfWeekTimeLabelFor(date);
-				PeriodEnrollment pe = periodEnrollmentMap.get(label);
-				if (pe == null) {
-					pe = new PeriodEnrollment(date, getStandardWeeksInReportingTerm());
-					periodEnrollmentMap.put(label, pe);
+		HashSet<Long> revisedDepartmentIds = new HashSet<Long>();
+		for (Department d : pointInTimeData.getSession().getDepartments()){
+			if (getDepartmentIds().contains(d.getUniqueId())){
+				for(SubjectArea sa : d.getSubjectAreas()) {
+					if (getSubjectAreaIds().contains(sa.getUniqueId())){
+						revisedDepartmentIds.add(d.getUniqueId());
+						break;
+					}
 				}
-				pe.addEnrollment(pc, datePeriodEnrollments.get(date));
 			}
 		}
+
+		HashSet<Long> processedClasses = new HashSet<Long>();
+
+		for(Long deptId : revisedDepartmentIds) {
+			for (Long pioUid : findAllPitInstructionalOfferingUniqueIdsForDepartment(pointInTimeData, deptId, hibSession)) {		
+				for(PitClass pc : findAllPitClassesForPitInstructionalOfferingId(pointInTimeData, pioUid, hibSession)) {
+					if (processedClasses.contains(pc.getUniqueId())){
+						continue;
+					}
+					processedClasses.add(pc.getUniqueId());
+
+					if(getSubjectAreaIds().contains(pc.getPitSchedulingSubpart().getPitInstrOfferingConfig().getPitInstructionalOffering().getControllingPitCourseOffering().getSubjectArea().getUniqueId())) {
+						HashMap<java.util.Date, Float> datePeriodEnrollments = pc.findPeriodEnrollmentsForCriteria(validRoomPermanentIds, positionIds);
+						for(java.util.Date date : datePeriodEnrollments.keySet()) {
+							String label = dayOfWeekTimeLabelFor(date);
+							PeriodEnrollment pe = periodEnrollmentMap.get(label);
+							if (pe == null) {
+								pe = new PeriodEnrollment(date, getStandardWeeksInReportingTerm());
+								periodEnrollmentMap.put(label, pe);
+							}
+							pe.addEnrollment(pc, datePeriodEnrollments.get(date));
+						}
+					};
+				}
+			}
+		}
+
 
 		TreeSet<WSEByDayOfWeekAndPeriod.PeriodEnrollment> ts = new TreeSet<WSEByDayOfWeekAndPeriod.PeriodEnrollment>();
 		ts.addAll(periodEnrollmentMap.values());
@@ -124,24 +150,24 @@ public class WSEByDayOfWeekAndPeriod extends BasePointInTimeDataReports {
 		
 	}
 
-	@SuppressWarnings("unchecked")
-	private HashSet<PitClass> findAllPitClassesWithContactHoursForDepartmentsAndSubjectAreas(
-			PointInTimeData pointInTimeData, Session hibSession) {
-		
-		HashSet<PitClass> pitClasses = new HashSet<PitClass>();
-				
-		for(Long deptId : getDepartmentIds()) {
-			List<PitClass> pitClassesQueryResult = findAllPitClassesWithContactHoursForDepartment(pointInTimeData, deptId, hibSession);
-			for(PitClass pc : pitClassesQueryResult) {
-				if(pc.getPitSchedulingSubpart().getPitInstrOfferingConfig().getPitInstructionalOffering().getControllingPitCourseOffering().isIsControl().booleanValue() 
-						&& getSubjectAreaIds().contains(pc.getPitSchedulingSubpart().getPitInstrOfferingConfig().getPitInstructionalOffering().getControllingPitCourseOffering().getSubjectArea().getUniqueId())) {
-					pitClasses.add(pc);
-				};
-			}
-		}
-		return(pitClasses);
-
-	}
+//	@SuppressWarnings("unchecked")
+//	private HashSet<PitClass> findAllPitClassesWithContactHoursForDepartmentsAndSubjectAreas(
+//			PointInTimeData pointInTimeData, Session hibSession) {
+//		
+//		HashSet<PitClass> pitClasses = new HashSet<PitClass>();
+//				
+//		for(Long deptId : getDepartmentIds()) {
+//			List<PitClass> pitClassesQueryResult = findAllPitClassesWithContactHoursForDepartment(pointInTimeData, deptId, hibSession);
+//			for(PitClass pc : pitClassesQueryResult) {
+//				if(pc.getPitSchedulingSubpart().getPitInstrOfferingConfig().getPitInstructionalOffering().getControllingPitCourseOffering().isIsControl().booleanValue() 
+//						&& getSubjectAreaIds().contains(pc.getPitSchedulingSubpart().getPitInstrOfferingConfig().getPitInstructionalOffering().getControllingPitCourseOffering().getSubjectArea().getUniqueId())) {
+//					pitClasses.add(pc);
+//				};
+//			}
+//		}
+//		return(pitClasses);
+//
+//	}
 
 	@Override
 	protected void parseParameters() {

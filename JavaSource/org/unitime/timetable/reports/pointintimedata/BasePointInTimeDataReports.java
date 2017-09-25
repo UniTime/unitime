@@ -506,26 +506,48 @@ public abstract class BasePointInTimeDataReports {
 	}
 
 
-	protected List<PitClass> findAllPitClassesWithContactHoursForDepartment(PointInTimeData pointInTimeData, Department department, org.hibernate.Session hibSession) {
-		return(findAllPitClassesWithContactHoursForDepartment(pointInTimeData, department.getUniqueId(), hibSession));
-	}
-
 	@SuppressWarnings("unchecked")
-	protected List<PitClass> findAllPitClassesWithContactHoursForDepartment(PointInTimeData pointInTimeData, Long departmentId, org.hibernate.Session hibSession) {
+	protected List<Long> findAllPitInstructionalOfferingUniqueIdsForDepartment(PointInTimeData pointInTimeData, Long departmentId, org.hibernate.Session hibSession) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select pc")
-		  .append(" from PitClass pc")
-		  .append(" inner join pc.pitSchedulingSubpart.pitInstrOfferingConfig.pitInstructionalOffering.pitCourseOfferings as pco")
-		  .append(" where pc.pitSchedulingSubpart.pitInstrOfferingConfig.pitInstructionalOffering.pointInTimeData.uniqueId = :pitdUid")
-		  .append(" and pc.pitClassEvents is not empty")
+		sb.append("select pio.uniqueId")
+		  .append(" from PitInstructionalOffering pio")
+		  .append(" inner join pio.pitCourseOfferings as pco")
+		  .append(" where pio.pointInTimeData.uniqueId = :pitdUid")
 		  .append(" and pco.isControl = true")
 		  .append(" and pco.subjectArea.department.uniqueId = :deptUid");
-	
-		return((List<PitClass>)hibSession.createQuery(sb.toString())
+
+		return((List<Long>)hibSession.createQuery(sb.toString())
 		          .setLong("pitdUid", pointInTimeData.getUniqueId().longValue())
 		          .setLong("deptUid", departmentId.longValue())
 		          .setCacheable(true)
 		          .list());
+
 	}
+	
+	@SuppressWarnings("unchecked")
+	protected List<PitClass> findAllPitClassesForPitInstructionalOfferingId(PointInTimeData pointInTimeData, Long pitOfferingId, org.hibernate.Session hibSession) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select pc")
+		  .append(" from PitClass pc")
+		  .append(" inner join pc.pitClassEvents as pce")
+		  .append(" inner join pce.pitClassMeetings as pcm")
+		  .append(" inner join pcm.pitClassMeetingUtilPeriods as pcmup")
+		  .append(" inner join pc.pitSchedulingSubpart as pss")
+		  .append(" inner join pss.pitInstrOfferingConfig as pioc")
+		  .append(" inner join pioc.pitInstructionalOffering as pio")
+		  .append(" inner join pio.pitCourseOfferings as pco")
+		  .append(" inner join pco.subjectArea as sa")
+		  .append(" where pc.pitSchedulingSubpart.pitInstrOfferingConfig.pitInstructionalOffering.uniqueId = :offrId")
+		  .append(" and pco.isControl = true")
+		  .append(" and pc.pitClassEvents is not empty");
+	
+		ArrayList<PitClass> pitClasses = new ArrayList<PitClass>();
+			pitClasses.addAll((List<PitClass>)hibSession.createQuery(sb.toString())
+		          .setLong("offrId", pitOfferingId.longValue())
+		          .setCacheable(true)
+		          .list());
+		return(pitClasses);
+	}
+	
 
 }

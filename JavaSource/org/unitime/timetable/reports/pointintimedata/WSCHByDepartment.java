@@ -21,6 +21,7 @@
 package org.unitime.timetable.reports.pointintimedata;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import org.hibernate.Session;
@@ -49,15 +50,23 @@ public abstract class WSCHByDepartment extends BasePointInTimeDataReports {
 	protected abstract float weeklyStudentClassHours(PitClass pitClass);
 
 	public void createWeeklyStudentContactHoursByDepartmentReportFor(PointInTimeData pointInTimeData, Session hibSession) {
+		HashSet<Long> processedClasses = new HashSet<Long>();
 		for(Department d : pointInTimeData.getSession().getDepartments()) {
-			float deptTotalWsch = 0;
-			float deptTotalWch = 0;
-			List<PitClass> pitClassesForDept = findAllPitClassesWithContactHoursForDepartment(pointInTimeData, d, hibSession);
-			for(PitClass pc : pitClassesForDept) {
-				deptTotalWch += weeklyClassHours(pc);
-				deptTotalWsch += weeklyStudentClassHours(pc);
-			}
 			if (!d.getSubjectAreas().isEmpty()) {
+				float deptTotalWsch = 0;
+				float deptTotalWch = 0;
+				
+				for (Long pioUid : findAllPitInstructionalOfferingUniqueIdsForDepartment(pointInTimeData, d.getUniqueId(), hibSession)) {
+					for(PitClass pc : findAllPitClassesForPitInstructionalOfferingId(pointInTimeData, pioUid, hibSession)) {
+						if (processedClasses.contains(pc.getUniqueId())){
+							continue;
+						}
+						processedClasses.add(pc.getUniqueId());
+						deptTotalWch += weeklyClassHours(pc);
+						deptTotalWsch += weeklyStudentClassHours(pc);
+					}
+				}
+			
 				ArrayList<String> row = new ArrayList<String>();
 				row.add(d.getDeptCode());
 				row.add(d.getAbbreviation());

@@ -107,15 +107,20 @@ public class RoomUtilization extends BasePointInTimeDataReports {
 
 	public void createRoomUtilizationReportFor(PointInTimeData pointInTimeData, Session hibSession) {
 		HashMap<Long, RoomUtilization.LocationHours> locationUtilization = new HashMap<Long, RoomUtilization.LocationHours>();
-		HashSet<PitClass> pitClasses = findAllPitClassesWithContactHoursForRoomDepartmentsAndRoomTypes(pointInTimeData, hibSession);
-		for(PitClass pc : pitClasses) {
-			for(Long locationPermanentId : pc.getLocationPermanentIdList()) {
-				LocationHours lh = locationUtilization.get(locationPermanentId);
-				if (lh == null) {
-					lh = new LocationHours(locationPermanentId, getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
-					locationUtilization.put(locationPermanentId, lh);
+		HashSet<Long> processedClassIds = new HashSet<Long>();
+		for(Long deptId : getDepartmentIds()) {
+			for(PitClass pc : findAllPitClassesWithContactHoursForRoomDepartmentAndRoomTypes(deptId, pointInTimeData, hibSession)) {
+				if (!processedClassIds.contains(pc.getUniqueId())) {
+					processedClassIds.add(pc.getUniqueId());
+					for(Long locationPermanentId : pc.getLocationPermanentIdList()) {
+						LocationHours lh = locationUtilization.get(locationPermanentId);
+						if (lh == null) {
+							lh = new LocationHours(locationPermanentId, getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm());
+							locationUtilization.put(locationPermanentId, lh);
+						}
+						lh.addRoomHours(pc);
+					}
 				}
-				lh.addRoomHours(pc);
 			}
 		}
 		if (pointInTimeData.getSession().getRooms() != null && !pointInTimeData.getSession().getRooms().isEmpty()) {
@@ -133,13 +138,13 @@ public class RoomUtilization extends BasePointInTimeDataReports {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected HashSet<PitClass> findAllPitClassesWithContactHoursForRoomDepartmentsAndRoomTypes(
+	protected List<PitClass> findAllPitClassesWithContactHoursForRoomDepartmentAndRoomTypes(Long departmentId,
 			PointInTimeData pointInTimeData, Session hibSession) {
 		
 		HashSet<PitClass> pitClasses = new HashSet<PitClass>();
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select pc")
+		sb.append("select pc ")
 		  .append(" from PitClass pc ")
 		  .append(" where pc.uniqueId in ( select pcm.pitClassEvent.pitClass.uniqueId from PitClassMeeting pcm, Location l inner join l.roomDepts as rd "
 		  		+ " where pcm.pitClassEvent.pitClass.pitSchedulingSubpart.pitInstrOfferingConfig.pitInstructionalOffering.pointInTimeData.uniqueId = :pitdUid")
@@ -160,14 +165,11 @@ public class RoomUtilization extends BasePointInTimeDataReports {
 		sb.append(" ) ) ");
 ;
 				
-		for(Long deptId : getDepartmentIds()) {
-			pitClasses.addAll((List<PitClass>)hibSession.createQuery(sb.toString())
+		return((List<PitClass>)hibSession.createQuery(sb.toString())
 					.setLong("pitdUid", pointInTimeData.getUniqueId().longValue())
-					.setLong("deptId", deptId.longValue())
+					.setLong("deptId", departmentId.longValue())
 					.setCacheable(true)
 					.list());
-		}
-		return(pitClasses);
 
 	}
 

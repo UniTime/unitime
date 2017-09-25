@@ -21,6 +21,7 @@
 package org.unitime.timetable.reports.pointintimedata;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import org.hibernate.Session;
@@ -91,32 +92,39 @@ public class AllWSCHForDepartmentByClass extends WSCHByDepartment {
 
 	@Override
 	public void createWeeklyStudentContactHoursByDepartmentReportFor(PointInTimeData pointInTimeData, Session hibSession) {
+		HashSet<Long> processedClasses = new HashSet<Long>();
 		Department d = (Department) hibSession.createQuery("from Department d where d.uniqueId = :id").setLong("id", getDepartmentId()).setCacheable(true).uniqueResult();
-		List<PitClass> pitClassesForDept = findAllPitClassesWithContactHoursForDepartment(pointInTimeData, d, hibSession);
-		for(PitClass pc : pitClassesForDept) {
-			ArrayList<String> row = new ArrayList<String>();
-			row.add(d.getDeptCode());
-			row.add(d.getAbbreviation());
-			row.add(d.getName());
-			row.add(pc.getPitSchedulingSubpart().getPitInstrOfferingConfig().getPitInstructionalOffering().getControllingPitCourseOffering().getSubjectArea().getSubjectAreaAbbreviation());
-			row.add(pc.getPitSchedulingSubpart().getPitInstrOfferingConfig().getPitInstructionalOffering().getControllingPitCourseOffering().getCourseNbr());
-			row.add(pc.getPitSchedulingSubpart().getItype().getAbbv());
-			row.add(pc.getPitSchedulingSubpart().getItype().getOrganized().toString());
-			row.add(pc.getSectionNumber().toString() + (pc.getPitSchedulingSubpart().getSchedulingSubpartSuffixCache().equals("-")?"":pc.getPitSchedulingSubpart().getSchedulingSubpartSuffixCache()));
-			row.add(pc.getExternalUniqueId());
-			row.add(Float.toString(pc.getOrganizedWeeklyClassHours(getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm())));
-			row.add(Float.toString(pc.getNotOrganizedWeeklyClassHours(getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm())));
-			row.add(Float.toString(weeklyClassHours(pc)));
-			row.add(Float.toString(pc.getOrganizedWeeklyStudentClassHours(getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm())));
-			row.add(Float.toString(pc.getNotOrganizedWeeklyStudentClassHours(getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm())));
-			row.add(Float.toString(weeklyStudentClassHours(pc)));
-			int cnt = 0;
-			for(PitClassEvent pce : pc.getPitClassEvents()){
-				cnt += pce.getPitClassMeetings().size();
-			}
-			row.add(Integer.toString(cnt));
-			addDataRow(row);
-		}	
+		for (Long pioUid : findAllPitInstructionalOfferingUniqueIdsForDepartment(pointInTimeData, getDepartmentId(), hibSession)) {
+			for(PitClass pc : findAllPitClassesForPitInstructionalOfferingId(pointInTimeData, pioUid, hibSession)) {
+				if (processedClasses.contains(pc.getUniqueId())){
+					continue;
+				}
+				processedClasses.add(pc.getUniqueId());
+
+				ArrayList<String> row = new ArrayList<String>();
+				row.add(d.getDeptCode());
+				row.add(d.getAbbreviation());
+				row.add(d.getName());
+				row.add(pc.getPitSchedulingSubpart().getPitInstrOfferingConfig().getPitInstructionalOffering().getControllingPitCourseOffering().getSubjectArea().getSubjectAreaAbbreviation());
+				row.add(pc.getPitSchedulingSubpart().getPitInstrOfferingConfig().getPitInstructionalOffering().getControllingPitCourseOffering().getCourseNbr());
+				row.add(pc.getPitSchedulingSubpart().getItype().getAbbv());
+				row.add(pc.getPitSchedulingSubpart().getItype().getOrganized().toString());
+				row.add(pc.getSectionNumber().toString() + (pc.getPitSchedulingSubpart().getSchedulingSubpartSuffixCache().equals("-")?"":pc.getPitSchedulingSubpart().getSchedulingSubpartSuffixCache()));
+				row.add(pc.getExternalUniqueId());
+				row.add(Float.toString(pc.getOrganizedWeeklyClassHours(getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm())));
+				row.add(Float.toString(pc.getNotOrganizedWeeklyClassHours(getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm())));
+				row.add(Float.toString(weeklyClassHours(pc)));
+				row.add(Float.toString(pc.getOrganizedWeeklyStudentClassHours(getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm())));
+				row.add(Float.toString(pc.getNotOrganizedWeeklyStudentClassHours(getStandardMinutesInReportingHour(), getStandardWeeksInReportingTerm())));
+				row.add(Float.toString(weeklyStudentClassHours(pc)));
+				int cnt = 0;
+				for(PitClassEvent pce : pc.getPitClassEvents()){
+					cnt += pce.getPitClassMeetings().size();
+				}
+				row.add(Integer.toString(cnt));
+				addDataRow(row);
+			}	
+		}
 	}
 
 	public Long getDepartmentId() {
