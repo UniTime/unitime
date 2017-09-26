@@ -83,7 +83,7 @@ public class DatabaseServer extends AbstractLockingServer {
 			XCourse course = new XCourse(c);
 			if (matcher == null || matcher.match(course))
 				ret.add(course);
-			if (limit != null && ret.size() >= limit) break;
+			if (limit != null && limit > 0 && ret.size() >= limit) break;
 		}
 		return ret;
 	}

@@ -58,6 +58,13 @@
 					but the other course (or courses) of the cross-list is allowed.</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Requests: Find Courses</name>
+			<description>
+				<line>Only include offered courses in the list.</line>
+				<line>Return all matching courses when the given limit is negative.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Event Management</title>

@@ -363,7 +363,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 			try {
 				iCourseInfoCache = new Hashtable<Long, XCourse>();
 				for (CourseOffering course: (List<CourseOffering>)hibSession.createQuery(
-						"from CourseOffering x where x.subjectArea.session.uniqueId = :sessionId"
+						"from CourseOffering x where x.subjectArea.session.uniqueId = :sessionId and x.instructionalOffering.notOffered = false"
 						).setLong("sessionId", getSessionId()).setCacheable(true).list()) {
 					iCourseInfoCache.put(course.getUniqueId(), new XCourse(course));
 				}
@@ -382,16 +382,16 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	@Override
 	public Collection<XCourseId> findCourses(String query, Integer limit, CourseMatcher matcher) {
 		if (matcher != null) matcher.setServer(this);
-		List<XCourseId> ret = new ArrayList<XCourseId>(limit == null ? 100 : limit);
+		List<XCourseId> ret = new ArrayList<XCourseId>(limit == null || limit < 0 ? 100 : limit);
 		String queryInLowerCase = query.toLowerCase();
 		for (XCourse c : getCourseInfoTable().values()) {
 			if (c.matchCourseName(queryInLowerCase) && (matcher == null || matcher.match(c))) ret.add(c);
-			if (limit != null && ret.size() == limit) return ret;
+			if (limit != null && limit > 0 && ret.size() >= limit) return ret;
 		}
 		if (queryInLowerCase.length() > 2) {
 			for (XCourse c : getCourseInfoTable().values()) {
 				if (c.matchTitle(queryInLowerCase) && (matcher == null || matcher.match(c))) ret.add(c);
-				if (limit != null && ret.size() == limit) return ret;
+				if (limit != null && limit > 0 && ret.size() >= limit) return ret;
 			}
 		}
 		return ret;
