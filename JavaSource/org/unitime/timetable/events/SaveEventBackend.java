@@ -463,6 +463,8 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				note.setUser(context.getUser().getTrueName());
 				note.setUserId(context.getUser().getTrueExternalUserId());
 				if (request.hasMessage()) note.setTextNote(request.getMessage());
+				if (note.getTextNote() != null && note.getTextNote().length() > 2000)
+					note.setTextNote(note.getTextNote().substring(0, 2000));
 				note.setMeetings(EventInterface.toString(
 						response.getCreatedMeetings(),
 						CONSTANTS, "\n", df));
@@ -492,6 +494,8 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				note.setUserId(context.getUser().getTrueExternalUserId());
 				note.setAffectedMeetings(updatedMeetings);
 				if (request.hasMessage()) note.setTextNote(request.getMessage());
+				if (note.getTextNote() != null && note.getTextNote().length() > 2000)
+					note.setTextNote(note.getTextNote().substring(0, 2000));
 				if (response.hasUpdatedMeetings())
 					note.setMeetings(EventInterface.toString(
 							response.getUpdatedMeetings(),
@@ -520,6 +524,8 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				note.setUser(context.getUser().getTrueName());
 				note.setUserId(context.getUser().getTrueExternalUserId());
 				if (request.hasMessage()) note.setTextNote(request.getMessage());
+				if (note.getTextNote() != null && note.getTextNote().length() > 2000)
+					note.setTextNote(note.getTextNote().substring(0, 2000));
 				note.setMeetings(EventInterface.toString(
 						response.getDeletedMeetings(),
 						CONSTANTS, "\n", df));
@@ -548,6 +554,8 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				note.setUserId(context.getUser().getTrueExternalUserId());
 				note.setAffectedMeetings(cancelledMeetings);
 				if (request.hasMessage()) note.setTextNote(request.getMessage());
+				if (note.getTextNote() != null && note.getTextNote().length() > 2000)
+					note.setTextNote(note.getTextNote().substring(0, 2000));
 				note.setMeetings(EventInterface.toString(
 						response.getCancelledMeetings(),
 						CONSTANTS, "\n", df));

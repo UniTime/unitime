@@ -677,6 +677,12 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iNotes.setStyleName("unitime-TextArea");
 		iNotes.setVisibleLines(5);
 		iNotes.setCharacterWidth(80);
+		iNotes.addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				iHeader.clearMessage();
+			}
+		});
 		VerticalPanel notesPanel = new VerticalPanel();
 		notesPanel.add(iNotes);
 		notesPanel.setSpacing(0);
@@ -1923,6 +1929,12 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			UniTimeNotifications.error(MESSAGES.reqCoursesOrClasses());
 			if (valid)
 				iHeader.setErrorMessage(MESSAGES.reqCoursesOrClasses());
+			valid = false;
+		}
+		if (iNotes.getText() != null && iNotes.getText().length() > 2000) {
+			UniTimeNotifications.error(MESSAGES.eventNoteTooLong());
+			if (valid)
+				iHeader.setErrorMessage(MESSAGES.eventNoteTooLong());
 			valid = false;
 		}
 		callback.onSuccess(valid);

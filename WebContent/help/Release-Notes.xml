@@ -114,6 +114,14 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Event Note: Event Text Note / Additional Information</name>
+			<description>
+				<line>Increase size of the event note to 2000 characters.</line>
+				<line>Concatenate the note when it is too long (to avoid an SQL exception).</line>
+				<line>Add/Edit Event: check the event note, show an error when it is too long.</line>
+			</description>
+		</item>
 	</category>
 </release>
 

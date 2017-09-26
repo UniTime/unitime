@@ -170,6 +170,8 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
 					}));
 			if (request.hasMessage())
 				note.setTextNote(request.getMessage());
+			if (note.getTextNote() != null && note.getTextNote().length() > 2000)
+				note.setTextNote(note.getTextNote().substring(0, 2000));
 			
 			FileItem attachment = (FileItem)context.getAttribute(UploadServlet.SESSION_LAST_FILE);
 			if (attachment != null) {

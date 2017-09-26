@@ -48,6 +48,7 @@ import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.Debug;
 import org.unitime.commons.Email;
 import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ListSolutionsForm.InfoComparator;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -72,6 +73,7 @@ import org.unitime.timetable.util.Formats;
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
 public class Solution extends BaseSolution implements ClassAssignmentProxy {
+	private static CourseMessages MSG = Localization.create(CourseMessages.class);
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 
 	private static final long serialVersionUID = 1L;
@@ -171,8 +173,8 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					note.setTimeStamp(new Date());
 					note.setUser(contact == null ? "System" : contact.getName());
 					note.setUserId(sendNotificationPuid);
-					note.setTextNote(getOwner().getName() + " uncommitted");
-					note.setMeetings("N/A");
+					note.setTextNote(MSG.classNoteUncommitted(getOwner().getName()));
+					note.setMeetings(MSG.classMeetingsNotApplicable());
 					event.getNotes().add(note);
 	        		hibSession.saveOrUpdate(event);
 	        	}
@@ -372,7 +374,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				note.setTimeStamp(new Date());
 				note.setUser(contact == null ? "System" : contact.getName());
 				note.setUserId(sendNotificationPuid);
-				note.setTextNote(getOwner().getName() + " committed");
+				note.setTextNote(MSG.classNoteCommitted(getOwner().getName()));
 				note.setMeetings(a.getPlacement().getLongName(CONSTANTS.useAmPm()));
 				event.getNotes().add(note);
 		        hibSession.saveOrUpdate(event);
@@ -409,8 +411,8 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					note.setTimeStamp(new Date());
 					note.setUser(contact == null ? "System" : contact.getName());
 					note.setUserId(sendNotificationPuid);
-					note.setTextNote(getOwner().getName() + " committed, class was removed or unassigned");
-					note.setMeetings("N/A");
+					note.setTextNote(MSG.classNoteCommittedClassRemoved(getOwner().getName()));
+					note.setMeetings(MSG.classMeetingsNotApplicable());
 					event.getNotes().add(note);
 	        		hibSession.saveOrUpdate(event);
 	        	}

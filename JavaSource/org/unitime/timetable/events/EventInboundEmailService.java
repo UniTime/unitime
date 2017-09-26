@@ -123,6 +123,8 @@ public class EventInboundEmailService {
 			note.setUserId(userId);
 			
 			note.setTextNote(text);
+			if (note.getTextNote() != null && note.getTextNote().length() > 2000)
+				note.setTextNote(note.getTextNote().substring(0, 2000));
 			
 			if (attachment != null) {
 				note.setAttachedName(attachment.getFileName());

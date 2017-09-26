@@ -2516,6 +2516,15 @@ public interface CourseMessages extends Messages {
 
 	@DefaultMessage("Assigned {0}")
 	String classNoteAssigned(String assignment);
+	
+	@DefaultMessage("{0} uncommitted")
+	String classNoteUncommitted(String problem);
+	
+	@DefaultMessage("{0} committed")
+	String classNoteCommitted(String problem);
+	
+	@DefaultMessage("{0} committed, class was removed or unassigned")
+	String classNoteCommittedClassRemoved(String problem);
 
 	@DefaultMessage("Reassigned {0} >> {1}")
 	String classNoteReassigned(String oldAssignment, String newAssignment);

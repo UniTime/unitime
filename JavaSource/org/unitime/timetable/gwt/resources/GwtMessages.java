@@ -3395,6 +3395,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("No courses / clases were defined.")
 	String reqCoursesOrClasses();
 	
+	@DefaultMessage("Additional Information is too long.")
+	String eventNoteTooLong();
+	
 	@DefaultMessage("an event")
 	String anEvent();
 	

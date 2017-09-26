@@ -12829,4 +12829,8 @@
 			references %SCHEMA%.service_provider (uniqueid) on delete cascade
 		</sql>
 	</update>
+	<update version="189" date="26-Sep-2017" comment="Larger Event Note">
+		<plsql>alter table %SCHEMA%.event_note modify text_note varchar2(2000 char)</plsql>
+		<mysql>alter table %SCHEMA%.event_note modify text_note varchar(2000)</mysql>
+	</update>
 </dbupdate>
