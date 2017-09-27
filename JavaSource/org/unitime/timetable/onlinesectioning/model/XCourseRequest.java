@@ -114,6 +114,7 @@ public class XCourseRequest extends XRequest {
         	if (alternative != null) {
         		// Make sure that the alternative course is not already requested
             	for (CourseDemand d: demand.getStudent().getCourseDemands()) {
+            		if (d.getFreeTime() != null) continue;
             		for (CourseRequest r: d.getCourseRequests()) {
             			if (alternative.equals(r.getCourseOffering())) { alternative = null; break; }
             			if (!d.isAlternative() && d.getPriority() < demand.getPriority() && d.getCourseRequests().size() == 1 && alternative.equals(r.getCourseOffering().getAlternativeOffering())) { alternative = null; break; }

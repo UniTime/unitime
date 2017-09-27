@@ -65,6 +65,12 @@
 				<line>Return all matching courses when the given limit is negative.</line>
 			</description>
 		</item>
+		<item>
+			<name>Default Alternative Course Offering</name>
+			<description>
+				<line>Fixed a Null exception when there is a new free time request (during the enroll action).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Event Management</title>
