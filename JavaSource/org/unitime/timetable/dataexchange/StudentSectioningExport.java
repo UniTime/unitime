@@ -98,7 +98,7 @@ public class StudentSectioningExport extends BaseExport {
 	        	        }
 	        	        freeTimeEl.addAttribute("days", days);
 	        	        freeTimeEl.addAttribute("startTime", startSlot2startTime(cd.getFreeTime().getStartSlot()));
-	        	        freeTimeEl.addAttribute("endTime", startSlot2startTime(cd.getFreeTime().getStartSlot() + Constants.SLOT_LENGTH_MIN * cd.getFreeTime().getLength()));
+	        	        freeTimeEl.addAttribute("endTime", startSlot2startTime(cd.getFreeTime().getStartSlot() + cd.getFreeTime().getLength()));
 	        	        freeTimeEl.addAttribute("length", String.valueOf(Constants.SLOT_LENGTH_MIN * cd.getFreeTime().getLength()));
 	        		}
 	        		if (!cd.getCourseRequests().isEmpty()) {

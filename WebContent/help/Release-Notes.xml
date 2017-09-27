@@ -123,6 +123,15 @@
 			</description>
 		</item>
 	</category>
+	<category>
+	<title>Administration</title>
+	    <item>
+	        <name>Data Exchange: Student Course Requests Export</name>
+	        <description>
+	        	<line>Corrected endTime attribute of a freeTime element.</line>
+	        </description>
+	    </item>
+	</category>
 </release>
 
 <release>
