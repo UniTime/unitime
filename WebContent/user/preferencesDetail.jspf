@@ -159,14 +159,9 @@
 							<% preference = (PreferenceLevel)prLevel; %>
 						</logic:equal>
 					</logic:iterate>
-					<logic:iterate scope="request" name="<%=Room.ROOM_LIST_ATTR_NAME%>" id="r">
+					<logic:iterate scope="request" name="<%=Room.ROOM_LIST_ATTR_NAME%>" id="r" type="Location">
 						<logic:equal name="r" property="uniqueId" value="<%=(String)roomPref%>">
-							<logic:equal value="true" parameter="examSeating">
-								<div style='color:<%=preference.prefcolor()%>' title='<%=preference.getPrefName()%>: <%=((Location)r).getLabelWithExamCapacity()%>'><B><%=((Location)r).getLabel()%></B></div>
-							</logic:equal>
-							<logic:notEqual value="true" parameter="examSeating">
-								<div style='color:<%=preference.prefcolor()%>' title='<%=preference.getPrefName()%>: <%=((Location)r).getLabelWithCapacity()%>'><B><%=((Location)r).getLabel()%></B></div>
-							</logic:notEqual>
+							<div style='color:<%=preference.prefcolor()%>; font-weight: bold;' onmouseover="showGwtRoomHint(this, '<%=r.getUniqueId()%>', '<%=preference.getPrefName()%>');" onmouseout="hideGwtRoomHint();"><bean:write name="r" property="label"/></div>
 						</logic:equal>
 					</logic:iterate>
 	   			</logic:iterate>

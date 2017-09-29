@@ -130,7 +130,16 @@
 		</item>
 	</category>
 	<category>
-	<title>Administration</title>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Class Detail, Scheduling Subpart Detail, Instructor Detail, Examination Detail: Room Preferences</name>
+			<description>
+				<line>Show room tool-tip when the mouse is over a room preference.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Administration</title>
 	    <item>
 	        <name>Data Exchange: Student Course Requests Export</name>
 	        <description>
