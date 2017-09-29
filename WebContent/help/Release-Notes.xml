@@ -137,6 +137,13 @@
 				<line>Show room tool-tip when the mouse is over a room preference.</line>
 			</description>
 		</item>
+		<item>
+			<name>Solver Info: HTML</name>
+			<description>
+				<line>When showing solver info (the mouse is over the solver status just below the page name), solver properties can contain HTML tags.</line>
+				<line>For example, the Period&amp;times;Size Penalty.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>

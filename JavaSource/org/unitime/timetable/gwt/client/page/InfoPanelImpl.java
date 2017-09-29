@@ -139,7 +139,7 @@ public class InfoPanelImpl extends P implements InfoPanelDisplay {
 		if (info != null)
 			for (InfoPairInterface pair: info.getPairs()) {
 				if (pair.getValue() == null || pair.getValue().isEmpty()) continue;
-				iInfo.setText(row, 0, pair.getName());
+				iInfo.setHTML(row, 0, pair.getName());
 				iInfo.setHTML(row, 1, pair.getValue());
 				if (pair.hasSeparator()) {
 					iInfo.getCellFormatter().addStyleName(row, 0, "separator");
