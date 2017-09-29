@@ -582,7 +582,7 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
             if (!student.variables().contains(exam))
                 student.addVariable(exam);
             for (ExamOwner owner: exam.getOwners()) {
-                if (owner.getId()==ownerId) owner.getStudents().add(student);
+                if (owner.getId()==ownerId) { owner.getStudents().add(student); student.getOwners().add(owner); }
             }
         }
     }
