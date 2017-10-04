@@ -1398,6 +1398,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Overall Solution Value:")
 	String propOverallSolutionValue();
 	
+	@DefaultMessage("Mode:")
+	String propConflictStatisticsMode();
+	
+	@DefaultMessage("Limit:")
+	String propConflictStatisticsLimit();
+	
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
 
@@ -2192,6 +2198,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Failed to compute conflicts: {0}")
 	String failedToComputeConflicts(String reason);
+	
+	@DefaultMessage("Failed to load conflict-based statistics: {0}")
+	String failedToLoadConflictStatistics(String reason);
 
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
@@ -2522,6 +2531,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("All classes are assigned.")
 	String errorNotAssignedClassesNoDataReturned();
+	
+	@DefaultMessage("Conflict-based statistics is not available at the moment.")
+	String errorConflictStatisticsNoDataReturned();
 	
 	@DefaultMessage("Solver is not started.")
 	String warnSolverNotStarted();
@@ -3293,6 +3305,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Suggestions")
 	@DoNotTranslate
 	String pageSuggestions();
+	
+	@DefaultMessage("Conflict-Based Statistics")
+	@DoNotTranslate
+	String pageConflictBasedStatistics();
 	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -5599,4 +5615,10 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Unknown")
 	String constraintUnknown();
+	
+	@DefaultMessage("Variable - oriented")
+	String modeCBSVariables();
+	
+	@DefaultMessage("Constraints - oriented")
+	String modeCBSConstraints();
 }

@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
+import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -45,6 +46,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HasValue;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
@@ -252,7 +254,16 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 			String value = Location.getParameter(param.getName());
 			if (value != null) param.setDefaultValue(value);
 			Widget w = getWidget(param);
-			int row = addRow(param.getLabel(), w);
+			int row;
+			if (param.hasSuffix()) {
+				P panel = new P("panel");
+				panel.add(w);
+				Label suffix = new Label(param.getSuffix()); suffix.addStyleName("suffix");
+				panel.add(suffix);
+				row = addRow(param.getLabel(), panel);
+			} else {
+				row = addRow(param.getLabel(), w);
+			}
 			if (param.isCollapsible()) iCollapsibleRows.add(row);
 			iFilterLastRow = row;
 			if (iHeader.isCollapsible() != null && !iHeader.isCollapsible() && param.isCollapsible())

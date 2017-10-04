@@ -59,7 +59,7 @@ public class FilterInterface implements GwtRpcResponse, Serializable {
 	}
 
 	public static class FilterParameterInterface implements IsSerializable, Comparable<FilterParameterInterface> {
-		private String iName, iLabel, iType, iValue, iDefault;
+		private String iName, iLabel, iType, iValue, iDefault, iSuffix;
 		private List<ListItem> iOptions = null;
 		private boolean iMultiSelect = false;
 		private boolean iCollapsible = true;
@@ -71,6 +71,10 @@ public class FilterInterface implements GwtRpcResponse, Serializable {
 		
 		public String getLabel() { return iLabel; }
 		public void setLabel(String label) { iLabel = label; }
+		
+		public boolean hasSuffix() { return iSuffix != null && !iSuffix.isEmpty(); }
+		public String getSuffix() { return iSuffix; }
+		public void setSuffix(String suffix) { iSuffix = suffix; }
 		
 		public String getType() { return iType; }
 		public void setType(String type) { iType = type; }

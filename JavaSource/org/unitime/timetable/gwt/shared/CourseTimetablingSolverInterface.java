@@ -27,6 +27,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.PreferenceInterface;
 import org.unitime.timetable.gwt.shared.SolverInterface.HasPageMessages;
 import org.unitime.timetable.gwt.shared.SolverInterface.PageMessage;
+import org.unitime.timetable.gwt.shared.SuggestionsInterface.SuggestionProperties;
 
 /**
  * @author Tomas Muller
@@ -87,5 +88,25 @@ public class CourseTimetablingSolverInterface {
 		
 		public boolean isShowNote() { return iShowNote; }
 		public void setShowNote(boolean showNote) { iShowNote = showNote; }
+	}
+	
+	public static class ConflictStatisticsFilterRequest implements GwtRpcRequest<ConflictStatisticsFilterResponse>, Serializable {
+		private static final long serialVersionUID = 0l;
+		
+	}
+	
+	public static class ConflictStatisticsFilterResponse extends FilterInterface implements HasPageMessages {
+		private static final long serialVersionUID = 0l;
+		private SuggestionProperties iProperties;
+		private List<PageMessage> iPageMessages = null;
+		
+		public SuggestionProperties getSuggestionProperties() { return iProperties; }
+		public void setSuggestionProperties(SuggestionProperties properties) { iProperties = properties; }
+		public boolean hasPageMessages() { return iPageMessages != null && !iPageMessages.isEmpty(); }
+		public List<PageMessage> getPageMessages() { return iPageMessages; }
+		public void addPageMessage(PageMessage message) {
+			if (iPageMessages == null) iPageMessages = new ArrayList<PageMessage>();
+			iPageMessages.add(message);
+		}
 	}
 }
