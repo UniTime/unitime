@@ -462,4 +462,7 @@ public interface GwtConstants extends Constants {
 	
 	@DefaultStringValue("; ")
 	String meetingContactsSeparator();
+	
+	@DefaultStringValue("%")
+	String percentageSign();
 }

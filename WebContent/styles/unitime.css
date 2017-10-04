@@ -5830,3 +5830,12 @@ unitime-RoomSharingWidget .legend .blank {
 	display: inline;
 	padding-right: 3px;
 }
+
+.unitime-PageFilter .panel * {
+	display: inline;
+}
+
+.unitime-PageFilter .panel .suffix {
+	padding-left: 3px;
+	vertical-align: bottom;
+}

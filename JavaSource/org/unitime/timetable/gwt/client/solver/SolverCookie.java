@@ -41,7 +41,7 @@ public class SolverCookie {
 	private String iSuggestionsFilter = "";
 	private boolean iShowConflicts = false;
 	private boolean iShowAllStudentConflicts = false, iShowAllDistributionConflicts = false;
-	private boolean iShowCBS = false;
+	private boolean iShowCBS = false, iShowCBSFilter = true;
 	
 	private SolverCookie() {
 		try {
@@ -65,6 +65,7 @@ public class SolverCookie {
 				iShowAllStudentConflicts = "1".equals(params[idx++]);
 				iShowAllDistributionConflicts = "1".equals(params[idx++]);
 				iShowCBS = "1".equals(params[idx++]);
+				iShowCBSFilter = "1".equals(params[idx++]);
 				iSuggestionsFilter = params[idx++];
 			}
 		} catch (Exception e) {
@@ -80,7 +81,7 @@ public class SolverCookie {
 				+ "|" + (iShowSuggestions ? "1" : "0")
 				+ "|" + (iShowConflicts ? "1" : "0") + "|" + iConflictsSort
 				+ "|" + (iShowAllStudentConflicts ? "1" : "0") + "|" + (iShowAllDistributionConflicts ? "1" : "0")
-				+ "|" + (iShowCBS ? "1" : "0")
+				+ "|" + (iShowCBS ? "1" : "0") + "|" + (iShowCBSFilter ? "1" : "0")
 				+ "|" + (iSuggestionsFilter == null ? "" : iSuggestionsFilter);
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:Solver", cookie, expires);
@@ -163,4 +164,6 @@ public class SolverCookie {
 	
 	public boolean isShowCBS() { return iShowCBS; }
 	public void setShowCBS(boolean showCBS) { iShowCBS = showCBS; save(); }
+	public boolean isShowCBSFilter() { return iShowCBSFilter; }
+	public void setShowCBSFilter(boolean filter) { iShowCBSFilter = filter; save(); }
 }
