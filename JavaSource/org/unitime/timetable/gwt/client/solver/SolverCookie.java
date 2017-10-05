@@ -36,12 +36,12 @@ public class SolverCookie {
 	private int iAssignedClassesSort = 0;
 	private boolean iNotAssignedClassesFilter = true;
 	private int iNotAssignedClassesSort = 0;
-	private int iSelectedAssignmentsSort = 0, iConflictingAssignmentsSort = 0, iSuggestionsSort = 0, iPlacementsSort = 0, iConflictsSort = 0;
+	private int iSelectedAssignmentsSort = 0, iConflictingAssignmentsSort = 0, iSuggestionsSort = 0, iPlacementsSort = 0, iConflictsSort = 0, iSolutionChangesSort = 0;
 	private boolean iShowSuggestions = true;
 	private String iSuggestionsFilter = "";
 	private boolean iShowConflicts = false;
 	private boolean iShowAllStudentConflicts = false, iShowAllDistributionConflicts = false;
-	private boolean iShowCBS = false, iShowCBSFilter = true;
+	private boolean iShowCBS = false, iShowCBSFilter = true, iSolutionChangesFilter = true;
 	
 	private SolverCookie() {
 		try {
@@ -66,10 +66,11 @@ public class SolverCookie {
 				iShowAllDistributionConflicts = "1".equals(params[idx++]);
 				iShowCBS = "1".equals(params[idx++]);
 				iShowCBSFilter = "1".equals(params[idx++]);
+				iSolutionChangesFilter = "1".equals(params[idx++]);
+				iSolutionChangesSort = Integer.parseInt(params[idx++]);
 				iSuggestionsFilter = params[idx++];
 			}
-		} catch (Exception e) {
-		}
+		} catch (Exception e) {}
 	}
 	
 	private void save() {
@@ -82,6 +83,7 @@ public class SolverCookie {
 				+ "|" + (iShowConflicts ? "1" : "0") + "|" + iConflictsSort
 				+ "|" + (iShowAllStudentConflicts ? "1" : "0") + "|" + (iShowAllDistributionConflicts ? "1" : "0")
 				+ "|" + (iShowCBS ? "1" : "0") + "|" + (iShowCBSFilter ? "1" : "0")
+				+ "|" + (iSolutionChangesFilter ? "1" : "0") + "|" + iSolutionChangesSort
 				+ "|" + (iSuggestionsFilter == null ? "" : iSuggestionsFilter);
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:Solver", cookie, expires);
@@ -166,4 +168,9 @@ public class SolverCookie {
 	public void setShowCBS(boolean showCBS) { iShowCBS = showCBS; save(); }
 	public boolean isShowCBSFilter() { return iShowCBSFilter; }
 	public void setShowCBSFilter(boolean filter) { iShowCBSFilter = filter; save(); }
+	
+	public boolean isSolutionChangesFilter() { return iSolutionChangesFilter; }
+	public void setSolutionChangesFilter(boolean filter) { iSolutionChangesFilter = filter; save(); }
+	public int getSolutionChangesSort() { return iSolutionChangesSort; }
+	public void setSolutionChangesSort(int sort) { iSolutionChangesSort = sort; save(); }
 }

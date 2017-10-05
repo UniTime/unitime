@@ -23,10 +23,13 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
 
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.export.CSVPrinter;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.Exporter;
 import org.unitime.timetable.export.PDFPrinter;
+import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.FilterInterface;
 import org.unitime.timetable.gwt.shared.FilterInterface.FilterParameterInterface;
 import org.unitime.timetable.gwt.shared.TableInterface;
@@ -35,6 +38,8 @@ import org.unitime.timetable.gwt.shared.TableInterface;
  * @author Tomas Muller
  */
 public abstract class TableExporter implements Exporter {
+	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 
 	protected void fillInFilter(FilterInterface filter, ExportHelper helper) {
 		for (FilterParameterInterface parameter: filter.getParameters()) {
@@ -113,6 +118,53 @@ public abstract class TableExporter implements Exporter {
 					ret += "\n" + alternative;
 			return ret;
 		}
+		if (cell instanceof TableInterface.TableCellChange) {
+			TableInterface.TableCellChange change = (TableInterface.TableCellChange)cell;
+			if (change.getFirst() != null && change.getSecond() != null && change.getFirst().compareTo(change.getSecond()) == 0) {
+				if (change.getFirst() instanceof TableInterface.TableCellRooms) {
+					TableInterface.TableCellRooms rooms = (TableInterface.TableCellRooms)change.getFirst();
+					String ret = "";
+					for (int i = 0; i < rooms.getNrRooms(); i++) {
+						if (i > 0) ret += CONSTANTS.itemSeparator();
+						ret += rooms.getName(i);
+					}
+					return ret;
+				} else {
+					return change.getFirst().getFormattedValue();
+				}
+			}
+			String ret = "";
+			if (change.getFirst() == null) {
+				ret += MESSAGES.notAssigned();
+			} else {
+				if (change.getFirst() instanceof TableInterface.TableCellRooms) {
+					TableInterface.TableCellRooms rooms = (TableInterface.TableCellRooms)change.getFirst();
+					for (int i = 0; i < rooms.getNrRooms(); i++) {
+						if (i > 0) ret += CONSTANTS.itemSeparator();
+						ret += rooms.getName(i);
+					}
+					if (rooms.getNrRooms() == 0) ret += MESSAGES.notApplicable();
+				} else {
+					ret += change.getFirst().getFormattedValue();
+				}
+			}
+			ret += " \u2192 ";
+			if (change.getSecond() == null) {
+				ret += MESSAGES.notAssigned();
+			} else {
+				if (change.getSecond() instanceof TableInterface.TableCellRooms) {
+					TableInterface.TableCellRooms rooms = (TableInterface.TableCellRooms)change.getSecond();
+					for (int i = 0; i < rooms.getNrRooms(); i++) {
+						if (i > 0) ret += CONSTANTS.itemSeparator();
+						ret += rooms.getName(i);
+					}
+					if (rooms.getNrRooms() == 0) ret += MESSAGES.notApplicable();
+				} else {
+					ret += change.getSecond().getFormattedValue();
+				}
+			}
+			return ret;
+		}
 		return cell.getFormattedValue();
 	}
 	
@@ -187,6 +239,67 @@ public abstract class TableExporter implements Exporter {
 					alternative.setColor("777777");
 					a.add(alternative);
 				}
+			return a;
+		}
+		if (cell instanceof TableInterface.TableCellChange) {
+			TableInterface.TableCellChange change = (TableInterface.TableCellChange)cell;
+			if (change.getFirst() != null && change.getSecond() != null && change.getFirst().compareTo(change.getSecond()) == 0) {
+				if (change.getFirst() instanceof TableInterface.TableCellRooms) {
+					TableInterface.TableCellRooms rooms = (TableInterface.TableCellRooms)change.getFirst();
+					PDFPrinter.A a = new PDFPrinter.A(); a.set(PDFPrinter.F.INLINE);
+					for (int i = 0; i < rooms.getNrRooms(); i++) {
+						if (i > 0) a.add(new PDFPrinter.A(CONSTANTS.itemSeparator()));
+						PDFPrinter.A b = new PDFPrinter.A(rooms.getName(i));
+						b.setColor(rooms.getColor(i));
+						a.add(b);
+					}
+					return a;
+				} else {
+					return convertPDF(change.getFirst());
+				}
+			}
+			PDFPrinter.A a = new PDFPrinter.A(); a.set(PDFPrinter.F.INLINE);
+			if (change.getFirst() == null) {
+				PDFPrinter.A b = new PDFPrinter.A(MESSAGES.notAssigned());
+				b.setColor("ff0000");
+				b.set(PDFPrinter.F.ITALIC);
+				a.add(b);
+			} else {
+				if (change.getFirst() instanceof TableInterface.TableCellRooms) {
+					TableInterface.TableCellRooms rooms = (TableInterface.TableCellRooms)change.getFirst();
+					for (int i = 0; i < rooms.getNrRooms(); i++) {
+						if (i > 0) a.add(new PDFPrinter.A(CONSTANTS.itemSeparator()));
+						PDFPrinter.A b = new PDFPrinter.A(rooms.getName(i));
+						b.setColor(rooms.getColor(i));
+						a.add(b);
+					}
+					if (rooms.getNrRooms() == 0)
+						a.add(new PDFPrinter.A(MESSAGES.notApplicable(), PDFPrinter.F.ITALIC));
+				} else {
+					a.add(convertPDF(change.getFirst()));
+				}
+			}
+			a.add(new PDFPrinter.A(" \u2192 "));
+			if (change.getSecond() == null) {
+				PDFPrinter.A c = new PDFPrinter.A(MESSAGES.notAssigned());
+				c.setColor("ff0000");
+				c.set(PDFPrinter.F.ITALIC);
+				a.add(c);
+			} else {
+				if (change.getSecond() instanceof TableInterface.TableCellRooms) {
+					TableInterface.TableCellRooms rooms = (TableInterface.TableCellRooms)change.getSecond();
+					for (int i = 0; i < rooms.getNrRooms(); i++) {
+						if (i > 0) a.add(new PDFPrinter.A(CONSTANTS.itemSeparator()));
+						PDFPrinter.A b = new PDFPrinter.A(rooms.getName(i));
+						b.setColor(rooms.getColor(i));
+						a.add(b);
+					}
+					if (rooms.getNrRooms() == 0)
+						a.add(new PDFPrinter.A(MESSAGES.notApplicable(), PDFPrinter.F.ITALIC));
+				} else {
+					a.add(convertPDF(change.getSecond()));
+				}
+			}
 			return a;
 		}
 		PDFPrinter.A a = new PDFPrinter.A(cell.getFormattedValue());

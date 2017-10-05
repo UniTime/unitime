@@ -5533,6 +5533,24 @@ unitime-RoomSharingWidget .legend .blank {
 	white-space: pre-wrap;
 }
 
+.unitime-DataTable .change * {
+	display: inline;
+	white-space: nowrap;
+}
+
+.unitime-DataTable .change .not-assigned {
+	color: red;
+	font-style: italic;	
+}
+
+.unitime-DataTable .change .arrow {
+	padding: 0px 2px 0px 2px;
+}
+
+.unitime-DataTable .change .collection .item {
+	display: inline;
+}
+
 .unitime-NotAssignedClassesPage .table-note-top {
 	font-style: italic;
 	max-width: 800px;

@@ -1404,6 +1404,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Limit:")
 	String propConflictStatisticsLimit();
 	
+	@DefaultMessage("Compare with:")
+	String propCompareSolutionWith();
+	
+	@DefaultMessage("Reversed mode (current \u2192 compared solution):")
+	String propCompareSolutionReversed();
+	
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
 
@@ -1715,6 +1721,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Legend")
 	String sectLegend();
+	
+	@DefaultMessage("Changes")
+	String sectSolutionChanges();
 	
 	@DefaultMessage("Loading {0}...")
 	String waitLoading(String name);
@@ -2201,6 +2210,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Failed to load conflict-based statistics: {0}")
 	String failedToLoadConflictStatistics(String reason);
+	
+	@DefaultMessage("Failed to load solution changes: {0}")
+	String failedToLoadSolutionChanges(String reason);
 
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
@@ -2534,6 +2546,21 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Conflict-based statistics is not available at the moment.")
 	String errorConflictStatisticsNoDataReturned();
+	
+	@DefaultMessage("No timetable is loaded. However, you can load one <a href='listSolutions.do'>here</a>.")
+	String errorNoSolverLoaded();
+	
+	@DefaultMessage("No best solution saved so far.")
+	String errorNoBestSolutionSaved();
+	
+	@DefaultMessage("No solution selected. However, you can select one <a href='listSolutions.do'>here")
+	String errorNoSolutionSelected();
+	
+	@DefaultMessage("No changes.")
+	String errorSolutionChangesNoDataReturned();
+	
+	@DefaultMessage("Class {0} does not exist anymore, please refresh your data.")
+	String errorClassDoesNotExist(Long id);
 	
 	@DefaultMessage("Solver is not started.")
 	String warnSolverNotStarted();
@@ -3309,6 +3336,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Conflict-Based Statistics")
 	@DoNotTranslate
 	String pageConflictBasedStatistics();
+	
+	@DefaultMessage("Changes")
+	@DoNotTranslate
+	String pageSolutionChanges();
 	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -5621,4 +5652,13 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Constraints - oriented")
 	String modeCBSConstraints();
+	
+	@DefaultMessage("Best Solution")
+	String compareWithBestSolution();
+	
+	@DefaultMessage("Initial Solution")
+	String compareWithInitialSolution();
+	
+	@DefaultMessage("Selected Solution")
+	String compareWithSelectedSolution();
 }

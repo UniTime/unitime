@@ -169,6 +169,9 @@ public class CurrentAssignment extends SimpleForm implements TakesValue<ClassAss
 		}
 		if (details.getClazz().nrRooms() > 0 && details.getClazz().getRoomCapacity() > 0)
 			addRow(MESSAGES.propMinimumRoomSize(), new Label(String.valueOf(details.getClazz().getRoomCapacity())));
+		if (details.getClazz().getNote() != null && !details.getClazz().getNote().isEmpty()) {
+			addRow(MESSAGES.propNote(), new HTML(details.getClazz().getNote()));
+		}
 		iMessage = new HTML(); iMessage.addStyleName("error-message");
 		iMessageRow = addRow(iMessage);
 		if (details.getTime() != null && details.isCanUnassign()) {
@@ -231,8 +234,10 @@ public class CurrentAssignment extends SimpleForm implements TakesValue<ClassAss
 		if (iTimes != null)
 			iTimes.select(assignment == null ? (TimeInfo) null : new TimeInfo(assignment), false);
 		if (iRooms != null)
-			for (int i = 0; i < iDetails.getClazz().nrRooms(); i++)
-				iRooms.select(assignment == null ? (RoomInfo) null : new RoomInfo(assignment.getRoomIds().get(i)), false);
+			for (int i = 0; i < iDetails.getClazz().nrRooms(); i++) {
+				Long roomId = (assignment == null ? null : assignment.getRoomId(i));
+				iRooms.select(roomId == null ? (RoomInfo) null : new RoomInfo(roomId), false);
+			}
 	}
 	
 	public void setSelectedTime(TimeInfo time, boolean fireUpdate) {

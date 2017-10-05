@@ -243,10 +243,13 @@ public class SuggestionsPage extends SimpleForm {
 				if (iSelectedAssignments != null && !iSelectedAssignments.isEmpty()) {
 					for (Iterator<SelectedAssignment> i =  iSelectedAssignments.iterator(); i.hasNext(); ) {
 						SelectedAssignment a = i.next();
-						if (a.getClassId().equals(classId))
+						if (a.getClassId().equals(classId)) {
 							iCurrentAssignment.setSelectedAssignment(a);
+							if (iCurrentAssignment.getSelectedAssignment() == null)
+								i.remove();
+						}
 					}
-					iCurrentAssignment.setShowUnassign(false);
+					iCurrentAssignment.setShowUnassign(iSelectedAssignments.isEmpty());
 				} else {
 					iCurrentAssignment.setShowUnassign(true);
 				}
@@ -262,7 +265,7 @@ public class SuggestionsPage extends SimpleForm {
 					iCBS.setVisible(details.isCanUnassign());
 					if (details.isCanUnassign()) iCBS.setValue(classId);
 				}
-				if (computeSuggestion && iSelectedAssignments != null && !iSelectedAssignments.isEmpty()) {
+				if (computeSuggestion && details.isCanUnassign() && iSelectedAssignments != null && !iSelectedAssignments.isEmpty()) {
 					SelectedAssignmentsRequest request = new SelectedAssignmentsRequest(classId);
 					for (SelectedAssignment a: iSelectedAssignments)
 						request.addAssignment(a);

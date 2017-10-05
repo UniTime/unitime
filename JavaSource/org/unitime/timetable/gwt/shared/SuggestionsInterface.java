@@ -587,7 +587,7 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 		private String iConflict = null;
 		private Map<String, Double> iObjectives = null;
 		private Map<String, Double> iAssignedObjectives = null;
-		private boolean iCanUnassign = false, iConstant = false;
+		private boolean iCanUnassign = false;
 		
 		public ClassAssignmentDetails() {}
 		
@@ -856,6 +856,10 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 			for (Long id: iRoomIds)
 				ret += (ret.isEmpty() ? "" : separator) + id;
 			return ret;
+		}
+		public Long getRoomId(int index) {
+			if (iRoomIds == null || index >= iRoomIds.size()) return null;
+			return iRoomIds.get(index);
 		}
 		public void setPatternId(Long patternId) { iPatternId = patternId; }
 		public Long getPatternId() { return iPatternId; }
