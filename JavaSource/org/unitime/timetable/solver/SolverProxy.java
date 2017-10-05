@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface;
 import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridModel;
 import org.unitime.timetable.server.solver.SuggestionsContext;
+import org.unitime.timetable.solver.TimetableSolver.AssignmentRecord;
 import org.unitime.timetable.solver.TimetableSolver.RecordedAssignment;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 import org.unitime.timetable.solver.interactive.Hint;
@@ -74,7 +75,7 @@ public interface SolverProxy extends ClassAssignmentProxy, CommonSolverInterface
 	
 	public AssignmentPreferenceInfo getInfo(Hint hint);
 	public String getNotValidReason(Hint hint);
-	public Vector getAssignmentRecords();
+	public List<AssignmentRecord> getAssignmentRecords();
 	public List<RecordedAssignment> getChangesToInitial();
 	public List<RecordedAssignment> getChangesToBest();
 	public List<RecordedAssignment> getChangesToSolution(Long solutionId);

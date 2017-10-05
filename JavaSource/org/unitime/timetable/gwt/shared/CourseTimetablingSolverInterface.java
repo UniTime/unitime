@@ -134,4 +134,24 @@ public class CourseTimetablingSolverInterface {
 		public String getMessage() { return iMessage; }
 		public void setMessage(String message) { iMessage = message; }
 	}
+	
+	public static class AssignmentHistoryFilterRequest implements GwtRpcRequest<AssignmentHistoryFilterResponse>, Serializable {
+		private static final long serialVersionUID = 0l;
+	}
+	
+	public static class AssignmentHistoryFilterResponse extends AssignedClassesFilterResponse {
+		private static final long serialVersionUID = 0l;
+	}
+	
+	public static class AssignmentHistoryRequest implements GwtRpcRequest<AssignmentHistoryResponse>, Serializable {
+		private static final long serialVersionUID = 0l;
+		private FilterInterface iFilter;
+		
+		public FilterInterface getFilter() { return iFilter; }
+		public void setFilter(FilterInterface filter) { iFilter = filter; }
+	}
+	
+	public static class AssignmentHistoryResponse extends SolutionChangesResponse {
+		private static final long serialVersionUID = 0l;
+	}
 }

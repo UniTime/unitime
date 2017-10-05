@@ -46,6 +46,7 @@ import org.unitime.timetable.gwt.client.sectioning.SectioningReports;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusPage;
 import org.unitime.timetable.gwt.client.sectioning.StudentSectioningPage;
 import org.unitime.timetable.gwt.client.solver.AssignedClassesPage;
+import org.unitime.timetable.gwt.client.solver.AssignmentHistoryPage;
 import org.unitime.timetable.gwt.client.solver.ConflictBasedStatisticsPage;
 import org.unitime.timetable.gwt.client.solver.NotAssignedClassesPage;
 import org.unitime.timetable.gwt.client.solver.SolutionChangesPage;
@@ -235,6 +236,10 @@ public enum Pages {
 	solutionChanges(new PageFactory() {
 		public Widget create() { return new SolutionChangesPage(); }
 		public String name(GwtMessages messages) { return messages.pageSolutionChanges(); }
+		}),
+	assignmentHistory(new PageFactory() {
+		public Widget create() { return new AssignmentHistoryPage(); }
+		public String name(GwtMessages messages) { return messages.pageAssignmentHistory(); }
 		}),
 	;
 	

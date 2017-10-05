@@ -20,8 +20,8 @@
 package org.unitime.timetable.action;
 
 import java.util.Date;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -109,7 +109,7 @@ public class AssignmentHistoryAction extends Action {
         return mapping.findForward("showAssignmentHistory");
 	}
 	
-    public String getHistoryTable(boolean simple, HttpServletRequest request, SessionContext context, SolverProxy solver, String name, Vector history) {
+    public String getHistoryTable(boolean simple, HttpServletRequest request, SessionContext context, SolverProxy solver, String name, List<AssignmentRecord> history) {
     	if (history==null || history.isEmpty()) return null;
 		WebTable.setOrder(context,"assignmentHistory.ord",request.getParameter("ord"),1);
         WebTable webTable =
@@ -128,8 +128,8 @@ public class AssignmentHistoryAction extends Action {
         try {
         	int idx = 0;
         	boolean hasBefore = false;
-        	for (Enumeration e=history.elements();e.hasMoreElements();idx++) {
-        		AssignmentRecord record = (AssignmentRecord)e.nextElement();
+        	for (Iterator<AssignmentRecord> e = history.iterator(); e.hasNext(); idx++) {
+        		AssignmentRecord record = (AssignmentRecord)e.next();
         		StringBuffer classes = new StringBuffer("<table colspan='0' rowspan='0' border='0'>");
         	    StringBuffer rooms = new StringBuffer("<table colspan='0' rowspan='0' border='0'>");
         	    StringBuffer times = new StringBuffer("<table colspan='0' rowspan='0' border='0'>");
@@ -138,8 +138,7 @@ public class AssignmentHistoryAction extends Action {
         	    StringBuffer dates = new StringBuffer("<table colspan='0' rowspan='0' border='0'>");
         	    StringBuffer datesSort = new StringBuffer();
         	    boolean first = true;
-        	    for (Enumeration f=record.getAssignments().elements();f.hasMoreElements();) {
-        	    	RecordedAssignment assignment = (RecordedAssignment)f.nextElement();
+        	    for (RecordedAssignment assignment: record.getAssignments()) {
         	    	if (assignment.getBefore()!=null)
         	    		hasBefore=true;
         	    	ClassAssignmentDetails before = (assignment.getBefore()==null?null:assignment.getBefore().getDetails(context, solver, false));
@@ -263,7 +262,7 @@ public class AssignmentHistoryAction extends Action {
         return webTable.printTable(WebTable.getOrder(context, "assignmentHistory.ord"));
     }	
 
-    public PdfWebTable exportPdf(boolean simple, HttpServletRequest request, SessionContext context, SolverProxy solver, String name, Vector history) throws Exception {
+    public PdfWebTable exportPdf(boolean simple, HttpServletRequest request, SessionContext context, SolverProxy solver, String name, List<AssignmentRecord> history) throws Exception {
     	if (history==null || history.isEmpty()) return null;
         PdfWebTable webTable =
         	(simple?
@@ -278,8 +277,7 @@ public class AssignmentHistoryAction extends Action {
         			new String[] {"left", "left", "left", "left", "left", "left","right","right","right","right","right","right","right","right","right","right","right"},
         			null ));
 
-        for (Enumeration e=history.elements();e.hasMoreElements();) {
-    		AssignmentRecord record = (AssignmentRecord)e.nextElement();
+        for (AssignmentRecord record: history) {
     		StringBuffer classes = new StringBuffer();
     	    StringBuffer rooms = new StringBuffer();
     	    StringBuffer times = new StringBuffer();
@@ -288,8 +286,7 @@ public class AssignmentHistoryAction extends Action {
     	    StringBuffer dates = new StringBuffer();
     	    StringBuffer datesSort = new StringBuffer();
     	    boolean first = true;
-    	    for (Enumeration f=record.getAssignments().elements();f.hasMoreElements();) {
-    	    	RecordedAssignment assignment = (RecordedAssignment)f.nextElement();
+    	    for (RecordedAssignment assignment: record.getAssignments()) {
     	    	ClassAssignmentDetails before = (assignment.getBefore()==null?null:assignment.getBefore().getDetails(context,solver,false));
     	    	ClassAssignmentDetails after = (assignment.getAfter()==null?null:assignment.getAfter().getDetails(context,solver,false));
     	    	if (!first) {

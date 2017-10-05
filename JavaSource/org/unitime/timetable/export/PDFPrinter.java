@@ -244,6 +244,23 @@ public class PDFPrinter implements Printer {
 							iMaxWidth[idx] = Math.max(iMaxWidth[idx], width + rpad);
 							underline = g.has(F.UNDERLINE);
 						}
+						if (g.hasChunks()) {
+							Paragraph parent = new Paragraph();
+							int width = 0;
+							for (A h: g.getChunks()) {
+								if (h.hasText()) {
+									Font font = PdfFont.getFont(h.has(F.BOLD), h.has(F.ITALIC));
+									if (h.getColor() != null) font.setColor(h.getColor());
+									if (h.has(F.UNDERLINE)) font.setStyle(Font.UNDERLINE);
+									Chunk ch = new Chunk(h.getText(), font);
+									parent.add(ch);
+									width += h.getWidth(font) + rpad;
+									underline = h.has(F.UNDERLINE);
+								}
+							}
+							iMaxWidth[idx] = Math.max(iMaxWidth[idx], width);
+							cell.addElement(parent);
+						}
 					}
 				}
 			}

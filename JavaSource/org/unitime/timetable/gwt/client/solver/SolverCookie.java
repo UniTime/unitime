@@ -36,12 +36,12 @@ public class SolverCookie {
 	private int iAssignedClassesSort = 0;
 	private boolean iNotAssignedClassesFilter = true;
 	private int iNotAssignedClassesSort = 0;
-	private int iSelectedAssignmentsSort = 0, iConflictingAssignmentsSort = 0, iSuggestionsSort = 0, iPlacementsSort = 0, iConflictsSort = 0, iSolutionChangesSort = 0;
+	private int iSelectedAssignmentsSort = 0, iConflictingAssignmentsSort = 0, iSuggestionsSort = 0, iPlacementsSort = 0, iConflictsSort = 0, iSolutionChangesSort = 0, iAssignmentHistorySort = 0;
 	private boolean iShowSuggestions = true;
 	private String iSuggestionsFilter = "";
 	private boolean iShowConflicts = false;
 	private boolean iShowAllStudentConflicts = false, iShowAllDistributionConflicts = false;
-	private boolean iShowCBS = false, iShowCBSFilter = true, iSolutionChangesFilter = true;
+	private boolean iShowCBS = false, iShowCBSFilter = true, iSolutionChangesFilter = true, iAssignmentHistoryFilter = true;
 	
 	private SolverCookie() {
 		try {
@@ -68,6 +68,8 @@ public class SolverCookie {
 				iShowCBSFilter = "1".equals(params[idx++]);
 				iSolutionChangesFilter = "1".equals(params[idx++]);
 				iSolutionChangesSort = Integer.parseInt(params[idx++]);
+				iAssignmentHistoryFilter = "1".equals(params[idx++]);
+				iAssignmentHistorySort = Integer.parseInt(params[idx++]);
 				iSuggestionsFilter = params[idx++];
 			}
 		} catch (Exception e) {}
@@ -84,6 +86,7 @@ public class SolverCookie {
 				+ "|" + (iShowAllStudentConflicts ? "1" : "0") + "|" + (iShowAllDistributionConflicts ? "1" : "0")
 				+ "|" + (iShowCBS ? "1" : "0") + "|" + (iShowCBSFilter ? "1" : "0")
 				+ "|" + (iSolutionChangesFilter ? "1" : "0") + "|" + iSolutionChangesSort
+				+ "|" + (iAssignmentHistoryFilter ? "1" : "0") + "|" + iAssignmentHistorySort
 				+ "|" + (iSuggestionsFilter == null ? "" : iSuggestionsFilter);
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:Solver", cookie, expires);
@@ -173,4 +176,9 @@ public class SolverCookie {
 	public void setSolutionChangesFilter(boolean filter) { iSolutionChangesFilter = filter; save(); }
 	public int getSolutionChangesSort() { return iSolutionChangesSort; }
 	public void setSolutionChangesSort(int sort) { iSolutionChangesSort = sort; save(); }
+	
+	public boolean isAssignmentHistoryFilter() { return iAssignmentHistoryFilter; }
+	public void setAssignmentHistoryFilter(boolean filter) { iAssignmentHistoryFilter = filter; save(); }
+	public int getAssignmentHistorySort() { return iAssignmentHistorySort; }
+	public void setAssignmentHistorySort(int sort) { iAssignmentHistorySort = sort; save(); }
 }

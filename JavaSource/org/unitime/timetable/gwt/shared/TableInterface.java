@@ -348,6 +348,12 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 		}
 	}
 	
+	public static class TableCellMultiLine extends TableCellMulti {
+		private static final long serialVersionUID = 1L;
+		
+		public TableCellMultiLine() { super(); }
+	}
+	
 	public static class TableCellChange extends TableCellText {
 		private static final long serialVersionUID = 1L;
 		public TableCellInterface iFirst, iSecond;

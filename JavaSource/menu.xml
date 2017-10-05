@@ -215,6 +215,13 @@
 			<item name="History" page="assignmentHistory.do">
 				<condition>
 					<hasPermission name="AssignmentHistory"/>
+					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
+				</condition>
+			</item>
+			<item name="History" page="assignmentHistory" type="gwt">
+				<condition>
+					<hasPermission name="AssignmentHistory"/>
+					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Conflict Statistics" page="cbs.do">

@@ -951,6 +951,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Pert")
 	String colShortPerturbations();
 	
+	@DefaultMessage("Conf")
+	String colShortUnassignments();
+	
 	@DefaultMessage("Students")
 	String colNrAssignedStudents();
 	
@@ -974,6 +977,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Distribution Conflicts")
 	String colDistributionConflicts();
+	
+	@DefaultMessage("Time")
+	String colTimeStamp();
 	
 	@DefaultMessage("pending")
 	String approvalNotApproved();
@@ -1725,6 +1731,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Changes")
 	String sectSolutionChanges();
 	
+	@DefaultMessage("History")
+	String sectAssignmentHistory();
+	
 	@DefaultMessage("Loading {0}...")
 	String waitLoading(String name);
 	
@@ -2213,6 +2222,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Failed to load solution changes: {0}")
 	String failedToLoadSolutionChanges(String reason);
+	
+	@DefaultMessage("Failed to load assignment history: {0}")
+	String failedToLoadAssignmentHistory(String reason);
 
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
@@ -2558,6 +2570,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("No changes.")
 	String errorSolutionChangesNoDataReturned();
+	
+	@DefaultMessage("No history.")
+	String errorAssignmentHistoryNoDataReturned();
 	
 	@DefaultMessage("Class {0} does not exist anymore, please refresh your data.")
 	String errorClassDoesNotExist(Long id);
@@ -3340,6 +3355,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Changes")
 	@DoNotTranslate
 	String pageSolutionChanges();
+	
+	@DefaultMessage("Assignment History")
+	@DoNotTranslate
+	String pageAssignmentHistory();
 	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
