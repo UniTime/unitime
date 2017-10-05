@@ -789,6 +789,7 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private List<PreferenceInterface> iPreferences = new ArrayList<PreferenceInterface>();
 		private boolean iSolver = false;
+		private List<SelectedAssignment> iSelectedAssignments = null;
 		
 		public void addPreference(PreferenceInterface preference) { iPreferences.add(preference); }
 		public List<PreferenceInterface> getPreferences() { return iPreferences; }
@@ -815,10 +816,26 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 		
 		public boolean isSolver() { return iSolver; }
 		public void setSolver(boolean solver) { iSolver = solver; }
+		
+		public boolean hasSelectedAssignments() { return iSelectedAssignments != null && !iSelectedAssignments.isEmpty(); }
+		public List<SelectedAssignment> getSelectedAssignments() { return iSelectedAssignments; }
+		public void addSelectedAssignment(SelectedAssignment assignment) {
+			if (iSelectedAssignments == null) iSelectedAssignments = new ArrayList<SelectedAssignment>();
+			iSelectedAssignments.add(assignment);
+		}
 	}
 	
 	public static class SuggestionPropertiesRequest implements GwtRpcRequest<SuggestionProperties>{
+		private Long iHistoryId;
+		
 		public SuggestionPropertiesRequest() {}
+		public SuggestionPropertiesRequest(Long historyId) {
+			iHistoryId = historyId;
+		}
+		
+		public boolean hasHistoryId() { return iHistoryId != null; }
+		public Long getHistoryId() { return iHistoryId; }
+		public void setHistoryId(Long id) { iHistoryId = id; }
 	}
 	
 	public static class SelectedAssignment implements GwtRpcResponse, Serializable {

@@ -191,6 +191,14 @@ public class DataTable extends UniTimeTable<TableInterface.TableRowInterface> im
 				}
 				return;
 			}
+			if (cell instanceof TableInterface.TableCellMultiLine) {
+				addStyleName("multiline");
+				TableInterface.TableCellMultiLine multi = (TableInterface.TableCellMultiLine)cell;
+				for (int index = 0; index < multi.getNrChunks(); index++) {
+					add(new DataTableCell(header, multi.get(index)));
+				}
+				return;
+			}
 			if (cell instanceof TableInterface.TableCellMulti) {
 				addStyleName("multi");
 				TableInterface.TableCellMulti multi = (TableInterface.TableCellMulti)cell;

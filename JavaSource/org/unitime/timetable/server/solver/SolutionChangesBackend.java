@@ -150,6 +150,8 @@ public class SolutionChangesBackend implements GwtRpcImplementation<SolutionChan
         	    	}
         	    	room.setFirst(beforeRooms);
         	    	link += "&room=" + rid;
+        	    	if (before.getRoom().length == 0 && after == null)
+        	    		room.setSecond(new TableCellRooms());
         	    }
     	    	if (after != null && after.getRoom() != null) {
     	    		TableCellRooms afterRooms = new TableCellRooms();
@@ -161,6 +163,8 @@ public class SolutionChangesBackend implements GwtRpcImplementation<SolutionChan
         	    				PreferenceLevel.int2string(after.getRoom()[i].getPref()));
         	    	}
         	    	room.setSecond(afterRooms);
+        	    	if (after.getRoom().length == 0 && before == null)
+        	    		room.setFirst(new TableCellRooms());
         	    }
     	    	
     	    	TableInterface.TableCellItems instructor = new TableInterface.TableCellItems();
@@ -253,11 +257,11 @@ public class SolutionChangesBackend implements GwtRpcImplementation<SolutionChan
 	}
 	
 	public TableCellInterface dispNumber(int value) {
-		return new TableCellInterface<Integer>(value).setColor(value < 0 ? "green" : value > 0 ? "red" : null);
+		return new TableCellInterface<Integer>(value, value == 0 ? "" : value <= 0 ? String.valueOf(value) : "+" + String.valueOf(value)).setColor(value < 0 ? "green" : value > 0 ? "red" : null);
 	}
 	
 	public TableCellInterface dispNumber(double value) {
-		return new TableCellInterface<Double>(value, sDF.format(value)).setColor(value < 0 ? "green" : value > 0 ? "red" : null);
+		return new TableCellInterface<Double>(value, Math.round(1000.0 * value) == 0.0 ? "" : (value >= 0.0005 ? "+" : "") + sDF.format(value)).setColor(value < 0 ? "green" : value > 0 ? "red" : null);
 	}
 	
 	public static void addCrosslistedNames(TableInterface table, boolean showClassSuffix, boolean showConfigNames) {

@@ -124,7 +124,10 @@ public class SuggestionsPage extends SimpleForm {
 			iSelectedAssignments.add(assignment);
 		}
 		
-		RPC.execute(new SuggestionPropertiesRequest(), new AsyncCallback<SuggestionProperties>() {
+		SuggestionPropertiesRequest request = new SuggestionPropertiesRequest();
+		if (Location.getParameter("history") != null)
+			request.setHistoryId(Long.valueOf(Location.getParameter("history")));
+		RPC.execute(request, new AsyncCallback<SuggestionProperties>() {
 
 			@Override
 			public void onFailure(Throwable t) {
@@ -135,6 +138,8 @@ public class SuggestionsPage extends SimpleForm {
 			@Override
 			public void onSuccess(SuggestionProperties properties) {
 				iContext.setSuggestionProperties(properties);
+				if (properties.hasSelectedAssignments())
+					iSelectedAssignments = properties.getSelectedAssignments();
 				if (properties.isSolver()) {
 					iSuggestions = new SuggestionsWidget(iContext) {
 						@Override

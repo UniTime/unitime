@@ -102,6 +102,15 @@ public abstract class TableExporter implements Exporter {
 	
 	protected String convertCSV(TableInterface.TableCellInterface cell) {
 		if (cell == null || cell.getValue() == null) return null;
+		if (cell instanceof TableInterface.TableCellMultiLine) {
+			TableInterface.TableCellMultiLine history = (TableInterface.TableCellMultiLine)cell;
+			String ret = "";
+			for (int i = 0; i < history.getNrChunks(); i++) {
+				if (i > 0) ret += "\n";
+				ret += convertCSV(history.get(i));
+			}
+			return ret;
+		}
 		if (cell instanceof TableInterface.TableCellItems) {
 			TableInterface.TableCellItems items = (TableInterface.TableCellItems)cell;
 			return items.getFormattedValue("\n");
@@ -194,6 +203,86 @@ public abstract class TableExporter implements Exporter {
 	
 	protected PDFPrinter.A convertPDF(TableInterface.TableCellInterface cell) {
 		if (cell == null || cell.getValue() == null) return null;
+		if (cell instanceof TableInterface.TableCellMultiLine){
+			TableInterface.TableCellMultiLine history = (TableInterface.TableCellMultiLine)cell;
+			PDFPrinter.A a = new PDFPrinter.A();
+			for (int i = 0; i < history.getNrChunks(); i++) {
+				TableInterface.TableCellInterface chunk = history.get(i);
+				if (chunk instanceof TableInterface.TableCellChange) {
+					TableInterface.TableCellChange change = (TableInterface.TableCellChange)chunk;
+					if (change.getFirst() != null && change.getSecond() != null && change.getFirst().compareTo(change.getSecond()) == 0) {
+						if (change.getFirst() instanceof TableInterface.TableCellRooms) {
+							TableInterface.TableCellRooms rooms = (TableInterface.TableCellRooms)change.getFirst();
+							PDFPrinter.A b = new PDFPrinter.A(); b.set(PDFPrinter.F.INLINE);
+							for (int j = 0; j < rooms.getNrRooms(); j++) {
+								if (j > 0) b.add(new PDFPrinter.A(CONSTANTS.itemSeparator()));
+								PDFPrinter.A c = new PDFPrinter.A(rooms.getName(j));
+								c.setColor(rooms.getColor(j));
+								b.add(c);
+							}
+							a.add(b);
+						} else {
+							PDFPrinter.A b = new PDFPrinter.A(change.getFirst().getFormattedValue());
+							if (change.getFirst().hasColor()) b.setColor(change.getFirst().getColor());
+							a.add(b);
+						}
+						continue;
+					}
+					PDFPrinter.A b = new PDFPrinter.A(); b.set(PDFPrinter.F.INLINE);
+					if (change.getFirst() == null) {
+						PDFPrinter.A c = new PDFPrinter.A(MESSAGES.notAssigned());
+						c.setColor("ff0000");
+						c.set(PDFPrinter.F.ITALIC);
+						b.add(c);
+					} else {
+						if (change.getFirst() instanceof TableInterface.TableCellRooms) {
+							TableInterface.TableCellRooms rooms = (TableInterface.TableCellRooms)change.getFirst();
+							for (int j = 0; j < rooms.getNrRooms(); j++) {
+								if (j > 0) b.add(new PDFPrinter.A(CONSTANTS.itemSeparator()));
+								PDFPrinter.A c = new PDFPrinter.A(rooms.getName(j));
+								c.setColor(rooms.getColor(j));
+								b.add(c);
+							}
+							if (rooms.getNrRooms() == 0)
+								b.add(new PDFPrinter.A(MESSAGES.notApplicable(), PDFPrinter.F.ITALIC));
+						} else {
+							PDFPrinter.A c = new PDFPrinter.A(change.getFirst().getFormattedValue());
+							if (change.getFirst().hasColor()) c.setColor(change.getFirst().getColor());
+							b.add(c);
+						}
+					}
+					b.add(new PDFPrinter.A(" \u2192 "));
+					if (change.getSecond() == null) {
+						PDFPrinter.A c = new PDFPrinter.A(MESSAGES.notAssigned());
+						c.setColor("ff0000");
+						c.set(PDFPrinter.F.ITALIC);
+						b.add(c);
+					} else {
+						if (change.getSecond() instanceof TableInterface.TableCellRooms) {
+							TableInterface.TableCellRooms rooms = (TableInterface.TableCellRooms)change.getSecond();
+							for (int j = 0; j < rooms.getNrRooms(); j++) {
+								if (j > 0) b.add(new PDFPrinter.A(CONSTANTS.itemSeparator()));
+								PDFPrinter.A c = new PDFPrinter.A(rooms.getName(i));
+								c.setColor(rooms.getColor(i));
+								b.add(c);
+							}
+							if (rooms.getNrRooms() == 0)
+								b.add(new PDFPrinter.A(MESSAGES.notApplicable(), PDFPrinter.F.ITALIC));
+						} else {
+							PDFPrinter.A c = new PDFPrinter.A(change.getSecond().getFormattedValue());
+							if (change.getSecond().hasColor()) c.setColor(change.getSecond().getColor());
+							b.add(c);
+						}
+					}
+					a.add(b);
+				} else {
+					PDFPrinter.A b = new PDFPrinter.A(chunk.getFormattedValue());
+					if (chunk.hasColor()) b.setColor(chunk.getColor());
+					a.add(b);
+				}
+			}
+			return a;
+		}
 		if (cell instanceof TableInterface.TableCellMulti) {
 			TableInterface.TableCellMulti multi = (TableInterface.TableCellMulti)cell;
 			PDFPrinter.A a = new PDFPrinter.A(); a.set(PDFPrinter.F.INLINE);

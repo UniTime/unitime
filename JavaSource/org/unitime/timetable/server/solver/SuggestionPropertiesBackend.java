@@ -23,11 +23,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.PreferenceInterface;
+import org.unitime.timetable.gwt.shared.SuggestionsInterface.SelectedAssignment;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.SuggestionProperties;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.SuggestionPropertiesRequest;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.solver.SolverProxy;
+import org.unitime.timetable.solver.TimetableSolver.AssignmentRecord;
+import org.unitime.timetable.solver.TimetableSolver.RecordedAssignment;
+import org.unitime.timetable.solver.interactive.Hint;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
 
@@ -53,6 +57,21 @@ public class SuggestionPropertiesBackend implements GwtRpcImplementation<Suggest
 					Constants.preference2preferenceLevel(pref.getPrefProlog())));
 		}
 		response.setSolver(courseTimetablingSolverService.getSolver() != null);
+		
+		if (request.getHistoryId() != null) {
+			try {
+				SolverProxy solver = courseTimetablingSolverService.getSolver();
+				if (solver != null) {
+					AssignmentRecord record = solver.getAssignmentRecords().get((int)request.getHistoryId().longValue());
+		        	for (RecordedAssignment assignment: record.getAssignments()) {
+		        		if (assignment.getBefore() != null) {
+		        			Hint before = assignment.getBefore();
+		        			response.addSelectedAssignment(new SelectedAssignment(before.getClassId(), before.getDays(), before.getStartSlot(), before.getRoomIds(), before.getPatternId(), before.getDatePatternId()));
+		        		}
+		        	}
+				}
+			} catch (Exception e) {}
+		}
 
 		return response;
 	}

@@ -197,9 +197,8 @@ public class SuggestionsAction extends Action {
         	model.reset(solver);
         	int idx = Integer.parseInt(request.getParameter("hist"));
         	
-        	AssignmentRecord record = (AssignmentRecord)solver.getAssignmentRecords().elementAt(idx);
-        	for (Enumeration e=record.getAssignments().elements();e.hasMoreElements();) {
-        		RecordedAssignment assignment = (RecordedAssignment)e.nextElement();
+        	AssignmentRecord record = solver.getAssignmentRecords().get(idx);
+        	for (RecordedAssignment assignment: record.getAssignments()) {
         		if (myForm.getId()==null) myForm.setId(assignment.getAfter()==null?assignment.getBefore().getClassId():assignment.getAfter().getClassId());
         		if (assignment.getBefore()==null) continue;
         		model.addHint(assignment.getBefore().getClassId(),assignment.getBefore().getDays(),assignment.getBefore().getStartSlot(),assignment.getBefore().getRoomIds(),assignment.getBefore().getPatternId(),assignment.getBefore().getDatePatternId());

@@ -128,8 +128,8 @@ import org.unitime.timetable.webutil.timegrid.TimetableGridModel;
  * @author Tomas Muller
  */
 public class TimetableSolver extends AbstractSolver<Lecture, Placement, TimetableModel> implements SolverProxy {
-	private Vector iAssignmentRecords = new Vector();
-	private Vector iBestAssignmentRecords = new Vector();
+	private Vector<AssignmentRecord> iAssignmentRecords = new Vector<AssignmentRecord>();
+	private Vector<AssignmentRecord> iBestAssignmentRecords = new Vector<AssignmentRecord>();
 	private ConflictStatisticsInfo iCbsInfo = null;
 	private CommitedClassAssignmentProxy iCommitedClassAssignmentProxy;
 
@@ -1020,7 +1020,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     }
 
     @Override
-	public Vector getAssignmentRecords() {
+	public List<AssignmentRecord> getAssignmentRecords() {
 		return iAssignmentRecords;
 	}
 	
@@ -1168,7 +1168,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 		private transient Solver iSolver; 
 		private Date iTimeStamp = new Date();
 		private Suggestion iBefore = null, iAfter = null;
-		private Vector iAssignments = new Vector(); 
+		private List<RecordedAssignment> iAssignments = new ArrayList<RecordedAssignment>(); 
 		
 		public AssignmentRecord() {}
 		public AssignmentRecord(Solver solver) {
@@ -1186,7 +1186,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 		}
 		public Suggestion getBefore() { return iBefore; }
 		public Suggestion getAfter() { return iAfter; }
-		public Vector getAssignments() { return iAssignments; }
+		public List<RecordedAssignment> getAssignments() { return iAssignments; }
 		public String toString() {
 			return "Record{TS="+iTimeStamp+", before="+iBefore+", after="+iAfter+", assignments="+iAssignments.size()+"}";
 		}
@@ -1198,8 +1198,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 			if (iAfter!=null)
 				iAfter.toXml(element.addElement("after"));
 			if (iAssignments!=null) {
-				for (Enumeration e=iAssignments.elements();e.hasMoreElements();) {
-					RecordedAssignment ra = (RecordedAssignment)e.nextElement();
+				for (RecordedAssignment ra: iAssignments) {
 					ra.toXml(element.addElement("assignment"));
 				}
 			}
