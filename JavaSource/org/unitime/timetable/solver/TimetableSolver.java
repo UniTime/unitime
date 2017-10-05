@@ -1025,8 +1025,8 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 	}
 	
     @Override
-	public Vector getChangesToInitial() {
-		Vector ret = new Vector();
+	public List<RecordedAssignment> getChangesToInitial() {
+    	List<RecordedAssignment> ret = new ArrayList<RecordedAssignment>();
 		Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
 		try {
@@ -1039,7 +1039,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 					if (currentSolution().getAssignment().getValue(lecture)!=null) {
 						a.getAfter().setDetails(new ClassAssignmentDetails(this,lecture,false));
 					}
-					ret.addElement(a);
+					ret.add(a);
 				}
 			}
 		} finally {
@@ -1070,8 +1070,8 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 	}
 
     @Override
-	public Vector getChangesToBest() {
-		Vector ret = new Vector();
+	public List<RecordedAssignment> getChangesToBest() {
+    	List<RecordedAssignment> ret = new ArrayList<RecordedAssignment>();
 		Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
 		try {
@@ -1085,7 +1085,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 					if (placement!=null) {
 						a.getAfter().setDetails(new ClassAssignmentDetails(this,lecture,false));
 					}
-					ret.addElement(a);
+					ret.add(a);
 				}
 			}
 		} finally {
@@ -1095,17 +1095,17 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 	}
 	
     @Override
-	public Vector getChangesToSolution(Long solutionId) {
+	public List<RecordedAssignment> getChangesToSolution(Long solutionId) {
 		return getChangesToSolution(solutionId, false);
 	}
 	
-	public Vector getChangesToSolution(Long solutionId, boolean closeSession) {
+	public List<RecordedAssignment> getChangesToSolution(Long solutionId, boolean closeSession) {
 		Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
 		try {
 			Session hibSession = (new SolutionDAO()).getSession();
 			Transaction tx = null;
-			Vector ret = new Vector();
+			List<RecordedAssignment> ret = new ArrayList<RecordedAssignment>();
 			try {
 				tx = hibSession.beginTransaction();
 				Solution solution = (new SolutionDAO()).get(solutionId, hibSession);
@@ -1132,13 +1132,13 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 					if (lecture==null || placement==null) {
 						RecordedAssignment a = new RecordedAssignment(this, assignment.getPlacement(), null);
 						a.getBefore().setDetails(new ClassAssignmentDetails(solution, assignment, false, hibSession, null));
-						ret.addElement(a);
+						ret.add(a);
 					} else {
 						if (placement.equals(assignment.getPlacement())) continue;
 						RecordedAssignment a = new RecordedAssignment(this, assignment.getPlacement(), placement);
 						a.getBefore().setDetails(new ClassAssignmentDetails(solution, assignment, false, hibSession, null));
 						a.getAfter().setDetails(new ClassAssignmentDetails(this,lecture,false));
-						ret.addElement(a);
+						ret.add(a);
 					}
 				}
 				for (Lecture lecture: currentSolution().getModel().variables()) {
@@ -1147,7 +1147,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 					if (!ownerId.equals(lecture.getSolverGroupId())) continue;
 					RecordedAssignment a = new RecordedAssignment(this, null, placement);
 					a.getAfter().setDetails(new ClassAssignmentDetails(this,lecture,false));
-					ret.addElement(a);
+					ret.add(a);
 				}			
 				if (tx!=null) tx.commit();
 			} catch (Exception e) {

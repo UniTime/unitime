@@ -39,10 +39,13 @@ import org.cpsolver.ifs.criteria.Criterion;
 import org.cpsolver.ifs.model.Constraint;
 import org.cpsolver.ifs.solver.Solver;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.BtbInstructorInfo;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.ClassAssignmentDetails;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.ClassAssignmentDetailsRequest;
@@ -83,6 +86,7 @@ import org.unitime.timetable.webutil.timegrid.SolverGridModel;
  */
 @GwtRpcImplements(ClassAssignmentDetailsRequest.class)
 public class ClassAssignmentDetailsBackend implements GwtRpcImplementation<ClassAssignmentDetailsRequest, ClassAssignmentDetails> {
+	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class); 
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 	
 	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
@@ -102,12 +106,13 @@ public class ClassAssignmentDetailsBackend implements GwtRpcImplementation<Class
 			if (details != null) return details;
 			try {
 				Class_ clazz = Class_DAO.getInstance().get(request.getClassId());
-				if (clazz == null) return null;
+				if (clazz == null)
+					throw new GwtRpcException(MESSAGES.errorClassDoesNotExist(request.getClassId()));
 				org.unitime.timetable.model.Assignment assignment = solver.getAssignment(clazz);
-				if (assignment==null || assignment.getSolution()==null) return null;
+				if (assignment == null || assignment.getSolution() == null) return createClassAssignmentDetailsFromClass(cx, clazz);
 				return createClassAssignmentDetailsFromAssignment(cx, assignment, true);
 			} catch (Exception e) {
-				return null;
+				throw new GwtRpcException(e.getMessage(), e);
 			}
 		}
 		
@@ -116,6 +121,10 @@ public class ClassAssignmentDetailsBackend implements GwtRpcImplementation<Class
 			org.unitime.timetable.model.Assignment assignment = proxy.getAssignment(request.getClassId());
 			if (assignment != null)
 				return createClassAssignmentDetailsFromAssignment(cx, assignment, true);
+			Class_ clazz = Class_DAO.getInstance().get(request.getClassId());
+			if (clazz == null)
+				throw new GwtRpcException(MESSAGES.errorClassDoesNotExist(request.getClassId()));
+			return createClassAssignmentDetailsFromClass(cx, clazz);
 		}
 		
 		return null;
@@ -287,6 +296,20 @@ public class ClassAssignmentDetailsBackend implements GwtRpcImplementation<Class
 	
 	public static ClassAssignmentDetails createClassAssignmentDetailsFromAssignment(SuggestionsContext context, Long assignmentId, boolean includeConstraints) {
 		return createClassAssignmentDetailsFromAssignment(context, AssignmentDAO.getInstance().get(assignmentId), includeConstraints);
+	}
+	
+	public static ClassAssignmentDetails createClassAssignmentDetailsFromClass(SuggestionsContext context, org.unitime.timetable.model.Class_ clazz) {
+		ClassAssignmentDetails details = new ClassAssignmentDetails();
+		details.setClazz(new ClassInfo(
+				clazz.getClassLabel(),
+				clazz.getUniqueId(),
+				clazz.getNbrRooms(),
+				PreferenceLevel.sProhibited,
+				-1,0,
+				clazz.getNotes()
+				));
+		details.setCanUnassign(false);
+		return details;
 	}
 	
 	public static ClassAssignmentDetails createClassAssignmentDetailsFromAssignment(SuggestionsContext context, org.unitime.timetable.model.Assignment assignment, boolean includeConstraints) {

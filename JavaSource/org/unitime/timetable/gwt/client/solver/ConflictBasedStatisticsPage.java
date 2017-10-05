@@ -42,7 +42,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -116,25 +115,8 @@ public class ConflictBasedStatisticsPage extends Composite {
 	
 	public static native void createTriggers()/*-{
 		$wnd.refreshPage = function() {
-			@org.unitime.timetable.gwt.client.solver.ConflictBasedStatisticsPage::__search()();
 		};
 	}-*/;
-	
-	public static void __search() {
-		final int left = Window.getScrollLeft();
-		final int top = Window.getScrollTop();
-		NotAssignedClassesPage page = (NotAssignedClassesPage)RootPanel.get("UniTimeGWT:Body").getWidget(0);
-		page.search(new AsyncCallback<Boolean>() {
-			@Override
-			public void onFailure(Throwable caught) {
-			}
-			@Override
-			public void onSuccess(Boolean result) {
-				if (result)
-					Window.scrollTo(left, top);
-			}
-		});
-	}
 	
 	protected void search(final AsyncCallback<Boolean> callback) {
 		final ConflictBasedStatisticsRequest request = new ConflictBasedStatisticsRequest();

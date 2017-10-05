@@ -236,6 +236,11 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 		public String getValue() {
 			return getValue(", ");
 		}
+		
+		@Override
+		public String getFormattedValue() {
+			return getValue(", ");
+		}
 	}
 	
 	public static class TableCellItems extends TableCellText {
@@ -340,6 +345,51 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 				}
 			}
 			return super.compareTo(c);
+		}
+	}
+	
+	public static class TableCellChange extends TableCellText {
+		private static final long serialVersionUID = 1L;
+		public TableCellInterface iFirst, iSecond;
+		
+		public TableCellChange() {}
+		public TableCellChange(TableCellInterface first, TableCellInterface second) {
+			iFirst = first; iSecond = second;
+		}
+		
+		public TableCellInterface getFirst() { return iFirst; }
+		public void setFirst(TableCellInterface first) { iFirst = first; }
+		
+		public TableCellInterface getSecond() { return iSecond; }
+		public void setSecond(TableCellInterface second) { iSecond = second; }
+		
+		@Override
+		public String getValue() {
+			if (getFirst() != null && getSecond() != null && getFirst().compareTo(getSecond()) == 0) return getFirst().toString();
+			return (getFirst() == null ? "N/A" : getFirst()) + " \u2192 " + (getSecond() == null ? "N/A" : getSecond());
+		}
+		
+		@Override
+		public String getFormattedValue() {
+			if (getFirst() != null && getSecond() != null && getFirst().compareTo(getSecond()) == 0) return getFirst().getFormattedValue();
+			return (getFirst() == null ? "N/A" : getFirst().getFormattedValue()) + " \u2192 " + (getSecond() == null ? "N/A" : getSecond().getFormattedValue());
+		}
+		
+		@Override
+		public int compareTo(TableCellInterface c) {
+			if (c instanceof TableCellChange) {
+				TableCellChange ch = (TableCellChange)c;
+				int cmp = compare(getFirst(), ch.getFirst());
+				if (cmp != 0) return cmp;
+				return compare(getSecond(), ch.getSecond());
+			}
+			return super.compareTo(c);
+		}
+		
+		private static int compare(TableCellInterface c1, TableCellInterface c2) {
+			if (c1 == null) return (c2 == null ? 0 : -1);
+			if (c2 == null) return 1;
+			return c1.compareTo(c2);
 		}
 	}
 	

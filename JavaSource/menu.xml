@@ -203,6 +203,13 @@
 			<item name="Changes" page="solutionChanges.do">
 				<condition>
 					<hasPermission name="SolutionChanges"/>
+					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
+				</condition>
+			</item>
+			<item name="Changes" page="solutionChanges" type="gwt">
+				<condition>
+					<hasPermission name="SolutionChanges"/>
+					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="History" page="assignmentHistory.do">

@@ -19,9 +19,9 @@
 */
 package org.unitime.timetable.action;
 
-import java.util.Enumeration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -92,7 +92,7 @@ public class SolutionChangesAction extends Action {
         	return mapping.findForward("showSolutionChanges");
         }
         
-    	Vector changes = null;
+    	List<RecordedAssignment> changes = null;
     	if (myForm.getReferenceInt()==SolutionChangesForm.sReferenceBest) {
     		if (solver.bestSolutionInfo()==null) {
     			request.setAttribute("SolutionChanges.message","No best solution saved so far.");
@@ -107,10 +107,10 @@ public class SolutionChangesAction extends Action {
     			request.setAttribute("SolutionChanges.message","No solution selected. However, you can select one <a href='listSolutions.do'>here");
     			return mapping.findForward("showSolutionChanges");
     		} 
-    		changes = new Vector();
+    		changes = new ArrayList<RecordedAssignment>();
 			for (StringTokenizer s=new StringTokenizer(solutionIdsStr,",");s.hasMoreTokens();) {
 				Long solutionId = Long.valueOf(s.nextToken());
-				Vector ch = solver.getChangesToSolution(solutionId);
+				List<RecordedAssignment> ch = solver.getChangesToSolution(solutionId);
 				if (ch!=null)
 					changes.addAll(ch);
 			}
@@ -136,7 +136,7 @@ public class SolutionChangesAction extends Action {
         return mapping.findForward("showSolutionChanges");
 	}
 
-    public String getChangesTable(boolean simple, boolean reversed, HttpServletRequest request, SessionContext context, SolverProxy solver, String name, Vector changes) {
+    public String getChangesTable(boolean simple, boolean reversed, HttpServletRequest request, SessionContext context, SolverProxy solver, String name, List<RecordedAssignment> changes) {
     	if (changes==null || changes.isEmpty()) return null;
 		WebTable.setOrder(context, "solutionChanges.ord",request.getParameter("ord"),1);
         WebTable webTable =
@@ -153,8 +153,7 @@ public class SolutionChangesAction extends Action {
         			null ));
         webTable.setRowStyle("white-space:nowrap");
         try {
-        	for (Enumeration e=changes.elements();e.hasMoreElements();) {
-        		RecordedAssignment assignment = (RecordedAssignment)e.nextElement();
+        	for (RecordedAssignment assignment: changes) {
     	    	ClassAssignmentDetails before = (assignment.getBefore()==null?null:assignment.getBefore().getDetails(context, solver, false));
     	    	ClassAssignmentDetails after = (assignment.getAfter()==null?null:assignment.getAfter().getDetails(context, solver, false));
     	    	if (reversed) {
@@ -260,7 +259,7 @@ public class SolutionChangesAction extends Action {
         return webTable.printTable(WebTable.getOrder(context, "solutionChanges.ord"));
     }	
 
-    public PdfWebTable exportPdf(boolean simple, boolean reversed, SessionContext context, SolverProxy solver, String name, Vector changes) throws Exception {
+    public PdfWebTable exportPdf(boolean simple, boolean reversed, SessionContext context, SolverProxy solver, String name, List<RecordedAssignment> changes) throws Exception {
     	if (changes==null || changes.isEmpty()) return null;
         PdfWebTable webTable =
         	(simple?
@@ -274,8 +273,7 @@ public class SolutionChangesAction extends Action {
         			new String[] {"Class", "Date", "Time", "Room", "Std","Tm","Rm","Gr","Ins","Usl","Big","Dept","Subp","Pert"},
         			new String[] {"left", "left", "left", "left", "right","right","right","right","right","right","right","right","right","right","right"},
         			null ));
-    	for (Enumeration e=changes.elements();e.hasMoreElements();) {
-    		RecordedAssignment assignment = (RecordedAssignment)e.nextElement();
+        for (RecordedAssignment assignment: changes) {
 	    	ClassAssignmentDetails before = (assignment.getBefore()==null?null:assignment.getBefore().getDetails(context, solver, false));
 	    	ClassAssignmentDetails after = (assignment.getAfter()==null?null:assignment.getAfter().getDetails(context, solver, false));
 	    	if (reversed) {

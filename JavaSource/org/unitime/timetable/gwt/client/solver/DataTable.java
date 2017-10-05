@@ -204,6 +204,26 @@ public class DataTable extends UniTimeTable<TableInterface.TableRowInterface> im
 				}
 				return;
 			}
+			if (cell instanceof TableInterface.TableCellChange) {
+				addStyleName("change");
+				TableInterface.TableCellChange change = (TableInterface.TableCellChange)cell;
+				if (change.getFirst() != null && change.getSecond() != null && change.getFirst().compareTo(change.getSecond()) == 0) {
+					add(new DataTableCell(header, change.getFirst()));
+					return;
+				}
+				if (change.getFirst() == null) {
+					P notAssigned = new P("not-assigned"); notAssigned.setText(MESSAGES.notAssigned()); add(notAssigned);
+				} else {
+					add(new DataTableCell(header, change.getFirst()));
+				}
+				P arrow = new P("arrow"); arrow.setHTML(MESSAGES.assignmentArrow()); add(arrow);
+				if (change.getSecond() == null) {
+					P notAssigned = new P("not-assigned"); notAssigned.setText(MESSAGES.notAssigned()); add(notAssigned);
+				} else {
+					add(new DataTableCell(header, change.getSecond()));
+				}
+				return;
+			}
 			setHTML(cell.getFormattedValue());
 			if (cell instanceof TableInterface.TableCellClassName && ((TableInterface.TableCellClassName)cell).hasAlternatives()) {
 				addStyleName("collection");
