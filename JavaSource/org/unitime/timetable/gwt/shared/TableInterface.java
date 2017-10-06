@@ -82,6 +82,7 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 		private TableCellInterface[] iCells = null;
 		private Long iId;
 		private String iLink, iLinkName;
+		private boolean iSelected = false;
 		
 		public TableRowInterface() {}
 		
@@ -92,6 +93,12 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 		public TableRowInterface(Long id, String link, String linkName, TableCellInterface... cells) {
 			iId = id;
 			iLink = link; iLinkName = linkName;
+			iCells = cells;
+		}
+		
+		public TableRowInterface(Long id, boolean selected, TableCellInterface... cells) {
+			iId = id;
+			iSelected = selected;
 			iCells = cells;
 		}
 		
@@ -111,6 +118,9 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 		public Long getId() { return iId; }
 		public void setId(Long id) { iId = id; }
 		public boolean hasId() { return iId != null; }
+		
+		public TableRowInterface setSelected(boolean selected) { iSelected = selected; return this; }
+		public boolean isSelected() { return iSelected; }
 		
 		public static int compare(TableCellInterface c1, TableCellInterface c2) {
 			return (c1 == null ? (c2 == null ? 0 : -1) : c2 == null ? 1 : c1.compareTo(c2));
@@ -132,6 +142,7 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 		private String iFormattedValue;
 		private String iStyleName, iColor;
 		private T iValue;
+		private String iTitle = null;
 		
 		public TableCellInterface() {}
 		public TableCellInterface(T value) {
@@ -155,6 +166,10 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 		public boolean hasColor() { return iColor != null && !iColor.isEmpty(); }
 		public TableCellInterface<T> setColor(String color) { iColor = color; return this; }
 		public String getColor() { return iColor; }
+		
+		public boolean hasTitle() { return iTitle != null && !iTitle.isEmpty(); }
+		public String getTitle() { return iTitle; }
+		public TableCellInterface<T> setTitle(String title) { iTitle = title; return this; }
 		
 		@Override
 		public int compareTo(TableCellInterface c) {

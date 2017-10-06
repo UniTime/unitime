@@ -160,9 +160,11 @@ public class SolverInterface implements IsSerializable {
 	}
 	
 	public static class SolutionInfo implements IsSerializable {
+		private Long iId = null;
 		private List<InfoPair> iPairs = new ArrayList<InfoPair>();
 		private String iName = null;
 		private List<ProgressMessage> iLog = null;
+		private String iCreated = null, iCommitted = null, iNote = null, iOwner = null;
 		
 		public SolutionInfo() {}
 		
@@ -183,6 +185,18 @@ public class SolverInterface implements IsSerializable {
 			iLog.add(new ProgressMessage(level, date, message, trace));
 		}
 		public List<ProgressMessage> getLog() { return iLog; }
+		
+		public String getCreated() { return iCreated; }
+		public void setCreated(String date) { iCreated = date; }
+		public String getCommitted() { return iCommitted; }
+		public void setCommitted(String committed) { iCommitted = committed; }
+		public String getNote() { return iNote == null ? "" : iNote; }
+		public void setNote(String note) { iNote = note; }
+		public String getOwner() { return iOwner; }
+		public void setOwner(String owner) { iOwner = owner; }
+		
+		public Long getId() { return iId; }
+		public void setId(Long id) { iId = id; }
 		
 		@Override
 		public String toString() { return iPairs.toString(); }

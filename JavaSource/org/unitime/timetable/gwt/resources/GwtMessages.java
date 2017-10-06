@@ -441,12 +441,33 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<u>R</u>efresh")
 	String opSolverLogRefresh();
 	
+	@DefaultMessage("Deselect")
+	String opSolutionDeselect();
+	
+	@DefaultMessage("Update Note")
+	String opSolutionUpdateNote();
+	
+	@DefaultMessage("Commit")
+	String opSolutionCommit();
+	
+	@DefaultMessage("Uncommit")
+	String opSolutionUncommit();
+	
+	@DefaultMessage("Export Solution")
+	String opSolutionExport();
+	
+	@DefaultMessage("Delete")
+	String opSolutionDelete();
+	
 	@DefaultMessage("Add Meeting Contact ...")
 	String opAddMeetingContact();
 	
 	@DefaultMessage("Remove Meeting Contact ...")
 	String opRemoveMeetingContact();
  
+	@DefaultMessage("Load Empty Solution")
+	String opSolverLoadEmptySolution();
+	
 	@DefaultMessage("Press Ctrl + C to copy the selected URL, and Escape to hide this dialog.")
 	String hintCtrlCToCopy();
 
@@ -957,6 +978,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Students")
 	String colNrAssignedStudents();
 	
+	@DefaultMessage("Assign")
+	String colShortAssignedVariables();
+	
+	@DefaultMessage("Total")
+	String colShortTotalValue();
+	
 	@DefaultMessage("Initial Assignment")
 	String colInitialAssignment();
 	
@@ -980,6 +1007,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Time")
 	String colTimeStamp();
+	
+	@DefaultMessage("Configuration")
+	String colSolverConfiguration();
+	
+	@DefaultMessage("Committed")
+	String colCommitted();
 	
 	@DefaultMessage("pending")
 	String approvalNotApproved();
@@ -1416,6 +1449,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Reversed mode (current \u2192 compared solution):")
 	String propCompareSolutionReversed();
 	
+	@DefaultMessage("Configuration:")
+	String propSolverConfig();
+	
+	@DefaultMessage("Load into interactive solver:")
+	String propLoadInteractiveSolver();
+	
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
 
@@ -1686,6 +1725,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Current Timetable")
 	String sectSolverCurrentSolution();
 	
+	@DefaultMessage("Loaded Timetable")
+	String sectListSolutionsCurrentSolution();
+	
 	@DefaultMessage("Current Student Schedule")
 	String sectStudentSolverCurrentSolution();
 	
@@ -1733,6 +1775,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("History")
 	String sectAssignmentHistory();
+	
+	@DefaultMessage("Saved Timetables")
+	String sectSavedSolutions();
 	
 	@DefaultMessage("Loading {0}...")
 	String waitLoading(String name);
@@ -2559,14 +2604,20 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Conflict-based statistics is not available at the moment.")
 	String errorConflictStatisticsNoDataReturned();
 	
-	@DefaultMessage("No timetable is loaded. However, you can load one <a href='listSolutions.do'>here</a>.")
+	@DefaultMessage("No timetable is loaded. However, you can load one <a href='gwt.jsp?page=listSolutions'>here</a>.")
 	String errorNoSolverLoaded();
 	
 	@DefaultMessage("No best solution saved so far.")
 	String errorNoBestSolutionSaved();
 	
-	@DefaultMessage("No solution selected. However, you can select one <a href='listSolutions.do'>here")
+	@DefaultMessage("No solution selected. However, you can select one <a href='gwt.jsp?page=listSolutions'>here")
 	String errorNoSolutionSelected();
+	
+	@DefaultMessage("No solution committed so far.")
+	String errorListSolutionsNoCommitted();
+	
+	@DefaultMessage("No solution saved so far.")
+	String errorListSolutionsNoSaved();
 	
 	@DefaultMessage("No changes.")
 	String errorSolutionChangesNoDataReturned();
@@ -2574,8 +2625,26 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("No history.")
 	String errorAssignmentHistoryNoDataReturned();
 	
+	@DefaultMessage("No solutions.")
+	String errorListSolutionsNoDataReturned();
+	
+	@DefaultMessage("No solution selected.")
+	String errorListSolutionsNoSolutionSelected();
+	
+	@DefaultMessage("No solver group selected.")
+	String errorListSolutionsNoOwnerSelected();
+	
 	@DefaultMessage("Class {0} does not exist anymore, please refresh your data.")
 	String errorClassDoesNotExist(Long id);
+	
+	@DefaultMessage("Solution {0} does not exist.")
+	String errorSolutionDoesNotExist(String id);
+		
+	@DefaultMessage("Class {0} {1} overlaps with {2} {3} (room {4}).")
+	String failedCommitRoomConflict(String class1, String time1, String class2, String time2, String room);
+	
+	@DefaultMessage("Class {0} {1} overlaps with {2} {3} (instructor {4}).")
+	String failedCommitInstructorConflict(String class1, String time1, String class2, String time2, String room);
 	
 	@DefaultMessage("Solver is not started.")
 	String warnSolverNotStarted();
@@ -3360,6 +3429,10 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageAssignmentHistory();
 	
+	@DefaultMessage("Saved Timetables")
+	@DoNotTranslate
+	String pageListSolutions();
+	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	
@@ -4052,6 +4125,21 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Available Services:")
 	String propAvailableServices();
 	
+	@DefaultMessage("Created:")
+	String propSolutionCreated();
+	
+	@DefaultMessage("Owner:")
+	String propSolutionOwner();
+	
+	@DefaultMessage("Committed:")
+	String propSolutionCommitted();
+	
+	@DefaultMessage("Note:")
+	String propSolutionNote();
+	
+	@DefaultMessage("Problems:")
+	String propSolutionLog();
+	
 	@DefaultMessage("{0} ({1})")
 	String label(String name, String type);
 
@@ -4606,6 +4694,15 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Do you really want to save and commit your current timetable? This may uncommit your currently committed solution.")
 	String confirmSolverSaveAsNewCommit();
+	
+	@DefaultMessage("Do you really want to uncommit this solution?")
+	String confirmSolverUncommit();
+	
+	@DefaultMessage("Do you really want to commit this solution?")
+	String confirmSolverCommit();
+	
+	@DefaultMessage("Do you really want to delete this solution?")
+	String confirmSolverDelete();
 	
 	@DefaultMessage("The selected assignment will be done directly in the database. Are you sure?")
 	String confirmInstructorAssignmentChangesNoSolver();
@@ -5680,4 +5777,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Selected Solution")
 	String compareWithSelectedSolution();
+	
+	@DefaultMessage("?")
+	String listSolutionsUnknown();
 }

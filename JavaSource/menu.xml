@@ -148,6 +148,13 @@
 			<item name="Saved Timetables" page="listSolutions.do">
 				<condition>
 					<hasPermission name="Timetables"/>
+					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
+				</condition>
+			</item>
+			<item name="Saved Timetables" page="listSolutions" type="gwt">
+				<condition>
+					<hasPermission name="Timetables"/>
+					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Solver" page="solver.do">

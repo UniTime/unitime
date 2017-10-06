@@ -488,7 +488,7 @@ public class SolverPage extends SimpleForm {
 		return row;
 	}
 	
-	protected static class SolverStatus extends P {
+	public static class SolverStatus extends P {
 		private P iStatus;
 		private Image iIcon;
 		

@@ -23,6 +23,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +81,8 @@ import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.solver.ui.LogInfo;
 import org.unitime.timetable.solver.ui.PropertiesInfo;
+import org.unitime.timetable.util.Formats;
+import org.unitime.timetable.util.Formats.Format;
 import org.unitime.timetable.webutil.BackTracker;
 
 /**
@@ -88,6 +91,7 @@ import org.unitime.timetable.webutil.BackTracker;
 @GwtRpcImplements(SolverPageRequest.class)
 public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest, SolverPageResponse> {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	protected static Format<Date> sTS = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
 	
 	@Autowired SolverServerService solverServerService;
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
@@ -463,6 +467,12 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 	 				if (solution == null) continue;
 	 				SolutionInfo si = new SolutionInfo();
 	 				si.setName(solution.getOwner().getName());
+	 				si.setCreated(sTS.format(solution.getCreated()));
+	 				if (solution.isCommited())
+	 					si.setCommitted(sTS.format(solution.getCommitDate()));
+	 				si.setOwner(solution.getOwner().getName());
+	 				si.setNote(solution.getNote());
+	 				si.setId(solution.getUniqueId());
 					LogInfo logInfo = (LogInfo)solution.getInfo("LogInfo");
 					if (logInfo != null)
 						for (Progress.Message m: logInfo.getLog()) {

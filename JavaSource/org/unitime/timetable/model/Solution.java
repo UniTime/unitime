@@ -52,6 +52,7 @@ import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ListSolutionsForm.InfoComparator;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.base.BaseSolution;
 import org.unitime.timetable.model.comparators.ClassComparator;
@@ -74,6 +75,7 @@ import org.unitime.timetable.util.Formats;
  */
 public class Solution extends BaseSolution implements ClassAssignmentProxy {
 	private static CourseMessages MSG = Localization.create(CourseMessages.class);
+	private static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 
 	private static final long serialVersionUID = 1L;
@@ -266,7 +268,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 			Assignment a = (Assignment)o[1];
 			Assignment b = (Assignment)o[2];
 			if (!room.isIgnoreRoomCheck() && a.getTimeLocation().hasIntersection(b.getTimeLocation()) && !shareRooms(a, b)) {
-				messages.add("Class "+a.getClassName()+" "+a.getTimeLocation().getName(CONSTANTS.useAmPm())+" overlaps with "+b.getClassName()+" "+b.getTimeLocation().getName(CONSTANTS.useAmPm())+" (room "+room.getLabel()+")");
+				messages.add(MESSAGES.failedCommitRoomConflict(a.getClassName(), a.getTimeLocation().getName(CONSTANTS.useAmPm()), b.getClassName(), b.getTimeLocation().getName(CONSTANTS.useAmPm()), room.getLabel()));
 				isOK=false;
 			}
 		}
@@ -288,7 +290,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 			Assignment a = (Assignment)o[1];
 			Assignment b = (Assignment)o[2];
 			if (a.getTimeLocation().hasIntersection(b.getTimeLocation()) && !shareRooms(a,b)) {
-				messages.add("Class "+a.getClassName()+" "+a.getTimeLocation().getName(CONSTANTS.useAmPm())+" overlaps with "+b.getClassName()+" "+b.getTimeLocation().getName(CONSTANTS.useAmPm())+" (instructor "+instructor.nameLastNameFirst()+")");
+				messages.add(MESSAGES.failedCommitInstructorConflict(a.getClassName(), a.getTimeLocation().getName(CONSTANTS.useAmPm()), b.getClassName(), b.getTimeLocation().getName(CONSTANTS.useAmPm()), instructor.nameLastNameFirst()));
 				isOK=false;
 			}
 		}

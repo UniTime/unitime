@@ -364,7 +364,7 @@ public interface GwtConstants extends Constants {
 	String[] solverType();
 	
 	@DefaultStringArrayValue({
-		"Trace", "Debug", "Progress", "Info", "Stage", "Warn", "Error", "Fatal"
+		"Trace", "Debug", "Progress", "Info", "Stage", "Warning", "Error", "Fatal"
 	})
 	String[] progressLogLevel();
 	
