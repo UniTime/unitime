@@ -124,7 +124,10 @@ public class DataTable extends UniTimeTable<TableInterface.TableRowInterface> im
 			for (TableInterface.TableCellInterface cell: row.getCells()) {
 				line.add(new DataTableCell(table.getHeader(idx++), cell));
 			}
-			addRow(row, line);
+			int rowIdx = addRow(row, line);
+			if (row.isSelected()) {
+				getRowFormatter().setStyleName(rowIdx, "unitime-TableRowSelected");
+			}
 		}
 	}
 	

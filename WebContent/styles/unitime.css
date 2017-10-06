@@ -5857,3 +5857,36 @@ unitime-RoomSharingWidget .legend .blank {
 	padding-left: 3px;
 	vertical-align: bottom;
 }
+
+.unitime-ListSolutionsPage .load-panel {
+	text-align: right;
+}
+
+.unitime-ListSolutionsPage .load-panel * {
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.unitime-ListSolutionsPage .load-panel .config-label {
+	padding: 0px 2px 0px 10px;
+}
+
+.unitime-ListSolutionsPage .load-panel .host-label {
+	padding: 0px 2px 0px 10px;
+}
+
+.unitime-ListSolutionsPage .load-panel .owner-label {
+	padding: 0px 2px 0px 10px;
+}
+
+.unitime-ListSolutionsPage .load-panel .gwt-Button {
+	margin-left: 10px;
+}
+
+.unitime-ListSolutionsPage .unitime-DataTable {
+	white-space: pre-wrap;
+}
+
+.unitime-ListSolutionsPage .note {
+	white-space: pre-wrap;
+}

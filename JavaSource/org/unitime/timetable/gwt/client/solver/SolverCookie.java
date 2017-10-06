@@ -36,7 +36,7 @@ public class SolverCookie {
 	private int iAssignedClassesSort = 0;
 	private boolean iNotAssignedClassesFilter = true;
 	private int iNotAssignedClassesSort = 0;
-	private int iSelectedAssignmentsSort = 0, iConflictingAssignmentsSort = 0, iSuggestionsSort = 0, iPlacementsSort = 0, iConflictsSort = 0, iSolutionChangesSort = 0, iAssignmentHistorySort = 0;
+	private int iSelectedAssignmentsSort = 0, iConflictingAssignmentsSort = 0, iSuggestionsSort = 0, iPlacementsSort = 0, iConflictsSort = 0, iSolutionChangesSort = 0, iAssignmentHistorySort = 0, iListSolutionsSort = 0;
 	private boolean iShowSuggestions = true;
 	private String iSuggestionsFilter = "";
 	private boolean iShowConflicts = false;
@@ -70,6 +70,7 @@ public class SolverCookie {
 				iSolutionChangesSort = Integer.parseInt(params[idx++]);
 				iAssignmentHistoryFilter = "1".equals(params[idx++]);
 				iAssignmentHistorySort = Integer.parseInt(params[idx++]);
+				iListSolutionsSort = Integer.parseInt(params[idx++]);
 				iSuggestionsFilter = params[idx++];
 			}
 		} catch (Exception e) {}
@@ -87,6 +88,7 @@ public class SolverCookie {
 				+ "|" + (iShowCBS ? "1" : "0") + "|" + (iShowCBSFilter ? "1" : "0")
 				+ "|" + (iSolutionChangesFilter ? "1" : "0") + "|" + iSolutionChangesSort
 				+ "|" + (iAssignmentHistoryFilter ? "1" : "0") + "|" + iAssignmentHistorySort
+				+ "|" + iListSolutionsSort
 				+ "|" + (iSuggestionsFilter == null ? "" : iSuggestionsFilter);
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:Solver", cookie, expires);
@@ -181,4 +183,7 @@ public class SolverCookie {
 	public void setAssignmentHistoryFilter(boolean filter) { iAssignmentHistoryFilter = filter; save(); }
 	public int getAssignmentHistorySort() { return iAssignmentHistorySort; }
 	public void setAssignmentHistorySort(int sort) { iAssignmentHistorySort = sort; save(); }
+	
+	public int getListSolutionsSort() { return iListSolutionsSort; }
+	public void setListSolutionsSort(int sort) { iListSolutionsSort = sort; save(); }
 }
