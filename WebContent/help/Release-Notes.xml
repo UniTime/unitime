@@ -153,6 +153,16 @@
 	        </description>
 	    </item>
 	</category>
+	<category>
+		<title>Other</title>
+		<item>
+			<name>GWT getAbsoluteLeft/Top incorrect in Chrome 61</name>
+			<description>
+				<line>Corrected implementation of document.getScrollTop and document.getScrollLeft.</line>
+				<line>See https://github.com/gwtproject/gwt/issues/9542 for more details.</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>
