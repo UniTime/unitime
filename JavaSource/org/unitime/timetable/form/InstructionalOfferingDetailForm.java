@@ -83,6 +83,7 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     private String accommodation;
     private boolean hasConflict;
     private String notes;
+    private boolean teachingRequests;
 
 
     // --------------------------------------------------------- Classes
@@ -143,6 +144,7 @@ public class InstructionalOfferingDetailForm extends ActionForm {
         accommodation = null;
         hasConflict = false;
         notes = null;
+        teachingRequests = false;
     }
     
     public List getCourseOfferings() {
@@ -396,4 +398,6 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+    public boolean getTeachingRequests() { return teachingRequests; }
+    public void setTeachingRequests(boolean teachingRequests) { this.teachingRequests = teachingRequests; }
 }
