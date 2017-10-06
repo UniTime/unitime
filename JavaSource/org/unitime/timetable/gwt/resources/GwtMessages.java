@@ -5780,4 +5780,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("?")
 	String listSolutionsUnknown();
+	
+	@DefaultMessage("Open Class Detail for {0} in a new window.")
+	String titleOpenClassDetail(String clazz);
 }

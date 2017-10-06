@@ -39,6 +39,7 @@ import org.unitime.timetable.gwt.shared.SuggestionsInterface.TimeInfo;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
@@ -110,7 +111,9 @@ public class CurrentAssignment extends SimpleForm implements TakesValue<ClassAss
 		iDetails = details;
 		clear();
 		iHeader.clearMessage();
-		iHeader.setHeaderTitle(MESSAGES.headerCurrentAssignment(details.getClazz().getName()));
+		String html = "<a href='classDetail.do?cid=" + details.getClazz().getClassId()+"' class='header-link' target='_blank' title='" + MESSAGES.titleOpenClassDetail(SafeHtmlUtils.htmlEscape(details.getClazz().getName())) + "'>"
+			+ details.getClazz().getName() + "</a>";
+		iHeader.setHeaderTitle(MESSAGES.headerCurrentAssignment(html));
 		addHeaderRow(iHeader);
 		if (details.getTime() != null) {
 			 if (details.getTime().hasDatePattern()) {
@@ -246,5 +249,4 @@ public class CurrentAssignment extends SimpleForm implements TakesValue<ClassAss
 		if (iTimes != null)
 			iTimes.select(time, fireUpdate);
 	}
-
 }

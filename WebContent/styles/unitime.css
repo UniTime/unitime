@@ -5890,3 +5890,17 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-ListSolutionsPage .note {
 	white-space: pre-wrap;
 }
+
+.unitime-HeaderPanel .header-link {
+	font-size: inherit;
+	color: inherit;
+	font-family: inherit;
+	text-decoration: none;
+}
+
+.unitime-HeaderPanel .header-link:hover {
+	font-size: inherit;
+	color: inherit;
+	font-family: inherit;
+	text-decoration: underline;
+}
