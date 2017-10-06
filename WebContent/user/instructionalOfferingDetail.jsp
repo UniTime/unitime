@@ -575,6 +575,7 @@
 		<% } %>
 		
 		<logic:equal name="instructionalOfferingDetailForm" property="notOffered" value="false">
+			<logic:equal name="instructionalOfferingDetailForm" property="teachingRequests" value="true">
 			<sec:authorize access="hasPermission(null, 'SolverGroup', 'InstructorScheduling') and hasPermission(null, 'Department', 'InstructorAssignmentPreferences')">
 			<TR>
 				<TD colspan="2">
@@ -583,6 +584,7 @@
 				</TD>
 			</TR>
 			</sec:authorize>
+			</logic:equal>
 		</logic:equal>
 
 		<logic:equal name="instructionalOfferingDetailForm" property="notOffered" value="false">

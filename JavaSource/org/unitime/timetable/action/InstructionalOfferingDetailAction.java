@@ -55,12 +55,14 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.OfferingCoordinator;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
@@ -447,6 +449,15 @@ public class InstructionalOfferingDetailAction extends Action {
         			"</a>";
         }
         frm.setCoordinators(coordinators);
+        frm.setTeachingRequests(false);
+        if (sessionContext.hasPermission(Right.InstructorScheduling)) {
+            for (DepartmentalInstructor di: io.getDepartment().getInstructors()) {
+            	if (di.getTeachingPreference() != null && !PreferenceLevel.sProhibited.equals(di.getTeachingPreference().getPrefProlog())) {
+            		frm.setTeachingRequests(true);
+            		break;
+            	}
+            }
+        }
         
         for (Iterator i=io.getInstrOfferingConfigs().iterator();i.hasNext();)
         	if (((InstrOfferingConfig)i.next()).isUnlimitedEnrollment().booleanValue()) {
