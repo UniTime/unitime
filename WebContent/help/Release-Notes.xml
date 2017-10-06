@@ -48,7 +48,6 @@
 			<description>
 				<line>Course Finder dialog: corrected course selection ARIA status message when going through the list of courses.</line>
 				<line>List of Classes: vertical scroll disabled in the List of Classes table (the page is already as big as the table).</line>
-				<line>Course Finder box: hide suggestion list when focus is lost.</line>
 			</description>
 		</item>
 		<item>
