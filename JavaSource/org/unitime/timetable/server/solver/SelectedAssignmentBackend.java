@@ -208,6 +208,10 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
 	}
 	
 	public static Suggestion createSuggestion(SuggestionsContext context, TimetableSolver solver, Map<Lecture, Placement> initialAssignments, List<Long> order, Collection<Placement> unresolvedConflicts) {
+		return createSuggestion(context, solver, initialAssignments, order, unresolvedConflicts, null);
+	}
+	
+	public static Suggestion createSuggestion(SuggestionsContext context, TimetableSolver solver, Map<Lecture, Placement> initialAssignments, List<Long> order, Collection<Placement> unresolvedConflicts, Map<Lecture, Placement> unresolvedAssignments) {
 		Suggestion suggestion = new Suggestion();
 		Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
     	if (unresolvedConflicts != null) {
@@ -222,6 +226,8 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
         	Map<Placement, Map<Placement, Integer>> committed = new HashMap<Placement, Map<Placement, Integer>>();
         	for (Lecture lecture: assignment.assignedVariables()) {
         		Placement p = assignment.getValue(lecture);
+        		if (unresolvedAssignments != null && unresolvedAssignments.containsKey(lecture))
+        			p = unresolvedAssignments.get(lecture);
         		Placement ini = initialAssignments.get(p.variable());
         		if (ini==null || !ini.equals(p)) {
         			suggestion.addDifferentAssignment(createClassAssignmentDetails(context, solver, p.variable(), ini, p));
@@ -257,6 +263,47 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
         			}
         		}
         	}
+            if (unresolvedAssignments != null)
+                for (Map.Entry<Lecture, Placement> entry: unresolvedAssignments.entrySet()) {
+                	Lecture lecture = entry.getKey();
+                	Placement p = entry.getValue();
+                	if (assignment.getValue(lecture) != null) continue;
+                	Placement ini = initialAssignments.get(p.variable());
+            		if (ini==null || !ini.equals(p)) {
+            			suggestion.addDifferentAssignment(createClassAssignmentDetails(context, solver, p.variable(), ini, p));
+            			jenrls.addAll(lecture.activeJenrls(assignment));
+            			if (p.getCommitedConflicts() > 0) {
+            				Map<Placement, Integer> x = new HashMap<Placement, Integer>();
+            				for (Iterator i=lecture.students().iterator();i.hasNext();) {
+            					Student s = (Student)i.next();
+            					Set confs = s.conflictPlacements(p);
+            					if (confs==null) continue;
+            					for (Iterator j=confs.iterator();j.hasNext();) {
+            						Placement commitedPlacement = (Placement)j.next();
+            						Integer current = (Integer)x.get(commitedPlacement);
+            						x.put(commitedPlacement, new Integer(1 + (current == null ? 0 : current.intValue())));
+            					}
+            				}
+            				committed.put(p, x);
+            			}
+            			gcs.addAll(lecture.groupConstraints());
+            			fcs.addAll(lecture.getFlexibleGroupConstraints());
+            			for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
+            			    for (Lecture other: ic.variables()) {
+            			    	Placement otherPlacement = assignment.getValue(other);
+            			        if (other.equals(lecture) || otherPlacement==null) continue;
+            			        int pref = ic.getDistancePreference(p, otherPlacement);
+            			        if (pref==PreferenceLevel.sIntLevelNeutral) continue;
+            			        BtbInstructorInfo conf = new BtbInstructorInfo();
+            			        conf.setOther(createClassAssignmentDetails(context, solver, p.variable(), p, null));
+            			        conf.setAnother(createClassAssignmentDetails(context, solver, otherPlacement.variable(), otherPlacement, null));
+            			        conf.setPreference(pref);
+            			        suggestion.addBtbInstructorConflict(conf);
+            			    }
+            			}
+            		}
+                	
+                }
             if (order != null && suggestion.hasDifferentAssignments())
             	Collections.sort(suggestion.getDifferentAssignments(), new ClassAssignmentDetailsComparator(order));
             for (JenrlConstraint jenrl: jenrls) {
@@ -338,18 +385,18 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
 	
 	public static Suggestion computeSuggestion(SuggestionsContext context, TimetableSolver solver, List<SelectedAssignment> assignments, Placement placement) {
 		Suggestion ret = null;
-        boolean canAssign = true;
         Solution<Lecture, Placement> solution = solver.currentSolution();
     	TimetableModel model = (TimetableModel)solution.getModel();
     	Assignment<Lecture, Placement> assignment = solution.getAssignment();
     	
-        List<Lecture> unAssignedVariables = new ArrayList<Lecture>();
+        List<Lecture> unAssignedVariables = new ArrayList<Lecture>(assignment.unassignedVariables(model));
         Map<Lecture, Placement> initialAssignments = new HashMap<Lecture, Placement>();
         for (Lecture lec: assignment.assignedVariables())
             initialAssignments.put(lec, assignment.getValue(lec));
 
         Map<Lecture, Placement> conflictsToResolve = new HashMap<Lecture, Placement>();
         List<Long> resolvedLectures = new ArrayList<Long>();
+        Map<Lecture, Placement> unresolvedLectures = new HashMap<Lecture, Placement>();
         List<Placement> hints = new ArrayList<Placement>();
         Map<Long, String> descriptions = new HashMap<Long, String>();
         if (assignments != null) {
@@ -364,9 +411,8 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
                 if (placement != null && placement.variable().equals(lect)) continue;
                 hints.add(plac);
                 fillDescriptions(assignment, plac, descriptions);
-                Set conflicts = model.conflictValues(assignment, plac);
-                for (Iterator i=conflicts.iterator();i.hasNext();) {
-                    Placement conflictPlacement = (Placement)i.next();
+                Set<Placement> conflicts = model.conflictValues(assignment, plac);
+                for (Placement conflictPlacement: conflicts) {
                     conflictsToResolve.put(conflictPlacement.variable(),conflictPlacement);
                     assignment.unassign(0, conflictPlacement.variable());
                 }
@@ -375,7 +421,7 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
                 	conflictsToResolve.remove(lect);
                 	assignment.assign(0,plac);
                 } else {
-                	canAssign = false;
+                	unresolvedLectures.put(plac.variable(), plac);
                 }
         	}
         }
@@ -393,11 +439,11 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
                 conflictsToResolve.remove(lect);
                 assignment.assign(0,placement);
             } else {
-            	canAssign = false;
+            	unresolvedLectures.put(placement.variable(), placement);
             }
         }
-        ret = createSuggestion(context, solver, initialAssignments, null, conflictsToResolve.values());
-        ret.setCanAssign(canAssign);
+        ret = createSuggestion(context, solver, initialAssignments, null, conflictsToResolve.values(), unresolvedLectures);
+        ret.setCanAssign(unresolvedLectures.isEmpty());
         if (placement!=null) ret.setPlacement(createClassAssignmentDetails(context, solver, placement.variable(), placement, null));
         
     	for (Placement plac: hints) {

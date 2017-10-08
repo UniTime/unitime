@@ -27,6 +27,8 @@ import org.cpsolver.coursett.model.Lecture;
 import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.dom4j.Element;
+import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 
 
 /**
@@ -52,8 +54,9 @@ public class GroupConstraintInfo implements TimetableInfo, Serializable {
 	public GroupConstraintInfo(Assignment<Lecture, Placement> assignment, FlexibleConstraint gc) {
 		super();
 		setPreference(gc.getPrologPreference());
-		setIsSatisfied(gc.isHard() || gc.getContext(assignment).getPreference() <= 0.0);
-		setName(gc.getName());
+		double preference = gc.getContext(assignment).getPreference();
+		setIsSatisfied(gc.isHard() || preference <= 0.0);
+		setName(gc.getName() + (preference <= 0.0 ? "" : " (penalty: " + Formats.getNumberFormat("0.###").format(preference / Math.abs(Constants.preference2preferenceLevel(gc.getPrologPreference()))) + ")"));
 	}
 	
 	public String getPreference() { return iPreference; }
