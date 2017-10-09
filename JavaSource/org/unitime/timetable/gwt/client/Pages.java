@@ -51,6 +51,7 @@ import org.unitime.timetable.gwt.client.solver.ConflictBasedStatisticsPage;
 import org.unitime.timetable.gwt.client.solver.ListSolutionsPage;
 import org.unitime.timetable.gwt.client.solver.NotAssignedClassesPage;
 import org.unitime.timetable.gwt.client.solver.SolutionChangesPage;
+import org.unitime.timetable.gwt.client.solver.SolutionReportsPage;
 import org.unitime.timetable.gwt.client.solver.SolverLogPage;
 import org.unitime.timetable.gwt.client.solver.SolverPage;
 import org.unitime.timetable.gwt.client.solver.SuggestionsPage;
@@ -245,6 +246,10 @@ public enum Pages {
 	listSolutions(new PageFactory() {
 		public Widget create() { return new ListSolutionsPage(); }
 		public String name(GwtMessages messages) { return messages.pageListSolutions(); }
+		}),
+	solutionReports(new PageFactory() {
+		public Widget create() { return new SolutionReportsPage(); }
+		public String name(GwtMessages messages) { return messages.pageSolutionReports(); }
 		}),
 	;
 	

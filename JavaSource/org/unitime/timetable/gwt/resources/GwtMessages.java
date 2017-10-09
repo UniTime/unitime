@@ -762,6 +762,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Distances")
 	String colDistances();
 	
+	@DefaultMessage("Distance")
+	String colDistance();
+	
 	@DefaultMessage("Room<br>Check")
 	String colRoomCheck();
 	
@@ -1013,6 +1016,126 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Committed")
 	String colCommitted();
+	
+	@DefaultMessage("Group")
+	String colRoomReportGroup();
+	
+	@DefaultMessage("Size")
+	String colRoomReportActualSizes();
+	
+	@DefaultMessage("NbrRooms")
+	String colRoomReportNbrRooms();
+	
+	@DefaultMessage("ClUse")
+	String colRoomReportClassUse();
+	
+	@DefaultMessage("ClShould")
+	String colRoomReportClassShould();
+	
+	@DefaultMessage("ClMust")
+	String colRoomReportClassMust();
+	
+	@DefaultMessage("HrUse")
+	String colRoomReportHourUse();
+	
+	@DefaultMessage("HrShould")
+	String colRoomReportHourShould();
+	
+	@DefaultMessage("HrMust")
+	String colRoomReportHourMust();
+	
+	@DefaultMessage("Penalty")
+	String colPenalty();
+	
+	@DefaultMessage("Type")
+	String colDistrubutionType();
+	
+	@DefaultMessage("Violations")
+	String colViolations();
+	
+	@DefaultMessage("Conflicts")
+	String colNrConflicts();
+	
+	@DefaultMessage("Committed")
+	String colStudentConflictCommitted();
+
+	@DefaultMessage("Fixed")
+	String colStudentConflictFixed();
+
+	@DefaultMessage("Hard")
+	String colStudentConflictHard();
+
+	@DefaultMessage("Distance")
+	String colStudentConflictDistance();
+
+	@DefaultMessage("Important")
+	String colStudentConflictImportant();
+
+	@DefaultMessage("Instructor")
+	String colStudentConflictInstructor();
+	
+	@DefaultMessage("Dist")
+	String colShortDist();
+	
+	@DefaultMessage("St")
+	String colPerturbationStudents();
+	
+	@DefaultMessage("StT")
+	String colPerturbationStudentsTime();
+	
+	@DefaultMessage("StR")
+	String colPerturbationStudentsRoom();
+	
+	@DefaultMessage("StB")
+	String colPerturbationStudentsBuilding();
+	
+	@DefaultMessage("In")
+	String colPerturbationInstructor();
+	
+	@DefaultMessage("InT")
+	String colPerturbationInstructorTime();
+	
+	@DefaultMessage("InR")
+	String colPerturbationInstructorRoom();
+	
+	@DefaultMessage("InB")
+	String colPerturbationInstructorBuilding();
+	
+	@DefaultMessage("Rm")
+	String colPerturbationRoom();
+	
+	@DefaultMessage("Bld")
+	String colPerturbationBuilding();
+	
+	@DefaultMessage("Tm")
+	String colPerturbationTime();
+	
+	@DefaultMessage("Day")
+	String colPerturbationDay();
+
+	@DefaultMessage("Hr")
+	String colPerturbationHour();
+
+	@DefaultMessage("TFSt")
+	String colPerturbationTooFarStudent();
+
+	@DefaultMessage("TFInst")
+	String colPerturbationTooFarInstructor();
+
+	@DefaultMessage("DStC")
+	String colPerturbationDeltaStudentConflicts();
+
+	@DefaultMessage("NStC")
+	String colPerturbationNewStudentConflicts();
+
+	@DefaultMessage("DTPr")
+	String colPerturbationDeltaTimePref();
+
+	@DefaultMessage("DRPr")
+	String colPerturbationDeltaRoomPref();
+
+	@DefaultMessage("DInsB")
+	String colPerturbationDeltaInstructorBTB();
 	
 	@DefaultMessage("pending")
 	String approvalNotApproved();
@@ -2270,6 +2393,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Failed to load assignment history: {0}")
 	String failedToLoadAssignmentHistory(String reason);
+	
+	@DefaultMessage("ERROR: {0}")
+	String failedToComputeReport(String reason);
 
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
@@ -3432,6 +3558,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Saved Timetables")
 	@DoNotTranslate
 	String pageListSolutions();
+	
+	@DefaultMessage("Solution Reports")
+	@DoNotTranslate
+	String pageSolutionReports();
 	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -5783,4 +5913,139 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Open Class Detail for {0} in a new window.")
 	String titleOpenClassDetail(String clazz);
+	
+	@DefaultMessage("Room Allocation - Non University Locations")
+	String reportRoomAllocationNonUnivLocs();
+	
+	@DefaultMessage("Room Allocation - {0}")
+	String reportRoomAllocation(String roomType);
+	
+	@DefaultMessage("Departmental Balancing")
+	String reportDepartmentalBalancing();
+	
+	@DefaultMessage("Violated Distribution Preferences")
+	String reportViolatedDistributionPreferences();
+	
+	@DefaultMessage("Instructor Back-to-Back Preferences")
+	String reportInstructorBackToBackPreferences();
+	
+	@DefaultMessage("Student Conflicts")
+	String reportStudentConflicts();
+	
+	@DefaultMessage("Section Balancing")
+	String reportSectionBalancing();
+	
+	@DefaultMessage("Perturbations")
+	String reportPerturbations();
+	
+	@DefaultMessage("{0} ... {1}")
+	String reportRoomRange(String low, String high);
+	
+	@DefaultMessage("Total")
+	String reportTotal();
+	
+	@DefaultMessage("{0}m")
+	String reportDistanceInMeter(Integer distance);
+	
+	@DefaultMessage("group size <minimum, maximum)")
+	String reportRoomAlocDescGroup();
+	
+	@DefaultMessage("actual group size (size of the smallest and the biggest room in the group)")
+	String reportRoomAlocDescSize();
+	
+	@DefaultMessage("number of rooms in the group (cumulative numbers are displayed in parentheses)")
+	String reportRoomAlocDescNbrRooms();
+	
+	@DefaultMessage("number of classes that are using a room from the group (actual solution)")
+	String reportRoomAlocDescClassUse();
+	
+	@DefaultMessage("number of classes that &quot;should&quot; use a room of the group (smallest available room of a class is in this group)")
+	String reportRoomAlocDescClassShould();
+	
+	@DefaultMessage("number of classes that must use a room of the group (all available rooms of a class are in this group; cumulative numbers are displayed in parentheses)")
+	String reportRoomAlocDescClassMust();
+	
+	@DefaultMessage("average hours a room of the group is used (actual solution)")
+	String reportRoomAlocDescHourUse();
+	
+	@DefaultMessage("average hours a room of the group should be used (smallest available room of a class is in this group)")
+	String reportRoomAlocDescHourShould();
+	
+	@DefaultMessage("average hours a room of this group must be used (all available rooms of a class are in this group; cumulative numbers are displayed in parentheses)")
+	String reportRoomAlocDescHourMust();
+	
+	@DefaultMessage("Class name")
+	String reportPertClass();
+	
+	@DefaultMessage("Date (initial \u2192 assigned)")
+	String reportPertDate();
+
+	@DefaultMessage("Time (initial \u2192 assigned)")
+	String reportPertTime();
+	
+	@DefaultMessage("Room (initial \u2192 assigned)")
+	String reportPertRoom();
+	
+	@DefaultMessage("Distance between assignments (if different are used buildings)")
+	String reportPertDistance();
+	
+	@DefaultMessage("Number of affected students")
+	String reportPertStudents();
+	
+	@DefaultMessage("Number of affected students by time change")
+	String reportPertStudentsTime();
+	
+	@DefaultMessage("Number of affected students by room change")
+	String reportPertStudentsRoom();
+	
+	@DefaultMessage("Number of affected students by building change")
+	String reportPertStudentsBuilding();
+	
+	@DefaultMessage("Number of affected instructors")
+	String reportPertInstructor();
+	
+	@DefaultMessage("Number of affected instructors by time change")
+	String reportPertInstructorTime();
+	
+	@DefaultMessage("Number of affected instructors by room change")
+	String reportPertInstructorRoom();
+	
+	@DefaultMessage("Number of affected instructors by building change")
+	String reportPertInstructorBuilding();
+	
+	@DefaultMessage("Number of rooms changed")
+	String reportPertRoomChange();
+	
+	@DefaultMessage("Number of buildings changed")
+	String reportPertBuildingChange();
+	
+	@DefaultMessage("Number of times changed")
+	String reportPertTimeChange();
+	
+	@DefaultMessage("Number of days changed")
+	String reportPertDayChange();
+	
+	@DefaultMessage("Number of hours changed")
+	String reportPertHourChange();
+	
+	@DefaultMessage("Assigned building too far for students (from the initial one)")
+	String reportPertTooFarStudents();
+	
+	@DefaultMessage("Assigned building too far for instructor (from the initial one)")
+	String reportPertTooFarInstructor();
+	
+	@DefaultMessage("Difference in student conflicts")
+	String reportPertDeltaStudentConf();
+	
+	@DefaultMessage("Number of new student conflicts")
+	String reportPertNewStudentConf();
+	
+	@DefaultMessage("Difference in time preferences")
+	String reportPertDeltaTimePref();
+	
+	@DefaultMessage("Difference in room preferences")
+	String reportPertDeltaRoomPref();
+	
+	@DefaultMessage("Difference in back-to-back instructor preferences")
+	String reportPertDeltaInstructorBTBPref();
 }

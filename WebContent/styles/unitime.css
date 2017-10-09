@@ -5551,6 +5551,18 @@ unitime-RoomSharingWidget .legend .blank {
 	display: inline;
 }
 
+.unitime-DataTable .underlined {
+	border-bottom: 1px solid #9CB0CE;
+}
+
+.unitime-DataTable .clickable {
+	cursor: pointer;
+}
+
+.unitime-DataTable .italic {
+	font-style: italic;	
+}
+
 .unitime-NotAssignedClassesPage .table-note-top {
 	font-style: italic;
 	max-width: 800px;
@@ -5903,4 +5915,12 @@ unitime-RoomSharingWidget .legend .blank {
 	color: inherit;
 	font-family: inherit;
 	text-decoration: underline;
+}
+
+.unitime-SolutionReportsPage .table-row {
+	width: calc(99vw - 8px);
+}
+
+.unitime-SolutionReportsPage .single-report {
+	padding-bottom: 20px;	
 }

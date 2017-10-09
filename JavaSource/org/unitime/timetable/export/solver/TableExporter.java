@@ -28,6 +28,7 @@ import org.unitime.timetable.export.CSVPrinter;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.Exporter;
 import org.unitime.timetable.export.PDFPrinter;
+import org.unitime.timetable.export.PDFPrinter.F;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.FilterInterface;
@@ -82,6 +83,9 @@ public abstract class TableExporter implements Exporter {
 		Printer out = new CSVPrinter(helper.getWriter(), false);
 		helper.setup(out.getContentType(), reference(), false);
 		
+		if (table.hasName())
+			out.printLine(table.getName());
+		
 		String[] header = new String[table.getHeader().length];
 		for (int i = 0; i < table.getHeader().length; i++) {
 			header[i] = table.getHeader(i).getName().replace("<br>", "\n");
@@ -95,6 +99,13 @@ public abstract class TableExporter implements Exporter {
 				line[i] = convertCSV(row.getCell(i));
 			}
 			out.printLine(line);
+		}
+		
+		if (table.hasColumnDescriptions()) {
+			out.printLine();
+			for (TableInterface.TableHeaderIterface h: table.getHeader())
+				if (h.hasDescription())
+					out.printLine(h.getName(), h.getDescription());
 		}
 		
 		out.flush(); out.close();
@@ -278,6 +289,7 @@ public abstract class TableExporter implements Exporter {
 				} else {
 					PDFPrinter.A b = new PDFPrinter.A(chunk.getFormattedValue());
 					if (chunk.hasColor()) b.setColor(chunk.getColor());
+					if (chunk.isUnderlined()) b.set(F.UNDERLINE);
 					a.add(b);
 				}
 			}
