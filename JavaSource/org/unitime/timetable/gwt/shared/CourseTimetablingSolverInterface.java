@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.shared.RoomInterface.PreferenceInterface;
 import org.unitime.timetable.gwt.shared.SolverInterface.HasPageMessages;
 import org.unitime.timetable.gwt.shared.SolverInterface.PageMessage;
@@ -371,4 +372,33 @@ public class CourseTimetablingSolverInterface {
 		public boolean isSucceeded() { return iSuccess != null && iSuccess.booleanValue(); }
 		public void setSuccess(Boolean success) { iSuccess = success; }
 	}
+	
+	public static class SolverReportsRequest implements GwtRpcRequest<SolverReportsResponse>, Serializable {
+		private static final long serialVersionUID = 0l;
+	}
+	
+	public static class SolverReportsResponse implements GwtRpcResponse, HasPageMessages, Serializable {
+		private static final long serialVersionUID = 0l;
+		private List<PageMessage> iPageMessages = null;
+		private List<TableInterface> iTables = null;
+		private List<PreferenceInterface> iPreferences = new ArrayList<PreferenceInterface>();
+
+		public boolean hasPageMessages() { return iPageMessages != null && !iPageMessages.isEmpty(); }
+		public List<PageMessage> getPageMessages() { return iPageMessages; }
+		public void addPageMessage(PageMessage message) {
+			if (iPageMessages == null) iPageMessages = new ArrayList<PageMessage>();
+			iPageMessages.add(message);
+		}
+		
+		public boolean hasTables() { return iTables != null && !iTables.isEmpty(); }
+		public List<TableInterface> getTables() { return iTables; }
+		public void addTable(TableInterface table) {
+			if (table == null) return;
+			if (iTables == null) iTables = new ArrayList<TableInterface>();
+			iTables.add(table);
+		}
+		
+		public void addPreference(PreferenceInterface preference) { iPreferences.add(preference); }
+		public List<PreferenceInterface> getPreferences() { return iPreferences; }
+	}	
 }

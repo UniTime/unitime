@@ -31,12 +31,16 @@ import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
+import org.unitime.timetable.gwt.client.widgets.SimpleForm.HasMobileScroll;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.TableInterface;
 import org.unitime.timetable.gwt.shared.TableInterface.TableCellInterface;
 import org.unitime.timetable.gwt.shared.TableInterface.TableRowInterface;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.MouseOutEvent;
 import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.event.dom.client.MouseOverEvent;
@@ -46,15 +50,17 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasValue;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
  * @author Tomas Muller
  */
-public class DataTable extends UniTimeTable<TableInterface.TableRowInterface> implements HasValue<Integer> {
+public class DataTable extends UniTimeTable<TableInterface.TableRowInterface> implements HasValue<Integer>, HasMobileScroll {
 	private Integer iValue = null;
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
+	private static final GwtResources RESOURCES = GWT.create(GwtResources.class);
 	
 	public DataTable(TableInterface table) {
 		addStyleName("unitime-DataTable");
@@ -129,6 +135,9 @@ public class DataTable extends UniTimeTable<TableInterface.TableRowInterface> im
 				getRowFormatter().setStyleName(rowIdx, "unitime-TableRowSelected");
 			}
 		}
+		for (int i = 0; i < table.getHeader().length; i++)
+			if (!table.getHeader(i).isVisible())
+				setColumnVisible(i, false);
 	}
 	
 	public static class DataTableCell extends P implements HasCellAlignment {
@@ -137,6 +146,7 @@ public class DataTable extends UniTimeTable<TableInterface.TableRowInterface> im
 		public DataTableCell(TableInterface.TableHeaderIterface header, TableInterface.TableCellInterface cell) {
 			iHeader = header;
 			if (cell.hasStyleName()) addStyleName(cell.getStyleName());
+			if (cell.isUnderlined()) addStyleName("underlined");
 			if (cell.hasColor()) getElement().getStyle().setColor(cell.getColor());
 			if (cell instanceof TableInterface.TableCellTime) {
 				final TableInterface.TableCellTime time = (TableInterface.TableCellTime)cell;
@@ -235,13 +245,33 @@ public class DataTable extends UniTimeTable<TableInterface.TableRowInterface> im
 				}
 				return;
 			}
-			setHTML(cell.getFormattedValue());
+			if (cell instanceof TableInterface.TableCellBoolean) {
+				Boolean value = ((TableInterface.TableCellBoolean)cell).getValue();
+				if (value != null && value.booleanValue())
+					add(new Image(RESOURCES.on()));
+				else if (value != null && !value.booleanValue())
+					add(new Image(RESOURCES.off()));
+			} else {
+				setHTML(cell.getFormattedValue());
+			}
 			if (cell instanceof TableInterface.TableCellClassName && ((TableInterface.TableCellClassName)cell).hasAlternatives()) {
 				addStyleName("collection");
 				for (String name: ((TableInterface.TableCellClassName)cell).getAlternatives()) {
 					final P alternative = new P("alternative");
 					alternative.setText(name);
 					add(alternative);
+				}
+			}
+			if (cell instanceof TableInterface.TableCellClickableClassName) {
+				final Long classId = ((TableInterface.TableCellClickableClassName)cell).getClassId();
+				if (classId != null) {
+					addStyleName("clickable");
+					addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							UniTimeFrameDialog.openDialog(MESSAGES.dialogSuggestions(), "gwt.jsp?page=suggestions&menu=hide&id=" + classId,"900","90%");
+						}
+					});
 				}
 			}
 		}

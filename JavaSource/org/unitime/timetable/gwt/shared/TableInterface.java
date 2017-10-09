@@ -35,8 +35,35 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 	private static final long serialVersionUID = 1L;
 	private TableHeaderIterface[] iHeader = null;
 	private List<TableRowInterface> iRows = new ArrayList<TableRowInterface>();
+	private String iName, iErrorMessage;
+	private Boolean iShowPrefLegend;
+	private String iTableId;
 	
 	public TableInterface() {}
+	public TableInterface(String id, String name) {
+		iTableId = id;
+		iName = name;
+	}
+	
+	public String getTableId() { return iTableId; }
+	public void setTableId(String id) { iTableId = id; }
+
+	public boolean hasName() { return iName != null && !iName.isEmpty(); }
+	public String getName() { return iName; }
+	public void setName(String name) { iName = name; }
+	
+	public boolean hasErrorMessage() { return iErrorMessage != null && !iErrorMessage.isEmpty(); }
+	public String getErrorMessage() { return iErrorMessage; }
+	public void setErrorMessage(String errorMessage) { iErrorMessage = errorMessage; }
+	
+	public void setShowPrefLegend(boolean showPrefLegend) { iShowPrefLegend = showPrefLegend; }
+	public boolean isShowPrefLegend() { return iShowPrefLegend != null && iShowPrefLegend.booleanValue(); }
+	public boolean hasColumnDescriptions() {
+		if (iHeader == null) return false;
+		for (TableHeaderIterface h: iHeader)
+			if (h.hasDescription()) return true;
+		return false;
+	}
 	
 	public void setHeader(TableHeaderIterface... header) { iHeader = header; }
 	public TableHeaderIterface[] getHeader() { return iHeader; }
@@ -52,6 +79,8 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 		private String iName;
 		private boolean iComparable = true;
 		private Alignment iAlignment = Alignment.LEFT;
+		private boolean iVisible = true;
+		private String iDescription = null;
 		
 		public TableHeaderIterface() {}
 		
@@ -75,6 +104,13 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 		
 		public Alignment getAlignment() { return iAlignment; }
 		public TableHeaderIterface setAlignment(Alignment alignment) { iAlignment = alignment; return this; }
+		
+		public boolean isVisible() { return iVisible; }
+		public TableHeaderIterface setVisible(boolean visible) { iVisible = visible; return this; }
+		
+		public boolean hasDescription() { return iDescription != null && !iDescription.isEmpty(); }
+		public String getDescription() { return iDescription; }
+		public TableHeaderIterface setDescription(String description) { iDescription = description; return this; }
 	}
 	
 	public static class TableRowInterface implements IsSerializable, Serializable {
@@ -143,6 +179,7 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 		private String iStyleName, iColor;
 		private T iValue;
 		private String iTitle = null;
+		private boolean iUnderline = false;
 		
 		public TableCellInterface() {}
 		public TableCellInterface(T value) {
@@ -171,9 +208,16 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 		public String getTitle() { return iTitle; }
 		public TableCellInterface<T> setTitle(String title) { iTitle = title; return this; }
 		
+		public boolean isUnderlined() { return iUnderline; }
+		public void setUnderlined(boolean underline) { iUnderline = underline; }
+		
 		@Override
 		public int compareTo(TableCellInterface c) {
-			return getValue() == null ? c.getValue() == null ? 0 : -1 : c.getValue() == null ? 1 : getValue().compareTo((T) c.getValue());
+			try {
+				return getValue() == null ? c.getValue() == null ? 0 : -1 : c.getValue() == null ? 1 : getValue().compareTo((T) c.getValue());
+			} catch (Exception e) {
+				return NaturalOrderComparator.compare(getFormattedValue(), c.getFormattedValue());
+			}
 		}
 	}
 	
@@ -196,6 +240,25 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 		}
 	}
 	
+	public static class TableCellBoolean extends TableCellInterface<Boolean> {
+		private static final long serialVersionUID = 1L;
+		
+		public TableCellBoolean() { super(); }
+		public TableCellBoolean(Boolean value) { super(value); }
+		
+		public String getValueNotNull() { return getValue() != null ? (getValue().booleanValue() ? "1" : "0") : ""; }
+		
+		@Override
+		public String getFormattedValue() { return super.getFormattedValue() != null ? super.getFormattedValue() : getValueNotNull(); }
+		
+		@Override
+		public int compareTo(TableCellInterface c) {
+			if (c instanceof TableCellBoolean)
+				return NaturalOrderComparator.compare(getValueNotNull(), ((TableCellBoolean)c).getValueNotNull());
+			return super.compareTo(c);
+		}
+	}
+	
 	public static class TableCellClassName extends TableCellText {
 		private static final long serialVersionUID = 1L;
 		private List<String> iAlternatives = null;
@@ -209,6 +272,17 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 			if (iAlternatives == null) iAlternatives = new ArrayList<String>();
 			iAlternatives.add(alternative);
 		}
+	}
+	
+	public static class TableCellClickableClassName extends TableCellClassName {
+		private static final long serialVersionUID = 1L;
+		private Long iClassId;
+		
+		public TableCellClickableClassName() { super(); }
+		public TableCellClickableClassName(Long id, String value) { super(value); iClassId = id; }
+		
+		public Long getClassId() { return iClassId; }
+		public void setClassId(Long classId) { iClassId = classId; }
 	}
 	
 	public static class TableCellTime extends TableCellText {
@@ -330,6 +404,8 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 		
 		public int getNrChunks() { return iChunks.size(); }
 		public TableCellInterface get(int index) { return iChunks.get(index); }
+		public TableCellInterface last() { return iChunks.isEmpty() ? null : iChunks.get(iChunks.size() - 1); }
+		public List<TableCellInterface> getChunks() { return iChunks; }
 
 		@Override
 		public String getValue() {

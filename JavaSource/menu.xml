@@ -259,6 +259,13 @@
 			<item name="Reports" page="solutionReport.do">
 				<condition>
 					<hasPermission name="SolutionReports"/>
+					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
+				</condition>
+			</item>
+			<item name="Reports" page="solutionReports" type="gwt">
+				<condition>
+					<hasPermission name="SolutionReports"/>
+					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 		</menu>
@@ -307,6 +314,13 @@
 			<item name="Reports" page="solutionReport.do">
 				<condition>
 					<hasPermission name="SolutionReports"/>
+					<propertyEquals name="unitime.legacy.solver" value="true" defaultValue="false"/>
+				</condition>
+			</item>
+			<item name="Reports" page="solutionReports" type="gwt">
+				<condition>
+					<hasPermission name="SolutionReports"/>
+					<propertyEquals name="unitime.legacy.solver" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 		</menu>
