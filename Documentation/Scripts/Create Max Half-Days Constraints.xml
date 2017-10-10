@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ ******************************************************************************
+ * Max Half-Days Constraint
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * The MaxHalfDays constraint limits the number of half-days of week during which
+ * the given set of classes are taught.
+ * It has one parameter: a maximal number of week half-days during which the given
+ * set of classes can be placed.
+ * A day is split by noon (which can be changed using General.HalfDaySlot parameter).
+ * A class starting before noon is considered a morning class (despite of its end),
+ * a class starting at noon or later is considered an afternoon class
+ * For instance, a reference MaxHalfDays:4 translates to a maximum number of 4 half-days
+ * a week.
+ -->
+ <script name="Distribution Types: Create Max Half-Days Constraints" permission="Distribution Types" engine="ECMAScript" created="Sun Oct 08 15:34:32 CEST 2017">
+  <description><![CDATA[This script creates the At Most N Half-Days a Week distribution types.]]></description>
+  <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
+
+for (var i = 2; i <= 12; i++) {
+  var type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', '_MaxHalfDays:' + i + '_').uniqueResult();
+  if (type == null) {
+    type = new org.unitime.timetable.model.DistributionType();
+    type.setReference('_MaxHalfDays:' + i + '_');
+    log.info('Creating Max ' + i + ' Half-Days constraint...');
+  } else {
+    log.warn('Constraint Max ' + i + ' Half-Days already exists.');
+  }
+  type.setLabel('At Most ' + i + ' Half-Days a Week');
+  type.setSequencingRequired(false);
+  type.setRequirementId(++reqId);
+  type.setAllowedPref('210R');
+  type.setDescr('Classes must / should be placed in no more than ' + i + ' week half-days. A class starting before noon is considered a morning class, a class starting at noon or later is considered an afternoon class.');
+  type.setAbbreviation('Max ' + i + ' Half-Days');
+  type.setInstructorPref(true);
+  type.setExamPref(false);
+  type.setVisible(true);
+  hibSession.saveOrUpdate(type);
+}
+
+log.info('All done.');]]></body>
+</script>
