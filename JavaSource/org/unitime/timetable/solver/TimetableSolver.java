@@ -42,8 +42,10 @@ import org.cpsolver.coursett.TimetableXMLLoader;
 import org.cpsolver.coursett.TimetableXMLSaver;
 import org.cpsolver.coursett.constraint.ClassLimitConstraint;
 import org.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
+import org.cpsolver.coursett.constraint.FlexibleConstraint;
 import org.cpsolver.coursett.constraint.GroupConstraint;
 import org.cpsolver.coursett.constraint.InstructorConstraint;
+import org.cpsolver.coursett.constraint.JenrlConstraint;
 import org.cpsolver.coursett.constraint.RoomConstraint;
 import org.cpsolver.coursett.constraint.SpreadConstraint;
 import org.cpsolver.coursett.model.Lecture;
@@ -257,7 +259,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     			((TimetableModel)currentSolution().getModel()).switchStudents(currentSolution().getAssignment(), this);
     		} finally {
     			iWorking = false;
-    			Progress.getInstance(currentSolution().getModel()).setStatus("Awaiting commands ...");
+    			Progress.getInstance(currentSolution().getModel()).setStatus(MSG.statusReady());
     		}
     		afterFinalSectioning();
     	}
@@ -334,7 +336,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     			}
     		}
     		if (time==null) {
-    			iProgress.warn("WARNING: Time "+placement.getTimeLocation().getLongName(useAmPm())+" is no longer valid for class "+lecture.getName());
+    			iProgress.warn(MSG.warnTimeNoLongerValid(placement.getTimeLocation().getLongName(useAmPm()), lecture.getName()));
     			return null;
     		}
     		Vector rooms = new Vector();
@@ -347,7 +349,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     			}
     		}
     		if (rooms.size()!=lecture.getNrRooms()) {
-    			iProgress.warn("WARNING: Room(s) "+(placement.isMultiRoom()?placement.getRoomLocations().toString():placement.getRoomLocation().getName())+" are no longer valid for class "+lecture.getName());
+    			iProgress.warn(MSG.warnRoomNoLongerValid(placement.isMultiRoom()?placement.getRoomLocations().toString():placement.getRoomLocation().getName(), lecture.getName()));
     			return null;
     		}
     		return new Placement(lecture,time,rooms);
@@ -359,15 +361,15 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
                 if (conflictConstraints.isEmpty()) {
                 	currentSolution().getAssignment().assign(0, placement);
                 } else {
-                    iProgress.warn("Unable to assign "+placement.variable().getName()+" &larr; "+placement.getLongName(useAmPm()));
-                    iProgress.warn("&nbsp;&nbsp;Reason:");
+                    iProgress.warn(MSG.warnCannotAssignClass(placement.variable().getName(), placement.getLongName(useAmPm())));
+                    iProgress.warn(MSG.warnReasonFirstLine());
                     for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
                         Collection vals = (Collection)conflictConstraints.get(c);
                         for (Iterator j=vals.iterator();j.hasNext();) {
                             Placement v = (Placement) j.next();
-                            iProgress.warn("&nbsp;&nbsp;&nbsp;&nbsp;"+v.variable().getName()+" = "+v.getLongName(useAmPm()));
+                            iProgress.warn(MSG.warnReasonConflict(v.variable().getName(), v.getLongName(useAmPm())));
                         }
-                        iProgress.debug("&nbsp;&nbsp;&nbsp;&nbsp;in constraint "+c);
+                        iProgress.debug(MSG.warnReasonConstraint(getConstraintName(c)));
                     }
                 }
     		} else {
@@ -375,17 +377,17 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     			String reason = "";
                	for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
         			if (!ic.isAvailable(lecture, placement))
-        				reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;instructor "+ic.getName()+" not available";
+        				reason += MSG.warnReasonInstructorNotAvailable(ic.getName());
                	}
     	    	if (lecture.getNrRooms()>0) {
     	    		if (placement.isMultiRoom()) {
     	    			for (RoomLocation roomLocation: placement.getRoomLocations()) {
     	    				if (!roomLocation.getRoomConstraint().isAvailable(lecture,placement.getTimeLocation(),lecture.getScheduler()))
-    	    					reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;room "+roomLocation.getName()+" not available";
+    	    					reason += MSG.warnReasonRoomNotAvailable(roomLocation.getName());
     	    			}
     	    		} else {
     					if (!placement.getRoomLocation().getRoomConstraint().isAvailable(lecture,placement.getTimeLocation(),lecture.getScheduler()))
-    						reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;room "+placement.getRoomLocation().getName()+" not available";
+    						reason += MSG.warnReasonRoomNotAvailable(placement.getRoomLocation().getName());
     	    		}
     	    	}
     	    	Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = currentSolution().getModel().conflictConstraints(currentSolution().getAssignment(), placement);
@@ -395,13 +397,16 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
                         for (Placement p: vals) {
                             Lecture l = p.variable();
                             if (l.isCommitted())
-                            	reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;conflict with committed assignment "+l.getName()+" = "+p.getLongName(useAmPm())+" (in constraint "+c+")";
+                            	reason += MSG.warnReasonConstraintCommitedAssignment(l.getName(), p.getLongName(useAmPm()), getConstraintName(c));
                             if (p.equals(placement))
-                            	reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;constraint "+c;
+                            	reason += MSG.warnReasonConstraint(getConstraintName(c));
                         }
                     }
                 }
-    	    	iProgress.warn("Unable to assign "+lecture.getName()+" &larr; "+placement.getLongName(useAmPm())+(reason.length()==0?".":":"+reason));
+                if (reason.isEmpty())
+                	iProgress.warn(MSG.warnCannotAssignClass(lecture.getName(), placement.getLongName(useAmPm())));
+                else
+                	iProgress.warn(MSG.warnCannotAssignClassWithReason(lecture.getName(), placement.getLongName(useAmPm()), reason));
     		}
     	}
     	private void unassignAll() {
@@ -412,7 +417,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     		iProgress = Progress.getInstance(currentSolution().getModel());
     		
             if (!iBestAssignmentTable.isEmpty()) {
-            	iProgress.setPhase("Creating best assignment ...",iBestAssignmentTable.size());
+            	iProgress.setPhase(MSG.phaseCreatingBestAssignment(),iBestAssignmentTable.size());
             	unassignAll();
             	for (Iterator i=iBestAssignmentTable.entrySet().iterator();i.hasNext();) {
             		Map.Entry entry = (Map.Entry)i.next();
@@ -426,7 +431,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
             	currentSolution().saveBest();
             }
             if (!iInitialAssignmentTable.isEmpty()) {
-            	iProgress.setPhase("Creating initial assignment ...",iInitialAssignmentTable.size());
+            	iProgress.setPhase(MSG.phaseCreatingInitialAssignment(),iInitialAssignmentTable.size());
             	for (Iterator i=iInitialAssignmentTable.entrySet().iterator();i.hasNext();) {
             		Map.Entry entry = (Map.Entry)i.next();
             		iProgress.incProgress();
@@ -437,7 +442,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
             	}
             }
             if (!iCurrentAssignmentTable.isEmpty()) {
-            	iProgress.setPhase("Creating current assignment ...",iCurrentAssignmentTable.size());
+            	iProgress.setPhase(MSG.phaseCreatingCurrentAssignment(),iCurrentAssignmentTable.size());
             	unassignAll();
             	for (Iterator i=iCurrentAssignmentTable.entrySet().iterator();i.hasNext();) {
             		Map.Entry entry = (Map.Entry)i.next();
@@ -459,7 +464,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     		iLoadedDate = new Date();
     		iWorking = false;
     		afterLoad();
-    		Progress.getInstance(currentSolution().getModel()).setStatus("Awaiting commands ...");
+    		Progress.getInstance(currentSolution().getModel()).setStatus(MSG.statusReady());
     	}
     }
 
@@ -829,6 +834,8 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 		}
     }
     
+    
+    
     @Override
     public Hashtable conflictInfo(Collection hints) {
     	Hashtable conflictTable = new Hashtable();
@@ -849,20 +856,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 		            		Hint confHint = new Hint(this, conflict);
 		            		if (done.contains(confHint)) continue;
 		            		if (!conflictTable.containsKey(confHint)) {
-		            			String name = constraint.getName();
-		        				if (constraint instanceof RoomConstraint) {
-		        					name = "Room "+constraint.getName();
-		        				} else if (constraint instanceof InstructorConstraint) {
-		        					name = "Instructor "+constraint.getName();
-		        				} else if (constraint instanceof GroupConstraint) {
-		        					name = "Distribution "+constraint.getName();
-		        				} else if (constraint instanceof DepartmentSpreadConstraint) {
-		        					name = "Balancing of department "+constraint.getName();
-		        				} else if (constraint instanceof SpreadConstraint) {
-		        					name = "Same subpart spread "+constraint.getName();
-		        				} else if (constraint instanceof ClassLimitConstraint) {
-		        					name = "Class limit "+constraint.getName();
-		        				}
+		            			String name = getConstraintName(constraint);
 		        				conflictTable.put(confHint, name);
 		            		}
 		            	}
@@ -1692,5 +1686,106 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 		} finally {
 			lock.unlock();
 		}
+	}
+	
+	public static String getConstraintName(Constraint<Lecture, Placement> constraint) {
+    	if (constraint instanceof RoomConstraint) {
+			return MSG.constraintRoom(constraint.getName());
+		} else if (constraint instanceof InstructorConstraint) {
+			return MSG.constraintInstructor(constraint.getName());
+		} else if (constraint instanceof GroupConstraint) {
+			return MSG.constraintDistribution(constraint.getName());
+		} else if (constraint instanceof FlexibleConstraint) {
+			return MSG.constraintFlexible(constraint.getName());
+		} else if (constraint instanceof DepartmentSpreadConstraint) {
+			return MSG.constraintDeptBalancing(constraint.getName());
+		} else if (constraint instanceof SpreadConstraint) {
+			return MSG.constraintSubpartBalancing(constraint.getName());
+		} else if (constraint instanceof ClassLimitConstraint) {
+			return MSG.constraintClassLimit(constraint.getName());
+		} else if (constraint instanceof JenrlConstraint) {
+			return MSG.constraintJointEnrollment(constraint.getName());
+		}
+    	return (constraint.getName() == null ? MSG.constraintWithNoName() : constraint.getName());
+    }
+	
+	public String getNotValidReason(Lecture lecture, org.cpsolver.ifs.assignment.Assignment<Lecture, Placement> assignment, Placement placement, boolean useAmPm) {
+		TimetableModel model = (TimetableModel) lecture.getModel();
+		if (model == null)
+			return null;
+		Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = model.conflictConstraints(assignment, placement);
+		for (Map.Entry<Constraint<Lecture, Placement>, Set<Placement>> entry : conflictConstraints.entrySet()) {
+			Constraint<Lecture, Placement> constraint = entry.getKey();
+			Set<Placement> conflicts = entry.getValue();
+			String cname = TimetableSolver.getConstraintName(constraint);
+			for (Placement confPlacement : conflicts) {
+				Lecture other = confPlacement.variable();
+				if (other.isCommitted()) {
+					return MSG.reasonConflictsWithCommittedClass(placement.getLongName(useAmPm), other.getName(), confPlacement.getLongName(useAmPm), cname);
+				}
+				if (confPlacement.equals(placement)) {
+					return MSG.reasonConflictConstraint(placement.getLongName(useAmPm), cname);
+				}
+			}
+		}
+		return null;
+	}
+
+	public static String getNotValidReason(Placement placement, org.cpsolver.ifs.assignment.Assignment<Lecture, Placement> assignment, boolean useAmPm) {
+		Lecture lecture = placement.variable();
+		String reason = lecture.getNotValidReason(assignment, placement, useAmPm);
+		if (reason != null)
+			return reason;
+		for (InstructorConstraint ic : lecture.getInstructorConstraints()) {
+			if (!ic.isAvailable(lecture, placement)) {
+				if (!ic.isAvailable(lecture, placement.getTimeLocation())) {
+					for (Placement c : ic.getUnavailabilities()) {
+						if (c.getTimeLocation().hasIntersection(placement.getTimeLocation())
+								&& !lecture.canShareRoom(c.variable()))
+							return MSG.reasonInstructorNotAvailableEvent(ic.getName(), placement.getTimeLocation().getLongName(useAmPm), c.variable().getName());
+					}
+					return MSG.reasonInstructorNotAvailable(ic.getName(), placement.getTimeLocation().getLongName(useAmPm));
+				} else
+					return MSG.reasonInstructorTooFar(placement.getTimeLocation().getLongName(useAmPm), placement.getRoomName(", "), ic.getName());
+			}
+		}
+		if (lecture.getNrRooms() > 0) {
+			if (placement.isMultiRoom()) {
+				for (RoomLocation roomLocation : placement.getRoomLocations()) {
+					if (roomLocation.getRoomConstraint() != null && !roomLocation.getRoomConstraint().isAvailable(lecture, placement.getTimeLocation(), lecture.getScheduler())) {
+						if (roomLocation.getRoomConstraint().getAvailableArray() != null) {
+							for (Enumeration<Integer> e = placement.getTimeLocation().getSlots(); e.hasMoreElements();) {
+								int slot = e.nextElement();
+								if (roomLocation.getRoomConstraint().getAvailableArray()[slot] != null) {
+									for (Placement c : roomLocation.getRoomConstraint().getAvailableArray()[slot]) {
+										if (c.getTimeLocation().hasIntersection(placement.getTimeLocation()) && !lecture.canShareRoom(c.variable())) {
+											return MSG.reasonRoomNotAvailableEvent(roomLocation.getName(), placement.getTimeLocation().getLongName(useAmPm), c.variable().getName());
+										}
+									}
+								}
+							}
+						}
+						return MSG.reasonRoomNotAvailable(roomLocation.getName(), placement.getTimeLocation().getLongName(useAmPm));
+					}
+				}
+			} else {
+				if (placement.getRoomLocation().getRoomConstraint() != null && !placement.getRoomLocation().getRoomConstraint().isAvailable(lecture, placement.getTimeLocation(), lecture.getScheduler())) {
+					if (placement.getRoomLocation().getRoomConstraint().getAvailableArray() != null) {
+						for (Enumeration<Integer> e = placement.getTimeLocation().getSlots(); e.hasMoreElements();) {
+							int slot = e.nextElement();
+							if (placement.getRoomLocation().getRoomConstraint().getAvailableArray()[slot] != null) {
+								for (Placement c : placement.getRoomLocation().getRoomConstraint().getAvailableArray()[slot]) {
+									if (c.getTimeLocation().hasIntersection(placement.getTimeLocation()) && !lecture.canShareRoom(c.variable())) {
+										return MSG.reasonRoomNotAvailableEvent(placement.getRoomLocation().getName(), placement.getTimeLocation().getLongName(useAmPm), c.variable().getName());
+									}
+								}
+							}
+						}
+					}
+					return MSG.reasonRoomNotAvailable(placement.getRoomLocation().getName(), placement.getTimeLocation().getLongName(useAmPm));
+				}
+			}
+		}
+		return (reason == null ? MSG.reasonNotKnown() : reason);
 	}
 }

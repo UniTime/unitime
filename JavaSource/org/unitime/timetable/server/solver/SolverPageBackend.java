@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ import org.unitime.timetable.form.ListSolutionsForm;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.resources.CPSolverMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SolverInterface.HasPageMessages;
 import org.unitime.timetable.gwt.shared.SolverInterface.PageMessage;
@@ -91,6 +93,7 @@ import org.unitime.timetable.webutil.BackTracker;
 @GwtRpcImplements(SolverPageRequest.class)
 public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest, SolverPageResponse> {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	protected static CPSolverMessages SOLVERMSG = Localization.create(CPSolverMessages.class);
 	protected static Format<Date> sTS = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
 	
 	@Autowired SolverServerService solverServerService;
@@ -421,12 +424,18 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 	
 	protected void fillSolverInfos(SessionContext context, CommonSolverInterface solver, SolverPageRequest request, SolverPageResponse response) {
 		Map<String, String> info = (solver == null ? null : solver.currentSolutionInfo());
+		Map<String, String> translations = getInfoTranslations(request.getType());
 		if (info != null) {
 			SolutionInfo si = new SolutionInfo();
 			TreeSet<String> keys = new TreeSet<String>(new ListSolutionsForm.InfoComparator());
 			keys.addAll(info.keySet());
-			for (String key: keys)
-				si.addPair(key, info.get(key));
+			for (String key: keys) {
+				String translatedKey = (translations == null ? null : translations.get(key));
+				if (translatedKey != null)
+					si.addPair(translatedKey, info.get(key));
+				else
+					si.addPair(key, info.get(key));
+			}
 			response.setCurrentSolution(si);
 		}
 		Map<String, String> best = (solver == null ? null : solver.bestSolutionInfo());
@@ -434,8 +443,13 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 			SolutionInfo si = new SolutionInfo();
 			TreeSet<String> keys = new TreeSet<String>(new ListSolutionsForm.InfoComparator());
 			keys.addAll(best.keySet());
-			for (String key: keys)
-				si.addPair(key, best.get(key));
+			for (String key: keys) {
+				String translatedKey = (translations == null ? null : translations.get(key));
+				if (translatedKey != null)
+					si.addPair(translatedKey, info.get(key));
+				else
+					si.addPair(key, info.get(key));
+			}
 			response.setBestSolution(si);
 		}
 		if (solver != null) {
@@ -737,6 +751,30 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 					list = MESSAGES.itemSeparatorLast(list, item);
 			}
 			return list;
+		}
+	}
+	
+	public static Map<String, String> translateInfo(SolverType type, Map<String, String> info) {
+    	Map<String, String> translations = getInfoTranslations(type);
+    	if (info == null || info.isEmpty() || translations == null || translations.isEmpty()) return info;
+    	Map<String, String> translatedInfo = new HashMap<String, String>();
+    	for (Map.Entry<String, String> entry: info.entrySet()) {
+    		String translatedKey = translations.get(entry.getKey());
+    		if (translatedKey != null)
+    			translatedInfo.put(translatedKey, entry.getValue());
+    		else
+    			translatedInfo.put(entry.getKey(), entry.getValue());
+    	}
+    	return translatedInfo;
+    }
+	
+	public static Map<String, String> getInfoTranslations(SolverType type) {
+		switch (type) {
+		case COURSE: return SOLVERMSG.courseInfoMessages();
+		case EXAM: return SOLVERMSG.examInfoMessages();
+		case STUDENT: return SOLVERMSG.studentInfoMessages();
+		case INSTRUCTOR: return SOLVERMSG.instructorInfoMessages();
+		default: return null;
 		}
 	}
 }

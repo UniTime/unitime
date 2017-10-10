@@ -19,13 +19,13 @@
 */
 package org.unitime.timetable.solver;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Vector;
-
 
 import org.cpsolver.coursett.constraint.JenrlConstraint;
 import org.cpsolver.coursett.criteria.StudentCommittedConflict;
@@ -41,6 +41,8 @@ import org.cpsolver.coursett.model.TimetableModel;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.criteria.Criterion;
 import org.cpsolver.ifs.util.Progress;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.CPSolverMessages;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -53,6 +55,7 @@ import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
  * @author Tomas Muller
  */
 public class EnrollmentCheck {
+	protected static CPSolverMessages MSG = Localization.create(CPSolverMessages.class);
     private static java.text.DecimalFormat sDoubleFormat = new java.text.DecimalFormat("0.##",new java.text.DecimalFormatSymbols(Locale.US));
     private TimetableModel iModel = null;
     private Assignment<Lecture, Placement> iAssignment = null;
@@ -83,10 +86,18 @@ public class EnrollmentCheck {
     	}
     }
     
+    protected String toString(Collection<Student> students) {
+    	if (students == null) return "";
+    	String ret = "";
+    	for (Student s: students)
+    		ret += (ret.isEmpty() ? "" : ", ") + s.getId();
+    	return ret;
+    }
+    
     /** Check validity of JENRL constraints from student enrollments */
     public void checkJenrl(Progress p) {
         try {
-            p.setPhase("Checking jenrl ...",iModel.variables().size());
+            p.setPhase(MSG.phaseCheckingJenrl(),iModel.variables().size());
             for (Lecture l1: iModel.variables()) {
                 p.incProgress();
                 p.debug("Checking "+l1.getName()+" ...");
@@ -108,24 +119,18 @@ public class EnrollmentCheck {
                             if ((a.equals(l1) && b.equals(l2)) || (a.equals(l2) && b.equals(l1))) {
                                 found = true;
                                 if (j.getJenrl()!=(int)Math.ceil(jenrl)) {
-                                    p.error("Wrong jenrl between "+getClassLabel(l1)+" and "+getClassLabel(l2)+" (constraint="+j.getJenrl()+" != computed="+jenrl+").<br>"+
-                                            "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(l1)+" has students: "+l1.students()+"<br>"+
-                                            "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(l2)+" has students: "+l2.students()+"<br>"+
-                                            "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;intersection: "+jenrlStudents);
+                                    p.error(MSG.warnWrongJenrl(getClassLabel(l1), getClassLabel(l2), j.getJenrl(), (long)Math.ceil(jenrl), toString(l1.students()), toString(l2.students()), toString(jenrlStudents)));
                                 }
                             }
                         }
                         if (!found && jenrl>0) {
-                            p.error("Missing jenrl between "+getClassLabel(l1)+" and "+getClassLabel(l2)+" (computed="+jenrl+").<br>"+
-                                    "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(l1)+" has students: "+l1.students()+"<br>"+
-                                    "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(l2)+" has students: "+l2.students()+"<br>"+
-                                    "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;intersection: "+jenrlStudents);
+                            p.error(MSG.warnMissingJenrl(getClassLabel(l1), getClassLabel(l2), Math.round(jenrl), toString(l1.students()), toString(l2.students()), toString(jenrlStudents)));
                         }
                     }
                 }
             }
         } catch (Exception e) {
-            p.error("Unexpected exception: "+e.getMessage(),e);
+            p.error(MSG.warnUnexpectedException(e.getMessage()), e);
         }
     }
     
@@ -135,12 +140,12 @@ public class EnrollmentCheck {
             Lecture lecture = (Lecture)i.next();
             if (s.getLectures().contains(lecture)) {
                 if (enrolled!=null)
-                    p.message(iMessageLevel, "Student "+s.getId()+" enrolled in multiple classes of the same subpart "+getClassLabel(enrolled)+", "+getClassLabel(lecture)+".");
+                    p.message(iMessageLevel, MSG.warnStudentInMultipleClasses(s.getId(), getClassLabel(enrolled), getClassLabel(lecture)));
                 enrolled = lecture;
             }
         }
         if (enrolled==null) {
-            p.message(iMessageLevel, "Student "+s.getId()+" not enrolled in any class of subpart "+getSubpartLabel(subpartId)+".");
+            p.message(iMessageLevel, MSG.warnStudentInNoClasses(s.getId(), getSubpartLabel(subpartId)));
         } else if (enrolled.hasAnyChildren()) {
             for (Long sid: enrolled.getChildrenSubpartIds()) {
                 checkEnrollment(p, s, sid, enrolled.getChildren(sid));
@@ -213,27 +218,28 @@ public class EnrollmentCheck {
     public void checkStudentEnrollments(Progress p) {
         p.setStatus("Student Enrollments Check");
         
+        DecimalFormat df = new DecimalFormat("0.##");
         Criterion<Lecture, Placement> sc = iModel.getCriterion(StudentConflict.class);
         if (sc.getValue(iAssignment) != sc.getValue(iAssignment, iModel.variables())) {
-            p.message(iMessageLevel, "Inconsistent number of student conflits (counter="+sc.getValue(iAssignment)+", actual="+sc.getValue(iAssignment, iModel.variables())+").");
+            p.message(iMessageLevel, MSG.warnWrongStudentConflictCount(df.format(sc.getValue(iAssignment)), df.format(sc.getValue(iAssignment, iModel.variables()))));
         }
         
         Criterion<Lecture, Placement> shc = iModel.getCriterion(StudentHardConflict.class);
         if (shc.getValue(iAssignment) != shc.getValue(iAssignment, iModel.variables())) {
-            p.message(iMessageLevel, "Inconsistent number of hard student conflits (counter="+shc.getValue(iAssignment)+", actual="+shc.getValue(iAssignment, iModel.variables())+").");
+            p.message(iMessageLevel, MSG.warnWrongHardStudentConflictCount(df.format(shc.getValue(iAssignment)), df.format(shc.getValue(iAssignment, iModel.variables()))));
         }
         
         Criterion<Lecture, Placement> sdc = iModel.getCriterion(StudentDistanceConflict.class);
         if (sdc.getValue(iAssignment) != sdc.getValue(iAssignment, iModel.variables())) {
-            p.message(iMessageLevel, "Inconsistent number of distance student conflits (counter="+sdc.getValue(iAssignment)+", actual="+sdc.getValue(iAssignment, iModel.variables())+").");
+            p.message(iMessageLevel, MSG.warnWrongDistanceStudentConflictCount(df.format(sdc.getValue(iAssignment)), df.format(sdc.getValue(iAssignment, iModel.variables()))));
         }
         
         Criterion<Lecture, Placement> scc = iModel.getCriterion(StudentCommittedConflict.class);
         if (scc.getValue(iAssignment) != scc.getValue(iAssignment, iModel.variables())) {
-            p.message(iMessageLevel, "Inconsistent number of committed student conflits (counter="+scc.getValue(iAssignment)+", actual="+scc.getValue(iAssignment, iModel.variables())+").");
+            p.message(iMessageLevel, MSG.warnWrongCommittedStudentConflictCount(df.format(scc.getValue(iAssignment)), df.format(scc.getValue(iAssignment, iModel.variables()))));
         }
         
-        p.setPhase("Checking class limits...", iModel.variables().size());
+        p.setPhase(MSG.phaseCheckingClassLimits(), iModel.variables().size());
         for (Lecture lecture: iModel.variables()) {
             p.incProgress();
             p.debug("Checking "+getClassLabel(lecture)+" ... students="+lecture.students().size()+", weighted="+lecture.nrWeightedStudents()+", limit="+lecture.classLimit(iAssignment)+" ("+lecture.minClassLimit()+".."+lecture.maxClassLimit()+")");
@@ -243,20 +249,20 @@ public class EnrollmentCheck {
                 w = Math.max(w, ((Student)i.next()).getOfferingWeight(lecture.getConfiguration().getOfferingId()));
             if (lecture.nrWeightedStudents() - w + FinalSectioning.sEps > lecture.classLimit(iAssignment)) {
                 if (hasSubpartMixedOwnership(lecture))
-                    p.message(iMessageLowerLevel, "Class limit exceeded for class "+getClassLabel(lecture)+" ("+sDoubleFormat.format(lecture.nrWeightedStudents())+">"+lecture.classLimit(iAssignment)+").");
+                    p.message(iMessageLowerLevel, MSG.warnClassLimitOver(getClassLabel(lecture), sDoubleFormat.format(lecture.nrWeightedStudents()), lecture.classLimit(iAssignment)));
                 else
-                    p.message(iMessageLevel, "Class limit exceeded for class "+getClassLabel(lecture)+" ("+sDoubleFormat.format(lecture.nrWeightedStudents())+">"+lecture.classLimit(iAssignment)+").");
+                    p.message(iMessageLevel, MSG.warnClassLimitOver(getClassLabel(lecture), sDoubleFormat.format(lecture.nrWeightedStudents()), lecture.classLimit(iAssignment)));
             }
         }
         // checkJenrl(p);
-        p.setPhase("Checking enrollments...", iModel.getAllStudents().size());
+        p.setPhase(MSG.phaseCheckingEnrollments(), iModel.getAllStudents().size());
         for (Iterator i=iModel.getAllStudents().iterator();i.hasNext();) {
             p.incProgress();
             Student student = (Student)i.next();
             for (Iterator j=student.getLectures().iterator();j.hasNext();) {
                 Lecture lecture = (Lecture)j.next();
                 if (!student.canEnroll(lecture))
-                    p.message(iMessageLowerLevel, "Student "+student.getId()+" enrolled to invalid class "+getClassLabel(lecture)+".");
+                    p.message(iMessageLowerLevel, MSG.warnStudentInInvalidClass(student.getId(), getClassLabel(lecture)));
             }
             if (student.getConfigurations().size()!=student.getOfferings().size()) {
                 Vector got = new Vector();
@@ -264,7 +270,7 @@ public class EnrollmentCheck {
                     Configuration cfg = (Configuration)j.next();
                     got.add(cfg.getOfferingId());
                 }
-                p.message(iMessageLevel, "Student "+student.getId()+" demands offerings "+getOfferingsLabel(student.getOfferings())+", but got "+getOfferingsLabel(got)+".");
+                p.message(iMessageLevel, MSG.warnStudentInWrongCourses(student.getId(), getOfferingsLabel(student.getOfferings()), getOfferingsLabel(got)));
             }
             for (Iterator j=student.getConfigurations().iterator();j.hasNext();) {
                 Configuration cfg = (Configuration)j.next();

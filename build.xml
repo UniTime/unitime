@@ -620,6 +620,7 @@
 			<bundle package="org.unitime.timetable.gwt.resources" name="GwtMessages"/>
 			<bundle package="org.unitime.timetable.gwt.resources" name="StudentSectioningConstants"/>
 			<bundle package="org.unitime.timetable.gwt.resources" name="StudentSectioningMessages"/>
+			<bundle package="org.unitime.timetable.gwt.resources" name="CPSolverMessages"/>
 			<locale value="${locale}"/>
 		</export-translations>
         <delete dir="${build.dir}" failonerror="false"/>
@@ -659,6 +660,7 @@
 			<bundle package="org.unitime.timetable.gwt.resources" name="GwtMessages"/>
 			<bundle package="org.unitime.timetable.gwt.resources" name="StudentSectioningConstants"/>
 			<bundle package="org.unitime.timetable.gwt.resources" name="StudentSectioningMessages"/>
+			<bundle package="org.unitime.timetable.gwt.resources" name="CPSolverMessages"/>
 			<locale value="${locale}"/>
 		</import-translations>
         <delete dir="${build.dir}" failonerror="false"/>

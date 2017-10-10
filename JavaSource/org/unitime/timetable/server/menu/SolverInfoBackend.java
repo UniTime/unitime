@@ -33,6 +33,7 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.command.server.GwtRpcLogging;
 import org.unitime.timetable.gwt.command.server.GwtRpcLogging.Level;
+import org.unitime.timetable.gwt.resources.CPSolverMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.MenuInterface.InfoPairInterface;
 import org.unitime.timetable.gwt.shared.MenuInterface.SolverInfoInterface;
@@ -53,6 +54,7 @@ import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 @GwtRpcLogging(Level.DISABLED)
 public class SolverInfoBackend implements GwtRpcImplementation<SolverInfoRpcRequest, SolverInfoInterface> {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	protected static CPSolverMessages SOLVERMSG = Localization.create(CPSolverMessages.class);
 
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
@@ -86,22 +88,27 @@ public class SolverInfoBackend implements GwtRpcImplementation<SolverInfoRpcRequ
 		if (ownerName.length() > 50)
 			ownerName = ownerName.substring(0,47) + "...";
 
+		Map<String, String> translations = null;
 		switch (solver.getType()) {
 		case COURSE:
 			ret.setType(MESSAGES.solverCourse());
 			ret.setUrl(ApplicationProperty.LegacySolver.isTrue() ? "solver.do" : "gwt.jsp?page=solver&type=course");
+			translations = SOLVERMSG.courseInfoMessages();
 			break;
 		case EXAM:
 			ret.setType(MESSAGES.solverExamination());
 			ret.setUrl(ApplicationProperty.LegacySolver.isTrue() ? "examSolver.do" : "gwt.jsp?page=solver&type=exam");
+			translations = SOLVERMSG.examInfoMessages();
 			break;
 		case STUDENT:
 			ret.setType(MESSAGES.solverStudent());
 			ret.setUrl(ApplicationProperty.LegacySolver.isTrue() ? "studentSolver.do" : "gwt.jsp?page=solver&type=student");
+			translations = SOLVERMSG.studentInfoMessages();
 			break;
 		case INSTRUCTOR:
 			ret.setType(MESSAGES.solverInstructor());
 			ret.setUrl("gwt.jsp?page=solver&type=instructor");
+			translations = SOLVERMSG.instructorInfoMessages();
 			break;
 		}
 		ret.addPair(MESSAGES.fieldType(), ret.getType());
@@ -124,8 +131,13 @@ public class SolverInfoBackend implements GwtRpcImplementation<SolverInfoRpcRequ
 				p.setSeparator(true);
 				TreeSet<String> keys = new TreeSet<String>(new ListSolutionsForm.InfoComparator());
 				keys.addAll(info.keySet());
-				for (String key: keys)
-					ret.addPair(key, (String)info.get(key));
+				for (String key: keys) {
+					String translatedKey = (translations == null ? null : translations.get(key));
+					if (translatedKey != null)
+						ret.addPair(translatedKey, info.get(key));
+					else
+						ret.addPair(key, info.get(key));
+				}
 			}
 		}
 	return ret;
