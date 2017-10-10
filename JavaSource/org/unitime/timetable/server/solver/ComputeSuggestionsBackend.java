@@ -44,6 +44,7 @@ import org.unitime.timetable.gwt.client.widgets.TimeSelector;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.resources.CPSolverMessages;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.server.Query;
@@ -66,6 +67,7 @@ import org.unitime.timetable.util.Constants;
 public class ComputeSuggestionsBackend implements GwtRpcImplementation<ComputeSuggestionsRequest, Suggestions> {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+	protected static CPSolverMessages MSG = Localization.create(CPSolverMessages.class);
 	
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 
@@ -111,8 +113,8 @@ public class ComputeSuggestionsBackend implements GwtRpcImplementation<ComputeSu
         		if (plac == null) continue;
         		if (plac.variable().getClassId().equals(request.getClassId()) && (request.isPlacements() || plac.equals(assignment.getValue(plac.variable())))) continue;
         		if (!plac.isValid()) {
-        			String reason = plac.getNotValidReason(assignment, solver.getProperties().getPropertyBoolean("General.UseAmPm", true));
-        			throw new GwtRpcException(reason == null ? "room or instructor not avaiable" : reason);
+        			String reason = TimetableSolver.getNotValidReason(plac, assignment, solver.getProperties().getPropertyBoolean("General.UseAmPm", true));
+        			throw new GwtRpcException(reason == null ? MSG.reasonNotKnown() : reason);
         		}
         		Lecture lect = (Lecture)plac.variable();
                 hints.add(plac);

@@ -55,7 +55,9 @@ import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.resources.CPSolverMessages;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.util.Constants;
 
@@ -63,6 +65,7 @@ import org.unitime.timetable.util.Constants;
  * @author Tomas Muller
  */
 public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V, T>, M extends Model<V, T>> extends ParallelSolver<V, T> implements CommonSolverInterface{
+	protected static CPSolverMessages MSG = Localization.create(CPSolverMessages.class);
     protected Log sLog = null;
     protected boolean iWorking = false;
     protected Date iLoadedDate = null;
@@ -240,7 +243,7 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
             if (getProperties().getPropertyBoolean("General.Unload",false)) {
                 dispose();
             } else {
-                Progress.getInstance(currentSolution().getModel()).setStatus("Awaiting commands ...");
+                Progress.getInstance(currentSolution().getModel()).setStatus(MSG.statusReady());
             }
         } finally {
             iWorking = false;
@@ -337,7 +340,7 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
         	iSolver.iLoadedDate = new Date();
         	iSolver.iWorking = false;
         	iSolver.afterLoad();
-            Progress.getInstance(iSolver.currentSolution().getModel()).setStatus("Awaiting commands ...");
+            Progress.getInstance(iSolver.currentSolution().getModel()).setStatus(MSG.statusReady());
             if (iSolver.getProperties().getPropertyBoolean("General.StartSolver",false))
             	iSolver.start();
         }
@@ -353,7 +356,7 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
         public void execute() {
         	iSolver.iWorking = false;
         	iSolver.afterSave();
-            Progress.getInstance(iSolver.currentSolution().getModel()).setStatus("Awaiting commands ...");
+            Progress.getInstance(iSolver.currentSolution().getModel()).setStatus(MSG.statusReady());
         }
     }
     
@@ -433,7 +436,7 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
             initSolver();
 
             restureCurrentSolutionFromBackup(document);
-            Progress.getInstance(model).setStatus("Awaiting commands ...");
+            Progress.getInstance(model).setStatus(MSG.statusReady());
             
             if (removeFiles) {
                 inXmlFile.delete();
@@ -676,7 +679,7 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
                 iProgress = Progress.getInstance(solution.getModel());
                 
                 if (!iBestAssignmentTable.isEmpty()) {
-                    iProgress.setPhase("Creating best assignment ...", iBestAssignmentTable.size());
+                    iProgress.setPhase(MSG.phaseCreatingBestAssignment(), iBestAssignmentTable.size());
                     unassignAll();
                     for (Map.Entry<V, T> e: iBestAssignmentTable.entrySet()) {
                         iProgress.incProgress();
@@ -689,7 +692,7 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
                 }
 
                 if (iRestoreInitial && !iInitialAssignmentTable.isEmpty()) {
-                    iProgress.setPhase("Creating initial assignment ...", iInitialAssignmentTable.size());
+                    iProgress.setPhase(MSG.phaseCreatingInitialAssignment(), iInitialAssignmentTable.size());
                     for (Map.Entry<V, T> e: iInitialAssignmentTable.entrySet()) {
                         iProgress.incProgress();
                         V v = getVariable(e.getKey());
@@ -700,7 +703,7 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
                 }
                 
                 if (!iCurrentAssignmentTable.isEmpty()) {
-                    iProgress.setPhase("Creating current assignment ...", iCurrentAssignmentTable.size());
+                    iProgress.setPhase(MSG.phaseCreatingCurrentAssignment(), iCurrentAssignmentTable.size());
                     unassignAll();
                     for (Map.Entry<V, T> e: iCurrentAssignmentTable.entrySet()) {
                         iProgress.incProgress();
@@ -719,12 +722,12 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
                 if (iSolutionId != null)
                     iSolver.getProperties().setProperty("General.SolutionId",iSolutionId);
         	} catch (Exception e) {
-        		Progress.getInstance(iSolver.currentSolution().getModel()).fatal("Failed to restore previous assignments: " + e.getMessage(), e);
+        		Progress.getInstance(iSolver.currentSolution().getModel()).fatal(MSG.fataFailedToRestore(e.getMessage()), e);
         	} finally {
                 iSolver.iLoadedDate = new Date();
                 iSolver.iWorking = false;
                 iSolver.afterLoad();
-                Progress.getInstance(iSolver.currentSolution().getModel()).setStatus("Awaiting commands ...");
+                Progress.getInstance(iSolver.currentSolution().getModel()).setStatus(MSG.statusReady());
         	}
         }
     }

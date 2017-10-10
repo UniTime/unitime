@@ -73,7 +73,9 @@ import org.hibernate.FlushMode;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.Query;
 import org.hibernate.Transaction;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.resources.CPSolverMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
@@ -144,6 +146,7 @@ import org.unitime.timetable.util.duration.DurationModel;
  */
 public class TimetableDatabaseLoader extends TimetableLoader {
 	private static Log sLog = LogFactory.getLog(TimetableDatabaseLoader.class);
+	protected static CPSolverMessages MSG = Localization.create(CPSolverMessages.class);
 	private Session iSession;
 	private Long iSessionId;
 	private Long[] iSolverGroupId;
@@ -271,7 +274,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             Class studentCourseDemandsClass = Class.forName(studentCourseDemandsClassName);
             iStudentCourseDemands = (StudentCourseDemands)studentCourseDemandsClass.getConstructor(DataProperties.class).newInstance(getModel().getProperties());
         } catch (Exception e) {
-        	iProgress.message(msglevel("badStudentCourseDemands", Progress.MSGLEVEL_WARN), "Failed to load custom student course demands class, using last-like course demands instead.",e);
+        	iProgress.message(msglevel("badStudentCourseDemands", Progress.MSGLEVEL_WARN), MSG.warnFailedLoadCustomStudentDemands(),e);
         	iStudentCourseDemands = new LastLikeStudentCourseDemands(getModel().getProperties());
         }
         IdGenerator studentIdGenerator = new IdGenerator();
@@ -308,7 +311,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             Class classWeightProviderClass = Class.forName(classWeightProviderClassName);
             iClassWeightProvider = (ClassWeightProvider)classWeightProviderClass.getConstructor(DataProperties.class).newInstance(getModel().getProperties());
         } catch (Exception e) {
-        	iProgress.message(msglevel("badClassWeightProvider", Progress.MSGLEVEL_WARN), "Failed to load custom class weight provider, using the default one instead.",e);
+        	iProgress.message(msglevel("badClassWeightProvider", Progress.MSGLEVEL_WARN), MSG.warnFauledLoadCustomClassWeights(),e);
         	iClassWeightProvider = new DefaultClassWeights(getModel().getProperties());
         }
         iLoadCommittedReservations = getModel().getProperties().getPropertyBoolean("General.LoadCommittedReservations", iLoadCommittedReservations);
@@ -589,14 +592,14 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     
     private Lecture loadClass(Class_ clazz, org.hibernate.Session hibSession) {
     	if (clazz.isCancelled()) {
-    		iProgress.message(msglevel("cancelledClass", Progress.MSGLEVEL_WARN), "Class "+getClassLabel(clazz)+" is cancelled (class not loaded).");
+    		iProgress.message(msglevel("cancelledClass", Progress.MSGLEVEL_WARN), MSG.warnCancelledClass(getClassLabel(clazz)));
     		return null;
     	}
     	
     	List<TimeLocation> timeLocations = new ArrayList<TimeLocation>();
     	List<RoomLocation> roomLocations = new ArrayList<RoomLocation>();
     	
-    	iProgress.message(msglevel("loadingClass", Progress.MSGLEVEL_DEBUG), "loading class "+getClassLabel(clazz));
+    	iProgress.message(msglevel("loadingClass", Progress.MSGLEVEL_DEBUG), MSG.debugLoadingClass(getClassLabel(clazz)));
     	
     	Department dept = clazz.getControllingDept();
     	iDeptNames.put(dept.getUniqueId(),dept.getShortLabel());
@@ -624,7 +627,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         if (timePrefs.isEmpty()) {
             if (clazz.getSchedulingSubpart().getMinutesPerWk().intValue()!=0) {
             	DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
-                iProgress.message(msglevel("noTimePattern", Progress.MSGLEVEL_WARN), "Class "+getClassLabel(clazz)+" has no time pattern selected (class not loaded). <i>If not changed, this class will be treated as Arrange "+dm.getArrangedHours(clazz.getSchedulingSubpart().getMinutesPerWk(), clazz.effectiveDatePattern())+" Hours.</i>");
+                iProgress.message(msglevel("noTimePattern", Progress.MSGLEVEL_WARN), MSG.warnNoTimePattern(getClassLabel(clazz), dm.getArrangedHours(clazz.getSchedulingSubpart().getMinutesPerWk(), clazz.effectiveDatePattern())));
             }
             return null;
         }
@@ -633,7 +636,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         
         DatePattern datePattern = clazz.effectiveDatePattern(); 
         if (datePattern==null) {
-            iProgress.message(msglevel("noDatePattern", Progress.MSGLEVEL_WARN), "Class "+getClassLabel(clazz)+" has no date pattern selected (class not loaded).");
+            iProgress.message(msglevel("noDatePattern", Progress.MSGLEVEL_WARN), MSG.warnNoDatePattern(getClassLabel(clazz)));
             return null;
         }
         
@@ -859,12 +862,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             }
         	
             if (roomLocations.isEmpty() || roomLocations.size()<(clazz.getNbrRooms()==null?1:clazz.getNbrRooms().intValue())) {
-            	iProgress.message(msglevel("noRoom", Progress.MSGLEVEL_WARN), "Class "+getClassLabel(clazz)+" has no available room"+(clazz.getNbrRooms()!=null && clazz.getNbrRooms().intValue()>1?"s":"")+" (class not loaded).");
+            	iProgress.message(msglevel("noRoom", Progress.MSGLEVEL_WARN), clazz.getNbrRooms().intValue() > 1 ? MSG.warnNoRooms(getClassLabel(clazz)) : MSG.warnNoRoom(getClassLabel(clazz)));
             	return null;
             }
         } else {
             if (!groupPrefs.isEmpty() || !roomPrefs.isEmpty() || !bldgPrefs.isEmpty() || !featurePrefs.isEmpty()) 
-                iProgress.message(msglevel("zeroRoomsButPref", Progress.MSGLEVEL_WARN), "Class "+getClassLabel(clazz)+" requires no room (number of rooms is set to zero), but it contains some room preferences.");
+                iProgress.message(msglevel("zeroRoomsButPref", Progress.MSGLEVEL_WARN), MSG.warnZeroRoomsButPref(getClassLabel(clazz)));
         }
         
         int minPerWeek = clazz.getSchedulingSubpart().getMinutesPerWk().intValue();
@@ -943,7 +946,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             }
         	
             if (!dm.isValidCombination(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, timePref.getTimePattern())) {
-        		iProgress.message(msglevel("noTimePattern", Progress.MSGLEVEL_WARN), "Class "+getClassLabel(clazz)+" has "+clazz.getSchedulingSubpart().getMinutesPerWk()+" "+(dtype == null ? "minutes per week" : dtype.getLabel()) + " , but "+pattern.getName()+" time pattern selected.");
+        		iProgress.message(msglevel("noTimePattern", Progress.MSGLEVEL_WARN), MSG.warnWrongTimePattern(getClassLabel(clazz), clazz.getSchedulingSubpart().getMinutesPerWk(), (dtype == null ? MSG.defaultDurationTypeName() : dtype.getLabel()), pattern.getName()));
         		minPerWeek = pattern.getMinPerMtg()*pattern.getNrMeetings();
         		if (iFixMinPerWeek)
         			clazz.getSchedulingSubpart().setMinutesPerWk(new Integer(minPerWeek));
@@ -951,9 +954,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             
             for (int time=0;time<pattern.getNrTimes(); time++) {
             	if (pattern.getStartSlot(time) + pattern.getSlotsPerMtg() > Constants.SLOTS_PER_DAY) {
-            		iProgress.message(msglevel("timeOverMidnight", Progress.MSGLEVEL_WARN), 
-            				"Time pattern " + pattern.getName() + " that is used by " + getClassLabel(clazz) + " has a time that goes over midnight. " +
-            				"This is not allowed and the time " + pattern.getStartTime(time) + " will be ignored.");
+            		iProgress.message(msglevel("timeOverMidnight", Progress.MSGLEVEL_WARN), MSG.warnTimeOverMidnight(pattern.getName(), getClassLabel(clazz), pattern.getStartTime(time)));
             		continue;
             	}
                 for (int day=0;day<pattern.getNrDays(); day++) {
@@ -1103,7 +1104,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         }
         
         if (timeLocations.isEmpty()) {
-        	iProgress.message(msglevel("noTime", Progress.MSGLEVEL_WARN), "Class "+getClassLabel(clazz)+" has no available time (class not loaded).");
+        	iProgress.message(msglevel("noTime", Progress.MSGLEVEL_WARN), MSG.warnNoTime(getClassLabel(clazz)));
             return null;
         }
     	
@@ -1134,28 +1135,24 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 
     	long estNrValues = lecture.nrValues();
     	if (estNrValues>1000000) {
-    	    iProgress.message(msglevel("hugeDomain", Progress.MSGLEVEL_WARN), "Class "+getClassLabel(lecture)+" has too many possible placements ("+estNrValues+"). " +
-    	    		"The class was not loaded in order to prevent out of memory exception. " +
-    	    		"Please restrict the number of available rooms and/or times for this class.");
+    	    iProgress.message(msglevel("hugeDomain", Progress.MSGLEVEL_WARN), MSG.warnHugeDomain(getClassLabel(lecture), estNrValues));
             for (DepartmentalInstructor instructor: instructors) {
                 getInstructorConstraint(instructor,hibSession).removeVariable(lecture);
             }
     	    return null;
     	} else if (estNrValues>10000) {
-            iProgress.message(msglevel("bigDomain", Progress.MSGLEVEL_WARN), "Class "+getClassLabel(lecture)+" has quite a lot of possible placements ("+estNrValues+"). " +
-                    "Solver may run too slow. " +
-                    "If possible, please restrict the number of available rooms and/or times for this class.");
+            iProgress.message(msglevel("bigDomain", Progress.MSGLEVEL_WARN), MSG.warnBigDomain(getClassLabel(lecture), estNrValues));
     	}
     	
         if (lecture.values(getAssignment()).isEmpty()) {
         	if (!iInteractiveMode) {
-        		iProgress.message(msglevel("noPlacement", Progress.MSGLEVEL_WARN), "Class "+getClassLabel(lecture)+" has no available placement (class not loaded).");
+        		iProgress.message(msglevel("noPlacement", Progress.MSGLEVEL_WARN), MSG.warnNoPlacement(getClassLabel(lecture)));
                 for (DepartmentalInstructor instructor: instructors) {
             		getInstructorConstraint(instructor,hibSession).removeVariable(lecture);
             	}
         		return null;
         	} else
-        		iProgress.message(msglevel("noPlacement", Progress.MSGLEVEL_WARN), "Class "+getClassLabel(lecture)+" has no available placement.");
+        		iProgress.message(msglevel("noPlacement", Progress.MSGLEVEL_WARN), MSG.warnNoPlacementInteractive(getClassLabel(lecture)));
         }
         if (iClassWeightProvider != null)
         	lecture.setWeight(iClassWeightProvider.getWeight(lecture));
@@ -1171,7 +1168,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     
     private void assignCommited() {
     	if (!getModel().hasConstantVariables()) return;
-    	setPhase("Assigning committed classes ...", getModel().constantVariables().size());
+    	setPhase(MSG.phaseAssignCommitted(), getModel().constantVariables().size());
     	for (Lecture lecture: getModel().constantVariables()) {
     		incProgress();
     		if (getAssignment().getValue(lecture)!=null) continue;
@@ -1181,14 +1178,14 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             if (conflictConstraints.isEmpty()) {
                 getAssignment().assign(0,placement);
             } else {
-                String warn = "Unable to assign committed class "+getClassLabel(lecture)+" &larr; "+placement.getLongName(iUseAmPm);
-            	warn+="<br>&nbsp;&nbsp;Reason:";
+                String warn = MSG.warnCannotAssignCommitted(getClassLabel(lecture), placement.getLongName(iUseAmPm));
+            	warn += MSG.warnReasonFirstLine();
                 for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
                 	Set<Placement> vals = conflictConstraints.get(c);
                     for (Placement v: vals) {
-                        warn+="<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(v.variable())+" = "+v.getLongName(iUseAmPm);
+                        warn += MSG.warnReasonConflict(getClassLabel(v.variable()), v.getLongName(iUseAmPm));
                     }
-                    warn+="<br>&nbsp;&nbsp;&nbsp;&nbsp;    in constraint "+c;
+                    warn += MSG.warnReasonConstraint(TimetableSolver.getConstraintName(c));
                     iProgress.message(msglevel("cannotAssignCommitted", Progress.MSGLEVEL_WARN), warn);
                 }
             }
@@ -1196,14 +1193,14 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private void purgeInvalidValues() {
-    	setPhase("Purging invalid placements ...", getModel().variables().size());
+    	setPhase(MSG.phasePurgeInvalidValues(), getModel().variables().size());
     	for (Lecture lecture: new ArrayList<Lecture>(getModel().variables())) {
     		List<Placement> oldValues = new ArrayList<Placement>(lecture.values(getAssignment()));
     		lecture.purgeInvalidValues(iInteractiveMode);
     		if (lecture.values(getAssignment()).isEmpty()) {
-	            String warn = "Class "+getClassLabel(lecture)+" has no available placement (after enforcing consistency between the problem and committed solutions"+(iInteractiveMode?"":", class not loaded")+")."; 
+	            String warn = (iInteractiveMode ? MSG.warnNoPlacementAfterCommitInteractive(getClassLabel(lecture)) : MSG.warnNoPlacementAfterCommit(getClassLabel(lecture))); 
     			for (Placement p: oldValues) {
-                    warn += "<br>&nbsp;&nbsp;&nbsp;&nbsp;"+p.getNotValidReason(getAssignment(), iUseAmPm);
+                    warn += MSG.warnReasonNotValid(TimetableSolver.getNotValidReason(p, getAssignment(), iUseAmPm));
     			}
                 iProgress.message(msglevel("noPlacementAfterCommit", Progress.MSGLEVEL_WARN), warn);
     			if (!iInteractiveMode) {
@@ -1282,24 +1279,24 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         			if (i.hasNext()) sb.append(", ");
     			}
     		}
-    		iProgress.message(msglevel("placementNotValid", Progress.MSGLEVEL_WARN), "Unable to assign "+getClassLabel(lecture)+" &larr; "+sb+" (placement not valid)");
+    		iProgress.message(msglevel("placementNotValid", Progress.MSGLEVEL_WARN), MSG.warnPlacementNotValid(getClassLabel(lecture), sb.toString()));
     		return;
     	}
         if (!initialPlacement.isValid()) {
 			String reason = "";
            	for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
     			if (!ic.isAvailable(lecture, initialPlacement))
-    				reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;instructor "+ic.getName()+" not available";
+    				reason += MSG.warnReasonInstructorNotAvailable(ic.getName());
            	}
 	    	if (lecture.getNrRooms()>0) {
 	    		if (initialPlacement.isMultiRoom()) {
 	    			for (RoomLocation roomLocation: initialPlacement.getRoomLocations()) {
 	    				if (!roomLocation.getRoomConstraint().isAvailable(lecture,initialPlacement.getTimeLocation(),lecture.getScheduler()))
-	    					reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;room "+roomLocation.getName()+" not available";
+	    					reason += MSG.warnReasonRoomNotAvailable(roomLocation.getName());
 	    			}
 	    		} else {
 					if (!initialPlacement.getRoomLocation().getRoomConstraint().isAvailable(lecture,initialPlacement.getTimeLocation(),lecture.getScheduler()))
-						reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;room "+initialPlacement.getRoomLocation().getName()+" not available";
+						reason += MSG.warnReasonRoomNotAvailable(initialPlacement.getRoomLocation().getName());
 	    		}
 	    	}
 	    	Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(getAssignment(), initialPlacement);
@@ -1309,13 +1306,16 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                     for (Placement p: vals) {
                         Lecture l = p.variable();
                         if (l.isCommitted())
-                        	reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;conflict with committed assignment "+getClassLabel(l)+" = "+p.getLongName(iUseAmPm)+" (in constraint "+c+")";
+                        	reason += MSG.warnReasonConstraintCommitedAssignment(getClassLabel(l), p.getLongName(iUseAmPm), TimetableSolver.getConstraintName(c));
                         if (p.equals(initialPlacement))
-                        	reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;constraint "+c;
+                        	reason += MSG.warnReasonConstraint(TimetableSolver.getConstraintName(c));
                     }
                 }
             }
-	    	iProgress.message(msglevel("cannotAssign", Progress.MSGLEVEL_WARN), "Unable to assign "+getClassLabel(lecture)+" &larr; "+initialPlacement.getLongName(iUseAmPm)+(reason.length()==0?".":":"+reason));
+            if (reason.isEmpty())
+            	iProgress.message(msglevel("cannotAssign", Progress.MSGLEVEL_WARN), MSG.warnCannotAssignClass(getClassLabel(lecture), initialPlacement.getLongName(iUseAmPm)));
+            else
+            	iProgress.message(msglevel("cannotAssign", Progress.MSGLEVEL_WARN), MSG.warnCannotAssignClassWithReason(getClassLabel(lecture), initialPlacement.getLongName(iUseAmPm), reason));
 		} else {
 			if (iMppAssignment) lecture.setInitialAssignment(initialPlacement);
 			getModel().weaken(getAssignment(), initialPlacement);
@@ -1323,14 +1323,14 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	if (conflictConstraints.isEmpty()) {
         		getAssignment().assign(0,initialPlacement);
 	        } else {
-                String warn = "Unable to assign "+getClassLabel(lecture)+" &larr; "+initialPlacement.getLongName(iUseAmPm);
-                warn += "<br>&nbsp;&nbsp;Reason:";
+                String warn = MSG.warnCannotAssignClass(getClassLabel(lecture), initialPlacement.getLongName(iUseAmPm));
+                warn += MSG.warnReasonFirstLine();
                 for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
                 	Set<Placement> vals = conflictConstraints.get(c);
                 	for (Placement v: vals) {
-                        warn += "<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(v.variable())+" = "+v.getLongName(iUseAmPm);
+                        warn += MSG.warnReasonConflict(getClassLabel(v.variable()), v.getLongName(iUseAmPm));
             	    }
-                    warn += "<br>&nbsp;&nbsp;&nbsp;&nbsp;    in constraint "+c;
+                	warn += MSG.warnReasonConstraint(TimetableSolver.getConstraintName(c));
                     iProgress.message(msglevel("cannotAssign", Progress.MSGLEVEL_WARN), warn);
     	        }
 	        }
@@ -1434,7 +1434,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private void loadInstructorAvailabilities(org.hibernate.Session hibSession) {
-    	setPhase("Loading instructor availabilities ...", 1);
+    	setPhase(MSG.phaseLoadInstructorAvailabilities(), 1);
     	StringBuffer puids = new StringBuffer();
     	int idx = 0;
     	for (Enumeration e=iInstructors.elements();e.hasMoreElements();) {
@@ -1461,7 +1461,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			InstructorConstraint ic = iInstructors.get(puid);
 			Student s = iStudents.get(studentId);
 			if (s != null && ic != null) {
-				iProgress.debug("Instructor " + puid + " mapped with student " + s.getId());
+				iProgress.debug(MSG.debugStudentInstructorPair(puid, s.getId()));
 				s.setInstructor(ic);
 				for (Lecture lecture: ic.variables()) {
 					s.addLecture(lecture);
@@ -1472,7 +1472,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private void loadInstructorStudentConflicts(org.hibernate.Session hibSession) {
-    	setPhase("Loading instructor student conflicts ...", 1);
+    	setPhase(MSG.phaseLoadInstructorStudentConflicts(), 1);
     	StringBuffer puids = new StringBuffer();
     	int idx = 0;
     	for (InstructorConstraint ic: iInstructors.values()) {
@@ -1508,7 +1508,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private void loadRoomAvailabilities(org.hibernate.Session hibSession) {
-    	setPhase("Loading room availabilities ...", 1);
+    	setPhase(MSG.phaseLoadRoomAvailabilities(), 1);
     	StringBuffer roomids = new StringBuffer();
     	int idx = 0;
     	for (Enumeration e=iRooms.elements();e.hasMoreElements();) {
@@ -1537,51 +1537,51 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     				try {
     					gc = fcType.create(id, owner.toString(), pref.getPrefProlog(), type.getReference());
     				} catch (IllegalArgumentException e) {
-    					iProgress.warn("Constraint " + type.getReference() + " was not loaded. Inconsistent values.", e);
+    					iProgress.warn(MSG.warnFlexibleConstraintNotLoaded(type.getReference()), e);
     				}
     			}
     		}
     		if (gc == null) {
-    			iProgress.warn("Constraint " + type.getReference() + " was not recognized.");
+    			iProgress.warn(MSG.warnDistributionConstraintNotKnown(type.getReference()));
 	        	return null;
     		}
     	} else if ("SAME_INSTR".equals(type.getReference())) {
     		if (PreferenceLevel.sRequired.equals(pref.getPrefProlog()))
     			gc = new InstructorConstraint(new Long(-id),null, type.getLabel(),false);
     	} else if ("SPREAD".equals(type.getReference())) {
-    		gc = new SpreadConstraint(getModel().getProperties(), "spread");
+    		gc = new SpreadConstraint(getModel().getProperties(), MSG.nameSpreadConstraint());
     	} else if ("MIN_ROOM_USE".equals(type.getReference())) {
     		if (!iInteractiveMode)
     			gc = new MinimizeNumberOfUsedRoomsConstraint(getModel().getProperties());
     		else
-    			iProgress.message(msglevel("constraintNotUsed", Progress.MSGLEVEL_INFO), "Minimize number of used rooms constraint not loaded due to the interactive mode of the solver.");
+    			iProgress.message(msglevel("constraintNotUsed", Progress.MSGLEVEL_INFO), MSG.warnMinRoomUseInteractive());
     	} else if ("MIN_GRUSE(10x1h)".equals(type.getReference())) {
     		if (!iInteractiveMode)
     			gc = new MinimizeNumberOfUsedGroupsOfTime(getModel().getProperties(),"10x1h",MinimizeNumberOfUsedGroupsOfTime.sGroups10of1h);
     		else
-    			iProgress.message(msglevel("constraintNotUsed", Progress.MSGLEVEL_INFO), "Minimize number of used groups of time constraint not loaded due to the interactive mode of the solver.");
+    			iProgress.message(msglevel("constraintNotUsed", Progress.MSGLEVEL_INFO), MSG.warnMinGroupUseInteractive());
     	} else if ("MIN_GRUSE(5x2h)".equals(type.getReference())) {
     		if (!iInteractiveMode)
     			gc = new MinimizeNumberOfUsedGroupsOfTime(getModel().getProperties(),"5x2h",MinimizeNumberOfUsedGroupsOfTime.sGroups5of2h);
     		else
-    			iProgress.message(msglevel("constraintNotUsed", Progress.MSGLEVEL_INFO), "Minimize number of used groups of time constraint not loaded due to the interactive mode of the solver.");
+    			iProgress.message(msglevel("constraintNotUsed", Progress.MSGLEVEL_INFO), MSG.warnMinGroupUseInteractive());
     	} else if ("MIN_GRUSE(3x3h)".equals(type.getReference())) {
     		if (!iInteractiveMode)
     			gc = new MinimizeNumberOfUsedGroupsOfTime(getModel().getProperties(),"3x3h",MinimizeNumberOfUsedGroupsOfTime.sGroups3of3h);
     		else
-    			iProgress.message(msglevel("constraintNotUsed", Progress.MSGLEVEL_INFO), "Minimize number of used groups of time constraint not loaded due to the interactive mode of the solver.");
+    			iProgress.message(msglevel("constraintNotUsed", Progress.MSGLEVEL_INFO), MSG.warnMinGroupUseInteractive());
     	} else if ("MIN_GRUSE(2x5h)".equals(type.getReference())) {
     		if (!iInteractiveMode)
     			gc = new MinimizeNumberOfUsedGroupsOfTime(getModel().getProperties(),"2x5h",MinimizeNumberOfUsedGroupsOfTime.sGroups2of5h);
     		else
-    			iProgress.message(msglevel("constraintNotUsed", Progress.MSGLEVEL_INFO), "Minimize number of used groups of time constraint not loaded due to the interactive mode of the solver.");
+    			iProgress.message(msglevel("constraintNotUsed", Progress.MSGLEVEL_INFO), MSG.warnMinGroupUseInteractive());
     	} else if (IgnoreStudentConflictsConstraint.REFERENCE.equals(type.getReference())) {
     		if (PreferenceLevel.sRequired.equals(pref.getPrefProlog()))
     			gc = new IgnoreStudentConflictsConstraint();
     	} else {
     		GroupConstraint.ConstraintType gcType = GroupConstraint.ConstraintType.get(type.getReference());
     		if (gcType == null) {
-    			iProgress.error("Distribution constraint " + type.getReference() + " is not implemented.");
+    			iProgress.error(MSG.warnDistributionConstraintNotImplemented(type.getReference()));
     			return null;
     		}
     		gc = new GroupConstraint(id, gcType, pref.getPrefProlog());
@@ -1591,9 +1591,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     
     private void errorAddGroupConstraintNotFound(DistributionPref pref, Class_ clazz) {
         if (pref.getOwner()!=null && pref.getOwner() instanceof DepartmentalInstructor) 
-            iProgress.message(msglevel("notLoadedInInstrPref", Progress.MSGLEVEL_INFO), "Lecture "+getClassLabel(clazz)+" not found/loaded, but used in distribution preference "+pref.getLabel());
+            iProgress.message(msglevel("notLoadedInInstrPref", Progress.MSGLEVEL_INFO), MSG.warnClassNotLoadedButUsedInDistPref(getClassLabel(clazz), pref.getLabel()));
         else
-            iProgress.message(msglevel("notLoadedInDistPref", Progress.MSGLEVEL_WARN), "Lecture "+getClassLabel(clazz)+" not found/loaded, but used in distribution preference "+pref.getLabel());
+            iProgress.message(msglevel("notLoadedInDistPref", Progress.MSGLEVEL_WARN), MSG.warnClassNotLoadedButUsedInDistPref(getClassLabel(clazz), pref.getLabel()));
     }
     
     private Lecture getLecture(Class_ clazz) {
@@ -1630,7 +1630,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		}
     	}
     	if (allVariablesAreCommitted) {
-    		iProgress.debug("Not created constraint "+gc.getName()+" between "+gc.variables()+" (all variables are committed)");
+    		String vars = "";
+    		for (Lecture l: gc.variables())
+    			vars += (vars.isEmpty() ? "" : ", ") + getClassLabel(l);
+    		iProgress.debug(MSG.debugDistributionAllCommitted(gc.getName(), vars));
 			for (Lecture lecture: new ArrayList<Lecture>(gc.variables())) {
 				gc.removeVariable(lecture);
 			}
@@ -1694,7 +1697,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	    	List<Class_> classes = new ArrayList<Class_>(subpart.getClasses());
         	    	Collections.sort(classes,new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
         	    	if (classes.isEmpty()) {
-        	    		iProgress.message(msglevel("badDistributionObj", Progress.MSGLEVEL_WARN), "Distribution preference "+pref.getLabel() + " refers to a scheduling subpart " + getSubpartLabel(subpart) + " with no classes.");
+        	    		iProgress.message(msglevel("badDistributionObj", Progress.MSGLEVEL_WARN), MSG.warnBadDistributionObject(pref.getLabel(), getSubpartLabel(subpart)));
         	    		continue;
         	    	}
         	    	for (int j=0;j<gc.length;j++) {
@@ -1740,7 +1743,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             			gcClasses[j].add(clazz);
         	    	}
         		} else {
-        			iProgress.message(msglevel("badDistributionObj", Progress.MSGLEVEL_WARN), "Distribution preference "+pref.getLabel()+" refers to unsupported object "+distributionObject.getPrefGroup());
+        			iProgress.message(msglevel("badDistributionObj", Progress.MSGLEVEL_WARN), MSG.warnBadDistributionObjectNotSupported(pref.getLabel(), distributionObject.getPrefGroup().toString()));
         		}
         	}
     		for (int i=0;i<gc.length;i++) {
@@ -1773,11 +1776,11 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             			lectures.add(lecture);
         	    	}
         		} else {
-        			iProgress.message(msglevel("badDistributionObj", Progress.MSGLEVEL_WARN), "Distribution preference "+pref.getLabel()+" refers to unsupported object "+distributionObject.getPrefGroup());
+        			iProgress.message(msglevel("badDistributionObj", Progress.MSGLEVEL_WARN), MSG.warnBadDistributionObjectNotSupported(pref.getLabel(), distributionObject.getPrefGroup().toString()));
         		}
         	}
         	if (lectures.size()<2) {
-        		iProgress.message(msglevel("distrPrefIncomplete", Progress.MSGLEVEL_WARN), "Distribution preference "+pref.getLabel()+" refers to less than two classes");
+        		iProgress.message(msglevel("distrPrefIncomplete", Progress.MSGLEVEL_WARN), MSG.warnBadDistributionIncomplete(pref.getLabel()));
         	} else {
         		for (int idx1=0;idx1<lectures.size()-1;idx1++) {
         			Lecture l1 = lectures.get(idx1);
@@ -1816,7 +1819,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             			lectures.add(lecture); count++;
         	    	}
         		} else {
-        			iProgress.message(msglevel("badDistributionObj", Progress.MSGLEVEL_WARN), "Distribution preference "+pref.getLabel()+" refers to unsupported object "+distributionObject.getPrefGroup());
+        			iProgress.message(msglevel("badDistributionObj", Progress.MSGLEVEL_WARN), MSG.warnBadDistributionObjectNotSupported(pref.getLabel(), distributionObject.getPrefGroup().toString()));
         		}
     			if (count > 0) counts.add(count);
         	}
@@ -1871,7 +1874,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 		}
         	    	}
         		} else {
-        			iProgress.message(msglevel("badDistributionObj", Progress.MSGLEVEL_WARN), "Distribution preference "+pref.getLabel()+" refers to unsupported object "+distributionObject.getPrefGroup());
+        			iProgress.message(msglevel("badDistributionObj", Progress.MSGLEVEL_WARN), MSG.warnBadDistributionObjectNotSupported(pref.getLabel(), distributionObject.getPrefGroup().toString()));
         		}
         	}
        		addGroupConstraint(gc);
@@ -1926,7 +1929,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     				).setLong("deptId",department.getUniqueId()).list();
     	}
     	if (instructors==null || instructors.isEmpty()) return;
-    	setPhase("Loading instructor distr. constraints for "+department.getShortLabel()+" ...", instructors.size());
+    	setPhase(MSG.phaseLoadInstructorGroupConstraints(department.getShortLabel()), instructors.size());
     	for (Iterator i=instructors.iterator();i.hasNext();) {
     		DepartmentalInstructor instructor = (DepartmentalInstructor)i.next();
     		loadInstructorGroupConstraints(instructor, checkedDistPrefIds);
@@ -1998,7 +2001,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private String getClassLimitConstraitName(SchedulingSubpart subpart) {
-    	if (subpart==null) return "class-limit";
+    	if (subpart==null) return MSG.nameClassLimitConstraint();
     	String name = subpart.getCourseName()+" "+subpart.getItypeDesc().trim();
     	String sufix = subpart.getSchedulingSubpartSuffix();
     	if (sufix!=null && sufix.length()>0)
@@ -2066,7 +2069,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		
     		tx.commit();
     	} catch (Exception e) {
-    		iProgress.message(msglevel("loadFailed", Progress.MSGLEVEL_FATAL), "Unable to load input data, reason:"+e.getMessage(),e);
+    		iProgress.message(msglevel("loadFailed", Progress.MSGLEVEL_FATAL), MSG.fatalLoadFailed(e.getMessage()), e);
     		tx.rollback();
     	} finally {
     		// here we need to close the session since this code may run in a separate thread
@@ -2156,7 +2159,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			if (!info.isEmpty()) info += ", ";
 			info += getClassLabel(var);
 		}
-		iProgress.info("Posted precedence constraint between " + info + " (" + PreferenceLevel.prolog2string(preference) + ")");
+		iProgress.info(MSG.infoAutomaticPrecedence(info, PreferenceLevel.prolog2string(preference)));
     	
     	addGroupConstraint(gc);
 		return true;
@@ -2246,7 +2249,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		}
 		
 		// Make up the appropriate committed placements and propagate those through the course structure
-        setPhase("Loading student conflicts with commited solutions ...", assignments.size());
+        setPhase(MSG.phaseLoadCommittedStudentConflicts(), assignments.size());
 		for (Iterator i1=assignments.entrySet().iterator(); i1.hasNext();) {
 			Map.Entry entry = (Map.Entry)i1.next();
 			Assignment assignment = (Assignment)entry.getKey();
@@ -2368,7 +2371,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private void makeupCommittedStudentConflicts(Set<Long> offeringsToAvoid) {
-        setPhase("Creating student conflicts with commited solutions ...", iStudents.size());
+        setPhase(MSG.phaseMakeupCommittedStudentConflicts(), iStudents.size());
     	for (Student student: iStudents.values()) {
     		Set<WeightedCourseOffering> courses = iStudentCourseDemands.getCourses(student.getId());
     		if (iStudentGroupCourseDemands != null) {
@@ -2425,7 +2428,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     
     private void checkReservation(CourseOffering course, Set<Lecture> cannotAttendLectures, List<Configuration> configurations) {
     	if (canAttendConfigurations(cannotAttendLectures, configurations)) return;
-    	iProgress.message(msglevel("badCourseReservation", Progress.MSGLEVEL_WARN), "Inconsistent course reservations for course "+getOfferingLabel(course));
+    	iProgress.message(msglevel("badCourseReservation", Progress.MSGLEVEL_WARN), MSG.warnBadCourseReservations(getOfferingLabel(course)));
     }
     
     private Collection<InstrOfferingConfig> sortedConfigs(InstructionalOffering offering) {
@@ -2460,7 +2463,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     				Lecture lecture = iLectures.get(clazz.getUniqueId());
     				if (lecture == null) {
     					if (clazz.getManagingDept().getSolverGroup() == null) {
-    						iProgress.message(msglevel("noSolverGroup", Progress.MSGLEVEL_WARN), "Manager of class " + getClassLabel(clazz) + " has no solver group (" + clazz.getManagingDept().getManagingDeptAbbv() + ").");
+    						iProgress.message(msglevel("noSolverGroup", Progress.MSGLEVEL_WARN), MSG.warnNoSolverGroup(getClassLabel(clazz), clazz.getManagingDept().getManagingDeptAbbv()));
     						continue;
     					}
         				if (solverGroupIds.contains(clazz.getManagingDept().getSolverGroup().getUniqueId())) continue; // only classes of other problems
@@ -2480,14 +2483,14 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	                if (conflictConstraints.isEmpty()) {
         	                	getAssignment().assign(0,committedPlacement);
         	                } else {
-        	                    String warn = "Unable to assign committed class "+getClassLabel(lecture)+" &larr; "+committedPlacement.getLongName(iUseAmPm);
-        	                	warn+="<br>&nbsp;&nbsp;Reason:";
+        	                    String warn = MSG.warnCannotAssignCommitted(getClassLabel(lecture), committedPlacement.getLongName(iUseAmPm));
+        	                	warn += MSG.warnReasonFirstLine();
         	                    for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
         	                    	Set<Placement> vals = conflictConstraints.get(c);
         	                        for (Placement v: vals) {
-        	                            warn+="<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(v.variable())+" = "+v.getLongName(iUseAmPm);
+        	                            warn += MSG.warnReasonConflict(getClassLabel(v.variable()), v.getLongName(iUseAmPm));
         	                        }
-        	                        warn+="<br>&nbsp;&nbsp;&nbsp;&nbsp;    in constraint "+c;
+        	                        warn += MSG.warnReasonConstraint(TimetableSolver.getConstraintName(c));
         	                        iProgress.message(msglevel("cannotAssignCommitted", Progress.MSGLEVEL_WARN), warn);
         	                    }
         	                }
@@ -2540,7 +2543,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private void load(org.hibernate.Session hibSession) throws Exception {
-		iProgress.setStatus("Loading input data ...");
+		iProgress.setStatus(MSG.statusLoadingInputData());
 
 		TravelTime.populateTravelTimes(getModel().getDistanceMetric(), iSessionId, hibSession);
 
@@ -2552,14 +2555,14 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	for (int i=0;i<iSolverGroupId.length;i++) {
         		iSolverGroup[i] = SolverGroupDAO.getInstance().get(iSolverGroupId[i], hibSession);
         		if (iSolverGroup[i]==null) {
-        			iProgress.message(msglevel("loadFailed", Progress.MSGLEVEL_FATAL), "Unable to load solver group "+iSolverGroupId[i]+".");
+        			iProgress.message(msglevel("loadFailed", Progress.MSGLEVEL_FATAL), MSG.fatalUnableToLoadSolverGroup(iSolverGroupId[i]));
         			return;
         		}
         		iProgress.debug("solver group["+(i+1)+"]: "+iSolverGroup[i].getName());
         	}
         }
 		if (iSolverGroup==null || iSolverGroup.length==0) {
-			iProgress.message(msglevel("loadFailed", Progress.MSGLEVEL_FATAL), "No solver group loaded.");
+			iProgress.message(msglevel("loadFailed", Progress.MSGLEVEL_FATAL), MSG.fatalNoSolverGroupLoaded());
 			return;
 		}
 		
@@ -2580,7 +2583,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	for (int i=0;i<iSolutionId.length;i++) {
         		Solution solution = (new SolutionDAO()).get(iSolutionId[i], hibSession);
         		if (solution==null) {
-        			iProgress.message(msglevel("loadFailed", Progress.MSGLEVEL_FATAL), "Unable to load solution "+iSolutionId[i]+".");
+        			iProgress.message(msglevel("loadFailed", Progress.MSGLEVEL_FATAL), MSG.fatalUnableToLoadSolution(iSolutionId[i]));
         			return;
         		}
        			iProgress.debug("solution["+(i+1)+"] version: "+solution.getUniqueId()+" (created "+solution.getCreated()+", solver group "+solution.getOwner().getName()+")");
@@ -2605,7 +2608,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		if (iSession==null)
 			iSession = (new SessionDAO()).get(iSessionId, hibSession);
 		if (iSession==null) {
-			iProgress.message(msglevel("loadFailed", Progress.MSGLEVEL_FATAL), "No session loaded.");
+			iProgress.message(msglevel("loadFailed", Progress.MSGLEVEL_FATAL), MSG.fatalNoSessionLoaded());
 			return;
 		}
 		iProgress.debug("session: "+iSession.getLabel());
@@ -2631,12 +2634,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 	    	}
 		}
 		if (iAllClasses==null || iAllClasses.isEmpty()) {
-			iProgress.message(msglevel("noClasses", Progress.MSGLEVEL_FATAL), "No classes to load.");
+			iProgress.message(msglevel("noClasses", Progress.MSGLEVEL_FATAL), MSG.fatalNoClassesToLoad());
 			return;
 		}
 		iProgress.debug("classes to load: "+iAllClasses.size());
 		
-		setPhase("Loading classes ...",iAllClasses.size());
+		setPhase(MSG.phaseLoadingClasses(),iAllClasses.size());
 		int ord = 0;
 		HashSet<SchedulingSubpart> subparts = new HashSet<SchedulingSubpart>();
 		for (Iterator i1=iAllClasses.iterator();i1.hasNext();) {
@@ -2653,7 +2656,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		
 		loadRoomAvailabilities(hibSession);
 		
-		setPhase("Loading offerings ...", iAllClasses.size());
+		setPhase(MSG.phaseLoadingOfferings(), iAllClasses.size());
     	Set<Long> loadedOfferings = new HashSet<Long>();
 		for (Class_ clazz: iAllClasses) {
 			Lecture lecture = (Lecture)iLectures.get(clazz.getUniqueId());
@@ -2671,7 +2674,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		for (int i=0;i<iSolverGroup.length;i++) {
 			distPrefs.addAll(iSolverGroup[i].getDistributionPreferences());
 		}
-		setPhase("Loading distribution preferences ...",distPrefs.size());
+		setPhase(MSG.phaseLoadingDistributions(),distPrefs.size());
 		for (Iterator i=distPrefs.iterator();i.hasNext();) {
 			DistributionPref distributionPref = (DistributionPref)i.next();
 			if (!PreferenceLevel.sNeutral.equals(distributionPref.getPrefLevel().getPrefProlog()))
@@ -2687,7 +2690,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		}
 		
 		if (iAutoSameStudents) {
-			setPhase("Posting automatic same_students constraints ...",iAllClasses.size());
+			setPhase(MSG.phasePostingSameStudents(),iAllClasses.size());
     		for (Iterator i1=iAllClasses.iterator();i1.hasNext();) {
     			Class_ clazz = (Class_)i1.next();
     			Lecture lecture = (Lecture)iLectures.get(clazz.getUniqueId());
@@ -2709,9 +2712,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 					}
 			}
 			if (pref == null) {
-				iProgress.message(msglevel("autoPrecedence", Progress.MSGLEVEL_WARN), "Preference " + iAutoPrecedence + " not recognized.");
+				iProgress.message(msglevel("autoPrecedence", Progress.MSGLEVEL_WARN), MSG.warnPrecedenceNotRecognized(iAutoPrecedence));
 			} else if (!PreferenceLevel.sNeutral.equals(pref.getPrefProlog())) {
-				setPhase("Posting automatic precedence constraints ...",iAllClasses.size());
+				setPhase(MSG.phasePostingAutomaticPrecedences(),iAllClasses.size());
 	    		for (Iterator i1=iAllClasses.iterator();i1.hasNext();) {
 	    			Class_ clazz = (Class_)i1.next();
 	    			Lecture lecture = (Lecture)iLectures.get(clazz.getUniqueId());
@@ -2729,7 +2732,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		
 		assignCommited();
 		
-    	setPhase("Posting class limit constraints ...", iOfferings.size());
+    	setPhase(MSG.phasePostingClassLimits(), iOfferings.size());
     	for (Map.Entry<InstructionalOffering, Hashtable<InstrOfferingConfig, Set<SchedulingSubpart>>> entry: iOfferings.entrySet()) {
     		Hashtable<InstrOfferingConfig, Set<SchedulingSubpart>> topSubparts = entry.getValue();
     		for (Map.Entry<InstrOfferingConfig, Set<SchedulingSubpart>> subpartEntry: topSubparts.entrySet()) {
@@ -2804,7 +2807,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		if (iStudentGroupCourseDemands != null)
 			iStudentGroupCourseDemands.init(hibSession, iProgress, iSession, iOfferings.keySet());
 
-    	setPhase("Loading students ...",iOfferings.size());
+    	setPhase(MSG.phaseLoadingStudents(),iOfferings.size());
     	for (InstructionalOffering offering: iOfferings.keySet()) {
     		
     		boolean unlimitedOffering = false;
@@ -2828,7 +2831,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             			if (offering.getCourseOfferings().size() == 1)
             				courseLimit = offeringLimit;
             			else {
-            				iProgress.message(msglevel("crossListWithoutReservation", Progress.MSGLEVEL_INFO), "Cross-listed course "+getOfferingLabel(course)+" does not have any course reservation.");
+            				iProgress.message(msglevel("crossListWithoutReservation", Progress.MSGLEVEL_INFO), MSG.infoCrosslistNoCourseReservations(getOfferingLabel(course)));
             				if (course.getProjectedDemand() != null && offering.getProjectedDemand() > 0)
             					courseLimit = course.getProjectedDemand();
             				else if (course.getDemand() != null && offering.getDemand() > 0)
@@ -2842,10 +2845,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         		}
         		
         		if (totalCourseLimit < offeringLimit)
-        			iProgress.message(msglevel("courseReservationsBelowLimit", totalCourseLimit == 0 ? Progress.MSGLEVEL_INFO : Progress.MSGLEVEL_WARN), "Total number of course reservations is below the offering limit for instructional offering "+getOfferingLabel(offering)+" ("+totalCourseLimit+"<"+offeringLimit+").");
+        			iProgress.message(msglevel("courseReservationsBelowLimit", totalCourseLimit == 0 ? Progress.MSGLEVEL_INFO : Progress.MSGLEVEL_WARN), MSG.warnReservationBelowLimit(getOfferingLabel(offering), totalCourseLimit, offeringLimit));
 
         		if (totalCourseLimit > offeringLimit)
-        			iProgress.message(msglevel("courseReservationsOverLimit", Progress.MSGLEVEL_INFO), "Total number of course reservations exceeds the offering limit for instructional offering "+getOfferingLabel(offering)+" ("+totalCourseLimit+">"+offeringLimit+").");
+        			iProgress.message(msglevel("courseReservationsOverLimit", Progress.MSGLEVEL_INFO), MSG.warnReservationsOverLimit(getOfferingLabel(offering), totalCourseLimit, offeringLimit));
         		
         		if (totalCourseLimit == 0) continue;
         		
@@ -2883,12 +2886,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         			courseLimit = (int)Math.round(courseLimit * factor);
         		
         		if (studentIds == null || studentIds.isEmpty()) {
-        			iProgress.message(msglevel("offeringWithoutDemand", Progress.MSGLEVEL_INFO), "No student enrollments for course "+getOfferingLabel(course)+".");
+        			iProgress.message(msglevel("offeringWithoutDemand", Progress.MSGLEVEL_INFO), MSG.infoNoStudentInCourse(getOfferingLabel(course)));
         			continue;
         		}
         		
         		if (courseLimit == 0 && offering.getCourseOfferings().size() > 1) {
-        			iProgress.message(msglevel("noCourseReservation", Progress.MSGLEVEL_WARN), "No reserved space for students of course "+getOfferingLabel(course)+".");
+        			iProgress.message(msglevel("noCourseReservation", Progress.MSGLEVEL_WARN), MSG.warnNoReservedSpaceForCourse(getOfferingLabel(course)));
         		}
         		
         		double weight = (iStudentCourseDemands.isWeightStudentsToFillUpOffering() && courseLimit != 0 ? (double)courseLimit / studentWeight : 1.0);
@@ -2927,7 +2930,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             		if (!reservedClasses.isEmpty()) {
         				iProgress.debug("Course requests for course "+getOfferingLabel(course)+" are "+reservedClasses);
                         if (!unlimited && courseLimit > limit)
-                            iProgress.message(msglevel("insufficientCourseReservation", Progress.MSGLEVEL_WARN), "Too little space reserved in for course "+getOfferingLabel(course)+" ("+limit+"<"+courseLimit+").");
+                            iProgress.message(msglevel("insufficientCourseReservation", Progress.MSGLEVEL_WARN), MSG.warnTooLittleSpaceInCourse(getOfferingLabel(course), limit, courseLimit));
                         cannotAttendLectures = new HashSet<Lecture>();
                         for (InstrOfferingConfig config: course.getInstructionalOffering().getInstrOfferingConfigs()) {
                     		boolean hasConfigReservation = false;
@@ -3066,7 +3069,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	iProgress.debug(iStudents.size()+" students loaded.");
     	
     	if (!hibSession.isOpen())
-    		iProgress.message(msglevel("hibernateFailure", Progress.MSGLEVEL_FATAL), "Hibernate session not open.");
+    		iProgress.message(msglevel("hibernateFailure", Progress.MSGLEVEL_FATAL), MSG.fatalHibernateSessionClosed());
 
     	if (iCommittedStudentConflictsMode == CommittedStudentConflictsMode.Load && !iStudentCourseDemands.isMakingUpStudents())
     		loadCommittedStudentConflicts(hibSession, loadedOfferings);
@@ -3074,7 +3077,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		makeupCommittedStudentConflicts(loadedOfferings);
     	
     	if (!hibSession.isOpen())
-    		iProgress.message(msglevel("hibernateFailure", Progress.MSGLEVEL_FATAL), "Hibernate session not open.");
+    		iProgress.message(msglevel("hibernateFailure", Progress.MSGLEVEL_FATAL), MSG.fatalHibernateSessionClosed());
 
     	Hashtable<Student, Set<Lecture>> iPreEnrollments = new Hashtable<Student, Set<Lecture>>();
     	if (iLoadStudentEnrlsFromSolution) {
@@ -3085,7 +3088,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     					"StudentClassEnrollment e, Class_ c where " + 
     					"e.courseOffering.instructionalOffering = c.schedulingSubpart.instrOfferingConfig.instructionalOffering and " +
     					"c.managingDept.solverGroup.uniqueId in (" + iSolverGroupIds + ")").list();
-    			setPhase("Loading current student enrolments  ...", enrollments.size());
+    			setPhase(MSG.phaseLoadingStudentEnrollemnts(), enrollments.size());
     			int totalEnrollments = 0;
     			for (Object[] o: enrollments) {
             		Long studentId = (Long)o[0];
@@ -3113,7 +3116,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 
     				incProgress();
     			}
-    			iProgress.message(msglevel("enrollmentsLoaded", Progress.MSGLEVEL_INFO), "Loaded " + totalEnrollments + " enrollments of " + iPreEnrollments.size() + " students.");
+    			iProgress.message(msglevel("enrollmentsLoaded", Progress.MSGLEVEL_INFO), MSG.infoEnrollmentsLoaded(totalEnrollments, iPreEnrollments.size()));
     		} else {
     			// Load enrollments from selected / committed solutions
             	for (int idx=0;idx<iSolverGroupId.length;idx++) {
@@ -3130,7 +3133,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         				.setLong("sovlerGroupId", iSolverGroupId[idx])
         				.list();
             		}
-            		setPhase("Loading student enrolments ["+(idx+1)+"] ...",studentEnrls.size());
+            		setPhase(MSG.phaseLoadingStudentEnrollemntsPhase(idx+1),studentEnrls.size());
                 	for (Iterator i1=studentEnrls.iterator();i1.hasNext();) {
                 		Object o[] = (Object[])i1.next();
                 		Long studentId = (Long)o[0];
@@ -3166,7 +3169,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         					"e.solution.commited = true and e.solution.owner.uniqueId not in (" + iSolverGroupIds + ") and " +
         					"e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering = c.schedulingSubpart.instrOfferingConfig.instructionalOffering and " +
         					"c.managingDept.solverGroup.uniqueId in (" + iSolverGroupIds + ")").list();
-        			setPhase("Loading other committed student enrolments  ...", enrollments.size());
+        			setPhase(MSG.phaseLoadingOtherStudentEnrollments(), enrollments.size());
 
         			for (Object[] o: enrollments) {
                 		Long studentId = (Long)o[0];
@@ -3198,7 +3201,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	}
     	
     	if (!hibSession.isOpen())
-    		iProgress.message(msglevel("hibernateFailure", Progress.MSGLEVEL_FATAL), "Hibernate session not open.");
+    		iProgress.message(msglevel("hibernateFailure", Progress.MSGLEVEL_FATAL), MSG.fatalHibernateSessionClosed());
     	
     	RoomAvailabilityInterface availability = null;
     	if (SolverServerImplementation.getInstance() != null)
@@ -3214,9 +3217,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         }
 
         if (!hibSession.isOpen())
-            iProgress.message(msglevel("hibernateFailure", Progress.MSGLEVEL_FATAL), "Hibernate session not open.");
+            iProgress.message(msglevel("hibernateFailure", Progress.MSGLEVEL_FATAL), MSG.fatalHibernateSessionClosed());
 
-    	setPhase("Initial sectioning ...", iOfferings.size());
+    	setPhase(MSG.phaseInitialSectioning(), iOfferings.size());
         for (InstructionalOffering offering: iOfferings.keySet()) {
     		Set<Student> students = new HashSet<Student>();
 			for (CourseOffering course: offering.getCourseOfferings()) {
@@ -3236,14 +3239,14 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	}
     	
     	if (!iPreEnrollments.isEmpty()) {
-        	setPhase("Checking loaded enrollments ....", iPreEnrollments.size());
+        	setPhase(MSG.phaseCheckingLoadedEnrollments(), iPreEnrollments.size());
         	for (Map.Entry<Student, Set<Lecture>> entry: iPreEnrollments.entrySet()) {
         		incProgress();
         		Student student = entry.getKey();
         		Set<Lecture> lectures = entry.getValue();
         		for (Lecture lecture: lectures) {
         			if (!lecture.students().contains(student)) {
-        				iProgress.message(msglevel("studentNotEnrolled", Progress.MSGLEVEL_WARN), "Student " + student.getId() + " is supposed to be enrolled to " + getClassLabel(lecture));
+        				iProgress.message(msglevel("studentNotEnrolled", Progress.MSGLEVEL_WARN), MSG.warnStudentShouldBeInClass(student.getId(), getClassLabel(lecture)));
         			}
         		}
         		for (Lecture lecture: student.getLectures()) {
@@ -3255,21 +3258,21 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             				}
         				}
         				if (instead != null)
-            				iProgress.message(msglevel("studentEnrolled", Progress.MSGLEVEL_WARN), "Student " + student.getId() + " is NOT supposed to be enrolled to " + getClassLabel(lecture) + ", he/she should have " + getClassLabel(instead) + " instead.");
+            				iProgress.message(msglevel("studentEnrolled", Progress.MSGLEVEL_WARN), MSG.warnStudentShouldNotBeInClassShouldBeInOther(student.getId(), getClassLabel(lecture), getClassLabel(instead)));
         				else
-            				iProgress.message(msglevel("studentEnrolled", Progress.MSGLEVEL_INFO), "Student " + student.getId() + " is NOT supposed to be enrolled to " + getClassLabel(lecture) + ".");
+            				iProgress.message(msglevel("studentEnrolled", Progress.MSGLEVEL_INFO), MSG.warnStudentShouldNotBeInClass(student.getId(), getClassLabel(lecture)));
         			}
         		}
         	}
     	}
         
     	if (!hibSession.isOpen())
-    		iProgress.message(msglevel("hibernateFailure", Progress.MSGLEVEL_FATAL), "Hibernate session not open.");
+    		iProgress.message(msglevel("hibernateFailure", Progress.MSGLEVEL_FATAL), MSG.fatalHibernateSessionClosed());
 
         if (iLoadStudentInstructorConflicts)
         	loadInstructorStudentConflicts(hibSession);
 
-        setPhase("Computing jenrl ...",iStudents.size());
+        setPhase(MSG.phaseComputingJenrl(),iStudents.size());
         Hashtable jenrls = new Hashtable();
         for (Iterator i1=iStudents.values().iterator();i1.hasNext();) {
             Student st = (Student)i1.next();
@@ -3295,7 +3298,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         }
         
     	if (!hibSession.isOpen())
-    		iProgress.message(msglevel("hibernateFailure", Progress.MSGLEVEL_FATAL), "Hibernate session not open.");
+    		iProgress.message(msglevel("hibernateFailure", Progress.MSGLEVEL_FATAL), MSG.fatalHibernateSessionClosed());
     	
     	if (!getModel().getStudentSectioning().hasFinalSectioning())
     		postAutomaticStudentConstraints(hibSession);
@@ -3304,7 +3307,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	for (int idx=0;idx<iSolverGroupId.length;idx++) {
         		Solution solution = (Solution)solutions.get(iSolverGroupId[idx]);
         		if (solution==null) continue;
-            	setPhase("Creating initial assignment ["+(idx+1)+"] ...",solution.getAssignments().size());
+            	setPhase(MSG.phaseCreatingInitialAssignment(idx+1),solution.getAssignments().size());
             	for (Iterator i1=solution.getAssignments().iterator();i1.hasNext();) {
             		Assignment assignment = (Assignment)i1.next();
             		loadAssignment(assignment);
@@ -3312,7 +3315,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             	}
         	}
         } else if (iLoadCommittedAssignments) {
-        	setPhase("Creating initial assignment ...", getModel().variables().size());
+        	setPhase(MSG.phaseCreatingCommittedAssignment(), getModel().variables().size());
         	for (Lecture lecture: getModel().variables()) {
         		if (lecture.isCommitted()) continue;
         		Class_ clazz = iClasses.get(lecture.getClassId());
@@ -3323,10 +3326,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         }
         
     	if (!hibSession.isOpen())
-    		iProgress.message(msglevel("hibernateFailure", Progress.MSGLEVEL_FATAL), "Hibernate session not open.");
+    		iProgress.message(msglevel("hibernateFailure", Progress.MSGLEVEL_FATAL), MSG.fatalHibernateSessionClosed());
 
     	if (iSpread) {
-    		setPhase("Posting automatic spread constraints ...", subparts.size());
+    		setPhase(MSG.phasePostingAutoSpreads(), subparts.size());
     		for (SchedulingSubpart subpart: subparts) {
     			if (subpart.getClasses().size()<=1) {
     				incProgress();
@@ -3345,7 +3348,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 					spread.addVariable(lecture);
 				}
 				if (spread.variables().isEmpty())
-					iProgress.message(msglevel("courseWithNoClasses", Progress.MSGLEVEL_WARN), "No class for course "+getSubpartLabel(subpart));
+					iProgress.message(msglevel("courseWithNoClasses", Progress.MSGLEVEL_WARN), MSG.warnCourseWithNoClasses(getSubpartLabel(subpart)));
 				else
 					getModel().addConstraint(spread);
     			incProgress();
@@ -3353,7 +3356,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		}
 		
 		if (iDeptBalancing) {
-        	setPhase("Creating dept. spread constraints ...",getModel().variables().size());
+        	setPhase(MSG.phasePostingDeptSpreads(),getModel().variables().size());
             Hashtable<Long, DepartmentSpreadConstraint> depSpreadConstraints = new Hashtable<Long, DepartmentSpreadConstraint>();
             for (Lecture lecture: getModel().variables()) {
                 if (lecture.getDepartment()==null) continue;
@@ -3369,7 +3372,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         }
 		
 		if (iSubjectBalancing) {
-        	setPhase("Creating subject spread constraints ...",getModel().variables().size());
+        	setPhase(MSG.phasePostingSubjectSpreads(),getModel().variables().size());
             Hashtable<Long, SpreadConstraint> subjectSpreadConstraints = new Hashtable<Long, SpreadConstraint>();
             for (Lecture lecture: getModel().variables()) {
             	Class_ clazz = iClasses.get(lecture.getClassId());
@@ -3404,14 +3407,14 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		}
 		*/
 		
-		setPhase("Checking for inconsistencies...", getModel().variables().size());
+		setPhase(MSG.phaseCheckingForInconsistencies(), getModel().variables().size());
 		for (Lecture lecture: getModel().variables()) {
 			
 			incProgress();
     		for (Iterator i=lecture.students().iterator();i.hasNext();) {
     			Student s = (Student)i.next();
     			if (!s.canEnroll(lecture))
-    				iProgress.message(msglevel("badStudentEnrollment", Progress.MSGLEVEL_INFO), "Invalid student enrollment of student "+s.getId()+" in class "+getClassLabel(lecture)+" found.");
+    				iProgress.message(msglevel("badStudentEnrollment", Progress.MSGLEVEL_INFO), MSG.warnBadStudentEnrollment(s.getId(), getClassLabel(lecture)));
     		}
     		
     		//check same instructor constraint
@@ -3425,13 +3428,11 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	           		if (!other.getInstructorConstraints().contains(ic)) continue;
         	           		if (p1.canShareRooms(p2) && p1.sameRooms(p2)) continue;
         	           		if (p1.getTimeLocation().hasIntersection(p2.getTimeLocation())) {
-        	           			iProgress.message(msglevel("reqInstructorOverlap", Progress.MSGLEVEL_WARN), "Same instructor and overlapping time required:"+
-        	           					"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(lecture)+" &larr; "+p1.getLongName(iUseAmPm)+
-        	           					"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(other)+" &larr; "+p2.getLongName(iUseAmPm));
+        	           			iProgress.message(msglevel("reqInstructorOverlap", Progress.MSGLEVEL_WARN), MSG.warnSameInstructorTimeConflict(
+        	           					getClassLabel(lecture), p1.getLongName(iUseAmPm), getClassLabel(other), p2.getLongName(iUseAmPm)));
         	           		} else if (ic.getDistancePreference(p1,p2)==PreferenceLevel.sIntLevelProhibited && lecture.roomLocations().size()==1 && other.roomLocations().size()==1) {
-        	           			iProgress.message(msglevel("reqInstructorBackToBack", Progress.MSGLEVEL_WARN), "Same instructor, back-to-back time and rooms too far (distance="+Math.round(10.0*Placement.getDistanceInMeters(getModel().getDistanceMetric(),p1,p2))+"m) required:"+
-        	           					"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(lecture)+" &larr; "+p1.getLongName(iUseAmPm)+
-        	           					"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(other)+" &larr; "+p2.getLongName(iUseAmPm));
+        	           			iProgress.message(msglevel("reqInstructorBackToBack", Progress.MSGLEVEL_WARN), MSG.warnSameInstructorBackToBack(
+        	           					Math.round(10.0*Placement.getDistanceInMeters(getModel().getDistanceMetric(),p1,p2)), getClassLabel(lecture), p1.getLongName(iUseAmPm), getClassLabel(other), p2.getLongName(iUseAmPm)));
         	           		}
         				}
         			}
@@ -3444,9 +3445,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     			Placement p1 = new Placement(lecture, lecture.timeLocations().get(0), lecture.roomLocations());
     			Placement p2 = new Placement(other, other.timeLocations().get(0), other.roomLocations());
     			if (p1.shareRooms(p2) && p1.getTimeLocation().hasIntersection(p2.getTimeLocation()) && !p1.canShareRooms(p2)) {
-    				iProgress.message(msglevel("reqRoomOverlap", Progress.MSGLEVEL_WARN), "Same room and overlapping time required:"+
-    						"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(lecture)+" &larr; "+p1.getLongName(iUseAmPm)+
-    						"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(other)+" &larr; "+p2.getLongName(iUseAmPm));
+    				iProgress.message(msglevel("reqRoomOverlap", Progress.MSGLEVEL_WARN), MSG.warnSameRoomTimeConflict(getClassLabel(lecture), p1.getLongName(iUseAmPm), getClassLabel(other), p2.getLongName(iUseAmPm)));
     			}
     		}
     		if (getAssignment().getValue(lecture)==null) {
@@ -3455,17 +3454,17 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     				String reason = "";
     	           	for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
     	           		if (!ic.isAvailable(lecture, placement))
-    	           			reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;instructor "+ic.getName()+" not available";
+    	           			reason += MSG.warnReasonInstructorNotAvailable(ic.getName());
     	           	}
     		    	if (lecture.getNrRooms()>0) {
     		    		if (placement.isMultiRoom()) {
     		    			for (RoomLocation roomLocation: placement.getRoomLocations()) {
     		    				if (!roomLocation.getRoomConstraint().isAvailable(lecture,placement.getTimeLocation(),lecture.getScheduler()))
-    		    					reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;room "+roomLocation.getName()+" not available";
+    		    					reason += MSG.warnReasonRoomNotAvailable(roomLocation.getName());
     		    			}
     		    		} else {
     						if (!placement.getRoomLocation().getRoomConstraint().isAvailable(lecture,placement.getTimeLocation(),lecture.getScheduler()))
-    							reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;room "+placement.getRoomLocation().getName()+" not available";
+    							reason += MSG.warnReasonRoomNotAvailable(placement.getRoomLocation().getName());
     		    		}
     		    	}
     		    	Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(getAssignment(), placement);
@@ -3475,13 +3474,15 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	                    for (Placement p: vals) {
     	                        Lecture l = p.variable();
     	                        if (l.isCommitted())
-    	                        	reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;conflict with committed assignment "+getClassLabel(l)+" = "+p.getLongName(iUseAmPm)+" (in constraint "+c+")";
+    	                        	reason += MSG.warnReasonConstraintCommitedAssignment(getClassLabel(l), p.getLongName(iUseAmPm), TimetableSolver.getConstraintName(c));
     	                        if (p.equals(placement))
-    	                        	reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;constraint "+c;
+    	                        	reason += MSG.warnReasonConstraint(TimetableSolver.getConstraintName(c));
     	                    }
     	                }
     	            }
-    		    	iProgress.message(msglevel("reqInvalidPlacement", Progress.MSGLEVEL_WARN), "Class "+getClassLabel(lecture)+" requires an invalid placement "+placement.getLongName(iUseAmPm)+(reason.length()==0?".":":"+reason));
+    		    	iProgress.message(msglevel("reqInvalidPlacement", Progress.MSGLEVEL_WARN),
+    		    			reason.isEmpty() ? MSG.warnRequiresInvalidPlacement(getClassLabel(lecture), placement.getLongName(iUseAmPm)) :
+    		    			MSG.warnRequiresInvalidPlacementWithReason(getClassLabel(lecture), placement.getLongName(iUseAmPm), reason));
     			} else if (iAssignSingleton && getModel().conflictValues(getAssignment(), placement).isEmpty())
     				getAssignment().assign(0, placement);
     		}
@@ -3495,8 +3496,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		if (getModel().getProperties().getPropertyBoolean("General.SwitchStudents",true) && getAssignment().nrAssignedVariables() != 0 && !iLoadStudentEnrlsFromSolution)
 			getModel().switchStudents(getAssignment(), getTerminationCondition());
 		
- 		setPhase("Done",1);incProgress();            
-		iProgress.message(msglevel("allDone", Progress.MSGLEVEL_INFO), "Model successfully loaded.");
+ 		setPhase(MSG.phaseDone(),1);incProgress();            
+		iProgress.message(msglevel("allDone", Progress.MSGLEVEL_INFO), MSG.infoModelLoaded());
     }
     
     public static class ObjectsByGivenOrderComparator implements Comparator {
@@ -3518,7 +3519,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	availability.activate(new SessionDAO().get(iSessionId), startTime, endTime, RoomAvailabilityInterface.sClassType, ApplicationProperty.RoomAvailabilitySolverWaitForSync.isTrue());
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
-            iProgress.message(msglevel("roomAvailabilityFailure", Progress.MSGLEVEL_WARN), "Unable to access room availability service, reason:"+e.getMessage());
+            iProgress.message(msglevel("roomAvailabilityFailure", Progress.MSGLEVEL_WARN), MSG.warnRoomAvailableServiceFailed(e.getMessage()));
         } 
     }
     
@@ -3532,7 +3533,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 endDate = dp.getEndDate();
         }
         if (startDate == null || endDate == null) {
-        	iProgress.message(msglevel("roomAvailabilityFailure", Progress.MSGLEVEL_WARN), "Unable to load room availability, reason: no dates");
+        	iProgress.message(msglevel("roomAvailabilityFailure", Progress.MSGLEVEL_WARN), MSG.warnRoomAvailableServiceNoDates());
         	return null;
         }
         Calendar startDateCal = Calendar.getInstance(Locale.US);
@@ -3550,7 +3551,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     public void loadRoomAvailability(RoomAvailabilityInterface availability, Date[] startEnd) {
-        setPhase("Loading room availability...", iRooms.size());
+        setPhase(MSG.phaseLoadingRoomAvailability(), iRooms.size());
         int firstDOY = iSession.getDayOfYear(1,iSession.getPatternStartMonth());
         int lastDOY = iSession.getDayOfYear(0,iSession.getPatternEndMonth()+1);
         int size = lastDOY - firstDOY;
@@ -3617,22 +3618,22 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             if (!iRoomAvailabilityTimeStampIsSet) ts = availability.getTimeStamp(startTime, endTime, RoomAvailabilityInterface.sClassType);
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
-            iProgress.message(msglevel("roomAvailabilityFailure", Progress.MSGLEVEL_WARN), "Unable to access room availability service, reason:"+e.getMessage());
+            iProgress.message(msglevel("roomAvailabilityFailure", Progress.MSGLEVEL_WARN), MSG.warnRoomAvailableServiceFailed(e.getMessage()));
         } 
         if (!iRoomAvailabilityTimeStampIsSet) {
             iRoomAvailabilityTimeStampIsSet = true;
             if (ts!=null) {
                 getModel().getProperties().setProperty("RoomAvailability.TimeStamp", ts);
-                iProgress.message(msglevel("roomAvailabilityUpdated", Progress.MSGLEVEL_INFO), "Using room availability that was updated on "+ts+".");
+                iProgress.message(msglevel("roomAvailabilityUpdated", Progress.MSGLEVEL_INFO), MSG.infoUsingRoomAvailability(ts));
             } else {
-                iProgress.message(msglevel("roomAvailabilityFailure", Progress.MSGLEVEL_ERROR), "Room availability is not available.");
+                iProgress.message(msglevel("roomAvailabilityFailure", Progress.MSGLEVEL_ERROR), MSG.warnRoomAvailableServiceNotAvailable());
             }
         }
         return ret;
     }
     
     public void loadInstructorAvailability(RoomAvailabilityInterface availability, Date[] startEnd) {
-        setPhase("Loading instructor availability...", getModel().getInstructorConstraints().size());
+        setPhase(MSG.phaseLoadingInstructorAvailability(), getModel().getInstructorConstraints().size());
         int firstDOY = iSession.getDayOfYear(1,iSession.getPatternStartMonth());
         int lastDOY = iSession.getDayOfYear(0,iSession.getPatternEndMonth()+1);
         int size = lastDOY - firstDOY;
@@ -3694,15 +3695,15 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             if (!iRoomAvailabilityTimeStampIsSet) ts = availability.getTimeStamp(startTime, endTime, RoomAvailabilityInterface.sClassType);
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
-            iProgress.message(msglevel("roomAvailabilityFailure", Progress.MSGLEVEL_WARN), "Unable to access room availability service, reason:"+e.getMessage());
+            iProgress.message(msglevel("roomAvailabilityFailure", Progress.MSGLEVEL_WARN), MSG.warnRoomAvailableServiceFailed(e.getMessage()));
         } 
         if (!iRoomAvailabilityTimeStampIsSet) {
             iRoomAvailabilityTimeStampIsSet = true;
             if (ts!=null) {
                 getModel().getProperties().setProperty("RoomAvailability.TimeStamp", ts);
-                iProgress.message(msglevel("roomAvailabilityUpdated", Progress.MSGLEVEL_INFO), "Using room availability that was updated on "+ts+".");
+                iProgress.message(msglevel("roomAvailabilityUpdated", Progress.MSGLEVEL_INFO), MSG.infoUsingRoomAvailability(ts));
             } else {
-                iProgress.message(msglevel("roomAvailabilityFailure", Progress.MSGLEVEL_ERROR), "Room availability is not available.");
+                iProgress.message(msglevel("roomAvailabilityFailure", Progress.MSGLEVEL_ERROR), MSG.warnRoomAvailableServiceNotAvailable());
             }
         }
         return ret;
@@ -3747,7 +3748,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 				}
 			}
 			if (pref == null) {
-				iProgress.message(msglevel("automaticHierarchicalConstraints", Progress.MSGLEVEL_WARN), "Failed to parse automatic hierarchical constraint preference " + term);
+				iProgress.message(msglevel("automaticHierarchicalConstraints", Progress.MSGLEVEL_WARN), MSG.warnFailedToParseAutomaticHierarchicalConstraint(term));
 				continue;
 			}
 			DistributionType type = null;
@@ -3777,7 +3778,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 				}
 			}
 			if (type == null) {
-				iProgress.message(msglevel("automaticHierarchicalConstraints", Progress.MSGLEVEL_WARN), "Failed to parse automatic hierarchical constraint preference " + term);
+				iProgress.message(msglevel("automaticHierarchicalConstraints", Progress.MSGLEVEL_WARN), MSG.warnFailedToParseAutomaticHierarchicalConstraint(term));
 				continue;
 			}
 			DatePattern pattern = null;
@@ -3788,11 +3789,11 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 					}
 				}
 				if (pattern == null) {
-					iProgress.message(msglevel("automaticHierarchicalConstraints", Progress.MSGLEVEL_WARN), "Failed to parse automatic hierarchical constraint preference: unknown date pattern " + constraint);
+					iProgress.message(msglevel("automaticHierarchicalConstraints", Progress.MSGLEVEL_WARN), MSG.warnFailedToParseAutomaticHierarchicalConstraintBadDatePattern(constraint));
 					continue;
 				}
 			}
-			setPhase("Posting automatic " + pref.getPrefName() + " " + type.getLabel() + " constraints" + (pattern == null ? "" : " between classes of pattern " + pattern.getName()) + "...", iAllClasses.size());
+			setPhase(pattern == null ? MSG.phasePostingAutomaticConstraint(pref.getPrefName(), type.getLabel()) : MSG.phasePostingAutomaticConstraintDatePattern(pref.getPrefName(), type.getLabel(), pattern.getName()), iAllClasses.size());
 			for (Iterator i1=iAllClasses.iterator();i1.hasNext();) {
     			Class_ clazz = (Class_)i1.next();
     			Lecture lecture = (Lecture)iLectures.get(clazz.getUniqueId());
@@ -3842,7 +3843,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			if (!info.isEmpty()) info += ", ";
 			info += getClassLabel(var);
 		}
-		iProgress.info("Posted " + type.getLabel() + " constraint between " + info + " (" + preference.getPrefName() + ")");
+		iProgress.info(MSG.infoPostedConstraint(type.getLabel(), info, preference.getPrefName()));
     	addGroupConstraint(gc);
     	
 		return true;
@@ -3903,7 +3904,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 				}
 			}
 			if (pref == null) {
-				iProgress.message(msglevel("automaticStudentConstraints", Progress.MSGLEVEL_WARN), "Failed to parse automatic hierarchical constraint preference " + term);
+				iProgress.message(msglevel("automaticStudentConstraints", Progress.MSGLEVEL_WARN), MSG.warnFailedToParseAutomaticStudentConstraint(term));
 				continue;
 			}
 			DistributionType type = null;
@@ -3926,10 +3927,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 				}
 			}
 			if (type == null) {
-				iProgress.message(msglevel("automaticStudentConstraints", Progress.MSGLEVEL_WARN), "Failed to parse automatic hierarchical constraint preference " + term);
+				iProgress.message(msglevel("automaticStudentConstraints", Progress.MSGLEVEL_WARN), MSG.warnFailedToParseAutomaticStudentConstraint(term));
 				continue;
 			}
-			setPhase("Posting automatic " + pref.getPrefName() + " " + type.getLabel() + " constraints for students...", classes2counts.size());
+			setPhase(MSG.phasePostingAutomaticStudentConstraints(pref.getPrefName(), type.getLabel()), classes2counts.size());
 			for (Map.Entry<String, Integer> entry: classes2counts.entrySet()) {
 				incProgress();
 				if (entry.getValue() >= limit) {
@@ -3948,7 +3949,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 							if (!info.isEmpty()) info += ", ";
 							info += getClassLabel(var);
 						}
-						iProgress.info("Posted " + type.getLabel() + " constraint between " + info + " (" + pref.getPrefName() + ")");
+						iProgress.info(MSG.infoPostedConstraint(type.getLabel(), info, pref.getPrefName()));
 				    	addGroupConstraint(gc);
 					}
 				}
@@ -3958,7 +3959,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     
     protected void checkTermination() {
     	if (getTerminationCondition() != null && !getTerminationCondition().canContinue(new org.cpsolver.ifs.solution.Solution(getModel(), getAssignment())))
-    		throw new RuntimeException("The load was interrupted.");
+    		throw new RuntimeException(MSG.fatalLoadInterrupted());
     }
     
     protected void setPhase(String phase, long progressMax) {

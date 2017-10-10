@@ -36,6 +36,7 @@ import javax.servlet.jsp.JspWriter;
 
 import org.cpsolver.coursett.constraint.ClassLimitConstraint;
 import org.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
+import org.cpsolver.coursett.constraint.FlexibleConstraint;
 import org.cpsolver.coursett.constraint.GroupConstraint;
 import org.cpsolver.coursett.constraint.InstructorConstraint;
 import org.cpsolver.coursett.constraint.JenrlConstraint;
@@ -50,7 +51,9 @@ import org.cpsolver.ifs.extension.ConflictStatistics;
 import org.cpsolver.ifs.model.Constraint;
 import org.cpsolver.ifs.solver.Solver;
 import org.dom4j.Element;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.resources.CPSolverMessages;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.timegrid.SolverGridModel;
@@ -59,6 +62,7 @@ import org.unitime.timetable.webutil.timegrid.SolverGridModel;
  * @author Tomas Muller
  */
 public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
+	protected static CPSolverMessages MSG = Localization.create(CPSolverMessages.class);
 	private static final long serialVersionUID = 7L;
 	public static int sVersion = 8; // to be able to do some changes in the future
 	public static final int sConstraintTypeRoom = 1;
@@ -70,6 +74,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 	public static final int sConstraintTypeClassLimit = 7;
 	public static final int sConstraintTypeMinNrGroupsOfTime = 8;
 	public static final int sConstraintTypeJoinEnrollment = 9;
+	public static final int sConstraintTypeFlexible = 10;
 	private Map<Long, CBSVariable> iVariables = new HashMap<Long, CBSVariable>();
 	
 	public Collection<CBSVariable> getCBS() { return iVariables.values(); } 
@@ -163,6 +168,8 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 					con = new CBSConstraint(val, sConstraintTypeMinNrGroupsOfTime, constraint.getId(), constraint.getName(), PreferenceLevel.sRequired);
 				} else if (constraint instanceof JenrlConstraint) {
 					con = new CBSConstraint(val, sConstraintTypeJoinEnrollment, constraint.getId(), constraint.toString(), PreferenceLevel.sRequired);
+				} else if (constraint instanceof FlexibleConstraint) {
+					con = new CBSConstraint(val, sConstraintTypeFlexible, constraint.getId(), constraint.getName(), PreferenceLevel.sRequired);
 				} else {
 					con = new CBSConstraint(val, -1, constraint.getId(), constraint.getName(), PreferenceLevel.sRequired);
 				}
@@ -703,31 +710,37 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
     	String link = null;
     	switch (constraint.getType()) {
     		case sConstraintTypeBalanc : 
-    			name += "Balancing of department "+constraint.getName();
+    			name += MSG.constraintDeptBalancing(constraint.getName());
     			break;
     		case sConstraintTypeSpread : 
-    			name += "Same subpart spread "+constraint.getName();
+    			name += MSG.constraintSubpartBalancing(constraint.getName());
     			break;
     		case sConstraintTypeGroup :
-    			name += "Distribution "+constraint.getName();
+    			name += MSG.constraintDistribution(constraint.getName());
     			break;
     		case sConstraintTypeInstructor :
-    			name += "Instructor "+constraint.getName();
+    			name += MSG.constraintInstructor(constraint.getName());
     			if (clickable) link = "timetable.do?filter="+constraint.getName()+"&mode=i&op=Show";
     			break;
     		case sConstraintTypeRoom :
-    			name += "Room "+constraint.getName();
+    			name += MSG.constraintRoom(constraint.getName());
     			if (clickable) link = "timetable.do?filter="+constraint.getName()+"&mode=r&op=Show";
     			break;
     		case sConstraintTypeClassLimit :
-    			name += "Class limit "+constraint.getName();
+    			name += MSG.constraintClassLimit(constraint.getName());
+    			break;
+    		case sConstraintTypeJoinEnrollment:
+    			name += MSG.constraintJointEnrollment(constraint.getName());
+    			break;
+    		case sConstraintTypeFlexible:
+    			name += MSG.constraintFlexible(constraint.getName());
     			break;
     		case sConstraintTypeMinNrRoomUsed :
     		case sConstraintTypeMinNrGroupsOfTime :
     			name += constraint.getName();
     			break;
     		default :
-    			name += (constraint.getName()==null?"Unknown":constraint.getName());
+    			name += (constraint.getName()==null ? MSG.constraintWithNoName() : constraint.getName());
     	}
     	name += "</font>";
     	String description = null;

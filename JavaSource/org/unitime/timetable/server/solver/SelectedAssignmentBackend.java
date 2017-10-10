@@ -30,14 +30,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.cpsolver.coursett.constraint.ClassLimitConstraint;
-import org.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
 import org.cpsolver.coursett.constraint.FlexibleConstraint;
 import org.cpsolver.coursett.constraint.GroupConstraint;
 import org.cpsolver.coursett.constraint.InstructorConstraint;
 import org.cpsolver.coursett.constraint.JenrlConstraint;
-import org.cpsolver.coursett.constraint.RoomConstraint;
-import org.cpsolver.coursett.constraint.SpreadConstraint;
 import org.cpsolver.coursett.criteria.StudentOverlapConflict;
 import org.cpsolver.coursett.criteria.placement.DeltaTimePreference;
 import org.cpsolver.coursett.model.Lecture;
@@ -57,6 +53,7 @@ import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.resources.CPSolverMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.BtbInstructorInfo;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.ClassAssignmentDetails;
@@ -83,6 +80,7 @@ import org.unitime.timetable.util.Constants;
 @GwtRpcImplements(SelectedAssignmentsRequest.class)
 public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedAssignmentsRequest, Suggestion> {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	protected static CPSolverMessages MSG = Localization.create(CPSolverMessages.class);
 	
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 
@@ -363,21 +361,7 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
             constraint.computeConflicts(assignment, p, conflicts);
             for (Placement conflict: conflicts) {
         		if (!descriptions.containsKey(conflict.variable().getClassId())) {
-        			String name = constraint.getName();
-    				if (constraint instanceof RoomConstraint) {
-    					name = "Room "+constraint.getName();
-    				} else if (constraint instanceof InstructorConstraint) {
-    					name = "Instructor "+constraint.getName();
-    				} else if (constraint instanceof GroupConstraint) {
-    					name = "Distribution "+constraint.getName();
-    				} else if (constraint instanceof DepartmentSpreadConstraint) {
-    					name = "Balancing of department "+constraint.getName();
-    				} else if (constraint instanceof SpreadConstraint) {
-    					name = "Same subpart spread "+constraint.getName();
-    				} else if (constraint instanceof ClassLimitConstraint) {
-    					name = "Class limit "+constraint.getName();
-    				}
-    				descriptions.put(conflict.variable().getClassId(), name);
+    				descriptions.put(conflict.variable().getClassId(), TimetableSolver.getConstraintName(constraint));
         		}
             }
         }
@@ -404,8 +388,8 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
         		Placement plac = getPlacement(model, a, false);
         		if (plac == null) continue;
         		if (!plac.isValid()) {
-        			String reason = plac.getNotValidReason(assignment, solver.getProperties().getPropertyBoolean("General.UseAmPm", true));
-        			throw new GwtRpcException(reason == null ? "room or instructor not avaiable" : reason);
+        			String reason = TimetableSolver.getNotValidReason(plac, assignment, solver.getProperties().getPropertyBoolean("General.UseAmPm", true));
+        			throw new GwtRpcException(reason == null ? MSG.reasonNotKnown() : reason);
         		}
         		Lecture lect = (Lecture)plac.variable();
                 if (placement != null && placement.variable().equals(lect)) continue;
@@ -486,5 +470,4 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
             return (new Integer(i1)).compareTo(new Integer(i2));
         }
     }
-
 }

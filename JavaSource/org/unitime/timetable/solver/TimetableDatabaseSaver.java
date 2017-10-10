@@ -47,8 +47,10 @@ import org.cpsolver.ifs.util.Progress;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.resources.CPSolverMessages;
 import org.unitime.timetable.interfaces.ExternalSolutionCommitAction;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.AssignmentInfo;
@@ -93,6 +95,7 @@ import org.unitime.timetable.solver.ui.TimetableInfoUtil;
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
 public class TimetableDatabaseSaver extends TimetableSaver {
+	protected static CPSolverMessages MSG = Localization.create(CPSolverMessages.class);
 	private static Log sLog = LogFactory.getLog(TimetableDatabaseSaver.class);
 	private Long iSessionId;
 	private Long[] iSolverGroupId;
@@ -164,7 +167,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     			if (hibSession!=null && hibSession.isOpen()) hibSession.close();
     			hibSession = dao.getSession();
     			
-    			setPhase("Committing solution ...", 2*solutionIds.length);
+    			setPhase(MSG.phaseCommittingSolution(), 2*solutionIds.length);
     			tx = hibSession.beginTransaction();
     			for (int i=0;i<solutionIds.length;i++) {
     				Solution solution = (new SolutionDAO()).get(solutionIds[i]);
@@ -183,7 +186,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     				solution.commitSolution(messages,hibSession, getModel().getProperties().getProperty("General.OwnerPuid"));
     				touchedSolutions.add(solution);
     				for (String m: messages) {
-    					iProgress.error("Unable to commit: "+m);
+    					iProgress.error(MSG.errorUnableToCommit(m));
     				}
     				hibSession.update(solution);
     				incProgress();
@@ -196,13 +199,13 @@ public class TimetableDatabaseSaver extends TimetableSaver {
 		    	}
     		}
     		
-            setPhase("Refreshing solution ...", solutionIds.length+refreshIds.size());
+            setPhase(MSG.phaseRefreshingSolution(), solutionIds.length+refreshIds.size());
             for (Iterator i=refreshIds.iterator();i.hasNext();) {
                 Long solutionId = (Long)i.next();
                 refreshCourseSolution(solutionId);
                 try {
                 } catch (Exception e) {
-                    iProgress.warn("Unable to refresh solution "+solutionId+", reason:"+e.getMessage(),e);
+                    iProgress.warn(MSG.warnUnableToRefreshSolution(solutionId, e.getMessage()), e);
                 }
                 incProgress();
             }
@@ -210,14 +213,14 @@ public class TimetableDatabaseSaver extends TimetableSaver {
                 try {
                 	refreshCourseSolution(solutionIds[i]);
                 } catch (Exception e) {
-                    iProgress.warn("Unable to refresh solution "+solutionIds[i]+", reason:"+e.getMessage(),e);
+                	iProgress.warn(MSG.warnUnableToRefreshSolution(solutionIds[i], e.getMessage()), e);
                 }
                 incProgress();
             }
             
     		if (solutionIds!=null) {
     			getModel().getProperties().setProperty("General.SolutionId",solutionIds);
-    			iProgress.info("Solution successfully saved.");
+    			iProgress.info(MSG.infoSolutionSaved());
 
     			if (hibSession!=null && hibSession.isOpen()) hibSession.close();
     			hibSession = dao.getSession();
@@ -237,7 +240,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     			}
     		}
     	} catch (Exception e) {
-    		iProgress.fatal("Unable to save timetable, reason: "+e.getMessage(),e);
+    		iProgress.fatal(MSG.fatalUnableToSaveTimetable(e.getMessage()), e);
     		sLog.error(e.getMessage(),e);
             tx.rollback();
     	} finally {
@@ -250,10 +253,10 @@ public class TimetableDatabaseSaver extends TimetableSaver {
             
             if (iStudentSectioning) getModel().switchStudents(getAssignment(), getTerminationCondition());
         
-    		iProgress.setStatus("Saving solution ...");
+    		iProgress.setStatus(MSG.statusSavingSolution());
     		
     		if (iSolverGroupId==null || iSolverGroupId.length==0) {
-    			iProgress.fatal("No solver group loaded.");
+    			iProgress.fatal(MSG.fatalNoSolverGroupLoaded());
     			return null;
     		}
     		
@@ -261,7 +264,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		for (int i=0;i<iSolverGroupId.length;i++) {
     			SolverGroup solverGroup = SolverGroupDAO.getInstance().get(iSolverGroupId[i], hibSession);
     			if (solverGroup==null) {
-        			iProgress.fatal("Unable to load solver group "+iSolverGroupId[i]+".");
+        			iProgress.fatal(MSG.fatalUnableToLoadSolverGroup(iSolverGroupId[i]));
         			return null;
     			}
     			solverGroups.put(solverGroup.getUniqueId(),solverGroup);
@@ -274,11 +277,11 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     				if (i<iSolutionId.length && iSolutionId[i]!=null) {
     					Solution solution = (new SolutionDAO()).get(iSolutionId[i], hibSession);
     					if (solution==null) {
-    						iProgress.warn("Unable to load solution "+iSolutionId[i]);
+    						iProgress.warn(MSG.fatalUnableToLoadSolution(iSolutionId[i]));
     						continue;
     					}
     					if (!solverGroups.containsKey(solution.getOwner().getUniqueId())) {
-    						iProgress.warn("Solution "+iSolutionId[i]+" ignored -- it does not match with the owner(s) of the problem");
+    						iProgress.warn(MSG.warnSolutionIgnored(iSolutionId[i]));
     						continue;
     					}
     					if (solution.isCommited().booleanValue()){
@@ -302,7 +305,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		
     		Session session = SessionDAO.getInstance().get(iSessionId, hibSession);
     		if (session==null) {
-    			iProgress.fatal("No session loaded.");
+    			iProgress.fatal(MSG.fatalNoSessionLoaded());
     			return null;
     		}
     		iProgress.debug("session: "+session.getLabel());
@@ -323,7 +326,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
         		solution.setValid(Boolean.TRUE);
         		solution.setCommited(Boolean.FALSE);
         		
-        		setPhase("Saving solver parameters ...", getModel().getProperties().size());
+        		setPhase(MSG.phaseSavingSolverParameters(), getModel().getProperties().size());
         		HashSet params = new HashSet();
         		for (Iterator i1=getModel().getProperties().entrySet().iterator();i1.hasNext();) {
         			Map.Entry entry = (Map.Entry)i1.next();
@@ -347,14 +350,14 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		
     		hibSession.flush(); hibSession.clear(); int batchIdx = 0;
     		
-    		setPhase("Saving assignments ...", getModel().variables().size());
+    		setPhase(MSG.phaseSavingAssignments(), getModel().variables().size());
     		for (Lecture lecture: getModel().variables()) {
     			Placement placement = getAssignment().getValue(lecture);
     			if (placement!=null) {
     				iProgress.trace("save "+lecture.getName()+" "+placement.getName());
     				Class_ clazz = (new Class_DAO()).get(lecture.getClassId(),hibSession);
     				if (clazz==null) {
-    					iProgress.warn("Unable to save assignment for class "+lecture+" ("+placement.getLongName(iUseAmPm)+") -- class (id:"+lecture.getClassId()+") does not exist.");
+    					iProgress.warn(MSG.warnUnableToSaveClassAssignmentNotExist(lecture.getName(), placement.getLongName(iUseAmPm), lecture.getClassId()));
     					continue;
     				}
         			HashSet rooms = new HashSet();
@@ -362,7 +365,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
         				for (RoomLocation r: placement.getRoomLocations()) {
             				Location room = (new LocationDAO()).get(r.getId(), hibSession);
             				if (room==null) {
-               					iProgress.warn("Unable to save assignment for class "+lecture+" ("+placement.getLongName(iUseAmPm)+") -- room (id:"+r.getId()+") does not exist.");
+               					iProgress.warn(MSG.warnUnableToSaveClassAssignmentRoomNotExist(lecture.getName(), placement.getLongName(iUseAmPm), r.getId()));
                					continue;
             				}
             				rooms.add(room);
@@ -372,7 +375,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
         			} else {
         				Location room = (new LocationDAO()).get(placement.getRoomLocation().getId(), hibSession);
         				if (room==null) {
-           					iProgress.warn("Unable to save assignment for class "+lecture+" ("+placement.getLongName(iUseAmPm)+") -- room (id:"+placement.getRoomLocation().getId()+") does not exist.");
+           					iProgress.warn(MSG.warnUnableToSaveClassAssignmentRoomNotExist(lecture.getName(), placement.getLongName(iUseAmPm), placement.getRoomLocation().getId()));
            					continue;
         				}
         				rooms.add(room);
@@ -391,12 +394,12 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     				
     				TimePattern pattern = (new TimePatternDAO()).get(placement.getTimeLocation().getTimePatternId(),hibSession);
     				if (pattern==null) {
-       					iProgress.warn("Unable to save assignment for class "+lecture+" ("+placement.getLongName(iUseAmPm)+") -- time pattern (id:"+placement.getTimeLocation().getTimePatternId()+") does not exist.");
+       					iProgress.warn(MSG.warnUnableToSaveClassAssignmentTimePatternNotExist(lecture.getName(), placement.getLongName(iUseAmPm), placement.getTimeLocation().getTimePatternId()));
        					continue;
     				}
     				Solution solution = getSolution(lecture, hibSession);
     				if (solution==null) {
-   						iProgress.warn("Unable to save assignment for class "+lecture+" ("+placement.getLongName(iUseAmPm)+") -- none or wrong solution group assigned to the class");
+   						iProgress.warn(MSG.warnUnableToSaveClassAssignmentWrongOwner(lecture.getName(), placement.getLongName(iUseAmPm)));
    						continue;
     				}
         			Assignment assignment = new Assignment();
@@ -423,14 +426,14 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		hibSession.flush(); hibSession.clear(); batchIdx = 0;
     		
     		if (getModel().getProperties().getPropertyBoolean("General.SaveStudentEnrollments", true)) {
-        		setPhase("Saving student enrollments ...", getModel().variables().size());
+        		setPhase(MSG.phaseSavingStudentEnrollments(), getModel().variables().size());
         		for (Lecture lecture: getModel().variables()) {
         			Class_ clazz = (new Class_DAO()).get(lecture.getClassId(),hibSession);
         			if (clazz==null) continue;
         			iProgress.trace("save "+lecture.getName());
     				Solution solution = getSolution(lecture, hibSession);
     				if (solution==null) {
-    						iProgress.warn("Unable to save student enrollments for class "+lecture+"  -- none or wrong solution group assigned to the class");
+    						iProgress.warn(MSG.warnUnableToSaveClassEnrollmentsWrongOwner(lecture.getName()));
     						continue;
     				}
         			
@@ -515,7 +518,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
        			lectures.add(lecture);
     		}
     		
-   			setPhase("Saving global info ...", solverGroups.size());
+   			setPhase(MSG.phaseSavingGlobalInfo(), solverGroups.size());
    			for (Enumeration e=solverGroups.elements();e.hasMoreElements();) {
    				SolverGroup solverGroup = (SolverGroup)e.nextElement();
    				Solution solution = (Solution)iSolutions.get(solverGroup.getUniqueId());
@@ -542,7 +545,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		if (cbs!=null && cbs.getNoGoods()!=null) {
     			ConflictStatisticsInfo cbsInfo = new ConflictStatisticsInfo();
     			cbsInfo.load(getSolver(), cbs);
-    			setPhase("Saving conflict-based statistics ...", 1);
+    			setPhase(MSG.phaseSavingCBS(), 1);
     			for (Enumeration e=iSolutions.elements();e.hasMoreElements();) {
     				Solution solution = (Solution)e.nextElement();
     				List<Lecture> lectures = lectures4solution.get(solution);
@@ -562,7 +565,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		
     		hibSession.flush(); hibSession.clear(); batchIdx = 0;
     		
-    		setPhase("Saving variable infos ...", getModel().variables().size());
+    		setPhase(MSG.phaseSavingVariableInfos(), getModel().variables().size());
     		for (Lecture lecture: getModel().variables()) {
     			Placement placement = getAssignment().getValue(lecture);
     			if (placement!=null) {
@@ -582,7 +585,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		
     		hibSession.flush(); hibSession.clear(); batchIdx = 0;
     		
-    		setPhase("Saving btb instructor infos ...", getModel().variables().size());
+    		setPhase(MSG.phaseSavingInstructorBTBInfos(), getModel().variables().size());
     		for (Lecture lecture1: getModel().variables()) {
     			Placement placement1 = (Placement)getAssignment().getValue(lecture1);
     			incProgress();
@@ -623,7 +626,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
 
     		hibSession.flush(); hibSession.clear(); batchIdx = 0;
     		
-    		setPhase("Saving group constraint infos ...", getModel().getGroupConstraints().size());
+    		setPhase(MSG.phaseSavingGroupConstraintInfos(), getModel().getGroupConstraints().size());
     		for (GroupConstraint gc: getModel().getGroupConstraints()) {
     			GroupConstraintInfo gcInfo = new GroupConstraintInfo(getAssignment(), gc);
     			ConstraintInfo constraintInfo = new ConstraintInfo();
@@ -654,7 +657,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		
     		hibSession.flush(); hibSession.clear(); batchIdx = 0;
     		
-    		setPhase("Saving student enrollment infos ...", getModel().getJenrlConstraints().size());
+    		setPhase(MSG.phaseSavingStudentEnrollmentInfos(), getModel().getJenrlConstraints().size());
     		for (JenrlConstraint jc: getModel().getJenrlConstraints()) {
     			if (!jc.isInConflict(getAssignment()) || !jc.isOfTheSameProblem()) {
     				incProgress();
@@ -680,7 +683,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     			incProgress();
     		}
     		
-    		setPhase("Saving student group infos ...", getModel().getStudentGroups().size());
+    		setPhase(MSG.phaseSavingStudentGroupInfos(), getModel().getStudentGroups().size());
     		for (StudentGroup group: getModel().getStudentGroups()) {
     			StudentGroupInfo gInfo = new StudentGroupInfo(getSolver(), group);
     			ConstraintInfo constraintInfo = new ConstraintInfo();
@@ -704,7 +707,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		
     		hibSession.flush(); hibSession.clear(); batchIdx = 0;
     		
-    		setPhase("Saving committed student enrollment infos ...", iSolutions.size());
+    		setPhase(MSG.phaseSavingCommittedStudentEnrollmentInfos(), iSolutions.size());
     		for (Enumeration e=iSolutions.elements();e.hasMoreElements();) {
     			Solution solution = (Solution)e.nextElement();
     			solution.updateCommittedStudentEnrollmentInfos(hibSession);
@@ -744,7 +747,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		
     		hibSession.flush(); hibSession.clear(); batchIdx = 0;
     		
-    		setPhase("Done",1);incProgress();
+    		setPhase(MSG.phaseDone(),1);incProgress();
     		
     		Long ret[] = new Long[iSolutions.size()]; int idx=0;
     		for (Enumeration e=iSolutions.elements();e.hasMoreElements();)
@@ -755,7 +758,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     
     protected void checkTermination() {
     	if (getTerminationCondition() != null && !getTerminationCondition().canContinue(getSolution()))
-    		throw new RuntimeException("The save was interrupted.");
+    		throw new RuntimeException(MSG.fatalSaveInterrupted());
     }
     
     protected void setPhase(String phase, long progressMax) {

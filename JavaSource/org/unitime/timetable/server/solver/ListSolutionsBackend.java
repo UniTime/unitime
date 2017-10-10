@@ -75,6 +75,7 @@ import org.unitime.timetable.form.ListSolutionsForm;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.resources.CPSolverMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 
 /**
@@ -83,6 +84,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 @GwtRpcImplements(ListSolutionsRequest.class)
 public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsRequest, ListSolutionsResponse> {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	protected static CPSolverMessages SOLVERMSG = Localization.create(CPSolverMessages.class);
 	protected static Format<Date> sTS = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
 	
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
@@ -434,10 +436,16 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
 				}
 			PropertiesInfo propInfo = (PropertiesInfo)solution.getInfo("GlobalInfo");
 			if (propInfo != null) {
+				Map<String, String> translations = SOLVERMSG.courseInfoMessages();
 				TreeSet<String> keys = new TreeSet<String>(new ListSolutionsForm.InfoComparator());
 				for (Object o: propInfo.keySet()) keys.add((String)o);
-				for (String key: keys)
-					si.addPair(key, propInfo.getProperty(key));
+				for (String key: keys) {
+					String translatedKey = (translations == null ? null : translations.get(key));
+					if (translatedKey != null)
+						si.addPair(translatedKey, propInfo.getProperty(key));
+					else
+						si.addPair(key, propInfo.getProperty(key));
+				}
 				response.addSelectedSolution(si);
 			}
 		}
@@ -532,14 +540,20 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
 	protected void fillSolverInfos(ListSolutionsResponse response, SessionContext context, SolverProxy solver) {
 		Map<String, String> info = (solver == null ? null : solver.currentSolutionInfo());
 		if (info != null) {
+			Map<String, String> translations = SOLVERMSG.courseInfoMessages();
 			SolutionInfo si = new SolutionInfo();
 			Date loaded = solver.getLoadedDate();
 			si.setCreated(loaded == null ? null : sTS.format(loaded)); 
 			si.setNote(solver.getNote());
 			TreeSet<String> keys = new TreeSet<String>(new ListSolutionsForm.InfoComparator());
 			keys.addAll(info.keySet());
-			for (String key: keys)
-				si.addPair(key, info.get(key));
+			for (String key: keys) {
+				String translatedKey = (translations == null ? null : translations.get(key));
+				if (translatedKey != null)
+					si.addPair(translatedKey, info.get(key));
+				else
+					si.addPair(key, info.get(key));
+			}
 			response.setCurrentSolution(si);
 		}
 		if (solver != null) {
