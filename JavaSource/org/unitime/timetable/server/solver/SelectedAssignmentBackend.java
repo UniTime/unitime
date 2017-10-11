@@ -196,10 +196,15 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
 					details.setInstructor(new InstructorInfo(ic.getName(), ic.getResourceId()));
 				}
 			}
+			Map<String, String> translations = MSG.courseObjectives();
 			for (Criterion<Lecture, Placement> criterion: lecture.getModel().getCriteria()) {
 				if (criterion instanceof StudentOverlapConflict) continue;
 				if (criterion instanceof DeltaTimePreference) continue;
-				details.setAssignedObjective(criterion.getName(), criterion.getValue(solver.currentSolution().getAssignment(), newPlacement, null));
+				String translatedName = (translations == null || translations.isEmpty() ? null : translations.get(criterion.getName()));
+				if (translatedName != null)
+					details.setAssignedObjective(translatedName, criterion.getValue(solver.currentSolution().getAssignment(), newPlacement, null));
+				else
+					details.setAssignedObjective(criterion.getName(), criterion.getValue(solver.currentSolution().getAssignment(), newPlacement, null));
 			}
 		}
 		return details;
@@ -347,10 +352,15 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
         TimetableModel m = (TimetableModel)solver.currentSolution().getModel();
         suggestion.setValue(m.getTotalValue(assignment));
         suggestion.setUnassignedVariables(m.nrUnassignedVariables(assignment));
+        Map<String, String> translations = MSG.courseObjectives();
         for (Criterion<Lecture, Placement> c: m.getCriteria()) {
         	if (c instanceof StudentOverlapConflict) continue;
         	if (c instanceof DeltaTimePreference) continue;
-        	suggestion.setCriterion(c.getName(), c.getValue(assignment));
+        	String translatedName = (translations == null || translations.isEmpty() ? null : translations.get(c.getName()));
+        	if (translatedName != null)
+        		suggestion.setCriterion(translatedName, c.getValue(assignment));
+        	else
+        		suggestion.setCriterion(c.getName(), c.getValue(assignment));
         }
 		return suggestion;
 	}
@@ -450,10 +460,15 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
         	for (ClassAssignmentDetails d: ret.getUnresolvedConflicts())
         		d.setConflict(descriptions.get(d.getClazz().getClassId()));
         
+        Map<String, String> translations = MSG.courseObjectives();
         for (Criterion<Lecture, Placement> c: model.getCriteria()) {
         	if (c instanceof StudentOverlapConflict) continue;
         	if (c instanceof DeltaTimePreference) continue;
-        	ret.setBaseCriterion(c.getName(), c.getValue(assignment));
+        	String translatedName = (translations == null || translations.isEmpty() ? null : translations.get(c.getName()));
+        	if (translatedName != null)
+        		ret.setBaseCriterion(translatedName, c.getValue(assignment));
+        	else
+        		ret.setBaseCriterion(c.getName(), c.getValue(assignment));
         }
         ret.setBaseValue(model.getTotalValue(assignment));
         ret.setBaseUnassignedVariables(model.nrUnassignedVariables(assignment));

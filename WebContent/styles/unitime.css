@@ -5516,7 +5516,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-DataTable .collection .item {
-	display: inline-block;
+	display: inline;
 	white-space: nowrap;
 	padding-right: 3px;
 }
@@ -5820,9 +5820,17 @@ unitime-RoomSharingWidget .legend .blank {
 	white-space: nowrap;
 }
 
+.unitime-SuggestionsPage .table-row {
+	max-width: calc(99vw - 12px);
+}
+
 .unitime-SuggestionsPage .info-message {
 	font-style: italic;
 	text-align: center;	
+}
+
+.unitime-ClassAssignmentTableConflicts .conflicts {
+	white-space: nowrap;
 }
 
 .unitime-ClassAssignmentTableConflicts .conflicts .number {

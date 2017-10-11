@@ -45,6 +45,7 @@ import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.resources.CPSolverMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.BtbInstructorInfo;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.ClassAssignmentDetails;
@@ -86,7 +87,8 @@ import org.unitime.timetable.webutil.timegrid.SolverGridModel;
  */
 @GwtRpcImplements(ClassAssignmentDetailsRequest.class)
 public class ClassAssignmentDetailsBackend implements GwtRpcImplementation<ClassAssignmentDetailsRequest, ClassAssignmentDetails> {
-	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class); 
+	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	protected static CPSolverMessages MSG = Localization.create(CPSolverMessages.class);
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 	
 	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
@@ -183,10 +185,15 @@ public class ClassAssignmentDetailsBackend implements GwtRpcImplementation<Class
 					details.setInstructor(new InstructorInfo(ic.getName(), ic.getResourceId()));
 				}
 			}
+			Map<String, String> translations = MSG.courseObjectives();
 			for (Criterion<Lecture, Placement> criterion: lecture.getModel().getCriteria()) {
 				if (criterion instanceof StudentOverlapConflict) continue;
 				if (criterion instanceof DeltaTimePreference) continue;
-				details.setObjective(criterion.getName(), criterion.getValue(assignment, placement, null));
+				String translatedName = (translations == null || translations.isEmpty() ? null : translations.get(criterion.getName()));
+				if (translatedName != null)
+					details.setObjective(translatedName, criterion.getValue(assignment, placement, null));
+				else
+					details.setObjective(criterion.getName(), criterion.getValue(assignment, placement, null));
 			}
 		}
 		Placement initialPlacement = (Placement)lecture.getInitialAssignment();

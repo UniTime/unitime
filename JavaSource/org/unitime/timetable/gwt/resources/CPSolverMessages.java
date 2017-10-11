@@ -30,6 +30,9 @@ public interface CPSolverMessages extends Messages, Constants {
 	Map<String, String> courseInfoMessages();
 	
 	@DefaultStringMapValue({})
+	Map<String, String> courseObjectives();
+	
+	@DefaultStringMapValue({})
 	Map<String, String> examInfoMessages();
 	
 	@DefaultStringMapValue({})

@@ -49,6 +49,7 @@ import org.unitime.timetable.solver.ui.LogInfo;
 import org.unitime.timetable.solver.ui.PropertiesInfo;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.Formats.Format;
+import org.unitime.timetable.webutil.BackTracker;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
@@ -289,6 +290,7 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
 		fillAvailableOperations(response, context, solver);
 		fillSolverInfos(response, context, solver);
 		
+		BackTracker.markForBack(context, "gwt.jsp?page=listSolutions", MESSAGES.pageListSolutions(), true, true);
 		return response;
 	}
 	

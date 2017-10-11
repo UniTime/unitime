@@ -169,13 +169,18 @@ public class ComputeSuggestionsBackend implements GwtRpcImplementation<ComputeSu
             if (!plac.equals(assignment.getValue(lect))) assignment.assign(0, plac);
         }
         
+        Map<String, String> translations = MSG.courseObjectives();
         for (Criterion<Lecture, Placement> c: model.getCriteria()) {
         	if (c instanceof StudentOverlapConflict) continue;
         	if (c instanceof DeltaTimePreference) continue;
         	String name = c.getName();
+        	String translatedName = (translations == null || translations.isEmpty() ? null : translations.get(c.getName()));
         	double value = c.getValue(assignment);
         	for (Suggestion suggestion: suggestions.getSuggestions())
-        		suggestion.setBaseCriterion(name, value);
+        		if (translatedName != null)
+        			suggestion.setBaseCriterion(translatedName, value);
+        		else
+        			suggestion.setBaseCriterion(name, value);
         }
         double total = model.getTotalValue(assignment);
         int unassigned = model.nrUnassignedVariables(assignment);

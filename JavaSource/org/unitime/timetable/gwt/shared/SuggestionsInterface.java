@@ -535,7 +535,8 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 		public int getPreference() { return iPref; }
 	}
 	
-	public static class ClassAssignmentDetailsRequest implements GwtRpcRequest<ClassAssignmentDetails>{
+	public static class ClassAssignmentDetailsRequest implements GwtRpcRequest<ClassAssignmentDetails>, Serializable{
+		private static final long serialVersionUID = 1L;
 		private Long iClassId;
 		private List<SelectedAssignment> iAssignments;
 		
@@ -772,7 +773,8 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 		}
 	}
 	
-	public static class PreferenceInterface extends RoomInterface.PreferenceInterface implements IsSerializable {
+	public static class PreferenceInterface extends RoomInterface.PreferenceInterface implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
 		private int iPreference;
 		
 		public PreferenceInterface() {}
@@ -825,7 +827,8 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 		}
 	}
 	
-	public static class SuggestionPropertiesRequest implements GwtRpcRequest<SuggestionProperties>{
+	public static class SuggestionPropertiesRequest implements GwtRpcRequest<SuggestionProperties>, Serializable {
+		private static final long serialVersionUID = 1L;
 		private Long iHistoryId;
 		
 		public SuggestionPropertiesRequest() {}
@@ -898,7 +901,8 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 		}
 	}
 
-	public static class SelectedAssignmentsRequest implements GwtRpcRequest<Suggestion>{
+	public static class SelectedAssignmentsRequest implements GwtRpcRequest<Suggestion>, Serializable {
+		private static final long serialVersionUID = 1L;
 		private Long iClassId;
 		private List<SelectedAssignment> iAssignments;
 		
@@ -1066,7 +1070,8 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 		}
 	}
 	
-	public static class MakeAssignmentRequest implements GwtRpcRequest<GwtRpcResponseNull>{
+	public static class MakeAssignmentRequest implements GwtRpcRequest<GwtRpcResponseNull>, Serializable {
+		private static final long serialVersionUID = 1L;
 		private List<SelectedAssignment> iAssignments;
 		
 		public MakeAssignmentRequest() {}
@@ -1097,7 +1102,8 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 		public List<SelectedAssignment> getAssignments() { return iAssignments; }
 	}
 	
-	public static class ComputeSuggestionsRequest implements GwtRpcRequest<Suggestions>{
+	public static class ComputeSuggestionsRequest implements GwtRpcRequest<Suggestions>, Serializable {
+		private static final long serialVersionUID = 1L;
 		private Long iClassId;
 		private List<SelectedAssignment> iAssignments;
 		private int iDepth = 2;
