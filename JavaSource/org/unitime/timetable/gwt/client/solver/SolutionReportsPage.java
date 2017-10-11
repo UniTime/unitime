@@ -56,6 +56,7 @@ public class SolutionReportsPage extends P {
 
 	public SolutionReportsPage() {
 		super("unitime-SolutionReportsPage");
+		createTriggers();
 		init(null);
 	}
 
