@@ -28,6 +28,20 @@
 	<version>4.2.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Event Management</title>
+		<item>
+			<name>Personal Schedule: Meeting Contacts</name>
+			<description>
+				<line>Include meetings where the user is filled in as a meeting contact in the personal schedule.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.2.185</version>
+	<release-date>Sat, 7 Oct 2017</release-date>
+	<category>
 		<title>Online Student Scheduling</title>
 		<item>
 			<name>Student Scheduling Assistant: Degree Plan</name>

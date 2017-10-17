@@ -1272,6 +1272,14 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
                     		.set("externalId", request.getResourceExternalId())
                     		.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
                     		.query(hibSession).list());
+					
+					if (contact && (limit <= 0 || meetings.size() < limit))
+						meetings.addAll(query.select("distinct m")
+								.from("inner join m.meetingContacts c")
+	                    		.where("c.externalUniqueId = :externalId")
+	                    		.set("externalId", request.getResourceExternalId())
+	                    		.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
+	                    		.query(hibSession).list());
 
 					if (contact && (limit <= 0 || meetings.size() < limit))
 						meetings.addAll(query.select("distinct m")
