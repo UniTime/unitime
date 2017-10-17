@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ -->
+ <script name="Roll Forward Student Accommodations from Previous Term" permission="Student Accommodation Edit" engine="ECMAScript" created="Wed Oct 11 10:52:04 EDT 2017">
+  <description><![CDATA[This script rolls forward student accommodations from the previous term into the current term (including students if they already exist in the current term).]]></description>
+  <body><![CDATA[var fromSession = hibSession.createQuery(
+    "select z from Session s, Session z where s.uniqueId = :sessionId and " +
+    "s.academicInitiative = z.academicInitiative and z.sessionBeginDateTime < s.sessionBeginDateTime " +
+    "order by z.sessionBeginDateTime desc")
+    .setLong("sessionId", session.getUniqueId()).setMaxResults(1).uniqueResult();
+log.info("Taking data from " + fromSession.getLabel());
+
+var accommodations = hibSession.createQuery("from StudentAccomodation where session = :sessionId")
+    .setLong("sessionId", fromSession.getUniqueId()).list();
+
+log.setStatus("Copying " + accommodations.size() + " over to " + session.getLabel(), accommodations.size());
+for (var i = accommodations.iterator(); i.hasNext(); ) {
+  log.incProgress();
+  var fromAccomodation = i.next();
+  log.info(fromAccomodation.getAbbreviation() + " - " + fromAccomodation.getName());
+  var toAccomodation = hibSession.createQuery("from StudentAccomodation where session = :sessionId and (abbreviation = :abbreviation or name = :name)")
+    .setLong("sessionId", session.getUniqueId())
+    .setString("abbreviation", fromAccomodation.getAbbreviation())
+    .setString("name", fromAccomodation.getName())
+    .setMaxResults(1).uniqueResult();
+  if (toAccomodation == null) {
+    log.info("Creating " + fromAccomodation.getAbbreviation() + " - " + fromAccomodation.getName());
+    toAccomodation = new org.unitime.timetable.model.StudentAccomodation();
+    toAccomodation.setSession(session);
+    toAccomodation.setName(fromAccomodation.getName());
+    toAccomodation.setAbbreviation(fromAccomodation.getAbbreviation());
+    toAccomodation.setExternalUniqueId(fromAccomodation.getExternalUniqueId());
+    toAccomodation.setStudents(new java.util.HashSet());
+  }
+  for (var j = fromAccomodation.getStudents().iterator(); j.hasNext(); ) {
+    var fromStudent = j.next();
+    var toStudent = hibSession.createQuery("from Student where session = :sessionId and externalUniqueId = :externalUniqueId")
+      .setLong("sessionId", session.getUniqueId()).setString("externalUniqueId", fromStudent.getExternalUniqueId()).uniqueResult();
+    if (toStudent == null) {
+      log.warn("Student " + fromStudent.getName("last-first-middle") + " does not exist in " + session.getLabel());
+    } else if (toAccomodation.getStudents().add(toStudent)) {
+      log.debug("Added " + fromStudent.getName("last-first-middle"));
+    }
+  }
+  hibSession.saveOrUpdate(toAccomodation);
+}]]></body>
+</script>
