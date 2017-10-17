@@ -132,8 +132,41 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 			
 			for (Iterator<Session> i = SessionDAO.getInstance().findAll(hibSession).iterator(); i.hasNext(); ) {
 				Session session = i.next();
-				
-				if (!replicate && solvers.containsKey(session.getUniqueId().toString())) continue;
+				if (solvers.containsKey(session.getUniqueId().toString())) {
+					try {
+						Set<Address> members = solvers.get(session.getUniqueId().toString());
+						if (members.size() > 1) {
+							List<Address> masters = new ArrayList<Address>();
+								RspList<Boolean> ret = iContainer.getDispatcher().callRemoteMethods(
+										members, "hasMaster", new Object[] { session.getUniqueId().toString() }, new Class[] { String.class }, SolverServerImplementation.sAllResponses);
+								for (Rsp<Boolean> rsp : ret) {
+									if (Boolean.TRUE.equals(rsp.getValue())) masters.add(rsp.getSender());
+								}
+							if (masters.size() > 1) {
+								iLog.warn(masters.size() + " masters for " + session.getLabel() + " detected.");
+								iLog.info(iContainer.getLockService().printLocks());
+								iLog.info("Releasing master locks for " + session.getLabel() + " ...");
+								iContainer.getDispatcher().callRemoteMethods(masters, "invoke",
+										new Object[] { "setProperty", session.getUniqueId().toString(), new Class[] {String.class, Object.class}, new Object[] {"ReadyToServe", Boolean.FALSE}},
+										new Class[] { String.class, String.class, Class[].class, Object[].class },
+										SolverServerImplementation.sAllResponses);
+								iContainer.getDispatcher().callRemoteMethods(masters, "invoke",
+										new Object[] { "setProperty", session.getUniqueId().toString(), new Class[] {String.class, Object.class}, new Object[] {"ReloadIsNeeded", Boolean.TRUE}},
+										new Class[] { String.class, String.class, Class[].class, Object[].class },
+										SolverServerImplementation.sAllResponses);
+								iContainer.getDispatcher().callRemoteMethods(masters, "invoke",
+										new Object[] { "releaseMasterLockIfHeld", session.getUniqueId().toString(), new Class[] {}, new Object[] {}},
+										new Class[] { String.class, String.class, Class[].class, Object[].class },
+										SolverServerImplementation.sAllResponses);
+								continue;
+							}
+						}
+					} catch (Exception e) {
+						iLog.error("Failed to release master locks for " + session.getLabel() + ": " + e.getMessage(), e);
+						continue;
+					}
+					if (!replicate) continue;
+				}
 				if (session.getStatusType().isTestSession()) continue;
 				if (!session.getStatusType().canSectionAssistStudents() && !session.getStatusType().canOnlineSectionStudents()) continue;
 				
@@ -150,11 +183,11 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 							available.add(rsp.getSender());
 					}
 				} catch (Exception e) {
-					iLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() + " (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
+					iLog.fatal("Unable to update session " + session.getAcademicTerm() + " " + session.getAcademicYear() + " (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
 				}
 				
 				if (available.isEmpty()) {
-					iLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() + " (" + session.getAcademicInitiative() + "), reason: no server available.");
+					iLog.fatal("Unable to update session " + session.getAcademicTerm() + " " + session.getAcademicYear() + " (" + session.getAcademicInitiative() + "), reason: no server available.");
 					continue;
 				}
 				
@@ -181,7 +214,7 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 							if (members == null && created) break;
 						}
 					} catch (Exception e) {
-						iLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() + " (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
+						iLog.fatal("Unable to update session " + session.getAcademicTerm() + " " + session.getAcademicYear() + " (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
 					}
 				} else {
 					try {
@@ -212,7 +245,7 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 							if (created) break;
 						}
 					} catch (Exception e) {
-						iLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() + " (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
+						iLog.fatal("Unable to update session " + session.getAcademicTerm() + " " + session.getAcademicYear() + " (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
 					}
 				}
 			}

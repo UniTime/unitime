@@ -36,6 +36,15 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Online Student Scheduling</title>
+		<item>
+			<name>Generic Updater: Check For Multiple Masters</name>
+			<description>
+				<line>If multiple masters are detected, release all master locks and reload the new master.</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>
