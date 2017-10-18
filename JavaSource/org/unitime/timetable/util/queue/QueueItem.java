@@ -20,12 +20,16 @@
 package org.unitime.timetable.util.queue;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Date;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.log4j.Logger;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao._RootDAO;
@@ -37,6 +41,7 @@ import org.unitime.timetable.security.UserContext;
  *
  */
 public abstract class QueueItem implements Log {
+	protected static GwtMessages MSG = Localization.create(GwtMessages.class);
     protected static Logger iLogger;
 
 	private Long iSessionId;
@@ -45,7 +50,7 @@ public abstract class QueueItem implements Log {
 	private String iOwnerEmail;
 	private File iOutput = null;
 	private String iLog = "";
-	private String iStatus = "Waiting...";
+	private String iStatus = null;
 	private Date iCreated = new Date(), iStarted = null, iFinished = null;
 	private Throwable iException = null;
 	private String iLocale = null;
@@ -59,6 +64,7 @@ public abstract class QueueItem implements Log {
 		iOwnerName = owner.getName();
 		iOwnerEmail = owner.getEmail();
 		iLocale = Localization.getLocale();
+		iStatus = MSG.scriptStatusWaiting();
 	}
 	
 	public QueueItem(Session session, UserContext owner) {
@@ -89,21 +95,21 @@ public abstract class QueueItem implements Log {
 		try {
 			execute();
 		} catch (ThreadDeath e) {
-			fatal("Execution stopped.", e);
+			fatal(MSG.scriptLogExecutionStopped(), e);
 		} catch (Exception e) {
-			fatal("Execution failed.", e);
+			fatal(MSG.scriptLogExecutionFailed(), e);
 		} finally {
 			ApplicationProperties.setSessionId(null);
 			_RootDAO.closeCurrentThreadSessions();
 			Localization.removeLocale();
 		}
 		iFinished = new Date();
-		iStatus = "All done.";
+		iStatus = MSG.scriptStatusAllDone();
 		if (iException != null) {
 			if (iException instanceof ThreadDeath)
-				iStatus = "Killed";
+				iStatus = MSG.scriptStatusKilled();
 			else
-				iStatus = "Failed (" + iException.getMessage() + ")";
+				iStatus = MSG.scriptStatusFailed(iException.getMessage());
 		}
 	}
 	
@@ -111,7 +117,7 @@ public abstract class QueueItem implements Log {
 	public File output() { return iOutput; }
 	public void setOutput(File output) { iOutput = output; }
 	protected File createOutput(String prefix, String ext) {
-		if (iOutput != null) throw new RuntimeException("Output already created.");
+		if (iOutput != null) throw new RuntimeException(MSG.scriptErrorOutputAlreadyCreated());
 		iOutput = ApplicationProperties.getTempFile(prefix, ext);
 		return iOutput;
 	}
@@ -123,11 +129,11 @@ public abstract class QueueItem implements Log {
 	}
 	protected void warn(String message) {
 		if (iLog.length() > 0) iLog += "<br>";
-		iLog += "<font color='orange'>" + message + "</font>";
+		iLog += "<font color='orange'>" + StringEscapeUtils.escapeHtml(message) + "</font>";
 	}
 	protected void error(String message) {
 		if (iLog.length() > 0) iLog += "<br>";
-		iLog += "<font color='red'>" + message + "</font>";
+		iLog += "<font color='red'>" + StringEscapeUtils.escapeHtml(message) + "</font>";
 	}
 	
 	protected void setStatus(String status) {
@@ -223,6 +229,18 @@ public abstract class QueueItem implements Log {
 		} else {
 			error(message + " (" + exception.getClass().getSimpleName() + ": " + exception.getMessage() + ")");
 		}
+		if (exception != null)
+			logStackTrace(exception);
+	}
+	
+	protected void logStackTrace(Throwable t) {
+		if (t == null) return;
+		StringWriter writer = new StringWriter();
+		PrintWriter pw = new PrintWriter(writer);
+		t.printStackTrace(new PrintWriter(writer));
+		pw.flush(); pw.close();
+		if (iLog.length() > 0) iLog += "<br>";
+		iLog += "<font color='red'><pre>" + StringEscapeUtils.escapeHtml(writer.toString()) + "</pre></font>";
 	}
 
 	@Override
@@ -240,8 +258,10 @@ public abstract class QueueItem implements Log {
 		} else {
 			error(message + " (" + exception.getClass().getSimpleName() + ": " + exception.getMessage() + ")");
 		}
-		if (exception != null)
+		if (exception != null) {
+			logStackTrace(exception);
 			setError(exception);
+		}
 	}
 
 	@Override

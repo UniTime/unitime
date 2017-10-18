@@ -139,6 +139,7 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 		private List<String> iEngines = new ArrayList<String>();
 		private List<String> iPermissions = new ArrayList<String>();
 		private boolean iCanAdd;
+		private String iEmail;
 		
 		public ScriptOptionsInterface() {
 		}
@@ -151,6 +152,10 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 		
 		public boolean canAdd() { return iCanAdd; }
 		public void setCanAdd(boolean canAdd) { iCanAdd = canAdd; }
+		
+		public void setEmail(String email) { iEmail = email; }
+		public boolean hasEmail() { return iEmail != null && !iEmail.isEmpty(); }
+		public String getEmail() { return iEmail; }
 	}
 	
 	public static class GetScriptOptionsRpcRequest implements GwtRpcRequest<ScriptOptionsInterface> {
@@ -217,6 +222,7 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 		private Long iId;
 		private String iName;
 		private Map<String, String> iParameters = new HashMap<String, String>();
+		private String iEmail;
 
 		public ExecuteScriptRpcRequest() {}
 		
@@ -229,13 +235,18 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 		public Map<String, String> getParameters() { return iParameters; }
 		public void setParameter(String name, String value) { iParameters.put(name, value); }
 		
-		public static ExecuteScriptRpcRequest executeScript(Long scriptId, String scriptName, Map<String, String> parameters) {
+		public boolean hasEmail() { return iEmail != null && !iEmail.isEmpty(); }
+		public String getEmail() { return iEmail; }
+		public void setEmail(String email) { iEmail = email; }
+		
+		public static ExecuteScriptRpcRequest executeScript(Long scriptId, String scriptName, Map<String, String> parameters, String email) {
 			ExecuteScriptRpcRequest request = new ExecuteScriptRpcRequest();
 			request.setScriptId(scriptId);
 			request.setScriptName(scriptName);
 			if (parameters != null)
 				for (Map.Entry<String, String> e: parameters.entrySet())
 					request.setParameter(e.getKey(), e.getValue());
+			request.setEmail(email);
 			return request;
 		}
 		

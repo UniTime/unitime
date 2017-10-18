@@ -55,6 +55,16 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Scripts: Send email when finished</name>
+			<description>
+				<line>Added ability for a script to send an email (including the log and the generated file if there is any) when it is finished.</line>
+				<line>If there is an error, include stack trace in the log.</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>

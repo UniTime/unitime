@@ -53,6 +53,7 @@ public class ScriptOptionsBackend implements GwtRpcImplementation<GetScriptOptio
 		}
 		
 		options.setCanAdd(context.hasPermission(Right.ScriptEdit));
+		options.setEmail(context.getUser().getEmail());
 		
 		return options;
 	}

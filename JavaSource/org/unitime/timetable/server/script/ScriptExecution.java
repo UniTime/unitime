@@ -32,8 +32,10 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
 import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.hibernate.Transaction;
-import org.unitime.commons.Debug;
+import org.unitime.commons.Email;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.UploadServlet;
 import org.unitime.timetable.gwt.shared.ScriptInterface.ExecuteScriptRpcRequest;
 import org.unitime.timetable.model.Building;
@@ -99,11 +101,11 @@ public class ScriptExecution extends QueueItem {
 	
 	public void setProgress(double value) { iProgress = value; }
 	
-	public void debug(String message) { log("&nbsp;&nbsp;<i><font color='gray'> " + message + "</font></i>"); }
-	public void info(String message) { log("&nbsp;&nbsp;" + message); }
+	public void debug(String message) { log("&nbsp;&nbsp;<i><font color='gray'> " + StringEscapeUtils.escapeHtml(message) + "</font></i>"); }
+	public void info(String message) { log("&nbsp;&nbsp;" + StringEscapeUtils.escapeHtml(message)); }
 	public void warn(String message) { super.warn(message); }
 	public void error(String message) { super.error(message); }
-	public void error(String message, Throwable t) { super.error(message); setError(t); }
+	public void error(String message, Throwable t) { super.error(message); logStackTrace(t); setError(t); }
 	
 	public File createOutput(String prefix, String ext) {
 		return super.createOutput(prefix, ext);
@@ -115,7 +117,7 @@ public class ScriptExecution extends QueueItem {
 		
 		Transaction tx = hibSession.beginTransaction();
 		try {
-			setStatus("Starting up...", 3);
+			setStatus(MSG.scriptStatusStartingUp(), 3);
 
 			Script script = ScriptDAO.getInstance().get(iRequest.getScriptId(), hibSession);
 			
@@ -240,27 +242,60 @@ public class ScriptExecution extends QueueItem {
 			incProgress();
 			
 			if (engine instanceof Compilable) {
-				setStatus("Compiling script...", 1);
+				setStatus(MSG.scriptStatusCompiling(), 1);
 				CompiledScript compiled = ((Compilable)engine).compile(script.getScript());
 				incProgress();
-				setStatus("Running script...", 100);
+				setStatus(MSG.scriptStatusRunning(), 100);
 				compiled.eval();
 			} else {
-				setStatus("Running script...", 100);
+				setStatus(MSG.scriptStatusRunning(), 100);
 				engine.eval(script.getScript());
 			}
 			
 			hibSession.flush();
 			tx.commit();
 			
-			setStatus("All done.", 1);
+			setStatus(MSG.scriptStatusAllDone(), 1);
 			incProgress();
 		} catch (Exception e) {
 			tx.rollback();
-			error("Execution failed: " + e.getMessage(), e);
-			Debug.error("Execution failed: " + e.getMessage(), e);
+			error(MSG.failedExecution(e.getMessage()), e);
 		} finally {
 			hibSession.close();
 		}
+	}
+	
+	@Override
+	public void executeItem() {
+		super.executeItem();
+		sendEmail();
+	}
+	
+	protected boolean sendEmail() {
+		if (!getRequest().hasEmail()) return false;
+		try {
+			Email email = Email.createEmail();
+			String suffix = ApplicationProperty.EmailDefaultAddressSuffix.value();
+			for (String address: getRequest().getEmail().split("[\n,]")) {
+				if (!address.trim().isEmpty()) {
+					if (suffix != null && address.indexOf('@') < 0)
+						email.addRecipientCC(address.trim() + suffix, null);
+					else
+						email.addRecipientCC(address.trim(), null);
+				}
+			}
+			email.setHTML(log());
+			if (hasOutput())
+				email.addAttachment(output(), output().getName());
+			if (hasOwnerEmail())
+				email.setReplyTo(getOwnerEmail(), getOwnerName());
+			email.setSubject(name() + (hasError() ? " -- " + error().getMessage() : ""));
+			email.send();
+		} catch (Exception e) {
+			Throwable t = error();
+			error(MSG.failedEmail(e.getMessage()), e);
+			if (t != null) setError(t);
+		}
+		return true;
 	}
 }

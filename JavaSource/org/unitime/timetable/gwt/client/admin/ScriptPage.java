@@ -75,11 +75,13 @@ import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -108,6 +110,9 @@ public class ScriptPage extends Composite {
 	
 	private SaveOrUpdateDialog iDialog = new SaveOrUpdateDialog();
 	private int iLastSelectedRow = -1;
+	private CheckBox iSendEmail;
+	private TextArea iEmailAddresses;
+	private VerticalPanel iEmailPanel;
 	
 	public ScriptPage() {
 		iForm = new SimpleForm(2);
@@ -155,7 +160,7 @@ public class ScriptPage extends Composite {
 			public void onClick(ClickEvent event) {
 				if (!Window.confirm(MESSAGES.confirmScriptExecution(iName.getItemText(iName.getSelectedIndex())))) return;
 				LoadingWidget.getInstance().show(MESSAGES.waitExecuting(iName.getItemText(iName.getSelectedIndex())));
-				RPC.execute(ExecuteScriptRpcRequest.executeScript(Long.valueOf(iName.getValue(iName.getSelectedIndex())), iName.getItemText(iName.getSelectedIndex()), iParams),
+				RPC.execute(ExecuteScriptRpcRequest.executeScript(Long.valueOf(iName.getValue(iName.getSelectedIndex())), iName.getItemText(iName.getSelectedIndex()), iParams, (iSendEmail.getValue() ? iEmailAddresses.getText() : null)),
 						new AsyncCallback<QueueItemInterface>() {
 							@Override
 							public void onFailure(Throwable caught) {
@@ -202,9 +207,28 @@ public class ScriptPage extends Composite {
 		
 		iForm.addRow(MESSAGES.propName(), iName);
 		
+		iSendEmail = new CheckBox(MESSAGES.scriptSendEmailCheckbox()); iSendEmail.setValue(false);
+		iEmailAddresses = new TextArea();
+		iEmailAddresses.setStyleName("unitime-TextArea");
+		iEmailAddresses.setVisibleLines(3);
+		iEmailAddresses.setCharacterWidth(80);
+		iEmailPanel = new VerticalPanel();
+		iEmailPanel.add(iSendEmail);
+		iEmailPanel.setCellHorizontalAlignment(iSendEmail, HasHorizontalAlignment.ALIGN_LEFT);
+		iEmailPanel.add(iEmailAddresses);
+		iEmailAddresses.setVisible(false);
+		iSendEmail.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				iEmailAddresses.setVisible(event.getValue());
+			}
+		});
+		
 		iDescription = new HTML();
 		iDescriptionRow = iForm.addRow(MESSAGES.propDescription(), iDescription);
 		iForm.getRowFormatter().setVisible(iDescriptionRow, false);
+		
+		iForm.addRow(MESSAGES.propEmail(), iEmailPanel);
 		
 		iBottom = iHeader.clonePanel("");
 		iForm.addBottomRow(iBottom);
@@ -347,7 +371,7 @@ public class ScriptPage extends Composite {
 		ScriptInterface script = getScript();
 		if (script == null) {
 			iForm.getRowFormatter().setVisible(iDescriptionRow, false);
-			while (iForm.getRowCount() > iDescriptionRow + 2)
+			while (iForm.getRowCount() > iDescriptionRow + 3)
 				iForm.removeRow(1 + iDescriptionRow);
 			iHeader.setEnabled("edit", false);
 			iHeader.setEnabled("execute", false);
@@ -358,7 +382,7 @@ public class ScriptPage extends Composite {
 			iHeader.setEnabled("edit", script.canEdit());
 			iHeader.setEnabled("execute", script.canExecute());
 			iParams.clear();
-			while (iForm.getRowCount() > iDescriptionRow + 2)
+			while (iForm.getRowCount() > iDescriptionRow + 3)
 				iForm.removeRow(1 + iDescriptionRow);
 			if (script.hasParameters()) {
 				for (final ScriptParameterInterface param: script.getParameters()) {
@@ -484,7 +508,7 @@ public class ScriptPage extends Composite {
 						});
 						widget = text;
 					}
-					int row = iForm.insertRow(iForm.getRowCount() - 1);
+					int row = iForm.insertRow(iForm.getRowCount() - 2);
 					iForm.setWidget(row, 0, new Label((param.getLabel() == null || param.getLabel().isEmpty() ? param.getName() : param.getLabel()) + ":", false));
 					iForm.setWidget(row, 1, widget);
 				}
@@ -504,6 +528,7 @@ public class ScriptPage extends Composite {
 			@Override
 			public void onSuccess(ScriptOptionsInterface result) {
 				iHeader.setEnabled("add", result.canAdd());
+				if (result.hasEmail()) iEmailAddresses.setText(result.getEmail());
 				iDialog.setup(result);
 				RPC.execute(new LoadAllScriptsRpcRequest(), new AsyncCallback<GwtRpcResponseList<ScriptInterface>>() {
 

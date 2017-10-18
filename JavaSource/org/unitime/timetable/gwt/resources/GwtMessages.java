@@ -1355,7 +1355,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Requested Services:")
 	String propEventRequestedServices();
-
+	
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
 
@@ -2033,6 +2033,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Execution failed: {0}")
 	String failedExecution(String reason);
+	
+	@DefaultMessage("Failed to send email: {0}")
+	String failedEmail(String reason);
 	
 	@DefaultMessage("Failed to load reservations: {0}")
 	String failedToLoadReservations(String reason);
@@ -5394,4 +5397,37 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Departmental")
 	String serviceProviderDepartmental();
+	
+	@DefaultMessage("Waiting...")
+	String scriptStatusWaiting();
+	
+	@DefaultMessage("All done.")
+	String scriptStatusAllDone();
+	
+	@DefaultMessage("Killed.")
+	String scriptStatusKilled();
+	
+	@DefaultMessage("Failed: {0}")
+	String scriptStatusFailed(String message);
+	
+	@DefaultMessage("Starting up...")
+	String scriptStatusStartingUp();
+	
+	@DefaultMessage("Compiling script...")
+	String scriptStatusCompiling();
+	
+	@DefaultMessage("Running script...")
+	String scriptStatusRunning();
+	
+	@DefaultMessage("Execution Stopped.")
+	String scriptLogExecutionStopped();
+	
+	@DefaultMessage("Execution Failed.")
+	String scriptLogExecutionFailed();
+	
+	@DefaultMessage("Output already created.")
+	String scriptErrorOutputAlreadyCreated();
+	
+	@DefaultMessage("Send email when finished")
+	String scriptSendEmailCheckbox();
 }
