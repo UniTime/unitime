@@ -37,6 +37,16 @@
 		</item>
 	</category>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Room Sharing Grid, Instructor Availability Table</name>
+			<description>
+				<line>Corrected table splitting when more than 48 possible times are displayed horizontally.</line>
+				<line>Slightly increase cell width to make sure all cells are of the same width.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Online Student Scheduling</title>
 		<item>
 			<name>Generic Updater: Check For Multiple Masters</name>

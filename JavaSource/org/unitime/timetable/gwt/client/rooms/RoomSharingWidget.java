@@ -319,7 +319,7 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 				header.add(corner);
 				
 				int first = iMode.getFirstSlot() + 24 * page * iMode.getStep();
-				int last = Math.min(first + 24 * iMode.getStep() * (page + 1), iMode.getLastSlot());
+				int last = Math.min(first + 24 * iMode.getStep(), iMode.getLastSlot());
 				
 				final List<List<Cell>> thisTime = new ArrayList<List<Cell>>();
 				for (int slot = first; slot < last; slot += iMode.getStep()) {
