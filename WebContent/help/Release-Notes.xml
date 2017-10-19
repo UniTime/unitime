@@ -45,6 +45,12 @@
 				<line>Slightly increase cell width to make sure all cells are of the same width.</line>
 			</description>
 		</item>
+		<item>
+			<name>Room Sharing Grid: Add Department</name>
+			<description>
+				<line>Added ability to filter available departments by a given text (department code or name).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>

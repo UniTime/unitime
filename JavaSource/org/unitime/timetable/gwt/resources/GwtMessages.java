@@ -3634,7 +3634,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("-- Add Department --")
 	String separatorAddDepartment();
 	
-	@DefaultMessage("Add All Departments")
+	@DefaultMessage("Add All Matching Departments")
 	String buttonAddAllDepartments();
 	
 	@DefaultMessage("No academic session is available.")

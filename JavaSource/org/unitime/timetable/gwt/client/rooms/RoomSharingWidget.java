@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.P;
+import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm.HasMobileScroll;
@@ -50,6 +51,9 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
@@ -57,6 +61,7 @@ import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Button;
@@ -72,6 +77,7 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextArea;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
@@ -597,8 +603,51 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 									RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
 								}
 							});
+							SimpleForm form = new SimpleForm();
+							final TextBox text = new TextBox();
+							text.setStyleName("unitime-TextArea"); text.setWidth("300px");
+							form.addRow(MESSAGES.propFilter(), text);
+							final P box = new P("box");
+							final Timer filterTimer = new Timer() {
+					            @Override
+					            public void run() {
+					            	String f = text.getText();
+					            	boolean first = true;
+					            	for (int i = 0; i < other.size(); i++) {
+					            		P line = (P)box.getWidget(i);
+					            		line.setVisible(match(f, other.get(i)));
+					            		if (first && line.isVisible()) {
+					            			((P)line.getWidget(0)).addStyleName("first");
+					            			first = false;
+					            		} else {
+					            			((P)line.getWidget(0)).removeStyleName("first");
+					            		}
+					            	}
+					            }
+							};
+							text.addKeyUpHandler(new KeyUpHandler() {
+								@Override
+								public void onKeyUp(KeyUpEvent event) {
+									filterTimer.schedule(250);
+									if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+										String f = text.getText();
+						            	for (RoomSharingOption option: other) {
+						            		if (match(f, option)) {
+						            			iModel.getOptions().add(option);
+						            			iOption = option;
+						            			break;
+						            		}
+						            	}
+										dialog.hide();
+										setMode(mode, horizontal);
+										return;
+									} else if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
+										dialog.hide();
+										return;
+									}
+								}
+							});
 							P legend = new P("legend");
-							P box = new P("box");
 							legend.add(box);
 							for (final RoomSharingOption option: other) {
 								final P line = new P("row");
@@ -612,35 +661,20 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 								final P title = new P("title", "editable-title"); title.setHTML(option.getName());
 								line.add(title);
 								
-								MouseDownHandler md = new MouseDownHandler() {
+								ClickHandler md = new ClickHandler() {
 									@Override
-									public void onMouseDown(MouseDownEvent event) {
+									public void onClick(ClickEvent event) {
 										iModel.getOptions().add(option);
 										dialog.hide();
 										iOption = option;
 										setMode(mode, horizontal);
 									}
-								};
-								
-								icon.addMouseDownHandler(md);
-								title.addMouseDownHandler(md);
+								};								
+								icon.addClickHandler(md);
+								title.addClickHandler(md);
 								
 								box.add(line);
 							}
-							
-							final P line = new P("row");
-							line.add(new P("blank"));
-							Button button = new Button(MESSAGES.buttonAddAllDepartments(), new ClickHandler() {
-								@Override
-								public void onClick(ClickEvent event) {
-									iModel.getOptions().addAll(other);
-									dialog.hide();
-									setMode(mode, horizontal);
-								}
-							});
-							P p = new P("button"); p.add(button);
-							line.add(p);
-							box.add(line);
 							
 							ScrollPanel w = new ScrollPanel();
 							w.addStyleName("scroll");
@@ -648,10 +682,36 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 							w.add(legend);
 							if (other.size() >= 12)
 								w.setHeight("300px");
-							dialog.setWidget(w);
+							int r = form.addRow(w);
+							form.getCellFormatter().addStyleName(r, 0, "unitime-TopLine");
+							
+							UniTimeHeaderPanel footer = new UniTimeHeaderPanel();
+							footer.addButton("add", MESSAGES.buttonAddAllDepartments(), new ClickHandler() {
+								@Override
+								public void onClick(ClickEvent event) {
+									String f = text.getText();
+					            	for (RoomSharingOption option: other) {
+					            		if (match(f, option)) {
+					            			iModel.getOptions().add(option);
+					            			iOption = option;
+					            		}
+					            	}
+									dialog.hide();
+									setMode(mode, horizontal);
+								}
+							});
+							footer.addButton("close", MESSAGES.buttonClose(), new ClickHandler() {
+								@Override
+								public void onClick(ClickEvent event) {
+									dialog.hide();
+								}
+							});
+							form.addBottomRow(footer);
+							dialog.setWidget(form);
 							
 							RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
 							dialog.center();
+							text.setFocus(true);
 						}
 					});
 					Character ch = UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonAddDepartment());
@@ -677,6 +737,20 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 				box.add(line);
 			}
 		}
+	}
+	
+	protected boolean match(String filter, RoomSharingOption option) {
+		if (filter == null || filter.isEmpty()) return true;
+		fw: for (String fw: filter.split(" ")) {
+			if (option.getCode() != null && option.getCode().startsWith(fw)) continue;
+			if (option.getName() != null && !option.getName().isEmpty()) {
+				for (String w: option.getName().split(" ")) {
+					if (w.toLowerCase().startsWith(fw.toLowerCase())) continue fw;
+				}
+			}
+			return false;
+		}
+		return true;
 	}
 
 	@Override
