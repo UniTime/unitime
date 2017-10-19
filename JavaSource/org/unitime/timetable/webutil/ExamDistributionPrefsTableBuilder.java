@@ -59,7 +59,7 @@ public class ExamDistributionPrefsTableBuilder {
 	            "select distinct dp from DistributionPref dp " +
 	            "inner join dp.distributionObjects do, Exam x inner join x.owners o " +
 	            "where "+
-	            (courseNbr==null || courseNbr.trim().length()==0?"":courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr and ":"o.course.courseNbr=:courseNbr and")+
+	            (courseNbr==null || courseNbr.trim().length()==0?"":courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr and ":"o.course.courseNbr=:courseNbr and ")+
 	            (subjectAreaId==null?"":" o.course.subjectArea.uniqueId=:subjectAreaId and ")+
 	            "dp.distributionType.examPref = true and "+
 	            "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId")
@@ -79,7 +79,7 @@ public class ExamDistributionPrefsTableBuilder {
                 "select distinct dp from DistributionPref dp " +
                 "inner join dp.distributionObjects do, Exam x inner join x.owners o " +
                 "where "+
-                (courseNbr==null || courseNbr.trim().length()==0?"":courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr and ":"o.course.courseNbr=:courseNbr and")+
+                (courseNbr==null || courseNbr.trim().length()==0?"":courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr and ":"o.course.courseNbr=:courseNbr and ")+
                 (subjectAreaId==null?"":" o.course.subjectArea.uniqueId=:subjectAreaId and ")+
                 "dp.distributionType.examPref = true and "+
                 "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId")

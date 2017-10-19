@@ -47,6 +47,15 @@
 		</item>
 	</category>
 	<category>
+		<title>Examination Timetabling</title>
+		<item>
+			<name>Examination Distribution Preferences: HQL Fix</name>
+			<description>
+				<line>Fixed a query syntax exception when Subject is set to All, but a Course Number is filled in.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Online Student Scheduling</title>
 		<item>
 			<name>Generic Updater: Check For Multiple Masters</name>
