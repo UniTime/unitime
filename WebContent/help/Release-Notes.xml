@@ -35,6 +35,12 @@
 				<line>Include meetings where the user is filled in as a meeting contact in the personal schedule.</line>
 			</description>
 		</item>
+		<item>
+			<name>Rooms: Event Message</name>
+			<description>
+				<line>Do not copy event room note from the &lt;event department, room type&gt; pair over to the room when editing a room.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>

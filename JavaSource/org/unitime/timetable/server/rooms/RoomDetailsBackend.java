@@ -320,7 +320,7 @@ public class RoomDetailsBackend extends RoomFilterBackend {
         	if (location.getEventDepartment() != null)
         		response.setEventDepartment(wrap(location.getEventDepartment(), location, null));
         	
-        	response.setEventNote(location.getEventMessage());
+        	response.setEventNote(location.getNote());
         	response.setBreakTime(location.getBreakTime());
         	if (location.getEventDepartment() != null) {
             	response.setEventStatus(location.getEventStatus());
