@@ -114,6 +114,7 @@ import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomDegreePlansHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.custom.DefaultCourseDetailsProvider;
+import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.RequestStudentUpdates;
 import org.unitime.timetable.onlinesectioning.match.AbstractCourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
@@ -162,6 +163,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	private static Logger sLog = Logger.getLogger(SectioningServlet.class);
 	private CourseDetailsProvider iCourseDetailsProvider;
 	private CourseMatcherProvider iCourseMatcherProvider;
+	private ExternalTermProvider iExternalTermProvider;
 	
 	public SectioningServlet() {
 	}
@@ -191,6 +193,19 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			}
 		}
 		return iCourseMatcherProvider;
+	}
+	
+	private ExternalTermProvider getExternalTermProvider() {
+		if (iExternalTermProvider == null) {
+			try {
+				String providerClass = ApplicationProperty.CustomizationExternalTerm.value();
+				if (providerClass != null)
+					iExternalTermProvider = (ExternalTermProvider)Class.forName(providerClass).newInstance();
+			} catch (Exception e) {
+				sLog.warn("Failed to initialize external term provider: " + e.getMessage());
+			}
+		}
+		return iExternalTermProvider;
 	}
 	
 	private @Autowired AuthenticationManager authenticationManager;
@@ -444,24 +459,32 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 
 	public Collection<AcademicSessionProvider.AcademicSessionInfo> listAcademicSessions(boolean sectioning) throws SectioningException, PageAccessException {
 		ArrayList<AcademicSessionProvider.AcademicSessionInfo> ret = new ArrayList<AcademicSessionProvider.AcademicSessionInfo>();
+		ExternalTermProvider extTerm = getExternalTermProvider();
 		if (sectioning) {
 			for (String s: solverServerService.getOnlineStudentSchedulingContainer().getSolvers()) {
 				OnlineSectioningServer server = solverServerService.getOnlineStudentSchedulingContainer().getSolver(s);
 				if (server == null || !server.isReady()) continue;
 				Session session = SessionDAO.getInstance().get(Long.valueOf(s));
+				AcademicSessionInfo info = server.getAcademicSession();
 				ret.add(new AcademicSessionProvider.AcademicSessionInfo(
 						session.getUniqueId(),
 						session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
-						MSG.sessionName(session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative())));
+						MSG.sessionName(session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative()))
+						.setExternalCampus(extTerm == null ? null : extTerm.getExternalCampus(info))
+						.setExternalTerm(extTerm == null ? null : extTerm.getExternalTerm(info)));
 			}
 		} else {
 			for (Session session: SessionDAO.getInstance().findAll()) {
 				if (session.getStatusType().isTestSession()) continue;
-				if (session.getStatusType().canPreRegisterStudents() && !session.getStatusType().canSectionAssistStudents() && !session.getStatusType().canOnlineSectionStudents())
+				if (session.getStatusType().canPreRegisterStudents() && !session.getStatusType().canSectionAssistStudents() && !session.getStatusType().canOnlineSectionStudents()) {
+					AcademicSessionInfo info = new AcademicSessionInfo(session);
 					ret.add(new AcademicSessionProvider.AcademicSessionInfo(
 							session.getUniqueId(),
 							session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
-							MSG.sessionName(session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative())));
+							MSG.sessionName(session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative()))
+							.setExternalCampus(extTerm == null ? null : extTerm.getExternalCampus(info))
+							.setExternalTerm(extTerm == null ? null : extTerm.getExternalTerm(info)));
+				}
 			}
 		}
 		if (ret.isEmpty()) {
@@ -814,6 +837,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (getSessionContext().isHttpSessionNew()) throw new PageAccessException(MSG.exceptionUserNotLoggedIn());
 		Long sessionId = getLastSessionId();
 		if (sessionId == null) throw new SectioningException(MSG.exceptionNoAcademicSession());
+		ExternalTermProvider extTerm = getExternalTermProvider();
 		if (sectioning) {
 			OnlineSectioningServer server = getServerInstance(sessionId, false);
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
@@ -822,17 +846,22 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			return new AcademicSessionProvider.AcademicSessionInfo(
 					s.getUniqueId(),
 					s.getYear(), s.getTerm(), s.getCampus(),
-					MSG.sessionName(s.getYear(), s.getTerm(), s.getCampus()));
+					MSG.sessionName(s.getYear(), s.getTerm(), s.getCampus()))
+					.setExternalCampus(extTerm == null ? null : extTerm.getExternalCampus(s))
+					.setExternalTerm(extTerm == null ? null : extTerm.getExternalTerm(s));
 		} else {
 			Session session = SessionDAO.getInstance().get(sessionId);
 			if (session == null || session.getStatusType().isTestSession())
 				throw new SectioningException(MSG.exceptionNoSuitableAcademicSessions());
 			if (!session.getStatusType().canPreRegisterStudents() || session.getStatusType().canSectionAssistStudents() || session.getStatusType().canOnlineSectionStudents())
 				throw new SectioningException(MSG.exceptionNoServerForSession());
+			AcademicSessionInfo info = new AcademicSessionInfo(session);
 			return new AcademicSessionProvider.AcademicSessionInfo(
 					session.getUniqueId(),
 					session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
-					MSG.sessionName(session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative()));
+					MSG.sessionName(session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative()))
+					.setExternalCampus(extTerm == null ? null : extTerm.getExternalCampus(info))
+					.setExternalTerm(extTerm == null ? null : extTerm.getExternalTerm(info));
 		}
 	}
 	

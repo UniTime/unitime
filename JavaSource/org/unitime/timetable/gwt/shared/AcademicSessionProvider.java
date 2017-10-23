@@ -47,6 +47,7 @@ public interface AcademicSessionProvider {
 	public static class AcademicSessionInfo implements IsSerializable {
 		private Long iSessionId;
 		private String iYear, iTerm, iCampus, iName;
+		private String iExternalTerm, iExternalCampus;
 		
 		public AcademicSessionInfo() {}
 		
@@ -71,7 +72,15 @@ public interface AcademicSessionProvider {
 		public void setTerm(String term) { iTerm = term; }
 		
 		public String getName() { return (iName == null || iName.isEmpty() ? iTerm + " " + iYear + " (" + iCampus + ")" : iName); }
-		public void setname(String name) { iName = name; }
+		public void setName(String name) { iName = name; }
+		
+		public String getExternalCampus() { return iExternalCampus; }
+		public boolean hasExternalCampus() { return iExternalCampus != null && !iExternalCampus.isEmpty(); }
+		public AcademicSessionInfo setExternalCampus(String extCampus) { iExternalCampus = extCampus; return this; }
+		
+		public String getExternalTerm() { return iExternalTerm; }
+		public boolean hasExternalTerm() { return iExternalTerm != null && !iExternalTerm.isEmpty(); }
+		public AcademicSessionInfo setExternalTerm(String extTerm) { iExternalTerm = extTerm; return this; }
 		
 		@Override
 		public String toString() {
@@ -82,6 +91,18 @@ public interface AcademicSessionProvider {
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof AcademicSessionInfo)) return false;
 			return getSessionId().equals(((AcademicSessionInfo)o).getSessionId());
+		}
+	}
+	
+	public static interface AcademicSessionMatcher {
+		public boolean match(AcademicSessionInfo session);
+	}
+	
+	public static class AcademicSessionMatchSessionId implements AcademicSessionMatcher {
+		Long iSessionId;
+		public AcademicSessionMatchSessionId(Long sessionId) { iSessionId = sessionId; }
+		public boolean match(AcademicSessionInfo session) {
+			return session.getSessionId().equals(iSessionId);
 		}
 	}
 }

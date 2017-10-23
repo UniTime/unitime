@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.gwt.client.sectioning;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Vector;
 
 import org.unitime.timetable.gwt.client.aria.AriaDialogBox;
@@ -161,23 +163,29 @@ public class AcademicSessionSelector implements AcademicSessionProvider {
 	}
 	
 	public void selectSession(final Long sessionId, final AsyncCallback<Boolean> callback) {
-		if (sessionId == null) {
+		selectSession(new AcademicSessionMatchSessionId(sessionId), callback);
+	}
+	
+	public void selectSession(final AcademicSessionMatcher matcher, final AsyncCallback<Boolean> callback) {
+		if (matcher == null) {
 			selectSession();
 			callback.onSuccess(false);
-		} else if (sessionId.equals(getAcademicSessionId())) {
+		} else if (iSession != null && matcher.match(iSession)) {
 			callback.onSuccess(true);
 		} else {
 			iSectioningService.listAcademicSessions(iMode.isSectioning(), new AsyncCallback<Collection<AcademicSessionInfo>>() {
 				public void onSuccess(Collection<AcademicSessionInfo> result) {
+					List<AcademicSessionInfo> match = new ArrayList<AcademicSessionInfo>();
 					for (AcademicSessionInfo session: result) {
-						if (session.getSessionId().equals(sessionId)) {
-							selectSession(session, false);
-							callback.onSuccess(true);
-							return;
-						}
+						if (matcher.match(session)) { match.add(session); }
 					}
-					selectSession();
-					callback.onSuccess(false);
+					if (match.size() == 1) {
+						selectSession(match.get(0), false);
+						callback.onSuccess(true);
+					} else {
+						selectSession();
+						callback.onSuccess(false);
+					}
 				}
 				public void onFailure(Throwable caught) {
 					iSessions.clearTable(1);

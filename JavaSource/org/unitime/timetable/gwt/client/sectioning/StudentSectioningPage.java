@@ -30,6 +30,8 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
+import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionInfo;
+import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionMatcher;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
 
 import com.google.gwt.core.client.GWT;
@@ -39,6 +41,7 @@ import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.ClosingEvent;
+import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 
@@ -62,14 +65,14 @@ public class StudentSectioningPage extends Composite {
 	public StudentSectioningPage(final Mode mode) {
 		final UserAuthentication userAuthentication = new UserAuthentication(UniTimePageHeader.getInstance().getMiddle(), mode.isSectioning() ? !CONSTANTS.isAuthenticationRequired() : false);
 		
-		if (Window.Location.getParameter("student") == null)
+		if (Location.getParameter("student") == null)
 			iSectioningService.whoAmI(new AsyncCallback<String>() {
 				public void onFailure(Throwable caught) {
 					if (!mode.isSectioning() || CONSTANTS.isAuthenticationRequired() || CONSTANTS.tryAuthenticationWhenGuest()) {
 						if (CONSTANTS.allowUserLogin())
 							userAuthentication.authenticate();
 						else if (!mode.isSectioning() || CONSTANTS.isAuthenticationRequired())
-							ToolBox.open(GWT.getHostPageBaseURL() + "login.do?target=" + URL.encodeQueryString(Window.Location.getHref()));
+							ToolBox.open(GWT.getHostPageBaseURL() + "login.do?target=" + URL.encodeQueryString(Location.getHref()));
 						else
 							userAuthentication.authenticated(null);
 					}
@@ -80,7 +83,7 @@ public class StudentSectioningPage extends Composite {
 							if (CONSTANTS.allowUserLogin())
 								userAuthentication.authenticate();
 							else if (!mode.isSectioning() || CONSTANTS.isAuthenticationRequired())
-								ToolBox.open(GWT.getHostPageBaseURL() + "login.do?target=" + URL.encodeQueryString(Window.Location.getHref()));
+								ToolBox.open(GWT.getHostPageBaseURL() + "login.do?target=" + URL.encodeQueryString(Location.getHref()));
 							else
 								userAuthentication.authenticated(result);
 						} else {
@@ -101,16 +104,42 @@ public class StudentSectioningPage extends Composite {
 			public void onSuccess(SectioningProperties result) {
 				if (result.isAdminOrAdvisor()) {
 					userAuthentication.setAllowLookup(true);
-					if (Window.Location.getParameter("session") != null)
-						sessionSelector.selectSession(Long.valueOf(Window.Location.getParameter("session")), new AsyncCallback<Boolean>() {
+					if (Location.getParameter("session") != null || Location.getParameter("term") != null)
+						sessionSelector.selectSession(new AcademicSessionMatcher() {
+							protected boolean matchCampus(AcademicSessionInfo info, String campus) {
+								if (info.hasExternalCampus() && campus.equalsIgnoreCase(info.getExternalCampus())) return true;
+								return campus.equalsIgnoreCase(info.getCampus());
+							}
+
+							protected boolean matchTerm(AcademicSessionInfo info, String term) {
+								if (info.hasExternalTerm() && term.equalsIgnoreCase(info.getExternalTerm())) return true;
+								return term.equalsIgnoreCase(info.getTerm() + info.getYear()) || term.equalsIgnoreCase(info.getYear() + info.getTerm()) || term.equalsIgnoreCase(info.getTerm() + info.getYear() + info.getCampus());
+							}
+
+							protected boolean matchSession(AcademicSessionInfo info, String session) {
+								if (info.hasExternalTerm() && info.hasExternalCampus() && session.equalsIgnoreCase(info.getExternalTerm() + info.hasExternalCampus())) return true;
+								return session.equalsIgnoreCase(info.getTerm() + info.getYear() + info.getCampus()) || session.equalsIgnoreCase(info.getTerm() + info.getYear()) || session.equals(info.getSessionId().toString());
+							}
+
+							@Override
+							public boolean match(AcademicSessionInfo info) {
+								String campus = Location.getParameter("campus");
+								if (campus != null && !matchCampus(info, campus)) return false;
+								String term = Location.getParameter("term");
+								if (term != null && !matchTerm(info, term)) return false;
+								String session = Location.getParameter("session");
+								if (session != null && !matchSession(info, session)) return false;
+								return true;
+							}
+						}, new AsyncCallback<Boolean>() {
 							@Override
 							public void onFailure(Throwable caught) {
 							}
 
 							@Override
 							public void onSuccess(Boolean result) {
-								if (Window.Location.getParameter("student") != null)
-									UserAuthentication.personFound(Window.Location.getParameter("student"));
+								if (Location.getParameter("student") != null)
+									UserAuthentication.personFound(Location.getParameter("student"));
 							}
 						});
 				} else {
@@ -166,7 +195,7 @@ public class StudentSectioningPage extends Composite {
 				} else if (userAuthentication.isLoggedIn()) {
 					ToolBox.open(GWT.getHostPageBaseURL() + "logOut.do");
 				} else {
-					ToolBox.open(GWT.getHostPageBaseURL() + "login.do?target=" + URL.encodeQueryString(Window.Location.getHref()));
+					ToolBox.open(GWT.getHostPageBaseURL() + "login.do?target=" + URL.encodeQueryString(Location.getHref()));
 				}
 			}
 		});
@@ -200,7 +229,7 @@ public class StudentSectioningPage extends Composite {
 			}
 		});
 		
-		if (Window.Location.getParameter("session") == null)
+		if (Location.getParameter("session") == null && Location.getParameter("term") == null)
 			iSectioningService.lastAcademicSession(mode.isSectioning(), new AsyncCallback<AcademicSessionProvider.AcademicSessionInfo>() {
 				public void onFailure(Throwable caught) {
 					if (!userAuthentication.isShowing() && !UniTimeFrameDialog.hasDialog())
