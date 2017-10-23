@@ -521,7 +521,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 					int total = 0, assigned = 0;
 					if (model.getResourceType() == ResourceType.STUDENT_GROUP.ordinal() && !model.getResourceId().equals(group.getId())) continue;
 					for (Student student: group.getStudents()) {
-						if (!student.hasOffering(lecture.getConfiguration().getOfferingId())) continue;
+						if (lecture.getConfiguration() == null || !student.hasOffering(lecture.getConfiguration().getOfferingId())) continue;
 						total ++;
 						if (lecture.students().contains(student)) assigned ++;
 					}
