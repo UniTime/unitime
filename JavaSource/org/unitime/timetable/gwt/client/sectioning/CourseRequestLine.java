@@ -78,13 +78,15 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 	private AriaCheckBox iWaitList = null;
 	private CourseRequestLine iPrevious = null, iNext = null;
 	private Validator<CourseSelection> iValidator = null;
+	private boolean iSpecReg;
 	
-	public CourseRequestLine(AcademicSessionProvider session, int priority, boolean alternate, Validator<CourseSelection> validator) {
+	public CourseRequestLine(AcademicSessionProvider session, int priority, boolean alternate, Validator<CourseSelection> validator, boolean specreg) {
 		super("unitime-CourseRequestLine");
 		iSessionProvider = session;
 		iValidator = validator;
 		iPriority = priority;
 		iAlternate = alternate;
+		iSpecReg = specreg;
 		
 		P line = new P("line");
 		if (alternate) line.addStyleName("alternative");
@@ -403,7 +405,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 		private HandlerRegistration iCourseSelectionHandlerRegistration;
 		
 		public CourseSelectionBox(boolean allowFreeTime, boolean alternative) {
-			super(CONSTANTS.showCourseTitle());
+			super(CONSTANTS.showCourseTitle(), iSpecReg);
 			if (allowFreeTime) {
 				FreeTimeParser parser = new FreeTimeParser();
 				setFreeTimes(parser);
@@ -428,7 +430,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 							sSectioningService.retrieveCourseDetails(iSessionProvider.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 						}
 					});
-					CourseFinderClasses classes = new CourseFinderClasses(true);
+					CourseFinderClasses classes = new CourseFinderClasses(true, iSpecReg);
 					classes.setDataProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
 						@Override
 						public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {

@@ -5124,6 +5124,10 @@ unitime-RoomSharingWidget .legend .blank {
 	width: 100%;
 }
 
+.unitime-SuggestionsBox .all-choices {
+	text-align: right;
+}
+
 .unitime-SuggestionsBox .legend {
 	font-style: italic;
 	color: black;

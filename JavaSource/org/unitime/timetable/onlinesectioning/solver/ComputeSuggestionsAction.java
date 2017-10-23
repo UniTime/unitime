@@ -46,6 +46,7 @@ import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.online.OnlineReservation;
 import org.cpsolver.studentsct.online.OnlineSectioningModel;
 import org.cpsolver.studentsct.online.selection.BestPenaltyCriterion;
 import org.cpsolver.studentsct.online.selection.MultiCriteriaBranchAndBoundSelection;
@@ -72,6 +73,7 @@ import org.unitime.timetable.onlinesectioning.model.XDistributionType;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XReservationType;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 
@@ -104,7 +106,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		iFilter = filter;
 		return this;
 	}
-	
+		
 	public ClassAssignmentInterface.ClassAssignment getSelection() { return iSelection; }
 	
 	public String getFilter() { return iFilter; }
@@ -243,6 +245,16 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 			OnlineSectioningLog.Request.Builder rq = OnlineSectioningHelper.toProto(r); 
 			if (r instanceof CourseRequest) {
 				CourseRequest cr = (CourseRequest)r;
+				// Experimental: provide student with a blank override that allows for overlaps as well as over-limit
+				if (getRequest().isShowAllChoices()) {
+					for (Course course: cr.getCourses()) {
+						new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), -100, true, 1, true, true, true, true) {
+							@Override
+							public boolean mustBeUsed() { return true; }
+						};
+					}
+				}
+
 				if (!getSelection().isFreeTime() && cr.getCourse(getSelection().getCourseId()) != null) {
 					selectedRequest = r;
 					if (getSelection().getClassId() != null) {
@@ -306,7 +318,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		long t2 = System.currentTimeMillis();
 		
 		if (selectedRequest == null) return new ArrayList<ClassAssignmentInterface>();
-        
+		
 		SuggestionsBranchAndBound suggestionBaB = null;
 		
 		boolean avoidOverExpected = server.getAcademicSession().isSectioningEnabled();

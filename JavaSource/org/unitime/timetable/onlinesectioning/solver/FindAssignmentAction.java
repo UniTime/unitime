@@ -222,6 +222,21 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							offering.fillInUnavailabilities(student);
 					}
 			}
+			if (getRequest().isShowAllChoices()) {
+				// Experimental: provide student with a blank override that allows for overlaps as well as over-limit
+				for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
+					Request r = (Request)e.next();
+					if (r instanceof CourseRequest) {
+						CourseRequest cr = (CourseRequest)r;
+						for (Course course: cr.getCourses()) {
+							new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), -100, true, 1, true, true, true, true) {
+								@Override
+								public boolean mustBeUsed() { return true; }
+							};
+						}
+					}
+				}
+			}
 			model.addStudent(student);
 			model.setDistanceConflict(new DistanceConflict(server.getDistanceMetric(), model.getProperties()));
 			model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
@@ -758,6 +773,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					a.setClassNumber(section.getName(-1l));
 					a.setCancelled(section.isCancelled());
 					a.setLimit(new int[] {enrl.countEnrollmentsForSection(section.getId()), offering.getSection(section.getId()).getLimit()});
+					if (section.getLimit() == 0) a.setOverlapNote(MSG.sectionIsFull());
 					if (section.getTime() != null) {
 						for (DayCode d : DayCode.toDayCodes(section.getTime().getDayCode()))
 							a.addDay(d.getIndex());
@@ -828,9 +844,12 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 						String note = null;
 						for (Iterator<String> j = overlap.iterator(); j.hasNext(); ) {
 							String n = j.next();
-							if (note == null)
-								note = MSG.noteAllowedOverlapFirst(n);
-							else if (j.hasNext())
+							if (note == null) {
+								if (section.getLimit() == 0)
+									note = MSG.noteFullSectionOverlapFirst(n);
+								else
+									note = MSG.noteAllowedOverlapFirst(n);
+							} else if (j.hasNext())
 								note += MSG.noteAllowedOverlapMiddle(n);
 							else
 								note += MSG.noteAllowedOverlapLast(n);

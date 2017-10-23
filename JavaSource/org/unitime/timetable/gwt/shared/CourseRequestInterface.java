@@ -42,6 +42,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	private ArrayList<Request> iAlternatives = new ArrayList<Request>();
 	private boolean iSaved = false;
 	private boolean iNoChange = false;
+	private boolean iAllChoices = false;
 	private Boolean iUpdateLastRequest = null;
 	private RequestedCourse iLastCourse = null;
 	
@@ -61,6 +62,9 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	
 	public boolean isNoChange() { return iNoChange; }
 	public void setNoChange(boolean noChange) { iNoChange = noChange; }
+	
+	public boolean isShowAllChoices() { return iAllChoices; }
+	public void setShowAllChoices(boolean allChoices) { iAllChoices = allChoices; }
 	
 	public boolean isUpdateLastRequest() { return iUpdateLastRequest == null || iUpdateLastRequest.booleanValue(); }
 	public void setUpdateLastRequest(boolean updateLastRequest) { iUpdateLastRequest = updateLastRequest; }

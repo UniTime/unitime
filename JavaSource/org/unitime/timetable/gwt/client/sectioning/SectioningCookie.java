@@ -30,6 +30,7 @@ public class SectioningCookie {
 	private EnrollmentFilter iEnrollmentFilter = EnrollmentFilter.ALL;
 	private int iEnrollmentSortBy = 0;
 	private String iEnrollmentSortBySubpart = "";
+	private boolean iAllChoices = false;
 	
 	private static SectioningCookie sInstance = null;
 	
@@ -51,6 +52,7 @@ public class SectioningCookie {
 				iEnrollmentFilter = EnrollmentFilter.values()[Integer.parseInt(values[3])];
 				iEnrollmentSortBy = Integer.parseInt(values[4]);
 				iEnrollmentSortBySubpart = values[5];
+				iAllChoices = "T".equals(values[6]);
 			}
 		} catch (Exception e) {
 		}
@@ -59,7 +61,8 @@ public class SectioningCookie {
 	private void save() {
 		String cookie = 
 			(iCourseDetails ? "T": "F") + ":" +
-			(iShowClassNumbers ? "T": "F") + ":" + iRelatedSortBy + ":" + iEnrollmentFilter.ordinal() + ":" + iEnrollmentSortBy + ":" + iEnrollmentSortBySubpart;
+			(iShowClassNumbers ? "T": "F") + ":" + iRelatedSortBy + ":" + iEnrollmentFilter.ordinal() + ":" + iEnrollmentSortBy + ":" + iEnrollmentSortBySubpart +
+			(iAllChoices ? "T" : "F");
 		Cookies.setCookie("UniTime:Sectioning", cookie);
 	}
 	
@@ -122,4 +125,8 @@ public class SectioningCookie {
 		iEnrollmentSortBy = 0; iEnrollmentSortBySubpart = subpart;
 		save();
 	}
+	
+	public boolean isAllChoices() { return iAllChoices; }
+	
+	public void setAllChoices(boolean allChoices) { iAllChoices = allChoices; save(); }
 }

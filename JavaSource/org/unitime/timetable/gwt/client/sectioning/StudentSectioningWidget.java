@@ -89,6 +89,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
@@ -141,6 +142,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private boolean iInRestore = false;
 	private boolean iTrackHistory = true;
 	private boolean iOnline;
+	private boolean iSpecReg = false;
 	private StudentSectioningPage.Mode iMode = null;
 	private OnlineSectioningInterface.EligibilityCheck iEligibilityCheck = null;
 	private PinDialog iPinDialog = null;
@@ -157,6 +159,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	public StudentSectioningWidget(boolean online, AcademicSessionProvider sessionSelector, UserAuthenticationProvider userAuthentication, StudentSectioningPage.Mode mode, boolean history) {
 		iMode = mode;
 		iOnline = online;
+		iSpecReg = "specreg".equalsIgnoreCase(Location.getParameter("mode"));
 		iSessionSelector = sessionSelector;
 		iUserAuthentication = userAuthentication;
 		iTrackHistory = history;
@@ -164,7 +167,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iPanel = new VerticalPanel();
 		iPanel.addStyleName("unitime-SchedulingAssistant");
 		
-		iCourseRequests = new CourseRequestsTable(iSessionSelector, iOnline);
+		iCourseRequests = new CourseRequestsTable(iSessionSelector, iOnline, iSpecReg);
 		iCourseRequests.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<CourseRequestInterface> event) {
@@ -316,7 +319,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									iSectioningService.retrieveCourseDetails(iSessionSelector.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 								}
 							});
-							CourseFinderClasses classes = new CourseFinderClasses(true);
+							CourseFinderClasses classes = new CourseFinderClasses(true, iSpecReg);
 							classes.setDataProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
 								@Override
 								public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {
@@ -869,7 +872,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	
 	public void openSuggestionsBox(int rowIndex) {
 		if (iSuggestionsBox == null) {
-			iSuggestionsBox = new SuggestionsBox(iAssignmentGrid.getColorProvider(), iOnline);
+			iSuggestionsBox = new SuggestionsBox(iAssignmentGrid.getColorProvider(), iOnline, iSpecReg);
 			
 			iSuggestionsBox.addCloseHandler(new CloseHandler<PopupPanel>() {
 				public void onClose(CloseEvent<PopupPanel> event) {
@@ -1945,7 +1948,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					iSectioningService.retrieveCourseDetails(iSessionSelector.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 				}
 			});
-			CourseFinderClasses classes = new CourseFinderClasses(true);
+			CourseFinderClasses classes = new CourseFinderClasses(true, iSpecReg);
 			classes.setDataProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
 				@Override
 				public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {
@@ -1984,7 +1987,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						});
 					} else {
 						if (iQuickAddSuggestions == null) {
-							iQuickAddSuggestions = new SuggestionsBox(iAssignmentGrid.getColorProvider(), iOnline);
+							iQuickAddSuggestions = new SuggestionsBox(iAssignmentGrid.getColorProvider(), iOnline, iSpecReg);
 							iQuickAddSuggestions.addCloseHandler(new CloseHandler<PopupPanel>() {
 								public void onClose(CloseEvent<PopupPanel> event) {
 									Scheduler.get().scheduleDeferred(new ScheduledCommand() {

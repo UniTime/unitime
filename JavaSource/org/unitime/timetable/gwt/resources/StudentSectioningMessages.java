@@ -334,6 +334,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("{0} conflicts with {1}.")
 	String suggestionsNoChoicesCourseIsConflicting(String course, String conflict);
+	
+	@DefaultMessage("Include conflicting suggestions")
+	String suggestionsShowAllChoices();
 
 	@DefaultMessage("Free Time {0} {1} - {2}")
 	String freeTime(String days, String start, String end);
@@ -1517,4 +1520,10 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("{0} (TA)")
 	String teachingAssignment(String className);
+	
+	@DefaultMessage("Section is full")
+	String sectionIsFull();
+	
+	@DefaultMessage("Section is full, overlaps with {0}")
+	String noteFullSectionOverlapFirst(String classOrCourse);
 }

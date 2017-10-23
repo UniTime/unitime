@@ -91,14 +91,20 @@ public class CourseRequestBox extends P implements CourseSelection {
 	
 	private boolean iShowCourses = false;
 	private RequestedCourse iLastCourse = null;
+	private boolean iSpecReg = false;
 	
 	public CourseRequestBox() {
-		this(false);
+		this(false, false);
 	}
 	
 	public CourseRequestBox(boolean showCourses) {
+		this(showCourses, false);
+	}
+	
+	public CourseRequestBox(boolean showCourses, boolean specreg) {
 		super("unitime-CourseRequestBox");
 		iShowCourses = showCourses;
+		iSpecReg = specreg;
 		
 		iFilter = new CourseRequestFilterBox(new ClickHandler() {
 			@Override
@@ -144,7 +150,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 								}
 							}
 							for (ClassAssignment clazz: result) {
-								if (clazz.isCancelled() || (!clazz.isSaved() && !clazz.isAvailable())) continue;
+								if (clazz.isCancelled() || (!clazz.isSaved() && !clazz.isAvailable() && !iSpecReg)) continue;
 								if (clazz.getSection().toLowerCase().startsWith(query.toLowerCase()) || clazz.getSelection().toLowerCase().startsWith(query.toLowerCase()))
 									suggestions.add(new CourseSuggestion(course, clazz));
 								else if (clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrangeHours()).toLowerCase().startsWith(query.toLowerCase()))
