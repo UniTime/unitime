@@ -597,7 +597,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		}
 		
 		public int compareTo(ResourceInterface r) {
-			if (hasAbbreviation()) {
+			if (hasAbbreviation() && r.hasAbbreviation()) {
 				int cmp = getAbbreviation().compareTo(r.getAbbreviation());
 				if (cmp != 0) return cmp;
 			}

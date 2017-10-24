@@ -42,17 +42,9 @@ Gson (gson-2.3.1.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://code.google.com/p/google-gson/
 
-gwt-dev (gwt-dev-2.7.0.jar)
-	under Apache Software License (ASL), Version 2.0
-	http://www.gwtproject.org/gwt-dev/
-
-gwt-servlet (gwt-servlet-2.7.0.jar)
+gwt-servlet (gwt-servlet-2.8.2.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.gwtproject.org/gwt-servlet/
-
-gwt-user (gwt-user-2.7.0.jar)
-	under Apache Software License (ASL), Version 2.0
-	http://www.gwtproject.org/gwt-user/
 
 Protocol Buffer Java API (protobuf-java-2.6.1.jar)
 	under BSD or BSD-style License
@@ -117,17 +109,6 @@ JavaBeans Activation Framework (JAF) (activation-1.1.jar)
 JavaMail API (compat) (mail-1.4.7.jar)
 	under Common Development and Distribution License (CDDL), Version 1.0
 	http://kenai.com/projects/javamail/mail
-
-Java Servlet API (javax.servlet-api-3.0.1.jar)
-	under Common Development and Distribution License (CDDL), Version 1.0
-	http://servlet-spec.java.net
-
-JavaServer Pages(TM) API (jsp-api-2.2.jar)
-	under Common Development and Distribution License (CDDL), Version 1.0
-	https://jsp.dev.java.net/jsp-api
-
-Bean Validation API (validation-api-1.0.0.GA.jar)
-	under Apache Software License (ASL), Version 2.0
 
 Joda-Time (joda-time-2.8.2.jar)
 	under Apache Software License (ASL), Version 2.0
@@ -247,18 +228,6 @@ JGroups (jgroups-3.6.6.Final.jar)
 ASM Core (asm-5.0.3.jar)
 	under BSD or BSD-style License
 	http://asm.objectweb.org/asm/
-
-ASM Commons (asm-commons-5.0.3.jar)
-	under BSD or BSD-style License
-	http://asm.objectweb.org/asm-commons/
-
-ASM Tree (asm-tree-5.0.3.jar)
-	under BSD or BSD-style License
-	http://asm.objectweb.org/asm-tree/
-
-ASM Util (asm-util-5.0.3.jar)
-	under BSD or BSD-style License
-	http://asm.objectweb.org/asm-util/
 
 Restlet Core - API and Engine (org.restlet-2.3.4.jar)
 	under Apache Software License (ASL), Version 2.0
