@@ -556,6 +556,11 @@
 	.unitime-ScheduleStatus {
 		width: calc(100vw - 4px);
 	}
+	
+	.unitime-FilterBoxPopup .popupContent {
+		max-height: 50vh;
+		overflow-y: auto;
+	}
 }
 
 @media all and (max-width: 400px) {

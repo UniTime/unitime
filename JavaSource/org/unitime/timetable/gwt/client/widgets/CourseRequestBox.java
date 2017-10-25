@@ -567,7 +567,10 @@ public class CourseRequestBox extends P implements CourseSelection {
 		public CourseSuggestion(CourseAssignment course, ClassAssignment clazz) {
 			this(course);
 			setDisplayString(course.getCourseName() + " " + clazz.getSelection());
-			setHint("<span class='item-hint'>" + clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.emailArrangeHours()) + "</span>");
+			setHint("<span class='item-hint'>" +
+					(clazz.getSelection().startsWith(clazz.getSubpart()) ? "" : clazz.getSubpart() + " ") +
+					clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.emailArrangeHours()) +
+					(clazz.hasNote() ? " " + clazz.getNote() : "") + "</span>");
 			iCourse.setSelectedClass(clazz.getSelection(), !iCourse.isSelectedClass(clazz.getSelection()));
 		}
 		

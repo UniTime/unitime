@@ -75,6 +75,15 @@
 				<line>If multiple masters are detected, release all master locks and reload the new master.</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling Assistant</name>
+			<description>
+				<line>List of Classes: do not include course note in the section note.</line>
+				<line>Course Suggestions: when showing individual classes include subpart and section note in the hint.</line>
+				<line>Filter Box: limit the height of the suggestions / filter popup when on mobile (allow for vertical scroll).</line>
+				<line>Alternatives: allow for the Alternatives dialog to be wider if needed (up to 90% of viewport width).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>

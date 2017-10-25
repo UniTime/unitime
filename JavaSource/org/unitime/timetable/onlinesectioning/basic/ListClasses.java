@@ -109,7 +109,6 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 								if (enrollment.getStudentId().equals(getStudentId())) { a.setSaved(true); break; }
 							}
 						}
-						a.addNote(c.getNote());
 						a.addNote(section.getNote());
 						a.setCredit(subpart.getCredit(c.getCourseId()));
 						if (section.getTime() != null) {

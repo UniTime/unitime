@@ -5081,7 +5081,7 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-SuggestionsBox .panel {
 	margin: auto;
-	max-width: 780px;
+	max-width: 90vw;
 }
 
 .unitime-SuggestionsBox .filter {
