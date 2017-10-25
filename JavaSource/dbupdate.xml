@@ -12833,4 +12833,8 @@
 		<plsql>alter table %SCHEMA%.event_note modify text_note varchar2(2000 char)</plsql>
 		<mysql>alter table %SCHEMA%.event_note modify text_note varchar(2000)</mysql>
 	</update>
+	<update version="190" date="25-Oct-2017" comment="Longer Date Pattern Name">
+	    <plsql>alter table %SCHEMA%.date_pattern modify name varchar2(100 char)</plsql>
+	    <mysql>alter table %SCHEMA%.date_pattern modify name varchar(100)</mysql>
+	</update>
 </dbupdate>
