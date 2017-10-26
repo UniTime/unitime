@@ -47,6 +47,7 @@ import org.unitime.timetable.solver.jgroups.SolverContainerWrapper;
 import org.unitime.timetable.solver.jgroups.SolverServer;
 import org.unitime.timetable.solver.jgroups.SolverServerImplementation;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
+import org.unitime.timetable.util.queue.QueueProcessor;
 
 /**
  * @author Tomas Muller
@@ -274,5 +275,9 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 		} catch (Exception e) {
 			sLog.error("Failed to update the logging level for " + name + " along the cluster: " + e.getMessage(), e);
 		}
+	}
+	
+	public QueueProcessor getQueueProcessor() {
+		return iServer.getQueueProcessor();
 	}
 }

@@ -53,10 +53,10 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.SessionRollForward;
 import org.unitime.timetable.util.queue.QueueItem;
-import org.unitime.timetable.util.queue.QueueProcessor;
 
 
 /** 
@@ -74,6 +74,8 @@ public class RollForwardSessionAction extends Action {
 	@Autowired SessionContext sessionContext;
 	
 	@Autowired ApplicationContext applicationContext;
+	
+	@Autowired SolverServerService solverServerService;
 	
 	/*
 	 * Generated Methods
@@ -102,7 +104,7 @@ public class RollForwardSessionAction extends Action {
 
     		ActionMessages errors = rollForwardSessionForm.validate(mapping, request);
             if (errors.isEmpty()) {
-            	QueueProcessor.getInstance().add(new RollForwardQueueItem(
+            	solverServerService.getQueueProcessor().add(new RollForwardQueueItem(
             			SessionDAO.getInstance().get(rollForwardSessionForm.getSessionToRollForwardTo()), sessionContext.getUser(), (RollForwardSessionForm)rollForwardSessionForm.clone()));
             } else {
                 saveErrors(request, errors);
@@ -110,7 +112,7 @@ public class RollForwardSessionAction extends Action {
         }
 
 		if (request.getParameter("remove") != null) {
-			QueueProcessor.getInstance().remove(Long.valueOf(request.getParameter("remove")));
+			solverServerService.getQueueProcessor().remove(request.getParameter("remove"));
 	    }
 		WebTable table = getQueueTable(request, rollForwardSessionForm);
 	    if (table != null) {
@@ -150,7 +152,7 @@ public class RollForwardSessionAction extends Action {
 		String log = request.getParameter("log");
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.TIME_SHORT);
 		
-		List<QueueItem> queue = QueueProcessor.getInstance().getItems(null, null, "Roll Forward");
+		List<QueueItem> queue = solverServerService.getQueueProcessor().getItems(null, null, "Roll Forward");
 		if (queue.isEmpty()) return null;
 		WebTable table = new WebTable(9, null, "rollForwardSession.do?ord=%%",
 				new String[] { "Name", "Status", "Progress", "Owner", "Session", "Created", "Started", "Finished", "Output"},
@@ -202,7 +204,8 @@ public class RollForwardSessionAction extends Action {
 		return table;
 	}
 	
-	private class RollForwardQueueItem extends QueueItem {
+	private static class RollForwardQueueItem extends QueueItem {
+		private static final long serialVersionUID = 1L;
 		private RollForwardSessionForm iForm;
 		private int iProgress = 0;
 		private ActionErrors iErrors = new ActionErrors();

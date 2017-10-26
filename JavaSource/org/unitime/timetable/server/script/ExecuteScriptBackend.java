@@ -19,19 +19,23 @@
 */
 package org.unitime.timetable.server.script;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.ScriptInterface.ExecuteScriptRpcRequest;
 import org.unitime.timetable.gwt.shared.ScriptInterface.QueueItemInterface;
 import org.unitime.timetable.security.SessionContext;
-import org.unitime.timetable.util.queue.QueueProcessor;
+import org.unitime.timetable.solver.service.SolverServerService;
+import org.unitime.timetable.util.queue.QueueItem;
 
 /**
  * @author Tomas Muller
  */
 @GwtRpcImplements(ExecuteScriptRpcRequest.class)
 public class ExecuteScriptBackend implements GwtRpcImplementation<ExecuteScriptRpcRequest, QueueItemInterface> {
+	
+	@Autowired SolverServerService solverServerService;
 
 	@Override
 	@PreAuthorize("checkPermission('Scripts')")
@@ -40,9 +44,9 @@ public class ExecuteScriptBackend implements GwtRpcImplementation<ExecuteScriptR
 
 		ScriptExecution execution = new ScriptExecution(request, context);
 		
-		QueueProcessor.getInstance().add(execution);
+		QueueItem executed = solverServerService.getQueueProcessor().add(execution);
 		
-		return GetQueueTableBackend.convert(execution, context);
+		return GetQueueTableBackend.convert(executed, context);
 		
 		} catch (Exception e) {
 			e.printStackTrace();

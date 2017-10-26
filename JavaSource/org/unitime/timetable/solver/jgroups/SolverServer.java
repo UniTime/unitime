@@ -30,12 +30,13 @@ import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
+import org.unitime.timetable.util.queue.QueueProcessor;
 
 /**
  * @author Tomas Muller
  */
 public interface SolverServer {
-	public static final short SCOPE_SERVER = 0, SCOPE_COURSE = 1, SCOPE_EXAM = 2, SCOPE_STUDENT = 3, SCOPE_AVAILABILITY = 4, SCOPE_ONLINE = 5, SCOPE_INSTRUCTOR = 6;
+	public static final short SCOPE_SERVER = 0, SCOPE_COURSE = 1, SCOPE_EXAM = 2, SCOPE_STUDENT = 3, SCOPE_AVAILABILITY = 4, SCOPE_ONLINE = 5, SCOPE_INSTRUCTOR = 6, SCOPE_QUEUE_PROCESSOR = 7;
 	
 	public void start();
 	
@@ -98,4 +99,6 @@ public interface SolverServer {
 	public List<SolverServer> getServers(boolean onlyAvailable);
 	
 	public SolverServer crateServerProxy(Address address);
+	
+	public QueueProcessor getQueueProcessor();
 }

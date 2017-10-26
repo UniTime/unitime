@@ -20,15 +20,17 @@
 package org.unitime.timetable.util.queue;
 
 import java.io.File;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.log4j.Logger;
+import org.jgroups.Address;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.events.QueryEncoderBackend;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -40,25 +42,27 @@ import org.unitime.timetable.security.UserContext;
  * @author Tomas Muller
  *
  */
-public abstract class QueueItem implements Log {
+public abstract class QueueItem implements Log, Serializable, Comparable<QueueItem> {
+	private static final long serialVersionUID = 1L;
 	protected static GwtMessages MSG = Localization.create(GwtMessages.class);
-    protected static Logger iLogger;
 
 	private Long iSessionId;
 	private String iOwnerId;
 	private String iOwnerName;
 	private String iOwnerEmail;
 	private File iOutput = null;
-	private String iLog = "";
+	private List<QueueMessage> iLog = new ArrayList<QueueMessage>();
 	private String iStatus = null;
 	private Date iCreated = new Date(), iStarted = null, iFinished = null;
-	private Throwable iException = null;
+	private transient Throwable iException = null;
 	private String iLocale = null;
+	private double iProgress = 0;
+	private double iMaxProgress = 100.0;
 	
-	private Long iId = null;
+	private String iId = null;
+	private Address iAddress = null;;
 	
 	public QueueItem(Long sessionId, UserContext owner) {
-		iLogger = Logger.getLogger(getClass());
 		iSessionId = sessionId;
 		iOwnerId = owner.getExternalUserId();
 		iOwnerName = owner.getName();
@@ -85,7 +89,6 @@ public abstract class QueueItem implements Log {
 	
 	public abstract String type();
 	public abstract String name();
-	public abstract double progress();
 	protected abstract void execute() throws Exception;
 	
 	public void executeItem() {
@@ -121,152 +124,56 @@ public abstract class QueueItem implements Log {
 		iOutput = ApplicationProperties.getTempFile(prefix, ext);
 		return iOutput;
 	}
-	
-	public String log() { return iLog; }
-	protected void log(String message) {
-		if (iLog.length() > 0) iLog += "<br>";
-		iLog += message;
-	}
-	protected void warn(String message) {
-		if (iLog.length() > 0) iLog += "<br>";
-		iLog += "<font color='orange'>" + StringEscapeUtils.escapeHtml(message) + "</font>";
-	}
-	protected void error(String message) {
-		if (iLog.length() > 0) iLog += "<br>";
-		iLog += "<font color='red'>" + StringEscapeUtils.escapeHtml(message) + "</font>";
+	public String getOutputFileLink() {
+		if (!hasOutput()) return null;
+		if (output().exists()) return "temp/" + output().getName();
+		return "qpfile?q=" + QueryEncoderBackend.encode(getId().toString());
 	}
 	
-	protected void setStatus(String status) {
-		iStatus = status;
-		log("<i>" + iStatus + "</i>");
+	public List<QueueMessage> getLog() { return iLog; }
+	public String log() {
+		String ret = "";
+		for (QueueMessage m: iLog) {
+			if (!ret.isEmpty()) ret += "<br>";
+			ret += m.toHTML();
+		}
+		return ret;
 	}
+	
+	public void log(String message) {
+		iLog.add(new QueueMessage(QueueMessage.Level.HTML, message));
+	}
+	
+	public void setStatus(String status) {
+		setStatus(status, 100.0);
+	}
+	public void setStatus(String status, double maxProgress) {
+		iStatus = status; iProgress = 0; iMaxProgress = maxProgress;
+		iLog.add(new QueueMessage(QueueMessage.Level.STAGE, status));
+	}	
 	public String status() { return iStatus; }
+	public double progress() { return iProgress / iMaxProgress; }
+	public void incProgress() { iProgress ++; }
+	public void incProgress(double value) { iProgress += value; }
+	public void setProgress(double value) { iProgress = value; }
 
 	public boolean hasError() { return iException != null; }
 	protected void setError(Throwable exception) { iException = exception; }
 	public Throwable error() { return iException; }
 	
-	public Long getId() { return iId; }
-	public void setId(Long id) { iId = id; }
+	public String getId() { return iId; }
+	public void setId(String id) { iId = id; }
+	public String getHost() { return (iAddress == null ? "Local" : iAddress.toString()); }
+	public Address getAddress() { return iAddress; }
+	public void setAddress(Address address) { iAddress = address; }
 	
 	public Date created() { return iCreated; }
 	public Date started() { return iStarted; }
 	public Date finished() { return iFinished; }
-	
-	@Override
-	public void trace(Object message) {
-		iLogger.trace(message);
-	}
-
-	@Override
-	public void trace(Object message, Throwable exception) {
-		iLogger.trace(message, exception);
-	}
-	
-	@Override
-	public void debug(Object message) {
-		debug(message, null);
-	}
-
-	@Override
-	public void debug(Object message, Throwable exception) {
-		iLogger.debug(message, exception);
-		if (exception == null) {
-			if (message != null) log(message.toString());
-		} else if (message == null) {
-			log(exception.getClass().getSimpleName() + ": " + exception.getMessage());
-		} else {
-			log(message + " (" + exception.getClass().getSimpleName() + ": " + exception.getMessage() + ")");
-		}
-	}
-	
-	@Override
-	public void warn(Object message) {
-		warn(message, null);	
-	}
-
-	@Override
-	public void warn(Object message, Throwable exception) {
-		iLogger.warn(message, exception);
-		if (exception == null) {
-			if (message != null) warn(message.toString());
-		} else if (message == null) {
-			warn(exception.getClass().getSimpleName() + ": " + exception.getMessage());
-		} else {
-			warn(message + " (" + exception.getClass().getSimpleName() + ": " + exception.getMessage() + ")");
-		}
-	}
-	
-	@Override
-	public void info(Object message) {
-		info(message, null);
-	}
-
-	@Override
-	public void info(Object message, Throwable exception) {
-		iLogger.info(message, exception);
-		if (exception == null) {
-			if (message != null) log(message.toString());
-		} else if (message == null) {
-			log(exception.getClass().getSimpleName() + ": " + exception.getMessage());
-		} else {
-			log(message + " (" + exception.getClass().getSimpleName() + ": " + exception.getMessage() + ")");
-		}
-	}
-
-	@Override
-	public void error(Object message) {
-		error(message, null);
-	}
-
-	@Override
-	public void error(Object message, Throwable exception) {
-		iLogger.error(message, exception);
-		if (exception == null) {
-			if (message != null) error(message.toString());
-		} else if (message == null) {
-			error(exception.getClass().getSimpleName() + ": " + exception.getMessage());
-		} else {
-			error(message + " (" + exception.getClass().getSimpleName() + ": " + exception.getMessage() + ")");
-		}
-		if (exception != null)
-			logStackTrace(exception);
-	}
-	
-	protected void logStackTrace(Throwable t) {
-		if (t == null) return;
-		StringWriter writer = new StringWriter();
-		PrintWriter pw = new PrintWriter(writer);
-		t.printStackTrace(new PrintWriter(writer));
-		pw.flush(); pw.close();
-		if (iLog.length() > 0) iLog += "<br>";
-		iLog += "<font color='red'><pre>" + StringEscapeUtils.escapeHtml(writer.toString()) + "</pre></font>";
-	}
-
-	@Override
-	public void fatal(Object message) {
-		fatal(message, null);
-	}
-
-	@Override
-	public void fatal(Object message, Throwable exception) {
-		iLogger.fatal(message, exception);
-		if (exception == null) {
-			if (message != null) error(message.toString());
-		} else if (message == null) {
-			error(exception.getClass().getSimpleName() + ": " + exception.getMessage());
-		} else {
-			error(message + " (" + exception.getClass().getSimpleName() + ": " + exception.getMessage() + ")");
-		}
-		if (exception != null) {
-			logStackTrace(exception);
-			setError(exception);
-		}
-	}
 
 	@Override
 	public boolean isDebugEnabled() {
-		return true;
+		return Logger.getLogger(getClass()).isDebugEnabled();
 	}
 
 	@Override
@@ -276,21 +183,100 @@ public abstract class QueueItem implements Log {
 
 	@Override
 	public boolean isFatalEnabled() {
-		return true;
+		return false;
 	}
 
 	@Override
 	public boolean isInfoEnabled() {
-		return true;
+		return Logger.getLogger(getClass()).isInfoEnabled();
 	}
 
 	@Override
 	public boolean isTraceEnabled() {
-		return false;
+		return Logger.getLogger(getClass()).isTraceEnabled();
 	}
 
 	@Override
 	public boolean isWarnEnabled() {
 		return true;
+	}
+
+	@Override
+	public void trace(Object message) {
+		Logger.getLogger(getClass()).trace(message);
+		iLog.add(new QueueMessage(QueueMessage.Level.TRACE, message));
+	}
+
+	@Override
+	public void trace(Object message, Throwable t) {
+		Logger.getLogger(getClass()).trace(message, t);
+		iLog.add(new QueueMessage(QueueMessage.Level.TRACE, message, t));
+	}
+
+	@Override
+	public void debug(Object message) {
+		Logger.getLogger(getClass()).debug(message);
+		iLog.add(new QueueMessage(QueueMessage.Level.DEBUG, message));
+	}
+
+	@Override
+	public void debug(Object message, Throwable t) {
+		Logger.getLogger(getClass()).debug(message, t);
+		iLog.add(new QueueMessage(QueueMessage.Level.DEBUG, message, t));
+	}
+
+	@Override
+	public void info(Object message) {
+		Logger.getLogger(getClass()).info(message);
+		iLog.add(new QueueMessage(QueueMessage.Level.INFO, message));
+	}
+
+	@Override
+	public void info(Object message, Throwable t) {
+		Logger.getLogger(getClass()).info(message, t);
+		iLog.add(new QueueMessage(QueueMessage.Level.INFO, message, t));
+	}
+
+	@Override
+	public void warn(Object message) {
+		Logger.getLogger(getClass()).warn(message);
+		iLog.add(new QueueMessage(QueueMessage.Level.WARN, message));
+	}
+
+	@Override
+	public void warn(Object message, Throwable t) {
+		Logger.getLogger(getClass()).warn(message, t);
+		iLog.add(new QueueMessage(QueueMessage.Level.WARN, message, t));
+	}
+
+	@Override
+	public void error(Object message) {
+		Logger.getLogger(getClass()).error(message);
+		iLog.add(new QueueMessage(QueueMessage.Level.ERROR, message));
+	}
+
+	@Override
+	public void error(Object message, Throwable t) {
+		Logger.getLogger(getClass()).error(message, t);
+		iLog.add(new QueueMessage(QueueMessage.Level.ERROR, message, t));
+	}
+
+	@Override
+	public void fatal(Object message) {
+		Logger.getLogger(getClass()).fatal(message);
+		iLog.add(new QueueMessage(QueueMessage.Level.FATAL, message));
+	}
+
+	@Override
+	public void fatal(Object message, Throwable t) {
+		Logger.getLogger(getClass()).fatal(message, t);
+		iLog.add(new QueueMessage(QueueMessage.Level.FATAL, message, t));
+	}
+	
+	@Override
+	public int compareTo(QueueItem item) {
+		int cmp = created().compareTo(item.created());
+		if (cmp != 0) return cmp;
+		return getId().compareTo(item.getId());
 	}
 }

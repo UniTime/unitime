@@ -56,16 +56,8 @@ public class ImportXmlFile {
 	        // External id of the manager doing the import (can be null)
 	        String managerId = (args.length >= 2 ? args[1] : null);
 	        
-	        // Log writer to print messages from the import (can be null)
-	        DataExchangeHelper.LogWriter logger = new DataExchangeHelper.LogWriter() {
-	        	@Override
-	        	public void println(String message) {
-	        		Logger.getLogger(ImportXmlFile.class).info(message);
-	        	}
-	        };
-	        
 	        // Import document
-	        DataExchangeHelper.importDocument(document, managerId, logger);
+	        DataExchangeHelper.importDocument(document, managerId, null);
 	        
 	        // Close hibernate
 	        HibernateUtil.closeHibernate();

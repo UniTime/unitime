@@ -71,11 +71,13 @@ import org.unitime.timetable.util.Formats;
  *
  */
 public class PdfExamReportQueueItem extends QueueItem {
+	private static final long serialVersionUID = 1L;
+
 	public static String TYPE = "PDF Exam Report";
 
 	private ExamPdfReportForm iForm;
 	private String iUrl = null;
-	private ExamSolverProxy iExamSolver;
+	private transient ExamSolverProxy iExamSolver;
 	private String iName = null;
 	private double iProgress = 0;
 	private boolean iSubjectIndependent = false;
@@ -105,36 +107,9 @@ public class PdfExamReportQueueItem extends QueueItem {
 
 	@Override
 	public void execute() {
-        /*
-        Logger repLog = Logger.getLogger("org.unitime.timetable.reports.exam");
-        Appender myAppender = new AppenderSkeleton() {
-			
-			@Override
-			public boolean requiresLayout() {
-				return false;
-			}
-			
-			@Override
-			public void close() {
-			}
-			
-			@Override
-			protected void append(LoggingEvent event) {
-				if (event.getMessage() == null) return;
-				if (event.getLevel().toInt() >= Priority.ERROR_INT) {
-					error(event.getMessage().toString());
-				} else if (event.getLevel().toInt() >= Priority.WARN_INT) {
-					warn(event.getMessage().toString());
-				} else
-					log(event.getMessage().toString());
-			}
-		};
-		repLog.addAppender(myAppender);
-		*/
 		org.hibernate.Session hibSession = ExamDAO.getInstance().getSession();
 		createReports(hibSession);
 		if (hibSession.isOpen()) hibSession.close();
-		//repLog.removeAppender(myAppender);
 	}
 	
 	private void createReports(org.hibernate.Session hibSession) {

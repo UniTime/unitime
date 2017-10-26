@@ -37,7 +37,7 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LogCleaner;
 import org.unitime.timetable.util.MessageLogAppender;
 import org.unitime.timetable.util.RoomAvailability;
-import org.unitime.timetable.util.queue.QueueProcessor;
+import org.unitime.timetable.util.queue.LocalQueueProcessor;
 
 /**
  * @author Tomas Muller
@@ -112,7 +112,7 @@ public class StartupService implements InitializingBean, DisposableBean {
 	             RoomAvailability.getInstance().stopService();
 	         }
 	         
-	         QueueProcessor.stopProcessor();
+	         LocalQueueProcessor.stopProcessor();
 	         
 	         Debug.info(" - Removing Message Log Appender ... ");
 	         Logger.getRootLogger().removeAppender(iMessageLogAppender);

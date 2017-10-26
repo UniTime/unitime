@@ -32,7 +32,6 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
 import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.hibernate.Transaction;
 import org.unitime.commons.Email;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -61,9 +60,8 @@ import org.unitime.timetable.util.queue.QueueItem;
  * @author Tomas Muller
  */
 public class ScriptExecution extends QueueItem {
+	private static final long serialVersionUID = 1L;
 	private ExecuteScriptRpcRequest iRequest;
-	private double iProgress = 0;
-	private double iMaxProgress = 100.0;
 	private FileItem iFile = null;
 	
 	public ScriptExecution(ExecuteScriptRpcRequest request, SessionContext context) {
@@ -86,26 +84,12 @@ public class ScriptExecution extends QueueItem {
 
 	@Override
 	public String name() { return iRequest.getScriptName(); }
-
-	@Override
-	public double progress() { return iProgress / iMaxProgress; }
 	
-	public void setStatus(String status, double maxProgress) {
-		iProgress = 0; iMaxProgress = maxProgress;
-		super.setStatus(status);
-	}
-	
-	public void incProgress() { iProgress ++; }
-	
-	public void incProgress(double value) { iProgress += value; }
-	
-	public void setProgress(double value) { iProgress = value; }
-	
-	public void debug(String message) { log("&nbsp;&nbsp;<i><font color='gray'> " + StringEscapeUtils.escapeHtml(message) + "</font></i>"); }
-	public void info(String message) { log("&nbsp;&nbsp;" + StringEscapeUtils.escapeHtml(message)); }
+	public void debug(String message) { super.debug(message); }
+	public void info(String message) { super.info(message); }
 	public void warn(String message) { super.warn(message); }
 	public void error(String message) { super.error(message); }
-	public void error(String message, Throwable t) { super.error(message); logStackTrace(t); setError(t); }
+	public void error(String message, Throwable t) { super.error(message, t); setError(t); }
 	
 	public File createOutput(String prefix, String ext) {
 		return super.createOutput(prefix, ext);

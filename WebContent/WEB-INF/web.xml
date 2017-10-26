@@ -103,6 +103,11 @@
     </servlet>
     
     <servlet>
+        <servlet-name>queueOutputServlet</servlet-name>
+        <servlet-class>org.unitime.timetable.util.queue.QueueOutputFileServlet</servlet-class>
+    </servlet>
+    
+    <servlet>
     	<servlet-name>remoteLogging</servlet-name>
     	<servlet-class>org.unitime.timetable.gwt.server.UniTimeRemoteLoggingService</servlet-class>
     </servlet>
@@ -150,6 +155,11 @@
     <servlet-mapping>
       <servlet-name>exportServlet</servlet-name>
       <url-pattern>/export</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+      <servlet-name>queueOutputServlet</servlet-name>
+      <url-pattern>/qpfile</url-pattern>
     </servlet-mapping>
     
     <servlet-mapping>

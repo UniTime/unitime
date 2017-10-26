@@ -130,7 +130,7 @@ public class SessionRestore implements SessionRestoreInterface {
     private static Log sLog = LogFactory.getLog(SessionBackup.class);
     private SessionFactory iHibSessionFactory = null;
 	private org.hibernate.Session iHibSession = null;
-	private Progress iProgress = null;
+	private BackupProgress iProgress = null;
 	private boolean iIsClone = false;
 
 	private Map<String, Map<String, Entity>> iEntities = new Hashtable<String, Map<String, Entity>>();
@@ -141,7 +141,7 @@ public class SessionRestore implements SessionRestoreInterface {
 
 	private InputStream iIn;
 
-	public Progress getProgress() {
+	public BackupProgress getProgress() {
 		return iProgress;
 	}
 	
@@ -425,7 +425,7 @@ public class SessionRestore implements SessionRestoreInterface {
 	}
 	
 	
-	public void restore(InputStream input, Progress progress) throws IOException, InstantiationException, IllegalAccessException, DocumentException {
+	public void restore(InputStream input, BackupProgress progress) throws IOException, InstantiationException, IllegalAccessException, DocumentException {
 		iIn = input;
         iProgress = progress;
         iHibSession = new _RootDAO().createNewSession();
@@ -902,10 +902,40 @@ public class SessionRestore implements SessionRestoreInterface {
             	restore.debug(debug);
             }
 
-            Progress progress = Progress.getInstance();
+            final Progress progress = Progress.getInstance();
             progress.addProgressListener(new ProgressWriter(System.out));
 
-            restore.restore(in, progress);
+            restore.restore(in, new BackupProgress() {
+            	@Override
+				public void setStatus(String status) {
+					progress.setStatus(status);
+				}
+				
+				@Override
+				public void setPhase(String phase, double max) {
+					progress.setPhase(phase, Math.round(max));
+				}
+				
+				@Override
+				public void incProgress() {
+					progress.incProgress();
+				}
+				
+				@Override
+				public void info(String message) {
+					progress.info(message);
+				}
+				
+				@Override
+				public void warn(String message) {
+					progress.warn(message);
+				}
+
+				@Override
+				public void error(String message) {
+					progress.error(message);
+				}
+			});
             
             in.close();
             if (debug != null) debug.close();

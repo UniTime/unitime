@@ -43,13 +43,13 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.queue.PdfExamReportQueueItem;
 import org.unitime.timetable.util.queue.QueueItem;
-import org.unitime.timetable.util.queue.QueueProcessor;
 
 /** 
  * @author Tomas Muller
@@ -61,6 +61,8 @@ public class ExamPdfReportAction extends Action {
     @Autowired SessionContext sessionContext;
     
     @Autowired SolverService<ExamSolverProxy> examinationSolverService;
+    
+    @Autowired SolverServerService solverServerService;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		ExamPdfReportForm myForm = (ExamPdfReportForm) form;
@@ -90,7 +92,7 @@ public class ExamPdfReportAction extends Action {
                 saveErrors(request, errors);
             } else {
 
-                QueueProcessor.getInstance().add(new PdfExamReportQueueItem(
+            	solverServerService.getQueueProcessor().add(new PdfExamReportQueueItem(
                 		SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()),
                 		sessionContext.getUser(),
                 		(ExamPdfReportForm) myForm.clone(), request, examSolver));
@@ -98,7 +100,7 @@ public class ExamPdfReportAction extends Action {
         }
         
         if (request.getParameter("remove") != null) {
-        	QueueProcessor.getInstance().remove(Long.valueOf(request.getParameter("remove")));
+        	solverServerService.getQueueProcessor().remove(request.getParameter("remove"));
         }
         
         WebTable table = getQueueTable(request);
@@ -118,7 +120,7 @@ public class ExamPdfReportAction extends Action {
 		String ownerId = null;
 		if (!sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent))
 			ownerId = sessionContext.getUser().getExternalUserId();
-		List<QueueItem> queue = QueueProcessor.getInstance().getItems(ownerId, null, PdfExamReportQueueItem.TYPE);
+		List<QueueItem> queue = solverServerService.getQueueProcessor().getItems(ownerId, null, PdfExamReportQueueItem.TYPE);
 		if (queue.isEmpty()) return null;
 		WebTable table = new WebTable(9, "Reports in progress", "examPdfReport.do?ord=%%",
 				new String[] { "Name", "Status", "Progress", "Owner", "Session", "Created", "Started", "Finished", "Output"},

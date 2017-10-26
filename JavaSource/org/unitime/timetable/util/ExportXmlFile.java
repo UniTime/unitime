@@ -60,16 +60,8 @@ public class ExportXmlFile {
 	        if (session == null)
 	        	throw new Exception("Session " + args[0] + " not found.");
 	        
-	        // Log writer to print messages from the export (can be null)
-	        DataExchangeHelper.LogWriter logger = new DataExchangeHelper.LogWriter() {
-	        	@Override
-	        	public void println(String message) {
-	        		Logger.getLogger(ImportXmlFile.class).info(message);
-	        	}
-	        };
-
 	        // Export an XML file
-	        Document document = DataExchangeHelper.exportDocument(args[1], session, ApplicationProperties.getProperties(), logger);
+	        Document document = DataExchangeHelper.exportDocument(args[1], session, ApplicationProperties.getProperties(), null);
 	        if (document==null)
 	        	throw new Exception("No XML document has been created.");
 	        

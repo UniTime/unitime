@@ -288,7 +288,7 @@ public class ScriptPage extends Composite {
 		return null;
 	}
 	
-	private void populate(GwtRpcResponseList<QueueItemInterface> queue, Long selectId) {
+	private void populate(GwtRpcResponseList<QueueItemInterface> queue, String selectId) {
 		if (iQueue.getSelectedRow() > 0 && selectId == null) {
 			QueueItemInterface q = iQueue.getData(iQueue.getSelectedRow());
 			if (q != null) selectId = q.getId();
@@ -308,7 +308,7 @@ public class ScriptPage extends Composite {
 			line.add(new Label(q.getStarted() == null ? "" : sTS.format(q.getStarted())));
 			line.add(new Label(q.getFinished() == null ? "" : sTS.format(q.getFinished())));
 			if (q.getOtuput() != null) {
-				line.add(new Anchor(q.getOtuput().substring(1 + q.getOtuput().lastIndexOf('.')), "temp/" + q.getOtuput()));
+				line.add(new Anchor(q.getOtuput().substring(1 + q.getOtuput().lastIndexOf('.')), q.getOtuputLink()));
 			} else {
 				line.add(new Label(""));
 			}
@@ -341,7 +341,7 @@ public class ScriptPage extends Composite {
 		showLog(selectedQueue);
 	}
 	
-	private void refreshQueue(Long deleteId, final Long selectId) {
+	private void refreshQueue(String deleteId, final String selectId) {
 		RPC.execute(new ScriptInterface.GetQueueTableRpcRequest(deleteId), new AsyncCallback<GwtRpcResponseList<QueueItemInterface>>() {
 			@Override
 			public void onFailure(Throwable caught) {

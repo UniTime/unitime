@@ -42,6 +42,8 @@ import org.unitime.timetable.model.TeachingRequest;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.RoomAvailability;
+import org.unitime.timetable.util.queue.LocalQueueProcessor;
+import org.unitime.timetable.util.queue.QueueProcessor;
 
 /**
  * @author Tomas Muller
@@ -229,5 +231,10 @@ public abstract class AbstractSolverServer implements SolverServer {
 
 	@Override
 	public void reset() {
+	}
+	
+	@Override
+	public QueueProcessor getQueueProcessor() {
+		return LocalQueueProcessor.getInstance();
 	}
 }

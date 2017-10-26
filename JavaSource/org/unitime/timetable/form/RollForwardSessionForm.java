@@ -916,11 +916,11 @@ public class RollForwardSessionForm extends ActionForm {
 	public void setCreateStudentGroupsIfNeeded(boolean createStudentGroupsIfNeeded) { this.createStudentGroupsIfNeeded = createStudentGroupsIfNeeded; }
 
 	public void copyTo(RollForwardSessionForm form) {
-		form.subjectAreas = subjectAreas;
+		// form.subjectAreas = subjectAreas;
 		form.subjectAreaIds = subjectAreaIds;
 		form.buttonAction = buttonAction;
-		form.toSessions = toSessions;
-		form.fromSessions = fromSessions;
+		// form.toSessions = toSessions;
+		// form.fromSessions = fromSessions;
 		form.sessionToRollForwardTo = sessionToRollForwardTo;
 		form.rollForwardDatePatterns = rollForwardDatePatterns;
 		form.sessionToRollDatePatternsForwardFrom = sessionToRollDatePatternsForwardFrom;
@@ -931,7 +931,7 @@ public class RollForwardSessionForm extends ActionForm {
 		form.rollForwardManagers = rollForwardManagers;
 		form.sessionToRollManagersForwardFrom = sessionToRollManagersForwardFrom;
 		form.rollForwardRoomData = rollForwardRoomData;
-		form.departments = departments;
+		// form.departments = departments;
 		form.rollForwardDepartmentIds = rollForwardDepartmentIds;
 		form.sessionToRollRoomDataForwardFrom = sessionToRollRoomDataForwardFrom;
 		form.rollForwardSubjectAreas = rollForwardSubjectAreas;
@@ -952,7 +952,7 @@ public class RollForwardSessionForm extends ActionForm {
 		form.rollForwardStudents = rollForwardStudents;
 		form.rollForwardStudentsMode = rollForwardStudentsMode;
 		form.pointInTimeSnapshotToRollCourseEnrollmentsForwardFrom = pointInTimeSnapshotToRollCourseEnrollmentsForwardFrom;
-		form.fromPointInTimeDataSnapshots = fromPointInTimeDataSnapshots;
+		// form.fromPointInTimeDataSnapshots = fromPointInTimeDataSnapshots;
 		form.subpartLocationPrefsAction = subpartLocationPrefsAction;
 		form.subpartTimePrefsAction = subpartTimePrefsAction;
 		form.classPrefsAction = classPrefsAction;

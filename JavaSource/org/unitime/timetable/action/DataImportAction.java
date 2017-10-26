@@ -34,8 +34,6 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.cpsolver.ifs.util.Progress;
-import org.cpsolver.ifs.util.ProgressListener;
-import org.cpsolver.ifs.util.Progress.Message;
 import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
@@ -46,6 +44,7 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.Email;
 import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
+import org.unitime.timetable.backup.BackupProgress;
 import org.unitime.timetable.backup.SessionBackupInterface;
 import org.unitime.timetable.backup.SessionRestoreInterface;
 import org.unitime.timetable.dataexchange.DataExchangeHelper;
@@ -58,10 +57,10 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.queue.QueueItem;
-import org.unitime.timetable.util.queue.QueueProcessor;
 
 
 /** 
@@ -77,6 +76,8 @@ import org.unitime.timetable.util.queue.QueueProcessor;
 public class DataImportAction extends Action {
 	
 	@Autowired SessionContext sessionContext;
+	
+	@Autowired SolverServerService solverServerService;
 
 	// --------------------------------------------------------- Instance Variables
 
@@ -110,7 +111,7 @@ public class DataImportAction extends Action {
                 saveErrors(request, errors);
                 return mapping.findForward("display");
             }
-            QueueProcessor.getInstance().add(new ImportQueItem(session, sessionContext.getUser(), myForm, request));
+            solverServerService.getQueueProcessor().add(new ImportQueItem(session, sessionContext.getUser(), myForm, request));
         }
         
         if ("Export".equals(op)) {
@@ -119,11 +120,11 @@ public class DataImportAction extends Action {
                 saveErrors(request, errors);
                 return mapping.findForward("display");
             }
-            QueueProcessor.getInstance().add(new ExportQueItem(session, sessionContext.getUser(), myForm, request));
+            solverServerService.getQueueProcessor().add(new ExportQueItem(session, sessionContext.getUser(), myForm, request));
         }
         
         if (request.getParameter("remove") != null) {
-        	QueueProcessor.getInstance().remove(Long.valueOf(request.getParameter("remove")));
+        	solverServerService.getQueueProcessor().remove(request.getParameter("remove"));
         }
         
         WebTable table = getQueueTable(request);
@@ -138,7 +139,7 @@ public class DataImportAction extends Action {
         WebTable.setOrder(sessionContext,"dataImport.ord",request.getParameter("ord"),1);
 		String log = request.getParameter("log");
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.TIME_SHORT);
-		List<QueueItem> queue = QueueProcessor.getInstance().getItems(null, null, "Data Exchange");
+		List<QueueItem> queue = solverServerService.getQueueProcessor().getItems(null, null, "Data Exchange");
 		if (queue.isEmpty()) return null;
 		WebTable table = new WebTable(9, "Data exchange in progress", "dataImport.do?ord=%%",
 				new String[] { "Name", "Status", "Progress", "Owner", "Session", "Created", "Started", "Finished", "Output"},
@@ -165,7 +166,7 @@ public class DataImportAction extends Action {
 						df.format(item.created()),
 						item.started() == null ? "" : df.format(item.started()),
 						item.finished() == null ? "" : df.format(item.finished()),
-						item.hasOutput() ? "<A href='temp/"+item.output().getName()+"'>"+item.output().getName().substring(item.output().getName().lastIndexOf('.') + 1).toUpperCase()+"</A>" : ""
+						item.hasOutput() && item.finished() != null ? "<A href='"+item.getOutputFileLink()+"'>"+item.output().getName().substring(item.output().getName().lastIndexOf('.') + 1).toUpperCase()+"</A>" : ""
 					},
 					new Comparable[] {
 						item.getId(),
@@ -194,12 +195,12 @@ public class DataImportAction extends Action {
 		return table;
 	}
 	
-	public abstract class DataExchangeQueueItem extends QueueItem implements LogWriter {
+	public static abstract class DataExchangeQueueItem extends QueueItem implements LogWriter, BackupProgress {
+		private static final long serialVersionUID = 1L;
 		DataImportForm iForm;
 		String iUrl;
 		boolean iImport;
 		String iSessionName;
-		Progress iProgress;
 		
 		public DataExchangeQueueItem(Session session, UserContext owner, DataImportForm form, HttpServletRequest request, boolean isImport) {
 			super(session, owner);
@@ -207,45 +208,8 @@ public class DataImportAction extends Action {
 			iUrl = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath();
 			iImport = isImport;
 			iSessionName = session.getAcademicTerm() + session.getAcademicYear() + session.getAcademicInitiative();
-			iProgress = Progress.getInstance(this);
-			iProgress.addProgressListener(new ProgressListener() {
-				@Override
-				public void statusChanged(String status) {
-					log(status);
-				}
-				
-				@Override
-				public void progressSaved() {}
-				
-				@Override
-				public void progressRestored() {}
-				
-				@Override
-				public void progressMessagePrinted(Message message) {
-					log(message.toHtmlString());
-				}
-				
-				@Override
-				public void progressChanged(long currentProgress, long maxProgress) {}
-				
-				@Override
-				public void phaseChanged(String phase) {}
-			});
 		}
 				
-		@Override
-		public double progress() {
-			double p = iProgress.getProgress();
-			long m = iProgress.getProgressMax();
-			return (m <= 0 ? 0.0 : p >= m ? 1.0 : p / m);
-		}
-
-		@Override
-		public String status() {
-			String phase = iProgress.getPhase();
-			return (phase == null || phase.isEmpty() ? super.status() : phase);
-		}
-
 		@Override
 		public String type() {
 			return "Data Exchange";
@@ -262,7 +226,26 @@ public class DataImportAction extends Action {
 		
 		abstract void executeDataExchange() throws Exception;
 		
-	
+		@Override
+		public void info(String message) {
+			super.info(message);
+		}
+		
+		@Override
+		public void warn(String message) {
+			super.warn(message);
+		}
+		
+		@Override
+		public void error(String message) {
+			super.error(message);
+		}
+		
+		@Override
+		public void setPhase(String phase, double max) {
+			super.setStatus(phase, max);
+		}
+		
 		@Override
 		protected void execute() throws Exception {
             try {
@@ -307,8 +290,9 @@ public class DataImportAction extends Action {
 		}
 	}
 	
-	public class ImportQueItem extends DataExchangeQueueItem {
-		
+	public static class ImportQueItem extends DataExchangeQueueItem {
+		private static final long serialVersionUID = 1L;
+
 		public ImportQueItem(Session session, UserContext owner, DataImportForm form, HttpServletRequest request) {
 			super(session, owner, form, request, true);
 		}
@@ -317,7 +301,7 @@ public class DataImportAction extends Action {
 		protected void executeDataExchange() throws Exception {
 			if (iForm.getFile().getFileName().toLowerCase().endsWith(".dat")) {
 				SessionRestoreInterface restore = (SessionRestoreInterface)Class.forName(ApplicationProperty.SessionRestoreInterface.value()).getConstructor().newInstance();
-				restore.restore(iForm.getFile().getInputStream(), iProgress);
+				restore.restore(iForm.getFile().getInputStream(), this);
 			} else {
 				DataExchangeHelper.importDocument((new SAXReader()).read(iForm.getFile().getInputStream()), getOwnerId(), this);
 			}
@@ -325,7 +309,8 @@ public class DataImportAction extends Action {
 
 	}
 	
-	public class ExportQueItem extends DataExchangeQueueItem {
+	public static class ExportQueItem extends DataExchangeQueueItem {
+		private static final long serialVersionUID = 1L;
 		
 		public ExportQueItem(Session session, UserContext owner, DataImportForm form, HttpServletRequest request) {
 			super(session, owner, form, request, false);
@@ -338,7 +323,7 @@ public class DataImportAction extends Action {
     			FileOutputStream out = new FileOutputStream(createOutput("session", "dat"));
     			try {
     				SessionBackupInterface backup = (SessionBackupInterface)Class.forName(ApplicationProperty.SessionBackupInterface.value()).getConstructor().newInstance();
-    				backup.backup(out, iProgress, getSessionId());
+    				backup.backup(out, this, getSessionId());
     			} finally {
     				out.close();
     			}

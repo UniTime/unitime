@@ -22,6 +22,7 @@ package org.unitime.timetable.server.script;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -29,22 +30,24 @@ import org.unitime.timetable.gwt.shared.ScriptInterface.GetQueueTableRpcRequest;
 import org.unitime.timetable.gwt.shared.ScriptInterface.QueueItemInterface;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.util.queue.QueueItem;
-import org.unitime.timetable.util.queue.QueueProcessor;
 
 /**
  * @author Tomas Muller
  */
 @GwtRpcImplements(GetQueueTableRpcRequest.class)
 public class GetQueueTableBackend implements GwtRpcImplementation<GetQueueTableRpcRequest, GwtRpcResponseList<QueueItemInterface>>{
+	
+	@Autowired SolverServerService solverServerService;
 
 	@Override
 	public GwtRpcResponseList<QueueItemInterface> execute(GetQueueTableRpcRequest request, SessionContext context) {
 		if (request.getDeleteId() != null)
-			QueueProcessor.getInstance().remove(request.getDeleteId());
+			solverServerService.getQueueProcessor().remove(request.getDeleteId());
 		
 
-		List<QueueItem> queue = QueueProcessor.getInstance().getItems(null, null, "Script");
+		List<QueueItem> queue = solverServerService.getQueueProcessor().getItems(null, null, "Script");
 		GwtRpcResponseList<QueueItemInterface> table = new GwtRpcResponseList<QueueItemInterface>();
 		
 		Date now = new Date();
@@ -62,6 +65,7 @@ public class GetQueueTableBackend implements GwtRpcImplementation<GetQueueTableR
 		QueueItemInterface q = new QueueItemInterface();
 		
 		q.setId(item.getId());
+		q.setHost(item.getHost());
 		q.setName(item.name());
 		q.setStatus(item.status());
 		q.setProgress(item.progress() <= 0.0 || item.progress() >= 1.0 ? "" : String.valueOf(Math.round(100 * item.progress())) + "%");
@@ -70,8 +74,10 @@ public class GetQueueTableBackend implements GwtRpcImplementation<GetQueueTableR
 		q.setCreated(item.created());
 		q.setStarted(item.started());
 		q.setFinished(item.finished());
-		if (item.finished() != null && item.hasOutput())
+		if (item.finished() != null && item.hasOutput()) {
 			q.setOutput(item.output().getName());
+			q.setOutputLink(item.getOutputFileLink());
+		}
 		q.setLog(item.log());
 		q.setCanDelete((context.hasPermissionAnyAuthority(item.getSessionId(), "Session", Right.Chameleon) || context.getUser().getExternalUserId().equals(item.getOwnerId())));
 		

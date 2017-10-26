@@ -104,9 +104,9 @@ public class SessionBackup implements SessionBackupInterface {
 	private CodedOutputStream iOut = null;
 	private PrintWriter iDebug = null;
 	private Long iSessionId = null;
-	private Progress iProgress = null;
+	private BackupProgress iProgress = null;
 	
-	public Progress getProgress() {
+	public BackupProgress getProgress() {
 		return iProgress;
 	}
 	
@@ -127,7 +127,7 @@ public class SessionBackup implements SessionBackupInterface {
 	}
 	
 	@Override
-	public void backup(OutputStream out, Progress progress, Long sessionId) throws IOException {
+	public void backup(OutputStream out, BackupProgress progress, Long sessionId) throws IOException {
         iOut = CodedOutputStream.newInstance(out);
         iProgress = progress;
 		iSessionId = sessionId;
@@ -734,8 +734,7 @@ public class SessionBackup implements SessionBackupInterface {
             		? session.getAcademicTerm() + session.getAcademicYear() + session.getAcademicInitiative() + ".dat"
             		: args[0]);
             
-            Progress progress = Progress.getInstance();
-            
+            final Progress progress = Progress.getInstance();
             sLog.info("Using " + ApplicationProperty.SessionBackupInterface.value());
             SessionBackup backup = (SessionBackup)Class.forName(ApplicationProperty.SessionBackupInterface.value()).newInstance();
 
@@ -747,7 +746,37 @@ public class SessionBackup implements SessionBackupInterface {
             
             progress.addProgressListener(new ProgressWriter(System.out));
             
-            backup.backup(out, progress, session.getUniqueId());
+            backup.backup(out, new BackupProgress() {
+				@Override
+				public void setStatus(String status) {
+					progress.setStatus(status);
+				}
+				
+				@Override
+				public void setPhase(String phase, double max) {
+					progress.setPhase(phase, Math.round(max));
+				}
+				
+				@Override
+				public void incProgress() {
+					progress.incProgress();
+				}
+				
+				@Override
+				public void info(String message) {
+					progress.info(message);
+				}
+				
+				@Override
+				public void warn(String message) {
+					progress.warn(message);
+				}
+
+				@Override
+				public void error(String message) {
+					progress.error(message);
+				}
+			}, session.getUniqueId());
             
             out.close();
             if (debug != null) debug.close();

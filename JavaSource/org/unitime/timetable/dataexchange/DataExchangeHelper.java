@@ -25,7 +25,6 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.Document;
-import org.springframework.web.util.HtmlUtils;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
@@ -36,12 +35,7 @@ import org.unitime.timetable.model.dao._RootDAO;
  */
 public class DataExchangeHelper {
     protected static Log sLog = LogFactory.getLog(DataExchangeHelper.class);
-    public static String sLogLevelDebug = "DEBUG";
-    public static String sLogLevelInfo = "INFO";
-    public static String sLogLevelWarn = "WARN";
-    public static String sLogLevelError = "ERROR";
-    public static String sLogLevelFatal = "FATAL";
-    protected LogWriter iTextLog;
+    protected Log iTextLog;
     protected org.hibernate.Session iHibSession = null;
     protected org.hibernate.Transaction iTx = null;
     protected int iFlushIfNeededCounter = 0;
@@ -105,63 +99,51 @@ public class DataExchangeHelper {
     public DataExchangeHelper() {
     }
     
-    public void setLog(LogWriter out) {
+    public void setLog(Log out) {
         iTextLog = out;
     }
-    public LogWriter getLog() {
+    public Log getLog() {
         return iTextLog;
-    }
-    public void log(String level, String message, Throwable t) {
-        if (iTextLog==null) return;
-        if (message!=null) {
-        	String escapedMessage = HtmlUtils.htmlEscape(message);
-            if (sLogLevelDebug.equals(level)) iTextLog.println("<font color='gray'>&nbsp;&nbsp;--"+escapedMessage+"</font>");
-            else if (sLogLevelInfo.equals(level)) iTextLog.println(escapedMessage+"");
-            else if (sLogLevelWarn.equals(level)) iTextLog.println("<font color='orange'>"+escapedMessage+"</font>");
-            else if (sLogLevelError.equals(level)) iTextLog.println("<font color='red'>"+escapedMessage+"</font>");
-            else if (sLogLevelFatal.equals(level)) iTextLog.println("<font color='red'><b>"+escapedMessage+"</b></font>");
-            else iTextLog.println(escapedMessage);
-        }
     }
 
     public void debug(String msg) {
-        log(sLogLevelDebug, msg, null);
+    	if (iTextLog != null) iTextLog.debug(msg);
         sLog.debug(msg);
     }
     public void info(String msg) {
-        log(sLogLevelInfo, msg, null);
+    	if (iTextLog != null) iTextLog.info(msg);
         sLog.info(msg);
     }
     public void warn(String msg) {
-        log(sLogLevelWarn, msg, null);
+    	if (iTextLog != null) iTextLog.warn(msg);
         sLog.warn(msg);
     }
     public void error(String msg) {
-        log(sLogLevelError, msg, null);
+    	if (iTextLog != null) iTextLog.error(msg);
         sLog.error(msg);
     }
     public void fatal(String msg) {
-        log(sLogLevelFatal, msg, null);
+    	if (iTextLog != null) iTextLog.fatal(msg);
         sLog.fatal(msg);
     }
     public void debug(String msg, Throwable t) {
-        log(sLogLevelDebug, msg, t);
+    	if (iTextLog != null) iTextLog.debug(msg, t);
         sLog.debug(msg, t);
     }
     public void info(String msg, Throwable t) {
-        log(sLogLevelInfo, msg, t);
+    	if (iTextLog != null) iTextLog.info(msg, t);
         sLog.info(msg, t);
     }
     public void warn(String msg, Throwable t) {
-        log(sLogLevelWarn, msg, t);
+    	if (iTextLog != null) iTextLog.warn(msg, t);
         sLog.warn(msg, t);
     }
     public void error(String msg, Throwable t) {
-        log(sLogLevelError, msg, t);
+    	if (iTextLog != null) iTextLog.error(msg, t);
         sLog.error(msg, t);
     }
     public void fatal(String msg, Throwable t) {
-        log(sLogLevelFatal, msg, t);
+    	if (iTextLog != null) iTextLog.fatal(msg, t);
         sLog.fatal(msg, t);
     }
     
@@ -268,7 +250,7 @@ public class DataExchangeHelper {
         return (BaseExport)sExportRegister.get(type).getConstructor().newInstance();
     }
     
-    public static void importDocument(Document document, String userId, LogWriter log) throws Exception {
+    public static void importDocument(Document document, String userId, Log log) throws Exception {
         BaseImport imp = createImportBase(document.getRootElement().getName());
         imp.setLog(log);
         if (userId != null)
@@ -276,7 +258,7 @@ public class DataExchangeHelper {
         imp.loadXml(document.getRootElement());
     }
     
-    public static Document exportDocument(String rootName, Session session, Properties parameters, LogWriter log) throws Exception {
+    public static Document exportDocument(String rootName, Session session, Properties parameters, Log log) throws Exception {
         BaseExport exp = createExportBase(rootName);
         exp.setLog(log);
         return exp.saveXml(session, parameters);

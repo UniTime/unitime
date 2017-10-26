@@ -67,6 +67,8 @@ import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
 import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.spring.SpringApplicationContextHolder;
+import org.unitime.timetable.util.queue.QueueProcessor;
+import org.unitime.timetable.util.queue.RemoteQueueProcessor;
 
 /**
  * @author Tomas Muller
@@ -87,6 +89,7 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 	private OnlineStudentSchedulingContainerRemote iOnlineStudentSchedulingContainer;
 	private RemoteRoomAvailability iRemoteRoomAvailability;
 	private OnlineStudentSchedulingGenericUpdater iUpdater;
+	private RemoteQueueProcessor iRemoteQueueProcessor;
 	
 	protected boolean iLocal = false;
 	
@@ -106,6 +109,7 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 		iOnlineStudentSchedulingContainer = new OnlineStudentSchedulingContainerRemote(channel, SCOPE_ONLINE);
 		iRemoteRoomAvailability = new RemoteRoomAvailability(channel, SCOPE_AVAILABILITY);
 		iUpdater = new OnlineStudentSchedulingGenericUpdater(iDispatcher, iOnlineStudentSchedulingContainer);
+		iRemoteQueueProcessor = new RemoteQueueProcessor(channel, SCOPE_QUEUE_PROCESSOR);
 	}
 	
 	public JChannel getChannel() { return iChannel; }
@@ -645,4 +649,30 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 		else
 			logger.setLevel(Level.toLevel(level));
 	}
+
+	@Override
+	public QueueProcessor getQueueProcessor() {
+		Address local = getLocalAddress();
+		if (local != null)
+			return (QueueProcessor)Proxy.newProxyInstance(
+					SolverServerImplementation.class.getClassLoader(),
+					new Class[] {QueueProcessor.class},
+					new QueueProcessorInvocationHandler(local, iRemoteQueueProcessor));
+		return super.getQueueProcessor();
+	}
+	
+	public static class QueueProcessorInvocationHandler implements InvocationHandler {
+		private Address iAddress;
+		private RemoteQueueProcessor iProcessor;
+		
+		private QueueProcessorInvocationHandler(Address address, RemoteQueueProcessor processor) {
+			iAddress = address;
+			iProcessor = processor;
+		}
+		
+		@Override
+		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+    		return iProcessor.dispatch(iAddress, method, args);
+		}
+    }
 }

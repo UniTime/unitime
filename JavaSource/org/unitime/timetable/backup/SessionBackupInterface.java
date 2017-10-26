@@ -22,11 +22,9 @@ package org.unitime.timetable.backup;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.cpsolver.ifs.util.Progress;
-
 /**
  * @author Tomas Muller
  */
 public interface SessionBackupInterface {
-	public void backup(OutputStream out, Progress progress, Long sessionId) throws IOException;
+	public void backup(OutputStream out, BackupProgress progress, Long sessionId) throws IOException;
 }

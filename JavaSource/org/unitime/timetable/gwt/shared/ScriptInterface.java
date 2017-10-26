@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.shared;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -218,7 +219,8 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 		}
 	}
 	
-	public static class ExecuteScriptRpcRequest implements GwtRpcRequest<QueueItemInterface> {
+	public static class ExecuteScriptRpcRequest implements GwtRpcRequest<QueueItemInterface>, Serializable {
+		private static final long serialVersionUID = 1L;
 		private Long iId;
 		private String iName;
 		private Map<String, String> iParameters = new HashMap<String, String>();
@@ -285,8 +287,8 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 	}
 	
 	public static class QueueItemInterface implements GwtRpcResponse {
-		private Long iId;
-		private String iName, iStatus, iProgress, iOwner, iSession, iOutput, iLog;
+		private String iId;
+		private String iName, iStatus, iProgress, iOwner, iSession, iOutput, iLog, iHost, iOutputLink;
 		private Date iCreated, iStarted, iFinished;
 		private boolean iCanDelete = false;
 		
@@ -294,8 +296,11 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 		
 		public QueueItemInterface() {}
 		
-		public Long getId() { return iId; }
-		public void setId(Long id) { iId = id; }
+		public String getId() { return iId; }
+		public void setId(String id) { iId = id; }
+		
+		public String getHost() { return iHost; }
+		public void setHost(String host) { iHost = host; }
 		
 		public String getName() { return iName; }
 		public void setName(String name) { iName = name; }
@@ -314,6 +319,9 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 		
 		public String getOtuput() { return iOutput; }
 		public void setOutput(String output) { iOutput = output; }
+		
+		public String getOtuputLink() { return iOutputLink; }
+		public void setOutputLink(String outputLink) { iOutputLink = outputLink; }
 		
 		public Date getCreated() { return iCreated; }
 		public void setCreated(Date created) { iCreated = created; }
@@ -335,16 +343,16 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 	}
 	
 	public static class GetQueueTableRpcRequest implements GwtRpcRequest<GwtRpcResponseList<QueueItemInterface>> {
-		private Long iDeleteId = null;
+		private String iDeleteId = null;
 
 		public GetQueueTableRpcRequest() {}
-		public GetQueueTableRpcRequest(Long deleteId) { iDeleteId = deleteId; }
+		public GetQueueTableRpcRequest(String deleteId) {  iDeleteId = deleteId; }
 		
-		public Long getDeleteId() { return iDeleteId; }
+		public String getDeleteId() { return iDeleteId; }
 		
 		@Override
 		public String toString() {
-			return (iDeleteId == null ? "" : iDeleteId.toString());
+			return (iDeleteId == null ? "" : iDeleteId);
 		}
 	}
 }
