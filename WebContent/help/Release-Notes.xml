@@ -38,6 +38,20 @@
 		</item>
 	</category>
 	<category>
+		<title>Online Student Scheduling</title>
+		<item>
+			<name>Special Registration</name>
+			<description>
+				<line>The following work has been done to support special registration at Purdue.</line>
+				<line>Enable special registration in Scheduling Assistant by adding &amp;mode=specreg parameter in the URL.
+					<line>In this mode, a student is allowed to pick a section that is not available, conflicting with some other section that the student has, or reserved for some other students.</line>
+				</line>
+				<line>Added ability to select the current academic session using URL parameters term and campus
+					(these may include external term and campus names, if unitime.custom.ExternalTermProvider is configured).</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Constraint Solver (1.3.114)</title>
 		<item>
 			<name>Course Timetabling: Max Half-Days Constraint</name>
