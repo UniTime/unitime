@@ -23,6 +23,9 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Enumeration;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.unitime.timetable.security.SessionContext;
 
 /**
@@ -32,7 +35,7 @@ public interface ApiHelper {
 	public Long getAcademicSessionId();
 	
 	public SessionContext getSessionContext();
-	
+		
 	public <P> P getRequest(Type requestType) throws IOException;
 	
 	public <R> void setResponse(R response) throws IOException;

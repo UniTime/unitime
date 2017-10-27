@@ -25,6 +25,7 @@ import java.io.StringWriter;
 import java.util.Date;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
 import org.unitime.timetable.util.Formats;
 
 /**
@@ -82,17 +83,7 @@ public class QueueMessage implements Serializable, Comparable<QueueMessage> {
     
     protected String formatMessagePlain() {
     	Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
-    	switch (getLevel()) {
-    	case TRACE:
-    		return df.format(getDate()) + " " + getLevel().name() + ":    -- " + getMessage();
-    	case DEBUG:
-    		return df.format(getDate()) + " " + getLevel().name() + ":  -- " + getMessage();
-    	case PROGRESS:
-    	case STAGE:
-    		return df.format(getDate()) + " " + getLevel().name() + ":[" + getMessage() + "]";
-    	default:
-    		return df.format(getDate()) + " " + getLevel().name() + ":" + getMessage();
-		}
+    	return df.format(getDate()) + " " + StringUtils.leftPad(getLevel().name(), 5) + " " + getMessage();
     }
     
     @Override

@@ -22,10 +22,6 @@ package org.unitime.timetable.util.queue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.activation.DataSource;
 import javax.servlet.ServletException;
@@ -55,16 +51,6 @@ public class QueueOutputFileServlet extends HttpServlet {
 		WebApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
 		SolverServerService solverServerService = (SolverServerService)applicationContext.getBean("solverServerService");
 		return solverServerService.getQueueProcessor();
-	}
-	
-	public static Map<String, String> decode(String text) throws UnsupportedEncodingException {
-		Map<String, String> params = new HashMap<String, String>();
-		for (String p: QueryEncoderBackend.decode(text, false).split("&")) {
-			String name = p.substring(0, p.indexOf('='));
-			String value = URLDecoder.decode(p.substring(p.indexOf('=') + 1), "UTF-8");
-			params.put(name, value);
-		}
-		return params;
 	}
 	
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

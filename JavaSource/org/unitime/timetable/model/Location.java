@@ -1154,4 +1154,10 @@ public abstract class Location extends BaseLocation implements Comparable {
 	
 	public abstract Set<EventServiceProvider> getAllowedServices();
 	public abstract void setAllowedServices(Set<EventServiceProvider> services);
+	
+	public static List<Location> findAllLocations(Long sessionId) {
+        return (List<Location>)new LocationDAO().getSession().createQuery(
+                "select l from Location l where l.session.uniqueId=:sessionId"
+                ).setLong("sessionId", sessionId).setCacheable(true).list();
+    }
 }

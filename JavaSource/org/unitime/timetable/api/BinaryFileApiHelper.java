@@ -23,6 +23,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.Date;
 
@@ -90,7 +91,8 @@ public class BinaryFileApiHelper extends JsonApiHelper {
 		}
 	}
 	
-	public static class BinaryFile {
+	public static class BinaryFile implements Serializable {
+		private static final long serialVersionUID = 1L;
 		byte[] iBuffer;
 		public String iContentType;
 		public String iFileName;
