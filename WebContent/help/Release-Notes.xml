@@ -118,11 +118,56 @@
 		</item>
 	</category>
 	<category>
+		<title>Automation</title>
+		<item>
+			<name>Queue Processor: Clustering</name>
+			<description>
+				<line>Added ability to display queue processes across the cluster.
+					<line>Roll forward, data exchange, scripts, and PDF exam reports use queue processor at the moment.</line>
+				</line>
+				<line>A task is executed locally, but it shows on other nodes as well and the resultant file can be accessed from the other nodes too.</line>
+			</description>
+		</item>
+		<item>
+			<name>Scripts: Script API</name>
+			<description>
+				<line>Added script API (UniTime/api/script)</line>
+				<line>To execute script, use
+					<line>GET/POST api/script?term=&lt;TERM&gt;&amp;script=&lt;SCRIPT_NAME&gt;</line>
+					<line>plus all the parameters of the script</line>
+					<line>use &amp;queue=false to execute the script immediately (outside of the process queue)</line>
+					<line>when there is an input file, use POST with the file as the payload</line>
+					<line>For example:
+						<line>GET http://localhost:8080/UniTime/api/script?term=Fal2010woebegon&amp;name=Test+Script&amp;dept=0100&amp;name=TEST&amp;subjects=ALG&amp;subjects=BIOL</line>
+					</line>
+					<line>The request returns the appropriate task (queue item) when queue=false is not used.</line>
+					<line>When queue=false is used, the request waits till the script is finished and returns the output file (if there is any) or the log (in the text format if there is no output file).</line>
+				</line>
+				<line>To retrieve all tasks (queue items) from the process queue, use GET without additional parameters, e.g.,
+					<line>GET http://localhost:8080/UniTime/api/script?term=Fal2010woebegon</line>
+				</line>
+				<line>To check particular task (queue item), use id=&lt;ITEM_ID&gt;</line>
+				<line>To get text log of a particular task (queue item), use log=&lt;ITEM_ID&gt;</line>
+				<line>To get output file of a particular task (queue item), use output=&lt;ITEM_ID&gt;</line>
+				<line>To delete a particular task from the queue, use delete=&lt;ITEM_ID&gt;</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Other</title>
 		<item>
 			<name>Technology Update</name>
 			<description>
 				<line>GWT updated to version 2.8.2 (from 2.7.0)</line>
+			</description>
+		</item>
+		<item>
+			<name>Query Encoder: Illegal Block Size Fix</name>
+			<description>
+				<line>Use Base64 by default.</line>
+				<line>Fall back to base 36 big integers, but pad with sign bytes (0xff) when IllegalBlockSizeException is seen.
+					<line>Using BigInteger to map bytes to strings is not ideal because of the sign bytes may get ignored, causing IllegalBlockSizeException during decoding.</line>
+				</line>
 			</description>
 		</item>
 	</category>
