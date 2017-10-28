@@ -99,6 +99,14 @@
 			</description>
 		</item>
 		<item>
+			<name>Course Timetabling: Week starting on Sunday</name>
+			<description>
+				<line>When, e.g., General.FirstWorkDay = 6 (Sunday) and General.LastWorkDay = 3 (Thursday).</line>
+				<line>Corrected behavior of PRECEDENCE, BTB_DAY, NDB_GT_1, and FOLLOWING_DAY when week starts on Sunday.</line>
+				<line>Corrected behavior of SPREAD and MIN_ROOM_USE constraints (and a few other places) when week starts on Sunday.</line>
+			</description>
+		</item>
+		<item>
 			<name>Examination Timetabling: Period Preferences</name>
 			<description>
 				<line>Added additional information about how well are the period preferences satisfied into the solution extended info
@@ -121,6 +129,13 @@
 			<name>Student Scheduling: Scheduling Assistant Weights</name>
 			<description>
 				<line>Corrected precision on the selected choices criterion as the result is a % of the selected classes.</line>
+				<line>Put selected sections higher in the list.</line>
+				<line>Prefer sections that are available (there is space in them).
+					<line>This is especially useful when a student has an individual reservation that is not given for a particular section or for special registration (student is allowed to pick any section).</line>
+				</line>
+				<line>Minimize class penalties: divide penalty by the number of sections (counting average section penalty of the enrollment).
+					<line>This is to avoid penalization of enrollments with more/fewer sections.</line>
+				</line>
 			</description>
 		</item>
 	</category>
