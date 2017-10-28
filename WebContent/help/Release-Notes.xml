@@ -36,6 +36,13 @@
 				<line>These include Suggestions, Timetables, Solver Reports, Conflict Statistics, Changes, and History.</line>
 			</description>
 		</item>
+		<item>
+			<name>Time Patterns: First Day Of Week</name>
+			<description>
+				<line>Added ability to change the first day of week for time patterns.</line>
+				<line>Using unitime.timePattern.firstDayOfWeek application property (0 is Monday, 1 is Tuesday, etc.).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Online Student Scheduling</title>

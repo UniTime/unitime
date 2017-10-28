@@ -92,16 +92,19 @@ public class TimePatternModel implements RequiredTimeTableModel {
 	    	iDays = new String[days.size()];
 	    	iDayCodes = new int[days.size()];
 	    	int idx=0;
+	    	Integer firstDayOfWeek = ApplicationProperty.TimePatternFirstDayOfWeek.intValue();
 	    	for (Enumeration e=days.elements();e.hasMoreElements();idx++) {
 	    		int dayCode = ((TimePatternDays)e.nextElement()).getDayCode().intValue();
 	    		iDayCodes[idx] = dayCode;
 	    		iDays[idx] = "";
 	    		for (int i=0;i<Constants.DAY_CODES.length;i++) {
-	    			if ((Constants.DAY_CODES[i]&dayCode)==0) continue;
+	    			int j = (firstDayOfWeek == null ? i : (i + firstDayOfWeek) % 7);
+	    			if ((Constants.DAY_CODES[j]&dayCode)==0) continue;
 	    			if (pattern.getNrMeetings().intValue()<=1)
-	    				iDays[idx] += CONSTANTS.days()[i];
-	    			else
-	    				iDays[idx] += CONSTANTS.shortDays()[i];
+	    				iDays[idx] += CONSTANTS.days()[j];
+	    			else {
+	    				iDays[idx] += CONSTANTS.shortDays()[j];
+	    			}
 	    		}
 	    	}
 	    	
@@ -473,14 +476,16 @@ public class TimePatternModel implements RequiredTimeTableModel {
     }    
     
     public String toString() {
+    	Integer firstDayOfWeek = ApplicationProperty.TimePatternFirstDayOfWeek.intValue();
     	if (isExactTime()) {
     		if (iPref==null) return "not set";
     		int days = getExactDays();
     		int startSlot = getExactStartSlot();
     		StringBuffer sb = new StringBuffer();
     		for (int i=0;i<Constants.DAY_CODES.length;i++) {
-    			if ((Constants.DAY_CODES[i]&days)!=0)
-    				sb.append(CONSTANTS.shortDays()[i]);
+    			int j = (firstDayOfWeek == null ? i : (i + firstDayOfWeek) % 7);
+    			if ((Constants.DAY_CODES[j]&days)!=0)
+    				sb.append(CONSTANTS.shortDays()[j]);
     		}
     		sb.append(" ");
     		sb.append(Constants.toTime(startSlot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN));
@@ -542,18 +547,20 @@ public class TimePatternModel implements RequiredTimeTableModel {
              	  }
              	   
              	  for (int x=0;x<Constants.DAY_CODES.length;x++) {
+             		  int y = (firstDayOfWeek == null ? x : (x + firstDayOfWeek) % 7);
              		  boolean thisDay = false;
              		  for (int a=i;a<=endDay;a++)
-             			  if ((iDayCodes[a] & Constants.DAY_CODES[x])!=0)
+             			  if ((iDayCodes[a] & Constants.DAY_CODES[y])!=0)
              				 thisDay = true;
              		  if (thisDay)
-             			  sb.append(nrDays==1?CONSTANTS.days()[x]:CONSTANTS.shortDays()[x]);
+             			  sb.append(nrDays==1?CONSTANTS.days()[y]:CONSTANTS.shortDays()[y]);
              	  }
              	  String d1 = " ";
              	  String d2 = " ";
              	  for (int x = 0; x < 7; x++) {
-             		 if (x < 5) d1 += CONSTANTS.shortDays()[x];
-             		  d2 += CONSTANTS.shortDays()[x];
+             		 int y = (firstDayOfWeek == null ? x : (x + firstDayOfWeek) % 7);
+             		 if (x < 5) d1 += CONSTANTS.shortDays()[y];
+             		  d2 += CONSTANTS.shortDays()[y];
              	  }
              	  if (iTimePattern!=null && sb.toString().endsWith(d1))
              		  sb.delete(sb.length()-d1.length(), sb.length());

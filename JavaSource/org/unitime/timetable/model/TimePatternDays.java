@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.model;
 
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseTimePatternDays;
+import org.unitime.timetable.util.Constants;
 
 
 
@@ -49,7 +51,19 @@ public class TimePatternDays extends BaseTimePatternDays implements Comparable {
 
 	public int compareTo(Object o) {
 		if (o==null || !(o instanceof TimePatternDays)) return -1;
-		return -getDayCode().compareTo(((TimePatternDays)o).getDayCode());
+		Integer firstDayOfWeek = ApplicationProperty.TimePatternFirstDayOfWeek.intValue();
+		if (firstDayOfWeek == null || firstDayOfWeek.equals(0)) {
+			return -getDayCode().compareTo(((TimePatternDays)o).getDayCode());
+		} else {
+			for (int i = 0; i < Constants.DAY_CODES.length; i++) {
+				int idx = (i + firstDayOfWeek) % 7;
+				boolean a = (getDayCode() & Constants.DAY_CODES[idx]) != 0;
+				boolean b = (((TimePatternDays)o).getDayCode() & Constants.DAY_CODES[idx]) != 0;
+				if (a != b)
+					return (a ? -1 : 1);
+			}
+			return 0;
+		}
 	}
 
 	public int hashCode() {

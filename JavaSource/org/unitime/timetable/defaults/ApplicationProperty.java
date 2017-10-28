@@ -2273,6 +2273,11 @@ public enum ApplicationProperty {
 	@DefaultValue("1")
 	@Description("Instructional Offerings / Classes: maximal number of selected subject areas for the search to start automatically")
 	MaxSubjectsToSearchAutomatically("unitime.auto_search.maxSubjects"),
+	
+	@Type(Integer.class)
+	@DefaultValue("0")
+	@Description("Time Patterns: first day of week (0 is Monday, 1 is Tuesday, etc.)")
+	TimePatternFirstDayOfWeek("unitime.timePattern.firstDayOfWeek"),
 	;
 
 	String iKey;

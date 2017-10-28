@@ -26,6 +26,7 @@ import java.awt.image.WritableRaster;
 import javax.servlet.ServletRequest;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -96,9 +97,11 @@ public class RequiredTimeTable {
     		}
     	} catch (NumberFormatException e) {}
     	
+		Integer firstDayOfWeek = ApplicationProperty.TimePatternFirstDayOfWeek.intValue();
     	if (editable) {
         	for (int i=0;i<Constants.DAY_CODES.length;i++) {
-        		sb.append("<input type='checkbox' name='"+iName+"_d"+i+"' "+((days&Constants.DAY_CODES[i])!=0?"checked":"")+" "+"/>"+CONSTANTS.days()[i]+"&nbsp;&nbsp;\n");
+        		int j = (firstDayOfWeek == null ? i : (i + firstDayOfWeek) % 7);
+        		sb.append("<input type='checkbox' name='"+iName+"_d"+j+"' "+((days&Constants.DAY_CODES[j])!=0?"checked":"")+" "+"/>"+CONSTANTS.days()[j]+"&nbsp;&nbsp;\n");
         	}
         	
         	sb.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n");
@@ -122,8 +125,9 @@ public class RequiredTimeTable {
     			if ((days&Constants.DAY_CODES[i])!=0) nrDays++;
     		}
     		for (int i=0;i<Constants.DAY_CODES.length;i++) {
-    			if ((days&Constants.DAY_CODES[i])!=0) 
-    				sb.append(nrDays==1?CONSTANTS.days()[i]:CONSTANTS.shortDays()[i]);
+    			int j = (firstDayOfWeek == null ? i : (i + firstDayOfWeek) % 7);
+    			if ((days&Constants.DAY_CODES[j])!=0) 
+    				sb.append(nrDays==1?CONSTANTS.days()[j]:CONSTANTS.shortDays()[j]);
     		}
     		sb.append(" " + Constants.slot2str(startSlot));
     	}
