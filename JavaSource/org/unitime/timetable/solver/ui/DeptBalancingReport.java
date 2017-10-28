@@ -50,6 +50,7 @@ public class DeptBalancingReport implements Serializable {
         iLastDaySlot = model.getProperties().getPropertyInt("General.LastDaySlot", Constants.DAY_SLOTS_LAST);
         iFirstWorkDay = model.getProperties().getPropertyInt("General.FirstWorkDay", 0);
         iLastWorkDay = model.getProperties().getPropertyInt("General.LastWorkDay", Constants.NR_DAYS_WEEK - 1);
+        if (iLastWorkDay < iFirstWorkDay) iLastWorkDay += 7;
 		for (DepartmentSpreadConstraint deptSpread: model.getDepartmentSpreadConstraints()) {
 			iGroups.add(new DeptBalancingGroup(solver,deptSpread));
 		}
@@ -123,28 +124,28 @@ public class DeptBalancingReport implements Serializable {
 			if (slot<iFirstDaySlot || slot>iLastDaySlot) return 0;
 			int ret = 0;
 			for (int day=0;day<iLastWorkDay - iFirstWorkDay + 1;day++)
-				ret += iLimit[slot-iFirstDaySlot][day-iFirstWorkDay];
+				ret += iLimit[slot-iFirstDaySlot][day];
 			return ret;
 		}
 		public int getUsage(int slot) {
 			if (slot<iFirstDaySlot || slot>iLastDaySlot) return 0;
 			int ret = 0;
 			for (int day=0;day<iLastWorkDay - iFirstWorkDay + 1;day++)
-				ret += iUsage[slot-iFirstDaySlot][day-iFirstWorkDay];
+				ret += iUsage[slot-iFirstDaySlot][day];
 			return ret;
 		}
 		public int getExcess(int slot) {
 			if (slot<iFirstDaySlot || slot>iLastDaySlot) return 0;
 			int ret = 0;
 			for (int day=0;day<iLastWorkDay - iFirstWorkDay + 1;day++)
-				ret += Math.max(0,iUsage[slot-iFirstDaySlot][day-iFirstWorkDay]-iLimit[slot-iFirstDaySlot][day-iFirstWorkDay]);
+				ret += Math.max(0,iUsage[slot-iFirstDaySlot][day]-iLimit[slot-iFirstDaySlot][day]);
 			return ret;
 		}
 		public Collection getClasses(int slot) {
 			if (slot<iFirstDaySlot || slot>iLastDaySlot) return new HashSet(0);
 			HashSet ret = new HashSet();
 			for (int day=0;day<iLastWorkDay - iFirstWorkDay + 1;day++)
-				ret.addAll(iCourses[slot-iFirstDaySlot][day-iFirstWorkDay]);
+				ret.addAll(iCourses[slot-iFirstDaySlot][day]);
 			return ret;
 		}
 	}

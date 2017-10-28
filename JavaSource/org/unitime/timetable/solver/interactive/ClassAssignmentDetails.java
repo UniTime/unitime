@@ -514,8 +514,11 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		public int getDatePatternPreference() { return iDatePatternPref; }
 		public String getDaysName() {
 			StringBuffer ret = new StringBuffer();
-			for (int i=0;i<CONSTANTS.shortDays().length;i++)
-				if ((Constants.DAY_CODES[i] & iDays)!=0) ret.append(CONSTANTS.shortDays()[i]);
+			Integer firstDay = ApplicationProperty.TimePatternFirstDayOfWeek.intValue();
+			for (int i=0;i<CONSTANTS.shortDays().length;i++) {
+				int idx = (firstDay == null ? i : (i + firstDay) % 7);
+				if ((Constants.DAY_CODES[idx] & iDays)!=0) ret.append(CONSTANTS.shortDays()[idx]);
+			}
 			return ret.toString(); 
 		}
 		public String getStartTime() {

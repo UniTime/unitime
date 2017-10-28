@@ -253,7 +253,7 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
         				TableCellClickableClassName x = new TableCellClickableClassName(ca.getClazz().getClassId(), ca.getClazz().getName());
         				int nrMeetings = 0;
         				for (int j = deptBalancingReport.getFirstWorkDay(); j<=deptBalancingReport.getLastWorkDay(); j++)
-        					if ((Constants.DAY_CODES[j]&ca.getTime().getDays())!=0) nrMeetings++;
+        					if ((Constants.DAY_CODES[j%7]&ca.getTime().getDays())!=0) nrMeetings++;
         				u+=nrMeetings;
         				if (u>limit && !over) {
         					over=true;
@@ -576,7 +576,7 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
         				TableCellClickableClassName x = new TableCellClickableClassName(ca.getClazz().getClassId(), ca.getClazz().getName());
         				int nrMeetings = 0;
         				for (int j = report.getFirstWorkDay(); j<=report.getLastWorkDay(); j++)
-        					if ((Constants.DAY_CODES[j]&ca.getTime().getDays())!=0) nrMeetings++;
+        					if ((Constants.DAY_CODES[j%7]&ca.getTime().getDays())!=0) nrMeetings++;
         				u+=nrMeetings;
         				if (u>limit && !over) {
         					over=true;
