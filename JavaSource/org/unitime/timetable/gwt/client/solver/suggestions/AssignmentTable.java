@@ -150,7 +150,7 @@ public class AssignmentTable extends UniTimeTable<ClassAssignmentDetails>{
 		if (iSortBy == null) return;
 		if (getNbrCells(iSortBy) == 0) iSortBy = AssignmentColumn.CLASS;
 		UniTimeTableHeader header = getHeader(getCellIndex(iSortBy));
-		sort(header, new AssignmentComparator(iSortBy, true), iAsc);
+		sort(header, new AssignmentComparator(iProperties.getFirstDay(), iSortBy, true), iAsc);
 	}
 	
 	public static enum AssignmentColumn {
@@ -264,7 +264,7 @@ public class AssignmentTable extends UniTimeTable<ClassAssignmentDetails>{
 			P time = new P("time");
 			if (details.getTime() != null) {
 				final P current = new P("old");
-				current.setText(details.getTime().getName(false, CONSTANTS));
+				current.setText(details.getTime().getName(iProperties.getFirstDay(), false, CONSTANTS));
 				if (details.getTime().getPref() != 0)
 					current.getElement().getStyle().setColor(iProperties.getPreference(details.getTime().getPref()).getColor());
 				if (details.getTime().isStriked())
@@ -288,7 +288,7 @@ public class AssignmentTable extends UniTimeTable<ClassAssignmentDetails>{
 					P notAssigned = new P("not-assigned"); notAssigned.setText(MESSAGES.unassignment()); time.add(notAssigned);
 				} else if (details.getAssignedTime().getStartSlot() != details.getTime().getStartSlot() || details.getAssignedTime().getDays() != details.getTime().getDays() || !details.getAssignedTime().getPatternId().equals(details.getTime().getPatternId())) {
 					P arrow = new P("arrow"); arrow.setHTML(MESSAGES.assignmentArrow()); time.add(arrow);
-					final P other = new P("new"); other.setText(details.getAssignedTime().getName(false, CONSTANTS));
+					final P other = new P("new"); other.setText(details.getAssignedTime().getName(iProperties.getFirstDay(), false, CONSTANTS));
 					if (details.getAssignedTime().getPref() != 0)
 						other.getElement().getStyle().setColor(iProperties.getPreference(details.getAssignedTime().getPref()).getColor());
 					if (details.getAssignedTime().isStriked())
@@ -309,7 +309,7 @@ public class AssignmentTable extends UniTimeTable<ClassAssignmentDetails>{
 					time.add(other);
 				}
 			} else if (details.getAssignedTime() != null) {
-				final P other = new P("new"); other.setText(details.getAssignedTime().getName(false, CONSTANTS));
+				final P other = new P("new"); other.setText(details.getAssignedTime().getName(iProperties.getFirstDay(), false, CONSTANTS));
 				if (details.getAssignedTime().getPref() != 0)
 					other.getElement().getStyle().setColor(iProperties.getPreference(details.getAssignedTime().getPref()).getColor());
 				if (details.getAssignedTime().isStriked())
@@ -490,10 +490,12 @@ public class AssignmentTable extends UniTimeTable<ClassAssignmentDetails>{
 	}
 	
 	public static class AssignmentComparator implements Comparator<ClassAssignmentDetails> {
+		private Integer iFirstDay;
 		private AssignmentColumn iColumn;
 		private boolean iAsc;
 		
-		public AssignmentComparator(AssignmentColumn column, boolean asc) {
+		public AssignmentComparator(Integer firstDay, AssignmentColumn column, boolean asc) {
+			iFirstDay = firstDay;
 			iColumn = column;
 			iAsc = asc;
 		}
@@ -515,7 +517,7 @@ public class AssignmentTable extends UniTimeTable<ClassAssignmentDetails>{
 			if (cmp != 0) return cmp;
 			cmp = compare(t1 == null ? null : t1.getStartSlot(), t2 == null ? null : t2.getStartSlot());
 			if (cmp != 0) return cmp;
-			return compare(t1 == null ? null : t1.getName(false, CONSTANTS), t2 == null ? null : t2.getName(false, CONSTANTS));
+			return compare(t1 == null ? null : t1.getName(iFirstDay, false, CONSTANTS), t2 == null ? null : t2.getName(iFirstDay, false, CONSTANTS));
 		}
 
 		public int compareByRoom(List<RoomInfo> r1, List<RoomInfo> r2) {

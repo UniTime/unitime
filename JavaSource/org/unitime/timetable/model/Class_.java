@@ -63,6 +63,7 @@ import org.unitime.timetable.solver.course.ui.ClassAssignmentInfo;
 import org.unitime.timetable.solver.course.ui.ClassInstructorInfo;
 import org.unitime.timetable.solver.course.ui.ClassRoomInfo;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DefaultExternalClassNameHelper;
 import org.unitime.timetable.util.duration.DurationModel;
 import org.unitime.timetable.webutil.Navigation;
@@ -1560,10 +1561,11 @@ public class Class_ extends BaseClass_ {
 			Debug.error(e);
 		}
 		if (a!=null) {
-				Enumeration<Integer> e = a.getTimeLocation().getDays();
-				while (e.hasMoreElements()){
-					sb.append(CONSTANTS.shortDays()[e.nextElement()]);
-				}
+				Integer firstDay = ApplicationProperty.TimePatternFirstDayOfWeek.intValue();
+    			for (int i = 0; i < CONSTANTS.shortDays().length; i++) {
+    				int idx = (firstDay == null ? i : (i + firstDay) % 7);
+    				if ((Constants.DAY_CODES[idx] & a.getTimeLocation().getDayCode()) != 0) sb.append(CONSTANTS.shortDays()[idx]);
+    			}
 				sb.append(" ");
 				sb.append(a.getTimeLocation().getStartTimeHeader(CONSTANTS.useAmPm()));
 				sb.append("-");

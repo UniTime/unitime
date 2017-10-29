@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 
 /**
@@ -57,9 +58,13 @@ public enum DayCode {
 	}
 
 	public static ArrayList<DayCode> toDayCodes(int days) {
+		Integer firstDay = ApplicationProperty.TimePatternFirstDayOfWeek.intValue();
 		ArrayList<DayCode> dayCodes = new ArrayList<DayCode>(DayCode.values().length);
-		for (DayCode dc: DayCode.values())
-	    	if ((days & dc.getCode())!=0) dayCodes.add(dc);
+		for (int i = 0; i < DayCode.values().length; i++) {
+			int idx = (firstDay == null ? i : (i + firstDay) % 7);
+			DayCode dc = DayCode.values()[idx]; 
+			if ((days & dc.getCode())!=0) dayCodes.add(dc);
+		}
 		return dayCodes;
 	}
 

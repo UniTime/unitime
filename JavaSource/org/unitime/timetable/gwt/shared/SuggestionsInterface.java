@@ -289,20 +289,23 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 		public DateInfo getDatePattern() { return iDatePattern; }
 		public boolean hasDatePattern() { return iDatePattern != null; }
 		
-		public String getDaysName(GwtConstants CONSTANTS) {
-			return getDaysName(CONSTANTS.shortDays());
+		public String getDaysName(Integer firstDay, GwtConstants CONSTANTS) {
+			return getDaysName(firstDay, CONSTANTS.shortDays());
 		}
 		
-		public String getDaysName(String[] shortDays) {
+		public String getDaysName(Integer firstDay, String[] shortDays) {
 			if (shortDays == null) shortDays = new String[] {"M", "T", "W", "Th", "F", "S", "Su"};
 			String ret = "";
-			for (DayCode dc: DayCode.values())
+			for (int i = 0; i < DayCode.values().length; i++) {
+				int idx = (firstDay == null ? i : (i + firstDay) % 7);
+				DayCode dc = DayCode.values()[idx];
 				if ((dc.getCode() & iDays)!=0) ret += shortDays[dc.ordinal()];
+			}
 			return ret;
 		}
 		
 		public String getDaysName() {
-			return getDaysName(new String[] {"M", "T", "W", "Th", "F", "S", "Su"});
+			return getDaysName(null, new String[] {"M", "T", "W", "Th", "F", "S", "Su"});
 		}
 		
 		public static String slot2time(int timeSinceMidnight, boolean useAmPm) {
@@ -335,8 +338,8 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 			return t.getDays()==getDays() && t.getStartSlot()==getStartSlot() && t.getPatternId().equals(getPatternId()) && t.getDatePatternId().equals(getDatePatternId());
 		}
 		
-		public String getName(boolean endTime, GwtConstants CONSTANTS) {
-			return getDaysName(CONSTANTS) + " " + getStartTime(CONSTANTS) + (endTime ? " - " + getEndTime(CONSTANTS) : "");
+		public String getName(Integer firstDay, boolean endTime, GwtConstants CONSTANTS) {
+			return getDaysName(firstDay, CONSTANTS) + " " + getStartTime(CONSTANTS) + (endTime ? " - " + getEndTime(CONSTANTS) : "");
 		}
 		
 		@Override
@@ -355,7 +358,7 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 		
 		@Override
 		public String toString() {
-			return (hasDatePattern() ? getDatePatternName() + " " : "") + getDaysName(new String[] {"A", "B", "C", "D", "E", "F", "G"}) + " " + slot2time(5 * iStartSlot) + " - " + slot2time(5 * iStartSlot + iMin);
+			return (hasDatePattern() ? getDatePatternName() + " " : "") + getDaysName(null, new String[] {"A", "B", "C", "D", "E", "F", "G"}) + " " + slot2time(5 * iStartSlot) + " - " + slot2time(5 * iStartSlot + iMin);
 		}
 	}
 	
@@ -792,6 +795,7 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 		private List<PreferenceInterface> iPreferences = new ArrayList<PreferenceInterface>();
 		private boolean iSolver = false;
 		private List<SelectedAssignment> iSelectedAssignments = null;
+		private Integer iFirstDay;
 		
 		public void addPreference(PreferenceInterface preference) { iPreferences.add(preference); }
 		public List<PreferenceInterface> getPreferences() { return iPreferences; }
@@ -825,6 +829,8 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 			if (iSelectedAssignments == null) iSelectedAssignments = new ArrayList<SelectedAssignment>();
 			iSelectedAssignments.add(assignment);
 		}
+		public void setFirstDay(Integer firstDay) { iFirstDay = firstDay; }
+		public Integer getFirstDay() { return iFirstDay; }
 	}
 	
 	public static class SuggestionPropertiesRequest implements GwtRpcRequest<SuggestionProperties>, Serializable {

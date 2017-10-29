@@ -20,6 +20,7 @@
 package org.unitime.timetable.server.solver;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.PreferenceInterface;
@@ -57,6 +58,7 @@ public class SuggestionPropertiesBackend implements GwtRpcImplementation<Suggest
 					Constants.preference2preferenceLevel(pref.getPrefProlog())));
 		}
 		response.setSolver(courseTimetablingSolverService.getSolver() != null);
+		response.setFirstDay(ApplicationProperty.TimePatternFirstDayOfWeek.intValue());
 		
 		if (request.getHistoryId() != null) {
 			try {

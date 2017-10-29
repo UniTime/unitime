@@ -188,7 +188,7 @@ public class ConflictTable extends UniTimeTable<ClassAssignmentDetails> implemen
 		if (iSortBy == null) return;
 		if (getNbrCells(iSortBy) == 0) iSortBy = ConflictColum.TIME;
 		UniTimeTableHeader header = getHeader(getCellIndex(iSortBy));
-		sort(header, new ConflictsComparator(iSortBy, true), iAsc);
+		sort(header, new ConflictsComparator(iContext.getProperties().getFirstDay(), iSortBy, true), iAsc);
 	}
 
 	public static enum ConflictColum {
@@ -275,10 +275,12 @@ public class ConflictTable extends UniTimeTable<ClassAssignmentDetails> implemen
 	}
 	
 	public static class ConflictsComparator implements Comparator<ClassAssignmentDetails> {
+		private Integer iFirstDay;
 		private ConflictColum iColumn;
 		private boolean iAsc;
 		
-		public ConflictsComparator(ConflictColum column, boolean asc) {
+		public ConflictsComparator(Integer firstDay, ConflictColum column, boolean asc) {
+			iFirstDay = firstDay;
 			iColumn = column;
 			iAsc = asc;
 		}
@@ -292,11 +294,11 @@ public class ConflictTable extends UniTimeTable<ClassAssignmentDetails> implemen
 		public int compareByTime(ClassAssignmentDetails s1, ClassAssignmentDetails s2) {
 			TimeInfo t1 = s1.getTime();
 			TimeInfo t2 = s2.getTime();
-			int cmp = compare(t1 == null ? null : t1.getDaysName(new String[] {"A", "B", "C", "D", "E", "F", "G"}), t2 == null ? null : t2.getDaysName(new String[] {"A", "B", "C", "D", "E", "F", "G"}));
+			int cmp = compare(t1 == null ? null : t1.getDaysName(iFirstDay, new String[] {"A", "B", "C", "D", "E", "F", "G"}), t2 == null ? null : t2.getDaysName(iFirstDay, new String[] {"A", "B", "C", "D", "E", "F", "G"}));
 			if (cmp != 0) return cmp;
 			cmp = compare(t1 == null ? null : t1.getStartSlot(), t2 == null ? null : t2.getStartSlot());
 			if (cmp != 0) return cmp;
-			return compare(t1 == null ? null : t1.getName(false, CONSTANTS), t2 == null ? null : t2.getName(false, CONSTANTS));
+			return compare(t1 == null ? null : t1.getName(iFirstDay, false, CONSTANTS), t2 == null ? null : t2.getName(iFirstDay, false, CONSTANTS));
 		}
 		
 		public int compareByDateTime(ClassAssignmentDetails s1, ClassAssignmentDetails s2) {
@@ -304,11 +306,11 @@ public class ConflictTable extends UniTimeTable<ClassAssignmentDetails> implemen
 			TimeInfo t2 = s2.getTime();
 			int cmp = compare(t1 == null ? null : t1.getDatePatternName(), t2 == null ? null : t2.getDatePatternName());
 			if (cmp != 0) return cmp;
-			cmp = compare(t1 == null ? null : t1.getDaysName(new String[] {"A", "B", "C", "D", "E", "F", "G"}), t2 == null ? null : t2.getDaysName(new String[] {"A", "B", "C", "D", "E", "F", "G"}));
+			cmp = compare(t1 == null ? null : t1.getDaysName(iFirstDay, new String[] {"A", "B", "C", "D", "E", "F", "G"}), t2 == null ? null : t2.getDaysName(iFirstDay, new String[] {"A", "B", "C", "D", "E", "F", "G"}));
 			if (cmp != 0) return cmp;
 			cmp = compare(t1 == null ? null : t1.getStartSlot(), t2 == null ? null : t2.getStartSlot());
 			if (cmp != 0) return cmp;
-			return compare(t1 == null ? null : t1.getName(false, CONSTANTS), t2 == null ? null : t2.getName(false, CONSTANTS));
+			return compare(t1 == null ? null : t1.getName(iFirstDay, false, CONSTANTS), t2 == null ? null : t2.getName(iFirstDay, false, CONSTANTS));
 		}
 		
 		public int compareByStudentConflicts(ClassAssignmentDetails s1, ClassAssignmentDetails s2) {

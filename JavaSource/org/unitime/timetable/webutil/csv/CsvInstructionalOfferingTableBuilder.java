@@ -23,7 +23,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -34,6 +33,7 @@ import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.cpsolver.ifs.util.CSVFile.CSVLine;
 import org.unitime.commons.Debug;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
@@ -80,6 +80,7 @@ import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.duration.DurationModel;
 import org.unitime.timetable.webutil.RequiredTimeTable;
@@ -724,10 +725,11 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		}
     		if (a!=null) {
     			StringBuffer sb = new StringBuffer();
-   				Enumeration<Integer> e = a.getTimeLocation().getDays();
-   				while (e.hasMoreElements()){
-   					sb.append(CONSTANTS.shortDays()[e.nextElement()]);
-   				}
+    			Integer firstDay = ApplicationProperty.TimePatternFirstDayOfWeek.intValue();
+    			for (int i = 0; i < CONSTANTS.shortDays().length; i++) {
+    				int idx = (firstDay == null ? i : (i + firstDay) % 7);
+    				if ((Constants.DAY_CODES[idx] & a.getTimeLocation().getDayCode()) != 0) sb.append(CONSTANTS.shortDays()[idx]);
+    			}
    				sb.append(" ");
    				sb.append(a.getTimeLocation().getStartTimeHeader(CONSTANTS.useAmPm()));
    				sb.append("-");

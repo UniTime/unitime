@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -92,6 +91,7 @@ import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 
 
@@ -1240,10 +1240,11 @@ public class WebInstructionalOfferingTableBuilder {
     			if (info!=null) {
     				sb.append("<font color='"+(isEditable?PreferenceLevel.int2color(info.getTimePreference()):disabledColor)+"'>");
     			}
-   				Enumeration<Integer> e = a.getTimeLocation().getDays();
-   				while (e.hasMoreElements()){
-   					sb.append(CONSTANTS.shortDays()[e.nextElement()]);
-   				}
+    			Integer firstDay = ApplicationProperty.TimePatternFirstDayOfWeek.intValue();
+    			for (int i = 0; i < CONSTANTS.shortDays().length; i++) {
+    				int idx = (firstDay == null ? i : (i + firstDay) % 7);
+    				if ((Constants.DAY_CODES[idx] & a.getTimeLocation().getDayCode()) != 0) sb.append(CONSTANTS.shortDays()[idx]);
+    			}
    				sb.append(" ");
    				sb.append(a.getTimeLocation().getStartTimeHeader(CONSTANTS.useAmPm()));
    				sb.append("-");

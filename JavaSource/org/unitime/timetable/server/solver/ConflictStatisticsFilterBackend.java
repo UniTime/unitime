@@ -21,6 +21,7 @@ package org.unitime.timetable.server.solver;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -83,6 +84,7 @@ public class ConflictStatisticsFilterBackend implements GwtRpcImplementation<Con
 		}
 		properties.setSolver(courseTimetablingSolverService.getSolver() != null);
 		response.setSuggestionProperties(properties);
+		properties.setFirstDay(ApplicationProperty.TimePatternFirstDayOfWeek.intValue());
 		
 		SolverPageBackend.fillSolverWarnings(context, courseTimetablingSolverService.getSolver(), SolverType.COURSE, response);
 		

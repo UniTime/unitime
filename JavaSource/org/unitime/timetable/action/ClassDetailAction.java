@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -47,6 +46,7 @@ import org.unitime.commons.MultiComparable;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ClassEditForm;
@@ -77,6 +77,7 @@ import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.TimetableDatabaseLoader;
 import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.solver.service.SolverService;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DefaultRoomAvailabilityService;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
@@ -312,10 +313,11 @@ public class ClassDetailAction extends PreferencesAction {
 	        			TimeLocation t = assignment.getTimeLocation();
 	        			String time = "";
 	        			if (t != null) {
-	           				Enumeration<Integer> e = t.getDays();
-	           				while (e.hasMoreElements()){
-	           					time += CONST.shortDays()[e.nextElement()];
-	           				}
+	        				Integer firstDay = ApplicationProperty.TimePatternFirstDayOfWeek.intValue();
+	            			for (int i = 0; i < CONST.shortDays().length; i++) {
+	            				int idx = (firstDay == null ? i : (i + firstDay) % 7);
+	            				if ((Constants.DAY_CODES[idx] & t.getDayCode()) != 0) time += CONST.shortDays()[idx];
+	            			}
 	           				time += " " + t.getStartTimeHeader(CONST.useAmPm()) + "-" + t.getEndTimeHeader(CONST.useAmPm());
 	        			}
 	        			String roomsHtml = "", roomsText = "";

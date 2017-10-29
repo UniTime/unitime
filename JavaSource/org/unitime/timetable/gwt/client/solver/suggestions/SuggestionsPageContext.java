@@ -102,7 +102,7 @@ public abstract class SuggestionsPageContext {
 	protected class TimeLabel extends P {
 		public TimeLabel(TimeInfo time, Long classId, boolean endTime) {
 			super("time");
-			setText(time.getName(endTime, CONSTANTS));
+			setText(time.getName(iProperties.getFirstDay(), endTime, CONSTANTS));
 			if (time.getPref() != 0)
 				getElement().getStyle().setColor(iProperties.getPreference(time.getPref()).getColor());
 			if (time.isStriked())
@@ -509,7 +509,7 @@ public abstract class SuggestionsPageContext {
 			public TimeLocation(Long classId, TimeInfo time) {
 				super("time", "item");
 				iTime = time;
-				setText(time.getName(false, CONSTANTS));
+				setText(time.getName(iProperties.getFirstDay(), false, CONSTANTS));
 				if (time.getPref() != 0)
 					getElement().getStyle().setColor(iProperties.getPreference(time.getPref()).getColor());
 				if (time.isStriked())

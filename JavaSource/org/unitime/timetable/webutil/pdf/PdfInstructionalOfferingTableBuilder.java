@@ -24,13 +24,13 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
 import org.unitime.commons.Debug;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
@@ -1062,10 +1062,11 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		}
     		if (a!=null) {
     			StringBuffer sb = new StringBuffer();
-   				Enumeration<Integer> e = a.getTimeLocation().getDays();
-   				while (e.hasMoreElements()){
-   					sb.append(CONSTANTS.shortDays()[e.nextElement()]);
-   				}
+    			Integer firstDay = ApplicationProperty.TimePatternFirstDayOfWeek.intValue();
+    			for (int i = 0; i < CONSTANTS.shortDays().length; i++) {
+    				int idx = (firstDay == null ? i : (i + firstDay) % 7);
+    				if ((Constants.DAY_CODES[idx] & a.getTimeLocation().getDayCode()) != 0) sb.append(CONSTANTS.shortDays()[idx]);
+    			}
    				sb.append(" ");
    				sb.append(a.getTimeLocation().getStartTimeHeader(CONSTANTS.useAmPm()));
    				sb.append("-");

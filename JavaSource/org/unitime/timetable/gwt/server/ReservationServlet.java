@@ -22,7 +22,6 @@ package org.unitime.timetable.gwt.server;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -216,8 +215,11 @@ public class ReservationServlet implements ReservationService {
 								clazz.setDate(a.getDatePattern() != null ? a.getDatePattern().getName() : null);
 								if (a.getTimeLocation() != null) {
 					    			String time = "";
-					   				for (Enumeration<Integer> e = a.getTimeLocation().getDays(); e.hasMoreElements(); )
-					   					time += CONSTANTS.shortDays()[e.nextElement()];
+					    			Integer firstDay = ApplicationProperty.TimePatternFirstDayOfWeek.intValue();
+					    			for (int i = 0; i < CONSTANTS.shortDays().length; i++) {
+					    				int idx = (firstDay == null ? i : (i + firstDay) % 7);
+					    				if ((Constants.DAY_CODES[idx] & a.getTimeLocation().getDayCode()) != 0) time += CONSTANTS.shortDays()[idx];
+					    			}
 					   				time += " " + a.getTimeLocation().getStartTimeHeader(CONSTANTS.useAmPm()) +
 					   						" - " + a.getTimeLocation().getEndTimeHeader(CONSTANTS.useAmPm());
 					   				clazz.setTime(time);
