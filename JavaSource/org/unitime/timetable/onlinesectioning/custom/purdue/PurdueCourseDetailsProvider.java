@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
@@ -73,7 +74,7 @@ public class PurdueCourseDetailsProvider implements CourseDetailsProvider, Cours
 	@Override
 	public URL getCourseUrl(AcademicSessionInfo session, String subject, String courseNbr) throws SectioningException {
 		try {
-			if (courseNbr.length() > 5) courseNbr = courseNbr.substring(0, 5);
+			if (courseNbr.length() > getCourseNumberLength()) courseNbr = courseNbr.substring(0, getCourseNumberLength());
 			return new URL(sUrl
 				.replace(":year", getYear(session))
 				.replace(":term", getTerm(session))
@@ -115,6 +116,14 @@ public class PurdueCourseDetailsProvider implements CourseDetailsProvider, Cours
 			sLog.error(e.getMessage(), e);
 			throw new SectioningException(MSG.exceptionCustomCourseDetailsFailed("unable to read <a href='"+courseUrl+"'>course detail page</a>"));
 		}
+	}
+	
+	private Integer iCourseNumberLength = null;
+	public int getCourseNumberLength() {
+		if (iCourseNumberLength == null) {
+			iCourseNumberLength = Integer.valueOf(ApplicationProperties.getProperty("tmtbl.banner.courseNumberLength", "5"));
+		}
+		return iCourseNumberLength;
 	}
 	
 	public static void main(String[] args) {

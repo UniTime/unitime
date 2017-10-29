@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.onlinesectioning.custom.purdue;
 
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 
@@ -48,6 +49,14 @@ public class BannerTermProvider implements ExternalTermProvider {
 
 	@Override
 	public String getExternalCourseNumber(AcademicSessionInfo session, String subjectArea, String courseNumber) {
-		return courseNumber.length() > 5 ? courseNumber.substring(0, 5) : courseNumber;
+		return courseNumber.length() > getCourseNumberLength() ? courseNumber.substring(0, getCourseNumberLength()) : courseNumber;
+	}
+	
+	private Integer iCourseNumberLength = null;
+	public int getCourseNumberLength() {
+		if (iCourseNumberLength == null) {
+			iCourseNumberLength = Integer.valueOf(ApplicationProperties.getProperty("tmtbl.banner.courseNumberLength", "5"));
+		}
+		return iCourseNumberLength;
 	}
 }
