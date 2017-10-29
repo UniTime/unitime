@@ -23,9 +23,6 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Enumeration;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.unitime.timetable.security.SessionContext;
 
 /**
