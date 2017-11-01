@@ -270,7 +270,7 @@ public class ScriptExecution extends QueueItem {
 			}
 			email.setHTML(log());
 			if (hasOutput())
-				email.addAttachment(output(), output().getName());
+				email.addAttachment(output(), getOutputName());
 			if (hasOwnerEmail())
 				email.setReplyTo(getOwnerEmail(), getOwnerName());
 			email.setSubject(name() + (hasError() ? " -- " + error().getMessage() : ""));

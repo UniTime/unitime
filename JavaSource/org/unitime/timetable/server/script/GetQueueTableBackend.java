@@ -74,9 +74,9 @@ public class GetQueueTableBackend implements GwtRpcImplementation<GetQueueTableR
 		q.setCreated(item.created());
 		q.setStarted(item.started());
 		q.setFinished(item.finished());
-		if (item.finished() != null && item.hasOutput()) {
-			q.setOutput(item.output().getName());
-			q.setOutputLink(item.getOutputFileLink());
+		if (item.hasOutput()) {
+			q.setOutput(item.getOutputName());
+			q.setOutputLink(item.getOutputLink());
 		}
 		q.setLog(item.log());
 		q.setCanDelete((context.hasPermissionAnyAuthority(item.getSessionId(), "Session", Right.Chameleon) || context.getUser().getExternalUserId().equals(item.getOwnerId())));

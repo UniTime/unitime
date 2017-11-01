@@ -147,10 +147,10 @@ public class ExamPdfReportAction extends Action {
 						df.format(item.created()),
 						item.started() == null ? "" : df.format(item.started()),
 						item.finished() == null ? "" : df.format(item.finished()),
-						item.output() == null ? "" : "<A href='temp/"+item.output().getName()+"'>"+item.output().getName().substring(item.output().getName().lastIndexOf('.') + 1).toUpperCase()+"</A>"
+						item.hasOutput() ? "<A href='"+item.getOutputLink()+"'>"+item.getOutputName().substring(item.getOutputName().lastIndexOf('.') + 1).toUpperCase()+"</A>" : ""
 					},
 					new Comparable[] {
-						item.getId(),
+						item.created().getTime(),
 						item.status(),
 						item.progress(),
 						item.getOwnerName(),

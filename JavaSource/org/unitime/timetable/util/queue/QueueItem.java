@@ -50,7 +50,9 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 	private String iOwnerId;
 	private String iOwnerName;
 	private String iOwnerEmail;
-	private File iOutput = null;
+	private transient File iOutput = null;
+	private String iOutputName = null;
+	private String iOutputLink = null;
 	private List<QueueMessage> iLog = new ArrayList<QueueMessage>();
 	private String iStatus = null;
 	private Date iCreated = new Date(), iStarted = null, iFinished = null;
@@ -116,18 +118,20 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 		}
 	}
 	
-	public boolean hasOutput() { return iOutput != null && iOutput.exists() && iOutput.canRead(); }
+	public boolean hasOutput() { return iFinished != null && iOutputLink != null; }
 	public File output() { return iOutput; }
 	public void setOutput(File output) { iOutput = output; }
 	protected File createOutput(String prefix, String ext) {
 		if (iOutput != null) throw new RuntimeException(MSG.scriptErrorOutputAlreadyCreated());
 		iOutput = ApplicationProperties.getTempFile(prefix, ext);
+		iOutputName = prefix + "." + ext;
+		iOutputLink = "qpfile?q=" + QueryEncoderBackend.encode(getId().toString());
 		return iOutput;
 	}
-	public String getOutputFileLink() {
-		if (!hasOutput()) return null;
-		if (output().exists()) return "temp/" + output().getName();
-		return "qpfile?q=" + QueryEncoderBackend.encode(getId().toString());
+	public String getOutputName() { return iOutputName; }
+	public String getOutputLink() {
+		if (iOutput != null) return "temp/" + iOutput.getName();
+		return iOutputLink;
 	}
 	
 	public List<QueueMessage> getLog() { return iLog; }

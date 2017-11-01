@@ -163,7 +163,7 @@ public class ScriptConnector extends ApiConnector {
 			item.executeItem();
 			if (item.hasOutput()) {
 				FileInputStream is = new FileInputStream(item.output());
-				helper.setResponse(new BinaryFile(IOUtils.toByteArray(is), FileTypeMap.getDefaultFileTypeMap().getContentType(item.output()), item.output().getName()));
+				helper.setResponse(new BinaryFile(IOUtils.toByteArray(is), FileTypeMap.getDefaultFileTypeMap().getContentType(item.output()), item.getOutputName()));
 				is.close();
 			} else {
 				String log = "";
