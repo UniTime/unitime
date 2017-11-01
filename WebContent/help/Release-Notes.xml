@@ -176,6 +176,15 @@
 		</item>
 	</category>
 	<category>
+		<title>Administration</title>
+		<item>
+			<name>Add/Edit Timetable Manager</name>
+			<description>
+				<line>Maximal length of the External ID field corrected (40 characters).</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Other</title>
 		<item>
 			<name>Technology Update</name>
