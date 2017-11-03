@@ -446,9 +446,9 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 			for (String key: keys) {
 				String translatedKey = (translations == null ? null : translations.get(key));
 				if (translatedKey != null)
-					si.addPair(translatedKey, info.get(key));
+					si.addPair(translatedKey, best.get(key));
 				else
-					si.addPair(key, info.get(key));
+					si.addPair(key, best.get(key));
 			}
 			response.setBestSolution(si);
 		}
