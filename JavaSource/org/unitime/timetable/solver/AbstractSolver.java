@@ -253,8 +253,9 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
     @Override
     protected void onStop() {
         super.onStop();
-        if (currentSolution().getBestInfo()!=null)
+        if (currentSolution().getBestInfo()!=null && !getSolutionComparator().isBetterThanBestSolution(currentSolution()))
             currentSolution().restoreBest();
+
     }
 
     @Override
