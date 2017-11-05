@@ -102,6 +102,12 @@
 				<line>If there is an error, include stack trace in the log.</line>
 			</description>
 		</item>
+		<item>
+			<name>Add/Edit Timetable Manager</name>
+			<description>
+				<line>Maximal length of the External ID field corrected (40 characters).</line>
+			</description>
+		</item>
 	</category>
 </release>
 

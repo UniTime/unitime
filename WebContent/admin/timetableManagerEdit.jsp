@@ -156,7 +156,7 @@
 		<TR>
 			<TD>External ID: </TD>
 			<TD>
-				<html:text name="mgrForm" property="externalId" size="12" maxlength="12" styleId="uid"/>
+				<html:text name="mgrForm" property="externalId" size="40" maxlength="40" styleId="uid"/>
 				<html:hidden name="mgrForm" property="lookupEnabled"/>
 				<%--
 				&nbsp; <bean:write name="mgrForm" property="lookupResult"/>
