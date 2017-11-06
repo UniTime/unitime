@@ -109,6 +109,99 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Constraint Solver (1.3.121)</title>
+		<item>
+			<name>Course Timetabling: Max Half-Days Constraint</name>
+			<description>
+				<line>The MaxHalfDays constraint limits the number of half-days of week during which the given set of classes are taught.</line>
+				<line>It has one parameter: a maximal number of week half-days during which the given set of classes can be placed.</line>
+				<line>A day is split by noon (which can be changed using General.HalfDaySlot parameter).</line>
+				<line>A class starting before noon is considered a morning class (despite of its end), a class starting at noon or later is considered an afternoon class.</line>
+				<line>For instance, a reference MaxHalfDays:4 translates to a maximum number of 4 half-days a week.</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetabling: added MaxHoles distribution constraint</name>
+			<description>
+				<line>The MaxHoles constraint limits the number of free time (holes) for an instructor on a day (between the first and the last class on a day).</line>
+				<line>It has one parameter: a maximal amount of free time that an instructor can have on a day in minutes.</line>
+				<line>For example, reference _MaxHoles:120_ translates to a maximum number of two hours of total free time between the first and the last class on a day:
+					<line>if required, having more free time is prohibited</line>
+					<line>if preferred or strongly preferred, the excessive free time is penalized</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetabling: Student Conflicts</name>
+			<description>
+				<line>Added a naive, yet effective approach for minimizing holes in student schedule.
+					<line>The new StudentMinimizeScheduleHoles criterion penalizes all cases where a student has two classes taught on the same day that are not back-to-back.</line>
+					<line>The penalization is based on the time distance between the two classes, computed in hours.</line>
+					<line>These penalties are weighted by Comparator.MinimizeStudentScheduleHolesWeight, which defaults to 1/20 of the Comparator.StudentConflictWeight.</line>
+					<line>To enable this criterion, add org.cpsolver.coursett.criteria.additional.StudentMinimizeScheduleHoles to General.AdditionalCriteria.</line>
+				</line>
+				<line>Added a naive, yet effective approach for minimizing number of days in student schedule.
+					<line>The new StudentMinimizeDaysOfWeek criterion penalizes all cases where a student has two classes taught on different days.</line>
+					<line>These penalties are weighted by Comparator.MinimizeStudentScheduleDaysWeight, which defaults to 1/20 of the Comparator.StudentConflictWeight.</line>
+					<line>To enable this criterion, add org.cpsolver.coursett.criteria.additional.StudentMinimizeDaysOfWeek to General.AdditionalCriteria.</line>
+				</line>
+				<line>As the StudentMinimizeScheduleHoles criterion tends to spread the student among as many days as possible, the second criterion StudentMinimizeDaysOfWeek can be used to counteract this effect, if desired.</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetabling: Week Start/End</name>
+			<description>
+				<line>Added ability to define when a work week starts (General.FirstWorkDay) and when it ends (General.LastWorkDay).</line>
+				<line>It is possible that General.LastWorkDay &lt; General.FirstWorkDay, e.g., General.FirstWorkDay = 6 (Sunday) and General.LastWorkDay = 3 (Thursday).</line>
+				<line>Corrected behavior of various constraints for the case when week starts on Sunday (PRECEDENCE, BTB_DAY, NDB_GT_1, FOLLOWING_DAY, SPREAD, MIN_ROOM_USE, and a few other places).</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination Timetabling: Period Preferences</name>
+			<description>
+				<line>Added additional information about how well are the period preferences satisfied into the solution extended info
+					(showing how many time a preferred, a strongly preferred, etc. period is selected for an exam).</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination Timetabling: Room Split Penalty</name>
+			<description>
+				<line>Increased the limit on the maximal number of rooms that an exam can take to 30.</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination Timetabling: Save XML</name>
+			<description>
+				<line>Corrected examination period penalty value.</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling: Scheduling Assistant Weights</name>
+			<description>
+				<line>Corrected precision on the selected choices criterion as the result is a % of the selected classes.</line>
+				<line>Put selected sections higher in the list.</line>
+				<line>Minimize class penalties: divide penalty by the number of sections (counting average section penalty of the enrollment).
+					<line>This is to avoid penalization of enrollments with more/fewer sections.</line>
+				</line>
+				<line>Prefer sections that are available (there is space in them).
+					<line>This is especially useful when a student has an individual reservation that is not given for a particular section (student is allowed to pick any section).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling: Student Conflict Constraint</name>
+			<description>
+				<line>Checking whether a student already has a complete schedule corrected.
+					<line>If the request is over the limit (student already has a complete schedule), do not return a free time or a wait-listed course request as a conflict.</line>
+				</line>
+				<line>Ensure that completeness of a student schedule is properly checked during the assignment.
+					<line>Using Student.canAssign(request) does not work as it returns true when the request is already assigned and the conflicts are checked when Constraint.assigned(value) is called.</line>
+					<line>This was causing troubles for the IFS phase.</line>
+				</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>
