@@ -55,7 +55,17 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	public void setStudentId(Long studentId) { iStudentId = studentId; }
 	
 	public ArrayList<Request> getCourses() { return iCourses; }
+	public Request getCourse(int index) {
+		if (iCourses != null && index < iCourses.size())
+			return iCourses.get(index);
+		return null;
+	}
 	public ArrayList<Request> getAlternatives() { return iAlternatives; }
+	public Request getAlternative(int index) {
+		if (iAlternatives != null && index < iAlternatives.size())
+			return iAlternatives.get(index);
+		return null;
+	}
 	
 	public boolean isSaved() { return iSaved; }
 	public void setSaved(boolean saved) { iSaved = saved; }
@@ -68,6 +78,10 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	
 	public boolean isUpdateLastRequest() { return iUpdateLastRequest == null || iUpdateLastRequest.booleanValue(); }
 	public void setUpdateLastRequest(boolean updateLastRequest) { iUpdateLastRequest = updateLastRequest; }
+	
+	public boolean isEmpty() {
+		return iCourses.isEmpty() && iAlternatives.isEmpty();
+	}
 	
 	public boolean addCourse(RequestedCourse course) {
 		iLastCourse = course;
@@ -118,7 +132,22 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	public RequestPriority getRequestPriority(RequestedCourse course) {
 		return __getRequestPriority(course);
 	}
-
+	
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof CourseRequestInterface)) return false;
+		CourseRequestInterface r = (CourseRequestInterface)o;
+		if (getCourses().size() != r.getCourses().size()) return false;
+		for (int i = 0; i < getCourses().size(); i++) {
+			if (!getCourse(i).equals(r.getCourse(i))) return false;
+		}
+		if (getAlternatives().size() != r.getAlternatives().size()) return false;
+		for (int i = 0; i < getAlternatives().size(); i++) {
+			if (!getAlternative(i).equals(r.getAlternative(i))) return false;
+		}
+		return true;
+	}
+	
 	public static class FreeTime implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private ArrayList<Integer> iDays = new ArrayList<Integer>();
@@ -212,6 +241,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		private Long iCourseId;
 		private String iCourseName;
 		private Boolean iReadOnly = null;
+		private Boolean iCanDelete = null;
 		private List<FreeTime> iFreeTime;
 		private Set<String> iSelectedIntructionalMethods;
 		private Set<String> iSelectedClasses;
@@ -244,6 +274,9 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public boolean isReadOnly() { return iReadOnly != null && iReadOnly.booleanValue(); }
 		public void setReadOnly(Boolean readOnly) { iReadOnly = readOnly; }
 		
+		public boolean isCanDelete() { return iCanDelete == null || iCanDelete.booleanValue(); }
+		public void setCanDelete(Boolean canDelete) { iCanDelete = canDelete; }
+		
 		public boolean isEmpty() { return !isCourse() && !isFreeTime(); }
 		
 		public boolean hasSelectedIntructionalMethods() { return iSelectedIntructionalMethods != null && !iSelectedIntructionalMethods.isEmpty(); }
@@ -258,6 +291,17 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public boolean isSelectedIntructionalMethod(String id) {
 			if (iSelectedIntructionalMethods == null) return false;
 			return iSelectedIntructionalMethods.contains(id);
+		}
+		public int getNrSelectedIntructionalMethods() {
+			return (iSelectedIntructionalMethods == null ? 0 : iSelectedIntructionalMethods.size());
+		}
+		public boolean sameSelectedIntructionalMethods(RequestedCourse rc) {
+			if (getNrSelectedIntructionalMethods() != rc.getNrSelectedIntructionalMethods()) return false;
+			if (hasSelectedIntructionalMethods()) {
+				for (String id: getSelectedIntructionalMethods())
+					if (!rc.isSelectedIntructionalMethod(id)) return false;
+			}
+			return true;
 		}
 		
 		public boolean hasSelectedClasses() { return iSelectedClasses != null && !iSelectedClasses.isEmpty(); }
@@ -280,6 +324,17 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public boolean isSelectedClass(String id) {
 			if (iSelectedClasses == null || id == null) return false;
 			return iSelectedClasses.contains(id);
+		}
+		public int getNrSelectedClasses() {
+			return (iSelectedClasses == null ? 0 : iSelectedClasses.size());
+		}
+		public boolean sameSelectedClasses(RequestedCourse rc) {
+			if (getNrSelectedClasses() != rc.getNrSelectedClasses()) return false;
+			if (hasSelectedClasses()) {
+				for (String id: getSelectedClasses())
+					if (!rc.isSelectedClass(id)) return false;
+			}
+			return true;
 		}
 		
 		@Override
@@ -418,12 +473,32 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			return false;
 		}
 		
+		public boolean isCanDelete() {
+			if (iRequestedCourse == null) return true;
+			for (RequestedCourse rc: iRequestedCourse)
+				if (!rc.isCanDelete()) return false;
+			return true;
+		}
+		
 		public boolean hasWaitList() { return iWaitList != null; }
 		public boolean isWaitList() { return iWaitList != null && iWaitList.booleanValue(); }
 		public void setWaitList(Boolean waitList) { iWaitList = waitList; }
 		
 		public String toString() {
 			return (hasRequestedCourse() ? iRequestedCourse.toString() : "-") + (isWaitList() ? " (w)" : "");
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof Request)) return false;
+			Request r = (Request)o;
+			if (isWaitList() != r.isWaitList() || getRequestedCourse().size() != r.getRequestedCourse().size()) return false;
+			for (int i = 0; i < getRequestedCourse().size(); i++) {
+				RequestedCourse c1 = getRequestedCourse(i);
+				RequestedCourse c2 = r.getRequestedCourse(i);
+				if (!c1.equals(c2) || !c1.sameSelectedClasses(c2) || !c1.sameSelectedIntructionalMethods(c2)) return false;
+			}
+			return true;
 		}
 	}
 	

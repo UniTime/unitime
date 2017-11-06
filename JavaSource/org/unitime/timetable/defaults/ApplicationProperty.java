@@ -576,11 +576,6 @@ public enum ApplicationProperty {
 	OnlineSchedulingInstructorNameFormat("unitime.enrollment.instructor.name"),
 
 	@Type(Boolean.class)
-	@DefaultValue("false")
-	@Description("Online Student Scheduling: save course requests during the scheduling assistant mode")
-	OnlineSchedulingSaveRequests("unitime.enrollment.requests.save"),
-
-	@Type(Boolean.class)
 	@DefaultValue("true")
 	@Description("Online Student Scheduling: enable student email confirmations")
 	OnlineSchedulingEmailConfirmation("unitime.enrollment.email"),

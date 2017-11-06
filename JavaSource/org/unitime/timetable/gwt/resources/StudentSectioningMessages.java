@@ -1280,6 +1280,12 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("You have made some changes in your schedule. Please click the Submit Schedule button to update your registration.")
 	String warnScheduleChangedOnClassSchedule();
+	
+	@DefaultMessage("You are not registered for any courses yet. Please click the Submit Requests button in order to complete your registration.")
+	String warnRequestsEmptyOnCourseRequest();
+	
+	@DefaultMessage("You have made some changes in your course requests. Please click the Submit Requests button to update your registration.")
+	String warnRequestsChangedOnCourseRequest();
 		
 	@DefaultMessage("There are unsaved changes in your schedule. Do you really want to discard these changes without updating your registration?")
 	String queryLeaveChanges();

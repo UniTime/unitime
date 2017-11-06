@@ -49,10 +49,16 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 	private static final long serialVersionUID = 1L;
 	
 	private Long iStudentId;
+	private boolean iSectioning;
+	
+	public GetRequest forStudent(Long studentId, boolean sectioning) {
+		iStudentId = studentId;
+		iSectioning = sectioning;
+		return this;
+	}
 	
 	public GetRequest forStudent(Long studentId) {
-		iStudentId = studentId;
-		return this;
+		return forStudent(studentId, true);
 	}
 
 	@Override
@@ -121,6 +127,10 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 						rc.setCourseName(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
 						if (setReadOnly && ((XCourseRequest)cd).getEnrollment() != null && c.getCourseId().equals(((XCourseRequest)cd).getEnrollment().getCourseId()))
 							rc.setReadOnly(true);
+						if (!iSectioning && ((XCourseRequest)cd).getEnrollment() != null && c.getCourseId().equals(((XCourseRequest)cd).getEnrollment().getCourseId())) {
+							rc.setReadOnly(true);
+							rc.setCanDelete(false);
+						}
 						OnlineSectioningHelper.fillPreferencesIn(rc, ((XCourseRequest)cd).getPreferences(courseId));
 						r.addRequestedCourse(rc);
 					}

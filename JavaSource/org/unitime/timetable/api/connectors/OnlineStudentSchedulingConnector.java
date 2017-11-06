@@ -378,7 +378,7 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 		savedRequest(new OpExecution<CourseRequestInterface>() {
 			@Override
 			public CourseRequestInterface execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
-				return service.savedRequest(helper.getOptinalParameterBoolean("online", true), sessionId, studentId);
+				return service.savedRequest(helper.getOptinalParameterBoolean("online", true), helper.getOptinalParameterBoolean("sectioning", true), sessionId, studentId);
 			}
 		}, Flag.GET),
 		savedResult(new OpExecution<ClassAssignmentInterface>() {

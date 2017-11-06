@@ -92,6 +92,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 	private boolean iShowCourses = false;
 	private RequestedCourse iLastCourse = null;
 	private boolean iSpecReg = false;
+	private boolean iCanDelete = true;
 	
 	public CourseRequestBox() {
 		this(false, false);
@@ -287,6 +288,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 		for (Chip chip: iFilter.getChips("method"))
 			ret.setSelectedIntructionalMethod(chip.getValue(), true);
 		if (!iFilter.isEnabled() && ret.isCourse()) ret.setReadOnly(true);
+		ret.setCanDelete(iCanDelete);
 		return ret;
 		
 	}
@@ -299,6 +301,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 			iFilter.setText("");
 			setError(null);
 			setEnabled(true);
+			iCanDelete = true;
 		} else {
 			if (value.isCourse()) {
 				iFilter.setText(value.getCourseName());
@@ -314,6 +317,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 				iFilter.setText("");
 			}
 			setEnabled(!value.isReadOnly());
+			iCanDelete = value.isCanDelete();
 		}
 		iFilter.resizeFilterIfNeeded();
 	}
@@ -321,6 +325,10 @@ public class CourseRequestBox extends P implements CourseSelection {
 	public boolean hasValue() {
 		RequestedCourse value = getValue();
 		return value != null && !value.isEmpty();
+	}
+	
+	public boolean isCanDelete() {
+		return iCanDelete;
 	}
 
 	@Override

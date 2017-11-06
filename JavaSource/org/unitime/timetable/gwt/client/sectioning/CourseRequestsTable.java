@@ -68,6 +68,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	private ArrayList<CourseRequestLine> iCourses;
 	private ArrayList<CourseRequestLine> iAlternatives;
 	private Label iTip;
+	private boolean iSectioning;
 	private boolean iOnline;
 	private boolean iSpecReg;
 	
@@ -77,8 +78,9 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	private P iAltHeader, iAltHeaderTitle, iAltHeaderNote;
 	private boolean iArrowsVisible = true;
 
-	public CourseRequestsTable(AcademicSessionProvider sessionProvider, boolean online, boolean specreg) {
+	public CourseRequestsTable(AcademicSessionProvider sessionProvider, boolean sectioning, boolean online, boolean specreg) {
 		super("unitime-CourseRequests");
+		iSectioning = sectioning;
 		iOnline = online;
 		iSessionProvider = sessionProvider;
 		iSpecReg = specreg;
@@ -112,7 +114,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		};
 
 		for (int i = 0; i < CONSTANTS.numberOfCourses(); i++) {
-			final CourseRequestLine line = new CourseRequestLine(iSessionProvider, i, false, iCheckForDuplicities, iSpecReg);
+			final CourseRequestLine line = new CourseRequestLine(iSessionProvider, i, false, iCheckForDuplicities, iSectioning, iSpecReg);
 			iCourses.add(line);
 			if (i > 0) {
 				CourseRequestLine prev = iCourses.get(i - 1);
@@ -121,6 +123,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
 				@Override
 				public void onValueChange(ValueChangeEvent<Request> event) {
+					ValueChangeEvent.fire(CourseRequestsTable.this, getValue());
 					if (event.getValue() != null && iCourses.indexOf(line) + 1 == iCourses.size())
 						addCourseLine();
 				}
@@ -154,7 +157,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		add(iAltHeader);
 
 		for (int i=0; i<CONSTANTS.numberOfAlternatives(); i++) {
-			final CourseRequestLine line = new CourseRequestLine(iSessionProvider, i, true, iCheckForDuplicities, iSpecReg);
+			final CourseRequestLine line = new CourseRequestLine(iSessionProvider, i, true, iCheckForDuplicities, iSectioning, iSpecReg);
 			iAlternatives.add(line);
 			if (i == 0) {
 				CourseRequestLine prev = iCourses.get(iCourses.size() - 1);
@@ -166,6 +169,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
 				@Override
 				public void onValueChange(ValueChangeEvent<Request> event) {
+					ValueChangeEvent.fire(CourseRequestsTable.this, getValue());
 					if (event.getValue() != null && iAlternatives.indexOf(line) + 1 == iAlternatives.size())
 						addAlternativeLine();
 				}
@@ -177,7 +181,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	
 	private void addCourseLine() {
 		int i = iCourses.size();
-		final CourseRequestLine line = new CourseRequestLine(iSessionProvider, i, false, iCheckForDuplicities, iSpecReg);
+		final CourseRequestLine line = new CourseRequestLine(iSessionProvider, i, false, iCheckForDuplicities, iSectioning, iSpecReg);
 		iCourses.add(line);
 		CourseRequestLine prev = iCourses.get(i - 1);
 		prev.getCourses().get(0).setHint("");
@@ -191,6 +195,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Request> event) {
+				ValueChangeEvent.fire(CourseRequestsTable.this, getValue());
 				if (event.getValue() != null && iCourses.indexOf(line) + 1 == iCourses.size())
 					addCourseLine();
 			}
@@ -199,7 +204,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	
 	private void addAlternativeLine() {
 		int i = iAlternatives.size();
-		final CourseRequestLine line = new CourseRequestLine(iSessionProvider, i, true, iCheckForDuplicities, iSpecReg);
+		final CourseRequestLine line = new CourseRequestLine(iSessionProvider, i, true, iCheckForDuplicities, iSectioning, iSpecReg);
 		iAlternatives.add(line);
 		CourseRequestLine prev = iAlternatives.get(i - 1);
 		line.setPrevious(prev); prev.setNext(line);
@@ -208,6 +213,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Request> event) {
+				ValueChangeEvent.fire(CourseRequestsTable.this, getValue());
 				if (event.getValue() != null && iAlternatives.indexOf(line) + 1 == iAlternatives.size())
 					addAlternativeLine();
 			}

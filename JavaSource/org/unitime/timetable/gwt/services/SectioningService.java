@@ -55,7 +55,7 @@ public interface SectioningService extends RemoteService {
 	String whoAmI() throws SectioningException, PageAccessException;
 	OnlineSectioningInterface.EligibilityCheck checkEligibility(boolean online, boolean sectioning, Long sessionId, Long studentId, String pin) throws SectioningException, PageAccessException;
 	AcademicSessionProvider.AcademicSessionInfo lastAcademicSession(boolean sectioning) throws SectioningException, PageAccessException;
-	CourseRequestInterface lastRequest(boolean online, Long sessionId) throws SectioningException, PageAccessException;
+	CourseRequestInterface lastRequest(boolean online, boolean sectioning, Long sessionId) throws SectioningException, PageAccessException;
 	ClassAssignmentInterface lastResult(boolean online, Long sessionId) throws SectioningException, PageAccessException;
     Boolean saveRequest(CourseRequestInterface request) throws SectioningException, PageAccessException;
     ClassAssignmentInterface enroll(boolean online, CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException, PageAccessException;
@@ -70,7 +70,7 @@ public interface SectioningService extends RemoteService {
 	List<ClassAssignmentInterface.Enrollment> findEnrollments(boolean online, String query, SectioningStatusFilterRpcRequest filter, Long courseId, Long classId) throws SectioningException, PageAccessException;
 	List<String[]> querySuggestions(boolean online, String query, int limit) throws SectioningException, PageAccessException;
 	Long canEnroll(boolean online, Long studentId) throws SectioningException, PageAccessException;
-	CourseRequestInterface savedRequest(boolean online, Long sessionId, Long studentId) throws SectioningException, PageAccessException;
+	CourseRequestInterface savedRequest(boolean online,boolean sectioning, Long sessionId, Long studentId) throws SectioningException, PageAccessException;
 	ClassAssignmentInterface savedResult(boolean online, Long sessionId, Long studentId) throws SectioningException, PageAccessException;
 	Boolean selectSession(Long sessionId) throws SectioningException, PageAccessException;
 	Map<String, String> lookupStudentSectioningStates() throws SectioningException, PageAccessException;
