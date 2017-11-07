@@ -1606,7 +1606,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iSectioningService.lastResult(iOnline, request.getAcademicSessionId(), callback);
 	}
 	
-	public void lastRequest(Long sessionId, Long studentId, final boolean saved, final boolean changeViewIfNeeded) {
+	public void lastRequest(final Long sessionId, final Long studentId, final boolean saved, final boolean changeViewIfNeeded) {
 		if (!LoadingWidget.getInstance().isShowing())
 			LoadingWidget.getInstance().show(MESSAGES.courseRequestsLoading());
 		
