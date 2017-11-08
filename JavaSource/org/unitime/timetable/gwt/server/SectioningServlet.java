@@ -86,6 +86,7 @@ import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.StudentSectioningStatus.Option;
 import org.unitime.timetable.model.comparators.ClassComparator;
@@ -1513,7 +1514,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (user == null)
 			throw new PageAccessException(getSessionContext().isHttpSessionNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
 
-		if (getSessionContext().hasPermission(Right.HasRole)) return null;
+		if (getSessionContext().hasPermission(Right.HasRole)) return null; // only applies to users without a role
 		
 		HashSet<Long> courseIds = new HashSet<Long>(CourseOfferingDAO.getInstance().getSession().createQuery(
 				"select distinct c.uniqueId from CourseOffering c inner join c.instructionalOffering.offeringCoordinators oc where " +
@@ -1521,6 +1522,20 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				.setLong("sessionId", sessionId).setString("extId", user.getExternalUserId()).setCacheable(true).list());
 		
 		return courseIds;
+	}
+	
+	private Set<String> getSubjectAreas() throws SectioningException, PageAccessException {
+		UserContext user = getSessionContext().getUser();
+		if (user == null)
+			throw new PageAccessException(getSessionContext().isHttpSessionNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
+
+		if (!getSessionContext().hasPermission(Right.HasRole) || getSessionContext().hasPermission(Right.DepartmentIndependent)) return null; // only applies to users with a role that is department dependent
+		
+		HashSet<String> subjects = new HashSet<String>();
+		for (SubjectArea subject: SubjectArea.getUserSubjectAreas(user)) {
+			subjects.add(subject.getSubjectAreaAbbreviation());
+		}
+		return subjects;
 	}
 	
 	private HashSet<Long> getApprovableCourses(Long sessionId) throws SectioningException, PageAccessException {
@@ -1565,7 +1580,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							query,
 							courseId,
 							getCoordinatingCourses(sessionId),
-							query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null)
+							query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null,
+							getSubjectAreas())
 							.withFilter(filter), currentUser()
 					);	
 				}
@@ -1574,7 +1590,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						query,
 						courseId,
 						getCoordinatingCourses(sessionId),
-						query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null)
+						query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null,
+						getSubjectAreas())
 						.withFilter(filter), currentUser()
 				);				
 			} else {
@@ -1582,7 +1599,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 
-				return server.execute(server.createAction(FindEnrollmentInfoAction.class).withParams(query, courseId, null, null).withFilter(filter), currentUser());
+				return server.execute(server.createAction(FindEnrollmentInfoAction.class).withParams(query, courseId, null, null, getSubjectAreas()).withFilter(filter), currentUser());
 			}
 		} catch (PageAccessException e) {
 			throw e;
@@ -1608,6 +1625,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							query,
 							getCoordinatingCourses(sessionId),
 							query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null,
+							getSubjectAreas(),
 							sessionContext.hasPermission(Right.EnrollmentsShowExternalId),
 							sessionContext.hasPermission(Right.CourseRequests),
 							sessionContext.hasPermission(Right.SchedulingAssistant))
@@ -1619,6 +1637,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						query,
 						getCoordinatingCourses(sessionId),
 						query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null,
+						getSubjectAreas(),
 						sessionContext.hasPermission(Right.EnrollmentsShowExternalId),
 						sessionContext.hasPermission(Right.CourseRequests),
 						sessionContext.hasPermission(Right.SchedulingAssistant))
@@ -1629,7 +1648,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 
-				return server.execute(server.createAction(FindStudentInfoAction.class).withParams(query, null, null,
+				return server.execute(server.createAction(FindStudentInfoAction.class).withParams(query, null, null, getSubjectAreas(),
 						sessionContext.hasPermission(Right.EnrollmentsShowExternalId), false, true).withFilter(filter), currentUser());
 			}
 		} catch (PageAccessException e) {

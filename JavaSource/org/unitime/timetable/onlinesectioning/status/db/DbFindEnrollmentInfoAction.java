@@ -89,7 +89,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0;
 			int gConNeed = 0, gtConNeed = 0;
 			
-			DbFindEnrollmentInfoCourseMatcher m = new DbFindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iQuery);
+			DbFindEnrollmentInfoCourseMatcher m = new DbFindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery);
 			
 			Map<CourseOffering, List<CourseRequest>> requests = new HashMap<CourseOffering, List<CourseRequest>>();
 			for (CourseRequest cr: (List<CourseRequest>)SectioningStatusFilterAction.getCourseQuery(iFilter, server).select("distinct cr").query(helper.getHibSession()).list()) {
@@ -505,8 +505,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 	public static class DbFindEnrollmentInfoCourseMatcher extends FindEnrollmentInfoCourseMatcher {
 		private static final long serialVersionUID = 1L;
 		
-		public DbFindEnrollmentInfoCourseMatcher(Set<Long> coursesIcoordinate, Set<Long> coursesIcanApprove, Query query) {
-			super(coursesIcoordinate, coursesIcanApprove, query);
+		public DbFindEnrollmentInfoCourseMatcher(Set<Long> coursesIcoordinate, Set<Long> coursesIcanApprove, Set<String> subjects, Query query) {
+			super(coursesIcoordinate, coursesIcanApprove, subjects, query);
 		}
 		
 		public boolean isConsentToDoCourse(CourseOffering co) {
@@ -514,7 +514,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 		}
 		
 		public boolean match(CourseOffering co) {
-			return co != null && isCourseVisible(co.getUniqueId()) && iQuery.match(new DbCourseInfoMatcher(co, isConsentToDoCourse(co)));
+			return co != null && isCourseVisible(co.getUniqueId()) && hasMatchingSubjectArea(co.getSubjectAreaAbbv()) && iQuery.match(new DbCourseInfoMatcher(co, isConsentToDoCourse(co)));
 		}
 		
 	}

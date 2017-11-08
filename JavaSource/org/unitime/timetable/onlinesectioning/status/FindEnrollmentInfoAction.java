@@ -77,12 +77,14 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 	protected Integer iLimit = null;
 	protected Long iCourseId;
 	protected Set<Long> iCoursesIcoordinate, iCoursesIcanApprove;
+	protected Set<String> iSubjectAreas;
 	
-	public FindEnrollmentInfoAction withParams(String query, Long courseId, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove) {
+	public FindEnrollmentInfoAction withParams(String query, Long courseId, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove, Set<String> subjects) {
 		iQuery = new Query(query);
 		iCourseId = courseId;
 		iCoursesIcanApprove = coursesIcanApprove;
 		iCoursesIcoordinate = coursesIcoordinage;
+		iSubjectAreas = subjects;
 		Matcher m = Pattern.compile("limit:[ ]?([0-9]*)", Pattern.CASE_INSENSITIVE).matcher(query);
 		if (m.find()) {
 			iLimit = Integer.parseInt(m.group(1));
@@ -110,6 +112,10 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 		return iCoursesIcanApprove != null && course.getConsentLabel() != null && iCoursesIcanApprove.contains(course.getCourseId());
 	}
 	
+	public boolean hasMatchingSubjectArea(String subject) {
+		return iSubjectAreas == null || iSubjectAreas.contains(subject);
+	}	
+	
 	@Override
 	public List<EnrollmentInfo> execute(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 		List<EnrollmentInfo> ret = new ArrayList<EnrollmentInfo>();
@@ -123,7 +129,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 			int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0;
 			int gConNeed = 0, gtConNeed = 0;
 			
-			for (XCourseId info: server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iQuery))) {
+			for (XCourseId info: server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery))) {
 				XOffering offering = server.getOffering(info.getOfferingId());
 				if (offering == null) continue;
 				XCourse course = offering.getCourse(info.getCourseId());
@@ -531,12 +537,12 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 	protected Collection<? extends XCourseId> findCourses(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 		if (iFilter != null && server instanceof DatabaseServer) {
 			List<XCourseId> courses = new ArrayList<XCourseId>();
-			FindEnrollmentInfoCourseMatcher m = new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iQuery);
+			FindEnrollmentInfoCourseMatcher m = new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery);
 			for (XCourse course :server.createAction(SectioningStatusFilterAction.class).forRequest(iFilter).getCourses(server, helper))
 				if (m.match(course)) courses.add(course);
 			return courses;
 		} else {
-			 return server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iQuery));
+			 return server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery));
 		}
 	}
 
@@ -549,11 +555,13 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 		protected static final long serialVersionUID = 1L;
 		protected Set<Long> iCoursesIcoordinate;
 		protected Set<Long> iCoursesIcanApprove;
+		protected Set<String> iSubjectAreas;
 		protected Query iQuery;
 		
-		public FindEnrollmentInfoCourseMatcher(Set<Long> coursesIcoordinate, Set<Long> coursesIcanApprove, Query query) {
+		public FindEnrollmentInfoCourseMatcher(Set<Long> coursesIcoordinate, Set<Long> coursesIcanApprove, Set<String> subjects, Query query) {
 			iCoursesIcoordinate = coursesIcoordinate;
 			iCoursesIcanApprove = coursesIcanApprove;
+			iSubjectAreas = subjects;
 			iQuery = query;
 		}
 		
@@ -567,10 +575,14 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 			return iCoursesIcanApprove != null && course.getConsentLabel() != null && iCoursesIcanApprove.contains(course.getCourseId());
 		}
 		
+		public boolean hasMatchingSubjectArea(String subject) {
+			return iSubjectAreas == null || iSubjectAreas.contains(subject);
+		}
+		
 		@Override
 		public boolean match(XCourseId id) {
 			XCourse course = (id instanceof XCourse ? (XCourse) id : getServer().getCourse(id.getCourseId()));
-			return course != null && isCourseVisible(course.getCourseId()) && iQuery.match(new CourseInfoMatcher(course, isConsentToDoCourse(course)));
+			return course != null && isCourseVisible(course.getCourseId()) && hasMatchingSubjectArea(course.getSubjectArea()) && iQuery.match(new CourseInfoMatcher(course, isConsentToDoCourse(course)));
 		}
 		
 	}

@@ -64,15 +64,17 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 	protected Query iQuery;
 	protected Integer iLimit = null;
 	protected Set<Long> iCoursesIcoordinate, iCoursesIcanApprove;
+	protected Set<String> iSubjectAreas;
 	protected boolean iCanShowExtIds = false, iCanRegister = false, iCanUseAssistant = false;
 	
-	public FindStudentInfoAction withParams(String query, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove, boolean canShowExtIds, boolean canRegister, boolean canUseAssistant) {
+	public FindStudentInfoAction withParams(String query, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove, Set<String> subjects, boolean canShowExtIds, boolean canRegister, boolean canUseAssistant) {
 		iQuery = new Query(query);
 		iCoursesIcanApprove = coursesIcanApprove;
 		iCoursesIcoordinate = coursesIcoordinage;
 		iCanShowExtIds = canShowExtIds;
 		iCanRegister = canRegister;
 		iCanUseAssistant = canUseAssistant;
+		iSubjectAreas = subjects;
 		Matcher m = Pattern.compile("limit:[ ]?([0-9]*)", Pattern.CASE_INSENSITIVE).matcher(query);
 		if (m.find()) {
 			iLimit = Integer.parseInt(m.group(1));
@@ -98,6 +100,10 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		return iCoursesIcoordinate == null || iCoursesIcoordinate.contains(courseId);
 	}
 	
+	public boolean hasMatchingSubjectArea(String subject) {
+		return iSubjectAreas == null || iSubjectAreas.contains(subject);
+	}
+	
 	@Override
 	public List<StudentInfo> execute(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 		Map<Long, StudentInfo> students = new HashMap<Long, StudentInfo>();
@@ -106,6 +112,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0;
 		int gConNeed = 0, gtConNeed = 0;
 		Set<Long> unassigned = new HashSet<Long>();
+		Set<Long> assigned = new HashSet<Long>();
 		AcademicSessionInfo session = server.getAcademicSession();
 		Set<Long> studentIds = (iFilter == null ? null : server.createAction(SectioningStatusFilterAction.class).forRequest(iFilter).getStudentIds(server, helper));
 		for (XCourseId info: findCourses(server, helper)) {
@@ -198,28 +205,30 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						s.setNote(student.hasLastNote() ? student.getLastNote().getNote() : null);
 					}
 					if (m.enrollment() != null) {
-						s.setEnrollment(s.getEnrollment() + 1); gEnrl ++;
-						if (m.enrollment().getReservation() != null) { s.setReservation(s.getReservation() + 1); gRes ++; }
-						if (course.getConsentLabel() != null && m.enrollment().getApproval() == null) {
-							s.setConsentNeeded(s.getConsentNeeded() + 1); gConNeed ++;
-						}
-						if (m.enrollment().getTimeStamp() != null) {
-							if (s.getEnrolledDate() == null)
-								s.setEnrolledDate(m.enrollment().getTimeStamp());
-							else if (m.enrollment().getTimeStamp().after(s.getEnrolledDate()))
-								s.setEnrolledDate(m.enrollment().getTimeStamp());
-						}
-						if (m.enrollment().getApproval() != null) {
-							if (s.getApprovedDate() == null)
-								s.setApprovedDate(m.enrollment().getApproval().getTimeStamp());
-							else if (m.enrollment().getApproval().getTimeStamp().after(s.getApprovedDate()))
-								s.setApprovedDate(m.enrollment().getApproval().getTimeStamp());
-						}
-						XOffering o = server.getOffering(m.enrollment().getOfferingId());
-						XConfig g = (o == null ? null : o.getConfig(m.enrollment().getConfigId()));
-						if (g != null) {
-							for (XSubpart xs: g.getSubparts())
-								s.setCredit(s.getCredit() + guessCredit(xs.getCreditAbbv(m.enrollment().getCourseId())));
+						if (assigned.add(m.request().getRequestId())) {
+							s.setEnrollment(s.getEnrollment() + 1); gEnrl ++;
+							if (m.enrollment().getReservation() != null) { s.setReservation(s.getReservation() + 1); gRes ++; }
+							if (course.getConsentLabel() != null && m.enrollment().getApproval() == null) {
+								s.setConsentNeeded(s.getConsentNeeded() + 1); gConNeed ++;
+							}
+							if (m.enrollment().getTimeStamp() != null) {
+								if (s.getEnrolledDate() == null)
+									s.setEnrolledDate(m.enrollment().getTimeStamp());
+								else if (m.enrollment().getTimeStamp().after(s.getEnrolledDate()))
+									s.setEnrolledDate(m.enrollment().getTimeStamp());
+							}
+							if (m.enrollment().getApproval() != null) {
+								if (s.getApprovedDate() == null)
+									s.setApprovedDate(m.enrollment().getApproval().getTimeStamp());
+								else if (m.enrollment().getApproval().getTimeStamp().after(s.getApprovedDate()))
+									s.setApprovedDate(m.enrollment().getApproval().getTimeStamp());
+							}
+							XOffering o = server.getOffering(m.enrollment().getOfferingId());
+							XConfig g = (o == null ? null : o.getConfig(m.enrollment().getConfigId()));
+							if (g != null) {
+								for (XSubpart xs: g.getSubparts())
+									s.setCredit(s.getCredit() + guessCredit(xs.getCreditAbbv(m.enrollment().getCourseId())));
+							}
 						}
 					} else if (m.student().canAssign(m.request()) && unassigned.add(m.request().getRequestId())) {
 						if (m.request().isWaitlist()) {
@@ -243,65 +252,67 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		
 		List<StudentInfo> ret = new ArrayList<StudentInfo>(students.values());
 		
-		if (studentIds != null && (studentIds.size() < 1000 || server instanceof DatabaseServer)) {
-			FindStudentInfoMatcher m = new FindStudentInfoMatcher(session, query());
-			for (Long id: studentIds) {
-				if (students.containsKey(id)) continue;
-				XStudent student = server.getStudent(id);
-				if (student == null) continue;
-				if (!m.match(student)) continue;
-				StudentInfo s = new StudentInfo();
-				ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student(); s.setStudent(st);
-				st.setId(student.getStudentId());
-				st.setSessionId(session.getUniqueId());
-				st.setExternalId(student.getExternalId());
-				st.setCanShowExternalId(iCanShowExtIds);
-				st.setCanRegister(iCanRegister);
-				st.setCanUseAssistant(iCanUseAssistant);
-				st.setName(student.getName());
-				for (XAreaClassificationMajor acm: student.getMajors()) {
-					st.addArea(acm.getArea());
-					st.addClassification(acm.getClassification());
-					st.addMajor(acm.getMajor());
+		if (iSubjectAreas == null && iCoursesIcoordinate == null) {
+			if (studentIds != null && (studentIds.size() < 1000 || server instanceof DatabaseServer)) {
+				FindStudentInfoMatcher m = new FindStudentInfoMatcher(session, query());
+				for (Long id: studentIds) {
+					if (students.containsKey(id)) continue;
+					XStudent student = server.getStudent(id);
+					if (student == null) continue;
+					if (!m.match(student)) continue;
+					StudentInfo s = new StudentInfo();
+					ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student(); s.setStudent(st);
+					st.setId(student.getStudentId());
+					st.setSessionId(session.getUniqueId());
+					st.setExternalId(student.getExternalId());
+					st.setCanShowExternalId(iCanShowExtIds);
+					st.setCanRegister(iCanRegister);
+					st.setCanUseAssistant(iCanUseAssistant);
+					st.setName(student.getName());
+					for (XAreaClassificationMajor acm: student.getMajors()) {
+						st.addArea(acm.getArea());
+						st.addClassification(acm.getClassification());
+						st.addMajor(acm.getMajor());
+					}
+					for (String acc: student.getAccomodations()) {
+						st.addAccommodation(acc);
+					}
+					for (String gr: student.getGroups()) {
+						st.addGroup(gr);
+					}
+					s.setStatus(student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
+					s.setEmailDate(student.getEmailTimeStamp() == null ? null : student.getEmailTimeStamp());
+					s.setNote(student.hasLastNote() ? student.getLastNote().getNote() : null);
+					ret.add(s);
 				}
-				for (String acc: student.getAccomodations()) {
-					st.addAccommodation(acc);
+			} else {
+				for (XStudentId id: server.findStudents(new FindStudentInfoMatcher(session, query()))) {
+					XStudent student = (id instanceof XStudent ? (XStudent)id : server.getStudent(id.getStudentId()));
+					StudentInfo s = new StudentInfo();
+					ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student(); s.setStudent(st);
+					st.setId(student.getStudentId());
+					st.setSessionId(session.getUniqueId());
+					st.setExternalId(student.getExternalId());
+					st.setCanShowExternalId(iCanShowExtIds);
+					st.setCanRegister(iCanRegister);
+					st.setCanUseAssistant(iCanUseAssistant);
+					st.setName(student.getName());
+					for (XAreaClassificationMajor acm: student.getMajors()) {
+						st.addArea(acm.getArea());
+						st.addClassification(acm.getClassification());
+						st.addMajor(acm.getMajor());
+					}
+					for (String acc: student.getAccomodations()) {
+						st.addAccommodation(acc);
+					}
+					for (String gr: student.getGroups()) {
+						st.addGroup(gr);
+					}
+					s.setStatus(student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
+					s.setEmailDate(student.getEmailTimeStamp() == null ? null : student.getEmailTimeStamp());
+					s.setNote(student.hasLastNote() ? student.getLastNote().getNote() : null);
+					ret.add(s);
 				}
-				for (String gr: student.getGroups()) {
-					st.addGroup(gr);
-				}
-				s.setStatus(student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
-				s.setEmailDate(student.getEmailTimeStamp() == null ? null : student.getEmailTimeStamp());
-				s.setNote(student.hasLastNote() ? student.getLastNote().getNote() : null);
-				ret.add(s);
-			}
-		} else {
-			for (XStudentId id: server.findStudents(new FindStudentInfoMatcher(session, query()))) {
-				XStudent student = (id instanceof XStudent ? (XStudent)id : server.getStudent(id.getStudentId()));
-				StudentInfo s = new StudentInfo();
-				ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student(); s.setStudent(st);
-				st.setId(student.getStudentId());
-				st.setSessionId(session.getUniqueId());
-				st.setExternalId(student.getExternalId());
-				st.setCanShowExternalId(iCanShowExtIds);
-				st.setCanRegister(iCanRegister);
-				st.setCanUseAssistant(iCanUseAssistant);
-				st.setName(student.getName());
-				for (XAreaClassificationMajor acm: student.getMajors()) {
-					st.addArea(acm.getArea());
-					st.addClassification(acm.getClassification());
-					st.addMajor(acm.getMajor());
-				}
-				for (String acc: student.getAccomodations()) {
-					st.addAccommodation(acc);
-				}
-				for (String gr: student.getGroups()) {
-					st.addGroup(gr);
-				}
-				s.setStatus(student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
-				s.setEmailDate(student.getEmailTimeStamp() == null ? null : student.getEmailTimeStamp());
-				s.setNote(student.hasLastNote() ? student.getLastNote().getNote() : null);
-				ret.add(s);
 			}
 		}
 		
@@ -347,12 +358,12 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 	protected Collection<? extends XCourseId> findCourses(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 		if (iFilter != null && server instanceof DatabaseServer) {
 			List<XCourseId> courses = new ArrayList<XCourseId>();
-			FindEnrollmentInfoCourseMatcher m = new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iQuery);
+			FindEnrollmentInfoCourseMatcher m = new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery);
 			for (XCourse course :server.createAction(SectioningStatusFilterAction.class).forRequest(iFilter).getCourses(server, helper))
 				if (m.match(course)) courses.add(course);
 			return courses;
 		} else {
-			 return server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iQuery));
+			 return server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas,iQuery));
 		}
 	}
 	

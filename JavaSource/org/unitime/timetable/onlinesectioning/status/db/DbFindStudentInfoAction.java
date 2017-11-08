@@ -64,12 +64,15 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0;
 		int gConNeed = 0, gtConNeed = 0;
 		Set<Long> unassigned = new HashSet<Long>();
+		Set<Long> assignedRequests = new HashSet<Long>();
 		AcademicSessionInfo session = server.getAcademicSession();
 		
 		DbFindStudentInfoMatcher sm = new DbFindStudentInfoMatcher(session, iQuery, helper.getStudentNameFormat());
 		
 		Map<CourseOffering, List<CourseRequest>> requests = new HashMap<CourseOffering, List<CourseRequest>>();
 		for (CourseRequest cr: (List<CourseRequest>)SectioningStatusFilterAction.getCourseQuery(iFilter, server).select("distinct cr").query(helper.getHibSession()).list()) {
+			if (!hasMatchingSubjectArea(cr.getCourseOffering().getSubjectAreaAbbv())) continue;
+			if (!isCourseVisible(cr.getCourseOffering().getUniqueId())) continue;			
 			if (!query().match(new DbCourseRequestMatcher(session, cr, isConsentToDoCourse(cr.getCourseOffering()), helper.getStudentNameFormat()))) continue;
 			List<CourseRequest> list = requests.get(cr.getCourseOffering());
 			if (list == null) {
@@ -177,38 +180,40 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 				}
 				DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, helper.getStudentNameFormat());
 				if (!crm.enrollment().isEmpty()) {
-					s.setEnrollment(s.getEnrollment() + 1); gEnrl ++;
-					if (crm.reservation() != null) { s.setReservation(s.getReservation() + 1); gRes ++; }
-					if (course.getConsentType() != null && crm.approval() == null) {
-						s.setConsentNeeded(s.getConsentNeeded() + 1); gConNeed ++;
-					}
-					for (StudentClassEnrollment e: crm.enrollment()) {
-						if (e.getTimestamp() != null) {
-							if (s.getEnrolledDate() == null)
-								s.setEnrolledDate(e.getTimestamp());
-							else if (e.getTimestamp().after(s.getEnrolledDate()))
-								s.setEnrolledDate(e.getTimestamp());
+					if (assignedRequests.add(crm.request().getCourseDemand().getUniqueId())) {
+						s.setEnrollment(s.getEnrollment() + 1); gEnrl ++;
+						if (crm.reservation() != null) { s.setReservation(s.getReservation() + 1); gRes ++; }
+						if (course.getConsentType() != null && crm.approval() == null) {
+							s.setConsentNeeded(s.getConsentNeeded() + 1); gConNeed ++;
 						}
-					}
-					if (crm.approval() != null) {
 						for (StudentClassEnrollment e: crm.enrollment()) {
-							if (e.getApprovedDate() != null) {
-								if (s.getApprovedDate() == null)
-									s.setApprovedDate(e.getApprovedDate());
-								else if (e.getApprovedDate().after(s.getApprovedDate()))
-									s.setApprovedDate(e.getApprovedDate());
+							if (e.getTimestamp() != null) {
+								if (s.getEnrolledDate() == null)
+									s.setEnrolledDate(e.getTimestamp());
+								else if (e.getTimestamp().after(s.getEnrolledDate()))
+									s.setEnrolledDate(e.getTimestamp());
+							}
+						}
+						if (crm.approval() != null) {
+							for (StudentClassEnrollment e: crm.enrollment()) {
+								if (e.getApprovedDate() != null) {
+									if (s.getApprovedDate() == null)
+										s.setApprovedDate(e.getApprovedDate());
+									else if (e.getApprovedDate().after(s.getApprovedDate()))
+										s.setApprovedDate(e.getApprovedDate());
+								}
+							}
+						}
+						if (course.getCredit() != null) {
+							s.setCredit(s.getCredit() + guessCredit(course.getCredit().creditAbbv()));
+						} else {
+							for (StudentClassEnrollment e: crm.enrollment()) {
+								if (e.getClazz().getSchedulingSubpart().getCredit() != null)
+									s.setCredit(s.getCredit() + guessCredit(e.getClazz().getSchedulingSubpart().getCredit().creditAbbv()));
 							}
 						}
 					}
-					if (course.getCredit() != null) {
-						s.setCredit(s.getCredit() + guessCredit(course.getCredit().creditAbbv()));
-					} else {
-						for (StudentClassEnrollment e: crm.enrollment()) {
-							if (e.getClazz().getSchedulingSubpart().getCredit() != null)
-								s.setCredit(s.getCredit() + guessCredit(e.getClazz().getSchedulingSubpart().getCredit().creditAbbv()));
-						}
-					}
-				} else if (crm.canAssign() && unassigned.add(crm.request().getUniqueId())) {
+				} else if (crm.canAssign() && unassigned.add(crm.request().getCourseDemand().getUniqueId())) {
 					if (crm.request().getCourseDemand().isWaitlist()) {
 						s.setWaitlist(s.getWaitlist() + 1); gWait ++;
 						if (s.getTopWaitingPriority() == null)
@@ -229,38 +234,40 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		
 		List<StudentInfo> ret = new ArrayList<StudentInfo>(students.values());
 		
-		for (Student student: (List<Student>)SectioningStatusFilterAction.getQuery(iFilter, server).select("distinct s").query(helper.getHibSession()).list()) {
-			if (students.containsKey(student.getUniqueId())) continue;
-			if (!sm.match(student)) continue;
-			StudentInfo s = new StudentInfo();
-			ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student(); s.setStudent(st);
-			st.setId(student.getUniqueId());
-			st.setSessionId(session.getUniqueId());
-			st.setExternalId(student.getExternalUniqueId());
-			st.setCanShowExternalId(iCanShowExtIds);
-			st.setCanRegister(iCanRegister);
-			st.setCanUseAssistant(iCanUseAssistant);
-			st.setName(helper.getStudentNameFormat().format(student));
-			for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(student.getAreaClasfMajors())) {
-				st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation());
-				st.addClassification(acm.getAcademicClassification().getCode());
-				st.addMajor(acm.getMajor().getCode());
+		if (iSubjectAreas == null && iCoursesIcoordinate == null) {
+			for (Student student: (List<Student>)SectioningStatusFilterAction.getQuery(iFilter, server).select("distinct s").query(helper.getHibSession()).list()) {
+				if (students.containsKey(student.getUniqueId())) continue;
+				if (!sm.match(student)) continue;
+				StudentInfo s = new StudentInfo();
+				ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student(); s.setStudent(st);
+				st.setId(student.getUniqueId());
+				st.setSessionId(session.getUniqueId());
+				st.setExternalId(student.getExternalUniqueId());
+				st.setCanShowExternalId(iCanShowExtIds);
+				st.setCanRegister(iCanRegister);
+				st.setCanUseAssistant(iCanUseAssistant);
+				st.setName(helper.getStudentNameFormat().format(student));
+				for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(student.getAreaClasfMajors())) {
+					st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation());
+					st.addClassification(acm.getAcademicClassification().getCode());
+					st.addMajor(acm.getMajor().getCode());
+				}
+				for (StudentAccomodation acc: student.getAccomodations()) {
+					st.addAccommodation(acc.getAbbreviation());
+				}
+				for (StudentGroup gr: student.getGroups()) {
+					st.addGroup(gr.getGroupAbbreviation());
+				}
+				s.setStatus(student.getSectioningStatus() == null ? session.getDefaultSectioningStatus() : student.getSectioningStatus().getReference());
+				s.setEmailDate(student.getScheduleEmailedDate() == null ? null : student.getScheduleEmailedDate());
+				
+				StudentNote note = null;
+				for (StudentNote n: student.getNotes())
+					if (note == null || note.compareTo(n) > 0) note = n;
+				if (note != null) s.setNote(note.getTextNote());
+				
+				ret.add(s);
 			}
-			for (StudentAccomodation acc: student.getAccomodations()) {
-				st.addAccommodation(acc.getAbbreviation());
-			}
-			for (StudentGroup gr: student.getGroups()) {
-				st.addGroup(gr.getGroupAbbreviation());
-			}
-			s.setStatus(student.getSectioningStatus() == null ? session.getDefaultSectioningStatus() : student.getSectioningStatus().getReference());
-			s.setEmailDate(student.getScheduleEmailedDate() == null ? null : student.getScheduleEmailedDate());
-			
-			StudentNote note = null;
-			for (StudentNote n: student.getNotes())
-				if (note == null || note.compareTo(n) > 0) note = n;
-			if (note != null) s.setNote(note.getTextNote());
-			
-			ret.add(s);
 		}
 		
 		Collections.sort(ret, new Comparator<StudentInfo>() {
