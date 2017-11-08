@@ -1829,6 +1829,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				CourseRequestInterface request = new CourseRequestInterface();
 				request.setAcademicSessionId(sessionId);
 				request.setStudentId(studentId);
+				request.setSaved(true);
 				Set<Long> courseIds = new HashSet<Long>();
 				if (!student.getCourseDemands().isEmpty()) {
 					TreeSet<CourseDemand> demands = new TreeSet<CourseDemand>(new Comparator<CourseDemand>() {
