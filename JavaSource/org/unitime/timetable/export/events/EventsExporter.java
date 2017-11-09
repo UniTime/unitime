@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -101,8 +102,36 @@ public abstract class EventsExporter implements Exporter {
     	
     	EventContext context = new EventContext(helper.getSessionContext(), helper.getSessionContext().getUser(), sessionId);
 		context.checkPermission(Right.Events);
-		if (request.getResourceType() == ResourceType.PERSON && !context.getUser().getExternalUserId().equals(request.getResourceExternalId()))
+		if (request.getResourceType() == ResourceType.PERSON && !context.getUser().getExternalUserId().equals(request.getResourceExternalId())) {
 			context.checkPermission(Right.EventLookupSchedule);
+			Set<String> roles = request.getEventFilter().getOptions("role");
+			if (roles == null) {
+				roles = new HashSet<String>();
+				if (context.hasPermission(Right.CanLookupStudents)) {
+					roles.add("Student");
+				}
+				if (context.hasPermission(Right.CanLookupInstructors)) {
+					roles.add("Instructor");
+					roles.add("Coordinator");
+				}
+				if (context.hasPermission(Right.CanLookupEventContacts)) {
+					roles.add("Contact");
+				}
+				if (roles.size() < 4)
+					request.getEventFilter().setOptions("role", roles);
+			} else {
+				if (!context.hasPermission(Right.CanLookupStudents)) {
+					roles.remove("Student"); roles.remove("student");
+				}
+				if (!context.hasPermission(Right.CanLookupInstructors)) {
+					roles.remove("Instructor"); roles.remove("instructor");
+					roles.remove("Coordinator"); roles.remove("coordinator");
+				}
+				if (!context.hasPermission(Right.CanLookupStudents)) {
+					roles.remove("Contact"); roles.remove("contact");
+				}
+			}
+		}
     	
 		if (request.getResourceType() != ResourceType.ROOM && request.getResourceType() != ResourceType.PERSON && request.getResourceId() == null) {
 			String name = helper.getParameter("name");
