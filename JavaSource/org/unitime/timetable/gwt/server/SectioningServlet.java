@@ -2174,7 +2174,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					check.setFlag(EligibilityFlag.CAN_REGISTER, true);
 				} else {
 					check.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, status.hasOption(StudentSectioningStatus.Option.enabled));
-					check.setFlag(EligibilityFlag.CAN_REGISTER, status.hasOption(StudentSectioningStatus.Option.enrollment) ||
+					check.setFlag(EligibilityFlag.CAN_REGISTER, status.hasOption(StudentSectioningStatus.Option.registration) ||
 							(status.hasOption(StudentSectioningStatus.Option.admin) && check.hasFlag(EligibilityFlag.IS_ADMIN)) ||
 							(status.hasOption(StudentSectioningStatus.Option.advisor) && check.hasFlag(EligibilityFlag.IS_ADVISOR)));
 					check.setFlag(EligibilityFlag.CAN_WAITLIST, status.hasOption(StudentSectioningStatus.Option.waitlist));

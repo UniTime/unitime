@@ -137,5 +137,9 @@ public class QueryEncoderBackend implements GwtRpcImplementation<EncodeQueryRpcR
 			throw new GwtRpcException("Decoding failed: " + e.getMessage(), e);
 		}
 	}
+	
+	public static void main(String[] args) {
+		System.out.println(encode("output=events.csv&type=PERSON&ext=1001&token=1xhp5vo3zfxrpbzjzhtanmcipolx03fv42ohz4xa507x5acydh&user=1001"));
+	}
 
 }

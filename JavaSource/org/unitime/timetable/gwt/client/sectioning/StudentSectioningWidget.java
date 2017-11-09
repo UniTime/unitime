@@ -179,6 +179,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						iStatus.warning(iSavedRequest.isNoChange() ? MESSAGES.warnRequestsEmptyOnCourseRequest() : MESSAGES.warnRequestsChangedOnCourseRequest(), false);
 					} else if (iScheduleChanged) {
 						iScheduleChanged = false;
+						iSave.removeStyleName("unitime-EnrollButton");
 						clearMessage();
 					}
 					return;
@@ -1532,6 +1533,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					iSchedule.setVisible(false);  iSchedule.setEnabled(false);
 					iSave.setVisible(false); iSave.setEnabled(false);
 					iDegreePlan.setVisible(false); iDegreePlan.setEnabled(false);
+					if (result.hasMessage()) {
+						iStatus.warning(result.getMessage());
+					} else {
+						clearMessage();
+					}
 					if (ret != null) ret.onFailure(new SectioningException(result.getMessage()));
 				}
 			}
@@ -1833,7 +1839,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		if (iEligibilityCheck != null && iOnline && showEligibility) {
 			if (iEligibilityCheck.hasFlag(EligibilityFlag.PIN_REQUIRED))
 				iStatus.error(MESSAGES.exceptionAuthenticationPinNotProvided(), false);
-			else if (iEligibilityCheck.hasMessage() && !iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL))
+			else if (iEligibilityCheck.hasMessage() && (iMode.isSectioning() && !iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL)))
+				iStatus.error(iEligibilityCheck.getMessage(), false);
+			else if (iEligibilityCheck.hasMessage() && (!iMode.isSectioning() && !iEligibilityCheck.hasFlag(EligibilityFlag.CAN_REGISTER)))
 				iStatus.error(iEligibilityCheck.getMessage(), false);
 			else if (iEligibilityCheck.hasMessage() && iEligibilityCheck.hasFlag(EligibilityFlag.RECHECK_BEFORE_ENROLLMENT))
 				iStatus.warning(iEligibilityCheck.getMessage(), false);

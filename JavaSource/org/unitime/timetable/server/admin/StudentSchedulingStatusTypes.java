@@ -61,6 +61,7 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 	
 	enum StatusOption {
 		Access(MESSAGES.toggleAccess(), StudentSectioningStatus.Option.enabled),
+		Registration(MESSAGES.toggleRegistration(), StudentSectioningStatus.Option.registration),
 		Enrollment(MESSAGES.toggleEnrollment(), StudentSectioningStatus.Option.enrollment),
 		Advisor(MESSAGES.toggleAdvisor(), StudentSectioningStatus.Option.advisor),
 		Admin(MESSAGES.toggleAdmin(), StudentSectioningStatus.Option.admin),

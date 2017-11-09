@@ -40,6 +40,7 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 		nobatch("Do Not Schedule in Batch Solver"),
 		enrollment("Enrollment Enabled"),
 		admin("Admin Can Enroll"),
+		registration("Registration Enabled"),
 		;
 		
 		private String iName;

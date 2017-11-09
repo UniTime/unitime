@@ -12837,4 +12837,8 @@
 	    <plsql>alter table %SCHEMA%.date_pattern modify name varchar2(100 char)</plsql>
 	    <mysql>alter table %SCHEMA%.date_pattern modify name varchar(100)</mysql>
 	</update>
+	<update version="191" date="9-Nov-2017" comment="Registration Student Status Type">
+		<mysql><![CDATA[update %SCHEMA%.sectioning_status set status = status + 256 where (status & 64 = 64) and (status & 256 = 0)]]></mysql>
+		<plsql>update %SCHEMA%.sectioning_status set status = status + 256 where bitand(status, 64) = 64 and bitand(status, 256) = 0</plsql>
+	</update>
 </dbupdate>

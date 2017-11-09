@@ -4486,6 +4486,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Access")
 	String toggleAccess();
 	
+	@DefaultMessage("Registration")
+	String toggleRegistration();
+	
 	@DefaultMessage("Enrollment")
 	String toggleEnrollment();
 	
