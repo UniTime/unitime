@@ -47,6 +47,16 @@
 				<line>Added ability to lookup the subject, course, curriculum, department and student group by name (using name parameter).</line>
 			</description>
 		</item>
+		<item>
+			<name>Event Export: Personal Schedule Permissions</name>
+			<description>
+				<line>When exporting events of another person, the following permissions are used to filter the role:
+					<line>Can Lookup Students is needed for the Student role (person is enrolled in a class, an exam, or a course related event as a student).</line>
+					<line>Can Lookup Instructors is needed for the Instructor and Coordinator roles (person is assigned to a class or an exam as an instructor or coordinator).</line>
+					<line>Can Lookup Event Contacts is needed for the Contact role (person is listed among contacts of the event).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>
