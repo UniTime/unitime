@@ -41,6 +41,12 @@
 				<line>Do not copy event room note from the &lt;event department, room type&gt; pair over to the room when editing a room.</line>
 			</description>
 		</item>
+		<item>
+			<name>Events API: Resource Timetable</name>
+			<description>
+				<line>Added ability to lookup the subject, course, curriculum, department and student group by name (using name parameter).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>

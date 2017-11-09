@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.timetable.api.ApiConnector;
 import org.unitime.timetable.api.ApiHelper;
 import org.unitime.timetable.events.EventLookupBackend;
+import org.unitime.timetable.events.ResourceLookupBackend;
 import org.unitime.timetable.events.EventAction.EventContext;
 import org.unitime.timetable.events.EventDetailBackend;
 import org.unitime.timetable.gwt.command.server.GwtRpcServlet;
@@ -148,6 +149,15 @@ public class EventsConnector extends ApiConnector {
     		}
     	}
 		request.setRoomFilter(roomFilter);
+		
+		if (request.getResourceType() != ResourceType.ROOM && request.getResourceType() != ResourceType.PERSON && request.getResourceId() == null) {
+			String name = helper.getParameter("name");
+			if (name != null) {
+				ResourceInterface resource = new ResourceLookupBackend().findResource(request.getSessionId(), request.getResourceType(), name);
+				if (resource != null)
+					request.setResourceId(resource.getId());
+			}
+		}
     	
     	EventContext context = new EventContext(helper.getSessionContext(), helper.getSessionContext().getUser(), sessionId);
     	
