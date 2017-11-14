@@ -58,7 +58,7 @@ public class XDummyReservation extends XReservation {
      * Dummy reservation is not applicable to any students
      */
     @Override
-    public boolean isApplicable(XStudent student) {
+    public boolean isApplicable(XStudent student, XCourseId course) {
         return false;
     }
 

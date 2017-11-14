@@ -190,7 +190,7 @@ public abstract class XReservation extends XReservationId implements Comparable<
      * @param student a student 
      * @return true if student can use the reservation to get into the course / configuration / section
      */
-    public abstract boolean isApplicable(XStudent student);
+    public abstract boolean isApplicable(XStudent student, XCourseId course);
 
     /**
      * One or more configurations on which the reservation is set (optional).

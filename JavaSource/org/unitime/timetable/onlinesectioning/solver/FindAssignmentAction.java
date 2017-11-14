@@ -490,7 +490,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				}
 				if (reservationLimit <= 0 && !(reservation.mustBeUsed() & !reservation.isExpired())) continue;
 			}
-			boolean applicable = originalStudent != null && reservation.isApplicable(originalStudent);
+			boolean applicable = originalStudent != null && reservation.isApplicable(originalStudent, course);
 			if (reservation instanceof XCourseReservation)
 				applicable = ((XCourseReservation)reservation).getCourseId().equals(courseId);
 			if (reservation instanceof XDummyReservation) {

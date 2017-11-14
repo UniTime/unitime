@@ -191,7 +191,7 @@ public class CheckAssignmentAction implements OnlineSectioningAction<List<Enroll
 
 			XReservation reservation = null;
 			reservations: for (XReservation r: offering.getReservations()) {
-				if (!r.isApplicable(student)) continue;
+				if (!r.isApplicable(student, course)) continue;
 				if (r.getLimit() >= 0 && r.getLimit() <= enrollments.countEnrollmentsForReservation(r.getReservationId())) {
 					boolean contain = false;
 					for (XEnrollment e: enrollments.getEnrollmentsForReservation(r.getReservationId()))
@@ -272,11 +272,11 @@ public class CheckAssignmentAction implements OnlineSectioningAction<List<Enroll
 					throw new SectioningException(MSG.exceptionEnrollmentInvalid(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())));
 				}
 			}
-			if (!offering.isAllowOverlap(student, config.getConfigId(), sections))
+			if (!offering.isAllowOverlap(student, config.getConfigId(), course, sections))
 				for (EnrollmentRequest otherRequest: requests) {
 					XOffering other = courseId2offering.get(otherRequest.getCourse().getCourseId());
 					XConfig otherConfig = courseId2config.get(otherRequest.getCourse().getCourseId());
-					if (!other.equals(offering) && !other.isAllowOverlap(student, otherConfig.getConfigId(), otherRequest.getSections())) {
+					if (!other.equals(offering) && !other.isAllowOverlap(student, otherConfig.getConfigId(), otherRequest.getCourse(), otherRequest.getSections())) {
 						List<XSection> assignment = otherRequest.getSections();
 						for (XSection section: sections)
 							if (section.isOverlapping(offering.getDistributions(), assignment))

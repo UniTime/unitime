@@ -330,14 +330,14 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 				return false;
 			}
 		}
-		if (!offering.isAllowOverlap(student, request.getEnrollment().getConfigId(), sections))
+		if (!offering.isAllowOverlap(student, request.getEnrollment().getConfigId(), request.getEnrollment(), sections))
 			for (XRequest r: student.getRequests())
 				if (r instanceof XCourseRequest && !r.getRequestId().equals(request.getRequestId()) && ((XCourseRequest)r).getEnrollment() != null) {
 					XEnrollment e = ((XCourseRequest)r).getEnrollment();
 					XOffering other = server.getOffering(e.getOfferingId());
 					if (other != null) {
 						List<XSection> assignment = other.getSections(e);
-						if (!other.isAllowOverlap(student, e.getConfigId(), assignment))
+						if (!other.isAllowOverlap(student, e.getConfigId(), e, assignment))
 							for (XSection section: sections)
 								if (section.isOverlapping(offering.getDistributions(), assignment)) {
 									return false;

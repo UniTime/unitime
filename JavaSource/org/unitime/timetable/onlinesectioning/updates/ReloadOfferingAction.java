@@ -562,7 +562,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 		for (XSection s1: sections)
 			for (XSection s2: sections)
 				if (s1.getSectionId() < s2.getSectionId() && s1.isOverlapping(distributions, s2)) return false;
-		if (!offering.isAllowOverlap(student, enrollment.getConfigId(), sections))
+		if (!offering.isAllowOverlap(student, enrollment.getConfigId(), enrollment, sections))
 			for (XRequest r: student.getRequests()) {
 				if (r instanceof XCourseRequest) {
 					XCourseRequest cr = (XCourseRequest)r;
@@ -570,7 +570,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 						XOffering other = server.getOffering(cr.getEnrollment().getOfferingId());
 						if (other != null) {
 							List<XSection> assignment = other.getSections(cr.getEnrollment());
-							if (!other.isAllowOverlap(student, cr.getEnrollment().getConfigId(), assignment))
+							if (!other.isAllowOverlap(student, cr.getEnrollment().getConfigId(), cr.getEnrollment(), assignment))
 								for (XSection section: sections)
 									if (section.isOverlapping(offering.getDistributions(), assignment)) return false;
 						}
