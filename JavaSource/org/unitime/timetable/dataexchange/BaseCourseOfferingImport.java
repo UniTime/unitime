@@ -2711,7 +2711,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		canShareRoomType = (DistributionType) this.getHibSession().createQuery("from DistributionType dt where dt.reference = 'CAN_SHARE_ROOM'").uniqueResult();
 	}
 	private void loadRequiredPrefLevel() {
-		requiredPrefLevel = (PreferenceLevel) this.getHibSession().createQuery("from PreferenceLevel pl where pl.prefName = 'Required'").uniqueResult();
+		requiredPrefLevel = (PreferenceLevel) this.getHibSession().createQuery("from PreferenceLevel pl where pl.prefProlog = :pref").setString("pref", PreferenceLevel.sRequired).uniqueResult();
 	}
 	
 	private void loadExistingClasses(Long sessionId) throws Exception {
