@@ -134,6 +134,12 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 		return (SubjectArea)subjs.get(0);
 	}
 	
+	public static SubjectArea findByAbbv(org.hibernate.Session hibSession, Long sessionId, String subjectAreaAbbr) {
+		return (SubjectArea)(hibSession == null ? SubjectAreaDAO.getInstance().getSession() : hibSession).createQuery(
+				"from SubjectArea where session.uniqueId = :sessionId and subjectAreaAbbreviation = :subjectAreaAbbr"
+				).setLong("sessionId", sessionId).setString("subjectAreaAbbr", subjectAreaAbbr).setMaxResults(1).uniqueResult();
+	}
+	
 	/**
 	 * Get the current (updated) subject area abbreviation
 	 * @param subjectAreaAbbr

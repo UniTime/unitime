@@ -112,6 +112,12 @@ public class Building extends BaseBuilding implements Comparable {
 		return null;
 	}
 	
+	public static Building findByBldgAbbv(org.hibernate.Session hibSession, Long sessionId, String bldgAbbv) {
+		return (Building)(hibSession == null ? BuildingDAO.getInstance().getSession() : hibSession).createQuery(
+				"from Building where session.uniqueId=:sessionId and b.abbreviation=:bldgAbbv"
+				).setLong("sessionId", sessionId).setString("bldgAbbv", bldgAbbv).setMaxResults(1).uniqueResult();
+	}
+	
     public static Building findByName(String name, Long sessionId) {
         return (Building)(new BuildingDAO()).getSession().createQuery(
                 "select b from Building b where b.session.uniqueId=:sessionId and b.name=:name").

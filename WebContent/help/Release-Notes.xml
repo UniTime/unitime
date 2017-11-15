@@ -186,6 +186,13 @@
 				<line>To delete a particular task from the queue, use delete=&lt;ITEM_ID&gt;</line>
 			</description>
 		</item>
+		<item>
+			<name>Scripts: Parameter Defaults</name>
+			<description>
+				<line>Added ability to use subject area abbreviation, department code, building abbreviation or room names as defaults.</line>
+				<line>Added ability to provide multiple defaults (separated by a comma) when the list allows for multiple selection.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>

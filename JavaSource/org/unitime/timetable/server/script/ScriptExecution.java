@@ -94,6 +94,47 @@ public class ScriptExecution extends QueueItem {
 	public File createOutput(String prefix, String ext) {
 		return super.createOutput(prefix, ext);
 	}
+	
+	protected Department lookupDepartment(org.hibernate.Session hibSession, String value) {
+		try {
+			Department d = DepartmentDAO.getInstance().get(Long.valueOf(value), hibSession);
+			if (d != null) return d;
+		} catch (NumberFormatException e) {}
+		return Department.findByDeptCode(value, getSessionId(), hibSession);
+	}
+	
+	protected SubjectArea lookupSubjectArea(org.hibernate.Session hibSession, String value) {
+		try {
+			SubjectArea s = SubjectAreaDAO.getInstance().get(Long.valueOf(value), hibSession);
+			if (s != null) return s;
+		} catch (NumberFormatException e) {}
+		return SubjectArea.findByAbbv(hibSession, getSessionId(), value);
+	}
+	
+	protected Building lookupBuilding(org.hibernate.Session hibSession, String value) {
+		try {
+			Building b = BuildingDAO.getInstance().get(Long.valueOf(value), hibSession);
+			if (b != null) return b;
+		} catch (NumberFormatException e) {}
+		return Building.findByBldgAbbv(hibSession, getSessionId(), value);
+	}
+
+	protected Location lookupLocation(org.hibernate.Session hibSession, String value) {
+		try {
+			Location l = LocationDAO.getInstance().get(Long.valueOf(value), hibSession);
+			if (l != null) return l;
+		} catch (NumberFormatException e) {}
+		return Location.findByName(hibSession, getSessionId(), value);
+	}
+	
+	protected Room lookupRoom(org.hibernate.Session hibSession, String value) {
+		try {
+			Room r = RoomDAO.getInstance().get(Long.valueOf(value), hibSession);
+			if (r != null) return r;
+		} catch (NumberFormatException e) {}
+		Location l = Location.findByName(hibSession, getSessionId(), value);
+		return (l != null && l instanceof Room ? (Room)l : null);
+	}
 
 	@Override
 	protected void execute() throws Exception {
@@ -179,44 +220,54 @@ public class ScriptExecution extends QueueItem {
 					Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
 					engine.put(parameter.getName(), dateFormat.parse(value));
 				} else if (parameter.getType().equalsIgnoreCase("department")) {
-					engine.put(parameter.getName(), DepartmentDAO.getInstance().get(Long.valueOf(value), hibSession));
+					engine.put(parameter.getName(), lookupDepartment(hibSession, value));
 				} else if (parameter.getType().equalsIgnoreCase("departments")) {
 					List<Department> departments = new ArrayList<Department>();
 					for (String id: value.split(","))
-						if (!id.isEmpty())
-							departments.add(DepartmentDAO.getInstance().get(Long.valueOf(id), hibSession));
+						if (!id.isEmpty()) {
+							Department d = lookupDepartment(hibSession, id);
+							if (d != null) departments.add(d);
+						}
 					engine.put(parameter.getName(), departments);
 				} else if (parameter.getType().equalsIgnoreCase("subject")) {
-					engine.put(parameter.getName(), SubjectAreaDAO.getInstance().get(Long.valueOf(value), hibSession));
+					engine.put(parameter.getName(), lookupSubjectArea(hibSession, value));
 				} else if (parameter.getType().equalsIgnoreCase("subjects")) {
 					List<SubjectArea> subjects = new ArrayList<SubjectArea>();
 					for (String id: value.split(","))
-						if (!id.isEmpty())
-							subjects.add(SubjectAreaDAO.getInstance().get(Long.valueOf(id), hibSession));
+						if (!id.isEmpty()) {
+							SubjectArea s = lookupSubjectArea(hibSession, id);
+							if (s != null) subjects.add(s);
+						}
 					engine.put(parameter.getName(), subjects);
 				} else if (parameter.getType().equalsIgnoreCase("building")) {
-					engine.put(parameter.getName(), BuildingDAO.getInstance().get(Long.valueOf(value), hibSession));
+					engine.put(parameter.getName(), lookupBuilding(hibSession, value));
 				} else if (parameter.getType().equalsIgnoreCase("buildings")) {
 					List<Building> buildings = new ArrayList<Building>();
 					for (String id: value.split(","))
-						if (!id.isEmpty())
-							buildings.add(BuildingDAO.getInstance().get(Long.valueOf(id), hibSession));
+						if (!id.isEmpty()) {
+							Building b = lookupBuilding(hibSession, id);
+							if (b != null) buildings.add(b);
+						}
 					engine.put(parameter.getName(), buildings);
 				} else if (parameter.getType().equalsIgnoreCase("room")) {
-					engine.put(parameter.getName(), RoomDAO.getInstance().get(Long.valueOf(value), hibSession));
+					engine.put(parameter.getName(), lookupRoom(hibSession, value));
 				} else if (parameter.getType().equalsIgnoreCase("rooms")) {
 					List<Room> rooms = new ArrayList<Room>();
 					for (String id: value.split(","))
-						if (!id.isEmpty())
-							rooms.add(RoomDAO.getInstance().get(Long.valueOf(id), hibSession));
+						if (!id.isEmpty()) {
+							Room r = lookupRoom(hibSession, id);
+							if (r != null) rooms.add(r);
+						}
 					engine.put(parameter.getName(), rooms);
 				} else if (parameter.getType().equalsIgnoreCase("location")) {
-					engine.put(parameter.getName(), LocationDAO.getInstance().get(Long.valueOf(value), hibSession));
+					engine.put(parameter.getName(), lookupLocation(hibSession, value));
 				} else if (parameter.getType().equalsIgnoreCase("locations")) {
 					List<Location> locations = new ArrayList<Location>();
 					for (String id: value.split(","))
-						if (!id.isEmpty())
-							locations.add(LocationDAO.getInstance().get(Long.valueOf(id), hibSession));
+						if (!id.isEmpty()) {
+							Location l = lookupLocation(hibSession, id);
+							if (l != null) locations.add(l);
+						}
 					engine.put(parameter.getName(), locations);
 				} else {
 					engine.put(parameter.getName(), value);

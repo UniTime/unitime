@@ -393,8 +393,15 @@ public class ScriptPage extends Composite {
 						if (!param.isMultiSelect()) list.addItem(MESSAGES.itemSelect());
 						for (ScriptInterface.ListItem item: param.getOptions()) {
 							list.addItem(item.getText(), item.getValue());
-							if (param.getDefaultValue() != null && param.getDefaultValue().equalsIgnoreCase(item.getValue()))
-								list.setSelectedIndex(list.getItemCount() - 1);
+							if (param.getDefaultValue() != null) {
+								if (param.isMultiSelect()) {
+									for (String id: param.getDefaultValue().split(","))
+										if (!id.isEmpty() && (id.equalsIgnoreCase(item.getValue()) || id.equalsIgnoreCase(item.getText()) || item.getText().startsWith(id + " - "))) {
+											list.setItemSelected(list.getItemCount() - 1, true); break;
+										}
+								} else if (param.getDefaultValue().equalsIgnoreCase(item.getValue()) || param.getDefaultValue().equalsIgnoreCase(item.getText()) || item.getText().startsWith(param.getDefaultValue() + " - "))
+									list.setSelectedIndex(list.getItemCount() - 1);
+							}
 						}
 						list.addChangeHandler(new ChangeHandler() {
 							@Override
