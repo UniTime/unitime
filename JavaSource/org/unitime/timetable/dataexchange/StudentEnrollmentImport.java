@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -177,6 +178,7 @@ public class StudentEnrollmentImport extends BaseImport {
             		if (!cd.isAlternative() && cd.getPriority() >= nextPriority)
             			nextPriority = cd.getPriority() + 1;
             	Set<CourseDemand> remaining = new HashSet<CourseDemand>(student.getCourseDemands());
+            	Map<CourseDemand, CourseOffering> courseAssignments = new HashMap<CourseDemand, CourseOffering>();
             	
             	List<Enrollment> selected = new ArrayList<Enrollment>();
             	for (Iterator j = studentElement.elementIterator("class"); j.hasNext(); ) {
@@ -309,6 +311,26 @@ public class StudentEnrollmentImport extends BaseImport {
             		
             		if (enrollment.getCourseRequest() != null) {
             			remaining.remove(enrollment.getCourseRequest().getCourseDemand());
+            			CourseOffering assigned = courseAssignments.get(enrollment.getCourseRequest().getCourseDemand());
+            			if (assigned == null) {
+                			courseAssignments.put(enrollment.getCourseRequest().getCourseDemand(), course);
+            			} else if (!course.equals(assigned)) {
+            				// course demand has been already removed -> need to split the course demand
+            				enrollment.getCourseRequest().getCourseDemand().getCourseRequests().remove(enrollment.getCourseRequest());
+            				CourseDemand cd = new CourseDemand();
+                			cd.setTimestamp(ts);
+                			cd.setCourseRequests(new HashSet<CourseRequest>());
+                			cd.setEnrollmentMessages(new HashSet<StudentEnrollmentMessage>());
+                			cd.setStudent(student);
+                			student.getCourseDemands().add(cd);
+                			cd.setAlternative(false);
+                			cd.setPriority(nextPriority++);
+                			cd.setWaitlist(false);
+                			enrollment.getCourseRequest().setCourseDemand(cd);
+                			cd.getCourseRequests().add(enrollment.getCourseRequest());
+                			fixCourseDemands = true;
+                			if (student.getUniqueId() != null) updatedStudents.add(student.getUniqueId());
+            			}
             			for (Iterator<StudentEnrollmentMessage> j = enrollment.getCourseRequest().getCourseDemand().getEnrollmentMessages().iterator(); j.hasNext(); ) {
             				StudentEnrollmentMessage message = j.next();
             				getHibSession().delete(message);
@@ -354,15 +376,16 @@ public class StudentEnrollmentImport extends BaseImport {
             	}
             	
             	if (fixCourseDemands) {
-            		// removed unused course demands
-            		for (CourseDemand cd: remaining) {
-            			if (cd.getFreeTime() != null)
-            				getHibSession().delete(cd.getFreeTime());
-            			for (CourseRequest cr: cd.getCourseRequests())
-            				getHibSession().delete(cr);
-            			student.getCourseDemands().remove(cd);
-            			getHibSession().delete(cd);
-            		}
+            		// removed unused course demands (only when not in the registration mode)
+            		if (student.getSession().getStatusType() == null || !student.getSession().getStatusType().canPreRegisterStudents())
+                		for (CourseDemand cd: remaining) {
+                			if (cd.getFreeTime() != null)
+                				getHibSession().delete(cd.getFreeTime());
+                			for (CourseRequest cr: cd.getCourseRequests())
+                				getHibSession().delete(cr);
+                			student.getCourseDemands().remove(cd);
+                			getHibSession().delete(cd);
+                		}
             		int priority = 0;
             		for (CourseDemand cd: new TreeSet<CourseDemand>(student.getCourseDemands())) {
             			cd.setPriority(priority++);
