@@ -124,6 +124,12 @@
 				<line>Maximal length of the External ID field corrected (40 characters).</line>
 			</description>
 		</item>
+		<item>
+			<name>Session Roll Forward: Instructor Attributes</name>
+			<description>
+				<line>Fixed TransientObjectException when rolling instructor attributes (with parent-child relation) forward.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Constraint Solver (1.3.121)</title>

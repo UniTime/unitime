@@ -1722,6 +1722,7 @@ public class SessionRollForward {
 			toAttribute.setInstructors(new HashSet<DepartmentalInstructor>());
 			toAttribute.setChildAttributes(new HashSet<InstructorAttribute>());
 			attributes.put(fromAttribute.getUniqueId(), toAttribute);
+			InstructorAttributeDAO.getInstance().save(toAttribute);
 		}
 		for (InstructorAttribute fromChildAttribute: departmentalAttributes) {
 			if (fromChildAttribute.getParentAttribute() != null) {
@@ -1730,11 +1731,10 @@ public class SessionRollForward {
 				if (toParentAttribute != null) {
 					toChildAttribute.setParentAttribute(toParentAttribute);
 					toParentAttribute.getChildAttributes().add(toChildAttribute);
+					InstructorAttributeDAO.getInstance().saveOrUpdate(toChildAttribute);
 				}
 			}
 		}
-		for (InstructorAttribute attribute: attributes.values())
-			InstructorAttributeDAO.getInstance().saveOrUpdate(attribute);
 	}
 	
 	protected void rollForwardInstructorAttributePrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession) {
