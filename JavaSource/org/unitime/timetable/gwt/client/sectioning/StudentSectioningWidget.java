@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaTabBar;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.sectioning.TimeGrid.Meeting;
 import org.unitime.timetable.gwt.client.widgets.CourseFinder;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderClasses;
@@ -142,7 +143,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private Label iTotalCredit;
 	private P iGridMessage;
 	
-	private ArrayList<ClassAssignmentInterface.ClassAssignment> iLastResult;
+	private ArrayList<ClassAssignmentInterface.ClassAssignment> iLastResult, iLastEnrollment;
 	private ClassAssignmentInterface iLastAssignment, iSavedAssignment = null, iSpecialRegAssignment = null;
 	private CourseRequestInterface iSavedRequest = null;
 	private ArrayList<HistoryItem> iHistory = new ArrayList<HistoryItem>();
@@ -705,9 +706,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					public void execute() {
 						clearMessage();
 						LoadingWidget.getInstance().show(MESSAGES.waitEnroll());
-						final CourseRequestInterface lastRequests = iCourseRequests.getRequest();
-						final List<ClassAssignment> lastResult = iLastResult;
-						iSectioningService.enroll(iOnline, lastRequests, iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
+						final ArrayList<ClassAssignmentInterface.ClassAssignment> lastEnrollment = new ArrayList<ClassAssignmentInterface.ClassAssignment>(iLastResult);
+						iSectioningService.enroll(iOnline, iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
 							public void onSuccess(ClassAssignmentInterface result) {
 								LoadingWidget.getInstance().hide();
 								iSavedAssignment = result;
@@ -733,62 +733,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 												}
 											});
 								}
-								if (!iSpecReg && !iSpecRegSubmit && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG) && result.hasMessages()) {
-									iSectioningService.checkSpecialRequestEligibility(
-											new SpecialRegistrationEligibilityRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iLastResult),
-											new AsyncCallback<SpecialRegistrationEligibilityResponse>() {
-												@Override
-												public void onFailure(Throwable caught) {
-													iStatus.error(MESSAGES.requestSpecialRegistrationFail(caught.getMessage()), caught);
-												}
-
-												@Override
-												public void onSuccess(SpecialRegistrationEligibilityResponse response) {
-													iSpecRegSubmit = response.isCanSubmit();
-													iSubmitSpecReg.setEnabled(iSpecRegSubmit);
-													iSubmitSpecReg.setVisible(iSpecRegSubmit);
-													if (response.hasMessage()) {
-														if (iSpecRegSubmit) {
-															 UniTimeConfirmationDialog.confirm(response.getMessage(), new Command() {
-																@Override
-																public void execute() {
-																	LoadingWidget.getInstance().show(MESSAGES.waitSpecialRegistration());
-																	iSectioningService.submitSpecialRequest(
-																			new SubmitSpecialRegistrationRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), null, lastRequests, lastResult),
-																			new AsyncCallback<SubmitSpecialRegistrationResponse>() {
-																				@Override
-																				public void onFailure(Throwable caught) {
-																					LoadingWidget.getInstance().hide();
-																					iStatus.error(MESSAGES.submitSpecialRegistrationFail(caught.getMessage()), caught);
-																					updateHistory();
-																				}
-
-																				@Override
-																				public void onSuccess(SubmitSpecialRegistrationResponse respose) {
-																					LoadingWidget.getInstance().hide();
-																					if (respose.isSuccess()) {
-																						iSpecialRegAssignment = iLastAssignment;
-																						iStatus.info(respose.hasMessage() ? respose.getMessage() : MESSAGES.submitSecialRegistrationOK());
-																					} else {
-																						iStatus.error(respose.getMessage());
-																					}
-																					iSpecRegSubmit = respose.isCanSubmit();
-																					iSpecRegEnroll = respose.isCanEnroll() || !iSpecReg;
-																					iSpecRegRequestId = respose.getRequestId();
-																					iSubmitSpecReg.setEnabled(iSpecRegSubmit);
-																					iSubmitSpecReg.setVisible(iSpecRegSubmit);
-																					updateHistory();
-																				}
-																			});
-																}
-															});
-														} else {
-															UniTimeConfirmationDialog.alert(response.getMessage());
-														}
-													}
-												}
-											});
-								}
+								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG) && result.hasMessages())
+									checkSpecialRegistrationAfterFailedSubmitSchedule(lastEnrollment);
 							}
 							public void onFailure(Throwable caught) {
 								LoadingWidget.getInstance().hide();
@@ -836,6 +782,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 										iStatus.error(caught.getMessage() , false);
 									}
 								}
+								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG))
+									checkSpecialRegistrationAfterFailedSubmitSchedule(lastEnrollment);
 							}
 						});
 					}
@@ -851,7 +799,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				clearMessage();
 				LoadingWidget.getInstance().show(MESSAGES.waitSpecialRegistration());
 				iSectioningService.submitSpecialRequest(
-						new SubmitSpecialRegistrationRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iSpecRegRequestId, iCourseRequests.getRequest(), iLastResult),
+						new SubmitSpecialRegistrationRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iSpecRegRequestId, iCourseRequests.getRequest(),
+								iLastEnrollment != null ? iLastEnrollment : iLastResult),
 						new AsyncCallback<SubmitSpecialRegistrationResponse>() {
 							@Override
 							public void onFailure(Throwable caught) {
@@ -871,6 +820,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								}
 								iSpecRegSubmit = respose.isCanSubmit();
 								iSpecRegEnroll = respose.isCanEnroll() || !iSpecReg;
+								if (!iSpecRegEnroll) { iEnroll.setEnabled(false); iEnroll.setVisible(false); }
 								iSpecRegRequestId = respose.getRequestId();
 								iSubmitSpecReg.setEnabled(iSpecRegSubmit);
 								iSubmitSpecReg.setVisible(iSpecRegSubmit);
@@ -1036,6 +986,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	}
 	
 	private void fillIn(ClassAssignmentInterface result) {
+		iLastEnrollment = null;
 		iLastResult.clear();
 		iLastAssignment = result;
 		String calendarUrl = GWT.getHostPageBaseURL() + "calendar?sid=" + iSessionSelector.getAcademicSessionId() + "&cid=";
@@ -2215,5 +2166,39 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			});
 		}
 		return iQuickAddFinder;
+	}
+	
+	protected void checkSpecialRegistrationAfterFailedSubmitSchedule(ArrayList<ClassAssignmentInterface.ClassAssignment> lastEnrollment) {
+		iLastEnrollment = lastEnrollment;
+		UniTimeNotifications.info("Last enrollment: " + iLastEnrollment);
+		if (!iSpecReg) {
+			iSpecRegSubmit = false;
+			iSubmitSpecReg.setEnabled(false);
+			iSubmitSpecReg.setVisible(false);
+			iSectioningService.checkSpecialRequestEligibility(
+					new SpecialRegistrationEligibilityRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iLastEnrollment),
+					new AsyncCallback<SpecialRegistrationEligibilityResponse>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							iStatus.error(MESSAGES.requestSpecialRegistrationFail(caught.getMessage()), caught);
+						}
+
+						@Override
+						public void onSuccess(SpecialRegistrationEligibilityResponse response) {
+							iSubmitSpecReg.setEnabled(response.isCanSubmit());
+							iSubmitSpecReg.setVisible(response.isCanSubmit());
+							if (response.isCanSubmit()) {
+								 UniTimeConfirmationDialog.confirm(response.hasMessage() ? response.getMessage() : MESSAGES.confirmSpecialRegistrationSubmit(), new Command() {
+									@Override
+									public void execute() {
+										iSubmitSpecReg.click();
+									}
+								});
+							} else if (response.hasMessage()) {
+								UniTimeConfirmationDialog.alert(response.getMessage());
+							}
+						}
+					});
+		}
 	}
 }

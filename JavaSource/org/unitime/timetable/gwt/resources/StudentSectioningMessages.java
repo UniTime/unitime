@@ -1556,4 +1556,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Section is full, overlaps with {0}")
 	String noteFullSectionOverlapFirst(String classOrCourse);
+	
+	@DefaultMessage("Do you want to submit the enrollment changes to special registration?")
+	String confirmSpecialRegistrationSubmit();
 }
