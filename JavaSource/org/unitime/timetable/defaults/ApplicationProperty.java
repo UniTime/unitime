@@ -34,6 +34,7 @@ import org.unitime.commons.Email;
 import org.unitime.commons.hibernate.util.DatabaseUpdate;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.ExternalClassEditAction;
+import org.unitime.timetable.interfaces.ExternalClassLookupInterface;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface;
 import org.unitime.timetable.interfaces.ExternalCourseCrosslistAction;
 import org.unitime.timetable.interfaces.ExternalCourseOfferingEditAction;
@@ -1122,6 +1123,13 @@ public enum ApplicationProperty {
 	@Description("Customization: external term provider (interface ExternalTermProvider converting academic session info into an external term string etc.)")
 	@Since(3.5)
 	CustomizationExternalTerm("unitime.custom.ExternalTermProvider"),
+	
+	@Type(Class.class)
+	@Implements(ExternalClassLookupInterface.class)
+	@Description("Customization: external class lookup provider (interface ExternalClassLookupInterface looking up course offering and classes from an external id)")
+	@DefaultValue("org.unitime.timetable.util.DefaultExternalClassLookup")
+	@Since(4.3)
+	CustomizationExternalClassLookup("unitime.custom.ExternalClassLookup"),
 	
 	@Type(Class.class)
 	@Implements(ExternalLinkLookup.class)
