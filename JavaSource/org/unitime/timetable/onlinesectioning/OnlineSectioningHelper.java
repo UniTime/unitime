@@ -857,6 +857,13 @@ public class OnlineSectioningHelper {
 		return getUser().getExternalId();
 	}
 	
+	public String getSpecialRegistrationId() {
+		if (getUser().getParameterCount() > 0)
+			for (OnlineSectioningLog.Property p: getUser().getParameterList())
+				if ("specreg".equals(p.getKey())) return p.getValue();
+		return null;
+	}
+	
 	public static OnlineSectioningLog.CourseRequestOption.Builder toPreference(OnlineSectioningServer server, RequestedCourse rc, XCourseId c) {
 		if (!rc.isCourse() || (!rc.hasSelectedClasses() && !rc.hasSelectedIntructionalMethods())) return null;
 		if (c == null) c = server.getCourse(rc.getCourseId(), rc.getCourseName());

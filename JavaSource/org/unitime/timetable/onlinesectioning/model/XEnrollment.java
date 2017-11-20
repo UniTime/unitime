@@ -97,6 +97,14 @@ public class XEnrollment extends XCourseId implements Serializable {
 		iReservation = enrollment.getReservation() == null ? null : new XReservationId(enrollment.getReservation());
 	}
 	
+	public XEnrollment(Student student, XCourseId courseId, Long configId, Collection<Long> sectionIds) {
+		super(courseId);
+		iStudentId = student.getUniqueId();
+		iConfigId = configId;
+		if (sectionIds != null)
+			iSectionIds.addAll(sectionIds);
+	}
+	
 	public Long getStudentId() { return iStudentId; }
 	
 	public Long getConfigId() { return iConfigId; }

@@ -52,6 +52,12 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
@@ -122,7 +128,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	
 	private VerticalPanel iPanel;
 	private P iFooter;
-	private AriaButton iRequests, iReset, iSchedule, iEnroll, iPrint, iExport = null, iSave, iStartOver, iDegreePlan;
+	private AriaButton iRequests, iReset, iSchedule, iEnroll, iPrint, iExport = null, iSave, iStartOver, iDegreePlan, iSubmitSpecReg;
 	private AriaTabBar iAssignmentTab;
 	private DockPanel iAssignmentDock;
 	private FocusPanel iAssignmentPanel;
@@ -137,13 +143,16 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private P iGridMessage;
 	
 	private ArrayList<ClassAssignmentInterface.ClassAssignment> iLastResult;
-	private ClassAssignmentInterface iLastAssignment, iSavedAssignment = null;
+	private ClassAssignmentInterface iLastAssignment, iSavedAssignment = null, iSpecialRegAssignment = null;
 	private CourseRequestInterface iSavedRequest = null;
 	private ArrayList<HistoryItem> iHistory = new ArrayList<HistoryItem>();
 	private boolean iInRestore = false;
 	private boolean iTrackHistory = true;
 	private boolean iOnline;
 	private boolean iSpecReg = false;
+	private String iSpecRegRequestId = null;
+	private boolean iSpecRegSubmit = false;
+	private Boolean iSpecRegEnroll = null;
 	private StudentSectioningPage.Mode iMode = null;
 	private OnlineSectioningInterface.EligibilityCheck iEligibilityCheck = null;
 	private PinDialog iPinDialog = null;
@@ -161,6 +170,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iMode = mode;
 		iOnline = online;
 		iSpecReg = "specreg".equalsIgnoreCase(Location.getParameter("mode"));
+		iSpecRegRequestId = Location.getParameter("requestId");
 		iSessionSelector = sessionSelector;
 		iUserAuthentication = userAuthentication;
 		iTrackHistory = history;
@@ -260,6 +270,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iEnroll.setVisible(false);
 		iEnroll.setEnabled(false);
 		rightFooterPanel.add(iEnroll);
+		
+		iSubmitSpecReg = new AriaButton(MESSAGES.buttonSubmitSpecReg());
+		iSave.setTitle(MESSAGES.hintSpecialRegistration());
+		iSubmitSpecReg.setVisible(false);
+		iSubmitSpecReg.setEnabled(false);
+		iSubmitSpecReg.getElement().getStyle().setMarginLeft(4, Unit.PX);
+		rightFooterPanel.add(iSubmitSpecReg);
 
 		iPrint = new AriaButton(MESSAGES.buttonPrint());
 		iPrint.setTitle(MESSAGES.hintPrint());
@@ -688,7 +705,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					public void execute() {
 						clearMessage();
 						LoadingWidget.getInstance().show(MESSAGES.waitEnroll());
-						iSectioningService.enroll(iOnline, iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
+						final CourseRequestInterface lastRequests = iCourseRequests.getRequest();
+						final List<ClassAssignment> lastResult = iLastResult;
+						iSectioningService.enroll(iOnline, lastRequests, iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
 							public void onSuccess(ClassAssignmentInterface result) {
 								LoadingWidget.getInstance().hide();
 								iSavedAssignment = result;
@@ -711,6 +730,62 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 												@Override
 												public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
 													setElibibilityCheckDuringEnrollment(result);
+												}
+											});
+								}
+								if (!iSpecReg && !iSpecRegSubmit && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG) && result.hasMessages()) {
+									iSectioningService.checkSpecialRequestEligibility(
+											new SpecialRegistrationEligibilityRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iLastResult),
+											new AsyncCallback<SpecialRegistrationEligibilityResponse>() {
+												@Override
+												public void onFailure(Throwable caught) {
+													iStatus.error(MESSAGES.requestSpecialRegistrationFail(caught.getMessage()), caught);
+												}
+
+												@Override
+												public void onSuccess(SpecialRegistrationEligibilityResponse response) {
+													iSpecRegSubmit = response.isCanSubmit();
+													iSubmitSpecReg.setEnabled(iSpecRegSubmit);
+													iSubmitSpecReg.setVisible(iSpecRegSubmit);
+													if (response.hasMessage()) {
+														if (iSpecRegSubmit) {
+															 UniTimeConfirmationDialog.confirm(response.getMessage(), new Command() {
+																@Override
+																public void execute() {
+																	LoadingWidget.getInstance().show(MESSAGES.waitSpecialRegistration());
+																	iSectioningService.submitSpecialRequest(
+																			new SubmitSpecialRegistrationRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), null, lastRequests, lastResult),
+																			new AsyncCallback<SubmitSpecialRegistrationResponse>() {
+																				@Override
+																				public void onFailure(Throwable caught) {
+																					LoadingWidget.getInstance().hide();
+																					iStatus.error(MESSAGES.submitSpecialRegistrationFail(caught.getMessage()), caught);
+																					updateHistory();
+																				}
+
+																				@Override
+																				public void onSuccess(SubmitSpecialRegistrationResponse respose) {
+																					LoadingWidget.getInstance().hide();
+																					if (respose.isSuccess()) {
+																						iSpecialRegAssignment = iLastAssignment;
+																						iStatus.info(respose.hasMessage() ? respose.getMessage() : MESSAGES.submitSecialRegistrationOK());
+																					} else {
+																						iStatus.error(respose.getMessage());
+																					}
+																					iSpecRegSubmit = respose.isCanSubmit();
+																					iSpecRegEnroll = respose.isCanEnroll() || !iSpecReg;
+																					iSpecRegRequestId = respose.getRequestId();
+																					iSubmitSpecReg.setEnabled(iSpecRegSubmit);
+																					iSubmitSpecReg.setVisible(iSpecRegSubmit);
+																					updateHistory();
+																				}
+																			});
+																}
+															});
+														} else {
+															UniTimeConfirmationDialog.alert(response.getMessage());
+														}
+													}
 												}
 											});
 								}
@@ -767,6 +842,41 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				};
 				enroll = confirmEnrollment(enroll);
 				enroll.execute();
+			}
+		});
+		
+		iSubmitSpecReg.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				clearMessage();
+				LoadingWidget.getInstance().show(MESSAGES.waitSpecialRegistration());
+				iSectioningService.submitSpecialRequest(
+						new SubmitSpecialRegistrationRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iSpecRegRequestId, iCourseRequests.getRequest(), iLastResult),
+						new AsyncCallback<SubmitSpecialRegistrationResponse>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								LoadingWidget.getInstance().hide();
+								iStatus.error(MESSAGES.submitSpecialRegistrationFail(caught.getMessage()), caught);
+								updateHistory();
+							}
+
+							@Override
+							public void onSuccess(SubmitSpecialRegistrationResponse respose) {
+								LoadingWidget.getInstance().hide();
+								if (respose.isSuccess()) {
+									iSpecialRegAssignment = iLastAssignment;
+									iStatus.info(respose.hasMessage() ? respose.getMessage() : MESSAGES.submitSecialRegistrationOK());
+								} else {
+									iStatus.error(respose.getMessage());
+								}
+								iSpecRegSubmit = respose.isCanSubmit();
+								iSpecRegEnroll = respose.isCanEnroll() || !iSpecReg;
+								iSpecRegRequestId = respose.getRequestId();
+								iSubmitSpecReg.setEnabled(iSpecRegSubmit);
+								iSubmitSpecReg.setVisible(iSpecRegSubmit);
+								updateHistory();
+							}
+						});
 			}
 		});
 		
@@ -1355,7 +1465,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iRequests.setVisible(true); iRequests.setEnabled(true);
 			if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_RESET)) { iReset.setVisible(true); iReset.setEnabled(true); }
 			if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.QUICK_ADD_DROP)) { iQuickAdd.setVisible(true); iQuickAdd.setEnabled(true); }
-			iEnroll.setVisible(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL));
+			iEnroll.setVisible(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL) && (iSpecRegEnroll == null || iSpecRegEnroll.booleanValue()));
+			iSubmitSpecReg.setVisible(iSpecRegSubmit && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
+			iSubmitSpecReg.setEnabled(iSpecRegSubmit && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
 			if (iEligibilityCheck != null && iEligibilityCheck.hasCheckboxMessage()) {
 				if (iCustomCheckbox == null) {
 					iCustomCheckbox = new CheckBox(iEligibilityCheck.getCheckboxMessage(), true);
@@ -1373,7 +1485,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				iCustomCheckbox.setEnabled(true);
 				iCustomCheckbox.setVisible(true);
 			} else {
-				iEnroll.setEnabled(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL));
+				iEnroll.setEnabled(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL) && (iSpecRegEnroll == null || iSpecRegEnroll.booleanValue()));
 			}
 			iPrint.setVisible(true); iPrint.setEnabled(true);
 			iStartOver.setVisible(iSavedAssignment != null);
@@ -1423,6 +1535,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iReset.setVisible(false); iReset.setEnabled(false);
 		iQuickAdd.setVisible(false); iQuickAdd.setEnabled(false);
 		iEnroll.setVisible(false); iEnroll.setEnabled(false);
+		iSubmitSpecReg.setVisible(false); iSubmitSpecReg.setEnabled(false);
 		if (iCustomCheckbox != null) {
 			iCustomCheckbox.setVisible(false); iCustomCheckbox.setEnabled(false);
 		}
@@ -1444,7 +1557,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	public void clear(boolean switchToRequests) {
 		if (iShowUnassignments != null)
 			iShowUnassignments.setVisible(false);
-		iSavedAssignment = null; iLastAssignment = null;
+		iSavedAssignment = null; iLastAssignment = null; iSpecialRegAssignment = null;
 		iCourseRequests.clear();
 		iLastResult.clear();
 		iAssignments.clearData(true);
@@ -1551,7 +1664,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		});
 	}
 	
-	private void lastResult(final CourseRequestInterface request, boolean saved, final boolean changeViewIfNeeded) {
+	private void lastResult(final CourseRequestInterface request, final Long sessionId, final Long studentId, boolean saved, final boolean changeViewIfNeeded) {
 		AsyncCallback<ClassAssignmentInterface> callback = new AsyncCallback<ClassAssignmentInterface>() {
 			public void onFailure(Throwable caught) {
 				LoadingWidget.getInstance().hide();
@@ -1559,7 +1672,33 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			public void onSuccess(final ClassAssignmentInterface saved) {
 				iSavedAssignment = saved;
 				iShowUnassignments.setVisible(true);
-				if (request.isSaved() || !CONSTANTS.checkLastResult()) {
+				if (iSpecReg && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG) && iSpecRegRequestId == null)
+					iSpecRegSubmit = true;
+				if (iSpecReg && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG) && iSpecRegRequestId != null) {
+					iSectioningService.retrieveSpecialRequest(new RetrieveSpecialRegistrationRequest(sessionId, studentId, iSpecRegRequestId), new AsyncCallback<RetrieveSpecialRegistrationResponse>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							fillIn(saved);
+							updateHistory();
+							iStatus.error(MESSAGES.requestSpecialRegistrationFail(caught.getMessage()), caught);
+						}
+						@Override
+						public void onSuccess(RetrieveSpecialRegistrationResponse specReg) {
+							iSpecRegSubmit = specReg.isCanSubmit();
+							iSpecRegEnroll = specReg.isCanEnroll();
+							iSpecialRegAssignment = specReg.getClassAssignments();
+							if (specReg.hasClassAssignments()) {
+								fillIn(specReg.getClassAssignments());
+								if (specReg.getClassAssignments().hasRequest())
+									iCourseRequests.setRequest(specReg.getClassAssignments().getRequest());
+								updateHistory();
+							} else {
+								fillIn(saved);
+								updateHistory();
+							}
+						}
+					});
+				} else if (request.isSaved() || !CONSTANTS.checkLastResult()) {
 					if ((changeViewIfNeeded || CONSTANTS.startOverCanChangeView()) || iRequests.isVisible()) {
 						fillIn(saved);
 						updateHistory();
@@ -1641,7 +1780,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				}
 				iCourseRequests.setRequest(request);
 				if (iSchedule.isVisible() || iRequests.isVisible()) {
-					lastResult(request, saved, changeViewIfNeeded);
+					lastResult(request, sessionId, studentId, saved, changeViewIfNeeded);
 				} else {
 					LoadingWidget.getInstance().hide();
 					iStartOver.setVisible(true);
@@ -1760,8 +1899,39 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iScheduleChanged = false;
 			clearMessage();
 		}
-		if (iLastAssignment == null || !iLastAssignment.isCanEnroll() || iEligibilityCheck == null || !iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL))
+		if (iLastAssignment == null || !iLastAssignment.isCanEnroll() || iEligibilityCheck == null || !iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL) || (iSpecRegEnroll != null && !iSpecRegEnroll.booleanValue())) {
+			if (iLastAssignment != null && iSpecialRegAssignment != null && iSpecRegSubmit) {
+				for (ClassAssignmentInterface.CourseAssignment course: iLastAssignment.getCourseAssignments()) {
+					if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
+					for (ClassAssignmentInterface.CourseAssignment saved: iSpecialRegAssignment.getCourseAssignments()) {
+						if (!saved.isAssigned() || saved.isFreeTime() || saved.isTeachingAssignment() || !course.getCourseId().equals(saved.getCourseId())) continue;
+						classes: for (ClassAssignmentInterface.ClassAssignment clazz: saved.getClassAssignments()) {
+							for (ClassAssignmentInterface.ClassAssignment x: course.getClassAssignments()) {
+								if (clazz.getClassId().equals(x.getClassId())) continue classes;
+							}
+							if (clazz.isSaved() && !clazz.hasError()) {
+								iScheduleChanged = true;
+								iSubmitSpecReg.addStyleName("unitime-EnrollButton");
+								iStatus.warning(MESSAGES.warnSpecialRegistrationChanged(), false);
+							}
+						}
+					}
+				}
+				courses: for (ClassAssignmentInterface.CourseAssignment course: iSpecialRegAssignment.getCourseAssignments()) {
+					if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
+					for (ClassAssignmentInterface.CourseAssignment x: iLastAssignment.getCourseAssignments())
+						if (course.getCourseId().equals(x.getCourseId())) continue courses;
+					for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
+						if (clazz.isSaved() && !clazz.hasError()) {
+							iScheduleChanged = true;
+							iSubmitSpecReg.addStyleName("unitime-EnrollButton");
+							iStatus.warning(MESSAGES.warnSpecialRegistrationChanged(), false);
+						}
+					}
+				}
+			}
 			return;
+		}
 		boolean cr = iSchedule.isVisible();
 		boolean empty = true;
 		if (iSavedAssignment != null)
@@ -1851,11 +2021,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				iStatus.clear();
 				iEnroll.removeStyleName("unitime-EnrollButton");
 				iSave.removeStyleName("unitime-EnrollButton");
+				iSubmitSpecReg.removeStyleName("unitime-EnrollButton");
 			}
 		} else {
 			iStatus.clear();
 			iEnroll.removeStyleName("unitime-EnrollButton");
 			iSave.removeStyleName("unitime-EnrollButton");
+			iSubmitSpecReg.removeStyleName("unitime-EnrollButton");
 		}
 		if (isChanged())
 			updateScheduleChangedNoteIfNeeded();

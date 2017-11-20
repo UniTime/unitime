@@ -378,8 +378,14 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("<u>S</u>ubmit Schedule")
 	String buttonEnroll();
 	
+	@DefaultMessage("Submit Special Registration")
+	String buttonSubmitSpecReg();
+	
 	@DefaultMessage("Register for the above schedule.")
 	String hintEnroll();
+	
+	@DefaultMessage("Sumbit the above enrollment changes to Special Registration.")
+	String hintSpecialRegistration();
 	
 	@DefaultMessage("<u>P</u>rint")
 	String buttonPrint();
@@ -419,13 +425,22 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Unable to store requests: {0}")
 	String saveRequestsFail(String reason);
+	
+	@DefaultMessage("Unable to retrieve special registration: {0}")
+	String requestSpecialRegistrationFail(String reason);
+	
+	@DefaultMessage("Special registration failed: {0}")
+	String submitSpecialRegistrationFail(String reason);
+
+	@DefaultMessage("Success!")
+	String submitSecialRegistrationOK();
 
 	@DefaultMessage("Success!")
 	String enrollOK();
 	
 	@DefaultMessage("Registration failed: {0}")
 	String enrollFailed(String reason);
-	
+		
 	@DefaultMessage("Student Schedule")
 	String studentSchedule();
 
@@ -869,11 +884,17 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Failed to create degree plans provider: {0}")
 	String exceptionDegreePlansProvider(String message);
 	
+	@DefaultMessage("Failed to create special registration provider: {0}")
+	String exceptionSpecialRegistrationProvider(String message);
+	
 	@DefaultMessage("Eligibility check failed: {0}")
 	String exceptionFailedEligibilityCheck(String message);
 	
 	@DefaultMessage("Processing...")
 	String waitEnroll();
+	
+	@DefaultMessage("Processing...")
+	String waitSpecialRegistration();
 	
 	@DefaultMessage("Checking eligibility...")
 	String waitEligibilityCheck();
@@ -1286,6 +1307,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("You have made some changes in your course requests. Please click the Submit Requests button to update your registration.")
 	String warnRequestsChangedOnCourseRequest();
+	
+	@DefaultMessage("You have made some changes in your special registration. Please click the Submit Special Registration button to update your special registration.")
+	String warnSpecialRegistrationChanged();
 		
 	@DefaultMessage("There are unsaved changes in your schedule. Do you really want to discard these changes without updating your registration?")
 	String queryLeaveChanges();

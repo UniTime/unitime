@@ -166,6 +166,36 @@ public class XCourseRequest extends XRequest {
         	iTimeStamp = new Date();
     }
     
+    public XCourseRequest(Student student, XCourseId course, int priority, XEnrollment enrollment) {
+    	super();
+    	iStudentId = student.getUniqueId();
+    	iRequestId = -course.getCourseId();
+    	iAlternative = false;
+    	iPriority = priority;
+    	iCourseIds.add(course);
+        iWaitlist = false;
+        iEnrollment = enrollment;
+        if (iEnrollment != null)
+        	iTimeStamp = iEnrollment.getTimeStamp();
+        else
+        	iTimeStamp = new Date();
+    }
+    
+    public XCourseRequest(XCourseRequest request, XEnrollment enrollment) {
+    	super(request);
+    	iCourseIds.addAll(request.getCourseIds());
+    	iWaitlist = request.isWaitlist();
+    	iTimeStamp = request.getTimeStamp();
+    	iEnrollment = enrollment;
+    	if (request.iSectionWaitlist != null)
+    		iSectionWaitlist = new HashMap<XCourseId, List<XWaitListedSection>>(request.iSectionWaitlist);
+    	if (request.iOptions != null)
+    		iOptions = new HashMap<XCourseId, byte[]>(request.iOptions);
+    	if (request.iPreferences != null)
+    		iPreferences = new HashMap<XCourseId, byte[]>(request.iPreferences);
+    	iMessage = request.getEnrollmentMessage();
+    }
+    
     public XCourseRequest(org.cpsolver.studentsct.model.CourseRequest request, Enrollment enrollment) {
     	super(request);
     	for (Course course: request.getCourses())

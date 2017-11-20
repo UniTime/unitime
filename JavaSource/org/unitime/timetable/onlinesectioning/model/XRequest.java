@@ -54,6 +54,13 @@ public abstract class XRequest implements Serializable, Comparable<XRequest>, Ex
     	iAlternative = request.isAlternative();
     	iStudentId = request.getStudent().getId();
     }
+    
+    public XRequest(XRequest request) {
+    	iRequestId = request.getRequestId();
+    	iPriority = request.getPriority();
+    	iAlternative = request.isAlternative();
+    	iStudentId = request.getStudentId();
+    }
 
     /** Request id */
     public Long getRequestId() { return iRequestId; }

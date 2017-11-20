@@ -62,6 +62,12 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityChe
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
@@ -113,6 +119,7 @@ import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseMatcherProvider;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomDegreePlansHolder;
+import org.unitime.timetable.onlinesectioning.custom.CustomSpecialRegistrationHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.custom.DefaultCourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
@@ -123,6 +130,9 @@ import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.onlinesectioning.solver.ComputeSuggestionsAction;
 import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction;
+import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationEligibility;
+import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationRetrieve;
+import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationSubmit;
 import org.unitime.timetable.onlinesectioning.status.FindEnrollmentAction;
 import org.unitime.timetable.onlinesectioning.status.FindEnrollmentInfoAction;
 import org.unitime.timetable.onlinesectioning.status.FindStudentInfoAction;
@@ -781,6 +791,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		getSessionContext().removeAttribute("sessionId");
 		getSessionContext().removeAttribute("request");
 		getSessionContext().removeAttribute("eligibility");
+		getSessionContext().removeAttribute("specreq");
 		if (getSessionContext().hasPermission(Right.StudentSchedulingAdvisor)) 
 			return false;
 		SecurityContextHolder.getContext().setAuthentication(null);
@@ -2013,6 +2024,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		UserContext user = getSessionContext().getUser();
 		UniTimePrincipal principal = (UniTimePrincipal)getSessionContext().getAttribute("user");
 		String pin = (String)getSessionContext().getAttribute("pin");
+		String specialRequestId = (String)getSessionContext().getAttribute("specreq");
 		if (user != null) {
 			OnlineSectioningLog.Entity.Builder entity = OnlineSectioningLog.Entity.newBuilder()
 					.setExternalId(user.getTrueExternalUserId())
@@ -2021,6 +2033,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							OnlineSectioningLog.Entity.EntityType.MANAGER : OnlineSectioningLog.Entity.EntityType.STUDENT);
 			if (pin != null) entity.addParameterBuilder().setKey("pin").setValue(pin);
 			if (principal != null && principal.getStudentExternalId() != null) entity.addParameterBuilder().setKey("student").setValue(principal.getStudentExternalId());
+			if (specialRequestId != null) entity.addParameterBuilder().setKey("specreq").setValue(specialRequestId);
 			return entity.build();
 		} else if (principal != null) {
 			OnlineSectioningLog.Entity.Builder entity = OnlineSectioningLog.Entity.newBuilder()
@@ -2028,6 +2041,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					.setName(principal.getName())
 					.setType(OnlineSectioningLog.Entity.EntityType.STUDENT);
 			if (pin != null) entity.addParameterBuilder().setKey("pin").setValue(pin);
+			if (specialRequestId != null) entity.addParameterBuilder().setKey("specreq").setValue(specialRequestId);
 			return entity.build();
 		} else {
 			return null;
@@ -2183,6 +2197,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				return check;
 			}
 			
+			check.setFlag(EligibilityFlag.CAN_SPECREG, CustomSpecialRegistrationHolder.hasProvider());
+			
 			OnlineSectioningServer server = getServerInstance(sessionId, false);
 			if (server == null)
 				return new EligibilityCheck(MSG.exceptionNoServerForSession());
@@ -2202,6 +2218,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		CustomStudentEnrollmentHolder.release();
 		CustomCourseRequestsHolder.release();
 		CustomDegreePlansHolder.release();
+		CustomSpecialRegistrationHolder.release();
 	}
 
 	@Override
@@ -2283,5 +2300,77 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			st.addAccommodation(a.getAbbreviation());
 		}
 		return st;
+	}
+
+	@Override
+	public RetrieveSpecialRegistrationResponse retrieveSpecialRequest(RetrieveSpecialRegistrationRequest request) throws SectioningException, PageAccessException {
+		if (request.getSessionId() == null) {
+			request.setSessionId(getLastSessionId());
+		}
+		if (request.getStudentId() == null) {
+			Long sessionId = request.getSessionId();
+			if (sessionId == null) sessionId = getLastSessionId();
+			if (sessionId != null) request.setStudentId(getStudentId(sessionId));
+		}
+		
+		if (request.getSessionId() == null) throw new SectioningException(MSG.exceptionNoAcademicSession());
+		if (request.getStudentId() == null) throw new SectioningException(MSG.exceptionNoStudent());
+		
+		OnlineSectioningServer server = getServerInstance(request.getSessionId(), false);
+		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+		if (!server.getAcademicSession().isSectioningEnabled() || !CustomSpecialRegistrationHolder.hasProvider())
+			throw new SectioningException(MSG.exceptionNotSupportedFeature());
+		
+		setLastSessionId(request.getSessionId());
+
+		return server.execute(server.createAction(SpecialRegistrationRetrieve.class).withRequest(request), currentUser());
+	}
+
+	@Override
+	public SubmitSpecialRegistrationResponse submitSpecialRequest(SubmitSpecialRegistrationRequest request) throws SectioningException, PageAccessException {
+		if (request.getSessionId() == null) {
+			request.setSessionId(getLastSessionId());
+		}
+		if (request.getStudentId() == null) {
+			Long sessionId = request.getSessionId();
+			if (sessionId == null) sessionId = getLastSessionId();
+			if (sessionId != null) request.setStudentId(getStudentId(sessionId));
+		}
+		
+		if (request.getSessionId() == null) throw new SectioningException(MSG.exceptionNoAcademicSession());
+		if (request.getStudentId() == null) throw new SectioningException(MSG.exceptionNoStudent());
+		
+		OnlineSectioningServer server = getServerInstance(request.getSessionId(), false);
+		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+		if (!server.getAcademicSession().isSectioningEnabled() || !CustomSpecialRegistrationHolder.hasProvider())
+			throw new SectioningException(MSG.exceptionNotSupportedFeature());
+		
+		setLastSessionId(request.getSessionId());
+
+		return server.execute(server.createAction(SpecialRegistrationSubmit.class).withRequest(request), currentUser());
+	}
+
+	@Override
+	public SpecialRegistrationEligibilityResponse checkSpecialRequestEligibility(SpecialRegistrationEligibilityRequest request) throws SectioningException, PageAccessException {
+		if (request.getSessionId() == null) {
+			request.setSessionId(getLastSessionId());
+		}
+		if (request.getStudentId() == null) {
+			Long sessionId = request.getSessionId();
+			if (sessionId == null) sessionId = getLastSessionId();
+			if (sessionId != null) request.setStudentId(getStudentId(sessionId));
+		}
+		
+		if (request.getSessionId() == null) throw new SectioningException(MSG.exceptionNoAcademicSession());
+		if (request.getStudentId() == null) throw new SectioningException(MSG.exceptionNoStudent());
+		
+		OnlineSectioningServer server = getServerInstance(request.getSessionId(), false);
+		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+		if (!server.getAcademicSession().isSectioningEnabled() || !CustomSpecialRegistrationHolder.hasProvider())
+			throw new SectioningException(MSG.exceptionNotSupportedFeature());
+		
+		setLastSessionId(request.getSessionId());
+
+		return server.execute(server.createAction(SpecialRegistrationEligibility.class).withRequest(request), currentUser());
 	}
 }

@@ -62,6 +62,7 @@ import org.unitime.timetable.onlinesectioning.custom.CourseUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.DegreePlansProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.SectionUrlProvider;
+import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationProvider;
 import org.unitime.timetable.onlinesectioning.custom.SectionLimitProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider;
 import org.unitime.timetable.spring.ldap.SpringLdapExternalUidLookup;
@@ -1103,6 +1104,12 @@ public enum ApplicationProperty {
 	@Description("Customization: student degree plans provider (interface DegreePlansProvider, used by Student Scheduling Assistant to retrieve degree plans)")
 	@Since(4.1)
 	CustomizationDegreePlans("unitime.custom.DegreePlansProvider"),
+	
+	@Type(Class.class)
+	@Implements(SpecialRegistrationProvider.class)
+	@Description("Customization: student special registration provider (interface SpecialRegistrationProvider, used by Student Scheduling Assistant to retrieve and submit special registration)")
+	@Since(4.3)
+	CustomizationSpecialRegistration("unitime.custom.SpecialRegistrationProvider"),
 	
 	@Type(Class.class)
 	@Implements(OnlineSectioningActionFactory.class)
