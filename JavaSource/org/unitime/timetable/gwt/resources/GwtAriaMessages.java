@@ -469,6 +469,15 @@ public interface GwtAriaMessages extends Messages {
 	@DefaultMessage("Selected degree plan {0} of {1}.")
 	String selectedDegreePlan(String description, String degree);
 	
+	@DefaultMessage("There are {0, number} special registrations available. Use up and down arrows to navigate. To select a registration press Enter. Press Escape to hide registrations.")
+	String showingSpecRegs(int nbrSpecRegs);
+	
+	@DefaultMessage("Special registration {0, number} of {1, number}. {2}. Submitted {3,localdatetime,MMMM dd}")
+	String showingSpecReg(int index, int nbrAlternatives, String description, Date submitDate);
+	
+	@DefaultMessage("Selected special registration {0}.")
+	String selectedSpecReg(String description);
+	
 	@DefaultMessage("Line {0} of {1}.")
 	String selectedLine(int index, int nbrAlternatives);
 	

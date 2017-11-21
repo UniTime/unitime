@@ -178,4 +178,10 @@ public interface StudentSectioningResources extends ClientBundle {
 	
 	@Source("org/unitime/timetable/gwt/resources/icons/user_business_boss.png")
 	ImageResource isInstructing();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/time.png")
+	ImageResource specRegCanNotSubmit();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/action_check.png")
+	ImageResource specRegCanEnroll();
 }

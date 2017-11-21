@@ -33,6 +33,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.custom.CustomSpecialRegistrationHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
@@ -164,6 +165,13 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 			} else if (iCustomCheck) {
 				if (CustomStudentEnrollmentHolder.hasProvider())
 					CustomStudentEnrollmentHolder.getProvider().checkEligibility(server, helper, iCheck, xstudent);
+			}
+
+			try {
+				if (CustomSpecialRegistrationHolder.hasProvider() && xstudent != null)
+					iCheck.setFlag(EligibilityFlag.HAS_SPECREG, CustomSpecialRegistrationHolder.getProvider().hasSpecialRegistrationRequests(server, helper, xstudent));
+			} catch (SectioningException e) {
+				helper.error("Failed to check special registrations: " + e.getMessage(), e);
 			}
 
 			logCheck(action, iCheck);

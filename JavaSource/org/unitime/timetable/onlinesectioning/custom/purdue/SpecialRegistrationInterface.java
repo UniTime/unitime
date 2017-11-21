@@ -19,7 +19,13 @@
 */
 package org.unitime.timetable.onlinesectioning.custom.purdue;
 
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
+
+import org.joda.time.DateTime;
+
+import com.google.gson.reflect.TypeToken;
 
 /**
  * @author Tomas Muller
@@ -27,12 +33,15 @@ import java.util.List;
 public class SpecialRegistrationInterface {
 	
 	public static class SpecialRegistrationRequest {
+		public static final Type TYPE_LIST = new TypeToken<ArrayList<SpecialRegistrationRequest>>() {}.getType();
+		
 		public String requestId;
 		public String studentId;
 		public String term;
 		public String campus;
 		public SpecialRegistrationStatus status;
 		public List<Change> changes;
+		public DateTime submitted;
 	}
 	
 	public static enum SpecialRegistrationStatus {

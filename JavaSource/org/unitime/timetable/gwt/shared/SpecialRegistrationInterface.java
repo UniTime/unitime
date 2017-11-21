@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.shared;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Date;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -90,11 +91,14 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void setRequestId(String requestId) { iRequestId = requestId; }
 	}
 	
-	public static class RetrieveSpecialRegistrationResponse implements IsSerializable, Serializable {
+	public static class RetrieveSpecialRegistrationResponse implements IsSerializable, Serializable, Comparable<RetrieveSpecialRegistrationResponse> {
 		private static final long serialVersionUID = 1L;
 		private ClassAssignmentInterface iClassAssignment;
 		private boolean iCanSubmit;
 		private boolean iCanEnroll;
+		private Date iSubmitDate;
+		private String iRequestId;
+		private String iDescription;
 		
 		public RetrieveSpecialRegistrationResponse() {}
 		
@@ -107,7 +111,25 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		
 		public boolean isCanEnroll() { return iCanEnroll; }
 		public void setCanEnroll(boolean canEnroll) { iCanEnroll = canEnroll; }
-}
+		
+		public Date getSubmitDate() { return iSubmitDate; }
+		public void setSubmitDate(Date date) { iSubmitDate = date; }
+		
+		public String getRequestId() { return iRequestId; }
+		public void setRequestId(String requestId) { iRequestId = requestId; }
+		
+		public String getDescription() { return iDescription; }
+		public void setDescription(String description) { iDescription = description; }
+
+		@Override
+		public int compareTo(RetrieveSpecialRegistrationResponse o) {
+			int cmp = getSubmitDate().compareTo(o.getSubmitDate());
+			if (cmp != 0) return -cmp;
+			return getRequestId().compareTo(o.getRequestId());
+		}
+		
+		
+	}
 	
 	public static class SubmitSpecialRegistrationRequest implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
@@ -164,6 +186,22 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		
 		public boolean isCanEnroll() { return iCanEnroll; }
 		public void setCanEnroll(boolean canEnroll) { iCanEnroll = canEnroll; }
-
+	}
+	
+	public static class RetrieveAllSpecialRegistrationsRequest implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		private Long iSessionId;
+		private Long iStudentId;
+		
+		public RetrieveAllSpecialRegistrationsRequest() {}
+		public RetrieveAllSpecialRegistrationsRequest(Long sessionId, Long studentId) {
+			iStudentId = studentId;
+			iSessionId = sessionId;
+		}
+		
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		public Long getStudentId() { return iStudentId; }
+		public void setStudentId(Long studentId) { iStudentId = studentId; }
 	}
 }

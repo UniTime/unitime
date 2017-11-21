@@ -28,7 +28,6 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaTabBar;
-import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.sectioning.TimeGrid.Meeting;
 import org.unitime.timetable.gwt.client.widgets.CourseFinder;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderClasses;
@@ -53,6 +52,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAllSpecialRegistrationsRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityRequest;
@@ -129,7 +129,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	
 	private VerticalPanel iPanel;
 	private P iFooter;
-	private AriaButton iRequests, iReset, iSchedule, iEnroll, iPrint, iExport = null, iSave, iStartOver, iDegreePlan, iSubmitSpecReg;
+	private AriaButton iRequests, iReset, iSchedule, iEnroll, iPrint, iExport = null, iSave, iStartOver, iDegreePlan, iSubmitSpecReg, iGetSpecRegs;
 	private AriaTabBar iAssignmentTab;
 	private DockPanel iAssignmentDock;
 	private FocusPanel iAssignmentPanel;
@@ -166,6 +166,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private CheckBox iCustomCheckbox = null;
 	private DegreePlansSelectionDialog iDegreePlansSelectionDialog = null;
 	private DegreePlanDialog iDegreePlanDialog = null;
+	private SpecialRegistrationSelectionDialog iSpecialRegistrationSelectionDialog = null;
 
 	public StudentSectioningWidget(boolean online, AcademicSessionProvider sessionSelector, UserAuthenticationProvider userAuthentication, StudentSectioningPage.Mode mode, boolean history) {
 		iMode = mode;
@@ -251,6 +252,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iStartOver.setVisible(false);
 		iStartOver.setEnabled(false);
 		iStartOver.getElement().getStyle().setMarginLeft(4, Unit.PX);
+		
+		iGetSpecRegs = new AriaButton(MESSAGES.buttonGetSpecRegs());
+		iGetSpecRegs.setTitle(MESSAGES.hintGetSpecRegs());
+		leftFooterPanel.add(iGetSpecRegs);
+		iGetSpecRegs.setVisible(false);
+		iGetSpecRegs.setEnabled(false);
+		iGetSpecRegs.getElement().getStyle().setMarginLeft(4, Unit.PX);
 
 		iSchedule = new AriaButton(MESSAGES.buttonSchedule(), RESOURCES.arrowForward());
 		iSchedule.setTitle(MESSAGES.hintSchedule());
@@ -824,9 +832,41 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								iSpecRegRequestId = respose.getRequestId();
 								iSubmitSpecReg.setEnabled(iSpecRegSubmit);
 								iSubmitSpecReg.setVisible(iSpecRegSubmit);
+								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG)) {
+									iEligibilityCheck.setFlag(EligibilityFlag.HAS_SPECREG, true);
+									iGetSpecRegs.setVisible(true);
+									iGetSpecRegs.setEnabled(true);
+								}
 								updateHistory();
 							}
 						});
+			}
+		});
+		
+		iGetSpecRegs.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				LoadingWidget.getInstance().show(MESSAGES.waitSpecialRegistration());
+				iSectioningService.retrieveAllSpecialRequests(
+					new RetrieveAllSpecialRegistrationsRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId()),
+					new AsyncCallback<List<RetrieveSpecialRegistrationResponse>>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+							iStatus.error(MESSAGES.retrieveAllSpecialRegistrationsFail(caught.getMessage()), caught);
+							updateHistory();
+						}
+
+						@Override
+						public void onSuccess(List<RetrieveSpecialRegistrationResponse> response) {
+							LoadingWidget.getInstance().hide();
+							if (!response.isEmpty())
+								getSpecialRegistrationSelectionDialog().open(response, iSpecRegRequestId);
+							else
+								iStatus.info(MESSAGES.failedNoSpecialRegistrations());
+							updateHistory();
+						}
+					});
 			}
 		});
 		
@@ -1419,6 +1459,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iEnroll.setVisible(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL) && (iSpecRegEnroll == null || iSpecRegEnroll.booleanValue()));
 			iSubmitSpecReg.setVisible(iSpecRegSubmit && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
 			iSubmitSpecReg.setEnabled(iSpecRegSubmit && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
+			iGetSpecRegs.setVisible(iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.HAS_SPECREG));
+			iGetSpecRegs.setEnabled(iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.HAS_SPECREG));
 			if (iEligibilityCheck != null && iEligibilityCheck.hasCheckboxMessage()) {
 				if (iCustomCheckbox == null) {
 					iCustomCheckbox = new CheckBox(iEligibilityCheck.getCheckboxMessage(), true);
@@ -1486,6 +1528,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iReset.setVisible(false); iReset.setEnabled(false);
 		iQuickAdd.setVisible(false); iQuickAdd.setEnabled(false);
 		iEnroll.setVisible(false); iEnroll.setEnabled(false);
+		iGetSpecRegs.setVisible(false); iGetSpecRegs.setEnabled(false);
 		iSubmitSpecReg.setVisible(false); iSubmitSpecReg.setEnabled(false);
 		if (iCustomCheckbox != null) {
 			iCustomCheckbox.setVisible(false); iCustomCheckbox.setEnabled(false);
@@ -1767,6 +1810,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		private String iMessage = null;
 		private ScheduleStatus.Level iMessageLevel = null;
 		private int iTab = 0;
+		private String iSRid;
+		private boolean iSRsubmit = false;
+		private Boolean iSRenroll = null;
+		private ClassAssignmentInterface iSRassignment = null;
 		
 		private HistoryItem() {
 			iRequest = iCourseRequests.getRequest();
@@ -1776,6 +1823,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iUser = iUserAuthentication.getUser();
 			iMessage = iStatus.getMessage(); iMessageLevel = iStatus.getLevel();
 			iTab = iAssignmentTab.getSelectedTab();
+			iSRid = iSpecRegRequestId;
+			iSRsubmit = iSpecRegSubmit;
+			iSRenroll = iSpecRegEnroll;
+			iSRassignment = iSpecialRegAssignment;
 		}
 		
 		public void restore() {
@@ -1799,6 +1850,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						iSessionSelector.selectSession(iSessionId, new AsyncCallback<Boolean>() {
 							public void onSuccess(Boolean result) {
 								if (result) {
+									iSpecRegRequestId = iSRid;
+									iSpecRegSubmit = iSRsubmit;
+									iSpecRegEnroll = iSRenroll;
+									iSpecialRegAssignment = iSRassignment;
 									iCourseRequests.setRequest(iRequest);
 									if (iTab != iAssignmentTab.getSelectedTab())
 										iAssignmentTab.selectTab(iTab);
@@ -2170,7 +2225,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	
 	protected void checkSpecialRegistrationAfterFailedSubmitSchedule(ArrayList<ClassAssignmentInterface.ClassAssignment> lastEnrollment) {
 		iLastEnrollment = lastEnrollment;
-		UniTimeNotifications.info("Last enrollment: " + iLastEnrollment);
 		if (!iSpecReg) {
 			iSpecRegSubmit = false;
 			iSubmitSpecReg.setEnabled(false);
@@ -2200,5 +2254,38 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						}
 					});
 		}
+	}
+	
+	protected SpecialRegistrationSelectionDialog getSpecialRegistrationSelectionDialog() {
+		if (iSpecialRegistrationSelectionDialog == null) {
+			iSpecialRegistrationSelectionDialog = new SpecialRegistrationSelectionDialog(iSpecReg) {
+				public void doSubmit(RetrieveSpecialRegistrationResponse specReg) {
+					super.doSubmit(specReg);
+					if (specReg == null) {
+						iSpecRegRequestId = null;
+						iSpecRegSubmit = true;
+						iSpecRegEnroll = null;
+						iSpecialRegAssignment = iSavedAssignment;
+						fillIn(iSavedAssignment);
+						addHistory();
+					} else {
+						iSpecRegRequestId = specReg.getRequestId();
+						iSpecRegSubmit = specReg.isCanSubmit();
+						iSpecRegEnroll = specReg.isCanEnroll();
+						iSpecialRegAssignment = specReg.getClassAssignments();
+						if (specReg.hasClassAssignments()) {
+							fillIn(specReg.getClassAssignments());
+							if (specReg.getClassAssignments().hasRequest())
+								iCourseRequests.setRequest(specReg.getClassAssignments().getRequest());
+							addHistory();
+						} else {
+							fillIn(iSavedAssignment);
+							addHistory();
+						}
+					}
+				}				
+			};
+		}
+		return iSpecialRegistrationSelectionDialog;
 	}
 }

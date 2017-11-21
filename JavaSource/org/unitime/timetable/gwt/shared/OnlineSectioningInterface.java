@@ -52,7 +52,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			DEGREE_PLANS,
 			CAN_REGISTER,
 			NO_REQUEST_ARROWS,
-			CAN_SPECREG,
+			CAN_SPECREG, HAS_SPECREG,
 			;
 			
 			public int flag() { return 1 << ordinal(); }

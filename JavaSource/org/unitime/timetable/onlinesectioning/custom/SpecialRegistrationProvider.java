@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.onlinesectioning.custom;
 
+import java.util.List;
+
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse;
@@ -42,6 +44,10 @@ public interface SpecialRegistrationProvider {
 	public SubmitSpecialRegistrationResponse submitRegistration(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, SubmitSpecialRegistrationRequest request) throws SectioningException;
 	
 	public RetrieveSpecialRegistrationResponse retrieveRegistration(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, RetrieveSpecialRegistrationRequest request) throws SectioningException;
+	
+	public boolean hasSpecialRegistrationRequests(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) throws SectioningException;
+	
+	public List<RetrieveSpecialRegistrationResponse> retrieveAllRegistrations(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) throws SectioningException;
 	
 	public void dispose();
 }

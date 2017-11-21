@@ -413,6 +413,12 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Discard all changes and go back to your current registration.")
 	String hintStartOver();
+	
+	@DefaultMessage("Special Registrations")
+	String buttonGetSpecRegs();
+	
+	@DefaultMessage("Select one of the open special registrations.")
+	String hintGetSpecRegs();
 
 	@DefaultMessage("<u>L</u>ist of Classes")
 	String tabClasses();
@@ -431,6 +437,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Special registration failed: {0}")
 	String submitSpecialRegistrationFail(String reason);
+	
+	@DefaultMessage("Failed to load special registrations: {0}")
+	String retrieveAllSpecialRegistrationsFail(String reason);
 
 	@DefaultMessage("Success!")
 	String submitSecialRegistrationOK();
@@ -1380,6 +1389,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("There are multiple degree plans available, please select one to continue...")
 	String dialogSelectDegreePlan();
 	
+	@DefaultMessage("Special Registrations")
+	String dialogSpecialRegistrations();
+	
 	@DefaultMessage("Degree Plan: {0}")
 	String dialogDegreePlan(String name);
 	
@@ -1404,6 +1416,12 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Request")
 	String colRequestPriority();
 	
+	@DefaultMessage("Description")
+	String colSpecRegName();
+	
+	@DefaultMessage("Submitted")
+	String colSpecRegSubmitted();
+	
 	@DefaultMessage("<u>S</u>elect")
 	String buttonDegreePlanSelect();
 	
@@ -1419,11 +1437,23 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("<u>B</u>ack")
 	String buttonDegreePlanBack();
 	
+	@DefaultMessage("<u>N</u>ew Request")
+	String buttonSpecRegCreateNew();
+	
+	@DefaultMessage("<u>S</u>elect")
+	String buttonSpecRegSelect();
+	
+	@DefaultMessage("<u>C</u>ancel")
+	String buttonSpecRegCancel();
+	
 	@DefaultMessage("Retrieving degree plan...")
 	String waitListDegreePlans();
 	
 	@DefaultMessage("No degree plan is available.")
 	String failedNoDegreePlans();
+	
+	@DefaultMessage("No special registration is available.")
+	String failedNoSpecialRegistrations();
 	
 	@DefaultMessage("Failed to load degree plan: {0}")
 	String failedListDegreePlans(String reason);
@@ -1433,6 +1463,12 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("This plan is active.")
 	String hintActivePlan();
+	
+	@DefaultMessage("This special registration has been submitted for processing.")
+	String hintSpecRegCanNotSubmit();
+	
+	@DefaultMessage("This special registration has been processed.")
+	String hintSpecRegCanEnroll();
 	
 	@DefaultMessage("{0}, {1}")
 	String courseSeparatorMiddle(String list, String item);
