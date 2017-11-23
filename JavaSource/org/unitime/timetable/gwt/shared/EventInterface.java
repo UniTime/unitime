@@ -998,15 +998,14 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	    }
 	    
 	    public String getDays() {
-	        return getDays(new String[] {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"},
-	        		new String[] {"M", "T", "W", "Th", "F", "S", "Su"}, "Daily");
+	        return getDays(0, new String[] {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}, new String[] {"M", "T", "W", "Th", "F", "S", "Su"}, "Daily");
 	    }
 	    
-	    public String getDays(GwtConstants constants) {
-	    	return getDays(constants.days(), constants.shortDays(), constants.daily());
+	    public String getDays(int firstDayOfWeek, GwtConstants constants) {
+	    	return getDays(firstDayOfWeek, constants.days(), constants.shortDays(), constants.daily());
 	    }
 	    
-	    public String getDays(String[] dayNames, String[] shortDyNames, String daily) {
+	    public String getDays(int firstDayOfWeek, String[] dayNames, String[] shortDyNames, String daily) {
 	    	if (isArrangeHours()) return "";
 	        int nrDays = 0;
 	        int dayCode = 0;
@@ -1019,8 +1018,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	        if (nrDays == 7) return daily;
 	        String ret = "";
 	        for (int i = 0; i < 7; i++) {
-	        	if ((dayCode & (1 << i)) != 0)
-	        		ret += (nrDays == 1 ? dayNames : shortDyNames)[i];
+	        	int d = (i + firstDayOfWeek) % 7;
+	        	if ((dayCode & (1 << d)) != 0)
+	        		ret += (nrDays == 1 ? dayNames : shortDyNames)[d];
 	        }
 	        return ret;
 	    }
@@ -2035,6 +2035,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private boolean iStudent = false;
 		private boolean iViewMeetingContacts = false, iEditMeetingContacts = false;
 		private Set<EventServiceProviderInterface> iEventServiceProviders = null;
+		private Integer iFirstDayOfWeek = null;
 	
 		public EventPropertiesRpcResponse() {}
 		
@@ -2127,6 +2128,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			if (iEventServiceProviders == null) iEventServiceProviders = new TreeSet<EventServiceProviderInterface>();
 			iEventServiceProviders.add(provider);
 		}
+		
+		public void setFirstDayOfWeek(Integer firstDay) { iFirstDayOfWeek = firstDay; }
+		public Integer getFirstDayOfWeek() { return iFirstDayOfWeek; }
 	}
 	
 	public static class EventDetailRpcRequest extends EventRpcRequest<EventInterface> {
@@ -2592,11 +2596,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public String formatLastDate(Date date);
 	}
     
-    public static String toString(Collection<MeetingInterface> meetings, GwtConstants constants, String separator, DateFormatter df) {
+    public static String toString(int firstDayOfWeek, Collection<MeetingInterface> meetings, GwtConstants constants, String separator, DateFormatter df) {
     	String ret = "";
     	for (MultiMeetingInterface m: getMultiMeetings(meetings, false, false)) {
     		if (!ret.isEmpty()) ret += separator;
-    		ret += (m.getDays(constants.shortDays(), constants.shortDays(), "") + " " +
+    		ret += (m.getDays(firstDayOfWeek, constants.shortDays(), constants.shortDays(), "") + " " +
     				(m.isArrangeHours() ? constants.arrangeHours() : m.getNrMeetings() == 1 ? df.formatLastDate(m.getFirstMeetingDate()) : df.formatFirstDate(m.getFirstMeetingDate()) + " - " + df.formatLastDate(m.getLastMeetingDate())) + " " +
     				m.getMeetings().first().getMeetingTime(constants) + " " + m.getLocationName()).trim();
     	}

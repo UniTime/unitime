@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.client.widgets.WeekSelector.WeekSelectorRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
@@ -49,7 +50,18 @@ public class WeekSelectorBackend implements GwtRpcImplementation<WeekSelectorReq
 		Session session = SessionDAO.getInstance().get(command.getSessionId());
 		Calendar c = Calendar.getInstance(Locale.US);
 		c.setTime(session.getEventBeginDate());
-		while (c.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
+		int firstDayOfWeek = ApplicationProperty.EventGridStartDay.intValue();
+		int firstDay = Calendar.MONDAY;
+		switch (firstDayOfWeek) {
+		case 0: firstDay = Calendar.MONDAY; break;
+		case 1: firstDay = Calendar.TUESDAY; break;
+		case 2: firstDay = Calendar.WEDNESDAY; break;
+		case 3: firstDay = Calendar.THURSDAY; break;
+		case 4: firstDay = Calendar.FRIDAY; break;
+		case 5: firstDay = Calendar.SATURDAY; break;
+		case 6: firstDay = Calendar.SUNDAY; break;
+		}
+		while (c.get(Calendar.DAY_OF_WEEK) != firstDay) {
 			c.add(Calendar.DAY_OF_YEAR, -1);
 		}
 		int sessionYear = session.getSessionStartYear();

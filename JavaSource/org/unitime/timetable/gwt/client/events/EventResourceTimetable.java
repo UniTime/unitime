@@ -527,14 +527,14 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				
 				int firstSlot = 12 + CONSTANTS.eventStartDefault(), lastSlot = CONSTANTS.eventStopDefault();
 				boolean skipDays = iEvents.hasChip(new FilterBox.Chip("day", null));
-				boolean hasDay[] = new boolean[] {
-						!skipDays || iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[0])),
-						!skipDays || iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[1])),
-						!skipDays || iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[2])),
-						!skipDays || iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[3])),
-						!skipDays || iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[4])),
-						iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[5])),
-						iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[6])) };
+				boolean hasDay[] = new boolean[7];
+				for (int i = 0; i < 7; i++) {
+					int dayInv = (7 + i - getFirstDayOfWeek()) % 7;
+					if (dayInv < 5)
+						hasDay[i] = !skipDays || iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[i]));
+					else
+						hasDay[i] = iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[i]));
+				}
 				for (EventInterface event: iData) {
 					if (event.getType() == EventType.Unavailabile && !iEvents.hasChip(new Chip("type", "Not Available"))) continue;
 					for (MeetingInterface meeting: event.getMeetings()) {
@@ -559,8 +559,10 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				for (boolean d: hasDay) if (d) nrDays++;
 				int days[] = new int[nrDays];
 				int d = 0;
-				for (int i = 0; i < 7; i++)
-					if (hasDay[i]) days[d++] = i;
+				for (int i = 0; i < 7; i++) {
+					int day = (i + getFirstDayOfWeek()) % 7;
+					if (hasDay[day]) days[d++] = day;
+				}
 				int firstHour = firstSlot / 12;
 				int maxFirstHour = (int)(CONSTANTS.eventStartDefault() / 12);
 				int minLastHour = (int)((11 + CONSTANTS.eventStopDefault()) / 12);
@@ -985,7 +987,8 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 					if (meeting.getApprovalStatus() != ApprovalStatus.Pending && meeting.getApprovalStatus() != ApprovalStatus.Approved) continue;
 					if (firstSlot > meeting.getStartSlot()) firstSlot = meeting.getStartSlot();
 					if (lastSlot < meeting.getEndSlot()) lastSlot = meeting.getEndSlot();
-					nrDays = Math.max(nrDays, meeting.getDayOfWeek());
+					int day = (meeting.getDayOfWeek() + getFirstDayOfWeek()) % 7;
+					nrDays = Math.max(nrDays, day);
 				}
 			}
 			Chip after = iEvents.getChip("after");
@@ -1000,7 +1003,8 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			}
 			nrDays ++;
 			int days[] = new int[nrDays];
-			for (int i = 0; i < days.length; i++) days[i] = i;
+			for (int i = 0; i < days.length; i++)
+				days[i] = (i + getFirstDayOfWeek()) % 7;
 			int firstHour = firstSlot / 12;
 			int lastHour = 1 + (lastSlot - 1) / 12;
 			int maxFirstHour = (int)(CONSTANTS.eventStartDefault() / 12);
@@ -1903,6 +1907,12 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 	public boolean isTooEarly(int startSlot, int endSlot) {
 		if (iProperties == null || !iProperties.hasTooEarlySlot()) return false;
 		return (startSlot > 0 && startSlot <= iProperties.getTooEarlySlot()) || (startSlot == 0 && endSlot <= iProperties.getTooEarlySlot());
+	}
+	
+	@Override
+	public int getFirstDayOfWeek() {
+		if (iProperties == null || iProperties.getFirstDayOfWeek() == null) return 0;
+		return iProperties.getFirstDayOfWeek();
 	}
 	
 	public static class HistoryToken {

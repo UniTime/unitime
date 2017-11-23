@@ -1084,6 +1084,12 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 	}
 	
 	@Override
+	public int getFirstDayOfWeek() {
+		if (iProperties == null || iProperties.getFirstDayOfWeek() == null) return 0;
+		return iProperties.getFirstDayOfWeek();
+	}
+	
+	@Override
 	public SessionMonth.Flag getDateFlag(EventType type, Date date) {
 		if (iSessionMonths == null || iSessionMonths.isEmpty()) return null;
 		if (date == null) return null;

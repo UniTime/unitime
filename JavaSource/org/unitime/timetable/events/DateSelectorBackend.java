@@ -24,6 +24,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.EventInterface.RequestSessionDetails;
@@ -68,6 +69,18 @@ public class DateSelectorBackend extends EventAction<RequestSessionDetails, GwtR
 		
 		EventDateMapping.Class2EventDateMap class2eventDateMap = (context.hasPermission(Right.EventDateMappings) ? EventDateMapping.getMapping(command.getSessionId()) : null);
 		
+		int firstDayOfWeek = ApplicationProperty.EventGridStartDay.intValue();
+		int firstDay = Calendar.MONDAY;
+		switch (firstDayOfWeek) {
+		case 0: firstDay = Calendar.MONDAY; break;
+		case 1: firstDay = Calendar.TUESDAY; break;
+		case 2: firstDay = Calendar.WEDNESDAY; break;
+		case 3: firstDay = Calendar.THURSDAY; break;
+		case 4: firstDay = Calendar.FRIDAY; break;
+		case 5: firstDay = Calendar.SATURDAY; break;
+		case 6: firstDay = Calendar.SUNDAY; break;
+		}
+		
 		for (int month = session.getStartMonth(); month <= session.getEndMonth(); month ++) {
 			calendar.setTime(DateUtils.getDate(1, month, session.getSessionStartYear()));
 			
@@ -110,11 +123,9 @@ public class DateSelectorBackend extends EventAction<RequestSessionDetails, GwtR
 				else if (context.isPastOrOutside(calendar.getTime()))
 					m.setFlag(i, SessionMonth.Flag.PAST);
 				
-				switch (calendar.get(Calendar.DAY_OF_WEEK)) {
-				case Calendar.SATURDAY:
-				case Calendar.SUNDAY:
+				int dayInv = (7 + calendar.get(Calendar.DAY_OF_WEEK) - firstDay) % 7;
+				if (dayInv >= 5)
 					m.setFlag(i, SessionMonth.Flag.WEEKEND);
-				}
 				
 				if (class2eventDateMap != null && class2eventDateMap.hasClassDate(calendar.getTime()))
 					m.setFlag(i, SessionMonth.Flag.DATE_MAPPING_CLASS);

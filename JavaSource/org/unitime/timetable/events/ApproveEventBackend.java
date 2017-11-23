@@ -27,6 +27,7 @@ import java.util.Set;
 import org.apache.commons.fileupload.FileItem;
 import org.hibernate.Transaction;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -68,6 +69,7 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
 				throw new GwtRpcException(MESSAGES.failedApproveEventNoMeetings());
 
 			Date now = new Date();
+			int firstDayOfWeek = ApplicationProperty.EventGridStartDay.intValue();
 	        
 	        Set<Meeting> affectedMeetings = new HashSet<Meeting>();
 	        meetings: for (Iterator<Meeting> i = event.getMeetings().iterator(); i.hasNext(); ) {
@@ -152,7 +154,7 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
 			note.setUser(context.getUser().getTrueName());
 			note.setUserId(context.getUser().getTrueExternalUserId());
 			note.setAffectedMeetings(affectedMeetings);
-			note.setMeetings(EventInterface.toString(
+			note.setMeetings(EventInterface.toString(firstDayOfWeek,
 					response.getUpdatedMeetings(),
 					CONSTANTS,
 					"\n",

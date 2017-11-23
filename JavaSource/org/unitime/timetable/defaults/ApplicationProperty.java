@@ -1201,6 +1201,11 @@ public enum ApplicationProperty {
 	@Description("Event Time Grid: display event title instead of event name in the header")
 	EventGridDisplayTitle("unitime.events.grid_display_title"),
 	
+	@Type(Integer.class)
+	@DefaultValue("0")
+	@Description("Event Time Grid: first day of the week (0 is Monday, 1 is Tuesday, etc.)")
+	EventGridStartDay("unitime.events.gridStartDay"),
+	
 	@Type(Boolean.class)
 	@DefaultValue("false")
 	@Description("Event ICS Calendar: include instructor names in the event description")

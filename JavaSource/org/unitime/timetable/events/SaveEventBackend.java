@@ -455,6 +455,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 			
 			FileItem attachment = (FileItem)context.getAttribute(UploadServlet.SESSION_LAST_FILE);
 			boolean attached = false;
+			int firstDayOfWeek = ApplicationProperty.EventGridStartDay.intValue();
 			if (response.hasCreatedMeetings()) {
 				EventNote note = new EventNote();
 				note.setEvent(event);
@@ -465,7 +466,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				if (request.hasMessage()) note.setTextNote(request.getMessage());
 				if (note.getTextNote() != null && note.getTextNote().length() > 2000)
 					note.setTextNote(note.getTextNote().substring(0, 2000));
-				note.setMeetings(EventInterface.toString(
+				note.setMeetings(EventInterface.toString(firstDayOfWeek,
 						response.getCreatedMeetings(),
 						CONSTANTS, "\n", df));
 				note.setAffectedMeetings(createdMeetings);
@@ -497,7 +498,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				if (note.getTextNote() != null && note.getTextNote().length() > 2000)
 					note.setTextNote(note.getTextNote().substring(0, 2000));
 				if (response.hasUpdatedMeetings())
-					note.setMeetings(EventInterface.toString(
+					note.setMeetings(EventInterface.toString(firstDayOfWeek,
 							response.getUpdatedMeetings(),
 							CONSTANTS, "\n", df));
 				event.getNotes().add(note);
@@ -526,7 +527,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				if (request.hasMessage()) note.setTextNote(request.getMessage());
 				if (note.getTextNote() != null && note.getTextNote().length() > 2000)
 					note.setTextNote(note.getTextNote().substring(0, 2000));
-				note.setMeetings(EventInterface.toString(
+				note.setMeetings(EventInterface.toString(firstDayOfWeek,
 						response.getDeletedMeetings(),
 						CONSTANTS, "\n", df));
 				event.getNotes().add(note);
@@ -556,7 +557,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				if (request.hasMessage()) note.setTextNote(request.getMessage());
 				if (note.getTextNote() != null && note.getTextNote().length() > 2000)
 					note.setTextNote(note.getTextNote().substring(0, 2000));
-				note.setMeetings(EventInterface.toString(
+				note.setMeetings(EventInterface.toString(firstDayOfWeek,
 						response.getCancelledMeetings(),
 						CONSTANTS, "\n", df));
 				event.getNotes().add(note);

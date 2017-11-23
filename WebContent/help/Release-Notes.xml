@@ -152,6 +152,15 @@
 		</item>
      </category>
 	<category>
+		<title>Event Management</title>
+		<item>
+			<name>Events: Time Grid</name>
+			<description>
+				<line>Added ability to define first day of week, using unitime.events.gridStartDay application property (0 is Monday, 1 is Tuesday, etc.).</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Automation</title>
 		<item>
 			<name>Queue Processor: Clustering</name>

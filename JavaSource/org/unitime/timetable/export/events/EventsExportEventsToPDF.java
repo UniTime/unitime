@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.PDFPrinter;
 import org.unitime.timetable.gwt.client.events.EventComparator.EventMeetingSortBy;
@@ -104,6 +105,7 @@ public class EventsExportEventsToPDF extends EventsExporter {
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
 		Formats.Format<Date> dfLong = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_LONG);
 		Formats.Format<Date> dfShort = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
+		int firstDayOfWeek = ApplicationProperty.EventGridStartDay.intValue();
 		
 		for (EventInterface event: events) {
 			for (MultiMeetingInterface multi: EventInterface.getMultiMeetings(event.getMeetings(), false, showMeetingContacts)) {
@@ -114,7 +116,7 @@ public class EventsExportEventsToPDF extends EventsExporter {
 					event.hasInstruction() ? event.getInstruction() : event.getType().getAbbreviation(CONSTANTS),
 					getTitle(event),
 					event.hasEventNote() ? event.getEventNote("\n").replace("<br>", "\n") : "",
-					meeting.isArrangeHours() ? event.hasMessage() ? event.getMessage() : CONSTANTS.arrangeHours() : (multi.getDays(CONSTANTS) + " " + 
+					meeting.isArrangeHours() ? event.hasMessage() ? event.getMessage() : CONSTANTS.arrangeHours() : (multi.getDays(firstDayOfWeek, CONSTANTS) + " " + 
 							(multi.getNrMeetings() == 1 ? multi.getFirstMeetingDate() == null ? "" : dfLong.format(multi.getFirstMeetingDate()) : dfShort.format(multi.getFirstMeetingDate()) + " - " + dfLong.format(multi.getLastMeetingDate()))),
 					meeting.isArrangeHours() && event.hasMessage() ? CONSTANTS.arrangeHours() : meeting.getMeetingTime(CONSTANTS),
 					meeting.getAllocatedTime(CONSTANTS),

@@ -832,7 +832,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 					boolean globalUnavailability = event != null && event.getId() != null && event.getId() < 0 && event.getType() == EventType.Unavailabile;
 					for (MultiMeetingInterface m: EventInterface.getMultiMeetings(data.getMeetings(getMeetingFilter()), true, globalUnavailability ? null : iPropertiesProvider, event == null ? null : event.getType(), iShowMeetingContacts)) {
 						String[] mtg = new String[] {
-								m.isArrangeHours() ? event.hasMessage() ? event.getMessage() : CONSTANTS.arrangeHours() : (m.getDays(CONSTANTS) + " " + (m.getNrMeetings() == 1 ? sDateFormatLong.format(m.getFirstMeetingDate()) : sDateFormatShort.format(m.getFirstMeetingDate()) + " - " + sDateFormatLong.format(m.getLastMeetingDate()))),
+								m.isArrangeHours() ? event.hasMessage() ? event.getMessage() : CONSTANTS.arrangeHours() : (m.getDays(iPropertiesProvider.getFirstDayOfWeek(), CONSTANTS) + " " + (m.getNrMeetings() == 1 ? sDateFormatLong.format(m.getFirstMeetingDate()) : sDateFormatShort.format(m.getFirstMeetingDate()) + " - " + sDateFormatLong.format(m.getLastMeetingDate()))),
 								m.isArrangeHours() && event.hasMessage() ? CONSTANTS.arrangeHours() : m.getMeetings().first().getMeetingTime(CONSTANTS),
 								m.getMeetings().first().getAllocatedTime(CONSTANTS),
 								String.valueOf(m.getMeetings().first().getStartOffset()),
@@ -1250,7 +1250,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			boolean globalUnavailability = event != null && event.getId() != null && event.getId() < 0 && event.getType() == EventType.Unavailabile;
 			for (MultiMeetingInterface m: EventInterface.getMultiMeetings(data.getMeetings(getMeetingFilter()), true, globalUnavailability ? null : iPropertiesProvider, event == null ? null : event.getType(), iShowMeetingContacts)) {
 				String[] mtg = new String[] {
-						m.isArrangeHours() ? (event.hasMessage() ? event.getMessage() : CONSTANTS.arrangeHours()) : (m.getDays(CONSTANTS) + " " + (m.getNrMeetings() == 1 ? sDateFormatLong.format(m.getFirstMeetingDate()) : sDateFormatShort.format(m.getFirstMeetingDate()) + " - " + sDateFormatLong.format(m.getLastMeetingDate()))),
+						m.isArrangeHours() ? (event.hasMessage() ? event.getMessage() : CONSTANTS.arrangeHours()) : (m.getDays(iPropertiesProvider.getFirstDayOfWeek(), CONSTANTS) + " " + (m.getNrMeetings() == 1 ? sDateFormatLong.format(m.getFirstMeetingDate()) : sDateFormatShort.format(m.getFirstMeetingDate()) + " - " + sDateFormatLong.format(m.getLastMeetingDate()))),
 						m.isArrangeHours() && event.hasMessage() ? CONSTANTS.arrangeHours() : m.getMeetings().first().getMeetingTime(CONSTANTS),
 						m.getMeetings().first().getAllocatedTime(CONSTANTS),
 						String.valueOf(m.getMeetings().first().getStartOffset()),

@@ -332,9 +332,10 @@ public class TimeGrid extends Composite {
 	
 	public void labelDays(WeekInterface first, WeekInterface last) {
 		for (int i = 0; i < iDays.length; i++) {
+			int dayInv = (7 + iDays[i] - iPropertiesProvider.getFirstDayOfWeek()) % 7;
 			iDayLabels.get(i).setText(CONSTANTS.longDays()[iDays[i]] +
-					(first == null ? "" : " " + first.getDayNames().get(iDays[i])) +
-					(last == null ? "" : " - " + last.getDayNames().get(iDays[i])));
+					(first == null ? "" : " " + first.getDayNames().get(dayInv)) +
+					(last == null ? "" : " - " + last.getDayNames().get(dayInv)));
 		}
 	}
 	
@@ -347,14 +348,18 @@ public class TimeGrid extends Composite {
 	
 	private int nrWorkDays() {
 		int ret = 0;
-		for (int i = 0; i < iDays.length; i++)
-			if (iDays[i] < 5) ret++;
+		for (int i = 0; i < iDays.length; i++) {
+			int dayInv = (7 + iDays[i] - iPropertiesProvider.getFirstDayOfWeek()) % 7;
+			if (dayInv < 5) ret++;
+		}
 		return ret;
 	}
 	
 	private int firstWorkDay() { 
-		for (int i = 0; i < iDays.length; i++)
-			if (iDays[i] < 5) return i;
+		for (int i = 0; i < iDays.length; i++) {
+			int dayInv = (7 + iDays[i] - iPropertiesProvider.getFirstDayOfWeek()) % 7; 
+			if (dayInv < 5) return i;
+		}
 		return iDays.length;
 	}
 	
@@ -423,7 +428,8 @@ public class TimeGrid extends Composite {
 					for (int w = 0; w < iSelectedWeeks.size(); w++) {
 						if (w > 0)
 							iVLines.add(new P("week-separator"), 3 + iCellWidth * d + w * (iCellWidth - 6) / iSelectedWeeks.size(), 0);
-						DateInterface di = iSelectedWeeks.get(w).getDayNames().get(iDays[d]);
+						int dayInv = (7 + iDays[d] - iPropertiesProvider.getFirstDayOfWeek()) % 7;
+						DateInterface di = iSelectedWeeks.get(w).getDayNames().get(dayInv);
 						P p = new P("week-title"); p.setHTML(CONSTANTS.firstDayThenMonth() ? di.getDay() + "<br>" + di.getMonth() : di.getMonth() + "<br>" + di.getDay());
 						p.setWidth((iCellWidth - 6) / iSelectedWeeks.size());
 						iVLines.add(p, 3 + iCellWidth * d + w * (iCellWidth - 6) / iSelectedWeeks.size(), 0);
@@ -464,7 +470,14 @@ public class TimeGrid extends Composite {
 	}
 
 	public void shrink(boolean skipDays, boolean showUnavailable, boolean... day) {
-		boolean hasDay[] = new boolean[] { !skipDays, !skipDays, !skipDays, !skipDays, !skipDays, false, false };
+		boolean hasDay[] = new boolean[7];
+		for (int i = 0; i < 7; i++) {
+			int dayInv = (7 + i - iPropertiesProvider.getFirstDayOfWeek()) % 7;
+			if (dayInv < 5)
+				hasDay[i] = !skipDays;
+			else
+				hasDay[i] = false;
+		}
 		for (int i = 0; i < day.length; i++)
 			if (day[i]) hasDay[i] = true;
 		for (int i = 0; i < 7; i++) {
@@ -492,8 +505,10 @@ public class TimeGrid extends Composite {
 		for (boolean d: hasDay) if (d) nrDays++;
 		int days[] = new int[nrDays];
 		int d = 0;
-		for (int i = 0; i < 7; i++)
-			if (hasDay[i]) days[d++] = i;
+		for (int i = 0; i < 7; i++) {
+			int dd = (i + iPropertiesProvider.getFirstDayOfWeek()) % 7;
+			if (hasDay[dd]) days[d++] = dd;
+		}
 		setDays(days);
 	}
 	
@@ -1218,7 +1233,8 @@ public class TimeGrid extends Composite {
 			int m = 5 * (slot % 12);
 			String time = (CONSTANTS.useAmPm() ? (h == 0 ? "12": h <= 12 ? h : h-12) : h) + ":" + (m < 10 ? "0" : "") + m + (CONSTANTS.useAmPm() ? (h <= 11 ? "a" : "p") : "");
 			
-			String text = (iDayOfWeeks == null ? CONSTANTS.longDays()[dayOfWeek] : iDayOfWeeks.get(dayOfWeek)) + " " + (isSingleRoom() ? iSelectedWeeks.get(week) : iSelectedWeeks.get(0)).getDayNames().get(dayOfWeek) +
+			int dayInv = (7 + dayOfWeek - iPropertiesProvider.getFirstDayOfWeek()) % 7;
+			String text = (iDayOfWeeks == null ? CONSTANTS.longDays()[dayOfWeek] : iDayOfWeeks.get(dayOfWeek)) + " " + (isSingleRoom() ? iSelectedWeeks.get(week) : iSelectedWeeks.get(0)).getDayNames().get(dayInv) +
 					" " + time + (isSingleRoom() ? "" : " " + iRoomResources.get(week).getName());
 			ResourceInterface room = (isSingleRoom() ? iRoomResources.get(0) : iRoomResources.get(week));
 			iPopup.setPopupPosition(event.getClientX() + Window.getScrollLeft(), event.getClientY() + Window.getScrollTop());
