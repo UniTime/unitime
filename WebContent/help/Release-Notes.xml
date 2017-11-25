@@ -159,6 +159,17 @@
 				<line>Added ability to define first day of week, using unitime.events.gridStartDay application property (0 is Monday, 1 is Tuesday, etc.).</line>
 			</description>
 		</item>
+		<item>
+			<name>Room Availability: Include Events From Other Academic Sessions</name>
+			<description>
+				<line>Course/Examination Timetabling: Added ability to include events (of the same type) from other academic sessions.</line>
+				<line>To enable this, set tmtbl.room.availability.includeOtherTerms to true on the Application Configuration page.</line>
+				<line>Rooms of the overlapping academic sessions must have the same permanent id.
+					<line>This can be achieved, e.g., by rolling forward the rooms from one academic session to the next.</line>
+					<line>Or, the rooms must be created using the Add Room page (of the first academic session) using the Update Future Academic Sessions section (room is created in multiple academic sessions at once).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Automation</title>
