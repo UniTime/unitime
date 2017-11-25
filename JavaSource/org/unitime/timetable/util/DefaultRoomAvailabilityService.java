@@ -23,23 +23,27 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import org.hibernate.Query;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventDateMapping;
+import org.unitime.timetable.model.ExamEvent;
+import org.unitime.timetable.model.FinalExamEvent;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.MidtermExamEvent;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
-import org.unitime.timetable.model.dao._RootDAO;
 
 /**
  * @author Tomas Muller
@@ -60,6 +64,8 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
         }
         return null;
     }
+    
+    
     public Collection<TimeBlock> getRoomAvailability(Long locationId, Date startTime, Date endTime, String excludeType) {
     	Location location = LocationDAO.getInstance().get(locationId);
         if (location == null || location.getPermanentId() == null) return null;
@@ -68,41 +74,68 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
         synchronized(iCache) {
             CacheElement cache = get(time, excludeType);
             if (cache!=null) return cache.get(location.getPermanentId(), excludeType);
-            Calendar start = Calendar.getInstance(Locale.US); start.setTime(startTime);
-            int startMin = 60*start.get(Calendar.HOUR_OF_DAY) + start.get(Calendar.MINUTE);
-            start.add(Calendar.MINUTE, -startMin);
-            Calendar end = Calendar.getInstance(Locale.US); end.setTime(endTime);
-            int endMin = 60*end.get(Calendar.HOUR_OF_DAY) + start.get(Calendar.MINUTE);
-            end.add(Calendar.MINUTE, -endMin);
-            int startSlot = (startMin - Constants.FIRST_SLOT_TIME_MIN)/Constants.SLOT_LENGTH_MIN;
-            int endSlot = (endMin - Constants.FIRST_SLOT_TIME_MIN)/Constants.SLOT_LENGTH_MIN;
             TreeSet<TimeBlock> ret = new TreeSet<TimeBlock>();
-            String exclude = null;
+            Class<? extends Event> exclude = null;
             if (excludeType!=null) {
                 if (sFinalExamType.equals(excludeType))
-                    exclude = "FinalExamEvent";
+                    exclude = FinalExamEvent.class;
                 else if (sMidtermExamType.equals(excludeType))
-                    exclude = "MidtermExamEvent";
+                    exclude = MidtermExamEvent.class;
                 else if (sClassType.equals(excludeType))
-                    exclude = "ClassEvent";
+                    exclude = ClassEvent.class;
             }
-            Query q = new _RootDAO().getSession().createQuery(
+            for (Meeting m: (List<Meeting>)LocationDAO.getInstance().getSession().createQuery(
                     "select m from Meeting m where m.locationPermanentId=:locPermId and "+
                     "m.approvalStatus = 1 and "+
                     "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                     "m.startPeriod<:endSlot and m.stopPeriod>:startSlot"+
-                    (exclude!=null?" and m.event.class!="+exclude:""))
+                    (exclude != null ? " and m.event.class!=" + exclude.getSimpleName() : ""))
                     .setLong("locPermId", location.getPermanentId())
-                    .setDate("startDate", start.getTime())
-                    .setDate("endDate", end.getTime())
-                    .setInteger("startSlot", startSlot)
-                    .setInteger("endSlot", endSlot)
-                    .setCacheable(true);
-            for (Iterator i=q.list().iterator();i.hasNext();) {
-                Meeting m = (Meeting)i.next();
+                    .setDate("startDate", time.getStartDate())
+                    .setDate("endDate", time.getEndDate())
+                    .setInteger("startSlot", time.getStartSlot())
+                    .setInteger("endSlot", time.getEndSlot())
+                    .setCacheable(true).list()) {
                 MeetingTimeBlock block = new MeetingTimeBlock(m, class2eventDateMap);
                 if (block.getStartTime() != null)
                 	ret.add(block);
+            }
+            if (ApplicationProperty.RoomAvailabilityIncludeOtherTerms.isTrue() && excludeType != null) {
+            	if (ClassEvent.class.isAssignableFrom(exclude)) {
+            		for (Meeting m: (List<Meeting>)LocationDAO.getInstance().getSession().createQuery(
+                            "select m from ClassEvent e inner join e.meetings m where m.locationPermanentId=:locPermId and "+
+                            "m.approvalStatus = 1 and e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId != :sessionId and "+
+                            "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
+                            "m.startPeriod<:endSlot and m.stopPeriod>:startSlot")
+                            .setLong("locPermId", location.getPermanentId())
+                            .setLong("sessionId", location.getSession().getUniqueId())
+                            .setDate("startDate", time.getStartDate())
+                            .setDate("endDate", time.getEndDate())
+                            .setInteger("startSlot", time.getStartSlot())
+                            .setInteger("endSlot", time.getEndSlot())
+                            .setCacheable(true).list()) {
+                        MeetingTimeBlock block = new MeetingTimeBlock(m, class2eventDateMap);
+                        if (block.getStartTime() != null)
+                        	ret.add(block);
+                    }
+            	} else if (ExamEvent.class.isAssignableFrom(exclude)) {
+            		for (Meeting m: (List<Meeting>)LocationDAO.getInstance().getSession().createQuery(
+                            "select m from " + exclude.getSimpleName() + " e inner join e.meetings m where m.locationPermanentId=:locPermId and "+
+                            "m.approvalStatus = 1 and e.exam.session.uniqueId != :sessionId and "+
+                            "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
+                            "m.startPeriod<:endSlot and m.stopPeriod>:startSlot")
+                            .setLong("locPermId", location.getPermanentId())
+                            .setLong("sessionId", location.getSession().getUniqueId())
+                            .setDate("startDate", time.getStartDate())
+                            .setDate("endDate", time.getEndDate())
+                            .setInteger("startSlot", time.getStartSlot())
+                            .setInteger("endSlot", time.getEndSlot())
+                            .setCacheable(true).list()) {
+                        MeetingTimeBlock block = new MeetingTimeBlock(m, class2eventDateMap);
+                        if (block.getStartTime() != null)
+                        	ret.add(block);
+                    }
+            	}
             }
             return ret;
         }
@@ -117,7 +150,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                 cache = new CacheElement(time, excludeType);
                 iCache.insertElementAt(cache, 0);
             }
-            cache.update(class2eventDateMap, iInstructorAvailabilityEnabled ? session.getUniqueId() : null);
+            cache.update(class2eventDateMap, session.getUniqueId(), iInstructorAvailabilityEnabled);
         }
     }
     
@@ -163,80 +196,160 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
 
     public static class CacheElement{
         private TimeFrame iTime;
-        private Hashtable<Long, TreeSet<TimeBlock>> iAvailability = new Hashtable();
+        private Map<Long, TreeSet<TimeBlock>> iAvailability = new HashMap<Long, TreeSet<TimeBlock>>();
+        private Map<String, TreeSet<TimeBlock>> iInstructorAvailability = new HashMap<String, TreeSet<TimeBlock>>();
         private String iTimestamp = null;
         private String iExcludeType = null;
         public CacheElement(TimeFrame time, String excludeType) {
             iTime = time;
             iExcludeType = excludeType;
-        };
-        public void update(EventDateMapping.Class2EventDateMap class2eventDateMap, Long sessionId) {
-            iAvailability.clear();
-            String exclude = null;
+        }
+
+        public void update(EventDateMapping.Class2EventDateMap class2eventDateMap, Long sessionId, boolean includeInstructors) {
+        	iAvailability.clear();
+        	iInstructorAvailability.clear();
+            Class<? extends Event> exclude = null;
             if (iExcludeType!=null) {
                 if (sFinalExamType.equals(iExcludeType))
-                    exclude = "FinalExamEvent";
+                    exclude = FinalExamEvent.class;
                 else if (sMidtermExamType.equals(iExcludeType))
-                    exclude = "MidtermExamEvent";
+                    exclude = MidtermExamEvent.class;
                 else if (sClassType.equals(iExcludeType))
-                    exclude = "ClassEvent";	
+                    exclude = ClassEvent.class;	
             }
-            Query q = new _RootDAO().getSession().createQuery(
+            addAll(LocationDAO.getInstance().getSession().createQuery(
                     "select m from Meeting m where m.locationPermanentId!=null and "+
                     "m.approvalStatus = 1 and "+
                     "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                     "m.startPeriod<:endSlot and m.stopPeriod>:startSlot" + 
-                    (exclude==null?"":" and m.event.class!="+exclude))
+                    (exclude == null ? "" : " and m.event.class!=" + exclude.getSimpleName()))
                     .setDate("startDate", iTime.getStartDate())
                     .setDate("endDate", iTime.getEndDate())
                     .setInteger("startSlot", iTime.getStartSlot())
                     .setInteger("endSlot", iTime.getEndSlot())
-                    .setCacheable(true);
-            for (Iterator i=q.list().iterator();i.hasNext();) {
-                Meeting m = (Meeting)i.next(); 
-                TreeSet<TimeBlock> blocks = iAvailability.get(m.getLocationPermanentId());
-                if (blocks==null) {
-                    blocks = new TreeSet(); iAvailability.put(m.getLocationPermanentId(), blocks);
-                }
-                MeetingTimeBlock block = new MeetingTimeBlock(m, class2eventDateMap);
-                if (block.getStartTime() != null)
-                	blocks.add(block);
+                    .setCacheable(true)
+                    .list(), class2eventDateMap);
+            if (sessionId != null && ApplicationProperty.RoomAvailabilityIncludeOtherTerms.isTrue() && exclude != null) {
+            	if (ClassEvent.class.isAssignableFrom(exclude)) {
+            		addAll(LocationDAO.getInstance().getSession().createQuery(
+                            "select m from ClassEvent e inner join e.meetings m where m.locationPermanentId in (select l.permanentId from Location l where l.session = :sessionId) and "+
+                            "m.approvalStatus = 1 and e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId != :sessionId and "+
+                            "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
+                            "m.startPeriod<:endSlot and m.stopPeriod>:startSlot")
+                            .setLong("sessionId", sessionId)
+                            .setDate("startDate", iTime.getStartDate())
+                            .setDate("endDate", iTime.getEndDate())
+                            .setInteger("startSlot", iTime.getStartSlot())
+                            .setInteger("endSlot", iTime.getEndSlot())
+                            .setCacheable(true).list(), class2eventDateMap);
+            	} else if (ExamEvent.class.isAssignableFrom(exclude)) {
+            		addAll(LocationDAO.getInstance().getSession().createQuery(
+                            "select m from " + exclude.getSimpleName() + " e inner join e.meetings m where m.locationPermanentId in (select l.permanentId from Location l where l.session = :sessionId) and "+
+                            "m.approvalStatus = 1 and e.exam.session.uniqueId != :sessionId and "+
+                            "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
+                            "m.startPeriod<:endSlot and m.stopPeriod>:startSlot")
+                            .setLong("sessionId", sessionId)
+                            .setDate("startDate", iTime.getStartDate())
+                            .setDate("endDate", iTime.getEndDate())
+                            .setInteger("startSlot", iTime.getStartSlot())
+                            .setInteger("endSlot", iTime.getEndSlot())
+                            .setCacheable(true).list(), class2eventDateMap);
+            	}
             }
-            if (sessionId != null) {
-                q = new _RootDAO().getSession().createQuery(
-                		"select distinct m, -i.uniqueId from Meeting m left outer join m.event.additionalContacts c, DepartmentalInstructor i where " +
-                        "i.department.session.uniqueId = :sessionId and i.externalUniqueId is not null and "+
-                		"(m.event.mainContact.externalUniqueId = i.externalUniqueId or c.externalUniqueId = i.externalUniqueId) and "+
-                		"m.approvalStatus = 1 and "+
-                        "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
-                        "m.startPeriod<:endSlot and m.stopPeriod>:startSlot"+
-                        (exclude!=null?" and m.event.class!="+exclude:""))
-                        .setDate("startDate", iTime.getStartDate())
-                        .setDate("endDate", iTime.getEndDate())
-                        .setLong("sessionId", sessionId)
-                        .setInteger("startSlot", iTime.getStartSlot())
-                        .setInteger("endSlot", iTime.getEndSlot())
-                        .setCacheable(true);
-                for (Iterator i=q.list().iterator();i.hasNext();) {
-                	Object[] o = (Object[])i.next();
-                	Meeting m = (Meeting)o[0];
-                	Long id = (Long)o[1];
-                    TreeSet<TimeBlock> blocks = iAvailability.get(id);
-                    if (blocks==null) {
-                        blocks = new TreeSet(); iAvailability.put(id, blocks);
-                    }
-                    MeetingTimeBlock block = new MeetingTimeBlock(m, class2eventDateMap);
-                    if (block.getStartTime() != null)
-                    	blocks.add(block);
-                }            	
+            if (sessionId != null && includeInstructors) {
+            	addAllInstructors(LocationDAO.getInstance().getSession().createQuery(
+            			"select distinct m, i.externalUniqueId from Meeting m left outer join m.event.additionalContacts c, DepartmentalInstructor i where " +
+                         "i.department.session.uniqueId = :sessionId and i.externalUniqueId is not null and "+
+                         "(m.event.mainContact.externalUniqueId = i.externalUniqueId or c.externalUniqueId = i.externalUniqueId) and "+
+                         "m.approvalStatus = 1 and "+
+                         "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
+                         "m.startPeriod<:endSlot and m.stopPeriod>:startSlot"+
+                         (exclude!=null?" and m.event.class!="+exclude.getSimpleName():""))
+                         .setDate("startDate", iTime.getStartDate())
+                         .setDate("endDate", iTime.getEndDate())
+                         .setLong("sessionId", sessionId)
+                         .setInteger("startSlot", iTime.getStartSlot())
+                         .setInteger("endSlot", iTime.getEndSlot())
+                         .setCacheable(true).list(), class2eventDateMap);
+            	if (ApplicationProperty.RoomAvailabilityIncludeOtherTerms.isTrue() && exclude != null) {
+            		if (ClassEvent.class.isAssignableFrom(exclude)) {
+            			addAllInstructors(LocationDAO.getInstance().getSession().createQuery(
+                                "select m, ci.instructor.externalUniqueId from ClassEvent e inner join e.meetings m inner join e.clazz.classInstructors ci where "+
+                                "ci.lead = true and m.approvalStatus = 1 and e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId != :sessionId and "+
+                                "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
+                                "m.startPeriod<:endSlot and m.stopPeriod>:startSlot")
+                                .setLong("sessionId", sessionId)
+                                .setDate("startDate", iTime.getStartDate())
+                                .setDate("endDate", iTime.getEndDate())
+                                .setInteger("startSlot", iTime.getStartSlot())
+                                .setInteger("endSlot", iTime.getEndSlot())
+                                .setCacheable(true).list(), class2eventDateMap);
+                	} else if (ExamEvent.class.isAssignableFrom(exclude)) {
+                		addAllInstructors(LocationDAO.getInstance().getSession().createQuery(
+                                "select m, di.externalUniqueId from " + exclude.getSimpleName() + " e inner join e.meetings m inner join e.exam.instructors di where  "+
+                                "m.approvalStatus = 1 and e.exam.session.uniqueId != :sessionId and "+
+                                "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
+                                "m.startPeriod<:endSlot and m.stopPeriod>:startSlot")
+                                .setLong("sessionId", sessionId)
+                                .setDate("startDate", iTime.getStartDate())
+                                .setDate("endDate", iTime.getEndDate())
+                                .setInteger("startSlot", iTime.getStartSlot())
+                                .setInteger("endSlot", iTime.getEndSlot())
+                                .setCacheable(true).list(), class2eventDateMap);
+                	}
+                }
             }
             iTimestamp = new Date().toString();
         }
+        
+        private void add(Meeting m, EventDateMapping.Class2EventDateMap class2eventDateMap) {
+        	TreeSet<TimeBlock> blocks = iAvailability.get(m.getLocationPermanentId());
+            if (blocks==null) {
+                blocks = new TreeSet(); iAvailability.put(m.getLocationPermanentId(), blocks);
+            }
+            MeetingTimeBlock block = new MeetingTimeBlock(m, class2eventDateMap);
+            if (block.getStartTime() != null)
+            	blocks.add(block);
+        }
+        private void addAll(List<Meeting> meetings, EventDateMapping.Class2EventDateMap class2eventDateMap) {
+        	if (meetings != null)
+        		for (Meeting m: meetings)
+        			add(m, class2eventDateMap);
+        }
+        private void add(Meeting m, String instructorExternalId, EventDateMapping.Class2EventDateMap class2eventDateMap) {
+        	TreeSet<TimeBlock> blocks = iInstructorAvailability.get(instructorExternalId);
+            if (blocks==null) {
+                blocks = new TreeSet(); iInstructorAvailability.put(instructorExternalId, blocks);
+            }
+            MeetingTimeBlock block = new MeetingTimeBlock(m, class2eventDateMap);
+            if (block.getStartTime() != null)
+            	blocks.add(block);
+        }
+        private void addAllInstructors(List<Object[]> meetings, EventDateMapping.Class2EventDateMap class2eventDateMap) {
+        	if (meetings != null)
+        		for (Object[] o: meetings) {
+        			Meeting m = (Meeting)o[0];
+                	String id = (String)o[1];
+        			add(m, id, class2eventDateMap);
+        		}
+        }
+        
         public TreeSet<TimeBlock> get(Long roomPermId, String excludeType) {
             TreeSet<TimeBlock> roomAvailability = iAvailability.get(roomPermId);
             if (roomAvailability==null || excludeType==null || excludeType.equals(iExcludeType)) return roomAvailability;
             TreeSet<TimeBlock> ret = new TreeSet();
             for (TimeBlock block : roomAvailability) {
+            	if (excludeType.equals(block.getEventType())) continue;
+                ret.add(block);
+            }
+            return ret;
+        }
+        public TreeSet<TimeBlock> get(String instructorExternalId, String excludeType) {
+        	if (instructorExternalId == null) return null;
+            TreeSet<TimeBlock> instructorAvailability = iInstructorAvailability.get(instructorExternalId);
+            if (instructorAvailability==null || excludeType==null || excludeType.equals(iExcludeType)) return instructorAvailability;
+            TreeSet<TimeBlock> ret = new TreeSet();
+            for (TimeBlock block : instructorAvailability) {
             	if (excludeType.equals(block.getEventType())) continue;
                 ret.add(block);
             }
@@ -261,12 +374,13 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
     
     public static class MeetingTimeBlock implements TimeBlock, Comparable<TimeBlock> {
 		private static final long serialVersionUID = -5557707709984628517L;
-		Long iEventId, iMeetingId;
+		Long iEventId, iMeetingId, iLocationPermanentId;
         String iEventName, iEventType;
         Date iStart, iEnd;
         public MeetingTimeBlock(Meeting m, EventDateMapping.Class2EventDateMap class2eventDateMap) {
         	iEventId = m.getEvent().getUniqueId();
             iMeetingId = m.getUniqueId();
+            iLocationPermanentId = m.getLocationPermanentId();
             iEventName = m.getEvent().getEventName();
             iEventType = m.getEvent().getEventTypeAbbv();
             iStart = m.getTrueStartTime(class2eventDateMap);
@@ -274,6 +388,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
         }
         public Long getEventId() { return iEventId; }
         public Long getMeetingId() { return iMeetingId; }
+        public Long getLocationPermanentId() { return iLocationPermanentId; }
         public String getEventName() { return iEventName; }
         public String getEventType() { return iEventType; }
         public Date getStartTime() { return iStart; }
@@ -309,43 +424,72 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
         TimeFrame time = new TimeFrame(startTime, endTime);
         synchronized(iCache) {
             CacheElement cache = get(time, excludeType);
-            if (cache!=null) return cache.get(-instructor.getUniqueId(), excludeType);
-            Calendar start = Calendar.getInstance(Locale.US); start.setTime(startTime);
-            int startMin = 60*start.get(Calendar.HOUR_OF_DAY) + start.get(Calendar.MINUTE);
-            start.add(Calendar.MINUTE, -startMin);
-            Calendar end = Calendar.getInstance(Locale.US); end.setTime(endTime);
-            int endMin = 60*end.get(Calendar.HOUR_OF_DAY) + start.get(Calendar.MINUTE);
-            end.add(Calendar.MINUTE, -endMin);
-            int startSlot = (startMin - Constants.FIRST_SLOT_TIME_MIN)/Constants.SLOT_LENGTH_MIN;
-            int endSlot = (endMin - Constants.FIRST_SLOT_TIME_MIN)/Constants.SLOT_LENGTH_MIN;
+            if (cache!=null) return cache.get(instructor.getExternalUniqueId(), excludeType);
             TreeSet<TimeBlock> ret = new TreeSet<TimeBlock>();
-            String exclude = null;
+            Class<? extends Event> exclude = null;
             if (excludeType!=null) {
                 if (sFinalExamType.equals(excludeType))
-                    exclude = "FinalExamEvent";
+                    exclude = FinalExamEvent.class;
                 else if (sMidtermExamType.equals(excludeType))
-                    exclude = "MidtermExamEvent";
+                    exclude = MidtermExamEvent.class;
                 else if (sClassType.equals(excludeType))
-                    exclude = "ClassEvent";
+                    exclude = ClassEvent.class;
             }
-            Query q = new _RootDAO().getSession().createQuery(
+            for (Meeting m: (List<Meeting>)LocationDAO.getInstance().getSession().createQuery(
             		"select m from Meeting m left outer join m.event.additionalContacts c where " +
             		"(m.event.mainContact.externalUniqueId = :user or c.externalUniqueId = :user) and "+
             		"m.approvalStatus = 1 and "+
                     "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                     "m.startPeriod<:endSlot and m.stopPeriod>:startSlot"+
-                    (exclude!=null?" and m.event.class!="+exclude:""))
+                    (exclude != null ? " and m.event.class!=" + exclude.getSimpleName() : ""))
                     .setString("user", instructor.getExternalUniqueId())
-                    .setDate("startDate", start.getTime())
-                    .setDate("endDate", end.getTime())
-                    .setInteger("startSlot", startSlot)
-                    .setInteger("endSlot", endSlot)
-                    .setCacheable(true);
-            for (Iterator i=q.list().iterator();i.hasNext();) {
-                Meeting m = (Meeting)i.next();
+                    .setDate("startDate", time.getStartDate())
+                    .setDate("endDate", time.getEndDate())
+                    .setInteger("startSlot", time.getStartSlot())
+                    .setInteger("endSlot", time.getEndSlot())
+                    .setCacheable(true).list()) {
                 MeetingTimeBlock block = new MeetingTimeBlock(m, class2eventDateMap);
                 if (block.getStartTime() != null)
                 	ret.add(block);
+            }
+            if (ApplicationProperty.RoomAvailabilityIncludeOtherTerms.isTrue() && excludeType != null) {
+            	if (ClassEvent.class.isAssignableFrom(exclude)) {
+            		for (Meeting m: (List<Meeting>)LocationDAO.getInstance().getSession().createQuery(
+                            "select m from ClassEvent e inner join e.meetings m inner join e.clazz.classInstructors ci where "+
+                            "ci.instructor.externalUniqueId = :user and ci.lead = true and "+
+                            "m.approvalStatus = 1 and e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId != :sessionId and "+
+                            "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
+                            "m.startPeriod<:endSlot and m.stopPeriod>:startSlot")
+            				.setString("user", instructor.getExternalUniqueId())
+                            .setLong("sessionId", instructor.getDepartment().getSession().getUniqueId())
+                            .setDate("startDate", time.getStartDate())
+                            .setDate("endDate", time.getEndDate())
+                            .setInteger("startSlot", time.getStartSlot())
+                            .setInteger("endSlot", time.getEndSlot())
+                            .setCacheable(true).list()) {
+                        MeetingTimeBlock block = new MeetingTimeBlock(m, class2eventDateMap);
+                        if (block.getStartTime() != null)
+                        	ret.add(block);
+                    }
+            	} else if (ExamEvent.class.isAssignableFrom(exclude)) {
+            		for (Meeting m: (List<Meeting>)LocationDAO.getInstance().getSession().createQuery(
+                            "select m from " + exclude.getSimpleName() + " e inner join e.meetings m inner join e.exam.instructors di where  "+
+                            "di.externalUniqueId = :user and "+
+                            "m.approvalStatus = 1 and e.exam.session.uniqueId != :sessionId and "+
+                            "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
+                            "m.startPeriod<:endSlot and m.stopPeriod>:startSlot")
+            				.setString("user", instructor.getExternalUniqueId())
+                            .setLong("sessionId", instructor.getDepartment().getSession().getUniqueId())
+                            .setDate("startDate", time.getStartDate())
+                            .setDate("endDate", time.getEndDate())
+                            .setInteger("startSlot", time.getStartSlot())
+                            .setInteger("endSlot", time.getEndSlot())
+                            .setCacheable(true).list()) {
+                        MeetingTimeBlock block = new MeetingTimeBlock(m, class2eventDateMap);
+                        if (block.getStartTime() != null)
+                        	ret.add(block);
+                    }
+            	}
             }
             return ret;
         }

@@ -643,6 +643,11 @@ public enum ApplicationProperty {
 	@DefaultValue("Class Event")
 	@Description("Room Availability: class type")
 	RoomAvailabilityClassType("tmtbl.room.availability.eventType.class"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Room Availability: include events from other academic sessions")
+	RoomAvailabilityIncludeOtherTerms("tmtbl.room.availability.includeOtherTerms"),
 
 	@DefaultValue("{ call room_avail_interface.request(?) }")
 	@Description("Blob Room Availability Service: request sql")
