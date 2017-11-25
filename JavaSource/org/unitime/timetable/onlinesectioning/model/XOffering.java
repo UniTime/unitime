@@ -447,7 +447,7 @@ public class XOffering implements Serializable, Externalizable {
     	Set<XReservation> reservations = new TreeSet<XReservation>();
     	boolean mustBeUsed = false;
     	for (XReservation reservation: getReservations()) {
-    		if (reservation.isApplicable(student)) {
+    		if (reservation.isApplicable(student, enrollment)) {
     			if (reservation.equals(enrollment.getReservation()) && reservation.isIncluded(enrollment.getConfigId(), getSections(enrollment))) return reservation;
     			if (!mustBeUsed && reservation.mustBeUsed()) { reservations.clear(); mustBeUsed = true; }
     			if (mustBeUsed && !reservation.mustBeUsed()) continue;
@@ -593,7 +593,7 @@ public class XOffering implements Serializable, Externalizable {
 				}
 				if (reservationLimit <= 0 && !(reservation.mustBeUsed() && !reservation.isExpired())) continue;
 			}
-			boolean applicable = reservation.isApplicable(student);
+			boolean applicable = reservation.isApplicable(student, course);
 			if (reservation instanceof XCourseReservation)
 				applicable = ((XCourseReservation)reservation).getCourseId().equals(courseId);
 			if (reservation instanceof XDummyReservation) {
@@ -633,9 +633,9 @@ public class XOffering implements Serializable, Externalizable {
     	return false;
     }
     
-    public boolean isAllowOverlap(XStudent student, Long configId, List<XSection> assignment) {
+    public boolean isAllowOverlap(XStudent student, Long configId, XCourseId course, List<XSection> assignment) {
     	for (XReservation reservation: getReservations()) {
-    		if (reservation.isAllowOverlap() && reservation.isApplicable(student) && reservation.isIncluded(configId, assignment))
+    		if (reservation.isAllowOverlap() && reservation.isApplicable(student, course) && reservation.isIncluded(configId, assignment))
     			return true;
     	}
     	return false;

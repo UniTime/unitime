@@ -105,7 +105,7 @@ public class XCurriculumReservation extends XReservation {
      * Check the area, classifications and majors
      */
     @Override
-    public boolean isApplicable(XStudent student) {
+    public boolean isApplicable(XStudent student, XCourseId course) {
         for (XAreaClassificationMajor acm: student.getMajors()) {
             if (getAcademicArea().equals(acm.getArea()) &&
             	(getClassifications().isEmpty() || getClassifications().contains(acm.getClassification())) &&

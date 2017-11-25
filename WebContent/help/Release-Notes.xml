@@ -108,6 +108,12 @@
 				<line>Alternatives: allow for the Alternatives dialog to be wider if needed (up to 90% of viewport width).</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Reservations</name>
+			<description>
+				<line>Corrected checking whether a student is meeting course reservation (using the requested course, not stored course requests).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>

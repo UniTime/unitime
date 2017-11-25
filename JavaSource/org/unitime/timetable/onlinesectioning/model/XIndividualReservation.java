@@ -88,7 +88,7 @@ public class XIndividualReservation extends XReservation {
      * Reservation is applicable for all students in the reservation
      */
     @Override
-    public boolean isApplicable(XStudent student) {
+    public boolean isApplicable(XStudent student, XCourseId course) {
         return iStudentIds.contains(student.getStudentId());
     }
     

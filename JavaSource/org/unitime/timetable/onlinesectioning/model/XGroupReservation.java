@@ -64,7 +64,7 @@ public class XGroupReservation extends XReservation {
     }
     
 	@Override
-	public boolean isApplicable(XStudent student) {
+	public boolean isApplicable(XStudent student, XCourseId course) {
 		return student.getGroups().contains(iGroup);
 	}
 

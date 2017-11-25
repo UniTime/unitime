@@ -81,7 +81,9 @@ public class XCourseReservation extends XReservation {
      * Check the courses
      */
     @Override
-    public boolean isApplicable(XStudent student) {
+    public boolean isApplicable(XStudent student, XCourseId course) {
+    	if (course != null)
+    		return iCourseId.equals(course);
     	for (XRequest request: student.getRequests()) {
     		if (request instanceof XCourseRequest && ((XCourseRequest)request).getCourseIds().contains(iCourseId))
     			return true;
