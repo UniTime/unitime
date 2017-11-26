@@ -100,8 +100,7 @@ public class ConflictBasedStatisticsBackend implements GwtRpcImplementation<Conf
 	protected GwtRpcResponseList<CBSNode> convert(Collection<ConflictStatisticsInfo.CBSVariable> variables, Long classId, boolean variableOriented, double limit) {
 		GwtRpcResponseList<CBSNode> response = new GwtRpcResponseList<CBSNode>();
 		if (variableOriented) {
-			if (classId != null)
-				variables = ConflictStatisticsInfo.filter(variables, limit);
+			variables = ConflictStatisticsInfo.filter(variables, limit);
 			for (ConflictStatisticsInfo.CBSVariable var: variables) {
 				CBSNode varNode = null;
 				if (classId == null) {
