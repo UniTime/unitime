@@ -278,6 +278,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iEnroll.setTitle(MESSAGES.hintEnroll());
 		iEnroll.setVisible(false);
 		iEnroll.setEnabled(false);
+		iEnroll.getElement().getStyle().setMarginLeft(4, Unit.PX);
 		rightFooterPanel.add(iEnroll);
 		
 		iSubmitSpecReg = new AriaButton(MESSAGES.buttonSubmitSpecReg());
@@ -780,6 +781,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 											iPinDialog.checkEligibility(iOnline, iMode.isSectioning(), iSessionSelector.getAcademicSessionId(), null, callback);
 										}
 									}
+									if (se.hasErrors()) iLastAssignment.setErrors(se.getErrors());
 									if (se.hasSectionMessages()) {
 										for (CourseAssignment ca: iLastAssignment.getCourseAssignments()) {
 											for (ClassAssignment c: ca.getClassAssignments()) {
@@ -808,7 +810,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				LoadingWidget.getInstance().show(MESSAGES.waitSpecialRegistration());
 				iSectioningService.submitSpecialRequest(
 						new SubmitSpecialRegistrationRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iSpecRegRequestId, iCourseRequests.getRequest(),
-								iLastEnrollment != null ? iLastEnrollment : iLastResult),
+								iLastEnrollment != null ? iLastEnrollment : iLastResult, iLastAssignment == null ? null : iLastAssignment.getErrors()),
 						new AsyncCallback<SubmitSpecialRegistrationResponse>() {
 							@Override
 							public void onFailure(Throwable caught) {
@@ -2231,7 +2233,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iSubmitSpecReg.setEnabled(false);
 			iSubmitSpecReg.setVisible(false);
 			iSectioningService.checkSpecialRequestEligibility(
-					new SpecialRegistrationEligibilityRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iLastEnrollment),
+					new SpecialRegistrationEligibilityRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iLastEnrollment, iLastAssignment == null ? null : iLastAssignment.getErrors()),
 					new AsyncCallback<SpecialRegistrationEligibilityResponse>() {
 						@Override
 						public void onFailure(Throwable caught) {

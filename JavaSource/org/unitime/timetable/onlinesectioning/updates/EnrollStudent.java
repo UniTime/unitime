@@ -42,6 +42,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -153,6 +154,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 			}
 		};
 		
+		Set<ErrorMessage> checkErrors = (getRequest().isShowAllChoices() ? new TreeSet<ErrorMessage>() : null);
 		Lock lock = server.lockStudent(getStudentId(), offeringIds, name());
 		try {
 			helper.beginTransaction();
@@ -184,7 +186,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				for (OnlineSectioningLog.Request r: OnlineSectioningHelper.toProto(getRequest()))
 					action.addRequest(r);
 
-				List<EnrollmentRequest> enrlCheck = server.createAction(CheckAssignmentAction.class).forStudent(getStudentId()).withAssignment(getAssignment()).check(server, helper);
+				List<EnrollmentRequest> enrlCheck = server.createAction(CheckAssignmentAction.class).forStudent(getStudentId()).withAssignment(getAssignment()).check(server, helper, checkErrors);
 				
 				Student student = (Student)helper.getHibSession().createQuery(
 						"select s from Student s " +
@@ -746,8 +748,13 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				helper.commitTransaction();
 			} catch (Exception e) {
 				helper.rollbackTransaction();
-				if (e instanceof SectioningException)
-					throw (SectioningException)e;
+				if (e instanceof SectioningException) {
+					SectioningException se = (SectioningException)e;
+					if (checkErrors != null && !checkErrors.isEmpty())
+						for (ErrorMessage em: checkErrors)
+							se.addError(em);
+					throw se;
+				}
 				helper.error("Failed to enroll student " + getStudentId() + ": " + e.getMessage(), e);
 				throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 			}
@@ -765,7 +772,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				includeRequestInTheReturnMessage = true;
 		}
 		
-		return server.execute(server.createAction(GetAssignment.class).forStudent(getStudentId()).withMessages(failures).withRequest(includeRequestInTheReturnMessage), helper.getUser());
+		return server.execute(server.createAction(GetAssignment.class).forStudent(getStudentId()).withMessages(failures).withErrors(checkErrors).withRequest(includeRequestInTheReturnMessage), helper.getUser());
 	}
 	
 	public static int getLimit(Enrollment enrollment, Map<Long, XSection> sections) {

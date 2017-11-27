@@ -20,8 +20,11 @@
 package org.unitime.timetable.gwt.shared;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -36,12 +39,15 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private Long iSessionId;
 		private Long iStudentId;
 		private Collection<ClassAssignmentInterface.ClassAssignment> iClassAssignments;
+		private ArrayList<ErrorMessage> iErrors = null;
 		
 		public SpecialRegistrationEligibilityRequest() {}
-		public SpecialRegistrationEligibilityRequest(Long sessionId, Long studentId, Collection<ClassAssignmentInterface.ClassAssignment> assignments) {
+		public SpecialRegistrationEligibilityRequest(Long sessionId, Long studentId, Collection<ClassAssignmentInterface.ClassAssignment> assignments, Collection<ErrorMessage> errors) {
 			iClassAssignments = assignments;
 			iStudentId = studentId;
 			iSessionId = sessionId;
+			if (errors != null)
+				iErrors = new ArrayList<ErrorMessage>(errors);
 		}
 		
 		public Long getSessionId() { return iSessionId; }
@@ -50,6 +56,14 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void setStudentId(Long studentId) { iStudentId = studentId; }
 		public Collection<ClassAssignmentInterface.ClassAssignment> getClassAssignments() { return iClassAssignments; }
 		public void setClassAssignments(Collection<ClassAssignmentInterface.ClassAssignment> assignments) { iClassAssignments = assignments; }
+		public void addError(ErrorMessage error) {
+			if (iErrors == null) iErrors = new ArrayList<ErrorMessage>();
+			iErrors.add(error);
+		}
+		public boolean hasErrors() {
+			return iErrors != null && !iErrors.isEmpty();
+		}
+		public ArrayList<ErrorMessage> getErrors() { return iErrors; }		
 	}
 	
 	public static class SpecialRegistrationEligibilityResponse implements IsSerializable, Serializable {
@@ -138,14 +152,17 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private String iRequestId;
 		private CourseRequestInterface iCourses;
 		private Collection<ClassAssignmentInterface.ClassAssignment> iClassAssignments;
+		private ArrayList<ErrorMessage> iErrors = null;
 		
 		public SubmitSpecialRegistrationRequest() {}
-		public SubmitSpecialRegistrationRequest(Long sessionId, Long studentId, String requestId, CourseRequestInterface courses, Collection<ClassAssignmentInterface.ClassAssignment> assignments) {
+		public SubmitSpecialRegistrationRequest(Long sessionId, Long studentId, String requestId, CourseRequestInterface courses, Collection<ClassAssignmentInterface.ClassAssignment> assignments, Collection<ErrorMessage> errors) {
 			iRequestId = requestId;
 			iStudentId = studentId;
 			iSessionId = sessionId;
 			iCourses = courses;
 			iClassAssignments = assignments;
+			if (errors != null)
+				iErrors = new ArrayList<ErrorMessage>(errors);
 		}
 		
 		public Collection<ClassAssignmentInterface.ClassAssignment> getClassAssignments() { return iClassAssignments; }
@@ -158,6 +175,14 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void setStudentId(Long studentId) { iStudentId = studentId; }
 		public String getRequestId() { return iRequestId; }
 		public void setRequestId(String requestId) { iRequestId = requestId; }
+		public void addError(ErrorMessage error) {
+			if (iErrors == null) iErrors = new ArrayList<ErrorMessage>();
+			iErrors.add(error);
+		}
+		public boolean hasErrors() {
+			return iErrors != null && !iErrors.isEmpty();
+		}
+		public ArrayList<ErrorMessage> getErrors() { return iErrors; }		
 	}
 	
 	public static class SubmitSpecialRegistrationResponse implements IsSerializable, Serializable {

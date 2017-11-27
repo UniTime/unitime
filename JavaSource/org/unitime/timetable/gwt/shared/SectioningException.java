@@ -19,10 +19,12 @@
 */
 package org.unitime.timetable.gwt.shared;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
@@ -36,6 +38,7 @@ public class SectioningException extends GwtRpcException implements IsSerializab
 	public static enum Type { INFO, WARNING, ERROR };
 	private Type iType = null;
 	private Map<Long, String> iSectionMessages = null;
+	private ArrayList<ErrorMessage> iErrors = null;
 	
 	public SectioningException() {
 		super();
@@ -76,6 +79,15 @@ public class SectioningException extends GwtRpcException implements IsSerializab
 		if (classId == null || iSectionMessages == null) return null;
 		return iSectionMessages.get(classId);
 	}
+	
+	public void addError(ErrorMessage error) {
+		if (iErrors == null) iErrors = new ArrayList<ErrorMessage>();
+		iErrors.add(error);
+	}
+	public boolean hasErrors() {
+		return iErrors != null && !iErrors.isEmpty();
+	}
+	public ArrayList<ErrorMessage> getErrors() { return iErrors; }
 	
 	@Override
 	public String toString() {

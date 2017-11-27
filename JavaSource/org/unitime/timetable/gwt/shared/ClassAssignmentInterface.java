@@ -21,12 +21,14 @@ package org.unitime.timetable.gwt.shared;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
 
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
@@ -39,6 +41,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	private static final long serialVersionUID = 1L;
 	private ArrayList<CourseAssignment> iAssignments = new ArrayList<CourseAssignment>();
 	private ArrayList<String> iMessages = null;
+	private ArrayList<ErrorMessage> iErrors = null;
 	private boolean iCanEnroll = true;
 	private double iValue = 0.0;
 	
@@ -49,6 +52,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	public void clear() {
 		iAssignments.clear();
 		if (iMessages != null) iMessages.clear();
+		if (iErrors != null) iMessages.clear();
 	}
 	
 	public void addMessage(String message) {
@@ -68,6 +72,23 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		}
 		return ret;
 	}
+	
+	public void addError(ErrorMessage error) {
+		if (iErrors == null) iErrors = new ArrayList<ErrorMessage>();
+		iErrors.add(error);
+	}
+	public void setErrors(Collection<ErrorMessage> errors) {
+		if (iErrors == null) {
+			iErrors = new ArrayList<ErrorMessage>();
+		} else {
+			iErrors.clear();
+		}
+		iErrors.addAll(errors);
+	}
+	public boolean hasErrors() {
+		return iErrors != null && !iErrors.isEmpty();
+	}
+	public ArrayList<ErrorMessage> getErrors() { return iErrors; }
 	
 	public boolean isCanEnroll() { return iCanEnroll; }
 	public void setCanEnroll(boolean canEnroll) { iCanEnroll = canEnroll; }
@@ -275,6 +296,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private String iCredit = null;
 		private String iError = null;
 		private Date iEnrolledDate = null;
+		private String iExternalId = null;
 		
 		public ClassAssignment() {}
 		public ClassAssignment(CourseAssignment course) {
@@ -310,6 +332,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public String getSection() { return iSection; }
 		public void setSection(String section) { iSection = section; }
+		
+		public String getExternalId() { return iExternalId; }
+		public void setExternalId(String extId) { iExternalId = extId; }
 		
 		public String getSelection() { return iSection.length() <= 4 ? iSubpart + " " + iSection : iSection; }
 
@@ -1173,6 +1198,68 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof IdValue)) return false;
 			return getId().equals(((IdValue)o).getId());
+		}
+	}
+	
+	public static class ErrorMessage implements IsSerializable, Serializable, Comparable<ErrorMessage> {
+		private static final long serialVersionUID = 1L;
+		private String iCourse;
+		private String iSection;
+		private String iCode;
+		private String iMessage;
+		
+		public static enum UniTimeCode {
+			UT_LOCKED,
+			UT_DISABLED,
+			UT_STRUCTURE,
+			UT_TIME_CNF,
+			UT_NOT_AVAILABLE,
+			UT_CANCEL,
+			UT_DEADLINE,
+		}
+		
+		public ErrorMessage() {}
+		public ErrorMessage(String course, String section, String code, String message) {
+			iCourse = course;
+			iSection = section;
+			iCode = code;
+			iMessage = message;
+		}
+		public ErrorMessage(String course, String section, UniTimeCode code, String message) {
+			iCourse = course;
+			iSection = section;
+			iCode = code.name();
+			iMessage = message;
+		}
+		
+		public void setCourse(String course) { iCourse = course; }
+		public String getCourse() { return iCourse; }
+		public void setSection(String section) { iSection = section; }
+		public String getSection() { return iSection; }
+		public void setCode(String code) { iCode = code; }
+		public String getCode() { return iCode; }
+		public void setMessage(String message) { iMessage = message; }
+		public String getMessage() { return iMessage; }
+		
+		@Override
+		public int compareTo(ErrorMessage other) {
+			return NaturalOrderComparator.compare(toString(), other.toString());
+		}
+		
+		@Override
+		public String toString() {
+			return getCourse() + (getSection() == null ? "" : " " + getSection()) + ": " + getMessage();
+		}
+		
+		@Override
+		public int hashCode() {
+			return toString().hashCode();
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof ErrorMessage)) return false;
+			return toString().equals(o.toString());
 		}
 	}
 }

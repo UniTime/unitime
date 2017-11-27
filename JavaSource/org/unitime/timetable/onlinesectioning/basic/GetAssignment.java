@@ -48,6 +48,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -55,6 +56,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentError;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentFailure;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
@@ -84,6 +86,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 	
 	private Long iStudentId;
 	private List<EnrollmentFailure> iMessages;
+	private Set<ErrorMessage> iErrors;
 	private boolean iIncludeRequest = false;
 	
 	public GetAssignment forStudent(Long studentId) {
@@ -93,6 +96,11 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 	
 	public GetAssignment withMessages(List<EnrollmentFailure> messages) {
 		iMessages = messages;
+		return this;
+	}
+	
+	public GetAssignment withErrors(Set<ErrorMessage> errors) {
+		iErrors = errors;
 		return this;
 	}
 	
@@ -107,7 +115,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 		try {
 			XStudent student = server.getStudent(iStudentId);
 			if (student == null) return null;
-			return computeAssignment(server, helper, student, student.getRequests(), iMessages, iIncludeRequest); 
+			return computeAssignment(server, helper, student, student.getRequests(), iMessages, iErrors, iIncludeRequest); 
 		} finally {
 			lock.release();
 		}
@@ -198,7 +206,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 		return sections;
 	}
 	
-	public static ClassAssignmentInterface computeAssignment(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<XRequest> studentRequests, List<EnrollmentFailure> messages, boolean includeRequest) {
+	public static ClassAssignmentInterface computeAssignment(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<XRequest> studentRequests, List<EnrollmentFailure> messages, Set<ErrorMessage> errors, boolean includeRequest) {
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_REQUEST);
 		DistanceMetric m = server.getDistanceMetric();
 		OverExpectedCriterion overExp = server.getOverExpectedCriterion();
@@ -338,6 +346,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 						a.setSubpart(subpart.getName());
 						a.setClassNumber(section.getName(-1l));
 						a.setSection(section.getName(course.getCourseId()));
+						a.setExternalId(section.getExternalId(course.getCourseId()));
 						a.setCancelled(section.isCancelled());
 						a.setLimit(new int[] {enrollments.countEnrollmentsForSection(section.getSectionId()), section.getLimit()});
 						if (section.getTime() != null) {
@@ -446,6 +455,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 						a.setSubpart(subpart.getName());
 						a.setClassNumber(section.getName(-1l));
 						a.setSection(section.getName(course.getCourseId()));
+						a.setExternalId(section.getExternalId(course.getCourseId()));
 						a.setCancelled(section.isCancelled());
 						a.setLimit(new int[] {enrollments.countEnrollmentsForSection(section.getSectionId()), section.getLimit()});
 						if (section.getTime() != null) {
@@ -481,6 +491,18 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 						a.setExpected(overExp.getExpected(section.getLimit(), expectations.getExpectedSpace(section.getSectionId())));
 					}
 				}
+				if (errors != null) {
+					for (ErrorMessage f: errors) {
+						if (!ca.getCourseName().equals(f.getCourse())) continue;
+						for (ClassAssignmentInterface.ClassAssignment a: ca.getClassAssignments())
+							if (a.getExternalId().equals(f.getSection())) {
+								if (a.hasError())
+									a.setError(a.getError() + "\n" + f.getMessage());
+								else
+									a.setError(f.getMessage());
+							}
+					}
+				}
 			} else if (request instanceof XFreeTimeRequest) {
 				XFreeTimeRequest r = (XFreeTimeRequest)request;
 				ca.setCourseId(null);
@@ -511,9 +533,19 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 					
 		action.addEnrollment(stored);
 		
+		if (errors != null) {
+			for (ErrorMessage e: errors) {
+				ret.addError(e);
+				ret.addMessage(e.toString());
+			}
+		}
+		
 		if (messages != null) {
 			Set<String> added = new HashSet<String>();
 			for (EnrollmentFailure f: messages) {
+				if (f.hasErrors())
+					for (EnrollmentError err: f.getErrors())
+						ret.addError(new ErrorMessage(f.getCourse().getCourseName(), f.getSection().getExternalId(f.getCourse().getCourseId()), err.getCode(), err.getMessage()));
 				for (String fm: f.getMessage().split("\n")) {
 					String message = MSG.clazz(f.getCourse().getSubjectArea(), f.getCourse().getCourseNumber(), f.getSection().getSubpartName(), f.getSection().getName(f.getCourse().getCourseId())) + ": " + fm;
 					if (added.add(message))

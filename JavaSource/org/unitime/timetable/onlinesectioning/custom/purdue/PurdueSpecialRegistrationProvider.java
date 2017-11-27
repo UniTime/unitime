@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,6 +53,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse;
@@ -66,20 +68,26 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationProvider;
+import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Change;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ChangeError;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ChangeOperation;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationResponseStatus;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationStatus;
+import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
+import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XReservation;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.util.DefaultExternalClassLookup;
 
 import com.google.gson.Gson;
@@ -176,7 +184,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		return id;
 	}
 	
-	protected List<Change> buildChangeList(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, Collection<ClassAssignmentInterface.ClassAssignment> assignment) {
+	protected List<Change> buildChangeList(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, Collection<ClassAssignmentInterface.ClassAssignment> assignment, Collection<ErrorMessage> errors) {
 		List<Change> changes = new ArrayList<Change>();
 		Map<XCourse, List<XSection>> enrollments = new HashMap<XCourse, List<XSection>>();
 		Map<Long, XOffering> offerings = new HashMap<Long, XOffering>();
@@ -220,6 +228,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			sections.add(section);
 			offerings.put(course.getCourseId(), offering);
 		}
+		Set<String> crns = new HashSet<String>();
 		check: for (Map.Entry<XCourse, List<XSection>> e: enrollments.entrySet()) {
 			XCourse course = e.getKey();
 			List<XSection> sections = e.getValue();
@@ -235,7 +244,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								ch.courseNbr = course.getCourseNumber();
 								ch.crn = s.getExternalId(course.getCourseId());
 								ch.operation = ChangeOperation.ADD;
-								changes.add(ch);
+								if (crns.add(ch.crn)) changes.add(ch);
 							}
 						}
 						for (Long id: enrollment.getSectionIds()) {
@@ -246,7 +255,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								ch.courseNbr = course.getCourseNumber();
 								ch.crn = s.getExternalId(course.getCourseId());
 								ch.operation = ChangeOperation.DROP;
-								changes.add(ch);
+								if (crns.add(ch.crn)) changes.add(ch);
 							}
 						}
 						continue check;
@@ -261,7 +270,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				ch.courseNbr = course.getCourseNumber();
 				ch.crn = section.getExternalId(course.getCourseId());
 				ch.operation = ChangeOperation.ADD;
-				changes.add(ch);
+				if (crns.add(ch.crn)) changes.add(ch);
 			}
 		}
 		
@@ -284,6 +293,21 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				}
 			}
 		}
+		
+		if (errors != null) {
+			Set<ErrorMessage> added = new HashSet<ErrorMessage>();
+			for (Change ch: changes) {
+				for (ErrorMessage m: errors)
+					if (ch.crn.equals(m.getSection()) && added.add(m)) {
+						if (ch.errors == null) ch.errors = new ArrayList<ChangeError>();
+						ChangeError er = new ChangeError();
+						er.code = m.getCode();
+						er.message = m.getMessage();
+						ch.errors.add(er);
+					}
+			}
+		}
+		
 		return changes;
 	}
 
@@ -298,7 +322,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			request.term = getBannerTerm(session);
 			request.campus = getBannerCampus(session);
 			request.studentId = getBannerId(student);
-			request.changes = buildChangeList(server, helper, student, input.getClassAssignments());
+			request.changes = buildChangeList(server, helper, student, input.getClassAssignments(), input.getErrors());
 
 			resource = new ClientResource(getSpecialRegistrationApiSiteCheckEligibility());
 			resource.setNext(iClient);
@@ -346,7 +370,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			request.term = getBannerTerm(session);
 			request.campus = getBannerCampus(session);
 			request.studentId = getBannerId(student);
-			request.changes = buildChangeList(server, helper, student, input.getClassAssignments());
+			request.changes = buildChangeList(server, helper, student, input.getClassAssignments(), input.getErrors());
 			request.requestId = input.getRequestId();
 
 			resource = new ClientResource(getSpecialRegistrationApiSiteSubmit());
@@ -488,6 +512,201 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		return requests;
 	}
 	
+	protected Set<ErrorMessage> checkRequests(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<XRequest> xrequests) {
+		Set<ErrorMessage> errors = new TreeSet<ErrorMessage>();
+		List<EnrollmentRequest> requests = new ArrayList<EnrollmentRequest>();
+		Hashtable<Long, XOffering> courseId2offering = new Hashtable<Long, XOffering>();
+		for (XRequest req: xrequests) {
+			if (!(req instanceof XCourseRequest)) continue;
+			XCourseRequest courseReq = (XCourseRequest)req;
+			XEnrollment e = courseReq.getEnrollment();
+			if (e == null) continue;
+			XCourse course = server.getCourse(e.getCourseId());
+			if (course == null)
+				throw new SectioningException(MSG.exceptionCourseDoesNotExist(e.getCourseName()));
+			EnrollmentRequest request = new EnrollmentRequest(course, new ArrayList<XSection>());
+			requests.add(request);
+			XOffering offering = server.getOffering(course.getOfferingId());
+			if (offering == null)
+				throw new SectioningException(MSG.exceptionCourseDoesNotExist(e.getCourseName()));
+			for (Long sectionId: e.getSectionIds()) {
+				// Check section limits
+				XSection section = offering.getSection(sectionId);
+				if (section == null)
+					throw new SectioningException(MSG.exceptionEnrollNotAvailable(e.getCourseName() + " " + sectionId));
+				
+				// Check cancelled flag
+				if (section.isCancelled()) {
+					if (server.getConfig().getPropertyBoolean("Enrollment.CanKeepCancelledClass", false)) {
+						boolean contains = false;
+						for (XRequest r: student.getRequests())
+							if (r instanceof XCourseRequest) {
+								XCourseRequest cr = (XCourseRequest)r;
+								if (cr.getEnrollment() != null && cr.getEnrollment().getSectionIds().contains(section.getSectionId())) { contains = true; break; }
+							}
+						if (!contains)
+							errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_CANCEL, MSG.exceptionEnrollCancelled(MSG.clazz(course.getSubjectArea(), course.getCourseNumber(), section.getSubpartName(), section.getName(course.getCourseId())))));
+					} else
+						errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_CANCEL, MSG.exceptionEnrollCancelled(MSG.clazz(course.getSubjectArea(), course.getCourseNumber(), section.getSubpartName(), section.getName(course.getCourseId())))));
+				}
+				request.getSections().add(section);
+				courseId2offering.put(course.getCourseId(), offering);
+			}
+		}
+			
+		// Check for NEW and CHANGE deadlines
+		check: for (EnrollmentRequest request: requests) {
+			XCourse course = request.getCourse();
+			List<XSection> sections = request.getSections();
+
+			for (XRequest r: student.getRequests()) {
+				if (r instanceof XCourseRequest) {
+					XEnrollment enrollment = ((XCourseRequest)r).getEnrollment();
+					if (enrollment != null && enrollment.getCourseId().equals(course.getCourseId())) { // course change
+						for (XSection s: sections)
+							if (!enrollment.getSectionIds().contains(s.getSectionId()) && !server.checkDeadline(course.getCourseId(), s.getTime(), OnlineSectioningServer.Deadline.CHANGE))
+								errors.add(new ErrorMessage(course.getCourseName(), s.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_DEADLINE, MSG.exceptionEnrollDeadlineChange(MSG.clazz(course.getSubjectArea(), course.getCourseNumber(), s.getSubpartName(), s.getName(course.getCourseId())))));
+						continue check;
+					}
+				}
+			}
+			
+			// new course
+			for (XSection section: sections) {
+				if (!server.checkDeadline(course.getOfferingId(), section.getTime(), OnlineSectioningServer.Deadline.NEW))
+					errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_DEADLINE, MSG.exceptionEnrollDeadlineNew(MSG.clazz(course.getSubjectArea(), course.getCourseNumber(), section.getSubpartName(), section.getName(course.getCourseId())))));
+			}
+		}
+		
+		// Check for DROP deadlines
+		for (XRequest r: student.getRequests()) {
+			if (r instanceof XCourseRequest) {
+				XEnrollment enrollment = ((XCourseRequest)r).getEnrollment();
+				if (enrollment != null && !courseId2offering.containsKey(enrollment.getCourseId())) {
+					XOffering offering = server.getOffering(enrollment.getOfferingId());
+					if (offering != null)
+						for (XSection section: offering.getSections(enrollment)) {
+							if (!server.checkDeadline(offering.getOfferingId(), section.getTime(), OnlineSectioningServer.Deadline.DROP))
+								errors.add(new ErrorMessage(enrollment.getCourseName(), section.getExternalId(enrollment.getCourseId()), ErrorMessage.UniTimeCode.UT_DEADLINE, MSG.exceptionEnrollDeadlineDrop(enrollment.getCourseName())));
+						}
+				}
+			}
+		}
+		
+		Hashtable<Long, XConfig> courseId2config = new Hashtable<Long, XConfig>();
+		for (EnrollmentRequest request: requests) {
+			XCourse course = request.getCourse();
+			XOffering offering = courseId2offering.get(course.getCourseId());
+			XEnrollments enrollments = server.getEnrollments(course.getOfferingId());
+			List<XSection> sections = request.getSections();
+			XSubpart subpart = offering.getSubpart(sections.get(0).getSubpartId());
+			XConfig config = offering.getConfig(subpart.getConfigId());
+			courseId2config.put(course.getCourseId(), config);
+
+			XReservation reservation = null;
+			reservations: for (XReservation r: offering.getReservations()) {
+				if (!r.isApplicable(student, course)) continue;
+				if (r.getLimit() >= 0 && r.getLimit() <= enrollments.countEnrollmentsForReservation(r.getReservationId())) {
+					boolean contain = false;
+					for (XEnrollment e: enrollments.getEnrollmentsForReservation(r.getReservationId()))
+						if (e.getStudentId().equals(student.getStudentId())) { contain = true; break; }
+					if (!contain) continue;
+				}
+				if (!r.getConfigsIds().isEmpty() && !r.getConfigsIds().contains(config.getConfigId())) continue;
+				for (XSection section: sections)
+					if (r.getSectionIds(section.getSubpartId()) != null && !r.getSectionIds(section.getSubpartId()).contains(section.getSectionId())) continue reservations;
+				if (reservation == null || r.compareTo(reservation) < 0)
+					reservation = r;
+			}
+			
+			if (reservation == null || !reservation.canAssignOverLimit()) {
+				for (XSection section: sections) {
+					if (section.getLimit() >= 0 && section.getLimit() <= enrollments.countEnrollmentsForSection(section.getSectionId())) {
+						boolean contain = false;
+						for (XEnrollment e: enrollments.getEnrollmentsForSection(section.getSectionId()))
+							if (e.getStudentId().equals(student.getStudentId())) { contain = true; break; }
+						if (!contain)
+							errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_NOT_AVAILABLE, MSG.exceptionEnrollNotAvailable(MSG.clazz(course.getSubjectArea(), course.getCourseNumber(), section.getSubpartName(), section.getName()))));
+					}
+					if ((reservation == null || !offering.getSectionReservations(section.getSectionId()).contains(reservation)) && offering.getUnreservedSectionSpace(section.getSectionId(), enrollments) <= 0) {
+						boolean contain = false;
+						for (XEnrollment e: enrollments.getEnrollmentsForSection(section.getSectionId()))
+							if (e.getStudentId().equals(student.getStudentId())) { contain = true; break; }
+						if (!contain)
+							errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_NOT_AVAILABLE, MSG.exceptionEnrollNotAvailable(MSG.clazz(course.getSubjectArea(), course.getCourseNumber(), section.getSubpartName(), section.getName()))));
+					}
+				}
+				
+				if (config.getLimit() >= 0 && config.getLimit() <= enrollments.countEnrollmentsForConfig(config.getConfigId())) {
+					boolean contain = false;
+					for (XEnrollment e: enrollments.getEnrollmentsForConfig(config.getConfigId()))
+						if (e.getStudentId().equals(student.getStudentId())) { contain = true; break; }
+					if (!contain)
+						for (XSection section: sections)
+							errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_NOT_AVAILABLE, MSG.exceptionEnrollNotAvailable(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())) + " " + config.getName()));
+				}
+				if ((reservation == null || !offering.getConfigReservations(config.getConfigId()).contains(reservation)) && offering.getUnreservedConfigSpace(config.getConfigId(), enrollments) <= 0) {
+					boolean contain = false;
+					for (XEnrollment e: enrollments.getEnrollmentsForConfig(config.getConfigId()))
+						if (e.getStudentId().equals(student.getStudentId())) { contain = true; break; }
+					if (!contain)
+						for (XSection section: sections)
+							errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_NOT_AVAILABLE, MSG.exceptionEnrollNotAvailable(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())) + " " + config.getName()));
+				}
+				
+				if (course.getLimit() >= 0 && course.getLimit() <= enrollments.countEnrollmentsForCourse(course.getCourseId())) {
+					boolean contain = false;
+					for (XEnrollment e: enrollments.getEnrollmentsForCourse(course.getCourseId()))
+						if (e.getStudentId().equals(student.getStudentId())) { contain = true; break; }
+					if (!contain)
+						for (XSection section: sections)
+							errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_NOT_AVAILABLE, MSG.exceptionEnrollNotAvailable(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())) + " " + config.getName()));
+				}
+			}
+		}
+		
+		for (EnrollmentRequest request: requests) {
+			XCourse course = request.getCourse();
+			XOffering offering = courseId2offering.get(course.getCourseId());
+			List<XSection> sections = request.getSections();
+			XSubpart subpart = offering.getSubpart(sections.get(0).getSubpartId());
+			XConfig config = offering.getConfig(subpart.getConfigId());
+			if (sections.size() < config.getSubparts().size()) {
+				for (XSection section: sections)
+					errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_STRUCTURE, MSG.exceptionEnrollmentIncomplete(MSG.courseName(course.getSubjectArea(), course.getCourseNumber()))));
+			} else if (sections.size() > config.getSubparts().size()) {
+				for (XSection section: sections)
+					errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_STRUCTURE, MSG.exceptionEnrollmentInvalid(MSG.courseName(course.getSubjectArea(), course.getCourseNumber()))));
+			}
+			for (XSection s1: sections) {
+				for (XSection s2: sections) {
+					if (s1.getSectionId() < s2.getSectionId() && s1.isOverlapping(offering.getDistributions(), s2)) {
+						errors.add(new ErrorMessage(course.getCourseName(), s1.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_TIME_CNF, MSG.exceptionEnrollmentOverlapping(MSG.courseName(course.getSubjectArea(), course.getCourseNumber()))));
+						errors.add(new ErrorMessage(course.getCourseName(), s2.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_TIME_CNF, MSG.exceptionEnrollmentOverlapping(MSG.courseName(course.getSubjectArea(), course.getCourseNumber()))));
+					}
+					if (!s1.getSectionId().equals(s2.getSectionId()) && s1.getSubpartId().equals(s2.getSubpartId())) {
+						errors.add(new ErrorMessage(course.getCourseName(), s1.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_STRUCTURE, MSG.exceptionEnrollmentInvalid(MSG.courseName(course.getSubjectArea(), course.getCourseNumber()))));
+						errors.add(new ErrorMessage(course.getCourseName(), s2.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_STRUCTURE, MSG.exceptionEnrollmentInvalid(MSG.courseName(course.getSubjectArea(), course.getCourseNumber()))));
+					}
+				}
+				if (!offering.getSubpart(s1.getSubpartId()).getConfigId().equals(config.getConfigId()))
+					errors.add(new ErrorMessage(course.getCourseName(), s1.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_STRUCTURE, MSG.exceptionEnrollmentInvalid(MSG.courseName(course.getSubjectArea(), course.getCourseNumber()))));
+			}
+			if (!offering.isAllowOverlap(student, config.getConfigId(), course, sections))
+				for (EnrollmentRequest otherRequest: requests) {
+					XOffering other = courseId2offering.get(otherRequest.getCourse().getCourseId());
+					XConfig otherConfig = courseId2config.get(otherRequest.getCourse().getCourseId());
+					if (!other.equals(offering) && !other.isAllowOverlap(student, otherConfig.getConfigId(), otherRequest.getCourse(), otherRequest.getSections())) {
+						List<XSection> assignment = otherRequest.getSections();
+						for (XSection section: sections)
+							if (section.isOverlapping(offering.getDistributions(), assignment))
+								errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_TIME_CNF,MSG.exceptionEnrollmentConflicting(MSG.courseName(course.getSubjectArea(), course.getCourseNumber()))));
+					}
+				}
+		}
+		return errors;
+	}
+	
 	protected RetrieveSpecialRegistrationResponse convert(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, SpecialRegistrationRequest specialRequest) {
 		Map<CourseOffering, List<Class_>> adds = new HashMap<CourseOffering, List<Class_>>();
 		Map<CourseOffering, List<Class_>> drops = new HashMap<CourseOffering, List<Class_>>();
@@ -523,7 +742,9 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		}
 		
 		RetrieveSpecialRegistrationResponse ret = new RetrieveSpecialRegistrationResponse();
-		ret.setClassAssignments(GetAssignment.computeAssignment(server, helper, student, getRequests(server, helper, student, adds, drops), null, true));
+		List<XRequest> requests = getRequests(server, helper, student, adds, drops);
+		Set<ErrorMessage> errors = checkRequests(server, helper, student, requests);
+		ret.setClassAssignments(GetAssignment.computeAssignment(server, helper, student, requests, null, errors, true));
 		ret.setDescription(desc);
 		
 		if (ret.hasClassAssignments())

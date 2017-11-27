@@ -46,6 +46,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -379,7 +380,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					if (updateStudentRegistration(server, helper, student, original.registrations)) return;
 					check.setMessage("UniTime enrollment data are not synchronized with Banner enrollment data, please try again later" +
 							" (" + (removed.isEmpty() ? "added " + added : added.isEmpty() ? "dropped " + removed : "added " + added + ", dropped " + removed) + ")");
-					// check.setFlag(EligibilityFlag.CAN_ENROLL, false);
+					check.setFlag(EligibilityFlag.CAN_ENROLL, false);
 					if (isCanRequestUpdates()) {
 						List<XStudent> students = new ArrayList<XStudent>(1); students.add(student);
 						requestUpdate(server, helper, students);
@@ -567,7 +568,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 							id2course.put(id, course);
 						} else {
 							// student had a different section: just put warning on the new enrollment
-							fails.add(new EnrollmentFailure(course, section, MESSAGES.courseLocked(course.getCourseName()), false));
+							fails.add(new EnrollmentFailure(course, section, MESSAGES.courseLocked(course.getCourseName()), false, new EnrollmentError(ErrorMessage.UniTimeCode.UT_LOCKED.name(), MESSAGES.courseLocked(course.getCourseName()))));
 							checked.add(id); failed.add(id);
 							List<XSection> sections = id2section.get(id);
 							if (sections == null) {
@@ -584,7 +585,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					for (XSection section: request.getSections()) {
 						String id = section.getExternalId(course.getCourseId());
 						if (!registered.containsKey(id) && (!section.isEnabledForScheduling() || noadd.contains(id))) {
-							fails.add(new EnrollmentFailure(course, section, "Section not available for student scheduling.", false));
+							fails.add(new EnrollmentFailure(course, section, "Section not available for student scheduling.", false, new EnrollmentError(ErrorMessage.UniTimeCode.UT_DISABLED.name(), "Section not available for student scheduling.")));
 							checked.add(id); failed.add(id);
 						} else {
 							if (registered.containsKey(id)) {
@@ -628,11 +629,11 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 											sections.add(x);
 											id2course.put(id, offering.getCourse(c.getCourseId()));
 											if (!x.isEnabledForScheduling() || nodrop.contains(id)) {
-												fails.add(new EnrollmentFailure(offering.getCourse(c), x, "Section not available for student scheduling.", true));
+												fails.add(new EnrollmentFailure(offering.getCourse(c), x, "Section not available for student scheduling.", true, new EnrollmentError(ErrorMessage.UniTimeCode.UT_DISABLED.name(), "Section not available for student scheduling.")));
 												checked.add(id); failed.add(id);
 												drop = false;
 											} else if (lockedCoursesWithChanges.contains(c.getCourseId())) {
-												fails.add(new EnrollmentFailure(offering.getCourse(c), x, MESSAGES.courseLocked(c.getCourseName()), true));
+												fails.add(new EnrollmentFailure(offering.getCourse(c), x, MESSAGES.courseLocked(c.getCourseName()), true, new EnrollmentError(ErrorMessage.UniTimeCode.UT_LOCKED.name(), MESSAGES.courseLocked(c.getCourseName()))));
 												checked.add(id); failed.add(id);
 												drop = false;
 											}
@@ -730,6 +731,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					String id = reg.courseReferenceNumber;
 					checked.add(id);
 					
+					List<EnrollmentError> errors = new ArrayList<EnrollmentError>();
 					String error = null;
 					if (reg.crnErrors != null)
 						for (XEInterface.CrnError e: reg.crnErrors) {
@@ -737,6 +739,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 								error = e.message;
 							else
 								error += "\n" + e.message;
+							errors.add(new EnrollmentError(e.messageType, e.message));
 						}
 					
 					if ("Registered".equals(reg.statusDescription)) {
@@ -751,7 +754,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 								XCourse course = id2course.get(id);
 								if (course != null)
 									for (XSection section: id2section.get(id)) {
-										fails.add(new EnrollmentFailure(course, section, error, true));
+										fails.add(new EnrollmentFailure(course, section, error, true, errors));
 										failed.add(id);
 									}
 							}
@@ -762,19 +765,24 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						// skip deleted enrollments
 						continue;
 					}
-					if (error == null && response.registrationException != null)
+					if (error == null && response.registrationException != null) {
 						error = response.registrationException;
+						errors.add(new EnrollmentError("UNKNOWN", response.registrationException));
+					}
 					XCourse course = id2course.get(id);
 					if (course != null)
 						for (XSection section: id2section.get(id)) {
 							if (error == null && !failed.add(id)) continue;
-							fails.add(new EnrollmentFailure(course, section, error == null ? added.contains(id) ? "Enrollment failed." : "Drop failed." : error, "Registered".equals(reg.statusDescription)));
+							if (error == null) {
+								errors.add(new EnrollmentError("UNKNOWN", added.contains(id) ? "Enrollment failed." : "Drop failed."));
+							}
+							fails.add(new EnrollmentFailure(course, section, error == null ? added.contains(id) ? "Enrollment failed." : "Drop failed." : error, "Registered".equals(reg.statusDescription), errors));
 						}
 				}
 				helper.getAction().addEnrollment(external);
 			}
 			if (response.failedRegistrations != null) {
-				Set<String> error = new TreeSet<String>();
+				Set<EnrollmentError> error = new TreeSet<EnrollmentError>();
 				for (XEInterface.FailedRegistration reg: response.failedRegistrations) {
 					if (reg.failedCRN != null) {
 						String id = reg.failedCRN;
@@ -782,32 +790,37 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						if (course != null)
 							for (XSection section: id2section.get(id)) {
 								if (reg.failure == null && !failed.add(id)) continue;
-								fails.add(new EnrollmentFailure(course, section, reg.failure == null ? "Enrollment failed." : reg.failure, false));
+								fails.add(new EnrollmentFailure(course, section, reg.failure == null ? "Enrollment failed." : reg.failure, false, new EnrollmentError("UNKNOWN", reg.failure == null ? "Enrollment failed." : reg.failure)));
 							}
 						checked.add(id);
 					} else {
 						if (reg.failure != null)
-							error.add(reg.failure);
+							error.add(new EnrollmentError("UNKNOWN", reg.failure));
 					}
 				}
 				String em = null;
-				for (String m: error) {
+				for (EnrollmentError m: error) {
 					if (em == null)
-						em = m;
+						em = m.getMessage();
 					else
-						em += "\n" + m;
+						em += "\n" + m.getMessage();
 				}
-				if (response.registrationException != null)
+				if (response.registrationException != null) {
 					if (em == null)
 						em = response.registrationException;
 					else
 						em += "\n" + response.registrationException;
+					error.add(new EnrollmentError("UNKNOWN", response.registrationException));
+				}
 				for (EnrollmentRequest request: enrollments) {
 					XCourse course = request.getCourse();
 					for (XSection section: request.getSections()) {
 						String id = section.getExternalId(course.getCourseId());
 						if (!checked.contains(id) && (em != null || failed.add(id))) {
-							fails.add(new EnrollmentFailure(course, section, em == null ? "Enrollment failed." : em, false));
+							if (em == null)
+								fails.add(new EnrollmentFailure(course, section, "Enrollment failed.", false, new EnrollmentError("UNKNOWN", "Enrollment failed.")));
+							else
+								fails.add(new EnrollmentFailure(course, section, em, false, error));
 						}
 					}
 				}
@@ -820,9 +833,13 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						message += (message.isEmpty() ? "" : "<br>") + f;
 				}
 				SectioningException e = new SectioningException(message);
-				for (EnrollmentFailure f: fails)
+				for (EnrollmentFailure f: fails) {
 					if (f.getSection() != null && !"Unable to make requested changes so your schedule was not changed.".equals(f.getMessage()))
 						e.setSectionMessage(f.getSection().getSectionId(), f.getMessage());
+					if (f.hasErrors())
+						for (EnrollmentError err: f.getErrors())
+							e.addError(new ErrorMessage(f.getCourse().getCourseName(), f.getSection().getExternalId(f.getCourse().getCourseId()), err.getCode(), err.getMessage()));
+				}
 				throw e;
 			}
 			

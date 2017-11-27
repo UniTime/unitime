@@ -20,6 +20,7 @@
 package org.unitime.timetable.onlinesectioning.custom;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -51,13 +52,50 @@ public interface StudentEnrollmentProvider {
 	
 	public boolean isCanRequestUpdates();
 	
+	public static class EnrollmentError implements Serializable, Comparable<EnrollmentError> {
+		private static final long serialVersionUID = 1L;
+		private String iCode;
+		private String iMessage;
+		
+		public EnrollmentError(String code, String message) {
+			iCode = code; iMessage = message;
+		}
+		
+		public String getCode() { return iCode; }
+		public String getMessage() { return iMessage; }
+
+		@Override
+		public int compareTo(EnrollmentError ee) {
+			int cmp = (getCode() == null ? "" : getCode()).compareTo(ee.getCode() == null ? "" : ee.getCode());
+			if (cmp != 0) return cmp;
+			return getMessage().compareTo(ee.getMessage());
+		}
+		
+		@Override
+		public String toString() {
+			return getCode() + ": " + getMessage();
+		}
+	}
+	
 	public static class EnrollmentFailure implements Serializable {
 		private static final long serialVersionUID = 1L;
 		private XCourse iCourse;
 		private XSection iSection;
 		private String iMessage;
 		private boolean iEnrolled;
+		private List<EnrollmentError> iErrors;
 		
+		public EnrollmentFailure(XCourse course, XSection section, String message, boolean enrolled, Collection<EnrollmentError> errors) {
+			this(course, section, message, enrolled);
+			if (errors != null) iErrors = new ArrayList<EnrollmentError>(errors);
+		}
+		public EnrollmentFailure(XCourse course, XSection section, String message, boolean enrolled, EnrollmentError... errors) {
+			this(course, section, message, enrolled);
+			if (errors != null) {
+				iErrors = new ArrayList<EnrollmentError>();
+				for (EnrollmentError error: errors) iErrors.add(error);
+			}
+		}
 		public EnrollmentFailure(XCourse course, XSection section, String message, boolean enrolled) {
 			iCourse = course;
 			iSection = section;
@@ -69,6 +107,14 @@ public interface StudentEnrollmentProvider {
 		public XSection getSection() { return iSection; }
 		public String getMessage() { return iMessage; }
 		public boolean isEnrolled() { return iEnrolled; }
+		
+		public boolean hasErrors() { return iErrors != null && !iErrors.isEmpty(); }
+		public void addError(String code, String message) { addError(new EnrollmentError(code, message)); }
+		public void addError(EnrollmentError error) {
+			if (iErrors == null) iErrors = new ArrayList<EnrollmentError>();
+			iErrors.add(error);
+		}
+		public List<EnrollmentError> getErrors() { return iErrors; }
 		
 		public String toString() {
 			return getCourse().getCourseName() + " " + getSection().getSubpartName() + " " + getSection().getName(getCourse().getCourseId()) + ": " + getMessage() + (isEnrolled() ? " (e)" : "");

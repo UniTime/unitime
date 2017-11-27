@@ -29,6 +29,7 @@ import java.util.Set;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -82,7 +83,7 @@ public class CheckAssignmentAction implements OnlineSectioningAction<List<Enroll
 			
 			Lock lock = server.lockStudent(getStudentId(), offeringIds, name());
 			try {
-				return check(server, helper);
+				return check(server, helper, null);
 			} finally {
 				lock.release();
 			}
@@ -91,7 +92,7 @@ public class CheckAssignmentAction implements OnlineSectioningAction<List<Enroll
 		}
 	}
 	
-	public List<EnrollmentRequest> check(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+	public List<EnrollmentRequest> check(OnlineSectioningServer server, OnlineSectioningHelper helper, Set<ErrorMessage> errors) {
 		XStudent student = server.getStudent(getStudentId());
 		if (student == null) throw new SectioningException(MSG.exceptionBadStudentId());
 		List<EnrollmentRequest> requests = new ArrayList<EnrollmentRequest>();
@@ -122,10 +123,17 @@ public class CheckAssignmentAction implements OnlineSectioningAction<List<Enroll
 							XCourseRequest cr = (XCourseRequest)r;
 							if (cr.getEnrollment() != null && cr.getEnrollment().getSectionIds().contains(section.getSectionId())) { contains = true; break; }
 						}
-					if (!contains)
-						throw new SectioningException(MSG.exceptionEnrollCancelled(MSG.clazz(ca.getSubject(), ca.getCourseNbr(), ca.getSubpart(), ca.getSection())));
+					if (!contains) {
+						if (errors != null)
+							errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(ca.getCourseId()), ErrorMessage.UniTimeCode.UT_CANCEL, MSG.exceptionEnrollCancelled(MSG.clazz(ca.getSubject(), ca.getCourseNbr(), ca.getSubpart(), ca.getSection()))));
+						else
+							throw new SectioningException(MSG.exceptionEnrollCancelled(MSG.clazz(ca.getSubject(), ca.getCourseNbr(), ca.getSubpart(), ca.getSection())));
+					}
 				} else {
-					throw new SectioningException(MSG.exceptionEnrollCancelled(MSG.clazz(ca.getSubject(), ca.getCourseNbr(), ca.getSubpart(), ca.getSection())));
+					if (errors != null)
+						errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(ca.getCourseId()), ErrorMessage.UniTimeCode.UT_CANCEL, MSG.exceptionEnrollCancelled(MSG.clazz(ca.getSubject(), ca.getCourseNbr(), ca.getSubpart(), ca.getSection()))));
+					else
+						throw new SectioningException(MSG.exceptionEnrollCancelled(MSG.clazz(ca.getSubject(), ca.getCourseNbr(), ca.getSubpart(), ca.getSection())));
 				}
 			}
 
@@ -150,8 +158,12 @@ public class CheckAssignmentAction implements OnlineSectioningAction<List<Enroll
 					XEnrollment enrollment = ((XCourseRequest)r).getEnrollment();
 					if (enrollment != null && enrollment.getCourseId().equals(course.getCourseId())) { // course change
 						for (XSection s: sections)
-							if (!enrollment.getSectionIds().contains(s.getSectionId()) && !server.checkDeadline(course.getCourseId(), s.getTime(), OnlineSectioningServer.Deadline.CHANGE))
-								throw new SectioningException(MSG.exceptionEnrollDeadlineChange(MSG.clazz(course.getSubjectArea(), course.getCourseNumber(), s.getSubpartName(), s.getName(course.getCourseId()))));
+							if (!enrollment.getSectionIds().contains(s.getSectionId()) && !server.checkDeadline(course.getCourseId(), s.getTime(), OnlineSectioningServer.Deadline.CHANGE)) {
+								if (errors != null)
+									errors.add(new ErrorMessage(course.getCourseName(), s.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_DEADLINE, MSG.exceptionEnrollDeadlineChange(MSG.clazz(course.getSubjectArea(), course.getCourseNumber(), s.getSubpartName(), s.getName(course.getCourseId())))));
+								else
+									throw new SectioningException(MSG.exceptionEnrollDeadlineChange(MSG.clazz(course.getSubjectArea(), course.getCourseNumber(), s.getSubpartName(), s.getName(course.getCourseId()))));
+							}
 						continue check;
 					}
 				}
@@ -159,8 +171,12 @@ public class CheckAssignmentAction implements OnlineSectioningAction<List<Enroll
 			
 			// new course
 			for (XSection section: sections) {
-				if (!server.checkDeadline(course.getOfferingId(), section.getTime(), OnlineSectioningServer.Deadline.NEW))
-					throw new SectioningException(MSG.exceptionEnrollDeadlineNew(MSG.clazz(course.getSubjectArea(), course.getCourseNumber(), section.getSubpartName(), section.getName(course.getCourseId()))));
+				if (!server.checkDeadline(course.getOfferingId(), section.getTime(), OnlineSectioningServer.Deadline.NEW)) {
+					if (errors != null)
+						errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_DEADLINE, MSG.exceptionEnrollDeadlineNew(MSG.clazz(course.getSubjectArea(), course.getCourseNumber(), section.getSubpartName(), section.getName(course.getCourseId())))));
+					else
+						throw new SectioningException(MSG.exceptionEnrollDeadlineNew(MSG.clazz(course.getSubjectArea(), course.getCourseNumber(), section.getSubpartName(), section.getName(course.getCourseId()))));
+				}
 			}
 		}
 		
@@ -172,8 +188,12 @@ public class CheckAssignmentAction implements OnlineSectioningAction<List<Enroll
 					XOffering offering = server.getOffering(enrollment.getOfferingId());
 					if (offering != null)
 						for (XSection section: offering.getSections(enrollment)) {
-							if (!server.checkDeadline(offering.getOfferingId(), section.getTime(), OnlineSectioningServer.Deadline.DROP))
-								throw new SectioningException(MSG.exceptionEnrollDeadlineDrop(enrollment.getCourseName()));
+							if (!server.checkDeadline(offering.getOfferingId(), section.getTime(), OnlineSectioningServer.Deadline.DROP)) {
+								if (errors != null)
+									errors.add(new ErrorMessage(enrollment.getCourseName(), section.getExternalId(enrollment.getCourseId()), ErrorMessage.UniTimeCode.UT_DEADLINE, MSG.exceptionEnrollDeadlineDrop(enrollment.getCourseName())));
+								else
+									throw new SectioningException(MSG.exceptionEnrollDeadlineDrop(enrollment.getCourseName()));
+							}
 						}
 				}
 			}
@@ -211,15 +231,23 @@ public class CheckAssignmentAction implements OnlineSectioningAction<List<Enroll
 						boolean contain = false;
 						for (XEnrollment e: enrollments.getEnrollmentsForSection(section.getSectionId()))
 							if (e.getStudentId().equals(student.getStudentId())) { contain = true; break; }
-						if (!contain)
-							throw new SectioningException(MSG.exceptionEnrollNotAvailable(MSG.clazz(course.getSubjectArea(), course.getCourseNumber(), section.getSubpartName(), section.getName())));
+						if (!contain) {
+							if (errors != null)
+								errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_NOT_AVAILABLE, MSG.exceptionEnrollNotAvailable(MSG.clazz(course.getSubjectArea(), course.getCourseNumber(), section.getSubpartName(), section.getName()))));
+							else
+								throw new SectioningException(MSG.exceptionEnrollNotAvailable(MSG.clazz(course.getSubjectArea(), course.getCourseNumber(), section.getSubpartName(), section.getName())));
+						}
 					}
 					if ((reservation == null || !offering.getSectionReservations(section.getSectionId()).contains(reservation)) && offering.getUnreservedSectionSpace(section.getSectionId(), enrollments) <= 0) {
 						boolean contain = false;
 						for (XEnrollment e: enrollments.getEnrollmentsForSection(section.getSectionId()))
 							if (e.getStudentId().equals(student.getStudentId())) { contain = true; break; }
-						if (!contain)
-							throw new SectioningException(MSG.exceptionEnrollNotAvailable(MSG.clazz(course.getSubjectArea(), course.getCourseNumber(), section.getSubpartName(), section.getName())));
+						if (!contain) {
+							if (errors != null)
+								errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_NOT_AVAILABLE, MSG.exceptionEnrollNotAvailable(MSG.clazz(course.getSubjectArea(), course.getCourseNumber(), section.getSubpartName(), section.getName()))));
+							else
+								throw new SectioningException(MSG.exceptionEnrollNotAvailable(MSG.clazz(course.getSubjectArea(), course.getCourseNumber(), section.getSubpartName(), section.getName())));
+						}
 					}
 				}
 				
@@ -227,23 +255,38 @@ public class CheckAssignmentAction implements OnlineSectioningAction<List<Enroll
 					boolean contain = false;
 					for (XEnrollment e: enrollments.getEnrollmentsForConfig(config.getConfigId()))
 						if (e.getStudentId().equals(student.getStudentId())) { contain = true; break; }
-					if (!contain)
-						throw new SectioningException(MSG.exceptionEnrollNotAvailable(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())) + " " + config.getName());
+					if (!contain) {
+						if (errors != null) {
+							for (XSection section: sections)
+								errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_NOT_AVAILABLE, MSG.exceptionEnrollNotAvailable(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())) + " " + config.getName()));
+						} else
+							throw new SectioningException(MSG.exceptionEnrollNotAvailable(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())) + " " + config.getName());
+					}
 				}
 				if ((reservation == null || !offering.getConfigReservations(config.getConfigId()).contains(reservation)) && offering.getUnreservedConfigSpace(config.getConfigId(), enrollments) <= 0) {
 					boolean contain = false;
 					for (XEnrollment e: enrollments.getEnrollmentsForConfig(config.getConfigId()))
 						if (e.getStudentId().equals(student.getStudentId())) { contain = true; break; }
-					if (!contain)
-						throw new SectioningException(MSG.exceptionEnrollNotAvailable(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())) + " " + config.getName());
+					if (!contain) {
+						if (errors != null) {
+							for (XSection section: sections)
+								errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_NOT_AVAILABLE, MSG.exceptionEnrollNotAvailable(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())) + " " + config.getName()));
+						} else
+							throw new SectioningException(MSG.exceptionEnrollNotAvailable(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())) + " " + config.getName());
+					}
 				}
 				
 				if (course.getLimit() >= 0 && course.getLimit() <= enrollments.countEnrollmentsForCourse(course.getCourseId())) {
 					boolean contain = false;
 					for (XEnrollment e: enrollments.getEnrollmentsForCourse(course.getCourseId()))
 						if (e.getStudentId().equals(student.getStudentId())) { contain = true; break; }
-					if (!contain)
-						throw new SectioningException(MSG.exceptionEnrollNotAvailable(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())));
+					if (!contain) {
+						if (errors != null) {
+							for (XSection section: sections)
+								errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_NOT_AVAILABLE, MSG.exceptionEnrollNotAvailable(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())) + " " + config.getName()));
+						} else
+							throw new SectioningException(MSG.exceptionEnrollNotAvailable(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())));
+					}
 				}
 			}
 		}
@@ -255,21 +298,40 @@ public class CheckAssignmentAction implements OnlineSectioningAction<List<Enroll
 			XSubpart subpart = offering.getSubpart(sections.get(0).getSubpartId());
 			XConfig config = offering.getConfig(subpart.getConfigId());
 			if (sections.size() < config.getSubparts().size()) {
-				throw new SectioningException(MSG.exceptionEnrollmentIncomplete(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())));
+				if (errors != null) {
+					for (XSection section: sections)
+						errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_STRUCTURE, MSG.exceptionEnrollmentIncomplete(MSG.courseName(course.getSubjectArea(), course.getCourseNumber()))));
+				} else
+					throw new SectioningException(MSG.exceptionEnrollmentIncomplete(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())));
 			} else if (sections.size() > config.getSubparts().size()) {
-				throw new SectioningException(MSG.exceptionEnrollmentInvalid(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())));
+				if (errors != null) {
+					for (XSection section: sections)
+						errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_STRUCTURE, MSG.exceptionEnrollmentInvalid(MSG.courseName(course.getSubjectArea(), course.getCourseNumber()))));
+				} else
+					throw new SectioningException(MSG.exceptionEnrollmentInvalid(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())));
 			}
 			for (XSection s1: sections) {
 				for (XSection s2: sections) {
 					if (s1.getSectionId() < s2.getSectionId() && s1.isOverlapping(offering.getDistributions(), s2)) {
-						throw new SectioningException(MSG.exceptionEnrollmentOverlapping(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())));
+						if (errors != null) {
+							errors.add(new ErrorMessage(course.getCourseName(), s1.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_TIME_CNF, MSG.exceptionEnrollmentOverlapping(MSG.courseName(course.getSubjectArea(), course.getCourseNumber()))));
+							errors.add(new ErrorMessage(course.getCourseName(), s2.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_TIME_CNF, MSG.exceptionEnrollmentOverlapping(MSG.courseName(course.getSubjectArea(), course.getCourseNumber()))));
+						} else
+							throw new SectioningException(MSG.exceptionEnrollmentOverlapping(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())));
 					}
 					if (!s1.getSectionId().equals(s2.getSectionId()) && s1.getSubpartId().equals(s2.getSubpartId())) {
-						throw new SectioningException(MSG.exceptionEnrollmentInvalid(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())));
+						if (errors != null) {
+							errors.add(new ErrorMessage(course.getCourseName(), s1.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_STRUCTURE, MSG.exceptionEnrollmentInvalid(MSG.courseName(course.getSubjectArea(), course.getCourseNumber()))));
+							errors.add(new ErrorMessage(course.getCourseName(), s2.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_STRUCTURE, MSG.exceptionEnrollmentInvalid(MSG.courseName(course.getSubjectArea(), course.getCourseNumber()))));
+						} else
+							throw new SectioningException(MSG.exceptionEnrollmentInvalid(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())));
 					}
 				}
 				if (!offering.getSubpart(s1.getSubpartId()).getConfigId().equals(config.getConfigId())) {
-					throw new SectioningException(MSG.exceptionEnrollmentInvalid(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())));
+					if (errors != null) {
+						errors.add(new ErrorMessage(course.getCourseName(), s1.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_STRUCTURE, MSG.exceptionEnrollmentInvalid(MSG.courseName(course.getSubjectArea(), course.getCourseNumber()))));
+					} else
+						throw new SectioningException(MSG.exceptionEnrollmentInvalid(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())));
 				}
 			}
 			if (!offering.isAllowOverlap(student, config.getConfigId(), course, sections))
@@ -279,8 +341,12 @@ public class CheckAssignmentAction implements OnlineSectioningAction<List<Enroll
 					if (!other.equals(offering) && !other.isAllowOverlap(student, otherConfig.getConfigId(), otherRequest.getCourse(), otherRequest.getSections())) {
 						List<XSection> assignment = otherRequest.getSections();
 						for (XSection section: sections)
-							if (section.isOverlapping(offering.getDistributions(), assignment))
-								throw new SectioningException(MSG.exceptionEnrollmentConflicting(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())));
+							if (section.isOverlapping(offering.getDistributions(), assignment)) {
+								if (errors != null) {
+									errors.add(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), ErrorMessage.UniTimeCode.UT_TIME_CNF,MSG.exceptionEnrollmentConflicting(MSG.courseName(course.getSubjectArea(), course.getCourseNumber()))));
+								} else
+									throw new SectioningException(MSG.exceptionEnrollmentConflicting(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())));
+							}
 					}
 				}
 		}
