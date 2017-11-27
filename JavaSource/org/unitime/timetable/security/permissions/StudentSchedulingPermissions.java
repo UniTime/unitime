@@ -101,9 +101,7 @@ public class StudentSchedulingPermissions {
 		@Override
 		public boolean check(UserContext user, Session source) {
 			DepartmentStatusType status = source.getStatusType();
-			return status != null && status.can(DepartmentStatusType.Status.StudentsPreRegister) &&
-					!status.can(DepartmentStatusType.Status.StudentsAssistant) &&
-					!status.can(DepartmentStatusType.Status.StudentsOnline);
+			return status != null && status.can(DepartmentStatusType.Status.StudentsPreRegister);
 		}
 
 		@Override
