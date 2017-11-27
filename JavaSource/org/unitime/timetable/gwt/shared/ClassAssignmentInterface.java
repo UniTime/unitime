@@ -81,6 +81,12 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	public void setRequest(CourseRequestInterface request) { iRequest = request; }
 	public CourseRequestInterface getRequest() { return iRequest; }
 	
+	public boolean isEnrolled() {
+		for (CourseAssignment course: getCourseAssignments())
+			if (course.isAssigned() && !course.isFreeTime() && !course.isTeachingAssignment()) return true;
+		return false;
+	}
+	
 	public static class CourseAssignment implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private Long iCourseId = null;

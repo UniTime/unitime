@@ -1693,7 +1693,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						}
 					});
 				} else if (request.isSaved() || !CONSTANTS.checkLastResult()) {
-					if ((changeViewIfNeeded || CONSTANTS.startOverCanChangeView()) || iRequests.isVisible()) {
+					if ((saved.isEnrolled() && (changeViewIfNeeded || CONSTANTS.startOverCanChangeView())) || iRequests.isVisible()) {
 						fillIn(saved);
 						updateHistory();
 					} else {
@@ -1768,10 +1768,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					});
 				}
 				clear(changeViewIfNeeded);
+				/*
 				if (request.isSaved() && request.getCourses().isEmpty()) {
 					LoadingWidget.getInstance().hide();
 					return;
-				}
+				}*/
 				iCourseRequests.setRequest(request);
 				if (iSchedule.isVisible() || iRequests.isVisible()) {
 					lastResult(request, sessionId, studentId, saved, changeViewIfNeeded);
