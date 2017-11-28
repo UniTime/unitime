@@ -81,6 +81,13 @@
             not-null="false"
             length="50"/>
 		
+		<property
+		    name="campus"
+		    column="campus"
+		    type="java.lang.String"
+            not-null="false"
+            length="20"/>
+		
         <many-to-one
             name="positionType"
             class="PositionType"

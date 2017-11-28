@@ -222,6 +222,14 @@
 				<line>Maximal length of the External ID field corrected (40 characters).</line>
 			</description>
 		</item>
+		<item>
+			<name>Staff Import / Lookup</name>
+			<description>
+				<line>Include campus code (academic initiative) in the Staff table.</line>
+				<line>Manage Instructor List: match campus code when it is set.</line>
+				<line>Add/Edit Instructor Lookup: include campus code in the Department column when the campus does not match the current session.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other</title>

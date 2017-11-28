@@ -12841,4 +12841,8 @@
 		<mysql><![CDATA[update %SCHEMA%.sectioning_status set status = status + 256 where (status & 64 = 64) and (status & 256 = 0)]]></mysql>
 		<plsql>update %SCHEMA%.sectioning_status set status = status + 256 where bitand(status, 64) = 64 and bitand(status, 256) = 0</plsql>
 	</update>
+	<update version="192" date="28-Nov-2017" comment="Staff campus">
+		<plsql>alter table %SCHEMA%.staff add campus varchar2(20 char)</plsql>
+		<mysql>alter table %SCHEMA%.staff add campus varchar(20) null</mysql>
+	</update>
 </dbupdate>

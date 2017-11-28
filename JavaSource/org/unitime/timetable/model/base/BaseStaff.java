@@ -39,6 +39,7 @@ public abstract class BaseStaff implements Serializable {
 	private String iDept;
 	private String iEmail;
 	private String iAcademicTitle;
+	private String iCampus;
 
 	private PositionType iPositionType;
 
@@ -50,6 +51,7 @@ public abstract class BaseStaff implements Serializable {
 	public static String PROP_DEPT = "dept";
 	public static String PROP_EMAIL = "email";
 	public static String PROP_ACAD_TITLE = "academicTitle";
+	public static String PROP_CAMPUS = "campus";
 
 	public BaseStaff() {
 		initialize();
@@ -86,6 +88,9 @@ public abstract class BaseStaff implements Serializable {
 	public String getAcademicTitle() { return iAcademicTitle; }
 	public void setAcademicTitle(String academicTitle) { iAcademicTitle = academicTitle; }
 
+	public String getCampus() { return iCampus; }
+	public void setCampus(String campus) { iCampus = campus; }
+
 	public PositionType getPositionType() { return iPositionType; }
 	public void setPositionType(PositionType positionType) { iPositionType = positionType; }
 
@@ -107,6 +112,7 @@ public abstract class BaseStaff implements Serializable {
 	public String toDebugString() {
 		return "Staff[" +
 			"\n	AcademicTitle: " + getAcademicTitle() +
+			"\n	Campus: " + getCampus() +
 			"\n	Dept: " + getDept() +
 			"\n	Email: " + getEmail() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +

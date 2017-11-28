@@ -67,6 +67,7 @@ public class Staff extends BaseStaff implements Comparable, NameInterface {
 		
 		Query q = StaffDAO.getInstance().getSession().createQuery(
 				"select distinct s from Staff s where s.dept=:deptCode and " +
+				"(s.campus is null or s.campus=(select x.academicInitiative from Session x where x.uniqueId = :sessionId)) and " +
 				"(select di.externalUniqueId from DepartmentalInstructor di " +
 				"where di.department.deptCode=:deptCode and di.department.session.uniqueId=:sessionId and di.externalUniqueId = s.externalUniqueId ) is null");
 		q.setString("deptCode", deptCode);
@@ -139,10 +140,10 @@ public class Staff extends BaseStaff implements Comparable, NameInterface {
 	public String getDeptName(Long sessionId) {
 		if (getDept()==null || getDept().length()==0) return "N/A";
 		Department d = Department.findByDeptCode(getDept(), sessionId);
-		if (d!=null)
+		if (d != null && (getCampus() == null || getCampus().equals(d.getSession().getAcademicInitiative())))
 			return "<span title='"+d.getHtmlTitle()+"'>"+d.getShortLabel()+"</span>";
 		else
-			return getDept();
+			return getDept() + (getCampus() == null ? "" : " (" + getCampus() + ")");
 	}
 	
 	public String getName() {

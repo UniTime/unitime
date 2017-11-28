@@ -91,7 +91,7 @@ public class StaffImport extends BaseImport {
 				String externalId = getRequiredStringAttribute(element, "externalId", elementName);
 				String dept = getOptionalStringAttribute(element, "department");
 				Staff staff = null;
-				if(externalId != null && externalId.length() > 0) {
+				if (externalId != null && externalId.length() > 0) {
 		            if (trimLeadingZerosFromExternalId){
 		            	try {
 		            		Integer num = new Integer(externalId);
@@ -125,6 +125,7 @@ public class StaffImport extends BaseImport {
 				}
 				staff.setPositionType(posType);
 				staff.setExternalUniqueId(externalId);
+				staff.setCampus(campus);
 				if (dept != null)
 					staff.setDept(dept);
 				String email = getOptionalStringAttribute(element, "email");
