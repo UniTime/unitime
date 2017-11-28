@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <?xml-stylesheet type="text/css" href="Release-Notes.css"?>
 <!DOCTYPE release-history PUBLIC "-//UniTime//UniTime Release Notes DTD/EN" "Release-Notes.dtd">
-<!-- 
+<!--
  * Licensed to The Apereo Foundation under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
  * additional information regarding copyright ownership.
@@ -18,7 +18,7 @@
  *
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  -->
 
 <release-history>
@@ -149,7 +149,7 @@
 		</item>
 	</category>
 	<category>
-		<title>Constraint Solver (1.3.121)</title>
+		<title>Constraint Solver (1.3.124)</title>
 		<item>
 			<name>Course Timetabling: Max Half-Days Constraint</name>
 			<description>
@@ -213,6 +213,14 @@
 			<name>Examination Timetabling: Save XML</name>
 			<description>
 				<line>Corrected examination period penalty value.</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination Timetabling: Criteria</name>
+			<description>
+				<line>Changed the value update type to after unassigned after assigned.</line>
+				<line>This corrects the direct conflict computations when a student is assigned to three or more exams on a day.</line>
+				<line>This corrects the more than two exams on a day computation when a student is assigned to four or more exams on a day.</line>
 			</description>
 		</item>
 		<item>
@@ -817,7 +825,7 @@
 				<line>Course Requests, Student Scheduling Assistant: added an option to hide the up and down arrows and the trash bin in the Course Requests table.</line>
 				<line>The buttons can be removed by setting the application property unitime.enrollment.hideCourseRequestArrows to true (defaults to false).</line>
 				<line>The remaining components are made larger when the buttons are not shown to fill in the gap.</line>
-				<line>When the X is clicked in the Course Request Box and there is nothing filled in, the line is removed and the courses below are shifted up (just like when the trash bin was clicked).</line>			 
+				<line>When the X is clicked in the Course Request Box and there is nothing filled in, the line is removed and the courses below are shifted up (just like when the trash bin was clicked).</line>
 			</description>
 		</item>
 		<item>
@@ -957,11 +965,11 @@
 		<item>
 			<name>Data Exchange</name>
 			<description>
-				<line>Added ability to import and export course timetabling preferences.</line> 
+				<line>Added ability to import and export course timetabling preferences.</line>
 				<line>Added ability to include individual class meeting in the course timetabling and course timetable exports.
 						<line>This feature can be enabled by setting the tmtbl.export.classMeetings application property to true (defaults to false).</line>
-				</line> 
-				<line>Unify the use of suffix attribute of a class element across all the imports and exports.</line> 
+				</line>
+				<line>Unify the use of suffix attribute of a class element across all the imports and exports.</line>
 				<line>Suffix attribute is set to class suffix, if it is not null and not empty class section number string (e.g., 1a) is used otherwise.</line>
 			</description>
 		</item>
