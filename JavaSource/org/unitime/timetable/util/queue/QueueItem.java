@@ -134,26 +134,36 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 		return iOutputLink;
 	}
 	
-	public List<QueueMessage> getLog() { return iLog; }
-	public String log() {
-		String ret = "";
-		for (QueueMessage m: iLog) {
-			if (!ret.isEmpty()) ret += "<br>";
-			ret += m.toHTML();
+	public List<QueueMessage> getLog() {
+		synchronized (iLog) {
+			return new ArrayList<QueueMessage>(iLog);
 		}
-		return ret;
+	}
+	public String log() {
+		synchronized (iLog) {
+			String ret = "";
+			for (QueueMessage m: iLog) {
+				if (!ret.isEmpty()) ret += "<br>";
+				ret += m.toHTML();
+			}
+			return ret;
+		}
 	}
 	
 	public void log(String message) {
-		iLog.add(new QueueMessage(QueueMessage.Level.HTML, message));
+		synchronized (iLog) {
+			iLog.add(new QueueMessage(QueueMessage.Level.HTML, message));
+		}
 	}
 	
 	public void setStatus(String status) {
 		setStatus(status, 100.0);
 	}
 	public void setStatus(String status, double maxProgress) {
-		iStatus = status; iProgress = 0; iMaxProgress = maxProgress;
-		iLog.add(new QueueMessage(QueueMessage.Level.STAGE, status));
+		synchronized (iLog) {
+			iStatus = status; iProgress = 0; iMaxProgress = maxProgress;
+			iLog.add(new QueueMessage(QueueMessage.Level.STAGE, status));
+		}
 	}	
 	public String status() { return iStatus; }
 	public double progress() { return iProgress / iMaxProgress; }
@@ -208,73 +218,97 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 	@Override
 	public void trace(Object message) {
 		Logger.getLogger(getClass()).trace(message);
-		iLog.add(new QueueMessage(QueueMessage.Level.TRACE, message));
+		synchronized (iLog) {
+			iLog.add(new QueueMessage(QueueMessage.Level.TRACE, message));
+		}
 	}
 
 	@Override
 	public void trace(Object message, Throwable t) {
 		Logger.getLogger(getClass()).trace(message, t);
-		iLog.add(new QueueMessage(QueueMessage.Level.TRACE, message, t));
+		synchronized (iLog) {
+			iLog.add(new QueueMessage(QueueMessage.Level.TRACE, message, t));
+		}
 	}
 
 	@Override
 	public void debug(Object message) {
 		Logger.getLogger(getClass()).debug(message);
-		iLog.add(new QueueMessage(QueueMessage.Level.DEBUG, message));
+		synchronized (iLog) {
+			iLog.add(new QueueMessage(QueueMessage.Level.DEBUG, message));
+		}
 	}
 
 	@Override
 	public void debug(Object message, Throwable t) {
 		Logger.getLogger(getClass()).debug(message, t);
-		iLog.add(new QueueMessage(QueueMessage.Level.DEBUG, message, t));
+		synchronized (iLog) {
+			iLog.add(new QueueMessage(QueueMessage.Level.DEBUG, message, t));
+		}
 	}
 
 	@Override
 	public void info(Object message) {
 		Logger.getLogger(getClass()).info(message);
-		iLog.add(new QueueMessage(QueueMessage.Level.INFO, message));
+		synchronized (iLog) {
+			iLog.add(new QueueMessage(QueueMessage.Level.INFO, message));
+		}
 	}
 
 	@Override
 	public void info(Object message, Throwable t) {
 		Logger.getLogger(getClass()).info(message, t);
-		iLog.add(new QueueMessage(QueueMessage.Level.INFO, message, t));
+		synchronized (iLog) {
+			iLog.add(new QueueMessage(QueueMessage.Level.INFO, message, t));
+		}
 	}
 
 	@Override
 	public void warn(Object message) {
 		Logger.getLogger(getClass()).warn(message);
-		iLog.add(new QueueMessage(QueueMessage.Level.WARN, message));
+		synchronized (iLog) {
+			iLog.add(new QueueMessage(QueueMessage.Level.WARN, message));
+		}
 	}
 
 	@Override
 	public void warn(Object message, Throwable t) {
 		Logger.getLogger(getClass()).warn(message, t);
-		iLog.add(new QueueMessage(QueueMessage.Level.WARN, message, t));
+		synchronized (iLog) {
+			iLog.add(new QueueMessage(QueueMessage.Level.WARN, message, t));
+		}
 	}
 
 	@Override
 	public void error(Object message) {
 		Logger.getLogger(getClass()).error(message);
-		iLog.add(new QueueMessage(QueueMessage.Level.ERROR, message));
+		synchronized (iLog) {
+			iLog.add(new QueueMessage(QueueMessage.Level.ERROR, message));
+		}
 	}
 
 	@Override
 	public void error(Object message, Throwable t) {
 		Logger.getLogger(getClass()).error(message, t);
-		iLog.add(new QueueMessage(QueueMessage.Level.ERROR, message, t));
+		synchronized (iLog) {
+			iLog.add(new QueueMessage(QueueMessage.Level.ERROR, message, t));
+		}
 	}
 
 	@Override
 	public void fatal(Object message) {
 		Logger.getLogger(getClass()).fatal(message);
-		iLog.add(new QueueMessage(QueueMessage.Level.FATAL, message));
+		synchronized (iLog) {
+			iLog.add(new QueueMessage(QueueMessage.Level.FATAL, message));
+		}
 	}
 
 	@Override
 	public void fatal(Object message, Throwable t) {
 		Logger.getLogger(getClass()).fatal(message, t);
-		iLog.add(new QueueMessage(QueueMessage.Level.FATAL, message, t));
+		synchronized (iLog) {
+			iLog.add(new QueueMessage(QueueMessage.Level.FATAL, message, t));
+		}
 	}
 	
 	@Override
