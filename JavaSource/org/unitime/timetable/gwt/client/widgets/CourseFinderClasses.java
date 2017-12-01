@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -67,13 +68,13 @@ public class CourseFinderClasses extends UniTimeTable<ClassAssignment> implement
 	private CourseAssignment iValue = null;
 	private DataProvider<CourseAssignment, Collection<ClassAssignment>> iDataProvider = null;
 	private Set<String> iSelectedClasses = new HashSet<String>();
-	private boolean iSpecReg;
+	private SpecialRegistrationContext iSpecReg;
 	
 	public CourseFinderClasses(boolean allowSelection) {
-		this(allowSelection, false);
+		this(allowSelection, null);
 	}
 	
-	public CourseFinderClasses(boolean allowSelection, boolean specreg) {
+	public CourseFinderClasses(boolean allowSelection, SpecialRegistrationContext specreg) {
 		super();
 		setAllowSelection(allowSelection);
 		iSpecReg = specreg;
@@ -110,6 +111,10 @@ public class CourseFinderClasses extends UniTimeTable<ClassAssignment> implement
 		}
 	}
 	
+	protected boolean isSpecialRegistration() {
+		return iSpecReg != null && iSpecReg.isSpecRegMode();
+	}
+	
 	@Override
 	public Widget asWidget() {
 		return this;
@@ -137,7 +142,7 @@ public class CourseFinderClasses extends UniTimeTable<ClassAssignment> implement
 						for (final ClassAssignment clazz: result) {
 							List<Widget> line = new ArrayList<Widget>();
 							if (isAllowSelection()) {
-								if (!clazz.isCancelled() && (clazz.isSaved() || clazz.isAvailable() || iSpecReg)) {
+								if (!clazz.isCancelled() && (clazz.isSaved() || clazz.isAvailable() || isSpecialRegistration())) {
 									AriaCheckBox ch = new AriaCheckBox();
 									ch.setValue(iSelectedClasses.contains(clazz.getSelection()));
 									ch.setAriaLabel(ARIA.courseFinderPreferClass(MESSAGES.clazz(clazz.getSubject(), clazz.getCourseNbr(), clazz.getSubpart(), clazz.getSection())));
@@ -181,7 +186,7 @@ public class CourseFinderClasses extends UniTimeTable<ClassAssignment> implement
 								clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null).getWidget() :
 								new Label());
 							line.add(clazz.hasNote() && !clazz.getNote().equals(iValue.getNote()) ? new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), "").getWidget() : new Label());
-							if (!clazz.isSaved() && !clazz.isAvailable() && !iSpecReg)
+							if (!clazz.isSaved() && !clazz.isAvailable() && !isSpecialRegistration())
 								line.add(new AriaHiddenLabel(ARIA.courseFinderClassNotAvailable(
 										MESSAGES.clazz(clazz.getSubject(), clazz.getCourseNbr(), clazz.getSubpart(), clazz.getSection()),
 										clazz.isAssigned() ? clazz.getTimeStringAria(CONSTANTS.longDays(), CONSTANTS.useAmPm(), ARIA.arrangeHours()) + " " + clazz.getRooms(",") : ARIA.arrangeHours())));
@@ -197,7 +202,7 @@ public class CourseFinderClasses extends UniTimeTable<ClassAssignment> implement
 							if (clazz.isCancelled() || (!clazz.isSaved() && !clazz.isAvailable()))
 								for (int c = 0; c < getCellCount(row); c++)
 									getCellFormatter().addStyleName(row, c, "text-gray");
-							if (isAllowSelection() && !clazz.isCancelled() && (clazz.isSaved() || clazz.isAvailable() || iSpecReg) && iSelectedClasses.contains(clazz.getSelection()))
+							if (isAllowSelection() && !clazz.isCancelled() && (clazz.isSaved() || clazz.isAvailable() || isSpecialRegistration()) && iSelectedClasses.contains(clazz.getSelection()))
 								setSelected(row, true);
 							lastSubpartId = clazz.getSubpartId();
 						}

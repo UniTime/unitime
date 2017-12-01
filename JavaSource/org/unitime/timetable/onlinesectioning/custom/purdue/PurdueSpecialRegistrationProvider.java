@@ -37,7 +37,6 @@ import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.restlet.Client;
-import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
 import org.restlet.resource.ClientResource;
@@ -72,10 +71,11 @@ import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.E
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Change;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ChangeError;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ChangeOperation;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.RequestStatus;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ResponseStatus;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationResponse;
-import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationResponseStatus;
-import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationStatus;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationResponseList;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -138,36 +138,32 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		}
 	}
 	
+	protected String getSpecialRegistrationApiSite() {
+		return ApplicationProperties.getProperty("purdue.specreg.site");
+	}
+	
+	protected String getSpecialRegistrationApiSiteRetrieveRegistration() {
+		return ApplicationProperties.getProperty("purdue.specreg.site.retrieveRegistration", getSpecialRegistrationApiSite() + "/retrieveRegistration");
+	}
+	
+	protected String getSpecialRegistrationApiSiteSubmitRegistration() {
+		return ApplicationProperties.getProperty("purdue.specreg.site.submitRegistration", getSpecialRegistrationApiSite() + "/submitRegistration");
+	}
+
 	protected String getSpecialRegistrationApiSiteCheckEligibility() {
-		return ApplicationProperties.getProperty("purdue.specreg.site.eligibility");
+		return ApplicationProperties.getProperty("purdue.specreg.site.checkEligibility", getSpecialRegistrationApiSite() + "/checkEligibility");
 	}
 	
-	protected String getSpecialRegistrationApiSiteSubmit() {
-		return ApplicationProperties.getProperty("purdue.specreg.site.submit");
+	protected String getSpecialRegistrationApiSiteHasRegistrations() {
+		return ApplicationProperties.getProperty("purdue.specreg.site.hasSpecialRegistrationRequests", getSpecialRegistrationApiSite() + "/hasSpecialRegistrationRequests");
 	}
 	
-	protected String getSpecialRegistrationApiSiteGetAll() {
-		return ApplicationProperties.getProperty("purdue.specreg.site.getall", getSpecialRegistrationApiSiteSubmit());
+	protected String getSpecialRegistrationApiSiteGetAllRegistrations() {
+		return ApplicationProperties.getProperty("purdue.specreg.site.retrieveAllRegistrations", getSpecialRegistrationApiSite() + "/retrieveAllRegistrations");
 	}
 	
-	protected String getSpecialRegistrationApiSiteCheck() {
-		return ApplicationProperties.getProperty("purdue.specreg.site.check", getSpecialRegistrationApiSiteGetAll());
-	}
-	
-	protected String getSpecialRegistrationApiUser() {
-		return ApplicationProperties.getProperty("purdue.specreg.user");
-	}
-	
-	protected String getSpecialRegistrationApiPassword() {
-		return ApplicationProperties.getProperty("purdue.specreg.password");
-	}
-	
-	protected String getSpecialRegistrationApiKeyParameter() {
-		return ApplicationProperties.getProperty("purdue.specreg.apikey.name");
-	}
-	
-	protected String getSpecialRegistrationApiKeyValue() {
-		return ApplicationProperties.getProperty("purdue.specreg.apikey.value");
+	protected String getSpecialRegistrationApiKey() {
+		return ApplicationProperties.getProperty("purdue.specreg.apiKey");
 	}
 	
 	protected String getBannerTerm(AcademicSessionInfo session) {
@@ -326,12 +322,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 
 			resource = new ClientResource(getSpecialRegistrationApiSiteCheckEligibility());
 			resource.setNext(iClient);
-			String apiKeyName = getSpecialRegistrationApiKeyParameter();
-			if (apiKeyName != null)
-				resource.addQueryParameter(apiKeyName, getSpecialRegistrationApiKeyValue());
-			String apiUser = getSpecialRegistrationApiUser();
-			if (apiUser != null)
-				resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, apiUser, getSpecialRegistrationApiPassword());
+			resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
 			
 			if (helper.isDebugEnabled())
 				helper.debug("Request: " + gson.toJson(request));
@@ -349,10 +340,14 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				helper.debug("Response: " + gson.toJson(response));
 			helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(response));
 			
-			return new SpecialRegistrationEligibilityResponse(response != null && response.status == SpecialRegistrationResponseStatus.success, response != null ? response.message : null);
+			return new SpecialRegistrationEligibilityResponse(response != null && ResponseStatus.success.name().equals(response.status), response != null ? response.message : null);
+		} catch (SectioningException e) {
+			helper.getAction().setApiException(e.getMessage());
+			throw (SectioningException)e;
 		} catch (Exception e) {
 			helper.getAction().setApiException(e.getMessage());
-			throw new SectioningException("Failed to check special registration eligibility: " + e.getMessage());
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(e.getMessage());
 		} finally {
 			if (resource != null) {
 				if (resource.getResponse() != null) resource.getResponse().release();
@@ -373,14 +368,11 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			request.changes = buildChangeList(server, helper, student, input.getClassAssignments(), input.getErrors());
 			request.requestId = input.getRequestId();
 
-			resource = new ClientResource(getSpecialRegistrationApiSiteSubmit());
+			resource = new ClientResource(getSpecialRegistrationApiSiteSubmitRegistration());
 			resource.setNext(iClient);
-			String apiKeyName = getSpecialRegistrationApiKeyParameter();
-			if (apiKeyName != null)
-				resource.addQueryParameter(apiKeyName, getSpecialRegistrationApiKeyValue());
-			String apiUser = getSpecialRegistrationApiUser();
-			if (apiUser != null)
-				resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, apiUser, getSpecialRegistrationApiPassword());
+			resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
+			if (input.getRequestKey() != null && !input.getRequestKey().isEmpty())
+				resource.addQueryParameter("reqKey", input.getRequestKey());
 			
 			Gson gson = getGson(helper);
 			if (helper.isDebugEnabled())
@@ -398,16 +390,24 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(response));
 			
 			SubmitSpecialRegistrationResponse ret = new SubmitSpecialRegistrationResponse();
-			ret.setRequestId(response.requestId);
 			ret.setMessage(response.message);
-			ret.setCanEnroll(response.requestStatus == SpecialRegistrationStatus.maySubmit);
-			ret.setCanSubmit(response.requestStatus == SpecialRegistrationStatus.mayEdit);
-			ret.setSuccess(response.status == SpecialRegistrationResponseStatus.success);
+			ret.setSuccess(ResponseStatus.success.name().equals(response.status));
+			if (response.data != null) {
+				ret.setRequestId(response.data.requestId);
+				ret.setCanEnroll(RequestStatus.maySubmit.name().equals(response.data.status));
+				ret.setCanSubmit(RequestStatus.mayEdit.name().equals(response.data.status));
+			} else {
+				ret.setCanEnroll(false);
+				ret.setCanSubmit(false);
+			}
 			return ret;
+		} catch (SectioningException e) {
+			helper.getAction().setApiException(e.getMessage());
+			throw (SectioningException)e;
 		} catch (Exception e) {
 			helper.getAction().setApiException(e.getMessage());
-			sLog.error("Failed to submit special registration: " + e.getMessage(), e);
-			throw new SectioningException("Failed to submit special registration: " + e.getMessage());
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(e.getMessage());
 		} finally {
 			if (resource != null) {
 				if (resource.getResponse() != null) resource.getResponse().release();
@@ -760,10 +760,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								if (c.getUniqueId().equals(ca.getClassId())) ca.setSaved(false);
 			}
 		
-		ret.setCanEnroll(specialRequest.status == SpecialRegistrationStatus.maySubmit);
-		ret.setCanSubmit(specialRequest.status == SpecialRegistrationStatus.mayEdit);
+		ret.setCanEnroll(RequestStatus.maySubmit.name().equals(specialRequest.status) || RequestStatus.newRequest.name().equals(specialRequest.status));
+		ret.setCanSubmit(RequestStatus.mayEdit.name().equals(specialRequest.status) || RequestStatus.newRequest.name().equals(specialRequest.status));
 		ret.setRequestId(specialRequest.requestId);
-		ret.setSubmitDate(specialRequest.submitted == null ? null : specialRequest.submitted.toDate());
+		ret.setSubmitDate(specialRequest.dateCreated == null ? null : specialRequest.dateCreated.toDate());
 		return ret;
 	}
 	
@@ -772,43 +772,53 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		if (student == null) return null;
 		ClientResource resource = null;
 		try {
-			resource = new ClientResource(getSpecialRegistrationApiSiteSubmit());
+			resource = new ClientResource(getSpecialRegistrationApiSiteRetrieveRegistration());
 			resource.setNext(iClient);
-			AcademicSessionInfo session = server.getAcademicSession();
-			String term = getBannerTerm(session);
-			String campus = getBannerCampus(session);
-			resource.addQueryParameter("term", term);
-			resource.addQueryParameter("campus", campus);
-			resource.addQueryParameter("studentId", getBannerId(student));
-			resource.addQueryParameter("requestId", input.getRequestId());
-			helper.getAction().addOptionBuilder().setKey("term").setValue(term);
-			helper.getAction().addOptionBuilder().setKey("campus").setValue(campus);
-			helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
-			helper.getAction().addOptionBuilder().setKey("requestId").setValue(input.getRequestId());
-			String apiKeyName = getSpecialRegistrationApiKeyParameter();
-			if (apiKeyName != null)
-				resource.addQueryParameter(apiKeyName, getSpecialRegistrationApiKeyValue());
-			String apiUser = getSpecialRegistrationApiUser();
-			if (apiUser != null)
-				resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, apiUser, getSpecialRegistrationApiPassword());
-			
+			resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
+			resource.addQueryParameter("reqKey", input.getRequestKey());
+			helper.getAction().addOptionBuilder().setKey("reqKey").setValue(input.getRequestKey());
+
 			long t1 = System.currentTimeMillis();
 			
 			resource.get(MediaType.APPLICATION_JSON);
 			
 			helper.getAction().setApiGetTime(System.currentTimeMillis() - t1);
 			
-			SpecialRegistrationRequest specialRequest = (SpecialRegistrationRequest)new GsonRepresentation<SpecialRegistrationRequest>(resource.getResponseEntity(), SpecialRegistrationRequest.class).getObject();
+			SpecialRegistrationResponse response = (SpecialRegistrationResponse)new GsonRepresentation<SpecialRegistrationResponse>(resource.getResponseEntity(), SpecialRegistrationResponse.class).getObject();
 			Gson gson = getGson(helper);
 			if (helper.isDebugEnabled())
-				helper.debug("Response: " + gson.toJson(specialRequest));
-			helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(specialRequest));
+				helper.debug("Response: " + gson.toJson(response));
+			helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(response));
 			
-			return convert(server, helper, student, specialRequest);
+			if (response.data != null) {
+				AcademicSessionInfo session = server.getAcademicSession();
+				String term = getBannerTerm(session);
+				String campus = getBannerCampus(session);
+				if (response.data.campus != null && !campus.equals(response.data.campus))
+					throw new SectioningException("Special registration request is for a different campus (" + response.data.campus + ").");
+				if (response.data.term != null && !term.equals(response.data.term))
+					throw new SectioningException("Special registration request is for a different term (" + response.data.term + ").");
+				if (response.data.studentId != null && !getBannerId(student).equals(response.data.studentId))
+					throw new SectioningException("Special registration request is for a different student.");
+				return convert(server, helper, student, response.data);
+			} else if (!ResponseStatus.success.name().equals(response.status)) {
+				if (response.message != null && !response.message.isEmpty())
+					throw new SectioningException(response.message);
+			}
+			
+			RetrieveSpecialRegistrationResponse ret = new RetrieveSpecialRegistrationResponse();
+			ret.setCanSubmit(true);
+			ret.setCanEnroll(true);
+			ret.setDescription(response.message != null && !response.message.isEmpty() ? response.message : "New Special Registration");
+			// ret.setRequestId(input.getRequestKey());
+			return ret;
+		} catch (SectioningException e) {
+			helper.getAction().setApiException(e.getMessage());
+			throw (SectioningException)e;
 		} catch (Exception e) {
 			helper.getAction().setApiException(e.getMessage());
-			sLog.error("Failed to request special registration: " + e.getMessage(), e);
-			throw new SectioningException("Failed to request special registration: " + e.getMessage());
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(e.getMessage());
 		} finally {
 			if (resource != null) {
 				if (resource.getResponse() != null) resource.getResponse().release();
@@ -856,7 +866,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		if (student == null) return false;
 		ClientResource resource = null;
 		try {
-			resource = new ClientResource(getSpecialRegistrationApiSiteCheck());
+			resource = new ClientResource(getSpecialRegistrationApiSiteHasRegistrations());
 			resource.setNext(iClient);
 			AcademicSessionInfo session = server.getAcademicSession();
 			String term = getBannerTerm(session);
@@ -867,32 +877,31 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			helper.getAction().addOptionBuilder().setKey("term").setValue(term);
 			helper.getAction().addOptionBuilder().setKey("campus").setValue(campus);
 			helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
-			String apiKeyName = getSpecialRegistrationApiKeyParameter();
-			if (apiKeyName != null)
-				resource.addQueryParameter(apiKeyName, getSpecialRegistrationApiKeyValue());
-			String apiUser = getSpecialRegistrationApiUser();
-			if (apiUser != null)
-				resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, apiUser, getSpecialRegistrationApiPassword());
+			resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
 			
 			resource.get(MediaType.APPLICATION_JSON);
 			
 			Gson gson = getGson(helper);
-			if (getSpecialRegistrationApiSiteCheck().equals(getSpecialRegistrationApiSiteGetAll())) {
-				List<SpecialRegistrationRequest> specialRequests = (List<SpecialRegistrationRequest>)new GsonRepresentation<SpecialRegistrationRequest>(resource.getResponseEntity(), SpecialRegistrationRequest.TYPE_LIST).getObject();
+			if (getSpecialRegistrationApiSiteHasRegistrations().equals(getSpecialRegistrationApiSiteGetAllRegistrations())) {
+				SpecialRegistrationResponseList specialRequests = (SpecialRegistrationResponseList)new GsonRepresentation<SpecialRegistrationResponseList>(resource.getResponseEntity(), SpecialRegistrationResponseList.class).getObject();
 				if (helper.isDebugEnabled())
 					helper.debug("Response: " + gson.toJson(specialRequests));
 				helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(specialRequests));
-				return !specialRequests.isEmpty();
+				return specialRequests.data != null && !specialRequests.data.isEmpty();
 			} else {
 				SpecialRegistrationResponse specResponse = (SpecialRegistrationResponse)new GsonRepresentation<SpecialRegistrationResponse>(resource.getResponseEntity(), SpecialRegistrationResponse.class).getObject();
 				if (helper.isDebugEnabled())
 					helper.debug("Response: " + gson.toJson(specResponse));
 				helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(specResponse));
-				return specResponse.status == SpecialRegistrationResponseStatus.success;
+				return ResponseStatus.success.name().equals(specResponse.status);
 			}
+		} catch (SectioningException e) {
+			helper.getAction().setApiException(e.getMessage());
+			throw (SectioningException)e;
 		} catch (Exception e) {
-			sLog.error("Failed to check for open registrations: " + e.getMessage(), e);
-			throw new SectioningException("Failed to check for open registrations: " + e.getMessage());
+			helper.getAction().setApiException(e.getMessage());
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(e.getMessage());
 		} finally {
 			if (resource != null) {
 				if (resource.getResponse() != null) resource.getResponse().release();
@@ -906,7 +915,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		if (student == null) return null;
 		ClientResource resource = null;
 		try {
-			resource = new ClientResource(getSpecialRegistrationApiSiteGetAll());
+			resource = new ClientResource(getSpecialRegistrationApiSiteGetAllRegistrations());
 			resource.setNext(iClient);
 			AcademicSessionInfo session = server.getAcademicSession();
 			String term = getBannerTerm(session);
@@ -917,12 +926,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			helper.getAction().addOptionBuilder().setKey("term").setValue(term);
 			helper.getAction().addOptionBuilder().setKey("campus").setValue(campus);
 			helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
-			String apiKeyName = getSpecialRegistrationApiKeyParameter();
-			if (apiKeyName != null)
-				resource.addQueryParameter(apiKeyName, getSpecialRegistrationApiKeyValue());
-			String apiUser = getSpecialRegistrationApiUser();
-			if (apiUser != null)
-				resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, apiUser, getSpecialRegistrationApiPassword());
+			resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
 			
 			long t1 = System.currentTimeMillis();
 			
@@ -930,21 +934,31 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			
 			helper.getAction().setApiGetTime(System.currentTimeMillis() - t1);
 			
-			List<SpecialRegistrationRequest> specialRequests = (List<SpecialRegistrationRequest>)new GsonRepresentation<SpecialRegistrationRequest>(resource.getResponseEntity(), SpecialRegistrationRequest.TYPE_LIST).getObject();
+			SpecialRegistrationResponseList specialRequests = (SpecialRegistrationResponseList)new GsonRepresentation<SpecialRegistrationResponseList>(resource.getResponseEntity(), SpecialRegistrationResponseList.class).getObject();
 			Gson gson = getGson(helper);
 			if (helper.isDebugEnabled())
 				helper.debug("Response: " + gson.toJson(specialRequests));
 			helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(specialRequests));
 			
-			List<RetrieveSpecialRegistrationResponse> ret = new ArrayList<RetrieveSpecialRegistrationResponse>(specialRequests.size());
-			for (SpecialRegistrationRequest specialRequest: specialRequests)
-				ret.add(convert(server, helper, student, specialRequest));
+			if ((specialRequests.data == null || specialRequests.data.isEmpty()) && !ResponseStatus.success.name().equals(specialRequests.status)) {
+				throw new SectioningException(specialRequests.message == null || specialRequests.message.isEmpty() ? "Call failed but no message was given." : specialRequests.message);
+			}
 			
-			return ret;
+			if (specialRequests.data != null) {
+				List<RetrieveSpecialRegistrationResponse> ret = new ArrayList<RetrieveSpecialRegistrationResponse>(specialRequests.data.size());
+				for (SpecialRegistrationRequest specialRequest: specialRequests.data)
+					ret.add(convert(server, helper, student, specialRequest));
+				return ret;
+			}
+			
+			return new ArrayList<RetrieveSpecialRegistrationResponse>();
+		} catch (SectioningException e) {
+			helper.getAction().setApiException(e.getMessage());
+			throw (SectioningException)e;
 		} catch (Exception e) {
 			helper.getAction().setApiException(e.getMessage());
-			sLog.error("Failed to request special registrations: " + e.getMessage(), e);
-			throw new SectioningException("Failed to request special registrations: " + e.getMessage());
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(e.getMessage());
 		} finally {
 			if (resource != null) {
 				if (resource.getResponse() != null) resource.getResponse().release();

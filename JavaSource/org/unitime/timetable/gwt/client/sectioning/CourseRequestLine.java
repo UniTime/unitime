@@ -50,6 +50,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -78,11 +79,11 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 	private AriaCheckBox iWaitList = null;
 	private CourseRequestLine iPrevious = null, iNext = null;
 	private Validator<CourseSelection> iValidator = null;
-	private boolean iSpecReg;
+	private SpecialRegistrationContext iSpecReg;
 	private boolean iSectioning;
 	private ImageButton iDelete;
 	
-	public CourseRequestLine(AcademicSessionProvider session, int priority, boolean alternate, Validator<CourseSelection> validator, boolean sectioning, boolean specreg) {
+	public CourseRequestLine(AcademicSessionProvider session, int priority, boolean alternate, Validator<CourseSelection> validator, boolean sectioning, SpecialRegistrationContext specreg) {
 		super("unitime-CourseRequestLine");
 		iSessionProvider = session;
 		iValidator = validator;

@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignmen
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
@@ -91,18 +92,19 @@ public class CourseRequestBox extends P implements CourseSelection {
 	
 	private boolean iShowCourses = false;
 	private RequestedCourse iLastCourse = null;
-	private boolean iSpecReg = false;
+	private SpecialRegistrationContext iSpecReg;
 	private boolean iCanDelete = true;
 	
 	public CourseRequestBox() {
-		this(false, false);
+		this(false, null);
 	}
 	
 	public CourseRequestBox(boolean showCourses) {
-		this(showCourses, false);
+		this(showCourses, null);
 	}
 	
-	public CourseRequestBox(boolean showCourses, boolean specreg) {
+	
+	public CourseRequestBox(boolean showCourses, SpecialRegistrationContext specreg) {
 		super("unitime-CourseRequestBox");
 		iShowCourses = showCourses;
 		iSpecReg = specreg;
@@ -151,7 +153,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 								}
 							}
 							for (ClassAssignment clazz: result) {
-								if (clazz.isCancelled() || (!clazz.isSaved() && !clazz.isAvailable() && !iSpecReg)) continue;
+								if (clazz.isCancelled() || (!clazz.isSaved() && !clazz.isAvailable() && !isSpecialRegistration())) continue;
 								if (clazz.getSection().toLowerCase().startsWith(query.toLowerCase()) || clazz.getSelection().toLowerCase().startsWith(query.toLowerCase()))
 									suggestions.add(new CourseSuggestion(course, clazz));
 								else if (clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrangeHours()).toLowerCase().startsWith(query.toLowerCase()))
@@ -253,6 +255,10 @@ public class CourseRequestBox extends P implements CourseSelection {
 				iLastCourse = getValue();
 			}
 		});
+	}
+	
+	protected boolean isSpecialRegistration() {
+		return iSpecReg != null && iSpecReg.isSpecRegMode();
 	}
 	
 	@Override

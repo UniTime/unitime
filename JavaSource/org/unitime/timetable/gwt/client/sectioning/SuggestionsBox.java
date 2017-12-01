@@ -40,6 +40,7 @@ import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 import org.unitime.timetable.gwt.shared.SectioningException;
 
 import com.google.gwt.aria.client.Id;
@@ -116,12 +117,14 @@ public class SuggestionsBox extends UniTimeDialogBox {
 	private String iHintId = null;
 	private Timer iHideHint;
 	private boolean iUseGwtConfirmations = false;
+	private SpecialRegistrationContext iSpecReg;
 	
-	public SuggestionsBox(TimeGrid.ColorProvider color, boolean online, boolean allowAllChoices) {
+	public SuggestionsBox(TimeGrid.ColorProvider color, boolean online, SpecialRegistrationContext specReg) {
 		super(true, false);
 		addStyleName("unitime-SuggestionsBox");
 		
 		iOnline = online;
+		iSpecReg = specReg;
 		
 		setText("Alternatives");
 		setAnimationEnabled(true);
@@ -204,7 +207,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		iSuggestionsScroll.setStyleName("unitime-ScrollPanel");
 		panel.add(iSuggestionsScroll);
 		
-		if (allowAllChoices) {
+		if (iSpecReg != null) {
 			iAllChoices = new CheckBox(MESSAGES.suggestionsShowAllChoices());
 			iAllChoices.setValue(SectioningCookie.getInstance().isAllChoices());
 			iAllChoices.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
@@ -681,6 +684,8 @@ public class SuggestionsBox extends UniTimeDialogBox {
 	
 	public void open(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> rows, int index, boolean quickDrop, boolean useGwtConfirmations) {
 		ClassAssignmentInterface.ClassAssignment row = rows.get(index);
+		if (iAllChoices != null)
+			iAllChoices.setVisible(iSpecReg.isSpecRegMode());
 		if (row == null || row.isTeachingAssignment()) return;
 		LoadingWidget.getInstance().show(MESSAGES.suggestionsLoading());
 		iAssignment = row;
@@ -718,7 +723,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 			iQuickDrop.setVisible(false); iQuickDrop.setEnabled(false);
 		}
 		iCustomCallback = null;
-		request.setShowAllChoices(iAllChoices != null && iAllChoices.getValue());
+		request.setShowAllChoices(iAllChoices != null && iSpecReg.isSpecRegMode() && iAllChoices.getValue());
 		iSectioningService.computeSuggestions(iOnline, request, rows, index, iFilter.getText(), iCallback);
 	}
 	
@@ -741,7 +746,10 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		iQuickDrop.setVisible(false); iQuickDrop.setEnabled(false);
 		request.addCourse(course);
 		iCustomCallback = callback;
-		if (iAllChoices != null) iAllChoices.setValue(false);
+		if (iAllChoices != null) {
+			iAllChoices.setVisible(iSpecReg.isSpecRegMode());
+			iAllChoices.setValue(false);
+		}
 		request.setShowAllChoices(false);
 		iSectioningService.computeSuggestions(iOnline, request, rows, -1, iFilter.getText(), new AsyncCallback<Collection<ClassAssignmentInterface>>() {
 			@Override
@@ -752,7 +760,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 				} else if (result.size() == 1) {
 					ClassAssignmentInterface a = result.iterator().next();
 					if (a.getCourseAssignments().isEmpty()) {
-						if (iAllChoices == null) {
+						if (iAllChoices == null || !iAllChoices.isVisible()) {
 							LoadingWidget.getInstance().hide();	
 							if (a.hasMessages())
 								iCustomCallback.onFailure(new SectioningException(a.getMessages(", ")));

@@ -41,6 +41,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -70,7 +71,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	private Label iTip;
 	private boolean iSectioning;
 	private boolean iOnline;
-	private boolean iSpecReg;
+	private SpecialRegistrationContext iSpecReg;
 	
 	Validator<CourseSelection> iCheckForDuplicities;
 	private boolean iCanWaitList = true;
@@ -78,7 +79,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	private P iAltHeader, iAltHeaderTitle, iAltHeaderNote;
 	private boolean iArrowsVisible = true;
 
-	public CourseRequestsTable(AcademicSessionProvider sessionProvider, boolean sectioning, boolean online, boolean specreg) {
+	public CourseRequestsTable(AcademicSessionProvider sessionProvider, boolean sectioning, boolean online, SpecialRegistrationContext specreg) {
 		super("unitime-CourseRequests");
 		iSectioning = sectioning;
 		iOnline = online;
@@ -316,7 +317,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		cr.setAcademicSessionId(iSessionProvider.getAcademicSessionId());
 		fillInCourses(cr);
 		fillInAlternatives(cr);
-		cr.setShowAllChoices(iSpecReg);
+		cr.setShowAllChoices(iSpecReg.isSpecRegMode());
 		return cr;
 	}
 	

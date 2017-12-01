@@ -34,6 +34,39 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 public class SpecialRegistrationInterface implements IsSerializable, Serializable {
 	private static final long serialVersionUID = 1L;
 	
+	public static class SpecialRegistrationContext implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		private boolean iSpecReg = false;
+		private String iSpecRegRequestId = null;
+		private String iSpecRegRequestKey = null;
+		private boolean iSpecRegSubmit = false;
+		private Boolean iSpecRegEnroll = null;
+
+		public SpecialRegistrationContext() {}
+		public SpecialRegistrationContext(SpecialRegistrationContext cx) {
+			copy(cx);
+		}
+		public void copy(SpecialRegistrationContext cx) {
+			iSpecReg = cx.iSpecReg;
+			iSpecRegRequestId = cx.iSpecRegRequestId;
+			iSpecRegRequestKey = cx.iSpecRegRequestKey;
+			iSpecRegSubmit = cx.iSpecRegSubmit;
+			iSpecRegEnroll = cx.iSpecRegEnroll;
+		}
+		
+		public boolean isSpecRegMode() { return iSpecReg; }
+		public void setSpecRegMode(boolean specReg) { iSpecReg = specReg; }
+		public String getRequestKey() { return iSpecRegRequestKey; }
+		public void setRequestKey(String key) { iSpecRegRequestKey = key; }
+		public boolean hasRequestKey() { return iSpecRegRequestKey != null && !iSpecRegRequestKey.isEmpty(); }
+		public String getRequestId() { return iSpecRegRequestId; }
+		public void setRequestId(String id) { iSpecRegRequestId = id; }
+		public boolean isCanSubmit() { return iSpecRegSubmit; }
+		public void setCanSubmit(boolean canSubmit) { iSpecRegSubmit = canSubmit; }
+		public Boolean isCanEnroll() { return iSpecRegEnroll == null || iSpecRegEnroll.booleanValue(); }
+		public void setCanEnroll(Boolean canEnroll) { iSpecRegEnroll = canEnroll; }
+	}
+	
 	public static class SpecialRegistrationEligibilityRequest implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private Long iSessionId;
@@ -88,11 +121,11 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private static final long serialVersionUID = 1L;
 		private Long iSessionId;
 		private Long iStudentId;
-		private String iRequestId;
+		private String iRequestKey;
 		
 		public RetrieveSpecialRegistrationRequest() {}
-		public RetrieveSpecialRegistrationRequest(Long sessionId, Long studentId, String requestId) {
-			iRequestId = requestId;
+		public RetrieveSpecialRegistrationRequest(Long sessionId, Long studentId, String requestKey) {
+			iRequestKey = requestKey;
 			iStudentId = studentId;
 			iSessionId = sessionId;
 		}
@@ -101,8 +134,8 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 		public Long getStudentId() { return iStudentId; }
 		public void setStudentId(Long studentId) { iStudentId = studentId; }
-		public String getRequestId() { return iRequestId; }
-		public void setRequestId(String requestId) { iRequestId = requestId; }
+		public String getRequestKey() { return iRequestKey; }
+		public void setRequestKey(String requestKey) { iRequestKey = requestKey; }
 	}
 	
 	public static class RetrieveSpecialRegistrationResponse implements IsSerializable, Serializable, Comparable<RetrieveSpecialRegistrationResponse> {
@@ -149,13 +182,15 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private static final long serialVersionUID = 1L;
 		private Long iSessionId;
 		private Long iStudentId;
+		private String iRequestKey;
 		private String iRequestId;
 		private CourseRequestInterface iCourses;
 		private Collection<ClassAssignmentInterface.ClassAssignment> iClassAssignments;
 		private ArrayList<ErrorMessage> iErrors = null;
 		
 		public SubmitSpecialRegistrationRequest() {}
-		public SubmitSpecialRegistrationRequest(Long sessionId, Long studentId, String requestId, CourseRequestInterface courses, Collection<ClassAssignmentInterface.ClassAssignment> assignments, Collection<ErrorMessage> errors) {
+		public SubmitSpecialRegistrationRequest(Long sessionId, Long studentId, String requestKey, String requestId, CourseRequestInterface courses, Collection<ClassAssignmentInterface.ClassAssignment> assignments, Collection<ErrorMessage> errors) {
+			iRequestKey = requestKey;
 			iRequestId = requestId;
 			iStudentId = studentId;
 			iSessionId = sessionId;
@@ -175,6 +210,8 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void setStudentId(Long studentId) { iStudentId = studentId; }
 		public String getRequestId() { return iRequestId; }
 		public void setRequestId(String requestId) { iRequestId = requestId; }
+		public String getRequestKey() { return iRequestKey; }
+		public void setRequestKey(String requestKey) { iRequestKey = requestKey; }
 		public void addError(ErrorMessage error) {
 			if (iErrors == null) iErrors = new ArrayList<ErrorMessage>();
 			iErrors.add(error);

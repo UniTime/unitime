@@ -36,6 +36,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -64,9 +65,9 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 	private SimpleForm iForm;
 	private UniTimeTable<RetrieveSpecialRegistrationResponse> iTable;
 	private UniTimeHeaderPanel iFooter;
-	private boolean iSpecReg = false;
+	private SpecialRegistrationContext iSpecReg;
 
-	public SpecialRegistrationSelectionDialog(boolean specReg) {
+	public SpecialRegistrationSelectionDialog(SpecialRegistrationContext specReg) {
 		super(true, true);
 		iSpecReg = specReg;
 		setEscapeToHide(true);
@@ -99,14 +100,13 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 		header.add(new UniTimeTableHeader(MESSAGES.colSpecRegName()));
 		iTable.addRow(null, header);
 		
-		if (iSpecReg) {
-			iFooter.addButton("create", MESSAGES.buttonSpecRegCreateNew(), new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					doSubmit(null);
-				}
-			});
-		}
+		
+		iFooter.addButton("create", MESSAGES.buttonSpecRegCreateNew(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				doSubmit(null);
+			}
+		});
 		
 		iFooter.addButton("select", MESSAGES.buttonSpecRegSelect(), new ClickHandler() {
 			@Override
@@ -132,7 +132,8 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 		});
 	}
 	
-	public void open(List<RetrieveSpecialRegistrationResponse> registrations, String selectRequestId) {
+	public void open(List<RetrieveSpecialRegistrationResponse> registrations) {
+		iFooter.setEnabled("create", iSpecReg.isSpecRegMode());
 		iTable.clearTable(1);
 		int select = -1;
 		Collections.sort(registrations);
@@ -151,7 +152,7 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 			row.add(p);
 			row.add(new Label(reg.getSubmitDate() == null ? "" : sModifiedDateFormat.format(reg.getSubmitDate())));
 			row.add(new Label(reg.getDescription() == null ? "" : reg.getDescription()));
-			if (reg.getRequestId().equals(selectRequestId))
+			if (reg.getRequestId().equals(iSpecReg.getRequestId()))
 				select = iTable.getRowCount();
 			iTable.addRow(reg, row);
 			
