@@ -39,6 +39,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private boolean iSpecReg = false;
 		private String iSpecRegRequestId = null;
 		private String iSpecRegRequestKey = null;
+		private boolean iSpecRegRequestKeyValid = false;
 		private boolean iSpecRegSubmit = false;
 		private Boolean iSpecRegEnroll = null;
 
@@ -59,6 +60,8 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public String getRequestKey() { return iSpecRegRequestKey; }
 		public void setRequestKey(String key) { iSpecRegRequestKey = key; }
 		public boolean hasRequestKey() { return iSpecRegRequestKey != null && !iSpecRegRequestKey.isEmpty(); }
+		public boolean isSpecRegRequestKeyValid() { return iSpecRegRequestKeyValid; }
+		public void setSpecRegRequestKeyValid(boolean valid) { iSpecRegRequestKeyValid = valid; }
 		public String getRequestId() { return iSpecRegRequestId; }
 		public void setRequestId(String id) { iSpecRegRequestId = id; }
 		public boolean isCanSubmit() { return iSpecRegSubmit; }

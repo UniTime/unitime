@@ -133,7 +133,7 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 	}
 	
 	public void open(List<RetrieveSpecialRegistrationResponse> registrations) {
-		iFooter.setEnabled("create", iSpecReg.isSpecRegMode());
+		iFooter.setEnabled("create", iSpecReg.isSpecRegMode() && iSpecReg.hasRequestKey() && iSpecReg.isSpecRegRequestKeyValid());
 		iTable.clearTable(1);
 		int select = -1;
 		Collections.sort(registrations);

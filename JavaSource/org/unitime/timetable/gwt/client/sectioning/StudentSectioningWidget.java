@@ -1670,6 +1670,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						@Override
 						public void onFailure(Throwable caught) {
 							iSpecRegCx.setSpecRegMode(false);
+							iSpecRegCx.setSpecRegRequestKeyValid(false);
 							iSpecRegCx.setCanEnroll(null);
 							iSpecRegCx.setCanSubmit(false);
 							fillIn(saved);
@@ -1679,6 +1680,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						@Override
 						public void onSuccess(RetrieveSpecialRegistrationResponse specReg) {
 							iSpecRegCx.setSpecRegMode(true);
+							iSpecRegCx.setSpecRegRequestKeyValid(true);
 							iSpecRegCx.setCanSubmit(specReg.isCanSubmit());
 							iSpecRegCx.setCanEnroll(specReg.isCanEnroll());
 							iSpecRegCx.setRequestId(specReg.getRequestId());
