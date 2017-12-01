@@ -2239,7 +2239,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							iSubmitSpecReg.setEnabled(response.isCanSubmit());
 							iSubmitSpecReg.setVisible(response.isCanSubmit());
 							if (response.isCanSubmit()) {
-								 UniTimeConfirmationDialog.confirm(response.hasMessage() ? response.getMessage() : MESSAGES.confirmSpecialRegistrationSubmit(), new Command() {
+								 UniTimeConfirmationDialog.confirm(response.hasMessage() ? response.getMessage() + " " + MESSAGES.confirmSpecialRegistrationSubmit(): MESSAGES.confirmSpecialRegistrationSubmit(), new Command() {
 									@Override
 									public void execute() {
 										iSubmitSpecReg.click();
@@ -2259,6 +2259,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				public void doSubmit(RetrieveSpecialRegistrationResponse specReg) {
 					super.doSubmit(specReg);
 					if (specReg == null) {
+						iSpecRegCx.setSpecRegMode(true);
 						iSpecRegCx.setRequestId(null);
 						iSpecRegCx.setCanSubmit(true);
 						iSpecRegCx.setCanEnroll(null);
@@ -2266,6 +2267,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						fillIn(iSavedAssignment);
 						addHistory();
 					} else {
+						iSpecRegCx.setSpecRegMode(true);
 						iSpecRegCx.setRequestId(specReg.getRequestId());
 						iSpecRegCx.setCanSubmit(specReg.isCanSubmit());
 						iSpecRegCx.setCanEnroll(specReg.isCanEnroll());

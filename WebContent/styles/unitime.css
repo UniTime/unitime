@@ -5936,3 +5936,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-SolutionReportsPage .single-report {
 	padding-bottom: 20px;	
 }
+
+.unitime-SpecialRegistrations .table-row {
+	max-height: 200px;
+}

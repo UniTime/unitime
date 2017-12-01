@@ -44,7 +44,7 @@ public class SpecialRegistrationInterface {
 	
 	public static class SpecialRegistrationResponse {
 		public SpecialRegistrationRequest data;
-		public ResponseStatus status;
+		public String status;
 		public String message;
 	}
 
