@@ -265,7 +265,7 @@ public class AcademicSessionSetupImport extends BaseImport {
             	dept.setAllowReqTime(false);
             	dept.setAllowReqRoom(false);
             	dept.setAllowReqDistribution(false);
-            	dept.setInheritInstructorPreferences(false);
+            	dept.setInheritInstructorPreferences(true);
             	dept.setDistributionPrefPriority(0);
             	dept.setSubjectAreas(new HashSet<SubjectArea>());
             	debug("Department " + code + (externalId == null ? "" : " (" + externalId + ")") + " created.");
