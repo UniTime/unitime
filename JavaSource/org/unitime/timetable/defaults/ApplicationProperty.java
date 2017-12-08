@@ -2298,6 +2298,12 @@ public enum ApplicationProperty {
 	@DefaultValue("0")
 	@Description("Time Patterns: first day of week (0 is Monday, 1 is Tuesday, etc.)")
 	TimePatternFirstDayOfWeek("unitime.timePattern.firstDayOfWeek"),
+
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Class class suffix / external id: when true for six character class suffixes insert a \'-\' between the first three characters and the last three characters.")
+	ClassSuffixDivSecFormat("unitime.class.classSuffix.divSecDivider"),
+
 	;
 
 	String iKey;

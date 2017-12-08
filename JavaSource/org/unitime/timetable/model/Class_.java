@@ -1024,7 +1024,9 @@ public class Class_ extends BaseClass_ {
     		return getParentClass().getDivSecNumber();
     	}
     	String suffix = getClassSuffix();
-    	if (suffix!=null && suffix.length()==6) return suffix.substring(0,3)+"-"+suffix.substring(3,6);
+    	if (ApplicationProperty.ClassSuffixDivSecFormat.isTrue()) {
+    		if (suffix!=null && suffix.length()==6) return suffix.substring(0,3)+"-"+suffix.substring(3,6);
+    	}
     	return suffix;
     }
 
