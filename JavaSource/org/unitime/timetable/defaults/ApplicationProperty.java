@@ -2278,7 +2278,14 @@ public enum ApplicationProperty {
 	@DefaultValue("1")
 	@Description("Instructional Offerings / Classes: maximal number of selected subject areas for the search to start automatically")
 	MaxSubjectsToSearchAutomatically("unitime.auto_search.maxSubjects"),
+
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Class class suffix / external id: when true for six character class suffixes insert a \'-\' between the first three characters and the last three characters.")
+	ClassSuffixDivSecFormat("unitime.class.classSuffix.divSecDivider"),
+
 	;
+
 
 	String iKey;
 	
