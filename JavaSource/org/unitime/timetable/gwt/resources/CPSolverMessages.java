@@ -248,6 +248,9 @@ public interface CPSolverMessages extends Messages, Constants {
 	@DefaultMessage("Failed to parse automatic hierarchical constraint preference: unknown date pattern {0}")
 	String warnFailedToParseAutomaticHierarchicalConstraintBadDatePattern(String constraint);
 	
+	@DefaultMessage("Failed to parse automatic instructor constraint preference {0}")
+	String warnFailedToParseAutomaticInstructorConstraint(String term);
+	
 	@DefaultMessage("Failed to parse automatic student constraint preference {0}")
 	String warnFailedToParseAutomaticStudentConstraint(String term);
 	

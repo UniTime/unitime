@@ -43,6 +43,18 @@
 				<line>Using unitime.timePattern.firstDayOfWeek application property (0 is Monday, 1 is Tuesday, etc.).</line>
 			</description>
 		</item>
+		<item>
+			<name>Automatic Instructor Constraints</name>
+			<description>
+				<line>Added ability to define distribution preferences that would be applied automatically to all instructors.
+					<line>Using General.AutomaticInstructorConstraints solver parameter, containing a comma separated list of &lt;preference&gt; &lt;distribution&gt;.</line>
+					<line>For example: General.AutomaticInstructorConstraints=Required At Most 5 Hrs, Required 6h Work-Day, Strongly Preferred 5h Work-Day</line>
+				</line>
+				<line>An automatic instructor distribution preference is only applied to instructors that do not have a preference of the same type already.
+					<line>For instance, a Required At Most 5 Hrs will not be applied on an instructor that has a different At Most N Hrs preference already.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Online Student Scheduling</title>

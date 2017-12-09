@@ -158,6 +158,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 	
 	private Hashtable<Long, RoomConstraint> iRooms = new Hashtable<Long, RoomConstraint>();
 	private Hashtable<Object, InstructorConstraint> iInstructors = new Hashtable<Object, InstructorConstraint>();
+	private Hashtable<InstructorConstraint, List<DistributionType>> iInstructorDistributions = new Hashtable<InstructorConstraint, List<DistributionType>>();
 	private Hashtable<Long, Lecture> iLectures = new Hashtable<Long, Lecture>();
 	private Hashtable<Long, SchedulingSubpart> iSubparts = new Hashtable<Long, SchedulingSubpart>();
 	private Hashtable<Long, Student> iStudents = new Hashtable<Long, Student>();
@@ -1904,6 +1905,20 @@ public class TimetableDatabaseLoader extends TimetableLoader {
    			gc.addVariable(lecture);
     	}
    		addGroupConstraint(gc);
+    	InstructorConstraint ic = null;
+    	if (instructor.getExternalUniqueId() != null && instructor.getExternalUniqueId().length() > 0) {
+    		ic = iInstructors.get(instructor.getExternalUniqueId());
+    	} else {
+    		ic = iInstructors.get(instructor.getUniqueId());
+    	}
+    	if (ic != null) {
+    		List<DistributionType> distributions = iInstructorDistributions.get(ic);
+    		if (distributions == null) {
+    			distributions = new ArrayList<DistributionType>();
+    			iInstructorDistributions.put(ic, distributions);
+    		}
+    		distributions.add(pref.getDistributionType());
+    	}
     }
     
     private void loadInstructorGroupConstraints(DepartmentalInstructor instructor, Set<Long> checkedDistPrefIds) {
@@ -2729,6 +2744,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		}
 		
 		postAutomaticHierarchicalConstraints(hibSession);
+		
+		postAutomaticInstructorConstraints(hibSession);
 		
 		assignCommited();
 		
@@ -3970,5 +3987,99 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     protected void incProgress() {
     	checkTermination();
     	iProgress.incProgress();
+    }
+    
+    protected boolean isSameType(DistributionType t1, DistributionType t2) {
+    	if (t1.getReference().equals(t2.getReference())) return true;
+    	if (t1.getReference().matches("_(.+)_")) {
+    		for (FlexibleConstraintType fcType: FlexibleConstraintType.values()) {
+    			if (t1.getReference().matches(fcType.getPattern()) && t2.getReference().matches(fcType.getPattern())) return true;
+    		}
+    		return false;
+    	}
+    	return t1.getReference().replaceFirst("\\([a-z0-9\\.]+\\)","").equals(t2.getReference().replaceFirst("\\([a-z0-9\\.]+\\)",""));
+    }
+    
+    protected void postAutomaticInstructorConstraints(org.hibernate.Session hibSession) {
+		String constraints = getModel().getProperties().getProperty("General.AutomaticInstructorConstraints");
+		if (constraints == null || constraints.isEmpty()) return;
+		List<DistributionType> types = (List<DistributionType>)hibSession.createQuery("from DistributionType where examPref = false").list();
+		for (String term: constraints.split("[,;][ ]?(?=([^\"]*\"[^\"]*\")*[^\"]*$)")) {
+			String constraint = term.trim().toLowerCase();
+			if (constraint.isEmpty()) continue;
+			PreferenceLevel pref = null;
+			for (PreferenceLevel p: PreferenceLevel.getPreferenceLevelList()) {
+				if (constraint.startsWith(p.getPrefName().toLowerCase() + " ") || constraint.startsWith(p.getPrefName().toLowerCase() + ":")) {
+					pref = p;
+					constraint = constraint.substring(p.getPrefName().length() + 1).trim();
+					break;
+				} else if (constraint.startsWith(p.getPrefProlog().toLowerCase() + " ") || constraint.startsWith(p.getPrefProlog().toLowerCase() + ":")) {
+					pref = p;
+					constraint = constraint.substring(p.getPrefProlog().length() + 1).trim();
+					break;
+				} else if (p.getPrefAbbv() != null && (constraint.startsWith(p.getPrefAbbv().toLowerCase() + " ") || constraint.startsWith(p.getPrefAbbv().toLowerCase() + ":"))) {
+					pref = p;
+					constraint = constraint.substring(p.getPrefAbbv().length() + 1).trim();
+					break;
+				} else if (PreferenceLevel.sRequired.equals(p.getPrefProlog()) && (constraint.startsWith("required ") || constraint.startsWith("required:"))) {
+					pref = p; constraint = constraint.substring("required ".length()).trim(); break;
+				} else if (PreferenceLevel.sStronglyPreferred.equals(p.getPrefProlog()) && (constraint.startsWith("strongly preferred ") || constraint.startsWith("strongly preferred:"))) {
+					pref = p; constraint = constraint.substring("strongly preferred ".length()).trim(); break;
+				} else if (PreferenceLevel.sPreferred.equals(p.getPrefProlog()) && (constraint.startsWith("preferred ") || constraint.startsWith("preferred:"))) {
+					pref = p; constraint = constraint.substring("preferred ".length()).trim(); break;
+				} else if (PreferenceLevel.sNeutral.equals(p.getPrefProlog()) && (constraint.startsWith("neutral ") || constraint.startsWith("neutral:"))) {
+					pref = p; constraint = constraint.substring("neutral ".length()).trim(); break;
+				} else if (PreferenceLevel.sDiscouraged.equals(p.getPrefProlog()) && (constraint.startsWith("discouraged ") || constraint.startsWith("discouraged:"))) {
+					pref = p; constraint = constraint.substring("discouraged ".length()).trim(); break;
+				} else if (PreferenceLevel.sStronglyDiscouraged.equals(p.getPrefProlog()) && (constraint.startsWith("strongly discouraged ") || constraint.startsWith("strongly discouraged:"))) {
+					pref = p; constraint = constraint.substring("strongly discouraged ".length()).trim(); break;
+				} else if (PreferenceLevel.sProhibited.equals(p.getPrefProlog()) && (constraint.startsWith("prohibited ") || constraint.startsWith("prohibited:"))) {
+					pref = p; constraint = constraint.substring("prohibited ".length()).trim(); break;
+				}
+			}
+			if (pref == null) {
+				iProgress.message(msglevel("automaticHierarchicalConstraints", Progress.MSGLEVEL_WARN), MSG.warnFailedToParseAutomaticInstructorConstraint(term));
+				continue;
+			}
+			DistributionType type = null;
+			for (DistributionType t: types) {
+				if (constraint.equalsIgnoreCase(t.getReference()) || constraint.equalsIgnoreCase(t.getAbbreviation()) || constraint.equalsIgnoreCase(t.getLabel())) {
+					type = t; break;
+				}
+			}
+			if (type == null) {
+				for (GroupConstraint.ConstraintType t: GroupConstraint.ConstraintType.values()) {
+					if (constraint.equalsIgnoreCase(t.reference()) || constraint.equalsIgnoreCase(t.getName())) {
+						type = new DistributionType(); type.setReference(t.reference()); type.setLabel(t.getName()); type.setAbbreviation(t.getName());
+						break;
+					}
+				}
+			}
+			if (type == null) {
+				iProgress.message(msglevel("automaticHierarchicalConstraints", Progress.MSGLEVEL_WARN), MSG.warnFailedToParseAutomaticInstructorConstraint(term));
+				continue;
+			}
+			setPhase(MSG.phasePostingAutomaticConstraint(pref.getPrefName(), type.getLabel()), iInstructors.size());
+			ic: for (InstructorConstraint ic: getModel().getInstructorConstraints()) {
+		    	incProgress();
+				List<Lecture> variables = ic.variables();
+				if (variables.size() <= 1) continue;
+				List<DistributionType> distributions = iInstructorDistributions.get(ic);
+				if (distributions != null) {
+					for (DistributionType other: distributions)
+						if (isSameType(type, other)) continue ic;
+				}
+		    	Constraint gc = createGroupConstraint(ic.getId(), type, pref, ic);
+		    	if (gc == null) continue;
+		    	String info = "";
+				for (Lecture var: variables) {
+					gc.addVariable(var);
+					if (!info.isEmpty()) info += ", ";
+					info += getClassLabel(var);
+				}
+				iProgress.info(MSG.infoPostedConstraint(type.getLabel(), info, pref.getPrefName()));
+		    	addGroupConstraint(gc);
+    		}
+		}
     }
 }
