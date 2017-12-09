@@ -90,8 +90,8 @@ public class SuggestionsWidget extends SimpleForm {
 		iFooter.addButton("longer", MESSAGES.buttonSearchLonger(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				iFilter.removeChip(new Chip("time", null), false);
-				iFilter.addChip(new Chip("time", "T" + ((iRequest.getTimeLimit() + 2) / 1000)), false);
+				iFilter.removeChip(new Chip("timeout", null), false);
+				iFilter.addChip(new Chip("timeout", "T" + (2 * iRequest.getTimeLimit() / 1000)), false);
 				iRequest.setTimeLimit(2 * iRequest.getTimeLimit());
 				computeSuggestions();
 			}
