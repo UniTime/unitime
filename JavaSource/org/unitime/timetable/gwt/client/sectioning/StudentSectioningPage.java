@@ -102,49 +102,45 @@ public class StudentSectioningPage extends Composite {
 			}
 
 			public void onSuccess(SectioningProperties result) {
-				if (result.isAdminOrAdvisor()) {
-					userAuthentication.setAllowLookup(true);
-					if (Location.getParameter("session") != null || Location.getParameter("term") != null)
-						sessionSelector.selectSession(new AcademicSessionMatcher() {
-							protected boolean matchCampus(AcademicSessionInfo info, String campus) {
-								if (info.hasExternalCampus() && campus.equalsIgnoreCase(info.getExternalCampus())) return true;
-								return campus.equalsIgnoreCase(info.getCampus());
-							}
+				userAuthentication.setAllowLookup(result.isAdminOrAdvisor());
+				if (Location.getParameter("session") != null || Location.getParameter("term") != null)
+					sessionSelector.selectSession(new AcademicSessionMatcher() {
+						protected boolean matchCampus(AcademicSessionInfo info, String campus) {
+							if (info.hasExternalCampus() && campus.equalsIgnoreCase(info.getExternalCampus())) return true;
+							return campus.equalsIgnoreCase(info.getCampus());
+						}
 
-							protected boolean matchTerm(AcademicSessionInfo info, String term) {
-								if (info.hasExternalTerm() && term.equalsIgnoreCase(info.getExternalTerm())) return true;
-								return term.equalsIgnoreCase(info.getTerm() + info.getYear()) || term.equalsIgnoreCase(info.getYear() + info.getTerm()) || term.equalsIgnoreCase(info.getTerm() + info.getYear() + info.getCampus());
-							}
+						protected boolean matchTerm(AcademicSessionInfo info, String term) {
+							if (info.hasExternalTerm() && term.equalsIgnoreCase(info.getExternalTerm())) return true;
+							return term.equalsIgnoreCase(info.getTerm() + info.getYear()) || term.equalsIgnoreCase(info.getYear() + info.getTerm()) || term.equalsIgnoreCase(info.getTerm() + info.getYear() + info.getCampus());
+						}
 
-							protected boolean matchSession(AcademicSessionInfo info, String session) {
-								if (info.hasExternalTerm() && info.hasExternalCampus() && session.equalsIgnoreCase(info.getExternalTerm() + info.hasExternalCampus())) return true;
-								return session.equalsIgnoreCase(info.getTerm() + info.getYear() + info.getCampus()) || session.equalsIgnoreCase(info.getTerm() + info.getYear()) || session.equals(info.getSessionId().toString());
-							}
+						protected boolean matchSession(AcademicSessionInfo info, String session) {
+							if (info.hasExternalTerm() && info.hasExternalCampus() && session.equalsIgnoreCase(info.getExternalTerm() + info.hasExternalCampus())) return true;
+							return session.equalsIgnoreCase(info.getTerm() + info.getYear() + info.getCampus()) || session.equalsIgnoreCase(info.getTerm() + info.getYear()) || session.equals(info.getSessionId().toString());
+						}
 
-							@Override
-							public boolean match(AcademicSessionInfo info) {
-								String campus = Location.getParameter("campus");
-								if (campus != null && !matchCampus(info, campus)) return false;
-								String term = Location.getParameter("term");
-								if (term != null && !matchTerm(info, term)) return false;
-								String session = Location.getParameter("session");
-								if (session != null && !matchSession(info, session)) return false;
-								return true;
-							}
-						}, new AsyncCallback<Boolean>() {
-							@Override
-							public void onFailure(Throwable caught) {
-							}
+						@Override
+						public boolean match(AcademicSessionInfo info) {
+							String campus = Location.getParameter("campus");
+							if (campus != null && !matchCampus(info, campus)) return false;
+							String term = Location.getParameter("term");
+							if (term != null && !matchTerm(info, term)) return false;
+							String session = Location.getParameter("session");
+							if (session != null && !matchSession(info, session)) return false;
+							return true;
+						}
+					}, new AsyncCallback<Boolean>() {
+						@Override
+						public void onFailure(Throwable caught) {
+						}
 
-							@Override
-							public void onSuccess(Boolean result) {
-								if (Location.getParameter("student") != null)
-									UserAuthentication.personFound(Location.getParameter("student"));
-							}
-						});
-				} else {
-					userAuthentication.setAllowLookup(false);
-				}
+						@Override
+						public void onSuccess(Boolean result) {
+							if (Location.getParameter("student") != null && userAuthentication.isAllowLookup())
+								UserAuthentication.personFound(Location.getParameter("student"));
+						}
+					});
 			}
 		});
 		
