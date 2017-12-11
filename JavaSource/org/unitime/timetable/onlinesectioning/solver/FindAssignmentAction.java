@@ -260,6 +260,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		Hashtable<CourseRequest, Set<Section>> requiredSectionsForCourse = new Hashtable<CourseRequest, Set<Section>>();
 		HashSet<FreeTimeRequest> pinnedFreeTimes = new HashSet<FreeTimeRequest>();
 		HashSet<FreeTimeRequest> requiredFreeTimes = new HashSet<FreeTimeRequest>();
+		HashSet<CourseRequest> requiredUnassigned = new HashSet<CourseRequest>();
 
 		if (getAssignment() != null && !getAssignment().isEmpty()) {
 
@@ -280,8 +281,10 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					HashSet<Section> requiredOrSavedSections = new HashSet<Section>();
 					HashSet<CourseRequest> allowOverlaps = new HashSet<CourseRequest>();
 					boolean conflict = false;
+					boolean assigned = false;
 					a: for (ClassAssignmentInterface.ClassAssignment a: getAssignment()) {
 						if (a != null && !a.isFreeTime() && cr.getCourse(a.getCourseId()) != null && a.getClassId() != null) {
+							assigned = true;
 							Section section = cr.getSection(a.getClassId());
 							if (section == null || section.getLimit() == 0) {
 								continue a;
@@ -314,6 +317,9 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							rq.addSection(OnlineSectioningHelper.toProto(section, cr.getCourse(a.getCourseId())).setPreference(
 									a.isPinned() || a.isSaved() || getRequest().isNoChange() ? OnlineSectioningLog.Section.Preference.REQUIRED : OnlineSectioningLog.Section.Preference.PREFERRED));
 						}
+					}
+					if (!assigned && getRequest().isNoChange()) {
+						requiredUnassigned.add(cr);
 					}
 					preferredSectionsForCourse.put(cr, preferredSections);
 					requiredSectionsForCourse.put(cr, requiredSections);
@@ -353,6 +359,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		selection.setPreferredSections(preferredSectionsForCourse);
 		selection.setRequiredSections(requiredOrSavedSectionsForCourse);
 		selection.setRequiredFreeTimes(requiredFreeTimes);
+		selection.setRequiredUnassinged(requiredUnassigned);
 		
 		BranchBoundNeighbour neighbour = selection.select(assignment, student);
 		if (neighbour == null && student.getRequests().isEmpty())

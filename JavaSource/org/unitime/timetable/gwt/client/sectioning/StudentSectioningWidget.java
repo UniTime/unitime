@@ -1005,7 +1005,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					final CourseRequestInterface undo = iCourseRequests.getRequest();
 					iCourseRequests.dropCourse(event.getAssignment());
 					LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
-					iSectioningService.section(iOnline, iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
+					CourseRequestInterface r = iCourseRequests.getRequest(); r.setNoChange(true);
+					iSectioningService.section(iOnline, r, iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
 						public void onFailure(Throwable caught) {
 							LoadingWidget.getInstance().hide();
 							iStatus.error(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
@@ -2171,7 +2172,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								final CourseRequestInterface undo = iCourseRequests.getRequest();
 								iCourseRequests.dropCourse(event.getSelectedItem());
 								LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
-								iSectioningService.section(iOnline, iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
+								CourseRequestInterface r = iCourseRequests.getRequest(); r.setNoChange(true);
+								iSectioningService.section(iOnline, r, iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
 									public void onFailure(Throwable caught) {
 										LoadingWidget.getInstance().hide();
 										iStatus.error(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
