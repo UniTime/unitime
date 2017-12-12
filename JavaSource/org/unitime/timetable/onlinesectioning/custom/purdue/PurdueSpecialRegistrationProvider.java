@@ -370,6 +370,9 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			request.studentId = getBannerId(student);
 			request.changes = buildChangeList(server, helper, student, input.getClassAssignments(), input.getErrors());
 			request.requestId = input.getRequestId();
+			
+			if (request.changes == null || request.changes.isEmpty())
+				throw new SectioningException("There are no changes.");
 
 			resource = new ClientResource(getSpecialRegistrationApiSiteSubmitRegistration());
 			resource.setNext(iClient);
