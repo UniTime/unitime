@@ -319,6 +319,9 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			request.campus = getBannerCampus(session);
 			request.studentId = getBannerId(student);
 			request.changes = buildChangeList(server, helper, student, input.getClassAssignments(), input.getErrors());
+			
+			if (request.changes == null || request.changes.isEmpty())
+				return new SpecialRegistrationEligibilityResponse(false, "There are no changes.");
 
 			resource = new ClientResource(getSpecialRegistrationApiSiteCheckEligibility());
 			resource.setNext(iClient);
