@@ -210,7 +210,7 @@ public class RestrictionsTable extends UniTimeTable<RestrictionsTable.Node> {
 			iCheck = new CheckBox(name);
 			iCheck.addStyleName("check-box");
 			update();
-			iImage.getElement().getStyle().setPaddingLeft(16 * getIndent(), Unit.PX);
+			iImage.getElement().getStyle().setMarginLeft(16 * getIndent(), Unit.PX);
 			iCheck.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
