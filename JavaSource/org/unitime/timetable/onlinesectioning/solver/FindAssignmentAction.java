@@ -524,12 +524,12 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				if (enrollment.getStudentId().equals(studentId)) {
 					Reservation clonedReservation = null;
 					if (hasMustUse) {
-						clonedReservation = new OnlineReservation(XReservationType.Dummy.ordinal(), -2l, clonedOffering, 0, false, 1, true, true, false, true) {
+						clonedReservation = new OnlineReservation(XReservationType.Dummy.ordinal(), -2l, clonedOffering, 1000, false, 1, true, true, false, true) {
 							@Override
 							public boolean mustBeUsed() { return true; }
 						};
 					} else {
-						clonedReservation = new OnlineReservation(XReservationType.Dummy.ordinal(), -2l, clonedOffering, 0, false, 1, true, false, false, true);
+						clonedReservation = new OnlineReservation(XReservationType.Dummy.ordinal(), -2l, clonedOffering, 1000, false, 1, true, false, false, true);
 					}
 					clonedReservation.addConfig(configs.get(enrollment.getConfigId()));
 					for (Long sectionId: enrollment.getSectionIds())
@@ -600,7 +600,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								}
 								if (needReservation) {
 									Reservation reservation = new OnlineReservation(XReservationType.Dummy.ordinal(),
-											-originalStudent.getStudentId(), clonnedCourse.getOffering(), 5, false, 1, true, false, false, true);
+											-originalStudent.getStudentId(), clonnedCourse.getOffering(), 1000, false, 1, true, false, false, true);
 									for (Long originalSectionId: originalEnrollment.getSectionIds())
 										reservation.addSection(classTable.get(originalSectionId));
 								}
