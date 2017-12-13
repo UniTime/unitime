@@ -1070,6 +1070,9 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Important")
 	String colStudentConflictImportant();
+	
+	@DefaultMessage("Workday")
+	String colStudentConflictWorkday();
 
 	@DefaultMessage("Instructor")
 	String colStudentConflictInstructor();
@@ -5841,6 +5844,9 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("important")
 	String studentConflictImportant();
+	
+	@DefaultMessage("workday")
+	String studentConflictWorkday();
 
 	@DefaultMessage("instructor")
 	String studentConflictInstructor();

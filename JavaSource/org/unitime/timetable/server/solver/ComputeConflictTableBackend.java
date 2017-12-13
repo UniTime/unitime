@@ -28,6 +28,8 @@ import java.util.Set;
 import org.cpsolver.coursett.constraint.FlexibleConstraint;
 import org.cpsolver.coursett.constraint.GroupConstraint;
 import org.cpsolver.coursett.constraint.JenrlConstraint;
+import org.cpsolver.coursett.criteria.StudentConflict;
+import org.cpsolver.coursett.criteria.additional.ImportantStudentConflict;
 import org.cpsolver.coursett.model.Lecture;
 import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.Student;
@@ -128,6 +130,8 @@ public class ComputeConflictTableBackend implements GwtRpcImplementation<Compute
 			dummyPlacement = new Placement(lecture, time, currentPlacement.getRoomLocation());
 		
 		ClassAssignmentDetails suggestion = ClassAssignmentDetailsBackend.createClassAssignmentDetails(context, solver, lecture, dummyPlacement, false, false);
+		TimetableModel m = (TimetableModel)solver.currentSolution().getModel();
+		StudentConflict imp = (StudentConflict)m.getCriterion(ImportantStudentConflict.class);
 		
 		Map<Placement, Integer> committed = new HashMap<Placement, Integer>();
 		if (dummyPlacement.getCommitedConflicts()>0) {
@@ -149,8 +153,10 @@ public class ComputeConflictTableBackend implements GwtRpcImplementation<Compute
     			jInfo.setJenrl((int)j);
     			jInfo.setIsHard(jenrl.areStudentConflictsHard());
     			jInfo.setIsDistance(jenrl.areStudentConflictsDistance(assignment, dummyPlacement));
-    			jInfo.setIsImportant(jenrl.priority() > 0.0);
+    			jInfo.setIsImportant(imp != null && jenrl.priority() > 0.0);
+    			jInfo.setIsWorkDay(jenrl.areStudentConflictsWorkday(assignment, dummyPlacement));
     			jInfo.setIsFixed(jenrl.first().nrTimeLocations() == 1 && jenrl.second().nrTimeLocations() == 1);
+    			jInfo.setIsInstructor(jenrl.getNrInstructors() > 0);
     			if (jenrl.first().equals(lecture)) {
     				if (jenrl.second().isCommitted()) jInfo.setIsCommited(true);
     				suggestion.addStudentConflict(new StudentConflictInfo(jInfo, ClassAssignmentDetailsBackend.createClassAssignmentDetails(context, solver, jenrl.second(), false, false)));
@@ -169,7 +175,8 @@ public class ComputeConflictTableBackend implements GwtRpcImplementation<Compute
         	jenrl.setJenrl(cnt.intValue());
         	jenrl.setIsFixed(lecture.nrTimeLocations()==1);
         	jenrl.setIsHard(lecture.isSingleSection());
-        	jenrl.setIsDistance(!dummyPlacement.getTimeLocation().hasIntersection(p.getTimeLocation()));
+        	jenrl.setIsDistance(StudentConflict.distance(m.getDistanceMetric(), dummyPlacement, p));
+        	jenrl.setIsWorkDay(StudentConflict.workday(m.getStudentWorkDayLimit(), dummyPlacement, p));
         	suggestion.addStudentConflict(new StudentConflictInfo(jenrl, ClassAssignmentDetailsBackend.createClassAssignmentDetails(context, solver, p.variable(), p, false, false)));
 		}
     	for (GroupConstraint gc: lecture.groupConstraints()) {

@@ -419,6 +419,7 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 		public boolean iIsCommited = false;
 		public boolean iIsImportant = false;
 		public boolean iIsInstructor = false;
+		public boolean iIsWorkDay = false;
 		public double iDistance = 0.0;
 		private TreeSet<CurriculumInfo> iCurriculum2nrStudents = null;
 	
@@ -436,6 +437,8 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 		public void setIsCommited(boolean isCommited) { iIsCommited = isCommited; }
 		public boolean isImportant() { return iIsImportant; }
 		public void setIsImportant(boolean isImportant) { iIsImportant = isImportant; }
+		public boolean isWorkDay() { return iIsWorkDay; }
+		public void setIsWorkDay(boolean isWorkDay) { iIsWorkDay = isWorkDay; }
 		public boolean isInstructor() { return iIsInstructor; }
 		public void setIsInstructor(boolean isInstructor) { iIsInstructor = isInstructor; }
 		public double getDistance() { return iDistance; }

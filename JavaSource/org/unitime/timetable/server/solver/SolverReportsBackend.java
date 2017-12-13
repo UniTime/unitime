@@ -427,11 +427,21 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
 	}
 
 	public static TableInterface getStudentConflictsReportTable(StudentConflictsReport report) {
+		boolean hasHard = false;
+		boolean hasDistance = false;
+		boolean hasFixed = false;
+		boolean hasCommitted = false;
 		boolean hasImportant = false;
 		boolean hasInstructor = false;
+		boolean hasWorkday = false;
 		for (JenrlInfo g: (Set<JenrlInfo>)report.getGroups()) {
+			if (g.isHard()) hasHard = true;
+			if (g.isDistance()) hasDistance = true;
+			if (g.isFixed()) hasFixed = true;
+			if (g.isCommited()) hasCommitted = true;
 			if (g.isImportant()) hasImportant = true;
 			if (g.isInstructor()) hasInstructor = true;
+			if (g.isWorkDay()) hasWorkday = true;
 		}
 		TableInterface table = new TableInterface("student-conf", MESSAGES.reportStudentConflicts());
 		table.setHeader(
@@ -440,16 +450,17 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
 				new TableHeaderIterface(MESSAGES.colDate()),
 				new TableHeaderIterface(MESSAGES.colTime()),
 				new TableHeaderIterface(MESSAGES.colRoom()),
-				new TableHeaderIterface(MESSAGES.colStudentConflictHard()),
-				new TableHeaderIterface(MESSAGES.colStudentConflictDistance()),
-				new TableHeaderIterface(MESSAGES.colStudentConflictFixed()),
-				new TableHeaderIterface(MESSAGES.colStudentConflictCommitted()),
+				new TableHeaderIterface(MESSAGES.colStudentConflictHard()).setVisible(hasHard),
+				new TableHeaderIterface(MESSAGES.colStudentConflictDistance()).setVisible(hasDistance),
+				new TableHeaderIterface(MESSAGES.colStudentConflictFixed()).setVisible(hasFixed),
+				new TableHeaderIterface(MESSAGES.colStudentConflictCommitted()).setVisible(hasCommitted),
 				new TableHeaderIterface(MESSAGES.colStudentConflictImportant()).setVisible(hasImportant),
 				new TableHeaderIterface(MESSAGES.colStudentConflictInstructor()).setVisible(hasInstructor),
+				new TableHeaderIterface(MESSAGES.colStudentConflictWorkday()).setVisible(hasWorkday),
 				new TableHeaderIterface(MESSAGES.colCurriculum())
 				);
         try {
-        	int total[] = new int [] { 0, 0, 0, 0, 0, 0, 0};
+        	int total[] = new int [] { 0, 0, 0, 0, 0, 0, 0, 0};
         	for (Iterator i=report.getGroups().iterator();i.hasNext();) {
         		JenrlInfo g = (JenrlInfo)i.next();
         		
@@ -498,12 +509,13 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
     					dates,
     					times,
     					rooms,
-    					new TableCellBoolean(g.isHard() ? Boolean.TRUE : null).setFormattedValue(g.isHard() ? MESSAGES.exportTrue() : MESSAGES.exportFalse()),
+    					new TableCellBoolean(g.isHard()).setFormattedValue(g.isHard() ? MESSAGES.exportTrue() : MESSAGES.exportFalse()),
     					new TableCellInterface<Double>(g.isDistance() ? new Double(g.getDistance()) : null).setFormattedValue(g.isDistance() ? MESSAGES.reportDistanceInMeter((int)Math.round(g.getDistance())) : ""),
-    					new TableCellBoolean(g.isFixed() ? Boolean.TRUE : null).setFormattedValue(g.isFixed() ? MESSAGES.exportTrue() : MESSAGES.exportFalse()),
-    					new TableCellBoolean(g.isCommited() ? Boolean.TRUE : null).setFormattedValue(g.isCommited() ? MESSAGES.exportTrue() : MESSAGES.exportFalse()),
-    					new TableCellBoolean(g.isImportant() ? Boolean.TRUE : null).setFormattedValue(g.isImportant() ? MESSAGES.exportTrue() : MESSAGES.exportFalse()),
-    					new TableCellBoolean(g.isInstructor() ? Boolean.TRUE : null).setFormattedValue(g.isInstructor() ? MESSAGES.exportTrue() : MESSAGES.exportFalse()),
+    					new TableCellBoolean(g.isFixed()).setFormattedValue(g.isFixed() ? MESSAGES.exportTrue() : MESSAGES.exportFalse()),
+    					new TableCellBoolean(g.isCommited()).setFormattedValue(g.isCommited() ? MESSAGES.exportTrue() : MESSAGES.exportFalse()),
+    					new TableCellBoolean(g.isImportant()).setFormattedValue(g.isImportant() ? MESSAGES.exportTrue() : MESSAGES.exportFalse()),
+    					new TableCellBoolean(g.isInstructor()).setFormattedValue(g.isInstructor() ? MESSAGES.exportTrue() : MESSAGES.exportFalse()),
+    					new TableCellBoolean(g.isWorkDay()).setFormattedValue(g.isWorkDay() ? MESSAGES.exportTrue() : MESSAGES.exportFalse()),
     					new TableCellText(g.getCurriculumText())
     					));
 
@@ -514,6 +526,7 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
         		if (g.isCommited()) total[4] += Math.round(g.getJenrl());
         		if (g.isImportant()) total[5] += Math.round(g.getJenrl());
         		if (g.isInstructor()) total[6] += (g.isInstructor() ? 1 : 0);
+        		if (g.isWorkDay()) total[7] += Math.round(g.getJenrl());
         	}
         	
         	table.addRow(new TableRowInterface(
@@ -528,6 +541,7 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
 					new TableCellBoolean(null).setFormattedValue(String.valueOf(total[4])),
 					new TableCellBoolean(null).setFormattedValue(String.valueOf(total[5])),
 					new TableCellBoolean(null).setFormattedValue(String.valueOf(total[6])),
+					new TableCellBoolean(null).setFormattedValue(String.valueOf(total[7])),
 					new TableCellText("")
 					));
         } catch (Exception e) {

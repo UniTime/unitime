@@ -119,6 +119,15 @@
 			</description>
 		</item>
 		<item>
+			<name>Course Timetabling: Work-Day Student Conflicts</name>
+			<description>
+				<line>Added work-day student conflicts
+					<line>There is a work-day conflict when the time between the start of the first class and the end of the last class on a day is too long (e.g., more than 8 hours).</line>
+					<line>Solver parameter StudentConflict.WorkDayLimit defines the number of slots of a work-day (default is -1, work-day conflicts are disabled).</line>
+				</line>
+  			</description>
+		</item>
+		<item>
 			<name>Examination Timetabling: Period Preferences</name>
 			<description>
 				<line>Added additional information about how well are the period preferences satisfied into the solution extended info

@@ -251,6 +251,8 @@ public class DataTable extends UniTimeTable<TableInterface.TableRowInterface> im
 					add(new Image(RESOURCES.on()));
 				else if (value != null && !value.booleanValue())
 					add(new Image(RESOURCES.off()));
+				else
+					setHTML(cell.getFormattedValue());
 			} else {
 				setHTML(cell.getFormattedValue());
 			}

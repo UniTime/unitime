@@ -54,6 +54,7 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 	public boolean iIsFixed = false;
 	public boolean iIsCommited = false;
 	public boolean iIsImportant = false;
+	public boolean iIsWorkDay = false;
 	public boolean iIsInstructor = false;
 	public double iDistance = 0.0;
 	public ClassAssignmentDetails iFirst = null, iSecond = null;
@@ -87,7 +88,8 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 		if (jc.isInConflict(assignment)) {
 			setIsHard(first.areStudentConflictsHard(second));
 			setIsFixed(first.nrTimeLocations()==1 && second.nrTimeLocations()==1);
-			setIsDistance(!firstPl.getTimeLocation().hasIntersection(secondPl.getTimeLocation()));
+			setIsDistance(StudentConflict.distance(model.getDistanceMetric(), firstPl, secondPl));
+			setIsWorkDay(StudentConflict.workday(model.getStudentWorkDayLimit(), firstPl, secondPl));
 			setIsCommited(jc.areStudentConflictsCommitted());
 			if (isDistance())
 				setDistance(Placement.getDistanceInMeters(model.getDistanceMetric(),firstPl,secondPl));
@@ -134,7 +136,8 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 				if (info==null) {
 					info = new JenrlInfo();
 					info.setIsCommited(true);
-					info.setIsDistance(!pl.getTimeLocation().hasIntersection(placement.getTimeLocation()));
+					info.setIsDistance(StudentConflict.distance(((TimetableModel)lecture.getModel()).getDistanceMetric(), pl, placement));
+					info.setIsWorkDay(StudentConflict.workday(((TimetableModel)lecture.getModel()).getStudentWorkDayLimit(), pl, placement));
 					info.setIsFixed(lecture.nrTimeLocations()==1);
 					if (solver!=null) {
 						info.iFirst = new ClassAssignmentDetails(solver,lecture,placement,false);
@@ -186,6 +189,8 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 	public void setIsCommited(boolean isCommited) { iIsCommited = isCommited; }
 	public boolean isImportant() { return iIsImportant; }
 	public void setIsImportant(boolean isImportant) { iIsImportant = isImportant; }
+	public boolean isWorkDay() { return iIsWorkDay; }
+	public void setIsWorkDay(boolean isWorkDay) { iIsWorkDay = isWorkDay; }
 	public boolean isInstructor() { return iIsInstructor; }
 	public void setIsInstructor(boolean isInstructor) { iIsInstructor = isInstructor; }
 	public double getDistance() { return iDistance; }
@@ -224,6 +229,7 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 			iIsDistance = Boolean.valueOf(root.elementText("dist")).booleanValue();
 			iIsFixed = Boolean.valueOf(root.elementText("fixed")).booleanValue();
 			iIsHard = Boolean.valueOf(root.elementText("hard")).booleanValue();
+			iIsWorkDay = Boolean.valueOf(root.elementText("workday")).booleanValue();
 			if (root.elementText("distance")!=null)
 				iDistance = Double.parseDouble(root.elementText("distance"));
 			if (root.elementText("commited")==null) {
@@ -255,6 +261,7 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 		root.addElement("distance").setText(String.valueOf(iDistance));
 		root.addElement("important").setText(String.valueOf(iIsImportant));
 		root.addElement("instructor").setText(String.valueOf(iIsInstructor));
+		root.addElement("workday").setText(String.valueOf(iIsWorkDay));
 	}
 
 	public boolean saveToFile() {

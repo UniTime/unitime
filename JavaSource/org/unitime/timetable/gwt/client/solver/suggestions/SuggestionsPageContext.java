@@ -273,6 +273,7 @@ public abstract class SuggestionsPageContext {
 	        else if (conflict.getInfo().isHard()) props.add(MESSAGES.studentConflictHard());
 	        if (conflict.getInfo().isDistance()) props.add(MESSAGES.studentConflictDistance());
 	        if (conflict.getInfo().isImportant()) props.add(MESSAGES.studentConflictImportant());
+	        if (conflict.getInfo().isWorkDay()) props.add(MESSAGES.studentConflictWorkday());
 	        if (conflict.getInfo().isInstructor()) props.add(MESSAGES.studentConflictInstructor());
 	        if (!props.isEmpty()) {
 	        	String text = "";

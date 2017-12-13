@@ -255,7 +255,7 @@ public class ClassAssignmentDetailsBackend implements GwtRpcImplementation<Class
 			for (Iterator e=lecture.activeJenrls(assignment).iterator();e.hasNext();) {
 				JenrlConstraint jenrl = (JenrlConstraint)e.next();
 				Lecture another = (Lecture)jenrl.another(lecture);
-				if (!jenrl.isToBeIgnored())
+				if (!jenrl.isToBeIgnored() && jenrl.getJenrl() > 0)
 					details.addStudentConflict(new StudentConflictInfo(toJenrlInfo(new org.unitime.timetable.solver.ui.JenrlInfo(solver, jenrl)), createClassAssignmentDetails(context, solver, another, false, false)));
 			}
 			if (placement!=null) {
@@ -428,6 +428,7 @@ public class ClassAssignmentDetailsBackend implements GwtRpcImplementation<Class
 		ret.setIsFixed(info.isFixed());
 		ret.setIsCommited(info.isCommited());
 		ret.setIsImportant(info.isImportant());
+		ret.setIsWorkDay(info.isWorkDay());
 		ret.setIsInstructor(info.isInstructor());
 		ret.setDistance(info.getDistance());
 		if (info.hasCurricula())
