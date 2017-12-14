@@ -1574,6 +1574,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
 				clearMessage(false);
 				iEligibilityCheck = result;
+				iSpecRegCx.update(result);
 				iCourseRequests.setCanWaitList(result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
 				iCourseRequests.setArrowsVisible(!result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.NO_REQUEST_ARROWS));
 				if (result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_USE_ASSISTANT)) {
@@ -1602,6 +1603,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								iCourseRequests.setCanWaitList(result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
 								iCourseRequests.setArrowsVisible(!result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.NO_REQUEST_ARROWS));
 								iEligibilityCheck = result;
+								iSpecRegCx.update(result);
 								iSchedule.setVisible(iMode.isSectioning()); iSchedule.setEnabled(iMode.isSectioning());
 								iSave.setVisible(!iMode.isSectioning()); iSave.setEnabled(!iMode.isSectioning() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_REGISTER));
 								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.DEGREE_PLANS)) {
@@ -1653,6 +1655,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			public void onFailure(Throwable caught) {
 				LoadingWidget.getInstance().hide();
 				iEligibilityCheck = null;
+				iSpecRegCx.update(null);
 				if (ret != null) ret.onFailure(caught);
 			}
 		});
@@ -1670,7 +1673,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					iSectioningService.retrieveSpecialRequest(new RetrieveSpecialRegistrationRequest(sessionId, studentId, iSpecRegCx.getRequestKey()), new AsyncCallback<RetrieveSpecialRegistrationResponse>() {
 						@Override
 						public void onFailure(Throwable caught) {
-							iSpecRegCx.setSpecRegMode(false);
+							iSpecRegCx.update(iEligibilityCheck);
 							iSpecRegCx.setSpecRegRequestKeyValid(false);
 							iSpecRegCx.setCanEnroll(null);
 							iSpecRegCx.setCanSubmit(false);
@@ -1685,6 +1688,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							iSpecRegCx.setCanSubmit(specReg.isCanSubmit());
 							iSpecRegCx.setCanEnroll(specReg.isCanEnroll());
 							iSpecRegCx.setRequestId(specReg.getRequestId());
+							iSpecRegCx.setTimeConflictsAllowed(specReg.areTimeConflictsAllowed());
+							iSpecRegCx.setSpaceConflictsAllowed(specReg.areSpaceConflictsAllowed());
+							if (specReg.hasClassAssignments() && specReg.getRequestId() != null)
+								iSpecRegCx.setDisclaimerAccepted(true);
 							iSpecialRegAssignment = specReg.getClassAssignments();
 							if (specReg.hasClassAssignments()) {
 								fillIn(specReg.getClassAssignments());
@@ -2041,6 +2048,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	
 	protected void setElibibilityCheckDuringEnrollment(EligibilityCheck check) {
 		iEligibilityCheck = check;
+		iSpecRegCx.update(check);
 		iCourseRequests.setCanWaitList(check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
 		iCourseRequests.setArrowsVisible(!check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.NO_REQUEST_ARROWS));
 		if (check.hasFlag(EligibilityFlag.CAN_ENROLL)) {
@@ -2263,6 +2271,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				public void doSubmit(RetrieveSpecialRegistrationResponse specReg) {
 					super.doSubmit(specReg);
 					if (specReg == null) {
+						iSpecRegCx.update(iEligibilityCheck);
 						iSpecRegCx.setSpecRegMode(true);
 						iSpecRegCx.setRequestId(null);
 						iSpecRegCx.setCanSubmit(true);
@@ -2275,6 +2284,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						iSpecRegCx.setRequestId(specReg.getRequestId());
 						iSpecRegCx.setCanSubmit(specReg.isCanSubmit());
 						iSpecRegCx.setCanEnroll(specReg.isCanEnroll());
+						iSpecRegCx.setTimeConflictsAllowed(specReg.areTimeConflictsAllowed());
+						iSpecRegCx.setSpaceConflictsAllowed(specReg.areSpaceConflictsAllowed());
 						iSpecialRegAssignment = specReg.getClassAssignments();
 						if (specReg.hasClassAssignments()) {
 							fillIn(specReg.getClassAssignments());

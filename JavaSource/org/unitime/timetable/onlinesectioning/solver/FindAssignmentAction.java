@@ -222,14 +222,14 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							offering.fillInUnavailabilities(student);
 					}
 			}
-			if (getRequest().isShowAllChoices()) {
+			if (getRequest().areTimeConflictsAllowed() || getRequest().areSpaceConflictsAllowed()) {
 				// Experimental: provide student with a blank override that allows for overlaps as well as over-limit
 				for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
 					Request r = (Request)e.next();
 					if (r instanceof CourseRequest) {
 						CourseRequest cr = (CourseRequest)r;
 						for (Course course: cr.getCourses()) {
-							new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), -100, true, 1, true, true, true, true) {
+							new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), -100, getRequest().areSpaceConflictsAllowed(), 1, true, true, getRequest().areTimeConflictsAllowed(), true) {
 								@Override
 								public boolean mustBeUsed() { return true; }
 							};

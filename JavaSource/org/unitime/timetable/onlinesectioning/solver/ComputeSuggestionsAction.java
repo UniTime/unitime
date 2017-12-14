@@ -246,9 +246,9 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 			if (r instanceof CourseRequest) {
 				CourseRequest cr = (CourseRequest)r;
 				// Experimental: provide student with a blank override that allows for overlaps as well as over-limit
-				if (getRequest().isShowAllChoices()) {
+				if (getRequest().areTimeConflictsAllowed() || getRequest().areSpaceConflictsAllowed()) {
 					for (Course course: cr.getCourses()) {
-						new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), -100, true, 1, true, true, true, true) {
+						new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), -100, getRequest().areSpaceConflictsAllowed(), 1, true, true, getRequest().areTimeConflictsAllowed(), true) {
 							@Override
 							public boolean mustBeUsed() { return true; }
 						};

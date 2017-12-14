@@ -154,7 +154,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 			}
 		};
 		
-		Set<ErrorMessage> checkErrors = (getRequest().isShowAllChoices() ? new TreeSet<ErrorMessage>() : null);
+		Set<ErrorMessage> checkErrors = (getRequest().areTimeConflictsAllowed() || getRequest().areSpaceConflictsAllowed() ? new TreeSet<ErrorMessage>() : null);
 		Lock lock = server.lockStudent(getStudentId(), offeringIds, name());
 		try {
 			helper.beginTransaction();

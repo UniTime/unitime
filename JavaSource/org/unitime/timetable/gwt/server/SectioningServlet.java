@@ -2199,8 +2199,6 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				return check;
 			}
 			
-			check.setFlag(EligibilityFlag.CAN_SPECREG, CustomSpecialRegistrationHolder.hasProvider());
-			
 			OnlineSectioningServer server = getServerInstance(sessionId, false);
 			if (server == null)
 				return new EligibilityCheck(MSG.exceptionNoServerForSession());

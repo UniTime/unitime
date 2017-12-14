@@ -1595,4 +1595,16 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Do you want to submit the enrollment changes to special registration?")
 	String confirmSpecialRegistrationSubmit();
+	
+	@DefaultMessage("Based on your course selections, a conflict-free schedule is not possible. Under extenuating circumstances, the faculty may approve student enrollments that include schedule conflicts.")
+	String disclaimerNoSuggestionsWarning();
+	
+	@DefaultMessage("Do you want to explore approval for a schedule with time conflicts?")
+	String disclaimerSpecRegAllowForTimeConflicts();
+	
+	@DefaultMessage("Do you want to explore approval for a schedule with limit conflicts?")
+	String disclaimerSpecRegAllowForSpaceConflicts();
+	
+	@DefaultMessage("Do you want to explore approval for a schedule with conflicts?")
+	String disclaimerSpecRegAllowForTimeSpaceConflicts();
 }

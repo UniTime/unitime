@@ -165,13 +165,8 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 			} else if (iCustomCheck) {
 				if (CustomStudentEnrollmentHolder.hasProvider())
 					CustomStudentEnrollmentHolder.getProvider().checkEligibility(server, helper, iCheck, xstudent);
-			}
-
-			try {
-				if (CustomSpecialRegistrationHolder.hasProvider() && xstudent != null)
-					iCheck.setFlag(EligibilityFlag.HAS_SPECREG, CustomSpecialRegistrationHolder.getProvider().hasSpecialRegistrationRequests(server, helper, xstudent));
-			} catch (SectioningException e) {
-				helper.error("Failed to check special registrations: " + e.getMessage(), e);
+				if (CustomSpecialRegistrationHolder.hasProvider())
+					CustomSpecialRegistrationHolder.getProvider().checkEligibility(server, helper, iCheck, xstudent);
 			}
 
 			logCheck(action, iCheck);

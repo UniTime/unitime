@@ -42,7 +42,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	private ArrayList<Request> iAlternatives = new ArrayList<Request>();
 	private boolean iSaved = false;
 	private boolean iNoChange = false;
-	private boolean iAllChoices = false;
+	private boolean iAllowTimeConf = false, iAllowRoomConf = false;
 	private Boolean iUpdateLastRequest = null;
 	private RequestedCourse iLastCourse = null;
 	
@@ -73,8 +73,10 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	public boolean isNoChange() { return iNoChange; }
 	public void setNoChange(boolean noChange) { iNoChange = noChange; }
 	
-	public boolean isShowAllChoices() { return iAllChoices; }
-	public void setShowAllChoices(boolean allChoices) { iAllChoices = allChoices; }
+	public boolean areTimeConflictsAllowed() { return iAllowTimeConf; }
+	public void setTimeConflictsAllowed(boolean allow) { iAllowTimeConf = allow; }
+	public boolean areSpaceConflictsAllowed() { return iAllowRoomConf; }
+	public void setSpaceConflictsAllowed(boolean allow) { iAllowRoomConf = allow; }
 	
 	public boolean isUpdateLastRequest() { return iUpdateLastRequest == null || iUpdateLastRequest.booleanValue(); }
 	public void setUpdateLastRequest(boolean updateLastRequest) { iUpdateLastRequest = updateLastRequest; }

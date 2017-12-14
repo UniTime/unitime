@@ -25,6 +25,8 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -42,6 +44,9 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private boolean iSpecRegRequestKeyValid = false;
 		private boolean iSpecRegSubmit = false;
 		private Boolean iSpecRegEnroll = null;
+		private boolean iSpecRegDisclaimerAccepted = false;
+		private boolean iSpecRegTimeConfs = false;
+		private boolean iSpecRegSpaceConfs = false;
 
 		public SpecialRegistrationContext() {}
 		public SpecialRegistrationContext(SpecialRegistrationContext cx) {
@@ -53,6 +58,9 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			iSpecRegRequestKey = cx.iSpecRegRequestKey;
 			iSpecRegSubmit = cx.iSpecRegSubmit;
 			iSpecRegEnroll = cx.iSpecRegEnroll;
+			iSpecRegDisclaimerAccepted = cx.iSpecRegDisclaimerAccepted;
+			iSpecRegTimeConfs = cx.iSpecRegTimeConfs;
+			iSpecRegSpaceConfs = cx.iSpecRegSpaceConfs;
 		}
 		
 		public boolean isSpecRegMode() { return iSpecReg; }
@@ -68,6 +76,17 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void setCanSubmit(boolean canSubmit) { iSpecRegSubmit = canSubmit; }
 		public Boolean isCanEnroll() { return iSpecRegEnroll == null || iSpecRegEnroll.booleanValue(); }
 		public void setCanEnroll(Boolean canEnroll) { iSpecRegEnroll = canEnroll; }
+		public boolean isDisclaimerAccepted() { return iSpecRegDisclaimerAccepted; }
+		public void setDisclaimerAccepted(boolean accepted) { iSpecRegDisclaimerAccepted = accepted; }
+		public boolean areTimeConflictsAllowed() { return iSpecRegTimeConfs; }
+		public void setTimeConflictsAllowed(boolean allow) { iSpecRegTimeConfs = allow; }
+		public boolean areSpaceConflictsAllowed() { return iSpecRegSpaceConfs; }
+		public void setSpaceConflictsAllowed(boolean allow) { iSpecRegSpaceConfs = allow; }
+		public void update(EligibilityCheck check) {
+			iSpecRegTimeConfs = check != null && check.hasFlag(EligibilityFlag.SR_TIME_CONF);
+			iSpecRegSpaceConfs = check != null && check.hasFlag(EligibilityFlag.SR_LIMIT_CONF);
+			iSpecReg = iSpecRegTimeConfs || iSpecRegSpaceConfs;
+		}
 	}
 	
 	public static class SpecialRegistrationEligibilityRequest implements IsSerializable, Serializable {
@@ -149,6 +168,8 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private Date iSubmitDate;
 		private String iRequestId;
 		private String iDescription;
+		private boolean iTimeConfs = true;
+		private boolean iSpaceConfs = true;
 		
 		public RetrieveSpecialRegistrationResponse() {}
 		
@@ -170,6 +191,11 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		
 		public String getDescription() { return iDescription; }
 		public void setDescription(String description) { iDescription = description; }
+		
+		public boolean areTimeConflictsAllowed() { return iTimeConfs; }
+		public void setTimeConflictsAllowed(boolean allow) { iTimeConfs = allow; }
+		public boolean areSpaceConflictsAllowed() { return iSpaceConfs; }
+		public void setSpaceConflictsAllowed(boolean allow) { iSpaceConfs = allow; }
 
 		@Override
 		public int compareTo(RetrieveSpecialRegistrationResponse o) {
@@ -177,8 +203,6 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			if (cmp != 0) return -cmp;
 			return getRequestId().compareTo(o.getRequestId());
 		}
-		
-		
 	}
 	
 	public static class SubmitSpecialRegistrationRequest implements IsSerializable, Serializable {

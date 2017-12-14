@@ -536,7 +536,6 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 		if (errors != null) {
 			for (ErrorMessage e: errors) {
 				ret.addError(e);
-				ret.addMessage(e.toString());
 			}
 		}
 		
