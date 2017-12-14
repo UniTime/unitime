@@ -1850,21 +1850,37 @@ public enum ApplicationProperty {
 	@Description("Help: FAQ page")
 	HelpFAQ("tmtbl.help.faq"),
 
-	@DefaultValue("http://www.unitime.org/papers/event_documentation.pdf")
-	@Description("Manuals: event manual")
+	@DefaultValue("https://docs.google.com/document/d/1bDzKBMEKOFYN_aBwzA6E4PAsBOGV7Tx-A3i_kuMae6U")
+	@Description("Manuals: event management manual")
 	ManualEvents("tmtbl.help.manual.events"),
+	
+	@DefaultValue("https://docs.google.com/document/d/1Aye5LrLiAcTBR7aNOJO6laYg7-eEDlkfd5s0EW3jFZ4")
+	@Description("Manuals: event administration manual")
+	ManualEventsAdmin("tmtbl.help.manual.events_admin"),
 
-	@DefaultValue("http://www.unitime.org/papers/ttman_data.pdf")
+	@DefaultValue("https://docs.google.com/document/d/1rjS_6ebwegSTcN5Iw57qui5CHG8_6TWnk8MCwBwAt58")
 	@Description("Manuals: course timetabling data entry manual")
 	ManualCourseDataEntry("tmtbl.help.manual.input_data"),
 
-	@DefaultValue("http://www.unitime.org/papers/ttman_solver.pdf")
+	@DefaultValue("https://docs.google.com/document/d/1NZmKnmrjM2Tqg7dO18cWcMIe_GrtilQtKw6d1WGWBtY")
 	@Description("Manuals: course timetabling solver manual")
 	ManualCourseSolver("tmtbl.help.manual.solver"),
 	
 	@DefaultValue("https://docs.google.com/document/d/1JksFtB9ecIoKpuyY0SDdl3dKnATe8UQAPKlGfBWi2JU")
 	@Description("Manuals: instructor scheduling manual")
 	ManualInstructorScheduling("tmtbl.help.manual.instructorScheduling"),
+	
+	@DefaultValue("https://docs.google.com/document/d/1iuj9NwrqkiVeJvKn1Sd41qqaVEJGwO79y1KZo1mtwuw")
+	@Description("Manuals: administrative user manual")
+	ManualAdministration("tmtbl.help.manual.administration"),
+	
+	@DefaultValue("https://docs.google.com/document/d/18TH8LtNzbKE7_m99wks2POKsw6hali8xMnCroBK4ylc")
+	@Description("Manuals: other UniTime documentation")
+	ManualOtherDocumentation("tmtbl.help.manual.other"),
+	
+	@DefaultValue("https://docs.google.com/document/d/1QTCKwLhU62yGtr6XlW_XM68q3hgohxLpwWXdyajr30g")
+	@Description("Manuals: Student Scheduling Asisstant user manual")
+	ManualSchedulingAssistant("tmtbl.help.manual.schedulingAssistant"),
 
 	@DefaultValue("help/Release-Notes.xml")
 	@Description("Help: release notes")

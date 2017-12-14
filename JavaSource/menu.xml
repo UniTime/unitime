@@ -1271,37 +1271,57 @@
 				<hasProperty name="tmtbl.wiki.url"/>
 			</condition>
 		</item>
-		<item name="Event Manual" page="tmtbl.help.manual.events" type="property" target="download">
-			<condition>
-				<hasPermission name="Events" authority="any" check="false"/>
-			</condition>
-		</item>
-		<item name="Data Entry Manual" page="tmtbl.help.manual.input_data" type="property" target="download">
-			<condition>
-				<or>
-					<hasPermission name="InstructionalOfferings" check="false"/>
-					<hasPermission name="Classes" check="false"/>
-				</or>
-			</condition>
-		</item>
-		<item name="Solver Manual" page="tmtbl.help.manual.solver" type="property" target="download">
-			<condition>
-				<or>
-					<hasPermission name="CourseTimetabling" check="false"/>
-					<hasPermission name="CourseTimetablingAudit" check="false"/>
-					<hasPermission name="Timetables" check="false"/>
-				</or>
-			</condition>
-		</item>
-		<item name="Instructor Scheduling Manual" page="tmtbl.help.manual.instructorScheduling" type="property" target="download">
-			<condition>
-				<or>
-					<hasPermission name="InstructorScheduling" check="false"/>
-					<hasPermission name="InstructorSchedulingSolver" check="false"/>
-				</or>
-			</condition>
-		</item>
-		<separator/>
+		<menu name="Manuals">
+			<item name="Course Timetabling Data Entry" page="tmtbl.help.manual.input_data" type="property" target="tab">
+				<condition>
+					<or>
+						<hasPermission name="InstructionalOfferings" check="false"/>
+						<hasPermission name="Classes" check="false"/>
+					</or>
+				</condition>
+			</item>
+			<item name="Course Timetabling Solver" page="tmtbl.help.manual.solver" type="property" target="tab">
+				<condition>
+					<or>
+						<hasPermission name="CourseTimetabling" check="false"/>
+						<hasPermission name="CourseTimetablingAudit" check="false"/>
+						<hasPermission name="Timetables" check="false"/>
+					</or>
+				</condition>
+			</item>
+			<item name="Event Management" page="tmtbl.help.manual.events" type="property" target="tab">
+				<condition>
+					<hasPermission name="Events" authority="any" check="false"/>
+				</condition>
+			</item>
+			<item name="Event Administration" page="tmtbl.help.manual.events_admin" type="property" target="tab">
+				<condition>
+					<hasPermission name="EventStatuses" authority="any" check="false"/>
+				</condition>
+			</item>
+			<item name="Student Scheduling Assistant" page="tmtbl.help.manual.schedulingAssistant" type="property" target="tab">
+			    <condition>
+					<hasPermission name="SchedulingAssistant" authority="any" check="false"/>
+				</condition>
+			</item>
+			<item name="Instructor Scheduling" page="tmtbl.help.manual.instructorScheduling" type="property" target="tab">
+				<condition>
+					<or>
+						<hasPermission name="InstructorScheduling" check="false"/>
+						<hasPermission name="InstructorSchedulingSolver" check="false"/>
+					</or>
+				</condition>
+			</item>
+			<item name="Administration" page="tmtbl.help.manual.administration" type="property" target="tab">
+				<condition>
+					<or>
+						<hasPermission name="AcademicSessions" check="false"/>
+					</or>
+				</condition>
+			</item>
+			<separator/>
+			<item name="Other Documentation" page="tmtbl.help.manual.other" type="property" target="tab"/>
+		</menu>
 		<item name="Tips &amp; Tricks" page="tmtbl.help.tricks" type="property" target="dialog"/>
 		<item name="FAQ" page="tmtbl.help.faq" type="property" target="dialog"/>
 		<item name="Release Notes" page="tmtbl.help.release_notes" type="property" target="dialog"/>
