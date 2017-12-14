@@ -300,6 +300,8 @@ public class UniTimeMobileMenu extends UniTimeMenu {
 			ToolBox.open(url);
 		} else if ("eval".equals(target)) {
 			ToolBox.eval(url);
+		} else if ("tab".equals(target)) {
+			Window.open(url, "_blank", "");
 		} else {
 			ToolBox.open(GWT.getHostPageBaseURL() + url);
 		}

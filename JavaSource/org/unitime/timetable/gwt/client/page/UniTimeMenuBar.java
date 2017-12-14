@@ -261,6 +261,8 @@ public class UniTimeMenuBar extends UniTimeMenu {
 			ToolBox.eval(url);
 		} else if ("download".equals(target)) {
 			ToolBox.open(url);
+		} else if ("tab".equals(target)) {
+			Window.open(url, "_blank", "");
 		} else {
 			ToolBox.open(GWT.getHostPageBaseURL() + url);
 		}
