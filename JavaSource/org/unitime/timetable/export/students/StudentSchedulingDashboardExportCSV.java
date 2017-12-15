@@ -202,7 +202,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		if (!hasExtId) out.hideColumn(0);
 		
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
-				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false;
+				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false, hasDistances = false, hasOverlaps = false;
 		if (students != null)
 			for (ClassAssignmentInterface.StudentInfo e: students) {
 				if (e.getStudent() == null) continue;
@@ -217,6 +217,8 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 				if (e.getEnrolledDate() != null) hasEnrolledDate = true;
 				if (e.getTotalConsentNeeded() != null && e.getTotalConsentNeeded() > 0) hasConsent = true;
 				if (e.hasTotalCredit()) hasCredit = true;
+				if (e.hasTotalDistanceConflicts()) hasDistances = true;
+				if (e.hasOverlappingMinutes()) hasOverlaps = true;
 			}
 		if (!hasArea) { out.hideColumn(2); out.hideColumn(3); }
 		if (!hasMajor) out.hideColumn(4);
@@ -227,9 +229,11 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		if (!hasReservation) out.hideColumn(10);
 		if (!hasConsent) out.hideColumn(11);
 		if (!hasCredit) out.hideColumn(12);
-		if (!hasRequestedDate) out.hideColumn(13);
-		if (!hasEnrolledDate) out.hideColumn(14);
-		if (!online) { out.hideColumn(15); out.hideColumn(16); }
+		if (!hasDistances) { out.hideColumn(13); out.hideColumn(14); }
+		if (!hasOverlaps) { out.hideColumn(15); }
+		if (!hasRequestedDate) out.hideColumn(16);
+		if (!hasEnrolledDate) out.hideColumn(17);
+		if (!online) { out.hideColumn(18); out.hideColumn(19); }
 		
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_REQUEST);
 		
@@ -247,10 +251,13 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 				MESSAGES.colReservation(), // 10
 				MESSAGES.colConsent(), // 11
 				MESSAGES.colCredit(), // 12
-				MESSAGES.colRequestTimeStamp(), // 13
-				MESSAGES.colEnrollmentTimeStamp(), // 14
-				MESSAGES.colStudentNote(), // 15
-				MESSAGES.colEmailTimeStamp() // 16
+				MESSAGES.colDistanceConflicts(), // 13
+				MESSAGES.colLongestDistance(), // 14
+				MESSAGES.colOverlapMins(), // 15
+				MESSAGES.colRequestTimeStamp(), // 16
+				MESSAGES.colEnrollmentTimeStamp(), // 17
+				MESSAGES.colStudentNote(), // 18
+				MESSAGES.colEmailTimeStamp() // 19
 				);
 				
 				
@@ -273,6 +280,9 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 							number(info.getReservation(), info.getTotalReservation()),
 							number(info.getConsentNeeded(), info.getTotalConsentNeeded()),
 							credit(info.getCredit(), info.getTotalCredit()),
+							number(info.getNrDistanceConflicts(), info.getTotalNrDistanceConflicts()),
+							number(info.getLongestDistanceMinutes(), info.getTotalLongestDistanceMinutes()),
+							number(info.getOverlappingMinutes(), info.getTotalOverlappingMinutes()),
 							(info.getRequestedDate() == null ? null : df.format(info.getRequestedDate())),
 							(info.getEnrolledDate() == null ? null : df.format(info.getEnrolledDate())),
 							(info.hasNote() ? info.getNote() : ""),
@@ -294,6 +304,9 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 							number(info.getReservation(), info.getTotalReservation()),
 							number(info.getConsentNeeded(), info.getTotalConsentNeeded()),
 							credit(info.getCredit(), info.getTotalCredit()),
+							number(info.getNrDistanceConflicts(), info.getTotalNrDistanceConflicts()),
+							number(info.getLongestDistanceMinutes(), info.getTotalLongestDistanceMinutes()),
+							number(info.getOverlappingMinutes(), info.getTotalOverlappingMinutes()),
 							null,
 							null,
 							null,

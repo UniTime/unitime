@@ -259,6 +259,10 @@ public class XStudent extends XStudentId implements Externalizable {
     public List<String> getAccomodations() {
         return iAccomodations;
     }
+    
+    public boolean hasAccomodation(String accomodation) {
+    	return accomodation != null && iAccomodations.contains(accomodation);
+    }
         
     /**
      * Get student status (online sectioning only)

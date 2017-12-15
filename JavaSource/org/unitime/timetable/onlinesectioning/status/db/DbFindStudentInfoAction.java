@@ -156,7 +156,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 							}
 						}
 					}
-						
+					
 					s.setTotalEnrollment(tEnrl);
 					s.setTotalReservation(tRes);
 					s.setTotalWaitlist(tWait);

@@ -69,6 +69,12 @@
 					(these may include external term and campus names, if unitime.custom.ExternalTermProvider is configured).</line>
 			</description>
 		</item>
+		<item>
+			<name>Scheduling Dashboard</name>
+			<description>
+				<line>Include distance conflicts and time overlaps in the dashboard.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Constraint Solver</title>
@@ -169,6 +175,14 @@
 					<line>Using Student.canAssign(request) does not work as it returns true when the request is already assigned and the conflicts are checked when Constraint.assigned(value) is called.</line>
 					<line>This was causing troubles for the IFS phase.</line>
 				</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling: Short Distance Conflicts</name>
+			<description>
+				<line>Added ability to consider Short Distances student accommodation.</line>
+				<line>When a student needs short distances, there is a distance conflict between two back-to-back classes if the distance in minutes is greater than zero.</line>
+				<line>The reference of the accommodation for students that need short distances is defined by solver property Distances.ShortDistanceAccommodationReference (defaults to SD).</line>
 			</description>
 		</item>
      </category>

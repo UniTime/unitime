@@ -167,6 +167,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private boolean iLinkedClassesMustBeUsed = false;
 	private boolean iAllowDefaultCourseAlternatives = false;
 	private boolean iIncludeUnavailabilities = true;
+	private String iShortDistanceAccomodationReference = null;
     
     private Progress iProgress = null;
     
@@ -198,6 +199,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iLinkedClassesMustBeUsed = model.getProperties().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
         iAllowDefaultCourseAlternatives = ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue();
         iIncludeUnavailabilities = model.getProperties().getPropertyBoolean("Load.IncludeUnavailabilities", iIncludeUnavailabilities);
+        iShortDistanceAccomodationReference = model.getProperties().getProperty("Distances.ShortDistanceAccommodationReference", "SD");
         
         try {
         	String studentCourseDemandsClassName = getModel().getProperties().getProperty("StudentSct.ProjectedCourseDemadsClass", LastLikeStudentCourseDemands.class.getName());
@@ -682,6 +684,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         student.setName(nameFormat.format(s));
         student.setStatus(s.getSectioningStatus() == null ? null : s.getSectioningStatus().getReference());
         if (iLoadStudentInfo) loadStudentInfo(student,s);
+        if (iShortDistanceAccomodationReference != null)
+        	for (StudentAccomodation ac: s.getAccomodations())
+        		if (iShortDistanceAccomodationReference.equals(ac.getAbbreviation()))
+        			student.setNeedShortDistances(true);
 
 		TreeSet<CourseDemand> demands = new TreeSet<CourseDemand>(new Comparator<CourseDemand>() {
 			public int compare(CourseDemand d1, CourseDemand d2) {

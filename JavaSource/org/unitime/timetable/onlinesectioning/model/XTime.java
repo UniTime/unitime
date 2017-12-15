@@ -162,6 +162,29 @@ public class XTime implements Serializable, Externalizable {
         return shareDays(other) && shareHours(other) && shareWeeks(other);
     }
     
+    public int nrSharedDays(XTime anotherLocation) {
+        int ret = 0;
+        for (int i = 0; i < Constants.NR_DAYS; i++) {
+            if ((getDays() & Constants.DAY_CODES[i]) == 0)
+                continue;
+            if ((anotherLocation.getDays() & Constants.DAY_CODES[i]) == 0)
+                continue;
+            ret++;
+        }
+        return ret;
+    }
+
+    public int nrSharedHours(XTime anotherLocation) {
+        int end = Math.min(getSlot() + getLength(), anotherLocation.getSlot() + anotherLocation.getLength());
+        int start = Math.max(getSlot(), anotherLocation.getSlot());
+        return (end < start ? 0 : end - start);
+    }
+    
+    public int share(XTime other) {
+        if (!hasIntersection(other)) return 0;
+        return nrSharedDays(other) * nrSharedHours(other) * Constants.SLOT_LENGTH_MIN;
+    }
+    
     /** Used slots */
     public Enumeration<Integer> getSlots() {
         return new SlotsEnum();

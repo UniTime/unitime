@@ -125,6 +125,15 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("&nbsp;")
 	String colClassSelection();
+	
+	@DefaultMessage("Distance")
+	String colDistanceConflicts();
+	
+	@DefaultMessage("Longest Distance [min]")
+	String colLongestDistance();
+	
+	@DefaultMessage("Overlap [min]")
+	String colOverlapMins();
 
 	/* Academic Session Selector messages
 	 */

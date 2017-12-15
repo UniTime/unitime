@@ -1286,7 +1286,7 @@ public class SectioningStatusPage extends Composite {
 		header.add(hTotal);
 		
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
-				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false;
+				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false, hasDistances = false, hasOverlaps = false;
 		for (ClassAssignmentInterface.StudentInfo e: result) {
 			if (e.getStudent() == null) continue;
 			// if (e.getStatus() != null) hasStatus = true;
@@ -1302,6 +1302,8 @@ public class SectioningStatusPage extends Composite {
 			// if (e.getEmailDate() != null) hasEmailDate = true;
 			if (e.getTotalConsentNeeded() != null && e.getTotalConsentNeeded() > 0) hasConsent = true;
 			if (e.hasTotalCredit()) hasCredit = true;
+			if (e.hasTotalDistanceConflicts()) hasDistances = true;
+			if (e.hasOverlappingMinutes()) hasOverlaps = true;
 		}
 		
 		UniTimeTableHeader hArea = null, hClasf = null;
@@ -1380,6 +1382,20 @@ public class SectioningStatusPage extends Composite {
 			hCredit = new UniTimeTableHeader(MESSAGES.colCredit());
 			header.add(hCredit);
 			addSortOperation(hCredit, StudentComparator.SortBy.CREDIT, MESSAGES.colCredit());
+		}
+		
+		UniTimeTableHeader hDistConf = null;
+		if (hasDistances) {
+			hDistConf = new UniTimeTableHeader(MESSAGES.colDistanceConflicts());
+			header.add(hDistConf);
+			addSortOperation(hDistConf, StudentComparator.SortBy.DIST_CONF, MESSAGES.colDistanceConflicts());
+		}
+		
+		UniTimeTableHeader hShare = null;
+		if (hasOverlaps) {
+			hShare = new UniTimeTableHeader(MESSAGES.colOverlapMins());
+			header.add(hShare);
+			addSortOperation(hShare, StudentComparator.SortBy.OVERLAPS, MESSAGES.colOverlapMins());
 		}
 		
 		UniTimeTableHeader hRequestTS = null;
@@ -1493,6 +1509,11 @@ public class SectioningStatusPage extends Composite {
 				line.add(new NumberCell(info.getConsentNeeded(), info.getTotalConsentNeeded()));
 			if (hasCredit)
 				line.add(new CreditCell(info.getCredit(), info.getTotalCredit()));
+			if (hasDistances) {
+				line.add(new DistanceCell(info.getNrDistanceConflicts(), info.getTotalNrDistanceConflicts(), info.getLongestDistanceMinutes(), info.getTotalLongestDistanceMinutes()));
+			}
+			if (hasOverlaps)
+				line.add(new NumberCell(info.getOverlappingMinutes(), info.getTotalOverlappingMinutes()));
 			if (info.getStudent() != null) {
 				if (hasRequestedDate)
 					line.add(new HTML(info.getRequestedDate() == null ? "&nbsp;" : sDF.format(info.getRequestedDate()), false));
@@ -1550,6 +1571,8 @@ public class SectioningStatusPage extends Composite {
 			case STUDENT: h = hStudent; break;
 			case WAITLIST: h = hWaitlist; break;
 			case NOTE: h = hNote; break;
+			case DIST_CONF: h = hDistConf; break;
+			case OVERLAPS: h = hShare; break;
 			}
 			if (h != null)
 				iStudentTable.sort(h, new StudentComparator(sort), asc);
@@ -1987,6 +2010,7 @@ public class SectioningStatusPage extends Composite {
 			ENROLLMENT_TS,
 			EMAIL_TS,
 			NOTE,
+			DIST_CONF, OVERLAPS,
 			;
 		}
 		
@@ -2061,6 +2085,17 @@ public class SectioningStatusPage extends Composite {
 				return (e1.getEmailDate() == null ? new Date(0) : e1.getEmailDate()).compareTo(e2.getEmailDate() == null ? new Date(0) : e2.getEmailDate());
 			case NOTE:
 				return (e1.hasNote() ? e1.getNote().compareTo(e2.hasNote() ? e2.getNote() : "") : "".compareTo(e2.hasNote() ? e2.getNote() : ""));
+			case DIST_CONF:
+				cmp = (e1.hasDistanceConflicts() ? e1.getNrDistanceConflicts() : new Integer(0)).compareTo(e2.hasDistanceConflicts() ? e2.getNrDistanceConflicts() : new Integer(0));
+				if (cmp != 0) return - cmp;
+				cmp = (e1.hasTotalDistanceConflicts() ? e1.getTotalNrDistanceConflicts() : new Integer(0)).compareTo(e2.hasTotalDistanceConflicts() ? e2.getTotalNrDistanceConflicts() : new Integer(0));
+				if (cmp != 0) return - cmp;
+				return - (e1.hasDistanceConflicts() ? e1.getLongestDistanceMinutes() : e1.hasTotalDistanceConflicts() ? e1.getTotalLongestDistanceMinutes() : new Integer(0)).compareTo(
+						e2.hasDistanceConflicts() ? e2.getLongestDistanceMinutes() : e2.hasTotalDistanceConflicts() ? e2.getTotalLongestDistanceMinutes() : new Integer(0));
+			case OVERLAPS:
+				cmp = (e1.hasOverlappingMinutes() ? e1.getOverlappingMinutes() : new Integer(0)).compareTo(e2.hasOverlappingMinutes() ? e2.getOverlappingMinutes() : new Integer(0));
+				if (cmp != 0) return - cmp;
+				return (e1.hasTotalOverlappingMinutes() ? e1.getTotalOverlappingMinutes() : new Integer(0)).compareTo(e2.hasTotalOverlappingMinutes() ? e2.getTotalOverlappingMinutes() : new Integer(0));
 			default:
 				return 0;
 			}
@@ -2223,5 +2258,26 @@ public class SectioningStatusPage extends Composite {
 					add(p);
 				}
 		}	
+	}
+	
+	public static class DistanceCell extends HTML implements HasCellAlignment {
+		
+		public DistanceCell(Integer nrDist, Integer totalNrDist, Integer distMin, Integer totalDistMin) {
+			super();
+			if (nrDist == null) {
+				if (totalNrDist != null)
+					setHTML(totalNrDist == 0 ? "-" : totalNrDist + " " + MESSAGES.distanceConflict(totalDistMin));
+			} else {
+				if (nrDist.equals(totalNrDist))
+					setHTML(totalNrDist == 0 ? "-" : totalNrDist + " " + MESSAGES.distanceConflict(totalDistMin));
+				else
+					setHTML(nrDist + " / " + totalNrDist + " " + (nrDist == 0 ? MESSAGES.distanceConflict(totalDistMin) : MESSAGES.distanceConflict(distMin)));
+			}
+		}
+
+		@Override
+		public HorizontalAlignmentConstant getCellAlignment() {
+			return HasHorizontalAlignment.ALIGN_CENTER;
+		}
 	}
 }

@@ -1041,6 +1041,8 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Date iRequestedDate = null, iEnrolledDate = null, iApprovedDate = null, iEmailDate = null;
 		private String iStatus, iNote;
 		private Float iCredit, iTotalCredit;
+		private Integer iNrDistanceConflicts, iLongestDistanceMinutes, iOverlappingMinutes;
+		private Integer iTotalNrDistanceConflicts, iTotalLongestDistanceMinutes, iTotalOverlappingMinutes;
 		
 		public StudentInfo() {}
 		
@@ -1121,6 +1123,26 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public boolean hasTotalCredit() { return iTotalCredit != null && iTotalCredit > 0; }
 		public void setTotalCredit(Float totalCredit) { iTotalCredit = totalCredit; }
 		public Float getTotalCredit() { return iTotalCredit; }
+		
+		public boolean hasDistanceConflicts() { return iNrDistanceConflicts != null && iNrDistanceConflicts > 0; }
+		public void setNrDistanceConflicts(Integer nrDistanceConflicts) { iNrDistanceConflicts = nrDistanceConflicts; }
+		public Integer getNrDistanceConflicts() { return iNrDistanceConflicts; }
+		public void setLongestDistanceMinutes(Integer longestDistance) { iLongestDistanceMinutes = longestDistance; }
+		public Integer getLongestDistanceMinutes() { return iLongestDistanceMinutes; }
+		
+		public boolean hasOverlappingMinutes() { return iOverlappingMinutes != null && iOverlappingMinutes > 0; }
+		public void setOverlappingMinutes(Integer overlapMins) { iOverlappingMinutes = overlapMins; }
+		public Integer getOverlappingMinutes() { return iOverlappingMinutes; }
+
+		public boolean hasTotalDistanceConflicts() { return iTotalNrDistanceConflicts != null && iTotalNrDistanceConflicts > 0; }
+		public void setTotalNrDistanceConflicts(Integer nrDistanceConflicts) { iTotalNrDistanceConflicts = nrDistanceConflicts; }
+		public Integer getTotalNrDistanceConflicts() { return iTotalNrDistanceConflicts; }
+		public void setTotalLongestDistanceMinutes(Integer longestDistance) { iTotalLongestDistanceMinutes = longestDistance; }
+		public Integer getTotalLongestDistanceMinutes() { return iTotalLongestDistanceMinutes; }
+		
+		public boolean hasTotalOverlappingMinutes() { return iTotalOverlappingMinutes != null && iTotalOverlappingMinutes > 0; }
+		public void setTotalOverlappingMinutes(Integer overlapMins) { iTotalOverlappingMinutes = overlapMins; }
+		public Integer getTotalOverlappingMinutes() { return iTotalOverlappingMinutes; }
 }
 
 	public static class SectioningAction implements IsSerializable, Serializable {

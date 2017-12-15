@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.cpsolver.ifs.util.DistanceMetric;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
@@ -45,9 +46,11 @@ import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
@@ -111,9 +114,11 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0;
 		int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0;
 		int gConNeed = 0, gtConNeed = 0;
+		int gDist = 0, gtDist = 0, gNrDC = 0, gtNrDC = 0, gShr = 0, gtShr = 0; 
 		Set<Long> unassigned = new HashSet<Long>();
 		Set<Long> assigned = new HashSet<Long>();
 		AcademicSessionInfo session = server.getAcademicSession();
+		DistanceMetric dm = server.getDistanceMetric();
 		Set<Long> studentIds = (iFilter == null ? null : server.createAction(SectioningStatusFilterAction.class).forRequest(iFilter).getStudentIds(server, helper));
 		for (XCourseId info: findCourses(server, helper)) {
 			XOffering offering = server.getOffering(info.getOfferingId());
@@ -156,6 +161,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						}
 						int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0, tUnasg = 0;
 						float tCred = 0f;
+						int nrDisCnf = 0, maxDist = 0, share = 0; 
 						for (XRequest r: student.getRequests()) {
 							if (r instanceof XCourseRequest) {
 								XCourseRequest cr = (XCourseRequest)r;
@@ -184,6 +190,31 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 										for (XSubpart xs: g.getSubparts())
 											tCred += guessCredit(xs.getCreditAbbv(cr.getEnrollment().getCourseId()));
 									}
+									
+									if (o != null)
+										for (XSection section: o.getSections(cr.getEnrollment())) {
+											if (section.getTime() == null) continue;
+											for (XRequest q: student.getRequests()) {
+												if (q instanceof XCourseRequest) {
+													XEnrollment otherEnrollment = ((XCourseRequest)q).getEnrollment();
+													if (otherEnrollment == null) continue;
+													XOffering otherOffering = server.getOffering(otherEnrollment.getOfferingId());
+													for (XSection otherSection: otherOffering.getSections(otherEnrollment)) {
+														if (otherSection.equals(section) || otherSection.getTime() == null) continue;
+														if (otherSection.isDistanceConflict(student, section, dm)) {
+															nrDisCnf ++; gtNrDC ++;
+															int d = otherSection.getDistanceInMinutes(section, dm);
+															if (d > maxDist) maxDist = d;
+															if (d > gtDist) gtDist = d;
+														}
+														if (section.getTime().hasIntersection(otherSection.getTime()) && !section.isToIgnoreStudentConflictsWith(o.getDistributions(), otherSection.getSectionId()) && section.getSectionId() < otherSection.getSectionId()) {
+															share += section.getTime().share(otherSection.getTime());
+															gtShr += section.getTime().share(otherSection.getTime());
+														}
+													}
+												}
+											}											
+										}
 								}
 							}
 						}
@@ -203,6 +234,12 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						s.setCredit(0f);
 						s.setTotalCredit(tCred);
 						s.setNote(student.hasLastNote() ? student.getLastNote().getNote() : null);
+						s.setNrDistanceConflicts(0);
+						s.setLongestDistanceMinutes(0);
+						s.setOverlappingMinutes(0);
+						s.setTotalNrDistanceConflicts(nrDisCnf);
+						s.setTotalLongestDistanceMinutes(maxDist);
+						s.setTotalOverlappingMinutes(share);
 					}
 					if (m.enrollment() != null) {
 						if (assigned.add(m.request().getRequestId())) {
@@ -229,6 +266,34 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 								for (XSubpart xs: g.getSubparts())
 									s.setCredit(s.getCredit() + guessCredit(xs.getCreditAbbv(m.enrollment().getCourseId())));
 							}
+							
+							if (o != null)
+								for (XSection section: o.getSections(m.enrollment())) {
+									if (section.getTime() == null) continue;
+									for (XRequest q: student.getRequests()) {
+										if (q instanceof XCourseRequest) {
+											XEnrollment otherEnrollment = ((XCourseRequest)q).getEnrollment();
+											if (otherEnrollment == null) continue;
+											XOffering otherOffering = server.getOffering(otherEnrollment.getOfferingId());
+											XCourse otherCourse = otherOffering.getCourse(otherEnrollment.getCourseId());
+											for (XSection otherSection: otherOffering.getSections(otherEnrollment)) {
+												if (otherSection.equals(section) || otherSection.getTime() == null) continue;
+												if (otherSection.isDistanceConflict(student, section, dm)) {
+													s.setNrDistanceConflicts(s.getNrDistanceConflicts() + 1); gNrDC ++;
+													int d = otherSection.getDistanceInMinutes(section, dm);
+													if (d > s.getLongestDistanceMinutes()) s.setLongestDistanceMinutes(d);
+													if (d > gDist) gDist = d;
+												}
+												if (section.getTime().hasIntersection(otherSection.getTime()) && !section.isToIgnoreStudentConflictsWith(o.getDistributions(), otherSection.getSectionId())) {
+													if (section.getSectionId() < otherSection.getSectionId() || !query().match(new CourseRequestMatcher(session, otherCourse, student, otherOffering, (XCourseRequest)q, isConsentToDoCourse(otherCourse)))) {
+														s.setOverlappingMinutes(s.getOverlappingMinutes() + section.getTime().share(otherSection.getTime()));
+														gShr += section.getTime().share(otherSection.getTime());
+													}
+												}
+											}
+										}
+									}											
+								}
 						}
 					} else if (m.student().canAssign(m.request()) && unassigned.add(m.request().getRequestId())) {
 						if (m.request().isWaitlist()) {
@@ -349,6 +414,13 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		
 		t.setConsentNeeded(gConNeed);
 		t.setTotalConsentNeeded(gtConNeed);
+		
+		t.setNrDistanceConflicts(gNrDC);
+		t.setTotalNrDistanceConflicts(gtNrDC);
+		t.setLongestDistanceMinutes(gDist);
+		t.setTotalLongestDistanceMinutes(gtDist);
+		t.setOverlappingMinutes(gShr);
+		t.setTotalOverlappingMinutes(gtShr);
 
 		ret.add(t);				
 		

@@ -138,6 +138,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 				Collections.reverse(unavailabilities.getCourseAssignments());
 				student.setExternalId(original.getExternalId());
 				student.setName(original.getName());
+				student.setNeedShortDistances(original.hasAccomodation(server.getDistanceMetric().getShortDistanceAccommodationReference()));
 				action.getStudentBuilder().setUniqueId(original.getStudentId()).setExternalId(original.getExternalId()).setName(original.getName());
 				enrolled = new HashSet<IdPair>();
 				for (XRequest r: original.getRequests()) {

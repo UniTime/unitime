@@ -34,6 +34,7 @@ import java.util.Set;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentMap;
+import org.cpsolver.ifs.util.DistanceMetric;
 import org.cpsolver.studentsct.extension.DistanceConflict;
 import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import org.cpsolver.studentsct.model.Config;
@@ -99,7 +100,8 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
     		Hashtable<Long, Subpart> subparts = new Hashtable<Long, Subpart>();
     		Hashtable<Long, Section> sections = new Hashtable<Long, Section>();
     		Hashtable<Long, Reservation> reservations = new Hashtable<Long, Reservation>();
-
+    		DistanceMetric dm = server.getDistanceMetric();
+    		
     		for (XCourseId ci: server.findCourses(new AnyCourseMatcher())) {
 	        	XOffering offering = server.getOffering(ci.getOfferingId());
 	        	if (offering == null || offerings.containsKey(offering.getOfferingId())) continue;
@@ -208,6 +210,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 						for (GroupReservation gr: list)
 							gr.getStudentIds().add(student.getStudentId());
 				}
+				clonnedStudent.setNeedShortDistances(student.hasAccomodation(dm.getShortDistanceAccommodationReference()));
 				for (XRequest r: student.getRequests()) {
 					if (r instanceof XFreeTimeRequest) {
 						XFreeTimeRequest ft = (XFreeTimeRequest)r;

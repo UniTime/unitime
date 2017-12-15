@@ -158,6 +158,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				Collections.reverse(unavailabilities.getCourseAssignments());
 				student.setExternalId(original.getExternalId());
 				student.setName(original.getName());
+				student.setNeedShortDistances(original.hasAccomodation(server.getDistanceMetric().getShortDistanceAccommodationReference()));
 				action.getStudentBuilder().setUniqueId(original.getStudentId()).setExternalId(original.getExternalId()).setName(original.getName());
 				enrolled = new HashSet<IdPair>();
 				for (XRequest r: original.getRequests()) {
@@ -836,9 +837,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								for (Iterator<RoomLocation> k = s.getRooms().iterator(); k.hasNext();)
 									from += k.next().getName() + (k.hasNext() ? ", " : "");
 							}
-							if (d > s.getTime().getBreakTime()) {
+							if (dc.inConflict(enrollment.getStudent(), section, s))
 								a.setDistanceConflict(true);
-							}
 							if (section.getTime() != null && section.getTime().hasIntersection(s.getTime()) && !section.isToIgnoreStudentConflictsWith(s.getId())) {
 								overlap.add(MSG.clazz(x.getCourse().getSubjectArea(), x.getCourse().getCourseNumber(), s.getSubpart().getName(), s.getName(x.getCourse().getId())));
 							}

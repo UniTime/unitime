@@ -391,9 +391,8 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 										for (Iterator<XRoom> k = otherSection.getRooms().iterator(); k.hasNext();)
 											from += k.next().getName() + (k.hasNext() ? ", " : "");
 									}
-									if (d > otherSection.getTime().getBreakTime()) {
+									if (otherSection.isDistanceConflict(student, section, m))
 										a.setDistanceConflict(true);
-									}
 									if (section.getTime() != null && section.getTime().hasIntersection(otherSection.getTime()) && !section.isToIgnoreStudentConflictsWith(offering.getDistributions(), otherSection.getSectionId())) {
 										XCourse otherCourse = otherOffering.getCourse(otherEnrollment.getCourseId());
 										XSubpart otherSubpart = otherOffering.getSubpart(otherSection.getSubpartId());

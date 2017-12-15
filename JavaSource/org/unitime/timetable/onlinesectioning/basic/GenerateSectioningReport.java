@@ -34,6 +34,7 @@ import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentMap;
 import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.DistanceMetric;
 import org.cpsolver.studentsct.StudentSectioningModel;
 import org.cpsolver.studentsct.extension.DistanceConflict;
 import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
@@ -107,7 +108,8 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 		Lock lock = server.readLock();
 		try {
 			OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig(), server.getOverExpectedCriterion());
-			model.setDistanceConflict(new DistanceConflict(server.getDistanceMetric(), model.getProperties()));
+			DistanceMetric dm = server.getDistanceMetric();
+			model.setDistanceConflict(new DistanceConflict(dm, model.getProperties()));
 			model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
 			boolean linkedClassesMustBeUsed = server.getConfig().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
 
@@ -227,6 +229,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 				Student clonnedStudent = new Student(student.getStudentId());
 				clonnedStudent.setExternalId(student.getExternalId());
 				clonnedStudent.setName(student.getName());
+				clonnedStudent.setNeedShortDistances(student.hasAccomodation(dm.getShortDistanceAccommodationReference()));
 				for (String g: student.getGroups()) {
 					clonnedStudent.getMinors().add(new AcademicAreaCode("", g));
 					List<GroupReservation> list = groups.get(g);
