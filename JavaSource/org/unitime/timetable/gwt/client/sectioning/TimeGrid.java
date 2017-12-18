@@ -768,6 +768,7 @@ public class TimeGrid extends Composite {
 		public void move() {
 			getElement().getStyle().setWidth(iCellWidth + (iPrint ? 3 : iDayOfWeek + 1 < iNrDays ? 3 : 0), Unit.PX);
 			getElement().getStyle().setLeft(iCellWidth * iDayOfWeek, Unit.PX);
+			getElement().getStyle().setTop(125 * iStartSlot / 30 - 50 * iStart, Unit.PX);
 		}
 		
 		public int getDay() { return iDayOfWeek; }
