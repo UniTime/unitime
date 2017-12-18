@@ -86,6 +86,7 @@ import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -94,6 +95,7 @@ import org.unitime.timetable.model.EventServiceProvider;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.Location;
@@ -122,6 +124,7 @@ import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao._RootDAO;
 
 import com.google.protobuf.CodedInputStream;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
  * @author Tomas Muller
@@ -861,6 +864,45 @@ public class SessionRestore implements SessionRestoreInterface {
 					}
 					loc.setManagerIds(managerIds);
 				}
+			}
+			if (getObject() instanceof CourseRequestOption) {
+				CourseRequestOption o = (CourseRequestOption)getObject();
+				try {
+					org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.Builder option = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.parseFrom(o.getValue()).toBuilder();
+					if (option.getInstructionalMethodCount() > 0)
+						for (org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.Builder e: option.getInstructionalMethodBuilderList()) {
+							InstructionalMethod im = InstructionalMethod.findByReference(e.getExternalId(), iHibSession);
+							if (im != null) e.setUniqueId(im.getUniqueId());
+						}
+					if (option.getSectionCount() > 0)
+						for (org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Builder e: option.getSectionBuilderList()) {
+							Class_ clazz = (Class_)get(Class_.class, String.valueOf(e.getClazzBuilder().getUniqueId()));
+							if (clazz != null) {
+								e.getClazzBuilder().setUniqueId(clazz.getUniqueId());
+								e.getSubpartBuilder().setUniqueId(clazz.getSchedulingSubpart().getUniqueId());
+							}
+							if (e.hasCourse()) {
+								CourseOffering course = (CourseOffering)get(CourseOffering.class, String.valueOf(e.getCourseBuilder().getUniqueId()));
+								if (course != null)
+									e.getCourseBuilder().setUniqueId(course.getUniqueId());
+							}
+							if (e.getInstructorCount() > 0) {
+								for (org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.Builder f: e.getInstructorBuilderList()) {
+									DepartmentalInstructor instructor = (DepartmentalInstructor)get(DepartmentalInstructor.class, String.valueOf(f.getUniqueId()));
+									if (instructor != null)
+										f.setUniqueId(instructor.getUniqueId());
+								}
+							}
+							if (e.getLocationCount() > 0) {
+								for (org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.Builder f: e.getLocationBuilderList()) {
+									Location location = (Location)get(Location.class, String.valueOf(f.getUniqueId()));
+									if (location != null)
+										f.setUniqueId(location.getUniqueId());
+								}
+							}
+						}
+					o.setValue(option.build().toByteArray());
+				} catch (InvalidProtocolBufferException e) {}
 			}
 		}
 	}
