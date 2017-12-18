@@ -144,7 +144,12 @@ public class XEnrollment extends XCourseId implements Serializable {
 	
 	@Override
 	public boolean equals(Object o) {
-		if (o == null || !(o instanceof XEnrollment)) return false;
+		if (o == null) return false;
+		if (!(o instanceof XEnrollment)) {
+			if (o instanceof XCourseId)
+				return ((XCourseId)o).equals(this);
+			return false;
+		}
 		XEnrollment e = (XEnrollment)o;
 		return getCourseId().equals(e.getCourseId()) && getConfigId().equals(e.getConfigId()) && getSectionIds().equals(e.getSectionIds());
 	}

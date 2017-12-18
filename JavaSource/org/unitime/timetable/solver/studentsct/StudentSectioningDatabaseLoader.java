@@ -745,7 +745,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     					if (pref.getInstructionalMethodCount() > 0) {
     						for (OnlineSectioningLog.Entity e: pref.getInstructionalMethodList()) {
     							for (Config config: course.getOffering().getConfigs())
-    								if (config.getInstructionalMethodId() != null && config.getInstructionalMethodId().equals(e.getUniqueId()))
+    								if (config.getInstructionalMethodName() != null && config.getInstructionalMethodName().equals(e.getName()))
+    									selChoices.add(new Choice(config));
+    								else if (config.getInstructionalMethodId() != null && config.getInstructionalMethodId().equals(e.getUniqueId()))
     									selChoices.add(new Choice(config));
     						}
     					}
@@ -754,6 +756,13 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     							Section section = course.getOffering().getSection(x.getClazz().getUniqueId());
     							if (section != null)
     								selChoices.add(section.getChoice());
+    							else {
+    								for (Config config: course.getOffering().getConfigs())
+    									for (Subpart subpart: config.getSubparts())
+    										for (Section sect: subpart.getSections())
+    											if (x.getClazz().getExternalId().equals(sect.getName(course.getId())))
+    												selChoices.add(sect.getChoice());
+    							}
     						}
     					}
                     }

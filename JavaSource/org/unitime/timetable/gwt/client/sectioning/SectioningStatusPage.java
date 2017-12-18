@@ -1286,7 +1286,8 @@ public class SectioningStatusPage extends Composite {
 		header.add(hTotal);
 		
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
-				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false, hasDistances = false, hasOverlaps = false;
+				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false, hasDistances = false, hasOverlaps = false,
+				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false;
 		for (ClassAssignmentInterface.StudentInfo e: result) {
 			if (e.getStudent() == null) continue;
 			// if (e.getStatus() != null) hasStatus = true;
@@ -1304,6 +1305,9 @@ public class SectioningStatusPage extends Composite {
 			if (e.hasTotalCredit()) hasCredit = true;
 			if (e.hasTotalDistanceConflicts()) hasDistances = true;
 			if (e.hasOverlappingMinutes()) hasOverlaps = true;
+			if (e.hasFreeTimeOverlappingMins()) hasFreeTimeOverlaps = true;
+			if (e.hasTotalPrefInstrMethConflict()) hasPrefIMConfs = true;
+			if (e.hasTotalPrefSectionConflict()) hasPrefSecConfs = true;
 		}
 		
 		UniTimeTableHeader hArea = null, hClasf = null;
@@ -1396,6 +1400,27 @@ public class SectioningStatusPage extends Composite {
 			hShare = new UniTimeTableHeader(MESSAGES.colOverlapMins());
 			header.add(hShare);
 			addSortOperation(hShare, StudentComparator.SortBy.OVERLAPS, MESSAGES.colOverlapMins());
+		}
+		
+		UniTimeTableHeader hFTShare = null;
+		if (hasFreeTimeOverlaps) {
+			hFTShare = new UniTimeTableHeader(MESSAGES.colFreeTimeOverlapMins());
+			header.add(hFTShare);
+			addSortOperation(hFTShare, StudentComparator.SortBy.FT_OVERLAPS, MESSAGES.colFreeTimeOverlapMins());
+		}
+		
+		UniTimeTableHeader hPrefIMConfs = null;
+		if (hasPrefIMConfs) {
+			hPrefIMConfs = new UniTimeTableHeader(MESSAGES.colPrefInstrMethConfs());
+			header.add(hPrefIMConfs);
+			addSortOperation(hPrefIMConfs, StudentComparator.SortBy.PREF_IM, MESSAGES.colPrefInstrMethConfs());
+		}
+		
+		UniTimeTableHeader hPrefSecConfs = null;
+		if (hasPrefSecConfs) {
+			hPrefSecConfs = new UniTimeTableHeader(MESSAGES.colPrefSectionConfs());
+			header.add(hPrefSecConfs);
+			addSortOperation(hPrefSecConfs, StudentComparator.SortBy.PREF_SEC, MESSAGES.colPrefSectionConfs());
 		}
 		
 		UniTimeTableHeader hRequestTS = null;
@@ -1514,6 +1539,12 @@ public class SectioningStatusPage extends Composite {
 			}
 			if (hasOverlaps)
 				line.add(new NumberCell(info.getOverlappingMinutes(), info.getTotalOverlappingMinutes()));
+			if (hasFreeTimeOverlaps)
+				line.add(new NumberCell(info.getFreeTimeOverlappingMins(), info.getTotalFreeTimeOverlappingMins()));
+			if (hasPrefIMConfs)
+				line.add(new NumberCell(info.getPrefInstrMethConflict(), info.getTotalPrefInstrMethConflict()));
+			if (hasPrefSecConfs)
+				line.add(new NumberCell(info.getPrefSectionConflict(), info.getTotalPrefSectionConflict()));
 			if (info.getStudent() != null) {
 				if (hasRequestedDate)
 					line.add(new HTML(info.getRequestedDate() == null ? "&nbsp;" : sDF.format(info.getRequestedDate()), false));
@@ -1573,6 +1604,9 @@ public class SectioningStatusPage extends Composite {
 			case NOTE: h = hNote; break;
 			case DIST_CONF: h = hDistConf; break;
 			case OVERLAPS: h = hShare; break;
+			case FT_OVERLAPS: h = hFTShare; break;
+			case PREF_IM: h = hPrefIMConfs; break;
+			case PREF_SEC: h = hPrefSecConfs; break;
 			}
 			if (h != null)
 				iStudentTable.sort(h, new StudentComparator(sort), asc);
@@ -2011,6 +2045,7 @@ public class SectioningStatusPage extends Composite {
 			EMAIL_TS,
 			NOTE,
 			DIST_CONF, OVERLAPS,
+			FT_OVERLAPS, PREF_IM, PREF_SEC,
 			;
 		}
 		
@@ -2096,6 +2131,18 @@ public class SectioningStatusPage extends Composite {
 				cmp = (e1.hasOverlappingMinutes() ? e1.getOverlappingMinutes() : new Integer(0)).compareTo(e2.hasOverlappingMinutes() ? e2.getOverlappingMinutes() : new Integer(0));
 				if (cmp != 0) return - cmp;
 				return (e1.hasTotalOverlappingMinutes() ? e1.getTotalOverlappingMinutes() : new Integer(0)).compareTo(e2.hasTotalOverlappingMinutes() ? e2.getTotalOverlappingMinutes() : new Integer(0));
+			case FT_OVERLAPS:
+				cmp = (e1.hasFreeTimeOverlappingMins() ? e1.getFreeTimeOverlappingMins() : new Integer(0)).compareTo(e2.hasFreeTimeOverlappingMins() ? e2.getFreeTimeOverlappingMins() : new Integer(0));
+				if (cmp != 0) return - cmp;
+				return (e1.hasTotalFreeTimeOverlappingMins() ? e1.getTotalFreeTimeOverlappingMins() : new Integer(0)).compareTo(e2.hasTotalFreeTimeOverlappingMins() ? e2.getTotalFreeTimeOverlappingMins() : new Integer(0));
+			case PREF_IM:
+				cmp = (e1.hasTotalPrefInstrMethConflict() ? new Integer(e1.getTotalPrefInstrMethConflict() - e1.getPrefInstrMethConflict()) : new Integer(0)).compareTo(e2.hasTotalPrefInstrMethConflict() ? new Integer(e2.getTotalPrefInstrMethConflict() - e2.getPrefInstrMethConflict()) : new Integer(0));
+				if (cmp != 0) return - cmp;
+				return - (e1.hasTotalPrefInstrMethConflict() ? e1.getTotalPrefInstrMethConflict() : new Integer(0)).compareTo(e2.hasTotalPrefInstrMethConflict() ? e2.getTotalPrefInstrMethConflict() : new Integer(0));
+			case PREF_SEC:
+				cmp = (e1.hasTotalPrefSectionConflict() ? new Integer(e1.getTotalPrefSectionConflict() - e1.getPrefSectionConflict()) : new Integer(0)).compareTo(e2.hasTotalPrefSectionConflict() ? new Integer(e2.getTotalPrefSectionConflict() - e2.getPrefSectionConflict()) : new Integer(0));
+				if (cmp != 0) return - cmp;
+				return -(e1.hasTotalPrefSectionConflict() ? e1.getTotalPrefSectionConflict() : new Integer(0)).compareTo(e2.hasTotalPrefSectionConflict() ? e2.getTotalPrefSectionConflict() : new Integer(0));
 			default:
 				return 0;
 			}

@@ -214,7 +214,7 @@ public class XCourseRequest extends XRequest {
             		if (choice.getSectionId() != null) {
             			Section section = choice.getOffering().getSection(choice.getSectionId());
             			if (section != null)
-            				preference.addSection(OnlineSectioningHelper.toProto(section));
+            				preference.addSection(OnlineSectioningHelper.toProto(section, course));
             		} else if (choice.getConfigId() != null) {
             			for (Config config: choice.getOffering().getConfigs()) {
             				if (choice.getConfigId().equals(config.getId()) && config.getInstructionalMethodId() != null && im.add(config.getInstructionalMethodId())) {

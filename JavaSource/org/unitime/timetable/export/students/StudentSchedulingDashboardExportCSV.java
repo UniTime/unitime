@@ -202,7 +202,8 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		if (!hasExtId) out.hideColumn(0);
 		
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
-				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false, hasDistances = false, hasOverlaps = false;
+				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false, hasDistances = false, hasOverlaps = false,
+				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false;
 		if (students != null)
 			for (ClassAssignmentInterface.StudentInfo e: students) {
 				if (e.getStudent() == null) continue;
@@ -219,6 +220,9 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 				if (e.hasTotalCredit()) hasCredit = true;
 				if (e.hasTotalDistanceConflicts()) hasDistances = true;
 				if (e.hasOverlappingMinutes()) hasOverlaps = true;
+				if (e.hasFreeTimeOverlappingMins()) hasFreeTimeOverlaps = true;
+				if (e.hasTotalPrefInstrMethConflict()) hasPrefIMConfs = true;
+				if (e.hasTotalPrefSectionConflict()) hasPrefSecConfs = true;
 			}
 		if (!hasArea) { out.hideColumn(2); out.hideColumn(3); }
 		if (!hasMajor) out.hideColumn(4);
@@ -231,9 +235,12 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		if (!hasCredit) out.hideColumn(12);
 		if (!hasDistances) { out.hideColumn(13); out.hideColumn(14); }
 		if (!hasOverlaps) { out.hideColumn(15); }
-		if (!hasRequestedDate) out.hideColumn(16);
-		if (!hasEnrolledDate) out.hideColumn(17);
-		if (!online) { out.hideColumn(18); out.hideColumn(19); }
+		if (!hasFreeTimeOverlaps) { out.hideColumn(16); }
+		if (!hasPrefIMConfs) { out.hideColumn(17); }
+		if (!hasPrefSecConfs) { out.hideColumn(18); }
+		if (!hasRequestedDate) out.hideColumn(19);
+		if (!hasEnrolledDate) out.hideColumn(20);
+		if (!online) { out.hideColumn(21); out.hideColumn(22); }
 		
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_REQUEST);
 		
@@ -254,10 +261,13 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 				MESSAGES.colDistanceConflicts(), // 13
 				MESSAGES.colLongestDistance(), // 14
 				MESSAGES.colOverlapMins(), // 15
-				MESSAGES.colRequestTimeStamp(), // 16
-				MESSAGES.colEnrollmentTimeStamp(), // 17
-				MESSAGES.colStudentNote(), // 18
-				MESSAGES.colEmailTimeStamp() // 19
+				MESSAGES.colFreeTimeOverlapMins(), // 16
+				MESSAGES.colPrefInstrMethConfs(), // 17
+				MESSAGES.colPrefSectionConfs(), // 18
+				MESSAGES.colRequestTimeStamp(), // 19
+				MESSAGES.colEnrollmentTimeStamp(), // 20
+				MESSAGES.colStudentNote(), // 21
+				MESSAGES.colEmailTimeStamp() // 22
 				);
 				
 				
@@ -283,6 +293,9 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 							number(info.getNrDistanceConflicts(), info.getTotalNrDistanceConflicts()),
 							number(info.getLongestDistanceMinutes(), info.getTotalLongestDistanceMinutes()),
 							number(info.getOverlappingMinutes(), info.getTotalOverlappingMinutes()),
+							number(info.getFreeTimeOverlappingMins(), info.getTotalFreeTimeOverlappingMins()),
+							number(info.getPrefInstrMethConflict(), info.getTotalPrefInstrMethConflict()),
+							number(info.getPrefSectionConflict(), info.getTotalPrefSectionConflict()),
 							(info.getRequestedDate() == null ? null : df.format(info.getRequestedDate())),
 							(info.getEnrolledDate() == null ? null : df.format(info.getEnrolledDate())),
 							(info.hasNote() ? info.getNote() : ""),
@@ -307,6 +320,9 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 							number(info.getNrDistanceConflicts(), info.getTotalNrDistanceConflicts()),
 							number(info.getLongestDistanceMinutes(), info.getTotalLongestDistanceMinutes()),
 							number(info.getOverlappingMinutes(), info.getTotalOverlappingMinutes()),
+							number(info.getFreeTimeOverlappingMins(), info.getTotalFreeTimeOverlappingMins()),
+							number(info.getPrefInstrMethConflict(), info.getTotalPrefInstrMethConflict()),
+							number(info.getPrefSectionConflict(), info.getTotalPrefSectionConflict()),
 							null,
 							null,
 							null,

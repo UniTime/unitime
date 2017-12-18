@@ -134,6 +134,15 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Overlap [min]")
 	String colOverlapMins();
+	
+	@DefaultMessage("FreeTime [min]")
+	String colFreeTimeOverlapMins();
+	
+	@DefaultMessage("IM Pref")
+	String colPrefInstrMethConfs();
+	
+	@DefaultMessage("Section Pref")
+	String colPrefSectionConfs();
 
 	/* Academic Session Selector messages
 	 */

@@ -1043,6 +1043,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Float iCredit, iTotalCredit;
 		private Integer iNrDistanceConflicts, iLongestDistanceMinutes, iOverlappingMinutes;
 		private Integer iTotalNrDistanceConflicts, iTotalLongestDistanceMinutes, iTotalOverlappingMinutes;
+		private Integer iFreeTimeOverlappingMins, iTotalFreeTimeOverlappingMins;
+		private Integer iPrefInstrMethConflict, iTotalPrefInstrMethConflict;
+		private Integer iPrefSectionConflict, iTotalPrefSectionConflict;
 		
 		public StudentInfo() {}
 		
@@ -1143,7 +1146,27 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public boolean hasTotalOverlappingMinutes() { return iTotalOverlappingMinutes != null && iTotalOverlappingMinutes > 0; }
 		public void setTotalOverlappingMinutes(Integer overlapMins) { iTotalOverlappingMinutes = overlapMins; }
 		public Integer getTotalOverlappingMinutes() { return iTotalOverlappingMinutes; }
-}
+		
+		public boolean hasFreeTimeOverlappingMins() { return iFreeTimeOverlappingMins != null && iFreeTimeOverlappingMins > 0; }
+		public void setFreeTimeOverlappingMins(Integer overlapMins) { iFreeTimeOverlappingMins = overlapMins; }
+		public Integer getFreeTimeOverlappingMins() { return iFreeTimeOverlappingMins; }
+		public boolean hasTotalFreeTimeOverlappingMins() { return iTotalFreeTimeOverlappingMins != null && iTotalFreeTimeOverlappingMins > 0; }
+		public void setTotalFreeTimeOverlappingMins(Integer overlapMins) { iTotalFreeTimeOverlappingMins = overlapMins; }
+		public Integer getTotalFreeTimeOverlappingMins() { return iTotalFreeTimeOverlappingMins; }
+		
+		public boolean hasPrefInstrMethConflict() { return iPrefInstrMethConflict != null && iPrefInstrMethConflict > 0; }
+		public void setPrefInstrMethConflict(Integer conf) { iPrefInstrMethConflict = conf; }
+		public Integer getPrefInstrMethConflict() { return iPrefInstrMethConflict; }
+		public boolean hasTotalPrefInstrMethConflict() { return iTotalPrefInstrMethConflict != null && iTotalPrefInstrMethConflict > 0; }
+		public void setTotalPrefInstrMethConflict(Integer conf) { iTotalPrefInstrMethConflict = conf; }
+		public Integer getTotalPrefInstrMethConflict() { return iTotalPrefInstrMethConflict; }
+		public boolean hasPrefSectionConflict() { return iPrefSectionConflict != null && iPrefSectionConflict > 0; }
+		public void setPrefSectionConflict(Integer conf) { iPrefSectionConflict = conf; }
+		public Integer getPrefSectionConflict() { return iPrefSectionConflict; }
+		public boolean hasTotalPrefSectionConflict() { return iTotalPrefSectionConflict != null && iTotalPrefSectionConflict > 0; }
+		public void setTotalPrefSectionConflict(Integer conf) { iTotalPrefSectionConflict = conf; }
+		public Integer getTotalPrefSectionConflict() { return iTotalPrefSectionConflict; }
+	}
 
 	public static class SectioningAction implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;

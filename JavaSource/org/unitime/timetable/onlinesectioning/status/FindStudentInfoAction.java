@@ -39,6 +39,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.StudentInfo;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.match.AbstractStudentMatcher;
 import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
@@ -48,6 +49,7 @@ import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
+import org.unitime.timetable.onlinesectioning.model.XFreeTimeRequest;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XSection;
@@ -115,6 +117,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0;
 		int gConNeed = 0, gtConNeed = 0;
 		int gDist = 0, gtDist = 0, gNrDC = 0, gtNrDC = 0, gShr = 0, gtShr = 0; 
+		int gFre = 0, gtFre = 0, gPIM = 0, gtPIM = 0, gPSec = 0, gtPSec = 0;
 		Set<Long> unassigned = new HashSet<Long>();
 		Set<Long> assigned = new HashSet<Long>();
 		AcademicSessionInfo session = server.getAcademicSession();
@@ -162,6 +165,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0, tUnasg = 0;
 						float tCred = 0f;
 						int nrDisCnf = 0, maxDist = 0, share = 0; 
+						int ftShare = 0;
 						for (XRequest r: student.getRequests()) {
 							if (r instanceof XCourseRequest) {
 								XCourseRequest cr = (XCourseRequest)r;
@@ -212,6 +216,12 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 															gtShr += section.getTime().share(otherSection.getTime());
 														}
 													}
+												} else if (q instanceof XFreeTimeRequest) {
+													XFreeTimeRequest ft = (XFreeTimeRequest)q;
+													if (section.getTime().hasIntersection(ft.getTime())) {
+														ftShare += section.getTime().share(ft.getTime());
+														gtFre += section.getTime().share(ft.getTime());
+													}
 												}
 											}											
 										}
@@ -240,6 +250,12 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						s.setTotalNrDistanceConflicts(nrDisCnf);
 						s.setTotalLongestDistanceMinutes(maxDist);
 						s.setTotalOverlappingMinutes(share);
+						s.setFreeTimeOverlappingMins(0);
+						s.setTotalFreeTimeOverlappingMins(ftShare);
+						s.setPrefInstrMethConflict(0);
+						s.setTotalPrefInstrMethConflict(0);
+						s.setPrefSectionConflict(0);
+						s.setTotalPrefSectionConflict(0);
 					}
 					if (m.enrollment() != null) {
 						if (assigned.add(m.request().getRequestId())) {
@@ -265,6 +281,39 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 							if (g != null) {
 								for (XSubpart xs: g.getSubparts())
 									s.setCredit(s.getCredit() + guessCredit(xs.getCreditAbbv(m.enrollment().getCourseId())));
+								
+								OnlineSectioningLog.CourseRequestOption pref = m.request().getPreferences(m.enrollment());
+								if (pref != null) {
+									if (pref.getInstructionalMethodCount() > 0) {
+										boolean im = false;
+										if (g.getInstructionalMethod() != null)
+											for (OnlineSectioningLog.Entity e: pref.getInstructionalMethodList())
+												if (g.getInstructionalMethod().getReference().equals(e.getExternalId()) || g.getInstructionalMethod().getUniqueId().equals(e.getUniqueId())) { im = true; break; }
+										s.setTotalPrefInstrMethConflict(s.getTotalPrefInstrMethConflict() + 1);
+										gtPIM++;
+										if (im) {
+											s.setPrefInstrMethConflict(s.getPrefInstrMethConflict() + 1);
+											gPIM++;
+										}
+									}
+									if (pref.getSectionCount() > 0) {
+										Set<String> allSubpartIds = new HashSet<String>();
+										Set<String> selectedSubpartIds = new HashSet<String>();
+										for (OnlineSectioningLog.Section sc: pref.getSectionList()) {
+											allSubpartIds.add(sc.getSubpart().getName());
+											for (XSection section: o.getSections(m.enrollment())) {
+												if (section.getSectionId().equals(sc.getClazz().getUniqueId()) || section.getName(m.enrollment().getCourseId()).equals(sc.getClazz().getExternalId()))
+													selectedSubpartIds.add(sc.getSubpart().getName());
+											}
+										}
+										s.setTotalPrefSectionConflict(s.getTotalPrefSectionConflict() + allSubpartIds.size());
+										gtPSec += allSubpartIds.size();
+										if (!allSubpartIds.isEmpty()) {
+											s.setPrefSectionConflict(s.getPrefSectionConflict() + selectedSubpartIds.size());
+											gPSec += selectedSubpartIds.size();
+										}
+									}
+								}
 							}
 							
 							if (o != null)
@@ -290,6 +339,12 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 														gShr += section.getTime().share(otherSection.getTime());
 													}
 												}
+											}
+										} else if (q instanceof XFreeTimeRequest) {
+											XFreeTimeRequest ft = (XFreeTimeRequest)q;
+											if (section.getTime().hasIntersection(ft.getTime())) {
+												s.setFreeTimeOverlappingMins(s.getFreeTimeOverlappingMins() + section.getTime().share(ft.getTime()));
+												gFre += section.getTime().share(ft.getTime());
 											}
 										}
 									}											
@@ -421,8 +476,14 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		t.setTotalLongestDistanceMinutes(gtDist);
 		t.setOverlappingMinutes(gShr);
 		t.setTotalOverlappingMinutes(gtShr);
+		t.setFreeTimeOverlappingMins(gFre);
+		t.setTotalFreeTimeOverlappingMins(gtFre);
+		t.setPrefInstrMethConflict(gPIM);
+		t.setTotalPrefInstrMethConflict(gtPIM);
+		t.setPrefSectionConflict(gPSec);
+		t.setTotalPrefSectionConflict(gtPSec);
 
-		ret.add(t);				
+		ret.add(t);
 		
 		return ret;
 	}
