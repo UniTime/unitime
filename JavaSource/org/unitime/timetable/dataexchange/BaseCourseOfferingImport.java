@@ -323,6 +323,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
         if (existingIo && action != null && action.equalsIgnoreCase("delete")){
         	addNote("Deleted instructional offering: " + io.getCourseName());
         	deleteInstructionalOffering(io);
+        	updateChangeList(true);
         	changeCount++;
         } else if (!existingIo && action != null && action.equalsIgnoreCase("delete")){
         	return;
@@ -331,7 +332,8 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
         		if(!existingInstructionalOfferings.remove(io.getUniqueId())){
     				throw new Exception("could not remove io uniqueid from existing");
     			}
-        		action = "update";
+        		if (!"create-if-not-exists".equalsIgnoreCase(action))
+        			action = "update";
         		addNote("Changes for instructional offering: " + io.getCourseName());
         	} else {
         		action = "insert";
@@ -601,7 +603,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		}
        
         Boolean offered = getRequiredBooleanAttribute(element, "offered", "offered");
-        if (io.isNotOffered() == null || io.isNotOffered().equals(offered)){
+        if (io.isNotOffered() == null || (!"create-if-not-exists".equals(action) && io.isNotOffered().equals(offered))) {
          	io.setNotOffered(new Boolean(!offered.booleanValue()));
          	addNote("\toffered status changed");
          	changed = true;
@@ -616,12 +618,19 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			this.getHibSession().saveOrUpdate(io);
 		}
 		
-		if (elementInstrOffrConfig(element, io)){
-			changed = true;
-		}
-		
-		if (elementExam(element, io)) {
-			changed = true;
+		if ("create-if-not-exists".equals(action)) {
+        	for (InstrOfferingConfig ioc: io.getInstrOfferingConfigs())
+				for (SchedulingSubpart subpart: ioc.getSchedulingSubparts())
+					for (Class_ clazz: subpart.getClasses())
+						existingClasses.remove(clazz.getUniqueId());
+		} else {
+			if (elementInstrOffrConfig(element, io)){
+				changed = true;
+			}
+			
+			if (elementExam(element, io)) {
+				changed = true;
+			}
 		}
 		
 		if (changed){
@@ -1940,8 +1949,9 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		} else if (incremental && parentClass == null) {
 			// No class elements & incremental mode -> make no changes
 			for (SchedulingSubpart subpart: ioc.getSchedulingSubparts())
-				for (Class_ clazz: subpart.getClasses())
-					existingClasses.remove(clazz.getUniqueId());
+				if (subpart.getClasses() != null)
+					for (Class_ clazz: subpart.getClasses())
+						existingClasses.remove(clazz.getUniqueId());
 			return changed;
 		}
 		
