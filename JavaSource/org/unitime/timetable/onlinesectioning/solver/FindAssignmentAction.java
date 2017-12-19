@@ -520,7 +520,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			}
 		}
 		// There are reservations >> allow user to keep the current enrollment by providing a dummy reservation for it
-		if (!offering.getReservations().isEmpty())
+		if (!offering.getReservations().isEmpty() && getAssignment() != null)
 			for (XEnrollment enrollment: enrollments.getEnrollmentsForCourse(courseId))
 				if (enrollment.getStudentId().equals(studentId)) {
 					Reservation clonedReservation = null;
@@ -837,7 +837,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								for (Iterator<RoomLocation> k = s.getRooms().iterator(); k.hasNext();)
 									from += k.next().getName() + (k.hasNext() ? ", " : "");
 							}
-							if (dc.inConflict(enrollment.getStudent(), section, s))
+							if (dc.inConflict(enrollment.getStudent(), s, section) && s.getTime().getStartSlot() < section.getTime().getStartSlot())
 								a.setDistanceConflict(true);
 							if (section.getTime() != null && section.getTime().hasIntersection(s.getTime()) && !section.isToIgnoreStudentConflictsWith(s.getId())) {
 								overlap.add(MSG.clazz(x.getCourse().getSubjectArea(), x.getCourse().getCourseNumber(), s.getSubpart().getName(), s.getName(x.getCourse().getId())));
