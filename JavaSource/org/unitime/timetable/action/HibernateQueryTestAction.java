@@ -168,6 +168,7 @@ public class HibernateQueryTestAction extends Action {
         sqlLog.setLevel(iOriginalLevel == null ? Level.INFO : iOriginalLevel);
         out.flush(); out.close();
         String sql = "";
+        try {
         for (StringTokenizer stk = new StringTokenizer(new String(out.toByteArray()),"\n");stk.hasMoreTokens();) {
             String line = (String)stk.nextToken();
             String comment = null; 
@@ -181,6 +182,7 @@ public class HibernateQueryTestAction extends Action {
             Formatter f = new BasicFormatterImpl();
             sql += f.format(line).replaceAll("\n", "<br>").replaceAll(" ", "&nbsp;");
         }
+        } catch (Exception e) {}
         if (sql.length()>0)
             request.setAttribute("sql",sql);
 
