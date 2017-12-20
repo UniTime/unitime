@@ -29,11 +29,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.cpsolver.coursett.Constants;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.ifs.util.DistanceMetric;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.StudentInfo;
+import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
+import org.unitime.timetable.model.CourseRequestOption;
+import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.StudentAreaClassificationMajor;
@@ -42,11 +49,14 @@ import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentNote;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.status.FindStudentInfoAction;
 import org.unitime.timetable.onlinesectioning.status.SectioningStatusFilterAction;
 import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbCourseRequestMatcher;
 import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbFindStudentInfoMatcher;
+
+import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
  * @author Tomas Muller
@@ -63,11 +73,14 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0;
 		int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0;
 		int gConNeed = 0, gtConNeed = 0;
+		int gDist = 0, gtDist = 0, gNrDC = 0, gtNrDC = 0, gShr = 0, gtShr = 0; 
+		int gFre = 0, gtFre = 0, gPIM = 0, gtPIM = 0, gPSec = 0, gtPSec = 0;
 		Set<Long> unassigned = new HashSet<Long>();
 		Set<Long> assignedRequests = new HashSet<Long>();
 		AcademicSessionInfo session = server.getAcademicSession();
+		DistanceMetric dm = server.getDistanceMetric();
 		
-		DbFindStudentInfoMatcher sm = new DbFindStudentInfoMatcher(session, iQuery, helper.getStudentNameFormat());
+		DbFindStudentInfoMatcher sm = new DbFindStudentInfoMatcher(session, iQuery, helper.getStudentNameFormat()); sm.setServer(server);
 		
 		Map<CourseOffering, List<CourseRequest>> requests = new HashMap<CourseOffering, List<CourseRequest>>();
 		for (CourseRequest cr: (List<CourseRequest>)SectioningStatusFilterAction.getCourseQuery(iFilter, server).select("distinct cr").query(helper.getHibSession()).list()) {
@@ -113,6 +126,8 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					}
 					int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0, tUnasg = 0;
 					float tCred = 0f;
+					int nrDisCnf = 0, maxDist = 0, share = 0; 
+					int ftShare = 0;
 					for (CourseDemand demand: student.getCourseDemands()) {
 						if (!demand.getCourseRequests().isEmpty()) {
 							if (!demand.isAlternative()) tReq ++;
@@ -153,6 +168,38 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 											tCred += guessCredit(e.getClazz().getSchedulingSubpart().getCredit().creditAbbv());
 									}
 								}
+								
+								for (StudentClassEnrollment section: enrollment) {
+									Assignment assignment = section.getClazz().getCommittedAssignment();
+									if (assignment == null) continue;
+									for (StudentClassEnrollment otherSection: student.getClassEnrollments()) {
+										if (section.equals(otherSection)) continue;
+										Assignment otherAssignment = otherSection.getClazz().getCommittedAssignment();
+										if (otherAssignment == null) continue;
+										if (isDistanceConflict(student, assignment, otherAssignment, dm)) {
+											nrDisCnf ++; gtNrDC ++;
+											int d = getDistanceInMinutes(assignment, otherAssignment, dm);
+											if (d > maxDist) maxDist = d;
+											if (d > gtDist) gtDist = d;
+										}
+										if (assignment.getTimeLocation().hasIntersection(otherAssignment.getTimeLocation()) && !section.getClazz().isToIgnoreStudentConflictsWith(otherSection.getClazz()) && section.getClazz().getUniqueId() < otherSection.getClazz().getUniqueId()) {
+											int sh = assignment.getTimeLocation().nrSharedDays(otherAssignment.getTimeLocation()) * assignment.getTimeLocation().nrSharedHours(otherAssignment.getTimeLocation()) * Constants.SLOT_LENGTH_MIN;
+											share += sh;
+											gtShr += sh;
+										}
+									}
+									for (CourseDemand cd: student.getCourseDemands()) {
+										if (cd.getFreeTime() != null) {
+											TimeLocation ft = new TimeLocation(cd.getFreeTime().getDayCode(), cd.getFreeTime().getStartSlot(), cd.getFreeTime().getLength(),
+													0, 0.0, 0, null, null, session.getFreeTimePattern(), 0);
+											if (ft.hasIntersection(assignment.getTimeLocation())) {
+												int sh = assignment.getTimeLocation().nrSharedDays(ft) * assignment.getTimeLocation().nrSharedHours(ft) * Constants.SLOT_LENGTH_MIN;
+												ftShare += sh;
+												gtFre += sh;
+											}
+										}
+									}
+								}
 							}
 						}
 					}
@@ -172,6 +219,18 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					s.setEmailDate(student.getScheduleEmailedDate() == null ? null : student.getScheduleEmailedDate());
 					s.setCredit(0f);
 					s.setTotalCredit(tCred);
+					s.setNrDistanceConflicts(0);
+					s.setLongestDistanceMinutes(0);
+					s.setOverlappingMinutes(0);
+					s.setTotalNrDistanceConflicts(nrDisCnf);
+					s.setTotalLongestDistanceMinutes(maxDist);
+					s.setTotalOverlappingMinutes(share);
+					s.setFreeTimeOverlappingMins(0);
+					s.setTotalFreeTimeOverlappingMins(ftShare);
+					s.setPrefInstrMethConflict(0);
+					s.setTotalPrefInstrMethConflict(0);
+					s.setPrefSectionConflict(0);
+					s.setTotalPrefSectionConflict(0);
 					
 					StudentNote note = null;
 					for (StudentNote n: student.getNotes())
@@ -210,6 +269,79 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 							for (StudentClassEnrollment e: crm.enrollment()) {
 								if (e.getClazz().getSchedulingSubpart().getCredit() != null)
 									s.setCredit(s.getCredit() + guessCredit(e.getClazz().getSchedulingSubpart().getCredit().creditAbbv()));
+							}
+						}
+						
+						CourseRequestOption option = request.getCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE);
+						if (option != null && option.getValue() != null) {
+							try {
+								OnlineSectioningLog.CourseRequestOption pref = OnlineSectioningLog.CourseRequestOption.parseFrom(option.getValue());
+								if (pref.getInstructionalMethodCount() > 0) {
+									boolean im = false;
+									InstructionalMethod method = crm.enrollment().get(0).getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod();
+									if (method != null)
+										for (OnlineSectioningLog.Entity e: pref.getInstructionalMethodList())
+											if (method.getReference().equals(e.getExternalId()) || method.getUniqueId().equals(e.getUniqueId())) { im = true; break; }
+									s.setTotalPrefInstrMethConflict(s.getTotalPrefInstrMethConflict() + 1);
+									gtPIM++;
+									if (im) {
+										s.setPrefInstrMethConflict(s.getPrefInstrMethConflict() + 1);
+										gPIM++;
+									}
+								}
+								if (pref.getSectionCount() > 0) {
+									Set<String> allSubpartIds = new HashSet<String>();
+									Set<String> selectedSubpartIds = new HashSet<String>();
+									for (OnlineSectioningLog.Section sc: pref.getSectionList()) {
+										allSubpartIds.add(sc.getSubpart().getName());
+										for (StudentClassEnrollment section: crm.enrollment()) {
+											String externalId = section.getClazz().getExternalId(section.getCourseOffering());
+											if (section.getClazz().getUniqueId().equals(sc.getClazz().getUniqueId()) || (externalId != null && externalId.equals(sc.getClazz().getExternalId())))
+												selectedSubpartIds.add(sc.getSubpart().getName());
+										}
+									}
+									s.setTotalPrefSectionConflict(s.getTotalPrefSectionConflict() + allSubpartIds.size());
+									gtPSec += allSubpartIds.size();
+									if (!allSubpartIds.isEmpty()) {
+										s.setPrefSectionConflict(s.getPrefSectionConflict() + selectedSubpartIds.size());
+										gPSec += selectedSubpartIds.size();
+									}
+								}
+							} catch (InvalidProtocolBufferException e) {}
+						}
+					}
+					
+					for (StudentClassEnrollment section: crm.enrollment()) {
+						Assignment assignment = section.getClazz().getCommittedAssignment();
+						if (assignment == null) continue;
+						for (StudentClassEnrollment otherSection: student.getClassEnrollments()) {
+							if (section.equals(otherSection)) continue;
+							Assignment otherAssignment = otherSection.getClazz().getCommittedAssignment();
+							if (otherAssignment == null) continue;
+							if (isDistanceConflict(student, assignment, otherAssignment, dm)) {
+								s.setNrDistanceConflicts(s.getNrDistanceConflicts() + 1); gNrDC ++;
+								int d = getDistanceInMinutes(assignment, otherAssignment, dm);
+								if (d > s.getLongestDistanceMinutes()) s.setLongestDistanceMinutes(d);
+								if (d > gDist) gDist = d;
+							}
+							if (assignment.getTimeLocation().hasIntersection(otherAssignment.getTimeLocation()) && !section.getClazz().isToIgnoreStudentConflictsWith(otherSection.getClazz())) {
+								if (section.getClazz().getUniqueId() < otherSection.getClazz().getUniqueId() ||
+									!query().match(new DbCourseRequestMatcher(session, otherSection.getCourseRequest(), isConsentToDoCourse(otherSection.getCourseOffering()), helper.getStudentNameFormat()))) {
+									int sh = assignment.getTimeLocation().nrSharedDays(otherAssignment.getTimeLocation()) * assignment.getTimeLocation().nrSharedHours(otherAssignment.getTimeLocation()) * Constants.SLOT_LENGTH_MIN;
+									s.setOverlappingMinutes(s.getOverlappingMinutes() + sh);
+									gShr += sh;
+								}
+							}
+						}
+						for (CourseDemand cd: student.getCourseDemands()) {
+							if (cd.getFreeTime() != null) {
+								TimeLocation ft = new TimeLocation(cd.getFreeTime().getDayCode(), cd.getFreeTime().getStartSlot(), cd.getFreeTime().getLength(),
+										0, 0.0, 0, null, null, session.getFreeTimePattern(), 0);
+								if (ft.hasIntersection(assignment.getTimeLocation())) {
+									int sh = assignment.getTimeLocation().nrSharedDays(ft) * assignment.getTimeLocation().nrSharedHours(ft) * Constants.SLOT_LENGTH_MIN;
+									s.setFreeTimeOverlappingMins(s.getFreeTimeOverlappingMins() + sh);
+									gFre += sh;
+								}
 							}
 						}
 					}
@@ -303,10 +435,76 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		
 		t.setConsentNeeded(gConNeed);
 		t.setTotalConsentNeeded(gtConNeed);
+		
+		t.setNrDistanceConflicts(gNrDC);
+		t.setTotalNrDistanceConflicts(gtNrDC);
+		t.setLongestDistanceMinutes(gDist);
+		t.setTotalLongestDistanceMinutes(gtDist);
+		t.setOverlappingMinutes(gShr);
+		t.setTotalOverlappingMinutes(gtShr);
+		t.setFreeTimeOverlappingMins(gFre);
+		t.setTotalFreeTimeOverlappingMins(gtFre);
+		t.setPrefInstrMethConflict(gPIM);
+		t.setTotalPrefInstrMethConflict(gtPIM);
+		t.setPrefSectionConflict(gPSec);
+		t.setTotalPrefSectionConflict(gtPSec);
 
 		ret.add(t);				
 		
 		return ret;
+	}
+	
+	public int getDistanceInMinutes(Assignment as1, Assignment as2, DistanceMetric m) {
+		Placement p1 = as1.getPlacement(), p2 = as2.getPlacement();
+		if (p1.getNrRooms() == 0 || p2.getNrRooms() == 0) return 0;
+		TimeLocation t1 = p1.getTimeLocation(), t2 = p2.getTimeLocation();
+		if (t1 == null || t2 == null || !t1.shareDays(t2) || !t1.shareWeeks(t2)) return 0;
+        int a1 = t1.getStartSlot(), a2 = t2.getStartSlot();
+        if (m.doComputeDistanceConflictsBetweenNonBTBClasses()) {
+        	if (a1 + t1.getLength() <= a2) {
+        		int dist = Placement.getDistanceInMinutes(m, p1, p2);
+        		if (dist > t1.getBreakTime() + Constants.SLOT_LENGTH_MIN * (a2 - a1 - t1.getLength()))
+        			return dist;
+        	}
+        } else {
+        	if (a1 + t1.getLength() == a2)
+        		return Placement.getDistanceInMinutes(m, p1, p2);
+        }
+        return 0;
+    }
+	
+	public boolean isDistanceConflict(Student student, Assignment as1, Assignment as2, DistanceMetric m) {
+		Placement p1 = as1.getPlacement(), p2 = as2.getPlacement();
+		if (p1.getNrRooms() == 0 || p2.getNrRooms() == 0) return false;
+		TimeLocation t1 = p1.getTimeLocation(), t2 = p2.getTimeLocation();
+		if (t1 == null || t2 == null || !t1.shareDays(t2) || !t1.shareWeeks(t2)) return false;
+		int a1 = t1.getStartSlot(), a2 = t2.getStartSlot();
+		boolean sd = false;
+		for (StudentAccomodation a: student.getAccomodations()) {
+			if (m.getShortDistanceAccommodationReference().equals(a.getAbbreviation())) { sd = true; break; }
+		}
+        if (sd) {
+        	if (m.doComputeDistanceConflictsBetweenNonBTBClasses()) {
+	        	if (a1 + t1.getLength() <= a2) {
+	        		int dist = Placement.getDistanceInMinutes(m, p1, p2);
+	        		return (dist > Constants.SLOT_LENGTH_MIN * (a2 - a1 - t1.getLength()));
+	        	}
+	        } else {
+	        	if (a1 + t1.getLength() == a2)
+	        		return Placement.getDistanceInMinutes(m, p1, p2) > 0;
+	        }
+		} else {
+	        if (m.doComputeDistanceConflictsBetweenNonBTBClasses()) {
+	        	if (a1 + t1.getLength() <= a2) {
+	        		int dist = Placement.getDistanceInMinutes(m, p1, p2);
+	        		return (dist > t1.getBreakTime() + Constants.SLOT_LENGTH_MIN * (a2 - a1 - t1.getLength()));
+	        	}
+	        } else {
+	        	if (a1 + t1.getLength() == a2)
+	        		return Placement.getDistanceInMinutes(m, p1, p2) > t1.getBreakTime();
+	        }
+		}
+        return false;
 	}
 	
 	public boolean isConsentToDoCourse(CourseOffering course) {

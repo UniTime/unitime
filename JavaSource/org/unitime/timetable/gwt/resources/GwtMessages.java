@@ -5483,6 +5483,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("results")
 	String tagSuggestionsResults();
 	
+	@DefaultMessage("credit")
+	String tagCredit();
+	
+	@DefaultMessage("overlap")
+	String tagOverlap();
+	
 	@DefaultMessage("All Sessions")
 	String attrFlagAllSessions();
 	

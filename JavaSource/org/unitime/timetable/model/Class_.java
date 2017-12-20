@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
 import org.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import org.cpsolver.coursett.preference.PreferenceCombination;
 import org.hibernate.FlushMode;
@@ -1777,6 +1778,14 @@ public class Class_ extends BaseClass_ {
 		return !getSharedPreferences(other, null,
 				new String[] { PreferenceLevel.sRequired },
 				new String[] { "MEET_WITH"}
+				).isEmpty();
+	}
+	
+	public boolean isToIgnoreStudentConflictsWith(Class_ other) {
+		if (other == null) return false;
+		return !getSharedPreferences(other.getUniqueId(), other.getSchedulingSubpart().getUniqueId(),
+				new String[] { PreferenceLevel.sRequired },
+				new String[] { IgnoreStudentConflictsConstraint.REFERENCE}
 				).isEmpty();
 	}
 	

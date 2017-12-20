@@ -63,15 +63,19 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
+import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XInstructor;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XSubpart;
+import org.unitime.timetable.onlinesectioning.status.SectioningStatusFilterAction.Credit;
 import org.unitime.timetable.server.lookup.PeopleLookupBackend;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
@@ -604,20 +608,23 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		private XOffering iOffering;
 		private Date iFirstDate;
 		private String iDefaultStatus;
+		private OnlineSectioningServer iServer;
 		
-		public CourseRequestMatcher(AcademicSessionInfo session, XCourse info, XStudent student, XOffering offering, XCourseRequest request, boolean isConsentToDoCourse) {
+		public CourseRequestMatcher(AcademicSessionInfo session, XCourse info, XStudent student, XOffering offering, XCourseRequest request, boolean isConsentToDoCourse, OnlineSectioningServer server) {
 			super(info, isConsentToDoCourse);
 			iFirstDate = session.getDatePatternFirstDate();
 			iStudent = student;
 			iRequest = request;
 			iDefaultStatus = session.getDefaultSectioningStatus();
 			iOffering = offering;
+			iServer = server;
 		}
 		
 		public XCourseRequest request() { return iRequest; }
 		public XEnrollment enrollment() { return iRequest.getEnrollment(); }
 		public XStudent student() { return iStudent; }
 		public String status() { return student().getStatus() == null ? iDefaultStatus : student().getStatus(); }
+		public OnlineSectioningServer server() { return iServer; }
 		public XCourseId course() {
 			if (enrollment() != null) return enrollment();
 			for (XCourseId course: request().getCourseIds())
@@ -721,6 +728,102 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				if ("default".equalsIgnoreCase(term) || "Not Set".equalsIgnoreCase(term))
 					return student().getStatus() == null;
 				return term.equalsIgnoreCase(status());
+			}
+			
+			if ("credit".equals(attr)) {
+				int min = 0, max = Integer.MAX_VALUE;
+				Credit prefix = Credit.eq;
+				String number = term;
+				if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+				else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+				else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+				else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+				else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+				try {
+					int a = Integer.parseInt(number);
+					switch (prefix) {
+						case eq: min = max = a; break; // = a
+						case le: max = a; break; // <= a
+						case ge: min = a; break; // >= a
+						case lt: max = a - 1; break; // < a
+						case gt: min = a + 1; break; // > a
+					}
+				} catch (NumberFormatException e) {}
+				if (term.contains("..")) {
+					try {
+						String a = term.substring(0, term.indexOf('.'));
+						String b = term.substring(term.indexOf("..") + 2);
+						min = Integer.parseInt(a); max = Integer.parseInt(b);
+					} catch (NumberFormatException e) {}
+				}
+				float credit = 0;
+				for (XRequest r: student().getRequests()) {
+					if (r instanceof XCourseRequest) {
+						XCourseRequest cr = (XCourseRequest)r;
+						if (cr.getEnrollment() == null) continue;
+						XOffering o = server().getOffering(cr.getEnrollment().getOfferingId());
+						XConfig g = (o == null ? null : o.getConfig(cr.getEnrollment().getConfigId()));
+						if (g != null) {
+							for (XSubpart xs: g.getSubparts())
+								credit += FindStudentInfoAction.guessCredit(xs.getCreditAbbv(cr.getEnrollment().getCourseId()));
+						}
+					}
+				}
+				return min <= credit && credit <= max;
+			}
+			
+			if ("overlap".equals(attr)) {
+				int min = 0, max = Integer.MAX_VALUE;
+				Credit prefix = Credit.eq;
+				String number = term;
+				if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+				else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+				else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+				else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+				else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+				try {
+					int a = Integer.parseInt(number);
+					switch (prefix) {
+						case eq: min = max = a; break; // = a
+						case le: max = a; break; // <= a
+						case ge: min = a; break; // >= a
+						case lt: max = a - 1; break; // < a
+						case gt: min = a + 1; break; // > a
+					}
+				} catch (NumberFormatException e) {}
+				if (term.contains("..")) {
+					try {
+						String a = term.substring(0, term.indexOf('.'));
+						String b = term.substring(term.indexOf("..") + 2);
+						min = Integer.parseInt(a); max = Integer.parseInt(b);
+					} catch (NumberFormatException e) {}
+				}
+				int share = 0;
+				for (XRequest r: student().getRequests()) {
+					if (r instanceof XCourseRequest) {
+						XCourseRequest cr = (XCourseRequest)r;
+						if (cr.getEnrollment() == null) continue;
+						XOffering o = server().getOffering(cr.getEnrollment().getOfferingId());
+						if (o != null)
+							for (XSection section: o.getSections(cr.getEnrollment())) {
+								if (section.getTime() == null) continue;
+								for (XRequest q: student().getRequests()) {
+									if (q instanceof XCourseRequest) {
+										XEnrollment otherEnrollment = ((XCourseRequest)q).getEnrollment();
+										if (otherEnrollment == null) continue;
+										XOffering otherOffering = server().getOffering(otherEnrollment.getOfferingId());
+										for (XSection otherSection: otherOffering.getSections(otherEnrollment)) {
+											if (otherSection.equals(section) || otherSection.getTime() == null) continue;
+											if (section.getTime().hasIntersection(otherSection.getTime()) && !section.isToIgnoreStudentConflictsWith(o.getDistributions(), otherSection.getSectionId()) && section.getSectionId() < otherSection.getSectionId()) {
+												share += section.getTime().share(otherSection.getTime());
+											}
+										}
+									}
+								}
+							}
+					}
+				}
+				return min <= share && share <= max;
 			}
 			
 			if (enrollment() != null) {
@@ -918,14 +1021,17 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 	public static class StudentMatcher implements TermMatcher {
 		private XStudent iStudent;
 		private String iDefaultStatus;
+		private OnlineSectioningServer iServer;
 		
-		public StudentMatcher(XStudent student, String defaultStatus) {
+		public StudentMatcher(XStudent student, String defaultStatus, OnlineSectioningServer server) {
 			iStudent = student;
 			iDefaultStatus = defaultStatus;
+			iServer = server;
 		}
 
 		public XStudent student() { return iStudent; }
 		public String status() {  return (iStudent.getStatus() == null ? iDefaultStatus : iStudent.getStatus()); }
+		public OnlineSectioningServer server() { return iServer; }
 		
 		@Override
 		public boolean match(String attr, String term) {
@@ -957,6 +1063,98 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				if ("default".equalsIgnoreCase(term) || "Not Set".equalsIgnoreCase(term))
 					return student().getStatus() == null;
 				return term.equalsIgnoreCase(status());
+			} else if ("credit".equals(attr)) {
+				int min = 0, max = Integer.MAX_VALUE;
+				Credit prefix = Credit.eq;
+				String number = term;
+				if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+				else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+				else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+				else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+				else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+				try {
+					int a = Integer.parseInt(number);
+					switch (prefix) {
+						case eq: min = max = a; break; // = a
+						case le: max = a; break; // <= a
+						case ge: min = a; break; // >= a
+						case lt: max = a - 1; break; // < a
+						case gt: min = a + 1; break; // > a
+					}
+				} catch (NumberFormatException e) {}
+				if (term.contains("..")) {
+					try {
+						String a = term.substring(0, term.indexOf('.'));
+						String b = term.substring(term.indexOf("..") + 2);
+						min = Integer.parseInt(a); max = Integer.parseInt(b);
+					} catch (NumberFormatException e) {}
+				}
+				float credit = 0;
+				for (XRequest r: student().getRequests()) {
+					if (r instanceof XCourseRequest) {
+						XCourseRequest cr = (XCourseRequest)r;
+						if (cr.getEnrollment() == null) continue;
+						XOffering o = server().getOffering(cr.getEnrollment().getOfferingId());
+						XConfig g = (o == null ? null : o.getConfig(cr.getEnrollment().getConfigId()));
+						if (g != null) {
+							for (XSubpart xs: g.getSubparts())
+								credit += FindStudentInfoAction.guessCredit(xs.getCreditAbbv(cr.getEnrollment().getCourseId()));
+						}
+					}
+				}
+				return min <= credit && credit <= max;
+			} else if ("overlap".equals(attr)) {
+				int min = 0, max = Integer.MAX_VALUE;
+				Credit prefix = Credit.eq;
+				String number = term;
+				if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+				else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+				else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+				else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+				else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+				try {
+					int a = Integer.parseInt(number);
+					switch (prefix) {
+						case eq: min = max = a; break; // = a
+						case le: max = a; break; // <= a
+						case ge: min = a; break; // >= a
+						case lt: max = a - 1; break; // < a
+						case gt: min = a + 1; break; // > a
+					}
+				} catch (NumberFormatException e) {}
+				if (term.contains("..")) {
+					try {
+						String a = term.substring(0, term.indexOf('.'));
+						String b = term.substring(term.indexOf("..") + 2);
+						min = Integer.parseInt(a); max = Integer.parseInt(b);
+					} catch (NumberFormatException e) {}
+				}
+				int share = 0;
+				for (XRequest r: student().getRequests()) {
+					if (r instanceof XCourseRequest) {
+						XCourseRequest cr = (XCourseRequest)r;
+						if (cr.getEnrollment() == null) continue;
+						XOffering o = server().getOffering(cr.getEnrollment().getOfferingId());
+						if (o != null)
+							for (XSection section: o.getSections(cr.getEnrollment())) {
+								if (section.getTime() == null) continue;
+								for (XRequest q: student().getRequests()) {
+									if (q instanceof XCourseRequest) {
+										XEnrollment otherEnrollment = ((XCourseRequest)q).getEnrollment();
+										if (otherEnrollment == null) continue;
+										XOffering otherOffering = server().getOffering(otherEnrollment.getOfferingId());
+										for (XSection otherSection: otherOffering.getSections(otherEnrollment)) {
+											if (otherSection.equals(section) || otherSection.getTime() == null) continue;
+											if (section.getTime().hasIntersection(otherSection.getTime()) && !section.isToIgnoreStudentConflictsWith(o.getDistributions(), otherSection.getSectionId()) && section.getSectionId() < otherSection.getSectionId()) {
+												share += section.getTime().share(otherSection.getTime());
+											}
+										}
+									}
+								}
+							}
+					}
+				}
+				return min <= share && share <= max;
 			}
 			return false;
 		}

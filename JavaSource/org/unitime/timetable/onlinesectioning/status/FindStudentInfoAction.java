@@ -137,7 +137,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 				if (studentIds != null && !studentIds.contains(request.getStudentId())) continue;
 				XStudent student = server.getStudent(request.getStudentId());
 				if (student == null) continue;
-				CourseRequestMatcher m = new CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse);
+				CourseRequestMatcher m = new CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse, server);
 				if (query().match(m)) {
 					StudentInfo s = students.get(request.getStudentId());
 					if (s == null) {
@@ -334,7 +334,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 													if (d > gDist) gDist = d;
 												}
 												if (section.getTime().hasIntersection(otherSection.getTime()) && !section.isToIgnoreStudentConflictsWith(o.getDistributions(), otherSection.getSectionId())) {
-													if (section.getSectionId() < otherSection.getSectionId() || !query().match(new CourseRequestMatcher(session, otherCourse, student, otherOffering, (XCourseRequest)q, isConsentToDoCourse(otherCourse)))) {
+													if (section.getSectionId() < otherSection.getSectionId() || !query().match(new CourseRequestMatcher(session, otherCourse, student, otherOffering, (XCourseRequest)q, isConsentToDoCourse(otherCourse), server))) {
 														s.setOverlappingMinutes(s.getOverlappingMinutes() + section.getTime().share(otherSection.getTime()));
 														gShr += section.getTime().share(otherSection.getTime());
 													}
@@ -374,7 +374,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		
 		if (iSubjectAreas == null && iCoursesIcoordinate == null) {
 			if (studentIds != null && (studentIds.size() < 1000 || server instanceof DatabaseServer)) {
-				FindStudentInfoMatcher m = new FindStudentInfoMatcher(session, query());
+				FindStudentInfoMatcher m = new FindStudentInfoMatcher(session, query()); m.setServer(server);
 				for (Long id: studentIds) {
 					if (students.containsKey(id)) continue;
 					XStudent student = server.getStudent(id);
@@ -501,7 +501,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 	}
 	
 	protected static Pattern sCreditPattern = Pattern.compile("\\d+\\.?\\d*");
-	protected float guessCredit(String creditAbbv) {
+	public static float guessCredit(String creditAbbv) {
 		if (creditAbbv == null) return 0f;
 		Matcher m = Pattern.compile("[0-9]+\\.?[0-9]*").matcher(creditAbbv);
 		if (m.find())
@@ -527,7 +527,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		@Override
 		public boolean match(XStudentId id) {
 			XStudent student = (id instanceof XStudent ? (XStudent)id : getServer().getStudent(id.getStudentId()));
-			return student != null && student.getRequests().isEmpty() && iQuery.match(new StudentMatcher(student, iDefaultSectioningStatus));
+			return student != null && student.getRequests().isEmpty() && iQuery.match(new StudentMatcher(student, iDefaultSectioningStatus, getServer()));
 		}
 	}
 }

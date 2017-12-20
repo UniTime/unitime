@@ -49,6 +49,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.solver.studentsct.StudentSolver;
 import org.unitime.timetable.util.Constants;
 
 /**
@@ -405,8 +406,58 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			query.addFrom("course", "inner join s.courseDemands cd inner join cd.courseRequests cr inner join cr.courseOffering co");
 		}
 		
+		if (request.hasOption("credit") && !(server instanceof StudentSolver)) {
+			String term = request.getOption("credit");
+			Credit prefix = Credit.eq;
+			int min = 0, max = Integer.MAX_VALUE;
+			String number = term;
+			if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+			else if (number.startsWith(">=")) { prefix = Credit.ge; number = number.substring(2); }
+			else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+			else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+			else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+			try {
+				int a = Integer.parseInt(number);
+				switch (prefix) {
+					case eq: min = max = a; break; // = a
+					case le: max = a; break; // <= a
+					case ge: min = a; break; // >= a
+					case lt: max = a - 1; break; // < a
+					case gt: min = a + 1; break; // > a
+				}
+			} catch (NumberFormatException e) {}
+			if (term.contains("..")) {
+				try {
+					String a = term.substring(0, term.indexOf('.'));
+					String b = term.substring(term.indexOf("..") + 2);
+					min = Integer.parseInt(a); max = Integer.parseInt(b);
+				} catch (NumberFormatException e) {}
+			}
+			String creditTerm = "((select coalesce(sum(fixedUnits),0) from FixedCreditUnitConfig where courseOwner in (select courseOffering.uniqueId from StudentClassEnrollment where student = s)) + " +
+					// "(select coalesce(sum(fixedUnits),0) from FixedCreditUnitConfig where subpartOwner in (select clazz.schedulingSubpart.uniqueId from StudentClassEnrollment where student = s)) + " +
+					// "(select coalesce(sum(minUnits),0) from VariableFixedCreditUnitConfig where subpartOwner in (select clazz.schedulingSubpart.uniqueId from StudentClassEnrollment where student = s)) + " +
+					"(select coalesce(sum(minUnits),0) from VariableFixedCreditUnitConfig where courseOwner in (select courseOffering.uniqueId from StudentClassEnrollment where student = s)))";
+			if (min > 0) {
+				if (max < Integer.MAX_VALUE) {
+					query.addWhere("credit", creditTerm + " >= :Xmin and " + creditTerm + " <= :Xmax");
+					query.addParameter("credit", "Xmin", min);
+					query.addParameter("credit", "Xmax", max);
+				} else {
+					query.addWhere("credit", creditTerm + " >= :Xmin");
+					query.addParameter("credit", "Xmin", min);
+				}
+			} else if (max < Integer.MAX_VALUE) {
+				query.addWhere("credit", creditTerm + " <= :Xmax");
+				query.addParameter("credit", "Xmax", max);
+			}
+		}
+		
 		return query;
 	}
+	
+	public static enum Credit {
+		eq, lt, gt, le, ge
+	};
 	
 	public static class StudentQuery {
 		protected Long iSessionId;
