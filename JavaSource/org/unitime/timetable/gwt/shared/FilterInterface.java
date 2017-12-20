@@ -81,6 +81,17 @@ public class FilterInterface implements GwtRpcResponse, Serializable {
 		
 		public String getValue() { return iValue; }
 		public void setValue(String value) { iValue = value; }
+		public boolean isSelectedItem(ListItem item) {
+			if (iValue == null) return false;
+			if (isMultiSelect()) {
+				for (String val: iValue.split(","))
+					if (val.equalsIgnoreCase(item.getValue())) return true;
+				return false;
+			} else {
+				return iValue.equalsIgnoreCase(item.getValue());
+			}
+		}
+		public boolean hasValue() { return iValue != null; }
 
 		public String getDefaultValue() { return iDefault; }
 		public void setDefaultValue(String defaultValue) {
@@ -91,6 +102,7 @@ public class FilterInterface implements GwtRpcResponse, Serializable {
 				iDefault = getOptions().get(0).getValue();
 			}
 		}
+		public boolean hasDefaultValue() { return iDefault != null; }
 		public boolean isDefaultItem(ListItem item) {
 			if (iDefault == null) return false;
 			if (isMultiSelect()) {

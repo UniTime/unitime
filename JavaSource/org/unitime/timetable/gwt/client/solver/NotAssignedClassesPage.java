@@ -46,6 +46,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
@@ -89,6 +90,9 @@ public class NotAssignedClassesPage extends Composite {
 		iFilter.getFooter().addButton("search", MESSAGES.buttonSearch(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
+				String token = iFilter.getQuery();
+				if (!History.getToken().equals(token))
+					History.newItem(token, false);
 				search(null);
 			}
 		});
@@ -118,6 +122,15 @@ public class NotAssignedClassesPage extends Composite {
 		iRootPanel.addStyleName("unitime-NotAssignedClassesPage");
 		initWidget(iRootPanel);
 		init();
+		
+		History.addValueChangeHandler(new ValueChangeHandler<String>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<String> event) {
+				iFilter.setQuery(event.getValue(), true);
+				if (iPanel.getRowCount() > 1)
+					search(null);
+			}
+		});
 	}
 
 	protected void init() {

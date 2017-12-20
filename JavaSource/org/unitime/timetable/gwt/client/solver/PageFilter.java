@@ -21,7 +21,9 @@ package org.unitime.timetable.gwt.client.solver;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
@@ -45,6 +47,7 @@ import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.ui.CheckBox;
+import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -62,6 +65,7 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 	private FilterInterface iFilter;
 	private int iFilterHeaderRow = -1, iFilterLastRow = -1;
 	private List<Integer> iCollapsibleRows = new ArrayList<Integer>();
+	private Map<String, Widget> iWidgets = new HashMap<String, Widget>();
 	
 	public PageFilter() {
 		addStyleName("unitime-PageFilter");
@@ -149,7 +153,8 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 			textarea.setStyleName("unitime-TextArea");
 			textarea.setVisibleLines(5);
 			textarea.setCharacterWidth(80);
-			if (param.getDefaultValue() != null)textarea.setText(param.getDefaultValue());
+			if (param.hasDefaultValue())
+				textarea.setText(param.getDefaultValue());
 			textarea.addValueChangeHandler(new ValueChangeHandler<String>() {
 				@Override
 				public void onValueChange(ValueChangeEvent<String> event) {
@@ -165,7 +170,7 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 		if ("integer".equalsIgnoreCase(param.getType()) || "int".equalsIgnoreCase(param.getType()) || "long".equalsIgnoreCase(param.getType()) || "short".equalsIgnoreCase(param.getType()) || "byte".equalsIgnoreCase(param.getType())) {
 			NumberBox text = new NumberBox();
 			text.setDecimal(false); text.setNegative(true);
-			if (param.getDefaultValue() != null)
+			if (param.hasDefaultValue())
 				text.setText(param.getDefaultValue());
 			text.addValueChangeHandler(new ValueChangeHandler<String>() {
 				@Override
@@ -182,7 +187,7 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 		if ("number".equalsIgnoreCase(param.getType()) || "float".equalsIgnoreCase(param.getType()) || "double".equalsIgnoreCase(param.getType())) {
 			NumberBox text = new NumberBox();
 			text.setDecimal(true); text.setNegative(true);
-			if (param.getDefaultValue() != null)
+			if (param.hasDefaultValue())
 				text.setText(param.getDefaultValue());
 			text.addValueChangeHandler(new ValueChangeHandler<String>() {
 				@Override
@@ -198,7 +203,7 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 		}
 		if ("date".equalsIgnoreCase(param.getType())) {
 			SingleDateSelector text = new SingleDateSelector();
-			if (param.getDefaultValue() != null)
+			if (param.hasDefaultValue())
 				text.setText(param.getDefaultValue());
 			final DateTimeFormat format = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 			text.addValueChangeHandler(new ValueChangeHandler<Date>() {
@@ -216,7 +221,7 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 		TextBox text = new TextBox();
 		text.setStyleName("unitime-TextBox");
 		text.setWidth("400px");
-		if (param.getDefaultValue() != null)
+		if (param.hasDefaultValue())
 			text.setText(param.getDefaultValue());
 		text.addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
@@ -247,6 +252,7 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 	@Override
 	public void setValue(FilterInterface filter, boolean fireEvents) {
 		iFilter = filter;
+		iWidgets.clear();
 		for (int row = getRowCount() - 1; row > iFilterHeaderRow; row--)
 			removeRow(row);
 		iCollapsibleRows.clear();
@@ -254,6 +260,7 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 			String value = Location.getParameter(param.getName());
 			if (value != null) param.setDefaultValue(value);
 			Widget w = getWidget(param);
+			iWidgets.put(param.getName(), w);
 			int row;
 			if (param.hasSuffix()) {
 				P panel = new P("panel");
@@ -286,5 +293,52 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 				query += "&" + param.getName() + "=" + URL.encodeQueryString(value);
 		}
 		return query;
+	}
+	
+	public void setValue(String name, String value) {
+		Widget w = iWidgets.get(name);
+		FilterParameterInterface param = iFilter.getParameter(name);
+		if (param != null) param.setValue(value);
+		if (w == null) return;
+		if (w instanceof CheckBox) {
+			((CheckBox)w).setValue("1".equals(value));
+		} else if (w instanceof ListBox) {
+			ListBox list = (ListBox)w;
+			if (param != null && param.isMultiSelect()) {
+				for (int i = 0; i < list.getItemCount(); i++) {
+					boolean selected = false;
+					for (String val: value.split(","))
+						if (val.equalsIgnoreCase(list.getValue(i))) selected = true;
+					list.setItemSelected(i, selected);
+				}
+			} else {
+				for (int i = 0; i < list.getItemCount(); i++) {
+					if (value.equalsIgnoreCase(list.getValue(i))) {
+						list.setSelectedIndex(i); break;
+					}
+				}
+			}
+		} else if (w instanceof HasText) {
+			((HasText)w).setText(value);
+		}
+	}
+	
+	public void setQuery(String query, boolean fireEvents) {
+		if (query != null) {
+			Map<String, String> params = new HashMap<String, String>();
+			for (String pair: query.split("\\&")) {
+				int idx = pair.indexOf('=');
+				if (idx >= 0)
+					params.put(pair.substring(0, idx), URL.decodeQueryString(pair.substring(idx + 1)));
+			}
+			for (FilterParameterInterface param: iFilter.getParameters()) {
+				String value = params.get(param.getName());
+				if (value != null)
+					setValue(param.getName(), value);
+				else if (param.getValue() != null && param.getDefaultValue() != null) {
+					setValue(param.getName(), param.getDefaultValue());
+				}
+			}
+		}
 	}
 }
