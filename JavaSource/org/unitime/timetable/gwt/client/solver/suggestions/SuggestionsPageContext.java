@@ -472,7 +472,7 @@ public abstract class SuggestionsPageContext {
 				public int compare(TimeInfo t1, TimeInfo t2) {
 					if (t1.isStriked() && !t2.isStriked()) return 1;
 					if (!t1.isStriked() && t2.isStriked()) return -1;
-					int cmp = -Double.compare(t1.getDays(),t2.getDays());
+					int cmp = Double.compare(t1.getDaysOrder(iProperties.getFirstDay()),t2.getDaysOrder(iProperties.getFirstDay()));
 					if (cmp!=0) return cmp;
 					cmp = Double.compare(t1.getStartSlot(),t2.getStartSlot());
 					if (cmp!=0) return cmp;

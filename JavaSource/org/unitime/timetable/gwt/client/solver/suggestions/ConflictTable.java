@@ -294,7 +294,8 @@ public class ConflictTable extends UniTimeTable<ClassAssignmentDetails> implemen
 		public int compareByTime(ClassAssignmentDetails s1, ClassAssignmentDetails s2) {
 			TimeInfo t1 = s1.getTime();
 			TimeInfo t2 = s2.getTime();
-			int cmp = compare(t1 == null ? null : t1.getDaysName(iFirstDay, new String[] {"A", "B", "C", "D", "E", "F", "G"}), t2 == null ? null : t2.getDaysName(iFirstDay, new String[] {"A", "B", "C", "D", "E", "F", "G"}));
+			// int cmp = compare(t1 == null ? null : t1.getDaysName(iFirstDay, new String[] {"A", "B", "C", "D", "E", "F", "G"}), t2 == null ? null : t2.getDaysName(iFirstDay, new String[] {"A", "B", "C", "D", "E", "F", "G"}));
+			int cmp = compare(t1 == null ? 0 : t1.getDaysOrder(iFirstDay), t2 == null ? 0 : t2.getDaysOrder(iFirstDay));
 			if (cmp != 0) return cmp;
 			cmp = compare(t1 == null ? null : t1.getStartSlot(), t2 == null ? null : t2.getStartSlot());
 			if (cmp != 0) return cmp;
@@ -306,7 +307,8 @@ public class ConflictTable extends UniTimeTable<ClassAssignmentDetails> implemen
 			TimeInfo t2 = s2.getTime();
 			int cmp = compare(t1 == null ? null : t1.getDatePatternName(), t2 == null ? null : t2.getDatePatternName());
 			if (cmp != 0) return cmp;
-			cmp = compare(t1 == null ? null : t1.getDaysName(iFirstDay, new String[] {"A", "B", "C", "D", "E", "F", "G"}), t2 == null ? null : t2.getDaysName(iFirstDay, new String[] {"A", "B", "C", "D", "E", "F", "G"}));
+			// cmp = compare(t1 == null ? null : t1.getDaysName(iFirstDay, new String[] {"A", "B", "C", "D", "E", "F", "G"}), t2 == null ? null : t2.getDaysName(iFirstDay, new String[] {"A", "B", "C", "D", "E", "F", "G"}));
+			cmp = compare(t1 == null ? 0 : t1.getDaysOrder(iFirstDay), t2 == null ? 0 : t2.getDaysOrder(iFirstDay));
 			if (cmp != 0) return cmp;
 			cmp = compare(t1 == null ? null : t1.getStartSlot(), t2 == null ? null : t2.getStartSlot());
 			if (cmp != 0) return cmp;
@@ -323,7 +325,7 @@ public class ConflictTable extends UniTimeTable<ClassAssignmentDetails> implemen
 		
 		protected int compareByColumn(ClassAssignmentDetails c1, ClassAssignmentDetails c2) {
 			switch (iColumn) {
-			case DATE: return compareByDate(c1, c2);
+			case DATE: return compareByDateTime(c1, c2);
 			case TIME: return compareByTime(c1, c2);
 			case STUDENT_CONFLICTS: return compareByStudentConflicts(c1, c2);
 			case DISTRIBUTION_CONFLICTS: return compareByDistributionConflicts(c1, c2);
@@ -333,6 +335,7 @@ public class ConflictTable extends UniTimeTable<ClassAssignmentDetails> implemen
 		
 		public static boolean isApplicable(ConflictColum column) {
 			switch (column) {
+			case DATE:
 			case TIME:
 			case STUDENT_CONFLICTS:
 			case DISTRIBUTION_CONFLICTS:

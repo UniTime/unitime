@@ -288,6 +288,7 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 	public static class TableCellTime extends TableCellText {
 		private static final long serialVersionUID = 1L;
 		public String iId;
+		public Integer iOrder;
 		
 		public TableCellTime() { super(); }
 		public TableCellTime(String value) { super(value); }
@@ -295,6 +296,17 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 		public boolean hasId() { return iId != null && !iId.isEmpty(); }
 		public String getId() { return iId; }
 		public TableCellTime setId(String id) { iId = id; return this; }
+		
+		public TableCellTime setOrder(Integer order) { iOrder = order; return this; }
+		
+		@Override
+		public int compareTo(TableCellInterface c) {
+			if (c instanceof TableCellTime && iOrder != null && ((TableCellTime) c).iOrder != null) {
+				int cmp = iOrder.compareTo(((TableCellTime) c).iOrder);
+				if (cmp != 0) return cmp;
+			}
+			return super.compareTo(c);
+		}
 	}
 	
 	public static class TableCellRooms extends TableCellText {

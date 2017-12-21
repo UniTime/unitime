@@ -81,6 +81,16 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 			if (Constants.ALL_OPTION_VALUE.equals(id)) return true;
 		return false;
 	}
+	
+	public static int getOrder(TimeInfo time) {
+		int firstWorkDay = ApplicationProperty.TimePatternFirstDayOfWeek.intValue();
+		int days = time.getDays();
+		if (firstWorkDay != 0) {
+			days = time.getDays() << firstWorkDay;
+			days = (days & 127) + (days >> 7);
+		}
+		return (Constants.sDayCode2Order[days] << 18) + (time.getStartSlot() << 11) + time.getMin();
+	}
 
 	@Override
 	public AssignedClassesResponse execute(AssignedClassesRequest request, SessionContext context) {
@@ -217,8 +227,8 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
     	    			(showClassDetail ? null : MESSAGES.dialogSuggestions()),
     	    			new TableInterface.TableCellClassName(ca.getClazz().getName()).setColor(PreferenceLevel.prolog2color(ca.getClazz().getPref())),
     	    			new TableCellInterface(time.getDatePatternName()).setColor(PreferenceLevel.int2color(time.getDatePatternPreference())),
-    	    			new TableInterface.TableCellTime(time.getDaysName() + " " + time.getStartTime() + " - " + time.getEndTime())
-    	    			.setId(ca.getClazz().getClassId() + "," + time.getDays() + "," + time.getStartSlot()).setColor(PreferenceLevel.int2color(time.getPref())),
+    	    			new TableInterface.TableCellTime(time.getDaysName() + " " + time.getStartTime() + " - " + time.getEndTime()).setOrder(getOrder(time))
+    	    				.setId(ca.getClazz().getClassId() + "," + time.getDays() + "," + time.getStartSlot()).setColor(PreferenceLevel.int2color(time.getPref())),
     	    			rooms,
     	    			instructors,
     	    			studentConfs
@@ -230,7 +240,7 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
         	    		(showClassDetail ? null : MESSAGES.dialogSuggestions()),
         	    		new TableInterface.TableCellClassName(ca.getClazz().getName()).setColor(PreferenceLevel.prolog2color(ca.getClazz().getPref())),
         	    		new TableCellInterface(time.getDatePatternName()).setColor(PreferenceLevel.int2color(time.getDatePatternPreference())),
-        	    		new TableInterface.TableCellTime(time.getDaysName() + " " + time.getStartTime() + " - " + time.getEndTime())
+        	    		new TableInterface.TableCellTime(time.getDaysName() + " " + time.getStartTime() + " - " + time.getEndTime()).setOrder(getOrder(time))
     	    				.setId(ca.getClazz().getClassId() + "," + time.getDays() + "," + time.getStartSlot()).setColor(PreferenceLevel.int2color(time.getPref())),
         	    		rooms,
         	    		instructors,
@@ -306,5 +316,4 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 				((TableInterface.TableCellClassName)row.getCell(0)).addAlternative(clazz.getClassLabel(course, showClassSuffix, showConfigNames));
 		}
 	}
-
 }

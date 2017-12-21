@@ -13,6 +13,7 @@ import org.cpsolver.coursett.model.RoomLocation;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -82,22 +83,31 @@ public class SuggestionsFilterBackend extends FilterBoxBackend<SuggestionsFilter
 			entities.put("room", rooms);
 		}
 		int allDays = 0;
+		int firstDay = ApplicationProperty.TimePatternFirstDayOfWeek.intValue();
 		if (lecture.timeLocations() != null) {
 			Set<Entity> times = new TreeSet<Entity>();
 			Set<Entity> dates = new TreeSet<Entity>();
 			for (TimeLocation t: lecture.timeLocations()) {
 				if (t.getPreference() > 500) continue;
 				dates.add(new Entity(t.getDatePatternId(), t.getDatePatternName(), t.getDatePatternName()));
-				times.add(new Entity(new Long((t.getDayCode() - 0xff) * 288 - t.getStartSlot()), getDaysName(t.getDayCode()) + " " + t.getStartTimeHeader(CONSTANTS.useAmPm()), getDaysName(t.getDayCode()) + " " + t.getStartTimeHeader(CONSTANTS.useAmPm()) + " - " + t.getEndTimeHeader(CONSTANTS.useAmPm())));
+				int days = t.getDayCode();
+				if (firstDay != 0) {
+					days = t.getDayCode() << firstDay;
+					days = (days & 127) + (days >> 7);
+				}
+				times.add(new Entity(new Long(- (Constants.sDayCode2Order[days] << 7) - t.getStartSlot()), getDaysName(t.getDayCode()) + " " + t.getStartTimeHeader(CONSTANTS.useAmPm()), getDaysName(t.getDayCode()) + " " + t.getStartTimeHeader(CONSTANTS.useAmPm()) + " - " + t.getEndTimeHeader(CONSTANTS.useAmPm())));
 				allDays = (allDays | t.getDayCode());
 			}
 			entities.put("date", dates);
 			entities.put("time", times);
 		}
-		List<Entity> daysOfWeek = new ArrayList<Entity>();
+		Set<Entity> daysOfWeek = new TreeSet<Entity>();
 		for (int i = 0; i < Constants.DAY_CODES.length; i++) {
-			if ((allDays & Constants.DAY_CODES[i]) != 0)
-				daysOfWeek.add(new Entity(new Long(i), Constants.DAY_NAMES_FULL[i], CONSTANTS.longDays()[i], "translated-value", CONSTANTS.longDays()[i]));
+			if ((allDays & Constants.DAY_CODES[i]) != 0) {
+				Entity e = new Entity(new Long(i), Constants.DAY_NAMES_FULL[i], CONSTANTS.longDays()[i], "translated-value", CONSTANTS.longDays()[i]);
+				e.setProperty("order", String.valueOf((7 + i - firstDay) % 7));
+				daysOfWeek.add(e);
+			}
 		}
 		entities.put("day", daysOfWeek);
 		List<Entity> flags = new ArrayList<Entity>();

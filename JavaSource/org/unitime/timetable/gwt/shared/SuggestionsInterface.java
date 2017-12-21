@@ -44,6 +44,23 @@ import com.google.gwt.user.client.rpc.IsSerializable;
  */
 public class SuggestionsInterface implements IsSerializable, Serializable {
 	private static final long serialVersionUID = 1L;
+	public static int[] sDayCode2Order = new int[] {
+			  0, 127, 125, 126, 121, 124, 122, 123,
+			113, 120, 118, 119, 114, 117, 115, 116,
+			 97, 112, 110, 111, 106, 109, 107, 108,
+			 98, 105, 103, 104,  99, 102, 100, 101,
+			 65,  96,  94,  95,  90,  93,  91,  92,
+			 82,  89,  87,  88,  83,  86,  84,  85,
+			 66,  81,  79,  80,  75,  78,  76,  77,
+			 67,  74,  72,  73,  68,  71,  69,  70,
+			  1,  64,  62,  63,  58,  61,  59,  60,
+			 50,  57,  55,  56,  51,  54,  52,  53,
+			 34,  49,  47,  48,  43,  46,  44,  45,
+			 35,  42,  40,  41,  36,  39,  37,  38,
+			  2,  33,  31,  32,  27,  30,  28,  29,
+			 19,  26,  24,  25,  20,  23,  21,  22,
+			  3,  18,  16,  17,  12,  15,  13,  14,
+			  4,  11,   9,  10,   5,   8,   6,   7};
 	
 	public static class ClassInfo implements IsSerializable, Serializable, Comparable<ClassInfo> {
 		private static final long serialVersionUID = 1L;
@@ -252,6 +269,14 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 		
 		public void setDays(int days) { iDays = days; }
 		public int getDays() { return iDays; }
+		public int getDaysOrder(Integer firstWorkDay) {
+			int days = iDays;
+			if (firstWorkDay != null && firstWorkDay.intValue() != 0) {
+				days = iDays << firstWorkDay;
+				days = (days & 127) + (days >> 7);
+			}
+			return sDayCode2Order[days];
+		}
 		
 		public void setStartSlot(int startSlot) { iStartSlot = startSlot; }
 		public int getStartSlot() { return iStartSlot; }
@@ -342,18 +367,22 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 			return getDaysName(firstDay, CONSTANTS) + " " + getStartTime(CONSTANTS) + (endTime ? " - " + getEndTime(CONSTANTS) : "");
 		}
 		
-		@Override
-		public int compareTo(TimeInfo t) {
+		public int compareTo(TimeInfo t, Integer firstDay) {
 			if (isStriked() && !t.isStriked()) return 1;
 			if (!isStriked() && t.isStriked()) return -1;
 			int cmp = TableInterface.NaturalOrderComparator.compare(getDatePatternName(), t.getDatePatternName());
 			if (cmp!=0) return cmp;
-			cmp = -Double.compare(getDays(),t.getDays());
+			cmp = Double.compare(getDaysOrder(firstDay),t.getDaysOrder(firstDay));
 			if (cmp!=0) return cmp;
 			cmp = Double.compare(getStartSlot(),t.getStartSlot());
 			if (cmp!=0) return cmp;
 			cmp = Double.compare(getMin(),t.getMin());
 			return cmp;
+		}
+		
+		@Override
+		public int compareTo(TimeInfo t) {
+			return compareTo(t, null);
 		}
 		
 		@Override

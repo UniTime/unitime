@@ -513,7 +513,7 @@ public class AssignmentTable extends UniTimeTable<ClassAssignmentDetails>{
 		}
 		
 		public int compareByTime(TimeInfo t1, TimeInfo t2) {
-			int cmp = compare(t1 == null ? null : t1.getDays(), t2 == null ? null : t2.getDays());
+			int cmp = compare(t1 == null ? null : t1.getDaysOrder(iFirstDay), t2 == null ? null : t2.getDaysOrder(iFirstDay));
 			if (cmp != 0) return cmp;
 			cmp = compare(t1 == null ? null : t1.getStartSlot(), t2 == null ? null : t2.getStartSlot());
 			if (cmp != 0) return cmp;
