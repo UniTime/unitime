@@ -78,6 +78,7 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationResponseList;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationStatusResponse;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -156,12 +157,12 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		return ApplicationProperties.getProperty("purdue.specreg.site.checkEligibility", getSpecialRegistrationApiSite() + "/checkEligibility");
 	}
 	
-	protected String getSpecialRegistrationApiSiteHasRegistrations() {
-		return ApplicationProperties.getProperty("purdue.specreg.site.hasSpecialRegistrationRequests", getSpecialRegistrationApiSite() + "/hasSpecialRegistrationRequests");
+	protected String getSpecialRegistrationApiSiteGetAllRegistrations() {
+		return ApplicationProperties.getProperty("purdue.specreg.site.retrieveAllRegistrations", null); //getSpecialRegistrationApiSite() + "/retrieveAllRegistrations");
 	}
 	
-	protected String getSpecialRegistrationApiSiteGetAllRegistrations() {
-		return ApplicationProperties.getProperty("purdue.specreg.site.retrieveAllRegistrations", getSpecialRegistrationApiSite() + "/retrieveAllRegistrations");
+	protected String getSpecialRegistrationApiSiteCheckSpecialRegistrationStatus() {
+		return ApplicationProperties.getProperty("purdue.specreg.site.checkSpecialRegistrationStatus", getSpecialRegistrationApiSite() + "/checkSpecialRegistrationStatus");
 	}
 	
 	protected String getSpecialRegistrationApiKey() {
@@ -314,38 +315,86 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		if (student == null) return new SpecialRegistrationEligibilityResponse(false, "No student.");
 		ClientResource resource = null;
 		try {
-			Gson gson = getGson(helper);
-			SpecialRegistrationRequest request = new SpecialRegistrationRequest();
-			AcademicSessionInfo session = server.getAcademicSession();
-			request.term = getBannerTerm(session);
-			request.campus = getBannerCampus(session);
-			request.studentId = getBannerId(student);
-			request.changes = buildChangeList(server, helper, student, input.getClassAssignments(), input.getErrors());
-			
-			if (request.changes == null || request.changes.isEmpty())
-				return new SpecialRegistrationEligibilityResponse(false, "There are no changes.");
+			if (getSpecialRegistrationApiSiteCheckEligibility() != null) {
+				Gson gson = getGson(helper);
+				SpecialRegistrationRequest request = new SpecialRegistrationRequest();
+				AcademicSessionInfo session = server.getAcademicSession();
+				request.term = getBannerTerm(session);
+				request.campus = getBannerCampus(session);
+				request.studentId = getBannerId(student);
+				request.changes = buildChangeList(server, helper, student, input.getClassAssignments(), input.getErrors());
+				
+				if (request.changes == null || request.changes.isEmpty())
+					return new SpecialRegistrationEligibilityResponse(false, "There are no changes.");
 
-			resource = new ClientResource(getSpecialRegistrationApiSiteCheckEligibility());
-			resource.setNext(iClient);
-			resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
-			
-			if (helper.isDebugEnabled())
-				helper.debug("Request: " + gson.toJson(request));
-			helper.getAction().addOptionBuilder().setKey("specreg_request").setValue(gson.toJson(request));
-			
-			long t1 = System.currentTimeMillis();
-			
-			resource.post(new GsonRepresentation<SpecialRegistrationRequest>(request));
-			
-			helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
-			
-			SpecialRegistrationResponse response = (SpecialRegistrationResponse)new GsonRepresentation<SpecialRegistrationResponse>(resource.getResponseEntity(), SpecialRegistrationResponse.class).getObject();
-			
-			if (helper.isDebugEnabled())
-				helper.debug("Response: " + gson.toJson(response));
-			helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(response));
-			
-			return new SpecialRegistrationEligibilityResponse(response != null && ResponseStatus.success.name().equals(response.status), response != null ? response.message : null);
+				resource = new ClientResource(getSpecialRegistrationApiSiteCheckEligibility());
+				resource.setNext(iClient);
+				resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
+				
+				if (helper.isDebugEnabled())
+					helper.debug("Request: " + gson.toJson(request));
+				helper.getAction().addOptionBuilder().setKey("specreg_request").setValue(gson.toJson(request));
+				
+				long t1 = System.currentTimeMillis();
+				
+				resource.post(new GsonRepresentation<SpecialRegistrationRequest>(request));
+				
+				helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
+				
+				SpecialRegistrationResponse response = (SpecialRegistrationResponse)new GsonRepresentation<SpecialRegistrationResponse>(resource.getResponseEntity(), SpecialRegistrationResponse.class).getObject();
+				
+				if (helper.isDebugEnabled())
+					helper.debug("Response: " + gson.toJson(response));
+				helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(response));
+				
+				return new SpecialRegistrationEligibilityResponse(response != null && ResponseStatus.success.name().equals(response.status), response != null ? response.message : null);				
+			} else {
+				if (!input.hasErrors()) return new SpecialRegistrationEligibilityResponse(true, null);
+
+				Set<String> errors = new HashSet<String>();
+				for (ErrorMessage m: input.getErrors())
+					if (m.getCode() != null) errors.add(m.getCode());
+				if (errors.isEmpty()) return new SpecialRegistrationEligibilityResponse(true, null);
+				
+				Gson gson = getGson(helper);
+
+				resource = new ClientResource(getSpecialRegistrationApiSiteCheckSpecialRegistrationStatus());
+				resource.setNext(iClient);
+				
+				AcademicSessionInfo session = server.getAcademicSession();
+				String term = getBannerTerm(session);
+				String campus = getBannerCampus(session);
+				resource.addQueryParameter("term", term);
+				resource.addQueryParameter("campus", campus);
+				resource.addQueryParameter("studentId", getBannerId(student));
+				helper.getAction().addOptionBuilder().setKey("term").setValue(term);
+				helper.getAction().addOptionBuilder().setKey("campus").setValue(campus);
+				helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
+				helper.getAction().addOptionBuilder().setKey("errors").setValue(errors.toString());
+				resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
+				
+				long t1 = System.currentTimeMillis();
+				
+				resource.get(MediaType.APPLICATION_JSON);
+				
+				helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
+				
+				SpecialRegistrationStatusResponse response = (SpecialRegistrationStatusResponse)new GsonRepresentation<SpecialRegistrationStatusResponse>(resource.getResponseEntity(), SpecialRegistrationStatusResponse.class).getObject();
+				
+				if (helper.isDebugEnabled())
+					helper.debug("Response: " + gson.toJson(response));
+				helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(response));
+				
+				if (response != null && ResponseStatus.success.name().equals(response.status) && response.data != null && response.data.overrides != null) {
+					for (String error: errors)
+						if (!response.data.overrides.contains(error))
+							return new SpecialRegistrationEligibilityResponse(false, "Missing " + error + " override.");
+					
+					return new SpecialRegistrationEligibilityResponse(true, null);
+				} else {
+					return new SpecialRegistrationEligibilityResponse(false, response != null ? response.message : null);
+				}
+			}
 		} catch (SectioningException e) {
 			helper.getAction().setApiException(e.getMessage());
 			throw (SectioningException)e;
@@ -870,93 +919,80 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 	}
 
 	@Override
-	public boolean hasSpecialRegistrationRequests(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) throws SectioningException {
-		if (student == null) return false;
-		ClientResource resource = null;
-		try {
-			resource = new ClientResource(getSpecialRegistrationApiSiteHasRegistrations());
-			resource.setNext(iClient);
-			AcademicSessionInfo session = server.getAcademicSession();
-			String term = getBannerTerm(session);
-			String campus = getBannerCampus(session);
-			resource.addQueryParameter("term", term);
-			resource.addQueryParameter("campus", campus);
-			resource.addQueryParameter("studentId", getBannerId(student));
-			helper.getAction().addOptionBuilder().setKey("term").setValue(term);
-			helper.getAction().addOptionBuilder().setKey("campus").setValue(campus);
-			helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
-			resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
-			
-			resource.get(MediaType.APPLICATION_JSON);
-			
-			Gson gson = getGson(helper);
-			if (getSpecialRegistrationApiSiteHasRegistrations().equals(getSpecialRegistrationApiSiteGetAllRegistrations())) {
-				SpecialRegistrationResponseList specialRequests = (SpecialRegistrationResponseList)new GsonRepresentation<SpecialRegistrationResponseList>(resource.getResponseEntity(), SpecialRegistrationResponseList.class).getObject();
-				if (helper.isDebugEnabled())
-					helper.debug("Response: " + gson.toJson(specialRequests));
-				helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(specialRequests));
-				return specialRequests.data != null && !specialRequests.data.isEmpty();
-			} else {
-				SpecialRegistrationResponse specResponse = (SpecialRegistrationResponse)new GsonRepresentation<SpecialRegistrationResponse>(resource.getResponseEntity(), SpecialRegistrationResponse.class).getObject();
-				if (helper.isDebugEnabled())
-					helper.debug("Response: " + gson.toJson(specResponse));
-				helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(specResponse));
-				return ResponseStatus.success.name().equals(specResponse.status);
-			}
-		} catch (SectioningException e) {
-			helper.getAction().setApiException(e.getMessage());
-			throw (SectioningException)e;
-		} catch (Exception e) {
-			helper.getAction().setApiException(e.getMessage());
-			sLog.error(e.getMessage(), e);
-			throw new SectioningException(e.getMessage());
-		} finally {
-			if (resource != null) {
-				if (resource.getResponse() != null) resource.getResponse().release();
-				resource.release();
-			}
-		}
-	}
-
-	@Override
 	public List<RetrieveSpecialRegistrationResponse> retrieveAllRegistrations(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) throws SectioningException {
 		if (student == null) return null;
 		ClientResource resource = null;
 		try {
-			resource = new ClientResource(getSpecialRegistrationApiSiteGetAllRegistrations());
-			resource.setNext(iClient);
-			AcademicSessionInfo session = server.getAcademicSession();
-			String term = getBannerTerm(session);
-			String campus = getBannerCampus(session);
-			resource.addQueryParameter("term", term);
-			resource.addQueryParameter("campus", campus);
-			resource.addQueryParameter("studentId", getBannerId(student));
-			helper.getAction().addOptionBuilder().setKey("term").setValue(term);
-			helper.getAction().addOptionBuilder().setKey("campus").setValue(campus);
-			helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
-			resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
-			
-			long t1 = System.currentTimeMillis();
-			
-			resource.get(MediaType.APPLICATION_JSON);
-			
-			helper.getAction().setApiGetTime(System.currentTimeMillis() - t1);
-			
-			SpecialRegistrationResponseList specialRequests = (SpecialRegistrationResponseList)new GsonRepresentation<SpecialRegistrationResponseList>(resource.getResponseEntity(), SpecialRegistrationResponseList.class).getObject();
-			Gson gson = getGson(helper);
-			if (helper.isDebugEnabled())
-				helper.debug("Response: " + gson.toJson(specialRequests));
-			helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(specialRequests));
-			
-			if ((specialRequests.data == null || specialRequests.data.isEmpty()) && !ResponseStatus.success.name().equals(specialRequests.status)) {
-				throw new SectioningException(specialRequests.message == null || specialRequests.message.isEmpty() ? "Call failed but no message was given." : specialRequests.message);
-			}
-			
-			if (specialRequests.data != null) {
-				List<RetrieveSpecialRegistrationResponse> ret = new ArrayList<RetrieveSpecialRegistrationResponse>(specialRequests.data.size());
-				for (SpecialRegistrationRequest specialRequest: specialRequests.data)
-					ret.add(convert(server, helper, student, specialRequest));
-				return ret;
+			if (getSpecialRegistrationApiSiteGetAllRegistrations() != null) {
+				resource = new ClientResource(getSpecialRegistrationApiSiteGetAllRegistrations());
+				resource.setNext(iClient);
+				AcademicSessionInfo session = server.getAcademicSession();
+				String term = getBannerTerm(session);
+				String campus = getBannerCampus(session);
+				resource.addQueryParameter("term", term);
+				resource.addQueryParameter("campus", campus);
+				resource.addQueryParameter("studentId", getBannerId(student));
+				helper.getAction().addOptionBuilder().setKey("term").setValue(term);
+				helper.getAction().addOptionBuilder().setKey("campus").setValue(campus);
+				helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
+				resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
+				
+				long t1 = System.currentTimeMillis();
+				
+				resource.get(MediaType.APPLICATION_JSON);
+				
+				helper.getAction().setApiGetTime(System.currentTimeMillis() - t1);
+				
+				SpecialRegistrationResponseList specialRequests = (SpecialRegistrationResponseList)new GsonRepresentation<SpecialRegistrationResponseList>(resource.getResponseEntity(), SpecialRegistrationResponseList.class).getObject();
+				Gson gson = getGson(helper);
+				if (helper.isDebugEnabled())
+					helper.debug("Response: " + gson.toJson(specialRequests));
+				helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(specialRequests));
+				
+				if ((specialRequests.data == null || specialRequests.data.isEmpty()) && !ResponseStatus.success.name().equals(specialRequests.status)) {
+					throw new SectioningException(specialRequests.message == null || specialRequests.message.isEmpty() ? "Call failed but no message was given." : specialRequests.message);
+				}
+				
+				if (specialRequests.data != null) {
+					List<RetrieveSpecialRegistrationResponse> ret = new ArrayList<RetrieveSpecialRegistrationResponse>(specialRequests.data.size());
+					for (SpecialRegistrationRequest specialRequest: specialRequests.data)
+						ret.add(convert(server, helper, student, specialRequest));
+					return ret;
+				}				
+			} else {
+				resource = new ClientResource(getSpecialRegistrationApiSiteCheckSpecialRegistrationStatus());
+				resource.setNext(iClient);
+				
+				AcademicSessionInfo session = server.getAcademicSession();
+				String term = getBannerTerm(session);
+				String campus = getBannerCampus(session);
+				resource.addQueryParameter("term", term);
+				resource.addQueryParameter("campus", campus);
+				resource.addQueryParameter("studentId", getBannerId(student));
+				helper.getAction().addOptionBuilder().setKey("term").setValue(term);
+				helper.getAction().addOptionBuilder().setKey("campus").setValue(campus);
+				helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
+				resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
+				
+				long t1 = System.currentTimeMillis();
+				
+				resource.get(MediaType.APPLICATION_JSON);
+				
+				helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
+				
+				SpecialRegistrationStatusResponse response = (SpecialRegistrationStatusResponse)new GsonRepresentation<SpecialRegistrationStatusResponse>(resource.getResponseEntity(), SpecialRegistrationStatusResponse.class).getObject();
+				Gson gson = getGson(helper);
+				
+				if (helper.isDebugEnabled())
+					helper.debug("Response: " + gson.toJson(response));
+				helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(response));
+				
+				if (response != null && ResponseStatus.success.name().equals(response.status) && response.data != null && response.data.requests != null) {
+					List<RetrieveSpecialRegistrationResponse> ret = new ArrayList<RetrieveSpecialRegistrationResponse>(response.data.requests.size());
+					for (SpecialRegistrationRequest specialRequest: response.data.requests)
+						ret.add(convert(server, helper, student, specialRequest));
+					return ret;
+				}
 			}
 			
 			return new ArrayList<RetrieveSpecialRegistrationResponse>();
@@ -984,27 +1020,28 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		ClientResource resource = null;
 		try {
 			Gson gson = getGson(helper);
-			SpecialRegistrationRequest request = new SpecialRegistrationRequest();
-			AcademicSessionInfo session = server.getAcademicSession();
-			request.term = getBannerTerm(session);
-			request.campus = getBannerCampus(session);
-			request.studentId = getBannerId(student);
 
-			resource = new ClientResource(getSpecialRegistrationApiSiteCheckEligibility());
+			resource = new ClientResource(getSpecialRegistrationApiSiteCheckSpecialRegistrationStatus());
 			resource.setNext(iClient);
-			resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
 			
-			if (helper.isDebugEnabled())
-				helper.debug("Request: " + gson.toJson(request));
-			helper.getAction().addOptionBuilder().setKey("specreg_request").setValue(gson.toJson(request));
+			AcademicSessionInfo session = server.getAcademicSession();
+			String term = getBannerTerm(session);
+			String campus = getBannerCampus(session);
+			resource.addQueryParameter("term", term);
+			resource.addQueryParameter("campus", campus);
+			resource.addQueryParameter("studentId", getBannerId(student));
+			helper.getAction().addOptionBuilder().setKey("term").setValue(term);
+			helper.getAction().addOptionBuilder().setKey("campus").setValue(campus);
+			helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
+			resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
 			
 			long t1 = System.currentTimeMillis();
 			
-			resource.post(new GsonRepresentation<SpecialRegistrationRequest>(request));
+			resource.get(MediaType.APPLICATION_JSON);
 			
 			helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
 			
-			SpecialRegistrationResponse response = (SpecialRegistrationResponse)new GsonRepresentation<SpecialRegistrationResponse>(resource.getResponseEntity(), SpecialRegistrationResponse.class).getObject();
+			SpecialRegistrationStatusResponse response = (SpecialRegistrationStatusResponse)new GsonRepresentation<SpecialRegistrationStatusResponse>(resource.getResponseEntity(), SpecialRegistrationStatusResponse.class).getObject();
 			
 			if (helper.isDebugEnabled())
 				helper.debug("Response: " + gson.toJson(response));
@@ -1012,10 +1049,14 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			
 			if (response != null && ResponseStatus.success.name().equals(response.status)) {
 				check.setFlag(EligibilityFlag.CAN_SPECREG, true);
-				check.setFlag(EligibilityFlag.SR_TIME_CONF, true);
-				check.setFlag(EligibilityFlag.SR_LIMIT_CONF, true);
-			} else
+				if (response.data != null) 
+					check.setOverrides(response.data.overrides);
+				check.setFlag(EligibilityFlag.SR_TIME_CONF, check.hasOverride("TIME"));
+				check.setFlag(EligibilityFlag.SR_LIMIT_CONF, check.hasOverride("CLOS"));
+				check.setFlag(EligibilityFlag.HAS_SPECREG, response.data != null && response.data.requests != null && !response.data.requests.isEmpty());
+			} else {
 				check.setFlag(EligibilityFlag.CAN_SPECREG, false);
+			}
 		} catch (SectioningException e) {
 			helper.getAction().setApiException(e.getMessage());
 			throw (SectioningException)e;
@@ -1029,6 +1070,5 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				resource.release();
 			}
 		}
-		check.setFlag(EligibilityFlag.HAS_SPECREG, hasSpecialRegistrationRequests(server, helper, student));
 	}
 }

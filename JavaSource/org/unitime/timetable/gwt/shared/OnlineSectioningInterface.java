@@ -20,6 +20,9 @@
 package org.unitime.timetable.gwt.shared;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -35,6 +38,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private String iMessage = null;
 		private String iCheckboxMessage = null;
 		private Long iSessionId = null, iStudentId = null;
+		private Set<String> iOverrides = null;
 		
 		public static enum EligibilityFlag implements IsSerializable {
 			IS_ADMIN, IS_ADVISOR, IS_GUEST,
@@ -95,6 +99,14 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public Long getSessionId() { return iSessionId; }
 		public void setStudentId(Long studentId) { iStudentId = studentId; }
 		public Long getStudentId() { return iStudentId; }
+		
+		public boolean hasOverride(String errorCode) {
+			if (errorCode == null || errorCode.isEmpty()) return true;
+			return iOverrides != null && iOverrides.contains(errorCode);
+		}
+		public void setOverrides(Collection<String> overrides) {
+			iOverrides = (overrides == null ? null : new HashSet<String>(overrides));
+		}
 	}
 	
 	public static class SectioningProperties implements IsSerializable, Serializable {

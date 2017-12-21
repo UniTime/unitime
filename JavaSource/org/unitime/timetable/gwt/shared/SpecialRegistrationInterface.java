@@ -70,6 +70,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public boolean hasRequestKey() { return iSpecRegRequestKey != null && !iSpecRegRequestKey.isEmpty(); }
 		public boolean isSpecRegRequestKeyValid() { return iSpecRegRequestKeyValid; }
 		public void setSpecRegRequestKeyValid(boolean valid) { iSpecRegRequestKeyValid = valid; }
+		public boolean hasRequestId() { return iSpecRegRequestId != null; }
 		public String getRequestId() { return iSpecRegRequestId; }
 		public void setRequestId(String id) { iSpecRegRequestId = id; }
 		public boolean isCanSubmit() { return iSpecRegSubmit; }
@@ -168,8 +169,6 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private Date iSubmitDate;
 		private String iRequestId;
 		private String iDescription;
-		private boolean iTimeConfs = true;
-		private boolean iSpaceConfs = true;
 		
 		public RetrieveSpecialRegistrationResponse() {}
 		
@@ -192,11 +191,6 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public String getDescription() { return iDescription; }
 		public void setDescription(String description) { iDescription = description; }
 		
-		public boolean areTimeConflictsAllowed() { return iTimeConfs; }
-		public void setTimeConflictsAllowed(boolean allow) { iTimeConfs = allow; }
-		public boolean areSpaceConflictsAllowed() { return iSpaceConfs; }
-		public void setSpaceConflictsAllowed(boolean allow) { iSpaceConfs = allow; }
-
 		@Override
 		public int compareTo(RetrieveSpecialRegistrationResponse o) {
 			int cmp = getSubmitDate().compareTo(o.getSubmitDate());

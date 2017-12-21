@@ -1688,8 +1688,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							iSpecRegCx.setCanSubmit(specReg.isCanSubmit());
 							iSpecRegCx.setCanEnroll(specReg.isCanEnroll());
 							iSpecRegCx.setRequestId(specReg.getRequestId());
-							iSpecRegCx.setTimeConflictsAllowed(specReg.areTimeConflictsAllowed());
-							iSpecRegCx.setSpaceConflictsAllowed(specReg.areSpaceConflictsAllowed());
 							if (specReg.hasClassAssignments() && specReg.getRequestId() != null)
 								iSpecRegCx.setDisclaimerAccepted(true);
 							iSpecialRegAssignment = specReg.getClassAssignments();
@@ -2234,10 +2232,25 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	
 	protected void checkSpecialRegistrationAfterFailedSubmitSchedule(ArrayList<ClassAssignmentInterface.ClassAssignment> lastEnrollment) {
 		iLastEnrollment = lastEnrollment;
-		if (!iSpecRegCx.isSpecRegMode()) {
-			iSpecRegCx.setCanSubmit(false);
-			iSubmitSpecReg.setEnabled(false);
-			iSubmitSpecReg.setVisible(false);
+		if (!iSpecRegCx.isCanSubmit() && !iSpecRegCx.hasRequestId()) {
+			/*
+			if (iLastAssignment != null && iLastAssignment.hasErrors()) {
+				for (ErrorMessage e: iLastAssignment.getErrors()) {
+					if (!iEligibilityCheck.hasOverride(e.getCode())) return;
+				}
+			}
+			iSubmitSpecReg.setEnabled(true);
+			iSubmitSpecReg.setVisible(true);
+			iSubmitSpecReg.addStyleName("unitime-EnrollButton");
+			iEnroll.setEnabled(false);
+			iEnroll.setVisible(false);
+			UniTimeConfirmationDialog.confirm(MESSAGES.confirmSpecialRegistrationSubmit(), new Command() {
+				@Override
+				public void execute() {
+					iSubmitSpecReg.click();
+				}
+			});
+			*/
 			iSectioningService.checkSpecialRequestEligibility(
 					new SpecialRegistrationEligibilityRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iLastEnrollment, iLastAssignment == null ? null : iLastAssignment.getErrors()),
 					new AsyncCallback<SpecialRegistrationEligibilityResponse>() {
@@ -2250,6 +2263,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						public void onSuccess(SpecialRegistrationEligibilityResponse response) {
 							iSubmitSpecReg.setEnabled(response.isCanSubmit());
 							iSubmitSpecReg.setVisible(response.isCanSubmit());
+							if (response.isCanSubmit()) {
+								iEnroll.setEnabled(false);
+								iEnroll.setVisible(false);
+							}
 							if (response.isCanSubmit()) {
 								 UniTimeConfirmationDialog.confirm(response.hasMessage() ? response.getMessage() + " " + MESSAGES.confirmSpecialRegistrationSubmit(): MESSAGES.confirmSpecialRegistrationSubmit(), new Command() {
 									@Override
@@ -2284,8 +2301,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						iSpecRegCx.setRequestId(specReg.getRequestId());
 						iSpecRegCx.setCanSubmit(specReg.isCanSubmit());
 						iSpecRegCx.setCanEnroll(specReg.isCanEnroll());
-						iSpecRegCx.setTimeConflictsAllowed(specReg.areTimeConflictsAllowed());
-						iSpecRegCx.setSpaceConflictsAllowed(specReg.areSpaceConflictsAllowed());
 						iSpecialRegAssignment = specReg.getClassAssignments();
 						if (specReg.hasClassAssignments()) {
 							fillIn(specReg.getClassAssignments());

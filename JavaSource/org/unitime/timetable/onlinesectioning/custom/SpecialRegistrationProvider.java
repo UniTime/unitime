@@ -46,8 +46,6 @@ public interface SpecialRegistrationProvider {
 	
 	public RetrieveSpecialRegistrationResponse retrieveRegistration(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, RetrieveSpecialRegistrationRequest request) throws SectioningException;
 	
-	public boolean hasSpecialRegistrationRequests(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) throws SectioningException;
-	
 	public List<RetrieveSpecialRegistrationResponse> retrieveAllRegistrations(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) throws SectioningException;
 	
 	public void checkEligibility(OnlineSectioningServer server, OnlineSectioningHelper helper, EligibilityCheck check, XStudent student) throws SectioningException;

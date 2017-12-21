@@ -20,6 +20,7 @@
 package org.unitime.timetable.onlinesectioning.custom.purdue;
 
 import java.util.List;
+import java.util.Set;
 
 import org.joda.time.DateTime;
 
@@ -52,6 +53,17 @@ public class SpecialRegistrationInterface {
 		public List<SpecialRegistrationRequest> data;
 		public String status;
 		public String message;
+	}
+	
+	public static class SpecialRegistrationStatusResponse {
+		public SpecialRegistrationStatus data;
+		public String status;
+		public String message;
+	}
+	
+	public static class SpecialRegistrationStatus {
+		public Set<String> overrides;
+		public List<SpecialRegistrationRequest> requests;
 	}
 
 	public static enum ResponseStatus {

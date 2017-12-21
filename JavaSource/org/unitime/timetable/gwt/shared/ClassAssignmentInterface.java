@@ -1256,11 +1256,19 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public static enum UniTimeCode {
 			UT_LOCKED,
 			UT_DISABLED,
-			UT_STRUCTURE,
-			UT_TIME_CNF,
-			UT_NOT_AVAILABLE,
+			UT_STRUCTURE("LINK"),
+			UT_TIME_CNF("TIME"),
+			UT_NOT_AVAILABLE("CLOS"),
 			UT_CANCEL,
 			UT_DEADLINE,
+			;
+			
+			private String iCode;
+			
+			UniTimeCode() {}
+			UniTimeCode(String code) { iCode = code; }
+			
+			String code() { return (iCode == null ? name() : iCode); }
 		}
 		
 		public ErrorMessage() {}
@@ -1273,7 +1281,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public ErrorMessage(String course, String section, UniTimeCode code, String message) {
 			iCourse = course;
 			iSection = section;
-			iCode = code.name();
+			iCode = code.code();
 			iMessage = message;
 		}
 		
