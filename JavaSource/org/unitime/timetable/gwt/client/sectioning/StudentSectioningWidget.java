@@ -826,7 +826,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									iStatus.error(respose.getMessage());
 								}
 								iSpecRegCx.setCanSubmit(respose.isCanSubmit());
-								iSpecRegCx.setCanEnroll(respose.isCanEnroll() || !iSpecRegCx.isSpecRegMode());
+								iSpecRegCx.setCanEnroll(respose.isCanEnroll() || !iSpecRegCx.hasRequestKey());
 								if (!iSpecRegCx.isCanEnroll()) { iEnroll.setEnabled(false); iEnroll.setVisible(false); }
 								iSpecRegCx.setRequestId(respose.getRequestId());
 								iSubmitSpecReg.setEnabled(iSpecRegCx.isCanSubmit());
@@ -1569,6 +1569,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	public void checkEligibility(final Long sessionId, final Long studentId, final boolean saved, final AsyncCallback<OnlineSectioningInterface.EligibilityCheck> ret) {
 		LoadingWidget.getInstance().show(MESSAGES.courseRequestsLoading());
 		iStartOver.setVisible(false); iStartOver.setEnabled(false);
+		iSpecRegCx.reset();
 		iSectioningService.checkEligibility(iOnline, iMode.isSectioning(), sessionId, studentId, null, new AsyncCallback<OnlineSectioningInterface.EligibilityCheck>() {
 			@Override
 			public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
@@ -1655,7 +1656,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			public void onFailure(Throwable caught) {
 				LoadingWidget.getInstance().hide();
 				iEligibilityCheck = null;
-				iSpecRegCx.update(null);
 				if (ret != null) ret.onFailure(caught);
 			}
 		});

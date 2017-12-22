@@ -86,7 +86,18 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void update(EligibilityCheck check) {
 			iSpecRegTimeConfs = check != null && check.hasFlag(EligibilityFlag.SR_TIME_CONF);
 			iSpecRegSpaceConfs = check != null && check.hasFlag(EligibilityFlag.SR_LIMIT_CONF);
-			iSpecReg = iSpecRegTimeConfs || iSpecRegSpaceConfs;
+			iSpecReg = check != null && check.hasFlag(EligibilityFlag.CAN_SPECREG);
+			iSpecRegSubmit = check != null && check.hasFlag(EligibilityFlag.SR_ENABLED);
+		}
+		public void reset() {
+			iSpecReg = false;
+			iSpecRegRequestId = null;
+			iSpecRegRequestKeyValid = false;
+			iSpecRegSubmit = false;
+			iSpecRegEnroll = null;
+			iSpecRegDisclaimerAccepted = false;
+			iSpecRegTimeConfs = false;
+			iSpecRegSpaceConfs = false;
 		}
 	}
 	

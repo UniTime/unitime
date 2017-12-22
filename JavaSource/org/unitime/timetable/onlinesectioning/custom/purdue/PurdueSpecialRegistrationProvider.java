@@ -1054,6 +1054,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				check.setFlag(EligibilityFlag.SR_TIME_CONF, check.hasOverride("TIME"));
 				check.setFlag(EligibilityFlag.SR_LIMIT_CONF, check.hasOverride("CLOS"));
 				check.setFlag(EligibilityFlag.HAS_SPECREG, response.data != null && response.data.requests != null && !response.data.requests.isEmpty());
+				if (!check.hasFlag(EligibilityFlag.CAN_ENROLL))
+					check.setFlag(EligibilityFlag.SR_ENABLED, true);
 			} else {
 				check.setFlag(EligibilityFlag.CAN_SPECREG, false);
 			}
