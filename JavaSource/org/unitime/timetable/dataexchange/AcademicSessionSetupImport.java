@@ -62,6 +62,7 @@ import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePatternDays;
 import org.unitime.timetable.model.TimePatternTime;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
@@ -965,7 +966,7 @@ public class AcademicSessionSetupImport extends BaseImport {
             Element element = (Element) it.next();
             
             String name = element.attributeValue("name");
-            TimePattern pattern = name2pattern.get(name);
+            TimePattern pattern = name2pattern.remove(name);
             if (pattern == null) {
             	pattern = new TimePattern();
             	pattern.setTimes(new HashSet<TimePatternTime>());
@@ -1067,7 +1068,7 @@ public class AcademicSessionSetupImport extends BaseImport {
             Element element = (Element) it.next();
             
             String name = element.attributeValue("name");
-            DatePattern pattern = name2pattern.get(name);
+            DatePattern pattern = name2pattern.remove(name);
             if (pattern == null) {
             	pattern = new DatePattern();
             	pattern.setDepartments(new HashSet<Department>());
@@ -1160,13 +1161,15 @@ public class AcademicSessionSetupImport extends BaseImport {
         	getHibSession().saveOrUpdate(pattern);
         
         if (defaultDatePattern != null) {
+        	if (!getHibSession().contains(session))
+        		session = SessionDAO.getInstance().get(session.getUniqueId(), getHibSession());
         	session.setDefaultDatePattern(defaultDatePattern);
         	getHibSession().saveOrUpdate(session);
         }
         
         if (!"true".equalsIgnoreCase(root.attributeValue("incremental"))) {
             for (DatePattern dp: name2pattern.values()) {
-            	debug("Time pattern " + dp.getName() + " removed.");
+            	debug("Date pattern " + dp.getName() + " removed.");
             	getHibSession().delete(dp);
             }
         }
