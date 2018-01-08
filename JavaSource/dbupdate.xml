@@ -12845,4 +12845,73 @@
 		<plsql>alter table %SCHEMA%.staff add campus varchar2(20 char)</plsql>
 		<mysql>alter table %SCHEMA%.staff add campus varchar(20) null</mysql>
 	</update>
+	<update version="193" date="8-Jan-2018" comment="Student Advisors">
+		<mysql>
+			create table %SCHEMA%.advisor (
+				uniqueid decimal(20,0) primary key not null,
+				external_uid varchar(40) not null,
+			    first_name varchar(100),
+			    middle_name varchar(100),
+			    last_name varchar(100),
+			    acad_title varchar(50),
+			    email varchar(200),
+			    session_id decimal(20,0) not null,
+			    role_id decimal(20,0) not null
+			) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.advisor (
+				uniqueid number(20,0) constraint nn_advisor_uniqueid not null,
+				external_uid varchar2(40 char) constraint nn_advisor_external_uid not null,
+			    first_name varchar2(100 char),
+			    middle_name varchar2(100 char),
+			    last_name varchar2(100 char),
+			    acad_title varchar2(50 char),
+			    email varchar2(200 char),
+			    session_id number(20,0) constraint nn_advisor_session not null,
+				role_id number(20,0) constraint nn_advisor_role not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.advisor add constraint pk_advisor primary key (uniqueid)</plsql>
+		<sql>
+			alter table %SCHEMA%.advisor add constraint fk_advisor_session foreign key (session_id)
+			references %SCHEMA%.sessions (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.advisor add constraint fk_advisor_role foreign key (role_id)
+			references %SCHEMA%.roles (role_id) on delete cascade
+		</sql>
+		<plsql>
+			create table %SCHEMA%.student_advisor (
+				student_id number(20,0) constraint nn_std_adv_student not null,
+				advisor_id number(20,0) constraint nn_std_adv_advisor not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.student_advisor add constraint pk_student_advisor primary key (student_id, advisor_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.student_advisor (
+				student_id decimal(20,0) not null,
+				advisor_id decimal(20,0) not null,
+				primary key (student_id, advisor_id)
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.student_advisor add constraint fk_std_adv_student foreign key (student_id)
+			references %SCHEMA%.student (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.student_advisor add constraint fk_std_adv_advisor foreign key (advisor_id)
+			references %SCHEMA%.advisor (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'StudentAdvisorEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'StudentGroupEdit'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'StudentAdvisors'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'StudentGroups'
+		</sql>
+	</update>
 </dbupdate>

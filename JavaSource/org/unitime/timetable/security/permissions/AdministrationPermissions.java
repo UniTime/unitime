@@ -372,6 +372,9 @@ public class AdministrationPermissions {
 	
 	@PermissionForRight(Right.StudentAccommodations)
 	public static class StudentAccommodations extends SimpleSessionPermission {}
+	
+	@PermissionForRight(Right.StudentAdvisors)
+	public static class StudentAdvisors extends SimpleSessionPermission {}
 
 	@PermissionForRight(Right.AcademicAreaEdit)
 	public static class AcademicAreaEdit extends AcademicAreas {}
@@ -390,6 +393,9 @@ public class AdministrationPermissions {
 	
 	@PermissionForRight(Right.StudentAccommodationEdit)
 	public static class StudentAccommodationEdit extends StudentAccommodations {}
+	
+	@PermissionForRight(Right.StudentAdvisorEdit)
+	public static class StudentAdvisorEdit extends SimpleSessionPermission {}
 	
 	@PermissionForRight(Right.EventStatuses)
 	public static class EventStatuses implements Permission<Department> {

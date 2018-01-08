@@ -27,6 +27,7 @@ import java.util.TreeSet;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.ManagerRole;
@@ -140,6 +141,18 @@ public class UniTimeUserContext extends AbstractUserContext {
 			}
 			
 			TreeSet<Session> sessions = new TreeSet<Session>();
+			
+			for (Advisor advisor: (List<Advisor>)hibSession.createQuery(
+					"from Advisor where externalUniqueId = :id")
+					.setString("id", userId).list()) {
+				if (advisor.getRole() == null || !advisor.getRole().isEnabled()) continue;
+				if (iName == null && advisor.hasName()) iName = advisor.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
+				if (iEmail == null) iEmail = advisor.getEmail();
+				RoleAuthority authority = new RoleAuthority(advisor.getUniqueId(), advisor.getRole());
+				authority.addQualifier(advisor.getSession());
+				addAuthority(authority);
+				sessions.add(advisor.getSession());
+			}
 
 			Roles instructorRole = Roles.getRole(Roles.ROLE_INSTRUCTOR, hibSession);
 			if (instructorRole != null && instructorRole.isEnabled()) {

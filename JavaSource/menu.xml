@@ -883,6 +883,12 @@
 					<hasPermission name="StudentAccommodations"/>
 				</condition>
 			</item>
+			<item name="Student Advisors" page="admin" type="gwt">
+				<parameter name="type">advisor</parameter>
+				<condition>
+					<hasPermission name="StudentAdvisors"/>
+				</condition>
+			</item>
 			<separator/>
 			<item name="Examination Statuses" page="admin" type="gwt">
 				<parameter name="type">examStatus</parameter>

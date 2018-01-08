@@ -3566,6 +3566,14 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageSolutionReports();
 	
+	@DefaultMessage("Student Advisor")
+	@DoNotTranslate
+	String pageStudentAdvisor();
+	
+	@DefaultMessage("Student Advisors")
+	@DoNotTranslate
+	String pageStudentAdvisors();
+	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	
@@ -4485,6 +4493,18 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("All Rooms")
 	String fieldAllRooms();
+	
+	@DefaultMessage("First Name")
+	String fieldFirstName();
+	
+	@DefaultMessage("Middle Name")
+	String fieldMiddleName();
+	
+	@DefaultMessage("Last Name")
+	String fieldLastName();
+	
+	@DefaultMessage("Title")
+	String fieldAcademicTitle();
 	
 	@DefaultMessage("Access")
 	String toggleAccess();

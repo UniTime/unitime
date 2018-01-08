@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE studentAdvisors PUBLIC "-//UniTime//UniTime Student Advisors DTD/EN" "http://www.unitime.org/interface/StudentAdvisors.dtd">
+<!--
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ -->
+<studentAdvisors campus="woebegon" term="Fal" year="2010" incremental="false">
+  <studentAdvisor externalId="007" firstName="Student" lastName="Advisor" email="advisor@unitime.org" role="Advisor">
+    <updateStudents>
+      <student externalId="1001"/>
+      <student externalId="1003"/>
+      <student externalId="1005"/>
+      <student externalId="1007"/>
+    </updateStudents>
+  </studentAdvisor>
+  <studentAdvisor externalId="008" firstName="Will" middleName="Johnny" lastName="Smith" role="Advisor" acadTitle="Dr." email="smith@unitime.org"/>
+</studentAdvisors>

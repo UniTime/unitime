@@ -212,6 +212,16 @@
             <key column="student_id" foreign-key="fk_student_note_student"/>
             <one-to-many class="StudentNote"/>
         </set>
+        
+        <set
+            name="advisors"
+            table="student_advisor"
+            inverse="true"
+            lazy="true">
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="student_id" foreign-key="fk_std_adv_student"/>
+            <many-to-many class="Advisor" column="advisor_id" foreign-key="fk_std_adv_advisor"/>
+        </set>
     </class>
     
     <class name="StudentNote" table="student_note">

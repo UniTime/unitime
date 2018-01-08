@@ -83,6 +83,7 @@ public class DataImportForm extends ActionForm {
     	POINT_IN_TIME_DATA("pointInTimeData", "Point-In-Time Data"),
     	PREFERENCES("preferences", "Course Timetabling Preferences"),
     	SESSION_SETUP("sessionSetup", "Academic Session Setup"),
+    	STUDENT_ADVISORS("studentAdvisors", "Student Advisors"),
     	;
     	
     	private String iType, iLabel;
