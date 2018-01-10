@@ -61,6 +61,7 @@ import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
@@ -76,14 +77,15 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 	protected Query iQuery;
 	protected Integer iLimit = null;
 	protected Long iCourseId;
-	protected Set<Long> iCoursesIcoordinate, iCoursesIcanApprove;
+	protected Set<Long> iCoursesIcoordinate, iCoursesIcanApprove, iMyStudents;
 	protected Set<String> iSubjectAreas;
 	
-	public FindEnrollmentInfoAction withParams(String query, Long courseId, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove, Set<String> subjects) {
+	public FindEnrollmentInfoAction withParams(String query, Long courseId, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove, Set<Long> myStudents, Set<String> subjects) {
 		iQuery = new Query(query);
 		iCourseId = courseId;
 		iCoursesIcanApprove = coursesIcanApprove;
 		iCoursesIcoordinate = coursesIcoordinage;
+		iMyStudents = myStudents;
 		iSubjectAreas = subjects;
 		Matcher m = Pattern.compile("limit:[ ]?([0-9]*)", Pattern.CASE_INSENSITIVE).matcher(query);
 		if (m.find()) {
@@ -96,6 +98,10 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 	public FindEnrollmentInfoAction withFilter(SectioningStatusFilterRpcRequest filter) {
 		iFilter = filter;
 		return this;
+	}
+	
+	public boolean isMyStudent(XStudentId student) {
+		return iMyStudents != null && iMyStudents.contains(student.getStudentId());
 	}
 	
 	public Query query() { return iQuery; }
@@ -174,7 +180,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					
 					XStudent student = server.getStudent(request.getStudentId());
 					if (student == null) continue;
-					CourseRequestMatcher m = new CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse, server);
+					CourseRequestMatcher m = new CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse, isMyStudent(student), server);
 					if (query().match(m)) {
 						matchingStudents.add(request.getStudentId());
 						match++;
@@ -420,7 +426,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					if (!request.getEnrollment().getCourseId().equals(courseId())) {other++; continue; }
 					XStudent student = server.getStudent(request.getStudentId());
 					if (student == null) continue;
-					CourseRequestMatcher m = new CourseRequestMatcher(session, info, student, offering, request, isConsentToDoCourse, server);
+					CourseRequestMatcher m = new CourseRequestMatcher(session, info, student, offering, request, isConsentToDoCourse, isMyStudent(student), server);
 					if (query().match(m)) {
 						match++;
 						enrl ++;
@@ -437,7 +443,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					if (request.getEnrollment() != null || !request.hasCourse(courseId())) continue;
 					XStudent student = server.getStudent(request.getStudentId());
 					if (student == null || !student.canAssign(request)) continue;
-					CourseRequestMatcher m = new CourseRequestMatcher(session, info, student, offering, request, isConsentToDoCourse, server);
+					CourseRequestMatcher m = new CourseRequestMatcher(session, info, student, offering, request, isConsentToDoCourse, isMyStudent(student), server);
 					
 					//TODO: Do we need this?
 					boolean hasEnrollment = false;

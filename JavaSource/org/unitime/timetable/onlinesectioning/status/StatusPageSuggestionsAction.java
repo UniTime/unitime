@@ -591,6 +591,9 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				else
 					return info().getConsentLabel() != null;
 			}
+			if ("mode".equals(attr)) {
+				return true;
+			}
 			if ("registered".equals(attr)) {
 				if ("true".equalsIgnoreCase(term) || "1".equalsIgnoreCase(term))
 					return true;
@@ -609,8 +612,9 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		private Date iFirstDate;
 		private String iDefaultStatus;
 		private OnlineSectioningServer iServer;
+		private boolean iMyStudent;
 		
-		public CourseRequestMatcher(AcademicSessionInfo session, XCourse info, XStudent student, XOffering offering, XCourseRequest request, boolean isConsentToDoCourse, OnlineSectioningServer server) {
+		public CourseRequestMatcher(AcademicSessionInfo session, XCourse info, XStudent student, XOffering offering, XCourseRequest request, boolean isConsentToDoCourse, boolean isMyStudent, OnlineSectioningServer server) {
 			super(info, isConsentToDoCourse);
 			iFirstDate = session.getDatePatternFirstDate();
 			iStudent = student;
@@ -618,6 +622,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			iDefaultStatus = session.getDefaultSectioningStatus();
 			iOffering = offering;
 			iServer = server;
+			iMyStudent = isMyStudent;
 		}
 		
 		public XCourseRequest request() { return iRequest; }
@@ -718,6 +723,13 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				} else {
 					return info().getConsentLabel() != null && (enrollment() != null && ((enrollment().getApproval() != null && (has(enrollment().getApproval().getExternalId(), term) || eq(enrollment().getApproval().getName(), term))) || eq(info().getConsentAbbv(), term)));
 				}
+			}
+			
+			if ("mode".equals(attr)) {
+				if (eq("My Students", term)) {
+					return iMyStudent;
+				}
+				return true;
 			}
 			
 			if ("approver".equals(attr)) {

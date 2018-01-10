@@ -59,6 +59,8 @@ insert into rights (role_id, value)
 	select distinct r.role_id, 'StudentAdvisors'
 	from roles r, rights g where g.role_id = r.role_id and g.value = 'StudentGroups';
 
+create index idx_advisor on advisor(external_uid, role_id);
+
 /*
  * Update database version
  */

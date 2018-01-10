@@ -32,6 +32,7 @@ import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
@@ -58,6 +59,7 @@ import org.unitime.timetable.util.Constants;
 public class SectioningStatusFilterAction implements OnlineSectioningAction<FilterRpcResponse> {
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningConstants CONSTANTS = Localization.create(StudentSectioningConstants.class);
+	private static StudentSectioningMessages MESSAGES = Localization.create(StudentSectioningMessages.class);
 	
 	private FilterRpcRequest iRequest = null;
 	
@@ -197,6 +199,22 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		consent.add(new Entity(-4l, "Approved", CONSTANTS.consentTypeAbbv()[3], "translated-value", CONSTANTS.consentTypeAbbv()[3]));
 		consent.add(new Entity(-5l, "To Do", CONSTANTS.consentTypeAbbv()[4], "translated-value", CONSTANTS.consentTypeAbbv()[4]));
 		response.add("consent", consent);
+		
+		
+		if (iRequest.hasOption("role")) {
+			List<Entity> modes = new ArrayList<Entity>();
+			int myStudents = ((Number)query.select("count(distinct s)")
+					.where("s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = :Xuser and adv.role.reference = :Xrole and adv.session.uniqueId = s.session.uniqueId)")
+					.set("Xuser", iRequest.getOption("user")).set("Xrole", iRequest.getOption("role"))
+					.exclude("mode").query(helper.getHibSession()).uniqueResult()).intValue();
+			if (myStudents > 0) {
+				Entity myE = new Entity(-1l, "My Students", MESSAGES.modeMyStudents(), "translated-value", MESSAGES.modeMyStudents());
+				myE.setCount(myStudents);
+				modes.add(myE);
+			}
+			if (!modes.isEmpty())
+				response.add("mode", modes);
+		}
 		
 		return response;
 	}
@@ -450,6 +468,12 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				query.addWhere("credit", creditTerm + " <= :Xmax");
 				query.addParameter("credit", "Xmax", max);
 			}
+		}
+		
+		if (request.hasOption("mode") && "My Students".equals(request.getOption("mode")) && request.hasOption("role")) {
+			query.addWhere("mode", "s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = :Xuser and adv.role.reference = :Xrole and adv.session.uniqueId = s.session.uniqueId)");
+			query.addParameter("mode", "Xuser", request.getOption("user"));
+			query.addParameter("mode", "Xrole", request.getOption("role"));
 		}
 		
 		return query;

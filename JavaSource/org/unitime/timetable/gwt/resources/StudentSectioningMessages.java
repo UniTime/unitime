@@ -1625,4 +1625,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Do you want to explore approval for a schedule with conflicts?")
 	String disclaimerSpecRegAllowForTimeSpaceConflicts();
+	
+	@DefaultMessage("My Students")
+	String modeMyStudents();
 }

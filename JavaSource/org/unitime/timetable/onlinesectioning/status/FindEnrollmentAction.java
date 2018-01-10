@@ -50,6 +50,7 @@ import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 
 /**
@@ -62,8 +63,9 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 	protected Long iCourseId, iClassId;
 	protected boolean iConsentToDoCourse;
 	protected boolean iCanShowExtIds = false, iCanRegister = false, iCanUseAssistant = false;
+	protected Set<Long> iMyStudents;
 	
-	public FindEnrollmentAction withParams(String query, Long courseId, Long classId, boolean isConsentToDoCourse, boolean canShowExtIds, boolean canRegister, boolean canUseAssistant) {
+	public FindEnrollmentAction withParams(String query, Long courseId, Long classId, boolean isConsentToDoCourse, boolean canShowExtIds, boolean canRegister, boolean canUseAssistant, Set<Long> myStudents) {
 		iQuery = new Query(query);
 		iCourseId = courseId;
 		iClassId = classId;
@@ -71,6 +73,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 		iCanShowExtIds = canShowExtIds;
 		iCanRegister = canRegister;
 		iCanUseAssistant = canUseAssistant;
+		iMyStudents = myStudents;
 		return this;
 	}
 	
@@ -87,6 +90,10 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 	public Long classId() { return iClassId; }
 	
 	public boolean isConsentToDoCourse() { return iConsentToDoCourse; }
+	
+	public boolean isMyStudent(XStudentId student) {
+		return iMyStudents != null && iMyStudents.contains(student.getStudentId());
+	}
 
 	@Override
 	public List<ClassAssignmentInterface.Enrollment> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
@@ -110,7 +117,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 			XStudent student = server.getStudent(request.getStudentId());
 			if (student == null) continue;
 			if (request.getEnrollment() == null && !student.canAssign(request)) continue;
-			if (!query().match(new StatusPageSuggestionsAction.CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse(), server))) continue;
+			if (!query().match(new StatusPageSuggestionsAction.CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse(), isMyStudent(student), server))) continue;
 			
 			ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
 			st.setId(student.getStudentId());

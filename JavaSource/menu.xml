@@ -649,7 +649,7 @@
 	</item>
 	<item name="Scheduling Dashboard" page="onlinesctdash" type="gwt">
 		<condition>
-			<hasPermission name="SchedulingDashboard" authority="role"/>
+			<hasPermission name="SchedulingDashboard"/>
 			<not>
 				<hasPermission name="StudentScheduling"/>
 			</not>

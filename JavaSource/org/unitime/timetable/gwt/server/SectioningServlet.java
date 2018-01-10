@@ -1579,6 +1579,17 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		return courseIds;
 	}
 	
+	private HashSet<Long> getMyStudents(Long sessionId) throws SectioningException, PageAccessException {
+		UserContext user = getSessionContext().getUser();
+		if (user == null || user.getCurrentAuthority() == null)
+			throw new PageAccessException(getSessionContext().isHttpSessionNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
+
+		return new HashSet<Long>(CourseOfferingDAO.getInstance().getSession().createQuery(
+				"select s.uniqueId from Advisor a inner join a.students s where " +
+				"a.externalUniqueId = :user and a.role.reference = :role and a.session.uniqueId = :sessionId"
+				).setLong("sessionId", sessionId).setString("user", user.getExternalUserId()).setString("role", user.getCurrentAuthority().getRole()).setCacheable(true).list());
+	}
+	
 	public List<EnrollmentInfo> findEnrollmentInfos(boolean online, String query, SectioningStatusFilterRpcRequest filter, Long courseId) throws SectioningException, PageAccessException {
 		try {
 			if (online) {
@@ -1594,6 +1605,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							courseId,
 							getCoordinatingCourses(sessionId),
 							query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null,
+							getMyStudents(sessionId),
 							getSubjectAreas())
 							.withFilter(filter), currentUser()
 					);	
@@ -1604,6 +1616,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						courseId,
 						getCoordinatingCourses(sessionId),
 						query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null,
+						getMyStudents(sessionId),
 						getSubjectAreas())
 						.withFilter(filter), currentUser()
 				);				
@@ -1612,7 +1625,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 
-				return server.execute(server.createAction(FindEnrollmentInfoAction.class).withParams(query, courseId, null, null, getSubjectAreas()).withFilter(filter), currentUser());
+				return server.execute(server.createAction(FindEnrollmentInfoAction.class).withParams(query, courseId, null, null, getMyStudents(server.getAcademicSession().getUniqueId()), getSubjectAreas()).withFilter(filter), currentUser());
 			}
 		} catch (PageAccessException e) {
 			throw e;
@@ -1638,6 +1651,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							query,
 							getCoordinatingCourses(sessionId),
 							query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null,
+									getMyStudents(sessionId),
 							getSubjectAreas(),
 							sessionContext.hasPermission(Right.EnrollmentsShowExternalId),
 							sessionContext.hasPermission(Right.CourseRequests),
@@ -1650,6 +1664,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						query,
 						getCoordinatingCourses(sessionId),
 						query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null,
+						getMyStudents(sessionId),
 						getSubjectAreas(),
 						sessionContext.hasPermission(Right.EnrollmentsShowExternalId),
 						sessionContext.hasPermission(Right.CourseRequests),
@@ -1661,7 +1676,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 
-				return server.execute(server.createAction(FindStudentInfoAction.class).withParams(query, null, null, getSubjectAreas(),
+				return server.execute(server.createAction(FindStudentInfoAction.class).withParams(query, null, null, getMyStudents(server.getAcademicSession().getUniqueId()), getSubjectAreas(),
 						sessionContext.hasPermission(Right.EnrollmentsShowExternalId), false, true).withFilter(filter), currentUser());
 			}
 		} catch (PageAccessException e) {
@@ -1727,7 +1742,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId).contains(courseId): false,
 							sessionContext.hasPermission(Right.EnrollmentsShowExternalId),
 							sessionContext.hasPermission(Right.CourseRequests),
-							sessionContext.hasPermission(Right.SchedulingAssistant)).withFilter(filter), currentUser());
+							sessionContext.hasPermission(Right.SchedulingAssistant),
+							getMyStudents(sessionId)).withFilter(filter), currentUser());
 				}
 				
 				return server.execute(server.createAction(FindEnrollmentAction.class).withParams(
@@ -1735,7 +1751,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId).contains(courseId): false,
 						sessionContext.hasPermission(Right.EnrollmentsShowExternalId),
 						sessionContext.hasPermission(Right.CourseRequests),
-						sessionContext.hasPermission(Right.SchedulingAssistant)).withFilter(filter), currentUser());
+						sessionContext.hasPermission(Right.SchedulingAssistant),
+						getMyStudents(sessionId)).withFilter(filter), currentUser());
 			} else {
 				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
@@ -1746,7 +1763,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				
 				return server.execute(server.createAction(FindEnrollmentAction.class).withParams(
 						query, courseId, classId, false,
-						sessionContext.hasPermission(Right.EnrollmentsShowExternalId), false, true).withFilter(filter), currentUser());
+						sessionContext.hasPermission(Right.EnrollmentsShowExternalId), false, true,
+						getMyStudents(server.getAcademicSession().getUniqueId())).withFilter(filter), currentUser());
 			}
 		} catch (PageAccessException e) {
 			throw e;

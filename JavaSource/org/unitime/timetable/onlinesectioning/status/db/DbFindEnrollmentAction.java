@@ -58,6 +58,10 @@ import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoActi
  */
 public class DbFindEnrollmentAction extends FindEnrollmentAction {
 	private static final long serialVersionUID = 1L;
+	
+	public boolean isMyStudent(Student student) {
+		return iMyStudents != null && iMyStudents.contains(student.getUniqueId());
+	}
 
 	@Override
 	public List<ClassAssignmentInterface.Enrollment> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
@@ -76,7 +80,7 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 		for (CourseRequest request: (List<CourseRequest>)helper.getHibSession().createQuery(
 				"from CourseRequest where courseOffering.uniqueId = :courseId"
 				).setLong("courseId", course.getUniqueId()).setCacheable(true).list()) {
-			DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse(), helper.getStudentNameFormat());
+			DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse(), isMyStudent(request.getCourseDemand().getStudent()), helper.getStudentNameFormat());
 			if (classId() != null) {
 				boolean match = false;
 				for (StudentClassEnrollment e: crm.enrollment()) {

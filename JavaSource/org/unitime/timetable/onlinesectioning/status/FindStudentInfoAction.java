@@ -68,14 +68,15 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 	private static final long serialVersionUID = 1L;
 	protected Query iQuery;
 	protected Integer iLimit = null;
-	protected Set<Long> iCoursesIcoordinate, iCoursesIcanApprove;
+	protected Set<Long> iCoursesIcoordinate, iCoursesIcanApprove, iMyStudents;
 	protected Set<String> iSubjectAreas;
 	protected boolean iCanShowExtIds = false, iCanRegister = false, iCanUseAssistant = false;
 	
-	public FindStudentInfoAction withParams(String query, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove, Set<String> subjects, boolean canShowExtIds, boolean canRegister, boolean canUseAssistant) {
+	public FindStudentInfoAction withParams(String query, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove, Set<Long> myStudents, Set<String> subjects, boolean canShowExtIds, boolean canRegister, boolean canUseAssistant) {
 		iQuery = new Query(query);
 		iCoursesIcanApprove = coursesIcanApprove;
 		iCoursesIcoordinate = coursesIcoordinage;
+		iMyStudents = myStudents;
 		iCanShowExtIds = canShowExtIds;
 		iCanRegister = canRegister;
 		iCanUseAssistant = canUseAssistant;
@@ -109,6 +110,10 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		return iSubjectAreas == null || iSubjectAreas.contains(subject);
 	}
 	
+	public boolean isMyStudent(XStudentId student) {
+		return iMyStudents != null && iMyStudents.contains(student.getStudentId());
+	}
+	
 	@Override
 	public List<StudentInfo> execute(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 		Map<Long, StudentInfo> students = new HashMap<Long, StudentInfo>();
@@ -137,7 +142,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 				if (studentIds != null && !studentIds.contains(request.getStudentId())) continue;
 				XStudent student = server.getStudent(request.getStudentId());
 				if (student == null) continue;
-				CourseRequestMatcher m = new CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse, server);
+				CourseRequestMatcher m = new CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse, isMyStudent(student), server);
 				if (query().match(m)) {
 					StudentInfo s = students.get(request.getStudentId());
 					if (s == null) {
@@ -334,7 +339,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 													if (d > gDist) gDist = d;
 												}
 												if (section.getTime().hasIntersection(otherSection.getTime()) && !section.isToIgnoreStudentConflictsWith(o.getDistributions(), otherSection.getSectionId())) {
-													if (section.getSectionId() < otherSection.getSectionId() || !query().match(new CourseRequestMatcher(session, otherCourse, student, otherOffering, (XCourseRequest)q, isConsentToDoCourse(otherCourse), server))) {
+													if (section.getSectionId() < otherSection.getSectionId() || !query().match(new CourseRequestMatcher(session, otherCourse, student, otherOffering, (XCourseRequest)q, isConsentToDoCourse(otherCourse), isMyStudent(student), server))) {
 														s.setOverlappingMinutes(s.getOverlappingMinutes() + section.getTime().share(otherSection.getTime()));
 														gShr += section.getTime().share(otherSection.getTime());
 													}

@@ -12913,5 +12913,7 @@
 			select distinct r.role_id, 'StudentAdvisors'
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'StudentGroups'
 		</sql>
+		<plsql>create index %SCHEMA%.idx_advisor on %SCHEMA%.advisor(external_uid, role_id)</plsql>
+		<mysql>create index idx_advisor on %SCHEMA%.advisor(external_uid, role_id)</mysql>
 	</update>
 </dbupdate>

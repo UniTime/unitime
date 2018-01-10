@@ -63,6 +63,10 @@ import com.google.protobuf.InvalidProtocolBufferException;
  */
 public class DbFindStudentInfoAction extends FindStudentInfoAction {
 	private static final long serialVersionUID = 1L;
+	
+	public boolean isMyStudent(Student student) {
+		return iMyStudents != null && iMyStudents.contains(student.getUniqueId());
+	}
 
 	@Override
 	public List<StudentInfo> execute(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
@@ -86,7 +90,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		for (CourseRequest cr: (List<CourseRequest>)SectioningStatusFilterAction.getCourseQuery(iFilter, server).select("distinct cr").query(helper.getHibSession()).list()) {
 			if (!hasMatchingSubjectArea(cr.getCourseOffering().getSubjectAreaAbbv())) continue;
 			if (!isCourseVisible(cr.getCourseOffering().getUniqueId())) continue;			
-			if (!query().match(new DbCourseRequestMatcher(session, cr, isConsentToDoCourse(cr.getCourseOffering()), helper.getStudentNameFormat()))) continue;
+			if (!query().match(new DbCourseRequestMatcher(session, cr, isConsentToDoCourse(cr.getCourseOffering()), isMyStudent(cr.getCourseDemand().getStudent()), helper.getStudentNameFormat()))) continue;
 			List<CourseRequest> list = requests.get(cr.getCourseOffering());
 			if (list == null) {
 				list = new ArrayList<CourseRequest>();
@@ -144,7 +148,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 								for (CourseRequest r: demand.getCourseRequests()) {
 									if (first == null || r.getOrder() < first.getOrder()) first = r;
 								}
-								DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, first, isConsentToDoCourse(first.getCourseOffering()), helper.getStudentNameFormat());
+								DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, first, isConsentToDoCourse(first.getCourseOffering()), isMyStudent(student), helper.getStudentNameFormat());
 								if (crm.canAssign()) {
 									tUnasg ++; gtUnasg ++;
 									if (demand.isWaitlist()) {
@@ -153,7 +157,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 								}
 							} else {
 								tEnrl ++; gtEnrl ++;
-								DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, assigned, isConsentToDoCourse(assigned.getCourseOffering()), helper.getStudentNameFormat());
+								DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, assigned, isConsentToDoCourse(assigned.getCourseOffering()), isMyStudent(student), helper.getStudentNameFormat());
 								if (crm.reservation() != null) {
 									tRes ++; gtRes ++;
 								}
@@ -237,7 +241,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 						if (note == null || note.compareTo(n) > 0) note = n;
 					if (note != null) s.setNote(note.getTextNote());
 				}
-				DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, helper.getStudentNameFormat());
+				DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(student), helper.getStudentNameFormat());
 				if (!crm.enrollment().isEmpty()) {
 					if (assignedRequests.add(crm.request().getCourseDemand().getUniqueId())) {
 						s.setEnrollment(s.getEnrollment() + 1); gEnrl ++;
@@ -326,7 +330,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 							}
 							if (assignment.getTimeLocation().hasIntersection(otherAssignment.getTimeLocation()) && !section.getClazz().isToIgnoreStudentConflictsWith(otherSection.getClazz())) {
 								if (section.getClazz().getUniqueId() < otherSection.getClazz().getUniqueId() ||
-									!query().match(new DbCourseRequestMatcher(session, otherSection.getCourseRequest(), isConsentToDoCourse(otherSection.getCourseOffering()), helper.getStudentNameFormat()))) {
+									!query().match(new DbCourseRequestMatcher(session, otherSection.getCourseRequest(), isConsentToDoCourse(otherSection.getCourseOffering()), isMyStudent(student), helper.getStudentNameFormat()))) {
 									int sh = assignment.getTimeLocation().nrSharedDays(otherAssignment.getTimeLocation()) * assignment.getTimeLocation().nrSharedHours(otherAssignment.getTimeLocation()) * Constants.SLOT_LENGTH_MIN;
 									s.setOverlappingMinutes(s.getOverlappingMinutes() + sh);
 									gShr += sh;

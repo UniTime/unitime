@@ -79,7 +79,7 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 		iOnline = online;
 
 		FilterBox.StaticSimpleFilter mode = new FilterBox.StaticSimpleFilter("mode", GWT_MESSAGES.tagSectioningMode());
-		mode.setMultipleSelection(false);
+		// mode.setMultipleSelection(false);
 		addFilter(mode);
 		
 		addFilter(new FilterBox.StaticSimpleFilter("type", GWT_MESSAGES.tagSectioningType()));
