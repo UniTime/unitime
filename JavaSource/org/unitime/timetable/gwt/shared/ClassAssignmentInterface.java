@@ -903,8 +903,8 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private String iArea, iMajor, iClassification;
 		private String iSubject, iCourseNbr, iConfig, iSubpart, iClazz, iTitle, iConsent;
 		private Long iCourseId, iOfferingId, iSubjectId, iConfigId, iSubpartId, iClazzId;
-		private Integer iLimit, iOther, iProjection, iEnrollment, iWaitlist, iReservation, iAvailable, iUnassigned;
-		private Integer iTotalEnrollment, iTotalWaitlist, iTotalReservation, iTotalUnassigned;
+		private Integer iLimit, iOther, iProjection, iEnrollment, iWaitlist, iReservation, iAvailable, iUnassigned, iUnassignedPrimary;
+		private Integer iTotalEnrollment, iTotalWaitlist, iTotalReservation, iTotalUnassigned, iTotalUnassignedPrimary;
 		private Integer iConsentNeeded, iTotalConsentNeeded;
 		private ClassAssignment iAssignment;
 		private int iLevel = 0;
@@ -983,6 +983,15 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public void setUnassigned(Integer unassigned) { iUnassigned = unassigned; }
 		public boolean hasUnassigned() { return iUnassigned != null; }
 
+		public Integer getUnassignedPrimary() { return iUnassignedPrimary; }
+		public void setUnassignedPrimary(Integer unassigned) { iUnassignedPrimary = unassigned; }
+		public boolean hasUnassignedPrimary() { return iUnassignedPrimary != null; }
+		
+		public Integer getUnassignedAlternative() {
+			if (iUnassigned == null) return null;
+			return iUnassigned - (iUnassignedPrimary == null ? 0 : iUnassignedPrimary.intValue());
+		}
+
 		public Integer getReservation() { return iReservation; }
 		public void setReservation(Integer reservation) { iReservation = reservation; }
 		public boolean hasReservation() { return iReservation !=null; }
@@ -998,6 +1007,15 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public Integer getTotalUnassigned() { return iTotalUnassigned; }
 		public void setTotalUnassigned(Integer unassigned) { iTotalUnassigned = unassigned; }
 		public boolean hasTotalUnassigned() { return iTotalUnassigned != null; }
+
+		public Integer getTotalUnassignedPrimary() { return iTotalUnassignedPrimary; }
+		public void setTotalUnassignedPrimary(Integer unassigned) { iTotalUnassignedPrimary = unassigned; }
+		public boolean hasTotalUnassignedPrimary() { return iTotalUnassignedPrimary != null; }
+		
+		public Integer getTotalUnassignedAlternative() {
+			if (iTotalUnassigned == null) return null;
+			return iTotalUnassigned - (iTotalUnassignedPrimary == null ? 0 : iTotalUnassignedPrimary.intValue());
+		}
 
 		public Integer getTotalReservation() { return iTotalReservation; }
 		public void setTotalReservation(Integer reservation) { iTotalReservation = reservation; }

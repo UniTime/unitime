@@ -826,6 +826,7 @@ public class SectioningStatusPage extends Composite {
 		line.add(new NumberCell(null, e.getProjection()));
 		line.add(new NumberCell(e.getEnrollment(), e.getTotalEnrollment()));
 		line.add(new WaitListCell(e));
+		line.add(new NumberCell(e.getUnassignedAlternative(), e.getTotalUnassignedAlternative()));
 		line.add(new NumberCell(e.getReservation(), e.getTotalReservation()));
 		line.add(new NumberCell(e.getConsentNeeded(), e.getTotalConsentNeeded()));
 		return line;
@@ -873,6 +874,9 @@ public class SectioningStatusPage extends Composite {
 		header.add(hWaitListed);
 		addSortOperation(hWaitListed, EnrollmentComparator.SortBy.WAITLIST, MESSAGES.colWaitListed());
 
+		UniTimeTableHeader hAlternative = new UniTimeTableHeader(MESSAGES.colUnassignedAlternative());
+		header.add(hAlternative);
+		addSortOperation(hAlternative, EnrollmentComparator.SortBy.ALTERNATIVES, MESSAGES.colUnassignedAlternative().replace("<br>", " "));
 		
 		UniTimeTableHeader hReserved = new UniTimeTableHeader(MESSAGES.colReserved());
 		header.add(hReserved);
@@ -924,6 +928,8 @@ public class SectioningStatusPage extends Composite {
 				iCourseTable.sort(hReserved, new EnrollmentComparator(sort), asc); break;
 			case WAITLIST:
 				iCourseTable.sort(hWaitListed, new EnrollmentComparator(sort), asc); break;
+			case ALTERNATIVES:
+				iCourseTable.sort(hAlternative, new EnrollmentComparator(sort), asc); break;
 			}
 		}
 	}
@@ -1287,7 +1293,7 @@ public class SectioningStatusPage extends Composite {
 		
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
 				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false, hasDistances = false, hasOverlaps = false,
-				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false;
+				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false;
 		for (ClassAssignmentInterface.StudentInfo e: result) {
 			if (e.getStudent() == null) continue;
 			// if (e.getStatus() != null) hasStatus = true;
@@ -1308,6 +1314,8 @@ public class SectioningStatusPage extends Composite {
 			if (e.hasFreeTimeOverlappingMins()) hasFreeTimeOverlaps = true;
 			if (e.hasTotalPrefInstrMethConflict()) hasPrefIMConfs = true;
 			if (e.hasTotalPrefSectionConflict()) hasPrefSecConfs = true;
+			if (e.hasNote()) hasNote = true;
+			if (e.getEmailDate() != null) hasEmailed = true;
 		}
 		
 		UniTimeTableHeader hArea = null, hClasf = null;
@@ -1438,17 +1446,17 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		UniTimeTableHeader hNote = null;
-		if (iOnline) {
+		if (iOnline && hasNote) {
 			iNoteColumn = header.size() - 1;
 			hNote = new UniTimeTableHeader(MESSAGES.colStudentNote());
 			header.add(hNote);
-			addSortOperation(hNote, StudentComparator.SortBy.EMAIL_TS, MESSAGES.colEmailTimeStamp());
+			addSortOperation(hNote, StudentComparator.SortBy.NOTE, MESSAGES.colStudentNote());
 		} else {
 			iNoteColumn = -1;
 		}
 		
 		UniTimeTableHeader hEmailTS = null;
-		if (iOnline) {
+		if (iOnline && hasEmailed) {
 			hEmailTS = new UniTimeTableHeader(MESSAGES.colEmailTimeStamp());
 			header.add(hEmailTS);
 			addSortOperation(hEmailTS, StudentComparator.SortBy.EMAIL_TS, MESSAGES.colEmailTimeStamp());
@@ -1550,22 +1558,22 @@ public class SectioningStatusPage extends Composite {
 					line.add(new HTML(info.getRequestedDate() == null ? "&nbsp;" : sDF.format(info.getRequestedDate()), false));
 				if (hasEnrolledDate)
 					line.add(new HTML(info.getEnrolledDate() == null ? "&nbsp;" : sDF.format(info.getEnrolledDate()), false));
-				if (iOnline) {
+				if (iOnline && hasNote) {
 					HTML note = new HTML(info.hasNote() ? info.getNote() : ""); note.addStyleName("student-note");
 					if (info.hasNote())
 						note.setTitle(note.getText());
 					line.add(note);
 				}
-				if (iOnline)
+				if (iOnline && hasEmailed)
 					line.add(new HTML(info.getEmailDate() == null ? "&nbsp;" : sDF.format(info.getEmailDate()), false));
 			} else {
 				if (hasRequestedDate)
 					line.add(new HTML("&nbsp;", false));
 				if (hasEnrolledDate)
 					line.add(new HTML("&nbsp;", false));
-				if (iOnline)
+				if (iOnline && hasNote)
 					line.add(new HTML("&nbsp;", false));
-				if (iOnline)
+				if (iOnline && hasEmailed)
 					line.add(new HTML("&nbsp;", false));
 			}
 			iStudentTable.addRow(info, line);
@@ -1904,8 +1912,8 @@ public class SectioningStatusPage extends Composite {
 		public WaitListCell(EnrollmentInfo e) {
 			this(e.hasWaitlist() ? e.getWaitlist() : 0,
 				e.hasTotalWaitlist() ? e.getTotalWaitlist() : 0,
-				e.hasUnassigned() ? e.getUnassigned() : 0,
-				e.hasTotalUnassigned() ? e.getTotalUnassigned() : 0,
+				e.hasUnassigned() ? e.getUnassignedPrimary() : 0,
+				e.hasTotalUnassigned() ? e.getTotalUnassignedPrimary() : 0,
 				null);
 		}
 
@@ -1926,7 +1934,8 @@ public class SectioningStatusPage extends Composite {
 			ENROLLMENT,
 			WAITLIST,
 			RESERVATION,
-			NEED_CONSENT
+			NEED_CONSENT,
+			ALTERNATIVES,
 		}
 		
 		private SortBy iSortBy;
@@ -1992,11 +2001,11 @@ public class SectioningStatusPage extends Composite {
 			case WAITLIST:
 				cmp = (e1.getWaitlist() == null ? new Integer(0) : e1.getWaitlist()).compareTo(e2.getWaitlist() == null ? 0 : e2.getWaitlist());
 				if (cmp != 0) return - cmp;
-				cmp = (e1.getUnassigned() == null ? new Integer(0) : e1.getUnassigned()).compareTo(e2.getUnassigned() == null ? 0 : e2.getUnassigned());
+				cmp = (e1.getUnassignedPrimary() == null ? new Integer(0) : e1.getUnassignedPrimary()).compareTo(e2.getUnassignedPrimary() == null ? 0 : e2.getUnassignedPrimary());
 				if (cmp != 0) return - cmp;
 				cmp = (e1.getTotalWaitlist() == null ? new Integer(0) : e1.getTotalWaitlist()).compareTo(e2.getTotalWaitlist() == null ? 0 : e2.getTotalWaitlist());
 				if (cmp != 0) return - cmp;
-				cmp = (e1.getTotalUnassigned() == null ? new Integer(0) : e1.getTotalUnassigned()).compareTo(e2.getTotalUnassigned() == null ? 0 : e2.getTotalUnassigned());
+				cmp = (e1.getTotalUnassignedPrimary() == null ? new Integer(0) : e1.getTotalUnassignedPrimary()).compareTo(e2.getTotalUnassignedPrimary() == null ? 0 : e2.getTotalUnassignedPrimary());
 				if (cmp != 0) return - cmp;
 				break;
 			case RESERVATION:
@@ -2009,6 +2018,12 @@ public class SectioningStatusPage extends Composite {
 				cmp = (e1.getConsentNeeded() == null ? new Integer(0) : new Integer(e1.getConsentNeeded())).compareTo(e2.getConsentNeeded() == null ? 0 : e2.getConsentNeeded());
 				if (cmp != 0) return - cmp;
 				cmp = (e1.getTotalConsentNeeded() == null ? new Integer(0) : new Integer(e1.getTotalConsentNeeded())).compareTo(e2.getTotalConsentNeeded() == null ? 0 : e2.getTotalConsentNeeded());
+				if (cmp != 0) return - cmp;
+				break;
+			case ALTERNATIVES:
+				cmp = (e1.getUnassignedAlternative() == null ? new Integer(0) : e1.getUnassignedAlternative()).compareTo(e2.getUnassignedAlternative() == null ? 0 : e2.getUnassignedAlternative());
+				if (cmp != 0) return - cmp;
+				cmp = (e1.getTotalUnassignedAlternative() == null ? new Integer(0) : e1.getTotalUnassignedAlternative()).compareTo(e2.getTotalUnassignedAlternative() == null ? 0 : e2.getTotalUnassignedAlternative());
 				if (cmp != 0) return - cmp;
 				break;
 			}

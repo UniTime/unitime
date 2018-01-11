@@ -92,8 +92,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			Set<Long> students = new HashSet<Long>();
 			Set<Long> matchingStudents = new HashSet<Long>();
 			
-			int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0;
-			int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0;
+			int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0, gUnasgPrim = 0;
+			int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0, gtUnasgPrim = 0;
 			int gConNeed = 0, gtConNeed = 0;
 			
 			DbFindEnrollmentInfoCourseMatcher m = new DbFindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery);
@@ -123,8 +123,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				e.setConsent(course.getConsentType() == null ? null : course.getConsentType().getAbbv());
 
 				int match = 0;
-				int enrl = 0, wait = 0, res = 0, unasg = 0;
-				int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0;
+				int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0;
+				int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0;
 				int conNeed = 0, tConNeed = 0;
 				
 				for (CourseRequest request: (List<CourseRequest>)helper.getHibSession().createQuery(
@@ -139,6 +139,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 							if (request.getCourseOffering().getConsentType() != null && crm.approval() == null) tConNeed ++;
 						} else if (crm.canAssign()) {
 							tUnasg ++;
+							if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) tUnasgPrim ++;
 							if (request.getCourseDemand().isWaitlist())
 								tWait ++;
 						}
@@ -162,6 +163,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 							if (request.getCourseOffering().getConsentType() != null && crm.approval() == null) conNeed ++;
 						} else if (crm.canAssign()) {
 							unasg ++;
+							if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) unasgPrim ++;
 							if (request.getCourseDemand().isWaitlist())
 								wait ++;
 						}
@@ -173,6 +175,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 						if (request.getCourseOffering().getConsentType() != null && crm.approval() == null) tConNeed ++;
 					} else if (crm.canAssign()) {
 						tUnasg ++;
+						if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) tUnasgPrim ++;
 						if (request.getCourseDemand().isWaitlist())
 							tWait ++;
 					}
@@ -186,12 +189,14 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				gEnrl += enrl;
 				gWait += wait;
 				gUnasg += unasg;
+				gUnasgPrim += unasgPrim;
 				gRes += res;
 				gConNeed += conNeed;
 				
 				gtEnrl += tEnrl;
 				gtWait += tWait;
 				gtUnasg += tUnasg;
+				gtUnasgPrim += tUnasgPrim;
 				gtRes += tRes;
 				gtConNeed += tConNeed;
 				
@@ -232,11 +237,13 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				e.setReservation(res);
 				e.setWaitlist(wait);
 				e.setUnassigned(unasg);
+				e.setUnassignedPrimary(unasgPrim);
 				
 				e.setTotalEnrollment(tEnrl);
 				e.setTotalReservation(tRes);
 				e.setTotalWaitlist(tWait);
 				e.setTotalUnassigned(tUnasg);
+				e.setTotalUnassignedPrimary(tUnasgPrim);
 				
 				e.setConsentNeeded(conNeed);
 				e.setTotalConsentNeeded(tConNeed);
@@ -268,11 +275,13 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			t.setReservation(gRes);
 			t.setWaitlist(gWait);
 			t.setUnassigned(gUnasg);
+			t.setUnassignedPrimary(gUnasgPrim);
 			
 			t.setTotalEnrollment(gtEnrl);
 			t.setTotalReservation(gtRes);
 			t.setTotalWaitlist(gtWait);
 			t.setTotalUnassigned(gtUnasg);
+			t.setTotalUnassignedPrimary(gtUnasgPrim);
 			
 			t.setConsentNeeded(gConNeed);
 			t.setTotalConsentNeeded(gtConNeed);
@@ -390,8 +399,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				}
 				
 				int match = 0;
-				int enrl = 0, wait = 0, res = 0, unasg = 0;
-				int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0;
+				int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0;
+				int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0;
 				int conNeed = 0, tConNeed = 0;
 				int other = 0;
 
@@ -423,10 +432,12 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					if (query().match(m)) {
 						match++;
 						unasg++;
+						if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) unasgPrim ++;
 						if (request.getCourseDemand().isWaitlist())
 							wait++;
 					}
 					tUnasg ++;
+					if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) tUnasgPrim ++;
 					if (request.getCourseDemand().isWaitlist())
 						tWait ++;
 				}
@@ -443,11 +454,13 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				e.setReservation(res);
 				e.setWaitlist(wait);
 				e.setUnassigned(unasg);
+				e.setUnassignedPrimary(unasgPrim);
 				
 				e.setTotalEnrollment(tEnrl);
 				e.setTotalReservation(tRes);
 				e.setTotalWaitlist(tWait);
 				e.setTotalUnassigned(tUnasg);
+				e.setTotalUnassignedPrimary(tUnasgPrim);
 
 				e.setConsentNeeded(conNeed);
 				e.setTotalConsentNeeded(tConNeed);
@@ -658,7 +671,10 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				if (course)
 					for (CourseRequest request: demand.getCourseRequests())
 						if (!request.getClassEnrollments().isEmpty()) { assigned = true; break; }
-				if (assigned && demand.equals(request().getCourseDemand())) return false;
+				if (demand.equals(request().getCourseDemand())) {
+					if (assigned) return false;
+					else assigned = true;
+				}
 				boolean waitlist = (course && demand.isWaitlist());
 				if (demand.isAlternative()) {
 					if (assigned)

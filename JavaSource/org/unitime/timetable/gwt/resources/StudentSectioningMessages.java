@@ -983,6 +983,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Not-Enrolled")
 	String colWaitListed();
 	
+	@DefaultMessage("Alternative")
+	String colUnassignedAlternative();
+	
 	@DefaultMessage("Reservation")
 	String colReserved();
 	

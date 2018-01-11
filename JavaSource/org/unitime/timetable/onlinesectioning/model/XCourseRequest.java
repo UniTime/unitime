@@ -245,6 +245,14 @@ public class XCourseRequest extends XRequest {
     	return false;
     }
     
+    public boolean isPrimary(Long courseId) {
+    	return !iCourseIds.isEmpty() && iCourseIds.get(0).getCourseId().equals(courseId);
+    }
+    
+    public boolean isPrimary(XCourseId courseId) {
+    	return !iCourseIds.isEmpty() && iCourseIds.get(0).equals(courseId);
+    }
+    
     public Integer getEnrolledCourseIndex() {
     	if (iEnrollment == null) return null;
     	for (int i = 0; i < iCourseIds.size(); i++)

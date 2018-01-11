@@ -151,6 +151,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 				MESSAGES.colProjection(),
 				MESSAGES.colEnrollment(),
 				MESSAGES.colWaitListed(),
+				MESSAGES.colUnassignedAlternative().replace("<br>", "\n"),
 				MESSAGES.colReserved(),
 				MESSAGES.colNeedConsent().replace("<br>", "\n"));
 		out.flush();
@@ -167,6 +168,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 							number(null, e.getProjection()),
 							number(e.getEnrollment(), e.getTotalEnrollment()),
 							waitlist(e),
+							number(e.getUnassignedAlternative(), e.getTotalUnassignedAlternative()),
 							number(e.getReservation(), e.getTotalReservation()),
 							number(e.getConsentNeeded(), e.getTotalConsentNeeded())
 							);
@@ -181,6 +183,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 							number(null, e.getProjection()),
 							number(e.getEnrollment(), e.getTotalEnrollment()),
 							waitlist(e),
+							number(e.getUnassignedAlternative(), e.getTotalUnassignedAlternative()),
 							number(e.getReservation(), e.getTotalReservation()),
 							number(e.getConsentNeeded(), e.getTotalConsentNeeded())
 							);
@@ -203,7 +206,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
 				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false, hasDistances = false, hasOverlaps = false,
-				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false;
+				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false;
 		if (students != null)
 			for (ClassAssignmentInterface.StudentInfo e: students) {
 				if (e.getStudent() == null) continue;
@@ -223,6 +226,8 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 				if (e.hasFreeTimeOverlappingMins()) hasFreeTimeOverlaps = true;
 				if (e.hasTotalPrefInstrMethConflict()) hasPrefIMConfs = true;
 				if (e.hasTotalPrefSectionConflict()) hasPrefSecConfs = true;
+				if (e.hasNote()) hasNote = true;
+				if (e.getEmailDate() != null) hasEmailed = true;
 			}
 		if (!hasArea) { out.hideColumn(2); out.hideColumn(3); }
 		if (!hasMajor) out.hideColumn(4);
@@ -240,7 +245,8 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		if (!hasPrefSecConfs) { out.hideColumn(18); }
 		if (!hasRequestedDate) out.hideColumn(19);
 		if (!hasEnrolledDate) out.hideColumn(20);
-		if (!online) { out.hideColumn(21); out.hideColumn(22); }
+		if (!online || !hasNote) out.hideColumn(21);
+		if (!online || !hasEmailed) out.hideColumn(22);
 		
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_REQUEST);
 		
@@ -435,8 +441,8 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 	public String waitlist(EnrollmentInfo e) {
 		return waitlist(e.hasWaitlist() ? e.getWaitlist() : 0,
 			e.hasTotalWaitlist() ? e.getTotalWaitlist() : 0,
-			e.hasUnassigned() ? e.getUnassigned() : 0,
-			e.hasTotalUnassigned() ? e.getTotalUnassigned() : 0,
+			e.hasUnassigned() ? e.getUnassignedPrimary() : 0,
+			e.hasTotalUnassigned() ? e.getTotalUnassignedPrimary() : 0,
 			null);
 	}
 	
