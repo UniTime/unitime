@@ -214,6 +214,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private boolean iUseAmPm = true;
     private boolean iShowClassSuffix = false, iShowConfigName = false;
     private boolean iLoadCommittedReservations = false;
+    private boolean iInstructorDistributionsAcrossDepartments = false;
 
     public static enum CommittedStudentConflictsMode {
     		Ignore,
@@ -267,6 +268,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         iAutoSameStudentsConstraint = getModel().getProperties().getProperty("General.AutoSameStudentsConstraint",iAutoSameStudentsConstraint);
         
         iInstructorFormat = getModel().getProperties().getProperty("General.InstructorFormat", DepartmentalInstructor.sNameFormatLastFist);
+        iInstructorDistributionsAcrossDepartments = getModel().getProperties().getPropertyBoolean("General.ApplyInstructorDistributionsAcrossAllDepartments", iInstructorDistributionsAcrossDepartments);
                 
         try {
         	String studentCourseDemandsClassName = getModel().getProperties().getProperty("Curriculum.StudentCourseDemadsClass", LastLikeStudentCourseDemands.class.getName());
@@ -1894,23 +1896,28 @@ public class TimetableDatabaseLoader extends TimetableLoader {
    			}
     	}
     	if (!loadConstraint) return;
-    	for (Iterator i=instructor.getClasses().iterator();i.hasNext();) {
-    		ClassInstructor classInstructor = (ClassInstructor)i.next();
-    		if (!classInstructor.isLead()) continue;
-   			Class_ clazz = (Class_)classInstructor.getClassInstructing();
-   			Lecture lecture = getLecture(clazz);
-   			if (lecture==null) {
-   				errorAddGroupConstraintNotFound(pref, clazz); continue;
-   			}
-   			gc.addVariable(lecture);
-    	}
-   		addGroupConstraint(gc);
     	InstructorConstraint ic = null;
     	if (instructor.getExternalUniqueId() != null && instructor.getExternalUniqueId().length() > 0) {
     		ic = iInstructors.get(instructor.getExternalUniqueId());
     	} else {
     		ic = iInstructors.get(instructor.getUniqueId());
     	}
+    	if (ic != null && ic.variables().size() > 1 && iInstructorDistributionsAcrossDepartments) {
+    		for (Lecture lecutre: ic.variables())
+    			gc.addVariable(lecutre);
+    	} else {
+        	for (Iterator i=instructor.getClasses().iterator();i.hasNext();) {
+        		ClassInstructor classInstructor = (ClassInstructor)i.next();
+        		if (!classInstructor.isLead()) continue;
+       			Class_ clazz = (Class_)classInstructor.getClassInstructing();
+       			Lecture lecture = getLecture(clazz);
+       			if (lecture==null) {
+       				errorAddGroupConstraintNotFound(pref, clazz); continue;
+       			}
+       			gc.addVariable(lecture);
+        	}
+    	}
+   		addGroupConstraint(gc);
     	if (ic != null) {
     		List<DistributionType> distributions = iInstructorDistributions.get(ic);
     		if (distributions == null) {
