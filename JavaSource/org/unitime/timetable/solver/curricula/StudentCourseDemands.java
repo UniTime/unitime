@@ -214,7 +214,9 @@ public interface StudentCourseDemands {
 			}
 			if (curriculum.getMajors().isEmpty()) {
 				if (!curriculum.isMultipleMajors()) {
-					for (PosMajor major: curriculum.getAcademicArea().getPosMajors())
+					if (curriculum.getAcademicArea().getPosMajors().isEmpty())
+						iMajors.add(new AreaClasfMajor(curriculum.getAcademicArea().getAcademicAreaAbbreviation(), cc.getAcademicClassification().getCode(), ""));
+					else for (PosMajor major: curriculum.getAcademicArea().getPosMajors())
 						iMajors.add(new AreaClasfMajor(curriculum.getAcademicArea().getAcademicAreaAbbreviation(), cc.getAcademicClassification().getCode(), major.getCode()));
 				} else {
 					iMajors.add(new AreaClasfMajor(curriculum.getAcademicArea().getAcademicAreaAbbreviation(), cc.getAcademicClassification().getCode(), ""));
