@@ -196,7 +196,7 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
 					details.setInstructor(new InstructorInfo(ic.getName(), ic.getResourceId()));
 				}
 			}
-			Map<String, String> translations = MSG.courseObjectives();
+			Map<String, String> translations = context.courseObjectives();
 			for (Criterion<Lecture, Placement> criterion: lecture.getModel().getCriteria()) {
 				if (criterion instanceof StudentOverlapConflict) continue;
 				if (criterion instanceof DeltaTimePreference) continue;
@@ -352,7 +352,7 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
         TimetableModel m = (TimetableModel)solver.currentSolution().getModel();
         suggestion.setValue(m.getTotalValue(assignment));
         suggestion.setUnassignedVariables(m.nrUnassignedVariables(assignment));
-        Map<String, String> translations = MSG.courseObjectives();
+        Map<String, String> translations = context.courseObjectives();
         for (Criterion<Lecture, Placement> c: m.getCriteria()) {
         	if (c instanceof StudentOverlapConflict) continue;
         	if (c instanceof DeltaTimePreference) continue;
@@ -460,7 +460,7 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
         	for (ClassAssignmentDetails d: ret.getUnresolvedConflicts())
         		d.setConflict(descriptions.get(d.getClazz().getClassId()));
         
-        Map<String, String> translations = MSG.courseObjectives();
+        Map<String, String> translations = context.courseObjectives();
         for (Criterion<Lecture, Placement> c: model.getCriteria()) {
         	if (c instanceof StudentOverlapConflict) continue;
         	if (c instanceof DeltaTimePreference) continue;

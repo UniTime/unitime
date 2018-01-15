@@ -169,7 +169,7 @@ public class ComputeSuggestionsBackend implements GwtRpcImplementation<ComputeSu
             if (!plac.equals(assignment.getValue(lect))) assignment.assign(0, plac);
         }
         
-        Map<String, String> translations = MSG.courseObjectives();
+        Map<String, String> translations = context.courseObjectives();
         for (Criterion<Lecture, Placement> c: model.getCriteria()) {
         	if (c instanceof StudentOverlapConflict) continue;
         	if (c instanceof DeltaTimePreference) continue;

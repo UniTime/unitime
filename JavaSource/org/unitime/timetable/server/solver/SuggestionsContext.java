@@ -20,7 +20,10 @@
 package org.unitime.timetable.server.solver;
 
 import java.io.Serializable;
+import java.util.Map;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.CPSolverMessages;
 import org.unitime.timetable.util.NameFormat;
 
 /**
@@ -29,7 +32,15 @@ import org.unitime.timetable.util.NameFormat;
 public class SuggestionsContext implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private String iInstructorNameFormat = NameFormat.SHORT.reference();
+	private transient Map<String, String> iCourseObjectives = null; 
 	
 	public String getInstructorNameFormat() { return iInstructorNameFormat; }
 	public void setInstructorNameFormat(String format) { iInstructorNameFormat = format; }
+	
+	public Map<String, String> courseObjectives() {
+		if (iCourseObjectives == null)
+			iCourseObjectives = Localization.create(CPSolverMessages.class).courseObjectives();
+		return iCourseObjectives;
+	}
+	
 }

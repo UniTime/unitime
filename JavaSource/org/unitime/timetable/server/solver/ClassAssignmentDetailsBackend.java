@@ -185,7 +185,7 @@ public class ClassAssignmentDetailsBackend implements GwtRpcImplementation<Class
 					details.setInstructor(new InstructorInfo(ic.getName(), ic.getResourceId()));
 				}
 			}
-			Map<String, String> translations = MSG.courseObjectives();
+			Map<String, String> translations = context.courseObjectives();
 			for (Criterion<Lecture, Placement> criterion: lecture.getModel().getCriteria()) {
 				if (criterion instanceof StudentOverlapConflict) continue;
 				if (criterion instanceof DeltaTimePreference) continue;
