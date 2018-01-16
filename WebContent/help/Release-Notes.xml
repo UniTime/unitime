@@ -28,7 +28,7 @@
 	<version>4.3.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
-		<title>Course Timetabling Solver</title>
+		<title>Course Timetabling</title>
 		<item>
 			<name>GWT</name>
 			<description>
@@ -43,18 +43,6 @@
 				<line>Using unitime.timePattern.firstDayOfWeek application property (0 is Monday, 1 is Tuesday, etc.).</line>
 			</description>
 		</item>
-		<item>
-			<name>Automatic Instructor Constraints</name>
-			<description>
-				<line>Added ability to define distribution preferences that would be applied automatically to all instructors.
-					<line>Using General.AutomaticInstructorConstraints solver parameter, containing a comma separated list of &lt;preference&gt; &lt;distribution&gt;.</line>
-					<line>For example: General.AutomaticInstructorConstraints=Required At Most 5 Hrs, Required 6h Work-Day, Strongly Preferred 5h Work-Day</line>
-				</line>
-				<line>An automatic instructor distribution preference is only applied to instructors that do not have a preference of the same type already.
-					<line>For instance, a Required At Most 5 Hrs will not be applied on an instructor that has a different At Most N Hrs preference already.</line>
-				</line>
-			</description>
-		</item>
 	</category>
 	<category>
 		<title>Online Student Scheduling</title>
@@ -62,9 +50,9 @@
 			<name>Special Registration</name>
 			<description>
 				<line>The following work has been done to support special registration at Purdue.</line>
-				<line>Enable special registration in Scheduling Assistant by adding &amp;mode=specreg parameter in the URL.
-					<line>In this mode, a student is allowed to pick a section that is not available, conflicting with some other section that the student has, or reserved for some other students.</line>
-				</line>
+				<line>Enable special registration in Scheduling Assistant by implementing the custom special registration provider class.</line>
+				<line>In the special registration mode, a student may be allowed to pick a section that is not available, conflicting with some other section that the student has, or reserved for some other students.</line>
+				<line>Added ability to show Submit Special Registration when Submit Schedule button is not available.</line>
 				<line>Added ability to select the current academic session using URL parameters term and campus
 					(these may include external term and campus names, if unitime.custom.ExternalTermProvider is configured).</line>
 			</description>
@@ -73,6 +61,19 @@
 			<name>Scheduling Dashboard</name>
 			<description>
 				<line>Include distance conflicts and time overlaps in the dashboard.</line>
+				<line>Enrollments table: show only primary requests in the Not-Enrolled column; show alternative requests in the (newly added) Alternative column.</line>
+				<line>Students table: added time overlaps, distance conflicts, and satisfaction of section and instructional method preferences.</line>
+				<line>Filter: added ability to filter by the number of credits and time overlaps.</line>
+				<line>Filter: added My Students mode showing only students associated with the current advisor role.</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Advisors</name>
+			<description>
+				<line>Created student advisors table (named advisor) and a many to many relation between advisors and students.</line>
+				<line>Added XML import and export.</line>
+				<line>Added Administration &gt; Academic Sessions &gt; Student Advisors page.</line>
+				<line>Authentication can use the advisor table (to associate the authenticated user with an advisor role).</line>
 			</description>
 		</item>
 	</category>
@@ -132,6 +133,26 @@
 					<line>Solver parameter StudentConflict.WorkDayLimit defines the number of slots of a work-day (default is -1, work-day conflicts are disabled).</line>
 				</line>
   			</description>
+		</item>
+		<item>
+			<name>Course Timetabling: Automatic Instructor Constraints</name>
+			<description>
+				<line>Added ability to define distribution preferences that would be applied automatically to all instructors.
+					<line>Using General.AutomaticInstructorConstraints solver parameter, containing a comma separated list of &lt;preference&gt; &lt;distribution&gt;.</line>
+					<line>For example: General.AutomaticInstructorConstraints=Required At Most 5 Hrs, Required 6h Work-Day, Strongly Preferred 5h Work-Day</line>
+				</line>
+				<line>An automatic instructor distribution preference is only applied to instructors that do not have a preference of the same type already.
+					<line>For instance, a Required At Most 5 Hrs will not be applied on an instructor that has a different At Most N Hrs preference already.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetabling: Instructor Distribution Preferences</name>
+			<description>
+				<line>Added ability to include all classes of an instructor (not just those that are of the same department) in the instructor's distributions.
+					<line>Set solver parameter General.ApplyInstructorDistributionsAcrossAllDepartments to true (defaults to false).</line>
+				</line>
+			</description>
 		</item>
 		<item>
 			<name>Examination Timetabling: Period Preferences</name>
@@ -263,6 +284,15 @@
 				<line>Include campus code (academic initiative) in the Staff table.</line>
 				<line>Manage Instructor List: match campus code when it is set.</line>
 				<line>Add/Edit Instructor Lookup: include campus code in the Department column when the campus does not match the current session.</line>
+			</description>
+		</item>
+		<item>
+			<name>Data Exchange: Course Offering Import</name>
+			<description>
+				<line>When there is action=&quot;create-if-not-exists&quot; on the offering element:
+					<line>If the course already exists, do not update its offered/not-offered status, configurations, and exams (that is, only update courses and their title, schedule book note and credit information).</line>
+					<line>If the course does not exist, create the course with all its content.</line>
+				</line>
 			</description>
 		</item>
 	</category>
