@@ -3331,7 +3331,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	for (int idx=0;idx<iSolverGroupId.length;idx++) {
         		Solution solution = (Solution)solutions.get(iSolverGroupId[idx]);
         		if (solution==null) continue;
-            	setPhase(MSG.phaseCreatingInitialAssignment(idx+1),solution.getAssignments().size());
+            	setPhase(MSG.phaseCreatingInitialAssignmentPhase(idx+1),solution.getAssignments().size());
             	for (Iterator i1=solution.getAssignments().iterator();i1.hasNext();) {
             		Assignment assignment = (Assignment)i1.next();
             		loadAssignment(assignment);

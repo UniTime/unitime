@@ -490,7 +490,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 					LogInfo logInfo = (LogInfo)solution.getInfo("LogInfo");
 					if (logInfo != null)
 						for (Progress.Message m: logInfo.getLog()) {
-							if (m.getLevel() == ProgressLogLevel.STAGE.ordinal() && "Loading input data ...".equals(m.getMessage()) && si.hasLog())
+							if (m.getLevel() == ProgressLogLevel.STAGE.ordinal() && (SOLVERMSG.statusLoadingInputData().equals(m.getMessage()) || "Loading input data ...".equals(m.getMessage())) && si.hasLog())
 								si.getLog().clear();
 							if (m.getLevel() >= ProgressLogLevel.WARN.ordinal())
 								si.addMessage(m.getLevel(), m.getDate(), m.getMessage(), m.getTrace());
@@ -511,7 +511,8 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 	
 	protected void fillSolverLog(SessionContext context, CommonSolverInterface solver, SolverPageRequest request, SolverPageResponse response) {
 		if (solver != null) {
-			List<Progress.Message> log = solver.getProgressLog(ProgressLogLevel.WARN.ordinal(), "Loading input data ...", null);
+			List<Progress.Message> log = solver.getProgressLog(ProgressLogLevel.WARN.ordinal(),
+					request.getType() == SolverType.COURSE ? SOLVERMSG.statusLoadingInputData() : "Loading input data ...", null);
 			if (log != null)
 				for (Progress.Message m: log)
 					response.addMessage(m.getLevel(), m.getDate(), m.getMessage(), m.getTrace());

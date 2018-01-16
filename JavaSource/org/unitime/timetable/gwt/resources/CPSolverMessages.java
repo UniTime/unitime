@@ -434,9 +434,9 @@ public interface CPSolverMessages extends Messages, Constants {
 	String phaseComputingJenrl();
 	
 	@DefaultMessage("Creating initial assignment [{0}] ...")
-	String phaseCreatingInitialAssignment(int phase);
+	String phaseCreatingInitialAssignmentPhase(int phase);
 	
-	@DefaultMessage("Creating initial assignment ...")
+	@DefaultMessage("Creating committed assignment ...")
 	String phaseCreatingCommittedAssignment();
 	
 	@DefaultMessage("Posting automatic spread constraints ...")
