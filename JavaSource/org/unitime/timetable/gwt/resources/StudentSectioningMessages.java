@@ -143,6 +143,12 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Section Pref")
 	String colPrefSectionConfs();
+	
+	@DefaultMessage("Wait-List")
+	String colWaitList();
+	
+	@DefaultMessage("Preferences")
+	String colPreferences();
 
 	/* Academic Session Selector messages
 	 */
@@ -437,6 +443,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Select one of the open special registrations.")
 	String hintGetSpecRegs();
+	
+	@DefaultMessage("<u>C</u>ourse Requests")
+	String tabRequests();
 
 	@DefaultMessage("<u>L</u>ist of Classes")
 	String tabClasses();
@@ -482,6 +491,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Computed schedule is empty.")
 	String noSchedule();
+	
+	@DefaultMessage("There are no course requests.")
+	String emptyRequests();
 	
 	@DefaultMessage("There is no schedule.")
 	String emptySchedule();
@@ -1631,4 +1643,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("My Students")
 	String modeMyStudents();
+	
+	@DefaultMessage("Request is wait-listed.")
+	String descriptionRequestWaitListed();
 }

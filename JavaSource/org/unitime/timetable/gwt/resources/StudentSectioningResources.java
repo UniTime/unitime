@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.resources;
 
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.resources.client.ClientBundle.Source;
 
 /**
  * @author Tomas Muller
@@ -184,4 +185,7 @@ public interface StudentSectioningResources extends ClientBundle {
 	
 	@Source("org/unitime/timetable/gwt/resources/icons/action_check.png")
 	ImageResource specRegCanEnroll();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/action_check.png")
+	ImageResource requestsWaitList();
 }

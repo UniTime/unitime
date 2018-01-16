@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.shared;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -242,6 +243,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private Long iCourseId;
 		private String iCourseName;
+		private String iCourseTitle;
 		private Boolean iReadOnly = null;
 		private Boolean iCanDelete = null;
 		private List<FreeTime> iFreeTime;
@@ -264,6 +266,9 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public String getCourseName() { return iCourseName; }
 		public boolean hasCourseName() { return iCourseName != null && !iCourseName.isEmpty(); }
 		public void setCourseName(String courseName) { iCourseName = courseName; }
+		public String getCourseTitle() { return iCourseTitle; }
+		public boolean hasCourseTitle() { return iCourseTitle != null && !iCourseTitle.isEmpty(); }
+		public void setCourseTitle(String courseTitle) { iCourseTitle = courseTitle; }
 		
 		public List<FreeTime> getFreeTime() { return iFreeTime; }
 		public boolean isFreeTime() { return iFreeTime != null && !iFreeTime.isEmpty(); }
@@ -429,6 +434,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private List<RequestedCourse> iRequestedCourse = null;
 		private Boolean iWaitList = false;
+		private Date iTimeStamp = null;
 		
 		public Request() {}
 		
@@ -485,6 +491,10 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public boolean hasWaitList() { return iWaitList != null; }
 		public boolean isWaitList() { return iWaitList != null && iWaitList.booleanValue(); }
 		public void setWaitList(Boolean waitList) { iWaitList = waitList; }
+		
+		public boolean hasTimeStamp() { return iTimeStamp != null; }
+		public Date getTimeStamp() { return iTimeStamp; }
+		public void setTimeStamp(Date ts) { iTimeStamp = ts; }
 		
 		public String toString() {
 			return (hasRequestedCourse() ? iRequestedCourse.toString() : "-") + (isWaitList() ? " (w)" : "");

@@ -125,6 +125,7 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 						RequestedCourse rc = new RequestedCourse();
 						rc.setCourseId(c.getCourseId());
 						rc.setCourseName(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
+						rc.setCourseTitle(c.getTitle());
 						if (setReadOnly && ((XCourseRequest)cd).getEnrollment() != null && c.getCourseId().equals(((XCourseRequest)cd).getEnrollment().getCourseId()))
 							rc.setReadOnly(true);
 						if (!iSectioning && ((XCourseRequest)cd).getEnrollment() != null && c.getCourseId().equals(((XCourseRequest)cd).getEnrollment().getCourseId())) {
@@ -135,6 +136,7 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 						r.addRequestedCourse(rc);
 					}
 					r.setWaitList(((XCourseRequest)cd).isWaitlist());
+					r.setTimeStamp(((XCourseRequest)cd).getTimeStamp());
 					if (r.hasRequestedCourse()) {
 						if (cd.isAlternative())
 							request.getAlternatives().add(r);

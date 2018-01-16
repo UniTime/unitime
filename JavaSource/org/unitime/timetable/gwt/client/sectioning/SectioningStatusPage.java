@@ -253,8 +253,10 @@ public class SectioningStatusPage extends Composite {
 					event.preventDefault();
 				}
 				if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='l' || event.getNativeKeyCode()=='L')) {
-					iTabPanel.selectTab(2);
-					event.preventDefault();
+					if (iTabPanel.getTabCount() >= 3) {
+						iTabPanel.selectTab(2);
+						event.preventDefault();
+					}
 				}
 			}
 		});

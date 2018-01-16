@@ -38,7 +38,6 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
-import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasCellAlignment;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasColSpan;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasStyleName;
@@ -71,11 +70,15 @@ import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
@@ -109,6 +112,7 @@ public class EnrollmentTable extends Composite {
 	private UniTimeTable<ClassAssignmentInterface.Enrollment> iEnrollments;
 	private UniTimeHeaderPanel iHeader;
 	private Operation iApprove, iReject;
+	private StudentSchedule iStudentSchedule;
 	
 	private boolean iOnline;
 	private boolean iShowFilter = false;
@@ -120,6 +124,7 @@ public class EnrollmentTable extends Composite {
 	public EnrollmentTable(final boolean showHeader, boolean online, boolean showFilter) {
 		iOnline = online;
 		iEnrollmentPanel = new SimpleForm();
+		iStudentSchedule = new StudentSchedule(online);
 		iShowFilter = showFilter;
 		
 		iHeader = new UniTimeHeaderPanel(showHeader ? MESSAGES.enrollmentsTable() : "&nbsp;");
@@ -212,136 +217,30 @@ public class EnrollmentTable extends Composite {
 			@Override
 			public void onSuccess(ClassAssignmentInterface result) {
 				callback.onSuccess(true);
-				WebTable assignments = new WebTable();
-				assignments.setHeader(new WebTable.Row(
-						new WebTable.Cell(MESSAGES.colSubject(), 1, "75px"),
-						new WebTable.Cell(MESSAGES.colCourse(), 1, "75px"),
-						new WebTable.Cell(MESSAGES.colSubpart(), 1, "50px"),
-						new WebTable.Cell(MESSAGES.colClass(), 1, "75px"),
-						new WebTable.Cell(MESSAGES.colLimit(), 1, "60px"),
-						new WebTable.Cell(MESSAGES.colDays(), 1, "50px"),
-						new WebTable.Cell(MESSAGES.colStart(), 1, "75px"),
-						new WebTable.Cell(MESSAGES.colEnd(), 1, "75px"),
-						new WebTable.Cell(MESSAGES.colDate(), 1, "75px"),
-						new WebTable.Cell(MESSAGES.colRoom(), 1, "100px"),
-						new WebTable.Cell(MESSAGES.colInstructor(), 1, "100px"),
-						new WebTable.Cell(MESSAGES.colParent(), 1, "75px"),
-						new WebTable.Cell(MESSAGES.colNoteIcon(), 1, "10px"),
-						new WebTable.Cell(MESSAGES.colCredit(), 1, "75px"),
-						new WebTable.Cell(MESSAGES.colEnrollmentTimeStamp(), 1, "75px")
-					));
-				assignments.setEmptyMessage(MESSAGES.emptySchedule());
-				
-				ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
-				float totalCredit = 0f;
-				for (ClassAssignmentInterface.CourseAssignment course: result.getCourseAssignments()) {
-					if (course.isAssigned()) {
-						boolean firstClazz = true;
-						for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
-							String style = (firstClazz && !rows.isEmpty() ? "top-border-dashed": "");
-							if (clazz.isTeachingAssignment()) style += (clazz.isInstructing() ? " text-steelblue" : " text-steelblue-italic");
-							final WebTable.Row row = new WebTable.Row(
-									new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject() : ""),
-									new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr() : ""),
-									new WebTable.Cell(clazz.getSubpart()),
-									new WebTable.Cell(clazz.getSection()),
-									new WebTable.Cell(clazz.getLimitString()),
-									new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())),
-									new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())),
-									new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
-									new WebTable.Cell(clazz.getDatePattern()),
-									(clazz.hasDistanceConflict() ? new WebTable.RoomCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(), ", ") : new WebTable.RoomCell(clazz.getRooms(), ", ")),
-									new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
-									new WebTable.Cell(clazz.getParentSection()),
-									clazz.hasNote() ? new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), "") : new WebTable.Cell(""),
-									new WebTable.AbbvTextCell(clazz.getCredit()),
-									new WebTable.Cell(clazz.getEnrolledDate() == null ? "" : sDF.format(clazz.getEnrolledDate())));
-							if (clazz.isTeachingAssignment())
-								row.setStyleName("teaching-assignment");
-							rows.add(row);
-							for (WebTable.Cell cell: row.getCells())
-								cell.setStyleName(style);
-							firstClazz = false;
-							if (!clazz.isTeachingAssignment())
-								totalCredit += clazz.guessCreditCount();
-						}
-					} else {
-						String style = "text-red" + (!rows.isEmpty() ? " top-border-dashed": "");
-						WebTable.Row row = null;
-						String unassignedMessage = MESSAGES.courseNotAssigned();
-						if (course.hasEnrollmentMessage())
-							unassignedMessage = course.getEnrollmentMessage();
-						else if (course.getOverlaps()!=null && !course.getOverlaps().isEmpty()) {
-							unassignedMessage = "";
-							for (Iterator<String> i = course.getOverlaps().iterator(); i.hasNext();) {
-								String x = i.next();
-								if (unassignedMessage.isEmpty())
-									unassignedMessage += MESSAGES.conflictWithFirst(x);
-								else if (!i.hasNext())
-									unassignedMessage += MESSAGES.conflictWithLast(x);
-								else
-									unassignedMessage += MESSAGES.conflictWithMiddle(x);
-								if (i.hasNext()) unassignedMessage += ", ";
-							}
-							if (course.getInstead() != null)
-								unassignedMessage += MESSAGES.conflictAssignedAlternative(course.getInstead());
-							unassignedMessage += ".";
-						} else if (course.isNotAvailable()) {
-							if (course.isFull())
-								unassignedMessage = MESSAGES.courseIsFull();
-							else
-								unassignedMessage = MESSAGES.classNotAvailable();
-						} else if (course.isLocked()) {
-							unassignedMessage = MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr());
-						}
-						for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
-							row = new WebTable.Row(
-									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
-									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()),
-									new WebTable.Cell(clazz.getSubpart()),
-									new WebTable.Cell(clazz.getSection()),
-									new WebTable.Cell(clazz.getLimitString()),
-									new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())),
-									new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())),
-									new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
-									new WebTable.Cell(clazz.getDatePattern()),
-									new WebTable.Cell(unassignedMessage, 3, null),
-									clazz.getNote() == null ? new WebTable.Cell("") : new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), ""),
-									new WebTable.AbbvTextCell(clazz.getCredit()),
-									new WebTable.Cell(clazz.getEnrolledDate() != null ? sDF.format(clazz.getEnrolledDate()) : course.getRequestedDate() == null ? "" : sDF.format(course.getRequestedDate())));
-							break;
-						}
-						if (row == null) {
-							row = new WebTable.Row(
-									new WebTable.Cell(course.getSubject()),
-									new WebTable.Cell(course.getCourseNbr()),
-									new WebTable.Cell(unassignedMessage, 12, null),
-									new WebTable.Cell(course.getRequestedDate() == null ? "" : sDF.format(course.getRequestedDate())));
-						}
-						for (WebTable.Cell cell: row.getCells())
-							cell.setStyleName(style);
-						row.getCell(row.getNrCells() - 2).setStyleName("text-gray" + (!rows.isEmpty() ? " top-border-dashed": ""));
-						rows.add(row);
-					}
-				}
-				WebTable.Row[] rowArray = new WebTable.Row[rows.size()];
-				int idx = 0;
-				for (WebTable.Row row: rows) rowArray[idx++] = row;
-				assignments.setData(rowArray);
-				if (!iOnline) {
-					for (int row = 0; row < assignments.getTable().getRowCount(); row++)
-						assignments.getTable().getFlexCellFormatter().setVisible(row, assignments.getTable().getCellCount(row) - 2, false);
-				}
+				iStudentSchedule.setValue(result);
 				SimpleForm form = new SimpleForm();
-				form.addRow(assignments);
+				form.addRow(iStudentSchedule);
 				final UniTimeHeaderPanel buttons = new UniTimeHeaderPanel();
 				form.addBottomRow(buttons);
-				final UniTimeDialogBox dialog = new UniTimeDialogBox(true, false);
+				final UniTimeDialogBox dialog = new UniTimeDialogBox(true, false) {
+					@Override
+					protected void onPreviewNativeEvent(NativePreviewEvent event) {
+						super.onPreviewNativeEvent(event);
+						iStudentSchedule.checkAccessKeys(event);
+					}
+				};
+				iStudentSchedule.setSelectionHandler(new SelectionHandler<Integer>() {
+					@Override
+					public void onSelection(SelectionEvent<Integer> event) {
+						dialog.center();
+					}
+				});
 				dialog.setWidget(form);
 				dialog.setText(MESSAGES.dialogEnrollments(student.getName()));
 				dialog.setEscapeToHide(true);
-				if (totalCredit > 0f)
-					buttons.setMessage(MESSAGES.totalCredit(totalCredit));
+				dialog.sinkEvents(Event.ONKEYUP);
+				if (iStudentSchedule.getTotalCredit() > 0f)
+					buttons.setMessage(MESSAGES.totalCredit(iStudentSchedule.getTotalCredit()));
 				buttons.addButton("registration", MESSAGES.buttonRegistration(), new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent e) {
@@ -542,17 +441,28 @@ public class EnrollmentTable extends Composite {
 			}
 			@Override
 			public void onSuccess(String result) {
-				widget.lastRequest(student.getSessionId(), student.getId(), true, true);
-				final UniTimeDialogBox d = new UniTimeDialogBox(true, false);
-				d.setWidget(widget);
-				d.setText(MESSAGES.dialogRegistration(student.getName()));
-				d.setEscapeToHide(true);
-				callback.onSuccess(true);
-				d.center();
-				widget.addResizeHandler(new ResizeHandler() {
+				widget.checkEligibility(student.getSessionId(), student.getId(), true, new AsyncCallback<EligibilityCheck>() {
+
 					@Override
-					public void onResize(ResizeEvent event) {
+					public void onFailure(Throwable caught) {
+						callback.onFailure(caught);
+					}
+
+					@Override
+					public void onSuccess(EligibilityCheck result) {
+						//widget.lastRequest(student.getSessionId(), student.getId(), true, true);
+						final UniTimeDialogBox d = new UniTimeDialogBox(true, false);
+						d.setWidget(widget);
+						d.setText(MESSAGES.dialogRegistration(student.getName()));
+						d.setEscapeToHide(true);
+						callback.onSuccess(true);
 						d.center();
+						widget.addResizeHandler(new ResizeHandler() {
+							@Override
+							public void onResize(ResizeEvent event) {
+								d.center();
+							}
+						});
 					}
 				});
 			}

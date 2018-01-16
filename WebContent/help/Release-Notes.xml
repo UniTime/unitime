@@ -65,6 +65,9 @@
 				<line>Students table: added time overlaps, distance conflicts, and satisfaction of section and instructional method preferences.</line>
 				<line>Filter: added ability to filter by the number of credits and time overlaps.</line>
 				<line>Filter: added My Students mode showing only students associated with the current advisor role.</line>
+				<line>When a student is clicked, also include course requests and time grid in the view (Classes for student dialog).
+					<line>There are now three tabs: Course Requests, List of Classes, and Time Grid.</line>
+				</line>
 			</description>
 		</item>
 		<item>

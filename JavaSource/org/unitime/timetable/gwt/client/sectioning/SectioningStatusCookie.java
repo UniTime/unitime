@@ -31,6 +31,7 @@ public class SectioningStatusCookie {
 	private int iOnlineTab = 0, iBashTab = 0;
 	private String iOnlineQuery = "", iBashQuery = "";
 	private int[] iSortBy = new int[] {0, 0, 0, 0, 0, 0};
+	private int iStudentTab = 1;
 	
 	private SectioningStatusCookie() {
 		try {
@@ -44,6 +45,7 @@ public class SectioningStatusCookie {
 				iBashQuery = params[idx++];
 				for (int i = 0; i < iSortBy.length; i++)
 					iSortBy[i] = Integer.parseInt(params[idx++]);
+				iStudentTab = Integer.parseInt(params[idx++]);
 			}
 		} catch (Exception e) {
 		}
@@ -59,6 +61,7 @@ public class SectioningStatusCookie {
 		String cookie = iOnlineTab + "|" + iOnlineQuery + "|" + iBashTab + "|" + iBashQuery;
 		for (int i = 0; i < iSortBy.length; i++)
 			cookie += "|" + iSortBy[i];
+		cookie += "|" + iStudentTab;
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:StudentStatus", cookie, expires);
 	}
@@ -90,4 +93,8 @@ public class SectioningStatusCookie {
 		iSortBy[online ? tab : 3 + tab] = ord;
 		save();
 	}
+	
+	public int getStudentTab() { return iStudentTab; }
+	
+	public void setStudentTab(int tab) { iStudentTab = tab; save(); }
 }

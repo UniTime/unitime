@@ -567,6 +567,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 			iCourse = new RequestedCourse();
 			iCourse.setCourseId(course.getCourseId());
 			iCourse.setCourseName(!course.hasUniqueName() || iShowCourses ? course.getCourseNameWithTitle() : course.getCourseName());
+			iCourse.setCourseTitle(course.getTitle());
 			if (getText().equals(course.getCourseName()) || getText().startsWith(course.getCourseName() + " ") || 
 				getText().equals(course.getCourseNameWithTitle()) || getText().startsWith(course.getCourseNameWithTitle() + " ")) {
 				for (Chip chip: iFilter.getChips("section"))

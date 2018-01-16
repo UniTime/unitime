@@ -182,6 +182,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					RequestedCourse rc = new RequestedCourse();
 					rc.setCourseId(cid.getCourseId());
 					rc.setCourseName(cid.getCourseName());
+					rc.setCourseTitle(cid.getTitle());
 					r.addRequestedCourse(rc);
 					request.getCourses().add(r);
 					hasSelection = true;
@@ -204,6 +205,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					RequestedCourse rc = new RequestedCourse();
 					rc.setCourseId(cid.getCourseId());
 					rc.setCourseName(cid.getCourseName());
+					rc.setCourseTitle(cid.getTitle());
 					r.addRequestedCourse(rc);
 					b.addCourse(toEntity(course, cid));
 				}
@@ -228,6 +230,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				RequestedCourse rc = new RequestedCourse();
 				rc.setCourseId(cid.getCourseId());
 				rc.setCourseName(cid.getCourseName());
+				rc.setCourseTitle(cid.getTitle());
 				r.addRequestedCourse(rc);
 				request.getCourses().add(r);
 			}

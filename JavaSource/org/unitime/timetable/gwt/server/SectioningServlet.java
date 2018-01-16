@@ -1244,7 +1244,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	
 	public ClassAssignmentInterface getEnrollment(boolean online, Long studentId) throws SectioningException, PageAccessException {
 		try {
-			if (online) { 
+			if (online) {
 				getSessionContext().checkPermission(studentId, "Student", Right.StudentEnrollments);
 				org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 				try {
@@ -1415,9 +1415,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								clazz.setSubject(request.getCourseOffering().getSubjectAreaAbbv());
 							}
 						}
+						
+						ret.setRequest(getRequest(student));
+						
 						return ret;
 					} else {
-						return server.execute(server.createAction(GetAssignment.class).forStudent(studentId), currentUser());
+						return server.execute(server.createAction(GetAssignment.class).forStudent(studentId).withRequest(true), currentUser());
 					}
 				} finally {
 					hibSession.close();
@@ -1427,7 +1430,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 
-				return server.execute(server.createAction(GetAssignment.class).forStudent(studentId), currentUser());
+				return server.execute(server.createAction(GetAssignment.class).forStudent(studentId).withRequest(true), currentUser());
 			}
 		} catch (PageAccessException e) {
 			throw e;
@@ -1831,6 +1834,100 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 		}
 	}
+	
+	protected CourseRequestInterface getRequest(Student student) {
+		CourseRequestInterface request = new CourseRequestInterface();
+		request.setAcademicSessionId(student.getSession().getUniqueId());
+		request.setStudentId(student.getUniqueId());
+		request.setSaved(true);
+		Set<Long> courseIds = new HashSet<Long>();
+		if (!student.getCourseDemands().isEmpty()) {
+			TreeSet<CourseDemand> demands = new TreeSet<CourseDemand>(new Comparator<CourseDemand>() {
+				public int compare(CourseDemand d1, CourseDemand d2) {
+					if (d1.isAlternative() && !d2.isAlternative()) return 1;
+					if (!d1.isAlternative() && d2.isAlternative()) return -1;
+					int cmp = d1.getPriority().compareTo(d2.getPriority());
+					if (cmp != 0) return cmp;
+					return d1.getUniqueId().compareTo(d2.getUniqueId());
+				}
+			});
+			demands.addAll(student.getCourseDemands());
+			CourseRequestInterface.Request lastRequest = null;
+			int lastRequestPriority = -1;
+			for (CourseDemand cd: demands) {
+				CourseRequestInterface.Request r = null;
+				if (cd.getFreeTime() != null) {
+					CourseRequestInterface.FreeTime ft = new CourseRequestInterface.FreeTime();
+					ft.setStart(cd.getFreeTime().getStartSlot());
+					ft.setLength(cd.getFreeTime().getLength());
+					for (DayCode day : DayCode.toDayCodes(cd.getFreeTime().getDayCode()))
+						ft.addDay(day.getIndex());
+					if (lastRequest != null && lastRequestPriority == cd.getPriority() && lastRequest.hasRequestedCourse() && lastRequest.getRequestedCourse(0).isFreeTime()) {
+						lastRequest.getRequestedCourse(0).addFreeTime(ft);
+					} else {
+						r = new CourseRequestInterface.Request();
+						RequestedCourse rc = new RequestedCourse();
+						rc.addFreeTime(ft);
+						r.addRequestedCourse(rc);
+						if (cd.isAlternative())
+							request.getAlternatives().add(r);
+						else
+							request.getCourses().add(r);
+						lastRequest = r;
+						lastRequestPriority = cd.getPriority();
+					}
+				} else if (!cd.getCourseRequests().isEmpty()) {
+					r = new CourseRequestInterface.Request();
+					for (CourseRequest course: new TreeSet<CourseRequest>(cd.getCourseRequests())) {
+						courseIds.add(course.getCourseOffering().getUniqueId());
+						RequestedCourse rc = new RequestedCourse();
+						rc.setCourseId(course.getCourseOffering().getUniqueId());
+						rc.setCourseName(course.getCourseOffering().getSubjectAreaAbbv() + " " + course.getCourseOffering().getCourseNbr() + (!CONSTANTS.showCourseTitle() ? "" : " - " + course.getCourseOffering().getTitle()));
+						rc.setCourseTitle(course.getCourseOffering().getTitle());
+						boolean hasEnrollments = !course.getClassEnrollments().isEmpty(); 
+						rc.setReadOnly(hasEnrollments);
+						rc.setCanDelete(!hasEnrollments);
+						CourseRequestOption pref = course.getCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE);
+						if (pref != null) {
+							try {
+								OnlineSectioningHelper.fillPreferencesIn(rc, pref.getOption());
+							} catch (InvalidProtocolBufferException e) {}
+						}
+						r.addRequestedCourse(rc);
+					}
+					if (r.hasRequestedCourse()) {
+						if (cd.isAlternative())
+							request.getAlternatives().add(r);
+						else
+							request.getCourses().add(r);
+					}
+					r.setWaitList(cd.getWaitlist());
+					r.setTimeStamp(cd.getTimestamp());
+					lastRequest = r;
+					lastRequestPriority = cd.getPriority();
+				}
+			}
+		}
+		if (!student.getClassEnrollments().isEmpty()) {
+			TreeSet<CourseOffering> courses = new TreeSet<CourseOffering>();
+			for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
+				StudentClassEnrollment enrl = i.next();
+				if (courseIds.contains(enrl.getCourseOffering().getUniqueId())) continue;
+				courses.add(enrl.getCourseOffering());
+			}
+			for (CourseOffering c: courses) {
+				CourseRequestInterface.Request r = new CourseRequestInterface.Request();
+				RequestedCourse rc = new RequestedCourse();
+				rc.setCourseId(c.getUniqueId());
+				rc.setCourseName(c.getSubjectAreaAbbv() + " " + c.getCourseNbr() + (!CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
+				rc.setCourseTitle(c.getTitle());
+				r.addRequestedCourse(rc);
+				request.getCourses().add(r);
+			}
+		}
+		
+		return request;
+	}
 
 	@Override
 	public CourseRequestInterface savedRequest(boolean online, boolean sectioning, Long sessionId, Long studentId) throws SectioningException, PageAccessException {
@@ -1857,97 +1954,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			try {
 				Student student = StudentDAO.getInstance().get(studentId, hibSession);
 				if (student == null) throw new SectioningException(MSG.exceptionBadStudentId());
-				CourseRequestInterface request = new CourseRequestInterface();
-				request.setAcademicSessionId(sessionId);
-				request.setStudentId(studentId);
-				request.setSaved(true);
-				Set<Long> courseIds = new HashSet<Long>();
-				if (!student.getCourseDemands().isEmpty()) {
-					TreeSet<CourseDemand> demands = new TreeSet<CourseDemand>(new Comparator<CourseDemand>() {
-						public int compare(CourseDemand d1, CourseDemand d2) {
-							if (d1.isAlternative() && !d2.isAlternative()) return 1;
-							if (!d1.isAlternative() && d2.isAlternative()) return -1;
-							int cmp = d1.getPriority().compareTo(d2.getPriority());
-							if (cmp != 0) return cmp;
-							return d1.getUniqueId().compareTo(d2.getUniqueId());
-						}
-					});
-					demands.addAll(student.getCourseDemands());
-					CourseRequestInterface.Request lastRequest = null;
-					int lastRequestPriority = -1;
-					for (CourseDemand cd: demands) {
-						CourseRequestInterface.Request r = null;
-						if (cd.getFreeTime() != null) {
-							CourseRequestInterface.FreeTime ft = new CourseRequestInterface.FreeTime();
-							ft.setStart(cd.getFreeTime().getStartSlot());
-							ft.setLength(cd.getFreeTime().getLength());
-							for (DayCode day : DayCode.toDayCodes(cd.getFreeTime().getDayCode()))
-								ft.addDay(day.getIndex());
-							if (lastRequest != null && lastRequestPriority == cd.getPriority() && lastRequest.hasRequestedCourse() && lastRequest.getRequestedCourse(0).isFreeTime()) {
-								lastRequest.getRequestedCourse(0).addFreeTime(ft);
-							} else {
-								r = new CourseRequestInterface.Request();
-								RequestedCourse rc = new RequestedCourse();
-								rc.addFreeTime(ft);
-								r.addRequestedCourse(rc);
-								if (cd.isAlternative())
-									request.getAlternatives().add(r);
-								else
-									request.getCourses().add(r);
-								lastRequest = r;
-								lastRequestPriority = cd.getPriority();
-							}
-						} else if (!cd.getCourseRequests().isEmpty()) {
-							r = new CourseRequestInterface.Request();
-							for (CourseRequest course: new TreeSet<CourseRequest>(cd.getCourseRequests())) {
-								courseIds.add(course.getCourseOffering().getUniqueId());
-								XCourse c = (server == null ? new XCourse(course.getCourseOffering()) : server.getCourse(course.getCourseOffering().getUniqueId()));
-								if (c == null) continue;
-								RequestedCourse rc = new RequestedCourse();
-								rc.setCourseId(c.getCourseId());
-								rc.setCourseName(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
-								boolean hasEnrollments = !course.getClassEnrollments().isEmpty(); 
-								rc.setReadOnly(hasEnrollments);
-								rc.setCanDelete(!hasEnrollments);
-								CourseRequestOption pref = course.getCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE);
-								if (pref != null) {
-									try {
-										OnlineSectioningHelper.fillPreferencesIn(rc, pref.getOption());
-									} catch (InvalidProtocolBufferException e) {}
-								}
-								r.addRequestedCourse(rc);
-							}
-							if (r.hasRequestedCourse()) {
-								if (cd.isAlternative())
-									request.getAlternatives().add(r);
-								else
-									request.getCourses().add(r);
-							}
-							r.setWaitList(cd.getWaitlist());
-							lastRequest = r;
-							lastRequestPriority = cd.getPriority();
-						}
-					}
-				}
-				if (!student.getClassEnrollments().isEmpty()) {
-					TreeSet<XCourse> courses = new TreeSet<XCourse>();
-					for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
-						StudentClassEnrollment enrl = i.next();
-						if (courseIds.contains(enrl.getCourseOffering().getUniqueId())) continue;
-						XCourse c = (server == null ? new XCourse(enrl.getCourseOffering()) : server.getCourse(enrl.getCourseOffering().getUniqueId()));
-						if (c != null) courses.add(c);
-					}
-					for (XCourse c: courses) {
-						CourseRequestInterface.Request r = new CourseRequestInterface.Request();
-						RequestedCourse rc = new RequestedCourse();
-						rc.setCourseId(c.getCourseId());
-						rc.setCourseName(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
-						r.addRequestedCourse(rc);
-						request.getCourses().add(r);
-					}
-				}
-				
-				return request;
+				return getRequest(student);
 			} catch (PageAccessException e) {
 				throw e;
 			} catch (SectioningException e) {
