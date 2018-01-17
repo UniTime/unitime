@@ -48,10 +48,16 @@ public interface SessionContext {
     public void checkPermissionAnyAuthority(Right right, Qualifiable... filter);
     public void checkPermissionAnyAuthority(Serializable targetId, String targetType, Right right, Qualifiable... filter);
     public void checkPermissionAnyAuthority(Object targetObject, Right right, Qualifiable... filter);
+    public void checkPermissionAnySession(Right right, Qualifiable... filter);
+    public void checkPermissionAnySession(Serializable targetId, String targetType, Right right, Qualifiable... filter);
+    public void checkPermissionAnySession(Object targetObject, Right right, Qualifiable... filter);
     public boolean hasPermission(Right right);
     public boolean hasPermission(Serializable targetId, String targetType, Right right);
     public boolean hasPermission(Object targetObject, Right right);
     public boolean hasPermissionAnyAuthority(Right right, Qualifiable... filter);
     public boolean hasPermissionAnyAuthority(Serializable targetId, String targetType, Right right, Qualifiable... filter);
     public boolean hasPermissionAnyAuthority(Object targetObject, Right right, Qualifiable... filter);
+    public boolean hasPermissionAnySession(Right right, Qualifiable... filter);
+    public boolean hasPermissionAnySession(Serializable targetId, String targetType, Right right, Qualifiable... filter);
+    public boolean hasPermissionAnySession(Object targetObject, Right right, Qualifiable... filter);
 }

@@ -240,7 +240,34 @@ public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpc
 		public void checkPermissionAnyAuthority(Object targetObject, Right right, Qualifiable... filter) {
 			iContext.checkPermissionAnyAuthority(targetObject, right, filter == null || filter.length == 0 ? iFilter : filter);
 		}
-		
+
+		@Override
+		public boolean hasPermissionAnySession(Right right, Qualifiable... filter) {
+			return iContext.hasPermissionAnySession(right, filter == null || filter.length == 0 ? iFilter : filter);
+		}
+		@Override
+		public boolean hasPermissionAnySession(Serializable targetId, String targetType, Right right, Qualifiable... filter) {
+			return iContext.hasPermissionAnySession(targetId, targetType, right, filter == null || filter.length == 0 ? iFilter : filter);
+		}
+		@Override
+		public boolean hasPermissionAnySession(Object targetObject, Right right, Qualifiable... filter) {
+			return iContext.hasPermissionAnySession(targetObject, right, filter == null || filter.length == 0 ? iFilter : filter);
+		}
+
+		@Override
+		public void checkPermissionAnySession(Right right, Qualifiable... filter) {
+			iContext.checkPermissionAnySession(right, filter == null || filter.length == 0 ? iFilter : filter);
+		}
+
+		@Override
+		public void checkPermissionAnySession(Serializable targetId, String targetType, Right right, Qualifiable... filter) {
+			iContext.checkPermissionAnySession(targetId, targetType, right, filter == null || filter.length == 0 ? iFilter : filter);
+		}
+
+		@Override
+		public void checkPermissionAnySession(Object targetObject, Right right, Qualifiable... filter) {
+			iContext.checkPermissionAnySession(targetObject, right, filter == null || filter.length == 0 ? iFilter : filter);
+		}
 	}
 
 }

@@ -140,4 +140,34 @@ public class GwtRpcHelper implements SessionContext {
 	public boolean hasPermissionAnyAuthority(Object targetObject, Right right, Qualifiable... filter) {
 		return iCheck.hasPermissionAnyAuthority(getUser(), targetObject, right, filter);
 	}
+	
+	@Override
+	public void checkPermissionAnySession(Right right, Qualifiable... filter) {
+		iCheck.checkPermissionAnySession(getUser(), null, null, right, filter);
+	}
+
+	@Override
+	public void checkPermissionAnySession(Serializable targetId, String targetType, Right right, Qualifiable... filter) {
+		iCheck.checkPermissionAnySession(getUser(), targetId, targetType, right, filter);
+	}
+
+	@Override
+	public void checkPermissionAnySession(Object targetObject, Right right, Qualifiable... filter) {
+		iCheck.checkPermissionAnySession(getUser(), targetObject, right, filter);
+	}
+	
+	@Override
+	public boolean hasPermissionAnySession(Right right, Qualifiable... filter) {
+		return iCheck.hasPermissionAnySession(getUser(), null, null, right, filter);
+	}
+
+	@Override
+	public boolean hasPermissionAnySession(Serializable targetId, String targetType, Right right, Qualifiable... filter) {
+		return iCheck.hasPermissionAnySession(getUser(), targetId, targetType, right, filter);
+	}
+
+	@Override
+	public boolean hasPermissionAnySession(Object targetObject, Right right, Qualifiable... filter) {
+		return iCheck.hasPermissionAnySession(getUser(), targetObject, right, filter);
+	}
 }

@@ -171,6 +171,36 @@ public class HttpSessionContext implements SessionContext {
 		return unitimePermissionCheck.hasPermissionAnyAuthority(getUser(), targetObject, right, filter);
 	}
 	
+	@Override
+	public void checkPermissionAnySession(Right right, Qualifiable... filter) {
+		unitimePermissionCheck.checkPermissionAnySession(getUser(), null, null, right, filter);
+	}
+
+	@Override
+	public void checkPermissionAnySession(Serializable targetId, String targetType, Right right, Qualifiable... filter) {
+		unitimePermissionCheck.checkPermissionAnySession(getUser(), targetId, targetType, right, filter);
+	}
+
+	@Override
+	public void checkPermissionAnySession(Object targetObject, Right right, Qualifiable... filter) {
+		unitimePermissionCheck.checkPermissionAnySession(getUser(), targetObject, right, filter);
+	}
+	
+	@Override
+	public boolean hasPermissionAnySession(Right right, Qualifiable... filter) {
+		return unitimePermissionCheck.hasPermissionAnySession(getUser(), null, null, right, filter);
+	}
+
+	@Override
+	public boolean hasPermissionAnySession(Serializable targetId, String targetType, Right right, Qualifiable... filter) {
+		return unitimePermissionCheck.hasPermissionAnySession(getUser(), targetId, targetType, right, filter);
+	}
+
+	@Override
+	public boolean hasPermissionAnySession(Object targetObject, Right right, Qualifiable... filter) {
+		return unitimePermissionCheck.hasPermissionAnySession(getUser(), targetObject, right, filter);
+	}
+	
 	public static SessionContext getSessionContext(ServletContext context) {
 		return (SessionContext) WebApplicationContextUtils.getWebApplicationContext(context).getBean("sessionContext");
 	}
