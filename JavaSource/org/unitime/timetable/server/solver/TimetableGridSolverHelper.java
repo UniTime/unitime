@@ -645,13 +645,41 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 			cells.add(cell);
 		}
 		if (id2cells.isEmpty()) return;
-		for (Object[] o: (List<Object[]>)Class_DAO.getInstance().getSession().createQuery(
-				"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
-				"co.isControl = false and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr").setParameterList("classIds", id2cells.keySet(), LongType.INSTANCE).setCacheable(true).list()) {
-			Class_ clazz = (Class_)o[0];
-			CourseOffering course = (CourseOffering)o[1];
-			for (TimetableGridCell cell: id2cells.get(clazz.getUniqueId()))
-				cell.addName(clazz.getClassLabel(course, context.isShowClassSuffix(), context.isShowConfigName()));
+		if (id2cells.size() <= 1000) {
+			for (Object[] o: (List<Object[]>)Class_DAO.getInstance().getSession().createQuery(
+					"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
+					"co.isControl = false and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr").setParameterList("classIds", id2cells.keySet(), LongType.INSTANCE).setCacheable(true).list()) {
+				Class_ clazz = (Class_)o[0];
+				CourseOffering course = (CourseOffering)o[1];
+				for (TimetableGridCell cell: id2cells.get(clazz.getUniqueId()))
+					cell.addName(clazz.getClassLabel(course, context.isShowClassSuffix(), context.isShowConfigName()));
+			}
+		} else {
+			List<Long> ids = new ArrayList<Long>(1000);
+			for (Long id: id2cells.keySet()) {
+				ids.add(id);
+				if (ids.size() == 1000) {
+					for (Object[] o: (List<Object[]>)Class_DAO.getInstance().getSession().createQuery(
+							"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
+							"co.isControl = false and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr").setParameterList("classIds", ids, LongType.INSTANCE).setCacheable(true).list()) {
+						Class_ clazz = (Class_)o[0];
+						CourseOffering course = (CourseOffering)o[1];
+						for (TimetableGridCell cell: id2cells.get(clazz.getUniqueId()))
+							cell.addName(clazz.getClassLabel(course, context.isShowClassSuffix(), context.isShowConfigName()));
+					}
+					ids.clear();
+				}
+			}
+			if (!ids.isEmpty()) {
+				for (Object[] o: (List<Object[]>)Class_DAO.getInstance().getSession().createQuery(
+						"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
+						"co.isControl = false and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr").setParameterList("classIds", ids, LongType.INSTANCE).setCacheable(true).list()) {
+					Class_ clazz = (Class_)o[0];
+					CourseOffering course = (CourseOffering)o[1];
+					for (TimetableGridCell cell: id2cells.get(clazz.getUniqueId()))
+						cell.addName(clazz.getClassLabel(course, context.isShowClassSuffix(), context.isShowConfigName()));
+				}
+			}
 		}
 	}
 	
@@ -682,12 +710,40 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 					"where a.solution.commited = true and a.clazz.uniqueId in :classIds";
 		}
 		
-		for (Object[] o: (List<Object[]>)Class_DAO.getInstance().getSession().createQuery(query)
-				.setParameterList("classIds", id2cells.keySet(), LongType.INSTANCE).setCacheable(true).list()) {
-			Long classId = (Long)o[0];
-			DepartmentalInstructor instructor = (DepartmentalInstructor)o[1];
-			for (TimetableGridCell cell: id2cells.get(classId)) {
-				cell.addInstructor(instructor.getName(context.getInstructorNameFormat()));
+		if (id2cells.size() <= 1000) {
+			for (Object[] o: (List<Object[]>)Class_DAO.getInstance().getSession().createQuery(query)
+					.setParameterList("classIds", id2cells.keySet(), LongType.INSTANCE).setCacheable(true).list()) {
+				Long classId = (Long)o[0];
+				DepartmentalInstructor instructor = (DepartmentalInstructor)o[1];
+				for (TimetableGridCell cell: id2cells.get(classId)) {
+					cell.addInstructor(instructor.getName(context.getInstructorNameFormat()));
+				}
+			}
+		} else {
+			List<Long> ids = new ArrayList<Long>(1000);
+			for (Long id: id2cells.keySet()) {
+				ids.add(id);
+				if (ids.size() == 1000) {
+					for (Object[] o: (List<Object[]>)Class_DAO.getInstance().getSession().createQuery(query)
+							.setParameterList("classIds", ids, LongType.INSTANCE).setCacheable(true).list()) {
+						Long classId = (Long)o[0];
+						DepartmentalInstructor instructor = (DepartmentalInstructor)o[1];
+						for (TimetableGridCell cell: id2cells.get(classId)) {
+							cell.addInstructor(instructor.getName(context.getInstructorNameFormat()));
+						}
+					}
+					ids.clear();
+				}
+			}
+			if (!ids.isEmpty()) {
+				for (Object[] o: (List<Object[]>)Class_DAO.getInstance().getSession().createQuery(query)
+						.setParameterList("classIds", ids, LongType.INSTANCE).setCacheable(true).list()) {
+					Long classId = (Long)o[0];
+					DepartmentalInstructor instructor = (DepartmentalInstructor)o[1];
+					for (TimetableGridCell cell: id2cells.get(classId)) {
+						cell.addInstructor(instructor.getName(context.getInstructorNameFormat()));
+					}
+				}
 			}
 		}
 	}

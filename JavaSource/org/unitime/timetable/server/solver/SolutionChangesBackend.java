@@ -270,14 +270,44 @@ public class SolutionChangesBackend implements GwtRpcImplementation<SolutionChan
 			if (row.hasId()) id2row.put(row.getId(), row);
 		}
 		if (id2row.isEmpty()) return;
-		for (Object[] o: (List<Object[]>)Class_DAO.getInstance().getSession().createQuery(
-				"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
-				"co.isControl = false and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr").setParameterList("classIds", id2row.keySet(), LongType.INSTANCE).setCacheable(true).list()) {
-			Class_ clazz = (Class_)o[0];
-			CourseOffering course = (CourseOffering)o[1];
-			TableInterface.TableRowInterface row = id2row.get(clazz.getUniqueId());
-			if (row != null)
-				((TableInterface.TableCellClassName)row.getCell(0)).addAlternative(clazz.getClassLabel(course, showClassSuffix, showConfigNames));
+		if (id2row.size() <= 1000) {
+			for (Object[] o: (List<Object[]>)Class_DAO.getInstance().getSession().createQuery(
+					"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
+					"co.isControl = false and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr").setParameterList("classIds", id2row.keySet(), LongType.INSTANCE).setCacheable(true).list()) {
+				Class_ clazz = (Class_)o[0];
+				CourseOffering course = (CourseOffering)o[1];
+				TableInterface.TableRowInterface row = id2row.get(clazz.getUniqueId());
+				if (row != null)
+					((TableInterface.TableCellClassName)row.getCell(0)).addAlternative(clazz.getClassLabel(course, showClassSuffix, showConfigNames));
+			}
+		} else {
+			List<Long> ids = new ArrayList<Long>(1000);
+			for (Long id: id2row.keySet()) {
+				ids.add(id);
+				if (ids.size() == 1000) {
+					for (Object[] o: (List<Object[]>)Class_DAO.getInstance().getSession().createQuery(
+							"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
+							"co.isControl = false and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr").setParameterList("classIds", ids, LongType.INSTANCE).setCacheable(true).list()) {
+						Class_ clazz = (Class_)o[0];
+						CourseOffering course = (CourseOffering)o[1];
+						TableInterface.TableRowInterface row = id2row.get(clazz.getUniqueId());
+						if (row != null)
+							((TableInterface.TableCellClassName)row.getCell(0)).addAlternative(clazz.getClassLabel(course, showClassSuffix, showConfigNames));
+					}
+					ids.clear();
+				}
+			}
+			if (!ids.isEmpty()) {
+				for (Object[] o: (List<Object[]>)Class_DAO.getInstance().getSession().createQuery(
+						"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
+						"co.isControl = false and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr").setParameterList("classIds", ids, LongType.INSTANCE).setCacheable(true).list()) {
+					Class_ clazz = (Class_)o[0];
+					CourseOffering course = (CourseOffering)o[1];
+					TableInterface.TableRowInterface row = id2row.get(clazz.getUniqueId());
+					if (row != null)
+						((TableInterface.TableCellClassName)row.getCell(0)).addAlternative(clazz.getClassLabel(course, showClassSuffix, showConfigNames));
+				}
+			}
 		}
 	}
 
