@@ -146,6 +146,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 					"from Advisor where externalUniqueId = :id")
 					.setString("id", userId).list()) {
 				if (advisor.getRole() == null || !advisor.getRole().isEnabled()) continue;
+				if (ApplicationProperty.AuthorizationAdvisorMustHaveStudents.isTrue() && advisor.getStudents().isEmpty()) continue;
 				if (iName == null && advisor.hasName()) iName = advisor.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
 				if (iEmail == null) iEmail = advisor.getEmail();
 				RoleAuthority authority = new RoleAuthority(advisor.getUniqueId(), advisor.getRole());

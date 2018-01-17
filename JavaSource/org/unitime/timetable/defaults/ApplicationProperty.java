@@ -2319,6 +2319,12 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Class class suffix / external id: when true for six character class suffixes insert a \'-\' between the first three characters and the last three characters.")
 	ClassSuffixDivSecFormat("unitime.class.classSuffix.divSecDivider"),
+	
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Authorization: a user with an advisor record must be associated with at least one student to get the advisor role.")
+	AuthorizationAdvisorMustHaveStudents("unitime.authorization.advisor.mustHaveStudents"),
 
 	;
 
