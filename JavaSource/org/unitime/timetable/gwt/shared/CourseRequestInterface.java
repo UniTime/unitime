@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.shared;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -136,6 +137,48 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		return __getRequestPriority(course);
 	}
 	
+	public float[] getCreditRange() {
+		List<Float> mins = new ArrayList<Float>();
+		List<Float> maxs = new ArrayList<Float>();
+		int nrCourses = 0;
+		for (Request r: getCourses()) {
+			if (r.hasRequestedCourse()) {
+				Float min = null, max = null;
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					if (rc.hasCredit()) {
+						if (min == null || min > rc.getCreditMin()) min = rc.getCreditMin();
+						if (max == null || max < rc.getCreditMax()) max = rc.getCreditMax();
+					}
+				}
+				if (min != null) {
+					mins.add(min); maxs.add(max); nrCourses ++;
+				}
+			}
+		}
+		for (Request r: getAlternatives()) {
+			if (r.hasRequestedCourse()) {
+				Float min = null, max = null;
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					if (rc.hasCredit()) {
+						if (min == null || min > rc.getCreditMin()) min = rc.getCreditMin();
+						if (max == null || max < rc.getCreditMax()) max = rc.getCreditMax();
+					}
+				}
+				if (min != null) {
+					mins.add(min); maxs.add(max);
+				}
+			}
+		}
+		Collections.sort(mins);
+		Collections.sort(maxs);
+		float min = 0f, max = 0f;
+		for (int i = 0; i < nrCourses; i++) {
+			min += mins.get(i);
+			max += maxs.get(maxs.size() - i - 1);
+		}
+		return new float[] {min, max};
+	}
+	
 	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof CourseRequestInterface)) return false;
@@ -249,6 +292,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		private List<FreeTime> iFreeTime;
 		private Set<String> iSelectedIntructionalMethods;
 		private Set<String> iSelectedClasses;
+		private float[] iCredit = null;
 		
 		public RequestedCourse() {}
 		public RequestedCourse(List<FreeTime> freeTime) {
@@ -269,6 +313,13 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public String getCourseTitle() { return iCourseTitle; }
 		public boolean hasCourseTitle() { return iCourseTitle != null && !iCourseTitle.isEmpty(); }
 		public void setCourseTitle(String courseTitle) { iCourseTitle = courseTitle; }
+		public boolean hasCredit() { return iCredit != null; }
+		public float[] getCredit() { return iCredit; }
+		public Float getCreditMin() { return iCredit == null ? null : iCredit[0]; }
+		public Float getCreditMax() { return iCredit == null ? null : iCredit[1]; }
+		public void setCredit(Float minCredit, Float maxCredit) { iCredit = (minCredit == null || maxCredit == null ? null : new float[] { minCredit, maxCredit }); }
+		public void setCredit(Float credit) { iCredit = (credit == null ? null : new float[] { credit, credit }); }
+		public void setCredit(float[] credit) { iCredit = credit; }
 		
 		public List<FreeTime> getFreeTime() { return iFreeTime; }
 		public boolean isFreeTime() { return iFreeTime != null && !iFreeTime.isEmpty(); }

@@ -1808,6 +1808,10 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	color: #333333;
 }
 
+.unitime-FilterBox .filter:disabled {
+	background-color: white;
+}
+
 .unitime-FilterBox .filter:focus {
 	outline: none;
 }
@@ -5039,7 +5043,7 @@ unitime-RoomSharingWidget .legend .blank {
 	font-weight: bold;
 	color: black;
 	padding-top: 5px;
-	text-align: right;
+	text-align: center;
 }
 
 .unitime-SchedulingAssistantButtons .left-panel {
@@ -5048,6 +5052,11 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-SchedulingAssistantButtons .right-panel {
 	float: right;
+}
+
+.unitime-SchedulingAssistantButtons .center-panel {
+	margin-top: 3px;
+	display: inline-block;
 }
 
 .unitime-Panel {

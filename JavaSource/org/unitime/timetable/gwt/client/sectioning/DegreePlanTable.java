@@ -648,6 +648,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 				rc.setCourseId(ca.getCourseId());
 				rc.setCourseName(CONSTANTS.showCourseTitle() ? MESSAGES.courseNameWithTitle(ca.getSubject(), ca.getCourseNbr(), ca.getTitle()) : MESSAGES.course(ca.getSubject(), ca.getCourseNbr()));
 				rc.setCourseTitle(ca.getTitle());
+				rc.setCredit(ca.guessCreditRange());
 				r.addRequestedCourse(rc);
 				requests.getCourses().add(r);
 			}

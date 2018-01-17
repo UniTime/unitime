@@ -1359,6 +1359,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Total Credit: {0,number,0.#}")
 	String totalCredit(float total);
 	
+	@DefaultMessage("Total Credit: {0,number,0.#} - {1,number,0.#}")
+	String totalCreditRange(float minTotal, float maxTotal);
+	
 	@DefaultMessage("Request Update")
 	String requestStudentUpdate();
 	

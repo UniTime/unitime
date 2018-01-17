@@ -148,6 +148,8 @@ public class XCourse extends XCourseId {
     public String getCreditAbbv() { return (iCredit == null ? null : iCredit.getAbbreviation()); }
     public String getCreditText() { return (iCredit == null ? null : iCredit.getText()); }
     public String getCredit() { return (iCredit == null ? null : iCredit.getAbbreviation() + "|" + iCredit.getText()); }
+    public Float getMinCredit() { return iCredit != null ? iCredit.getMinCredit() : null; }
+    public Float getMaxCredit() { return iCredit != null ? iCredit.getMaxCredit() : null; }
     
     public boolean hasAlternativeCourse() { return iAlternativeCourseId != null; }
     public Long getAlternativeCourseId() { return iAlternativeCourseId; }

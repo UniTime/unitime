@@ -143,6 +143,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private CheckBox iShowUnassignments;
 	private Label iTotalCredit;
 	private P iGridMessage;
+	private P iTotalCreditRequests;
 	
 	private ArrayList<ClassAssignmentInterface.ClassAssignment> iLastResult, iLastEnrollment;
 	private ClassAssignmentInterface iLastAssignment, iSavedAssignment = null, iSpecialRegAssignment = null;
@@ -181,6 +182,17 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iCourseRequests.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<CourseRequestInterface> event) {
+				if (iTotalCreditRequests != null) {
+					float[] credit = iCourseRequests.getRequest().getCreditRange();
+					if (credit[1] > 0) {
+						if (credit[0] != credit[1])
+							iTotalCreditRequests.setText(MESSAGES.totalCreditRange(credit[0], credit[1]));
+						else
+							iTotalCreditRequests.setText(MESSAGES.totalCredit(credit[0]));
+					} else {
+						iTotalCreditRequests.setText("");
+					}
+				}
 				if (!iMode.isSectioning() && iSavedRequest != null && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_REGISTER)) {
 					if (!iSavedRequest.equals(iCourseRequests.getRequest())) {
 						iScheduleChanged = true;
@@ -239,6 +251,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iReset.getElement().getStyle().setMarginLeft(4, Unit.PX);
 		leftFooterPanel.add(iReset);
 		iFooter.add(leftFooterPanel);
+		
+		if (mode == StudentSectioningPage.Mode.REQUESTS) {
+			iTotalCreditRequests = new P("center-panel");
+			iFooter.add(iTotalCreditRequests);
+		}
 
 		P rightFooterPanel = new P("right-panel");
 		iFooter.add(rightFooterPanel);

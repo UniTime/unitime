@@ -79,6 +79,12 @@
 				<line>Authentication can use the advisor table (to associate the authenticated user with an advisor role).</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Course Requests</name>
+			<description>
+				<line>Show total credit range on the Student Course Requests page, assuming that the student will be able to get a complete schedule.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Constraint Solver</title>

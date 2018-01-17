@@ -277,9 +277,13 @@ public class CourseRequestBox extends P implements CourseSelection {
 		if (course != null) {
 			ret.setCourseId(course.getCourseId());
 			ret.setCourseName(course.getCourseName());
+			ret.setCourseTitle(course.getTitle());
+			ret.setCredit(course.guessCreditRange());
 		} else if (iLastCourse != null && iLastCourse.isCourse() && iLastCourse.hasCourseId() && courseName.equalsIgnoreCase(iLastCourse.getCourseName())) {
 			ret.setCourseId(iLastCourse.getCourseId());
 			ret.setCourseName(courseName);
+			ret.setCourseTitle(iLastCourse.getCourseTitle());
+			ret.setCredit(iLastCourse.getCredit());
 		} else if (iFreeTimeParser != null) {
 			try {
 				ret.setFreeTime(iFreeTimeParser.parseFreeTime(courseName));
@@ -568,6 +572,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 			iCourse.setCourseId(course.getCourseId());
 			iCourse.setCourseName(!course.hasUniqueName() || iShowCourses ? course.getCourseNameWithTitle() : course.getCourseName());
 			iCourse.setCourseTitle(course.getTitle());
+			iCourse.setCredit(course.guessCreditRange());
 			if (getText().equals(course.getCourseName()) || getText().startsWith(course.getCourseName() + " ") || 
 				getText().equals(course.getCourseNameWithTitle()) || getText().startsWith(course.getCourseNameWithTitle() + " ")) {
 				for (Chip chip: iFilter.getChips("section"))

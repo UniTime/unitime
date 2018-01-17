@@ -179,6 +179,14 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			if (m != null) return Float.parseFloat(m.getGroup(0));
 			return 0f;
 		}
+		
+		public float[] guessCreditRange() {
+			if (!hasCredit()) return new float[] {0f, 0f};
+			MatchResult r = RegExp.compile("(\\d+\\.?\\d*)-(\\d+\\.?\\d*)").exec(getCreditAbbv());
+			if (r != null) return new float[] {Float.parseFloat(r.getGroup(1)), Float.parseFloat(r.getGroup(2))};
+			float credit = guessCreditCount();
+			return new float[] { credit, credit };
+		}
 
 		public boolean hasUniqueName() { return iHasUniqueName; }
 		public void setHasUniqueName(boolean hasUniqueName) { iHasUniqueName = hasUniqueName; }

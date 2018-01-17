@@ -183,6 +183,12 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					rc.setCourseId(cid.getCourseId());
 					rc.setCourseName(cid.getCourseName());
 					rc.setCourseTitle(cid.getTitle());
+					if (cid instanceof XCourse) {
+						rc.setCredit(((XCourse)cid).getMinCredit(), ((XCourse)cid).getMaxCredit());
+					} else if (cid.getCourseId() != null) {
+						XCourse c = server.getCourse(cid.getCourseId());
+						if (c != null) rc.setCredit(c.getMinCredit(), c.getMaxCredit());
+					}
 					r.addRequestedCourse(rc);
 					request.getCourses().add(r);
 					hasSelection = true;
@@ -206,6 +212,12 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					rc.setCourseId(cid.getCourseId());
 					rc.setCourseName(cid.getCourseName());
 					rc.setCourseTitle(cid.getTitle());
+					if (cid instanceof XCourse) {
+						rc.setCredit(((XCourse)cid).getMinCredit(), ((XCourse)cid).getMaxCredit());
+					} else if (cid.getCourseId() != null) {
+						XCourse c = server.getCourse(cid.getCourseId());
+						if (c != null) rc.setCredit(c.getMinCredit(), c.getMaxCredit());
+					}
 					r.addRequestedCourse(rc);
 					b.addCourse(toEntity(course, cid));
 				}
@@ -231,6 +243,12 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				rc.setCourseId(cid.getCourseId());
 				rc.setCourseName(cid.getCourseName());
 				rc.setCourseTitle(cid.getTitle());
+				if (cid instanceof XCourse) {
+					rc.setCredit(((XCourse)cid).getMinCredit(), ((XCourse)cid).getMaxCredit());
+				} else if (cid.getCourseId() != null) {
+					XCourse c = server.getCourse(cid.getCourseId());
+					if (c != null) rc.setCredit(c.getMinCredit(), c.getMaxCredit());
+				}
 				r.addRequestedCourse(rc);
 				request.getCourses().add(r);
 			}

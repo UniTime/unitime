@@ -1884,6 +1884,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						rc.setCourseId(course.getCourseOffering().getUniqueId());
 						rc.setCourseName(course.getCourseOffering().getSubjectAreaAbbv() + " " + course.getCourseOffering().getCourseNbr() + (!CONSTANTS.showCourseTitle() ? "" : " - " + course.getCourseOffering().getTitle()));
 						rc.setCourseTitle(course.getCourseOffering().getTitle());
+						CourseCreditUnitConfig credit = course.getCourseOffering().getCredit(); 
+						if (credit != null) rc.setCredit(credit.getMinCredit(), credit.getMaxCredit());
 						boolean hasEnrollments = !course.getClassEnrollments().isEmpty(); 
 						rc.setReadOnly(hasEnrollments);
 						rc.setCanDelete(!hasEnrollments);
@@ -1921,6 +1923,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				rc.setCourseId(c.getUniqueId());
 				rc.setCourseName(c.getSubjectAreaAbbv() + " " + c.getCourseNbr() + (!CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
 				rc.setCourseTitle(c.getTitle());
+				CourseCreditUnitConfig credit = c.getCredit(); 
+				if (credit != null) rc.setCredit(credit.getMinCredit(), credit.getMaxCredit());
 				r.addRequestedCourse(rc);
 				request.getCourses().add(r);
 			}
