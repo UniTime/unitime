@@ -340,8 +340,8 @@ public enum Right {
     SchedulingReports(Session.class),
 
     ConsentApproval(CourseOffering.class),
-    StudentSchedulingAdvisor,
-    StudentSchedulingAdmin,
+    StudentSchedulingAdvisor(Session.class),
+    StudentSchedulingAdmin(Session.class),
     StudentSchedulingMassCancel(Session.class),
     StudentSchedulingEmailStudent(Session.class),
     StudentSchedulingChangeStudentStatus(Session.class),

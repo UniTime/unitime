@@ -204,4 +204,10 @@ public class StudentSchedulingPermissions {
 			return super.check(user, source) && source.getStatusType().can(Status.StudentsOnline) && ApplicationProperty.CustomizationStudentEnrollments.value() != null;
 		}
 	}
+	
+	@PermissionForRight(Right.StudentSchedulingAdvisor)
+	public static class StudentSchedulingAdvisor extends StudentScheduling {}
+	
+	@PermissionForRight(Right.StudentSchedulingAdmin)
+	public static class StudentSchedulingAdmin extends StudentScheduling {}
 }

@@ -154,6 +154,7 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.context.AnonymousUserContext;
+import org.unitime.timetable.security.permissions.AdministrationPermissions.Chameleon;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.service.ProxyHolder;
@@ -338,7 +339,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		boolean noCourseType = true, allCourseTypes = false;
 		Set<String> allowedCourseTypes = new HashSet<String>();
 		Long studentId = getStudentId(sessionId);
-		if (getSessionContext().hasPermission(Right.StudentSchedulingAdvisor)) {
+		if (getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdvisor)) {
 			allCourseTypes = true;
 		} else {
 			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
@@ -473,12 +474,14 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	public Collection<AcademicSessionProvider.AcademicSessionInfo> listAcademicSessions(boolean sectioning) throws SectioningException, PageAccessException {
 		ArrayList<AcademicSessionProvider.AcademicSessionInfo> ret = new ArrayList<AcademicSessionProvider.AcademicSessionInfo>();
 		ExternalTermProvider extTerm = getExternalTermProvider();
+		UniTimePrincipal principal = (UniTimePrincipal)getSessionContext().getAttribute("user");
 		if (sectioning) {
 			for (String s: solverServerService.getOnlineStudentSchedulingContainer().getSolvers()) {
 				OnlineSectioningServer server = solverServerService.getOnlineStudentSchedulingContainer().getSolver(s);
 				if (server == null || !server.isReady()) continue;
 				Session session = SessionDAO.getInstance().get(Long.valueOf(s));
 				AcademicSessionInfo info = server.getAcademicSession();
+				if (principal != null && principal.getStudentId(session.getUniqueId()) == null) continue;
 				ret.add(new AcademicSessionProvider.AcademicSessionInfo(
 						session.getUniqueId(),
 						session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
@@ -491,6 +494,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (session.getStatusType().isTestSession()) continue;
 				if (session.getStatusType().canPreRegisterStudents()) {
 					AcademicSessionInfo info = new AcademicSessionInfo(session);
+					if (principal != null && principal.getStudentId(session.getUniqueId()) == null) continue;
 					ret.add(new AcademicSessionProvider.AcademicSessionInfo(
 							session.getUniqueId(),
 							session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
@@ -728,7 +732,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		else
 			getSessionContext().removeAttribute("pin");
 		if ("LOOKUP".equals(userName)) {
-			getSessionContext().checkPermission(Right.StudentSchedulingAdvisor);
+			getSessionContext().checkPermissionAnySession(Right.StudentSchedulingAdvisor);
 			org.hibernate.Session hibSession = StudentDAO.getInstance().createNewSession();
 			try {
 				List<Student> student = hibSession.createQuery("select m from Student m where m.externalUniqueId = :uid").setString("uid", password).list();
@@ -736,8 +740,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					UserContext user = getSessionContext().getUser();
 					UniTimePrincipal principal = new UniTimePrincipal(user.getTrueExternalUserId(), password, user.getTrueName());
 					for (Student s: student) {
-						principal.addStudentId(s.getSession().getUniqueId(), s.getUniqueId());
-						principal.setName(NameFormat.defaultFormat().format(s));
+						if (getSessionContext().hasPermissionAnySession(s.getSession(), Right.StudentSchedulingAdvisor)) {
+							principal.addStudentId(s.getSession().getUniqueId(), s.getUniqueId());
+							principal.setName(NameFormat.defaultFormat().format(s));
+						}
 					}
 					getSessionContext().setAttribute("user", principal);
 					getSessionContext().removeAttribute("request");
@@ -936,7 +942,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	public Boolean saveRequest(CourseRequestInterface request) throws SectioningException, PageAccessException {
 		OnlineSectioningServer server = getServerInstance(request.getAcademicSessionId(), false);
 		Long studentId = getStudentId(request.getAcademicSessionId());
-		if (studentId == null && getSessionContext().hasPermission(Right.StudentSchedulingAdvisor))
+		if (studentId == null && getSessionContext().hasPermissionAnySession(request.getAcademicSessionId(), Right.StudentSchedulingAdvisor))
 			studentId = request.getStudentId();
 		if (server != null) {
 			if (studentId == null)
@@ -1814,7 +1820,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			if (studentId.equals(getStudentId(check.getSessionId())))
 				return check.getSessionId();
 			
-			if (getSessionContext().hasPermission(Right.StudentSchedulingAdvisor))
+			if (getSessionContext().hasPermissionAnySession(check.getSessionId(), Right.StudentSchedulingAdvisor))
 				return check.getSessionId();
 			
 			OnlineSectioningServer server = getServerInstance(check.getSessionId(), false);
@@ -2060,7 +2066,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			OnlineSectioningLog.Entity.Builder entity = OnlineSectioningLog.Entity.newBuilder()
 					.setExternalId(user.getTrueExternalUserId())
 					.setName(user.getTrueName() == null ? user.getUsername() : user.getTrueName())
-					.setType(getSessionContext().hasPermission(Right.StudentSchedulingAdvisor) ?
+					.setType(user instanceof Chameleon || principal != null ?
 							OnlineSectioningLog.Entity.EntityType.MANAGER : OnlineSectioningLog.Entity.EntityType.STUDENT);
 			if (pin != null) entity.addParameterBuilder().setKey("pin").setValue(pin);
 			if (principal != null && principal.getStudentExternalId() != null) entity.addParameterBuilder().setKey("student").setValue(principal.getStudentExternalId());
@@ -2070,7 +2076,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			OnlineSectioningLog.Entity.Builder entity = OnlineSectioningLog.Entity.newBuilder()
 					.setExternalId(principal.getExternalId())
 					.setName(principal.getName())
-					.setType(OnlineSectioningLog.Entity.EntityType.STUDENT);
+					.setType(OnlineSectioningLog.Entity.EntityType.MANAGER);
 			if (pin != null) entity.addParameterBuilder().setKey("pin").setValue(pin);
 			if (specialRequestId != null) entity.addParameterBuilder().setKey("specreq").setValue(specialRequestId);
 			return entity.build();
@@ -2189,8 +2195,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				studentId = getStudentId(sessionId);
 			
 			EligibilityCheck check = new EligibilityCheck();
-			check.setFlag(EligibilityFlag.IS_ADMIN, getSessionContext().hasPermission(Right.StudentSchedulingAdmin));
-			check.setFlag(EligibilityFlag.IS_ADVISOR, getSessionContext().hasPermission(Right.StudentSchedulingAdvisor));
+			check.setFlag(EligibilityFlag.IS_ADMIN, getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdmin));
+			check.setFlag(EligibilityFlag.IS_ADVISOR, getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdvisor));
 			check.setFlag(EligibilityFlag.IS_GUEST, user instanceof AnonymousUserContext);
 			check.setFlag(EligibilityFlag.CAN_RESET, ApplicationProperty.OnlineSchedulingAllowScheduleReset.isTrue());
 			if (!check.hasFlag(EligibilityFlag.CAN_RESET) && (check.hasFlag(EligibilityFlag.IS_ADMIN) || check.hasFlag(EligibilityFlag.IS_ADVISOR)))
@@ -2253,8 +2259,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	@Override
 	public SectioningProperties getProperties(Long sessionId) throws SectioningException, PageAccessException {
 		SectioningProperties properties = new SectioningProperties();
-		properties.setAdmin(getSessionContext().hasPermission(Right.StudentSchedulingAdmin));
-		properties.setAdvisor(getSessionContext().hasPermission(Right.StudentSchedulingAdvisor));
+		properties.setAdmin(getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdmin));
+		properties.setAdvisor(getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdvisor));
 		if (sessionId == null && getSessionContext().getUser() != null)
 			sessionId = getSessionContext().getUser().getCurrentAcademicSessionId();
 		properties.setSessionId(sessionId);
@@ -2285,7 +2291,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (studentId == null)
 			studentId = getStudentId(sessionId);
 		else if (!studentId.equals(getStudentId(sessionId)))
-			getSessionContext().checkPermission(Right.StudentSchedulingAdvisor);
+			getSessionContext().checkPermissionAnySession(sessionId, Right.StudentSchedulingAdvisor);
 		
 		OnlineSectioningServer server = null;
 		if (!online) {
