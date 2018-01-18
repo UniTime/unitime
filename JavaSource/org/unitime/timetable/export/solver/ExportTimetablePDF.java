@@ -110,15 +110,41 @@ public class ExportTimetablePDF extends TableExporter {
 			document.setMargins(margin, margin, margin, margin);
 			document.open();
 			int used = 0;
-			int tm = (Integer.valueOf(filter.getParameterValue("dispMode", "0")) == 0 ? 0 : 25);
-			for (TimetableGridModel model: response.getModels()) {
-				if (used > 0 && pageHeight(filter, model, response.getWeekOffset(), false) > height - used) {
-					document.newPage(); used = 0;
+			if (Integer.valueOf(filter.getParameterValue("dispMode", "0")) == 0) {
+				boolean hasDay[] = { true, true, true, true, true, false, false};
+				String days = filter.getParameterValue("days");
+				if (days != null && days.length() == 7 && days.indexOf('1') >= 0) {
+					for (int i = 0; i < 7; i++)
+						hasDay[i] = (days.charAt(i) == '1');
 				}
-				TimetableGrid tg = new TimetableGrid(filter, model, index++, width, response.getWeekOffset(), used == 0);
-				PdfContentByte canvas = writer.getDirectContent();
-				tg.print(canvas, margin, margin + used, height + 2 * margin, null);
-				used += tg.getHeight() + tm;
+				for (int i = 0; i < 7; i++) {
+					if (!hasDay[i]) continue;
+					String d = "";
+					for (int j = 0; j < 7; j++) d += (i == j ? "1" : "0");
+					filter.getParameter("days").setValue(d);
+					boolean first = true;
+					for (TimetableGridModel model: response.getModels()) {
+						if (used > 0 && pageHeight(filter, model, response.getWeekOffset(), first) > height - used) {
+							document.newPage(); used = 0;
+						}
+						TimetableGrid tg = new TimetableGrid(filter, model, index++, width, response.getWeekOffset(), used == 0 || first);
+						PdfContentByte canvas = writer.getDirectContent();
+						tg.print(canvas, margin, margin + used, height + 2 * margin, null);
+						used += tg.getHeight();
+						first = false;
+					}
+					used += 25;
+				}
+			} else {
+				for (TimetableGridModel model: response.getModels()) {
+					if (used > 0 && pageHeight(filter, model, response.getWeekOffset(), false) > height - used) {
+						document.newPage(); used = 0;
+					}
+					TimetableGrid tg = new TimetableGrid(filter, model, index++, width, response.getWeekOffset(), used == 0);
+					PdfContentByte canvas = writer.getDirectContent();
+					tg.print(canvas, margin, margin + used, height + 2 * margin, null);
+					used += tg.getHeight() + 25;
+				}
 			}
 			if (document != null)
 				document.close();
@@ -361,7 +387,7 @@ public class ExportTimetablePDF extends TableExporter {
 			String comment = getComment(model);
 			
 			if (displayMode == 0) {
-				int headerLines = (showHeader ? 2 : 0);
+				int headerLines = (showHeader ? 1 : 0);
 				int nrLines = 0;
 				int[] dayIndex = new int[7];
 				int x = 0;
@@ -380,6 +406,12 @@ public class ExportTimetablePDF extends TableExporter {
 				if (headerLines > 0) {
 					P name = new P("grid-name");
 					name.setSize(sHeaderWidth, headerLines * sLineHeight);
+					for (int i = 0; i < 7; i++) {
+						int d = (i + weekOffset) % 7;
+						if (!hasDay[d]) continue;
+						name.setText(CONSTANTS.longDays()[d]);
+						break;
+					}
 					add(name);
 				}
 				
@@ -401,7 +433,7 @@ public class ExportTimetablePDF extends TableExporter {
 							int j = dayIndex[d] * nrTimes + t;
 							P hi = new P("header-interval");
 							hi.setSize(iCellWidth, headerLines * sLineHeight);
-							hi.setText(CONSTANTS.days()[d] + "\n" + slot2time(startSlot + t * step));
+							hi.setText(slot2time(startSlot + t * step));
 							horizontalHeader.add(hi, j * iCellWidth + 2 * dayIndex[d], 0);
 							if (t == 0 && dayIndex[d] > 0) {
 								P vs = new P("vertical-double-separator");
@@ -840,12 +872,10 @@ public class ExportTimetablePDF extends TableExporter {
 		int displayMode = Integer.valueOf(filter.getParameterValue("dispMode", "0"));
 		boolean hasDay[] = { true, true, true, true, true, false, false };
 		String days = filter.getParameterValue("days");
-		int nrDays = 0;
 		if (days != null && days.length() == 7 && days.indexOf('1') >= 0) {
 			for (int i = 0; i < 7; i++)
 				if (days.charAt(i) == '1') {
 					hasDay[i] = true;
-					nrDays ++;
 				} else {
 					hasDay[i] = false;
 				}
@@ -889,8 +919,7 @@ public class ExportTimetablePDF extends TableExporter {
         }
         
         if (displayMode == 0) {
-        	if (widthPerSlot > 14) widthPerSlot = 14f;
-	        return Math.round(sHeaderWidth + nrDays * step * nrTimes * widthPerSlot + 2 * nrDays);
+	        return Math.round(sHeaderWidth + step * nrTimes * widthPerSlot);
 		} else if (displayMode == 2) {
 			return Math.round(sHeaderWidth + nrColumns * widthPerColumn);
 		} else {
@@ -922,7 +951,7 @@ public class ExportTimetablePDF extends TableExporter {
 		String comment = getComment(model);
 		
 		if (displayMode == 0) {
-			int headerLines = (showHeader ? 2 : 0);
+			int headerLines = (showHeader ? 1 : 0);
 			int nrLines = 0;
 			for (int i = 0; i < 7; i++) {
 				int d = (i + weekOffset) % 7;
