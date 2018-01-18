@@ -989,6 +989,7 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 	    private ClassAssignmentDetails iSelectedPlacement = null;
 	    private double iBaseValue = 0;
 	    private int iBaseUnassignedVariables = 0;
+	    private TableInterface.TableCellMulti iStudentConflictSummary = null;
 	    private Map<String, Double> iCriteria = new HashMap<String, Double>();
 	    private Map<String, Double> iBaseCriteria = new HashMap<String, Double>();
 		
@@ -1106,6 +1107,10 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 					getDifferentAssignments() == null ? "" : getDifferentAssignments().toString(),
 					other.getDifferentAssignments() == null ? "" : other.getDifferentAssignments().toString());
 		}
+		
+		public boolean hasStudentConflictSummary() { return iStudentConflictSummary != null; }
+		public void setStudentConflictSummary(TableInterface.TableCellMulti cell) { iStudentConflictSummary = cell; }
+		public TableInterface.TableCellMulti getStudentConflictSummary() { return iStudentConflictSummary; }
 	}
 	
 	public static class MakeAssignmentRequest implements GwtRpcRequest<GwtRpcResponseNull>, Serializable {

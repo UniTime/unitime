@@ -34,6 +34,10 @@ import org.cpsolver.coursett.constraint.FlexibleConstraint;
 import org.cpsolver.coursett.constraint.GroupConstraint;
 import org.cpsolver.coursett.constraint.InstructorConstraint;
 import org.cpsolver.coursett.constraint.JenrlConstraint;
+import org.cpsolver.coursett.criteria.StudentCommittedConflict;
+import org.cpsolver.coursett.criteria.StudentConflict;
+import org.cpsolver.coursett.criteria.StudentDistanceConflict;
+import org.cpsolver.coursett.criteria.StudentHardConflict;
 import org.cpsolver.coursett.criteria.StudentOverlapConflict;
 import org.cpsolver.coursett.criteria.placement.DeltaTimePreference;
 import org.cpsolver.coursett.model.Lecture;
@@ -65,6 +69,8 @@ import org.unitime.timetable.gwt.shared.SuggestionsInterface.SelectedAssignments
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.StudentConflictInfo;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.Suggestion;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.TimeInfo;
+import org.unitime.timetable.gwt.shared.TableInterface.TableCellInterface;
+import org.unitime.timetable.gwt.shared.TableInterface.TableCellMulti;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -362,6 +368,32 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
         	else
         		suggestion.setCriterion(c.getName(), c.getValue(assignment));
         }
+        
+		Criterion<Lecture, Placement> sc = m.getCriterion(StudentConflict.class);
+        Criterion<Lecture, Placement> shc = m.getCriterion(StudentHardConflict.class);
+        Criterion<Lecture, Placement> sdc = m.getCriterion(StudentDistanceConflict.class);
+        Criterion<Lecture, Placement> scc = m.getCriterion(StudentCommittedConflict.class);
+        long studentConflicts = Math.round((scc == null ? 0.0 : scc.getValue(assignment)) + (sc == null ? 0.0 : sc.getValue(assignment)) - context.getBaseStudentConflicts());
+        long studentConflictsCommitted = Math.round((scc == null ? 0.0 : scc.getValue(assignment)) - context.getBaseStudentConflictsCommitted());
+        long studentConflictsDistance = Math.round((sdc == null ? 0.0 : sdc.getValue(assignment)) - context.getBaseStudentConflictsDistance());
+        long studentConflictsHard = Math.round((shc == null ? 0.0 : shc.getValue(assignment)) - context.getBaseStudentConflictsHard());
+        TableCellMulti studentConfs = new TableCellMulti();
+		studentConfs.add(dispNumber(studentConflicts));
+		if (studentConflictsCommitted != 0) {
+			if (studentConfs.getNrChunks() <= 1) studentConfs.add(" ("); else studentConfs.add(",");
+			studentConfs.add(dispNumber(studentConflictsCommitted).setFormattedValue("c" + (studentConflictsCommitted > 0 ? "+" : "") + studentConflictsCommitted));
+	    }
+	    if (studentConflictsDistance != 0) {
+	    	if (studentConfs.getNrChunks() <= 1) studentConfs.add(" ("); else studentConfs.add(",");
+	    	studentConfs.add(dispNumber(studentConflictsDistance).setFormattedValue("d" + (studentConflictsDistance > 0 ? "+" : "") + studentConflictsDistance));
+	    }
+	    if (studentConflictsHard != 0) {
+	    	if (studentConfs.getNrChunks() <= 1) studentConfs.add(" ("); else studentConfs.add(",");
+	    	studentConfs.add(dispNumber(studentConflictsHard).setFormattedValue("h" + (studentConflictsHard > 0 ? "+" : "") + studentConflictsHard));
+	    }
+	    if (studentConfs.getNrChunks() > 1) studentConfs.add(")");
+	    suggestion.setStudentConflictSummary(studentConfs);
+	    
 		return suggestion;
 	}
 	
@@ -485,4 +517,10 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
             return (new Integer(i1)).compareTo(new Integer(i2));
         }
     }
+	
+	public static TableCellInterface dispNumber(long value) {
+		TableCellInterface cell = new TableCellInterface<Long>(value).setColor(value < 0 ? "green" : value > 0 ? "red" : null);
+		if (value > 0) cell.setFormattedValue("+" + value);
+		return cell;
+	}
 }

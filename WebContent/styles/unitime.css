@@ -5798,6 +5798,14 @@ unitime-RoomSharingWidget .legend .blank {
 	border-bottom: 1px dashed #9CB0CE;
 }
 
+.unitime-ClassAssignmentTableSuggestions .multi {
+	white-space: nowrap;
+}
+
+.unitime-ClassAssignmentTableSuggestions .multi .chunk {
+	display: inline;
+}
+
 .unitime-ClassAssignmentTable .class .delete {
 	cursor: pointer;
 	cursor: hand;

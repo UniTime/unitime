@@ -1140,6 +1140,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("DInsB")
 	String colPerturbationDeltaInstructorBTB();
 	
+	@DefaultMessage("Students")
+	String colStudents();
+	
 	@DefaultMessage("pending")
 	String approvalNotApproved();
 	

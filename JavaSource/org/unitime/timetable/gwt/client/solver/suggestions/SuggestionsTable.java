@@ -29,6 +29,7 @@ import java.util.TreeSet;
 import org.unitime.timetable.gwt.client.TimeHint;
 import org.unitime.timetable.gwt.client.rooms.RoomHint;
 import org.unitime.timetable.gwt.client.solver.SolverCookie;
+import org.unitime.timetable.gwt.client.solver.DataTable.DataTableCell;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
@@ -37,6 +38,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
+import org.unitime.timetable.gwt.shared.TableInterface;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.ClassAssignmentDetails;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.RoomInfo;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.Suggestion;
@@ -160,6 +162,7 @@ public class SuggestionsTable extends UniTimeTable<Suggestion> implements TakesV
 		DATE,
 		TIME,
 		ROOM,
+		STUDENTS,
 		OBJECTIVES,
 		;
 	}
@@ -178,6 +181,7 @@ public class SuggestionsTable extends UniTimeTable<Suggestion> implements TakesV
 		case DATE: return MESSAGES.colDate();
 		case TIME: return MESSAGES.colTime();
 		case ROOM: return MESSAGES.colRoom();
+		case STUDENTS: return MESSAGES.colStudents();
 		case OBJECTIVES: return MESSAGES.colObjectives();
 		default: return column.name();
 		}
@@ -437,6 +441,8 @@ public class SuggestionsTable extends UniTimeTable<Suggestion> implements TakesV
 			if (suggestion.hasUnresolvedConflicts()) for (ClassAssignmentDetails details: suggestion.getUnresolvedConflicts())
 				rooms.add(getCellLine(details, true, column, idx));
 			return rooms;
+		case STUDENTS:
+			return (suggestion.hasStudentConflictSummary() ? new DataTableCell(null, suggestion.getStudentConflictSummary()) : null);
 		case OBJECTIVES:
 			return new Objectives(suggestion);
 		default:
@@ -507,6 +513,12 @@ public class SuggestionsTable extends UniTimeTable<Suggestion> implements TakesV
 			return 0;
 		}
 		
+		public int compareByCell(TableInterface.TableCellInterface c1, TableInterface.TableCellInterface c2) {
+			if (c1 == null) return (c2 == null ? 0 : -1);
+			if (c2 == null) return 1;
+			return c1.compareTo(c2);
+		}
+		
 		protected int compareByColumn(ClassAssignmentDetails c1, ClassAssignmentDetails c2) {
 			switch (iColumn) {
 			case CLASS: return compareByName(c1, c2);
@@ -542,6 +554,7 @@ public class SuggestionsTable extends UniTimeTable<Suggestion> implements TakesV
 			case DATE:
 			case TIME:
 			case ROOM:
+			case STUDENTS:
 				return true;
 			default:
 				return false;
@@ -552,6 +565,12 @@ public class SuggestionsTable extends UniTimeTable<Suggestion> implements TakesV
 		public int compare(Suggestion s1, Suggestion s2) {
 			if (iColumn == SuggestionColumn.SCORE) {
 				int cmp = compareByScore(s1, s2);
+				if (cmp != 0) return (iAsc ? cmp : -cmp);
+			}
+			if (iColumn == SuggestionColumn.STUDENTS) {
+				int cmp = compareByCell(s1.getStudentConflictSummary(), s2.getStudentConflictSummary());
+				if (cmp != 0) return (iAsc ? cmp : -cmp);
+				cmp = compareByScore(s1, s2);
 				if (cmp != 0) return (iAsc ? cmp : -cmp);
 			}
 			int cmp = compareByColumns(s1.getDifferentAssignments(), s2.getDifferentAssignments());

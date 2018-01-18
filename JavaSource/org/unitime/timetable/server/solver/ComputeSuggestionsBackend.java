@@ -96,7 +96,9 @@ public class ComputeSuggestionsBackend implements GwtRpcImplementation<ComputeSu
 		Solution<Lecture, Placement> solution = solver.currentSolution();
     	TimetableModel model = (TimetableModel)solution.getModel();
     	Assignment<Lecture, Placement> assignment = solution.getAssignment();
-    	
+
+		context.setBaseStudentConflicts(solution);
+
     	List<Lecture> unAssignedVariables = new ArrayList<Lecture>();
         Map<Lecture, Placement> initialAssignments = new HashMap<Lecture, Placement>();
         for (Lecture lec: assignment.assignedVariables())
