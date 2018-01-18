@@ -72,9 +72,15 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 	public boolean isLocked() { return iLocked; }
 	public void setLocked(boolean locked) { iLocked = locked; }
 	
-	public List<DegreeCourseInterface> listSelected() {
+	public List<DegreeCourseInterface> listSelected(boolean pickFirstWhenNoneSelected) {
 		List<DegreeCourseInterface> ret = new ArrayList<DegreeCourseInterface>();
-		if (iGroup != null) iGroup.listSelected(ret);
+		if (iGroup != null) iGroup.listSelected(ret, pickFirstWhenNoneSelected);
+		return ret;
+	}
+	
+	public List<DegreeCourseInterface> listAlternatives(DegreeCourseInterface course) {
+		List<DegreeCourseInterface> ret = new ArrayList<DegreeCourseInterface>();
+		if (iGroup != null) iGroup.listAlternatives(ret, course);
 		return ret;
 	}
 	
@@ -240,13 +246,50 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 			}
 		}
 		
-		protected void listSelected(List<DegreeCourseInterface> requested) {
+		protected void listSelected(List<DegreeCourseInterface> requested, boolean pickFirstWhenNoneSelected) {
+			boolean hasSelection = false;
 			if (hasCourses())
 				for (DegreeCourseInterface course: getCourses())
-					if (!isChoice() || course.isSelected()) requested.add(course);
+					if (!isChoice() || course.isSelected()) {
+						requested.add(course); hasSelection = true;
+					}
 			if (hasGroups())
 				for (DegreeGroupInterface g: getGroups())
-					if (!isChoice() || g.isSelected()) g.listSelected(requested);
+					if (!isChoice() || g.isSelected()) {
+						g.listSelected(requested, pickFirstWhenNoneSelected); hasSelection = true;
+					}
+			if (isChoice() && !hasSelection && pickFirstWhenNoneSelected) {
+				if (hasCourses())
+					requested.add(getCourses().get(0));
+				else if (hasGroups())
+					getGroups().get(0).listSelected(requested, pickFirstWhenNoneSelected);
+			}
+		}
+		
+		public boolean hasCourse(DegreeCourseInterface course) {
+			if (hasCourses())
+				for (DegreeCourseInterface c: getCourses())
+					if (c.getId().equals(course.getId())) return true;
+			if (hasGroups())
+				for (DegreeGroupInterface g: getGroups())
+					if (g.hasCourse(course)) return true;
+			return false;
+		}
+		
+		protected void listAlternatives(List<DegreeCourseInterface> alternatives, DegreeCourseInterface course) {
+			if (isChoice() && hasCourse(course)) {
+				if (hasCourses())
+					for (DegreeCourseInterface c: getCourses())
+						if (!c.getId().equals(course.getId())) alternatives.add(c);
+				if (hasGroups())
+					for (DegreeGroupInterface g: getGroups())
+						if (g.hasCourses())
+							for (DegreeCourseInterface c: g.getCourses())
+								if (!c.getId().equals(course.getId())) alternatives.add(c);
+			} else if (hasGroups()) {
+				for (DegreeGroupInterface g: getGroups())
+					g.listAlternatives(alternatives, course);
+			}
 		}
 		
 		public boolean hasSelection() {
@@ -363,16 +406,21 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 			iCourses.add(course);
 		}
 		
-		public CourseAssignment getSelectedCourse() {
+		public CourseAssignment getSelectedCourse(boolean pickOneWhenNoneSelected) {
 			if (iCourses != null && iCourseId != null)
 				for (CourseAssignment course: iCourses)
 					if (iCourseId.equals(course.getCourseId())) return course;
+			if (pickOneWhenNoneSelected && iCourses != null && !iCourses.isEmpty()) {
+				for (CourseAssignment course: iCourses)
+					if (getCourseName().equals(course.getCourseName())) return course;
+				return iCourses.get(0);
+			}
 			return null;
 		}
 		
 		@Override
 		public String toString() {
-			CourseAssignment ca = getSelectedCourse();
+			CourseAssignment ca = getSelectedCourse(false);
 			if (ca != null) return ca.getCourseName();
 			return getCourseName();
 		}

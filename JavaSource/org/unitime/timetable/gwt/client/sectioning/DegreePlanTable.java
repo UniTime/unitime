@@ -62,11 +62,13 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 	protected static StudentSectioningResources RESOURCES = GWT.create(StudentSectioningResources.class);
 	protected static StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	
+	private StudentSectioningPage.Mode iMode;
 	private DegreePlanInterface iPlan;
 	private TakesValue<CourseRequestInterface> iRequests;
 	private AssignmentProvider iAssignments;
 	
-	public DegreePlanTable(TakesValue<CourseRequestInterface> requests, AssignmentProvider assignments) {
+	public DegreePlanTable(StudentSectioningPage.Mode mode, TakesValue<CourseRequestInterface> requests, AssignmentProvider assignments) {
+		iMode = mode;
 		iRequests = requests;
 		iAssignments = assignments;
 		addStyleName("unitine-DegreePlanTable");
@@ -602,15 +604,17 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 	
 	public CourseRequestInterface createRequests() {
 		CourseRequestInterface requests = iRequests.getValue();
+		boolean includeAlternatives = (iMode == StudentSectioningPage.Mode.REQUESTS);
 		// 1. delete all requests that are not assigned
 		for (Iterator<CourseRequestInterface.Request> i = requests.getCourses().iterator(); i.hasNext(); ) {
 			CourseRequestInterface.Request request = i.next();
+			if (!request.isCanDelete()) continue;
 			if (request.hasRequestedCourse()) {
 				for (Iterator<RequestedCourse> j = request.getRequestedCourse().iterator(); j.hasNext(); ) { 
 					RequestedCourse course = j.next();
 					if (isLast(course)) {
 						// Only drop the request if the student selected a different course (from a choice)
-						if (iPlan.hasCourse(course) && !iPlan.isCourseSelected(course))
+						if (!includeAlternatives && iPlan.hasCourse(course) && !iPlan.isCourseSelected(course))
 							j.remove();
 					} else {
 						j.remove();
@@ -622,6 +626,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		// 2. move all assigned alternate requests up into the requests table
 		for (Iterator<CourseRequestInterface.Request> i = requests.getAlternatives().iterator(); i.hasNext(); ) {
 			CourseRequestInterface.Request request = i.next();
+			if (!request.isCanDelete()) continue;
 			if (request.hasRequestedCourse()) {
 				for (Iterator<RequestedCourse> j = request.getRequestedCourse().iterator(); j.hasNext(); ) { 
 					RequestedCourse course = j.next();
@@ -638,19 +643,51 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 			i.remove();
 		}
 		// 3. put in all selected courses, skip those that are already in there
-		for (DegreeCourseInterface course: iPlan.listSelected()) {
-			CourseAssignment ca = course.getSelectedCourse();
+		selected: for (DegreeCourseInterface course: iPlan.listSelected(includeAlternatives)) {
+			CourseAssignment ca = course.getSelectedCourse(includeAlternatives);
 			if (ca != null) {
 				CourseRequestInterface.RequestPriority p = requests.getRequestPriority(ca);
-				if (p != null) continue;
-				CourseRequestInterface.Request r = new CourseRequestInterface.Request();
+				if (p != null) continue selected;
+				
 				RequestedCourse rc = new RequestedCourse();
 				rc.setCourseId(ca.getCourseId());
 				rc.setCourseName(CONSTANTS.showCourseTitle() ? MESSAGES.courseNameWithTitle(ca.getSubject(), ca.getCourseNbr(), ca.getTitle()) : MESSAGES.course(ca.getSubject(), ca.getCourseNbr()));
 				rc.setCourseTitle(ca.getTitle());
 				rc.setCredit(ca.guessCreditRange());
-				r.addRequestedCourse(rc);
-				requests.getCourses().add(r);
+				
+				if (includeAlternatives) {
+					p = requests.getRequestPriority(course);
+					if (p != null) {
+						p.getRequest().getRequestedCourse().add(0, rc);
+						continue selected;
+					}
+					List<DegreeCourseInterface> alternatives = iPlan.listAlternatives(course);
+					for (DegreeCourseInterface alternative: alternatives) {
+						p = requests.getRequestPriority(alternative);
+						if (p != null) {
+							p.getRequest().getRequestedCourse().add(0, rc);
+							continue selected;
+						}
+					}
+					CourseRequestInterface.Request r = new CourseRequestInterface.Request();
+					r.addRequestedCourse(rc);
+					for (DegreeCourseInterface alternative: alternatives) {
+						CourseAssignment altCa = alternative.getSelectedCourse(includeAlternatives);
+						if (altCa != null) {
+							RequestedCourse altRc = new RequestedCourse();
+							altRc.setCourseId(altCa.getCourseId());
+							altRc.setCourseName(CONSTANTS.showCourseTitle() ? MESSAGES.courseNameWithTitle(altCa.getSubject(), altCa.getCourseNbr(), altCa.getTitle()) : MESSAGES.course(altCa.getSubject(), altCa.getCourseNbr()));
+							altRc.setCourseTitle(altCa.getTitle());
+							altRc.setCredit(altCa.guessCreditRange());
+							r.addRequestedCourse(altRc);
+						}
+					}
+					requests.getCourses().add(r);
+				} else {
+					CourseRequestInterface.Request r = new CourseRequestInterface.Request();
+					r.addRequestedCourse(rc);
+					requests.getCourses().add(r);
+				}
 			}
 		}
 		
@@ -658,10 +695,11 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 	}
 	
 	public void updateBackground() {
+		boolean includeAlternatives = (iMode == StudentSectioningPage.Mode.REQUESTS);
 		CourseRequestInterface requests = iRequests.getValue();
 		Set<String> selectedCourses = new HashSet<String>();
 		Set<Long> selectedCourseIds = new HashSet<Long>();
-		for (DegreeCourseInterface course: iPlan.listSelected()) {
+		for (DegreeCourseInterface course: iPlan.listSelected(false)) {
 			if (course.getId() != null) selectedCourses.add(course.getId());
 			if (course.getCourseId() != null) selectedCourseIds.add(course.getCourseId());
 		}
@@ -677,7 +715,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 					if (!requested)
 						color = "#D7FFD7"; // will be added if Apply is used
 				} else {
-					if (requested)
+					if (requested && !includeAlternatives)
 						color = "#FFD7D7"; // will be removed, not enrolled
 				}
 				setBackGroundColor(row, color);

@@ -76,7 +76,7 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 	private Map<Character, Integer> iTabAccessKeys = new HashMap<Character, Integer>();
 	private TakesValue<CourseRequestInterface> iRequests;
 	
-	public DegreePlanDialog(TakesValue<CourseRequestInterface> requests, AssignmentProvider assignments, CourseFinderCourseDetails... details) {
+	public DegreePlanDialog(StudentSectioningPage.Mode mode, TakesValue<CourseRequestInterface> requests, AssignmentProvider assignments, CourseFinderCourseDetails... details) {
 		super(true, false);
 		setEscapeToHide(true);
 		addStyleName("unitime-DegreePlanDialog");
@@ -84,7 +84,7 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 		
 		iForm = new SimpleForm();
 		
-		iDegreePlanTable = new DegreePlanTable(requests, assignments);
+		iDegreePlanTable = new DegreePlanTable(mode, requests, assignments);
 		iDegreePlanPanel = new ScrollPanel(iDegreePlanTable);
 		iDegreePlanPanel.setStyleName("unitime-ScrollPanel");
 		iDegreePlanPanel.addStyleName("plan");

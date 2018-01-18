@@ -83,6 +83,9 @@
 			<name>Student Course Requests</name>
 			<description>
 				<line>Show total credit range on the Student Course Requests page, assuming that the student will be able to get a complete schedule.</line>
+				<line>Degree Plan: when updating course requests with a degree plan, do not remove course requests that cannot be deleted (student is already enrolled in the course).
+					<line>Also, include alternatives from choice groups.</line>
+				</line>
 			</description>
 		</item>
 	</category>
