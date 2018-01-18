@@ -92,6 +92,12 @@
 					(the name text field already allows for up to 100 characters).</line>
 			</description>
 		</item>
+		<item>
+			<name>Timetable Grid: Export PDF</name>
+			<description>
+				<line>Print one table per each day of week when in the &quot;In Row [horizontal]&quot; mode (instead showing one table very wide table with all the days of the week inside).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>
