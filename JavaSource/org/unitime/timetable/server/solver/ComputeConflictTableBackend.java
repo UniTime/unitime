@@ -196,6 +196,7 @@ public class ComputeConflictTableBackend implements GwtRpcImplementation<Compute
     		if (sat) continue;
     		DistributionInfo dist = new DistributionInfo(ClassAssignmentDetailsBackend.toGroupConstraintInfo(new GroupConstraintInfo(assignment, gc)));
     		dist.getInfo().setValue((double)curPref);
+    		dist.getInfo().setIsSatisfied(false);
 			for (Lecture another: gc.variables()) {
 				if (!another.equals(lecture) && assignment.getValue(another)!=null)
 					dist.addClass(ClassAssignmentDetailsBackend.createClassAssignmentDetails(context, solver, another, false, false));
@@ -208,6 +209,7 @@ public class ComputeConflictTableBackend implements GwtRpcImplementation<Compute
     		if (fc.isHard() || fc.getNrViolations(assignment, null, dummies) == 0.0) continue;
     		DistributionInfo dist = new DistributionInfo(ClassAssignmentDetailsBackend.toGroupConstraintInfo(new GroupConstraintInfo(assignment, fc)));
     		dist.getInfo().setValue(Math.abs(fc.getCurrentPreference(assignment, null, dummies)));
+    		dist.getInfo().setIsSatisfied(false);
     		for (Lecture another: fc.variables()) {
 				if (!another.equals(lecture) && assignment.getValue(another)!=null)
 					dist.addClass(ClassAssignmentDetailsBackend.createClassAssignmentDetails(context, solver, another, false, false));
