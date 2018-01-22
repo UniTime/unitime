@@ -53,6 +53,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Conflict;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Student;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.gwt.shared.UserAuthenticationProvider;
@@ -206,6 +207,30 @@ public class EnrollmentTable extends Composite {
 	public UniTimeTable<ClassAssignmentInterface.Enrollment> getTable() { return iEnrollments; }
 	
 	public UniTimeHeaderPanel getHeader() { return iHeader; }
+	
+	public void showStudentSchedule(final Long studentId) {
+		iSectioningService.lookupStudent(iOnline, studentId, new AsyncCallback<ClassAssignmentInterface.Student>() {
+			@Override
+			public void onSuccess(final Student student) {
+				LoadingWidget.getInstance().show(MESSAGES.pleaseWait());
+				showStudentSchedule(student, new AsyncCallback<Boolean>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						LoadingWidget.getInstance().hide();
+						UniTimeNotifications.error(caught.getMessage());
+					}
+					@Override
+					public void onSuccess(Boolean result) {
+						LoadingWidget.getInstance().hide();
+					}
+				});						
+			}
+			@Override
+			public void onFailure(Throwable caught) {
+				UniTimeNotifications.error(caught.getMessage());
+			}
+		});
+	}
 	
 	public void showStudentSchedule(final ClassAssignmentInterface.Student student, final AsyncCallback<Boolean> callback) {
 		iSectioningService.getEnrollment(iOnline, student.getId(), new AsyncCallback<ClassAssignmentInterface>() {

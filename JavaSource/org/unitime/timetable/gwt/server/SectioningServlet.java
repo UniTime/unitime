@@ -2432,4 +2432,34 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 
 		return server.execute(server.createAction(SpecialRegistrationRetrieveAll.class).withRequest(request), currentUser());
 	}
+
+	@Override
+	public org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Student lookupStudent(boolean online, Long studentId) throws SectioningException, PageAccessException {
+		if (getSessionContext().getUser() == null || getSessionContext().getUser().getCurrentAcademicSessionId() == null) return null;
+		Student student = StudentDAO.getInstance().get(studentId);
+		if (student == null) return null;
+		getSessionContext().checkPermission(student, Right.StudentEnrollments);
+		ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
+		st.setId(student.getUniqueId());
+		st.setSessionId(getSessionContext().getUser().getCurrentAcademicSessionId());
+		st.setExternalId(student.getExternalUniqueId());
+		st.setCanShowExternalId(getSessionContext().hasPermission(Right.EnrollmentsShowExternalId));
+		st.setCanRegister(getSessionContext().hasPermission(Right.CourseRequests) && (getSessionContext().hasPermission(Right.StudentSchedulingAdmin) || getSessionContext().hasPermission(Right.StudentSchedulingAdvisor)));
+		st.setCanUseAssistant(online
+				? getSessionContext().hasPermission(Right.SchedulingAssistant) && (getSessionContext().hasPermission(Right.StudentSchedulingAdmin) || getSessionContext().hasPermission(Right.StudentSchedulingAdvisor))
+				: getStudentSolver() != null);
+		st.setName(student.getName(ApplicationProperty.OnlineSchedulingStudentNameFormat.value()));
+		for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(student.getAreaClasfMajors())) {
+			st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation());
+			st.addClassification(acm.getAcademicClassification().getCode());
+			st.addMajor(acm.getMajor().getCode());
+		}
+		for (StudentGroup g: student.getGroups()) {
+			st.addGroup(g.getGroupAbbreviation());
+		}
+		for (StudentAccomodation a: student.getAccomodations()) {
+			st.addAccommodation(a.getAbbreviation());
+		}
+		return st;
+	}
 }

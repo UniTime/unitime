@@ -26,6 +26,7 @@ import java.util.List;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
+import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
@@ -471,6 +472,8 @@ public class SavedHQLPage extends Composite {
 						ToolBox.open(GWT.getHostPageBaseURL() + "examDetail.do?examId=" + event.getData()[0]);
 					else if ("__Event".equals(iFirstField))
 						ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=events#event=" + event.getData()[0]);
+					else if ("__Student".equals(iFirstField))
+						new EnrollmentTable(false, true).showStudentSchedule(Long.valueOf(event.getData()[0]));
 				}
 			}
 		});
