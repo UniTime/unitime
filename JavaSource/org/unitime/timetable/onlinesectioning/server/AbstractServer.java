@@ -182,6 +182,11 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 				setReady(true);
 				getMemUsage();
 			} else {
+				if (Boolean.TRUE.equals(getProperty("ReloadingAllData", Boolean.FALSE))) {
+					iLog.info("Already reloading all data.");
+					return;
+				}
+				setProperty("ReloadingAllData", Boolean.TRUE);
 				execute(createAction(ReloadAllData.class), user, new ServerCallback<Boolean>() {
 					@Override
 					public void onSuccess(Boolean result) {
@@ -189,21 +194,25 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 							execute(createAction(CheckAllOfferingsAction.class), user, new ServerCallback<Boolean>() {
 								@Override
 								public void onSuccess(Boolean result) {
+									setProperty("ReloadingAllData", Boolean.FALSE);
 									setReady(true);
 									getMemUsage();
 								}
 								@Override
 								public void onFailure(Throwable exception) {
+									setProperty("ReloadingAllData", Boolean.FALSE);
 									iLog.error("Failed to check all offerings: " + exception.getMessage(), exception);
 								}
 							});
 						else {
+							setProperty("ReloadingAllData", Boolean.FALSE);
 							setReady(true);
 							getMemUsage();
 						}
 					}
 					@Override
 					public void onFailure(Throwable exception) {
+						setProperty("ReloadingAllData", Boolean.FALSE);
 						iLog.error("Failed to load server: " + exception.getMessage(), exception);
 					}
 				});
