@@ -27,7 +27,7 @@
             name="uniqueId"
             column="uniqueid"
             type="java.lang.Long"
-            length="10">
+            length="20">
 
             <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
                 <param name="sequence">point_in_time_seq</param>

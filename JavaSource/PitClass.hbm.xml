@@ -160,7 +160,7 @@
 		    column="class_suffix"
 		    type="java.lang.String"
 		    not-null="false"
-		    length="10"/>
+		    length="20"/>
 		
 		<property
 		    name="uniqueIdRolledForwardFrom"
