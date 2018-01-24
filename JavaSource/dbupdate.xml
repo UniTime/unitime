@@ -12916,7 +12916,7 @@
 		<plsql>create index %SCHEMA%.idx_advisor on %SCHEMA%.advisor(external_uid, role_id)</plsql>
 		<mysql>create index idx_advisor on %SCHEMA%.advisor(external_uid, role_id)</mysql>
 	</update>
-		<update version="191" date="24-Jan-2018" comment="Longer configuration name and class suffix in Point In Time Data">
+		<update version="194" date="24-Jan-2018" comment="Longer configuration name and class suffix in Point In Time Data">
 	    <plsql>alter table %SCHEMA%.pit_instr_offer_config modify name varchar2(20 char)</plsql>
 		<mysql>alter table %SCHEMA%.pit_instr_offer_config modify name varchar(20)</mysql>
 		<plsql>alter table %SCHEMA%.pit_class modify class_suffix varchar2(20 char)</plsql>

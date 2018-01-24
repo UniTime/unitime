@@ -25,6 +25,6 @@ alter table pit_class modify class_suffix varchar2(20 char);
  * Update database version
  */
 
-update application_config set value='191' where name='tmtbl.db.version';
+update application_config set value='194' where name='tmtbl.db.version';
 
 commit;
