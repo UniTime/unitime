@@ -109,11 +109,25 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
     
 	@Override
 	protected ProblemSaver<Request, Enrollment, StudentSectioningModel> getDatabaseSaver(Solver<Request, Enrollment> solver) {
+		try {
+			String saverClass = getProperties().getProperty("General.DatabaseSaver", StudentSectioningDatabaseSaver.class.getName());
+			if (saverClass != null)
+				return (ProblemSaver<Request, Enrollment, StudentSectioningModel>) Class.forName(saverClass).getConstructor(Solver.class).newInstance(solver);
+		} catch (Exception e) {
+			iProgress.error("Failed to create a custom database saver: " + e.getMessage(), e);
+		}
 		return new StudentSectioningDatabaseSaver(solver);
 	}
 
 	@Override
 	protected ProblemLoader<Request, Enrollment, StudentSectioningModel> getDatabaseLoader(StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+		try {
+			String loaderClass = getProperties().getProperty("General.DatabaseLoader", StudentSectioningDatabaseLoader.class.getName());
+			if (loaderClass != null)
+				return (ProblemLoader<Request, Enrollment, StudentSectioningModel>) Class.forName(loaderClass).getConstructor(StudentSectioningModel.class, Assignment.class).newInstance(model, assignment);
+		} catch (Exception e) {
+			iProgress.error("Failed to create a custom database loader: " + e.getMessage(), e);
+		}
 		return new StudentSectioningDatabaseLoader(model, assignment);
 	}
 
