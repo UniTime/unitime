@@ -409,7 +409,7 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 			boolean contain = false;
 			for (String s: subjectAreaIds.split(","))
 				if (s.equals(subjectAreaId)) { contain = true; break; }
-			if (!contain) {
+			if (!contain && sessionContext.hasPermission(offering.getControllingCourseOffering().getDepartment(), Right.InstructionalOfferings)) {
 				sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, subjectAreaId);
 			}
 		}
