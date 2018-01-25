@@ -150,12 +150,14 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		iTip.addStyleName("tip");
 		add(iTip);
 		
-		iAltHeader = new P("alt-header");
-		iAltHeaderTitle = new P("title"); iAltHeaderTitle.setText(MESSAGES.courseRequestsAlternatives());
-		iAltHeaderNote = new P("note"); iAltHeaderNote.setText(MESSAGES.courseRequestsAlternativesNote());
-		iAltHeader.add(iAltHeaderTitle);
-		iAltHeader.add(iAltHeaderNote);
-		add(iAltHeader);
+		if (CONSTANTS.numberOfAlternatives() > 0) {
+			iAltHeader = new P("alt-header");
+			iAltHeaderTitle = new P("title"); iAltHeaderTitle.setText(MESSAGES.courseRequestsAlternatives());
+			iAltHeaderNote = new P("note"); iAltHeaderNote.setText(MESSAGES.courseRequestsAlternativesNote());
+			iAltHeader.add(iAltHeaderTitle);
+			iAltHeader.add(iAltHeaderNote);
+			add(iAltHeader);
+		}
 
 		for (int i=0; i<CONSTANTS.numberOfAlternatives(); i++) {
 			final CourseRequestLine line = new CourseRequestLine(iSessionProvider, i, true, iCheckForDuplicities, iSectioning, iSpecReg);
@@ -177,7 +179,8 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			});
 			add(line);
 		}
-		iAlternatives.get(0).getCourses().get(0).setHint(MESSAGES.courseRequestsHintA0());
+		if (CONSTANTS.numberOfAlternatives() > 0)
+			iAlternatives.get(0).getCourses().get(0).setHint(MESSAGES.courseRequestsHintA0());
 	}
 	
 	private void addCourseLine() {
@@ -187,9 +190,11 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		CourseRequestLine prev = iCourses.get(i - 1);
 		prev.getCourses().get(0).setHint("");
 		line.getCourses().get(0).setHint(MESSAGES.courseRequestsHint8());
-		CourseRequestLine next = iAlternatives.get(0);
+		CourseRequestLine next = (iAlternatives.isEmpty() ? null : iAlternatives.get(0));
 		line.setPrevious(prev); prev.setNext(line);
-		line.setNext(next); next.setPrevious(line);
+		if (next != null) {
+			line.setNext(next); next.setPrevious(line);
+		}
 		line.setArrowsVisible(iArrowsVisible);
 		line.setWaitListVisible(iCanWaitList);
 		insert(line, 1 + i);
@@ -204,11 +209,21 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	}
 	
 	private void addAlternativeLine() {
+		if (iAlternatives.isEmpty()) {
+			iAltHeader = new P("alt-header");
+			iAltHeaderTitle = new P("title"); iAltHeaderTitle.setText(MESSAGES.courseRequestsAlternatives());
+			iAltHeaderNote = new P("note"); iAltHeaderNote.setText(MESSAGES.courseRequestsAlternativesNote());
+			iAltHeader.add(iAltHeaderTitle);
+			iAltHeader.add(iAltHeaderNote);
+			add(iAltHeader);
+		}
 		int i = iAlternatives.size();
 		final CourseRequestLine line = new CourseRequestLine(iSessionProvider, i, true, iCheckForDuplicities, iSectioning, iSpecReg);
 		iAlternatives.add(line);
-		CourseRequestLine prev = iAlternatives.get(i - 1);
-		line.setPrevious(prev); prev.setNext(line);
+		CourseRequestLine prev = (i == 0 ? iCourses.get(iCourses.size() - 1) : iAlternatives.get(i - 1));
+		if (prev != null) {
+			line.setPrevious(prev); prev.setNext(line);
+		}
 		line.setArrowsVisible(iArrowsVisible);
 		insert(line, 3 + iCourses.size() + i);
 		line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
