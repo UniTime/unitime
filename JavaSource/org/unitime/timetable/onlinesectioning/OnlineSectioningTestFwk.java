@@ -104,7 +104,7 @@ public abstract class OnlineSectioningTestFwk {
                 ApplicationProperties.getProperty("term","Fal")
                 );
         
-        boolean remote = "true".equalsIgnoreCase(ApplicationProperties.getProperty("remote", "true"));
+        boolean remote = "true".equalsIgnoreCase(ApplicationProperties.getProperty("remote", "false"));
 
         if (session==null) {
             sLog.error("Academic session not found, use properties initiative, year, and term to set academic session.");
@@ -139,7 +139,7 @@ public abstract class OnlineSectioningTestFwk {
             iServer = new InMemoryServer(new OnlineSectioningServerContext() {
     			@Override
     			public boolean isWaitTillStarted() {
-    				return true;
+    				return false;
     			}
     			
     			@Override
@@ -319,6 +319,15 @@ public abstract class OnlineSectioningTestFwk {
 	        HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
 	        
 			startServer();
+			
+			while (!getServer().isReady()) {
+				sLog.info("Waiting for the server to load...");
+				try {
+					Thread.sleep(10000);
+				} catch (InterruptedException e) {
+					break;
+				}
+			}
 			
 			List<Operation> operations = operations();
 			
