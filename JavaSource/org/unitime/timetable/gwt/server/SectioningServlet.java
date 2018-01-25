@@ -260,6 +260,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				}
 				course.setTitle(c.getTitle());
 				course.setHasUniqueName(true);
+				course.setHasCrossList(c.getInstructionalOffering().hasCrossList());
 				boolean unlimited = false;
 				int courseLimit = 0;
 				for (Iterator<InstrOfferingConfig> i = c.getInstructionalOffering().getInstrOfferingConfigs().iterator(); i.hasNext(); ) {
@@ -1055,6 +1056,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							c.setSubject(enrollment.getCourseOffering().getSubjectAreaAbbv());
 							c.setCourseNbr(enrollment.getCourseOffering().getCourseNbr());
 							c.setTitle(enrollment.getCourseOffering().getTitle());
+							c.setHasCrossList(enrollment.getCourseOffering().getInstructionalOffering().hasCrossList());
 							e.setCourse(c);
 							student2enrollment.put(enrollment.getStudent().getUniqueId(), e);
 							if (enrollment.getCourseRequest() != null) {
@@ -1151,6 +1153,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							c.setSubject(request.getCourseOffering().getSubjectAreaAbbv());
 							c.setCourseNbr(request.getCourseOffering().getCourseNbr());
 							c.setTitle(request.getCourseOffering().getTitle());
+							c.setHasCrossList(request.getCourseOffering().getInstructionalOffering().hasCrossList());
 							e.setCourse(c);
 							e.setWaitList(request.getCourseDemand().isWaitlist());
 							student2enrollment.put(request.getCourseDemand().getStudent().getUniqueId(), e);
@@ -1252,6 +1255,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								course.setSubject(enrollment.getCourseOffering().getSubjectAreaAbbv());
 								course.setTitle(enrollment.getCourseOffering().getTitle());
 								course.setWaitListed(enrollment.getCourseRequest() != null && enrollment.getCourseRequest().getCourseDemand().getWaitlist() != null && enrollment.getCourseRequest().getCourseDemand().getWaitlist().booleanValue());
+								course.setHasCrossList(enrollment.getCourseOffering().getInstructionalOffering().hasCrossList());
 								credit = enrollment.getCourseOffering().getCredit();
 								if (enrollment.getCourseRequest() != null)
 									course.setRequestedDate(enrollment.getCourseRequest().getCourseDemand().getTimestamp());
@@ -1367,6 +1371,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								course.setCourseNbr(request.getCourseOffering().getCourseNbr());
 								course.setSubject(request.getCourseOffering().getSubjectAreaAbbv());
 								course.setTitle(request.getCourseOffering().getTitle());
+								course.setHasCrossList(request.getCourseOffering().getInstructionalOffering().hasCrossList());
 								ClassAssignment clazz = course.addClassAssignment();
 								clazz.setCourseId(request.getCourseOffering().getUniqueId());
 								clazz.setCourseAssigned(false);

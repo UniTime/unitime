@@ -138,6 +138,7 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 					c.setSubject(course.getSubjectArea());
 					c.setCourseNbr(course.getCourseNumber());
 					c.setTitle(course.getTitle());
+					c.setHasCrossList(offering.hasCrossList());
 					e.setCourse(c);
 					e.setWaitList(request.isWaitlist());
 					if (!request.getCourseIds().get(0).equals(course))

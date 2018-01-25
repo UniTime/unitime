@@ -99,13 +99,15 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 		}
 		course.setEnrollment(enrl);
 		XOffering offering = server.getOffering(c.getOfferingId());
-		if (offering != null)
+		if (offering != null) {
 			for (XConfig config: offering.getConfigs()) {
 				if (config.getInstructionalMethod() != null)
 					course.addInstructionalMethod(config.getInstructionalMethod().getUniqueId(), config.getInstructionalMethod().getLabel());
 				else
 					course.setHasNoInstructionalMethod(true);
 			}
+			course.setHasCrossList(offering.hasCrossList());
+		}
 		return course;
 	}
 

@@ -39,7 +39,6 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
-import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasCellAlignment;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasColSpan;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasStyleName;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasVerticalCellAlignment;
@@ -655,17 +654,6 @@ public class EnrollmentTable extends Composite {
 		});
 	}
 	
-	private static class Number extends HTML implements HasCellAlignment {
-		public Number(String text) {
-			super(text, false);
-		}
-
-		@Override
-		public HorizontalAlignmentConstant getCellAlignment() {
-			return HasHorizontalAlignment.ALIGN_RIGHT;
-		}
-	}
-	
 	protected void refresh() {
 		clear();
 		iHeader.showLoading();
@@ -787,6 +775,7 @@ public class EnrollmentTable extends Composite {
 			if (filter(f, e)) continue;
 			if (courseId == null) courseId = e.getCourseId();
 			else if (e.getCourseId() != courseId) { crosslist = true; break; }
+			if (e.getCourse() != null && e.getCourse().hasCrossList()) { crosslist = true; break; }
 		}
 		
 		UniTimeTableHeader hCourse = null;
@@ -1161,7 +1150,7 @@ public class EnrollmentTable extends Composite {
 			if (crosslist)
 				line.add(new Label(enrollment.getCourseName(), false));
 			if (hasPriority)
-				line.add(new Number(enrollment.getPriority() <= 0 ? "&nbsp;" : MESSAGES.priority(enrollment.getPriority())));
+				line.add(new Label(enrollment.getPriority() <= 0 ? "&nbsp;" : MESSAGES.priority(enrollment.getPriority())));
 			if (hasAlternative)
 				line.add(new Label(enrollment.getAlternative(), false));
 			if (hasArea) {

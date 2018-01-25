@@ -528,6 +528,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
     			c.setCourseId(enrollment.getCourseOffering().getUniqueId());
     			c.setSubject(enrollment.getCourseOffering().getSubjectAreaAbbv());
     			c.setCourseNbr(enrollment.getCourseOffering().getCourseNbr());
+    			c.setHasCrossList(enrollment.getCourseOffering().getInstructionalOffering().hasCrossList());
     			enrl.setCourse(c);
     			student2enrollment.put(enrollment.getStudent().getUniqueId(), enrl);
     			if (enrollment.getCourseRequest() != null) {

@@ -618,6 +618,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					XCourse xc = server.getCourse(course.getId());
 					if (xc != null) ca.setTitle(xc.getTitle());
 					ca.setWaitListed(r.isWaitlist());
+					ca.setHasCrossList(course.getOffering().getCourses().size() > 1);
 					if (!r.isWaitlist()) 
 						nrUnassignedCourses++;
 					if (computeOverlaps) {
@@ -734,6 +735,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				ca.setCourseId(course.getId());
 				ca.setSubject(course.getSubjectArea());
 				ca.setCourseNbr(course.getCourseNumber());
+				ca.setHasCrossList(course.getOffering().getCourses().size() > 1);
 				boolean hasAlt = false;
 				if (r.getCourses().size() > 1) {
 					hasAlt = true;

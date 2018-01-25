@@ -2422,6 +2422,7 @@ public class CurriculaServlet implements CurriculaService {
 						course.setCreditAbbv(c.getCredit().creditAbbv());
 					}
 					course.setHasUniqueName(true);
+					course.setHasCrossList(c.getInstructionalOffering().hasCrossList());
 					boolean unlimited = false;
 					int courseLimit = 0;
 					for (Iterator<InstrOfferingConfig> i = c.getInstructionalOffering().getInstrOfferingConfigs().iterator(); i.hasNext(); ) {
