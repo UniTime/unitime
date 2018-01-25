@@ -55,6 +55,7 @@ import org.unitime.timetable.interfaces.ExternalInstructionalOfferingInCrosslist
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.CurriculumCourse;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Event;
@@ -278,6 +279,7 @@ public class CrossListsModifyAction extends Action {
         Transaction tx = null;
         HashMap saList = new HashMap();
         List<CurriculumCourse> cc = new ArrayList<CurriculumCourse>();
+        List<CourseRequest> courseRequests = new ArrayList<CourseRequest>();
         
         try {
 	        tx = hibSession.beginTransaction();
@@ -315,6 +317,20 @@ public class CrossListsModifyAction extends Action {
                     	x.getClassification().getCourses().remove(x);
                     	hibSession.delete(x);
                     }
+                    if (ApplicationProperty.ModifyCrossListKeepCourseRequests.isTrue())
+                    	for (CourseRequest oldReq: (List<CourseRequest>)hibSession.createQuery(
+                    			"from CourseRequest where courseOffering.uniqueId = :courseId")
+                    			.setLong("courseId", co1.getUniqueId()).list()) {
+                    		CourseRequest newReq = new CourseRequest();
+                    		newReq.setAllowOverlap(oldReq.getAllowOverlap());
+                    		newReq.setOrder(oldReq.getOrder());
+                    		newReq.setCredit(oldReq.getCredit());
+                    		newReq.setCourseOffering(co2);
+                    		newReq.setCourseDemand(oldReq.getCourseDemand());
+                    		oldReq.getCourseDemand().getCourseRequests().remove(oldReq);
+                    		courseRequests.add(newReq);
+                    		hibSession.delete(oldReq);
+                    	}
                     
 /*	                
 	                hibSession.saveOrUpdate(io1);
@@ -432,6 +448,20 @@ public class CrossListsModifyAction extends Action {
 	                    	x.getClassification().getCourses().remove(x);
 	                    	hibSession.delete(x);
 	                    }
+	                    if (ApplicationProperty.ModifyCrossListKeepCourseRequests.isTrue())
+	                    	for (CourseRequest oldReq: (List<CourseRequest>)hibSession.createQuery(
+	                    			"from CourseRequest where courseOffering.uniqueId = :courseId")
+	                    			.setLong("courseId", co2.getUniqueId()).list()) {
+	                    		CourseRequest newReq = new CourseRequest();
+	                    		newReq.setAllowOverlap(oldReq.getAllowOverlap());
+	                    		newReq.setOrder(oldReq.getOrder());
+	                    		newReq.setCredit(oldReq.getCredit());
+	                    		newReq.setCourseOffering(co3);
+	                    		newReq.setCourseDemand(oldReq.getCourseDemand());
+	                    		oldReq.getCourseDemand().getCourseRequests().remove(oldReq);
+	                    		courseRequests.add(newReq);
+	                    		hibSession.delete(oldReq);
+	                    	}
 
 	                    addedOfferings.addElement(co3);
 
@@ -498,6 +528,10 @@ public class CrossListsModifyAction extends Action {
 	        }
 	        for (CurriculumCourse x: cc)
 	        	hibSession.saveOrUpdate(x);
+	        for (CourseRequest x: courseRequests) {
+		        x.getCourseDemand().getCourseRequests().add(x);
+	        	hibSession.saveOrUpdate(x);
+	        }
             
 	        // Update managing department on all classes
 	        Department dept = io.getControllingCourseOffering().getDepartment();

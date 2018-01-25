@@ -1060,7 +1060,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 
 				OnlineSectioningServer server = getServerInstance(offering.getControllingCourseOffering().getSubjectArea().getSessionId(), false);
 				
-				if (server == null || !offering.isAllowStudentScheduling()) {
+				if (server == null || !offering.isAllowStudentScheduling() || offering.isNotOffered() || offering.getInstrOfferingConfigs().isEmpty()) {
 					NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingStudentNameFormat.value());
 					Map<String, String> approvedBy2name = new Hashtable<String, String>();
 					Hashtable<Long, ClassAssignmentInterface.Enrollment> student2enrollment = new Hashtable<Long, ClassAssignmentInterface.Enrollment>();

@@ -2325,6 +2325,11 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Authorization: a user with an advisor record must be associated with at least one student to get the advisor role.")
 	AuthorizationAdvisorMustHaveStudents("unitime.authorization.advisor.mustHaveStudents"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Instructional Offering Cross Lists: keep course requests of a course that is added to or dropped from a cross-list.")
+	ModifyCrossListKeepCourseRequests("unitime.crossList.keepCourseRequests"),
 
 	;
 
