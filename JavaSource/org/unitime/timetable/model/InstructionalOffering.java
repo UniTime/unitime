@@ -659,4 +659,8 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     		if (course.isAllowStudentScheduling()) return true;
     	return false;
     }
+    
+    public boolean hasCrossList() {
+    	return getCourseOfferings().size() > 1;
+    }
 }

@@ -176,6 +176,10 @@ public class XOffering implements Serializable, Externalizable {
         return iCourses;
     }
     
+    public boolean hasCrossList() {
+    	return iCourses.size() > 1;
+    }
+    
     public XCourse getControllingCourse() {
     	for (XCourse course: getCourses())
     		if (course.isControlling()) return course;

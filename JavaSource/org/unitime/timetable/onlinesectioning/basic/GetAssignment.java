@@ -153,6 +153,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 				ca.setCourseNbr(course.getCourseNumber());
 				ca.setTitle(course.getTitle());
 				ca.setTeachingAssignment(true);
+				ca.setHasCrossList(offering.hasCrossList());
 				
 				Set<Long> added = new HashSet<Long>();
 		    	for (XConfig config: offering.getConfigs())
@@ -249,6 +250,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 				ca.setTitle(course.getTitle());
 				ca.setEnrollmentMessage(r.getEnrollmentMessage());
 				ca.setRequestedDate(r.getTimeStamp());
+				ca.setHasCrossList(offering.hasCrossList());
 				if (enrollment == null) {
 					TreeSet<Enrollment> overlap = new TreeSet<Enrollment>(new Comparator<Enrollment>() {
 						@Override

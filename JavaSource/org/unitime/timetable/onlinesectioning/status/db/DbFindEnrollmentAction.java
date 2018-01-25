@@ -121,6 +121,7 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 			c.setSubject(course.getSubjectAreaAbbv());
 			c.setCourseNbr(course.getCourseNbr());
 			c.setTitle(course.getTitle());
+			c.setHasCrossList(course.getInstructionalOffering().hasCrossList());
 			e.setCourse(c);
 			e.setWaitList(request.getCourseDemand().isWaitlist());
 			if (crm.enrollment().isEmpty()) {

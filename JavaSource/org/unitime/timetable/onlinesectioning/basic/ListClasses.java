@@ -86,6 +86,7 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 			courseAssign.setCourseNbr(c.getCourseNumber());
 			courseAssign.setTitle(c.getTitle());
 			courseAssign.setSubject(c.getSubjectArea());
+			courseAssign.setHasCrossList(offering.hasCrossList());
 			for (XConfig config: offering.getConfigs())
 				for (XSubpart subpart: config.getSubparts())
 					for (XSection section: subpart.getSections()) {

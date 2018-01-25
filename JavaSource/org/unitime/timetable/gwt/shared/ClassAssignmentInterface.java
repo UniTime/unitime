@@ -113,7 +113,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Long iCourseId = null;
 		private boolean iAssigned = true, iTeachingAssigment = false;
 		private String iSubject, iCourseNbr, iTitle, iNote, iCreditText = null, iCreditAbbv = null;
-		private boolean iHasUniqueName = true;
+		private boolean iHasUniqueName = true, iHasCrossList = false;
 		private Integer iLimit = null, iProjected = null, iEnrollment = null, iLastLike = null;
 		
 		private ArrayList<String> iOverlaps = null;
@@ -190,6 +190,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 
 		public boolean hasUniqueName() { return iHasUniqueName; }
 		public void setHasUniqueName(boolean hasUniqueName) { iHasUniqueName = hasUniqueName; }
+		
+		public boolean hasCrossList() { return iHasCrossList; }
+		public void setHasCrossList(boolean hasCrossList) { iHasCrossList = hasCrossList; }
 
 		public void addOverlap(String overlap) {
 			if (iOverlaps == null) iOverlaps = new ArrayList<String>();
