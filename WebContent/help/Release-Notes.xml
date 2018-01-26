@@ -145,6 +145,13 @@
 				<line>Corrected checking whether a student is meeting course reservation (using the requested course, not stored course requests).</line>
 			</description>
 		</item>
+		<item>
+			<name>No Alternate Course Requests</name>
+			<description>
+				<line>Added an ability to hide Alternate Course Requests table (unless the student has some alternatives already).</line>
+				<line>To do this, set the StudentSectioningConstants.numberOfAlternatives constant to zero.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>

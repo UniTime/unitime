@@ -158,8 +158,8 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 		P line = (P)getWidget(0);
 		P buttons = (P)line.getWidget(2);
 		int idx = (iWaitList == null ? 0 : 1);
-		if (buttons.getWidget(idx) instanceof ImageButton) {
-			if (iPrevious == null) {
+		if (iPrevious == null) {
+			if (buttons.getWidget(idx) instanceof ImageButton) {
 				buttons.remove(idx);
 				P up = new P("blank");
 				buttons.add(up);
@@ -167,7 +167,9 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			}
 		} else {
 			ImageButton up = null;
-			if (iPrevious != null) {
+			if (buttons.getWidget(idx) instanceof ImageButton) {
+				up = (ImageButton)buttons.getWidget(idx);
+			} else {
 				buttons.remove(idx);
 				up = new ImageButton(RESOURCES.up(), RESOURCES.up_Down(), RESOURCES.up_Over());
 				up.addClickHandler(new ClickHandler() {
@@ -178,8 +180,6 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 				});
 				up.addStyleName("up");
 				buttons.insert(up, idx);
-			} else {
-				up = (ImageButton)getWidget(idx);
 			}
 			if (isAlternate()) {
 				if (iPrevious.isAlternate())
@@ -197,8 +197,8 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 		P line = (P)getWidget(0);
 		P buttons = (P)line.getWidget(2);
 		int idx = (iWaitList == null ? 1 : 2);
-		if (buttons.getWidget(idx) instanceof ImageButton) {
-			if (iNext == null) {
+		if (iNext == null) {
+			if (buttons.getWidget(idx) instanceof ImageButton) {
 				buttons.remove(idx);
 				P down = new P("blank");
 				buttons.add(down);
@@ -206,7 +206,9 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			}
 		} else {
 			ImageButton down = null;
-			if (iNext != null) {
+			if (buttons.getWidget(idx) instanceof ImageButton) {
+				down = (ImageButton)buttons.getWidget(idx);
+			} else {
 				buttons.remove(idx);
 				down = new ImageButton(RESOURCES.down(), RESOURCES.down_Down(), RESOURCES.down_Over());
 				down.addClickHandler(new ClickHandler() {
@@ -217,8 +219,6 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 				});
 				down.addStyleName("down");
 				buttons.insert(down, idx);
-			} else {
-				down = (ImageButton)getWidget(idx);
 			}
 			if (isAlternate()) {
 				down.setAltText(ARIA.altSwapAlternateRequest(getPriority() + 1, getPriority() + 2));
