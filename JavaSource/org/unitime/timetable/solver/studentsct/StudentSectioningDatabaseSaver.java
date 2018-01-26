@@ -293,27 +293,27 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
     
     public void save(Session session, org.hibernate.Session hibSession) {
         iClasses = new Hashtable<Long, Class_>();
-        iProgress.setPhase("Loading classes...", 1);
+        setPhase("Loading classes...", 1);
         for (Class_ clazz: (List<Class_>)hibSession.createQuery(
         		"select distinct c from Class_ c where " +
         		"c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
         		.setLong("sessionId", session.getUniqueId()).list()) {
             iClasses.put(clazz.getUniqueId(),clazz);
         }
-        iProgress.incProgress();
+        incProgress();
         
         if (iIncludeCourseDemands && !iProjections) {
             iCourses = new Hashtable<Long, CourseOffering>();
-            iProgress.setPhase("Loading courses...", 1);
+            setPhase("Loading courses...", 1);
             for (CourseOffering course: (List<CourseOffering>)hibSession.createQuery(
             		"select distinct c from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId")
             		.setLong("sessionId", session.getUniqueId()).list()) {
                 iCourses.put(course.getUniqueId(), course);
             }
-            iProgress.incProgress();
+            incProgress();
 
             iStudents = new Hashtable<Long, org.unitime.timetable.model.Student>();
-            iProgress.setPhase("Loading students...", 1);
+            setPhase("Loading students...", 1);
             for (org.unitime.timetable.model.Student student: (List<org.unitime.timetable.model.Student>)hibSession.createQuery(
             		"select distinct s from Student s " +
                     "left join fetch s.courseDemands as cd "+
@@ -324,11 +324,11 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             		.setLong("sessionId", session.getUniqueId()).list()) {
             	iStudents.put(student.getUniqueId(), student);
             }
-            iProgress.incProgress();
+            incProgress();
             
             
             iRequests = new Hashtable<String, org.unitime.timetable.model.CourseRequest>();
-            iProgress.setPhase("Loading course demands...", 1);
+            setPhase("Loading course demands...", 1);
             for (CourseDemand demand: (List<CourseDemand>)hibSession.createQuery(
             		"select distinct c from CourseDemand c " +
             		"left join fetch c.courseRequests r " +
@@ -340,9 +340,9 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
                     iRequests.put(demand.getUniqueId()+":"+request.getCourseOffering().getInstructionalOffering().getUniqueId(), request);
                 }
             }
-            iProgress.incProgress();
+            incProgress();
             
-            iProgress.setPhase("Saving student enrollments...", getModel().getStudents().size());
+            setPhase("Saving student enrollments...", getModel().getStudents().size());
             String statusToSet = getSolver().getProperties().getProperty("Save.StudentSectioningStatusToSet");
             if ("Default".equalsIgnoreCase(statusToSet)) {
             	iStatusToSet = null; iResetStatus = true;
@@ -357,7 +357,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             if (iStatusToSet == null && !iResetStatus)
             	iProgress.info("Keeping student sectioning status unchanged.");
             for (Iterator e=getModel().getStudents().iterator();e.hasNext();) {
-                Student student = (Student)e.next(); iProgress.incProgress();
+                Student student = (Student)e.next(); incProgress();
                 if (student.isDummy()) continue;
                 saveStudent(hibSession, student);
             }
@@ -365,9 +365,9 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         }
         
         if (getModel().getNrLastLikeRequests(false) > 0 || iProjections) {
-            iProgress.setPhase("Computing expected/held space for online sectioning...", 0);
+            setPhase("Computing expected/held space for online sectioning...", 0);
             getModel().computeOnlineSectioningInfos(getAssignment());
-            iProgress.incProgress();
+            incProgress();
             
         	Hashtable<Long, SectioningInfo> infoTable = new Hashtable<Long, SectioningInfo>();
         	List<SectioningInfo> infos = hibSession.createQuery(
@@ -377,9 +377,9 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         	for (SectioningInfo info : infos)
         		infoTable.put(info.getClazz().getUniqueId(), info);
             
-            iProgress.setPhase("Saving expected/held space for online sectioning...", getModel().getOfferings().size());
+            setPhase("Saving expected/held space for online sectioning...", getModel().getOfferings().size());
             for (Iterator e=getModel().getOfferings().iterator();e.hasNext();) {
-                Offering offering = (Offering)e.next(); iProgress.incProgress();
+                Offering offering = (Offering)e.next(); incProgress();
                 for (Iterator f=offering.getConfigs().iterator();f.hasNext();) {
                     Config config = (Config)f.next();
                     for (Iterator g=config.getSubparts().iterator();g.hasNext();) {
@@ -406,9 +406,9 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         // Update class enrollments
         /*
         if (!iProjections) {
-            iProgress.setPhase("Updating enrollment counts...", getModel().getOfferings().size());
+            setPhase("Updating enrollment counts...", getModel().getOfferings().size());
             for (Offering offering: getModel().getOfferings()) {
-                iProgress.incProgress();
+                incProgress();
                 for (Config config: offering.getConfigs()) {
                     for (Subpart subpart: config.getSubparts()) {
                         for (Section section: subpart.getSections()) {
@@ -439,7 +439,22 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         
         flush(hibSession);
         
-        iProgress.setPhase("Done",1);iProgress.incProgress();
+        setPhase("Done",1);incProgress();
+    }
+    
+    protected void checkTermination() {
+    	if (getTerminationCondition() != null && !getTerminationCondition().canContinue(getSolution()))
+    		throw new RuntimeException("The save was interrupted.");
+    }
+    
+    protected void setPhase(String phase, long progressMax) {
+    	checkTermination();
+    	iProgress.setPhase(phase, progressMax);
+    }
+    
+    protected void incProgress() {
+    	checkTermination();
+    	iProgress.incProgress();
     }
 
 }

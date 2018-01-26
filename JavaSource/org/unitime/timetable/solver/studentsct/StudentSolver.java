@@ -111,7 +111,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	protected ProblemSaver<Request, Enrollment, StudentSectioningModel> getDatabaseSaver(Solver<Request, Enrollment> solver) {
 		try {
 			String saverClass = getProperties().getProperty("General.DatabaseSaver", StudentSectioningDatabaseSaver.class.getName());
-			if (saverClass != null)
+			if (saverClass != null && !saverClass.isEmpty())
 				return (ProblemSaver<Request, Enrollment, StudentSectioningModel>) Class.forName(saverClass).getConstructor(Solver.class).newInstance(solver);
 		} catch (Exception e) {
 			iProgress.error("Failed to create a custom database saver: " + e.getMessage(), e);
@@ -123,7 +123,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	protected ProblemLoader<Request, Enrollment, StudentSectioningModel> getDatabaseLoader(StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
 		try {
 			String loaderClass = getProperties().getProperty("General.DatabaseLoader", StudentSectioningDatabaseLoader.class.getName());
-			if (loaderClass != null)
+			if (loaderClass != null && !loaderClass.isEmpty())
 				return (ProblemLoader<Request, Enrollment, StudentSectioningModel>) Class.forName(loaderClass).getConstructor(StudentSectioningModel.class, Assignment.class).newInstance(model, assignment);
 		} catch (Exception e) {
 			iProgress.error("Failed to create a custom database loader: " + e.getMessage(), e);
@@ -768,5 +768,24 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 								}
 		}
 		return ret;
+	}
+	
+	@Override
+	public boolean isRunning() {
+		if (super.isRunning()) return true;
+		if (iWorking && iWorkThread != null && iWorkThread instanceof InterruptibleThread && iWorkThread.isAlive() && !iWorkThread.isInterrupted())
+			return true;
+		return false;
+	}
+	
+	@Override
+	public void stopSolver() {
+		if (super.isRunning()) super.stopSolver();
+		if (iWorking && iWorkThread != null && iWorkThread instanceof InterruptibleThread && iWorkThread.isAlive() && !iWorkThread.isInterrupted()) {
+			try {
+				iWorkThread.interrupt();
+				iWorkThread.join();
+			} catch (InterruptedException e) {}
+		}
 	}
 }

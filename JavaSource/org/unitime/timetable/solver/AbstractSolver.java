@@ -737,7 +737,7 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
     	return (M)currentSolution().getModel();
     }
     
-    static class InterruptibleThread<V extends Variable<V, T>, T extends Value<V, T>> extends Thread implements TerminationCondition<V, T> {
+    public static class InterruptibleThread<V extends Variable<V, T>, T extends Value<V, T>> extends Thread implements TerminationCondition<V, T> {
     	InterruptibleThread(Runnable runnable) {
     		super(runnable);
     	}

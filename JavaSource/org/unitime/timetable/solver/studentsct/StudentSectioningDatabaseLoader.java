@@ -47,6 +47,7 @@ import org.cpsolver.coursett.model.Lecture;
 import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.RoomLocation;
 import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.ifs.solution.Solution;
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.IdGenerator;
 import org.cpsolver.ifs.util.Progress;
@@ -1107,9 +1108,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     }
     
     private void fixWeights(org.hibernate.Session hibSession, Collection<Course> courses) {
-    	iProgress.setPhase("Computing projected request weights...", courses.size());
+    	setPhase("Computing projected request weights...", courses.size());
     	for (Course course: courses) {
-    		iProgress.incProgress();
+    		incProgress();
     		
     		Map<String, Integer> cur2real = iCourse2Curricula2Weight.get(course.getId());
     		if (cur2real != null) {
@@ -1501,9 +1502,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 "io.session.uniqueId = :sessionId and io.notOffered = false and co.subjectArea.department.allowStudentScheduling = true").
                 setLong("sessionId",session.getUniqueId().longValue()).
                 setFetchSize(1000).list();
-        iProgress.setPhase("Loading course offerings...", offerings.size());
+        setPhase("Loading course offerings...", offerings.size());
         for (InstructionalOffering io: offerings) {
-        	iProgress.incProgress();
+        	incProgress();
             Offering offering = loadOffering(io, courseTable, classTable);
             if (offering!=null) getModel().addOffering(offering);
         }
@@ -1521,9 +1522,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     "where s.session.uniqueId=:sessionId").
                     setLong("sessionId",session.getUniqueId().longValue()).
                     setFetchSize(1000).list();
-            iProgress.setPhase("Loading student requests...", students.size());
+            setPhase("Loading student requests...", students.size());
             for (Iterator i=students.iterator();i.hasNext();) {
-                org.unitime.timetable.model.Student s = (org.unitime.timetable.model.Student)i.next(); iProgress.incProgress();
+                org.unitime.timetable.model.Student s = (org.unitime.timetable.model.Student)i.next(); incProgress();
                 if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty() && s.getWaitlists().isEmpty()) continue;
                 Student student = loadStudent(s, courseTable, classTable);
                 if (student == null) continue;
@@ -1576,7 +1577,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		.setLong("sessionId", iSessionId)
         		.list();
         if (!distPrefs.isEmpty()) {
-        	iProgress.setPhase("Loading distribution preferences...", distPrefs.size());
+        	setPhase("Loading distribution preferences...", distPrefs.size());
         	SectionProvider p = new SectionProvider() {
 				@Override
 				public Section get(Long classId) {
@@ -1584,7 +1585,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 				}
 			};
         	for (DistributionPref pref: distPrefs) {
-        		iProgress.incProgress();
+        		incProgress();
         		for (Collection<Section> sections: getSections(pref, p)) {
         			if (GroupConstraint.ConstraintType.LINKED_SECTIONS.reference().equals(pref.getDistributionType().getReference())) {
         				getModel().addLinkedSections(iLinkedClassesMustBeUsed, sections);
@@ -1598,9 +1599,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         }
         
         if (iIncludeUnavailabilities) {
-        	iProgress.setPhase("Loading unavailabilities...", offerings.size());
+        	setPhase("Loading unavailabilities...", offerings.size());
         	for (InstructionalOffering offering: offerings) {
-        		iProgress.incProgress();
+        		incProgress();
         		for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
         			for (SchedulingSubpart subpart: config.getSchedulingSubparts()) {
         				for (Class_ clazz: subpart.getClasses()) {
@@ -1636,15 +1637,15 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	}
         }
         
-        iProgress.setPhase("Assigning students...", getModel().getStudents().size());
+        setPhase("Assigning students...", getModel().getStudents().size());
         for (Student student: getModel().getStudents()) {
-        	iProgress.incProgress();
+        	incProgress();
         	assignStudent(student);
         }
         
-        iProgress.setPhase("Checking for student conflicts...", getModel().getStudents().size());
+        setPhase("Checking for student conflicts...", getModel().getStudents().size());
         for (Student student: getModel().getStudents()) {
-        	iProgress.incProgress();
+        	incProgress();
         	checkForConflicts(student);
         }
         
@@ -1658,9 +1659,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 List enrollments = hibSession.createQuery("select distinct se.studentId, se.clazz.uniqueId from StudentEnrollment se where "+
                     "se.solution.commited=true and se.solution.owner.session.uniqueId=:sessionId").
                     setLong("sessionId",session.getUniqueId().longValue()).setFetchSize(1000).list();
-                iProgress.setPhase("Loading projected class assignments...", enrollments.size());
+                setPhase("Loading projected class assignments...", enrollments.size());
                 for (Iterator i=enrollments.iterator();i.hasNext();) {
-                    Object[] o = (Object[])i.next(); iProgress.incProgress();
+                    Object[] o = (Object[])i.next(); incProgress();
                     Long studentId = (Long)o[0];
                     Long classId = (Long)o[1];
                     Set<Long> classIds = classAssignments.get(studentId);
@@ -1672,10 +1673,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 }
             }
     		
-            iProgress.setPhase("Loading projected course requests...", offerings.size());
+            setPhase("Loading projected course requests...", offerings.size());
         	long requestId = -1;
             for (InstructionalOffering io: offerings) {
-            	iProgress.incProgress();
+            	incProgress();
             	for (CourseOffering co: io.getCourseOfferings()) {
         	        Course course = courseTable.get(co.getUniqueId());
         	        if (course == null) continue;
@@ -1738,9 +1739,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 List enrollments = hibSession.createQuery("select distinct se.studentId, se.clazz.uniqueId from StudentEnrollment se where "+
                     "se.solution.commited=true and se.solution.owner.session.uniqueId=:sessionId").
                     setLong("sessionId",session.getUniqueId().longValue()).setFetchSize(1000).list();
-                iProgress.setPhase("Loading last-like class assignments...", enrollments.size());
+                setPhase("Loading last-like class assignments...", enrollments.size());
                 for (Iterator i=enrollments.iterator();i.hasNext();) {
-                    Object[] o = (Object[])i.next(); iProgress.incProgress();
+                    Object[] o = (Object[])i.next(); incProgress();
                     Long studentId = (Long)o[0];
                     Long classId = (Long)o[1];
                     Set<Long> classIds = classAssignments.get(studentId);
@@ -1762,10 +1763,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     " (cx.permId!=null and cx.permId=d.coursePermId)) "+
                     "order by s.uniqueId, d.priority, d.uniqueId").
                     setLong("sessionId",session.getUniqueId().longValue()).setFetchSize(1000).list();
-            iProgress.setPhase("Loading last-like course requests...", enrollments.size());
+            setPhase("Loading last-like course requests...", enrollments.size());
             Hashtable lastLikeStudentTable = new Hashtable();
             for (Iterator i=enrollments.iterator();i.hasNext();) {
-                Object[] o = (Object[])i.next();iProgress.incProgress();
+                Object[] o = (Object[])i.next();incProgress();
                 LastLikeCourseDemand d = (LastLikeCourseDemand)o[0];
                 org.unitime.timetable.model.Student s = (org.unitime.timetable.model.Student)d.getStudent();
                 Long courseOfferingId = (Long)o[1];
@@ -1786,9 +1787,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 				"select i from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
 				.setLong("sessionId", iSessionId)
 				.list();
-        	iProgress.setPhase("Loading sectioning infos...", infos.size());
+        	setPhase("Loading sectioning infos...", infos.size());
         	for (SectioningInfo info : infos) {
-        		iProgress.incProgress();
+        		incProgress();
         		Section section = classTable.get(info.getClazz().getUniqueId());
         		if (section != null) {
         			section.setSpaceExpected(info.getNbrExpectedStudents());
@@ -1801,8 +1802,21 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	}	
         }
         
-        iProgress.setPhase("Done",1);iProgress.incProgress();
+        setPhase("Done",1);incProgress();
     }
     
+    protected void checkTermination() {
+    	if (getTerminationCondition() != null && !getTerminationCondition().canContinue(new Solution<Request, Enrollment>(getModel(), getAssignment())))
+    		throw new RuntimeException("The load was interrupted.");
+    }
     
+    protected void setPhase(String phase, long progressMax) {
+    	checkTermination();
+    	iProgress.setPhase(phase, progressMax);
+    }
+    
+    protected void incProgress() {
+    	checkTermination();
+    	iProgress.incProgress();
+    }
 }
