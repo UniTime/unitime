@@ -98,6 +98,12 @@
 				<line>Print one table per each day of week when in the &quot;In Row [horizontal]&quot; mode (instead showing one table very wide table with all the days of the week inside).</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructional Offering Detail: Enrollments Table</name>
+			<description>
+				<line>Allow schedule managers from non-controlling departments to see the enrollments.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>

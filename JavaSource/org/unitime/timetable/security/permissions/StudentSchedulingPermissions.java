@@ -149,7 +149,9 @@ public class StudentSchedulingPermissions {
 				
 				return false;
 			} else {
-				return permissionDepartment.check(user, source.getControllingCourseOffering().getSubjectArea().getDepartment());
+				for (CourseOffering course: source.getCourseOfferings())
+					if (permissionDepartment.check(user, course.getSubjectArea().getDepartment())) return true;
+				return false;
 			}
 		}
 
