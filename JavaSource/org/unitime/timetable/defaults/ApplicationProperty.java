@@ -2283,7 +2283,11 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Class class suffix / external id: when true for six character class suffixes insert a \'-\' between the first three characters and the last three characters.")
 	ClassSuffixDivSecFormat("unitime.class.classSuffix.divSecDivider"),
-
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Instructional Offering Cross Lists: keep course requests of a course that is added to or dropped from a cross-list.")
+	ModifyCrossListKeepCourseRequests("unitime.crossList.keepCourseRequests"),
 	;
 
 

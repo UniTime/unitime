@@ -104,6 +104,14 @@
 				<line>Allow schedule managers from non-controlling departments to see the enrollments.</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructional Offering Cross Lists: Keep Course Requests</name>
+			<description>
+				<line>Added an ability to keep course requests on the course that is added to or dropped from a cross-list.
+					<line>Enable this feature by setting unitime.crossList.keepCourseRequests to true (default is false).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>
