@@ -194,6 +194,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 					if (iEmail == null) iEmail = student.getEmail();
 					UserAuthority authority = new RoleAuthority(student.getUniqueId(), studentRole);
 					authority.addQualifier(student.getSession());
+					authority.addQualifier(student);
 					addAuthority(authority);
 					sessions.add(student.getSession());
 				}				

@@ -157,6 +157,7 @@ public class AcademicSessionSelector implements AcademicSessionProvider {
 				AriaStatus.getInstance().setText(caught.getMessage());
 				iSessions.clearTable(1);
 				iSessions.addRow(null, new EmptyTableCell(caught.getMessage()));
+				iDialog.setAutoHideEnabled(true);
 				iDialog.center();
 			}
 		});

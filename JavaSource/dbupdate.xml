@@ -12922,5 +12922,34 @@
 		<plsql>alter table %SCHEMA%.pit_class modify class_suffix varchar2(20 char)</plsql>
 		<mysql>alter table %SCHEMA%.pit_class modify class_suffix varchar(20)</mysql>
 	</update>
-	
+	<update version="195" date="26-Jan-2018" comment="Student Scheduling Permissions">
+	    <sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'StudentSchedulingAdvisorCanModifyMyStudents'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'StudentSchedulingAdvisor'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'StudentSchedulingAdvisorCanModifyAllStudents'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'StudentSchedulingAdvisor'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'StudentSchedulingCanRegister'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value in ('StudentSchedulingAdmin','StudentSchedulingAdvisor')
+		</sql>
+		<sql onFail="next">
+			insert into %SCHEMA%.rights (select role_id, 'StudentSchedulingCanRegister' as value from %SCHEMA%.roles where reference = 'Student')
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'StudentSchedulingCanEnroll'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value in ('StudentSchedulingAdmin','StudentSchedulingAdvisor')
+		</sql>
+		<sql onFail="next">
+			insert into %SCHEMA%.rights (select role_id, 'StudentSchedulingCanEnroll' as value from %SCHEMA%.roles where reference = 'Student')
+		</sql>
+		<mysql><![CDATA[update %SCHEMA%.sectioning_status set status = status + 3584 where (status & 256 = 256) and (status & 3584 = 0)]]></mysql>
+		<plsql>update %SCHEMA%.sectioning_status set status = status + 3584 where bitand(status, 256) = 256 and bitand(status, 3584) = 0</plsql>
+	</update>
 </dbupdate>

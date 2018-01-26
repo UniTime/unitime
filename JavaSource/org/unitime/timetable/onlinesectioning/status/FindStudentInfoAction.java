@@ -36,6 +36,8 @@ import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.Sec
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.StudentInfo;
+import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -126,6 +128,12 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		Set<Long> unassigned = new HashSet<Long>();
 		Set<Long> assigned = new HashSet<Long>();
 		AcademicSessionInfo session = server.getAcademicSession();
+		Set<String> regStates = new HashSet<String>();
+		Set<String> assStates = new HashSet<String>();
+		for (StudentSectioningStatus status: StudentSectioningStatusDAO.getInstance().findAll(helper.getHibSession())) {
+			if (status.hasOption(StudentSectioningStatus.Option.enabled)) assStates.add(status.getReference());
+			if (status.hasOption(StudentSectioningStatus.Option.regenabled)) regStates.add(status.getReference());
+		}
 		DistanceMetric dm = server.getDistanceMetric();
 		Set<Long> studentIds = (iFilter == null ? null : server.createAction(SectioningStatusFilterAction.class).forRequest(iFilter).getStudentIds(server, helper));
 		for (XCourseId info: findCourses(server, helper)) {
@@ -153,8 +161,9 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						st.setSessionId(session.getUniqueId());
 						st.setExternalId(student.getExternalId());
 						st.setCanShowExternalId(iCanShowExtIds);
-						st.setCanRegister(iCanRegister);
-						st.setCanUseAssistant(iCanUseAssistant);
+						String status = (student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
+						st.setCanRegister(iCanRegister && (status == null || regStates.contains(status)));
+						st.setCanUseAssistant(iCanUseAssistant && (status == null || assStates.contains(status)));
 						st.setName(student.getName());
 						for (XAreaClassificationMajor acm: student.getMajors()) {
 							st.addArea(acm.getArea());
@@ -391,8 +400,9 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 					st.setSessionId(session.getUniqueId());
 					st.setExternalId(student.getExternalId());
 					st.setCanShowExternalId(iCanShowExtIds);
-					st.setCanRegister(iCanRegister);
-					st.setCanUseAssistant(iCanUseAssistant);
+					String status = (student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
+					st.setCanRegister(iCanRegister && (status == null || regStates.contains(status)));
+					st.setCanUseAssistant(iCanUseAssistant && (status == null || assStates.contains(status)));
 					st.setName(student.getName());
 					for (XAreaClassificationMajor acm: student.getMajors()) {
 						st.addArea(acm.getArea());
@@ -419,8 +429,9 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 					st.setSessionId(session.getUniqueId());
 					st.setExternalId(student.getExternalId());
 					st.setCanShowExternalId(iCanShowExtIds);
-					st.setCanRegister(iCanRegister);
-					st.setCanUseAssistant(iCanUseAssistant);
+					String status = (student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
+					st.setCanRegister(iCanRegister && (status == null || regStates.contains(status)));
+					st.setCanUseAssistant(iCanUseAssistant && (status == null || assStates.contains(status)));
 					st.setName(student.getName());
 					for (XAreaClassificationMajor acm: student.getMajors()) {
 						st.addArea(acm.getArea());

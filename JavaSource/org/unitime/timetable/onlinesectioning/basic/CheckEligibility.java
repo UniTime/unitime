@@ -51,6 +51,7 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 	protected Long iStudentId;
 	protected EligibilityCheck iCheck;
 	protected boolean iCustomCheck = true;
+	protected Boolean iPermissionCanEnroll;
 	
 	public CheckEligibility forStudent(Long studentId) {
 		iStudentId = studentId;
@@ -64,6 +65,11 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 	
 	public CheckEligibility includeCustomCheck(boolean customCheck) {
 		iCustomCheck = customCheck;
+		return this;
+	}
+	
+	public CheckEligibility withPermission(boolean canEnroll) {
+		iPermissionCanEnroll = canEnroll;
 		return this;
 	}
 	
@@ -121,11 +127,16 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 				if (status == null) status = student.getSession().getDefaultSectioningStatus();
 				boolean disabled = (status != null && !status.hasOption(StudentSectioningStatus.Option.enabled));
 				
-				boolean noenrl = (status != null && !status.hasOption(StudentSectioningStatus.Option.enrollment));
-				if (noenrl && status.hasOption(StudentSectioningStatus.Option.admin) && iCheck.hasFlag(EligibilityFlag.IS_ADMIN))
-					noenrl = false;
-				if (noenrl && status.hasOption(StudentSectioningStatus.Option.advisor) && iCheck.hasFlag(EligibilityFlag.IS_ADVISOR))
-					noenrl = false;
+				boolean noenrl = false;
+				if (iPermissionCanEnroll != null) {
+					noenrl = !iPermissionCanEnroll;
+				} else {
+					noenrl = (status != null && !status.hasOption(StudentSectioningStatus.Option.enrollment));
+					if (noenrl && status.hasOption(StudentSectioningStatus.Option.admin) && iCheck.hasFlag(EligibilityFlag.IS_ADMIN))
+						noenrl = false;
+					if (noenrl && status.hasOption(StudentSectioningStatus.Option.advisor) && iCheck.hasFlag(EligibilityFlag.IS_ADVISOR))
+						noenrl = false;
+				}
 				
 				if (status != null && !status.hasOption(StudentSectioningStatus.Option.waitlist))
 					iCheck.setFlag(EligibilityFlag.CAN_WAITLIST, false);

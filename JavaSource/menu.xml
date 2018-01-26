@@ -440,14 +440,14 @@
 		<separator>
 			<condition>
 				<or>
-					<hasPermission name="SchedulingAssistant" authority="any"/>
-					<hasPermission name="CourseRequests" authority="any"/>
+					<hasPermission name="SchedulingAssistant" authority="role"/>
+					<hasPermission name="CourseRequests" authority="role"/>
 				</or>
 			</condition>
 		</separator>
 		<item name="Scheduling Assistant" page="sectioning" type="gwt">
 			<condition>
-				<hasPermission name="SchedulingAssistant" authority="any"/>
+				<hasPermission name="SchedulingAssistant" authority="role"/>
 			</condition>
 		</item>
 		<item name="Online Scheduling Dashboard" page="onlinesctdash" type="gwt">
@@ -462,7 +462,7 @@
 		</item>
 		<item name="Course Requests" page="requests" type="gwt">
 			<condition>
-				<hasPermission name="CourseRequests" authority="any"/>
+				<hasPermission name="CourseRequests" authority="role"/>
 			</condition>
 		</item>
 		<separator/>
@@ -633,7 +633,7 @@
 	</menu>
 	<item name="Course Requests" page="requests" type="gwt">
 		<condition>
-			<hasPermission name="CourseRequests" authority="any"/>	
+			<hasPermission name="CourseRequests" authority="role"/>	
 			<not>
 				<hasPermission name="StudentScheduling"/>
 			</not>
@@ -641,7 +641,7 @@
 	</item>
 	<item name="Scheduling Assistant" page="sectioning" type="gwt">
 		<condition>
-			<hasPermission name="SchedulingAssistant" authority="any"/>	
+			<hasPermission name="SchedulingAssistant" authority="role"/>	
 			<not>
 				<hasPermission name="StudentScheduling"/>
 			</not>

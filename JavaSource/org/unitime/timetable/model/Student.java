@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -30,6 +31,7 @@ import org.hibernate.Query;
 import org.unitime.timetable.model.base.BaseStudent;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.util.NameFormat;
 import org.unitime.timetable.util.NameInterface;
 
@@ -39,7 +41,7 @@ import org.unitime.timetable.util.NameInterface;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
-public class Student extends BaseStudent implements Comparable<Student>, NameInterface {
+public class Student extends BaseStudent implements Comparable<Student>, NameInterface, Qualifiable {
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -235,5 +237,24 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
 
 	@Override
 	public String getAcademicTitle() { return null; }
+	
+	@Override
+	public Serializable getQualifierId() {
+		return getUniqueId();
+	}
 
+	@Override
+	public String getQualifierType() {
+		return getClass().getSimpleName();
+	}
+
+	@Override
+	public String getQualifierReference() {
+		return getExternalUniqueId();
+	}
+
+	@Override
+	public String getQualifierLabel() {
+		return NameFormat.LAST_FIRST_MIDDLE.format(this);
+	}
 }

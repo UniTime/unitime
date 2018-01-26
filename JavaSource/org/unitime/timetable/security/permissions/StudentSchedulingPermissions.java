@@ -19,8 +19,11 @@
 */
 package org.unitime.timetable.security.permissions;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -28,9 +31,12 @@ import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.DepartmentStatusType.Status;
+import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.UserQualifier;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.service.SolverServerService;
 
@@ -76,7 +82,21 @@ public class StudentSchedulingPermissions {
 			if (!permissionSession.check(user, source, DepartmentStatusType.Status.StudentsAssistant, DepartmentStatusType.Status.StudentsOnline))
 				return false;
 			
-			return hasInstance(user.getCurrentAcademicSessionId());
+			if (!hasInstance(user.getCurrentAcademicSessionId()))
+				return false;
+			
+			if (Roles.ROLE_STUDENT.equals(user.getCurrentAuthority().getRole())) {
+				List<? extends UserQualifier> q = user.getCurrentAuthority().getQualifiers("Student");
+				if (q == null || q.isEmpty()) return false;
+				Student student = StudentDAO.getInstance().get((Long)q.get(0).getQualifierId());
+				if (student == null) return false;
+				StudentSectioningStatus status = student.getSectioningStatus();
+				if (status == null)
+					status = source.getDefaultSectioningStatus();
+				return (status == null || status.hasOption(StudentSectioningStatus.Option.enabled));
+			}
+			
+			return true;
 		}
 
 		@Override
@@ -100,8 +120,21 @@ public class StudentSchedulingPermissions {
 		
 		@Override
 		public boolean check(UserContext user, Session source) {
-			DepartmentStatusType status = source.getStatusType();
-			return status != null && status.can(DepartmentStatusType.Status.StudentsPreRegister);
+			if (!permissionSession.check(user, source, DepartmentStatusType.Status.StudentsPreRegister))
+				return false;
+			
+			if (Roles.ROLE_STUDENT.equals(user.getCurrentAuthority().getRole())) {
+				List<? extends UserQualifier> q = user.getCurrentAuthority().getQualifiers("Student");
+				if (q == null || q.isEmpty()) return false;
+				Student student = StudentDAO.getInstance().get((Long)q.get(0).getQualifierId());
+				if (student == null) return false;
+				StudentSectioningStatus status = student.getSectioningStatus();
+				if (status == null)
+					status = source.getDefaultSectioningStatus();
+				return (status == null || status.hasOption(StudentSectioningStatus.Option.regenabled));
+			}
+			
+			return true;
 		}
 
 		@Override
@@ -212,4 +245,86 @@ public class StudentSchedulingPermissions {
 	
 	@PermissionForRight(Right.StudentSchedulingAdmin)
 	public static class StudentSchedulingAdmin extends StudentScheduling {}
+	
+	@PermissionForRight(Right.StudentSchedulingCanEnroll)
+	public static class StudentSchedulingCanEnroll implements Permission<Student> {
+		@Autowired PermissionSession permissionSession;
+
+		@Override
+		public boolean check(UserContext user, Student source) {
+			if (!permissionSession.check(user, source.getSession()) && !source.getSession().getStatusType().can(Status.StudentsOnline)) return false; 
+			
+			StudentSectioningStatus status = source.getSectioningStatus();
+			if (status == null)
+				status = source.getSession().getDefaultSectioningStatus();
+			
+			// Student check
+			if (Roles.ROLE_STUDENT.equals(user.getCurrentAuthority().getRole())) {
+				if (status != null && !status.hasOption(StudentSectioningStatus.Option.enrollment)) return false;
+				return source.getExternalUniqueId().equals(user.getExternalUserId());
+			}
+			
+			// Admin check
+			if ((status == null || status.hasOption(StudentSectioningStatus.Option.admin)) && user.getCurrentAuthority().hasRight(Right.StudentSchedulingAdmin)) {
+				return true;
+			}
+			
+			// Advisor check
+			if ((status == null || status.hasOption(StudentSectioningStatus.Option.advisor)) && user.getCurrentAuthority().hasRight(Right.StudentSchedulingAdvisor)) {
+				if (user.getCurrentAuthority().hasRight(Right.StudentSchedulingAdvisorCanModifyAllStudents))
+					return true;
+				if (user.getCurrentAuthority().hasRight(Right.StudentSchedulingAdvisorCanModifyMyStudents)) {
+					for (Advisor advisor: source.getAdvisors())
+						if (advisor.getRole().getReference().equals(user.getCurrentAuthority().getRole()) && advisor.getExternalUniqueId().equals(user.getExternalUserId()))
+							return true;
+				}
+			}
+			
+			return false;
+		}
+
+		@Override
+		public Class<Student> type() { return Student.class; }
+	}
+	
+	@PermissionForRight(Right.StudentSchedulingCanRegister)
+	public static class StudentSchedulingCanRegister implements Permission<Student> {
+		@Autowired PermissionSession permissionSession;
+
+		@Override
+		public boolean check(UserContext user, Student source) {
+			if (!permissionSession.check(user, source.getSession()) && !source.getSession().getStatusType().can(Status.StudentsPreRegister)) return false; 
+			
+			StudentSectioningStatus status = source.getSectioningStatus();
+			if (status == null)
+				status = source.getSession().getDefaultSectioningStatus();
+			
+			// Student check
+			if (Roles.ROLE_STUDENT.equals(user.getCurrentAuthority().getRole())) {
+				if (status != null && !status.hasOption(StudentSectioningStatus.Option.registration)) return false;
+				return source.getExternalUniqueId().equals(user.getExternalUserId());
+			}
+			
+			// Admin check
+			if ((status == null || status.hasOption(StudentSectioningStatus.Option.regadmin)) && user.getCurrentAuthority().hasRight(Right.StudentSchedulingAdmin)) {
+				return true;
+			}
+			
+			// Advisor check
+			if ((status == null || status.hasOption(StudentSectioningStatus.Option.regadvisor)) && user.getCurrentAuthority().hasRight(Right.StudentSchedulingAdvisor)) {
+				if (user.getCurrentAuthority().hasRight(Right.StudentSchedulingAdvisorCanModifyAllStudents))
+					return true;
+				if (user.getCurrentAuthority().hasRight(Right.StudentSchedulingAdvisorCanModifyMyStudents)) {
+					for (Advisor advisor: source.getAdvisors())
+						if (advisor.getRole().getReference().equals(user.getCurrentAuthority().getRole()) && advisor.getExternalUniqueId().equals(user.getExternalUserId()))
+							return true;
+				}
+			}
+			
+			return false;
+		}
+
+		@Override
+		public Class<Student> type() { return Student.class; }
+	}
 }

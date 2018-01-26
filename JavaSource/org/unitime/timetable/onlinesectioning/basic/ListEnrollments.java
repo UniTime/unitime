@@ -21,8 +21,10 @@ package org.unitime.timetable.onlinesectioning.basic;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.cpsolver.ifs.util.DistanceMetric;
@@ -32,6 +34,9 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -96,6 +101,14 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 			OverExpectedCriterion overExp = server.getOverExpectedCriterion();
 			Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_REQUEST);
 			XExpectations expectations = server.getExpectations(iOfferingId);
+			
+			Set<String> regStates = new HashSet<String>();
+			Set<String> assStates = new HashSet<String>();
+			for (StudentSectioningStatus status: StudentSectioningStatusDAO.getInstance().findAll(helper.getHibSession())) {
+				if (status.hasOption(StudentSectioningStatus.Option.enabled)) assStates.add(status.getReference());
+				if (status.hasOption(StudentSectioningStatus.Option.regenabled)) regStates.add(status.getReference());
+			}
+			AcademicSessionInfo session = server.getAcademicSession();
 
 			XEnrollments requests = server.getEnrollments(iOfferingId);
 			for (XCourseRequest request: requests.getRequests()) {
@@ -108,6 +121,8 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 					
 					XStudent student = server.getStudent(request.getStudentId());
 					if (enrollment == null && !student.canAssign(request)) continue;
+					String status = student.getStatus();
+					if (status == null) status = session.getDefaultSectioningStatus();
 					
 					ClassAssignmentInterface.Enrollment e = new ClassAssignmentInterface.Enrollment();
 
@@ -117,8 +132,8 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 					st.setSessionId(server.getAcademicSession().getUniqueId());
 					st.setExternalId(student.getExternalId());
 					st.setCanShowExternalId(iCanShowExtIds);
-					st.setCanRegister(iCanRegister);
-					st.setCanUseAssistant(iCanUseAssistant);
+					st.setCanRegister(iCanRegister && (status == null || regStates.contains(status)));
+					st.setCanUseAssistant(iCanUseAssistant && (status == null || assStates.contains(status)));
 					st.setName(student.getName());
 					for (XAreaClassificationMajor acm: student.getMajors()) {
 						st.addArea(acm.getArea());

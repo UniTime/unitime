@@ -32,15 +32,18 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 	private static final long serialVersionUID = -33276457852954947L;
 
 	public static enum Option {
-		enabled("Access Enabled"),
-		advisor("Advisor Can Enroll"),
-		email("Email Notifications"),
-		notype("Must Have Course Type"),
-		waitlist("Wait-Listing Enabled"),
-		nobatch("Do Not Schedule in Batch Solver"),
-		enrollment("Enrollment Enabled"),
-		admin("Admin Can Enroll"),
-		registration("Registration Enabled"),
+		/*    1 */ enabled("Scheduling Assistant Access Enabled"),
+		/*    2 */ advisor("Advisor Can Enroll"),
+		/*    4 */ email("Email Notifications"),
+		/*    8 */ notype("Must Have Course Type"),
+		/*   16 */ waitlist("Wait-Listing Enabled"),
+		/*   32 */ nobatch("Do Not Schedule in Batch Solver"),
+		/*   64 */ enrollment("Student Can Enrol"),
+		/*  128 */ admin("Admin Can Enroll"),
+		/*  256 */ registration("Student Can Register"),
+		/*  512 */ regenabled("Course Requests Access Enabled"),
+		/* 1024 */ regadvisor("Advisor Can Register"),
+		/* 2048 */ regadmin("Admin Can Register"),
 		;
 		
 		private String iName;

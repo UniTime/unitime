@@ -4509,19 +4509,19 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Title")
 	String fieldAcademicTitle();
 	
-	@DefaultMessage("Access")
+	@DefaultMessage("Assistant")
 	String toggleAccess();
 	
-	@DefaultMessage("Registration")
+	@DefaultMessage("Student Register")
 	String toggleRegistration();
-	
-	@DefaultMessage("Enrollment")
+		
+	@DefaultMessage("Student Enroll")
 	String toggleEnrollment();
 	
-	@DefaultMessage("Advisor")
+	@DefaultMessage("Advisor Enroll")
 	String toggleAdvisor();
 	
-	@DefaultMessage("Admin")
+	@DefaultMessage("Admin Enroll")
 	String toggleAdmin();
 	
 	@DefaultMessage("Email")
@@ -4535,6 +4535,15 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Other")
 	String toggleNoCourseType();
+	
+	@DefaultMessage("Registration")
+	String toggleRegAccess();
+	
+	@DefaultMessage("Advisor Register")
+	String toggleRegAdvisor();
+	
+	@DefaultMessage("Admin Register")
+	String toggleRegAdmin();
 	
 	@DefaultMessage("Final Examinations")
 	String finalExaminations();

@@ -47,6 +47,7 @@ import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentNote;
+import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -114,8 +115,10 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					st.setSessionId(session.getUniqueId());
 					st.setExternalId(student.getExternalUniqueId());
 					st.setCanShowExternalId(iCanShowExtIds);
-					st.setCanRegister(iCanRegister);
-					st.setCanUseAssistant(iCanUseAssistant);
+					StudentSectioningStatus status = student.getSectioningStatus();
+					if (status == null) status = student.getSession().getDefaultSectioningStatus();
+					st.setCanRegister(iCanRegister && (status == null || status.hasOption(StudentSectioningStatus.Option.regenabled)));
+					st.setCanUseAssistant(iCanUseAssistant && (status == null || status.hasOption(StudentSectioningStatus.Option.enabled)));
 					st.setName(helper.getStudentNameFormat().format(student));
 					for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(student.getAreaClasfMajors())) {
 						st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation());
@@ -380,8 +383,10 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 				st.setSessionId(session.getUniqueId());
 				st.setExternalId(student.getExternalUniqueId());
 				st.setCanShowExternalId(iCanShowExtIds);
-				st.setCanRegister(iCanRegister);
-				st.setCanUseAssistant(iCanUseAssistant);
+				StudentSectioningStatus status = student.getSectioningStatus();
+				if (status == null) status = student.getSession().getDefaultSectioningStatus();
+				st.setCanRegister(iCanRegister && (status == null || status.hasOption(StudentSectioningStatus.Option.regenabled)));
+				st.setCanUseAssistant(iCanUseAssistant && (status == null || status.hasOption(StudentSectioningStatus.Option.enabled)));
 				st.setName(helper.getStudentNameFormat().format(student));
 				for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(student.getAreaClasfMajors())) {
 					st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation());
