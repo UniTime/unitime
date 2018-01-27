@@ -189,6 +189,15 @@
 				<line>These are academic sessions for which the user has the current role.</line>
 			</description>
 		</item>
+		<item>
+			<name>Data Exchange: Course Requests XML Import</name>
+			<description>
+				<line>Added ability to only add / drop certain requests of a student.</line>
+				<line>Use the new addCourseRequests and dropCourseRequests elements instead of the updateCourseRequests element.
+					<line>These elements have the same format as the updateCourseRequests element.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Constraint Solver (1.3.124)</title>

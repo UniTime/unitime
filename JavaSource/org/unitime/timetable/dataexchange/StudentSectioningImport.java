@@ -108,6 +108,16 @@ public class StudentSectioningImport extends BaseImport {
                                 if (altElement.element("class") != null) { mode = EnrollmentMode.IMPORT; break mode; }
 	            			}
 	            		}
+	            	Element addCoursesElement = studentElement.element("addCourseRequests");
+	            	if (addCoursesElement != null && "true".equals(addCoursesElement.attributeValue("commit", "true")))
+	            		for (Iterator j = addCoursesElement.elementIterator("courseOffering"); j.hasNext(); ) {
+	            			Element requestElement = (Element)j.next();
+	            			if (requestElement.element("class") != null) { mode = EnrollmentMode.IMPORT; break mode; }
+	            			for (Iterator k = requestElement.elementIterator("alternative"); k.hasNext(); ) {
+                                Element altElement = (Element)k.next();
+                                if (altElement.element("class") != null) { mode = EnrollmentMode.IMPORT; break mode; }
+	            			}
+	            		}
 	        	}
 	        }
 	        info("Enrollment mode set to " + mode.name() + ": " + mode.toString()); 
@@ -525,19 +535,25 @@ public class StudentSectioningImport extends BaseImport {
             	}
             	
             	Element reqCoursesElement = studentElement.element("updateCourseRequests");
-            	if (reqCoursesElement != null && "true".equals(reqCoursesElement.attributeValue("commit", "true"))) {
+            	Element delCoursesElement = null;
+            	boolean updateMode = (reqCoursesElement != null);
+            	if (!updateMode) {
+            		reqCoursesElement = studentElement.element("addCourseRequests");
+            		delCoursesElement = studentElement.element("dropCourseRequests");
+            	}
+            	if ((reqCoursesElement != null || delCoursesElement != null) && "true".equals(reqCoursesElement.attributeValue("commit", "true"))) {
                 	Hashtable<Pair, StudentClassEnrollment> enrollments = new Hashtable<Pair, StudentClassEnrollment>();
                 	for (StudentClassEnrollment enrollment: student.getClassEnrollments()) {
                 		enrollments.put(new Pair(enrollment.getCourseOffering().getUniqueId(), enrollment.getClazz().getUniqueId()), enrollment);
                 	}
                 	
             		Set<CourseDemand> remaining = new TreeSet<CourseDemand>(student.getCourseDemands());
-            		int priority = 0;
+            		int priority = (updateMode ? 0 : remaining.size());
             		Date ts = new Date();
             		Map<Long, CourseRequest> course2request = new HashMap<Long, CourseRequest>();
             		List<CourseRequest> unusedRequests = new ArrayList<CourseRequest>();
             		
-                    for (Iterator i = reqCoursesElement.elementIterator(); i.hasNext(); priority++) {
+            		if (reqCoursesElement != null) for (Iterator i = reqCoursesElement.elementIterator(); i.hasNext(); priority++) {
                         Element requestElement = (Element)i.next();
                         String waitList = requestElement.attributeValue("waitlist");
                         String alternative = requestElement.attributeValue("alternative");
@@ -693,6 +709,11 @@ public class StudentSectioningImport extends BaseImport {
         					for (Iterator<CourseDemand> j = remaining.iterator(); j.hasNext(); ) {
         						CourseDemand adept = j.next();
         						if (adept.getFreeTime() == null) continue;
+        						if (!updateMode) {
+        							TimeLocation free = new TimeLocation(adept.getFreeTime().getDayCode(), adept.getFreeTime().getStartSlot(), adept.getFreeTime().getLength(),
+											0, 0.0, 0, null, null, student.getSession().getDefaultDatePattern().getPatternBitSet(), 0);
+        							if (!free.hasIntersection(time)) continue;
+        						}
         						cd = adept; j.remove(); break;
         					}
         					if (cd == null) {
@@ -720,8 +741,73 @@ public class StudentSectioningImport extends BaseImport {
         					getHibSession().saveOrUpdate(cd);
                         } else warn("Request element "+requestElement.getName()+" not recognized.");
                     }
-                    
-                    if (mode == EnrollmentMode.DELETE || mode == EnrollmentMode.IMPORT) {
+            		
+        			if (delCoursesElement != null) for (Iterator i = delCoursesElement.elementIterator(); i.hasNext(); priority++) {
+                        Element requestElement = (Element)i.next();
+                        if (requestElement.getName().equals("courseOffering")) {
+                        	
+                        	CourseOffering course = name2course.get(requestElement.attributeValue("subjectArea") + " " + requestElement.attributeValue("courseNumber"));
+                            if (course == null) {
+                                warn("Course " + requestElement.attributeValue("subjectArea") + " " + requestElement.attributeValue("courseNumber") + " not found.");
+                                continue;
+                            }
+                            
+            				CourseDemand cd = null;
+            				adepts: for (Iterator<CourseDemand> j = remaining.iterator(); j.hasNext(); ) {
+            					CourseDemand adept = j.next();
+            					if (adept.getFreeTime() != null) continue;
+            					for (CourseRequest cr: adept.getCourseRequests())
+            						if (cr.getCourseOffering().getUniqueId().equals(course.getUniqueId())) {
+            							cd = adept; j.remove();  break adepts;
+            						}
+            				}
+            				if (cd == null) continue;
+            				for (CourseRequest cr: cd.getCourseRequests())
+            					unusedRequests.add(cr);
+                        } else if (requestElement.getName().equals("freeTime")) {
+                            String days = requestElement.attributeValue("days");
+                            String startTime = requestElement.attributeValue("startTime");
+                            String length = requestElement.attributeValue("length");
+                            String endTime = requestElement.attributeValue("endTime");
+                            TimeLocation time = makeTime(student.getSession().getDefaultDatePattern(), days, startTime, endTime, length);
+                            
+        					CourseDemand cd = null;
+        					for (Iterator<CourseDemand> j = remaining.iterator(); j.hasNext(); ) {
+        						CourseDemand adept = j.next();
+        						if (adept.getFreeTime() == null) continue;
+        						if (!updateMode) {
+        							TimeLocation free = new TimeLocation(adept.getFreeTime().getDayCode(), adept.getFreeTime().getStartSlot(), adept.getFreeTime().getLength(),
+											0, 0.0, 0, null, null, student.getSession().getDefaultDatePattern().getPatternBitSet(), 0);
+        							if (!free.hasIntersection(time)) continue;
+        						}
+        						cd = adept; j.remove(); break;
+        					}
+        					
+        					if (cd == null) continue;
+        					getHibSession().delete(cd.getFreeTime());
+                			student.getCourseDemands().remove(cd);
+                			getHibSession().delete(cd);
+                        } else warn("Request element "+requestElement.getName()+" not recognized.");
+                    }
+        			
+        			if (!updateMode) {
+        				for (CourseDemand cd: remaining) {
+        					for (CourseRequest cr: cd.getCourseRequests()) {
+        						if (course2request.containsKey(cr.getCourseOffering().getUniqueId())) {
+        							unusedRequests.add(cr);
+        							continue;
+        						}
+        						course2request.put(cr.getCourseOffering().getUniqueId(), cr);
+        						if (mode == EnrollmentMode.IMPORT)
+        							for (StudentClassEnrollment e: student.getClassEnrollments())
+        								if (e.getCourseOffering().equals(cr.getCourseOffering()))
+        									enrollments.remove(new Pair(e.getCourseOffering().getUniqueId(), e.getClazz().getUniqueId()));
+        					}
+        				}
+        				remaining.clear();
+        			}
+        			
+        		    if (mode == EnrollmentMode.DELETE || mode == EnrollmentMode.IMPORT) {
                     	for (StudentClassEnrollment enrl: enrollments.values()) {
                 			student.getClassEnrollments().remove(enrl);
                 			enrl.getClazz().getStudentEnrollments().remove(enrl);
@@ -748,8 +834,13 @@ public class StudentSectioningImport extends BaseImport {
                     }
             		
             		for (CourseRequest cr: unusedRequests) {
-            			cr.getCourseDemand().getCourseRequests().remove(cr);
+            			CourseDemand cd = cr.getCourseDemand();
+            			cd.getCourseRequests().remove(cr);
             			getHibSession().delete(cr);
+            			if (cd.getCourseRequests().isEmpty()) {
+            				student.getCourseDemands().remove(cd);
+                			getHibSession().delete(cd);
+            			}
             		}
             		
             		for (CourseDemand cd: remaining) {
@@ -759,6 +850,14 @@ public class StudentSectioningImport extends BaseImport {
             				getHibSession().delete(cr);
             			student.getCourseDemands().remove(cd);
             			getHibSession().delete(cd);
+            		}
+            		
+            		if (!updateMode) {
+            			priority = 0;
+                		for (CourseDemand cd: new TreeSet<CourseDemand>(student.getCourseDemands())) {
+                			cd.setPriority(priority++);
+                			getHibSession().saveOrUpdate(cd);
+                		}
             		}
 
             		updatedStudents.add(student.getUniqueId());

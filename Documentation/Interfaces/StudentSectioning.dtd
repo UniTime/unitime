@@ -131,12 +131,18 @@
 <!ELEMENT schedule ( courseOffering | freeTime )* >
 <!ATTLIST schedule type ( actual | proposed ) #REQUIRED >
 
-<!ELEMENT student ( updateDemographics?, updateCourseRequests?, requestSchedule?, retrieveCourseRequests?, cancelStudent?, acknowledgement?, courseRequests?, schedule?, message* ) >
+<!ELEMENT student ( updateDemographics?, updateCourseRequests?, addCourseRequests?, dropCourseRequests?, requestSchedule?, retrieveCourseRequests?, cancelStudent?, acknowledgement?, courseRequests?, schedule?, message* ) >
 <!ATTLIST student key CDATA #REQUIRED >
 
 <!ELEMENT updateCourseRequests ( courseOffering | freeTime )* >
 <!ATTLIST updateCourseRequests commit ( false | true ) #REQUIRED >
 <!ATTLIST updateCourseRequests distribution ( dense | spread ) #IMPLIED >
+
+<!ELEMENT addCourseRequests ( courseOffering | freeTime )* >
+<!ATTLIST addCourseRequests commit ( false | true ) #REQUIRED >
+<!ATTLIST addCourseRequests distribution ( dense | spread ) #IMPLIED >
+
+<!ELEMENT dropCourseRequests ( courseOffering | freeTime )* >
 
 <!ELEMENT updateDemographics ( name, email?, acadArea+, major*, minor*, disability*, groupAffiliation* ) >
 
