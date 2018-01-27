@@ -12952,4 +12952,10 @@
 		<mysql><![CDATA[update %SCHEMA%.sectioning_status set status = status + 3584 where (status & 256 = 256) and (status & 3584 = 0)]]></mysql>
 		<plsql>update %SCHEMA%.sectioning_status set status = status + 3584 where bitand(status, 256) = 256 and bitand(status, 3584) = 0</plsql>
 	</update>
+	<update version="196" date="27-Jan-2018" comment="Longer class suffix">
+		<plsql>alter table %SCHEMA%.class_ modify class_suffix varchar2(40 char)</plsql>
+		<mysql>alter table %SCHEMA%.class_ modify class_suffix varchar(40)</mysql>
+		<plsql>alter table %SCHEMA%.pit_class modify class_suffix varchar2(40 char)</plsql>
+		<mysql>alter table %SCHEMA%.pit_class modify class_suffix varchar(40)</mysql>
+	</update>
 </dbupdate>

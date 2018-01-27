@@ -330,7 +330,7 @@
                 column="class_suffix"
                 type="java.lang.String"
                 not-null="false"
-                length="20"/>
+                length="40"/>
 
             <property
                 name="enabledForStudentScheduling"
