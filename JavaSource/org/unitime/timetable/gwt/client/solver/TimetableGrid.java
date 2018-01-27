@@ -738,7 +738,7 @@ public class TimetableGrid extends Composite {
 			if (iTitle == null) {
 				SimpleForm form = new SimpleForm();
 				form.removeStyleName("unitime-NotPrintableBottomLine");
-				form.addRow(MESSAGES.propName(), new HTML(iCell.getName("<br>&nbsp;&nbsp;&nbsp;") +
+				form.addRow(MESSAGES.propName(), new HTML(iCell.getTitle("<br>&nbsp;&nbsp;&nbsp;") +
 						(iCell.hasProperty(Property.EventType) ? " (" + iCell.getProperty(Property.EventType, "") + ")"
 						:iCell.hasProperty(Property.Owner) ? " (" + iCell.getProperty(Property.Owner, "") + ")" : "")
 						));

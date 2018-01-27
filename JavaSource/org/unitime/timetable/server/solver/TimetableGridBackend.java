@@ -99,6 +99,7 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
 		context.getUser().setProperty("TimetableGridTable.showEvents", request.getFilter().getParameterValue("showEvents"));
 		context.getUser().setProperty("TimetableGridTable.showTimes", request.getFilter().getParameterValue("showTimes"));
 		context.getUser().setProperty("TimetableGridTable.orderBy", request.getFilter().getParameterValue("orderBy"));
+		context.getUser().setProperty("TimetableGridTable.showTitles", request.getFilter().getParameterValue("showTitles"));
 		
 		TimetableGridResponse response = new TimetableGridResponse();
 		
@@ -121,7 +122,9 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
     			for (TimetableGridModel model: models) {
     				if (fixInstructors)
     					TimetableGridSolverHelper.fixInstructors(model, cx);
-    				if (cx.isShowCrossLists())
+    				if (cx.isShowClassNameTwoLines() || cx.isShowCourseTitle())
+    					TimetableGridSolverHelper.fixClassNames(model, cx);
+    				else if (cx.isShowCrossLists())
     					TimetableGridSolverHelper.addCrosslistedNames(model, cx);
     				TimetableGridHelper.computeIndexes(model, cx);
     				response.addModel(model);

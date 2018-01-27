@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import org.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
@@ -678,6 +679,103 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 					CourseOffering course = (CourseOffering)o[1];
 					for (TimetableGridCell cell: id2cells.get(clazz.getUniqueId()))
 						cell.addName(clazz.getClassLabel(course, context.isShowClassSuffix(), context.isShowConfigName()));
+				}
+			}
+		}
+	}
+	
+	public static void fixClassName(TimetableGridContext context, TimetableGridCell cell, Class_ clazz, CourseOffering course) {
+		cell.clearName();
+		if (context.isShowClassNameTwoLines()) {
+    		cell.addName(clazz.getCourseName());
+    		String label = clazz.getItypeDesc().trim() + " " + clazz.getSectionNumberString();
+    		if (context.isShowClassSuffix()) {
+    			String extId = clazz.getClassSuffix(course);
+    			if (extId != null && !extId.isEmpty() && !extId.equalsIgnoreCase(clazz.getSectionNumberString()))
+    				label += " - " + extId;
+    		}
+    		if (context.isShowConfigName() && course.getInstructionalOffering().getInstrOfferingConfigs().size() > 1) {
+    			label += " (" + clazz.getSchedulingSubpart().getInstrOfferingConfig().getName() + ")";
+    		}
+    		cell.addName(label);
+    	} else {
+    		cell.addName(clazz.getClassLabel(course, context.isShowClassSuffix(), context.isShowConfigName()));
+    	}
+    	if (context.isShowCourseTitle() && course.getTitle() != null && !course.getTitle().isEmpty()) {
+    		cell.addName(course.getTitle());
+    	}
+    	if (context.isShowCourseTitle()) {
+    		cell.addTitle(clazz.getClassLabel(course, context.isShowClassSuffix(), context.isShowConfigName()) +
+    				(course.getTitle() != null && !course.getTitle().isEmpty() ? " - " + course.getTitle() : ""));
+    	} else if (context.isShowClassNameTwoLines()) {
+    		cell.addTitle(clazz.getClassLabel(course, context.isShowClassSuffix(), context.isShowConfigName()));
+    	}
+    	if (context.isShowCrossLists()) {
+    		Set<CourseOffering> courses = course.getInstructionalOffering().getCourseOfferings();
+    		if (courses.size() > 1) {
+    			for (CourseOffering co: new TreeSet<CourseOffering>(courses)) {
+    				if (co.isIsControl()) continue;
+    				cell.addName(clazz.getClassLabel(co, context.isShowClassSuffix(), context.isShowConfigName()));
+    				if (context.isShowCourseTitle()) {
+    					if (co.getTitle() != null && !co.getTitle().isEmpty()) {
+    						cell.addName(co.getTitle());
+    						cell.addTitle(clazz.getClassLabel(co, context.isShowClassSuffix(), context.isShowConfigName()) + " - " + co.getTitle());
+    					} else {
+    						cell.addTitle(clazz.getClassLabel(co, context.isShowClassSuffix(), context.isShowConfigName()));
+    					}
+    		    	} else if (context.isShowClassNameTwoLines()) {
+    		    		cell.addTitle(clazz.getClassLabel(co, context.isShowClassSuffix(), context.isShowConfigName()));
+    		    	}
+    			}
+    		}
+    	}
+	}
+	
+	public static void fixClassNames(TimetableGridModel model, TimetableGridContext context) {
+		Map<Long, List<TimetableGridCell>> id2cells = new HashMap<Long, List<TimetableGridCell>>();
+		for (TimetableGridCell cell: model.getCells()) {
+			if (cell.getType() != Type.Class || cell.getId() == null || cell.getId() < 0) continue;
+			List<TimetableGridCell> cells = id2cells.get(cell.getId());
+			if (cells == null) {
+				cells = new ArrayList<TimetableGridCell>();
+				id2cells.put(cell.getId(), cells);
+			}
+			cells.add(cell);
+		}
+		if (id2cells.isEmpty()) return;
+		if (id2cells.size() <= 1000) {
+			for (Object[] o: (List<Object[]>)Class_DAO.getInstance().getSession().createQuery(
+					"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
+					"co.isControl = true and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr").setParameterList("classIds", id2cells.keySet(), LongType.INSTANCE).setCacheable(true).list()) {
+				Class_ clazz = (Class_)o[0];
+				CourseOffering course = (CourseOffering)o[1];
+				for (TimetableGridCell cell: id2cells.get(clazz.getUniqueId()))
+					fixClassName(context, cell, clazz, course);
+			}
+		} else {
+			List<Long> ids = new ArrayList<Long>(1000);
+			for (Long id: id2cells.keySet()) {
+				ids.add(id);
+				if (ids.size() == 1000) {
+					for (Object[] o: (List<Object[]>)Class_DAO.getInstance().getSession().createQuery(
+							"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
+							"co.isControl = true and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr").setParameterList("classIds", ids, LongType.INSTANCE).setCacheable(true).list()) {
+						Class_ clazz = (Class_)o[0];
+						CourseOffering course = (CourseOffering)o[1];
+						for (TimetableGridCell cell: id2cells.get(clazz.getUniqueId()))
+							fixClassName(context, cell, clazz, course);
+					}
+					ids.clear();
+				}
+			}
+			if (!ids.isEmpty()) {
+				for (Object[] o: (List<Object[]>)Class_DAO.getInstance().getSession().createQuery(
+						"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
+						"co.isControl = true and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr").setParameterList("classIds", ids, LongType.INSTANCE).setCacheable(true).list()) {
+					Class_ clazz = (Class_)o[0];
+					CourseOffering course = (CourseOffering)o[1];
+					for (TimetableGridCell cell: id2cells.get(clazz.getUniqueId()))
+						fixClassName(context, cell, clazz, course);
 				}
 			}
 		}
