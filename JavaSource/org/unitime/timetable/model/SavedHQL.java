@@ -26,7 +26,9 @@ import java.util.Map;
 import org.unitime.timetable.model.base.BaseSavedHQL;
 import org.unitime.timetable.model.dao.SavedHQLDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.UserQualifier;
 import org.unitime.timetable.security.rights.Right;
 
 /**
@@ -211,6 +213,27 @@ public class SavedHQL extends BaseSavedHQL {
 					for (Map.Entry<Long, String> e: values.entrySet())
 						if (value.equalsIgnoreCase(e.getValue())) return e.getKey();
 				return null;
+			}
+		}),
+		SESSIONS("Academic Sessions", true, true, new OptionImplementation() {
+			@Override
+			public Map<Long, String> getValues(UserContext user) {
+				Map<Long, String> ret = new Hashtable<Long, String>();
+				for (UserAuthority a: user.getAuthorities(user.getCurrentAuthority().getRole())) {
+					UserQualifier session = a.getAcademicSession();
+					if (session != null)
+						ret.put((Long)session.getQualifierId(), session.getQualifierLabel());
+				}
+				return ret;
+			}
+
+			@Override
+			public Long lookupValue(UserContext user, String value) {
+				return (Long)SessionDAO.getInstance().getSession().createQuery(
+						"select s.uniqueId from Session s where " +
+						"s.academicTerm || s.academicYear = :term or " +
+						"s.academicTerm || s.academicYear || s.academicInitiative = :term").
+						setString("term", value).setMaxResults(1).uniqueResult();
 			}
 		}),
 

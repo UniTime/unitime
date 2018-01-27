@@ -182,6 +182,13 @@
 				<line>Fixed TransientObjectException when rolling instructor attributes (with parent-child relation) forward.</line>
 			</description>
 		</item>
+		<item>
+			<name>HQL Reports: SESSIONS</name>
+			<description>
+				<line>Added %SESSIONS% parameter listing unique IDs of available academic sessions.</line>
+				<line>These are academic sessions for which the user has the current role.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Constraint Solver (1.3.124)</title>
