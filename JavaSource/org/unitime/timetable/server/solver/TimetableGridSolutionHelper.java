@@ -179,22 +179,54 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
     		}
 		}
     }
-    
+	
     protected static TimetableGridCell createCell(TimetableGridModel model, int day, int slot, org.hibernate.Session hibSession, Assignment assignment, TimetableGridContext context, boolean notAvailable) {
     	TimetableGridCell cell = new TimetableGridCell();
     	cell.setType(TimetableGridCell.Type.Class);
     	cell.setId(assignment.getClassId());
-    	cell.addName(assignment.getClazz().getClassLabel(context.isShowClassSuffix(), context.isShowConfigName()));
+    	CourseOffering course = assignment.getClazz().getSchedulingSubpart().getControllingCourseOffering();
+    	if (context.isShowClassNameTwoLines()) {
+    		cell.addName(assignment.getClazz().getCourseName());
+    		String label = assignment.getClazz().getItypeDesc().trim() + " " + assignment.getClazz().getSectionNumberString();
+    		if (context.isShowClassSuffix()) {
+    			String extId = assignment.getClazz().getClassSuffix(course);
+    			if (extId != null && !extId.isEmpty() && !extId.equalsIgnoreCase(assignment.getClazz().getSectionNumberString()))
+    				label += " - " + extId;
+    		}
+    		if (context.isShowConfigName() && assignment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getInstrOfferingConfigs().size() > 1) {
+    			label += " (" + assignment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getName() + ")";
+    		}
+    		cell.addName(label);
+    	} else {
+    		cell.addName(assignment.getClazz().getClassLabel(context.isShowClassSuffix(), context.isShowConfigName()));
+    	}
+    	if (context.isShowCourseTitle() && course.getTitle() != null && !course.getTitle().isEmpty()) {
+    		cell.addName(course.getTitle());
+    	}
     	cell.setCommitted(notAvailable);
     	cell.setDay(day);
     	cell.setSlot(slot);
+    	if (context.isShowCourseTitle() || context.isShowClassNameTwoLines()) {
+    		cell.addTitle(assignment.getClazz().getClassLabel(course, context.isShowClassSuffix(), context.isShowConfigName()) +
+    				(course.getTitle() != null && !course.getTitle().isEmpty() ? " - " + course.getTitle() : ""));
+    	}
     	
     	if (context.isShowCrossLists()) {
     		Set<CourseOffering> courses = assignment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings();
     		if (courses.size() > 1) {
-    			for (CourseOffering course: new TreeSet<CourseOffering>(courses)) {
-    				if (course.isIsControl()) continue;
-    				cell.addName(assignment.getClazz().getClassLabel(course, context.isShowClassSuffix(), context.isShowConfigName()));
+    			for (CourseOffering co: new TreeSet<CourseOffering>(courses)) {
+    				if (co.isIsControl()) continue;
+    				cell.addName(assignment.getClazz().getClassLabel(co, context.isShowClassSuffix(), context.isShowConfigName()));
+    				if (context.isShowCourseTitle()) {
+    					if (co.getTitle() != null && !co.getTitle().isEmpty()) {
+    						cell.addName(co.getTitle());
+    						cell.addTitle(assignment.getClazz().getClassLabel(co, context.isShowClassSuffix(), context.isShowConfigName()) + " - " + co.getTitle());
+    					} else {
+    						cell.addTitle(assignment.getClazz().getClassLabel(co, context.isShowClassSuffix(), context.isShowConfigName()));
+    					}
+    		    	} else if (context.isShowClassNameTwoLines()) {
+    		    		cell.addTitle(assignment.getClazz().getClassLabel(co, context.isShowClassSuffix(), context.isShowConfigName()));
+    		    	}
     			}
     		}
     	}

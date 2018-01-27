@@ -2266,6 +2266,11 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
+	@Description("Time Grid: show class name in two lines (course, section)")
+	TimeGridShowNameInTwoLines("unitime.timeGrid.classNameTwoLines"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
 	@Description("Events: show academic sessions in the reverse order (latest first)")
 	ListSessionsReverse("unitime.events.listSessionsLatestFirst"),
 	

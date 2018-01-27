@@ -3868,6 +3868,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Show Times:")
 	String propTimeGridShowTimes();
 	
+	@DefaultMessage("Show Course Titles:")
+	String propTimeGridShowCourseTitles();
+	
 	@DefaultMessage("Order By:")
 	String propTimeGridOrderBy();
 	

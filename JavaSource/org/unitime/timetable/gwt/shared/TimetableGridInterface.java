@@ -183,6 +183,7 @@ public class TimetableGridInterface implements GwtRpcResponse {
 		private Type iType;
 		private Long iId;
 		private List<String> iNames;
+		private List<String> iTitles;
 		private String iDate;
 		private String iTime;
 		private List<String> iInstructors;
@@ -227,6 +228,7 @@ public class TimetableGridInterface implements GwtRpcResponse {
 			iType = cell.iType;
 			iId = cell.iId;
 			iNames = (cell.iNames == null ? null : new ArrayList<String>(cell.iNames));
+			iTitles = (cell.iTitles == null ? null : new ArrayList<String>(cell.iTitles));
 			iDate = date;
 			iTime = cell.iTime;
 			iInstructors = (cell.iInstructors == null ? null : new ArrayList<String>(cell.iInstructors));
@@ -251,6 +253,7 @@ public class TimetableGridInterface implements GwtRpcResponse {
 		public Long getId() { return iId; }
 		public boolean hasId() { return iId != null; }
 		
+		public void clearName() { iNames = null; }
 		public void addName(String name) {
 			if (iNames == null) iNames = new ArrayList<String>();
 			iNames.add(name);
@@ -261,6 +264,20 @@ public class TimetableGridInterface implements GwtRpcResponse {
 			if (iNames == null) return "";
 			String ret = "";
 			for (String name: iNames)
+				ret += (ret.isEmpty() ? "" : delim) + name;
+			return ret;
+		}
+		public void addTitle(String title) {
+			if (iTitles == null) iTitles = new ArrayList<String>();
+			iTitles.add(title);
+		}
+		public int getNrTitles() { return iTitles == null ? 0 : iTitles.size(); }
+		public List<String> getTitles() { return iTitles; }
+		public String getTitle(String delim) {
+			if (iTitles == null || iTitles.isEmpty()) return getName(delim);
+			if (iTitles == null) return "";
+			String ret = "";
+			for (String name: iTitles)
 				ret += (ret.isEmpty() ? "" : delim) + name;
 			return ret;
 		}

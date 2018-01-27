@@ -93,9 +93,17 @@
 			</description>
 		</item>
 		<item>
-			<name>Timetable Grid: Export PDF</name>
+			<name>Timetable Grid</name>
 			<description>
-				<line>Print one table per each day of week when in the &quot;In Row [horizontal]&quot; mode (instead showing one table very wide table with all the days of the week inside).</line>
+				<line>Export PDF: Print one table per each day of week when in the &quot;In Row [horizontal]&quot; mode (instead showing one table very wide table with all the days of the week inside).</line>
+				<line>Show Course Title: It is now possible to show course titles on the timetable grid.
+					<line>There is a new toggle in the Filter named Show Course Titles.</line>
+				</line>
+				<line>Split Class Name: Added ability to split class label into two lines.
+					<line>Subject and course number on the first line,</line>
+					<line>itype and section number (and the optional suffix and/or configuration name) on the second line.</line>
+					<line>Enable by setting the application property unitime.timeGrid.classNameTwoLines to true (defaults to false).</line>
+				</line>
 			</description>
 		</item>
 		<item>

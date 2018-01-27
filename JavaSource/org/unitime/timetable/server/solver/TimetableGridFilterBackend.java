@@ -183,6 +183,13 @@ public class TimetableGridFilterBackend implements GwtRpcImplementation<Timetabl
 		showTimes.setLabel(MESSAGES.propTimeGridShowTimes());
 		showTimes.setDefaultValue(context.getUser().getProperty("TimetableGridTable.showTimes", "0"));
 		response.addParameter(showTimes);
+		
+		FilterParameterInterface showTitles = new FilterParameterInterface();
+		showTitles.setName("showTitles");
+		showTitles.setType("boolean");
+		showTitles.setLabel(MESSAGES.propTimeGridShowCourseTitles());
+		showTitles.setDefaultValue(context.getUser().getProperty("TimetableGridTable.showTitles", "0"));
+		response.addParameter(showTitles);
 
 		FilterParameterInterface orderBy = new FilterParameterInterface();
 		orderBy.setName("orderBy");
