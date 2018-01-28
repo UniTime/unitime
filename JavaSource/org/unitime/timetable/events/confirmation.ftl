@@ -121,7 +121,7 @@
 					</tr>
 					<#list created as meeting>
 						<tr>
-							<td>${meeting.getDays(const)} <#if meeting.getNrMeetings() <= 1>${meeting.getFirstMeetingDate()?string(const.eventDateFormatLong())}<#else>${meeting.getFirstMeetingDate()?string(const.eventDateFormatShort())} - ${meeting.getLastMeetingDate()?string(const.eventDateFormatLong())}</#if></td>
+							<td>${meeting.getDays(eventGridStartDay,const)} <#if meeting.getNrMeetings() <= 1>${meeting.getFirstMeetingDate()?string(const.eventDateFormatLong())}<#else>${meeting.getFirstMeetingDate()?string(const.eventDateFormatShort())} - ${meeting.getLastMeetingDate()?string(const.eventDateFormatLong())}</#if></td>
 							<td>${meeting.getMeetingTime(const)}</td>
 							<#if event.type != 'FinalExam' && event.type != 'MidtermExam'>
 							<td>${meeting.getAllocatedTime(const)}</td>
@@ -176,7 +176,7 @@
 					</tr>
 					<#list deleted as meeting>
 						<tr>
-							<td>${meeting.getDays(const)} <#if meeting.getNrMeetings() <= 1>${meeting.getFirstMeetingDate()?string(const.eventDateFormatLong())}<#else>${meeting.getFirstMeetingDate()?string(const.eventDateFormatShort())} - ${meeting.getLastMeetingDate()?string(const.eventDateFormatLong())}</#if></td>
+							<td>${meeting.getDays(eventGridStartDay,const)} <#if meeting.getNrMeetings() <= 1>${meeting.getFirstMeetingDate()?string(const.eventDateFormatLong())}<#else>${meeting.getFirstMeetingDate()?string(const.eventDateFormatShort())} - ${meeting.getLastMeetingDate()?string(const.eventDateFormatLong())}</#if></td>
 							<td>${meeting.getMeetingTime(const)}</td>
 							<#if event.type != 'FinalExam' && event.type != 'MidtermExam'>
 							<td>${meeting.getAllocatedTime(const)}</td>
@@ -204,7 +204,7 @@
 					</tr>
 					<#list cancelled as meeting>
 						<tr>
-							<td>${meeting.getDays(const)} <#if meeting.getNrMeetings() <= 1>${meeting.getFirstMeetingDate()?string(const.eventDateFormatLong())}<#else>${meeting.getFirstMeetingDate()?string(const.eventDateFormatShort())} - ${meeting.getLastMeetingDate()?string(const.eventDateFormatLong())}</#if></td>
+							<td>${meeting.getDays(eventGridStartDay,const)} <#if meeting.getNrMeetings() <= 1>${meeting.getFirstMeetingDate()?string(const.eventDateFormatLong())}<#else>${meeting.getFirstMeetingDate()?string(const.eventDateFormatShort())} - ${meeting.getLastMeetingDate()?string(const.eventDateFormatLong())}</#if></td>
 							<td>${meeting.getMeetingTime(const)}</td>
 							<#if event.type != 'FinalExam' && event.type != 'MidtermExam'>
 							<td>${meeting.getAllocatedTime(const)}</td>
@@ -258,7 +258,7 @@
 						<#default>
 							<tr>
 						</#switch>
-							<td>${meeting.getDays(const)} <#if meeting.getNrMeetings() <= 1>${meeting.getFirstMeetingDate()?string(const.eventDateFormatLong())}<#else>${meeting.getFirstMeetingDate()?string(const.eventDateFormatShort())} - ${meeting.getLastMeetingDate()?string(const.eventDateFormatLong())}</#if></td>
+							<td>${meeting.getDays(eventGridStartDay,const)} <#if meeting.getNrMeetings() <= 1>${meeting.getFirstMeetingDate()?string(const.eventDateFormatLong())}<#else>${meeting.getFirstMeetingDate()?string(const.eventDateFormatShort())} - ${meeting.getLastMeetingDate()?string(const.eventDateFormatLong())}</#if></td>
 							<td>${meeting.getMeetingTime(const)}</td>
 							<#if event.type != 'FinalExam' && event.type != 'MidtermExam'>
 							<td>${meeting.getAllocatedTime(const)}</td>
@@ -341,7 +341,7 @@
 						<#default>
 							<#assign empty = false>
 							<tr>
-								<td>${meeting.getDays(const)} <#if meeting.getNrMeetings() <= 1>${meeting.getFirstMeetingDate()?string(const.eventDateFormatLong())}<#else>${meeting.getFirstMeetingDate()?string(const.eventDateFormatShort())} - ${meeting.getLastMeetingDate()?string(const.eventDateFormatLong())}</#if></td>
+								<td>${meeting.getDays(eventGridStartDay,const)} <#if meeting.getNrMeetings() <= 1>${meeting.getFirstMeetingDate()?string(const.eventDateFormatLong())}<#else>${meeting.getFirstMeetingDate()?string(const.eventDateFormatShort())} - ${meeting.getLastMeetingDate()?string(const.eventDateFormatLong())}</#if></td>
 								<td>${meeting.getMeetingTime(const)}</td>
 								<#if event.type != 'FinalExam' && event.type != 'MidtermExam'>
 								<td>${meeting.getAllocatedTime(const)}</td>

@@ -333,6 +333,7 @@ public class EventEmail {
 		input.put("const", CONSTANTS);
 		input.put("subject", subject());
 		input.put("event", event());
+		input.put("eventGridStartDay", ApplicationProperty.EventGridStartDay.intValue());
 		input.put("operation", request().getOperation() == null ? "NONE" : request().getOperation().name());
 		if (response().hasCreatedMeetings())
 			input.put("created", EventInterface.getMultiMeetings(response().getCreatedMeetings(), true, false));
