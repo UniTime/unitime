@@ -5901,6 +5901,7 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-ListSolutionsPage .load-panel {
 	text-align: right;
+	white-space: nowrap;
 }
 
 .unitime-ListSolutionsPage .load-panel * {
@@ -5930,6 +5931,11 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-ListSolutionsPage .note {
 	white-space: pre-wrap;
+}
+
+.unitime-ListSolutionsPage .load-panel .gwt-ListBox {
+	display: inline;
+	max-width: 250px;
 }
 
 .unitime-HeaderPanel .header-link {
