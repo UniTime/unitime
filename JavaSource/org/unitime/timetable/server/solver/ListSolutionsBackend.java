@@ -206,8 +206,8 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
 				String solutionIds = "", ownerIds = "";
 				for (Long solutionId: selectedSolutionIds) {
 					Solution solution = SolutionDAO.getInstance().get(solutionId, hibSession);
-					solutionIds = (solutionIds.isEmpty() ? "" : ",") + solution.getUniqueId();
-					ownerIds = (ownerIds.isEmpty() ? "": ",") + solution.getOwner().getUniqueId();
+					solutionIds += (solutionIds.isEmpty() ? "" : ",") + solution.getUniqueId();
+					ownerIds += (ownerIds.isEmpty() ? "": ",") + solution.getOwner().getUniqueId();
 				}
 				DataProperties configLoad = courseTimetablingSolverService.createConfig(request.getConfigurationId(), null);
 				configLoad.setProperty("General.SolverGroupId", ownerIds);
