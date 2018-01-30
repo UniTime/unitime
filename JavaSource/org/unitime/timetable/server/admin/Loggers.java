@@ -116,7 +116,7 @@ public class Loggers implements AdminTable {
 			if (logger.getLevel() == null) continue;
 			Record r = records.get(logger.getName());
 			if (r == null)
-				delete(r, context, hibSession);
+				delete(logger.getName(), context, hibSession);
 			else
 				update(r, context, hibSession);
 		}
@@ -165,6 +165,14 @@ public class Loggers implements AdminTable {
 		boolean root = record.getUniqueId() != null && record.getUniqueId() == 0;
 		solverServerService.setLoggingLevel(root ? null : record.getField(0), null);
 		ApplicationConfig config = ApplicationConfig.getConfig(root ? "log4j.logger.root" : "log4j.logger." + record.getField(0));
+		if (config != null)
+			hibSession.delete(config);
+	}
+	
+	protected void delete(String name, SessionContext context, Session hibSession) {
+		boolean root = " root".equals(name);
+		solverServerService.setLoggingLevel(root ? null : name, null);
+		ApplicationConfig config = ApplicationConfig.getConfig(root ? "log4j.logger.root" : "log4j.logger." + name);
 		if (config != null)
 			hibSession.delete(config);
 	}
