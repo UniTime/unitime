@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.security.UserAuthority;
@@ -180,14 +181,14 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 				return service.retrieveCourseOfferingId(sessionId, helper.getRequiredParameter("course"));
 			}
 		}, Flag.GET),
-		checkCourses(new OpExecution<Collection<String>>() {
+		checkCourses(new OpExecution<CheckCoursesResponse>() {
 			@Override
-			public Collection<String> execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
+			public CheckCoursesResponse execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
 				CourseRequestInterface request = helper.getRequest(CourseRequestInterface.class);
 				request.setAcademicSessionId(sessionId);
 				if (request.getStudentId() == null && studentId != null)
 					request.setStudentId(studentId);
-				return service.checkCourses(helper.getOptinalParameterBoolean("online", true), request);
+				return service.checkCourses(helper.getOptinalParameterBoolean("online", true), helper.getOptinalParameterBoolean("sectioning", false), request);
 			}
 		}, Flag.POST),
 		section(new OpExecution<ClassAssignmentInterface>() {
@@ -227,7 +228,7 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 			public OnlineSectioningInterface.EligibilityCheck execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
 				return service.checkEligibility(
 						helper.getOptinalParameterBoolean("online", true),
-						helper.getOptinalParameterBoolean("sectioning", true),
+						helper.getOptinalParameterBoolean("sectioning", false),
 						sessionId,
 						studentId,
 						helper.getOptinalParameter("pin", null));

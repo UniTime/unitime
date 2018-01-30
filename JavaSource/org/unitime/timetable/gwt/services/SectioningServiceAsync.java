@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.Sec
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
@@ -53,7 +54,7 @@ public interface SectioningServiceAsync {
 	void listClasses(Long sessionId, String course, AsyncCallback<Collection<ClassAssignmentInterface.ClassAssignment>> callback) throws SectioningException, PageAccessException;
 	void retrieveCourseOfferingId(Long sessionId, String course, AsyncCallback<Long> callback) throws SectioningException, PageAccessException;
 	void section(boolean online, CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;
-	void checkCourses(boolean online, CourseRequestInterface request, AsyncCallback<Collection<String>> callback) throws SectioningException, PageAccessException;
+	void checkCourses(boolean online, boolean sectioning, CourseRequestInterface request, AsyncCallback<CheckCoursesResponse> callback) throws SectioningException, PageAccessException;
 	void computeSuggestions(boolean online, CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> currentAssignment, int selectedAssignment, String filter, AsyncCallback<Collection<ClassAssignmentInterface>> callback) throws SectioningException, PageAccessException;
 	void logIn(String userName, String password, String pin, AsyncCallback<String> callback) throws SectioningException, PageAccessException;
 	void logOut(AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;

@@ -920,6 +920,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Failed to create course request provider: {0}")
 	String exceptionCourseRequestProvider(String message);
 	
+	@DefaultMessage("Failed to create course request validation provider: {0}")
+	String exceptionCourseRequestValidationProvider(String message);
+	
 	@DefaultMessage("Failed to create degree plans provider: {0}")
 	String exceptionDegreePlansProvider(String message);
 	
@@ -1649,4 +1652,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Request is wait-listed.")
 	String descriptionRequestWaitListed();
+	
+	@DefaultMessage("Do you want to request overrides for these errors?")
+	String questionRequestOverrides();
 }

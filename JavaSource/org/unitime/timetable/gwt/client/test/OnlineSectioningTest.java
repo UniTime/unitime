@@ -36,6 +36,7 @@ import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
@@ -311,9 +312,9 @@ public class OnlineSectioningTest extends Composite {
 									request.getCourses().add(r);
 								}
 								final long T2 = new Date().getTime();
-								checkCourses(request, new Callback<Collection<String>>() {
+								checkCourses(request, new Callback<CheckCoursesResponse>() {
 									@Override
-									public void execute(Collection<String> success, Throwable failure) {
+									public void execute(CheckCoursesResponse success, Throwable failure) {
 										final long T3 = new Date().getTime();
 										section(request, new ArrayList<ClassAssignment>(), new Callback<ClassAssignmentInterface>() {
 											@Override
@@ -446,9 +447,9 @@ public class OnlineSectioningTest extends Composite {
 			});
 		}
 		
-		private void checkCourses(final CourseRequestInterface request, final Callback<Collection<String>> callback) {
+		private void checkCourses(final CourseRequestInterface request, final Callback<CheckCoursesResponse> callback) {
 			debug("checkCourses(" + request + ")");	
-			iSectioningService.checkCourses(true, request, new AsyncCallback<Collection<String>>() {
+			iSectioningService.checkCourses(true, false, request, new AsyncCallback<CheckCoursesResponse>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					warn("&nbsp;&nbsp;checkCourses(" + request + ") failed: " + caught.getMessage());
@@ -456,7 +457,7 @@ public class OnlineSectioningTest extends Composite {
 				}
 
 				@Override
-				public void onSuccess(Collection<String> result) {
+				public void onSuccess(CheckCoursesResponse result) {
 					callback.execute(result, null);
 				}
 				

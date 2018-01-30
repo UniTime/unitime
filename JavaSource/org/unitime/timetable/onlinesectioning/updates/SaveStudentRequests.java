@@ -50,6 +50,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsValidationHolder;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
@@ -66,6 +67,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 	private Long iStudentId;
 	private CourseRequestInterface iRequest;
 	private boolean iKeepEnrollments;
+	private boolean iCustomValidation = false;
 	
 	public SaveStudentRequests forStudent(Long studentId) {
 		iStudentId = studentId;
@@ -76,6 +78,10 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 		iRequest = request;
 		iKeepEnrollments = keepEnrollments;
 		return this;
+	}
+	
+	public SaveStudentRequests withCustomValidation(boolean validation) {
+		iCustomValidation = validation; return this;
 	}
 	
 	public SaveStudentRequests withRequest(CourseRequestInterface request) {
@@ -101,6 +107,11 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 					action.setStudent(
 							OnlineSectioningLog.Entity.newBuilder()
 							.setUniqueId(getStudentId()));
+				
+				if (iCustomValidation && CustomCourseRequestsValidationHolder.hasProvider()) {
+					getRequest().setStudentId(getStudentId());
+					CustomCourseRequestsValidationHolder.getProvider().submit(server, helper, getRequest());
+				}
 				
 				// Save requests
 				saveRequest(server, helper, student, getRequest(), getKeepEnrollments());

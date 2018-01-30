@@ -35,6 +35,7 @@ public class SpecialRegistrationInterface {
 		public String term;
 		public String campus;
 		public String status;
+		public String mode;
 		public List<Change> changes;
 		public DateTime dateCreated;
 	}
@@ -48,7 +49,7 @@ public class SpecialRegistrationInterface {
 		public String status;
 		public String message;
 	}
-
+	
 	public static class SpecialRegistrationResponseList {
 		public List<SpecialRegistrationRequest> data;
 		public String status;
@@ -70,21 +71,78 @@ public class SpecialRegistrationInterface {
 		success, failure;
 	}
 	
+	public static enum ChangeOperation {
+		ADD, DROP,
+	}
+	
 	public static class Change {
 		public String subject;
 		public String courseNbr;
 		public String crn;
-		public ChangeOperation operation;
+		public String operation;
 		public List<ChangeError> errors;
-	}
-	
-	public static enum ChangeOperation {
-		ADD, DROP;
+		public List<Override> overrides;
 	}
 	
 	public static class ChangeError {
 		String code;
 		String message;
 	}
-
+	
+	public static class Override {
+		String code;
+		String message;
+		String needsAction;
+		String needsOverride;
+		String overrideApplied;
+	}
+	
+	public static class EligibilityCheckRequest {
+		public String studentId;
+		public String term;
+		public String campus;
+	}
+	
+	public static class EligibilityCheckResponse {
+		public String studentId;
+		public String term;
+		public String campus;
+		public Boolean validStudent;
+		public String message;
+		public Integer maxCreditHours;
+	}
+	
+	public static class ValidationCheckRequest {
+		public String studentId;
+		public String term;
+		public String campus;
+		public String includeReg;
+		public String mode;
+		public List<Schedule> schedule;
+		public List<Schedule> alternatives;
+	}
+	
+	public static class Schedule {
+		public String subject;
+		public String courseNbr;
+		public Set<String> crns;
+	}
+	
+	public static class ValidationCheckResponse {
+		public ScheduleRestrictions scheduleRestrictions;
+		public ScheduleRestrictions alternativesRestrictions;
+	}
+	
+	public static class ScheduleRestrictions {
+		public List<Problem> problems;
+		public String sisId;
+		public String status;
+		public String term;
+	}
+	
+	public static class Problem {
+		String code;
+		String crn;
+		String message;
+	}
 }

@@ -19,14 +19,15 @@
 */
 package org.unitime.timetable.onlinesectioning.basic;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsValidationHolder;
 import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -36,10 +37,12 @@ import org.unitime.timetable.onlinesectioning.model.XStudent;
 /**
  * @author Tomas Muller
  */
-public class CheckCourses implements OnlineSectioningAction<Collection<String>> {
+public class CheckCourses implements OnlineSectioningAction<CheckCoursesResponse> {
 	private static final long serialVersionUID = 1L;
+	protected static final StudentSectioningMessages MESSAGES = Localization.create(StudentSectioningMessages.class);
 	private CourseRequestInterface iRequest;
 	private CourseMatcher iMatcher;
+	private boolean iCustomValidation = false;
 	
 	public CheckCourses forRequest(CourseRequestInterface request) {
 		iRequest = request; return this;
@@ -48,25 +51,35 @@ public class CheckCourses implements OnlineSectioningAction<Collection<String>> 
 	public CheckCourses withMatcher(CourseMatcher matcher) {
 		iMatcher = matcher; return this;
 	}
+	
+	public CheckCourses withCustomValidation(boolean validation) {
+		iCustomValidation = validation; return this;
+	}
 
 	@Override
-	public Collection<String> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+	public CheckCoursesResponse execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		if (iMatcher != null) iMatcher.setServer(server);
-		ArrayList<String> notFound = new ArrayList<String>();
+		CheckCoursesResponse response = new CheckCoursesResponse();
 		XStudent student = (iRequest.getStudentId() == null ? null : server.getStudent(iRequest.getStudentId()));
 		for (CourseRequestInterface.Request cr: iRequest.getCourses()) {
 			if (cr.hasRequestedCourse()) {
 				for (RequestedCourse rc: cr.getRequestedCourse())
-					if (rc.isCourse() && lookup(server, student, rc) == null) notFound.add(rc.getCourseName());
+					if (rc.isCourse() && lookup(server, student, rc) == null)
+						response.addMessage(rc.getCourseId(), rc.getCourseName(), "NOT_FOUND", MESSAGES.validationCourseNotExists(rc.getCourseName()), true, false);
 			}
 		}
 		for (CourseRequestInterface.Request cr: iRequest.getAlternatives()) {
 			if (cr.hasRequestedCourse()) {
 				for (RequestedCourse rc: cr.getRequestedCourse())
-					if (rc.isCourse() && lookup(server, student, rc) == null) notFound.add(rc.getCourseName());
+					if (rc.isCourse() && lookup(server, student, rc) == null)
+						response.addMessage(rc.getCourseId(), rc.getCourseName(), "NOT_FOUND", MESSAGES.validationCourseNotExists(rc.getCourseName()), true, false);
 			}
 		}
-		return notFound;
+		
+		if (iCustomValidation && CustomCourseRequestsValidationHolder.hasProvider())
+			CustomCourseRequestsValidationHolder.getProvider().validate(server, helper, iRequest, response);
+		
+		return response;
 	}
 	
 	public XCourseId lookup(OnlineSectioningServer server, XStudent student, RequestedCourse course) {

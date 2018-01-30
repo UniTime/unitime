@@ -20,13 +20,13 @@
 package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.sectioning.CourseRequestLine.CourseSelectionBox;
 import org.unitime.timetable.gwt.client.widgets.CourseSelection;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
+import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.Validator;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
@@ -37,6 +37,7 @@ import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
@@ -72,6 +73,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	private boolean iSectioning;
 	private boolean iOnline;
 	private SpecialRegistrationContext iSpecReg;
+	private CheckCoursesResponse iLastCheck;
 	
 	Validator<CourseSelection> iCheckForDuplicities;
 	private boolean iCanWaitList = true;
@@ -259,6 +261,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 
 	public void validate(Boolean updateLastRequest, final AsyncCallback<Boolean> callback) {
 		try {
+			iLastCheck = null;
 			String failed = null;
 			LoadingWidget.getInstance().show(MESSAGES.courseRequestsValidating());
 			for (CourseRequestLine line: iCourses) {
@@ -269,7 +272,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 				String message = line.validate();
 				if (message != null) failed = message;
 			}
-			CourseRequestInterface cr = new CourseRequestInterface();
+			final CourseRequestInterface cr = new CourseRequestInterface();
 			cr.setAcademicSessionId(iSessionProvider.getAcademicSessionId());
 			if (cr.getAcademicSessionId() == null)
 				throw new SectioningException(MESSAGES.sessionSelectorNoSession());
@@ -277,13 +280,22 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			if (updateLastRequest != null)
 				cr.setUpdateLastRequest(updateLastRequest);
 			final boolean success = (failed == null);
-			iSectioningService.checkCourses(iOnline, cr,
-					new AsyncCallback<Collection<String>>() {
-						public void onSuccess(Collection<String> result) {
-							for (String course: result)
-								setError(course, MESSAGES.validationCourseNotExists(course));
+			iSectioningService.checkCourses(iOnline, iSectioning, cr,
+					new AsyncCallback<CheckCoursesResponse>() {
+						public void onSuccess(CheckCoursesResponse result) {
+							iLastCheck = result;
+							setErrors(result);
 							LoadingWidget.getInstance().hide();
-							callback.onSuccess(success && result.isEmpty());
+							if (success && result.isConfirm()) {
+								UniTimeConfirmationDialog.confirm(result.getConfirmations("\n") + "\n\n" + MESSAGES.questionRequestOverrides(), new Command() {
+									@Override
+									public void execute() {
+										callback.onSuccess(true);
+									}
+								});
+							} else {
+								callback.onSuccess(success);
+							}
 						}
 						public void onFailure(Throwable caught) {
 							LoadingWidget.getInstance().hide();
@@ -305,6 +317,23 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		for (CourseRequestLine line: iAlternatives) {
 			for (CourseSelectionBox box: line.getCourses()) {
 				if (course.equals(box.getText())) box.setError(error);
+			}
+		}
+	}
+	
+	public void setErrors(CheckCoursesResponse response) {
+		for (CourseRequestLine line: iCourses) {
+			for (CourseSelectionBox box: line.getCourses()) {
+				String message = response.getMessage(box.getText(), " ");
+				if (message != null)
+					box.setError(message);
+			}
+		}
+		for (CourseRequestLine line: iAlternatives) {
+			for (CourseSelectionBox box: line.getCourses()) {
+				String message = response.getMessage(box.getText(), " ");
+				if (message != null)
+					box.setError(message);
 			}
 		}
 	}
@@ -334,6 +363,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		fillInAlternatives(cr);
 		cr.setTimeConflictsAllowed(iSpecReg.isSpecRegMode() && iSpecReg.isDisclaimerAccepted() && iSpecReg.areTimeConflictsAllowed());
 		cr.setSpaceConflictsAllowed(iSpecReg.isSpecRegMode() && iSpecReg.isDisclaimerAccepted() && iSpecReg.areSpaceConflictsAllowed());
+		if (iLastCheck != null) cr.setConfirmations(iLastCheck.getMessages());
 		return cr;
 	}
 	

@@ -21,11 +21,13 @@ package org.unitime.timetable.gwt.shared;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -47,6 +49,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	private boolean iAllowTimeConf = false, iAllowRoomConf = false;
 	private Boolean iUpdateLastRequest = null;
 	private RequestedCourse iLastCourse = null;
+	private List<CourseMessage> iConfirmations = null;
 	
 	public CourseRequestInterface() {}
 
@@ -481,6 +484,16 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		}
 	}
 	
+	public boolean hasConfirmations() { return iConfirmations != null && !iConfirmations.isEmpty(); }
+	public void addConfirmation(CourseMessage message) {
+		if (iConfirmations != null) iConfirmations = new ArrayList<CourseMessage>();
+		iConfirmations.add(message);
+	}
+	public List<CourseMessage> getConfirmations() { return iConfirmations; }
+	public void setConfirmations(Collection<CourseMessage> confirmations) {
+		iConfirmations = (confirmations == null ? null : new ArrayList<CourseMessage>(confirmations));
+	}
+	
 	public static class Request implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private List<RequestedCourse> iRequestedCourse = null;
@@ -577,7 +590,8 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		
 	}
 	
-	public static class RequestPriority implements IsSerializable {
+	public static class RequestPriority implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
 		private boolean iAlternative = false;
 		private int iPriority = 0;
 		private int iChoice = 0;
@@ -626,6 +640,125 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 				}
 			}
 			
+		}
+	}
+	
+	public static class CheckCoursesResponse implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		private Set<CourseMessage> iMessages = new TreeSet<CourseMessage>();
+		
+		public CheckCoursesResponse() {}
+		
+		public boolean hasMessages() { return iMessages != null && !iMessages.isEmpty(); }
+		public Set<CourseMessage> getMessages() { return iMessages; }
+		public void addMessage(CourseMessage message) {
+			iMessages.add(message);
+		}
+		public void addMessage(Long courseId, String course, String code, String message, boolean error, boolean confirm) {
+			CourseMessage m = new CourseMessage();
+			m.setCourseId(courseId);
+			m.setCourse(course);
+			m.setCode(code);
+			m.setMessage(message);
+			m.setError(error);
+			m.setConfirm(confirm);
+			addMessage(m);
+		}
+		
+		public boolean isError() {
+			if (hasMessages())
+				for (CourseMessage m: getMessages())
+					if (m.isError()) return true;
+			return false;
+		}
+		public boolean isOK() { return !hasMessages(); }
+		public boolean isWarning() { return hasMessages() && !isError(); }
+		public boolean isConfirm() {
+			if (hasMessages())
+				for (CourseMessage m: getMessages())
+					if (m.isConfirm()) return true;
+			return false;
+		}
+		
+		public List<CourseMessage> getMessages(String courseName) {
+			List<CourseMessage> ret = new ArrayList<CourseMessage>();
+			if (hasMessages())
+				for (CourseMessage m: getMessages())
+					if (courseName.equals(m.getCourse())) ret.add(m);
+			return ret;
+		}
+		public String getMessage(String courseName, String delim) {
+			if (!hasMessages()) return null;
+			String ret = null;
+			if (hasMessages())
+				for (CourseMessage m: getMessages())
+					if (courseName == null || courseName.equals(m.getCourse())) {
+						if (ret == null)
+							ret = (courseName == null ? m.getCourse() + ": " : "") + m.getMessage();
+						else
+							ret += delim + (courseName == null ? m.getCourse() + ": " : "") + m.getMessage();
+					}
+			return ret;
+		}
+		public String getConfirmations(String delim) {
+			if (!hasMessages()) return null;
+			String ret = null;
+			if (hasMessages())
+				for (CourseMessage m: getMessages()) {
+					if (!m.isConfirm()) continue;
+					if (ret == null)
+						ret = m.getCourse() + ": " + m.getMessage();
+					else
+						ret += delim + m.getCourse() + ": "  + m.getMessage();
+				}
+			return ret;
+		}
+		
+		@Override
+		public String toString() { return hasMessages() ? getMessages().toString() : "[]"; }
+	}
+	
+	public static class CourseMessage implements IsSerializable, Serializable, Comparable<CourseMessage> {
+		private static final long serialVersionUID = 1L;
+		private Long iCourseId;
+		private String iCourse;
+		private boolean iError = true, iConfirm = true;
+		private String iMessage;
+		private String iCode;
+		
+		public CourseMessage() {}
+		
+		public Long getCourseId() { return iCourseId; }
+		public boolean hasCourseId() { return iCourseId != null; }
+		public void setCourseId(Long courseId) { iCourseId = courseId; }
+
+		public String getCourse() { return iCourse; }
+		public boolean hasCourse() { return iCourse != null && !iCourse.isEmpty(); }
+		public void setCourse(String course) { iCourse = course; }
+		
+		public boolean isError() { return iError; }
+		public void setError(boolean error) { iError = error; }
+		
+		public boolean isConfirm() { return iConfirm; }
+		public void setConfirm(boolean confirm) { iConfirm = confirm; }
+		
+		public String getMessage() { return iMessage; }
+		public void setMessage(String message) { iMessage = message; }
+		
+		public String getCode() { return iCode; }
+		public void setCode(String code) { iCode = code; }
+		
+		@Override
+		public String toString() { return getCourse() + ": " + getMessage(); }
+		
+		@Override
+		public int hashCode() { return (getCourse() + ":" + getCode()).hashCode(); }
+
+		@Override
+		public int compareTo(CourseMessage m) {
+			int cmp = getCourse().compareTo(m.getCourse());
+			if (cmp != 0) return cmp;
+			return getCode().compareTo(m.getCode());
 		}
 	}
 }

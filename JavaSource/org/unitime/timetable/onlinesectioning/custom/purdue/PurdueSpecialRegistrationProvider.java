@@ -242,7 +242,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								ch.subject = course.getSubjectArea();
 								ch.courseNbr = course.getCourseNumber();
 								ch.crn = s.getExternalId(course.getCourseId());
-								ch.operation = ChangeOperation.ADD;
+								ch.operation = ChangeOperation.ADD.name();
 								if (crns.add(ch.crn)) changes.add(ch);
 							}
 						}
@@ -253,7 +253,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								ch.subject = course.getSubjectArea();
 								ch.courseNbr = course.getCourseNumber();
 								ch.crn = s.getExternalId(course.getCourseId());
-								ch.operation = ChangeOperation.DROP;
+								ch.operation = ChangeOperation.DROP.name();
 								if (crns.add(ch.crn)) changes.add(ch);
 							}
 						}
@@ -268,7 +268,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				ch.subject = course.getSubjectArea();
 				ch.courseNbr = course.getCourseNumber();
 				ch.crn = section.getExternalId(course.getCourseId());
-				ch.operation = ChangeOperation.ADD;
+				ch.operation = ChangeOperation.ADD.name();
 				if (crns.add(ch.crn)) changes.add(ch);
 			}
 		}
@@ -286,7 +286,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							ch.subject = course.getSubjectArea();
 							ch.courseNbr = course.getCourseNumber();
 							ch.crn = section.getExternalId(course.getCourseId());
-							ch.operation = ChangeOperation.DROP;
+							ch.operation = ChangeOperation.DROP.name();
 							changes.add(ch);
 						}
 				}
@@ -441,7 +441,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			
 			helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
 			
-			SpecialRegistrationResponse response = (SpecialRegistrationResponse)new GsonRepresentation<SpecialRegistrationResponse>(resource.getResponseEntity(), SpecialRegistrationResponse.class).getObject();
+			SpecialRegistrationResponseList response = (SpecialRegistrationResponseList)new GsonRepresentation<SpecialRegistrationResponseList>(resource.getResponseEntity(), SpecialRegistrationResponseList.class).getObject();
 			if (helper.isDebugEnabled())
 				helper.debug("Response: " + gson.toJson(response));
 			helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(response));
@@ -449,10 +449,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			SubmitSpecialRegistrationResponse ret = new SubmitSpecialRegistrationResponse();
 			ret.setMessage(response.message);
 			ret.setSuccess(ResponseStatus.success.name().equals(response.status));
-			if (response.data != null) {
-				ret.setRequestId(response.data.requestId);
-				ret.setCanEnroll(RequestStatus.maySubmit.name().equals(response.data.status));
-				ret.setCanSubmit(RequestStatus.mayEdit.name().equals(response.data.status));
+			if (response.data != null && !response.data.isEmpty()) {
+				ret.setRequestId(response.data.get(0).requestId);
+				ret.setCanEnroll(RequestStatus.maySubmit.name().equals(response.data.get(0).status));
+				ret.setCanSubmit(RequestStatus.mayEdit.name().equals(response.data.get(0).status));
 			} else {
 				ret.setCanEnroll(false);
 				ret.setCanSubmit(false);
@@ -774,10 +774,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				List<Class_> classes = findClassesByExternalId(server.getAcademicSession().getUniqueId(), change.crn);
 				if (course != null && classes != null && !classes.isEmpty()) {
 					courses.add(course);
-					List<Class_> list = (change.operation == ChangeOperation.ADD ? adds : drops).get(course);
+					List<Class_> list = (!ChangeOperation.DROP.name().equals(change.operation) ? adds : drops).get(course);
 					if (list == null) {
 						list = new ArrayList<Class_>();
-						 (change.operation == ChangeOperation.ADD ? adds : drops).put(course, list);
+						 (!ChangeOperation.DROP.name().equals(change.operation) ? adds : drops).put(course, list);
 					}
 					for (Class_ clazz: classes)
 						list.add(clazz);

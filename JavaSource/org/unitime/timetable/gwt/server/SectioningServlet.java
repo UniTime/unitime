@@ -56,6 +56,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
@@ -120,6 +121,7 @@ import org.unitime.timetable.onlinesectioning.basic.ListEnrollments;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseMatcherProvider;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsHolder;
+import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsValidationHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomDegreePlansHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomSpecialRegistrationHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
@@ -602,7 +604,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 	}
 	
-	public Collection<String> checkCourses(boolean online, CourseRequestInterface request) throws SectioningException, PageAccessException {
+	public CheckCoursesResponse checkCourses(boolean online, boolean sectioning, CourseRequestInterface request) throws SectioningException, PageAccessException {
 		try {
 			if (request.getAcademicSessionId() == null) throw new SectioningException(MSG.exceptionNoAcademicSession());
 			if (request.getStudentId() == null)
@@ -619,27 +621,31 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			setLastRequest(request);
 			OnlineSectioningServer server = getServerInstance(request.getAcademicSessionId(), false);
 			if (server == null) {
+				if (!sectioning && CustomCourseRequestsValidationHolder.hasProvider()) {
+					OnlineSectioningServer dummy = getServerInstance(request.getAcademicSessionId(), true);
+					return dummy.execute(dummy.createAction(CheckCourses.class).forRequest(request).withMatcher(getCourseMatcher(request.getAcademicSessionId())).withCustomValidation(true), currentUser());
+				}
 				org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
-				ArrayList<String> notFound = new ArrayList<String>();
+				CheckCoursesResponse response = new CheckCoursesResponse();
 				CourseMatcher matcher = getCourseMatcher(request.getAcademicSessionId());
 				Long studentId = getStudentId(request.getAcademicSessionId());
 				for (CourseRequestInterface.Request cr: request.getCourses()) {
 					if (cr.hasRequestedCourse()) {
 						for (RequestedCourse rc: cr.getRequestedCourse())
 							if (rc.isCourse() && lookupCourse(hibSession, request.getAcademicSessionId(), studentId, rc, matcher) == null)
-								notFound.add(rc.getCourseName());
+								response.addMessage(rc.getCourseId(), rc.getCourseName(), "NOT_FOUND", MSG.validationCourseNotExists(rc.getCourseName()), true, false);
 					}
 				}
 				for (CourseRequestInterface.Request cr: request.getAlternatives()) {
 					if (cr.hasRequestedCourse()) {
 						for (RequestedCourse rc: cr.getRequestedCourse())
 							if (rc.isCourse() && lookupCourse(hibSession, request.getAcademicSessionId(), studentId, rc, matcher) == null)
-								notFound.add(rc.getCourseName());
+								response.addMessage(rc.getCourseId(), rc.getCourseName(), "NOT_FOUND", MSG.validationCourseNotExists(rc.getCourseName()), true, false);
 					}
 				}
-				return notFound;
+				return response;
 			} else {
-				return server.execute(server.createAction(CheckCourses.class).forRequest(request).withMatcher(getCourseMatcher(request.getAcademicSessionId())), currentUser());
+				return server.execute(server.createAction(CheckCourses.class).forRequest(request).withMatcher(getCourseMatcher(request.getAcademicSessionId())).withCustomValidation(!sectioning), currentUser());
 			}
 		} catch (PageAccessException e) {
 			throw e;
@@ -972,9 +978,13 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (server != null) {
 			if (studentId == null)
 				throw new SectioningException(MSG.exceptionEnrollNotStudent(server.getAcademicSession().toString()));
-			server.execute(server.createAction(SaveStudentRequests.class).forStudent(studentId).withRequest(request), currentUser());
+			server.execute(server.createAction(SaveStudentRequests.class).forStudent(studentId).withRequest(request).withCustomValidation(true), currentUser());
 			return true;
 		} else {
+			if (CustomCourseRequestsValidationHolder.hasProvider()) {
+				OnlineSectioningServer dummy = getServerInstance(request.getAcademicSessionId(), true);
+				return dummy.execute(dummy.createAction(SaveStudentRequests.class).forStudent(studentId).withRequest(request).withCustomValidation(true), currentUser());
+			}
 			if (studentId == null)
 				throw new SectioningException(MSG.exceptionEnrollNotStudent(SessionDAO.getInstance().get(request.getAcademicSessionId()).getLabel()));
 			org.hibernate.Session hibSession = StudentDAO.getInstance().getSession();
@@ -2321,6 +2331,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		CustomCourseRequestsHolder.release();
 		CustomDegreePlansHolder.release();
 		CustomSpecialRegistrationHolder.release();
+		CustomCourseRequestsValidationHolder.release();
 	}
 
 	@Override

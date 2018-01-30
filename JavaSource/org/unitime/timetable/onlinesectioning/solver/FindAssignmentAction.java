@@ -183,10 +183,10 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			Map<Long, Section> classTable = new HashMap<Long, Section>();
 			Set<XDistribution> distributions = new HashSet<XDistribution>();
 			for (CourseRequestInterface.Request c: getRequest().getCourses())
-				addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions);
+				addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, getAssignment() != null);
 			if (student.getRequests().isEmpty() && !CONSTANTS.allowEmptySchedule()) throw new SectioningException(MSG.exceptionNoCourse());
 			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
-				addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions);
+				addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, getAssignment() != null);
 			if (helper.isAlternativeCourseEnabled()) {
 				for (Request r: student.getRequests()) {
 					if (r.isAlternative() || !(r instanceof CourseRequest)) continue;
@@ -205,7 +205,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								if (ci != null) {
 									XOffering x = server.getOffering(ci.getOfferingId());
 									if (x != null) {
-										cr.getCourses().add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getCourseId(), student.getId(), original, classTable, server, model));
+										cr.getCourses().add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getCourseId(), student.getId(), original, classTable, server, model, getAssignment() != null));
 										distributions.addAll(x.getDistributions());
 									}
 								}
@@ -401,7 +401,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected Course clone(XOffering offering, XEnrollments enrollments, Long courseId, long studentId, XStudent originalStudent, Map<Long, Section> sections, OnlineSectioningServer server, StudentSectioningModel model) {
+	public static Course clone(XOffering offering, XEnrollments enrollments, Long courseId, long studentId, XStudent originalStudent, Map<Long, Section> sections, OnlineSectioningServer server, StudentSectioningModel model, boolean hasAssignment) {
 		Offering clonedOffering = new Offering(offering.getOfferingId(), offering.getName());
 		clonedOffering.setModel(model);
 		XExpectations expectations = server.getExpectations(offering.getOfferingId());
@@ -520,7 +520,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			}
 		}
 		// There are reservations >> allow user to keep the current enrollment by providing a dummy reservation for it
-		if (!offering.getReservations().isEmpty() && getAssignment() != null)
+		if (!offering.getReservations().isEmpty() && hasAssignment)
 			for (XEnrollment enrollment: enrollments.getEnrollmentsForCourse(courseId))
 				if (enrollment.getStudentId().equals(studentId)) {
 					Reservation clonedReservation = null;
@@ -540,7 +540,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		return clonedCourse;
 	}
 	
-	protected void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, Student student, XStudent originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Set<XDistribution> distributions) {
+	public static void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, Student student, XStudent originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Set<XDistribution> distributions, boolean hasAssignment) {
 		if (request.hasRequestedCourse()) {
 			Vector<Course> cr = new Vector<Course>();
 			Set<Choice> selChoices = new HashSet<Choice>();
@@ -561,7 +561,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					XOffering offering = null;
 					if (courseInfo != null) offering = server.getOffering(courseInfo.getOfferingId());
 					if (offering != null) {
-						Course course = clone(offering, server.getEnrollments(offering.getOfferingId()), courseInfo.getCourseId(), student.getId(), originalStudent, classTable, server, model);
+						Course course = clone(offering, server.getEnrollments(offering.getOfferingId()), courseInfo.getCourseId(), student.getId(), originalStudent, classTable, server, model, hasAssignment);
 						cr.add(course);
 						if (rc.hasSelectedIntructionalMethods()) {
 							for (Config config: course.getOffering().getConfigs()) {

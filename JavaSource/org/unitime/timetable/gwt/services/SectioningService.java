@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.Sec
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
@@ -54,7 +55,7 @@ public interface SectioningService extends RemoteService {
 	String retrieveCourseDetails(Long sessionId, String course) throws SectioningException, PageAccessException;
 	Collection<ClassAssignmentInterface.ClassAssignment> listClasses(Long sessionId, String course) throws SectioningException, PageAccessException;
 	Long retrieveCourseOfferingId(Long sessionId, String course) throws SectioningException, PageAccessException;
-	Collection<String> checkCourses(boolean online, CourseRequestInterface request) throws SectioningException, PageAccessException;
+	CheckCoursesResponse checkCourses(boolean online, boolean sectioning, CourseRequestInterface request) throws SectioningException, PageAccessException;
 	ClassAssignmentInterface section(boolean online, CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException, PageAccessException;
 	Collection<ClassAssignmentInterface> computeSuggestions(boolean online, CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> currentAssignment, int selectedAssignment, String filter) throws SectioningException, PageAccessException;
 	String logIn(String userName, String password, String pin) throws SectioningException, PageAccessException;

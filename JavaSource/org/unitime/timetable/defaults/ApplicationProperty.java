@@ -58,6 +58,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseMatcherProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseRequestsProvider;
+import org.unitime.timetable.onlinesectioning.custom.CourseRequestsValidationProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.DegreePlansProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
@@ -1103,6 +1104,11 @@ public enum ApplicationProperty {
 	@Implements(CourseRequestsProvider.class)
 	@Description("Customization: student course requests provider (interface CourseRequestsProvider, used by Student Scheduling Assistant when there are no course requests stored within UniTime)")
 	CustomizationCourseRequests("unitime.custom.CourseRequestsProvider"),
+	
+	@Type(Class.class)
+	@Implements(CourseRequestsValidationProvider.class)
+	@Description("Customization: student course requests validation provider (interface CourseRequestsValidationProvider, used by Student Course Requests when the entered data are being validated)")
+	CustomizationCourseRequestsValidation("unitime.custom.CourseRequestsValidationProvider"),
 	
 	@Type(Class.class)
 	@Implements(DegreePlansProvider.class)
