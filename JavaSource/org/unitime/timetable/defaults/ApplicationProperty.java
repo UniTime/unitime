@@ -2335,6 +2335,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Instructional Offering Cross Lists: keep course requests of a course that is added to or dropped from a cross-list.")
 	ModifyCrossListKeepCourseRequests("unitime.crossList.keepCourseRequests"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Student Course Requests: show courses that are not offered (when the online scheduling server is not running).")
+	CourseRequestsShowNotOffered("unitime.courseRequests.showNotOffered"),
 
 	;
 

@@ -263,11 +263,13 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				types += (types.isEmpty() ? "" : ", ") + "'" + ref + "'";
 			if (!matcher.isAllCourseTypes() && !matcher.isNoCourseType() && types.isEmpty()) throw new SectioningException(MSG.exceptionCourseDoesNotExist(query));
 			
+			boolean excludeNotOffered = ApplicationProperty.CourseRequestsShowNotOffered.isFalse();
 			ArrayList<ClassAssignmentInterface.CourseAssignment> results = new ArrayList<ClassAssignmentInterface.CourseAssignment>();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			org.unitime.timetable.onlinesectioning.match.CourseMatcher parent = matcher.getParentCourseMatcher();
 			for (CourseOffering c: (List<CourseOffering>)hibSession.createQuery(
 					"select c from CourseOffering c where " +
+					(excludeNotOffered ? "c.instructionalOffering.notOffered is false and " : "") +
 					"c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and (" +
 					"(lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' or lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' - ' || c.title) like :q || '%') " +
 					(query.length()>2 ? "or lower(c.title) like '%' || :q || '%'" : "") + ") " +
