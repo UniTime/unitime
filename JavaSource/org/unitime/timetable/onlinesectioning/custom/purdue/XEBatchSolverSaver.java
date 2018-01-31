@@ -20,6 +20,7 @@
 package org.unitime.timetable.onlinesectioning.custom.purdue;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,7 +32,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.solver.Solver;
@@ -40,6 +40,7 @@ import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.cpsolver.ifs.util.CSVFile.CSVLine;
 import org.cpsolver.studentsct.StudentSectioningSaver;
+import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Section;
@@ -47,6 +48,8 @@ import org.cpsolver.studentsct.model.Student;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.restlet.Client;
 import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
@@ -63,11 +66,23 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 
 /**
  * @author Tomas Muller
@@ -114,16 +129,16 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 			sLog.error("Failed to create external term provider, using the default one instead.", e);
 			iExternalTermProvider = new BannerTermProvider();
 		}
-		iHoldPassword = solver.getProperties().getProperty("XE.HoldPassword");
-		iRegistrationDate = solver.getProperties().getProperty("XE.RegistrationDate");
-		iActionAdd = solver.getProperties().getProperty("XE.ActionAdd", "RE");
-		iActionDrop = solver.getProperties().getProperty("XE.ActionDrop", "DDD");
-		iConditionalAddDrop = solver.getProperties().getPropertyBoolean("XE.ConditionalAddDrop", true);
-		iAutoOverrides = solver.getProperties().getPropertyBoolean("XE.AutoOverrides", false);
-		String allowedOverrides = solver.getProperties().getProperty("XE.AllowedOverrides", null);
+		iHoldPassword = solver.getProperties().getProperty("Save.XE.HoldPassword");
+		iRegistrationDate = solver.getProperties().getProperty("Save.XE.RegistrationDate");
+		iActionAdd = solver.getProperties().getProperty("Save.XE.ActionAdd", "RE");
+		iActionDrop = solver.getProperties().getProperty("Save.XE.ActionDrop", "DDD");
+		iConditionalAddDrop = solver.getProperties().getPropertyBoolean("Save.XE.ConditionalAddDrop", true);
+		iAutoOverrides = solver.getProperties().getPropertyBoolean("Save.XE.AutoOverrides", false);
+		String allowedOverrides = solver.getProperties().getProperty("Save.XE.AllowedOverrides", null);
 		if (allowedOverrides != null && !allowedOverrides.isEmpty())
 			iAllowedOverrides = new HashSet<String>(Arrays.asList(allowedOverrides.split(",")));
-		iNrThreads = solver.getProperties().getPropertyInt("XE.NrSaveThreads", 10);
+		iNrThreads = solver.getProperties().getPropertyInt("Save.XE.NrSaveThreads", 10);
 	}
 
 	@Override
@@ -180,11 +195,11 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 			}
 		}
 		StringBuffer csv = new StringBuffer();
-		csv.append(StringEscapeUtils.escapeHtml(iCSV.getHeader().toString()));
+		csv.append(iCSV.getHeader().toString());
 		if (iCSV.getLines() != null)
 			for (CSVLine line: iCSV.getLines()) {
 				csv.append("\n");
-				csv.append(StringEscapeUtils.escapeHtml(line.toString()));
+				csv.append(line.toString());
 			}
 		iProgress.info("CSV:<br><pre>\n" + csv + "</pre>");
 	}
@@ -236,25 +251,84 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 	}
 	
 	protected void saveStudent(Student student) {
+		long c0 = OnlineSectioningHelper.getCpuTime();
+		OnlineSectioningLog.Action.Builder action = OnlineSectioningLog.Action.newBuilder();
+		action.setOperation("batch-enroll");
+		action.setSession(OnlineSectioningLog.Entity.newBuilder()
+    			.setUniqueId(iSession.getUniqueId())
+    			.setName(iSession.toCompactString())
+    			);
+    	action.setStartTime(System.currentTimeMillis());
+    	action.setUser(getUser());
+    	action.setStudent(
+    			OnlineSectioningLog.Entity.newBuilder()
+    			.setUniqueId(student.getId())
+    			.setExternalId(student.getExternalId())
+    			.setName(student.getName())
+    			.setType(OnlineSectioningLog.Entity.EntityType.STUDENT)
+    			);
+    	OnlineSectioningLog.Enrollment.Builder requested = OnlineSectioningLog.Enrollment.newBuilder();
+    	requested.setType(OnlineSectioningLog.Enrollment.EnrollmentType.REQUESTED);
+    	for (Request request: student.getRequests()) {
+    		action.addRequest(OnlineSectioningHelper.toProto(request));
+    		if (request instanceof CourseRequest) {
+    			Enrollment e = getAssignment().getValue(request);
+    			if (e != null)
+    				for (Section section: e.getSections())
+    					requested.addSection(OnlineSectioningHelper.toProto(section, e));
+    		}
+    	}
+    	action.addEnrollment(requested);
+    	List<CSVField[]> csv = new ArrayList<CSVField[]>();
         try {
-        	enroll(student, getCrns(student));
-        } catch (Throwable t) {
-        	iProgress.error("[" + student.getExternalId() + "] Enrollment failed: " + t.getMessage());
+        	enroll(student, getCrns(student), action, csv);
+        } catch (Exception e) {
+        	if (e instanceof SectioningException) {
+				if (e.getCause() == null) {
+					iProgress.info("Enrollment failed: " + e.getMessage());
+				} else {
+					iProgress.warn("Enrollment failed: " + e.getMessage(), e.getCause());
+				}
+			} else {
+				iProgress.error("Enrollment failed: " + e.getMessage(), e);
+			}
         	String puid = getBannerId(student);
         	for (String id: getCrns(student)) {
         		if (id == null) continue;
-        		iCSV.addLine(new CSVField[] {
-						new CSVField(puid),
+        		csv.add(new CSVField[] {
+        				new CSVField(puid),
 						new CSVField(student.getName()),
 						new CSVField(getCourseNameForCrn(student, id)),
 						new CSVField(id),
 						new CSVField("Add"),
 						new CSVField("Failed"),
-						new CSVField(t.getMessage())
+						new CSVField(e.getMessage())
         		});
         	}
-        }
-        iUpdatedStudents.add(new XStudent(student, getAssignment()));
+        	action.setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
+        	if (e.getMessage() != null)
+        		action.setApiException(e.getMessage());
+			if (e.getCause() != null && e instanceof SectioningException)
+				action.addMessage(OnlineSectioningLog.Message.newBuilder()
+						.setLevel(OnlineSectioningLog.Message.Level.FATAL)
+						.setText(e.getCause().getClass().getName() + ": " + e.getCause().getMessage()));
+			else
+				action.addMessage(OnlineSectioningLog.Message.newBuilder()
+						.setLevel(OnlineSectioningLog.Message.Level.FATAL)
+						.setText(e.getMessage() == null ? "null" : e.getMessage()));
+        } finally {
+        	action.setEndTime(System.currentTimeMillis()).setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
+		}
+        StringBuffer table = new StringBuffer();
+        synchronized (iCSV) {
+        	for (CSVField[] line: csv) {
+        		if (table.length() > 0) table.append("\n");
+        		table.append(iCSV.addLine(line));
+        	}
+        	action.addOptionBuilder().setKey("table").setValue(table.toString());
+            iUpdatedStudents.add(new XStudent(student, getAssignment()));
+		}
+        OnlineSectioningLogger.getInstance().record(OnlineSectioningLog.Log.newBuilder().addAction(action).build());
 	}
 	
 	protected Set<String> getCrns(Student student) {
@@ -272,7 +346,24 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		return crns;
 	}
 	
-	protected void enroll(Student student, Set<String> crns) throws IOException {
+	protected Gson getGson() {
+		GsonBuilder builder = new GsonBuilder()
+		.registerTypeAdapter(DateTime.class, new JsonSerializer<DateTime>() {
+			@Override
+			public JsonElement serialize(DateTime src, Type typeOfSrc, JsonSerializationContext context) {
+				return new JsonPrimitive(src.toString("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+			}
+		})
+		.registerTypeAdapter(DateTime.class, new JsonDeserializer<DateTime>() {
+			@Override
+			public DateTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+				return new DateTime(json.getAsJsonPrimitive().getAsString(), DateTimeZone.UTC);
+			}
+		});
+		return builder.create();
+	}
+	
+	protected void enroll(Student student, Set<String> crns, OnlineSectioningLog.Action.Builder action, List<CSVField[]> csv) throws IOException {
 		iProgress.info("[" + student.getExternalId() + "] " + student.getName() + " " + crns);
 		
 		ClientResource resource = null;
@@ -291,26 +382,45 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		    resource.addQueryParameter("persona", "SB");
 		    if (iHoldPassword != null && !iHoldPassword.isEmpty())
 		        resource.addQueryParameter("holdPassword", iHoldPassword);
+		    action.addOptionBuilder().setKey("term").setValue(term);
+			action.addOptionBuilder().setKey("bannerId").setValue(getBannerId(student));
+			Gson gson = getGson();
 		    
-		    XEInterface.RegisterResponse original = getSchedule(student, resource);
+			long t0 = System.currentTimeMillis();
+		    XEInterface.RegisterResponse original = null;
+		    try {
+		    	original = getSchedule(student, resource);
+		    } finally {
+		    	action.setApiGetTime(System.currentTimeMillis() - t0);
+		    }
+		    action.addOptionBuilder().setKey("original").setValue(gson.toJson(original));
 		    
 		    Set<String> noadd = new HashSet<String>();
 		    Set<String> nodrop = new HashSet<String>();
 		    Set<String> notregistered = new HashSet<String>();
 		    Map<String, XEInterface.Registration> registered = new HashMap<String, XEInterface.Registration>();
-		    if (original.registrations != null)
+		    if (original.registrations != null) {
+		    	OnlineSectioningLog.Enrollment.Builder previous = OnlineSectioningLog.Enrollment.newBuilder();
+		    	previous.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
 		    	for (XEInterface.Registration reg: original.registrations) {
 		    		if (reg.isRegistered()) {
 		    			registered.put(reg.courseReferenceNumber, reg);
 		    			if (!reg.can(iActionDrop))
 		    				nodrop.add(reg.courseReferenceNumber);
+		    			previous.addSectionBuilder()
+		    				.setClazz(OnlineSectioningLog.Entity.newBuilder().setName(reg.courseReferenceNumber))
+		    				.setCourse(OnlineSectioningLog.Entity.newBuilder().setName(reg.subject + " " + reg.courseNumber))
+		    				.setSubpart(OnlineSectioningLog.Entity.newBuilder().setName(reg.scheduleType));
 		    		} else {
 		    			notregistered.add(reg.courseReferenceNumber);
 		    			if (!reg.can(iActionAdd))
 		    				noadd.add(reg.courseReferenceNumber);
 		    		}
 		    	}
+		    	action.addEnrollment(previous);
+		    }
 		    
+			action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
 		    Set<String> added = new HashSet<String>();
 		    XEInterface.RegisterRequest req = new XEInterface.RegisterRequest(term, puid, null, true);
 		    if (iHoldPassword != null && !iHoldPassword.isEmpty())
@@ -323,7 +433,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 			for (String id: crns) {
 				if (id == null) continue;
 				if (!registered.containsKey(id) && noadd.contains(id)) {
-					iCSV.addLine(new CSVField[] {
+					csv.add(new CSVField[] {
 							new CSVField(puid),
 							new CSVField(student.getName()),
 							new CSVField(getCourseNameForCrn(student, id)),
@@ -332,6 +442,11 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 							new CSVField("Failed"),
 							new CSVField("Action " + iActionAdd + " is not allowed.")
 					});
+					iProgress.warn("[" + student.getExternalId() + "] " + id + ": Action " + iActionAdd + " is not allowed.");
+					action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
+					action.addMessage(OnlineSectioningLog.Message.newBuilder()
+							.setLevel(OnlineSectioningLog.Message.Level.WARN)
+							.setText(id + ": Action " + iActionAdd + " is not allowed."));
 				} else {
 					if (registered.containsKey(id)) {
 						if (added.add(id)) keep(req, id);
@@ -346,7 +461,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 				if (!campus.equals(reg.campus)) {
 					if (added.add(id)) keep(req, id);
 				} else if (nodrop.contains(id)) {
-					iCSV.addLine(new CSVField[] {
+					csv.add(new CSVField[] {
 							new CSVField(puid),
 							new CSVField(student.getName()),
 							new CSVField(reg.subject + " " + reg.courseNumber),
@@ -355,15 +470,29 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 							new CSVField("Failed"),
 							new CSVField("Action " + iActionDrop + " is not allowed.")
 					});
+					iProgress.warn("[" + student.getExternalId() + "] " + id + ": Action " + iActionDrop + " is not allowed.");
+					action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
+					action.addMessage(OnlineSectioningLog.Message.newBuilder()
+							.setLevel(OnlineSectioningLog.Message.Level.WARN)
+							.setText(id + ": Action " + iActionDrop + " is not allowed."));					
 					if (added.add(id)) keep(req, id);
 				} else {
 					drop(req, id);
 				}
 			}
-			Map<String, List<String>> appliedOverrides = new HashMap<String, List<String>>();
+			Map<String, Set<String>> appliedOverrides = new HashMap<String, Set<String>>();
 			
-			XEInterface.RegisterResponse response = postChanges(resource, req);
+			action.addOptionBuilder().setKey("request").setValue(gson.toJson(req));
+			long t1 = System.currentTimeMillis();
+			XEInterface.RegisterResponse response = null;
+			try {
+				response = postChanges(resource, req);
+			} finally {
+				action.setApiPostTime(System.currentTimeMillis() - t1);
+			}
+			action.addOptionBuilder().setKey("response").setValue(gson.toJson(response));
 			
+			int index = 1;
 			while (iAutoOverrides && response.registrations != null) {
 				boolean changed = false;
 				for (XEInterface.Registration reg: response.registrations) {
@@ -378,12 +507,28 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 					}
 				}
 				if (!changed) break;
-				response = postChanges(resource, req);
+				action.addOptionBuilder().setKey("request-override-" + index).setValue(gson.toJson(req));
+				long t2 = System.currentTimeMillis();
+				try {
+					response = postChanges(resource, req);
+				} finally {
+					action.setApiPostTime(System.currentTimeMillis() - t2 + action.getApiPostTime());
+				}
+				action.addOptionBuilder().setKey("response-override-" + index).setValue(gson.toJson(response));
+				index ++;
 			}
 			
 			Set<String> checked = new HashSet<String>();
 			if (response.registrations != null) {
+				OnlineSectioningLog.Enrollment.Builder stored = OnlineSectioningLog.Enrollment.newBuilder();
+				stored.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
 				for (XEInterface.Registration reg: response.registrations) {
+					if (reg.isRegistered()) {
+						stored.addSectionBuilder()
+	    					.setClazz(OnlineSectioningLog.Entity.newBuilder().setName(reg.courseReferenceNumber))
+	    					.setCourse(OnlineSectioningLog.Entity.newBuilder().setName(reg.subject + " " + reg.courseNumber))
+	    					.setSubpart(OnlineSectioningLog.Entity.newBuilder().setName(reg.scheduleType));
+					}
 					String id = reg.courseReferenceNumber;
 					checked.add(id);
 					String op = (added.contains(id) ? "Add" : "Drop");
@@ -396,7 +541,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 							else
 								error += "\n" + e.messageType + ": " + e.message;;
 						}
-					iCSV.addLine(new CSVField[] {
+					csv.add(new CSVField[] {
 							new CSVField(puid),
 							new CSVField(student.getName()),
 							new CSVField(reg.subject + " " + reg.courseNumber),
@@ -406,8 +551,15 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 							new CSVField(error),
 							new CSVField(getOverride(req, id, appliedOverrides))
 					});
-					if (error != null) iProgress.warn("[" + student.getExternalId() + "] " + id + ": " + error);
+					if (error != null) {
+						iProgress.warn("[" + student.getExternalId() + "] " + id + ": " + error);
+						action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
+						action.addMessage(OnlineSectioningLog.Message.newBuilder()
+								.setLevel(OnlineSectioningLog.Message.Level.WARN)
+								.setText(id + ": " + error));
+					}
 				}
+				action.addEnrollment(stored);
 			}
 			
 			if (response.failedRegistrations != null) {
@@ -417,8 +569,8 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		            checked.add(id);
 		            String op = (added.contains(id) ? "Add" : "Drop");
 		            String error = reg.failure;
-		            iCSV.addLine(new CSVField[] {
-							new CSVField(puid),
+		            csv.add(new CSVField[] {
+		            		new CSVField(puid),
 							new CSVField(student.getName()),
 							new CSVField(getCourseNameForCrn(student, id)),
 							new CSVField(id),
@@ -426,8 +578,12 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 							new CSVField("Failed"),
 							new CSVField(error),
 							new CSVField(getOverride(req, id, appliedOverrides))
-					});
+		            });
 		            iProgress.warn("[" + student.getExternalId() + "] " + id + ": " + error);
+		            action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
+					action.addMessage(OnlineSectioningLog.Message.newBuilder()
+							.setLevel(OnlineSectioningLog.Message.Level.WARN)
+							.setText(id + ": " + error));
 				}
 			}
 			
@@ -437,7 +593,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 				if (checked.contains(id)) continue;
 				String op = (added.contains(id) ? "Add" : "Drop");
 				ex = true;
-				iCSV.addLine(new CSVField[] {
+				csv.add(new CSVField[] {
 						new CSVField(puid),
 						new CSVField(student.getName()),
 						new CSVField(getCourseNameForCrn(student, id)),
@@ -449,7 +605,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 			}
 			
 			if (response.registrationException != null && !ex) {
-				iCSV.addLine(new CSVField[] {
+				csv.add(new CSVField[] {
 						new CSVField(puid),
 						new CSVField(student.getName()),
 						new CSVField(null),
@@ -460,6 +616,13 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 				});
 			}
 			
+			if (response.registrationException != null) {
+				action.setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
+				action.addMessage(OnlineSectioningLog.Message.newBuilder()
+						.setLevel(OnlineSectioningLog.Message.Level.ERROR)
+						.setText(response.registrationException));
+			}
+			
 			if (response.registrationException != null)
 				iProgress.warn("[" + student.getExternalId() + "] " + response.registrationException);
 		} finally {
@@ -468,16 +631,15 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 				resource.release();
 			}
 		}
-		
 	}
 	
-	protected boolean addOverride(Student student, XEInterface.RegisterRequest req, String id, String override, Map<String, List<String>> overrides) {
+	protected boolean addOverride(Student student, XEInterface.RegisterRequest req, String id, String override, Map<String, Set<String>> overrides) {
 		for (XEInterface.CourseReferenceNumber crn: req.courseReferenceNumbers) {
 			if (id.equals(crn.courseReferenceNumber)) {
 	            iProgress.debug("[" + student.getExternalId() + "] " + "Adding override " + override + " for " + id);
 	            crn.courseOverride = override;
-	            List<String> list = overrides.get(id);
-	            if (list == null) { list = new ArrayList<String>(); overrides.put(id, list); }
+	            Set<String> list = overrides.get(id);
+	            if (list == null) { list = new TreeSet<String>(); overrides.put(id, list); }
 	            list.add(override);
 	            return true;
 			}
@@ -486,8 +648,8 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		return false;
 	}
 	
-	protected String getOverride(XEInterface.RegisterRequest req, String id, Map<String, List<String>> overrides) {
-		List<String> list = overrides.get(id);
+	protected String getOverride(XEInterface.RegisterRequest req, String id, Map<String, Set<String>> overrides) {
+		Set<String> list = overrides.get(id);
 		if (list != null) {
 			String ret = "";
 			for (String override: list)
@@ -703,7 +865,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 	    for (int i = 0; i < defaultOverrides.length; i+= 2) {
 	    	if (messageType.equals(defaultOverrides[i])) override = defaultOverrides[i + 1];
 	    }
-	    return getSolver().getProperties().getProperty("XE.Override." + messageType, override);
+	    return getSolver().getProperties().getProperty("Save.XE.Override." + messageType, override);
 	}
 	
     protected void checkTermination() {
