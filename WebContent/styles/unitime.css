@@ -3522,6 +3522,7 @@ unitime-RoomSharingWidget .legend .blank {
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow: hidden;
+	white-space: pre;
 }
 
 .unitime-ChangeLog .proto {
@@ -5962,4 +5963,8 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-SpecialRegistrations .table-row {
 	max-height: 200px;
+}
+
+.unitime-CourseRequestBox .unitime-ErrorHint {
+	white-space: pre-wrap;	
 }

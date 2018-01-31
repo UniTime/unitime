@@ -67,6 +67,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CourseMessage;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -76,6 +77,7 @@ import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Change;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ChangeError;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Problem;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.RequestStatus;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ResponseStatus;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Schedule;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationRequest;
@@ -90,6 +92,8 @@ import org.unitime.timetable.onlinesectioning.model.XDistributionType;
 import org.unitime.timetable.onlinesectioning.model.XReservationType;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction;
+import org.unitime.timetable.util.Formats;
+import org.unitime.timetable.util.Formats.Format;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -107,6 +111,7 @@ import com.google.gson.JsonSerializer;
 public class PurdueCourseRequestsValidationProvider implements CourseRequestsValidationProvider {
 	private static Logger sLog = Logger.getLogger(PurdueCourseRequestsValidationProvider.class);
 	protected static final StudentSectioningMessages MESSAGES = Localization.create(StudentSectioningMessages.class);
+	protected static Format<Number> sCreditFormat = Formats.getNumberFormat("0.##");
 	
 	private Client iClient;
 	private ExternalTermProvider iExternalTermProvider;
@@ -272,9 +277,14 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				helper.debug("Status: " + gson.toJson(status));
 			helper.getAction().addOptionBuilder().setKey("status_response").setValue(gson.toJson(status));
 			
+			Float maxCredit = null, maxCreditOverride = null;
+			if (status != null && status.data != null)
+				maxCredit = status.data.maxCredit;
+			if (maxCredit == null) maxCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"));
 			if (status != null && status.data != null && status.data.requests != null) {
 				for (SpecialRegistrationRequest r: status.data.requests) {
-					// FIXME: check if the request is not cancelled or deleted
+					if (RequestStatus.denied.name().equals(r.status)) continue;
+					if (RequestStatus.cancelled.name().equals(r.status)) continue;
 					if (r.changes != null)
 						for (Change ch: r.changes) {
 							String course = ch.subject + " " + ch.courseNbr;
@@ -289,13 +299,49 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 										problems.add(err.code);
 								}
 						}
+					if (r.maxCredit != null && (maxCreditOverride == null || maxCreditOverride < r.maxCredit))
+						maxCreditOverride = status.data.maxCredit;
 				}
 			}
+			
+			if (maxCredit < request.getCredit()) {
+				boolean error = false;
+				float total = 0;
+				for (CourseRequestInterface.Request r: request.getCourses()) {
+					if (r.hasRequestedCourse()) {
+						Float credit = null;
+						for (RequestedCourse rc: r.getRequestedCourse()) {
+							if (rc.hasCredit()) {
+								if (credit == null || credit < rc.getCreditMin()) credit = rc.getCreditMin();
+							}
+						}
+						if (credit != null) {
+							total += credit;
+							if (total > maxCredit) {
+								response.addMessage(r.getRequestedCourse(0).getCourseId(), r.getRequestedCourse(0).getCourseName(), "CREDIT",
+										ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} hours exceeded.").replace("{max}", sCreditFormat.format(status.data.maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())),
+										false, maxCreditOverride == null || maxCreditOverride < request.getCredit());
+								error = true;
+							}
+						}
+					}
+				}
+				if (!error)
+					for (CourseRequestInterface.Request r: request.getAlternatives()) {
+						if (r.hasRequestedCourse()) {
+							response.addMessage(r.getRequestedCourse(0).getCourseId(), r.getRequestedCourse(0).getCourseName(), "CREDIT",
+									ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} hours exceeded.").replace("{max}", sCreditFormat.format(status.data.maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())),
+									false, maxCreditOverride == null || maxCreditOverride < request.getCredit());
+							break;
+						}
+					}
+			}
+
 		} catch (SectioningException e) {
 			helper.getAction().setApiException(e.getMessage());
 			throw (SectioningException)e;
 		} catch (Exception e) {
-			helper.getAction().setApiException(e.getMessage());
+			helper.getAction().setApiException(e.getMessage() == null ? "Null" : e.getMessage());
 			sLog.error(e.getMessage(), e);
 			throw new SectioningException(e.getMessage());
 		} finally {
@@ -507,6 +553,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 
 		ClientResource resource = null;
 		Map<String, Set<String>> overrides = new HashMap<String, Set<String>>();
+		Float maxCredit = null;
 		try {
 			resource = new ClientResource(getSpecialRegistrationApiSiteCheckSpecialRegistrationStatus());
 			resource.setNext(iClient);
@@ -535,9 +582,14 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				helper.debug("Status: " + gson.toJson(status));
 			helper.getAction().addOptionBuilder().setKey("status_response").setValue(gson.toJson(status));
 			
+			if (status != null && status.data != null)
+				maxCredit = status.data.maxCredit;
+			if (maxCredit == null) maxCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"));
+
 			if (status != null && status.data != null && status.data.requests != null) {
 				for (SpecialRegistrationRequest r: status.data.requests) {
-					// FIXME: check if the request is not cancelled or deleted
+					if (RequestStatus.denied.name().equals(r.status)) continue;
+					if (RequestStatus.cancelled.name().equals(r.status)) continue;
 					if (r.changes != null)
 						for (Change ch: r.changes) {
 							String course = ch.subject + " " + ch.courseNbr;
@@ -587,12 +639,14 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						String courseNbr = iExternalTermProvider.getExternalCourseNumber(server.getAcademicSession(), course.getSubjectArea(), course.getCourseNumber());
 						overrides.remove(subject + " " + courseNbr);
 						List<ChangeError> errors = new ArrayList<ChangeError>();
-						for (CourseMessage m: request.getConfirmations())
+						for (CourseMessage m: request.getConfirmations()) {
+							// if ("CREDIT".equals(m.getCode())) continue;
 							if (!m.isError() && (course.getCourseId().equals(m.getCourseId()) || course.getCourseName().equals(m.getCourse()))) {
 								ChangeError e = new ChangeError();
 								e.code = m.getCode(); e.message = m.getMessage();
 								errors.add(e);
 							}
+						}
 						if (!errors.isEmpty()) {
 							Change ch = new Change();
 							ch.subject = subject;
@@ -634,8 +688,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					}
 				}
 		}
+		if (maxCredit < request.getCredit())
+			req.maxCredit = request.getCredit();
 		
-		if (!req.changes.isEmpty() || !overrides.isEmpty()) {
+		if (!req.changes.isEmpty() || !overrides.isEmpty() || req.maxCredit != null) {
 			resource = null;
 			try {
 				resource = new ClientResource(getSpecialRegistrationApiSiteSubmitRegistration());

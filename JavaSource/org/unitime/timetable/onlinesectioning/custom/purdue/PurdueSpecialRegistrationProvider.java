@@ -169,6 +169,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		return ApplicationProperties.getProperty("purdue.specreg.apiKey");
 	}
 	
+	protected String getSpecialRegistrationMode() {
+		return ApplicationProperties.getProperty("purdue.specreg.mode", "");
+	}
+	
 	protected String getBannerTerm(AcademicSessionInfo session) {
 		return iExternalTermProvider.getExternalTerm(session);
 	}
@@ -421,6 +425,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			request.studentId = getBannerId(student);
 			request.changes = buildChangeList(server, helper, student, input.getClassAssignments(), input.getErrors());
 			request.requestId = input.getRequestId();
+			request.mode = getSpecialRegistrationMode(); 
 			
 			if (request.changes == null || request.changes.isEmpty())
 				throw new SectioningException("There are no changes.");
@@ -451,8 +456,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			ret.setSuccess(ResponseStatus.success.name().equals(response.status));
 			if (response.data != null && !response.data.isEmpty()) {
 				ret.setRequestId(response.data.get(0).requestId);
-				ret.setCanEnroll(RequestStatus.maySubmit.name().equals(response.data.get(0).status));
-				ret.setCanSubmit(RequestStatus.mayEdit.name().equals(response.data.get(0).status));
+				ret.setCanEnroll(RequestStatus.maySubmit.name().equals(response.data.get(0).status) || RequestStatus.approved.name().equals(response.data.get(0).status));
+				ret.setCanSubmit(RequestStatus.mayEdit.name().equals(response.data.get(0).status) || RequestStatus.draft.name().equals(response.data.get(0).status));
 			} else {
 				ret.setCanEnroll(false);
 				ret.setCanSubmit(false);
@@ -817,8 +822,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								if (c.getUniqueId().equals(ca.getClassId())) ca.setSaved(false);
 			}
 		
-		ret.setCanEnroll(RequestStatus.maySubmit.name().equals(specialRequest.status) || RequestStatus.newRequest.name().equals(specialRequest.status));
-		ret.setCanSubmit(RequestStatus.mayEdit.name().equals(specialRequest.status) || RequestStatus.newRequest.name().equals(specialRequest.status));
+		ret.setCanEnroll(RequestStatus.maySubmit.name().equals(specialRequest.status) || RequestStatus.newRequest.name().equals(specialRequest.status) || RequestStatus.approved.name().equals(specialRequest.status));
+		ret.setCanSubmit(RequestStatus.mayEdit.name().equals(specialRequest.status) || RequestStatus.newRequest.name().equals(specialRequest.status) || RequestStatus.draft.name().equals(specialRequest.status));
 		ret.setRequestId(specialRequest.requestId);
 		ret.setSubmitDate(specialRequest.dateCreated == null ? null : specialRequest.dateCreated.toDate());
 		return ret;

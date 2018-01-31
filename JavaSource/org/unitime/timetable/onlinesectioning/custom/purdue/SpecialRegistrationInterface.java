@@ -38,10 +38,13 @@ public class SpecialRegistrationInterface {
 		public String mode;
 		public List<Change> changes;
 		public DateTime dateCreated;
+		public Float maxCredit;
 	}
 	
 	public static enum RequestStatus {
-		 mayEdit, mayNotEdit, maySubmit, newRequest;
+		 mayEdit, mayNotEdit, maySubmit, newRequest,
+		 draft, inProgress, approved, denied, cancelled,
+		 ;
 	}
 	
 	public static class SpecialRegistrationResponse {
@@ -65,6 +68,7 @@ public class SpecialRegistrationInterface {
 	public static class SpecialRegistrationStatus {
 		public Set<String> overrides;
 		public List<SpecialRegistrationRequest> requests;
+		public Float maxCredit;
 	}
 
 	public static enum ResponseStatus {
@@ -96,22 +100,7 @@ public class SpecialRegistrationInterface {
 		String needsOverride;
 		String overrideApplied;
 	}
-	
-	public static class EligibilityCheckRequest {
-		public String studentId;
-		public String term;
-		public String campus;
-	}
-	
-	public static class EligibilityCheckResponse {
-		public String studentId;
-		public String term;
-		public String campus;
-		public Boolean validStudent;
-		public String message;
-		public Integer maxCreditHours;
-	}
-	
+
 	public static class ValidationCheckRequest {
 		public String studentId;
 		public String term;

@@ -182,6 +182,43 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		return new float[] {min, max};
 	}
 	
+	public float getCredit() {
+		List<Float> credits = new ArrayList<Float>();
+		int nrCourses = 0;
+		for (Request r: getCourses()) {
+			if (r.hasRequestedCourse()) {
+				Float credit = null;
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					if (rc.hasCredit()) {
+						if (credit == null || credit < rc.getCreditMin()) credit = rc.getCreditMin();
+					}
+				}
+				if (credit != null) {
+					credits.add(credit); nrCourses ++;
+				}
+			}
+		}
+		for (Request r: getAlternatives()) {
+			if (r.hasRequestedCourse()) {
+				Float credit = null;
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					if (rc.hasCredit()) {
+						if (credit == null || credit < rc.getCreditMin()) credit = rc.getCreditMin();
+					}
+				}
+				if (credit != null) {
+					credits.add(credit);
+				}
+			}
+		}
+		Collections.sort(credits);
+		float total = 0f;
+		for (int i = 0; i < nrCourses; i++) {
+			total += credits.get(credits.size() - i - 1);
+		}
+		return total;
+	}
+	
 	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof CourseRequestInterface)) return false;

@@ -324,14 +324,14 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	public void setErrors(CheckCoursesResponse response) {
 		for (CourseRequestLine line: iCourses) {
 			for (CourseSelectionBox box: line.getCourses()) {
-				String message = response.getMessage(box.getText(), " ");
+				String message = response.getMessage(box.getText(), "\n");
 				if (message != null)
 					box.setError(message);
 			}
 		}
 		for (CourseRequestLine line: iAlternatives) {
 			for (CourseSelectionBox box: line.getCourses()) {
-				String message = response.getMessage(box.getText(), " ");
+				String message = response.getMessage(box.getText(), "\n");
 				if (message != null)
 					box.setError(message);
 			}
