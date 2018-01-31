@@ -145,6 +145,7 @@ import org.unitime.timetable.onlinesectioning.status.FindOnlineSectioningLogActi
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction;
 import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentAction;
 import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction;
+import org.unitime.timetable.onlinesectioning.status.db.DbFindOnlineSectioningLogAction;
 import org.unitime.timetable.onlinesectioning.status.db.DbFindStudentInfoAction;
 import org.unitime.timetable.onlinesectioning.updates.ApproveEnrollmentsAction;
 import org.unitime.timetable.onlinesectioning.updates.ChangeStudentStatus;
@@ -2156,6 +2157,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		Long sessionId = getStatusPageSessionId();
 		OnlineSectioningServer server = getServerInstance(sessionId, true);
 		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+		if (server instanceof DatabaseServer)
+			return server.execute(server.createAction(DbFindOnlineSectioningLogAction.class).forQuery(query), currentUser());
 		return server.execute(server.createAction(FindOnlineSectioningLogAction.class).forQuery(query), currentUser());
 	}
 
@@ -2343,7 +2346,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			sessionId = getSessionContext().getUser().getCurrentAcademicSessionId();
 		properties.setSessionId(sessionId);
 		if (sessionId != null) {
-			properties.setChangeLog(properties.isAdmin() && getServerInstance(sessionId, false) != null);
+			properties.setChangeLog(properties.isAdmin() && getServerInstance(sessionId, true) != null);
 			properties.setMassCancel(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingMassCancel));
 			properties.setEmail(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingEmailStudent));
 			properties.setChangeStatus(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingChangeStudentStatus));

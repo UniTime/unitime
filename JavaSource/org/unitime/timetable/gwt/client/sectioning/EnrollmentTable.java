@@ -319,7 +319,7 @@ public class EnrollmentTable extends Composite {
 							});
 						}
 					});		
-					buttons.setEnabled("log", student.getSessionId() != null && student.isCanUseAssistant());
+					buttons.setEnabled("log", student.getSessionId() != null && (student.isCanUseAssistant() || student.isCanRegister()));
 				}
 				buttons.addButton("close", MESSAGES.buttonClose(), new ClickHandler() {
 					@Override

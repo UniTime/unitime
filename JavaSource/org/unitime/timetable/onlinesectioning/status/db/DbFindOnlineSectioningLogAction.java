@@ -17,7 +17,7 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.onlinesectioning.status;
+package org.unitime.timetable.onlinesectioning.status.db;
 
 import java.text.DateFormat;
 import java.text.NumberFormat;
@@ -25,26 +25,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.TreeSet;
 
-import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
-import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
-import org.unitime.timetable.gwt.server.Query;
-import org.unitime.timetable.gwt.server.Query.QueryFormatter;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentAccomodation;
+import org.unitime.timetable.model.StudentAreaClassificationMajor;
+import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
-import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.status.FindOnlineSectioningLogAction;
 import org.unitime.timetable.util.Constants;
 
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -52,27 +48,9 @@ import com.google.protobuf.InvalidProtocolBufferException;
 /**
  * @author Tomas Muller
  */
-public class FindOnlineSectioningLogAction implements OnlineSectioningAction<List<SectioningAction>> {
+public class DbFindOnlineSectioningLogAction extends FindOnlineSectioningLogAction {
 	private static final long serialVersionUID = 1L;
-	protected static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
-	protected static StudentSectioningConstants CONST = Localization.create(StudentSectioningConstants.class);
 	
-	private Query iQuery;
-	private Integer iLimit = 100;
-	
-	public FindOnlineSectioningLogAction forQuery(String query) {
-		iQuery = new Query(query.isEmpty() ? "limit:100" : query);
-		Matcher m = Pattern.compile("limit:[ ]?([0-9]*)", Pattern.CASE_INSENSITIVE).matcher(query);
-		if (m.find()) {
-			iLimit = Integer.parseInt(m.group(1));
-		}
-		return this;
-	}
-	
-	public Query getQuery() { return iQuery; }
-	
-	public Integer getLimit() { return iLimit; }
-
 	@Override
 	public List<SectioningAction> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		helper.beginTransaction();
@@ -83,7 +61,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 			AcademicSessionInfo session = server.getAcademicSession();
 			
 			org.hibernate.Query q = helper.getHibSession().createQuery(
-					"select l, s.uniqueId from OnlineSectioningLog l, Student s " +
+					"select l, s from OnlineSectioningLog l, Student s " +
 					(getQuery().hasAttribute("area", "clasf", "classification", "major") ? "left outer join s.areaClasfMajors m " : "") +
 					(getQuery().hasAttribute("minor") ? "left outer join s.areaClasfMinors n " : "") + 
 					(getQuery().hasAttribute("group") ? "left outer join s.groups g " : "") + 
@@ -100,25 +78,25 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 				try {
 					org.unitime.timetable.model.OnlineSectioningLog log = (org.unitime.timetable.model.OnlineSectioningLog)o[0];
 					
-					XStudent student = server.getStudent((Long)o[1]);
+					Student student = (Student)o[1];
 					if (student == null) continue;
 					ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
-					st.setId(student.getStudentId());
+					st.setId(student.getUniqueId());
 					st.setSessionId(session.getUniqueId());
-					st.setExternalId(student.getExternalId());
-					st.setName(student.getName());
-					for (XAreaClassificationMajor acm: student.getMajors()) {
-						st.addArea(acm.getArea());
-						st.addClassification(acm.getClassification());
-						st.addMajor(acm.getMajor());
+					st.setExternalId(student.getExternalUniqueId());
+					st.setName(helper.getStudentNameFormat().format(student));
+					for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(student.getAreaClasfMajors())) {
+						st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation());
+						st.addClassification(acm.getAcademicClassification().getCode());
+						st.addMajor(acm.getMajor().getCode());
 					}
-					for (String acc: student.getAccomodations()) {
-						st.addAccommodation(acc);
+					for (StudentAccomodation acc: student.getAccomodations()) {
+						st.addAccommodation(acc.getAbbreviation());
 					}
-					for (String gr: student.getGroups()) {
-						st.addGroup(gr);
+					for (StudentGroup gr: student.getGroups()) {
+						st.addGroup(gr.getGroupAbbreviation());
 					}
-
+					
 					SectioningAction a = new SectioningAction();
 					a.setStudent(st);
 					a.setTimeStamp(log.getTimeStamp());
@@ -138,12 +116,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					html += "<tr><td><b>" + MSG.colOperation() + ":</b></td><td>" + Constants.toInitialCase(log.getOperation().replace('-', ' ')) + "</td></tr>";
 					if (action.hasResult())
 						html += "<tr><td><b>" + MSG.colResult() + ":</b></td><td>" + Constants.toInitialCase(action.getResult().name()) + "</td></tr>";
-					if (action.hasStudent()) {
-						XStudent s = server.getStudent(action.getStudent().getUniqueId());
-						if (s != null) {
-							html += "<tr><td><b>" + MSG.colStudent() + ":</b></td><td>" + s.getName() + "</td></tr>";
-						}
-					}
+					html += "<tr><td><b>" + MSG.colStudent() + ":</b></td><td>" + helper.getStudentNameFormat().format(student) + "</td></tr>";
 					for (OnlineSectioningLog.Entity other: action.getOtherList()) {
 						html += "<tr><td><b>" + Constants.toInitialCase(other.getType().name()) + ":</b></td><td>" + other.getName() + "</td></tr>";
 					}
@@ -297,99 +270,5 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 				throw (SectioningException)e;
 			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 		}
-	}
-
-	protected String time(int slot) {
-        int h = slot / 12;
-        int m = 5 * (slot % 12);
-        if (CONST.useAmPm())
-        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? "a" : h >= 12 ? "p" : "a");
-        else
-			return h + ":" + (m < 10 ? "0" : "") + m;
-	}
-
-	public static class SectioningLogQueryFormatter implements QueryFormatter {
-
-		@Override
-		public String format(String attr, String body) {
-			if ("id".equalsIgnoreCase(attr) || "student".equalsIgnoreCase(attr)) {
-				return "s.externalUniqueId = '" + body + "'";
-			} else if ("operation".equalsIgnoreCase(attr) || "op".equalsIgnoreCase(attr)) {
-				return "lower(l.operation) = '" + body.toLowerCase() + "'";
-			} else if ("max-age".equalsIgnoreCase(attr) || "age".equalsIgnoreCase(attr)) {
-				return HibernateUtil.addDate("l.timeStamp", body) + " > current_date()";
-			} else if ("limit".equalsIgnoreCase(attr)) {
-				return "1 = 1";
-			} else if ("area".equalsIgnoreCase(attr)) {
-				return "lower(m.academicArea.academicAreaAbbreviation) = '" + body.toLowerCase() + "'";
-			} else if ("clasf".equalsIgnoreCase(attr) || "classification".equalsIgnoreCase(attr)) {
-				return "lower(m.academicClassification.code) = '" + body.toLowerCase() + "'";
-			} else if ("major".equalsIgnoreCase(attr)) {
-				return "lower(m.major.code) = '" + body.toLowerCase() + "'";
-			} else if ("minor".equalsIgnoreCase(attr)) {
-				return "lower(n.minor.code) = '" + body.toLowerCase() + "'";
-			} else if ("group".equalsIgnoreCase(attr)) {
-				return "lower(g.groupAbbreviation) = '" + body.toLowerCase() + "'";
-			} else if ("accommodation".equalsIgnoreCase(attr)) {
-				return "lower(a.abbreviation) = '" + body.toLowerCase() + "'";
-			} else if ("user".equalsIgnoreCase(attr)) {
-				return ("none".equalsIgnoreCase(body) ? "l.user is null" : "l.user = '" + body + "'");				
-			} else if ("result".equalsIgnoreCase(attr)) {
-				for (OnlineSectioningLog.Action.ResultType t: OnlineSectioningLog.Action.ResultType.values())
-					if (t.name().equalsIgnoreCase(body))
-						return "l.result = " + t.getNumber();
-				if ("none".equalsIgnoreCase(body) || "unknown".equalsIgnoreCase(body))
-					return "l.result is null";
-				else
-					return "1 = 1";
-			} else if ("status".equalsIgnoreCase(attr)) {
-				if ("Not Set".equalsIgnoreCase(body))
-					return "s.sectioningStatus is null";
-				else
-					return "s.sectioningStatus.reference = '" + body.toLowerCase() + "'";
-			} else if ("over".equalsIgnoreCase(attr)) {
-				try {
-					return "l.wallTime >= " + 1000 * Integer.parseInt(body.trim());
-				} catch (Exception e) {
-					return "1 = 1";
-				}
-			} else if ("under".equalsIgnoreCase(attr)) {
-				try {
-					return "l.wallTime <= " + 1000 * Integer.parseInt(body.trim());
-				} catch (Exception e) {
-					return "1 = 1";
-				}
-			} else if ("api".equalsIgnoreCase(attr)) {
-				try {
-					return "l.apiGetTime >= " + 1000 * Integer.parseInt(body.trim()) + "or l.apiPostTime >= " + 1000 * Integer.parseInt(body.trim()) + " or (l.apiGetTime + l.apiPostTime) >= " + 1000 * Integer.parseInt(body.trim());
-				} catch (Exception e) {
-					return "l.apiException like '%" + body + "%'";
-				}
-			} else if ("message".equalsIgnoreCase(attr)) {
-				return "l.message like '%" + body + "%' or l.apiException like '%" + body + "%'";
-			} else if ("get".equalsIgnoreCase(attr)) {
-				try {
-					return "l.apiGetTime >= " + 1000 * Integer.parseInt(body.trim());
-				} catch (Exception e) {
-					return "1 = 1";
-				}
-			} else if ("post".equalsIgnoreCase(attr)) {
-				try {
-					return "l.apiPostTime >= " + 1000 * Integer.parseInt(body.trim());
-				} catch (Exception e) {
-					return "1 = 1";
-				}
-			} else if (!body.isEmpty()) {
-				return "lower(s.firstName || ' ' || s.middleName || ' ' || s.lastName) like '%" + body.toLowerCase() + "%'";
-			} else {
-				return "1 = 1";
-			}
-		}
-		
-	}
-
-	@Override
-	public String name() {
-		return "sectioning-log";
 	}
 }

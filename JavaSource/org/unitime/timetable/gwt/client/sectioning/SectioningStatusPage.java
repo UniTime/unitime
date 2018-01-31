@@ -488,26 +488,21 @@ public class SectioningStatusPage extends Composite {
 			}
 		});
 		
-		
-		if (iOnline) {
-			iSectioningService.getProperties(null, new AsyncCallback<SectioningProperties>() {
-				@Override
-				public void onSuccess(SectioningProperties result) {
-					iProperties = result;
-					if (iProperties.isChangeLog())
-						iTabPanel.add(iLogTable, MESSAGES.tabChangeLog(), true);
-					checkLastQuery();
-				}
+		iSectioningService.getProperties(null, new AsyncCallback<SectioningProperties>() {
+			@Override
+			public void onSuccess(SectioningProperties result) {
+				iProperties = result;
+				if (iProperties.isChangeLog())
+					iTabPanel.add(iLogTable, MESSAGES.tabChangeLog(), true);
+				checkLastQuery();
+			}
 
-				@Override
-				public void onFailure(Throwable caught) {
-					iError.setHTML(caught.getMessage());
-					iError.setVisible(true);
-				}
-			});
-		} else {
-			checkLastQuery();
-		}
+			@Override
+			public void onFailure(Throwable caught) {
+				iError.setHTML(caught.getMessage());
+				iError.setVisible(true);
+			}
+		});
 		
 		iStatus = new UniTimeWidget<ListBox>(new ListBox());
 		iStatus.getWidget().addItem("", "-");
@@ -1254,8 +1249,10 @@ public class SectioningStatusPage extends Composite {
 												((HTML)iStudentTable.getWidget(row, iStatusColumn)).setHTML(status);
 											}
 											i.setNote(note);
-											HTML w = ((HTML)iStudentTable.getWidget(row, iNoteColumn));
-											w.setHTML(note); w.setTitle(w.getText());
+											if (iNoteColumn >= 0) {
+												HTML w = ((HTML)iStudentTable.getWidget(row, iNoteColumn));
+												w.setHTML(note); w.setTitle(w.getText());
+											}
 										}
 									}
 									LoadingWidget.getInstance().hide();
@@ -1319,6 +1316,8 @@ public class SectioningStatusPage extends Composite {
 			if (e.hasNote()) hasNote = true;
 			if (e.getEmailDate() != null) hasEmailed = true;
 		}
+		
+		if (iProperties != null && iProperties.isChangeStatus()) hasNote = true;
 		
 		UniTimeTableHeader hArea = null, hClasf = null;
 		if (hasArea) {
