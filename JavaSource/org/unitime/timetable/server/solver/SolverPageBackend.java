@@ -182,6 +182,17 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 		case SAVE_UNCOMMIT:
         	if (solver == null) throw new GwtRpcException(MESSAGES.warnSolverNotStarted());
         	if (solver.isWorking()) throw new GwtRpcException(MESSAGES.warnSolverIsWorking());
+        	if (request.hasParameters()) {
+        		for (SolverParameterDef parameter: (List<SolverParameterDef>)SolverParameterDefDAO.getInstance().getSession().createQuery(
+	        			"from SolverParameterDef where uniqueId in :uniqueIds")
+	        			.setParameterList("uniqueIds", request.getParameters().keySet()).list()) {
+        			String value = request.getParameter(parameter.getUniqueId());
+        			if (parameter.getName().startsWith("Save.")) {
+        				solver.setProperty(parameter.getName(), value);
+        				System.out.println(parameter.getName() + "=" + value);
+        			}
+        		}
+        	}
         	switch (request.getType()) {
 			case COURSE:
 				Long[] owners = solver.getProperties().getPropertyLongArry("General.SolverGroupId", null);
@@ -199,10 +210,6 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 				break;
 			case STUDENT:
 				context.checkPermission(Right.StudentSectioningSolverSave);
-	        	SolverParameterDef statusToSet = SolverParameterDef.findByNameType("Save.StudentSectioningStatusToSet", SolverParameterGroup.SolverType.STUDENT);
-	        	if (statusToSet != null) {
-	        		solver.setProperty("Save.StudentSectioningStatusToSet", request.getParameter(statusToSet.getUniqueId()));
-	        	}
 				solver.save();
 				break;
 			case INSTRUCTOR:
