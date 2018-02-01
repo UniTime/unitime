@@ -300,7 +300,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 								}
 						}
 					if (r.maxCredit != null && (maxCreditOverride == null || maxCreditOverride < r.maxCredit))
-						maxCreditOverride = status.data.maxCredit;
+						maxCreditOverride = r.maxCredit;
 				}
 			}
 			
@@ -319,7 +319,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							total += credit;
 							if (total > maxCredit) {
 								response.addMessage(r.getRequestedCourse(0).getCourseId(), r.getRequestedCourse(0).getCourseName(), "CREDIT",
-										ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} hours exceeded.").replace("{max}", sCreditFormat.format(status.data.maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())),
+										ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())),
 										false, maxCreditOverride == null || maxCreditOverride < request.getCredit());
 								error = true;
 							}
@@ -330,7 +330,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					for (CourseRequestInterface.Request r: request.getAlternatives()) {
 						if (r.hasRequestedCourse()) {
 							response.addMessage(r.getRequestedCourse(0).getCourseId(), r.getRequestedCourse(0).getCourseName(), "CREDIT",
-									ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} hours exceeded.").replace("{max}", sCreditFormat.format(status.data.maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())),
+									ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())),
 									false, maxCreditOverride == null || maxCreditOverride < request.getCredit());
 							break;
 						}
@@ -588,9 +588,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 
 			if (status != null && status.data != null && status.data.requests != null) {
 				for (SpecialRegistrationRequest r: status.data.requests) {
-					if (RequestStatus.denied.name().equals(r.status)) continue;
-					if (RequestStatus.cancelled.name().equals(r.status)) continue;
-					if (r.changes != null)
+					if (RequestStatus.inProgress.name().equals(r.status) && r.changes != null)
 						for (Change ch: r.changes) {
 							String course = ch.subject + " " + ch.courseNbr;
 							Set<String> problems = overrides.get(course);
