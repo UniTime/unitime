@@ -65,6 +65,7 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpeci
 import org.unitime.timetable.interfaces.ExternalClassLookupInterface;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
@@ -185,6 +186,19 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		String id = student.getExternalId();
 		while (id.length() < 9) id = "0" + id;
 		return id;
+	}
+	
+	protected String getRequestorId(OnlineSectioningLog.Entity user) {
+		if (user == null || user.getExternalId() == null) return null;
+		String id = user.getExternalId();
+		while (id.length() < 9) id = "0" + id;
+		return id;
+	}
+	
+	protected String getRequestorType(OnlineSectioningLog.Entity user, XStudent student) {
+		if (user == null || user.getExternalId() == null) return null;
+		if (user.hasType()) return user.getType().name();
+		return (user.getExternalId().equals(student.getExternalId()) ? "STUDENT" : "MANAGER");
 	}
 	
 	protected List<Change> buildChangeList(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, Collection<ClassAssignmentInterface.ClassAssignment> assignment, Collection<ErrorMessage> errors) {
@@ -426,6 +440,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			request.changes = buildChangeList(server, helper, student, input.getClassAssignments(), input.getErrors());
 			request.requestId = input.getRequestId();
 			request.mode = getSpecialRegistrationMode(); 
+			if (helper.getUser() != null) {
+				request.requestorId = getRequestorId(helper.getUser());
+				request.requestorRole = getRequestorType(helper.getUser(), student);
+			}
 			
 			if (request.changes == null || request.changes.isEmpty())
 				throw new SectioningException("There are no changes.");

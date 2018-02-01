@@ -39,6 +39,8 @@ public class SpecialRegistrationInterface {
 		public List<Change> changes;
 		public DateTime dateCreated;
 		public Float maxCredit;
+		public String requestorId;
+		public String requestorRole;
 	}
 	
 	public static enum RequestStatus {

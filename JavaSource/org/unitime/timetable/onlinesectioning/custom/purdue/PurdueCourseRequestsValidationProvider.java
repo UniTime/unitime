@@ -71,6 +71,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.CourseRequestsValidationProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
@@ -157,6 +158,19 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		String id = student.getExternalId();
 		while (id.length() < 9) id = "0" + id;
 		return id;
+	}
+	
+	protected String getRequestorId(OnlineSectioningLog.Entity user) {
+		if (user == null || user.getExternalId() == null) return null;
+		String id = user.getExternalId();
+		while (id.length() < 9) id = "0" + id;
+		return id;
+	}
+	
+	protected String getRequestorType(OnlineSectioningLog.Entity user, XStudent student) {
+		if (user == null || user.getExternalId() == null) return null;
+		if (user.hasType()) return user.getType().name();
+		return (user.getExternalId().equals(student.getExternalId()) ? "STUDENT" : "MANAGER");
 	}
 	
 	protected String getBannerTerm(AcademicSessionInfo session) {
@@ -624,6 +638,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		req.campus = getBannerCampus(server.getAcademicSession());
 		req.mode = "STAR";
 		req.changes = new ArrayList<Change>();
+		if (helper.getUser() != null) {
+			req.requestorId = getRequestorId(helper.getUser());
+			req.requestorRole = getRequestorType(helper.getUser(), original);
+		}
 
 		if (request.hasConfirmations()) {
 			for (CourseRequestInterface.Request c: request.getCourses())
