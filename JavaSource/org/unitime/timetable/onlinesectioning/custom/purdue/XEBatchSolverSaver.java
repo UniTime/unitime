@@ -455,6 +455,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 					}
 				}
 			}
+		    Set<String> dropped = new HashSet<String>();
 			for (String id: registered.keySet()) {
 				if (added.contains(id)) continue;
 				XEInterface.Registration reg = registered.get(id);
@@ -478,6 +479,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 					if (added.add(id)) keep(req, id);
 				} else {
 					drop(req, id);
+					dropped.add(id);
 				}
 			}
 			Map<String, Set<String>> appliedOverrides = new HashMap<String, Set<String>>();
@@ -497,13 +499,16 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 				boolean changed = false;
 				for (XEInterface.Registration reg: response.registrations) {
 					String id = reg.courseReferenceNumber;
-					if (reg.crnErrors != null) {
+					if (reg.crnErrors != null && "F".equals(reg.statusIndicator)) {
 						for (XEInterface.CrnError e: reg.crnErrors) {
 							String override = getDefaultOverride(student, id, e.messageType);
 							if (override != null && iAllowedOverrides.contains(override)) {
 								if (addOverride(student, req, id, override, appliedOverrides)) { changed = true; break; }
 							}
 						}
+					}
+					if (!iConditionalAddDrop && dropped.contains(reg.courseReferenceNumber) && ("Deleted".equals(reg.statusDescription) || "Dropped".equals(reg.statusDescription))) {
+						removeAction(req, reg.courseReferenceNumber);
 					}
 				}
 				if (!changed) break;
@@ -523,7 +528,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 				OnlineSectioningLog.Enrollment.Builder stored = OnlineSectioningLog.Enrollment.newBuilder();
 				stored.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
 				for (XEInterface.Registration reg: response.registrations) {
-					if (reg.isRegistered()) {
+					if ("Registered".equals(reg.statusDescription)) {
 						stored.addSectionBuilder()
 	    					.setClazz(OnlineSectioningLog.Entity.newBuilder().setName(reg.courseReferenceNumber))
 	    					.setCourse(OnlineSectioningLog.Entity.newBuilder().setName(reg.subject + " " + reg.courseNumber))
@@ -552,11 +557,18 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 							new CSVField(getOverride(req, id, appliedOverrides))
 					});
 					if (error != null) {
-						iProgress.warn("[" + student.getExternalId() + "] " + id + ": " + error);
-						action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
-						action.addMessage(OnlineSectioningLog.Message.newBuilder()
-								.setLevel(OnlineSectioningLog.Message.Level.WARN)
-								.setText(id + ": " + error));
+						if ("F".equals(reg.statusIndicator)) {
+							iProgress.warn("[" + student.getExternalId() + "] " + id + ": " + error);
+							action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
+							action.addMessage(OnlineSectioningLog.Message.newBuilder()
+									.setLevel(OnlineSectioningLog.Message.Level.WARN)
+									.setText(id + ": " + error));
+						} else {
+							iProgress.info("[" + student.getExternalId() + "] " + id + ": " + error);
+							action.addMessage(OnlineSectioningLog.Message.newBuilder()
+									.setLevel(OnlineSectioningLog.Message.Level.INFO)
+									.setText(id + ": " + error));
+						}
 					}
 				}
 				action.addEnrollment(stored);
@@ -634,6 +646,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 	}
 	
 	protected boolean addOverride(Student student, XEInterface.RegisterRequest req, String id, String override, Map<String, Set<String>> overrides) {
+		if (req.courseReferenceNumbers == null) return false;
 		for (XEInterface.CourseReferenceNumber crn: req.courseReferenceNumbers) {
 			if (id.equals(crn.courseReferenceNumber)) {
 	            iProgress.debug("[" + student.getExternalId() + "] " + "Adding override " + override + " for " + id);
@@ -787,7 +800,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 				for (Section section: enrollment.getSections()) {
 					Class_ clazz = iClasses.get(section.getId());
 					if (clazz != null && course != null && crn.equals(clazz.getExternalId(course)))
-						course.getCourseName();
+						return course.getCourseName();
 				}
 			}
 		}
@@ -836,6 +849,15 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 			if (req.actionsAndOptions == null) req.actionsAndOptions = new ArrayList<XEInterface.RegisterAction>();
 			req.actionsAndOptions.add(new XEInterface.RegisterAction(iActionDrop, id));
 		}
+	}
+	
+	protected boolean removeAction(XEInterface.RegisterRequest req, String id) {
+		if (req.actionsAndOptions == null) return false;
+		for (Iterator<XEInterface.RegisterAction> i = req.actionsAndOptions.iterator(); i.hasNext(); ) {
+			XEInterface.RegisterAction action = i.next();
+			if (id.equals(action.courseReferenceNumber)) { i.remove(); return true; }
+		}
+		return false;
 	}
 	
 	protected static String defaultOverrides[] = new String[] {
