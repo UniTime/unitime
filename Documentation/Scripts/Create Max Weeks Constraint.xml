@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE script PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/Script.dtd">
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ ******************************************************************************
+ * MaxHoles distribution constraint
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * The MaxHoles constraint limits the number of free time (holes) for an instructor
+ * on a day (between the first and the last class on a day).
+ * It has one parameter: a maximal amount of free time that an instructor can have
+ * on a day in minutes.
+ * For example, reference _MaxHoles:120_ translates to a maximum number of two hours
+ * of total free time between the first and the last class on a day.
+ * If required, having more free time is prohibited.
+ * If preferred or strongly preferred, the excessive free time is penalized
+ -->
+
+<script name="Distribution Types: Create Max Weeks Constraint" permission="Distribution Types" engine="ECMAScript" created="Fri Feb 02 18:03:48 CET 2018">
+  <description><![CDATA[The MaxWeeks constraint limits the number of weeks during which the given set of classes are taught.<br>
+It has two parameters: a maximal number of weeks during which the given set of classes can be placed and a day combination indicating what days of the week are considered.<br>
+If no days of the week are selected, all days of the week are considered.]]></description>
+  <parameter name="dayMon" label="2. Monday" type="boolean" default="false"/>
+  <parameter name="daySun" label="8. Sunday" type="boolean" default="false"/>
+  <parameter name="dayFri" label="6. Friday" type="boolean" default="false"/>
+  <parameter name="maxWeeks" label="1. Maximum number of weeks" type="integer" default="3"/>
+  <parameter name="dayThu" label="5. Thursday" type="boolean" default="false"/>
+  <parameter name="dayTue" label="3. Tuesday" type="boolean" default="false"/>
+  <parameter name="daySat" label="7. Saturday" type="boolean" default="false"/>
+  <parameter name="dayWed" label="4. Wednesday" type="boolean" default="false"/>
+  <body><![CDATA[var dayCode = 0;
+var days = "";
+if (dayMon) { dayCode += 64; days += "M"; }
+if (dayTue) { dayCode += 32; days += "T"; }
+if (dayWed) { dayCode += 16; days += "W"; }
+if (dayThu) { dayCode += 8; days += "Th"; }
+if (dayFri) { dayCode += 4; days += "F"; }
+if (daySat) { dayCode += 2; days += "S"; }
+if (daySun) { dayCode += 1; days += "Su"; }
+var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
+var reference = '_MaxWeeks:' + maxWeeks + ':' + dayCode + '_';
+
+var type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', reference).uniqueResult();
+var abbv = 'Max ' + maxWeeks + ' Wks';
+var label = 'At Most ' + maxWeeks + ' Weeks';
+var desc = 'Classes should be placed in no more than ' + maxWeeks + ' weeks (all classes are considered).';
+if (dayCode > 0 && dayCode < 127) {
+  abbv += ' ' + days;
+  label += ' ' + days;
+  desc = 'Classes should be placed in no more than ' + maxWeeks + ' weeks (only ' + days + ' classes are considered).';
+}
+if (type == null) {
+  type = new org.unitime.timetable.model.DistributionType();
+  type.setReference(reference);
+  log.info('Creating ' + label + ' constraint...');
+} else {
+  log.warn('Constraint ' + label + ' already exists.');
+}
+type.setLabel(label);
+type.setSequencingRequired(false);
+type.setRequirementId(++reqId);
+type.setAllowedPref('210R');
+type.setDescr(desc);
+type.setAbbreviation(abbv);
+type.setInstructorPref(true);
+type.setExamPref(false);
+type.setVisible(true);
+hibSession.saveOrUpdate(type);
+log.info('All done.');]]></body>
+</script>
