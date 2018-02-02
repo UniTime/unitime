@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE script PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/Script.dtd">
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ ******************************************************************************
+ * MaxHoles distribution constraint
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * The MaxHoles constraint limits the number of free time (holes) for an instructor
+ * on a day (between the first and the last class on a day).
+ * It has one parameter: a maximal amount of free time that an instructor can have
+ * on a day in minutes.
+ * For example, reference _MaxHoles:120_ translates to a maximum number of two hours
+ * of total free time between the first and the last class on a day.
+ * If required, having more free time is prohibited.
+ * If preferred or strongly preferred, the excessive free time is penalized
+ -->
+
+<script name="Distribution Types: Create Max Hours A Day Constraints" permission="Distribution Types" engine="ECMAScript" created="Fri Feb 02 18:04:04 CET 2018">
+  <description><![CDATA[This script creates At Most N Hours a Day distribution types. ]]></description>
+  <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
+
+for (var i = 3; i <= 10; i++) {
+  var type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', 'MAX_HRS_DAY(' + i + ')').uniqueResult();
+  if (type == null) {
+    type = new org.unitime.timetable.model.DistributionType();
+    type.setReference('MAX_HRS_DAY(' + i + ')');
+    log.info('Creating At Most ' + i + ' Hour a Day constraint...');
+  } else {
+    log.warn('Constraint At Most ' + i + ' Hour a Day already exists.');
+  }
+  type.setLabel('At Most ' + i + ' Hours a Day');
+  type.setSequencingRequired(false);
+  type.setRequirementId(++reqId);
+  type.setAllowedPref('210R');
+  type.setDescr('Classes are to be placed in a way that there is no more than ' + i + ' hours in any day.');
+  type.setAbbreviation('At Most ' + i + ' Hrs');
+  type.setInstructorPref(true);
+  type.setExamPref(false);
+  type.setVisible(true);
+  hibSession.saveOrUpdate(type);
+}
+
+log.info('All done.');]]></body>
+</script>
