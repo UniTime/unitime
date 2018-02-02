@@ -26,7 +26,7 @@ import java.util.TreeSet;
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.DistanceMetric;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.client.rooms.TravelTimes;
 import org.unitime.timetable.gwt.client.rooms.TravelTimes.TravelTimeResponse;
 import org.unitime.timetable.gwt.client.rooms.TravelTimes.TravelTimesRequest;
@@ -72,7 +72,8 @@ public class TravelTimesBackend implements GwtRpcImplementation<TravelTimesReque
 	@SuppressWarnings("deprecation")
 	protected void load(Long sessionId, TravelTimesRequest request, TravelTimeResponse response) {
 		DataProperties config = new DataProperties();
-		config.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
+		config.setProperty("Distances.Ellipsoid", ApplicationProperty.DistanceEllipsoid.value());
+		config.setProperty("Distances.Speed", ApplicationProperty.EventDistanceSpeed.value());
 		DistanceMetric metric = new DistanceMetric(config);
 		TravelTime.populateTravelTimes(metric, sessionId);
 		
