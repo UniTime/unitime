@@ -12958,4 +12958,16 @@
 		<plsql>alter table %SCHEMA%.pit_class modify class_suffix varchar2(40 char)</plsql>
 		<mysql>alter table %SCHEMA%.pit_class modify class_suffix varchar(40)</mysql>
 	</update>
+	<update version="197" date="2-2-2018" comment="Default Date Pattern foreign key">
+	    <mysql>alter table %SCHEMA%.sessions drop foreign key fk_session_datepatt</mysql>
+	    <plsql>alter table %SCHEMA%.sessions drop constraint fk_session_datepatt</plsql>
+	    <sql>alter table %SCHEMA%.sessions add constraint fk_session_datepatt foreign key (def_datepatt_id)
+	        references %SCHEMA%.date_pattern (uniqueid) on delete set null
+		</sql>
+	    <mysql>alter table %SCHEMA%.sessions drop foreign key fk_sessions_status_type</mysql>
+	    <plsql>alter table %SCHEMA%.sessions drop constraint fk_sessions_status_type</plsql>
+	    <sql>alter table %SCHEMA%.sessions add constraint fk_sessions_status_type foreign key (status_type)
+	        references %SCHEMA%.dept_status_type (uniqueid) on delete set null
+		</sql>
+	</update>
 </dbupdate>
