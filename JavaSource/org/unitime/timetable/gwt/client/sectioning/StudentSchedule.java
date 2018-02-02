@@ -218,7 +218,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
 								);
 						if (first)
-							for (WebTable.Cell cell: row.getCells()) cell.setStyleName(first ? "top-border-solid" : "top-border-dashed");
+							for (WebTable.Cell cell: row.getCells()) cell.setStyleName(priority == 1 ? "top-border-solid" : "top-border-dashed");
 						rows.add(row);
 					} else if (rc.isFreeTime()) {
 						String  free = "";
@@ -231,7 +231,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								new WebTable.Cell(CONSTANTS.freePrefix() + free, 4, null),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : ""));
 						if (first)
-							for (WebTable.Cell cell: row.getCells()) cell.setStyleName(first ? "top-border-solid" : "top-border-dashed");
+							for (WebTable.Cell cell: row.getCells()) cell.setStyleName(priority == 1 ? "top-border-solid" : "top-border-dashed");
 						rows.add(row);
 					}
 					first = false;
