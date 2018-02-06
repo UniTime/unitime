@@ -827,6 +827,7 @@ public class SectioningStatusPage extends Composite {
 		line.add(new NumberCell(e.getUnassignedAlternative(), e.getTotalUnassignedAlternative()));
 		line.add(new NumberCell(e.getReservation(), e.getTotalReservation()));
 		line.add(new NumberCell(e.getConsentNeeded(), e.getTotalConsentNeeded()));
+		line.add(new NumberCell(e.getOverrideNeeded(), e.getTotalOverrideNeeded()));
 		return line;
 	}
 	
@@ -883,6 +884,10 @@ public class SectioningStatusPage extends Composite {
 		UniTimeTableHeader hConsent = new UniTimeTableHeader(MESSAGES.colNeedConsent());
 		header.add(hConsent);
 		addSortOperation(hConsent, EnrollmentComparator.SortBy.NEED_CONSENT, MESSAGES.colNeedConsent().replace("<br>", " "));
+		
+		UniTimeTableHeader hOverride = new UniTimeTableHeader(MESSAGES.colNeedOverride());
+		header.add(hOverride);
+		addSortOperation(hOverride, EnrollmentComparator.SortBy.NEED_OVERRIDE, MESSAGES.colNeedOverride().replace("<br>", " "));
 
 		iCourseTable.addRow(null, header);
 		
@@ -928,6 +933,8 @@ public class SectioningStatusPage extends Composite {
 				iCourseTable.sort(hWaitListed, new EnrollmentComparator(sort), asc); break;
 			case ALTERNATIVES:
 				iCourseTable.sort(hAlternative, new EnrollmentComparator(sort), asc); break;
+			case NEED_OVERRIDE:
+				iCourseTable.sort(hOverride, new EnrollmentComparator(sort), asc); break;
 			}
 		}
 	}
@@ -1155,6 +1162,39 @@ public class SectioningStatusPage extends Composite {
 					});
 				}
 			});
+			hSelect.addOperation(new Operation() {
+				@Override
+				public String getName() {
+					return MESSAGES.checkOverrideStatus();
+				}
+				@Override
+				public boolean hasSeparator() {
+					return !iProperties.isRequestUpdate();
+				}
+				@Override
+				public boolean isApplicable() {
+					return iSelectedStudentIds.size() > 0 && iProperties != null && iProperties.isCheckStudentOverrides();
+				}
+				@Override
+				public void execute() {
+					List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
+					LoadingWidget.getInstance().show(MESSAGES.requestingStudentUpdate());
+					iSectioningService.checkStudentOverrides(studentIds, new AsyncCallback<Boolean>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+							UniTimeNotifications.error(caught);
+						}
+
+						@Override
+						public void onSuccess(Boolean result) {
+							LoadingWidget.getInstance().hide();
+							UniTimeNotifications.info(MESSAGES.checkStudentOverridesSuccess());
+							loadData();
+						}
+					});
+				}
+			});
 			if (iStates != null) {
 				for (final String ref: new TreeSet<String>(iStates.keySet())) {
 					hSelect.addOperation(new Operation() {
@@ -1293,7 +1333,7 @@ public class SectioningStatusPage extends Composite {
 		
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
 				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false, hasDistances = false, hasOverlaps = false,
-				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false;
+				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false, hasOverride = false;
 		for (ClassAssignmentInterface.StudentInfo e: result) {
 			if (e.getStudent() == null) continue;
 			// if (e.getStatus() != null) hasStatus = true;
@@ -1308,6 +1348,7 @@ public class SectioningStatusPage extends Composite {
 			if (e.getEnrolledDate() != null) hasEnrolledDate = true;
 			// if (e.getEmailDate() != null) hasEmailDate = true;
 			if (e.getTotalConsentNeeded() != null && e.getTotalConsentNeeded() > 0) hasConsent = true;
+			if (e.getTotalOverrideNeeded() != null && e.getTotalOverrideNeeded() > 0) hasOverride = true;
 			if (e.hasTotalCredit() || e.hasTotalRequestCredit()) hasCredit = true;
 			if (e.hasTotalDistanceConflicts()) hasDistances = true;
 			if (e.hasOverlappingMinutes()) hasOverlaps = true;
@@ -1389,6 +1430,13 @@ public class SectioningStatusPage extends Composite {
 			hConsent = new UniTimeTableHeader(MESSAGES.colConsent());
 			header.add(hConsent);
 			addSortOperation(hConsent, StudentComparator.SortBy.CONSENT, MESSAGES.colConsent());
+		}
+		
+		UniTimeTableHeader hOverride = null;
+		if (hasOverride) {
+			hOverride = new UniTimeTableHeader(MESSAGES.colOverride());
+			header.add(hOverride);
+			addSortOperation(hOverride, StudentComparator.SortBy.OVERRIDE, MESSAGES.colOverride());
 		}
 		
 		UniTimeTableHeader hCredit = null;
@@ -1542,6 +1590,8 @@ public class SectioningStatusPage extends Composite {
 				line.add(new NumberCell(info.getReservation(), info.getTotalReservation()));
 			if (hasConsent)
 				line.add(new NumberCell(info.getConsentNeeded(), info.getTotalConsentNeeded()));
+			if (hasOverride)
+				line.add(new NumberCell(info.getOverrideNeeded(), info.getTotalOverrideNeeded()));
 			if (hasCredit) {
 				if (info.hasCredit())
 					line.add(new CreditCell(info.getCredit(), info.getTotalCredit()));
@@ -1621,6 +1671,7 @@ public class SectioningStatusPage extends Composite {
 			case FT_OVERLAPS: h = hFTShare; break;
 			case PREF_IM: h = hPrefIMConfs; break;
 			case PREF_SEC: h = hPrefSecConfs; break;
+			case OVERRIDE: h = hOverride; break;
 			}
 			if (h != null)
 				iStudentTable.sort(h, new StudentComparator(sort), asc);
@@ -1942,6 +1993,7 @@ public class SectioningStatusPage extends Composite {
 			RESERVATION,
 			NEED_CONSENT,
 			ALTERNATIVES,
+			NEED_OVERRIDE,
 		}
 		
 		private SortBy iSortBy;
@@ -2032,6 +2084,12 @@ public class SectioningStatusPage extends Composite {
 				cmp = (e1.getTotalUnassignedAlternative() == null ? new Integer(0) : e1.getTotalUnassignedAlternative()).compareTo(e2.getTotalUnassignedAlternative() == null ? 0 : e2.getTotalUnassignedAlternative());
 				if (cmp != 0) return - cmp;
 				break;
+			case NEED_OVERRIDE:
+				cmp = (e1.getOverrideNeeded() == null ? new Integer(0) : new Integer(e1.getOverrideNeeded())).compareTo(e2.getOverrideNeeded() == null ? 0 : e2.getOverrideNeeded());
+				if (cmp != 0) return - cmp;
+				cmp = (e1.getTotalOverrideNeeded() == null ? new Integer(0) : new Integer(e1.getTotalOverrideNeeded())).compareTo(e2.getTotalOverrideNeeded() == null ? 0 : e2.getTotalOverrideNeeded());
+				if (cmp != 0) return - cmp;
+				break;
 			}
 			
 			// Default sort
@@ -2067,6 +2125,7 @@ public class SectioningStatusPage extends Composite {
 			NOTE,
 			DIST_CONF, OVERLAPS,
 			FT_OVERLAPS, PREF_IM, PREF_SEC,
+			OVERRIDE,
 			;
 		}
 		
@@ -2172,6 +2231,10 @@ public class SectioningStatusPage extends Composite {
 				cmp = (e1.hasTotalPrefSectionConflict() ? new Integer(e1.getTotalPrefSectionConflict() - e1.getPrefSectionConflict()) : new Integer(0)).compareTo(e2.hasTotalPrefSectionConflict() ? new Integer(e2.getTotalPrefSectionConflict() - e2.getPrefSectionConflict()) : new Integer(0));
 				if (cmp != 0) return - cmp;
 				return -(e1.hasTotalPrefSectionConflict() ? e1.getTotalPrefSectionConflict() : new Integer(0)).compareTo(e2.hasTotalPrefSectionConflict() ? e2.getTotalPrefSectionConflict() : new Integer(0));
+			case OVERRIDE:
+				cmp = (e1.getOverrideNeeded() == null ? new Integer(0) : e1.getOverrideNeeded()).compareTo(e2.getOverrideNeeded() == null ? 0 : e2.getOverrideNeeded());
+				if (cmp != 0) return - cmp;
+				return (e1.getTotalOverrideNeeded() == null ? new Integer(0) : e1.getTotalOverrideNeeded()).compareTo(e2.getTotalOverrideNeeded() == null ? 0 : e2.getTotalOverrideNeeded());
 			default:
 				return 0;
 			}

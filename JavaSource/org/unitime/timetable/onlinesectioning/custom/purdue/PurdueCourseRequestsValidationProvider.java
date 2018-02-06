@@ -700,7 +700,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						overrides.remove(subject + " " + courseNbr);
 						List<ChangeError> errors = new ArrayList<ChangeError>();
 						for (CourseMessage m: request.getConfirmations()) {
-							// if ("CREDIT".equals(m.getCode())) continue;
+							if ("CREDIT".equals(m.getCode())) continue;
 							if (!m.isError() && (course.getCourseId().equals(m.getCourseId()) || course.getCourseName().equals(m.getCourse()))) {
 								ChangeError e = new ChangeError();
 								e.code = m.getCode(); e.message = m.getMessage();
@@ -730,12 +730,14 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						String courseNbr = iExternalTermProvider.getExternalCourseNumber(server.getAcademicSession(), course.getSubjectArea(), course.getCourseNumber());
 						overrides.remove(subject + " " + courseNbr);
 						List<ChangeError> errors = new ArrayList<ChangeError>();
-						for (CourseMessage m: request.getConfirmations())
+						for (CourseMessage m: request.getConfirmations()) {
+							if ("CREDIT".equals(m.getCode())) continue;
 							if (!m.isError() && (course.getCourseId().equals(m.getCourseId()) || course.getCourseName().equals(m.getCourse()))) {
 								ChangeError e = new ChangeError();
 								e.code = m.getCode(); e.message = m.getMessage();
 								errors.add(e);
 							}
+						}
 						if (!errors.isEmpty()) {
 							Change ch = new Change();
 							ch.subject = subject;
@@ -1023,6 +1025,32 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 								helper.getHibSession().update(cr);
 								changed = true;
 							}
+						}
+					} else {
+						String subject = iExternalTermProvider.getExternalSubject(session, cr.getCourseOffering().getSubjectAreaAbbv(), cr.getCourseOffering().getCourseNbr());
+						String courseNbr = iExternalTermProvider.getExternalCourseNumber(session, cr.getCourseOffering().getSubjectAreaAbbv(), cr.getCourseOffering().getCourseNbr());
+						SpecialRegistrationRequest req = null;
+						for (SpecialRegistrationRequest r: status.data.requests) {
+							if (r.requestId == null) continue;
+							Change match = null;
+							if (r.changes != null)
+								for (Change ch: r.changes)
+									if (subject.equals(ch.subject) && courseNbr.equals(ch.courseNbr)) { match = ch; break; }
+							if (match != null && (req == null || r.dateCreated.isAfter(req.dateCreated))) req = r;
+						}
+						if (req != null) {
+							cr.setOverrideExternalId(req.requestId);
+							cr.setOverrideTimeStamp(req.dateCreated.toDate());
+							if (RequestStatus.denied.name().equals(req.status))
+								cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.REJECTED);
+							else if (RequestStatus.approved.name().equals(req.status))
+								cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.APPROVED);
+							else if (RequestStatus.cancelled.name().equals(req.status))
+								cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.CANCELLED);
+							else
+								cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.PENDING);
+							helper.getHibSession().update(cr);
+							changed = true;
 						}
 					}
 				}

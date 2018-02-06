@@ -1989,7 +1989,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (CustomCourseRequestsValidationHolder.hasProvider()) {
 			OnlineSectioningServer server = getServerInstance(student.getSession().getUniqueId(), true);
 			if (server != null)
-				return server.execute(server.createAction(CustomCourseRequestsHolder.Check.class).withRequest(request), currentUser());
+				return server.execute(server.createAction(CustomCourseRequestsValidationHolder.Check.class).withRequest(request), currentUser());
 		}
 		
 		return request;
@@ -2367,6 +2367,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			properties.setEmail(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingEmailStudent));
 			properties.setChangeStatus(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingChangeStudentStatus));
 			properties.setRequestUpdate(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingRequestStudentUpdate));
+			properties.setCheckStudentOverrides(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingCheckStudentOverrides));
 		}
 		return properties;
 	}
@@ -2379,6 +2380,16 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		getSessionContext().checkPermission(server.getAcademicSession(), Right.StudentSchedulingRequestStudentUpdate);
 		
 		return server.execute(server.createAction(RequestStudentUpdates.class).forStudents(studentIds), currentUser());
+	}
+	
+	@Override
+	public Boolean checkStudentOverrides(List<Long> studentIds) throws SectioningException, PageAccessException {
+		OnlineSectioningServer server = getServerInstance(getStatusPageSessionId(), true);
+		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+		
+		getSessionContext().checkPermission(server.getAcademicSession(), Right.StudentSchedulingCheckStudentOverrides);
+		
+		return server.execute(server.createAction(CustomCourseRequestsValidationHolder.Update.class).forStudents(studentIds), currentUser());
 	}
 
 	@Override

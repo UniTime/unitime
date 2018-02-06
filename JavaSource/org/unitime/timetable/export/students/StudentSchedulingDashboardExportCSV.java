@@ -153,7 +153,8 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 				MESSAGES.colWaitListed(),
 				MESSAGES.colUnassignedAlternative().replace("<br>", "\n"),
 				MESSAGES.colReserved(),
-				MESSAGES.colNeedConsent().replace("<br>", "\n"));
+				MESSAGES.colNeedConsent().replace("<br>", "\n"),
+				MESSAGES.colNeedOverride().replace("<br>", "\n"));
 		out.flush();
 		
 		if (enrollments != null)
@@ -170,7 +171,8 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 							waitlist(e),
 							number(e.getUnassignedAlternative(), e.getTotalUnassignedAlternative()),
 							number(e.getReservation(), e.getTotalReservation()),
-							number(e.getConsentNeeded(), e.getTotalConsentNeeded())
+							number(e.getConsentNeeded(), e.getTotalConsentNeeded()),
+							number(e.getOverrideNeeded(), e.getTotalOverrideNeeded())
 							);
 				} else {
 					out.printLine(
@@ -185,7 +187,8 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 							waitlist(e),
 							number(e.getUnassignedAlternative(), e.getTotalUnassignedAlternative()),
 							number(e.getReservation(), e.getTotalReservation()),
-							number(e.getConsentNeeded(), e.getTotalConsentNeeded())
+							number(e.getConsentNeeded(), e.getTotalConsentNeeded()),
+							number(e.getOverrideNeeded(), e.getTotalOverrideNeeded())
 							);
 				}
 			}
@@ -206,7 +209,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
 				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasReqCredit = false, hasCredit = false, hasDistances = false, hasOverlaps = false,
-				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false;
+				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false, hasOverride = false;
 		if (students != null)
 			for (ClassAssignmentInterface.StudentInfo e: students) {
 				if (e.getStudent() == null) continue;
@@ -220,6 +223,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 				if (e.getRequestedDate() != null) hasRequestedDate = true;
 				if (e.getEnrolledDate() != null) hasEnrolledDate = true;
 				if (e.getTotalConsentNeeded() != null && e.getTotalConsentNeeded() > 0) hasConsent = true;
+				if (e.getTotalOverrideNeeded() != null && e.getTotalOverrideNeeded() > 0) hasOverride = true;
 				if (e.hasTotalRequestCredit()) hasReqCredit = true;
 				if (e.hasTotalCredit()) hasCredit = true;
 				if (e.hasTotalDistanceConflicts()) hasDistances = true;
@@ -238,17 +242,18 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		if (!hasWaitList) out.hideColumn(9);
 		if (!hasReservation) out.hideColumn(10);
 		if (!hasConsent) out.hideColumn(11);
-		if (!hasReqCredit) out.hideColumn(12);
-		if (!hasCredit) out.hideColumn(13);
-		if (!hasDistances) { out.hideColumn(14); out.hideColumn(15); }
-		if (!hasOverlaps) { out.hideColumn(16); }
-		if (!hasFreeTimeOverlaps) { out.hideColumn(17); }
-		if (!hasPrefIMConfs) { out.hideColumn(18); }
-		if (!hasPrefSecConfs) { out.hideColumn(19); }
-		if (!hasRequestedDate) out.hideColumn(20);
-		if (!hasEnrolledDate) out.hideColumn(21);
-		if (!hasNote) out.hideColumn(22);
-		if (!hasEmailed) out.hideColumn(23);
+		if (!hasOverride) out.hideColumn(12);
+		if (!hasReqCredit) out.hideColumn(13);
+		if (!hasCredit) out.hideColumn(14);
+		if (!hasDistances) { out.hideColumn(15); out.hideColumn(16); }
+		if (!hasOverlaps) { out.hideColumn(17); }
+		if (!hasFreeTimeOverlaps) { out.hideColumn(18); }
+		if (!hasPrefIMConfs) { out.hideColumn(19); }
+		if (!hasPrefSecConfs) { out.hideColumn(20); }
+		if (!hasRequestedDate) out.hideColumn(21);
+		if (!hasEnrolledDate) out.hideColumn(22);
+		if (!hasNote) out.hideColumn(23);
+		if (!hasEmailed) out.hideColumn(24);
 		
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_REQUEST);
 		
@@ -265,18 +270,19 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 				MESSAGES.colWaitListed(), // 9
 				MESSAGES.colReservation(), // 10
 				MESSAGES.colConsent(), // 11
-				MESSAGES.colRequestCredit(), // 12
-				MESSAGES.colCredit(), // 13
-				MESSAGES.colDistanceConflicts(), // 14
-				MESSAGES.colLongestDistance(), // 15
-				MESSAGES.colOverlapMins(), // 16
-				MESSAGES.colFreeTimeOverlapMins(), // 17
-				MESSAGES.colPrefInstrMethConfs(), // 18
-				MESSAGES.colPrefSectionConfs(), // 19
-				MESSAGES.colRequestTimeStamp(), // 20
-				MESSAGES.colEnrollmentTimeStamp(), // 21
-				MESSAGES.colStudentNote(), // 22
-				MESSAGES.colEmailTimeStamp() // 23
+				MESSAGES.colOverride(), // 12
+				MESSAGES.colRequestCredit(), // 13
+				MESSAGES.colCredit(), // 14
+				MESSAGES.colDistanceConflicts(), // 15
+				MESSAGES.colLongestDistance(), // 16
+				MESSAGES.colOverlapMins(), // 17
+				MESSAGES.colFreeTimeOverlapMins(), // 18
+				MESSAGES.colPrefInstrMethConfs(), // 19
+				MESSAGES.colPrefSectionConfs(), // 20
+				MESSAGES.colRequestTimeStamp(), // 21
+				MESSAGES.colEnrollmentTimeStamp(), // 22
+				MESSAGES.colStudentNote(), // 23
+				MESSAGES.colEmailTimeStamp() // 24
 				);
 				
 				
@@ -298,6 +304,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 							waitlist(info),
 							number(info.getReservation(), info.getTotalReservation()),
 							number(info.getConsentNeeded(), info.getTotalConsentNeeded()),
+							number(info.getOverrideNeeded(), info.getTotalOverrideNeeded()),
 							reqCredit(info.getRequestCreditMin(), info.getRequestCreditMax(), info.getTotalRequestCreditMin(), info.getTotalRequestCreditMax()),
 							credit(info.getCredit(), info.getTotalCredit()),
 							number(info.getNrDistanceConflicts(), info.getTotalNrDistanceConflicts()),
@@ -326,6 +333,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 							waitlist(info),
 							number(info.getReservation(), info.getTotalReservation()),
 							number(info.getConsentNeeded(), info.getTotalConsentNeeded()),
+							number(info.getOverrideNeeded(), info.getTotalOverrideNeeded()),
 							reqCredit(info.getRequestCreditMin(), info.getRequestCreditMax(), info.getTotalRequestCreditMin(), info.getTotalRequestCreditMax()),
 							credit(info.getCredit(), info.getTotalCredit()),
 							number(info.getNrDistanceConflicts(), info.getTotalNrDistanceConflicts()),

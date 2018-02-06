@@ -122,7 +122,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		
 		int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0;
 		int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0;
-		int gConNeed = 0, gtConNeed = 0;
+		int gConNeed = 0, gtConNeed = 0, gOvrNeed = 0, gtOvrNeed = 0;
 		int gDist = 0, gtDist = 0, gNrDC = 0, gtNrDC = 0, gShr = 0, gtShr = 0; 
 		int gFre = 0, gtFre = 0, gPIM = 0, gtPIM = 0, gPSec = 0, gtPSec = 0;
 		Set<Long> unassigned = new HashSet<Long>();
@@ -176,7 +176,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						for (String gr: student.getGroups()) {
 							st.addGroup(gr);
 						}
-						int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0, tUnasg = 0;
+						int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0, tUnasg = 0, tOvrNeed = 0, ovrNeed = 0;
 						float tCred = 0f;
 						int nrDisCnf = 0, maxDist = 0, share = 0; 
 						int ftShare = 0;
@@ -196,9 +196,13 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 										if (minTot == null || minTot > c.getMinCredit()) minTot = c.getMinCredit();
 										if (maxTot == null || maxTot < c.getMaxCredit()) maxTot = c.getMaxCredit();
 									}
-									if (c != null && c.hasCredit() && query().match(new CourseRequestMatcher(session, c, student, server.getOffering(c.getOfferingId()), cr, isConsentToDoCourse(c), isMyStudent(student), server))) {
-										if (min == null || min > c.getMinCredit()) min = c.getMinCredit();
-										if (max == null || max < c.getMaxCredit()) max = c.getMaxCredit();
+									if (cr.isOverridePending(c)) { gtOvrNeed ++; tOvrNeed ++; }
+									if (query().match(new CourseRequestMatcher(session, c, student, server.getOffering(c.getOfferingId()), cr, isConsentToDoCourse(c), isMyStudent(student), server))) {
+										if (c != null && c.hasCredit()) { 
+											if (min == null || min > c.getMinCredit()) min = c.getMinCredit();
+											if (max == null || max < c.getMaxCredit()) max = c.getMaxCredit();
+										}
+										if (cr.isOverridePending(c)) { gOvrNeed ++; ovrNeed ++; }
 									}
 								}
 								if (minTot != null) {
@@ -290,11 +294,13 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						s.setTotalWaitlist(tWait);
 						s.setTotalUnassigned(tUnasg);
 						s.setTotalConsentNeeded(tConNeed);
+						s.setTotalOverrideNeeded(tOvrNeed);
 						s.setEnrollment(0);
 						s.setReservation(0);
 						s.setWaitlist(0);
 						s.setUnassigned(0);
 						s.setConsentNeeded(0);
+						s.setOverrideNeeded(ovrNeed);
 						s.setRequested(tReq);
 						s.setStatus(student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
 						s.setEmailDate(student.getEmailTimeStamp() == null ? null : student.getEmailTimeStamp());
@@ -528,6 +534,8 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		
 		t.setConsentNeeded(gConNeed);
 		t.setTotalConsentNeeded(gtConNeed);
+		t.setOverrideNeeded(gOvrNeed);
+		t.setTotalOverrideNeeded(gtOvrNeed);
 		
 		t.setNrDistanceConflicts(gNrDC);
 		t.setTotalNrDistanceConflicts(gtNrDC);

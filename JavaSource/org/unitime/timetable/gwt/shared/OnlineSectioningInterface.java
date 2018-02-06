@@ -116,6 +116,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private boolean iEmail = false, iMassCancel = false, iChangeStatus = false;
 		private boolean iRequestUpdate = false;
 		private boolean iChangeLog = false;
+		private boolean iCheckStudentOverrides = false;
 		
 		public SectioningProperties() {
 		}
@@ -142,11 +143,14 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public void setRequestUpdate(boolean requestUpdate) { iRequestUpdate = requestUpdate; }
 		public boolean isRequestUpdate() { return iRequestUpdate; }
 		
+		public void setCheckStudentOverrides(boolean checkOverrides) { iCheckStudentOverrides = checkOverrides; }
+		public boolean isCheckStudentOverrides() { return iCheckStudentOverrides; }
+		
 		public void setChangeLog(boolean changeLog) { iChangeLog = changeLog; }
 		public boolean isChangeLog() { return iChangeLog; }
 		
 		public boolean isCanSelectStudent() {
-			return iEmail || iMassCancel || iChangeStatus || iRequestUpdate;
+			return iEmail || iMassCancel || iChangeStatus || iRequestUpdate || iCheckStudentOverrides;
 		}
 	}
 

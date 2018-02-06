@@ -133,7 +133,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 			
 			int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0, gUnasgPrim = 0;
 			int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0, gtUnasgPrim = 0;
-			int gConNeed = 0, gtConNeed = 0;
+			int gConNeed = 0, gtConNeed = 0, gOvrNeed = 0, gtOvrNeed = 0;
 			
 			for (XCourseId info: server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery))) {
 				XOffering offering = server.getOffering(info.getOfferingId());
@@ -153,7 +153,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				int match = 0;
 				int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0;
 				int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0;
-				int conNeed = 0, tConNeed = 0;
+				int conNeed = 0, tConNeed = 0, ovrNeed = 0, tOvrNeed = 0;
 				
 				Set<Long> addedStudents = new HashSet<Long>();
 				for (XCourseRequest request: enrollments.getRequests()) {
@@ -195,6 +195,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 							if (m.request().isWaitlist())
 								wait ++;
 						}
+						if (m.request().isOverridePending(course)) ovrNeed ++;
 					}
 					
 					if (m.enrollment() != null) {
@@ -206,8 +207,8 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 						if (!m.request().isAlternative() && m.request().isPrimary(info)) tUnasgPrim ++;
 						if (m.request().isWaitlist())
 							tWait ++;
-						
 					}
+					if (m.request().isOverridePending(course)) tOvrNeed ++;
 				}
 				
 				if (match == 0) {
@@ -221,6 +222,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				gUnasgPrim += unasgPrim;
 				gRes += res;
 				gConNeed += conNeed;
+				gOvrNeed += ovrNeed;
 				
 				gtEnrl += tEnrl;
 				gtWait += tWait;
@@ -228,6 +230,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				gtUnasgPrim += tUnasgPrim;
 				gtRes += tRes;
 				gtConNeed += tConNeed;
+				gtOvrNeed += tOvrNeed;
 				
 				int limit = 0;
 				for (XConfig config: offering.getConfigs()) {
@@ -276,6 +279,8 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				
 				e.setConsentNeeded(conNeed);
 				e.setTotalConsentNeeded(tConNeed);
+				e.setOverrideNeeded(ovrNeed);
+				e.setTotalOverrideNeeded(tOvrNeed);
 
 				ret.add(e);
 				if (limit() != null && ret.size() >= limit()) break;
@@ -314,6 +319,8 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 			
 			t.setConsentNeeded(gConNeed);
 			t.setTotalConsentNeeded(gtConNeed);
+			t.setOverrideNeeded(gOvrNeed);
+			t.setTotalOverrideNeeded(gtOvrNeed);
 			ret.add(t);
 		} else {
 			XCourse info = server.getCourse(courseId());

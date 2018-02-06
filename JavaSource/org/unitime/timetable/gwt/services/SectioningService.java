@@ -90,6 +90,7 @@ public interface SectioningService extends RemoteService {
 	List<DegreePlanInterface> listDegreePlans(boolean online, Long sessionId, Long studentId) throws SectioningException, PageAccessException;
 	ClassAssignmentInterface.Student lookupStudent(boolean online, String studentId) throws SectioningException, PageAccessException;
 	ClassAssignmentInterface.Student lookupStudent(boolean online, Long studentId) throws SectioningException, PageAccessException;
+	Boolean checkStudentOverrides(List<Long> studentIds) throws SectioningException, PageAccessException;
 	
 	RetrieveSpecialRegistrationResponse retrieveSpecialRequest(RetrieveSpecialRegistrationRequest request) throws SectioningException, PageAccessException;
 	SubmitSpecialRegistrationResponse submitSpecialRequest(SubmitSpecialRegistrationRequest request) throws SectioningException, PageAccessException;

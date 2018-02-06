@@ -1013,6 +1013,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Consent")
 	String colConsent();
 	
+	@DefaultMessage("Override")
+	String colOverride();
+	
 	@DefaultMessage("Coordinator")
 	String colCoordinator();
 
@@ -1081,6 +1084,9 @@ public interface StudentSectioningMessages extends Messages {
 		
 	@DefaultMessage("Need<br>Consent")
 	String colNeedConsent();
+	
+	@DefaultMessage("Need<br>Override")
+	String colNeedOverride();
 	
 	@DefaultMessage("<u>E</u>nrollments")
 	String tabEnrollments();
@@ -1380,6 +1386,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Request Update")
 	String requestStudentUpdate();
 	
+	@DefaultMessage("Check Override Status")
+	String checkOverrideStatus();
+	
 	@DefaultMessage("Requesting student update...")
 	String requestingStudentUpdate();
 	
@@ -1388,6 +1397,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Student update successfully requested. Please wait a while for the synchronization to take place.")
 	String requestStudentUpdateSuccess();
+	
+	@DefaultMessage("Student overrides successfully rechecked.")
+	String checkStudentOverridesSuccess();
 	
 	@DefaultMessage("Click to lock the class. Any course changes will not affect locked course.")
 	String hintUnlocked();

@@ -94,7 +94,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			
 			int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0, gUnasgPrim = 0;
 			int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0, gtUnasgPrim = 0;
-			int gConNeed = 0, gtConNeed = 0;
+			int gConNeed = 0, gtConNeed = 0, gOvrNeed = 0, gtOvrNeed = 0;
 			
 			DbFindEnrollmentInfoCourseMatcher m = new DbFindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery);
 			
@@ -125,7 +125,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				int match = 0;
 				int enrl = 0, wait = 0, res = 0, unasg = 0, unasgPrim = 0;
 				int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0, tUnasgPrim = 0;
-				int conNeed = 0, tConNeed = 0;
+				int conNeed = 0, tConNeed = 0, ovrNeed = 0, tOvrNeed = 0;
 				
 				for (CourseRequest request: (List<CourseRequest>)helper.getHibSession().createQuery(
 						"from CourseRequest where courseOffering.uniqueId = :courseId"
@@ -167,6 +167,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 							if (request.getCourseDemand().isWaitlist())
 								wait ++;
 						}
+						if (request.isRequestPending()) ovrNeed ++;
 					}
 					
 					if (!crm.enrollment().isEmpty()) {
@@ -179,6 +180,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 						if (request.getCourseDemand().isWaitlist())
 							tWait ++;
 					}
+					if (request.isRequestPending()) tOvrNeed ++;
 				}
 				
 				if (match == 0) {
@@ -192,6 +194,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				gUnasgPrim += unasgPrim;
 				gRes += res;
 				gConNeed += conNeed;
+				gOvrNeed += ovrNeed;
 				
 				gtEnrl += tEnrl;
 				gtWait += tWait;
@@ -199,6 +202,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				gtUnasgPrim += tUnasgPrim;
 				gtRes += tRes;
 				gtConNeed += tConNeed;
+				gtOvrNeed += tOvrNeed;
 				
 				int limit = 0;
 				for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
@@ -247,6 +251,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				
 				e.setConsentNeeded(conNeed);
 				e.setTotalConsentNeeded(tConNeed);
+				e.setOverrideNeeded(ovrNeed);
+				e.setTotalOverrideNeeded(tOvrNeed);
 
 				ret.add(e);
 				if (limit() != null && ret.size() >= limit()) break;
@@ -285,6 +291,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			
 			t.setConsentNeeded(gConNeed);
 			t.setTotalConsentNeeded(gtConNeed);
+			t.setOverrideNeeded(gOvrNeed);
+			t.setTotalOverrideNeeded(gtOvrNeed);
 			ret.add(t);
 		} else {
 			final CourseOffering course = CourseOfferingDAO.getInstance().get(courseId(), helper.getHibSession());

@@ -46,6 +46,7 @@ import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
+import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
@@ -321,6 +322,11 @@ public class XCourseRequest extends XRequest {
     public String getOverrideExternalId(XCourseId courseId) {
     	XOverride override = (iOverrides == null ? null : iOverrides.get(courseId));
     	return (override == null ? null : override.getExternalId());
+    }
+    
+    public boolean isOverridePending(XCourseId courseId) {
+    	XOverride override = (iOverrides == null ? null : iOverrides.get(courseId));
+    	return (override == null || override.getStatus() == null ? false : override.getStatus().intValue() == CourseRequestOverrideStatus.PENDING.ordinal());
     }
 
     public OnlineSectioningLog.CourseRequestOption getOptions(Long offeringId) {

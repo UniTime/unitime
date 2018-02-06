@@ -917,6 +917,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Integer iLimit, iOther, iProjection, iEnrollment, iWaitlist, iReservation, iAvailable, iUnassigned, iUnassignedPrimary;
 		private Integer iTotalEnrollment, iTotalWaitlist, iTotalReservation, iTotalUnassigned, iTotalUnassignedPrimary;
 		private Integer iConsentNeeded, iTotalConsentNeeded;
+		private Integer iOverrideNeeded, iTotalOverrideNeeded;
 		private ClassAssignment iAssignment;
 		private int iLevel = 0;
 		
@@ -1046,7 +1047,15 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public Integer getTotalConsentNeeded() { return iTotalConsentNeeded; }
 		public void setTotalConsentNeeded(Integer totalConsentNeeded) { iTotalConsentNeeded = totalConsentNeeded; }
 		public int hasTotalConsentNeeded() { return iTotalConsentNeeded; }
+
+		public Integer getOverrideNeeded() { return iOverrideNeeded; }
+		public void setOverrideNeeded(Integer overrideNeeded) { iOverrideNeeded = overrideNeeded; }
+		public int hasOverrideNeeded() { return iOverrideNeeded; }
 		
+		public Integer getTotalOverrideNeeded() { return iTotalOverrideNeeded; }
+		public void setTotalOverrideNeeded(Integer totalOverrideNeeded) { iTotalOverrideNeeded = totalOverrideNeeded; }
+		public int hasTotalOverrideNeeded() { return iTotalOverrideNeeded; }
+
 		public int getLevel() { return iLevel; }
 		public void setLevel(int level) { iLevel = level; }
 		public void incLevel() { iLevel ++; }
@@ -1076,6 +1085,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Integer iPrefInstrMethConflict, iTotalPrefInstrMethConflict;
 		private Integer iPrefSectionConflict, iTotalPrefSectionConflict;
 		private float[] iRequestCredit = null, iRequestTotalCredit = null;
+		private Integer iOverrideNeeded, iTotalOverrideNeeded;
 		
 		public StudentInfo() {}
 		
@@ -1125,6 +1135,14 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public Integer getTotalConsentNeeded() { return iTotalConsentNeeded; }
 		public void setTotalConsentNeeded(Integer totalConsentNeeded) { iTotalConsentNeeded = totalConsentNeeded; }
 		public int hasTotalConsentNeeded() { return iTotalConsentNeeded; }
+		
+		public Integer getOverrideNeeded() { return iOverrideNeeded; }
+		public void setOverrideNeeded(Integer overrideNeeded) { iOverrideNeeded = overrideNeeded; }
+		public int hasOverrideNeeded() { return iOverrideNeeded; }
+		
+		public Integer getTotalOverrideNeeded() { return iTotalOverrideNeeded; }
+		public void setTotalOverrideNeeded(Integer totalOverrideNeeded) { iTotalOverrideNeeded = totalOverrideNeeded; }
+		public int hasTotalOverrideNeeded() { return iTotalOverrideNeeded; }
 
 		public Integer getTopWaitingPriority() { return iTopWaitingPriority; }
 		public void setTopWaitingPriority(Integer topWaitingPriority) { iTopWaitingPriority = topWaitingPriority; }
