@@ -120,7 +120,11 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 	
 	public boolean hasOutput() { return iFinished != null && iOutputLink != null; }
 	public File output() { return iOutput; }
-	public void setOutput(File output) { iOutput = output; }
+	public void setOutput(File output) {
+		iOutput = output;
+		iOutputName = (output == null ? null : output.getName());
+		iOutputLink = (output == null ? null : "qpfile?q=" + QueryEncoderBackend.encode(getId().toString()));
+	}
 	protected File createOutput(String prefix, String ext) {
 		if (iOutput != null) throw new RuntimeException(MSG.scriptErrorOutputAlreadyCreated());
 		iOutput = ApplicationProperties.getTempFile(prefix, ext);
