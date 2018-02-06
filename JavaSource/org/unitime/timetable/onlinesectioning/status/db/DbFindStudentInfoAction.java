@@ -36,6 +36,7 @@ import org.cpsolver.ifs.util.DistanceMetric;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.StudentInfo;
 import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
@@ -135,8 +136,34 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					float tCred = 0f;
 					int nrDisCnf = 0, maxDist = 0, share = 0; 
 					int ftShare = 0;
+					List<Float> minsTot = new ArrayList<Float>();
+					List<Float> maxsTot = new ArrayList<Float>();
+					List<Float> mins = new ArrayList<Float>();
+					List<Float> maxs = new ArrayList<Float>();
+					int nrCoursesTot = 0, nrCourses = 0;
 					for (CourseDemand demand: student.getCourseDemands()) {
 						if (!demand.getCourseRequests().isEmpty()) {
+							Float minTot = null, maxTot = null;
+							Float min = null, max = null;
+							for (CourseRequest r: demand.getCourseRequests()) {
+								CourseCreditUnitConfig c = r.getCourseOffering().getCredit();
+								if (c != null) {
+									if (minTot == null || minTot > c.getMinCredit()) minTot = c.getMinCredit();
+									if (maxTot == null || maxTot < c.getMaxCredit()) maxTot = c.getMaxCredit();
+								}
+								if (c != null && query().match(new DbCourseRequestMatcher(session, r, isConsentToDoCourse(r.getCourseOffering()), isMyStudent(student), helper.getStudentNameFormat()))) {
+									if (min == null || min > c.getMinCredit()) min = c.getMinCredit();
+									if (max == null || max < c.getMaxCredit()) max = c.getMaxCredit();
+								}
+							}
+							if (minTot != null) {
+								minsTot.add(minTot); maxsTot.add(maxTot); 
+								if (!demand.isAlternative()) nrCoursesTot ++;
+							}
+							if (min != null) {
+								mins.add(min); maxs.add(max); 
+								if (!demand.isAlternative()) nrCourses ++;
+							}
 							if (!demand.isAlternative()) tReq ++;
 							List<StudentClassEnrollment> enrollment = null;
 							CourseRequest assigned = null;
@@ -210,7 +237,23 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 							}
 						}
 					}
-					
+
+					Collections.sort(mins);
+					Collections.sort(maxs);
+					float min = 0f, max = 0f;
+					for (int i = 0; i < nrCourses; i++) {
+						min += mins.get(i);
+						max += maxs.get(maxs.size() - i - 1);
+					}
+					Collections.sort(minsTot);
+					Collections.sort(maxsTot);
+					float minTot = 0f, maxTot = 0f;
+					for (int i = 0; i < nrCoursesTot; i++) {
+						minTot += minsTot.get(i);
+						maxTot += maxsTot.get(maxsTot.size() - i - 1);
+					}
+					s.setRequestCredit(min, max);
+					s.setTotalRequestCredit(minTot, maxTot);
 					s.setTotalEnrollment(tEnrl);
 					s.setTotalReservation(tRes);
 					s.setTotalWaitlist(tWait);

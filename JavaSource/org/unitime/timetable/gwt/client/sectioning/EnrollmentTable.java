@@ -256,6 +256,7 @@ public class EnrollmentTable extends Composite {
 				iStudentSchedule.setSelectionHandler(new SelectionHandler<Integer>() {
 					@Override
 					public void onSelection(SelectionEvent<Integer> event) {
+						buttons.setMessage(iStudentSchedule.getCreditMessage());
 						dialog.center();
 					}
 				});
@@ -263,8 +264,7 @@ public class EnrollmentTable extends Composite {
 				dialog.setText(MESSAGES.dialogEnrollments(student.getName()));
 				dialog.setEscapeToHide(true);
 				dialog.sinkEvents(Event.ONKEYUP);
-				if (iStudentSchedule.getTotalCredit() > 0f)
-					buttons.setMessage(MESSAGES.totalCredit(iStudentSchedule.getTotalCredit()));
+				buttons.setMessage(iStudentSchedule.getCreditMessage());
 				buttons.addButton("registration", MESSAGES.buttonRegistration(), new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent e) {

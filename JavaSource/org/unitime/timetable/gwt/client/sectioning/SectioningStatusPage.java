@@ -69,6 +69,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.FontStyle;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -1307,7 +1308,7 @@ public class SectioningStatusPage extends Composite {
 			if (e.getEnrolledDate() != null) hasEnrolledDate = true;
 			// if (e.getEmailDate() != null) hasEmailDate = true;
 			if (e.getTotalConsentNeeded() != null && e.getTotalConsentNeeded() > 0) hasConsent = true;
-			if (e.hasTotalCredit()) hasCredit = true;
+			if (e.hasTotalCredit() || e.hasTotalRequestCredit()) hasCredit = true;
 			if (e.hasTotalDistanceConflicts()) hasDistances = true;
 			if (e.hasOverlappingMinutes()) hasOverlaps = true;
 			if (e.hasFreeTimeOverlappingMins()) hasFreeTimeOverlaps = true;
@@ -1389,7 +1390,7 @@ public class SectioningStatusPage extends Composite {
 			header.add(hConsent);
 			addSortOperation(hConsent, StudentComparator.SortBy.CONSENT, MESSAGES.colConsent());
 		}
-
+		
 		UniTimeTableHeader hCredit = null;
 		if (hasCredit) {
 			hCredit = new UniTimeTableHeader(MESSAGES.colCredit());
@@ -1541,8 +1542,12 @@ public class SectioningStatusPage extends Composite {
 				line.add(new NumberCell(info.getReservation(), info.getTotalReservation()));
 			if (hasConsent)
 				line.add(new NumberCell(info.getConsentNeeded(), info.getTotalConsentNeeded()));
-			if (hasCredit)
-				line.add(new CreditCell(info.getCredit(), info.getTotalCredit()));
+			if (hasCredit) {
+				if (info.hasCredit())
+					line.add(new CreditCell(info.getCredit(), info.getTotalCredit()));
+				else
+					line.add(new RequestCreditCell(info.getRequestCreditMin(), info.getRequestCreditMax(), info.getTotalRequestCreditMin(), info.getTotalRequestCreditMax()));
+			}
 			if (hasDistances) {
 				line.add(new DistanceCell(info.getNrDistanceConflicts(), info.getTotalNrDistanceConflicts(), info.getLongestDistanceMinutes(), info.getTotalLongestDistanceMinutes()));
 			}
@@ -2127,7 +2132,15 @@ public class SectioningStatusPage extends Composite {
 			case CREDIT:
 				cmp = (e1.hasCredit() ? e1.getCredit() : new Float(0f)).compareTo(e2.hasCredit() ? e2.getCredit() : new Float(0f));
 				if (cmp != 0) return - cmp;
-				return (e1.hasTotalCredit() ? e1.getTotalCredit() : new Float(0f)).compareTo(e2.hasTotalCredit() ? e2.getTotalCredit() : new Float(0f));
+				cmp = (e1.hasTotalCredit() ? e1.getTotalCredit() : new Float(0f)).compareTo(e2.hasTotalCredit() ? e2.getTotalCredit() : new Float(0f));
+				if (cmp != 0) return - cmp;
+				cmp = (e1.hasRequestCredit() ? new Float(e1.getRequestCreditMin()) : new Float(0f)).compareTo(e2.hasRequestCredit() ? e2.getRequestCreditMin() : 0f);
+				if (cmp != 0) return - cmp;
+				cmp = (e1.hasRequestCredit() ? new Float(e1.getRequestCreditMax()) : new Float(0f)).compareTo(e2.hasRequestCredit() ? e2.getRequestCreditMax() : 0f);
+				if (cmp != 0) return - cmp;
+				cmp = (e1.hasTotalRequestCredit() ? new Float(e1.getTotalRequestCreditMin()) : new Float(0f)).compareTo(e2.hasTotalRequestCredit() ? e2.getTotalRequestCreditMin() : 0f);
+				if (cmp != 0) return - cmp;
+				return (e1.hasTotalRequestCredit() ? new Float(e1.getTotalRequestCreditMax()) : new Float(0f)).compareTo(e2.hasTotalRequestCredit() ? e2.getTotalRequestCreditMax() : 0f);
 			case REQUEST_TS:
 				return (e1.getRequestedDate() == null ? new Date(0) : e1.getRequestedDate()).compareTo(e2.getRequestedDate() == null ? new Date(0) : e2.getRequestedDate());
 			case ENROLLMENT_TS:
@@ -2285,6 +2298,30 @@ public class SectioningStatusPage extends Composite {
 					setHTML(df.format(total));
 				else
 					setHTML(df.format(value) + " / " + df.format(total));
+			} else {
+				setHTML("&nbsp;");
+			}
+		}
+
+		@Override
+		public HorizontalAlignmentConstant getCellAlignment() {
+			return HasHorizontalAlignment.ALIGN_RIGHT;
+		}
+	}
+	
+	public static class RequestCreditCell extends HTML implements HasCellAlignment {
+		private static NumberFormat df = NumberFormat.getFormat("0.#");
+		
+		public RequestCreditCell(float min, float max, float totalMin, float totalMax) {
+			super();
+			getElement().getStyle().setFontStyle(FontStyle.ITALIC);
+			if (totalMax > 0f) {
+				if (min == totalMin && max == totalMax) {
+					setHTML(totalMin == totalMax ? df.format(totalMax) : df.format(totalMin) + " - " + df.format(totalMax));
+				} else {
+					setHTML((min == max ? df.format(min) : df.format(min) + " - " + df.format(max)) + " / " +
+							(totalMin == totalMax ? df.format(totalMin) : df.format(totalMin) + " - " + df.format(totalMax)));
+				}
 			} else {
 				setHTML("&nbsp;");
 			}

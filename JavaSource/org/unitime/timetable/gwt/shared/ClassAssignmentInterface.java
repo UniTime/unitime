@@ -1075,6 +1075,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Integer iFreeTimeOverlappingMins, iTotalFreeTimeOverlappingMins;
 		private Integer iPrefInstrMethConflict, iTotalPrefInstrMethConflict;
 		private Integer iPrefSectionConflict, iTotalPrefSectionConflict;
+		private float[] iRequestCredit = null, iRequestTotalCredit = null;
 		
 		public StudentInfo() {}
 		
@@ -1155,6 +1156,16 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public boolean hasTotalCredit() { return iTotalCredit != null && iTotalCredit > 0; }
 		public void setTotalCredit(Float totalCredit) { iTotalCredit = totalCredit; }
 		public Float getTotalCredit() { return iTotalCredit; }
+		
+		public boolean hasRequestCredit() { return iRequestCredit != null && iRequestCredit[1] > 0f; }
+		public void setRequestCredit(float min, float max) { iRequestCredit = new float[] { min, max }; }
+		public float getRequestCreditMin() { return iRequestCredit == null ? 0f : iRequestCredit[0]; }
+		public float getRequestCreditMax() { return iRequestCredit == null ? 0f : iRequestCredit[1]; }
+		
+		public boolean hasTotalRequestCredit() { return iRequestTotalCredit != null && iRequestTotalCredit[1] > 0f; }
+		public void setTotalRequestCredit(float min, float max) { iRequestTotalCredit = new float[] { min, max }; }
+		public float getTotalRequestCreditMin() { return iRequestTotalCredit == null ? 0f : iRequestTotalCredit[0]; }
+		public float getTotalRequestCreditMax() { return iRequestTotalCredit == null ? 0f : iRequestTotalCredit[1]; }
 		
 		public boolean hasDistanceConflicts() { return iNrDistanceConflicts != null && iNrDistanceConflicts > 0; }
 		public void setNrDistanceConflicts(Integer nrDistanceConflicts) { iNrDistanceConflicts = nrDistanceConflicts; }

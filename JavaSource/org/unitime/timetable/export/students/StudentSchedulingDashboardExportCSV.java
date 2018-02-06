@@ -205,7 +205,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		if (!hasExtId) out.hideColumn(0);
 		
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
-				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false, hasDistances = false, hasOverlaps = false,
+				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasReqCredit = false, hasCredit = false, hasDistances = false, hasOverlaps = false,
 				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false;
 		if (students != null)
 			for (ClassAssignmentInterface.StudentInfo e: students) {
@@ -220,6 +220,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 				if (e.getRequestedDate() != null) hasRequestedDate = true;
 				if (e.getEnrolledDate() != null) hasEnrolledDate = true;
 				if (e.getTotalConsentNeeded() != null && e.getTotalConsentNeeded() > 0) hasConsent = true;
+				if (e.hasTotalRequestCredit()) hasReqCredit = true;
 				if (e.hasTotalCredit()) hasCredit = true;
 				if (e.hasTotalDistanceConflicts()) hasDistances = true;
 				if (e.hasOverlappingMinutes()) hasOverlaps = true;
@@ -237,16 +238,17 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		if (!hasWaitList) out.hideColumn(9);
 		if (!hasReservation) out.hideColumn(10);
 		if (!hasConsent) out.hideColumn(11);
-		if (!hasCredit) out.hideColumn(12);
-		if (!hasDistances) { out.hideColumn(13); out.hideColumn(14); }
-		if (!hasOverlaps) { out.hideColumn(15); }
-		if (!hasFreeTimeOverlaps) { out.hideColumn(16); }
-		if (!hasPrefIMConfs) { out.hideColumn(17); }
-		if (!hasPrefSecConfs) { out.hideColumn(18); }
-		if (!hasRequestedDate) out.hideColumn(19);
-		if (!hasEnrolledDate) out.hideColumn(20);
-		if (!online || !hasNote) out.hideColumn(21);
-		if (!online || !hasEmailed) out.hideColumn(22);
+		if (!hasReqCredit) out.hideColumn(12);
+		if (!hasCredit) out.hideColumn(13);
+		if (!hasDistances) { out.hideColumn(14); out.hideColumn(15); }
+		if (!hasOverlaps) { out.hideColumn(16); }
+		if (!hasFreeTimeOverlaps) { out.hideColumn(17); }
+		if (!hasPrefIMConfs) { out.hideColumn(18); }
+		if (!hasPrefSecConfs) { out.hideColumn(19); }
+		if (!hasRequestedDate) out.hideColumn(20);
+		if (!hasEnrolledDate) out.hideColumn(21);
+		if (!hasNote) out.hideColumn(22);
+		if (!hasEmailed) out.hideColumn(23);
 		
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_REQUEST);
 		
@@ -263,17 +265,18 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 				MESSAGES.colWaitListed(), // 9
 				MESSAGES.colReservation(), // 10
 				MESSAGES.colConsent(), // 11
-				MESSAGES.colCredit(), // 12
-				MESSAGES.colDistanceConflicts(), // 13
-				MESSAGES.colLongestDistance(), // 14
-				MESSAGES.colOverlapMins(), // 15
-				MESSAGES.colFreeTimeOverlapMins(), // 16
-				MESSAGES.colPrefInstrMethConfs(), // 17
-				MESSAGES.colPrefSectionConfs(), // 18
-				MESSAGES.colRequestTimeStamp(), // 19
-				MESSAGES.colEnrollmentTimeStamp(), // 20
-				MESSAGES.colStudentNote(), // 21
-				MESSAGES.colEmailTimeStamp() // 22
+				MESSAGES.colRequestCredit(), // 12
+				MESSAGES.colCredit(), // 13
+				MESSAGES.colDistanceConflicts(), // 14
+				MESSAGES.colLongestDistance(), // 15
+				MESSAGES.colOverlapMins(), // 16
+				MESSAGES.colFreeTimeOverlapMins(), // 17
+				MESSAGES.colPrefInstrMethConfs(), // 18
+				MESSAGES.colPrefSectionConfs(), // 19
+				MESSAGES.colRequestTimeStamp(), // 20
+				MESSAGES.colEnrollmentTimeStamp(), // 21
+				MESSAGES.colStudentNote(), // 22
+				MESSAGES.colEmailTimeStamp() // 23
 				);
 				
 				
@@ -295,6 +298,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 							waitlist(info),
 							number(info.getReservation(), info.getTotalReservation()),
 							number(info.getConsentNeeded(), info.getTotalConsentNeeded()),
+							reqCredit(info.getRequestCreditMin(), info.getRequestCreditMax(), info.getTotalRequestCreditMin(), info.getTotalRequestCreditMax()),
 							credit(info.getCredit(), info.getTotalCredit()),
 							number(info.getNrDistanceConflicts(), info.getTotalNrDistanceConflicts()),
 							number(info.getLongestDistanceMinutes(), info.getTotalLongestDistanceMinutes()),
@@ -322,6 +326,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 							waitlist(info),
 							number(info.getReservation(), info.getTotalReservation()),
 							number(info.getConsentNeeded(), info.getTotalConsentNeeded()),
+							reqCredit(info.getRequestCreditMin(), info.getRequestCreditMax(), info.getTotalRequestCreditMin(), info.getTotalRequestCreditMax()),
 							credit(info.getCredit(), info.getTotalCredit()),
 							number(info.getNrDistanceConflicts(), info.getTotalNrDistanceConflicts()),
 							number(info.getLongestDistanceMinutes(), info.getTotalLongestDistanceMinutes()),
@@ -444,6 +449,18 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 			e.hasUnassigned() ? e.getUnassignedPrimary() : 0,
 			e.hasTotalUnassigned() ? e.getTotalUnassignedPrimary() : 0,
 			null);
+	}
+	
+	public String reqCredit(float min, float max, float totalMin, float totalMax) {
+		if (totalMax > 0f) {
+			if (min == totalMin && max == totalMax)
+				return (totalMin == totalMax ? sCreditFormat.format(totalMin) : sCreditFormat.format(totalMin) + " - " + sCreditFormat.format(totalMax));
+			else
+				return ((min == max ? sCreditFormat.format(min) : sCreditFormat.format(min) + " - " + sCreditFormat.format(max)) + " / " + 
+						(totalMin == totalMax ? sCreditFormat.format(totalMin) : sCreditFormat.format(totalMin) + " - " + sCreditFormat.format(totalMax)));
+		} else {
+			return null;
+		}
 	}
 	
 	public String credit(Float value, Float total) {

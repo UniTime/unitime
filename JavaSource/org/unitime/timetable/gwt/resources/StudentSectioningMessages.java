@@ -107,6 +107,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Note")
 	String colNote();
+	
+	@DefaultMessage("Req. Credit")
+	String colRequestCredit();
 
 	@DefaultMessage("Credit")
 	String colCredit();
@@ -1367,6 +1370,12 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Total Credit: {0,number,0.#} - {1,number,0.#}")
 	String totalCreditRange(float minTotal, float maxTotal);
+	
+	@DefaultMessage("Requested Credit: {0,number,0.#}")
+	String requestedCredit(float total);
+	
+	@DefaultMessage("Requested Credit: {0,number,0.#} - {1,number,0.#}")
+	String requestedCreditRange(float minTotal, float maxTotal);
 	
 	@DefaultMessage("Request Update")
 	String requestStudentUpdate();

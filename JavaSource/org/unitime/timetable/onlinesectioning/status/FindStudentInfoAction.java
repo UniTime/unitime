@@ -180,9 +180,35 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						float tCred = 0f;
 						int nrDisCnf = 0, maxDist = 0, share = 0; 
 						int ftShare = 0;
+						List<Float> minsTot = new ArrayList<Float>();
+						List<Float> maxsTot = new ArrayList<Float>();
+						List<Float> mins = new ArrayList<Float>();
+						List<Float> maxs = new ArrayList<Float>();
+						int nrCoursesTot = 0, nrCourses = 0;
 						for (XRequest r: student.getRequests()) {
 							if (r instanceof XCourseRequest) {
 								XCourseRequest cr = (XCourseRequest)r;
+								Float min = null, max = null;
+								Float minTot = null, maxTot = null;
+								for (XCourseId courseId: cr.getCourseIds()) {
+									XCourse c = server.getCourse(courseId.getCourseId());
+									if (c != null && c.hasCredit()) {
+										if (minTot == null || minTot > c.getMinCredit()) minTot = c.getMinCredit();
+										if (maxTot == null || maxTot < c.getMaxCredit()) maxTot = c.getMaxCredit();
+									}
+									if (c != null && c.hasCredit() && query().match(new CourseRequestMatcher(session, c, student, server.getOffering(c.getOfferingId()), cr, isConsentToDoCourse(c), isMyStudent(student), server))) {
+										if (min == null || min > c.getMinCredit()) min = c.getMinCredit();
+										if (max == null || max < c.getMaxCredit()) max = c.getMaxCredit();
+									}
+								}
+								if (minTot != null) {
+									minsTot.add(minTot); maxsTot.add(maxTot); 
+									if (!r.isAlternative()) nrCoursesTot ++;
+								}
+								if (min != null) {
+									mins.add(min); maxs.add(max); 
+									if (!r.isAlternative()) nrCourses ++;
+								}
 								if (!r.isAlternative()) tReq ++;
 								if (cr.getEnrollment() == null) {
 									if (student.canAssign(cr)) {
@@ -242,6 +268,23 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 								}
 							}
 						}
+
+						Collections.sort(mins);
+						Collections.sort(maxs);
+						float min = 0f, max = 0f;
+						for (int i = 0; i < nrCourses; i++) {
+							min += mins.get(i);
+							max += maxs.get(maxs.size() - i - 1);
+						}
+						Collections.sort(minsTot);
+						Collections.sort(maxsTot);
+						float minTot = 0f, maxTot = 0f;
+						for (int i = 0; i < nrCoursesTot; i++) {
+							minTot += minsTot.get(i);
+							maxTot += maxsTot.get(maxsTot.size() - i - 1);
+						}
+						s.setRequestCredit(min, max);
+						s.setTotalRequestCredit(minTot, maxTot);
 						s.setTotalEnrollment(tEnrl);
 						s.setTotalReservation(tRes);
 						s.setTotalWaitlist(tWait);

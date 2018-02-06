@@ -44,6 +44,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
@@ -78,6 +79,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				new WebTable.Cell(MESSAGES.colPriority(), 1, "25px"),
 				new WebTable.Cell(MESSAGES.colCourse(), 1, "75px"),
 				new WebTable.Cell(MESSAGES.colTitle(), 1, "200px"),
+				new WebTable.Cell(MESSAGES.colCredit(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colPreferences(), 1, "100px"),
 				new WebTable.Cell(MESSAGES.colWarnings(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colWaitList(), 1, "20px"),
@@ -146,6 +148,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 	protected void fillInRequests() {
 		ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 		boolean hasPref = false, hasWarn = false, hasWait = false;
+		NumberFormat df = NumberFormat.getFormat("0.#");
 		if (iAssignment.hasRequest()) {
 			CheckCoursesResponse check = null;
 			if (iAssignment.getRequest().hasConfirmations()) {
@@ -176,6 +179,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								new WebTable.Cell(first ? MESSAGES.courseRequestsPriority(priority) : ""),
 								new WebTable.Cell(rc.getCourseName()),
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
+								new WebTable.Cell(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : ""), 
 								new WebTable.Cell(ToolBox.toString(prefs)),
 								new WebTable.NoteCell(check == null ? "" : check.getMessageWithColor(rc.getCourseName(), "<br>"), check == null ? null : check.getMessage(rc.getCourseName(), "\n")),
 								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell("")),
@@ -192,7 +196,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						}
 						WebTable.Row row = new WebTable.Row(
 								new WebTable.Cell(first ? MESSAGES.courseRequestsPriority(priority) : ""),
-								new WebTable.Cell(CONSTANTS.freePrefix() + free, 2, null),
+								new WebTable.Cell(CONSTANTS.freePrefix() + free, 3, null),
 								new WebTable.Cell(""),
 								new WebTable.Cell(""),
 								new WebTable.Cell(""),
@@ -229,6 +233,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								new WebTable.Cell(first ? MESSAGES.courseRequestsAlternative(priority) : ""),
 								new WebTable.Cell(rc.getCourseName()),
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
+								new WebTable.Cell(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : ""),
 								new WebTable.Cell(ToolBox.toString(prefs)),
 								new WebTable.NoteCell(check == null ? "" : check.getMessageWithColor(rc.getCourseName(), "<br>"), check == null ? null : check.getMessage(rc.getCourseName(), "\n")),
 								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell("")),
@@ -245,7 +250,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						}
 						WebTable.Row row = new WebTable.Row(
 								new WebTable.Cell(first ? MESSAGES.courseRequestsPriority(priority) : ""),
-								new WebTable.Cell(CONSTANTS.freePrefix() + free, 2, null),
+								new WebTable.Cell(CONSTANTS.freePrefix() + free, 3, null),
 								new WebTable.Cell(""),
 								new WebTable.Cell(""),
 								new WebTable.Cell(""),
@@ -265,9 +270,9 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		for (WebTable.Row row: rows) rowArray[idx++] = row;
 		
 		iRequests.setData(rowArray);
-		iRequests.setColumnVisible(3, hasPref);
-		iRequests.setColumnVisible(4, hasWarn);
-		iRequests.setColumnVisible(5, hasWait);
+		iRequests.setColumnVisible(4, hasPref);
+		iRequests.setColumnVisible(5, hasWarn);
+		iRequests.setColumnVisible(6, hasWait);
 	}
 	
 	protected void fillInAssignments() {
@@ -394,6 +399,25 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 	}
 	
 	public float getTotalCredit() { return iTotalCredit; }
+	
+	public float[] getCreditRange() { return iAssignment == null || !iAssignment.hasRequest() ? null : iAssignment.getRequest().getCreditRange(); }
+	
+	public String getCreditMessage() {
+		if (iTabs.getSelectedTab() == 0) {
+			float[] range = getCreditRange();
+			if (range != null && range[1] > 0f) {
+				if (range[0] == range[1]) return MESSAGES.requestedCredit(range[0]);
+				else return MESSAGES.requestedCreditRange(range[0], range[1]);
+			} else {
+				return "";
+			}
+		} else {
+			if (iTotalCredit > 0f)
+				return MESSAGES.totalCredit(iTotalCredit);
+			else
+				return "";
+		}
+	}
 	
 	public void checkAccessKeys(NativePreviewEvent event) {
 		if (event.getTypeInt() == Event.ONKEYUP && (event.getNativeEvent().getAltKey() || event.getNativeEvent().getCtrlKey())) {
