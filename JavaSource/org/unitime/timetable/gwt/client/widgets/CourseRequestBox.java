@@ -458,6 +458,20 @@ public class CourseRequestBox extends P implements CourseSelection {
 	
 	@Override
 	public void setError(String error) {
+		iError.setStyleName("unitime-ErrorHint");
+		if (error == null || error.isEmpty()) {
+			iError.setText("");
+			iError.setVisible(false);
+		} else {
+			iError.setText(error);
+			iError.setVisible(true);
+			iFilter.setStatus(error);
+			// AriaStatus.getInstance().setText(error);
+		}
+	}
+	
+	public void setWarning(String error) {
+		iError.setStyleName("unitime-WarningHint");
 		if (error == null || error.isEmpty()) {
 			iError.setText("");
 			iError.setVisible(false);

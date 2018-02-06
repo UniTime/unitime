@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.CourseMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
@@ -126,6 +127,17 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
 				@Override
 				public void onValueChange(ValueChangeEvent<Request> event) {
+					if (iLastCheck != null) {
+						for (CourseSelectionBox box: line.getCourses()) {
+							String message = iLastCheck.getMessage(box.getText(), "\n");
+							if (message != null) {
+								if (iLastCheck.isError(box.getText()) || iLastCheck.isConfirm(box.getText()))
+									box.setError(message);
+								else
+									box.setWarning(message);
+							}
+						}
+					}
 					ValueChangeEvent.fire(CourseRequestsTable.this, getValue());
 					if (event.getValue() != null && iCourses.indexOf(line) + 1 == iCourses.size())
 						addCourseLine();
@@ -174,6 +186,17 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
 				@Override
 				public void onValueChange(ValueChangeEvent<Request> event) {
+					if (iLastCheck != null) {
+						for (CourseSelectionBox box: line.getCourses()) {
+							String message = iLastCheck.getMessage(box.getText(), "\n");
+							if (message != null) {
+								if (iLastCheck.isError(box.getText()) || iLastCheck.isConfirm(box.getText()))
+									box.setError(message);
+								else
+									box.setWarning(message);
+							}
+						}
+					}
 					ValueChangeEvent.fire(CourseRequestsTable.this, getValue());
 					if (event.getValue() != null && iAlternatives.indexOf(line) + 1 == iAlternatives.size())
 						addAlternativeLine();
@@ -203,6 +226,17 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Request> event) {
+				if (iLastCheck != null) {
+					for (CourseSelectionBox box: line.getCourses()) {
+						String message = iLastCheck.getMessage(box.getText(), "\n");
+						if (message != null) {
+							if (iLastCheck.isError(box.getText()) || iLastCheck.isConfirm(box.getText()))
+								box.setError(message);
+							else
+								box.setWarning(message);
+						}
+					}
+				}
 				ValueChangeEvent.fire(CourseRequestsTable.this, getValue());
 				if (event.getValue() != null && iCourses.indexOf(line) + 1 == iCourses.size())
 					addCourseLine();
@@ -231,6 +265,17 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Request> event) {
+				if (iLastCheck != null) {
+					for (CourseSelectionBox box: line.getCourses()) {
+						String message = iLastCheck.getMessage(box.getText(), "\n");
+						if (message != null) {
+							if (iLastCheck.isError(box.getText()) || iLastCheck.isConfirm(box.getText()))
+								box.setError(message);
+							else
+								box.setWarning(message);
+						}
+					}
+				}
 				ValueChangeEvent.fire(CourseRequestsTable.this, getValue());
 				if (event.getValue() != null && iAlternatives.indexOf(line) + 1 == iAlternatives.size())
 					addAlternativeLine();
@@ -286,6 +331,10 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 							iLastCheck = result;
 							setErrors(result);
 							LoadingWidget.getInstance().hide();
+							if (result.isError()) {
+								callback.onSuccess(false);
+								return;
+							}
 							if (success && result.isConfirm()) {
 								UniTimeConfirmationDialog.confirm(result.getConfirmations("\n") + "\n\n" + MESSAGES.questionRequestOverrides(), new Command() {
 									@Override
@@ -325,15 +374,23 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		for (CourseRequestLine line: iCourses) {
 			for (CourseSelectionBox box: line.getCourses()) {
 				String message = response.getMessage(box.getText(), "\n");
-				if (message != null)
-					box.setError(message);
+				if (message != null) {
+					if (response.isError(box.getText()) || response.isConfirm(box.getText()))
+						box.setError(message);
+					else
+						box.setWarning(message);
+				}
 			}
 		}
 		for (CourseRequestLine line: iAlternatives) {
 			for (CourseSelectionBox box: line.getCourses()) {
 				String message = response.getMessage(box.getText(), "\n");
-				if (message != null)
-					box.setError(message);
+				if (message != null) {
+					if (response.isError(box.getText()) || response.isConfirm(box.getText()))
+						box.setError(message);
+					else
+						box.setWarning(message);
+				}
 			}
 		}
 	}
@@ -375,6 +432,12 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		while (iAlternatives.size() < request.getAlternatives().size()) addAlternativeLine();;
 		for (int idx = 0; idx < request.getAlternatives().size(); idx++)
 			iAlternatives.get(idx).setValue(request.getAlternatives().get(idx), true);
+		if (request.hasConfirmations()) {
+			iLastCheck = new CheckCoursesResponse(request.getConfirmations());
+			setErrors(iLastCheck);
+		} else {
+			iLastCheck = null;
+		}
 	}
 	
 	public Boolean getWaitList(String course) {
@@ -402,6 +465,18 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	}
 	
 	public String getFirstError() {
+		if (iLastCheck != null && iLastCheck.hasMessages()) {
+			for (CourseRequestLine line: iCourses)
+				for (CourseSelectionBox box: line.getCourses())
+					for (CourseMessage m: iLastCheck.getMessages(box.getText()))
+						if (m.isError()) return m.getMessage();
+			for (CourseRequestLine line: iAlternatives)
+				for (CourseSelectionBox box: line.getCourses())
+					for (CourseMessage m: iLastCheck.getMessages(box.getText()))
+						if (m.isError()) return m.getMessage();
+			for (CourseMessage m: iLastCheck.getMessages())
+				if (m.isError()) return m.getMessage();
+		}
 		for (CourseRequestLine line: iCourses)
 			for (CourseSelectionBox box: line.getCourses())
 				if (box.getError() != null) return box.getError();

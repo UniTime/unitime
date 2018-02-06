@@ -87,6 +87,25 @@
             <key column="course_request_id" foreign-key="fk_class_waitlist_request"/>
             <one-to-many class="ClassWaitList"/>
         </set>
-
+        
+        <property
+            name="overrideStatus"
+            column="req_status"
+            type="java.lang.Integer"
+            not-null="false"
+            length="10"/>
+        
+        <property
+            name="overrideExternalId"
+            column="req_extid"
+            type="java.lang.String"
+            not-null="false"
+            length="40"/>
+        
+		<property
+            name="overrideTimeStamp"
+            column="req_ts"
+            type="java.util.Date"
+            not-null="false"/>        
     </class>
 </hibernate-mapping>

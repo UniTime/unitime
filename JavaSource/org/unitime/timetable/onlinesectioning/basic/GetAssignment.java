@@ -51,11 +51,13 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsValidationHolder;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentError;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentFailure;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
@@ -88,6 +90,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 	private List<EnrollmentFailure> iMessages;
 	private Set<ErrorMessage> iErrors;
 	private boolean iIncludeRequest = false;
+	private boolean iCustomCheck = false;
 	
 	public GetAssignment forStudent(Long studentId) {
 		iStudentId = studentId;
@@ -108,6 +111,11 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 		iIncludeRequest = includeRequest;
 		return this;
 	}
+	
+	public GetAssignment withCustomCheck(boolean customCheck) {
+		iCustomCheck = customCheck;
+		return this;
+	}
 
 	@Override
 	public ClassAssignmentInterface execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
@@ -115,7 +123,12 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 		try {
 			XStudent student = server.getStudent(iStudentId);
 			if (student == null) return null;
-			return computeAssignment(server, helper, student, student.getRequests(), iMessages, iErrors, iIncludeRequest); 
+			ClassAssignmentInterface ret = computeAssignment(server, helper, student, student.getRequests(), iMessages, iErrors, iIncludeRequest);
+			
+			if (ret.hasRequest() && iCustomCheck && CustomCourseRequestsValidationHolder.hasProvider())
+				CustomCourseRequestsValidationHolder.getProvider().check(server, helper, ret.getRequest());
+			
+			return ret;
 		} finally {
 			lock.release();
 		}
@@ -594,8 +607,26 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 						rc.setCourseName(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
 						rc.setCourseTitle(c.getTitle());
 						rc.setCredit(c.getMinCredit(), c.getMaxCredit());
-						if (setReadOnly && ((XCourseRequest)cd).getEnrollment() != null && c.getCourseId().equals(((XCourseRequest)cd).getEnrollment().getCourseId()))
+						boolean isEnrolled = ((XCourseRequest)cd).getEnrollment() != null && c.getCourseId().equals(((XCourseRequest)cd).getEnrollment().getCourseId());
+						if (setReadOnly && isEnrolled)
 							rc.setReadOnly(true);
+						if (isEnrolled)
+							rc.setStatus(RequestedCourseStatus.ENROLLED);
+						else {
+							Integer status = ((XCourseRequest)cd).getOverrideStatus(courseId);
+							if (status == null)
+								rc.setStatus(RequestedCourseStatus.SAVED);
+							else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.APPROVED.ordinal())
+								rc.setStatus(RequestedCourseStatus.OVERRIDE_APPROVED);
+							else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.REJECTED.ordinal())
+								rc.setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
+							else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.CANCELLED.ordinal())
+								rc.setStatus(RequestedCourseStatus.OVERRIDE_CANCELLED);
+							else
+								rc.setStatus(RequestedCourseStatus.OVERRIDE_PENDING);
+						}
+						rc.setOverrideExternalId(((XCourseRequest)cd).getOverrideExternalId(courseId));
+						rc.setOverrideTimeStamp(((XCourseRequest)cd).getOverrideTimeStamp(courseId));
 						OnlineSectioningHelper.fillPreferencesIn(rc, ((XCourseRequest)cd).getPreferences(courseId));
 						r.addRequestedCourse(rc);
 					}

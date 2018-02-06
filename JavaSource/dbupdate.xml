@@ -12970,4 +12970,14 @@
 	        references %SCHEMA%.dept_status_type (uniqueid) on delete set null
 		</sql>
 	</update>
+	<update version="198" date="2-5-2018" comment="Course Request additional fields">
+		<plsql>alter table %SCHEMA%.course_request add req_status number(10)</plsql>
+		<plsql>alter table %SCHEMA%.course_request add req_extid varchar2(40 char)</plsql>
+		<plsql>alter table %SCHEMA%.course_request add req_ts date</plsql>
+		<mysql>alter table %SCHEMA%.course_request add req_status bigint(10)</mysql>
+		<mysql>alter table %SCHEMA%.course_request add req_extid varchar(40)</mysql>
+		<mysql>alter table %SCHEMA%.course_request add req_ts datetime</mysql>
+		<plsql>create index %SCHEMA%.idx_course_req_extid on %SCHEMA%.course_request(req_extid)</plsql>
+		<mysql>create index idx_course_req_extid on %SCHEMA%.course_request(req_extid)</mysql>
+	</update>
 </dbupdate>

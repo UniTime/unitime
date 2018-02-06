@@ -69,6 +69,7 @@ public class XCourseRequest extends XRequest {
     private Map<XCourseId, byte[]> iOptions = null;
     private Map<XCourseId, byte[]> iPreferences = null;
     private String iMessage = null;
+    private Map<XCourseId, XOverride> iOverrides = null;
 
     public XCourseRequest() {}
     
@@ -106,6 +107,10 @@ public class XCourseRequest extends XRequest {
         			if (iPreferences == null) iPreferences = new HashMap<XCourseId, byte[]>();
         			iPreferences.put(courseId, option.getValue());
         		}
+        	}
+        	if (cr.getOverrideExternalId() != null) {
+        		if (iOverrides == null) iOverrides = new HashMap<XCourseId, XOverride>();
+        		iOverrides.put(courseId, new XOverride(cr.getOverrideExternalId(), cr.getOverrideTimeStamp(), cr.getOverrideStatus()));
         	}
         }
         if (helper.isAlternativeCourseEnabled() && crs.size() == 1 && !demand.isAlternative()) {
@@ -193,6 +198,8 @@ public class XCourseRequest extends XRequest {
     		iOptions = new HashMap<XCourseId, byte[]>(request.iOptions);
     	if (request.iPreferences != null)
     		iPreferences = new HashMap<XCourseId, byte[]>(request.iPreferences);
+    	if (request.iOverrides != null)
+    		iOverrides = new HashMap<XCourseId, XOverride>(request.iOverrides);
     	iMessage = request.getEnrollmentMessage();
     }
     
@@ -297,6 +304,25 @@ public class XCourseRequest extends XRequest {
     	return (iSectionWaitlist == null ? null : iSectionWaitlist.get(courseId));
     }
     
+    public XOverride getOverride(XCourseId courseId) {
+    	return (iOverrides == null ? null : iOverrides.get(courseId));
+    }
+    
+    public Integer getOverrideStatus(XCourseId courseId) {
+    	XOverride override = (iOverrides == null ? null : iOverrides.get(courseId));
+    	return (override == null ? null : override.getStatus());
+    }
+
+    public Date getOverrideTimeStamp(XCourseId courseId) {
+    	XOverride override = (iOverrides == null ? null : iOverrides.get(courseId));
+    	return (override == null ? null : override.getTimeStamp());
+    }
+
+    public String getOverrideExternalId(XCourseId courseId) {
+    	XOverride override = (iOverrides == null ? null : iOverrides.get(courseId));
+    	return (override == null ? null : override.getExternalId());
+    }
+
     public OnlineSectioningLog.CourseRequestOption getOptions(Long offeringId) {
     	if (iOptions == null) return null;
     	XCourseId courseId = getCourseIdByOfferingId(offeringId);
@@ -446,6 +472,22 @@ public class XCourseRequest extends XRequest {
         }
         
         iMessage = (String)in.readObject();
+        
+        int nrOverrides = in.readInt();
+        if (nrOverrides == 0)
+        	iOverrides = null;
+        else {
+        	iOverrides = new HashMap<XCourseId, XOverride>();
+        	for (int i = 0; i < nrOverrides; i++) {
+        		Long courseId = in.readLong();
+        		XOverride override = new XOverride(in);
+        		for (XCourseId course: iCourseIds)
+    				if (course.getCourseId().equals(courseId)) {
+    					iOverrides.put(course, override);
+    					break;
+    				}
+        	}
+        }
 	}
 
 	@Override
@@ -495,6 +537,13 @@ public class XCourseRequest extends XRequest {
 			}
 		
 		out.writeObject(iMessage);
+		
+		out.writeInt(iOverrides == null ? 0 : iOverrides.size());
+		if (iOverrides != null)
+			for (Map.Entry<XCourseId, XOverride> entry: iOverrides.entrySet()) {
+				out.writeLong(entry.getKey().getCourseId());
+				entry.getValue().writeExternal(out);
+			}
 	}
 	
 	public static class XCourseRequestSerializer implements Externalizer<XCourseRequest> {

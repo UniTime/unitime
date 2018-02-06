@@ -34,6 +34,10 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
  */
 public class CourseRequest extends BaseCourseRequest implements Comparable {
 	private static final long serialVersionUID = 1L;
+	
+	public static enum CourseRequestOverrideStatus {
+		PENDING, APPROVED, REJECTED, CANCELLED,
+	}
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
 	public CourseRequest () {
@@ -109,6 +113,29 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
     		getCourseRequestOptions().add(o);
     	}
     }
-
-
+    
+    public CourseRequestOverrideStatus getCourseRequestOverrideStatus() {
+    	if (getOverrideStatus() == null) return CourseRequestOverrideStatus.APPROVED;
+    	return CourseRequestOverrideStatus.values()[getOverrideStatus()];
+    }
+    
+    public void setCourseRequestOverrideStatus(CourseRequestOverrideStatus status) {
+    	setOverrideStatus(status == null ? null : new Integer(status.ordinal()));
+    }
+    
+    public boolean isRequestApproved() {
+    	return getOverrideStatus() == null || getOverrideStatus().intValue() == CourseRequestOverrideStatus.APPROVED.ordinal();
+    }
+    
+    public boolean isRequestPending() {
+    	return getOverrideStatus() != null && getOverrideStatus().intValue() == CourseRequestOverrideStatus.PENDING.ordinal();
+    }
+    
+    public boolean isRequestCancelled() {
+    	return getOverrideStatus() != null && getOverrideStatus().intValue() == CourseRequestOverrideStatus.CANCELLED.ordinal();
+    }
+    
+    public boolean isRequestRejected() {
+    	return getOverrideStatus() != null && getOverrideStatus().intValue() == CourseRequestOverrideStatus.REJECTED.ordinal();
+    }
 }

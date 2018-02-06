@@ -58,6 +58,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningActio
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
@@ -1466,7 +1467,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						
 						return ret;
 					} else {
-						return server.execute(server.createAction(GetAssignment.class).forStudent(studentId).withRequest(true), currentUser());
+						return server.execute(server.createAction(GetAssignment.class).forStudent(studentId).withRequest(true).withCustomCheck(true), currentUser());
 					}
 				} finally {
 					hibSession.close();
@@ -1935,6 +1936,14 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						boolean hasEnrollments = !course.getClassEnrollments().isEmpty(); 
 						rc.setReadOnly(hasEnrollments);
 						rc.setCanDelete(!hasEnrollments);
+						if (hasEnrollments)
+							rc.setStatus(RequestedCourseStatus.ENROLLED);
+						else if (course.getOverrideStatus() != null)
+							rc.setStatus(course.isRequestApproved() ? RequestedCourseStatus.OVERRIDE_APPROVED : course.isRequestRejected() ? RequestedCourseStatus.OVERRIDE_REJECTED : RequestedCourseStatus.OVERRIDE_PENDING);
+						else
+							rc.setStatus(RequestedCourseStatus.SAVED);
+						rc.setOverrideExternalId(course.getOverrideExternalId());
+						rc.setOverrideTimeStamp(course.getOverrideTimeStamp());
 						CourseRequestOption pref = course.getCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE);
 						if (pref != null) {
 							try {
@@ -1973,7 +1982,14 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (credit != null) rc.setCredit(credit.getMinCredit(), credit.getMaxCredit());
 				r.addRequestedCourse(rc);
 				request.getCourses().add(r);
+				rc.setReadOnly(true); rc.setCanDelete(false); rc.setStatus(RequestedCourseStatus.ENROLLED);
 			}
+		}
+		
+		if (CustomCourseRequestsValidationHolder.hasProvider()) {
+			OnlineSectioningServer server = getServerInstance(student.getSession().getUniqueId(), true);
+			if (server != null)
+				return server.execute(server.createAction(CustomCourseRequestsHolder.Check.class).withRequest(request), currentUser());
 		}
 		
 		return request;
@@ -1998,7 +2014,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 		OnlineSectioningServer server = getServerInstance(sessionId == null ? canEnroll(online, studentId) : sessionId, false);
 		if (server != null) {
-			return server.execute(server.createAction(GetRequest.class).forStudent(studentId, sectioning), currentUser());
+			return server.execute(server.createAction(GetRequest.class).forStudent(studentId, sectioning).withCustomValidation(!sectioning), currentUser());
 		} else {
 			org.hibernate.Session hibSession = StudentDAO.getInstance().getSession();
 			try {

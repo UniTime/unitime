@@ -35,6 +35,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
@@ -78,6 +79,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				new WebTable.Cell(MESSAGES.colCourse(), 1, "75px"),
 				new WebTable.Cell(MESSAGES.colTitle(), 1, "200px"),
 				new WebTable.Cell(MESSAGES.colPreferences(), 1, "100px"),
+				new WebTable.Cell(MESSAGES.colWarnings(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colWaitList(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colRequestTimeStamp(), 1, "50px")));
 		iTabs.add(iRequests, MESSAGES.tabRequests(), true);
@@ -143,11 +145,18 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 	
 	protected void fillInRequests() {
 		ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
+		boolean hasPref = false, hasWarn = false, hasWait = false;
 		if (iAssignment.hasRequest()) {
+			CheckCoursesResponse check = null;
+			if (iAssignment.getRequest().hasConfirmations()) {
+				check = new CheckCoursesResponse(iAssignment.getRequest().getConfirmations());
+				hasWarn = true;
+			}
 			int priority = 1;
 			for (Request request: iAssignment.getRequest().getCourses()) {
 				if (!request.hasRequestedCourse()) continue;
 				boolean first = true;
+				if (request.isWaitList()) hasWait = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					if (rc.isCourse()) {
 						Collection<String> prefs = null;
@@ -162,11 +171,13 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						} else if (rc.hasSelectedClasses()) {
 							prefs = new TreeSet<String>(rc.getSelectedClasses());
 						}
+						if (prefs != null) hasPref = true;
 						WebTable.Row row = new WebTable.Row(
 								new WebTable.Cell(first ? MESSAGES.courseRequestsPriority(priority) : ""),
 								new WebTable.Cell(rc.getCourseName()),
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 								new WebTable.Cell(ToolBox.toString(prefs)),
+								new WebTable.NoteCell(check == null ? "" : check.getMessageWithColor(rc.getCourseName(), "<br>"), check == null ? null : check.getMessage(rc.getCourseName(), "\n")),
 								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell("")),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
 								);
@@ -181,7 +192,10 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						}
 						WebTable.Row row = new WebTable.Row(
 								new WebTable.Cell(first ? MESSAGES.courseRequestsPriority(priority) : ""),
-								new WebTable.Cell(CONSTANTS.freePrefix() + free, 4, null),
+								new WebTable.Cell(CONSTANTS.freePrefix() + free, 2, null),
+								new WebTable.Cell(""),
+								new WebTable.Cell(""),
+								new WebTable.Cell(""),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : ""));
 						if (priority > 1 && first)
 							for (WebTable.Cell cell: row.getCells()) cell.setStyleName("top-border-dashed");
@@ -195,6 +209,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 			for (Request request: iAssignment.getRequest().getAlternatives()) {
 				if (!request.hasRequestedCourse()) continue;
 				boolean first = true;
+				if (request.isWaitList()) hasWait = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					if (rc.isCourse()) {
 						Collection<String> prefs = null;
@@ -209,11 +224,13 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						} else if (rc.hasSelectedClasses()) {
 							prefs = new TreeSet<String>(rc.getSelectedClasses());
 						}
+						if (prefs != null) hasPref = true;
 						WebTable.Row row = new WebTable.Row(
 								new WebTable.Cell(first ? MESSAGES.courseRequestsAlternative(priority) : ""),
 								new WebTable.Cell(rc.getCourseName()),
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 								new WebTable.Cell(ToolBox.toString(prefs)),
+								new WebTable.NoteCell(check == null ? "" : check.getMessageWithColor(rc.getCourseName(), "<br>"), check == null ? null : check.getMessage(rc.getCourseName(), "\n")),
 								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell("")),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
 								);
@@ -228,7 +245,10 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						}
 						WebTable.Row row = new WebTable.Row(
 								new WebTable.Cell(first ? MESSAGES.courseRequestsPriority(priority) : ""),
-								new WebTable.Cell(CONSTANTS.freePrefix() + free, 4, null),
+								new WebTable.Cell(CONSTANTS.freePrefix() + free, 2, null),
+								new WebTable.Cell(""),
+								new WebTable.Cell(""),
+								new WebTable.Cell(""),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : ""));
 						if (first)
 							for (WebTable.Cell cell: row.getCells()) cell.setStyleName(priority == 1 ? "top-border-solid" : "top-border-dashed");
@@ -245,6 +265,9 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		for (WebTable.Row row: rows) rowArray[idx++] = row;
 		
 		iRequests.setData(rowArray);
+		iRequests.setColumnVisible(3, hasPref);
+		iRequests.setColumnVisible(4, hasWarn);
+		iRequests.setColumnVisible(5, hasWait);
 	}
 	
 	protected void fillInAssignments() {

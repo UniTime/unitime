@@ -36,6 +36,7 @@ import org.unitime.timetable.gwt.server.SectioningServlet;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
@@ -43,6 +44,7 @@ import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.FreeTime;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -177,6 +179,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 			if (r.hasRequestedCourse()) {
 				List<CourseOffering> courses = new ArrayList<CourseOffering>();
 				Map<Long, OnlineSectioningLog.CourseRequestOption.Builder> preferences = new HashMap<Long, OnlineSectioningLog.CourseRequestOption.Builder>();
+				Map<Long, RequestedCourse> rcs = new HashMap<Long, RequestedCourse>();
 				for (RequestedCourse rc: r.getRequestedCourse()) {
 					if (rc.isFreeTime()) {
 						for (CourseRequestInterface.FreeTime ft: rc.getFreeTime()) {
@@ -220,6 +223,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 							co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), student.getUniqueId(), rc) : getCourse(helper.getHibSession(), c.getCourseId()));
 						}
 						if (co != null) {
+							rcs.put(co.getUniqueId(), rc);
 							courses.add(co);
 							if (server != null) {
 								OnlineSectioningLog.CourseRequestOption.Builder pref = OnlineSectioningHelper.toPreference(server, rc, new XCourseId(co));
@@ -270,6 +274,14 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 					cr.setCredit(0);
 					cr.setOrder(order++);
 					cr.setCourseOffering(co);
+					RequestedCourse rc = rcs.get(co.getUniqueId());
+					cr.setOverrideExternalId(rc == null ? null : rc.getOverrideExternalId());
+					cr.setOverrideTimeStamp(rc == null ? null : rc.getOverrideTimeStamp());
+					cr.setCourseRequestOverrideStatus(rc == null ? null :
+						RequestedCourseStatus.OVERRIDE_APPROVED == rc.getStatus() ? CourseRequestOverrideStatus.APPROVED :
+						RequestedCourseStatus.OVERRIDE_PENDING == rc.getStatus() ? CourseRequestOverrideStatus.PENDING :
+						RequestedCourseStatus.OVERRIDE_CANCELLED == rc.getStatus() ? CourseRequestOverrideStatus.CANCELLED :
+						RequestedCourseStatus.OVERRIDE_REJECTED == rc.getStatus() ? CourseRequestOverrideStatus.REJECTED : null);
 					course2request.put(co.getUniqueId(), cr);
 				}
 				while (requests.hasNext()) {
@@ -286,6 +298,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 			if (r.hasRequestedCourse()) {
 				List<CourseOffering> courses = new ArrayList<CourseOffering>();
 				Map<Long, OnlineSectioningLog.CourseRequestOption.Builder> preferences = new HashMap<Long, OnlineSectioningLog.CourseRequestOption.Builder>();
+				Map<Long, RequestedCourse> rcs = new HashMap<Long, RequestedCourse>();
 				for (RequestedCourse rc: r.getRequestedCourse()) {
 					if (rc.isFreeTime()) {
 						for (CourseRequestInterface.FreeTime ft: rc.getFreeTime()) {
@@ -329,6 +342,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 							co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), student.getUniqueId(), rc) : getCourse(helper.getHibSession(), c.getCourseId()));
 						}
 						if (co != null) {
+							rcs.put(co.getUniqueId(), rc);
 							courses.add(co);
 							if (server != null) {
 								OnlineSectioningLog.CourseRequestOption.Builder pref = OnlineSectioningHelper.toPreference(server, rc, new XCourseId(co));
@@ -379,6 +393,14 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 					cr.setCredit(0);
 					cr.setOrder(order++);
 					cr.setCourseOffering(co);
+					RequestedCourse rc = rcs.get(co.getUniqueId());
+					cr.setOverrideExternalId(rc == null ? null : rc.getOverrideExternalId());
+					cr.setOverrideTimeStamp(rc == null ? null : rc.getOverrideTimeStamp());
+					cr.setCourseRequestOverrideStatus(rc == null ? null :
+						RequestedCourseStatus.OVERRIDE_APPROVED == rc.getStatus() ? CourseRequestOverrideStatus.APPROVED :
+						RequestedCourseStatus.OVERRIDE_PENDING == rc.getStatus() ? CourseRequestOverrideStatus.PENDING :
+						RequestedCourseStatus.OVERRIDE_CANCELLED == rc.getStatus() ? CourseRequestOverrideStatus.CANCELLED :
+						RequestedCourseStatus.OVERRIDE_REJECTED == rc.getStatus() ? CourseRequestOverrideStatus.REJECTED : null);
 					course2request.put(co.getUniqueId(), cr);
 				}
 				while (requests.hasNext()) {

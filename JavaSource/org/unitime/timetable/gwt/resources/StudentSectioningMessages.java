@@ -149,6 +149,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Preferences")
 	String colPreferences();
+	
+	@DefaultMessage("Warnings")
+	String colWarnings();
 
 	/* Academic Session Selector messages
 	 */

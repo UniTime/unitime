@@ -20,6 +20,7 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -40,6 +41,9 @@ public abstract class BaseCourseRequest implements Serializable {
 	private Integer iOrder;
 	private Boolean iAllowOverlap;
 	private Integer iCredit;
+	private Integer iOverrideStatus;
+	private String iOverrideExternalId;
+	private Date iOverrideTimeStamp;
 
 	private CourseDemand iCourseDemand;
 	private CourseOffering iCourseOffering;
@@ -50,6 +54,9 @@ public abstract class BaseCourseRequest implements Serializable {
 	public static String PROP_ORD = "order";
 	public static String PROP_ALLOW_OVERLAP = "allowOverlap";
 	public static String PROP_CREDIT = "credit";
+	public static String PROP_REQ_STATUS = "overrideStatus";
+	public static String PROP_REQ_EXTID = "overrideExternalId";
+	public static String PROP_REQ_TS = "overrideTimeStamp";
 
 	public BaseCourseRequest() {
 		initialize();
@@ -74,6 +81,15 @@ public abstract class BaseCourseRequest implements Serializable {
 
 	public Integer getCredit() { return iCredit; }
 	public void setCredit(Integer credit) { iCredit = credit; }
+
+	public Integer getOverrideStatus() { return iOverrideStatus; }
+	public void setOverrideStatus(Integer overrideStatus) { iOverrideStatus = overrideStatus; }
+
+	public String getOverrideExternalId() { return iOverrideExternalId; }
+	public void setOverrideExternalId(String overrideExternalId) { iOverrideExternalId = overrideExternalId; }
+
+	public Date getOverrideTimeStamp() { return iOverrideTimeStamp; }
+	public void setOverrideTimeStamp(Date overrideTimeStamp) { iOverrideTimeStamp = overrideTimeStamp; }
 
 	public CourseDemand getCourseDemand() { return iCourseDemand; }
 	public void setCourseDemand(CourseDemand courseDemand) { iCourseDemand = courseDemand; }
@@ -117,6 +133,9 @@ public abstract class BaseCourseRequest implements Serializable {
 			"\n	CourseOffering: " + getCourseOffering() +
 			"\n	Credit: " + getCredit() +
 			"\n	Order: " + getOrder() +
+			"\n	OverrideExternalId: " + getOverrideExternalId() +
+			"\n	OverrideStatus: " + getOverrideStatus() +
+			"\n	OverrideTimeStamp: " + getOverrideTimeStamp() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

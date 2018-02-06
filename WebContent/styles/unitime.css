@@ -495,13 +495,24 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	white-space: nowrap;
 }
 
-.unitime-ErrorHint{
+.unitime-ErrorHint {
 	font-size: xx-small;
 	font-style: italic;
 	color: red;
 	text-align: right;
 	vertical-align: top;
 	margin-top: -2px;
+	white-space: pre-wrap;
+}
+
+.unitime-WarningHint {
+	font-size: xx-small;
+	font-style: italic;
+	color: orange;
+	text-align: right;
+	vertical-align: top;
+	margin-top: -2px;
+	white-space: pre-wrap;
 }
 
 .unitime-FreeTimePicker .corner {
@@ -620,6 +631,10 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 .unitime-WebTable .text-gray {
 	color: gray;
 	font-style: italic;
+}
+
+.unitime-WebTable .text-orange {
+	color: orange;
 }
 
 .unitime-WebTable .text-red-centered {

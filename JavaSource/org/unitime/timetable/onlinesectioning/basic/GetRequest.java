@@ -26,13 +26,16 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsHolder;
+import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsValidationHolder;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -50,6 +53,7 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 	
 	private Long iStudentId;
 	private boolean iSectioning;
+	private boolean iCustomValidation = false;
 	
 	public GetRequest forStudent(Long studentId, boolean sectioning) {
 		iStudentId = studentId;
@@ -59,6 +63,10 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 	
 	public GetRequest forStudent(Long studentId) {
 		return forStudent(studentId, true);
+	}
+	
+	public GetRequest withCustomValidation(boolean validation) {
+		iCustomValidation = validation; return this;
 	}
 
 	@Override
@@ -127,12 +135,30 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 						rc.setCourseName(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
 						rc.setCourseTitle(c.getTitle());
 						rc.setCredit(c.getMinCredit(), c.getMaxCredit());
-						if (setReadOnly && ((XCourseRequest)cd).getEnrollment() != null && c.getCourseId().equals(((XCourseRequest)cd).getEnrollment().getCourseId()))
+						boolean isEnrolled = ((XCourseRequest)cd).getEnrollment() != null && c.getCourseId().equals(((XCourseRequest)cd).getEnrollment().getCourseId());
+						if (setReadOnly && isEnrolled)
 							rc.setReadOnly(true);
-						if (!iSectioning && ((XCourseRequest)cd).getEnrollment() != null && c.getCourseId().equals(((XCourseRequest)cd).getEnrollment().getCourseId())) {
+						if (!iSectioning && isEnrolled) {
 							rc.setReadOnly(true);
 							rc.setCanDelete(false);
 						}
+						if (isEnrolled)
+							rc.setStatus(RequestedCourseStatus.ENROLLED);
+						else {
+							Integer status = ((XCourseRequest)cd).getOverrideStatus(courseId);
+							if (status == null)
+								rc.setStatus(RequestedCourseStatus.SAVED);
+							else if (status == CourseRequest.CourseRequestOverrideStatus.APPROVED.ordinal())
+								rc.setStatus(RequestedCourseStatus.OVERRIDE_APPROVED);
+							else if (status == CourseRequest.CourseRequestOverrideStatus.REJECTED.ordinal())
+								rc.setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
+							else if (status == CourseRequest.CourseRequestOverrideStatus.CANCELLED.ordinal())
+								rc.setStatus(RequestedCourseStatus.OVERRIDE_CANCELLED);
+							else
+								rc.setStatus(RequestedCourseStatus.OVERRIDE_PENDING);
+						}
+						rc.setOverrideExternalId(((XCourseRequest)cd).getOverrideExternalId(courseId));
+						rc.setOverrideTimeStamp(((XCourseRequest)cd).getOverrideTimeStamp(courseId));
 						OnlineSectioningHelper.fillPreferencesIn(rc, ((XCourseRequest)cd).getPreferences(courseId));
 						r.addRequestedCourse(rc);
 					}
@@ -149,6 +175,10 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 				}
 				action.addRequest(OnlineSectioningHelper.toProto(cd));
 			}
+			
+			if (iCustomValidation && CustomCourseRequestsValidationHolder.hasProvider())
+				CustomCourseRequestsValidationHolder.getProvider().check(server, helper, request);
+			
 			return request;
 		} finally {
 			lock.release();

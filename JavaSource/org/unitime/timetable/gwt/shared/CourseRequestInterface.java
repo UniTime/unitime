@@ -322,6 +322,16 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		}
 	}
 	
+	public static enum RequestedCourseStatus implements IsSerializable, Serializable {
+		NEW_REQUEST,
+		ENROLLED,
+		SAVED,
+		OVERRIDE_PENDING,
+		OVERRIDE_REJECTED,
+		OVERRIDE_APPROVED,
+		OVERRIDE_CANCELLED,
+	}
+	
 	public static class RequestedCourse implements IsSerializable, Serializable, Comparable<RequestedCourse> {
 		private static final long serialVersionUID = 1L;
 		private Long iCourseId;
@@ -333,6 +343,9 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		private Set<String> iSelectedIntructionalMethods;
 		private Set<String> iSelectedClasses;
 		private float[] iCredit = null;
+		private RequestedCourseStatus iStatus = null;
+		private String iOverrideExternalId = null;
+		private Date iOverrideTimeStamp = null;
 		
 		public RequestedCourse() {}
 		public RequestedCourse(List<FreeTime> freeTime) {
@@ -360,6 +373,12 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public void setCredit(Float minCredit, Float maxCredit) { iCredit = (minCredit == null || maxCredit == null ? null : new float[] { minCredit, maxCredit }); }
 		public void setCredit(Float credit) { iCredit = (credit == null ? null : new float[] { credit, credit }); }
 		public void setCredit(float[] credit) { iCredit = credit; }
+		public void setStatus(RequestedCourseStatus status) { iStatus = status; }
+		public RequestedCourseStatus getStatus() { return iStatus; }
+		public void setOverrideExternalId(String externalId) { iOverrideExternalId = externalId; }
+		public String getOverrideExternalId() { return iOverrideExternalId; }
+		public void setOverrideTimeStamp(Date timeStamp) { iOverrideTimeStamp = timeStamp; }
+		public Date getOverrideTimeStamp() { return iOverrideTimeStamp; }
 		
 		public List<FreeTime> getFreeTime() { return iFreeTime; }
 		public boolean isFreeTime() { return iFreeTime != null && !iFreeTime.isEmpty(); }
@@ -686,6 +705,11 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		
 		public CheckCoursesResponse() {}
 		
+		public CheckCoursesResponse(Collection<CourseMessage> messages) {
+			if (messages != null && !messages.isEmpty())
+				iMessages = new TreeSet<CourseMessage>(messages);
+		}
+		
 		public boolean hasMessages() { return iMessages != null && !iMessages.isEmpty(); }
 		public Set<CourseMessage> getMessages() { return iMessages; }
 		public void addMessage(CourseMessage message) {
@@ -737,6 +761,50 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 					}
 			return ret;
 		}
+		public String getMessageWithColor(String courseName, String delim) {
+			if (!hasMessages()) return null;
+			String ret = null;
+			if (hasMessages())
+				for (CourseMessage m: getMessages())
+					if (courseName == null || courseName.equals(m.getCourse())) {
+						if (ret == null)
+							ret = (m.isError() ? "<span class='text-red'>" : "<span class='text-orange'>") + (courseName == null ? m.getCourse() + ": " : "") + m.getMessage() + "</span>";
+						else
+							ret += delim + (m.isError() ? "<span class='text-red'>" : "<span class='text-orange'>") + (courseName == null ? m.getCourse() + ": " : "") + m.getMessage() + "</span>";
+					}
+			return ret;
+		}
+		
+		public boolean isError(String courseName) {
+			if (!hasMessages()) return false;
+			if (hasMessages())
+				for (CourseMessage m: getMessages())
+					if (courseName == null || courseName.equals(m.getCourse())) {
+						if (m.isError()) return true;
+					}
+			return false;
+		}
+		
+		public boolean isConfirm(String courseName) {
+			if (!hasMessages()) return false;
+			if (hasMessages())
+				for (CourseMessage m: getMessages())
+					if (courseName == null || courseName.equals(m.getCourse())) {
+						if (m.isConfirm()) return true;
+					}
+			return false;
+		}
+		
+		public boolean isWarning(String courseName) {
+			if (!hasMessages()) return false;
+			if (hasMessages())
+				for (CourseMessage m: getMessages())
+					if (courseName == null || courseName.equals(m.getCourse())) {
+						return true;
+					}
+			return false;
+		}
+		
 		public String getConfirmations(String delim) {
 			if (!hasMessages()) return null;
 			String ret = null;
@@ -797,5 +865,17 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			if (cmp != 0) return cmp;
 			return getCode().compareTo(m.getCode());
 		}
+	}
+	
+	public void addConfirmationMessage(Long courseId, String course, String code, String message, boolean error, boolean confirm) {
+		if (iConfirmations == null) iConfirmations = new ArrayList<CourseMessage>();
+		CourseMessage m = new CourseMessage();
+		m.setCourseId(courseId);
+		m.setCourse(course);
+		m.setCode(code);
+		m.setMessage(message);
+		m.setError(error);
+		m.setConfirm(confirm);
+		iConfirmations.add(m);
 	}
 }

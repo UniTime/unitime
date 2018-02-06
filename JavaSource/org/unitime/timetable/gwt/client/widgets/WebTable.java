@@ -718,7 +718,16 @@ public class WebTable extends Composite implements HasMobileScroll {
 			} else {
 				iNote = new P("unitime-Note");
 				iNote.setHTML(text);
-				if (title != null) iNote.setTitle(title);
+				if (title != null)  {
+					iNote.setTitle(title);
+					iNote.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							event.stopPropagation();
+							UniTimeConfirmationDialog.info(title);
+						}
+					});
+				}
 			}
 		}
 		
