@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
@@ -87,7 +88,8 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					(getQuery().hasAttribute("area", "clasf", "classification", "major") ? "left outer join s.areaClasfMajors m " : "") +
 					(getQuery().hasAttribute("minor") ? "left outer join s.areaClasfMinors n " : "") + 
 					(getQuery().hasAttribute("group") ? "left outer join s.groups g " : "") + 
-					(getQuery().hasAttribute("accommodation") ? "left outer join s.accomodations a " : "") + 
+					(getQuery().hasAttribute("accommodation") ? "left outer join s.accomodations a " : "") +
+					(getQuery().hasAttribute("course") ? "left outer join s.courseDemands cd left outer join cd.courseRequests cr " : "") +
 					"where l.session.uniqueId = :sessionId and l.session = s.session and l.student = s.externalUniqueId " +
 					"and (" + getQuery().toString(new SectioningLogQueryFormatter()) + ") " +
 					"and (l.result is not null or l.operation not in ('reload-offering', 'check-offering')) order by l.timeStamp desc, l.uniqueId desc");
@@ -312,6 +314,8 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 
 		@Override
 		public String format(String attr, String body) {
+			if (body != null && !body.isEmpty())
+				body = StringEscapeUtils.escapeSql(body);
 			if ("id".equalsIgnoreCase(attr) || "student".equalsIgnoreCase(attr)) {
 				return "s.externalUniqueId = '" + body + "'";
 			} else if ("operation".equalsIgnoreCase(attr) || "op".equalsIgnoreCase(attr)) {
@@ -346,7 +350,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 				if ("Not Set".equalsIgnoreCase(body))
 					return "s.sectioningStatus is null";
 				else
-					return "s.sectioningStatus.reference = '" + body.toLowerCase() + "'";
+					return "lower(s.sectioningStatus.reference) = '" + body.toLowerCase() + "'";
 			} else if ("over".equalsIgnoreCase(attr)) {
 				try {
 					return "l.wallTime >= " + 1000 * Integer.parseInt(body.trim());
@@ -379,7 +383,9 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 				} catch (Exception e) {
 					return "1 = 1";
 				}
-			} else if (!body.isEmpty()) {
+			} else if ("course".equalsIgnoreCase(attr)) {
+				return "cr.courseOffering.subjectAreaAbbv = '" + body + "' or (cr.courseOffering.subjectAreaAbbv || ' ' || cr.courseOffering.courseNbr) = '" + body + "'";
+			} else if (attr == null && !body.isEmpty()) {
 				return "lower(s.firstName || ' ' || s.middleName || ' ' || s.lastName) like '%" + body.toLowerCase() + "%'";
 			} else {
 				return "1 = 1";
