@@ -336,7 +336,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 								return;
 							}
 							if (success && result.isConfirm()) {
-								UniTimeConfirmationDialog.confirm(result.getConfirmations("\n") + "\n\n" + MESSAGES.questionRequestOverrides(), new Command() {
+								UniTimeConfirmationDialog.confirm(result.getConfirmations("\n"), new Command() {
 									@Override
 									public void execute() {
 										callback.onSuccess(true);
@@ -437,6 +437,14 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			setErrors(iLastCheck);
 		} else {
 			iLastCheck = null;
+		}
+	}
+	
+	public void notifySaveSucceeded() {
+		if (iLastCheck != null && iLastCheck.hasMessages()) {
+			for (CourseMessage m: iLastCheck.getMessages())
+				if (m.isConfirm()) m.setConfirm(false);
+			setErrors(iLastCheck);
 		}
 	}
 	

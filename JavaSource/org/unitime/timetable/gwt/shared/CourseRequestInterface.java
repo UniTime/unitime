@@ -702,6 +702,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	public static class CheckCoursesResponse implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private Set<CourseMessage> iMessages = new TreeSet<CourseMessage>();
+		private List<String> iConfirmations = new ArrayList<String>();
 		
 		public CheckCoursesResponse() {}
 		
@@ -726,6 +727,12 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			addMessage(m);
 		}
 		
+		public boolean hasConfirmations() { return iConfirmations != null && !iConfirmations.isEmpty(); }
+		public void addConfirmation(String message) {
+			iConfirmations.add(message);
+		}
+		public List<String> getConfirmations() { return iConfirmations; }
+		
 		public boolean isError() {
 			if (hasMessages())
 				for (CourseMessage m: getMessages())
@@ -738,6 +745,8 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			if (hasMessages())
 				for (CourseMessage m: getMessages())
 					if (m.isConfirm()) return true;
+			if (hasConfirmations())
+				return true;
 			return false;
 		}
 		
@@ -806,7 +815,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		}
 		
 		public String getConfirmations(String delim) {
-			if (!hasMessages()) return null;
+			if (!hasMessages() && !hasConfirmations()) return null;
 			String ret = null;
 			if (hasMessages())
 				for (CourseMessage m: getMessages()) {
@@ -816,6 +825,13 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 					else
 						ret += delim + m.getCourse() + ": "  + m.getMessage();
 				}
+			if (hasConfirmations()) {
+				for (String m: getConfirmations())
+					if (ret == null)
+						ret = m;
+					else
+						ret += delim + m;
+			}
 			return ret;
 		}
 		
