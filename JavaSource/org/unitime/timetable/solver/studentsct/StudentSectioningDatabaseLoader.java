@@ -83,6 +83,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.server.Query;
+import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.ReservationInterface.OverrideType;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Assignment;
@@ -113,6 +114,7 @@ import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
+import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.TeachingClassRequest;
 import org.unitime.timetable.model.TimePatternModel;
@@ -123,7 +125,11 @@ import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity;
+import org.unitime.timetable.onlinesectioning.custom.CourseRequestsValidationProvider;
 import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbStudentMatcher;
 import org.unitime.timetable.solver.TimetableDatabaseLoader;
 import org.unitime.timetable.solver.curricula.LastLikeStudentCourseDemands;
@@ -151,6 +157,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private String iInitiative = null;
     private String iTerm = null;
     private String iYear = null;
+    private String iOwnerId = null;
     private Long iSessionId = null;
     private long iMakeupAssignmentId = 0;
 	private BitSet iFreeTimePattern = null;
@@ -169,6 +176,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private boolean iAllowDefaultCourseAlternatives = false;
 	private boolean iIncludeUnavailabilities = true;
 	private String iShortDistanceAccomodationReference = null;
+	private boolean iCheckOverrideStatus = false;
+	private CourseRequestsValidationProvider iValidationProvider = null;
+	private List<Long> iUpdatedStudents = new ArrayList<Long>();
+	private NameFormat iStudentNameFormat = null, iInstructorNameFormat = null;
     
     private Progress iProgress = null;
     
@@ -186,6 +197,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iInitiative = model.getProperties().getProperty("Data.Initiative");
         iYear = model.getProperties().getProperty("Data.Year");
         iTerm = model.getProperties().getProperty("Data.Term");
+        iOwnerId = model.getProperties().getProperty("General.OwnerPuid");
         iSessionId = model.getProperties().getPropertyLong("General.SessionId", null);
         iTweakLimits = model.getProperties().getPropertyBoolean("Load.TweakLimits", iTweakLimits);
         iLoadSectioningInfos = model.getProperties().getPropertyBoolean("Load.LoadSectioningInfos",iLoadSectioningInfos);
@@ -201,7 +213,14 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iAllowDefaultCourseAlternatives = ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue();
         iIncludeUnavailabilities = model.getProperties().getPropertyBoolean("Load.IncludeUnavailabilities", iIncludeUnavailabilities);
         iShortDistanceAccomodationReference = model.getProperties().getProperty("Distances.ShortDistanceAccommodationReference", "SD");
-        
+        iCheckOverrideStatus = model.getProperties().getPropertyBoolean("Load.CheckOverrideStatus", iCheckOverrideStatus);
+        if (iCheckOverrideStatus && ApplicationProperty.CustomizationCourseRequestsValidation.value() != null) {
+        	try {
+        		iValidationProvider = ((CourseRequestsValidationProvider)Class.forName(ApplicationProperty.CustomizationCourseRequestsValidation.value()).newInstance());
+        	} catch (Exception e) {
+        		iProgress.error("Failed to create course request validation provider: " + e.getMessage());
+        	}
+        }
         try {
         	String studentCourseDemandsClassName = getModel().getProperties().getProperty("StudentSct.ProjectedCourseDemadsClass", LastLikeStudentCourseDemands.class.getName());
         	if (studentCourseDemandsClassName.indexOf(' ') >= 0) studentCourseDemandsClassName = studentCourseDemandsClassName.replace(" ", "");
@@ -231,6 +250,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iUseAmPm = model.getProperties().getPropertyBoolean("General.UseAmPm", iUseAmPm);
         iShowClassSuffix = ApplicationProperty.SolverShowClassSufix.isTrue();
         iShowConfigName = ApplicationProperty.SolverShowConfiguratioName.isTrue();
+        iStudentNameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingStudentNameFormat.value());
+        iInstructorNameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
     }
     
     public void load() {
@@ -273,6 +294,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             
             load(session, hibSession);
             
+            if (!iUpdatedStudents.isEmpty())
+            	StudentSectioningQueue.studentChanged(hibSession, null, iSessionId, iUpdatedStudents);
+            
             tx.commit();
         } catch (Exception e) {
             iProgress.fatal("Unable to load sectioning problem, reason: "+e.getMessage(),e);
@@ -281,6 +305,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         } finally {
             // here we need to close the session since this code may run in a separate thread
             if (hibSession!=null && hibSession.isOpen()) hibSession.close();
+            if (iValidationProvider != null) iValidationProvider.dispose();
         }
     }
     
@@ -288,11 +313,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         if (!clazz.isDisplayInstructor().booleanValue()) return null;
         List<Instructor> ret = new ArrayList<Instructor>();
         TreeSet ts = new TreeSet(clazz.getClassInstructors());
-        NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
         for (Iterator i=ts.iterator();i.hasNext();) {
             ClassInstructor ci = (ClassInstructor)i.next();
             if (!ci.isLead().booleanValue()) continue;
-            ret.add(new Instructor(ci.getInstructor().getUniqueId(), ci.getInstructor().getExternalUniqueId(), nameFormat.format(ci.getInstructor()), ci.getInstructor().getEmail()));
+            ret.add(new Instructor(ci.getInstructor().getUniqueId(), ci.getInstructor().getExternalUniqueId(), iInstructorNameFormat.format(ci.getInstructor()), ci.getInstructor().getEmail()));
         }
         return ret;
     }
@@ -665,7 +689,48 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     	updateCurriculumCounts(s);    	
     }
     
-    public Student loadStudent(org.unitime.timetable.model.Student s, Hashtable<Long,Course> courseTable, Hashtable<Long,Section> classTable) {
+    protected void checkOverrideStatus(org.hibernate.Session hibSession, org.unitime.timetable.model.Student s) {
+    	OnlineSectioningLog.Action.Builder action = OnlineSectioningLog.Action.newBuilder();
+    	action.setOperation("update-overrides");
+		action.setSession(OnlineSectioningLog.Entity.newBuilder()
+    			.setUniqueId(iSessionId)
+    			.setName(iTerm + iYear + iInitiative)
+    			);
+    	action.setStartTime(System.currentTimeMillis());
+    	OnlineSectioningLog.Entity user = Entity.newBuilder().setExternalId(iOwnerId).setType(Entity.EntityType.MANAGER).build(); 
+    	action.setUser(user);
+    	action.setStudent(OnlineSectioningLog.Entity.newBuilder()
+				.setUniqueId(s.getUniqueId())
+				.setExternalId(s.getExternalUniqueId())
+				.setName(iStudentNameFormat.format(s))
+				.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
+		long c0 = OnlineSectioningHelper.getCpuTime();
+		try {
+        	if (iValidationProvider.updateStudent(null, new OnlineSectioningHelper(hibSession, user), s, OnlineSectioningLog.Action.newBuilder())) {
+        		iUpdatedStudents.add(s.getUniqueId());
+        		action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
+        	} else {
+        		action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
+        	}
+		} catch (SectioningException e) {
+			action.setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
+			if (e.getCause() != null) {
+				action.addMessage(OnlineSectioningLog.Message.newBuilder()
+						.setLevel(OnlineSectioningLog.Message.Level.FATAL)
+						.setText(e.getCause().getClass().getName() + ": " + e.getCause().getMessage()));
+			} else {
+				action.addMessage(OnlineSectioningLog.Message.newBuilder()
+						.setLevel(OnlineSectioningLog.Message.Level.FATAL)
+						.setText(e.getMessage() == null ? "null" : e.getMessage()));
+			}
+		} finally {
+			action.setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
+			action.setEndTime(System.currentTimeMillis());
+			OnlineSectioningLogger.getInstance().record(OnlineSectioningLog.Log.newBuilder().addAction(action).build());
+		}
+    }
+    
+    public Student loadStudent(org.hibernate.Session hibSession, org.unitime.timetable.model.Student s, Hashtable<Long,Course> courseTable, Hashtable<Long,Section> classTable) {
     	// Check for nobatch sectioning status
         if (iCheckForNoBatchStatus && s.hasSectioningStatusOption(StudentSectioningStatus.Option.nobatch)) {
         	skipStudent(s, courseTable, classTable);
@@ -678,11 +743,13 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	return null;
         }
         
-        NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingStudentNameFormat.value());
-        iProgress.debug("Loading student "+s.getUniqueId()+" (id="+s.getExternalUniqueId()+", name="+nameFormat.format(s)+")");
+        if (iCheckOverrideStatus && iValidationProvider != null)
+        	checkOverrideStatus(hibSession, s);
+        
+        iProgress.debug("Loading student "+s.getUniqueId()+" (id="+s.getExternalUniqueId()+", name="+iStudentNameFormat.format(s)+")");
         Student student = new Student(s.getUniqueId().longValue());
         student.setExternalId(s.getExternalUniqueId());
-        student.setName(nameFormat.format(s));
+        student.setName(iStudentNameFormat.format(s));
         student.setStatus(s.getSectioningStatus() == null ? null : s.getSectioningStatus().getReference());
         if (iLoadStudentInfo) loadStudentInfo(student,s);
         if (iShortDistanceAccomodationReference != null)
@@ -726,9 +793,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 				});
                 crs.addAll(cd.getCourseRequests());
                 for (org.unitime.timetable.model.CourseRequest cr: crs) {
+                	if (cr.isRequestRejected() && cr.getClassEnrollments().isEmpty()) continue;
                     Course course = courseTable.get(cr.getCourseOffering().getUniqueId());
                     if (course==null) {
-                        iProgress.warn("Student " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + ") requests course " + cr.getCourseOffering().getCourseName() + " that is not loaded.");
+                        iProgress.warn("Student " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ") requests course " + cr.getCourseOffering().getCourseName() + " that is not loaded.");
                         continue;
                     }
                     for (Iterator<ClassWaitList> k=cr.getClassWaitLists().iterator();k.hasNext();) {
@@ -777,14 +845,14 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                             		selChoices.add(section.getChoice());
                                 assignedSections.add(section);
                                 if (assignedConfig != null && assignedConfig.getId() != section.getSubpart().getConfig().getId()) {
-                                	iProgress.error("There is a problem assigning " + course.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): classes from different configurations.");
+                                	iProgress.error("There is a problem assigning " + course.getName() + " to " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + "): classes from different configurations.");
                                 }
                                 assignedConfig = section.getSubpart().getConfig();
                                 if (!subparts.add(section.getSubpart().getId())) {
-                                	iProgress.error("There is a problem assigning " + course.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): two or more classes of the same subpart.");
+                                	iProgress.error("There is a problem assigning " + course.getName() + " to " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + "): two or more classes of the same subpart.");
                                 }
                             } else {
-                            	iProgress.error("There is a problem assigning " + course.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel(iShowClassSuffix, iShowConfigName) + " not known.");
+                            	iProgress.error("There is a problem assigning " + course.getName() + " to " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel(iShowClassSuffix, iShowConfigName) + " not known.");
                             }
                         }
                     }
@@ -814,14 +882,14 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                                     		selChoices.add(section.getChoice());
                                         assignedSections.add(section);
                                         if (assignedConfig != null && assignedConfig.getId() != section.getSubpart().getConfig().getId()) {
-                                        	iProgress.error("There is a problem assigning " + course.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): classes from different configurations.");
+                                        	iProgress.error("There is a problem assigning " + course.getName() + " to " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + "): classes from different configurations.");
                                         }
                                         assignedConfig = section.getSubpart().getConfig();
                                         if (!subparts.add(section.getSubpart().getId())) {
-                                        	iProgress.error("There is a problem assigning " + course.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): two or more classes of the same subpart.");
+                                        	iProgress.error("There is a problem assigning " + course.getName() + " to " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + "): two or more classes of the same subpart.");
                                         }
                                     } else {
-                                    	iProgress.error("There is a problem assigning " + course.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel(iShowClassSuffix, iShowConfigName) + " not known.");
+                                    	iProgress.error("There is a problem assigning " + course.getName() + " to " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel(iShowClassSuffix, iShowConfigName) + " not known.");
                                     }
                                 }
                             }
@@ -845,7 +913,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     request.setInitialAssignment(enrollment);
                 }
                 if (assignedConfig!=null && assignedSections.size() != assignedConfig.getSubparts().size()) {
-                	iProgress.error("There is a problem assigning " + request.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + ") wrong number of classes (" +
+                	iProgress.error("There is a problem assigning " + request.getName() + " to " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ") wrong number of classes (" +
                 			"has " + assignedSections.size() + ", expected " + assignedConfig.getSubparts().size() + ").");
                 }
             }
@@ -862,7 +930,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		if (enrl.getCourseRequest() != null || alternatives.contains(enrl.getCourseOffering())) continue; // already loaded
         		Course course = courseTable.get(enrl.getCourseOffering().getUniqueId());
                 if (course==null) {
-                    iProgress.warn("Student " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + ") requests course " + enrl.getCourseOffering().getCourseName()+" that is not loaded.");
+                    iProgress.warn("Student " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ") requests course " + enrl.getCourseOffering().getCourseName()+" that is not loaded.");
                     continue;
                 }
                 if (enrl.getTimestamp() != null) timeStamp.put(enrl.getCourseOffering().getUniqueId(), enrl.getTimestamp().getTime());
@@ -871,7 +939,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	for (WaitList w: s.getWaitlists()) {
         		Course course = courseTable.get(w.getCourseOffering().getUniqueId());
                 if (course==null) {
-                    iProgress.warn("Student " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + ") requests course " + w.getCourseOffering().getCourseName()+" that is not loaded.");
+                    iProgress.warn("Student " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ") requests course " + w.getCourseOffering().getCourseName()+" that is not loaded.");
                     continue;
                 }
                 if (w.getTimestamp() != null) timeStamp.put(w.getCourseOffering().getUniqueId(), w.getTimestamp().getTime());
@@ -907,16 +975,16 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     if (section!=null) {
                         assignedSections.add(section);
                         if (assignedConfig != null && assignedConfig.getId() != section.getSubpart().getConfig().getId()) {
-                        	iProgress.error("There is a problem assigning " + request.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): classes from different configurations.");
+                        	iProgress.error("There is a problem assigning " + request.getName() + " to " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + "): classes from different configurations.");
                         	continue courses;
                         }
                         assignedConfig = section.getSubpart().getConfig();
                         if (!subparts.add(section.getSubpart().getId())) {
-                        	iProgress.error("There is a problem assigning " + request.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): two or more classes of the same subpart.");
+                        	iProgress.error("There is a problem assigning " + request.getName() + " to " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + "): two or more classes of the same subpart.");
                         	continue courses;
                         }
                     } else {
-                    	iProgress.error("There is a problem assigning " + request.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel(iShowClassSuffix, iShowConfigName) + " not known.");
+                    	iProgress.error("There is a problem assigning " + request.getName() + " to " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel(iShowClassSuffix, iShowConfigName) + " not known.");
                     	Section x = classTable.get(enrl.getClazz().getUniqueId());
                     	if (x != null) {
                     		iProgress.info("  but a class with the same id is loaded, but under offering " + x.getSubpart().getConfig().getOffering().getName() + " (id is " + x.getSubpart().getConfig().getOffering().getId() + 
@@ -930,7 +998,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     request.setInitialAssignment(enrollment);
                 }
                 if (assignedConfig!=null && assignedSections.size() != assignedConfig.getSubparts().size()) {
-                	iProgress.error("There is a problem assigning " + request.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): wrong number of classes (" +
+                	iProgress.error("There is a problem assigning " + request.getName() + " to " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + "): wrong number of classes (" +
                 			"has " + assignedSections.size() + ", expected " + assignedConfig.getSubparts().size() + ").");
                 }
         	}
@@ -970,7 +1038,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
            	CourseRequest cr = (CourseRequest)r;
            	Enrollment enrl = (Enrollment)r.getInitialAssignment();
            	org.unitime.timetable.model.Student s = (student.getId() >= 0 ? StudentDAO.getInstance().get(student.getId()) : null);
-           	iProgress.error("There is a problem assigning " + cr.getName() + " to " + (s == null ? student.getId() : NameFormat.defaultFormat().format(s) + " (" + s.getExternalUniqueId() + ")" ));
+           	iProgress.error("There is a problem assigning " + cr.getName() + " to " + (s == null ? student.getId() : iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ")" ));
            	boolean hasLimit = false, hasOverlap = false;
            	for (Iterator<Section> i = enrl.getSections().iterator(); i.hasNext();) {
            		Section section = i.next();
@@ -1526,7 +1594,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             for (Iterator i=students.iterator();i.hasNext();) {
                 org.unitime.timetable.model.Student s = (org.unitime.timetable.model.Student)i.next(); incProgress();
                 if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty() && s.getWaitlists().isEmpty()) continue;
-                Student student = loadStudent(s, courseTable, classTable);
+                Student student = loadStudent(hibSession, s, courseTable, classTable);
                 if (student == null) continue;
                 updateCurriculumCounts(student);
                 if (iProjections) {

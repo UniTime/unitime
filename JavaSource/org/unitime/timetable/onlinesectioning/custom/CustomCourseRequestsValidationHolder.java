@@ -134,9 +134,29 @@ public class CustomCourseRequestsValidationHolder {
 								.setExternalId(student.getExternalUniqueId())
 								.setName(helper.getStudentNameFormat().format(student))
 								.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
-					
-						if (CustomCourseRequestsValidationHolder.getProvider().updateStudent(server, helper, student, action))
-							reloadIds.add(studentId);
+						long c0 = OnlineSectioningHelper.getCpuTime();
+						try {
+							if (CustomCourseRequestsValidationHolder.getProvider().updateStudent(server, helper, student, action)) {
+								reloadIds.add(studentId);
+								action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
+							} else {
+								action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
+							}
+						} catch (SectioningException e) {
+							action.setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
+							if (e.getCause() != null) {
+								action.addMessage(OnlineSectioningLog.Message.newBuilder()
+										.setLevel(OnlineSectioningLog.Message.Level.FATAL)
+										.setText(e.getCause().getClass().getName() + ": " + e.getCause().getMessage()));
+							} else {
+								action.addMessage(OnlineSectioningLog.Message.newBuilder()
+										.setLevel(OnlineSectioningLog.Message.Level.FATAL)
+										.setText(e.getMessage() == null ? "null" : e.getMessage()));
+							}
+						} finally {
+							action.setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
+							action.setEndTime(System.currentTimeMillis());
+						}
 					}
 				}
 				helper.commitTransaction();

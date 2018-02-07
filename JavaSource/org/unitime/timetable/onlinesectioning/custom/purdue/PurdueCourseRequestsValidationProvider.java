@@ -973,7 +973,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			resource = new ClientResource(getSpecialRegistrationApiSiteCheckSpecialRegistrationStatus());
 			resource.setNext(iClient);
 			
-			AcademicSessionInfo session = server.getAcademicSession();
+			AcademicSessionInfo session = (server == null ? new AcademicSessionInfo(student.getSession()) : server.getAcademicSession());
 			String term = getBannerTerm(session);
 			String campus = getBannerCampus(session);
 			resource.addQueryParameter("term", term);
