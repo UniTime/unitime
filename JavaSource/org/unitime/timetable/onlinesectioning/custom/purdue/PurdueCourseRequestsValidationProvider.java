@@ -564,6 +564,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				if (course == null) continue;
 				String bc = course2banner.get(course);
 				if ("DUPL".equals(problem.code)) continue;
+				if ("MAXI".equals(problem.code)) continue;
 				Set<String> problems = (bc == null ? null : overrides.get(bc));
 				Set<String> denied = (bc == null ? null : deniedOverrides.get(bc));
 				if (denied != null && denied.contains(problem.code))
