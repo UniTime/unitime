@@ -164,7 +164,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 			setHasInitialSameTime(placement.getTimeLocation().equals(((Placement)lecture.getInitialAssignment()).getTimeLocation()));
 			setHasInitialSameRoom(placement.sameRooms((Placement)lecture.getInitialAssignment()));
 		}
-		iTooBigRoomPreference = TooBigRooms.getTooBigRoomPreference(placement);
+		iTooBigRoomPreference = ((TooBigRooms)model.getCriterion(TooBigRooms.class)).getPreference(placement);
 		iMinRoomSize = lecture.minRoomSize();
 		iUselessHalfHours = placement.variable().getModel() == null ? 0 : (int)Math.round(
 				placement.variable().getModel().getCriterion(UselessHalfHours.class).getValue(assignment, placement, null) + 

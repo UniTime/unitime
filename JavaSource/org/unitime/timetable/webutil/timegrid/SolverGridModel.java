@@ -504,7 +504,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 			if (roomSize < lecture.minRoomSize())
 				background = TimetableGridCell.pref2color(PreferenceLevel.sRequired);
 			else
-				background = TimetableGridCell.pref2color(TooBigRooms.getTooBigRoomPreference(placement));
+				background = TimetableGridCell.pref2color(((TooBigRooms)solver.currentSolution().getModel().getCriterion(TooBigRooms.class)).getPreference(placement));
 			if (lecture.getNrRooms()>0) {
 				shortComment = "<span style='color:rgb(200,200,200)'>"+(lecture.nrRoomLocations()==1?"<u>":"")+lecture.minRoomUse()+
 						(lecture.maxRoomUse()!=lecture.minRoomUse()?" - "+lecture.maxRoomUse():"")+" / "+

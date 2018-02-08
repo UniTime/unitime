@@ -504,7 +504,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 			if (roomSize < lecture.minRoomSize())
 				cell.setBackground(pref2color(PreferenceLevel.sRequired));
 			else
-				cell.setBackground(pref2color(TooBigRooms.getTooBigRoomPreference(placement)));
+				cell.setBackground(pref2color(((TooBigRooms)solver.currentSolution().getModel().getCriterion(TooBigRooms.class)).getPreference(placement)));
 			if (lecture.getNrRooms() > 0) {
 				cell.setPreference(
 						(lecture.nrRoomLocations()==1?"<u>":"")+lecture.minRoomUse()+
