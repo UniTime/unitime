@@ -541,7 +541,7 @@ public class StudentSectioningImport extends BaseImport {
             		reqCoursesElement = studentElement.element("addCourseRequests");
             		delCoursesElement = studentElement.element("dropCourseRequests");
             	}
-            	if ((reqCoursesElement != null || delCoursesElement != null) && "true".equals(reqCoursesElement.attributeValue("commit", "true"))) {
+            	if ((reqCoursesElement != null && "true".equals(reqCoursesElement.attributeValue("commit", "true"))) || delCoursesElement != null) {
                 	Hashtable<Pair, StudentClassEnrollment> enrollments = new Hashtable<Pair, StudentClassEnrollment>();
                 	for (StudentClassEnrollment enrollment: student.getClassEnrollments()) {
                 		enrollments.put(new Pair(enrollment.getCourseOffering().getUniqueId(), enrollment.getClazz().getUniqueId()), enrollment);
@@ -922,7 +922,7 @@ public class StudentSectioningImport extends BaseImport {
         if (length!=null) {
             nrSlots = Integer.parseInt(length) / Constants.SLOT_LENGTH_MIN; 
         } else {
-            nrSlots = ((Integer.parseInt(endTime)/100)*60 + Integer.parseInt(endTime)%100) - ((Integer.parseInt(startTime)/100)*60 + Integer.parseInt(startTime)%100) / Constants.SLOT_LENGTH_MIN;
+            nrSlots = (((Integer.parseInt(endTime)/100)*60 + Integer.parseInt(endTime)%100) - ((Integer.parseInt(startTime)/100)*60 + Integer.parseInt(startTime)%100)) / Constants.SLOT_LENGTH_MIN;
         }
         return new TimeLocation(
                 dayCode,
