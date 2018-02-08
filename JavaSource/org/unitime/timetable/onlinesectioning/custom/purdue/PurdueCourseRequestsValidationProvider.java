@@ -81,6 +81,7 @@ import org.unitime.timetable.onlinesectioning.custom.CourseRequestsValidationPro
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Change;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ChangeError;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CourseCredit;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Problem;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.RequestStatus;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ResponseStatus;
@@ -801,8 +802,21 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					}
 				}
 		}
-		if (maxCredit < request.getCredit())
+		if (maxCredit < request.getCredit()) {
 			req.maxCredit = request.getCredit();
+			req.courseCreditHrs = new ArrayList<CourseCredit>();
+			for (RequestedCourse rc: getOverCreditRequests(request, maxCredit)) {
+				XCourseId cid = server.getCourse(rc.getCourseId(), rc.getCourseName());
+				if (cid == null) continue;
+				XCourse course = (cid instanceof XCourse ? (XCourse)cid : server.getCourse(cid.getCourseId()));
+				if (course == null) continue;
+				CourseCredit cc = new CourseCredit();
+				cc.subject = iExternalTermProvider.getExternalSubject(server.getAcademicSession(), course.getSubjectArea(), course.getCourseNumber());
+				cc.courseNbr = iExternalTermProvider.getExternalCourseNumber(server.getAcademicSession(), course.getSubjectArea(), course.getCourseNumber());
+				cc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
+				req.courseCreditHrs.add(cc);
+			}
+		}
 		
 		if (!req.changes.isEmpty() || !overrides.isEmpty() || req.maxCredit != null) {
 			resource = null;
