@@ -96,9 +96,12 @@ import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XDistribution;
 import org.unitime.timetable.onlinesectioning.model.XDistributionType;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XReservationType;
+import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.Formats.Format;
@@ -432,6 +435,39 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			}
 		}
 		
+		// Single section time conflict check
+		boolean questionTimeConflict = false;
+		Map<Section, Course> singleSections = new HashMap<Section, Course>();
+		for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
+			Request r = (Request)e.next();
+			if (r.isAlternative()) continue; // no alternate course requests
+			if (r instanceof CourseRequest) {
+				CourseRequest cr = (CourseRequest)r;
+				for (Course course: cr.getCourses()) {
+					if (course.getOffering().getConfigs().size() == 1) { // take only single config courses
+						for (Subpart subpart: course.getOffering().getConfigs().get(0).getSubparts()) {
+							if (subpart.getSections().size() == 1) { // take only single section subparts
+								Section section = subpart.getSections().get(0);
+								for (Section other: singleSections.keySet()) {
+									if (section.isOverlapping(other)) {
+										boolean confirm = (original.getRequestForCourse(course.getId()) == null || original.getRequestForCourse(singleSections.get(other).getId()) == null) && (cr.getCourses().size() == 1);
+										response.addMessage(course.getId(), course.getName(), "OVERLAP",
+												ApplicationProperties.getProperty("purdue.specreg.messages.courseOverlaps", "Conflists with {other}.").replace("{course}", course.getName()).replace("{other}", singleSections.get(other).getName()),
+												false, confirm);	
+										if (confirm) questionTimeConflict = true;
+									}
+								}
+								if (cr.getCourses().size() == 1) {
+									// remember section when there are no alternative courses provided
+									singleSections.put(section, course);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
 		OnlineSectioningSelection selection = null;
 		
 		if (server.getConfig().getPropertyBoolean("StudentWeights.MultiCriteria", true)) {
@@ -629,18 +665,22 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			}
 		}
 		if (questionRequestOverrides) {
-			if (!questionNoAlt && !questionMinCred) response.addConfirmation("");
-			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.requestOverrides", MESSAGES.questionRequestOverrides()));
+			if (!questionNoAlt && !questionMinCred && !questionTimeConflict) response.addConfirmation("");
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.requestOverrides", "It is possible to request overrides for some of the above problems. Do you want to request overrides?"));
 		}
-		if (questionRequestOverrides && (questionNoAlt || questionMinCred))
+		if (questionRequestOverrides && (questionNoAlt || questionMinCred || questionTimeConflict))
 			response.addConfirmation("");
 		if (questionMinCred)
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
 					"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit))
 					);
 		if (questionNoAlt)
-			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.noAlternatives", "One or more of the newly requested courses have no alternatives provided."));
-		if (questionNoAlt || questionMinCred)
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.noAlternatives",
+					"One or more of the newly requested courses have no alternatives provided. You may not be able to get a full schedule because you did not provide an alternative course."));
+		if (questionTimeConflict)
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.timeConflicts",
+					"Two or more single section courses are conflicting with each other. You will likely not be able to get the conflicting course, so please provide an alternative course if possible."));
+		if (questionNoAlt || questionMinCred || questionTimeConflict)
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.confirmation", "Do you want to proceed?"));
 	}
 
@@ -752,6 +792,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						for (CourseMessage m: request.getConfirmations()) {
 							if ("CREDIT".equals(m.getCode())) continue;
 							if ("NO_ALT".equals(m.getCode())) continue;
+							if ("OVERLAP".equals(m.getCode())) continue;
 							if (!m.isError() && (course.getCourseId().equals(m.getCourseId()) || course.getCourseName().equals(m.getCourse()))) {
 								ChangeError e = new ChangeError();
 								e.code = m.getCode(); e.message = m.getMessage();
@@ -784,6 +825,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						for (CourseMessage m: request.getConfirmations()) {
 							if ("CREDIT".equals(m.getCode())) continue;
 							if ("NO_ALT".equals(m.getCode())) continue;
+							if ("OVERLAP".equals(m.getCode())) continue;
 							if (!m.isError() && (course.getCourseId().equals(m.getCourseId()) || course.getCourseName().equals(m.getCourse()))) {
 								ChangeError e = new ChangeError();
 								e.code = m.getCode(); e.message = m.getMessage();
@@ -985,6 +1027,35 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), "NO_ALT",
 							ApplicationProperties.getProperty("purdue.specreg.messages.courseHasNoAlt", "No alternative course provided.").replace("{course}", rc.getCourseName()),
 							false, false);
+				}
+			}
+		}
+		
+		Map<XSection, XCourseId> singleSections = new HashMap<XSection, XCourseId>();
+		for (XRequest r: original.getRequests()) {
+			if (r.isAlternative()) continue; // no alternate course requests
+			if (r instanceof XCourseRequest) {
+				XCourseRequest cr = (XCourseRequest)r;
+				for (XCourseId course: cr.getCourseIds()) {
+					XOffering offering = server.getOffering(course.getOfferingId());
+					if (offering != null && offering.getConfigs().size() == 1) { // take only single config courses
+						for (XSubpart subpart: offering.getConfigs().get(0).getSubparts()) {
+							if (subpart.getSections().size() == 1) { // take only single section subparts
+								XSection section = subpart.getSections().get(0);
+								for (XSection other: singleSections.keySet()) {
+									if (section.isOverlapping(offering.getDistributions(), other)) {
+										request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "OVERLAP",
+												ApplicationProperties.getProperty("purdue.specreg.messages.courseOverlaps", "Conflists with {other}.").replace("{course}", course.getCourseName()).replace("{other}", singleSections.get(other).getCourseName()),
+												false, false);
+									}
+								}
+								if (cr.getCourseIds().size() == 1) {
+									// remember section when there are no alternative courses provided
+									singleSections.put(section, course);
+								}
+							}
+						}
+					}
 				}
 			}
 		}
