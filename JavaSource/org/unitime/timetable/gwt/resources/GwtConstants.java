@@ -28,7 +28,7 @@ public interface GwtConstants extends Constants {
 	@DoNotTranslate
 	String version();
 
-	@DefaultStringValue("&copy; 2008 - 2017 The Apereo Foundation")
+	@DefaultStringValue("&copy; 2008 - 2018 The Apereo Foundation")
 	@DoNotTranslate
 	String copyright();
 	
