@@ -44,7 +44,8 @@ contribute to ongoing research in this area.
 - [Student Scheduling][students]
 
 ### Links
-- [Online Documentation][help]
+- [Online UI Documentation][help]
+- [Documentation overview][gdoc]
 - [Installation Notes][install]
 - [Online Demo][demo]
 - [Downloads][downloads]
@@ -63,3 +64,4 @@ contribute to ongoing research in this area.
 [xml]: http://www.unitime.org/uct_interfaces.php
 [research]: http://www.unitime.org/index.php?tab=2
 [downloads]: http://sourceforge.net/projects/unitime/files
+[gdoc]:https://docs.google.com/document/d/18TH8LtNzbKE7_m99wks2POKsw6hali8xMnCroBK4ylc/edit?usp=sharing
