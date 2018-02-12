@@ -189,7 +189,6 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
         			String value = request.getParameter(parameter.getUniqueId());
         			if (parameter.getName().startsWith("Save.")) {
         				solver.setProperty(parameter.getName(), value);
-        				System.out.println(parameter.getName() + "=" + value);
         			}
         		}
         	}
@@ -216,6 +215,22 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 				solver.setProperty("Save.Commit", (request.getOperation() == SolverOperation.SAVE_AS_NEW_COMMIT || request.getOperation() == SolverOperation.SAVE_COMMIT) ? "true" : "false");
 				solver.save();
         	}
+        	break;
+        	
+		case VALIDATE:
+			if (solver == null) throw new GwtRpcException(MESSAGES.warnSolverNotStarted());
+        	if (solver.isWorking()) throw new GwtRpcException(MESSAGES.warnSolverIsWorking());
+        	if (request.hasParameters()) {
+        		for (SolverParameterDef parameter: (List<SolverParameterDef>)SolverParameterDefDAO.getInstance().getSession().createQuery(
+	        			"from SolverParameterDef where uniqueId in :uniqueIds")
+	        			.setParameterList("uniqueIds", request.getParameters().keySet()).list()) {
+        			String value = request.getParameter(parameter.getUniqueId());
+        			if (parameter.getName().startsWith("Save.")) {
+        				solver.setProperty(parameter.getName(), value);
+        			}
+        		}
+        	}
+        	solver.validate();
         	break;
         	
 		case UNLOAD:
@@ -636,6 +651,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 						response.setCanExecute(SolverOperation.SAVE);
 					response.setCanExecute(SolverOperation.SAVE_COMMIT);
 				}
+				if (solver.isCanValidate()) response.setCanExecute(SolverOperation.VALIDATE);
 			}
 		}
 	}

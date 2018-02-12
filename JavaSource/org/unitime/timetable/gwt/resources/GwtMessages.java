@@ -402,6 +402,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Reload Input Data")
 	String opSolverReload();
 	
+	@DefaultMessage("Validate")
+	String opSolverValidate();
+	
 	@DefaultMessage("Clear")
 	String opSolverClear();
 	

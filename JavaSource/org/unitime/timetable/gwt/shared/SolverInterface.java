@@ -57,6 +57,7 @@ public class SolverInterface implements IsSerializable {
 		RESTORE_BEST,
 		SAVE, SAVE_AS_NEW,
 		SAVE_COMMIT, SAVE_AS_NEW_COMMIT, SAVE_UNCOMMIT,
+		VALIDATE,
 		;
 		public int flag() { return 1 << ordinal(); }
 		public boolean in(int flags) {

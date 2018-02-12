@@ -217,6 +217,9 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
     
     protected abstract ProblemSaver<V, T, M> getDatabaseSaver(Solver<V, T> solver);
     protected abstract ProblemLoader<V, T, M> getDatabaseLoader(M model, Assignment<V, T> assignment);
+    protected ProblemSaver<V, T, M> getCustomValidator(Solver<V, T> solver) {
+    	return null;
+    }
 
     protected void finishBeforeSave() {}
     
@@ -324,10 +327,17 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
         return new DefaultSavingDoneCallback<V, T, M>(this);
     }
     
+    public Callback getValidationDoneCallback() {
+        return new DefaultValidationDoneCallback<V, T, M>(this);
+    }
+    
     protected void afterSave() {
     }
     
     protected void afterLoad() {
+    }
+    
+    protected void afterValidate() {
     }
 
     protected static class DefaultLoadingDoneCallback<V extends Variable<V, T>, T extends Value<V, T>, M extends Model<V, T>> implements Callback {
@@ -357,6 +367,20 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
         public void execute() {
         	iSolver.iWorking = false;
         	iSolver.afterSave();
+            Progress.getInstance(iSolver.currentSolution().getModel()).setStatus(MSG.statusReady());
+        }
+    }
+    
+    protected static class DefaultValidationDoneCallback<V extends Variable<V, T>, T extends Value<V, T>, M extends Model<V, T>> implements Callback {
+        AbstractSolver<V, T, M> iSolver;
+        
+        protected DefaultValidationDoneCallback(AbstractSolver<V, T, M> solver) {
+        	iSolver = solver;
+        }
+        
+        public void execute() {
+        	iSolver.iWorking = false;
+        	iSolver.afterValidate();
             Progress.getInstance(iSolver.currentSolution().getModel()).setStatus(MSG.statusReady());
         }
     }
@@ -749,5 +773,21 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
     	public boolean canContinue(Solution<V, T> currentSolution) {
     		return !isInterrupted();
     	}
+    }
+    
+    @Override
+    public boolean isCanValidate() {
+    	return getCustomValidator(this) != null;
+    }
+    
+    @Override
+    public void validate() {
+        iWorking = true;
+        ProblemSaver<V, T, M> saver = getCustomValidator(this);
+        saver.setCallback(getValidationDoneCallback());
+        iWorkThread = new InterruptibleThread(saver);
+        saver.setTerminationCondition((InterruptibleThread)iWorkThread);
+        iWorkThread.setPriority(THREAD_PRIORITY);
+        iWorkThread.start();
     }
 }

@@ -130,6 +130,24 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 		}
 		return new StudentSectioningDatabaseLoader(model, assignment);
 	}
+	
+	@Override
+	protected ProblemSaver<Request, Enrollment, StudentSectioningModel> getCustomValidator(Solver<Request, Enrollment> solver) {
+		try {
+			String validatorClass = getProperties().getProperty("General.CustomValidator", null);
+			if (validatorClass != null && !validatorClass.isEmpty())
+				return (ProblemSaver<Request, Enrollment, StudentSectioningModel>) Class.forName(validatorClass).getConstructor(Solver.class).newInstance(solver);
+		} catch (Exception e) {
+			iProgress.error("Failed to create a custom validator: " + e.getMessage(), e);
+		}
+		return null;
+	}
+	
+	@Override
+	public boolean isCanValidate() {
+		String validatorClass = getProperties().getProperty("General.CustomValidator", null);
+		return validatorClass != null && !validatorClass.isEmpty();
+	}
 
 	@Override
 	protected StudentSectioningModel createModel(DataProperties properties) {

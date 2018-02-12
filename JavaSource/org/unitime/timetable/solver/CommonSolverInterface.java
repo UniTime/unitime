@@ -77,4 +77,6 @@ public interface CommonSolverInterface {
     public Date getLastUsed();
     
     public void interrupt();
+    public boolean isCanValidate();
+    public void validate();
 }
