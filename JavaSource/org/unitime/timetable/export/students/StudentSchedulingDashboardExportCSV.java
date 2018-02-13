@@ -270,15 +270,15 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 				MESSAGES.colWaitListed(), // 9
 				MESSAGES.colReservation(), // 10
 				MESSAGES.colConsent(), // 11
-				MESSAGES.colOverride(), // 12
-				MESSAGES.colRequestCredit(), // 13
-				MESSAGES.colCredit(), // 14
-				MESSAGES.colDistanceConflicts(), // 15
-				MESSAGES.colLongestDistance(), // 16
+				MESSAGES.colPendingOverrides().replace("<br>", "\n"), // 12
+				MESSAGES.colRequestCredit().replace("<br>", "\n"), // 13
+				MESSAGES.colEnrollCredit().replace("<br>", "\n"), // 14
+				MESSAGES.colDistanceConflicts().replace("<br>", "\n"), // 15
+				MESSAGES.colLongestDistance().replace("<br>", "\n"), // 16
 				MESSAGES.colOverlapMins(), // 17
 				MESSAGES.colFreeTimeOverlapMins(), // 18
-				MESSAGES.colPrefInstrMethConfs(), // 19
-				MESSAGES.colPrefSectionConfs(), // 20
+				MESSAGES.colPrefInstrMethConfs().replace("<br>", "\n"), // 19
+				MESSAGES.colPrefSectionConfs().replace("<br>", "\n"), // 20
 				MESSAGES.colRequestTimeStamp(), // 21
 				MESSAGES.colEnrollmentTimeStamp(), // 22
 				MESSAGES.colStudentNote(), // 23

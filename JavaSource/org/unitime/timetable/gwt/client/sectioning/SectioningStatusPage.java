@@ -69,7 +69,6 @@ import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Style.FontStyle;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -1332,7 +1331,7 @@ public class SectioningStatusPage extends Composite {
 		header.add(hTotal);
 		
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
-				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false, hasDistances = false, hasOverlaps = false,
+				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false, hasReqCred = false, hasDistances = false, hasOverlaps = false,
 				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false, hasOverride = false;
 		for (ClassAssignmentInterface.StudentInfo e: result) {
 			if (e.getStudent() == null) continue;
@@ -1349,7 +1348,8 @@ public class SectioningStatusPage extends Composite {
 			// if (e.getEmailDate() != null) hasEmailDate = true;
 			if (e.getTotalConsentNeeded() != null && e.getTotalConsentNeeded() > 0) hasConsent = true;
 			if (e.getTotalOverrideNeeded() != null && e.getTotalOverrideNeeded() > 0) hasOverride = true;
-			if (e.hasTotalCredit() || e.hasTotalRequestCredit()) hasCredit = true;
+			if (e.hasTotalCredit()) hasCredit = true;
+			if (e.hasTotalRequestCredit()) hasReqCred = true;
 			if (e.hasTotalDistanceConflicts()) hasDistances = true;
 			if (e.hasOverlappingMinutes()) hasOverlaps = true;
 			if (e.hasFreeTimeOverlappingMins()) hasFreeTimeOverlaps = true;
@@ -1434,23 +1434,30 @@ public class SectioningStatusPage extends Composite {
 		
 		UniTimeTableHeader hOverride = null;
 		if (hasOverride) {
-			hOverride = new UniTimeTableHeader(MESSAGES.colOverride());
+			hOverride = new UniTimeTableHeader(MESSAGES.colPendingOverrides());
 			header.add(hOverride);
-			addSortOperation(hOverride, StudentComparator.SortBy.OVERRIDE, MESSAGES.colOverride());
+			addSortOperation(hOverride, StudentComparator.SortBy.OVERRIDE, MESSAGES.colPendingOverrides().replace("<br>", " "));
 		}
 		
 		UniTimeTableHeader hCredit = null;
 		if (hasCredit) {
-			hCredit = new UniTimeTableHeader(MESSAGES.colCredit());
+			hCredit = new UniTimeTableHeader(MESSAGES.colEnrollCredit());
 			header.add(hCredit);
-			addSortOperation(hCredit, StudentComparator.SortBy.CREDIT, MESSAGES.colCredit());
+			addSortOperation(hCredit, StudentComparator.SortBy.CREDIT, MESSAGES.colEnrollCredit().replace("<br>", " "));
+		}
+		
+		UniTimeTableHeader hReqCred = null;
+		if (hasReqCred) {
+			hReqCred = new UniTimeTableHeader(MESSAGES.colRequestCredit());
+			header.add(hReqCred);
+			addSortOperation(hReqCred, StudentComparator.SortBy.REQ_CREDIT, MESSAGES.colRequestCredit().replace("<br>", " "));
 		}
 		
 		UniTimeTableHeader hDistConf = null;
 		if (hasDistances) {
 			hDistConf = new UniTimeTableHeader(MESSAGES.colDistanceConflicts());
 			header.add(hDistConf);
-			addSortOperation(hDistConf, StudentComparator.SortBy.DIST_CONF, MESSAGES.colDistanceConflicts());
+			addSortOperation(hDistConf, StudentComparator.SortBy.DIST_CONF, MESSAGES.colDistanceConflicts().replace("<br>", " "));
 		}
 		
 		UniTimeTableHeader hShare = null;
@@ -1471,14 +1478,14 @@ public class SectioningStatusPage extends Composite {
 		if (hasPrefIMConfs) {
 			hPrefIMConfs = new UniTimeTableHeader(MESSAGES.colPrefInstrMethConfs());
 			header.add(hPrefIMConfs);
-			addSortOperation(hPrefIMConfs, StudentComparator.SortBy.PREF_IM, MESSAGES.colPrefInstrMethConfs());
+			addSortOperation(hPrefIMConfs, StudentComparator.SortBy.PREF_IM, MESSAGES.colPrefInstrMethConfs().replace("<br>", " "));
 		}
 		
 		UniTimeTableHeader hPrefSecConfs = null;
 		if (hasPrefSecConfs) {
 			hPrefSecConfs = new UniTimeTableHeader(MESSAGES.colPrefSectionConfs());
 			header.add(hPrefSecConfs);
-			addSortOperation(hPrefSecConfs, StudentComparator.SortBy.PREF_SEC, MESSAGES.colPrefSectionConfs());
+			addSortOperation(hPrefSecConfs, StudentComparator.SortBy.PREF_SEC, MESSAGES.colPrefSectionConfs().replace("<br>", " "));
 		}
 		
 		UniTimeTableHeader hRequestTS = null;
@@ -1592,12 +1599,10 @@ public class SectioningStatusPage extends Composite {
 				line.add(new NumberCell(info.getConsentNeeded(), info.getTotalConsentNeeded()));
 			if (hasOverride)
 				line.add(new NumberCell(info.getOverrideNeeded(), info.getTotalOverrideNeeded()));
-			if (hasCredit) {
-				if (info.hasCredit())
-					line.add(new CreditCell(info.getCredit(), info.getTotalCredit()));
-				else
-					line.add(new RequestCreditCell(info.getRequestCreditMin(), info.getRequestCreditMax(), info.getTotalRequestCreditMin(), info.getTotalRequestCreditMax()));
-			}
+			if (hasCredit)
+				line.add(new CreditCell(info.getCredit(), info.getTotalCredit()));
+			if (hasReqCred)
+				line.add(new RequestCreditCell(info.getRequestCreditMin(), info.getRequestCreditMax(), info.getTotalRequestCreditMin(), info.getTotalRequestCreditMax()));
 			if (hasDistances) {
 				line.add(new DistanceCell(info.getNrDistanceConflicts(), info.getTotalNrDistanceConflicts(), info.getLongestDistanceMinutes(), info.getTotalLongestDistanceMinutes()));
 			}
@@ -1672,6 +1677,7 @@ public class SectioningStatusPage extends Composite {
 			case PREF_IM: h = hPrefIMConfs; break;
 			case PREF_SEC: h = hPrefSecConfs; break;
 			case OVERRIDE: h = hOverride; break;
+			case REQ_CREDIT: h = hReqCred; break;
 			}
 			if (h != null)
 				iStudentTable.sort(h, new StudentComparator(sort), asc);
@@ -2126,6 +2132,7 @@ public class SectioningStatusPage extends Composite {
 			DIST_CONF, OVERLAPS,
 			FT_OVERLAPS, PREF_IM, PREF_SEC,
 			OVERRIDE,
+			REQ_CREDIT,
 			;
 		}
 		
@@ -2191,8 +2198,8 @@ public class SectioningStatusPage extends Composite {
 			case CREDIT:
 				cmp = (e1.hasCredit() ? e1.getCredit() : new Float(0f)).compareTo(e2.hasCredit() ? e2.getCredit() : new Float(0f));
 				if (cmp != 0) return - cmp;
-				cmp = (e1.hasTotalCredit() ? e1.getTotalCredit() : new Float(0f)).compareTo(e2.hasTotalCredit() ? e2.getTotalCredit() : new Float(0f));
-				if (cmp != 0) return - cmp;
+				return (e1.hasTotalCredit() ? e1.getTotalCredit() : new Float(0f)).compareTo(e2.hasTotalCredit() ? e2.getTotalCredit() : new Float(0f));
+			case REQ_CREDIT:
 				cmp = (e1.hasRequestCredit() ? new Float(e1.getRequestCreditMin()) : new Float(0f)).compareTo(e2.hasRequestCredit() ? e2.getRequestCreditMin() : 0f);
 				if (cmp != 0) return - cmp;
 				cmp = (e1.hasRequestCredit() ? new Float(e1.getRequestCreditMax()) : new Float(0f)).compareTo(e2.hasRequestCredit() ? e2.getRequestCreditMax() : 0f);
@@ -2377,7 +2384,6 @@ public class SectioningStatusPage extends Composite {
 		
 		public RequestCreditCell(float min, float max, float totalMin, float totalMax) {
 			super();
-			getElement().getStyle().setFontStyle(FontStyle.ITALIC);
 			if (totalMax > 0f) {
 				if (min == totalMin && max == totalMax) {
 					setHTML(totalMin == totalMax ? df.format(totalMax) : df.format(totalMin) + " - " + df.format(totalMax));

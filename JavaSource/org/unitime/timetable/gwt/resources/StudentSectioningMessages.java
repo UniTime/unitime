@@ -108,8 +108,11 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Note")
 	String colNote();
 	
-	@DefaultMessage("Req. Credit")
+	@DefaultMessage("Request<br>Credit")
 	String colRequestCredit();
+	
+	@DefaultMessage("Enrollment<br>Credit")
+	String colEnrollCredit();
 
 	@DefaultMessage("Credit")
 	String colCredit();
@@ -129,7 +132,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("&nbsp;")
 	String colClassSelection();
 	
-	@DefaultMessage("Distance")
+	@DefaultMessage("Distance<br>Conflicts")
 	String colDistanceConflicts();
 	
 	@DefaultMessage("Longest Distance [min]")
@@ -141,10 +144,10 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("FreeTime [min]")
 	String colFreeTimeOverlapMins();
 	
-	@DefaultMessage("IM Pref")
+	@DefaultMessage("Instr. Method<br>Preferences")
 	String colPrefInstrMethConfs();
 	
-	@DefaultMessage("Section Pref")
+	@DefaultMessage("Section<br>Preferences")
 	String colPrefSectionConfs();
 	
 	@DefaultMessage("Wait-List")
@@ -1013,8 +1016,8 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Consent")
 	String colConsent();
 	
-	@DefaultMessage("Override")
-	String colOverride();
+	@DefaultMessage("Pending<br>Overrides")
+	String colPendingOverrides();
 	
 	@DefaultMessage("Coordinator")
 	String colCoordinator();
