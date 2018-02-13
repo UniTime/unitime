@@ -4176,7 +4176,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-ConfirmationPanel {
-	max-width: 400px;
+	max-width: 80vw;
 	padding: 3px 10px 3px 10px;
 }
 

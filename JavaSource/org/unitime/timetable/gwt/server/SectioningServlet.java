@@ -635,14 +635,14 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					if (cr.hasRequestedCourse()) {
 						for (RequestedCourse rc: cr.getRequestedCourse())
 							if (rc.isCourse() && lookupCourse(hibSession, request.getAcademicSessionId(), studentId, rc, matcher) == null)
-								response.addMessage(rc.getCourseId(), rc.getCourseName(), "NOT_FOUND", MSG.validationCourseNotExists(rc.getCourseName()), true, false);
+								response.addError(rc.getCourseId(), rc.getCourseName(), "NOT_FOUND", MSG.validationCourseNotExists(rc.getCourseName()));
 					}
 				}
 				for (CourseRequestInterface.Request cr: request.getAlternatives()) {
 					if (cr.hasRequestedCourse()) {
 						for (RequestedCourse rc: cr.getRequestedCourse())
 							if (rc.isCourse() && lookupCourse(hibSession, request.getAcademicSessionId(), studentId, rc, matcher) == null)
-								response.addMessage(rc.getCourseId(), rc.getCourseName(), "NOT_FOUND", MSG.validationCourseNotExists(rc.getCourseName()), true, false);
+								response.addError(rc.getCourseId(), rc.getCourseName(), "NOT_FOUND", MSG.validationCourseNotExists(rc.getCourseName()));
 					}
 				}
 				return response;

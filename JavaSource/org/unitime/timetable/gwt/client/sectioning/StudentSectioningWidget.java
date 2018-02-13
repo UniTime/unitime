@@ -296,7 +296,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		rightFooterPanel.add(iEnroll);
 		
 		iSubmitSpecReg = new AriaButton(MESSAGES.buttonSubmitSpecReg());
-		iSave.setTitle(MESSAGES.hintSpecialRegistration());
+		iSubmitSpecReg.setTitle(MESSAGES.hintSpecialRegistration());
 		iSubmitSpecReg.setVisible(false);
 		iSubmitSpecReg.setEnabled(false);
 		iSubmitSpecReg.getElement().getStyle().setMarginLeft(4, Unit.PX);

@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.sectioning.CourseRequestLine.CourseSelectionBox;
@@ -327,7 +328,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			final boolean success = (failed == null);
 			iSectioningService.checkCourses(iOnline, iSectioning, cr,
 					new AsyncCallback<CheckCoursesResponse>() {
-						public void onSuccess(CheckCoursesResponse result) {
+						public void onSuccess(final CheckCoursesResponse result) {
 							iLastCheck = result;
 							setErrors(result);
 							LoadingWidget.getInstance().hide();
@@ -336,12 +337,17 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 								return;
 							}
 							if (success && result.isConfirm()) {
-								UniTimeConfirmationDialog.confirm(result.getConfirmations("\n"), new Command() {
+								final Iterator<Integer> it = result.getConfirms().iterator();
+								new Command() {
 									@Override
 									public void execute() {
-										callback.onSuccess(true);
+										if (it.hasNext()) {
+											UniTimeConfirmationDialog.confirm(result.getConfirmations(it.next(), "\n"), this);
+										} else {
+											callback.onSuccess(true);
+										}
 									}
-								});
+								}.execute();
 							} else {
 								callback.onSuccess(success);
 							}
@@ -443,7 +449,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	public void notifySaveSucceeded() {
 		if (iLastCheck != null && iLastCheck.hasMessages()) {
 			for (CourseMessage m: iLastCheck.getMessages())
-				if (m.isConfirm()) m.setConfirm(false);
+				if (m.isConfirm()) m.setConfirm(null);
 			setErrors(iLastCheck);
 		}
 	}

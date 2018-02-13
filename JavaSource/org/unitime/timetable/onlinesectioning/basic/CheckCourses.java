@@ -65,14 +65,14 @@ public class CheckCourses implements OnlineSectioningAction<CheckCoursesResponse
 			if (cr.hasRequestedCourse()) {
 				for (RequestedCourse rc: cr.getRequestedCourse())
 					if (rc.isCourse() && lookup(server, student, rc) == null)
-						response.addMessage(rc.getCourseId(), rc.getCourseName(), "NOT_FOUND", MESSAGES.validationCourseNotExists(rc.getCourseName()), true, false);
+						response.addError(rc.getCourseId(), rc.getCourseName(), "NOT_FOUND", MESSAGES.validationCourseNotExists(rc.getCourseName()));
 			}
 		}
 		for (CourseRequestInterface.Request cr: iRequest.getAlternatives()) {
 			if (cr.hasRequestedCourse()) {
 				for (RequestedCourse rc: cr.getRequestedCourse())
 					if (rc.isCourse() && lookup(server, student, rc) == null)
-						response.addMessage(rc.getCourseId(), rc.getCourseName(), "NOT_FOUND", MESSAGES.validationCourseNotExists(rc.getCourseName()), true, false);
+						response.addError(rc.getCourseId(), rc.getCourseName(), "NOT_FOUND", MESSAGES.validationCourseNotExists(rc.getCourseName()));
 			}
 		}
 		

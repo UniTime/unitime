@@ -720,7 +720,6 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	public static class CheckCoursesResponse implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private Set<CourseMessage> iMessages = new TreeSet<CourseMessage>();
-		private List<String> iConfirmations = new ArrayList<String>();
 		
 		public CheckCoursesResponse() {}
 		
@@ -734,22 +733,40 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public void addMessage(CourseMessage message) {
 			iMessages.add(message);
 		}
-		public void addMessage(Long courseId, String course, String code, String message, boolean error, boolean confirm) {
+		
+		public CourseMessage addMessage(Long courseId, String course, String code, String message, Integer confirm) {
 			CourseMessage m = new CourseMessage();
 			m.setCourseId(courseId);
 			m.setCourse(course);
 			m.setCode(code);
 			m.setMessage(message);
-			m.setError(error);
+			m.setError(false);
 			m.setConfirm(confirm);
+			m.setOrder(0);
 			addMessage(m);
+			return m;
 		}
-		
-		public boolean hasConfirmations() { return iConfirmations != null && !iConfirmations.isEmpty(); }
-		public void addConfirmation(String message) {
-			iConfirmations.add(message);
+		public CourseMessage addError(Long courseId, String course, String code, String message) {
+			CourseMessage m = new CourseMessage();
+			m.setCourseId(courseId);
+			m.setCourse(course);
+			m.setCode(code);
+			m.setMessage(message);
+			m.setError(true);
+			m.setConfirm(null);
+			addMessage(m);
+			return m;
 		}
-		public List<String> getConfirmations() { return iConfirmations; }
+		public CourseMessage addConfirmation(String message, Integer confirm, Integer order) {
+			CourseMessage m = new CourseMessage();
+			m.setCode("CONF_MSG");
+			m.setMessage(message);
+			m.setError(false);
+			m.setConfirm(confirm);
+			m.setOrder(order);
+			addMessage(m);
+			return m;
+		}
 		
 		public boolean isError() {
 			if (hasMessages())
@@ -763,41 +780,48 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			if (hasMessages())
 				for (CourseMessage m: getMessages())
 					if (m.isConfirm()) return true;
-			if (hasConfirmations())
-				return true;
 			return false;
+		}
+		public Set<Integer> getConfirms() {
+			Set<Integer> ret = new TreeSet<Integer>();
+			if (hasMessages())
+				for (CourseMessage m: getMessages())
+					if (m.isConfirm()) ret.add(m.getConfirm());
+			return ret;
 		}
 		
 		public List<CourseMessage> getMessages(String courseName) {
 			List<CourseMessage> ret = new ArrayList<CourseMessage>();
 			if (hasMessages())
 				for (CourseMessage m: getMessages())
-					if (courseName.equals(m.getCourse())) ret.add(m);
+					if (m.hasCourse() && courseName.equals(m.getCourse())) ret.add(m);
 			return ret;
 		}
+		
 		public String getMessage(String courseName, String delim) {
 			if (!hasMessages()) return null;
 			String ret = null;
 			if (hasMessages())
 				for (CourseMessage m: getMessages())
-					if (courseName == null || courseName.equals(m.getCourse())) {
+					if (m.hasCourse() && courseName.equals(m.getCourse())) {
 						if (ret == null)
-							ret = (courseName == null ? m.getCourse() + ": " : "") + m.getMessage();
+							ret = m.getMessage();
 						else
-							ret += delim + (courseName == null ? m.getCourse() + ": " : "") + m.getMessage();
+							ret += delim + m.getMessage();
 					}
 			return ret;
 		}
+		
 		public String getMessageWithColor(String courseName, String delim) {
 			if (!hasMessages()) return null;
 			String ret = null;
 			if (hasMessages())
 				for (CourseMessage m: getMessages())
-					if (courseName == null || courseName.equals(m.getCourse())) {
+					if (m.hasCourse() && courseName.equals(m.getCourse())) {
 						if (ret == null)
-							ret = (m.isError() ? "<span class='text-red'>" : "<span class='text-orange'>") + (courseName == null ? m.getCourse() + ": " : "") + m.getMessage() + "</span>";
+							ret = (m.isError() ? "<span class='text-red'>" : "<span class='text-orange'>") + m.getMessage() + "</span>";
 						else
-							ret += delim + (m.isError() ? "<span class='text-red'>" : "<span class='text-orange'>") + (courseName == null ? m.getCourse() + ": " : "") + m.getMessage() + "</span>";
+							ret += delim + (m.isError() ? "<span class='text-red'>" : "<span class='text-orange'>") + m.getMessage() + "</span>";
 					}
 			return ret;
 		}
@@ -806,7 +830,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			if (!hasMessages()) return false;
 			if (hasMessages())
 				for (CourseMessage m: getMessages())
-					if (courseName == null || courseName.equals(m.getCourse())) {
+					if (m.hasCourse() && courseName.equals(m.getCourse())) {
 						if (m.isError()) return true;
 					}
 			return false;
@@ -816,40 +840,23 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			if (!hasMessages()) return false;
 			if (hasMessages())
 				for (CourseMessage m: getMessages())
-					if (courseName == null || courseName.equals(m.getCourse())) {
+					if (m.hasCourse() && courseName.equals(m.getCourse())) {
 						if (m.isConfirm()) return true;
 					}
 			return false;
 		}
 		
-		public boolean isWarning(String courseName) {
-			if (!hasMessages()) return false;
-			if (hasMessages())
-				for (CourseMessage m: getMessages())
-					if (courseName == null || courseName.equals(m.getCourse())) {
-						return true;
-					}
-			return false;
-		}
-		
-		public String getConfirmations(String delim) {
-			if (!hasMessages() && !hasConfirmations()) return null;
+		public String getConfirmations(int confirm, String delim) {
+			if (!hasMessages()) return null;
 			String ret = null;
 			if (hasMessages())
 				for (CourseMessage m: getMessages()) {
-					if (!m.isConfirm()) continue;
+					if (confirm != m.getConfirm()) continue;
 					if (ret == null)
-						ret = m.getCourse() + ": " + m.getMessage();
+						ret = (m.hasCourse() ? m.getCourse() + ": " : "") + m.getMessage();
 					else
-						ret += delim + m.getCourse() + ": "  + m.getMessage();
+						ret += delim + (m.hasCourse() ? m.getCourse() + ": " : "") + m.getMessage();
 				}
-			if (hasConfirmations()) {
-				for (String m: getConfirmations())
-					if (ret == null)
-						ret = m;
-					else
-						ret += delim + m;
-			}
 			return ret;
 		}
 		
@@ -861,9 +868,11 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private Long iCourseId;
 		private String iCourse;
-		private boolean iError = true, iConfirm = true;
+		private boolean iError = true;
 		private String iMessage;
 		private String iCode;
+		private Integer iConfirm;
+		private Integer iOrder;
 		
 		public CourseMessage() {}
 		
@@ -878,8 +887,13 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public boolean isError() { return iError; }
 		public void setError(boolean error) { iError = error; }
 		
-		public boolean isConfirm() { return iConfirm; }
-		public void setConfirm(boolean confirm) { iConfirm = confirm; }
+		public boolean isConfirm() { return iConfirm != null; }
+		public void setConfirm(Integer confirm) { iConfirm = confirm; }
+		public int getConfirm() { return iConfirm == null ? -1 : iConfirm; }
+		
+		public void setOrder(Integer order) { iOrder = order; }
+		public boolean hasOrder() { return iOrder != null; }
+		public int getOrder() { return iOrder == null ? Integer.MAX_VALUE : iOrder; }
 		
 		public String getMessage() { return iMessage; }
 		public void setMessage(String message) { iMessage = message; }
@@ -888,28 +902,51 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public void setCode(String code) { iCode = code; }
 		
 		@Override
-		public String toString() { return getCourse() + ": " + getMessage(); }
+		public String toString() { return (hasCourse() ? getCourse() + ": " : "") + getMessage(); }
 		
 		@Override
-		public int hashCode() { return (getCourse() + ":" + getCode()).hashCode(); }
+		public int hashCode() { return (hasCourse() ? getCourse() + ":" + getCode() : getCode()).hashCode(); }
+		
+		protected int compare(int x, int y) {
+			return (x < y) ? -1 : ((x == y) ? 0 : 1);
+		}
 
 		@Override
 		public int compareTo(CourseMessage m) {
-			int cmp = getCourse().compareTo(m.getCourse());
+			int cmp = compare(getConfirm(), m.getConfirm());
 			if (cmp != 0) return cmp;
+			cmp = compare(getOrder(), m.getOrder());
+			if (cmp != 0) return cmp;
+			if (hasCourse() != m.hasCourse()) return (hasCourse() ? -1 : 1);
+			if (hasCourse()) {
+				cmp = getCourse().compareTo(m.getCourse());
+				if (cmp != 0) return cmp;
+			}
 			return getCode().compareTo(m.getCode());
 		}
 	}
 	
-	public void addConfirmationMessage(Long courseId, String course, String code, String message, boolean error, boolean confirm) {
+	public void addConfirmationError(Long courseId, String course, String code, String message) {
 		if (iConfirmations == null) iConfirmations = new ArrayList<CourseMessage>();
 		CourseMessage m = new CourseMessage();
 		m.setCourseId(courseId);
 		m.setCourse(course);
 		m.setCode(code);
 		m.setMessage(message);
-		m.setError(error);
-		m.setConfirm(confirm);
+		m.setError(true);
+		m.setConfirm(null);
+		iConfirmations.add(m);
+	}
+	
+	public void addConfirmationMessage(Long courseId, String course, String code, String message) {
+		if (iConfirmations == null) iConfirmations = new ArrayList<CourseMessage>();
+		CourseMessage m = new CourseMessage();
+		m.setCourseId(courseId);
+		m.setCourse(course);
+		m.setCode(code);
+		m.setMessage(message);
+		m.setError(false);
+		m.setConfirm(null);
 		iConfirmations.add(m);
 	}
 }
