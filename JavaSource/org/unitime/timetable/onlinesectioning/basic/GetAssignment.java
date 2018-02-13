@@ -641,7 +641,6 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 					lastRequest = r;
 					lastRequestPriority = cd.getPriority();
 				}
-				action.addRequest(OnlineSectioningHelper.toProto(cd));
 			}
 			ret.setRequest(request);
 		}
