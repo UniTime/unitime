@@ -80,7 +80,39 @@
             type="java.lang.Integer"
             not-null="true"
             length="10"/>
-
+        
+        <property
+            name="maxCredit"
+            column="max_credit"
+            type="java.lang.Float"
+            not-null="false"/>
+        
+        <property
+            name="overrideMaxCredit"
+            column="req_credit"
+            type="java.lang.Float"
+            not-null="false"/>
+        
+        <property
+            name="overrideStatus"
+            column="req_status"
+            type="java.lang.Integer"
+            not-null="false"
+            length="10"/>
+        
+        <property
+            name="overrideExternalId"
+            column="req_extid"
+            type="java.lang.String"
+            not-null="false"
+            length="40"/>
+        
+		<property
+            name="overrideTimeStamp"
+            column="req_ts"
+            type="java.util.Date"
+            not-null="false"/>
+        
         <many-to-one
             name="session"
             class="Session"

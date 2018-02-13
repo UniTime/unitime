@@ -452,6 +452,16 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 			helper.getHibSession().delete(cd);
 		}
 		
+		student.setMaxCredit(request.getMaxCredit());
+		student.setOverrideExternalId(request.getMaxCreditOverrideExternalId());
+		student.setOverrideTimeStamp(request.getMaxCreditOverrideTimeStamp());
+		student.setMaxCreditOverrideStatus(
+			RequestedCourseStatus.OVERRIDE_APPROVED == request.getMaxCreditOverrideStatus() ? CourseRequestOverrideStatus.APPROVED :
+			RequestedCourseStatus.OVERRIDE_PENDING == request.getMaxCreditOverrideStatus() ? CourseRequestOverrideStatus.PENDING :
+			RequestedCourseStatus.OVERRIDE_CANCELLED == request.getMaxCreditOverrideStatus() ? CourseRequestOverrideStatus.CANCELLED :
+			RequestedCourseStatus.OVERRIDE_REJECTED == request.getMaxCreditOverrideStatus() ? CourseRequestOverrideStatus.REJECTED : null);
+		student.setOverrideMaxCredit(request.getMaxCreditOverride());
+		
 		helper.getHibSession().saveOrUpdate(student);
 		helper.getHibSession().flush();
 		

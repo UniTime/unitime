@@ -272,6 +272,10 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 								}
 							}
 						}
+						if (student.isMaxCreditOverridePending()) {
+							if (nrCourses == nrCoursesTot) { gOvrNeed ++; ovrNeed ++; }
+							gtOvrNeed ++; tOvrNeed ++;
+						}
 
 						Collections.sort(mins);
 						Collections.sort(maxs);

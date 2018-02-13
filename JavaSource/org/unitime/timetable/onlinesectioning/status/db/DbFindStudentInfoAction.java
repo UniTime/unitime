@@ -256,6 +256,10 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 						minTot += minsTot.get(i);
 						maxTot += maxsTot.get(maxsTot.size() - i - 1);
 					}
+					if (student.isRequestPending()) {
+						if (nrCourses == nrCoursesTot) { gOvrNeed ++; ovrNeed ++; }
+						gtOvrNeed ++; tOvrNeed ++;
+					}
 					s.setRequestCredit(min, max);
 					s.setTotalRequestCredit(minTot, maxTot);
 					s.setTotalEnrollment(tEnrl);

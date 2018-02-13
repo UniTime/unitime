@@ -1887,6 +1887,23 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		request.setAcademicSessionId(student.getSession().getUniqueId());
 		request.setStudentId(student.getUniqueId());
 		request.setSaved(true);
+		request.setMaxCredit(student.getMaxCredit());
+		if (student.getOverrideMaxCredit() != null) {
+			request.setMaxCreditOverride(student.getOverrideMaxCredit());
+			request.setMaxCreditOverrideExternalId(student.getOverrideExternalId());
+			request.setMaxCreditOverrideTimeStamp(student.getOverrideTimeStamp());
+			Integer status = student.getOverrideStatus();
+			if (status == null)
+				request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_PENDING);
+			else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.APPROVED.ordinal())
+				request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_APPROVED);
+			else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.REJECTED.ordinal())
+				request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
+			else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.CANCELLED.ordinal())
+				request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_CANCELLED);
+			else
+				request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_PENDING);
+		}
 		Set<Long> courseIds = new HashSet<Long>();
 		if (!student.getCourseDemands().isEmpty()) {
 			TreeSet<CourseDemand> demands = new TreeSet<CourseDemand>(new Comparator<CourseDemand>() {

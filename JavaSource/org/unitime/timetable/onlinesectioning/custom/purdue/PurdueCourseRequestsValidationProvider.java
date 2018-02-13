@@ -730,10 +730,12 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				helper.debug("Status: " + gson.toJson(status));
 			helper.getAction().addOptionBuilder().setKey("status_response").setValue(gson.toJson(status));
 			
-			if (status != null && status.data != null)
+			if (status != null && status.data != null) {
 				maxCredit = status.data.maxCredit;
+				request.setMaxCredit(status.data.maxCredit);
+			}
 			if (maxCredit == null) maxCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"));
-
+			
 			if (status != null && status.data != null && status.data.requests != null) {
 				for (SpecialRegistrationRequest r: status.data.requests) {
 					if (RequestStatus.inProgress.name().equals(r.status) && r.changes != null)
@@ -988,6 +990,19 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 									}
 							}
 						}
+					if (req.maxCredit != null) {
+						for (SpecialRegistrationRequest r: response.data) {
+							if (r.maxCredit != null) {
+								request.setMaxCreditOverride(r.maxCredit);
+								request.setMaxCreditOverrideExternalId(r.requestId);
+								request.setMaxCreditOverrideTimeStamp(r.dateCreated == null ? null : r.dateCreated.toDate());
+								request.setMaxCreditOverrideStatus(RequestStatus.approved.name().equals(r.status) ? RequestedCourseStatus.OVERRIDE_APPROVED :
+									RequestStatus.denied.name().equals(r.status) ?  RequestedCourseStatus.OVERRIDE_REJECTED :
+									RequestStatus.cancelled.name().equals(r.status) ? RequestedCourseStatus.OVERRIDE_CANCELLED : RequestedCourseStatus.OVERRIDE_PENDING);
+								break;
+							}
+						}
+					}
 				}
 			} catch (SectioningException e) {
 				helper.getAction().setApiException(e.getMessage());
@@ -1131,7 +1146,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					if (rc.getOverrideExternalId() != null)
 						rcs.put(rc.getOverrideExternalId(), rc);
 		}
-		if (rcs.isEmpty() && request.getCredit() <= Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"))) return;
+		if (rcs.isEmpty() && !request.hasMaxCreditOverride()) return;
 		
 		ClientResource resource = null;
 		try {
@@ -1164,13 +1179,27 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			helper.getAction().addOptionBuilder().setKey("status_response").setValue(gson.toJson(status));
 			
 			Float maxCredit = null;
-			if (status != null && status.data != null)
+			if (status != null && status.data != null) {
 				maxCredit = status.data.maxCredit;
+				request.setMaxCredit(status.data.maxCredit);
+			}
 			if (maxCredit == null) maxCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"));
 			
 			if (status != null && status.data != null && status.data.requests != null) {
 				for (SpecialRegistrationRequest r: status.data.requests) {
 					if (r.requestId == null) continue;
+					if (r.requestId.equals(request.getMaxCreditOverrideExternalId())) {
+						if (RequestStatus.denied.name().equals(r.status))
+							request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
+						else if (RequestStatus.approved.name().equals(r.status))
+							request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_APPROVED);
+						else if (RequestStatus.cancelled.name().equals(r.status))
+							request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_CANCELLED);
+						else
+							request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_PENDING);
+						if (r.maxCredit != null)
+							request.setMaxCreditOverride(r.maxCredit);
+					}
 					RequestedCourse rc = rcs.get(r.requestId);
 					if (rc == null) continue;
 					if (rc.getStatus() != RequestedCourseStatus.ENROLLED) {
@@ -1302,10 +1331,59 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				}
 			}
 			
-			if (changed)
-				helper.getHibSession().flush();
-			
-			return changed;
+			boolean studentChanged = false;
+			if (status.data.maxCredit != null && !status.data.maxCredit.equals(student.getMaxCredit())) {
+				student.setMaxCredit(status.data.maxCredit);
+				studentChanged = true;
+			}
+			if (student.getOverrideExternalId() != null) {
+				SpecialRegistrationRequest req = null;
+				for (SpecialRegistrationRequest r: status.data.requests) {
+					if (student.getOverrideExternalId().equals(r.requestId)) { req = r; break; }
+				}
+				if (req == null) {
+					student.setOverrideExternalId(null);
+					student.setOverrideMaxCredit(null);
+					student.setOverrideStatus(null);
+					student.setOverrideTimeStamp(null);
+					studentChanged = true;
+				} else {
+					Integer oldStatus = student.getOverrideStatus();
+					if (RequestStatus.denied.name().equals(req.status))
+						student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.REJECTED);
+					else if (RequestStatus.approved.name().equals(req.status))
+						student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.APPROVED);
+					else if (RequestStatus.cancelled.name().equals(req.status))
+						student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.CANCELLED);
+					else
+						student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.PENDING);
+					if (oldStatus == null || !oldStatus.equals(student.getOverrideStatus()))
+						studentChanged = true;
+				}
+			} else {
+				SpecialRegistrationRequest req = null;
+				for (SpecialRegistrationRequest r: status.data.requests) {
+					if (r.requestId == null || r.maxCredit == null) continue;
+					if (req == null || r.dateCreated.isAfter(req.dateCreated)) req = r;
+				}
+				if (req != null) {
+					student.setOverrideExternalId(req.requestId);
+					student.setOverrideMaxCredit(req.maxCredit);
+					if (RequestStatus.denied.name().equals(req.status))
+						student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.REJECTED);
+					else if (RequestStatus.approved.name().equals(req.status))
+						student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.APPROVED);
+					else if (RequestStatus.cancelled.name().equals(req.status))
+						student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.CANCELLED);
+					else
+						student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.PENDING);
+					student.setOverrideTimeStamp(req.dateCreated.toDate());
+					studentChanged = true;
+				}
+			}
+			if (studentChanged) helper.getHibSession().update(student);
+						
+			return changed || studentChanged;
 		} catch (SectioningException e) {
 			action.setApiException(e.getMessage());
 			throw (SectioningException)e;

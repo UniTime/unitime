@@ -52,6 +52,7 @@ import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentNote;
+import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
 /**
@@ -69,6 +70,8 @@ public class XStudent extends XStudentId implements Externalizable {
     private Date iEmailTimeStamp = null;
     private List<XInstructorAssignment> iInstructorAssignments = new ArrayList<XInstructorAssignment>();
     private XStudentNote iLastNote = null;
+    private Float iMaxCredit = null;
+    private XOverride iMaxCreditOverride = null;
 
     public XStudent() {
     	super();
@@ -143,6 +146,10 @@ public class XStudent extends XStudentId implements Externalizable {
             }
         if (note != null)
         	iLastNote = new XStudentNote(note);
+        
+        iMaxCredit = student.getMaxCredit();
+        if (student.getOverrideMaxCredit() != null)
+        	iMaxCreditOverride = new XOverride(student.getOverrideExternalId(), student.getOverrideTimeStamp(), student.getOverrideStatus(), student.getOverrideMaxCredit());
     }
     
     public XStudent(XStudent student) {
@@ -164,6 +171,8 @@ public class XStudent extends XStudentId implements Externalizable {
     	iMajors.addAll(student.getMajors());
     	iGroups.addAll(student.getGroups());
     	iAccomodations.addAll(student.getAccomodations());
+    	iMaxCredit = student.getMaxCredit();
+    	iMaxCreditOverride = student.getMaxCreditOverride();
 
     	if (demands != null)
         	for (CourseDemand cd: demands) {
@@ -237,6 +246,13 @@ public class XStudent extends XStudentId implements Externalizable {
     		if (request instanceof XCourseRequest && ((XCourseRequest)request).hasCourse(courseId))
     			return (XCourseRequest)request;
     	return null;
+    }
+    
+    public Float getMaxCredit() { return iMaxCredit; }
+    public boolean hasMaxCredit() { return iMaxCredit != null; }
+    public XOverride getMaxCreditOverride() { return iMaxCreditOverride; }
+    public boolean isMaxCreditOverridePending() {
+    	return (iMaxCreditOverride == null || iMaxCreditOverride.getStatus() == null ? false : iMaxCreditOverride.getStatus().intValue() == CourseRequestOverrideStatus.PENDING.ordinal());
     }
 
     /**

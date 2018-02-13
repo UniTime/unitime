@@ -53,6 +53,11 @@ public abstract class BaseStudent implements Serializable {
 	private String iEmail;
 	private Integer iFreeTimeCategory;
 	private Integer iSchedulePreference;
+	private Float iMaxCredit;
+	private Float iOverrideMaxCredit;
+	private Integer iOverrideStatus;
+	private String iOverrideExternalId;
+	private Date iOverrideTimeStamp;
 	private Date iScheduleEmailedDate;
 
 	private Session iSession;
@@ -76,6 +81,11 @@ public abstract class BaseStudent implements Serializable {
 	public static String PROP_EMAIL = "email";
 	public static String PROP_FREE_TIME_CAT = "freeTimeCategory";
 	public static String PROP_SCHEDULE_PREFERENCE = "schedulePreference";
+	public static String PROP_MAX_CREDIT = "maxCredit";
+	public static String PROP_REQ_CREDIT = "overrideMaxCredit";
+	public static String PROP_REQ_STATUS = "overrideStatus";
+	public static String PROP_REQ_EXTID = "overrideExternalId";
+	public static String PROP_REQ_TS = "overrideTimeStamp";
 	public static String PROP_SCHEDULE_EMAILED = "scheduleEmailedDate";
 
 	public BaseStudent() {
@@ -112,6 +122,21 @@ public abstract class BaseStudent implements Serializable {
 
 	public Integer getSchedulePreference() { return iSchedulePreference; }
 	public void setSchedulePreference(Integer schedulePreference) { iSchedulePreference = schedulePreference; }
+
+	public Float getMaxCredit() { return iMaxCredit; }
+	public void setMaxCredit(Float maxCredit) { iMaxCredit = maxCredit; }
+
+	public Float getOverrideMaxCredit() { return iOverrideMaxCredit; }
+	public void setOverrideMaxCredit(Float overrideMaxCredit) { iOverrideMaxCredit = overrideMaxCredit; }
+
+	public Integer getOverrideStatus() { return iOverrideStatus; }
+	public void setOverrideStatus(Integer overrideStatus) { iOverrideStatus = overrideStatus; }
+
+	public String getOverrideExternalId() { return iOverrideExternalId; }
+	public void setOverrideExternalId(String overrideExternalId) { iOverrideExternalId = overrideExternalId; }
+
+	public Date getOverrideTimeStamp() { return iOverrideTimeStamp; }
+	public void setOverrideTimeStamp(Date overrideTimeStamp) { iOverrideTimeStamp = overrideTimeStamp; }
 
 	public Date getScheduleEmailedDate() { return iScheduleEmailedDate; }
 	public void setScheduleEmailedDate(Date scheduleEmailedDate) { iScheduleEmailedDate = scheduleEmailedDate; }
@@ -214,7 +239,12 @@ public abstract class BaseStudent implements Serializable {
 			"\n	FirstName: " + getFirstName() +
 			"\n	FreeTimeCategory: " + getFreeTimeCategory() +
 			"\n	LastName: " + getLastName() +
+			"\n	MaxCredit: " + getMaxCredit() +
 			"\n	MiddleName: " + getMiddleName() +
+			"\n	OverrideExternalId: " + getOverrideExternalId() +
+			"\n	OverrideMaxCredit: " + getOverrideMaxCredit() +
+			"\n	OverrideStatus: " + getOverrideStatus() +
+			"\n	OverrideTimeStamp: " + getOverrideTimeStamp() +
 			"\n	ScheduleEmailedDate: " + getScheduleEmailedDate() +
 			"\n	SchedulePreference: " + getSchedulePreference() +
 			"\n	SectioningStatus: " + getSectioningStatus() +

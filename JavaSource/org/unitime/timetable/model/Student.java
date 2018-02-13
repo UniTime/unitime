@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.hibernate.Query;
+import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.base.BaseStudent;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -257,4 +258,29 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
 	public String getQualifierLabel() {
 		return NameFormat.LAST_FIRST_MIDDLE.format(this);
 	}
+	
+	public CourseRequestOverrideStatus getMaxCreditOverrideStatus() {
+    	if (getOverrideStatus() == null) return CourseRequestOverrideStatus.APPROVED;
+    	return CourseRequestOverrideStatus.values()[getOverrideStatus()];
+    }
+    
+    public void setMaxCreditOverrideStatus(CourseRequestOverrideStatus status) {
+    	setOverrideStatus(status == null ? null : new Integer(status.ordinal()));
+    }
+    
+    public boolean isRequestApproved() {
+    	return getOverrideStatus() == null || getOverrideStatus().intValue() == CourseRequestOverrideStatus.APPROVED.ordinal();
+    }
+    
+    public boolean isRequestPending() {
+    	return getOverrideStatus() != null && getOverrideStatus().intValue() == CourseRequestOverrideStatus.PENDING.ordinal();
+    }
+    
+    public boolean isRequestCancelled() {
+    	return getOverrideStatus() != null && getOverrideStatus().intValue() == CourseRequestOverrideStatus.CANCELLED.ordinal();
+    }
+    
+    public boolean isRequestRejected() {
+    	return getOverrideStatus() != null && getOverrideStatus().intValue() == CourseRequestOverrideStatus.REJECTED.ordinal();
+    }
 }

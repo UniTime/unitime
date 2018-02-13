@@ -39,11 +39,17 @@ public class XOverride implements Serializable, Externalizable {
 	private String iExternalId = null;
 	private Date iTimeStamp = null;
 	private Integer iStatus = null;
+	private Float iValue = null;
 	
-	public XOverride(String externalId, Date timeStamp, Integer status) {
+	public XOverride(String externalId, Date timeStamp, Integer status, Float value) {
 		iExternalId = externalId;
 		iTimeStamp = timeStamp;
 		iStatus = status;
+		iValue = value;
+	}
+	
+	public XOverride(String externalId, Date timeStamp, Integer status) {
+		this(externalId, timeStamp, status, null);
 	}
 	
 	public XOverride(ObjectInput in) throws IOException, ClassNotFoundException {
@@ -55,6 +61,8 @@ public class XOverride implements Serializable, Externalizable {
 	public Date getTimeStamp() { return iTimeStamp; }
 	
 	public Integer getStatus() { return iStatus; }
+	
+	public Float getValue() { return iValue; }
 
 	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
@@ -62,6 +70,7 @@ public class XOverride implements Serializable, Externalizable {
 		iTimeStamp = (in.readBoolean() ? new Date(in.readLong()) : null);
 		int status = in.readInt();
 		iStatus = (status < 0 ? null : new Integer(status));
+		iValue = (in.readBoolean() ? new Float(in.readFloat()) : null);
 	}
 
 	@Override
@@ -71,6 +80,9 @@ public class XOverride implements Serializable, Externalizable {
 		if (iTimeStamp != null)
 			out.writeLong(iTimeStamp.getTime());
 		out.writeInt(iStatus == null ? -1 : iStatus.intValue());
+		out.writeBoolean(iValue != null);
+		if (iValue != null)
+			out.writeFloat(iValue);
 	}
 	
 	public static class XOverrideSerializer implements Externalizer<XOverride> {

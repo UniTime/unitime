@@ -50,6 +50,11 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	private Boolean iUpdateLastRequest = null;
 	private RequestedCourse iLastCourse = null;
 	private List<CourseMessage> iConfirmations = null;
+	private Float iMaxCredit = null;
+	private Float iMaxCreditOverride = null;
+	private RequestedCourseStatus iMaxCreditOverrideStatus = null;
+	private String iMaxCreditOverrideExternalId = null;
+	private Date iMaxCreditOverrideTimeStamp = null;
 	
 	public CourseRequestInterface() {}
 
@@ -89,6 +94,19 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	public boolean isEmpty() {
 		return iCourses.isEmpty() && iAlternatives.isEmpty();
 	}
+	
+	public boolean hasMaxCredit() { return iMaxCredit != null; }
+	public void setMaxCredit(Float maxCredit) { iMaxCredit = maxCredit; }
+	public Float getMaxCredit() { return iMaxCredit; }
+	public boolean hasMaxCreditOverride() { return iMaxCreditOverride != null; }
+	public void setMaxCreditOverride(Float maxCreditOverride) { iMaxCreditOverride = maxCreditOverride; }
+	public Float getMaxCreditOverride() { return iMaxCreditOverride; }
+	public void setMaxCreditOverrideStatus(RequestedCourseStatus status) { iMaxCreditOverrideStatus = status; }
+	public RequestedCourseStatus getMaxCreditOverrideStatus() { return iMaxCreditOverrideStatus; }
+	public void setMaxCreditOverrideExternalId(String externalId) { iMaxCreditOverrideExternalId = externalId; }
+	public String getMaxCreditOverrideExternalId() { return iMaxCreditOverrideExternalId; }
+	public void setMaxCreditOverrideTimeStamp(Date timeStamp) { iMaxCreditOverrideTimeStamp = timeStamp; }
+	public Date getMaxCreditOverrideTimeStamp() { return iMaxCreditOverrideTimeStamp; }
 	
 	public boolean addCourse(RequestedCourse course) {
 		iLastCourse = course;

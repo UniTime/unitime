@@ -572,6 +572,23 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 			request.setStudentId(student.getStudentId());
 			request.setSaved(true);
 			request.setAcademicSessionId(server.getAcademicSession().getUniqueId());
+			request.setMaxCredit(student.getMaxCredit());
+			if (student.getMaxCreditOverride() != null) {
+				request.setMaxCreditOverride(student.getMaxCreditOverride().getValue());
+				request.setMaxCreditOverrideExternalId(student.getMaxCreditOverride().getExternalId());
+				request.setMaxCreditOverrideTimeStamp(student.getMaxCreditOverride().getTimeStamp());
+				Integer status = student.getMaxCreditOverride().getStatus();
+				if (status == null)
+					request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_PENDING);
+				else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.APPROVED.ordinal())
+					request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_APPROVED);
+				else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.REJECTED.ordinal())
+					request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
+				else if (status == org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus.CANCELLED.ordinal())
+					request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_CANCELLED);
+				else
+					request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_PENDING);
+			}
 			CourseRequestInterface.Request lastRequest = null;
 			int lastRequestPriority = -1;
 			for (XRequest cd: studentRequests) {
