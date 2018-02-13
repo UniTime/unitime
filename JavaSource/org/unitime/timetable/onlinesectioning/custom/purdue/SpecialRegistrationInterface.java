@@ -42,6 +42,7 @@ public class SpecialRegistrationInterface {
 		public String requestorId;
 		public String requestorRole;
 		public List<CourseCredit> courseCreditHrs;
+		public List<CourseCredit> alternateCourseCreditHrs;
 	}
 	
 	public static enum RequestStatus {
@@ -141,6 +142,8 @@ public class SpecialRegistrationInterface {
 	public static class CourseCredit {
 		public String subject;
 		public String courseNbr;
+		public String title;
 		public Float creditHrs;
+		public List<CourseCredit> alternatives;
 	}
 }
