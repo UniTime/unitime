@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
+import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentMap;
 import org.cpsolver.studentsct.extension.DistanceConflict;
@@ -70,8 +71,12 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesRespo
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CourseMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
+import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
+import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
+import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -102,6 +107,7 @@ import org.unitime.timetable.onlinesectioning.model.XReservationType;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
+import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.Formats.Format;
@@ -1104,27 +1110,61 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			}
 		}
 		
-		Map<XSection, XCourseId> singleSections = new HashMap<XSection, XCourseId>();
-		for (XRequest r: original.getRequests()) {
-			if (r.isAlternative()) continue; // no alternate course requests
-			if (r instanceof XCourseRequest) {
-				XCourseRequest cr = (XCourseRequest)r;
-				for (XCourseId course: cr.getCourseIds()) {
-					XOffering offering = server.getOffering(course.getOfferingId());
-					if (offering != null && offering.getConfigs().size() == 1) { // take only single config courses
-						for (XSubpart subpart: offering.getConfigs().get(0).getSubparts()) {
-							if (subpart.getSections().size() == 1) { // take only single section subparts
-								XSection section = subpart.getSections().get(0);
-								for (XSection other: singleSections.keySet()) {
-									if (section.isOverlapping(offering.getDistributions(), other)) {
-										request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "OVERLAP",
-												ApplicationProperties.getProperty("purdue.specreg.messages.courseOverlaps", "Conflists with {other}.").replace("{course}", course.getCourseName()).replace("{other}", singleSections.get(other).getCourseName()),
-												false, false);
+		if (server instanceof DatabaseServer) {
+			Map<Class_, XCourseId> singleSections = new HashMap<Class_, XCourseId>();
+			for (XRequest r: original.getRequests()) {
+				if (r.isAlternative()) continue; // no alternate course requests
+				if (r instanceof XCourseRequest) {
+					XCourseRequest cr = (XCourseRequest)r;
+					for (XCourseId course: cr.getCourseIds()) {
+						InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(course.getOfferingId(), helper.getHibSession());
+						if (offering != null && offering.getInstrOfferingConfigs().size() == 1) { // take only single config courses
+							for (SchedulingSubpart subpart: offering.getInstrOfferingConfigs().iterator().next().getSchedulingSubparts()) {
+								if (subpart.getClasses().size() == 1) { // take only single section subparts
+									Class_ clazz = subpart.getClasses().iterator().next();
+									if (clazz.getCommittedAssignment() != null) {
+										TimeLocation time = clazz.getCommittedAssignment().getTimeLocation();
+										for (Class_ other: singleSections.keySet()) {
+											if (other.getCommittedAssignment().getTimeLocation().hasIntersection(time) && !clazz.isToIgnoreStudentConflictsWith(other)){
+												request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "OVERLAP",
+														ApplicationProperties.getProperty("purdue.specreg.messages.courseOverlaps", "Conflists with {other}.").replace("{course}", course.getCourseName()).replace("{other}", singleSections.get(other).getCourseName()),
+														false, false);
+											}
+										}
+										if (cr.getCourseIds().size() == 1) {
+											// remember section when there are no alternative courses provided
+											singleSections.put(clazz, course);
+										}
 									}
 								}
-								if (cr.getCourseIds().size() == 1) {
-									// remember section when there are no alternative courses provided
-									singleSections.put(section, course);
+							}
+						}
+					}
+				}
+			}
+		} else {
+			Map<XSection, XCourseId> singleSections = new HashMap<XSection, XCourseId>();
+			for (XRequest r: original.getRequests()) {
+				if (r.isAlternative()) continue; // no alternate course requests
+				if (r instanceof XCourseRequest) {
+					XCourseRequest cr = (XCourseRequest)r;
+					for (XCourseId course: cr.getCourseIds()) {
+						XOffering offering = server.getOffering(course.getOfferingId());
+						if (offering != null && offering.getConfigs().size() == 1) { // take only single config courses
+							for (XSubpart subpart: offering.getConfigs().get(0).getSubparts()) {
+								if (subpart.getSections().size() == 1) { // take only single section subparts
+									XSection section = subpart.getSections().get(0);
+									for (XSection other: singleSections.keySet()) {
+										if (section.isOverlapping(offering.getDistributions(), other)) {
+											request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "OVERLAP",
+													ApplicationProperties.getProperty("purdue.specreg.messages.courseOverlaps", "Conflists with {other}.").replace("{course}", course.getCourseName()).replace("{other}", singleSections.get(other).getCourseName()),
+													false, false);
+										}
+									}
+									if (cr.getCourseIds().size() == 1) {
+										// remember section when there are no alternative courses provided
+										singleSections.put(section, course);
+									}
 								}
 							}
 						}
