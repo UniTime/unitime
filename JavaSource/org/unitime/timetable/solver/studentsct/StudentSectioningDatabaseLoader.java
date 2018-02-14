@@ -706,7 +706,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 				.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
 		long c0 = OnlineSectioningHelper.getCpuTime();
 		try {
-        	if (iValidationProvider.updateStudent(null, new OnlineSectioningHelper(hibSession, user), s, OnlineSectioningLog.Action.newBuilder())) {
+        	if (iValidationProvider.updateStudent(null, new OnlineSectioningHelper(hibSession, user), s, action)) {
         		iUpdatedStudents.add(s.getUniqueId());
         		action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
         	} else {

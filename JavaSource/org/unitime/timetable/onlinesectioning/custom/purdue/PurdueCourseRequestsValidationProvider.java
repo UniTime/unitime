@@ -1440,6 +1440,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				}
 			}
 			if (studentChanged) helper.getHibSession().update(student);
+			
+			if (changed || studentChanged) helper.getHibSession().flush();
 						
 			return changed || studentChanged;
 		} catch (SectioningException e) {
