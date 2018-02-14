@@ -1101,6 +1101,12 @@
 					<hasPermission name="StudentSchedulingStatusTypes"/>
 				</condition>
 			</item>
+			<item name="Student Group Types" page="admin" type="gwt">
+				<parameter name="type">stdgrtypes</parameter>
+				<condition>
+					<hasPermission name="StudentGroupTypes"/>
+				</condition>
+			</item>
 			<item name="Examination Types" page="admin" type="gwt">
 				<parameter name="type">examType</parameter>
 				<condition>

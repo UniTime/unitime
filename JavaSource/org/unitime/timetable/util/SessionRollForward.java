@@ -3166,6 +3166,7 @@ public class SessionRollForward {
 				group.setGroupAbbreviation(fromReservation.getGroup().getGroupAbbreviation());
 				group.setGroupName(fromReservation.getGroup().getGroupName());
 				group.setExpectedSize(fromReservation.getGroup().getExpectedSize());
+				group.setType(fromReservation.getGroup().getType());
 				StudentGroupDAO.getInstance().getSession().save(group);
 				groups.put(group.getGroupAbbreviation(), group);
 			} else {

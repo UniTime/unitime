@@ -192,7 +192,8 @@ public interface StudentCourseDemands {
 			else if (cnt > 1)
 				iWeight = (float) Math.pow(rule, 1.0 / cnt);
 			for (StudentGroup g: student.getGroups())
-				iGroups.add(new Group(g.getUniqueId(), g.getGroupAbbreviation()));
+				if (g.getType() == null || g.getType().isKeepTogether())
+					iGroups.add(new Group(g.getUniqueId(), g.getGroupAbbreviation()));
 		}
 		
 		public WeightedStudentId(Long studentId, CurriculumClassification cc, ProjectionsProvider projections) {

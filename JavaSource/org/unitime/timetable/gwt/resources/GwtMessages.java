@@ -3580,6 +3580,14 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageStudentAdvisors();
 	
+	@DefaultMessage("Student Group Type")
+	@DoNotTranslate
+	String pageStudentGroupType();
+	
+	@DefaultMessage("Student Group Types")
+	@DoNotTranslate
+	String pageStudentGroupTypes();
+	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	
@@ -3594,6 +3602,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("No Type")
 	String itemNoFeatureType();
+	
+	@DefaultMessage("No Type")
+	String itemNoStudentGroupType();
 
 	@DefaultMessage("Add Meetings...")
 	String dialogAddMeetings();
@@ -4514,6 +4525,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Title")
 	String fieldAcademicTitle();
+	
+	@DefaultMessage("Keep Students Together")
+	String fieldKeepTogether();
+	
+	@DefaultMessage("Type")
+	String fieldStudentGroupType();
 	
 	@DefaultMessage("Assistant")
 	String toggleAccess();

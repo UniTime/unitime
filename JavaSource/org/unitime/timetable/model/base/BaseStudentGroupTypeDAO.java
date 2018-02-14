@@ -19,36 +19,24 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.util.List;
-
-import org.unitime.timetable.model.StudentGroup;
+import org.unitime.timetable.model.StudentGroupType;
 import org.unitime.timetable.model.dao._RootDAO;
-import org.unitime.timetable.model.dao.StudentGroupDAO;
+import org.unitime.timetable.model.dao.StudentGroupTypeDAO;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public abstract class BaseStudentGroupDAO extends _RootDAO<StudentGroup,Long> {
+public abstract class BaseStudentGroupTypeDAO extends _RootDAO<StudentGroupType,Long> {
 
-	private static StudentGroupDAO sInstance;
+	private static StudentGroupTypeDAO sInstance;
 
-	public static StudentGroupDAO getInstance() {
-		if (sInstance == null) sInstance = new StudentGroupDAO();
+	public static StudentGroupTypeDAO getInstance() {
+		if (sInstance == null) sInstance = new StudentGroupTypeDAO();
 		return sInstance;
 	}
 
-	public Class<StudentGroup> getReferenceClass() {
-		return StudentGroup.class;
-	}
-
-	@SuppressWarnings("unchecked")
-	public List<StudentGroup> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from StudentGroup x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
-	}
-
-	@SuppressWarnings("unchecked")
-	public List<StudentGroup> findByType(org.hibernate.Session hibSession, Long typeId) {
-		return hibSession.createQuery("from StudentGroup x where x.type.uniqueId = :typeId").setLong("typeId", typeId).list();
+	public Class<StudentGroupType> getReferenceClass() {
+		return StudentGroupType.class;
 	}
 }

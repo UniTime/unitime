@@ -1308,6 +1308,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     public void loadRequestGroups(Student student, org.unitime.timetable.model.Student s) {
         for (StudentGroup g: s.getGroups()) {
         	if (iRequestGroupRegExp != null && !iRequestGroupRegExp.isEmpty() && !g.getGroupName().matches(iRequestGroupRegExp)) continue;
+        	if (g.getType() != null && !g.getType().isKeepTogether()) continue;
         	for (Request r: student.getRequests()) {
         		if (r instanceof CourseRequest) {
         			CourseRequest cr = (CourseRequest)r;

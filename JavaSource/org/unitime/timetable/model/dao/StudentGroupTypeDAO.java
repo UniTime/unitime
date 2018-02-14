@@ -1,4 +1,4 @@
-<!-- 
+/*
  * Licensed to The Apereo Foundation under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
  * additional information regarding copyright ownership.
@@ -16,18 +16,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- -->
+*/
+package org.unitime.timetable.model.dao;
 
-<!ELEMENT studentGroups ( studentGroup+ ) >
-<!ATTLIST studentGroups campus CDATA #REQUIRED >
-<!ATTLIST studentGroups term CDATA #REQUIRED >
-<!ATTLIST studentGroups year CDATA #REQUIRED >
+import org.unitime.timetable.model.base.BaseStudentGroupTypeDAO;
 
-<!ELEMENT studentGroup EMPTY >
-<!ATTLIST studentGroup externalId CDATA #IMPLIED >
-<!ATTLIST studentGroup code CDATA #REQUIRED >
-<!ATTLIST studentGroup name CDATA #REQUIRED >
-<!ATTLIST studentGroup size CDATA #IMPLIED >
-<!ATTLIST studentGroup type CDATA #IMPLIED >
+public class StudentGroupTypeDAO extends BaseStudentGroupTypeDAO {
 
+	public StudentGroupTypeDAO() {}
 
+}

@@ -1,4 +1,4 @@
-<!-- 
+/*
  * Licensed to The Apereo Foundation under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
  * additional information regarding copyright ownership.
@@ -16,18 +16,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- -->
+*/
+package org.unitime.timetable.model;
 
-<!ELEMENT studentGroups ( studentGroup+ ) >
-<!ATTLIST studentGroups campus CDATA #REQUIRED >
-<!ATTLIST studentGroups term CDATA #REQUIRED >
-<!ATTLIST studentGroups year CDATA #REQUIRED >
+import org.unitime.timetable.model.base.BaseStudentGroupType;
+import org.unitime.timetable.model.dao.StudentGroupTypeDAO;
 
-<!ELEMENT studentGroup EMPTY >
-<!ATTLIST studentGroup externalId CDATA #IMPLIED >
-<!ATTLIST studentGroup code CDATA #REQUIRED >
-<!ATTLIST studentGroup name CDATA #REQUIRED >
-<!ATTLIST studentGroup size CDATA #IMPLIED >
-<!ATTLIST studentGroup type CDATA #IMPLIED >
+public class StudentGroupType extends BaseStudentGroupType {
+	private static final long serialVersionUID = 1L;
 
+	public StudentGroupType() {
+		super();
+	}
+	
+	public static StudentGroupType findByReference(String reference, org.hibernate.Session hibSession) {
+		return (StudentGroupType)(hibSession == null ? StudentGroupTypeDAO.getInstance().getSession() : hibSession).createQuery(
+				"from StudentGroupType where reference = :reference"
+				).setString("reference", reference).setMaxResults(1).setCacheable(true).uniqueResult();
+	}
 
+}

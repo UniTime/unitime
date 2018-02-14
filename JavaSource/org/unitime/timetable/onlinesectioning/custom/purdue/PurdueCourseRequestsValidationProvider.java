@@ -460,7 +460,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 									if (section.isOverlapping(other)) {
 										boolean confirm = (original.getRequestForCourse(course.getId()) == null || original.getRequestForCourse(singleSections.get(other).getId()) == null) && (cr.getCourses().size() == 1);
 										response.addMessage(course.getId(), course.getName(), "OVERLAP",
-												ApplicationProperties.getProperty("purdue.specreg.messages.courseOverlaps", "Conflists with {other}.").replace("{course}", course.getName()).replace("{other}", singleSections.get(other).getName()),
+												ApplicationProperties.getProperty("purdue.specreg.messages.courseOverlaps", "Conflicts with {other}.").replace("{course}", course.getName()).replace("{other}", singleSections.get(other).getName()),
 												confirm ? CONF_UNITIME : CONF_NONE);
 										if (confirm) questionTimeConflict = true;
 									}
@@ -1144,7 +1144,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 										for (Class_ other: singleSections.keySet()) {
 											if (other.getCommittedAssignment().getTimeLocation().hasIntersection(time) && !clazz.isToIgnoreStudentConflictsWith(other)){
 												request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "OVERLAP",
-														ApplicationProperties.getProperty("purdue.specreg.messages.courseOverlaps", "Conflists with {other}.").replace("{course}", course.getCourseName()).replace("{other}", singleSections.get(other).getCourseName()));
+														ApplicationProperties.getProperty("purdue.specreg.messages.courseOverlaps", "Conflicts with {other}.").replace("{course}", course.getCourseName()).replace("{other}", singleSections.get(other).getCourseName()));
 											}
 										}
 										if (cr.getCourseIds().size() == 1) {
@@ -1173,7 +1173,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 									for (XSection other: singleSections.keySet()) {
 										if (section.isOverlapping(offering.getDistributions(), other)) {
 											request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "OVERLAP",
-													ApplicationProperties.getProperty("purdue.specreg.messages.courseOverlaps", "Conflists with {other}.").replace("{course}", course.getCourseName()).replace("{other}", singleSections.get(other).getCourseName()));
+													ApplicationProperties.getProperty("purdue.specreg.messages.courseOverlaps", "Conflicts with {other}.").replace("{course}", course.getCourseName()).replace("{other}", singleSections.get(other).getCourseName()));
 										}
 									}
 									if (cr.getCourseIds().size() == 1) {

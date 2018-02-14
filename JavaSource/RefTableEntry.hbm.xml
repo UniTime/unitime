@@ -376,5 +376,13 @@
                 type="java.lang.Integer"
                 not-null="true"/>
         </union-subclass>
+        
+        <union-subclass name="StudentGroupType" table="std_group_type" abstract="false">
+            <property
+                name="keepTogether"
+                column="together"
+                type="java.lang.Boolean"
+                not-null="true"/>
+        </union-subclass>
     </class>
 </hibernate-mapping>

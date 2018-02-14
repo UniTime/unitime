@@ -57,6 +57,7 @@ import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.StudentGroup;
+import org.unitime.timetable.model.StudentGroupType;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePatternDays;
@@ -859,6 +860,7 @@ public class AcademicSessionSetupImport extends BaseImport {
             String code = element.attributeValue("code");
             String name = element.attributeValue("name");
             String size = element.attributeValue("size");
+            String type = element.attributeValue("type");
             
             StudentGroup group = null;
             if (externalId != null)
@@ -882,6 +884,7 @@ public class AcademicSessionSetupImport extends BaseImport {
     		} catch (NumberFormatException e) {
     			group.setExpectedSize(null);
     		}
+            group.setType(type == null ? null : StudentGroupType.findByReference(type, getHibSession()));
             
             getHibSession().saveOrUpdate(group);
         }

@@ -27,6 +27,7 @@ import java.util.Map;
 import org.dom4j.Element;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentGroup;
+import org.unitime.timetable.model.StudentGroupType;
 
 
 /**
@@ -66,6 +67,7 @@ public class StudentGroupImport extends BaseImport {
                 String code = element.attributeValue("code");
                 String name = element.attributeValue("name");
                 String size = element.attributeValue("size");
+                String type = element.attributeValue("type");
                 
                 StudentGroup group = null;
                 if (externalId != null)
@@ -84,6 +86,7 @@ public class StudentGroupImport extends BaseImport {
                 group.setExternalUniqueId(externalId);
                 group.setGroupAbbreviation(code);
                 group.setGroupName(name);
+                group.setType(type == null ? null : StudentGroupType.findByReference(type, getHibSession()));
                 try {
         			group.setExpectedSize(size == null || size.isEmpty() ? null : Integer.valueOf(size));
         		} catch (NumberFormatException e) {

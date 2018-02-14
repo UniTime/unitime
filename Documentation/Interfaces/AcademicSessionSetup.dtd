@@ -194,6 +194,8 @@
 <!ATTLIST studentGroup externalId CDATA #IMPLIED >
 <!ATTLIST studentGroup code CDATA #REQUIRED >
 <!ATTLIST studentGroup name CDATA #REQUIRED >
+<!ATTLIST studentGroup size CDATA #IMPLIED >
+<!ATTLIST studentGroup type CDATA #IMPLIED >
 
 <!ELEMENT studentAccomodations (studentAccomodation*)>
 <!ATTLIST studentAccomodations incremental ( false | true ) #IMPLIED >

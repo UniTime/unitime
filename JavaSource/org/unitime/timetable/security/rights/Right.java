@@ -560,6 +560,9 @@ public enum Right {
 	
 	TeachingResponsibilities,
 	TeachingResponsibilityEdit,
+
+	StudentGroupTypes,
+	StudentGroupTypeEdit,
 	
 	EventServiceProviders,
 	EventServiceProviderEditGlobal,

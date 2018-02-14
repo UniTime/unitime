@@ -70,6 +70,12 @@
             column="session_id"
             not-null="true"/>
 
+        <many-to-one
+            name="type"
+            class="StudentGroupType"
+            column="type_id"
+            not-null="false"/>
+        
         <set
             name="students"
             table="student_to_group"

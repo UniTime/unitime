@@ -26,6 +26,7 @@ import java.util.Set;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentGroup;
+import org.unitime.timetable.model.StudentGroupType;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
@@ -42,6 +43,7 @@ public abstract class BaseStudentGroup implements Serializable {
 	private Integer iExpectedSize;
 
 	private Session iSession;
+	private StudentGroupType iType;
 	private Set<Student> iStudents;
 
 	public static String PROP_UNIQUEID = "uniqueId";
@@ -83,6 +85,9 @@ public abstract class BaseStudentGroup implements Serializable {
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	public StudentGroupType getType() { return iType; }
+	public void setType(StudentGroupType type) { iType = type; }
+
 	public Set<Student> getStudents() { return iStudents; }
 	public void setStudents(Set<Student> students) { iStudents = students; }
 	public void addTostudents(Student student) {
@@ -113,6 +118,7 @@ public abstract class BaseStudentGroup implements Serializable {
 			"\n	GroupName: " + getGroupName() +
 			"\n	Session: " + getSession() +
 			"\n	SessionId: " + getSessionId() +
+			"\n	Type: " + getType() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

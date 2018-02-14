@@ -12990,4 +12990,40 @@
 		<mysql>alter table %SCHEMA%.student add req_extid varchar(40)</mysql>
 		<mysql>alter table %SCHEMA%.student add req_ts datetime</mysql>
 	</update>
+	<update version="200" date="14-Feb-2018" comment="Student group type">
+		<plsql>
+			create table %SCHEMA%.std_group_type (
+				uniqueid number(20,0) constraint nn_std_group_type_uniqueid not null,
+				reference varchar2(20 char) constraint nn_std_group_type_reference not null,
+				label varchar2(60 char) constraint nn_std_group_type_label not null,
+				together number(1,0) constraint nn_std_group_type_together not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.std_group_type add constraint pk_std_group_type primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.std_group_type (
+				uniqueid decimal(20,0) primary key not null,
+				reference varchar(20) not null,
+				label varchar(60) not null,
+				together int(1) not null
+			) engine = INNODB
+		</mysql>
+		<plsql>alter table %SCHEMA%.student_group add type_id number(20,0)</plsql>
+		<mysql>alter table %SCHEMA%.student_group add type_id decimal(20,0) default null</mysql>
+		<sql>
+			alter table %SCHEMA%.student_group
+			add constraint fk_std_group_type foreign key (type_id)
+			references %SCHEMA%.std_group_type (uniqueid) on delete set null
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'StudentGroupTypes'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'PreferenceLevels'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'StudentGroupTypeEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'PreferenceLevelEdit'
+		</sql>
+	</update>	
 </dbupdate>
