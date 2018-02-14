@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +38,8 @@ import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.CourseRequest;
+import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.Session;
@@ -199,6 +202,25 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		consent.add(new Entity(-4l, "Approved", CONSTANTS.consentTypeAbbv()[3], "translated-value", CONSTANTS.consentTypeAbbv()[3]));
 		consent.add(new Entity(-5l, "To Do", CONSTANTS.consentTypeAbbv()[4], "translated-value", CONSTANTS.consentTypeAbbv()[4]));
 		response.add("consent", consent);
+		
+		if ("true".equals(iRequest.getOption("online"))) {
+			List<Entity> overrides = new ArrayList<Entity>();
+			for (CourseRequest.CourseRequestOverrideStatus status: CourseRequest.CourseRequestOverrideStatus.values()) {
+				overrides.add(new Entity(new Long(-1 - status.ordinal()), Constants.toInitialCase(status.name()), CONSTANTS.overrideType()[status.ordinal()], "translated-value", CONSTANTS.overrideType()[status.ordinal()])); 
+			}
+			for (Object[] o: (List<Object[]>)query.select("s.overrideStatus, count(distinct s)").where("s.overrideStatus is not null").order("s.overrideStatus").group("s.overrideStatus").exclude("override").query(helper.getHibSession()).list()) {
+				Entity e = overrides.get((Integer)o[0]);
+				e.setCount(((Number)o[1]).intValue());
+			}
+			for (Object[] o: (List<Object[]>)query.select("xcr.overrideStatus, count(distinct xcr)").where("xcr.overrideStatus is not null").order("xcr.overrideStatus").group("xcr.overrideStatus").from("inner join s.courseDemands xcd inner join xcd.courseRequests xcr").exclude("override").query(helper.getHibSession()).list()) {
+				Entity e = overrides.get((Integer)o[0]);
+				e.setCount(e.getCount() + ((Number)o[1]).intValue());
+			}
+			for (Iterator<Entity> i = overrides.iterator(); i.hasNext(); )
+				if (i.next().getCount() == 0) i.remove();
+			if (!overrides.isEmpty())
+				response.add("override", overrides);
+		}
 		
 		
 		if (iRequest.hasOption("role")) {
@@ -474,6 +496,17 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			query.addWhere("mode", "s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = :Xuser and adv.role.reference = :Xrole and adv.session.uniqueId = s.session.uniqueId)");
 			query.addParameter("mode", "Xuser", request.getOption("user"));
 			query.addParameter("mode", "Xrole", request.getOption("role"));
+		}
+		
+		if (request.hasOption("override")) {
+			CourseRequestOverrideStatus status = null;
+			for (CourseRequestOverrideStatus s: CourseRequestOverrideStatus.values())
+				if (s.name().equalsIgnoreCase(request.getOption("override"))) { status = s; break; }
+			if (status != null) {
+				query.addFrom("override", "CourseRequest xcr");
+				query.addWhere("override", "xcr.courseDemand.student = s and (s.overrideStatus = :Xstatus or xcr.overrideStatus = :Xstatus)");
+				query.addParameter("override", "Xstatus", status.ordinal());
+			}
 		}
 		
 		return query;

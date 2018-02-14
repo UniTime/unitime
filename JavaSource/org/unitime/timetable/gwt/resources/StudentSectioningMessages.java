@@ -1599,6 +1599,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("section")
 	String tagSection();
 	
+	@DefaultMessage("override")
+	String tagOverride();
+	
 	@DefaultMessage("Swap this course with its alternative")
 	String altFilterSwapWithAlternative();
 	
@@ -1682,4 +1685,19 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Do you want to request overrides for these errors?")
 	String questionRequestOverrides();
+	
+	@DefaultMessage("Enrolled")
+	String reqStatusEnrolled();
+
+	@DefaultMessage("Approved")
+	String reqStatusApproved();
+
+	@DefaultMessage("Pending")
+	String reqStatusPending();
+
+	@DefaultMessage("Cancelled")
+	String reqStatusCancelled();
+
+	@DefaultMessage("Rejected")
+	String reqStatusRejected();
 }

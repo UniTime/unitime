@@ -191,6 +191,14 @@ public interface StudentSectioningConstants extends Constants {
 	String[] consentTypeLabel();
 	
 	@DefaultStringArrayValue({
+		"Pending",
+		"Approved",
+		"Rejected",
+		"Cancelled",
+	})
+	String[] overrideType();
+	
+	@DefaultStringArrayValue({
 		"[0-9]+",
 	})
 	@DoNotTranslate

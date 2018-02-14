@@ -46,6 +46,7 @@ import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.dao.AcademicAreaDAO;
 import org.unitime.timetable.model.dao.AcademicClassificationDAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
@@ -70,6 +71,7 @@ import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XInstructor;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XOverride;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
@@ -838,6 +840,20 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				return min <= share && share <= max;
 			}
 			
+			if ("override".equals(attr)) {
+				CourseRequestOverrideStatus status = null;
+				for (CourseRequestOverrideStatus s: CourseRequestOverrideStatus.values()) {
+					if (s.name().equalsIgnoreCase(term)) { status = s; break; }
+				}
+				if (status == null) return false;
+				// if (student().getMaxCreditOverride() != null && student().getMaxCreditOverride().getStatus() == status.ordinal()) return true;
+				for (XCourseId course: request().getCourseIds()) {
+					XOverride o = request().getOverride(course);
+					if (o != null && o.getStatus() == status.ordinal()) return true;
+				}
+				return false;
+			}
+			
 			if (enrollment() != null) {
 				
 				for (XSection section: offering().getSections(enrollment())) {
@@ -1167,6 +1183,24 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					}
 				}
 				return min <= share && share <= max;
+			} else if ("override".equals(attr)) {
+				CourseRequestOverrideStatus status = null;
+				for (CourseRequestOverrideStatus s: CourseRequestOverrideStatus.values()) {
+					if (s.name().equalsIgnoreCase(term)) { status = s; break; }
+				}
+				if (status == null) return false;
+				if (student().getMaxCreditOverride() != null && student().getMaxCreditOverride().getStatus() == status.ordinal()) return true;
+				for (XRequest request: student().getRequests()) {
+					if (request instanceof XCourseRequest) {
+						XCourseRequest cr = (XCourseRequest)request;
+						for (XCourseId course: cr.getCourseIds()) {
+							XOverride o = cr.getOverride(course);
+							if (o != null && o.getStatus() == status.ordinal()) return true;
+						}
+					}
+				}
+				return false;
+				
 			}
 			return false;
 		}

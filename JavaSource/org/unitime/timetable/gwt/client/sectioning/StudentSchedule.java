@@ -82,6 +82,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				new WebTable.Cell(MESSAGES.colCredit(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colPreferences(), 1, "100px"),
 				new WebTable.Cell(MESSAGES.colWarnings(), 1, "20px"),
+				new WebTable.Cell(MESSAGES.colStatus(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colWaitList(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colRequestTimeStamp(), 1, "50px")));
 		iTabs.add(iRequests, MESSAGES.tabRequests(), true);
@@ -147,7 +148,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 	
 	protected void fillInRequests() {
 		ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
-		boolean hasPref = false, hasWarn = false, hasWait = false;
+		boolean hasPref = false, hasWarn = false, hasWait = false, hasStat = false;
 		NumberFormat df = NumberFormat.getFormat("0.#");
 		if (iAssignment.hasRequest()) {
 			CheckCoursesResponse check = null;
@@ -174,6 +175,16 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						} else if (rc.hasSelectedClasses()) {
 							prefs = new TreeSet<String>(rc.getSelectedClasses());
 						}
+						String status = "";
+						if (rc.getStatus() != null) {
+							switch (rc.getStatus()) {
+							case ENROLLED: status = MESSAGES.reqStatusEnrolled(); break;
+							case OVERRIDE_APPROVED: status = MESSAGES.reqStatusApproved(); hasStat = true; break;
+							case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); hasStat = true; break;
+							case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); hasStat = true; break;
+							case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); hasStat = true; break;
+							}
+						}
 						if (prefs != null) hasPref = true;
 						WebTable.Row row = new WebTable.Row(
 								new WebTable.Cell(first ? MESSAGES.courseRequestsPriority(priority) : ""),
@@ -182,6 +193,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								new WebTable.Cell(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : ""), 
 								new WebTable.Cell(ToolBox.toString(prefs)),
 								new WebTable.NoteCell(check == null ? "" : check.getMessageWithColor(rc.getCourseName(), "<br>"), check == null ? null : check.getMessage(rc.getCourseName(), "\n")),
+								new WebTable.Cell(status),
 								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell("")),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
 								);
@@ -197,6 +209,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						WebTable.Row row = new WebTable.Row(
 								new WebTable.Cell(first ? MESSAGES.courseRequestsPriority(priority) : ""),
 								new WebTable.Cell(CONSTANTS.freePrefix() + free, 3, null),
+								new WebTable.Cell(""),
 								new WebTable.Cell(""),
 								new WebTable.Cell(""),
 								new WebTable.Cell(""),
@@ -229,6 +242,16 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							prefs = new TreeSet<String>(rc.getSelectedClasses());
 						}
 						if (prefs != null) hasPref = true;
+						String status = "";
+						if (rc.getStatus() != null) {
+							switch (rc.getStatus()) {
+							case ENROLLED: status = MESSAGES.reqStatusEnrolled(); break;
+							case OVERRIDE_APPROVED: status = MESSAGES.reqStatusApproved(); hasStat = true; break;
+							case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); hasStat = true; break;
+							case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); hasStat = true; break;
+							case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); hasStat = true; break;
+							}
+						}
 						WebTable.Row row = new WebTable.Row(
 								new WebTable.Cell(first ? MESSAGES.courseRequestsAlternative(priority) : ""),
 								new WebTable.Cell(rc.getCourseName()),
@@ -236,6 +259,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								new WebTable.Cell(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : ""),
 								new WebTable.Cell(ToolBox.toString(prefs)),
 								new WebTable.NoteCell(check == null ? "" : check.getMessageWithColor(rc.getCourseName(), "<br>"), check == null ? null : check.getMessage(rc.getCourseName(), "\n")),
+								new WebTable.Cell(status),
 								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell("")),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
 								);
@@ -251,6 +275,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						WebTable.Row row = new WebTable.Row(
 								new WebTable.Cell(first ? MESSAGES.courseRequestsPriority(priority) : ""),
 								new WebTable.Cell(CONSTANTS.freePrefix() + free, 3, null),
+								new WebTable.Cell(""),
 								new WebTable.Cell(""),
 								new WebTable.Cell(""),
 								new WebTable.Cell(""),
@@ -272,7 +297,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		iRequests.setData(rowArray);
 		iRequests.setColumnVisible(4, hasPref);
 		iRequests.setColumnVisible(5, hasWarn);
-		iRequests.setColumnVisible(6, hasWait);
+		iRequests.setColumnVisible(6, hasStat);
+		iRequests.setColumnVisible(7, hasWait);
 	}
 	
 	protected void fillInAssignments() {

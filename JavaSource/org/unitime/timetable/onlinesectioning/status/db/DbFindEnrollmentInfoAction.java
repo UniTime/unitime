@@ -48,6 +48,7 @@ import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
+import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
@@ -878,6 +879,17 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				return min <= share && share <= max;
 			}
 			
+			if ("override".equals(attr)) {
+				CourseRequestOverrideStatus status = null;
+				for (CourseRequestOverrideStatus s: CourseRequestOverrideStatus.values()) {
+					if (s.name().equalsIgnoreCase(term)) { status = s; break; }
+				}
+				if (status == null) return false;
+				// if (student().getOverrideStatus() != null && student().getOverrideStatus() == status.ordinal()) return true;
+				if (request().getOverrideStatus() != null && request().getOverrideStatus() == status.ordinal()) return true;
+				return false;
+			}
+			
 			if (!enrollment().isEmpty()) {
 				for (StudentClassEnrollment e: enrollment()) {
 					if (attr == null || attr.equals("crn") || attr.equals("id") || attr.equals("externalId") || attr.equals("exid") || attr.equals("name")) {
@@ -1176,6 +1188,19 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					}
 				}
 				return min <= share && share <= max;
+			} else if ("override".equals(attr)) {
+				CourseRequestOverrideStatus status = null;
+				for (CourseRequestOverrideStatus s: CourseRequestOverrideStatus.values()) {
+					if (s.name().equalsIgnoreCase(term)) { status = s; break; }
+				}
+				if (status == null) return false;
+				if (student().getOverrideStatus() != null && student().getOverrideStatus() == status.ordinal()) return true;
+				for (CourseDemand cd: student().getCourseDemands()) {
+					for (CourseRequest cr: cd.getCourseRequests()) {
+						if (cr.getOverrideStatus() != null && cr.getOverrideStatus() == status.ordinal()) return true;
+					}
+				}
+				return false;
 			}
 			return false;
 		}
