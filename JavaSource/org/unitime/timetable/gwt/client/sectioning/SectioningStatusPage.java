@@ -492,7 +492,7 @@ public class SectioningStatusPage extends Composite {
 			@Override
 			public void onSuccess(SectioningProperties result) {
 				iProperties = result;
-				if (iProperties.isChangeLog())
+				if (iProperties.isChangeLog() && iOnline)
 					iTabPanel.add(iLogTable, MESSAGES.tabChangeLog(), true);
 				checkLastQuery();
 			}
