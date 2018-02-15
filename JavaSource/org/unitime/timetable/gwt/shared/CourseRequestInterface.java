@@ -826,6 +826,13 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			return ret;
 		}
 		
+		public boolean hasMessage(String courseName, String code) {
+			if (hasMessages())
+				for (CourseMessage m: getMessages())
+					if (m.hasCourse() && courseName.equals(m.getCourse()) && code.equals(m.getCode())) return true;
+			return false;
+		}
+		
 		public boolean isError(String courseName) {
 			if (!hasMessages()) return false;
 			if (hasMessages())

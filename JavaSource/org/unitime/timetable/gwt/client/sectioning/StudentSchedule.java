@@ -185,6 +185,14 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); hasStat = true; break;
 							}
 						}
+						if (status.isEmpty() && iAssignment.getRequest().getMaxCreditOverrideStatus() != null && check.hasMessage(rc.getCourseName(), "CREDIT")) {
+							switch (iAssignment.getRequest().getMaxCreditOverrideStatus()) {
+							case OVERRIDE_APPROVED: status = MESSAGES.reqStatusApproved(); hasStat = true; break;
+							case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); hasStat = true; break;
+							case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); hasStat = true; break;
+							case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); hasStat = true; break;
+							}
+						}
 						if (prefs != null) hasPref = true;
 						WebTable.Row row = new WebTable.Row(
 								new WebTable.Cell(first ? MESSAGES.courseRequestsPriority(priority) : ""),
@@ -246,6 +254,14 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						if (rc.getStatus() != null) {
 							switch (rc.getStatus()) {
 							case ENROLLED: status = MESSAGES.reqStatusEnrolled(); break;
+							case OVERRIDE_APPROVED: status = MESSAGES.reqStatusApproved(); hasStat = true; break;
+							case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); hasStat = true; break;
+							case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); hasStat = true; break;
+							case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); hasStat = true; break;
+							}
+						}
+						if (status.isEmpty() && iAssignment.getRequest().getMaxCreditOverrideStatus() != null && check.hasMessage(rc.getCourseName(), "CREDIT")) {
+							switch (iAssignment.getRequest().getMaxCreditOverrideStatus()) {
 							case OVERRIDE_APPROVED: status = MESSAGES.reqStatusApproved(); hasStat = true; break;
 							case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); hasStat = true; break;
 							case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); hasStat = true; break;
