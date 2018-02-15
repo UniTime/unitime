@@ -96,6 +96,7 @@ import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.ExactTimeMins;
+import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
@@ -2334,6 +2335,14 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     				if (gr.getGroup() == null) continue;
     				Group g = studentId.getGroup(gr.getGroup().getGroupAbbreviation());
     				if (g == null || g.getId() < 0) continue;
+    			} else if (reservation instanceof IndividualReservation) {
+    				IndividualReservation ir = (IndividualReservation)reservation;
+    				WeightedStudentId studentId = iWeightedStudents.get(student.getId());
+    				if (studentId == null) continue;
+    				boolean match = false;
+    				for (org.unitime.timetable.model.Student s: ir.getStudents())
+    					if (studentId.getStudentId() == s.getUniqueId()) match = true;
+    				if (!match) continue;
     			} else continue;
     			for (Class_ clazz: reservation.getClasses()) {
     				propagateReservedClasses(clazz, reservedClasses);
@@ -3039,7 +3048,13 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         					if (gr.getGroup() == null) continue;
         					Group g = studentId.getGroup(gr.getGroup().getGroupAbbreviation());
         					if (g == null || g.getId() < 0) continue;
-        				} else continue;
+        				} else if (reservation instanceof IndividualReservation) {
+            				IndividualReservation ir = (IndividualReservation)reservation;
+            				boolean match = false;
+            				for (org.unitime.timetable.model.Student s: ir.getStudents())
+            					if (studentId.getStudentId() == s.getUniqueId()) match = true;
+            				if (!match) continue;
+            			} else continue;
         				for (Class_ clazz: reservation.getClasses()) {
     						propagateReservedClasses(clazz, reservedClasses);
     						Class_ parent = clazz.getParentClass();
