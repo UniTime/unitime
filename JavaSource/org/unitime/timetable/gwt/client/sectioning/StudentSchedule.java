@@ -49,6 +49,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 
 /**
  * @author Tomas Muller
@@ -81,7 +82,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				new WebTable.Cell(MESSAGES.colTitle(), 1, "200px"),
 				new WebTable.Cell(MESSAGES.colCredit(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colPreferences(), 1, "100px"),
-				new WebTable.Cell(MESSAGES.colWarnings(), 1, "20px"),
+				new WebTable.Cell(MESSAGES.colWarnings(), 1, "200px"),
 				new WebTable.Cell(MESSAGES.colStatus(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colWaitList(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colRequestTimeStamp(), 1, "50px")));
@@ -194,11 +195,13 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							}
 						}
 						if (prefs != null) hasPref = true;
+						WebTable.Cell credit = new WebTable.Cell(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : "");
+						credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 						WebTable.Row row = new WebTable.Row(
 								new WebTable.Cell(first ? MESSAGES.courseRequestsPriority(priority) : ""),
 								new WebTable.Cell(rc.getCourseName()),
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
-								new WebTable.Cell(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : ""), 
+								credit, 
 								new WebTable.Cell(ToolBox.toString(prefs)),
 								new WebTable.NoteCell(check == null ? "" : check.getMessageWithColor(rc.getCourseName(), "<br>"), check == null ? null : check.getMessage(rc.getCourseName(), "\n")),
 								new WebTable.Cell(status),
@@ -268,11 +271,13 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); hasStat = true; break;
 							}
 						}
+						WebTable.Cell credit = new WebTable.Cell(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : "");
+						credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 						WebTable.Row row = new WebTable.Row(
 								new WebTable.Cell(first ? MESSAGES.courseRequestsAlternative(priority) : ""),
 								new WebTable.Cell(rc.getCourseName()),
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
-								new WebTable.Cell(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : ""),
+								credit,
 								new WebTable.Cell(ToolBox.toString(prefs)),
 								new WebTable.NoteCell(check == null ? "" : check.getMessageWithColor(rc.getCourseName(), "<br>"), check == null ? null : check.getMessage(rc.getCourseName(), "\n")),
 								new WebTable.Cell(status),
