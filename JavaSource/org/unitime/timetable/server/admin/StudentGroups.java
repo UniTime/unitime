@@ -71,7 +71,7 @@ public class StudentGroups implements AdminTable {
 	@PreAuthorize("checkPermission('StudentGroups')")
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
 		List<ListItem> types = new ArrayList<ListItem>();
-		types.add(new ListItem("-1", MESSAGES.itemNoStudentGroupType()));
+		types.add(new ListItem("", MESSAGES.itemNoStudentGroupType()));
 		for (StudentGroupType type: StudentGroupTypeDAO.getInstance().findAll(Order.asc("label"))) {
 			types.add(new ListItem(type.getUniqueId().toString(), type.getLabel()));
 		}
@@ -88,7 +88,7 @@ public class StudentGroups implements AdminTable {
 			r.setField(0, group.getExternalUniqueId());
 			r.setField(1, group.getGroupAbbreviation());
 			r.setField(2, group.getGroupName());
-			r.setField(3, group.getType() == null ? "-1" : group.getType().getUniqueId().toString());
+			r.setField(3, group.getType() == null ? "" : group.getType().getUniqueId().toString());
 			r.setField(4, group.getExpectedSize() == null ? "" : group.getExpectedSize().toString());
 			String students = "";
 			for (Student student: new TreeSet<Student>(group.getStudents())) {
@@ -124,7 +124,7 @@ public class StudentGroups implements AdminTable {
 		group.setExternalUniqueId(record.getField(0));
 		group.setGroupAbbreviation(record.getField(1));
 		group.setGroupName(record.getField(2));
-		group.setType("-1".equals(record.getField(3)) ? null : StudentGroupTypeDAO.getInstance().get(Long.valueOf(record.getField(3))));
+		group.setType(record.getField(3) == null || record.getField(3).isEmpty() ? null : StudentGroupTypeDAO.getInstance().get(Long.valueOf(record.getField(3))));
 		try {
 			group.setExpectedSize(record.getField(4) == null || record.getField(4).isEmpty() ? null : Integer.valueOf(record.getField(4)));
 		} catch (NumberFormatException e) {
@@ -175,12 +175,12 @@ public class StudentGroups implements AdminTable {
 				!ToolBox.equals(group.getExternalUniqueId(), record.getField(0)) ||
 				!ToolBox.equals(group.getGroupAbbreviation(), record.getField(1)) ||
 				!ToolBox.equals(group.getGroupName(), record.getField(2)) ||
-				!ToolBox.equals(group.getType() == null ? "-1" : group.getType().getUniqueId().toString(), record.getField(3)) ||
+				!ToolBox.equals(group.getType() == null ? "" : group.getType().getUniqueId().toString(), record.getField(3)) ||
 				!ToolBox.equals(group.getExpectedSize() == null ? "" : group.getExpectedSize().toString(), record.getField(4));
 			group.setExternalUniqueId(record.getField(0));
 			group.setGroupAbbreviation(record.getField(1));
 			group.setGroupName(record.getField(2));
-			group.setType("-1".equals(record.getField(3)) ? null : StudentGroupTypeDAO.getInstance().get(Long.valueOf(record.getField(3))));
+			group.setType(record.getField(3) == null || record.getField(3).isEmpty() ? null : StudentGroupTypeDAO.getInstance().get(Long.valueOf(record.getField(3))));
 			try {
 				group.setExpectedSize(record.getField(4) == null || record.getField(4).isEmpty() ? null : Integer.valueOf(record.getField(4)));
 			} catch (NumberFormatException e) {
