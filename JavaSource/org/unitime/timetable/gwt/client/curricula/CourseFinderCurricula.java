@@ -105,4 +105,12 @@ public class CourseFinderCurricula extends CourseCurriculaTable implements Cours
 
 	@Override
 	public void onGetValue(RequestedCourse course) {}
+
+	@Override
+	public boolean isEnabled() {
+		return true;
+	}
+
+	@Override
+	public void setEnabled(boolean enabled) {}
 }

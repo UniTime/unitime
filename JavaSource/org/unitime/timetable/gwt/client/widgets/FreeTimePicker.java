@@ -36,18 +36,20 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasValue;
 
 /**
  * @author Tomas Muller
  */
-public class FreeTimePicker extends Grid implements HasValue<List<CourseRequestInterface.FreeTime>> {
+public class FreeTimePicker extends Grid implements HasValue<List<CourseRequestInterface.FreeTime>>, HasEnabled {
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 
 	private boolean[][] iSelected;
 	private long[][] iLastSelectedTime;
 	private long iTime = 0;
+	private boolean iEnabled = true;
 	
 	public FreeTimePicker() {
 		super(1 + CONSTANTS.freeTimeDays().length, CONSTANTS.freeTimePeriods().length);
@@ -268,6 +270,7 @@ public class FreeTimePicker extends Grid implements HasValue<List<CourseRequestI
 	private int iOverDay= -1, iOverPeriod = -1;
 	
 	private void processMouseEvent(int eventType, int day, int period) {
+		if (!isEnabled()) return;
 	    switch (eventType) {
 		case Event.ONMOUSEDOWN:
 			iDownDay = day; iDownPeriod = period; iOverDay = day; iOverPeriod = period;
@@ -362,5 +365,15 @@ public class FreeTimePicker extends Grid implements HasValue<List<CourseRequestI
 		}
 		if (fireEvents)
 			ValueChangeEvent.fire(this, getValue());
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return iEnabled;
+	}
+
+	@Override
+	public void setEnabled(boolean enabled) {
+		iEnabled = enabled;
 	}
 }

@@ -43,6 +43,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -53,7 +54,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentC
 /**
  * @author Tomas Muller
  */
-public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileScroll {
+public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileScroll, HasEnabled {
 	
 	private List<MouseOverListener<T>> iMouseOverListeners = new ArrayList<MouseOverListener<T>>();
 	private List<MouseOutListener<T>> iMouseOutListeners = new ArrayList<MouseOutListener<T>>();
@@ -67,6 +68,7 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 	private int iLastHoverRow = -1;
 	private Map<Integer,String> iLastHoverBackgroundColor = new HashMap<Integer, String>();
 	private boolean iAllowSelection = false, iAllowMultiSelect= true;
+	private boolean iEnabled = true;
 	
 	public UniTimeTable() {
 		setCellPadding(2);
@@ -576,7 +578,7 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 			}
 			break;
 		case Event.ONCLICK:
-			if (isAllowSelection() && hasData && isCanSelectRow(row)) {
+			if (isAllowSelection() && hasData && isCanSelectRow(row) && isEnabled()) {
 				Element element = DOM.eventGetTarget(event);
 				while (element.getPropertyString("tagName").equalsIgnoreCase("div"))
 					element = DOM.getParent(element);
@@ -1021,5 +1023,15 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 		public int getColSpan() {
 			return getRowCount() == 0 ? 1 : getCellCount(0);
 		}
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return iEnabled;
+	}
+
+	@Override
+	public void setEnabled(boolean enabled) {
+		iEnabled = enabled;
 	}
 }

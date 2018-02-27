@@ -28,18 +28,19 @@ import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.TakesValue;
+import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.IsWidget;
 
 /**
  * @author Tomas Muller
  */
-public interface CourseFinder extends HasValue<RequestedCourse>, HasSelectionHandlers<RequestedCourse>, IsWidget {
+public interface CourseFinder extends HasValue<RequestedCourse>, HasSelectionHandlers<RequestedCourse>, IsWidget, HasEnabled {
 	public void findCourse();
 	
 	public void setTabs(CourseFinderTab... tabs);
 	
-	public interface CourseFinderTab<E> extends HasValue<RequestedCourse>, HasSelectionHandlers<RequestedCourse>, IsWidget, KeyUpHandler, HasResponseHandlers {
+	public interface CourseFinderTab<E> extends HasValue<RequestedCourse>, HasSelectionHandlers<RequestedCourse>, IsWidget, KeyUpHandler, HasResponseHandlers, HasEnabled {
 		public String getName();
 		public void setDataProvider(DataProvider<String, E> provider);
 		public boolean isCourseSelection();
@@ -47,7 +48,7 @@ public interface CourseFinder extends HasValue<RequestedCourse>, HasSelectionHan
 		public void changeTip();
 	}
 		
-	public interface CourseFinderCourseDetails<T, E> extends TakesValue<T>, IsWidget {
+	public interface CourseFinderCourseDetails<T, E> extends TakesValue<T>, IsWidget, HasEnabled {
 		public void setDataProvider(DataProvider<T, E> provider);
 		public String getName();
 		public void onSetValue(RequestedCourse course);

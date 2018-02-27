@@ -65,6 +65,8 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 	
 	private AriaTextBox iFilter = null;
 	private AriaButton iFilterSelect;
+	private P iFilterPanel;
+	private boolean iEnabled = true;
 	
 	private CourseFinderTab[] iTabs = null;
 	
@@ -93,18 +95,18 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 			}
 		});
 		
-		P filterPanel = new P("filter");
+		iFilterPanel = new P("filter");
 		P filterText = new P("text");
 		P filterButton = new P("button");
-		filterPanel.add(filterButton);
-		filterPanel.add(filterText);
+		iFilterPanel.add(filterButton);
+		iFilterPanel.add(filterText);
 		filterText.add(iFilter);
 		filterButton.add(iFilterSelect);
 		
 		iDialogPanel = new VerticalPanel();
 		iDialogPanel.setSpacing(5);
-		iDialogPanel.add(filterPanel);
-		iDialogPanel.setCellHorizontalAlignment(filterPanel, HasHorizontalAlignment.ALIGN_CENTER);
+		iDialogPanel.add(iFilterPanel);
+		iDialogPanel.setCellHorizontalAlignment(iFilterPanel, HasHorizontalAlignment.ALIGN_CENTER);
 
 		addCloseHandler(new CloseHandler<PopupPanel>() {
 			public void onClose(CloseEvent<PopupPanel> event) {
@@ -319,5 +321,27 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 	@Override
 	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<RequestedCourse> handler) {
 		return addHandler(handler, ValueChangeEvent.getType());
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return iEnabled;
+	}
+
+	@Override
+	public void setEnabled(boolean enabled) {
+		iEnabled = enabled;
+		iFilter.setReadOnly(!iEnabled);
+		iFilterSelect.setVisible(iEnabled);
+		if (iTabPanel != null) {
+			for (int i = 0; i < iTabs.length; i++) {
+				iTabs[i].setEnabled(enabled);
+				iTabPanel.getTabBar().setTabEnabled(i, iEnabled || iTabPanel.getSelectedTab() == i);
+			}
+		}
+		if (iEnabled)
+			setText(MESSAGES.courseSelectionDialog());
+		else
+			setText(MESSAGES.courseSelectionDialogDisabled());
 	}
 }

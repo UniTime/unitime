@@ -189,4 +189,14 @@ public class CourseFinderFreeTime extends P implements CourseFinder.CourseFinder
 	public void changeTip() {
 		iFreeTimeTip.setText(CONSTANTS.freeTimeTips()[(int)(Math.random() * CONSTANTS.freeTimeTips().length)]);
 	}
+
+	@Override
+	public boolean isEnabled() {
+		return iFreeTimePicker.isEnabled();
+	}
+
+	@Override
+	public void setEnabled(boolean enabled) {
+		iFreeTimePicker.setEnabled(enabled);
+	}
 }

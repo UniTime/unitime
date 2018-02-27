@@ -273,6 +273,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course Finder")
 	String courseSelectionDialog();
 	
+	@DefaultMessage("Course Finder -- Not Editable")
+	String courseSelectionDialogDisabled();
+	
 	@DefaultMessage("No course selected.")
 	String courseSelectionNoCourseSelected();
 	

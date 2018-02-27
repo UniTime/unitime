@@ -4774,7 +4774,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-CourseFinderDialog .filter {
-	width: 780px;
+	width: 100%;
 	padding: 2px;
 }
 
@@ -5982,4 +5982,13 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-CourseRequestBox .unitime-ErrorHint {
 	white-space: pre-wrap;	
+}
+
+.gwt-TabBarItem-disabled {
+	font-style: italic;
+}
+
+.gwt-SuggestBox-readonly {
+	color: #777777;
+	font-style: italic;
 }

@@ -112,8 +112,8 @@ public class CourseRequestBox extends P implements CourseSelection {
 		iFilter = new CourseRequestFilterBox(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				if (isEnabled())
-					openDialogAsync();
+				// if (isEnabled())
+				openDialogAsync();
 			}
 		}) {
 			@Override
@@ -417,7 +417,8 @@ public class CourseRequestBox extends P implements CourseSelection {
 			iCourseFinder.addSelectionHandler(new SelectionHandler<RequestedCourse>() {
 				@Override
 				public void onSelection(SelectionEvent<RequestedCourse> event) {
-					setValue(event.getSelectedItem(), true);
+					if (isEnabled())
+						setValue(event.getSelectedItem(), true);
 				}
 			});
 			if (iCourseFinder instanceof HasCloseHandlers) {
@@ -522,6 +523,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 	
 	private void openDialog() {
 		getCourseFinder().setValue(getValue(), true);
+		getCourseFinder().setEnabled(isEnabled());
 		getCourseFinder().findCourse();
 	}
 

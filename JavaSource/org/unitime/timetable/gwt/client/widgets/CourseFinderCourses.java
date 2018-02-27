@@ -108,7 +108,8 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 			@Override
 			public void onMouseDoubleClick(UniTimeTable.TableEvent<CourseAssignment> event) {
 				updateCourseDetails();
-				SelectionEvent.fire(CourseFinderCourses.this, getValue());
+				if (isEnabled())
+					SelectionEvent.fire(CourseFinderCourses.this, getValue());
 			}
 		});
 		iCourses.addMouseClickListener(new UniTimeTable.MouseClickListener<CourseAssignment>() {
@@ -330,6 +331,7 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 				for (final IdValue m: record.getInstructionalMethods()) {
 					CheckBox ch = new CheckBox(m.getValue());
 					ch.setValue(iSelectedMethods.contains(m.getValue()));
+					ch.setEnabled(isEnabled());
 					ch.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 						@Override
 						public void onValueChange(ValueChangeEvent<Boolean> event) {
@@ -391,14 +393,14 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 	public void onKeyUp(KeyUpEvent event) {
 		if (iCourses.getRowCount() < 2 || iCourses.getData(1) == null) return;
 		int row = iCourses.getSelectedRow();
-		if (event.getNativeKeyCode() == KeyCodes.KEY_DOWN) {
+		if (event.getNativeKeyCode() == KeyCodes.KEY_DOWN && isEnabled()) {
 			if (row < 0 || iCourses.getSelectedRow() + 1 >= iCourses.getRowCount())
 				iCourses.setSelected(1, true);
 			else
 				iCourses.setSelected(row + 1, true);
             scrollToSelectedRow();
             updateCourseDetails();
-		} else if (event.getNativeKeyCode()==KeyCodes.KEY_UP) {
+		} else if (event.getNativeKeyCode()==KeyCodes.KEY_UP && isEnabled()) {
 			if (row - 1 < 1)
 				iCourses.setSelected(iCourses.getRowCount() - 1, true);
 			else
@@ -436,5 +438,18 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 	public void changeTip() {
 		iCoursesTip.setText(CONSTANTS.courseTips()[(int)(Math.random() * CONSTANTS.courseTips().length)]);
 		selectLastTab();
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return iCourses.isEnabled();
+	}
+
+	@Override
+	public void setEnabled(boolean enabled) {
+		iCourses.setEnabled(enabled);
+		if (iDetails != null)
+			for (CourseFinderCourseDetails details: iDetails)
+				details.setEnabled(enabled);
 	}
 }

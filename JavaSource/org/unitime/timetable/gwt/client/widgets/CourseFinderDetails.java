@@ -93,5 +93,12 @@ public class CourseFinderDetails extends HTML implements CourseFinder.CourseFind
 
 	@Override
 	public void onGetValue(RequestedCourse course) {}
+	
+	@Override
+	public boolean isEnabled() {
+		return true;
+	}
 
+	@Override
+	public void setEnabled(boolean enabled) {}
 }

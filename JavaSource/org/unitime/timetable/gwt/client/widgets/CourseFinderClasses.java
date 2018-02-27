@@ -146,6 +146,7 @@ public class CourseFinderClasses extends UniTimeTable<ClassAssignment> implement
 									AriaCheckBox ch = new AriaCheckBox();
 									ch.setValue(iSelectedClasses.contains(clazz.getSelection()));
 									ch.setAriaLabel(ARIA.courseFinderPreferClass(MESSAGES.clazz(clazz.getSubject(), clazz.getCourseNbr(), clazz.getSubpart(), clazz.getSection())));
+									ch.setEnabled(isEnabled());
 									ch.addClickHandler(new ClickHandler() {
 										@Override
 										public void onClick(ClickEvent event) {
