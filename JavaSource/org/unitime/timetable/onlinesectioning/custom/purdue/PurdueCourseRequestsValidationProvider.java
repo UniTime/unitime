@@ -207,14 +207,6 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		return iExternalTermProvider.getExternalCampus(session);
 	}
 	
-	protected String getExternalSubject(AcademicSessionInfo session, String subjectArea, String courseNumber) {
-		return iExternalTermProvider.getExternalSubject(session, subjectArea, courseNumber);
-	}
-	
-	protected String getExternalCourseNumber(AcademicSessionInfo session, String subjectArea, String courseNumber) {
-		return iExternalTermProvider.getExternalCourseNumber(session, subjectArea, courseNumber);
-	}
-	
 	protected String getCRN(Section section, Course course) {
 		String name = section.getName(course.getId());
 		if (name != null && name.indexOf('-') >= 0)
@@ -511,8 +503,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				Enrollment e = assignment.getValue(cr);
 				courses: for (Course course: cr.getCourses()) {
 					Schedule s = new Schedule();
-					s.subject = getExternalSubject(server.getAcademicSession(), course.getSubjectArea(), course.getCourseNumber());
-					s.courseNbr = getExternalCourseNumber(server.getAcademicSession(), course.getSubjectArea(), course.getCourseNumber());
+					s.subject = course.getSubjectArea();
+					s.courseNbr = course.getCourseNumber();
 					s.crns = new TreeSet<String>();
 					XCourseId cid = new XCourseId(course);
 					course2banner.put(cid, s.subject + " " + s.courseNbr);
@@ -809,8 +801,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						if (cid == null) continue;
 						XCourse course = (cid instanceof XCourse ? (XCourse)cid : server.getCourse(cid.getCourseId()));
 						if (course == null) continue;
-						String subject = iExternalTermProvider.getExternalSubject(server.getAcademicSession(), course.getSubjectArea(), course.getCourseNumber());
-						String courseNbr = iExternalTermProvider.getExternalCourseNumber(server.getAcademicSession(), course.getSubjectArea(), course.getCourseNumber());
+						String subject = course.getSubjectArea();
+						String courseNbr = course.getCourseNumber();
 						overrides.remove(subject + " " + courseNbr);
 						List<ChangeError> errors = new ArrayList<ChangeError>();
 						for (CourseMessage m: request.getConfirmations()) {
@@ -843,8 +835,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						if (cid == null) continue;
 						XCourse course = (cid instanceof XCourse ? (XCourse)cid : server.getCourse(cid.getCourseId()));
 						if (course == null) continue;
-						String subject = iExternalTermProvider.getExternalSubject(server.getAcademicSession(), course.getSubjectArea(), course.getCourseNumber());
-						String courseNbr = iExternalTermProvider.getExternalCourseNumber(server.getAcademicSession(), course.getSubjectArea(), course.getCourseNumber());
+						String subject = course.getSubjectArea();
+						String courseNbr = course.getCourseNumber();
 						overrides.remove(subject + " " + courseNbr);
 						List<ChangeError> errors = new ArrayList<ChangeError>();
 						for (CourseMessage m: request.getConfirmations()) {
@@ -936,8 +928,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				XCourse course = (cid instanceof XCourse ? (XCourse)cid : server.getCourse(cid.getCourseId()));
 				if (course == null) continue;
 				CourseCredit cc = new CourseCredit();
-				cc.subject = iExternalTermProvider.getExternalSubject(server.getAcademicSession(), course.getSubjectArea(), course.getCourseNumber());
-				cc.courseNbr = iExternalTermProvider.getExternalCourseNumber(server.getAcademicSession(), course.getSubjectArea(), course.getCourseNumber());
+				cc.subject = course.getSubjectArea();
+				cc.courseNbr = course.getCourseNumber();
 				cc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
 				req.courseCreditHrs.add(cc);
 			}
@@ -977,8 +969,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 								if (cid == null) continue;
 								XCourse course = (cid instanceof XCourse ? (XCourse)cid : server.getCourse(cid.getCourseId()));
 								if (course == null) continue;
-								String subject = iExternalTermProvider.getExternalSubject(server.getAcademicSession(), course.getSubjectArea(), course.getCourseNumber());
-								String courseNbr = iExternalTermProvider.getExternalCourseNumber(server.getAcademicSession(), course.getSubjectArea(), course.getCourseNumber());
+								String subject = course.getSubjectArea();
+								String courseNbr = course.getCourseNumber();
 								for (SpecialRegistrationRequest r: response.data)
 									if (r.changes != null)
 										for (Change ch: r.changes) {
@@ -999,8 +991,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 								if (cid == null) continue;
 								XCourse course = (cid instanceof XCourse ? (XCourse)cid : server.getCourse(cid.getCourseId()));
 								if (course == null) continue;
-								String subject = iExternalTermProvider.getExternalSubject(server.getAcademicSession(), course.getSubjectArea(), course.getCourseNumber());
-								String courseNbr = iExternalTermProvider.getExternalCourseNumber(server.getAcademicSession(), course.getSubjectArea(), course.getCourseNumber());
+								String subject = course.getSubjectArea();
+								String courseNbr = course.getCourseNumber();
 								for (SpecialRegistrationRequest r: response.data)
 									if (r.changes != null)
 									for (Change ch: r.changes) {
@@ -1360,8 +1352,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							}
 						}
 					} else {
-						String subject = iExternalTermProvider.getExternalSubject(session, cr.getCourseOffering().getSubjectAreaAbbv(), cr.getCourseOffering().getCourseNbr());
-						String courseNbr = iExternalTermProvider.getExternalCourseNumber(session, cr.getCourseOffering().getSubjectAreaAbbv(), cr.getCourseOffering().getCourseNbr());
+						String subject = cr.getCourseOffering().getSubjectAreaAbbv();
+						String courseNbr = cr.getCourseOffering().getCourseNbr();
 						SpecialRegistrationRequest req = null;
 						for (SpecialRegistrationRequest r: status.data.requests) {
 							if (r.requestId == null) continue;

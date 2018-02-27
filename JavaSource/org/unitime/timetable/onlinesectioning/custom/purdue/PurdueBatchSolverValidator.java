@@ -320,8 +320,8 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 				CourseOffering course = iCourses.get(enrollment.getCourse().getId());
 				if (course != null) {
 					Schedule s = new Schedule();
-					s.subject = iExternalTermProvider.getExternalSubject(iSession,  course.getSubjectAreaAbbv(), course.getCourseNbr());
-					s.courseNbr = iExternalTermProvider.getExternalCourseNumber(iSession,  course.getSubjectAreaAbbv(), course.getCourseNbr());
+					s.subject = course.getSubjectAreaAbbv();
+					s.courseNbr = course.getCourseNbr();
 					s.crns = new TreeSet<String>();
 					for (Section section: enrollment.getSections()) {
 						Class_ clazz = iClasses.get(section.getId());
