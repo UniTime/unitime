@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.resources;
 
 import com.google.gwt.i18n.client.Messages;
+import com.google.gwt.i18n.client.Messages.DefaultMessage;
 
 /**
  * @author Tomas Muller
@@ -432,6 +433,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("E<u>x</u>port")
 	String buttonExport();
 	
+	@DefaultMessage("M<u>o</u>re<span class='unitime-ButtonArrow'>&#9660;</span>")
+	String buttonMoreOperations();
+	
 	@DefaultMessage("Export the currently selected schedule in iCalendar format.")
 	String hintExport();
 
@@ -664,6 +668,9 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Sort by {0}")
 	String sortBy(String column);
+	
+	@DefaultMessage("Sort By")
+	String opSort();
 	
 	@DefaultMessage("Student")
 	String colStudent();

@@ -46,6 +46,8 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasColSpan;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.AriaOperation;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.HasColumnName;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
@@ -68,7 +70,9 @@ import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -90,6 +94,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
@@ -105,10 +110,13 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextArea;
+import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.SuggestOracle.Callback;
 import com.google.gwt.user.client.ui.SuggestOracle.Request;
@@ -135,6 +143,7 @@ public class SectioningStatusPage extends Composite {
 
 	private Button iSearch = null;
 	private Button iExport = null;
+	private Button iMore = null;
 	private Image iLoadingImage = null;
 
 	private VerticalPanel iSectioningPanel = null;
@@ -165,6 +174,8 @@ public class SectioningStatusPage extends Composite {
 	private Set<Long> iSelectedStudentIds = new HashSet<Long>();
 	private Set<Long> iSelectedCourseIds = new HashSet<Long>();
 	private boolean iOnline; 
+	
+	private List<Operation> iSortOperations = new ArrayList<Operation>();
 	
 	public SectioningStatusPage(boolean online) {
 		iOnline = online;
@@ -197,6 +208,91 @@ public class SectioningStatusPage extends Composite {
 		iExport.addStyleName("unitime-NoPrint");
 		iFilterPanel.add(iExport);
 		iFilterPanel.setCellVerticalAlignment(iExport, HasVerticalAlignment.ALIGN_TOP);
+		
+		iMore = new Button(MESSAGES.buttonMoreOperations());
+		Character moreAccessKey = UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonMoreOperations());
+		if (moreAccessKey != null)
+			iMore.setAccessKey(moreAccessKey);
+		iMore.addStyleName("unitime-NoPrint");
+		iFilterPanel.add(iMore);
+		iFilterPanel.setCellVerticalAlignment(iMore, HasVerticalAlignment.ALIGN_TOP);
+		iMore.setVisible(false); iMore.setEnabled(false);
+		iMore.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				final PopupPanel popup = new PopupPanel(true);
+				MenuBar menu = new UniTimeTableHeader.MenuBarWithAccessKeys();
+				
+				boolean first = true;
+				if (iOnline && iTabPanel.getSelectedTab() == 1 && iStudentTable.getHeader(0) != null) {
+					for (final Operation op: iStudentTable.getHeader(0).getOperations()) {
+						if (!op.isApplicable()) continue;
+						if (op.hasSeparator() && !first)
+							menu.addSeparator();
+						first = false;
+						MenuItem item = new MenuItem(op.getName(), true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								op.execute();
+							}
+						});
+						if (op instanceof AriaOperation)
+							Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), ((AriaOperation)op).getAriaLabel());
+						else
+							Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), UniTimeHeaderPanel.stripAccessKey(op.getName()));
+						menu.addItem(item);
+					}
+
+					if (!iSortOperations.isEmpty()) {
+						if (!first) menu.addSeparator();
+						MenuBar submenu = new MenuBar(true);
+						for (final Operation op: iSortOperations) {
+							String name = op.getName();
+							if (op instanceof HasColumnName)
+								name = ((HasColumnName)op).getColumnName();
+							MenuItem item = new MenuItem(name, true, new Command() {
+								@Override
+								public void execute() {
+									popup.hide();
+									op.execute();
+								}
+							});
+							if (op instanceof AriaOperation)
+								Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), ((AriaOperation)op).getAriaLabel());
+							else
+								Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), UniTimeHeaderPanel.stripAccessKey(op.getName()));
+							submenu.addItem(item);
+						}
+						MenuItem columns = new MenuItem(MESSAGES.opSort(), submenu);
+						columns.getElement().getStyle().setCursor(Cursor.POINTER);
+						menu.addItem(columns);
+					}
+				} else {
+					if (!iSortOperations.isEmpty()) {
+						for (final Operation op: iSortOperations) {
+							String name = op.getName();
+							MenuItem item = new MenuItem(name, true, new Command() {
+								@Override
+								public void execute() {
+									popup.hide();
+									op.execute();
+								}
+							});
+							if (op instanceof AriaOperation)
+								Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), ((AriaOperation)op).getAriaLabel());
+							else
+								Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), UniTimeHeaderPanel.stripAccessKey(op.getName()));
+							menu.addItem(item);
+						}
+					}
+				}
+				
+				popup.add(menu);
+				popup.showRelativeTo((UIObject)event.getSource());
+				menu.focus();
+			}
+		});
 
 		iLoadingImage = new Image(RESOURCES.loading_small());
 		iLoadingImage.setVisible(false);
@@ -206,9 +302,9 @@ public class SectioningStatusPage extends Composite {
 		iSectioningPanel.add(iFilterPanel);
 		iSectioningPanel.setCellHorizontalAlignment(iFilterPanel, HasHorizontalAlignment.ALIGN_CENTER);
 		
-		iCourseTable = new UniTimeTable<EnrollmentInfo>();
+		iCourseTable = new UniTimeTable<EnrollmentInfo>(); iCourseTable.addStyleName("unitime-EnrollmentsTable");
 		iStudentTable = new UniTimeTable<StudentInfo>(); iStudentTable.addStyleName("unitime-StudentsTable");
-		iLogTable = new UniTimeTable<SectioningAction>();
+		iLogTable = new UniTimeTable<SectioningAction>(); iLogTable.addStyleName("unitime-LogsTable");
 
 		VerticalPanel courseTableWithHint = new VerticalPanel();
 		courseTableWithHint.add(iCourseTable);
@@ -585,6 +681,9 @@ public class SectioningStatusPage extends Composite {
 		iLoadingImage.setVisible(loading);
 		iSearch.setVisible(!loading);
 		iExport.setVisible(!loading);
+		if (loading) {
+			iMore.setVisible(false); iMore.setEnabled(false);
+		}
 	}
 	
 	private void loadData() {
@@ -632,9 +731,11 @@ public class SectioningStatusPage extends Composite {
 						iError.setHTML(MESSAGES.exceptionNoMatchingResultsFound(iCourseFilter));
 						iError.setVisible(true);
 						iTabPanel.setVisible(false);
+						iMore.setVisible(false); iMore.setEnabled(false);
 					} else {
 						populateCourseTable(result);
 						iTabPanel.setVisible(true);
+						iMore.setVisible(true); iMore.setEnabled(true);
 					}
 					setLoading(false);
 					LoadingWidget.getInstance().hide();
@@ -650,6 +751,7 @@ public class SectioningStatusPage extends Composite {
 						iError.setHTML(caught.getMessage());
 						iError.setVisible(true);
 						iTabPanel.setVisible(false);
+						iMore.setVisible(false); iMore.setEnabled(false);
 						ToolBox.checkAccess(caught);
 					}
 
@@ -659,9 +761,11 @@ public class SectioningStatusPage extends Composite {
 							iError.setHTML(MESSAGES.exceptionNoMatchingResultsFound(iCourseFilter));
 							iError.setVisible(true);
 							iTabPanel.setVisible(false);
+							iMore.setVisible(false); iMore.setEnabled(false);
 						} else {
 							populateStudentTable(result);
 							iTabPanel.setVisible(true);
+							iMore.setVisible(true); iMore.setEnabled(true);
 						}
 						setLoading(false);
 						LoadingWidget.getInstance().hide();
@@ -676,6 +780,7 @@ public class SectioningStatusPage extends Composite {
 						iError.setHTML(caught.getMessage());
 						iError.setVisible(true);
 						iTabPanel.setVisible(false);
+						iMore.setVisible(false); iMore.setEnabled(false);
 						ToolBox.checkAccess(caught);
 					}
 
@@ -685,9 +790,11 @@ public class SectioningStatusPage extends Composite {
 							iError.setHTML(MESSAGES.exceptionNoMatchingResultsFound(iCourseFilter));
 							iError.setVisible(true);
 							iTabPanel.setVisible(false);
+							iMore.setVisible(false); iMore.setEnabled(false);
 						} else {
 							populateStudentTable(result);
 							iTabPanel.setVisible(true);
+							iMore.setVisible(true); iMore.setEnabled(true);
 						}
 						setLoading(false);
 						LoadingWidget.getInstance().hide();
@@ -703,6 +810,7 @@ public class SectioningStatusPage extends Composite {
 					iError.setHTML(caught.getMessage());
 					iError.setVisible(true);
 					iTabPanel.setVisible(false);
+					iMore.setVisible(false); iMore.setEnabled(false);
 					ToolBox.checkAccess(caught);
 				}
 
@@ -710,6 +818,7 @@ public class SectioningStatusPage extends Composite {
 				public void onSuccess(final List<SectioningAction> result) {
 					populateChangeLog(result);
 					iTabPanel.setVisible(true);
+					iMore.setVisible(true); iMore.setEnabled(true);
 					setLoading(false);
 					LoadingWidget.getInstance().hide();
 				}
@@ -832,6 +941,7 @@ public class SectioningStatusPage extends Composite {
 	
 	public void populateCourseTable(List<EnrollmentInfo> result) {
 		iSelectedCourseIds.clear();
+		iSortOperations.clear();
 		List<Widget> header = new ArrayList<Widget>();
 
 		UniTimeTableHeader hOperations = new UniTimeTableHeader("");
@@ -857,34 +967,42 @@ public class SectioningStatusPage extends Composite {
 		addSortOperation(hRoom, EnrollmentComparator.SortBy.CONSENT, MESSAGES.colConsent());
 
 		UniTimeTableHeader hLimit = new UniTimeTableHeader(MESSAGES.colAvailable());
+		hLimit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		header.add(hLimit);
 		addSortOperation(hLimit, EnrollmentComparator.SortBy.LIMIT, MESSAGES.colAvailable());
 
 		UniTimeTableHeader hProjection = new UniTimeTableHeader(MESSAGES.colProjection());
+		hProjection.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		header.add(hProjection);
 		addSortOperation(hProjection, EnrollmentComparator.SortBy.PROJECTION, MESSAGES.colProjection());
 
 		UniTimeTableHeader hEnrollment = new UniTimeTableHeader(MESSAGES.colEnrollment());
+		hEnrollment.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		header.add(hEnrollment);
 		addSortOperation(hEnrollment, EnrollmentComparator.SortBy.ENROLLMENT, MESSAGES.colEnrollment());
 
 		UniTimeTableHeader hWaitListed = new UniTimeTableHeader(MESSAGES.colWaitListed());
+		hWaitListed.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		header.add(hWaitListed);
 		addSortOperation(hWaitListed, EnrollmentComparator.SortBy.WAITLIST, MESSAGES.colWaitListed());
 
 		UniTimeTableHeader hAlternative = new UniTimeTableHeader(MESSAGES.colUnassignedAlternative());
+		hAlternative.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		header.add(hAlternative);
 		addSortOperation(hAlternative, EnrollmentComparator.SortBy.ALTERNATIVES, MESSAGES.colUnassignedAlternative().replace("<br>", " "));
 		
 		UniTimeTableHeader hReserved = new UniTimeTableHeader(MESSAGES.colReserved());
+		hReserved.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		header.add(hReserved);
 		addSortOperation(hReserved, EnrollmentComparator.SortBy.RESERVATION, MESSAGES.colReserved());
 
 		UniTimeTableHeader hConsent = new UniTimeTableHeader(MESSAGES.colNeedConsent());
+		hConsent.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		header.add(hConsent);
 		addSortOperation(hConsent, EnrollmentComparator.SortBy.NEED_CONSENT, MESSAGES.colNeedConsent().replace("<br>", " "));
 		
 		UniTimeTableHeader hOverride = new UniTimeTableHeader(MESSAGES.colNeedOverride());
+		hOverride.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		header.add(hOverride);
 		addSortOperation(hOverride, EnrollmentComparator.SortBy.NEED_OVERRIDE, MESSAGES.colNeedOverride().replace("<br>", " "));
 
@@ -894,7 +1012,7 @@ public class SectioningStatusPage extends Composite {
 		for (EnrollmentInfo e: result) {
 			iCourseTable.addRow(e, line(e));
 			if (!hasReservation && AvailableCell.hasReservedSpace(e)) hasReservation = true;
-			iCourseTable.getRowFormatter().getElement(iCourseTable.getRowCount() - 1).getStyle().setBackgroundColor("#f3f3f3");
+			iCourseTable.getRowFormatter().getElement(iCourseTable.getRowCount() - 1).addClassName("course-line");
 		}
 		
 		// Total line
@@ -911,34 +1029,35 @@ public class SectioningStatusPage extends Composite {
 			EnrollmentComparator.SortBy sort = EnrollmentComparator.SortBy.values()[Math.abs(SectioningStatusCookie.getInstance().getSortBy(iOnline, 0)) - 1];
 			switch (sort) {
 			case COURSE:
-				iCourseTable.sort(hCourse, new EnrollmentComparator(sort), asc); break;
+				iCourseTable.sort(hCourse, new EnrollmentComparator(sort, asc), asc); break;
 			case SUBJECT:
-				iCourseTable.sort(hSubject, new EnrollmentComparator(sort), asc); break;
+				iCourseTable.sort(hSubject, new EnrollmentComparator(sort, asc), asc); break;
 			case TITLE:
-				iCourseTable.sort(hTitleSubpart, new EnrollmentComparator(sort), asc); break;
+				iCourseTable.sort(hTitleSubpart, new EnrollmentComparator(sort, asc), asc); break;
 			case CONSENT:
-				iCourseTable.sort(hRoom, new EnrollmentComparator(sort), asc); break;
+				iCourseTable.sort(hRoom, new EnrollmentComparator(sort, asc), asc); break;
 			case LIMIT:
-				iCourseTable.sort(hLimit, new EnrollmentComparator(sort), asc); break;
+				iCourseTable.sort(hLimit, new EnrollmentComparator(sort, asc), asc); break;
 			case PROJECTION:
-				iCourseTable.sort(hProjection, new EnrollmentComparator(sort), asc); break;
+				iCourseTable.sort(hProjection, new EnrollmentComparator(sort, asc), asc); break;
 			case ENROLLMENT:
-				iCourseTable.sort(hEnrollment, new EnrollmentComparator(sort), asc); break;
+				iCourseTable.sort(hEnrollment, new EnrollmentComparator(sort, asc), asc); break;
 			case NEED_CONSENT:
-				iCourseTable.sort(hConsent, new EnrollmentComparator(sort), asc); break;
+				iCourseTable.sort(hConsent, new EnrollmentComparator(sort, asc), asc); break;
 			case RESERVATION:
-				iCourseTable.sort(hReserved, new EnrollmentComparator(sort), asc); break;
+				iCourseTable.sort(hReserved, new EnrollmentComparator(sort, asc), asc); break;
 			case WAITLIST:
-				iCourseTable.sort(hWaitListed, new EnrollmentComparator(sort), asc); break;
+				iCourseTable.sort(hWaitListed, new EnrollmentComparator(sort, asc), asc); break;
 			case ALTERNATIVES:
-				iCourseTable.sort(hAlternative, new EnrollmentComparator(sort), asc); break;
+				iCourseTable.sort(hAlternative, new EnrollmentComparator(sort, asc), asc); break;
 			case NEED_OVERRIDE:
-				iCourseTable.sort(hOverride, new EnrollmentComparator(sort), asc); break;
+				iCourseTable.sort(hOverride, new EnrollmentComparator(sort, asc), asc); break;
 			}
 		}
 	}
 	
 	public void populateStudentTable(List<StudentInfo> result) {
+		iSortOperations.clear();
 		List<Widget> header = new ArrayList<Widget>();
 		
 		if (iOnline && iProperties != null && iProperties.isCanSelectStudent()) {
@@ -1407,6 +1526,7 @@ public class SectioningStatusPage extends Composite {
 		UniTimeTableHeader hEnrollment = null;
 		if (hasEnrollment) {
 			hEnrollment = new UniTimeTableHeader(MESSAGES.colEnrollment());
+			hEnrollment.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			header.add(hEnrollment);
 			addSortOperation(hEnrollment, StudentComparator.SortBy.ENROLLMENT, MESSAGES.colEnrollment());
 		}
@@ -1414,6 +1534,7 @@ public class SectioningStatusPage extends Composite {
 		UniTimeTableHeader hWaitlist = null;
 		if (hasWaitList) {
 			hWaitlist = new UniTimeTableHeader(MESSAGES.colWaitListed());
+			hWaitlist.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			header.add(hWaitlist);
 			addSortOperation(hWaitlist, StudentComparator.SortBy.WAITLIST, MESSAGES.colWaitListed());
 		}
@@ -1421,6 +1542,7 @@ public class SectioningStatusPage extends Composite {
 		UniTimeTableHeader hReservation = null;
 		if (hasReservation) {
 			hReservation = new UniTimeTableHeader(MESSAGES.colReservation());
+			hReservation.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			header.add(hReservation);
 			addSortOperation(hReservation, StudentComparator.SortBy.RESERVATION, MESSAGES.colReservation());
 		}
@@ -1428,6 +1550,7 @@ public class SectioningStatusPage extends Composite {
 		UniTimeTableHeader hConsent = null;
 		if (hasConsent) {
 			hConsent = new UniTimeTableHeader(MESSAGES.colConsent());
+			hConsent.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			header.add(hConsent);
 			addSortOperation(hConsent, StudentComparator.SortBy.CONSENT, MESSAGES.colConsent());
 		}
@@ -1435,6 +1558,7 @@ public class SectioningStatusPage extends Composite {
 		UniTimeTableHeader hOverride = null;
 		if (hasOverride) {
 			hOverride = new UniTimeTableHeader(MESSAGES.colPendingOverrides());
+			hOverride.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			header.add(hOverride);
 			addSortOperation(hOverride, StudentComparator.SortBy.OVERRIDE, MESSAGES.colPendingOverrides().replace("<br>", " "));
 		}
@@ -1442,6 +1566,7 @@ public class SectioningStatusPage extends Composite {
 		UniTimeTableHeader hCredit = null;
 		if (hasCredit) {
 			hCredit = new UniTimeTableHeader(MESSAGES.colEnrollCredit());
+			hCredit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			header.add(hCredit);
 			addSortOperation(hCredit, StudentComparator.SortBy.CREDIT, MESSAGES.colEnrollCredit().replace("<br>", " "));
 		}
@@ -1449,6 +1574,7 @@ public class SectioningStatusPage extends Composite {
 		UniTimeTableHeader hReqCred = null;
 		if (hasReqCred) {
 			hReqCred = new UniTimeTableHeader(MESSAGES.colRequestCredit());
+			hReqCred.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			header.add(hReqCred);
 			addSortOperation(hReqCred, StudentComparator.SortBy.REQ_CREDIT, MESSAGES.colRequestCredit().replace("<br>", " "));
 		}
@@ -1456,6 +1582,7 @@ public class SectioningStatusPage extends Composite {
 		UniTimeTableHeader hDistConf = null;
 		if (hasDistances) {
 			hDistConf = new UniTimeTableHeader(MESSAGES.colDistanceConflicts());
+			hDistConf.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 			header.add(hDistConf);
 			addSortOperation(hDistConf, StudentComparator.SortBy.DIST_CONF, MESSAGES.colDistanceConflicts().replace("<br>", " "));
 		}
@@ -1463,6 +1590,7 @@ public class SectioningStatusPage extends Composite {
 		UniTimeTableHeader hShare = null;
 		if (hasOverlaps) {
 			hShare = new UniTimeTableHeader(MESSAGES.colOverlapMins());
+			hShare.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			header.add(hShare);
 			addSortOperation(hShare, StudentComparator.SortBy.OVERLAPS, MESSAGES.colOverlapMins());
 		}
@@ -1470,6 +1598,7 @@ public class SectioningStatusPage extends Composite {
 		UniTimeTableHeader hFTShare = null;
 		if (hasFreeTimeOverlaps) {
 			hFTShare = new UniTimeTableHeader(MESSAGES.colFreeTimeOverlapMins());
+			hFTShare.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			header.add(hFTShare);
 			addSortOperation(hFTShare, StudentComparator.SortBy.FT_OVERLAPS, MESSAGES.colFreeTimeOverlapMins());
 		}
@@ -1477,6 +1606,7 @@ public class SectioningStatusPage extends Composite {
 		UniTimeTableHeader hPrefIMConfs = null;
 		if (hasPrefIMConfs) {
 			hPrefIMConfs = new UniTimeTableHeader(MESSAGES.colPrefInstrMethConfs());
+			hPrefIMConfs.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			header.add(hPrefIMConfs);
 			addSortOperation(hPrefIMConfs, StudentComparator.SortBy.PREF_IM, MESSAGES.colPrefInstrMethConfs().replace("<br>", " "));
 		}
@@ -1484,6 +1614,7 @@ public class SectioningStatusPage extends Composite {
 		UniTimeTableHeader hPrefSecConfs = null;
 		if (hasPrefSecConfs) {
 			hPrefSecConfs = new UniTimeTableHeader(MESSAGES.colPrefSectionConfs());
+			hPrefSecConfs.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			header.add(hPrefSecConfs);
 			addSortOperation(hPrefSecConfs, StudentComparator.SortBy.PREF_SEC, MESSAGES.colPrefSectionConfs().replace("<br>", " "));
 		}
@@ -1680,11 +1811,12 @@ public class SectioningStatusPage extends Composite {
 			case REQ_CREDIT: h = hReqCred; break;
 			}
 			if (h != null)
-				iStudentTable.sort(h, new StudentComparator(sort), asc);
+				iStudentTable.sort(h, new StudentComparator(sort, asc), asc);
 		}
 	}
 	
 	public void populateChangeLog(List<SectioningAction> result) {
+		iSortOperations.clear();
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		
 		UniTimeTableHeader hStudent = new UniTimeTableHeader(MESSAGES.colStudent());
@@ -1747,10 +1879,11 @@ public class SectioningStatusPage extends Composite {
 	}
 	
 	protected void addSortOperation(final UniTimeTableHeader header, final EnrollmentComparator.SortBy sort, final String column) {
-		header.addOperation(new Operation() {
+		Operation op = new SortOperation() {
 			@Override
 			public void execute() {
-				iCourseTable.sort(header, new EnrollmentComparator(sort));
+				boolean asc = (header.getOrder() == null ? true : !header.getOrder());
+				iCourseTable.sort(header, new EnrollmentComparator(sort, asc));
 				SectioningStatusCookie.getInstance().setSortBy(iOnline, 0, header.getOrder() ? 1 + sort.ordinal() : -1 - sort.ordinal());
 			}
 			@Override
@@ -1765,14 +1898,21 @@ public class SectioningStatusPage extends Composite {
 			public String getName() {
 				return MESSAGES.sortBy(column);
 			}
-		});
+			@Override
+			public String getColumnName() {
+				return column;
+			}
+		};
+		header.addOperation(op);
+		iSortOperations.add(op);
 	}
 	
 	protected void addSortOperation(final UniTimeTableHeader header, final StudentComparator.SortBy sort, final String column) {
-		header.addOperation(new Operation() {
+		Operation op = new SortOperation() {
 			@Override
 			public void execute() {
-				iStudentTable.sort(header, new StudentComparator(sort));
+				boolean asc = (header.getOrder() == null ? true : !header.getOrder());
+				iStudentTable.sort(header, new StudentComparator(sort, asc));
 				SectioningStatusCookie.getInstance().setSortBy(iOnline, 1, header.getOrder() ? 1 + sort.ordinal() : -1 - sort.ordinal());
 			}
 			@Override
@@ -1787,7 +1927,13 @@ public class SectioningStatusPage extends Composite {
 			public String getName() {
 				return MESSAGES.sortBy(column);
 			}
-		});
+			@Override
+			public String getColumnName() {
+				return column;
+			}
+		};
+		header.addOperation(op);
+		iSortOperations.add(op);
 	}
 	
 	public static class SimpleSuggestion implements Suggestion {
@@ -1812,7 +1958,7 @@ public class SectioningStatusPage extends Composite {
 	}
 	
 	protected void addSortOperation(final UniTimeTableHeader header, final ChangeLogComparator.SortBy sort, final String column) {
-		header.addOperation(new Operation() {
+		Operation op = new SortOperation() {
 			@Override
 			public void execute() {
 				iLogTable.sort(header, new ChangeLogComparator(sort));
@@ -1830,8 +1976,16 @@ public class SectioningStatusPage extends Composite {
 			public String getName() {
 				return MESSAGES.sortBy(column);
 			}
-		});
+			@Override
+			public String getColumnName() {
+				return column;
+			}
+		};
+		header.addOperation(op);
+		iSortOperations.add(op);
 	}
+	
+	private static interface SortOperation extends Operation, HasColumnName {}
 	
 	public class SuggestCallback implements AsyncCallback<List<String[]>> {
 		private Request iRequest;
@@ -2003,21 +2157,23 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		private SortBy iSortBy;
+		private boolean iAsc;
 		
-		public EnrollmentComparator(SortBy sortBy) {
+		public EnrollmentComparator(SortBy sortBy, boolean asc) {
 			iSortBy = sortBy;
+			iAsc = asc;
 		}
 
 		@Override
 		public int compare(EnrollmentInfo e1, EnrollmentInfo e2) {
 			// Totals line is always last
-			if (e1.getCourseId() == null) return 1;
-			if (e2.getCourseId() == null) return -1;
+			if (e1.getCourseId() == null) return (iAsc ? 1 : -1);
+			if (e2.getCourseId() == null) return (iAsc ? -1 : 1);
 			
 			if (e1.getCourseId().equals(e2.getCourseId())) { // Same course
 				// Course line first
-				if (e1.getConfigId() == null) return -1;
-				if (e2.getConfigId() == null) return -1;
+				if (e1.getConfigId() == null) return (iAsc ? -1 : 1);
+				if (e2.getConfigId() == null) return (iAsc ? 1 : -1);
 				return compareClasses(e1, e2);
 			} else { // Different course
 				return compareCourses(e1, e2);
@@ -2137,9 +2293,11 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		private SortBy iSortBy;
+		private boolean iAsc;
 		
-		public StudentComparator(SortBy sortBy) {
+		public StudentComparator(SortBy sortBy, boolean asc) {
 			iSortBy = sortBy;
+			iAsc = asc;
 		}
 		
 		protected int doCompare(StudentInfo e1, StudentInfo e2) {
@@ -2249,8 +2407,8 @@ public class SectioningStatusPage extends Composite {
 
 		@Override
 		public int compare(StudentInfo e1, StudentInfo e2) {
-			if (e1.getStudent() == null) return 1;
-			if (e2.getStudent() == null) return -1;
+			if (e1.getStudent() == null) return (iAsc ? 1 : -1);
+			if (e2.getStudent() == null) return (iAsc ? -1 : 1);
 			int cmp = doCompare(e1, e2);
 			if (cmp != 0) return cmp;
 			cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());

@@ -6003,3 +6003,55 @@ unitime-RoomSharingWidget .legend .blank {
 	color: #777777;
 	font-style: italic;
 }
+
+.unitime-StudentsTable tr:nth-child(odd) {
+	background-color: #eee;
+}
+
+.unitime-StudentsTable tr:last-child {
+	background-color: #ffc;
+}
+
+.unitime-StudentsTable td:nth-child(n+2) {
+	border-left: 1px dashed #9CB0CE;
+}
+
+.unitime-StudentsTable tr:first-child td {
+	border-left: none;
+}
+
+.unitime-StudentsTable tr:last-child td {
+	border-left: none;
+}
+
+.unitime-EnrollmentsTable .course-line {
+	background-color: #f3f3f3;
+}
+
+.unitime-EnrollmentsTable tr:last-child {
+	background-color: #ffc;
+}
+
+.unitime-EnrollmentsTable td:nth-child(n+3) {
+	border-left: 1px dashed #9CB0CE;
+}
+
+.unitime-EnrollmentsTable tr:first-child td {
+	border-left: none;
+}
+
+.unitime-EnrollmentsTable tr:last-child td {
+	border-left: none;
+}
+
+.unitime-LogsTable tr:nth-child(odd) {
+	background-color: #eee;
+}
+
+.unitime-LogsTable td:nth-child(n+2) {
+	border-left: 1px dashed #9CB0CE;
+}
+
+.unitime-LogsTable tr:first-child td {
+	border-left: none;
+}

@@ -96,7 +96,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
     		if (enrollments != null && sort != 0) {
     			boolean asc = (sort > 0);
     			EnrollmentComparator.SortBy sortBy = EnrollmentComparator.SortBy.values()[Math.abs(sort) - 1];
-    			Collections.sort(enrollments, new EnrollmentComparator(sortBy));
+    			Collections.sort(enrollments, new EnrollmentComparator(sortBy, asc));
     			if (!asc) Collections.reverse(enrollments);
     		}
     		if (!courseIds.isEmpty() && enrollments != null) {
@@ -119,7 +119,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
     		if (students != null && sort != 0) {
     			boolean asc = (sort > 0);
     			StudentComparator.SortBy sortBy = StudentComparator.SortBy.values()[Math.abs(sort) - 1];
-    			Collections.sort(students, new StudentComparator(sortBy));
+    			Collections.sort(students, new StudentComparator(sortBy, asc));
     			if (!asc) Collections.reverse(students);
     		}
     		populateStudentTable(helper, online, students);
