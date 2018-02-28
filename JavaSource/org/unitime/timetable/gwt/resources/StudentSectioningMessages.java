@@ -1703,4 +1703,28 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Rejected")
 	String reqStatusRejected();
+		
+	@DefaultMessage("You are already enrolled in {0}.\nThis course request cannot be modified or deleted.")
+	String enrolled(String course);
+	
+	@DefaultMessage("You are currently registered for {0}.")
+	String requested(String course);
+	
+	@DefaultMessage("The following registration errors have been detected:\n{0}")
+	String overrideNeeded(String errors);
+	
+	@DefaultMessage("The following issues have been detected:\n{0}")
+	String requestWarnings(String errors);
+	
+	@DefaultMessage("Requested override for {0} has been rejected.\nPlease select a different course or remove this course request.")
+	String overrideRejected(String course);
+	
+	@DefaultMessage("An override has been requested for {0}.\nWaiting for approval...")
+	String overridePending(String course);
+	
+	@DefaultMessage("Requested override for {0} has been cancelled.\nClick the Submit Requests button to re-validate this request and request a new override if it is still needed.")
+	String overrideCancelled(String course);
+	
+	@DefaultMessage("Requested override for {0} has been approved.")
+	String overrideApproved(String course);
 }

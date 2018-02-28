@@ -1865,6 +1865,17 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
     -moz-opacity: .80;
 }
 
+.unitime-FilterBox .status-image {
+	cursor: pointer;
+	position: relative;
+	float: left;
+	display: -moz-inline-box;
+	display: inline-block;
+	margin-top: 3px;
+	margin-right: 2px;
+	margin-left: 1px;
+}
+
 .unitime-FilterBox .chip {
 	margin: 1px;
 	border-radius: 2px;

@@ -48,6 +48,7 @@ import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
@@ -60,6 +61,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HasValue;
 
@@ -416,6 +418,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 	
 	public class CourseSelectionBox extends CourseRequestBox {
 		private HandlerRegistration iCourseSelectionHandlerRegistration;
+		private FilterStatus iStatus;
 		
 		public CourseSelectionBox(boolean allowFreeTime, boolean alternative) {
 			super(CONSTANTS.showCourseTitle(), iSpecReg);
@@ -689,11 +692,64 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 				});
 				addOperation(addAlternative, true);
 			}
+			
+			if (!iSectioning) {
+				iStatus = new FilterStatus(RESOURCES.requestEnrolled()); iStatus.clearStatus();
+				addStatus(iStatus);
+			}
+		}
+		
+		public void setStatus(ImageResource icon, String message) {
+			if (iStatus != null) {
+				iStatus.setStatus(icon, message);
+				resizeFilterIfNeeded();
+			}
+		}
+		
+		public void clearStatus() {
+			if (iStatus != null) {
+				iStatus.clearStatus();
+				resizeFilterIfNeeded();
+			}
 		}
 		
 		@Override
 		public void setValue(RequestedCourse rc) {
 			super.setValue(rc);
+			if (iSectioning || rc == null || rc.getStatus() == null) {
+				clearStatus();
+			} else {
+				switch (rc.getStatus()) {
+				case ENROLLED:
+					setStatus(RESOURCES.requestEnrolled(), MESSAGES.enrolled(rc.getCourseName()));
+					break;
+				case OVERRIDE_REJECTED:
+					setStatus(RESOURCES.requestRejected(), MESSAGES.overrideRejected(rc.getCourseName()));
+					break;
+				case OVERRIDE_PENDING:
+					setStatus(RESOURCES.requestPending(), MESSAGES.overridePending(rc.getCourseName()));
+					break;
+				case OVERRIDE_CANCELLED:
+					setStatus(RESOURCES.requestCancelled(), MESSAGES.overrideCancelled(rc.getCourseName()));
+					break;
+				case OVERRIDE_APPROVED:
+					setStatus(RESOURCES.requestSaved(), MESSAGES.overrideApproved(rc.getCourseName()));
+				case NEW_REQUEST:
+					clearStatus();
+					break;
+				default:
+					if (rc.isCourse())
+						setStatus(RESOURCES.requestSaved(), MESSAGES.requested(rc.getCourseName()));
+					else if (rc.isFreeTime()) {
+						String  free = "";
+						for (FreeTime ft: rc.getFreeTime()) {
+							if (!free.isEmpty()) free += ", ";
+							free += ft.toString(CONSTANTS.shortDays(), CONSTANTS.useAmPm());
+						}
+						setStatus(RESOURCES.requestSaved(), MESSAGES.requested(CONSTANTS.freePrefix() + free));
+					}
+				}
+			}
 			CourseSelectionBox prev = getPrevious();
 			// if (rc == null && prev != null && !prev.getValue().isCourse()) setEnabled(false);
 			if (prev != null) {

@@ -63,7 +63,7 @@ import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
  * @author Tomas Muller
  */
 @CheckMaster(Master.REQUIRED)
-public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
+public class SaveStudentRequests implements OnlineSectioningAction<CourseRequestInterface>{
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Long iStudentId;
@@ -95,7 +95,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 	public boolean getKeepEnrollments() { return iKeepEnrollments; }
 
 	@Override
-	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+	public CourseRequestInterface execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		Lock lock = server.lockStudent(getStudentId(), null, name());
 		try {
 			helper.beginTransaction();
@@ -141,7 +141,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 				
 				helper.commitTransaction();
 				
-				return true;
+				return getRequest();
 			} catch (Exception e) {
 				helper.rollbackTransaction();
 				if (e instanceof SectioningException)
@@ -214,6 +214,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 							helper.getHibSession().saveOrUpdate(cd);
 						}
 						priority++;
+						rc.setStatus(RequestedCourseStatus.SAVED);
 					} else if (rc.isCourse()) {
 						CourseOffering co = null;
 						if (rc.hasCourseId()) {
@@ -282,6 +283,8 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 						RequestedCourseStatus.OVERRIDE_PENDING == rc.getStatus() ? CourseRequestOverrideStatus.PENDING :
 						RequestedCourseStatus.OVERRIDE_CANCELLED == rc.getStatus() ? CourseRequestOverrideStatus.CANCELLED :
 						RequestedCourseStatus.OVERRIDE_REJECTED == rc.getStatus() ? CourseRequestOverrideStatus.REJECTED : null);
+					if (rc.getStatus() == null || rc.getStatus() == RequestedCourseStatus.NEW_REQUEST)
+						rc.setStatus(RequestedCourseStatus.SAVED);
 					course2request.put(co.getUniqueId(), cr);
 				}
 				while (requests.hasNext()) {
@@ -333,6 +336,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 							helper.getHibSession().saveOrUpdate(cd);
 						}
 						priority ++;
+						rc.setStatus(RequestedCourseStatus.SAVED);
 					} else if (rc.isCourse()) {
 						CourseOffering co = null;
 						if (rc.hasCourseId()) {
@@ -401,6 +405,8 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 						RequestedCourseStatus.OVERRIDE_PENDING == rc.getStatus() ? CourseRequestOverrideStatus.PENDING :
 						RequestedCourseStatus.OVERRIDE_CANCELLED == rc.getStatus() ? CourseRequestOverrideStatus.CANCELLED :
 						RequestedCourseStatus.OVERRIDE_REJECTED == rc.getStatus() ? CourseRequestOverrideStatus.REJECTED : null);
+					if (rc.getStatus() == null || rc.getStatus() == RequestedCourseStatus.NEW_REQUEST)
+						rc.setStatus(RequestedCourseStatus.SAVED);
 					course2request.put(co.getUniqueId(), cr);
 				}
 				while (requests.hasNext()) {

@@ -950,15 +950,15 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (result) {
 							LoadingWidget.getInstance().show(MESSAGES.courseRequestsSaving());
 							final CourseRequestInterface request = iCourseRequests.getRequest();
-							iSectioningService.saveRequest(request, new AsyncCallback<Boolean>() {
-								public void onSuccess(Boolean result) {
-									if (result) {
+							iSectioningService.saveRequest(request, new AsyncCallback<CourseRequestInterface>() {
+								public void onSuccess(CourseRequestInterface result) {
+									if (result != null) {
 										if (iScheduleChanged) {
 											iScheduleChanged = false;
 											clearMessage();
 										}
-										iStatus.info(MESSAGES.saveRequestsOK());
-										iSavedRequest = request;
+										iSavedRequest = result;
+										iCourseRequests.setValue(result, false);
 										iCourseRequests.notifySaveSucceeded();
 									}
 									LoadingWidget.getInstance().hide();

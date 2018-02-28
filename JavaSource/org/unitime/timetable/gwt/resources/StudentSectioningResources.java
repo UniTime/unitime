@@ -21,7 +21,6 @@ package org.unitime.timetable.gwt.resources;
 
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.ClientBundle.Source;
 
 /**
  * @author Tomas Muller
@@ -165,6 +164,9 @@ public interface StudentSectioningResources extends ClientBundle {
 	@Source("org/unitime/timetable/gwt/resources/icons/alert.png")
 	ImageResource statusError();
 	
+	@Source("org/unitime/timetable/gwt/resources/icons/check.png")
+	ImageResource statusDone();
+	
 	@Source("org/unitime/timetable/gwt/resources/icons/finder_assigned.png")
 	ImageResource finderAssigned();
 	
@@ -188,4 +190,25 @@ public interface StudentSectioningResources extends ClientBundle {
 	
 	@Source("org/unitime/timetable/gwt/resources/icons/action_check.png")
 	ImageResource requestsWaitList();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/login.png")
+	ImageResource requestEnrolled();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/action_check.png")
+	ImageResource requestSaved();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/stop.png")
+	ImageResource requestRejected();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/time.png")
+	ImageResource requestPending();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/attention.png")
+	ImageResource requestCancelled();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/attention.png")
+	ImageResource requestNeeded();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/stop.png")
+	ImageResource requestError();
 }

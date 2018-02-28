@@ -344,10 +344,11 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		NEW_REQUEST,
 		ENROLLED,
 		SAVED,
-		OVERRIDE_PENDING,
-		OVERRIDE_REJECTED,
 		OVERRIDE_APPROVED,
 		OVERRIDE_CANCELLED,
+		OVERRIDE_PENDING,
+		OVERRIDE_NEEDED,
+		OVERRIDE_REJECTED,
 	}
 	
 	public static class RequestedCourse implements IsSerializable, Serializable, Comparable<RequestedCourse> {
@@ -812,6 +813,17 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			return ret;
 		}
 		
+		public RequestedCourseStatus getStatus(String courseName) {
+			RequestedCourseStatus status = null;
+			if (hasMessages())
+				for (CourseMessage m: getMessages()) {
+					if (m.getStatus() != null && m.hasCourse() && courseName.equals(m.getCourse())) {
+						if (status == null || m.getStatus().ordinal() > status.ordinal()) status = m.getStatus();
+					}
+				}
+			return status;
+		}
+		
 		public String getMessageWithColor(String courseName, String delim) {
 			if (!hasMessages()) return null;
 			String ret = null;
@@ -880,6 +892,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		private String iCode;
 		private Integer iConfirm;
 		private Integer iOrder;
+		private RequestedCourseStatus iStatus;
 		
 		public CourseMessage() {}
 		
@@ -908,8 +921,11 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public String getCode() { return iCode; }
 		public void setCode(String code) { iCode = code; }
 		
+		public RequestedCourseStatus getStatus() { return iStatus; }
+		public CourseMessage setStatus(RequestedCourseStatus status) { iStatus = status; return this; }
+		
 		@Override
-		public String toString() { return (hasCourse() ? getCourse() + ": " : "") + getMessage(); }
+		public String toString() { return (hasCourse() ? getCourse() + ": " : "") + getMessage() + (getStatus() == null ? "" : " (" + getStatus() + ")"); }
 		
 		@Override
 		public int hashCode() { return (hasCourse() ? getCourse() + ":" + getCode() : getCode()).hashCode(); }
@@ -933,7 +949,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		}
 	}
 	
-	public void addConfirmationError(Long courseId, String course, String code, String message) {
+	public void addConfirmationError(Long courseId, String course, String code, String message, RequestedCourseStatus status) {
 		if (iConfirmations == null) iConfirmations = new ArrayList<CourseMessage>();
 		CourseMessage m = new CourseMessage();
 		m.setCourseId(courseId);
@@ -942,10 +958,11 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		m.setMessage(message);
 		m.setError(true);
 		m.setConfirm(null);
+		m.setStatus(status);
 		iConfirmations.add(m);
 	}
 	
-	public void addConfirmationMessage(Long courseId, String course, String code, String message) {
+	public void addConfirmationMessage(Long courseId, String course, String code, String message, RequestedCourseStatus status) {
 		if (iConfirmations == null) iConfirmations = new ArrayList<CourseMessage>();
 		CourseMessage m = new CourseMessage();
 		m.setCourseId(courseId);
@@ -954,6 +971,11 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		m.setMessage(message);
 		m.setError(false);
 		m.setConfirm(null);
+		m.setStatus(status);
 		iConfirmations.add(m);
+	}
+	
+	public void addConfirmationMessage(Long courseId, String course, String code, String message) {
+		addConfirmationMessage(courseId, course, code, message, null);
 	}
 }

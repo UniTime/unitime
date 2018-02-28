@@ -43,6 +43,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.CourseMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
@@ -128,17 +129,8 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
 				@Override
 				public void onValueChange(ValueChangeEvent<Request> event) {
-					if (iLastCheck != null) {
-						for (CourseSelectionBox box: line.getCourses()) {
-							String message = iLastCheck.getMessage(box.getText(), "\n");
-							if (message != null) {
-								if (iLastCheck.isError(box.getText()) || iLastCheck.isConfirm(box.getText()))
-									box.setError(message);
-								else
-									box.setWarning(message);
-							}
-						}
-					}
+					if (iLastCheck != null)
+						for (CourseSelectionBox box: line.getCourses()) setErrors(box, iLastCheck);
 					ValueChangeEvent.fire(CourseRequestsTable.this, getValue());
 					if (event.getValue() != null && iCourses.indexOf(line) + 1 == iCourses.size())
 						addCourseLine();
@@ -187,17 +179,8 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
 				@Override
 				public void onValueChange(ValueChangeEvent<Request> event) {
-					if (iLastCheck != null) {
-						for (CourseSelectionBox box: line.getCourses()) {
-							String message = iLastCheck.getMessage(box.getText(), "\n");
-							if (message != null) {
-								if (iLastCheck.isError(box.getText()) || iLastCheck.isConfirm(box.getText()))
-									box.setError(message);
-								else
-									box.setWarning(message);
-							}
-						}
-					}
+					if (iLastCheck != null)
+						for (CourseSelectionBox box: line.getCourses()) setErrors(box, iLastCheck);
 					ValueChangeEvent.fire(CourseRequestsTable.this, getValue());
 					if (event.getValue() != null && iAlternatives.indexOf(line) + 1 == iAlternatives.size())
 						addAlternativeLine();
@@ -227,17 +210,8 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Request> event) {
-				if (iLastCheck != null) {
-					for (CourseSelectionBox box: line.getCourses()) {
-						String message = iLastCheck.getMessage(box.getText(), "\n");
-						if (message != null) {
-							if (iLastCheck.isError(box.getText()) || iLastCheck.isConfirm(box.getText()))
-								box.setError(message);
-							else
-								box.setWarning(message);
-						}
-					}
-				}
+				if (iLastCheck != null)
+					for (CourseSelectionBox box: line.getCourses()) setErrors(box, iLastCheck);
 				ValueChangeEvent.fire(CourseRequestsTable.this, getValue());
 				if (event.getValue() != null && iCourses.indexOf(line) + 1 == iCourses.size())
 					addCourseLine();
@@ -266,17 +240,8 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Request> event) {
-				if (iLastCheck != null) {
-					for (CourseSelectionBox box: line.getCourses()) {
-						String message = iLastCheck.getMessage(box.getText(), "\n");
-						if (message != null) {
-							if (iLastCheck.isError(box.getText()) || iLastCheck.isConfirm(box.getText()))
-								box.setError(message);
-							else
-								box.setWarning(message);
-						}
-					}
-				}
+				if (iLastCheck != null)
+					for (CourseSelectionBox box: line.getCourses()) setErrors(box, iLastCheck);
 				ValueChangeEvent.fire(CourseRequestsTable.this, getValue());
 				if (event.getValue() != null && iAlternatives.indexOf(line) + 1 == iAlternatives.size())
 					addAlternativeLine();
@@ -330,6 +295,24 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 					new AsyncCallback<CheckCoursesResponse>() {
 						public void onSuccess(final CheckCoursesResponse result) {
 							iLastCheck = result;
+							for (CourseRequestLine line: iCourses) {
+								for (CourseSelectionBox box: line.getCourses()) {
+									String message = box.validate();
+									if (message != null) {
+										RequestedCourse rc = box.getValue();
+										iLastCheck.addError(rc.getCourseId(), rc.getCourseName(), "ERROR", message);
+									}
+								}
+							}
+							for (CourseRequestLine line: iAlternatives) {
+								for (CourseSelectionBox box: line.getCourses()) {
+									String message = box.validate();
+									if (message != null) {
+										RequestedCourse rc = box.getValue();
+										iLastCheck.addError(rc.getCourseId(), rc.getCourseName(), "ERROR", message);
+									}
+								}
+							}
 							setErrors(result);
 							LoadingWidget.getInstance().hide();
 							if (result.isError()) {
@@ -377,26 +360,54 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	}
 	
 	public void setErrors(CheckCoursesResponse response) {
-		for (CourseRequestLine line: iCourses) {
-			for (CourseSelectionBox box: line.getCourses()) {
-				String message = response.getMessage(box.getText(), "\n");
-				if (message != null) {
-					if (response.isError(box.getText()) || response.isConfirm(box.getText()))
-						box.setError(message);
-					else
-						box.setWarning(message);
-				}
-			}
+		for (CourseRequestLine line: iCourses)
+			for (CourseSelectionBox box: line.getCourses()) setErrors(box, response);
+		for (CourseRequestLine line: iAlternatives)
+			for (CourseSelectionBox box: line.getCourses()) setErrors(box, response);
+	}
+	
+	protected void setErrors(CourseSelectionBox box, CheckCoursesResponse messages) {
+		String message = messages.getMessage(box.getText(), "\n");
+		if (message != null) {
+			if (messages.isError(box.getText()) || messages.isConfirm(box.getText()))
+				box.setError(message);
+			else
+				box.setWarning(message);
 		}
-		for (CourseRequestLine line: iAlternatives) {
-			for (CourseSelectionBox box: line.getCourses()) {
-				String message = response.getMessage(box.getText(), "\n");
-				if (message != null) {
-					if (response.isError(box.getText()) || response.isConfirm(box.getText()))
-						box.setError(message);
-					else
-						box.setWarning(message);
-				}
+		RequestedCourseStatus status = messages.getStatus(box.getText());
+		if (status == null) status = box.getValue().getStatus();
+		if (!box.isCanDelete()) status = RequestedCourseStatus.ENROLLED;
+		if (messages.isError(box.getText()) && (status == null || status != RequestedCourseStatus.OVERRIDE_REJECTED)) {
+			box.setStatus(RESOURCES.requestError(), message);
+		} else if (status != null) {
+			switch (status) {
+			case ENROLLED:
+				box.setStatus(RESOURCES.requestEnrolled(), MESSAGES.enrolled(box.getText()));
+				break;
+			case OVERRIDE_NEEDED:
+				box.setStatus(RESOURCES.requestNeeded(), MESSAGES.overrideNeeded(message));
+				break;
+			case SAVED:
+				box.setStatus(RESOURCES.requestSaved(), (message == null ? "" : MESSAGES.requestWarnings(message) + "\n\n") + MESSAGES.requested(box.getText()));
+				break;				
+			case OVERRIDE_REJECTED:
+				box.setStatus(RESOURCES.requestRejected(), (message == null ? "" : MESSAGES.requestWarnings(message) + "\n\n") + MESSAGES.overrideRejected(box.getText()));
+				break;
+			case OVERRIDE_PENDING:
+				box.setStatus(RESOURCES.requestPending(), (message == null ? "" : MESSAGES.requestWarnings(message) + "\n\n") + MESSAGES.overridePending(box.getText()));
+				break;
+			case OVERRIDE_CANCELLED:
+				box.setStatus(RESOURCES.requestCancelled(), (message == null ? "" : MESSAGES.requestWarnings(message) + "\n\n") + MESSAGES.overrideCancelled(box.getText()));
+				break;
+			case OVERRIDE_APPROVED:
+				box.setStatus(RESOURCES.requestSaved(), (message == null ? "" : MESSAGES.requestWarnings(message) + "\n\n") + MESSAGES.overrideApproved(box.getText()));
+				break;
+			default:
+				if (messages.isError(box.getText()))
+					box.setStatus(RESOURCES.requestError(), message);
+				else
+					box.clearStatus();
+				break;
 			}
 		}
 	}

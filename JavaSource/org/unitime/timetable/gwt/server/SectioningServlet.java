@@ -972,7 +972,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 	}
 
-	public Boolean saveRequest(CourseRequestInterface request) throws SectioningException, PageAccessException {
+	public CourseRequestInterface saveRequest(CourseRequestInterface request) throws SectioningException, PageAccessException {
 		OnlineSectioningServer server = getServerInstance(request.getAcademicSessionId(), false);
 		Long studentId = getStudentId(request.getAcademicSessionId());
 		if (studentId == null && getSessionContext().hasPermissionAnySession(request.getAcademicSessionId(), Right.StudentSchedulingAdvisor))
@@ -980,8 +980,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (server != null) {
 			if (studentId == null)
 				throw new SectioningException(MSG.exceptionEnrollNotStudent(server.getAcademicSession().toString()));
-			server.execute(server.createAction(SaveStudentRequests.class).forStudent(studentId).withRequest(request).withCustomValidation(true), currentUser());
-			return true;
+			return server.execute(server.createAction(SaveStudentRequests.class).forStudent(studentId).withRequest(request).withCustomValidation(true), currentUser());
 		} else {
 			if (CustomCourseRequestsValidationHolder.hasProvider()) {
 				OnlineSectioningServer dummy = getServerInstance(request.getAcademicSessionId(), true);
@@ -996,7 +995,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				SaveStudentRequests.saveRequest(null, new OnlineSectioningHelper(hibSession, currentUser()), student, request, true);
 				hibSession.save(student);
 				hibSession.flush();
-				return true;
+				return request;
 			} catch (PageAccessException e) {
 				throw e;
 			} catch (SectioningException e) {
@@ -1939,6 +1938,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							request.getCourses().add(r);
 						lastRequest = r;
 						lastRequestPriority = cd.getPriority();
+						rc.setStatus(RequestedCourseStatus.SAVED);
 					}
 				} else if (!cd.getCourseRequests().isEmpty()) {
 					r = new CourseRequestInterface.Request();

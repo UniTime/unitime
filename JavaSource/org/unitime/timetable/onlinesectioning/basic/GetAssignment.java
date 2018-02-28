@@ -613,6 +613,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 							request.getCourses().add(r);
 						lastRequest = r;
 						lastRequestPriority = cd.getPriority();
+						rc.setStatus(RequestedCourseStatus.SAVED);
 					}
 				} else if (cd instanceof XCourseRequest) {
 					r = new CourseRequestInterface.Request();

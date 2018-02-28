@@ -234,9 +234,9 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 						helper.getOptinalParameter("pin", null));
 			}
 		}, Flag.GET),
-		saveRequest(new OpExecution<Boolean>() {
+		saveRequest(new OpExecution<CourseRequestInterface>() {
 			@Override
-			public Boolean execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
+			public CourseRequestInterface execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
 				CourseRequestInterface request = helper.getRequest(CourseRequestInterface.class);
 				request.setAcademicSessionId(sessionId);
 				if (request.getStudentId() == null && studentId != null)

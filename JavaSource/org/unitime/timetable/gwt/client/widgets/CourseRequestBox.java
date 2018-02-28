@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
+import org.unitime.timetable.gwt.client.aria.HasAriaLabel;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Suggestion;
@@ -38,6 +39,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignmen
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
 import com.google.gwt.aria.client.Roles;
@@ -68,6 +70,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -279,11 +282,13 @@ public class CourseRequestBox extends P implements CourseSelection {
 			ret.setCourseName(course.getCourseName());
 			ret.setCourseTitle(course.getTitle());
 			ret.setCredit(course.guessCreditRange());
+			ret.setStatus(RequestedCourseStatus.NEW_REQUEST);
 		} else if (iLastCourse != null && iLastCourse.isCourse() && iLastCourse.hasCourseId() && courseName.equalsIgnoreCase(iLastCourse.getCourseName())) {
 			ret.setCourseId(iLastCourse.getCourseId());
 			ret.setCourseName(courseName);
 			ret.setCourseTitle(iLastCourse.getCourseTitle());
 			ret.setCredit(iLastCourse.getCredit());
+			ret.setStatus(iLastCourse.getStatus());
 		} else if (iFreeTimeParser != null) {
 			try {
 				ret.setFreeTime(iFreeTimeParser.parseFreeTime(courseName));
@@ -705,8 +710,10 @@ public class CourseRequestBox extends P implements CourseSelection {
 					buttonWidth += w.getElement().getOffsetWidth() + 2;
 			}
 			int w = 0;
-			for (int i = 1; i < getWidgetCount(); i++)
+			for (int i = 0; i < getWidgetCount(); i++) {
+				if (getWidget(i) instanceof TextBox) continue;
 				w += 2 + getWidget(i).getOffsetWidth();
+			}
 			int width = getElement().getClientWidth() - w;
 			if (width < 100) {
 				width = getElement().getClientWidth() - buttonWidth;
@@ -779,6 +786,11 @@ public class CourseRequestBox extends P implements CourseSelection {
         Roles.getDocumentRole().setAriaHiddenState(operation.getElement(), true);
 	}
 	
+	public void addStatus(FilterOperation operation) {
+		operation.addStyleName("status-image");
+		iFilter.insert(operation, 0);
+	}
+	
 	public void removeOperation(FilterOperation operation) {
 		iFilter.remove(operation);
 	}
@@ -797,7 +809,6 @@ public class CourseRequestBox extends P implements CourseSelection {
 		public FilterOperation(ImageResource resource, Character accessKey) {
 			super(resource);
 			iAccessKey = accessKey;
-			addStyleName("button-image");
 	        Roles.getDocumentRole().setAriaHiddenState(getElement(), true);
 		}
 		
@@ -809,5 +820,42 @@ public class CourseRequestBox extends P implements CourseSelection {
 		}
 		
 		public Character getAccessKey() { return iAccessKey; }
+	}
+	
+	public static class FilterStatus extends FilterOperation implements HasAriaLabel {
+		public FilterStatus(ImageResource resource, Character accessKey) {
+			super(resource, accessKey);
+			addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					UniTimeConfirmationDialog.info(getAltText());
+				}
+			});
+		}
+		
+		public FilterStatus(ImageResource resource) {
+			this(resource, null);
+		}
+		
+		public void setStatus(ImageResource icon, String message) {
+			setVisible(true);
+			setResource(icon);
+			setTitle(message);
+			setAriaLabel(message);
+		}
+		
+		public void clearStatus() {
+			setVisible(false);
+		}
+
+		@Override
+		public String getAriaLabel() {
+			return getAltText();
+		}
+
+		@Override
+		public void setAriaLabel(String text) {
+			setAltText(text);
+		}
 	}
 }
