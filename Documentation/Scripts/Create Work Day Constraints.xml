@@ -22,7 +22,7 @@
   <description><![CDATA[This script creates the N Hour Work Day distribution types.]]></description>
   <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
 
-for (var i = 6; i <= 12; i++) {
+for (var i = 4; i <= 12; i++) {
   var type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', 'WORKDAY(' + i + ')').uniqueResult();
   if (type == null) {
     type = new org.unitime.timetable.model.DistributionType();
