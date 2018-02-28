@@ -36,6 +36,7 @@ public class ScheduleStatus extends P {
 		INFO("unitime-ScheduleMessage", RESOURCES.statusInfo()),
 		WARNING("unitime-ScheduleWarningMessage", RESOURCES.statusWarning()),
 		ERROR("unitime-ScheduleErrorMessage", RESOURCES.statusError()),
+		DONE("unitime-ScheduleMessage", RESOURCES.statusDone()),
 		;
 		
 		private String iStyleName;
@@ -118,6 +119,16 @@ public class ScheduleStatus extends P {
 	
 	public void error(Throwable t) {
 		error(t.getMessage(), t);
+	}
+	
+	public void done(String message, boolean popup) {
+		setMessage(Level.DONE, message);
+		if (popup)
+			UniTimeNotifications.info(message);
+	}
+	
+	public void done(String message) {
+		done(message, true);
 	}
 	
 	public void clear() {

@@ -740,7 +740,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								if (result.hasRequest())
 									iCourseRequests.setRequest(result.getRequest());
 								if (!result.hasMessages())
-									iStatus.info(MESSAGES.enrollOK());
+									iStatus.done(MESSAGES.enrollOK());
 								updateHistory();
 								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.RECHECK_AFTER_ENROLLMENT)) {
 									iSectioningService.checkEligibility(iOnline, iMode.isSectioning(), iSessionSelector.getAcademicSessionId(),
@@ -838,7 +838,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								LoadingWidget.getInstance().hide();
 								if (respose.isSuccess()) {
 									iSpecialRegAssignment = iLastAssignment;
-									iStatus.info(respose.hasMessage() ? respose.getMessage() : MESSAGES.submitSecialRegistrationOK());
+									iStatus.done(respose.hasMessage() ? respose.getMessage() : MESSAGES.submitSecialRegistrationOK());
 								} else {
 									iStatus.error(respose.getMessage());
 								}
@@ -960,6 +960,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 										iSavedRequest = result;
 										iCourseRequests.setValue(result, false);
 										iCourseRequests.notifySaveSucceeded();
+										iStatus.done(MESSAGES.saveRequestsOK());
 									}
 									LoadingWidget.getInstance().hide();
 								}
