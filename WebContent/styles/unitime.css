@@ -1729,6 +1729,14 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	.unitime-Label {
 		color: black;
 	}
+	.unitime-FilterBox .button-image {
+		visibility: hidden;
+		display: none;
+	}
+	.unitime-CourseRequestBox .hint {
+		visibility: hidden;
+		display: none;
+	}
 }
 
 .unitime-BlankSeparator {

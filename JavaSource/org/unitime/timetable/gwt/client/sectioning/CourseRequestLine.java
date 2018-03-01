@@ -138,6 +138,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 		buttons.add(down);
 
 		iDelete = new ImageButton(RESOURCES.delete(), RESOURCES.delete_Down(), RESOURCES.delete_Over());
+		iDelete.addStyleName("unitime-NoPrint");
 		iDelete.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				delete();
@@ -186,6 +187,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			} else {
 				buttons.remove(idx);
 				up = new ImageButton(RESOURCES.up(), RESOURCES.up_Down(), RESOURCES.up_Over());
+				up.addStyleName("unitime-NoPrint");
 				up.addClickHandler(new ClickHandler() {
 					public void onClick(ClickEvent event) {
 						up();
@@ -225,6 +227,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			} else {
 				buttons.remove(idx);
 				down = new ImageButton(RESOURCES.down(), RESOURCES.down_Down(), RESOURCES.down_Over());
+				down.addStyleName("unitime-NoPrint");
 				down.addClickHandler(new ClickHandler() {
 					public void onClick(ClickEvent event) {
 						down();

@@ -155,6 +155,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			}
 		});
 		iTip.addStyleName("tip");
+		iTip.addStyleName("unitime-NoPrint");
 		add(iTip);
 		
 		if (CONSTANTS.numberOfAlternatives() > 0) {

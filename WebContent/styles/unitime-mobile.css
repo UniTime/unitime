@@ -564,3 +564,10 @@
 		width: 90%;
 	}
 }
+
+@media print {
+	.unitime-MobileMenuButton {
+		visibility: hidden;
+		display: none;
+	}
+}
