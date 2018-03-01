@@ -214,7 +214,6 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 							helper.getHibSession().saveOrUpdate(cd);
 						}
 						priority++;
-						rc.setStatus(RequestedCourseStatus.SAVED);
 					} else if (rc.isCourse()) {
 						CourseOffering co = null;
 						if (rc.hasCourseId()) {
@@ -235,6 +234,8 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 							}
 						}
 					}
+					if (rc.getStatus() == RequestedCourseStatus.NEW_REQUEST || rc.getStatus() == null)
+						rc.setStatus(RequestedCourseStatus.SAVED);
 				}
 				if (courses.isEmpty()) continue;
 				
@@ -336,7 +337,6 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 							helper.getHibSession().saveOrUpdate(cd);
 						}
 						priority ++;
-						rc.setStatus(RequestedCourseStatus.SAVED);
 					} else if (rc.isCourse()) {
 						CourseOffering co = null;
 						if (rc.hasCourseId()) {
@@ -357,6 +357,8 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 							}
 						}
 					}
+					if (rc.getStatus() == RequestedCourseStatus.NEW_REQUEST || rc.getStatus() == null)
+						rc.setStatus(RequestedCourseStatus.SAVED);					
 				}
 				if (courses.isEmpty()) continue;
 				

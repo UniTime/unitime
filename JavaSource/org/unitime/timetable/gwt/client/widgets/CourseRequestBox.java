@@ -282,7 +282,10 @@ public class CourseRequestBox extends P implements CourseSelection {
 			ret.setCourseName(course.getCourseName());
 			ret.setCourseTitle(course.getTitle());
 			ret.setCredit(course.guessCreditRange());
-			ret.setStatus(RequestedCourseStatus.NEW_REQUEST);
+			if (iLastCourse != null && iLastCourse.isCourse() && iLastCourse.hasCourseId() && courseName.equalsIgnoreCase(iLastCourse.getCourseName()))
+				ret.setStatus(iLastCourse.getStatus());
+			else
+				ret.setStatus(RequestedCourseStatus.NEW_REQUEST);
 		} else if (iLastCourse != null && iLastCourse.isCourse() && iLastCourse.hasCourseId() && courseName.equalsIgnoreCase(iLastCourse.getCourseName())) {
 			ret.setCourseId(iLastCourse.getCourseId());
 			ret.setCourseName(courseName);

@@ -734,6 +734,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 					break;
 				case OVERRIDE_APPROVED:
 					setStatus(RESOURCES.requestSaved(), MESSAGES.overrideApproved(rc.getCourseName()));
+					break;
 				case NEW_REQUEST:
 					clearStatus();
 					break;
