@@ -41,6 +41,7 @@ import org.unitime.timetable.gwt.client.widgets.FreeTimeParser;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.Validator;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
+import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.services.SectioningService;
@@ -71,6 +72,7 @@ import com.google.gwt.user.client.ui.HasValue;
 public class CourseRequestLine extends P implements HasValue<Request> {
 	protected static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
 	protected static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
+	protected static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	protected static final SectioningServiceAsync sSectioningService = GWT.create(SectioningService.class);
 	
@@ -383,9 +385,9 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 	public void setValue(Request value, boolean fireEvents) {
 		if (value == null) {
 			if (iWaitList != null) iWaitList.setValue(false);
+			iCourses.get(0).setValue(null, true);
 			for (int i = iCourses.size() - 1; i > 0; i--)
 				deleteAlternative(i);
-			iCourses.get(0).setValue(null, true);
 		} else {
 			if (iWaitList != null) iWaitList.setValue(value.isWaitList());
 			int index = 0;
@@ -397,6 +399,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 					index ++;
 				}
 			if (index == 0) { iCourses.get(0).setValue(null, true); index++; }
+			else if (CONSTANTS.courseRequestAutomaticallyAddFirstAlternative() && !iAlternate && index == 1 && iCourses.get(0).getValue().isCourse() && iCourses.get(0).getValue().isCanDelete()) index ++;
 			for (int i = iCourses.size() - 1; i >= index; i--)
 				deleteAlternative(i);
 		}
@@ -487,7 +490,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 					if (event.isValid()) setError("");
 					CourseSelectionBox next = getNext();
 					if (next != null) {
-						if (event.getValue().isFreeTime()) {
+						if (event.getValue() == null || event.getValue().isFreeTime()) {
 							next.setHint("");
 						} else {
 							next.resizeFilterIfNeeded();
@@ -502,6 +505,8 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 								next.setHint("");
 							}
 						}
+					} else if (CONSTANTS.courseRequestAutomaticallyAddFirstAlternative() && !iAlternate && event.isValid() && event.getValue().isCourse() && event.getValue().isCanDelete() && getIndex() == 0) {
+						insertAlternative(getCourses().size());
 					}
 					CourseSelectionBox prev = getPrevious();
 					if (prev != null) {
@@ -663,8 +668,8 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 					public void onClick(ClickEvent event) {
 						if (iCourses.size() > 1) {
 							RequestedCourse rc = iCourses.get(1).getValue();
-							deleteAlternative(1);
 							setValue(rc, true);
+							deleteAlternative(1);
 						} else if (!getValue().isEmpty()) {
 							setValue((RequestedCourse)null, true);
 						} else {

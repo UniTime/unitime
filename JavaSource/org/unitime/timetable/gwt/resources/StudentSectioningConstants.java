@@ -219,4 +219,8 @@ public interface StudentSectioningConstants extends Constants {
 	@DefaultStringValue("0.000")
 	@DoNotTranslate
 	String executionTimeFormat();
+	
+	@DefaultBooleanValue(true)
+	@DoNotTranslate
+	boolean courseRequestAutomaticallyAddFirstAlternative();
 }
