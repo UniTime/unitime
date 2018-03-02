@@ -875,76 +875,62 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		}
 		if (maxCredit < request.getCredit()) {
 			req.maxCredit = request.getCredit();
-			req.courseCreditHrs = new ArrayList<CourseCredit>();
-			req.alternateCourseCreditHrs = new ArrayList<CourseCredit>();
-			for (CourseRequestInterface.Request r: request.getCourses()) {
-				if (r.hasRequestedCourse()) {
-					CourseCredit cc = null;
-					for (RequestedCourse rc: r.getRequestedCourse()) {
-						XCourseId cid = server.getCourse(rc.getCourseId(), rc.getCourseName());
-						if (cid == null) continue;
-						XCourse course = (cid instanceof XCourse ? (XCourse)cid : server.getCourse(cid.getCourseId()));
-						if (course == null) continue;
-						if (cc == null) {
-							cc = new CourseCredit();
-							cc.subject = course.getSubjectArea();
-							cc.courseNbr = course.getCourseNumber();
-							cc.title = course.getTitle();
-							cc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
-						} else {
-							if (cc.alternatives == null) cc.alternatives = new ArrayList<CourseCredit>();
-							CourseCredit acc = new CourseCredit();
-							acc.subject = course.getSubjectArea();
-							acc.courseNbr = course.getCourseNumber();
-							acc.title = course.getTitle();
-							acc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
-							cc.alternatives.add(acc);
-						}
+		}
+		req.courseCreditHrs = new ArrayList<CourseCredit>();
+		req.alternateCourseCreditHrs = new ArrayList<CourseCredit>();
+		for (CourseRequestInterface.Request r: request.getCourses()) {
+			if (r.hasRequestedCourse()) {
+				CourseCredit cc = null;
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					XCourseId cid = server.getCourse(rc.getCourseId(), rc.getCourseName());
+					if (cid == null) continue;
+					XCourse course = (cid instanceof XCourse ? (XCourse)cid : server.getCourse(cid.getCourseId()));
+					if (course == null) continue;
+					if (cc == null) {
+						cc = new CourseCredit();
+						cc.subject = course.getSubjectArea();
+						cc.courseNbr = course.getCourseNumber();
+						cc.title = course.getTitle();
+						cc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
+					} else {
+						if (cc.alternatives == null) cc.alternatives = new ArrayList<CourseCredit>();
+						CourseCredit acc = new CourseCredit();
+						acc.subject = course.getSubjectArea();
+						acc.courseNbr = course.getCourseNumber();
+						acc.title = course.getTitle();
+						acc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
+						cc.alternatives.add(acc);
 					}
-					if (cc != null) req.courseCreditHrs.add(cc);
 				}
+				if (cc != null) req.courseCreditHrs.add(cc);
 			}
-			for (CourseRequestInterface.Request r: request.getAlternatives()) {
-				if (r.hasRequestedCourse()) {
-					CourseCredit cc = null;
-					for (RequestedCourse rc: r.getRequestedCourse()) {
-						XCourseId cid = server.getCourse(rc.getCourseId(), rc.getCourseName());
-						if (cid == null) continue;
-						XCourse course = (cid instanceof XCourse ? (XCourse)cid : server.getCourse(cid.getCourseId()));
-						if (course == null) continue;
-						if (cc == null) {
-							cc = new CourseCredit();
-							cc.subject = course.getSubjectArea();
-							cc.courseNbr = course.getCourseNumber();
-							cc.title = course.getTitle();
-							cc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
-						} else {
-							if (cc.alternatives == null) cc.alternatives = new ArrayList<CourseCredit>();
-							CourseCredit acc = new CourseCredit();
-							acc.subject = course.getSubjectArea();
-							acc.courseNbr = course.getCourseNumber();
-							acc.title = course.getTitle();
-							acc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
-							cc.alternatives.add(acc);
-						}
+		}
+		for (CourseRequestInterface.Request r: request.getAlternatives()) {
+			if (r.hasRequestedCourse()) {
+				CourseCredit cc = null;
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					XCourseId cid = server.getCourse(rc.getCourseId(), rc.getCourseName());
+					if (cid == null) continue;
+					XCourse course = (cid instanceof XCourse ? (XCourse)cid : server.getCourse(cid.getCourseId()));
+					if (course == null) continue;
+					if (cc == null) {
+						cc = new CourseCredit();
+						cc.subject = course.getSubjectArea();
+						cc.courseNbr = course.getCourseNumber();
+						cc.title = course.getTitle();
+						cc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
+					} else {
+						if (cc.alternatives == null) cc.alternatives = new ArrayList<CourseCredit>();
+						CourseCredit acc = new CourseCredit();
+						acc.subject = course.getSubjectArea();
+						acc.courseNbr = course.getCourseNumber();
+						acc.title = course.getTitle();
+						acc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
+						cc.alternatives.add(acc);
 					}
-					if (cc != null) req.alternateCourseCreditHrs.add(cc);
 				}
+				if (cc != null) req.alternateCourseCreditHrs.add(cc);
 			}
-			/*// The following code only adds the courses that show as over the max credit into the request message
-			req.courseCreditHrs = new ArrayList<CourseCredit>();
-			for (RequestedCourse rc: getOverCreditRequests(request, maxCredit)) {
-				XCourseId cid = server.getCourse(rc.getCourseId(), rc.getCourseName());
-				if (cid == null) continue;
-				XCourse course = (cid instanceof XCourse ? (XCourse)cid : server.getCourse(cid.getCourseId()));
-				if (course == null) continue;
-				CourseCredit cc = new CourseCredit();
-				cc.subject = course.getSubjectArea();
-				cc.courseNbr = course.getCourseNumber();
-				cc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
-				req.courseCreditHrs.add(cc);
-			}
-			*/
 		}
 		
 		if (!req.changes.isEmpty() || !overrides.isEmpty() || req.maxCredit != null) {
