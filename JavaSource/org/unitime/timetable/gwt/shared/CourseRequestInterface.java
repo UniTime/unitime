@@ -24,8 +24,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -721,6 +723,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	public static class CheckCoursesResponse implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private Set<CourseMessage> iMessages = new TreeSet<CourseMessage>();
+		private Map<Integer, String[]> iConfirmationSetup = null;
 		
 		public CheckCoursesResponse() {}
 		
@@ -877,6 +880,36 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 						ret += delim + (m.hasCourse() ? m.getCourse() + ": " : "") + m.getMessage();
 				}
 			return ret;
+		}
+		
+		public void setConfirmation(int confirm, String dialogTitle, String yesButton, String noButton, String yesButtonTitle, String noButtonTitle) {
+			if (iConfirmationSetup == null) iConfirmationSetup = new HashMap<Integer, String[]>();
+			iConfirmationSetup.put(confirm, new String[] {dialogTitle, yesButton, noButton, yesButtonTitle, noButtonTitle});
+		}
+		public String getConfirmationTitle(int confirm, String defaultTitle) {
+			if (iConfirmationSetup == null) return defaultTitle;
+			String[] confirmation = iConfirmationSetup.get(confirm);
+			return (confirmation == null || confirmation[0] == null ? defaultTitle : confirmation[0]);
+		}
+		public String getConfirmationYesButton(int confirm, String defaultTitle) {
+			if (iConfirmationSetup == null) return defaultTitle;
+			String[] confirmation = iConfirmationSetup.get(confirm);
+			return (confirmation == null || confirmation[1] == null ? defaultTitle : confirmation[1]);
+		}
+		public String getConfirmationNoButton(int confirm, String defaultTitle) {
+			if (iConfirmationSetup == null) return defaultTitle;
+			String[] confirmation = iConfirmationSetup.get(confirm);
+			return (confirmation == null || confirmation[2] == null ? defaultTitle : confirmation[2]);
+		}
+		public String getConfirmationYesButtonTitle(int confirm, String defaultTitle) {
+			if (iConfirmationSetup == null) return defaultTitle;
+			String[] confirmation = iConfirmationSetup.get(confirm);
+			return (confirmation == null || confirmation[3] == null ? defaultTitle : confirmation[3]);
+		}
+		public String getConfirmationNoButtonTitle(int confirm, String defaultTitle) {
+			if (iConfirmationSetup == null) return defaultTitle;
+			String[] confirmation = iConfirmationSetup.get(confirm);
+			return (confirmation == null || confirmation[4] == null ? defaultTitle : confirmation[4]);
 		}
 		
 		@Override

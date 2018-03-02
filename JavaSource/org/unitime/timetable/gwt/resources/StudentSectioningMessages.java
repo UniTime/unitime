@@ -20,7 +20,6 @@
 package org.unitime.timetable.gwt.resources;
 
 import com.google.gwt.i18n.client.Messages;
-import com.google.gwt.i18n.client.Messages.DefaultMessage;
 
 /**
  * @author Tomas Muller

@@ -1683,6 +1683,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private void lastResult(final CourseRequestInterface request, final Long sessionId, final Long studentId, boolean saved, final boolean changeViewIfNeeded) {
 		AsyncCallback<ClassAssignmentInterface> callback = new AsyncCallback<ClassAssignmentInterface>() {
 			public void onFailure(Throwable caught) {
+				iStatus.error(caught.getMessage(), caught);
 				LoadingWidget.getInstance().hide();
 			}
 			public void onSuccess(final ClassAssignmentInterface saved) {
@@ -1789,7 +1790,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				else if (!iMode.isSectioning() && iSavedRequest == null) {
 					iSectioningService.savedRequest(iOnline, iMode.isSectioning(), sessionId, studentId, new AsyncCallback<CourseRequestInterface>() {
 						@Override
-						public void onFailure(Throwable caught) {}
+						public void onFailure(Throwable caught) {
+							iStatus.error(caught.getMessage(), caught);
+						}
 						@Override
 						public void onSuccess(CourseRequestInterface savedRequest) {
 							iSavedRequest = savedRequest;

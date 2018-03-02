@@ -27,7 +27,6 @@ import org.unitime.timetable.gwt.client.sectioning.CourseRequestLine.CourseSelec
 import org.unitime.timetable.gwt.client.widgets.CourseSelection;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
-import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.Validator;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
@@ -326,7 +325,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 									@Override
 									public void execute() {
 										if (it.hasNext()) {
-											UniTimeConfirmationDialog.confirm(result.getConfirmations(it.next(), "\n"), this);
+											CourseRequestsConfirmationDialog.confirm(result, it.next(), this);
 										} else {
 											callback.onSuccess(true);
 										}

@@ -682,12 +682,9 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			response.addConfirmation(
 					ApplicationProperties.getProperty("purdue.specreg.messages.requestOverrides",
 							"If you have already discussed these courses with your advisor and were advised to request\n" +
-							"registration in them please select YES to request overrides. If you aren’t sure, click NO and\n" +
+							"registration in them please select Request Overrides & Submit. If you aren’t sure, click Cancel and\n" +
 							"consult with your advisor before coming back to your Course Request page."),
 					CONF_BANNER, 2);
-			response.addConfirmation(
-					ApplicationProperties.getProperty("purdue.specreg.messages.requestOverridesTail", "Do you want to request overrides for the registration errors listed above?"),
-					CONF_BANNER, 3);
 		}
 		if (response.getConfirms().contains(CONF_UNITIME)) {
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.unitimeProblemsFound", "The following issues have been detected:"), CONF_UNITIME, -1);
@@ -707,6 +704,25 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					CONF_UNITIME, 4);
 		if (questionNoAlt || questionMinCred || questionTimeConflict)
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.confirmation", "\nDo you want to proceed?"), CONF_UNITIME, 5);
+		
+		Set<Integer> conf = response.getConfirms();
+		if (conf.contains(CONF_UNITIME)) {
+		response.setConfirmation(CONF_UNITIME, ApplicationProperties.getProperty("purdue.specreg.confirm.unitimeDialogName","Warning Confirmations"),
+				(conf.contains(CONF_BANNER) ? ApplicationProperties.getProperty("purdue.specreg.confirm.unitimeContinueButton", "Accept & Continue") :
+					ApplicationProperties.getProperty("purdue.specreg.confirm.unitimeYesButton", "Accept & Submit")),
+				ApplicationProperties.getProperty("purdue.specreg.confirm.unitimeNoButton", "Cancel"),
+				(conf.contains(CONF_BANNER) ? ApplicationProperties.getProperty("purdue.specreg.confirm.unitimeContinueButtonTitle", "Accept the above warning(s) and continue to submit the Course Requests") :
+					ApplicationProperties.getProperty("purdue.specreg.confirm.unitimeYesButtonTitle", "Accept the above warning(s) and submit the Course Requests")),
+				ApplicationProperties.getProperty("purdue.specreg.confirm.unitimeNoButtonTitle", "Go back to editing your Course Requests"));
+		}
+		if (conf.contains(CONF_BANNER)) {
+			response.setConfirmation(CONF_BANNER, ApplicationProperties.getProperty("purdue.specreg.confirm.bannerDialogName", "Request Overrides"),
+					ApplicationProperties.getProperty("purdue.specreg.confirm.bannerYesButton", "Request Overrides & Submit"),
+					ApplicationProperties.getProperty("purdue.specreg.confirm.bannerNoButton", "Cancel"),
+					ApplicationProperties.getProperty("purdue.specreg.confirm.bannerYesButtonTitle", "Request overrides for the above registration errors and submit the Course Requests"),
+					ApplicationProperties.getProperty("purdue.specreg.confirm.bannerNoButtonTitle", "Go back to editing your Course Requests"));
+		}
+
 	}
 
 	@Override

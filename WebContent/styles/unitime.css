@@ -6063,3 +6063,38 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-LogsTable tr:first-child td {
 	border-left: none;
 }
+
+.unitime-CourseRequestsConfirmationDialog .course-table {
+	display: table;
+	padding-top: 5px;
+	padding-left: 10px;
+	padding-bottom: 10px;
+}
+
+.unitime-CourseRequestsConfirmationDialog .course-table .course-row {
+	display: table-row;
+}
+
+.unitime-CourseRequestsConfirmationDialog .course-table .first-course-line .course-name {
+	padding-top: 5px;
+}
+
+.unitime-CourseRequestsConfirmationDialog .course-table .first-course-line .course-message {
+	padding-top: 5px;
+}
+
+.unitime-CourseRequestsConfirmationDialog .course-table .course-message {
+	display: table-cell;
+}
+
+.unitime-CourseRequestsConfirmationDialog .course-table .course-name {
+	display: table-cell;
+	vertical-align: top;
+	white-space: nowrap;
+	padding-right: 5px;
+	font-weight: bold;
+}
+
+.unitime-ConfirmationPanel .message-panel {
+	font-weight: normal;
+}
