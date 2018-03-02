@@ -316,23 +316,28 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 							setErrors(result);
 							LoadingWidget.getInstance().hide();
 							if (result.isError()) {
-								callback.onSuccess(false);
+								callback.onFailure(null);
 								return;
 							}
 							if (success && result.isConfirm()) {
 								final Iterator<Integer> it = result.getConfirms().iterator();
-								new Command() {
+								new AsyncCallback<Boolean>() {
 									@Override
-									public void execute() {
-										if (it.hasNext()) {
+									public void onFailure(Throwable caught) {}
+									@Override
+									public void onSuccess(Boolean accept) {
+										if (accept && it.hasNext()) {
 											CourseRequestsConfirmationDialog.confirm(result, it.next(), this);
 										} else {
-											callback.onSuccess(true);
+											callback.onSuccess(accept);
 										}
 									}
-								}.execute();
+								}.onSuccess(true);
 							} else {
-								callback.onSuccess(success);
+								if (success)
+									callback.onSuccess(true);
+								else
+									callback.onFailure(null);
 							}
 						}
 						public void onFailure(Throwable caught) {

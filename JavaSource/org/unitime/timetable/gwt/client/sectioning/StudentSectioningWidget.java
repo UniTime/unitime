@@ -197,7 +197,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					if (!iSavedRequest.equals(iCourseRequests.getRequest())) {
 						iScheduleChanged = true;
 						iSave.addStyleName("unitime-EnrollButton");
-						iStatus.warning(iSavedRequest.isNoChange() ? MESSAGES.warnRequestsEmptyOnCourseRequest() : MESSAGES.warnRequestsChangedOnCourseRequest(), false);
+						iStatus.warning(iSavedRequest.isEmpty() ? MESSAGES.warnRequestsEmptyOnCourseRequest() : MESSAGES.warnRequestsChangedOnCourseRequest(), false);
 					} else if (iScheduleChanged) {
 						iScheduleChanged = false;
 						iSave.removeStyleName("unitime-EnrollButton");
@@ -942,11 +942,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		
 		iSave.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
+				addHistory();
 				iCourseRequests.changeTip();
 				clearMessage();
 				iCourseRequests.validate(new AsyncCallback<Boolean>() {
 					public void onSuccess(Boolean result) {
-						updateHistory();
 						if (result) {
 							LoadingWidget.getInstance().show(MESSAGES.courseRequestsSaving());
 							final CourseRequestInterface request = iCourseRequests.getRequest();
@@ -963,22 +963,33 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 										iStatus.done(MESSAGES.saveRequestsOK());
 									}
 									LoadingWidget.getInstance().hide();
+									updateHistory();
 								}
 								public void onFailure(Throwable caught) {
 									iStatus.error(MESSAGES.saveRequestsFail(caught.getMessage()), caught);
 									LoadingWidget.getInstance().hide();
+									updateHistory();
 								}
 							});
 						} else {
-							String error = iCourseRequests.getFirstError();
-							iStatus.error(error == null ? MESSAGES.validationFailed() : MESSAGES.validationFailedWithMessage(error));
-							LoadingWidget.getInstance().hide();
+							if (iSavedRequest != null && !iSavedRequest.equals(iCourseRequests.getRequest())) {
+								iScheduleChanged = true;
+								iSave.addStyleName("unitime-EnrollButton");
+								iStatus.warning(iSavedRequest.isEmpty() ? MESSAGES.warnRequestsEmptyOnCourseRequest() : MESSAGES.warnRequestsChangedOnCourseRequest(), false);
+							}
 							updateHistory();
 						}
 					}
 					public void onFailure(Throwable caught) {
-						iStatus.error(MESSAGES.validationFailedWithMessage(caught.getMessage()), caught);
-						LoadingWidget.getInstance().hide();
+						if (caught != null) {
+							iStatus.error(MESSAGES.validationFailedWithMessage(caught.getMessage()), caught);
+						} else {
+							String error = iCourseRequests.getFirstError();
+							iStatus.error(error == null ? MESSAGES.validationFailed() : MESSAGES.validationFailedWithMessage(error));
+						}
+						if (iSavedRequest != null && !iSavedRequest.equals(iCourseRequests.getRequest())) {
+							iScheduleChanged = true;
+						}
 						updateHistory();
 					}
 				});
@@ -1806,6 +1817,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					return;
 				}*/
 				iCourseRequests.setRequest(request);
+				updateHistory();
 				if (iSchedule.isVisible() || iRequests.isVisible()) {
 					lastResult(request, sessionId, studentId, saved, changeViewIfNeeded);
 				} else {
@@ -1891,6 +1903,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 										if (iAssignment != null) fillIn(iAssignment);
 									}
 									iStatus.setMessage(iMessageLevel, iMessage);
+									if (!iMode.isSectioning() && iSavedRequest != null && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_REGISTER) && !iSavedRequest.equals(iCourseRequests.getRequest())) {
+										iScheduleChanged = true;
+										iSave.addStyleName("unitime-EnrollButton");
+										iStatus.warning(iSavedRequest.isEmpty() ? MESSAGES.warnRequestsEmptyOnCourseRequest() : MESSAGES.warnRequestsChangedOnCourseRequest(), false);
+									}
 								}
 								iInRestore = false;
 								ResizeEvent.fire(StudentSectioningWidget.this, getOffsetWidth(), getOffsetHeight());

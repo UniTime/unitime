@@ -34,8 +34,11 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Command;
+import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.event.logical.shared.CloseHandler;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.PopupPanel;
 
 /**
  * @author Tomas Muller
@@ -45,10 +48,11 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 	protected static GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static StudentSectioningResources RESOURCES = GWT.create(StudentSectioningResources.class);
 	private AriaButton iYes, iNo;
-	private Command iCommand;
+	private AsyncCallback<Boolean> iCommand;
 	private String iMessage;
+	private boolean iValue = false;
 
-	public CourseRequestsConfirmationDialog(CheckCoursesResponse response, int confirm, Command callback) {
+	public CourseRequestsConfirmationDialog(CheckCoursesResponse response, int confirm, AsyncCallback<Boolean> callback) {
 		super(true, true);
 		addStyleName("unitime-CourseRequestsConfirmationDialog");
 		setText(response.getConfirmationTitle(confirm, MESSAGES.dialogConfirmation()));
@@ -57,13 +61,6 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 		
 		P panel = new P("unitime-ConfirmationPanel");
 		setEscapeToHide(true);
-		setEnterToSubmit(new Command() {
-			@Override
-			public void execute() {
-				if (iNo.isFocused()) return;
-				submit();
-			}
-		});
 		
 		P bd = new P("body-panel");
 		panel.add(bd);
@@ -123,6 +120,19 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 			}
 		});
 		
+		addCloseHandler(new CloseHandler<PopupPanel>() {
+			@Override
+			public void onClose(CloseEvent<PopupPanel> event) {
+				if (iCommand != null) 
+					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+						@Override
+						public void execute() {
+							iCommand.onSuccess(iValue);
+						}
+					});
+			}
+		});
+		
 		setWidget(panel);
 	}
 	
@@ -140,12 +150,11 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 	}
 	
 	protected void submit() {
+		iValue = true;
 		hide();
-		if (iCommand != null) iCommand.execute();
 	}
 	
-	public static void confirm(CheckCoursesResponse response, int confirm, Command callback) {
+	public static void confirm(CheckCoursesResponse response, int confirm, AsyncCallback<Boolean> callback) {
 		new CourseRequestsConfirmationDialog(response, confirm, callback).center();
 	}
-
 }
