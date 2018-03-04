@@ -28,7 +28,7 @@ select m.uniqueid, m.external_uid from pos_major m
 	where m.code = '-' and m.name = 'No Major' and m.external_uid in (select a.uniqueid from academic_area a);
 
 insert into student_major(student_id, major_id)
-select s.uniqueid, m.uniqueid
+select distinct s.uniqueid, m.uniqueid
 	from student_acad_area a, student s, pos_major m
 	where s.uniqueid = a.student_id and (select count(*) from student_major m where m.student_id = s.uniqueid) = 0
 	and m.external_uid = a.acad_area_id and m.code = '-';

@@ -12417,7 +12417,7 @@
 		</mysql>
 		<mysql>
 			insert into %SCHEMA%.student_major(student_id, major_id)
-			select s.uniqueid, m.uniqueid
+			select distinct s.uniqueid, m.uniqueid
 				from %SCHEMA%.student_acad_area a, %SCHEMA%.student s, %SCHEMA%.pos_major m
 				where s.uniqueid = a.student_id and (select count(*) from %SCHEMA%.student_major m where m.student_id = s.uniqueid) = 0
 				and m.external_uid = a.acad_area_id and m.code = '-'
@@ -12438,7 +12438,7 @@
 		</plsql>
 		<plsql>
 			insert into %SCHEMA%.student_major(student_id, major_id)
-			select s.uniqueid, m.uniqueid
+			select distinct s.uniqueid, m.uniqueid
 				from %SCHEMA%.student_acad_area a, %SCHEMA%.student s, %SCHEMA%.pos_major m
 				where s.uniqueid = a.student_id and (select count(*) from %SCHEMA%.student_major m where m.student_id = s.uniqueid) = 0
 				and m.external_uid = a.acad_area_id and m.code = '-'
