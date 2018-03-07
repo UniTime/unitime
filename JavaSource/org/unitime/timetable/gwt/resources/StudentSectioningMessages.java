@@ -1401,6 +1401,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Check Override Status")
 	String checkOverrideStatus();
 	
+	@DefaultMessage("Validate Overrides")
+	String validateStudentOverrides();
+	
 	@DefaultMessage("Requesting student update...")
 	String requestingStudentUpdate();
 	
@@ -1412,6 +1415,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Student overrides successfully rechecked.")
 	String checkStudentOverridesSuccess();
+	
+	@DefaultMessage("Student overrides successfully validated.")
+	String validateStudentOverridesSuccess();
 	
 	@DefaultMessage("Click to lock the class. Any course changes will not affect locked course.")
 	String hintUnlocked();

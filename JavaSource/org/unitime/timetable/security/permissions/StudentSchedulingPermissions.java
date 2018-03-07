@@ -248,6 +248,9 @@ public class StudentSchedulingPermissions {
 		}
 	}
 	
+	@PermissionForRight(Right.StudentSchedulingValidateStudentOverrides)
+	public static class StudentSchedulingValidateStudentOverrides extends StudentSchedulingCheckStudentOverrides {}
+	
 	@PermissionForRight(Right.StudentSchedulingAdvisor)
 	public static class StudentSchedulingAdvisor extends StudentScheduling {}
 	

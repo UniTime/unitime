@@ -1313,6 +1313,39 @@ public class SectioningStatusPage extends Composite {
 					});
 				}
 			});
+			hSelect.addOperation(new Operation() {
+				@Override
+				public String getName() {
+					return MESSAGES.validateStudentOverrides();
+				}
+				@Override
+				public boolean hasSeparator() {
+					return !iProperties.isRequestUpdate() && !iProperties.isChangeStatus();
+				}
+				@Override
+				public boolean isApplicable() {
+					return iSelectedStudentIds.size() > 0 && iProperties != null && iProperties.isValidateStudentOverrides();
+				}
+				@Override
+				public void execute() {
+					List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
+					LoadingWidget.getInstance().show(MESSAGES.requestingStudentUpdate());
+					iSectioningService.validateStudentOverrides(studentIds, new AsyncCallback<Boolean>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+							UniTimeNotifications.error(caught);
+						}
+
+						@Override
+						public void onSuccess(Boolean result) {
+							LoadingWidget.getInstance().hide();
+							UniTimeNotifications.info(MESSAGES.validateStudentOverridesSuccess());
+							loadData();
+						}
+					});
+				}
+			});
 			if (iStates != null) {
 				for (final String ref: new TreeSet<String>(iStates.keySet())) {
 					hSelect.addOperation(new Operation() {

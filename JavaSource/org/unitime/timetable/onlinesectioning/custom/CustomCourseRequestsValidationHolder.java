@@ -179,4 +179,90 @@ public class CustomCourseRequestsValidationHolder {
 		}
 
 	}
+	
+	public static class Validate implements OnlineSectioningAction<Boolean> {
+		private static final long serialVersionUID = 1L;
+		private Collection<Long> iStudentIds = null;
+		
+		public Validate forStudents(Long... studentIds) {
+			iStudentIds = new ArrayList<Long>();
+			for (Long studentId: studentIds)
+				iStudentIds.add(studentId);
+			return this;
+		}
+		
+		public Validate forStudents(Collection<Long> studentIds) {
+			iStudentIds = studentIds;
+			return this;
+		}
+
+		
+		public Collection<Long> getStudentIds() { return iStudentIds; }
+		
+		@Override
+		public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+			if (!CustomCourseRequestsValidationHolder.hasProvider()) return false;
+			List<Long> reloadIds = new ArrayList<Long>();
+			
+			helper.beginTransaction();
+			try {
+				for (Long studentId: getStudentIds()) {
+					helper.getAction().addOther(OnlineSectioningLog.Entity.newBuilder()
+							.setUniqueId(studentId)
+							.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
+					
+					Student student = StudentDAO.getInstance().get(studentId, helper.getHibSession());
+					
+					if (student != null) {
+						OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
+						action.setStudent(OnlineSectioningLog.Entity.newBuilder()
+								.setUniqueId(studentId)
+								.setExternalId(student.getExternalUniqueId())
+								.setName(helper.getStudentNameFormat().format(student))
+								.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
+						long c0 = OnlineSectioningHelper.getCpuTime();
+						try {
+							if (CustomCourseRequestsValidationHolder.getProvider().revalidateStudent(server, helper, student, action)) {
+								reloadIds.add(studentId);
+								action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
+							} else {
+								action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
+							}
+						} catch (SectioningException e) {
+							action.setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
+							if (e.getCause() != null) {
+								action.addMessage(OnlineSectioningLog.Message.newBuilder()
+										.setLevel(OnlineSectioningLog.Message.Level.FATAL)
+										.setText(e.getCause().getClass().getName() + ": " + e.getCause().getMessage()));
+							} else {
+								action.addMessage(OnlineSectioningLog.Message.newBuilder()
+										.setLevel(OnlineSectioningLog.Message.Level.FATAL)
+										.setText(e.getMessage() == null ? "null" : e.getMessage()));
+							}
+						} finally {
+							action.setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
+							action.setEndTime(System.currentTimeMillis());
+						}
+					}
+				}
+				helper.commitTransaction();
+			} catch (Exception e) {
+				helper.rollbackTransaction();
+				if (e instanceof SectioningException)
+					throw (SectioningException)e;
+				throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
+			}
+			
+			if (!reloadIds.isEmpty())
+				server.execute(server.createAction(ReloadStudent.class).forStudents(reloadIds), helper.getUser());
+
+			return !reloadIds.isEmpty();
+		}
+
+		@Override
+		public String name() {
+			return "validate-overrides";
+		}
+
+	}
 }

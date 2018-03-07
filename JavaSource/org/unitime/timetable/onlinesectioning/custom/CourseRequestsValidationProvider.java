@@ -36,6 +36,8 @@ public interface CourseRequestsValidationProvider {
 	
 	public boolean updateStudent(OnlineSectioningServer server, OnlineSectioningHelper helper, Student student, OnlineSectioningLog.Action.Builder action) throws SectioningException;
 	
+	public boolean revalidateStudent(OnlineSectioningServer server, OnlineSectioningHelper helper, Student student, OnlineSectioningLog.Action.Builder action) throws SectioningException;
+	
 	public void validate(OnlineSectioningServer server, OnlineSectioningHelper helper, CourseRequestInterface request, CheckCoursesResponse response) throws SectioningException;
 	
 	public void submit(OnlineSectioningServer server, OnlineSectioningHelper helper, CourseRequestInterface request) throws SectioningException;

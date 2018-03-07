@@ -347,6 +347,7 @@ public enum Right {
     StudentSchedulingChangeStudentStatus(Session.class),
     StudentSchedulingRequestStudentUpdate(Session.class),
     StudentSchedulingCheckStudentOverrides(Session.class),
+    StudentSchedulingValidateStudentOverrides(Session.class),
     StudentSchedulingAdvisorCanModifyMyStudents,
     StudentSchedulingAdvisorCanModifyAllStudents,
     StudentSchedulingCanEnroll(Student.class),

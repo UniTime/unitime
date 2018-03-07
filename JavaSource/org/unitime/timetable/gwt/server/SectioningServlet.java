@@ -2385,6 +2385,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			properties.setChangeStatus(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingChangeStudentStatus));
 			properties.setRequestUpdate(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingRequestStudentUpdate));
 			properties.setCheckStudentOverrides(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingCheckStudentOverrides));
+			properties.setValidateStudentOverrides(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingValidateStudentOverrides));
 		}
 		return properties;
 	}
@@ -2407,6 +2408,16 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		getSessionContext().checkPermission(server.getAcademicSession(), Right.StudentSchedulingCheckStudentOverrides);
 		
 		return server.execute(server.createAction(CustomCourseRequestsValidationHolder.Update.class).forStudents(studentIds), currentUser());
+	}
+	
+	@Override
+	public Boolean validateStudentOverrides(List<Long> studentIds) throws SectioningException, PageAccessException {
+		OnlineSectioningServer server = getServerInstance(getStatusPageSessionId(), true);
+		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+		
+		getSessionContext().checkPermission(server.getAcademicSession(), Right.StudentSchedulingValidateStudentOverrides);
+		
+		return server.execute(server.createAction(CustomCourseRequestsValidationHolder.Validate.class).forStudents(studentIds), currentUser());
 	}
 
 	@Override
