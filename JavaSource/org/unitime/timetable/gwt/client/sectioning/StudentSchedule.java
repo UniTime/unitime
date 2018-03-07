@@ -39,12 +39,14 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesRespo
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
@@ -164,6 +166,38 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				if (request.isWaitList()) hasWait = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					if (rc.isCourse()) {
+						ImageResource icon = null; String iconText = null;
+						String msg = check.getMessage(rc.getCourseName(), "\n");
+						if (check.isError(rc.getCourseName()) && (rc.getStatus() == null || rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED)) {
+							icon = RESOURCES.requestError(); iconText = (msg);
+						} else if (rc.getStatus() != null) {
+							switch (rc.getStatus()) {
+							case ENROLLED:
+								icon = RESOURCES.requestEnrolled(); iconText = (MESSAGES.enrolled(rc.getCourseName()));
+								break;
+							case OVERRIDE_NEEDED:
+								icon = RESOURCES.requestNeeded(); iconText = (MESSAGES.overrideNeeded(msg));
+								break;
+							case SAVED:
+								icon = RESOURCES.requestSaved(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.requested(rc.getCourseName()));
+								break;				
+							case OVERRIDE_REJECTED:
+								icon = RESOURCES.requestRejected(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideRejected(rc.getCourseName()));
+								break;
+							case OVERRIDE_PENDING:
+								icon = RESOURCES.requestPending(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overridePending(rc.getCourseName()));
+								break;
+							case OVERRIDE_CANCELLED:
+								icon = RESOURCES.requestCancelled(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideCancelled(rc.getCourseName()));
+								break;
+							case OVERRIDE_APPROVED:
+								icon = RESOURCES.requestSaved(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideApproved(rc.getCourseName()));
+								break;
+							default:
+								if (check.isError(rc.getCourseName()))
+									icon = RESOURCES.requestError(); iconText = (msg);
+							}
+						}
 						Collection<String> prefs = null;
 						if (rc.hasSelectedIntructionalMethods()) {
 							if (rc.hasSelectedClasses()) {
@@ -194,6 +228,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); hasStat = true; break;
 							}
 						}
+						if (status.isEmpty()) status = MESSAGES.reqStatusRegistered();
 						if (prefs != null) hasPref = true;
 						WebTable.Cell credit = new WebTable.Cell(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : "");
 						credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
@@ -204,7 +239,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								credit, 
 								new WebTable.Cell(ToolBox.toString(prefs)),
 								new WebTable.NoteCell(check == null ? "" : check.getMessageWithColor(rc.getCourseName(), "<br>"), check == null ? null : check.getMessage(rc.getCourseName(), "\n")),
-								new WebTable.Cell(status),
+								(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
 								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell("")),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
 								);
@@ -222,7 +257,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								new WebTable.Cell(CONSTANTS.freePrefix() + free, 3, null),
 								new WebTable.Cell(""),
 								new WebTable.Cell(""),
-								new WebTable.Cell(""),
+								new WebTable.IconCell(RESOURCES.requestSaved(), MESSAGES.requested(free), MESSAGES.reqStatusRegistered()),
 								new WebTable.Cell(""),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : ""));
 						if (priority > 1 && first)
@@ -240,6 +275,38 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				if (request.isWaitList()) hasWait = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					if (rc.isCourse()) {
+						ImageResource icon = null; String iconText = null;
+						String msg = check.getMessage(rc.getCourseName(), "\n");
+						if (check.isError(rc.getCourseName()) && (rc.getStatus() == null || rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED)) {
+							icon = RESOURCES.requestError(); iconText = (msg);
+						} else if (rc.getStatus() != null) {
+							switch (rc.getStatus()) {
+							case ENROLLED:
+								icon = RESOURCES.requestEnrolled(); iconText = (MESSAGES.enrolled(rc.getCourseName()));
+								break;
+							case OVERRIDE_NEEDED:
+								icon = RESOURCES.requestNeeded(); iconText = (MESSAGES.overrideNeeded(msg));
+								break;
+							case SAVED:
+								icon = RESOURCES.requestSaved(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.requested(rc.getCourseName()));
+								break;				
+							case OVERRIDE_REJECTED:
+								icon = RESOURCES.requestRejected(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideRejected(rc.getCourseName()));
+								break;
+							case OVERRIDE_PENDING:
+								icon = RESOURCES.requestPending(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overridePending(rc.getCourseName()));
+								break;
+							case OVERRIDE_CANCELLED:
+								icon = RESOURCES.requestCancelled(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideCancelled(rc.getCourseName()));
+								break;
+							case OVERRIDE_APPROVED:
+								icon = RESOURCES.requestSaved(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideApproved(rc.getCourseName()));
+								break;
+							default:
+								if (check.isError(rc.getCourseName()))
+									icon = RESOURCES.requestError(); iconText = (msg);
+							}
+						}
 						Collection<String> prefs = null;
 						if (rc.hasSelectedIntructionalMethods()) {
 							if (rc.hasSelectedClasses()) {
@@ -271,6 +338,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); hasStat = true; break;
 							}
 						}
+						if (status.isEmpty()) status = MESSAGES.reqStatusRegistered();
 						WebTable.Cell credit = new WebTable.Cell(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : "");
 						credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 						WebTable.Row row = new WebTable.Row(
@@ -280,7 +348,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								credit,
 								new WebTable.Cell(ToolBox.toString(prefs)),
 								new WebTable.NoteCell(check == null ? "" : check.getMessageWithColor(rc.getCourseName(), "<br>"), check == null ? null : check.getMessage(rc.getCourseName(), "\n")),
-								new WebTable.Cell(status),
+								(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
 								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell("")),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
 								);
@@ -298,7 +366,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								new WebTable.Cell(CONSTANTS.freePrefix() + free, 3, null),
 								new WebTable.Cell(""),
 								new WebTable.Cell(""),
-								new WebTable.Cell(""),
+								new WebTable.IconCell(RESOURCES.requestSaved(), MESSAGES.requested(free), MESSAGES.reqStatusRegistered()),
 								new WebTable.Cell(""),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : ""));
 						if (first)

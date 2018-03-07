@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
@@ -42,6 +43,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
@@ -63,7 +65,11 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpeci
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
@@ -94,6 +100,8 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
@@ -122,6 +130,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	public static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
+	public static final GwtMessages GWT_MESSAGES = GWT.create(GwtMessages.class);
 
 	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
 	
@@ -961,6 +970,12 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 										iCourseRequests.setValue(result, false);
 										iCourseRequests.notifySaveSucceeded();
 										iStatus.done(MESSAGES.saveRequestsOK());
+										UniTimeConfirmationDialog.confirm(MESSAGES.saveRequestsConfirmation(), RESOURCES.statusDone(), new Command() {
+											@Override
+											public void execute() {
+												printConfirmation(result);
+											}
+										});
 									}
 									LoadingWidget.getInstance().hide();
 									updateHistory();
@@ -1794,6 +1809,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			public void onFailure(Throwable caught) {
 				LoadingWidget.getInstance().hide();
 				clear(changeViewIfNeeded);
+				iStatus.error(caught.getMessage(), caught);
 			}
 			public void onSuccess(final CourseRequestInterface request) {
 				if (request.isSaved())
@@ -2355,5 +2371,265 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			};
 		}
 		return iSpecialRegistrationSelectionDialog;
+	}
+	
+	protected void printConfirmation(CourseRequestInterface savedRequests) {
+		WebTable requests = new WebTable();
+		requests.setEmptyMessage(StudentSectioningWidget.MESSAGES.emptyRequests());
+		requests.setHeader(new WebTable.Row(
+				new WebTable.Cell(StudentSectioningWidget.MESSAGES.colPriority(), 1, "25px"),
+				new WebTable.Cell(StudentSectioningWidget.MESSAGES.colCourse(), 1, "75px"),
+				new WebTable.Cell(StudentSectioningWidget.MESSAGES.colTitle(), 1, "200px"),
+				new WebTable.Cell(StudentSectioningWidget.MESSAGES.colCredit(), 1, "20px"),
+				new WebTable.Cell(StudentSectioningWidget.MESSAGES.colPreferences(), 1, "100px"),
+				new WebTable.Cell(StudentSectioningWidget.MESSAGES.colWarnings(), 1, "200px"),
+				new WebTable.Cell(StudentSectioningWidget.MESSAGES.colStatus(), 1, "20px"),
+				new WebTable.Cell(StudentSectioningWidget.MESSAGES.colWaitList(), 1, "20px")
+				));
+
+		ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
+		boolean hasPref = false, hasWarn = false, hasWait = false;
+		NumberFormat df = NumberFormat.getFormat("0.#");
+		CheckCoursesResponse check = null;
+		if (savedRequests.hasConfirmations()) {
+			check = new CheckCoursesResponse(savedRequests.getConfirmations());
+			hasWarn = true;
+		}
+		int priority = 1;
+		for (Request request: savedRequests.getCourses()) {
+			if (!request.hasRequestedCourse()) continue;
+			boolean first = true;
+			if (request.isWaitList()) hasWait = true;
+			for (RequestedCourse rc: request.getRequestedCourse()) {
+				if (rc.isCourse()) {
+					ImageResource icon = null; String iconText = null;
+					String msg = check.getMessage(rc.getCourseName(), "\n");
+					if (check.isError(rc.getCourseName()) && (rc.getStatus() == null || rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED)) {
+						icon = RESOURCES.requestError(); iconText = (msg);
+					} else if (rc.getStatus() != null) {
+						switch (rc.getStatus()) {
+						case ENROLLED:
+							icon = RESOURCES.requestEnrolled(); iconText = (MESSAGES.enrolled(rc.getCourseName()));
+							break;
+						case OVERRIDE_NEEDED:
+							icon = RESOURCES.requestNeeded(); iconText = (MESSAGES.overrideNeeded(msg));
+							break;
+						case SAVED:
+							icon = RESOURCES.requestSaved(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.requested(rc.getCourseName()));
+							break;				
+						case OVERRIDE_REJECTED:
+							icon = RESOURCES.requestRejected(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideRejected(rc.getCourseName()));
+							break;
+						case OVERRIDE_PENDING:
+							icon = RESOURCES.requestPending(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overridePending(rc.getCourseName()));
+							break;
+						case OVERRIDE_CANCELLED:
+							icon = RESOURCES.requestCancelled(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideCancelled(rc.getCourseName()));
+							break;
+						case OVERRIDE_APPROVED:
+							icon = RESOURCES.requestSaved(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideApproved(rc.getCourseName()));
+							break;
+						default:
+							if (check.isError(rc.getCourseName()))
+								icon = RESOURCES.requestError(); iconText = (msg);
+						}
+					}
+					Collection<String> prefs = null;
+					if (rc.hasSelectedIntructionalMethods()) {
+						if (rc.hasSelectedClasses()) {
+							prefs = new ArrayList<String>(rc.getSelectedIntructionalMethods().size() + rc.getSelectedClasses().size());
+							prefs.addAll(new TreeSet<String>(rc.getSelectedIntructionalMethods()));
+							prefs.addAll(new TreeSet<String>(rc.getSelectedClasses()));
+						} else {
+							prefs = new TreeSet<String>(rc.getSelectedIntructionalMethods());
+						}
+					} else if (rc.hasSelectedClasses()) {
+						prefs = new TreeSet<String>(rc.getSelectedClasses());
+					}
+					String status = "";
+					if (rc.getStatus() != null) {
+						switch (rc.getStatus()) {
+						case ENROLLED: status = MESSAGES.reqStatusEnrolled(); break;
+						case OVERRIDE_APPROVED: status = MESSAGES.reqStatusApproved(); break;
+						case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); break;
+						case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); break;
+						case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); break;
+						}
+					}
+					if (status.isEmpty() && savedRequests.getMaxCreditOverrideStatus() != null && check.hasMessage(rc.getCourseName(), "CREDIT")) {
+						switch (savedRequests.getMaxCreditOverrideStatus()) {
+						case OVERRIDE_APPROVED: status = MESSAGES.reqStatusApproved(); break;
+						case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); break;
+						case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); break;
+						case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); break;
+						}
+					}
+					if (status.isEmpty()) status = MESSAGES.reqStatusRegistered();
+					if (prefs != null) hasPref = true;
+					WebTable.Cell credit = new WebTable.Cell(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : "");
+					credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+					WebTable.Row row = new WebTable.Row(
+							new WebTable.Cell(first ? MESSAGES.courseRequestsPriority(priority) : ""),
+							new WebTable.Cell(rc.getCourseName()),
+							new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
+							credit, 
+							new WebTable.Cell(ToolBox.toString(prefs)),
+							new WebTable.Cell(check == null ? null : check.getMessage(rc.getCourseName(), "\n")),
+							(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
+							(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell(""))
+							);
+					if (priority > 1 && first)
+						for (WebTable.Cell cell: row.getCells()) cell.setStyleName("top-border-dashed");
+					rows.add(row);
+				} else if (rc.isFreeTime()) {
+					String  free = "";
+					for (FreeTime ft: rc.getFreeTime()) {
+						if (!free.isEmpty()) free += ", ";
+						free += ft.toString(CONSTANTS.shortDays(), CONSTANTS.useAmPm());
+					}
+					WebTable.Row row = new WebTable.Row(
+							new WebTable.Cell(first ? MESSAGES.courseRequestsPriority(priority) : ""),
+							new WebTable.Cell(CONSTANTS.freePrefix() + free, 3, null),
+							new WebTable.Cell(""),
+							new WebTable.Cell(""),
+							new WebTable.IconCell(RESOURCES.requestSaved(), MESSAGES.requested(free), MESSAGES.reqStatusRegistered()),
+							new WebTable.Cell(""));
+					if (priority > 1 && first)
+						for (WebTable.Cell cell: row.getCells()) cell.setStyleName("top-border-dashed");
+					rows.add(row);
+				}
+				first = false;
+			}
+			priority ++;
+		}
+		priority = 1;
+		for (Request request: savedRequests.getAlternatives()) {
+			if (!request.hasRequestedCourse()) continue;
+			boolean first = true;
+			if (request.isWaitList()) hasWait = true;
+			for (RequestedCourse rc: request.getRequestedCourse()) {
+				if (rc.isCourse()) {
+					ImageResource icon = null; String iconText = null;
+					String msg = check.getMessage(rc.getCourseName(), "\n");
+					if (check.isError(rc.getCourseName()) && (rc.getStatus() == null || rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED)) {
+						icon = RESOURCES.requestError(); iconText = (msg);
+					} else if (rc.getStatus() != null) {
+						switch (rc.getStatus()) {
+						case ENROLLED:
+							icon = RESOURCES.requestEnrolled(); iconText = (MESSAGES.enrolled(rc.getCourseName()));
+							break;
+						case OVERRIDE_NEEDED:
+							icon = RESOURCES.requestNeeded(); iconText = (MESSAGES.overrideNeeded(msg));
+							break;
+						case SAVED:
+							icon = RESOURCES.requestSaved(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.requested(rc.getCourseName()));
+							break;				
+						case OVERRIDE_REJECTED:
+							icon = RESOURCES.requestRejected(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideRejected(rc.getCourseName()));
+							break;
+						case OVERRIDE_PENDING:
+							icon = RESOURCES.requestPending(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overridePending(rc.getCourseName()));
+							break;
+						case OVERRIDE_CANCELLED:
+							icon = RESOURCES.requestCancelled(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideCancelled(rc.getCourseName()));
+							break;
+						case OVERRIDE_APPROVED:
+							icon = RESOURCES.requestSaved(); iconText = ((msg == null ? "" : MESSAGES.requestWarnings(msg) + "\n\n") + MESSAGES.overrideApproved(rc.getCourseName()));
+							break;
+						default:
+							if (check.isError(rc.getCourseName()))
+								icon = RESOURCES.requestError(); iconText = (msg);
+						}
+					}					
+					Collection<String> prefs = null;
+					if (rc.hasSelectedIntructionalMethods()) {
+						if (rc.hasSelectedClasses()) {
+							prefs = new ArrayList<String>(rc.getSelectedIntructionalMethods().size() + rc.getSelectedClasses().size());
+							prefs.addAll(new TreeSet<String>(rc.getSelectedIntructionalMethods()));
+							prefs.addAll(new TreeSet<String>(rc.getSelectedClasses()));
+						} else {
+							prefs = new TreeSet<String>(rc.getSelectedIntructionalMethods());
+						}
+					} else if (rc.hasSelectedClasses()) {
+						prefs = new TreeSet<String>(rc.getSelectedClasses());
+					}
+					if (prefs != null) hasPref = true;
+					String status = "";
+					if (rc.getStatus() != null) {
+						switch (rc.getStatus()) {
+						case ENROLLED: status = MESSAGES.reqStatusEnrolled(); break;
+						case OVERRIDE_APPROVED: status = MESSAGES.reqStatusApproved(); break;
+						case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); break;
+						case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); break;
+						case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); break;
+						}
+					}
+					if (status.isEmpty() && savedRequests.getMaxCreditOverrideStatus() != null && check.hasMessage(rc.getCourseName(), "CREDIT")) {
+						switch (savedRequests.getMaxCreditOverrideStatus()) {
+						case OVERRIDE_APPROVED: status = MESSAGES.reqStatusApproved(); break;
+						case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); break;
+						case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); break;
+						case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); break;
+						}
+					}
+					if (status.isEmpty()) status = MESSAGES.reqStatusRegistered();
+					WebTable.Cell credit = new WebTable.Cell(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : "");
+					credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+					WebTable.Row row = new WebTable.Row(
+							new WebTable.Cell(first ? MESSAGES.courseRequestsAlternative(priority) : ""),
+							new WebTable.Cell(rc.getCourseName()),
+							new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
+							credit,
+							new WebTable.Cell(ToolBox.toString(prefs)),
+							new WebTable.Cell(check == null ? null : check.getMessage(rc.getCourseName(), "\n")),
+							(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
+							(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell(""))
+							);
+					if (first)
+						for (WebTable.Cell cell: row.getCells()) cell.setStyleName(priority == 1 ? "top-border-solid" : "top-border-dashed");
+					rows.add(row);
+				} else if (rc.isFreeTime()) {
+					String  free = "";
+					for (FreeTime ft: rc.getFreeTime()) {
+						if (!free.isEmpty()) free += ", ";
+						free += ft.toString(CONSTANTS.shortDays(), CONSTANTS.useAmPm());
+					}
+					WebTable.Row row = new WebTable.Row(
+							new WebTable.Cell(first ? MESSAGES.courseRequestsPriority(priority) : ""),
+							new WebTable.Cell(CONSTANTS.freePrefix() + free, 3, null),
+							new WebTable.Cell(""),
+							new WebTable.Cell(""),
+							new WebTable.IconCell(RESOURCES.requestSaved(), MESSAGES.requested(free), MESSAGES.reqStatusRegistered()),
+							new WebTable.Cell(""));
+					if (first)
+						for (WebTable.Cell cell: row.getCells()) cell.setStyleName(priority == 1 ? "top-border-solid" : "top-border-dashed");
+					rows.add(row);
+				}
+				first = false;
+			}
+			priority ++;
+		}
+
+		WebTable.Row[] rowArray = new WebTable.Row[rows.size()];
+		int idx = 0;
+		for (WebTable.Row row: rows) rowArray[idx++] = row;
+		
+		requests.setData(rowArray);
+		requests.setColumnVisible(4, hasPref);
+		requests.setColumnVisible(5, hasWarn);
+		requests.setColumnVisible(7, hasWait);
+		
+		P credit = new P("unitime-StatusLine");
+		float[] range = savedRequests.getCreditRange();
+		if (range != null && range[1] > 0f) {
+			if (range[0] == range[1]) credit.setText(MESSAGES.requestedCredit(range[0]));
+			else credit.setText(MESSAGES.requestedCreditRange(range[0], range[1]));
+		}
+		
+		ToolBox.print(GWT_MESSAGES.pageStudentCourseRequests(),
+				iUserAuthentication.getUser(),
+				iSessionSelector.getAcademicSessionName(),
+				requests, credit
+				);
 	}
 }

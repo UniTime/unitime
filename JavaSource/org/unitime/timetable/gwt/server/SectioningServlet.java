@@ -2005,8 +2005,13 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		
 		if (CustomCourseRequestsValidationHolder.hasProvider()) {
 			OnlineSectioningServer server = getServerInstance(student.getSession().getUniqueId(), true);
-			if (server != null)
-				return server.execute(server.createAction(CustomCourseRequestsValidationHolder.Check.class).withRequest(request), currentUser());
+			if (server != null) {
+				try {
+					return server.execute(server.createAction(CustomCourseRequestsValidationHolder.Check.class).withRequest(request), currentUser());
+				} catch (SectioningException e) {
+					sLog.warn("Failed to validate course requests: " + e.getMessage(), e);
+				}
+			}
 		}
 		
 		return request;

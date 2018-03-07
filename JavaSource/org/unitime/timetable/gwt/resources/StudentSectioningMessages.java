@@ -471,6 +471,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Requests stored.")
 	String saveRequestsOK();
 	
+	@DefaultMessage("Course requests have been successfully submitted.\nDo you want to print a confirmation?")
+	String saveRequestsConfirmation();
+	
 	@DefaultMessage("Unable to store requests: {0}")
 	String saveRequestsFail(String reason);
 	
@@ -1715,7 +1718,10 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Rejected")
 	String reqStatusRejected();
-		
+	
+	@DefaultMessage("Registered")
+	String reqStatusRegistered();
+	
 	@DefaultMessage("You are already enrolled in {0}.\nThis course request cannot be modified or deleted.")
 	String enrolled(String course);
 	

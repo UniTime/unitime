@@ -63,10 +63,14 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 	private Command iCommand;
 	private P iError = null;
 	private String iMessage;
-
+	
 	protected UniTimeConfirmationDialog(Type type, String message, String question, String answer, Command command) {
+		this(type, type.getTitle(), type.getIcon(), message, question, answer, command);
+	}
+
+	protected UniTimeConfirmationDialog(Type type, String title, ImageResource icon, String message, String question, String answer, Command command) {
 		super(true, true);
-		this.setText(type.getTitle());
+		this.setText(title);
 		iAnswer = answer;
 		iCommand = command;
 		iMessage = message;
@@ -86,7 +90,7 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 
 		P ic = new P("icon-panel");
 		bd.add(ic);
-		ic.add(new Image(type.getIcon()));
+		ic.add(new Image(icon));
 
 		P cp = new P("content-panel");
 		bd.add(cp);
@@ -202,7 +206,11 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 	public static void confirm(String message, Command callback) {
 		new UniTimeConfirmationDialog(Type.CONFIRM, message, null, null, callback).center();
 	}
-
+	
+	public static void confirm(String message, ImageResource icon, Command callback) {
+		new UniTimeConfirmationDialog(Type.CONFIRM, Type.CONFIRM.getTitle(), icon, message, null, null, callback).center();
+	}
+	
 	public static void confirm(boolean useDefault, String message, Command callback) {
 		if (useDefault) {
 			if (Window.confirm(message))
