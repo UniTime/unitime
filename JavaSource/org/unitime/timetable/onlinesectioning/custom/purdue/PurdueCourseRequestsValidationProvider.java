@@ -1652,7 +1652,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		
 		
 		if (validation.scheduleRestrictions != null && validation.scheduleRestrictions.problems != null)
-			for (Problem problem: validation.scheduleRestrictions.problems) {
+			problems: for (Problem problem: validation.scheduleRestrictions.problems) {
 				if ("HOLD".equals(problem.code)) continue;
 				Course course = crn2course.get(problem.crn);
 				if (course == null) continue;
@@ -1670,6 +1670,9 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					change.errors = new ArrayList<ChangeError>();
 					change.operation = "ADD";
 					submitRequest.changes.add(change);
+				}  else {
+					for (ChangeError err: change.errors)
+						if (problem.code.equals(err.code)) continue problems;
 				}
 				ChangeError err = new ChangeError();
 				err.code = problem.code;
@@ -1681,7 +1684,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				change.errors.add(err);
 			}
 		if (validation.alternativesRestrictions != null && validation.alternativesRestrictions.problems != null)
-			for (Problem problem: validation.alternativesRestrictions.problems) {
+			problems: for (Problem problem: validation.alternativesRestrictions.problems) {
 				if ("HOLD".equals(problem.code)) continue;
 				Course course = crn2course.get(problem.crn);
 				if (course == null) continue;
@@ -1699,6 +1702,9 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					change.errors = new ArrayList<ChangeError>();
 					change.operation = "ADD";
 					submitRequest.changes.add(change);
+				} else {
+					for (ChangeError err: change.errors)
+						if (problem.code.equals(err.code)) continue problems;
 				}
 				ChangeError err = new ChangeError();
 				err.code = problem.code;
