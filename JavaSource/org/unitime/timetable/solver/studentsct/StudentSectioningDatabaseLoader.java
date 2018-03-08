@@ -176,10 +176,11 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private boolean iAllowDefaultCourseAlternatives = false;
 	private boolean iIncludeUnavailabilities = true;
 	private String iShortDistanceAccomodationReference = null;
-	private boolean iCheckOverrideStatus = false;
+	private boolean iCheckOverrideStatus = false, iValidateOverrides = false;
 	private CourseRequestsValidationProvider iValidationProvider = null;
 	private List<Long> iUpdatedStudents = new ArrayList<Long>();
 	private NameFormat iStudentNameFormat = null, iInstructorNameFormat = null;
+	private StudentSolver iValidator = null;
     
     private Progress iProgress = null;
     
@@ -214,7 +215,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iIncludeUnavailabilities = model.getProperties().getPropertyBoolean("Load.IncludeUnavailabilities", iIncludeUnavailabilities);
         iShortDistanceAccomodationReference = model.getProperties().getProperty("Distances.ShortDistanceAccommodationReference", "SD");
         iCheckOverrideStatus = model.getProperties().getPropertyBoolean("Load.CheckOverrideStatus", iCheckOverrideStatus);
-        if (iCheckOverrideStatus && ApplicationProperty.CustomizationCourseRequestsValidation.value() != null) {
+        iValidateOverrides = model.getProperties().getPropertyBoolean("Load.ValidateOverrides", iValidateOverrides);
+        if ((iValidateOverrides || iCheckOverrideStatus) && ApplicationProperty.CustomizationCourseRequestsValidation.value() != null) {
         	try {
         		iValidationProvider = ((CourseRequestsValidationProvider)Class.forName(ApplicationProperty.CustomizationCourseRequestsValidation.value()).newInstance());
         	} catch (Exception e) {
@@ -294,8 +296,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             
             load(session, hibSession);
             
-            if (!iUpdatedStudents.isEmpty())
+            if (!iUpdatedStudents.isEmpty()) {
             	StudentSectioningQueue.studentChanged(hibSession, null, iSessionId, iUpdatedStudents);
+            	hibSession.flush();
+            }
             
             tx.commit();
         } catch (Exception e) {
@@ -730,6 +734,51 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 		}
     }
     
+    protected void validateOverrides(org.hibernate.Session hibSession, org.unitime.timetable.model.Student s) {
+    	if (iValidator == null) {
+    		iValidator = new StudentSolver(getModel().getProperties(), null);
+    		iValidator.setInitalSolution(new Solution(getModel(), getAssignment()));
+    	}
+    	OnlineSectioningLog.Action.Builder action = OnlineSectioningLog.Action.newBuilder();
+    	action.setOperation("validate-overrides");
+		action.setSession(OnlineSectioningLog.Entity.newBuilder()
+    			.setUniqueId(iSessionId)
+    			.setName(iTerm + iYear + iInitiative)
+    			);
+    	action.setStartTime(System.currentTimeMillis());
+    	OnlineSectioningLog.Entity user = Entity.newBuilder().setExternalId(iOwnerId).setType(Entity.EntityType.MANAGER).build(); 
+    	action.setUser(user);
+    	action.setStudent(OnlineSectioningLog.Entity.newBuilder()
+				.setUniqueId(s.getUniqueId())
+				.setExternalId(s.getExternalUniqueId())
+				.setName(iStudentNameFormat.format(s))
+				.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
+		long c0 = OnlineSectioningHelper.getCpuTime();
+		try {
+        	if (iValidationProvider.revalidateStudent(iValidator, new OnlineSectioningHelper(hibSession, user), s, action)) {
+        		iUpdatedStudents.add(s.getUniqueId());
+        		action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
+        	} else {
+        		action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
+        	}
+		} catch (SectioningException e) {
+			action.setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
+			if (e.getCause() != null) {
+				action.addMessage(OnlineSectioningLog.Message.newBuilder()
+						.setLevel(OnlineSectioningLog.Message.Level.FATAL)
+						.setText(e.getCause().getClass().getName() + ": " + e.getCause().getMessage()));
+			} else {
+				action.addMessage(OnlineSectioningLog.Message.newBuilder()
+						.setLevel(OnlineSectioningLog.Message.Level.FATAL)
+						.setText(e.getMessage() == null ? "null" : e.getMessage()));
+			}
+		} finally {
+			action.setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
+			action.setEndTime(System.currentTimeMillis());
+			OnlineSectioningLogger.getInstance().record(OnlineSectioningLog.Log.newBuilder().addAction(action).build());
+		}
+    }
+    
     public Student loadStudent(org.hibernate.Session hibSession, org.unitime.timetable.model.Student s, Hashtable<Long,Course> courseTable, Hashtable<Long,Section> classTable) {
     	// Check for nobatch sectioning status
         if (iCheckForNoBatchStatus && s.hasSectioningStatusOption(StudentSectioningStatus.Option.nobatch)) {
@@ -743,7 +792,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	return null;
         }
         
-        if (iCheckOverrideStatus && iValidationProvider != null)
+        if (iValidateOverrides && iValidationProvider != null)
+        	validateOverrides(hibSession, s);
+        else if (iCheckOverrideStatus && iValidationProvider != null)
         	checkOverrideStatus(hibSession, s);
         
         iProgress.debug("Loading student "+s.getUniqueId()+" (id="+s.getExternalUniqueId()+", name="+iStudentNameFormat.format(s)+")");
@@ -1578,6 +1629,36 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             if (offering!=null) getModel().addOffering(offering);
         }
         
+        List<DistributionPref> distPrefs = hibSession.createQuery(
+        		"select p from DistributionPref p, Department d where p.distributionType.reference in (:ref1, :ref2) and d.session.uniqueId = :sessionId" +
+        		" and p.owner = d and p.prefLevel.prefProlog = :pref")
+        		.setString("ref1", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference())
+        		.setString("ref2", IgnoreStudentConflictsConstraint.REFERENCE)
+        		.setString("pref", PreferenceLevel.sRequired)
+        		.setLong("sessionId", iSessionId)
+        		.list();
+        if (!distPrefs.isEmpty()) {
+        	setPhase("Loading distribution preferences...", distPrefs.size());
+        	SectionProvider p = new SectionProvider() {
+				@Override
+				public Section get(Long classId) {
+					return classTable.get(classId);
+				}
+			};
+        	for (DistributionPref pref: distPrefs) {
+        		incProgress();
+        		for (Collection<Section> sections: getSections(pref, p)) {
+        			if (GroupConstraint.ConstraintType.LINKED_SECTIONS.reference().equals(pref.getDistributionType().getReference())) {
+        				getModel().addLinkedSections(iLinkedClassesMustBeUsed, sections);
+        			} else {
+        				for (Section s1: sections)
+                			for (Section s2: sections)
+                				if (!s1.equals(s2)) s1.addIgnoreConflictWith(s2.getId());
+        			}
+        		}
+        	}
+        }
+        
         Map<String, Student> ext2student = new HashMap<String, Student>();
         if (iIncludeCourseDemands || iProjections) {
             List students = hibSession.createQuery(
@@ -1635,36 +1716,6 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     // assignStudent(student);
                 }
             }
-        }
-        
-        List<DistributionPref> distPrefs = hibSession.createQuery(
-        		"select p from DistributionPref p, Department d where p.distributionType.reference in (:ref1, :ref2) and d.session.uniqueId = :sessionId" +
-        		" and p.owner = d and p.prefLevel.prefProlog = :pref")
-        		.setString("ref1", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference())
-        		.setString("ref2", IgnoreStudentConflictsConstraint.REFERENCE)
-        		.setString("pref", PreferenceLevel.sRequired)
-        		.setLong("sessionId", iSessionId)
-        		.list();
-        if (!distPrefs.isEmpty()) {
-        	setPhase("Loading distribution preferences...", distPrefs.size());
-        	SectionProvider p = new SectionProvider() {
-				@Override
-				public Section get(Long classId) {
-					return classTable.get(classId);
-				}
-			};
-        	for (DistributionPref pref: distPrefs) {
-        		incProgress();
-        		for (Collection<Section> sections: getSections(pref, p)) {
-        			if (GroupConstraint.ConstraintType.LINKED_SECTIONS.reference().equals(pref.getDistributionType().getReference())) {
-        				getModel().addLinkedSections(iLinkedClassesMustBeUsed, sections);
-        			} else {
-        				for (Section s1: sections)
-                			for (Section s2: sections)
-                				if (!s1.equals(s2)) s1.addIgnoreConflictWith(s2.getId());
-        			}
-        		}
-        	}
         }
         
         if (iIncludeUnavailabilities) {
