@@ -2390,11 +2390,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 		boolean hasPref = false, hasWarn = false, hasWait = false;
 		NumberFormat df = NumberFormat.getFormat("0.#");
-		CheckCoursesResponse check = null;
-		if (savedRequests.hasConfirmations()) {
-			check = new CheckCoursesResponse(savedRequests.getConfirmations());
-			hasWarn = true;
-		}
+		CheckCoursesResponse check = new CheckCoursesResponse(savedRequests.getConfirmations());
+		hasWarn = savedRequests.hasConfirmations();
 		int priority = 1;
 		for (Request request: savedRequests.getCourses()) {
 			if (!request.hasRequestedCourse()) continue;

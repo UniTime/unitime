@@ -154,11 +154,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		boolean hasPref = false, hasWarn = false, hasWait = false, hasStat = false;
 		NumberFormat df = NumberFormat.getFormat("0.#");
 		if (iAssignment.hasRequest()) {
-			CheckCoursesResponse check = null;
-			if (iAssignment.getRequest().hasConfirmations()) {
-				check = new CheckCoursesResponse(iAssignment.getRequest().getConfirmations());
-				hasWarn = true;
-			}
+			CheckCoursesResponse check = new CheckCoursesResponse(iAssignment.getRequest().getConfirmations());
+			hasWarn = iAssignment.getRequest().hasConfirmations();
 			int priority = 1;
 			for (Request request: iAssignment.getRequest().getCourses()) {
 				if (!request.hasRequestedCourse()) continue;
