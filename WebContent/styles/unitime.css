@@ -6103,3 +6103,7 @@ unitime-RoomSharingWidget .legend .blank {
 	text-align: center;
 	max-width: 800px;
 }
+
+.unitime-ChangeLog .top-border-dashed {
+	border-top: 1px dashed #9CB0CE;
+}

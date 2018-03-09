@@ -171,26 +171,49 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					
 					if (!action.getRequestList().isEmpty()) {
 						html += "<tr><td class='unitime-MainTableHeader' colspan='2'>" + MSG.courseRequestsCourses() + "</td></tr>";
-						
+						html += "<tr><td colspan='2'><table cellspacing='0' cellpadding='2'>" +
+								"<td class='unitime-TableHeader'>" + MSG.colPriority() + "</td>" +
+								"<td class='unitime-TableHeader'>" + MSG.colCourse() + "</td>" +
+								"<td class='unitime-TableHeader'>" + MSG.colPreferences() + "</td></tr>";
 					}
 					String request = "";
 					String selected = "";
+					int notAlt = 0, lastFT = -1;
 					for (OnlineSectioningLog.Request r: action.getRequestList()) {
-						if (!request.isEmpty()) request += "<br>";
-						request += (r.getAlternative() ? "A" : "") + (1 + r.getPriority()) + ". ";
-						html += "<tr><td colspan='2'>" + (r.getAlternative() ? "A" : "") + (1 + r.getPriority()) + ". ";
+						if (!r.getAlternative()) notAlt = r.getPriority() + 1;
 						int idx = 0;
 						for (OnlineSectioningLog.Time f: r.getFreeTimeList()) {
-							if (idx ++ > 0) { html += ", "; request += ", "; }
-							else { html += CONST.freePrefix() + " "; request += CONST.freePrefix() + " "; }
+							if (idx == 0) {
+								html += (r.getPriority() > 0 && lastFT != r.getPriority() ? "<tr><td class='top-border-dashed'>" : "<tr><td>") + (lastFT == r.getPriority() ? "" : !r.getAlternative() ? MSG.courseRequestsPriority(1 + r.getPriority()) : MSG.courseRequestsAlternative(1 + r.getPriority() - notAlt)) + "</td>";
+								html += (r.getPriority() > 0 && lastFT != r.getPriority() ?"<td class='top-border-dashed' colspan='2'>":"<td colspan='2'>") + CONST.freePrefix() + " ";
+								request += (lastFT == r.getPriority() ? ", " : (request.isEmpty() ? "" : "<br>") + (r.getAlternative() ? "A" + (1 + r.getPriority() - notAlt) : String.valueOf(1 + r.getPriority())) + ". " + CONST.freePrefix() + " ");
+							} else {
+								html += ", ";
+								request += ", ";
+							}
+							idx++;
 							html += DayCode.toString(f.getDays()) + " "  + time(f.getStart()) + " - " + time(f.getStart() + f.getLength());
 							request += DayCode.toString(f.getDays()) + " "  + time(f.getStart()) + " - " + time(f.getStart() + f.getLength());
+							html += "</td></tr>";
+							lastFT = r.getPriority();
 						}
 						if (r.getFreeTimeList().isEmpty())
 							for (OnlineSectioningLog.Entity e: r.getCourseList()) {
-								if (idx ++ > 0) { html += ", "; request += ", "; }
+								if (idx == 0) {
+									html += (r.getPriority() > 0 ? "<tr><td class='top-border-dashed'>" : "<tr><td>") + (!r.getAlternative() ? MSG.courseRequestsPriority(1 + r.getPriority()) : MSG.courseRequestsAlternative(1 + r.getPriority() - notAlt)) + "</td>";
+									html += (r.getPriority() > 0 ?"<td class='top-border-dashed'>":"<td>");
+									request += (request.isEmpty() ? "" : "<br>") + (r.getAlternative() ? "A" + (1 + r.getPriority() - notAlt) : String.valueOf(1 + r.getPriority())) + ". ";
+								} else {
+									html += "<tr><td></td><td>";
+									request += ", ";
+								}
+								idx++;
 								html += e.getName();
 								request += e.getName();
+								html += (r.getPriority() > 0 && idx == 1 ? "</td><td class='top-border-dashed'>" : "</td><td>" );
+								for (int i = 0; i < e.getParameterCount(); i++)
+									html += (i > 0 ? ", " : "") + e.getParameter(i).getValue();
+								html += "</td></tr>";
 							}
 						for (OnlineSectioningLog.Section s: r.getSectionList()) {
 							if (s.getPreference() == OnlineSectioningLog.Section.Preference.SELECTED) {
@@ -209,6 +232,9 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 									(s.hasTime() ? DayCode.toString(s.getTime().getDays()) + " " + time(s.getTime().getStart()) + " - " + time(s.getTime().getStart() + s.getTime().getLength()) : "") + " " + loc;
 							}
 						}
+					}
+					if (!action.getRequestList().isEmpty()) {
+						html += "</table></td></tr>";
 					}
 					String enrollment = "";
 					Map<OnlineSectioningLog.Enrollment.EnrollmentType, String> enrollmentByType = new HashMap<OnlineSectioningLog.Enrollment.EnrollmentType, String>();
