@@ -343,7 +343,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	protected OnlineSectioningHelper getCurrentHelper() {
 		LinkedList<OnlineSectioningHelper> h = sHelper.get();
 		if (h == null || h.isEmpty())
-			return new OnlineSectioningHelper(null);
+			return new OnlineSectioningHelper();
 		return h.peek();
 	}
 	

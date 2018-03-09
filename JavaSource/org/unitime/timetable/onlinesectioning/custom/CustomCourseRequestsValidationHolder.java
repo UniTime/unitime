@@ -21,6 +21,7 @@ package org.unitime.timetable.onlinesectioning.custom;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import org.unitime.localization.impl.Localization;
@@ -30,10 +31,12 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
 
 /**
@@ -114,70 +117,102 @@ public class CustomCourseRequestsValidationHolder {
 		public Collection<Long> getStudentIds() { return iStudentIds; }
 		
 		@Override
-		public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		public Boolean execute(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 			if (!CustomCourseRequestsValidationHolder.hasProvider()) return false;
-			List<Long> reloadIds = new ArrayList<Long>();
-			
-			helper.beginTransaction();
+			final List<Long> reloadIds = new ArrayList<Long>();
 			try {
-				for (Long studentId: getStudentIds()) {
-					helper.getAction().addOther(OnlineSectioningLog.Entity.newBuilder()
-							.setUniqueId(studentId)
-							.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
-					
-					Student student = StudentDAO.getInstance().get(studentId, helper.getHibSession());
-					
-					if (student != null) {
-						OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
-						action.setStudent(OnlineSectioningLog.Entity.newBuilder()
-								.setUniqueId(studentId)
-								.setExternalId(student.getExternalUniqueId())
-								.setName(helper.getStudentNameFormat().format(student))
-								.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
-						long c0 = OnlineSectioningHelper.getCpuTime();
+				int nrThreads = server.getConfig().getPropertyInt("CourseRequestsValidation.NrThreads", 10);
+				if (nrThreads <= 1 || getStudentIds().size() <= 1) {
+					for (Long studentId: getStudentIds()) {
+						if (updateStudent(server, helper, studentId)) reloadIds.add(studentId);
+					}
+				} else {
+					List<Worker> workers = new ArrayList<Worker>();
+					Iterator<Long> studentIds = getStudentIds().iterator();
+					for (int i = 0; i < nrThreads; i++)
+						workers.add(new Worker(i, studentIds) {
+							@Override
+							protected void process(Long studentId) {
+								if (updateStudent(server, new OnlineSectioningHelper(helper), studentId)) {
+									synchronized (reloadIds) {
+										reloadIds.add(studentId);
+									}
+								}
+							}
+						});
+					for (Worker worker: workers) worker.start();
+					for (Worker worker: workers) {
 						try {
-							if (CustomCourseRequestsValidationHolder.getProvider().updateStudent(server, helper, student, action)) {
-								reloadIds.add(studentId);
-								action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
-							} else {
-								action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
-							}
-						} catch (SectioningException e) {
-							action.setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
-							if (e.getCause() != null) {
-								action.addMessage(OnlineSectioningLog.Message.newBuilder()
-										.setLevel(OnlineSectioningLog.Message.Level.FATAL)
-										.setText(e.getCause().getClass().getName() + ": " + e.getCause().getMessage()));
-							} else {
-								action.addMessage(OnlineSectioningLog.Message.newBuilder()
-										.setLevel(OnlineSectioningLog.Message.Level.FATAL)
-										.setText(e.getMessage() == null ? "null" : e.getMessage()));
-							}
-						} finally {
-							action.setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
-							action.setEndTime(System.currentTimeMillis());
+							worker.join();
+						} catch (InterruptedException e) {
 						}
 					}
 				}
+			} finally {
+				if (!reloadIds.isEmpty() && !(server instanceof DatabaseServer))
+					server.execute(server.createAction(ReloadStudent.class).forStudents(reloadIds), helper.getUser());
+			}
+
+			return !reloadIds.isEmpty();
+		}
+		
+		protected boolean updateStudent(OnlineSectioningServer server, OnlineSectioningHelper helper, Long studentId) {
+			helper.beginTransaction();
+			try {
+				helper.getAction().addOther(OnlineSectioningLog.Entity.newBuilder()
+						.setUniqueId(studentId)
+						.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
+
+				Student student = StudentDAO.getInstance().get(studentId, helper.getHibSession());
+				boolean changed = false;
+				
+				if (student != null) {
+					OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
+					action.setStudent(OnlineSectioningLog.Entity.newBuilder()
+							.setUniqueId(studentId)
+							.setExternalId(student.getExternalUniqueId())
+							.setName(helper.getStudentNameFormat().format(student))
+							.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
+					long c0 = OnlineSectioningHelper.getCpuTime();
+					try {
+						if (CustomCourseRequestsValidationHolder.getProvider().updateStudent(server, helper, student, action)) {
+							changed = true;
+							action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
+						} else {
+							action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
+						}
+					} catch (SectioningException e) {
+						action.setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
+						if (e.getCause() != null) {
+							action.addMessage(OnlineSectioningLog.Message.newBuilder()
+									.setLevel(OnlineSectioningLog.Message.Level.FATAL)
+									.setText(e.getCause().getClass().getName() + ": " + e.getCause().getMessage()));
+						} else {
+							action.addMessage(OnlineSectioningLog.Message.newBuilder()
+									.setLevel(OnlineSectioningLog.Message.Level.FATAL)
+									.setText(e.getMessage() == null ? "null" : e.getMessage()));
+						}
+					} finally {
+						action.setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
+						action.setEndTime(System.currentTimeMillis());
+					}
+				}
 				helper.commitTransaction();
+				return changed;
 			} catch (Exception e) {
 				helper.rollbackTransaction();
 				if (e instanceof SectioningException)
 					throw (SectioningException)e;
 				throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 			}
-			
-			if (!reloadIds.isEmpty())
-				server.execute(server.createAction(ReloadStudent.class).forStudents(reloadIds), helper.getUser());
 
-			return !reloadIds.isEmpty();
 		}
 
 		@Override
 		public String name() {
 			return "update-overrides";
 		}
-
+		
 	}
 	
 	public static class Validate implements OnlineSectioningAction<Boolean> {
@@ -200,69 +235,125 @@ public class CustomCourseRequestsValidationHolder {
 		public Collection<Long> getStudentIds() { return iStudentIds; }
 		
 		@Override
-		public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		public Boolean execute(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 			if (!CustomCourseRequestsValidationHolder.hasProvider()) return false;
-			List<Long> reloadIds = new ArrayList<Long>();
-			
-			helper.beginTransaction();
+			final List<Long> reloadIds = new ArrayList<Long>();
 			try {
-				for (Long studentId: getStudentIds()) {
-					helper.getAction().addOther(OnlineSectioningLog.Entity.newBuilder()
-							.setUniqueId(studentId)
-							.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
-					
-					Student student = StudentDAO.getInstance().get(studentId, helper.getHibSession());
-					
-					if (student != null) {
-						OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
-						action.setStudent(OnlineSectioningLog.Entity.newBuilder()
-								.setUniqueId(studentId)
-								.setExternalId(student.getExternalUniqueId())
-								.setName(helper.getStudentNameFormat().format(student))
-								.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
-						long c0 = OnlineSectioningHelper.getCpuTime();
+				int nrThreads = server.getConfig().getPropertyInt("CourseRequestsValidation.NrThreads", 10);
+				if (nrThreads <= 1 || getStudentIds().size() <= 1) {
+					for (Long studentId: getStudentIds()) {
+						if (revalidateStudent(server, helper, studentId)) reloadIds.add(studentId);
+					}
+				} else {
+					List<Worker> workers = new ArrayList<Worker>();
+					Iterator<Long> studentIds = getStudentIds().iterator();
+					for (int i = 0; i < nrThreads; i++)
+						workers.add(new Worker(i, studentIds) {
+							@Override
+							protected void process(Long studentId) {
+								if (revalidateStudent(server, new OnlineSectioningHelper(helper), studentId)) {
+									synchronized (reloadIds) {
+										reloadIds.add(studentId);
+									}
+								}
+							}
+						});
+					for (Worker worker: workers) worker.start();
+					for (Worker worker: workers) {
 						try {
-							if (CustomCourseRequestsValidationHolder.getProvider().revalidateStudent(server, helper, student, action)) {
-								reloadIds.add(studentId);
-								action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
-							} else {
-								action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
-							}
-						} catch (SectioningException e) {
-							action.setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
-							if (e.getCause() != null) {
-								action.addMessage(OnlineSectioningLog.Message.newBuilder()
-										.setLevel(OnlineSectioningLog.Message.Level.FATAL)
-										.setText(e.getCause().getClass().getName() + ": " + e.getCause().getMessage()));
-							} else {
-								action.addMessage(OnlineSectioningLog.Message.newBuilder()
-										.setLevel(OnlineSectioningLog.Message.Level.FATAL)
-										.setText(e.getMessage() == null ? "null" : e.getMessage()));
-							}
-						} finally {
-							action.setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
-							action.setEndTime(System.currentTimeMillis());
+							worker.join();
+						} catch (InterruptedException e) {
 						}
 					}
 				}
+			} finally {
+				if (!reloadIds.isEmpty() && !(server instanceof DatabaseServer))
+					server.execute(server.createAction(ReloadStudent.class).forStudents(reloadIds), helper.getUser());
+			}
+			return !reloadIds.isEmpty();
+		}
+		
+		protected boolean revalidateStudent(OnlineSectioningServer server, OnlineSectioningHelper helper, Long studentId) {
+			helper.beginTransaction();
+			try {
+				helper.getAction().addOther(OnlineSectioningLog.Entity.newBuilder()
+						.setUniqueId(studentId)
+						.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
+				
+				Student student = StudentDAO.getInstance().get(studentId, helper.getHibSession());
+				
+				boolean changed = false;
+				if (student != null) {
+					OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
+					action.setStudent(OnlineSectioningLog.Entity.newBuilder()
+							.setUniqueId(studentId)
+							.setExternalId(student.getExternalUniqueId())
+							.setName(helper.getStudentNameFormat().format(student))
+							.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
+					long c0 = OnlineSectioningHelper.getCpuTime();
+					try {
+						if (CustomCourseRequestsValidationHolder.getProvider().revalidateStudent(server, helper, student, action)) {
+							changed = true;
+							action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
+						} else {
+							action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
+						}
+					} catch (SectioningException e) {
+						action.setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
+						if (e.getCause() != null) {
+							action.addMessage(OnlineSectioningLog.Message.newBuilder()
+									.setLevel(OnlineSectioningLog.Message.Level.FATAL)
+									.setText(e.getCause().getClass().getName() + ": " + e.getCause().getMessage()));
+						} else {
+							action.addMessage(OnlineSectioningLog.Message.newBuilder()
+									.setLevel(OnlineSectioningLog.Message.Level.FATAL)
+									.setText(e.getMessage() == null ? "null" : e.getMessage()));
+						}
+					} finally {
+						action.setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
+						action.setEndTime(System.currentTimeMillis());
+					}
+				}
 				helper.commitTransaction();
+				return changed;
 			} catch (Exception e) {
 				helper.rollbackTransaction();
 				if (e instanceof SectioningException)
 					throw (SectioningException)e;
 				throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 			}
-			
-			if (!reloadIds.isEmpty())
-				server.execute(server.createAction(ReloadStudent.class).forStudents(reloadIds), helper.getUser());
-
-			return !reloadIds.isEmpty();
 		}
 
 		@Override
 		public String name() {
 			return "validate-overrides";
 		}
-
+	}
+	
+	protected static abstract class Worker extends Thread {
+		private Iterator<Long> iStudentsIds;
+		
+		public Worker(int index, Iterator<Long> studentsIds) {
+			setName("Validator-" + (1 + index));
+			iStudentsIds = studentsIds;
+		}
+		
+		protected abstract void process(Long studentId);
+		
+		@Override
+	    public void run() {
+			try {
+				while (true) {
+					Long studentId = null;
+					synchronized (iStudentsIds) {
+						if (!iStudentsIds.hasNext()) break;
+						studentId = iStudentsIds.next();
+					}
+					process(studentId);
+				}
+			} finally {
+				_RootDAO.closeCurrentThreadSessions();
+			}
+		}
 	}
 }

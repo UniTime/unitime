@@ -107,6 +107,10 @@ public class OnlineSectioningHelper {
     protected CacheMode iCacheMode = null;
     protected XExactTimeConversion iExactTimeConversion = null;
     
+    public OnlineSectioningHelper() {
+    	this(null, null, null);
+    }
+    
     public OnlineSectioningHelper(OnlineSectioningLog.Entity user, CacheMode cacheMode) {
     	this(null, user, cacheMode);
     }
@@ -123,6 +127,11 @@ public class OnlineSectioningHelper {
     	iHibSession = hibSession;
     	iUser = user;
     	iCacheMode = cacheMode;
+    }
+    
+    public OnlineSectioningHelper(OnlineSectioningHelper parent) {
+    	this(null, parent.getUser(), parent.iCacheMode);
+    	iLog = parent.iLog;
     }
     
     public OnlineSectioningLog.Entity getUser() { return iUser; }
@@ -409,8 +418,10 @@ public class OnlineSectioningHelper {
     	a.setStartTime(System.currentTimeMillis());
     	if (iUser != null)
     		a.setUser(iUser);
-    	iLog.addAction(a);
-    	return iLog.getActionBuilder(iLog.getActionCount() - 1);
+    	synchronized (iLog) {
+        	iLog.addAction(a);
+        	return iLog.getActionBuilder(iLog.getActionCount() - 1);
+		}
     }
     
     public OnlineSectioningLog.Action.Builder getAction() {
