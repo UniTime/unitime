@@ -159,10 +159,6 @@ public class CustomCourseRequestsValidationHolder {
 		protected boolean updateStudent(OnlineSectioningServer server, OnlineSectioningHelper helper, Long studentId) {
 			helper.beginTransaction();
 			try {
-				helper.getAction().addOther(OnlineSectioningLog.Entity.newBuilder()
-						.setUniqueId(studentId)
-						.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
-
 				Student student = StudentDAO.getInstance().get(studentId, helper.getHibSession());
 				boolean changed = false;
 				
@@ -276,10 +272,6 @@ public class CustomCourseRequestsValidationHolder {
 		protected boolean revalidateStudent(OnlineSectioningServer server, OnlineSectioningHelper helper, Long studentId) {
 			helper.beginTransaction();
 			try {
-				helper.getAction().addOther(OnlineSectioningLog.Entity.newBuilder()
-						.setUniqueId(studentId)
-						.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
-				
 				Student student = StudentDAO.getInstance().get(studentId, helper.getHibSession());
 				
 				boolean changed = false;
