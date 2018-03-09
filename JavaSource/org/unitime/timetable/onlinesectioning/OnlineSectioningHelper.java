@@ -21,14 +21,17 @@ package org.unitime.timetable.onlinesectioning;
 
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cpsolver.coursett.Constants;
 import org.cpsolver.coursett.model.RoomLocation;
 import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.studentsct.model.Choice;
+import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
@@ -594,9 +597,24 @@ public class OnlineSectioningHelper {
     	} else if (r instanceof CourseRequest) {
     		CourseRequest cr = (CourseRequest)r;
     		for (Course course: cr.getCourses()) {
-    			request.addCourse(OnlineSectioningLog.Entity.newBuilder()
+    			OnlineSectioningLog.Entity.Builder entity = OnlineSectioningLog.Entity.newBuilder()
     					.setUniqueId(course.getId())
-    					.setName(course.getName()));
+    					.setName(course.getName());
+    			Set<String> im = new HashSet<String>();
+    			for (Choice choice: cr.getSelectedChoices()) {
+            		if (!course.getOffering().equals(choice.getOffering())) continue;
+            		if (choice.getSectionId() != null) {
+            			Section section = choice.getOffering().getSection(choice.getSectionId());
+            			if (section != null)
+            				entity.addParameterBuilder().setKey("sec_pref").setValue(section.getName(course.getId()));
+            		} else if (choice.getConfigId() != null) {
+            			for (Config config: choice.getOffering().getConfigs()) {
+            				if (choice.getConfigId().equals(config.getId()) && config.getInstructionalMethodName() != null && im.add(config.getInstructionalMethodName()))
+            					entity.addParameterBuilder().setKey("im_pref").setValue(config.getInstructionalMethodName());
+            			}
+            		}
+            	}
+    			request.addCourse(entity);
     		}
     		if (cr.getTimeStamp() != null)
     			request.setTimeStamp(cr.getTimeStamp());
@@ -620,9 +638,21 @@ public class OnlineSectioningHelper {
     	} else if (r instanceof XCourseRequest) {
     		XCourseRequest cr = (XCourseRequest)r;
     		for (XCourseId course: cr.getCourseIds()) {
-    			request.addCourse(OnlineSectioningLog.Entity.newBuilder()
+    			OnlineSectioningLog.Entity.Builder entity = OnlineSectioningLog.Entity.newBuilder()
     					.setUniqueId(course.getCourseId())
-    					.setName(course.getCourseName()));
+    					.setName(course.getCourseName());
+    			OnlineSectioningLog.CourseRequestOption pref = cr.getPreferences(course);
+    			if (pref != null) {
+    				if (pref.getInstructionalMethodCount() > 0)
+    					for (OnlineSectioningLog.Entity im: pref.getInstructionalMethodList()) 
+        					if (im.hasName())
+        						entity.addParameterBuilder().setKey("im_pref").setValue(im.getName());
+    				if (pref.getSectionCount() > 0)
+    					for (OnlineSectioningLog.Section section: pref.getSectionList())
+    						if (section.getClazz().hasExternalId())
+        						entity.addParameterBuilder().setKey("sec_pref").setValue(section.getClazz().getExternalId());
+    			}
+    			request.addCourse(entity);
     		}
     		if (cr.getTimeStamp() != null)
     			request.setTimeStamp(cr.getTimeStamp().getTime());
@@ -652,6 +682,12 @@ public class OnlineSectioningHelper {
     				OnlineSectioningLog.Entity.Builder e = OnlineSectioningLog.Entity.newBuilder();
     				if (rc.hasCourseId()) e.setUniqueId(rc.getCourseId());
     				if (rc.hasCourseName()) e.setName(rc.getCourseName());
+    				if (rc.hasSelectedClasses())
+    					for (String clazz: rc.getSelectedClasses())
+    						e.addParameterBuilder().setKey("sec_pref").setValue(clazz);
+    				if (rc.hasSelectedIntructionalMethods())
+    					for (String im: rc.getSelectedIntructionalMethods())
+    						e.addParameterBuilder().setKey("im_pref").setValue(im);
     				rq.addCourse(e);
 				}
 			}
@@ -676,6 +712,12 @@ public class OnlineSectioningHelper {
     				OnlineSectioningLog.Entity.Builder e = OnlineSectioningLog.Entity.newBuilder();
     				if (rc.hasCourseId()) e.setUniqueId(rc.getCourseId());
     				if (rc.hasCourseName()) e.setName(rc.getCourseName());
+    				if (rc.hasSelectedClasses())
+    					for (String clazz: rc.getSelectedClasses())
+    						e.addParameterBuilder().setKey("sec_pref").setValue(clazz);
+    				if (rc.hasSelectedIntructionalMethods())
+    					for (String im: rc.getSelectedIntructionalMethods())
+    						e.addParameterBuilder().setKey("im_pref").setValue(im);
     				rq.addCourse(e);
 				}
 			}
