@@ -1462,7 +1462,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			updateStudent(server, helper, student, action);
 		
 		// All course requests are approved -> nothing to do
-		if (!hasNotApprovedCourseRequestOverride(student)) return false;
+		if (!hasNotApprovedCourseRequestOverride(student) && !"true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.forceRevalidation", "false"))) return false;
 		
 		OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig(), server.getOverExpectedCriterion());
 		boolean linkedClassesMustBeUsed = server.getConfig().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
@@ -1841,8 +1841,39 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				}
 			}
 		}
+		boolean studentChanged = false;
+		if (student.getOverrideExternalId() != null) {
+			SpecialRegistrationRequest req = null;
+			if (response != null && response.data != null)
+				for (SpecialRegistrationRequest r: response.data) {
+					if (student.getOverrideExternalId().equals(r.requestId)) { req = r; break; }
+				}
+			if (req == null) {
+				student.setOverrideExternalId(null);
+				student.setOverrideMaxCredit(null);
+				student.setOverrideStatus(null);
+				student.setOverrideTimeStamp(null);
+				studentChanged = true;
+			} else {
+				Integer oldStatus = student.getOverrideStatus();
+				if (RequestStatus.denied.name().equals(req.status))
+					student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.REJECTED);
+				else if (RequestStatus.approved.name().equals(req.status))
+					student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.APPROVED);
+				else if (RequestStatus.cancelled.name().equals(req.status))
+					student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.CANCELLED);
+				else
+					student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.PENDING);
+				if (oldStatus == null || !oldStatus.equals(student.getOverrideStatus()))
+					studentChanged = true;
+			}
+		}
+		if (studentChanged) helper.getHibSession().update(student);
+		
 		if (changed) helper.getHibSession().flush();
 					
-		return changed;
+		if (changed || studentChanged) helper.getHibSession().flush();
+		
+		return changed || studentChanged;
 	}
 }
