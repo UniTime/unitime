@@ -285,12 +285,20 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
                 	"or lower(s.lastName) like :t" + idx + " || '%' " +
                 	"or lower(s.lastName) like '% ' || :t" + idx + " || '%' " +
                 	"or lower(s.email) like :t" + idx + " || '%'" +
-                	(context.isAdmin() ? "or s.externalUniqueId = :t" + idx : "") + ")";
+                	(context.isAdmin() ? "or s.externalUniqueId = :i" + idx : "") + ")";
         }
         q += " order by s.lastName, s.firstName, s.middleName";
         Query hq = StudentDAO.getInstance().getSession().createQuery(q);
-        for (int idx = 0; idx < context.getQueryTokens().size(); idx++)
+        for (int idx = 0; idx < context.getQueryTokens().size(); idx++) {
         	hq.setString("t" + idx, context.getQueryTokens().get(idx));
+        	if (context.isAdmin()) {
+        		if (ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue()) {
+            		hq.setString("i" + idx, context.getQueryTokens().get(idx).replaceFirst("^0+(?!$)", ""));
+            	} else {
+            		hq.setString("i" + idx, context.getQueryTokens().get(idx));
+            	}
+        	}
+        }
         hq.setLong("sessionId", context.getSessionId());
         if (context.getLimit() > 0)
         	hq.setMaxResults(context.getLimit());
