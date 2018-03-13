@@ -634,15 +634,19 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				for (CourseRequestInterface.Request cr: request.getCourses()) {
 					if (cr.hasRequestedCourse()) {
 						for (RequestedCourse rc: cr.getRequestedCourse())
-							if (rc.isCourse() && lookupCourse(hibSession, request.getAcademicSessionId(), studentId, rc, matcher) == null)
+							if (rc.isCourse() && lookupCourse(hibSession, request.getAcademicSessionId(), studentId, rc, matcher) == null) {
 								response.addError(rc.getCourseId(), rc.getCourseName(), "NOT_FOUND", MSG.validationCourseNotExists(rc.getCourseName()));
+								response.setErrorMessage(MSG.validationCourseNotExists(rc.getCourseName()));
+							}
 					}
 				}
 				for (CourseRequestInterface.Request cr: request.getAlternatives()) {
 					if (cr.hasRequestedCourse()) {
 						for (RequestedCourse rc: cr.getRequestedCourse())
-							if (rc.isCourse() && lookupCourse(hibSession, request.getAcademicSessionId(), studentId, rc, matcher) == null)
+							if (rc.isCourse() && lookupCourse(hibSession, request.getAcademicSessionId(), studentId, rc, matcher) == null) {
 								response.addError(rc.getCourseId(), rc.getCourseName(), "NOT_FOUND", MSG.validationCourseNotExists(rc.getCourseName()));
+								response.setErrorMessage(MSG.validationCourseNotExists(rc.getCourseName()));
+							}
 					}
 				}
 				return response;

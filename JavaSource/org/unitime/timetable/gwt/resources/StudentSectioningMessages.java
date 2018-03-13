@@ -1734,7 +1734,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("The following issues have been detected:\n{0}")
 	String requestWarnings(String errors);
 	
-	@DefaultMessage("Requested override for {0} has been rejected.\nPlease select a different course or remove this course request.")
+	@DefaultMessage("Requested override for {0} has been denied.\nPlease select a different course or remove this course request.")
 	String overrideRejected(String course);
 	
 	@DefaultMessage("An override has been requested for {0}.\nWaiting for approval...")

@@ -3838,6 +3838,7 @@ unitime-RoomSharingWidget .legend .blank {
 	display: table-cell;
 	vertical-align: middle;
 	width: 100%;
+	white-space: pre-wrap;
 }
 
 .unitime-ScheduleMessage {

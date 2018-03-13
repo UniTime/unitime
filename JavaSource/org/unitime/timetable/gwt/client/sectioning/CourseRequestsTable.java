@@ -495,6 +495,8 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	}
 	
 	public String getFirstError() {
+		if (iLastCheck != null && iLastCheck.hasErrorMessage())
+			return iLastCheck.getErrorMessaeg();
 		if (iLastCheck != null && iLastCheck.hasMessages()) {
 			for (CourseRequestLine line: iCourses)
 				for (CourseSelectionBox box: line.getCourses())

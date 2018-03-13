@@ -724,6 +724,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private Set<CourseMessage> iMessages = new TreeSet<CourseMessage>();
 		private Map<Integer, String[]> iConfirmationSetup = null;
+		private String iErrorMessage = null;
 		
 		public CheckCoursesResponse() {}
 		
@@ -911,6 +912,13 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			String[] confirmation = iConfirmationSetup.get(confirm);
 			return (confirmation == null || confirmation[4] == null ? defaultTitle : confirmation[4]);
 		}
+		
+		public boolean hasErrorMessage() { return iErrorMessage != null && !iErrorMessage.isEmpty(); }
+		public void setErrorMessage(String message) {
+			if (iErrorMessage == null) iErrorMessage = message;
+			else if (!iErrorMessage.contains(message)) iErrorMessage += "\n" + message;
+		}
+		public String getErrorMessaeg() { return iErrorMessage; }
 		
 		@Override
 		public String toString() { return hasMessages() ? getMessages().toString() : "[]"; }

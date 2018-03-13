@@ -372,16 +372,21 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				float maxCreditLimit = Float.parseFloat(maxCreditLimitStr);
 				if (maxCredit != null && maxCredit > maxCreditLimit) maxCreditLimit = maxCredit;
 				if (request.getCredit() > maxCreditLimit) {
-					for (RequestedCourse rc: getOverCreditRequests(request, maxCreditLimit))
+					for (RequestedCourse rc: getOverCreditRequests(request, maxCreditLimit)) {
 						response.addError(rc.getCourseId(), rc.getCourseName(), "CREDIT",
 								ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCreditLimit)).replace("{credit}", sCreditFormat.format(request.getCredit()))
 								);
+						response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.maxCreditError",
+										"Maximum of {max} credit hours exceeded.\nYou must remove some course requests in order to submit your registration request.")
+								.replace("{max}", sCreditFormat.format(maxCreditLimit)).replace("{credit}", sCreditFormat.format(request.getCredit()))
+								);
+					}
 					creditError = true;
 				}
 			}
 			
 			if (!creditError && maxCredit < request.getCredit()) {
-				for (RequestedCourse rc: getOverCreditRequests(request, maxCredit))
+				for (RequestedCourse rc: getOverCreditRequests(request, maxCredit)) 
 					response.addMessage(rc.getCourseId(), rc.getCourseName(), "CREDIT",
 							ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())),
 							maxCreditOverride == null || maxCreditOverride < request.getCredit() ? CONF_BANNER : CONF_NONE)
@@ -598,6 +603,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			for (Problem problem: resp.scheduleRestrictions.problems) {
 				if ("HOLD".equals(problem.code)) {
 					response.addError(null, null, problem.code, problem.message);
+					response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.holdError", problem.message));
 					//throw new SectioningException(problem.message);
 				}
 				XCourseId course = crn2course.get(problem.crn);
@@ -607,9 +613,11 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				if ("MAXI".equals(problem.code)) continue;
 				Map<String, RequestedCourseStatus> problems = (bc == null ? null : overrides.get(bc));
 				Set<String> denied = (bc == null ? null : deniedOverrides.get(bc));
-				if (denied != null && denied.contains(problem.code))
+				if (denied != null && denied.contains(problem.code)) {
 					response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
-				else {
+					response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.deniedOverrideError",
+							"One or more courses require registration overrides which have been denied.\nYou must remove or replace these courses in order to submit your registration request."));
+				} else {
 					RequestedCourseStatus status = (problems == null ? null : problems.get(problem.code));
 					response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, problem.message, status == null ? CONF_BANNER : CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_PENDING)
 						.setStatus(status == null ? RequestedCourseStatus.OVERRIDE_NEEDED : status);
@@ -619,6 +627,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			for (Problem problem: resp.alternativesRestrictions.problems) {
 				if ("HOLD".equals(problem.code)) {
 					response.addError(null, null, problem.code, problem.message);
+					response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.holdError", problem.message));
 					// throw new SectioningException(problem.message);
 				}
 				XCourseId course = crn2course.get(problem.crn);
@@ -628,6 +637,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				Set<String> denied = (bc == null ? null : deniedOverrides.get(bc));
 				if (denied != null && denied.contains(problem.code)) {
 					response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
+					response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.deniedOverrideError",
+							"One or more courses require registration overrides which have been denied.\nYou must remove or replace these courses in order to submit your registration request."));
 				} else {
 					RequestedCourseStatus status = (problems == null ? null : problems.get(problem.code));
 					response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, problem.message, status == null ? CONF_BANNER : CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_PENDING)
