@@ -260,6 +260,92 @@ public class SavedHQL extends BaseSavedHQL {
 						setString("term", value).setMaxResults(1).uniqueResult();
 			}
 		}),
+		STUDENT_GROUP("Student Group", true, false, new OptionImplementation() {
+			@Override
+			public Map<Long, String> getValues(UserContext user) {
+				Map<Long, String> ret = new Hashtable<Long, String>();
+				for (StudentGroup g: (List<StudentGroup>)SessionDAO.getInstance().getSession().createQuery(
+						"from StudentGroup where session.uniqueId = :sessionId").
+						setLong("sessionId", user.getCurrentAcademicSessionId()).setCacheable(true).list()) {
+					ret.put(g.getUniqueId(), g.getGroupAbbreviation() + " - " + g.getGroupName());
+				}
+				return ret;
+			}
+			@Override
+			public Long lookupValue(UserContext user, String value) {
+				return (Long)SessionDAO.getInstance().getSession().createQuery(
+						"select uniqueId from StudentGroup where session.uniqueId = :sessionId and groupAbbreviation = :value"
+						).setLong("sessionId", user.getCurrentAcademicSessionId())
+						.setString("value", value).setCacheable(true).setMaxResults(1).uniqueResult();
+			}
+		}),
+		STUDENT_GROUPS("Student Groups", true, true, STUDENT_GROUP.iImplementation),
+		ACADEMIC_AREA("Academic Area", true, false, new OptionImplementation() {
+			@Override
+			public Map<Long, String> getValues(UserContext user) {
+				Map<Long, String> ret = new Hashtable<Long, String>();
+				for (AcademicArea a: (List<AcademicArea>)SessionDAO.getInstance().getSession().createQuery(
+						"from AcademicArea where session.uniqueId = :sessionId").
+						setLong("sessionId", user.getCurrentAcademicSessionId()).setCacheable(true).list()) {
+					ret.put(a.getUniqueId(), a.getAcademicAreaAbbreviation() + " - " + a.getTitle());
+				}
+				return ret;
+			}
+			@Override
+			public Long lookupValue(UserContext user, String value) {
+				return (Long)SessionDAO.getInstance().getSession().createQuery(
+						"select uniqueId from AcademicArea where session.uniqueId = :sessionId and academicAreaAbbreviation = :value"
+						).setLong("sessionId", user.getCurrentAcademicSessionId())
+						.setString("value", value).setCacheable(true).setMaxResults(1).uniqueResult();
+			}
+		}),
+		ACADEMIC_AREAS("Academic Areas", true, true, ACADEMIC_AREA.iImplementation),
+		POS_MAJOR("Major", true, false, new OptionImplementation() {
+			@Override
+			public Map<Long, String> getValues(UserContext user) {
+				Map<Long, String> ret = new Hashtable<Long, String>();
+				for (PosMajor m: (List<PosMajor>)SessionDAO.getInstance().getSession().createQuery(
+						"from PosMajor where session.uniqueId = :sessionId").
+						setLong("sessionId", user.getCurrentAcademicSessionId()).setCacheable(true).list()) {
+					for (AcademicArea a: m.getAcademicAreas())
+						ret.put(m.getUniqueId(), a.getAcademicAreaAbbreviation() + " " + m.getCode() + " - " + m.getName());
+				}
+				return ret;
+			}
+			@Override
+			public Long lookupValue(UserContext user, String value) {
+				Long id = (Long)SessionDAO.getInstance().getSession().createQuery(
+						"select m.uniqueId from PosMajor m inner join m.academicAreas a where m.session.uniqueId = :sessionId and (a.academicAreaAbbreviation || ' ' || m.code) = :value"
+						).setLong("sessionId", user.getCurrentAcademicSessionId())
+						.setString("value", value).setCacheable(true).setMaxResults(1).uniqueResult();
+				if (id != null) return id;
+				return (Long)SessionDAO.getInstance().getSession().createQuery(
+						"select m.uniqueId from PosMajor m where m.session.uniqueId = :sessionId and m.code = :value"
+						).setLong("sessionId", user.getCurrentAcademicSessionId())
+						.setString("value", value).setCacheable(true).setMaxResults(1).uniqueResult();
+			}
+		}),
+		POS_MAJORS("Majors", true, true, POS_MAJOR.iImplementation),
+		ACCOMODATION("Student Accomodation", true, false, new OptionImplementation() {
+			@Override
+			public Map<Long, String> getValues(UserContext user) {
+				Map<Long, String> ret = new Hashtable<Long, String>();
+				for (StudentAccomodation a: (List<StudentAccomodation>)SessionDAO.getInstance().getSession().createQuery(
+						"from StudentAccomodation where session.uniqueId = :sessionId").
+						setLong("sessionId", user.getCurrentAcademicSessionId()).setCacheable(true).list()) {
+					ret.put(a.getUniqueId(), a.getAbbreviation() + " - " + a.getName());
+				}
+				return ret;
+			}
+			@Override
+			public Long lookupValue(UserContext user, String value) {
+				return (Long)SessionDAO.getInstance().getSession().createQuery(
+						"select uniqueId from StudentAccomodation where session.uniqueId = :sessionId and abbreviation = :value"
+						).setLong("sessionId", user.getCurrentAcademicSessionId())
+						.setString("value", value).setCacheable(true).setMaxResults(1).uniqueResult();
+			}
+		}),
+		ACCOMODATIONS("Student Accomodations", true, true, ACCOMODATION.iImplementation),
 
 		
 		DistributionType(DistributionType.class, false),
