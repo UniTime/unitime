@@ -386,6 +386,7 @@ public class ScriptPage extends Composite {
 				iForm.removeRow(1 + iDescriptionRow);
 			if (script.hasParameters()) {
 				for (final ScriptParameterInterface param: script.getParameters()) {
+					if (param.getValue() != null) iParams.put(param.getName(), param.getValue());
 					Widget widget = null;
 					if (param.hasOptions()) {
 						final ListBox list = new ListBox();

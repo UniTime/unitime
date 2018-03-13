@@ -143,6 +143,11 @@ public class LoadAllScriptsBackend implements GwtRpcImplementation<LoadAllScript
 						for (Map.Entry<Long, String> entry: option.values(context.getUser()).entrySet()) {
 							parameter.addOption(entry.getKey().toString(), entry.getValue());
 						}
+						if (p.getDefaultValue() != null) {
+							Long id = option.lookupValue(context.getUser(), p.getDefaultValue());
+							if (id != null)
+								parameter.setValue(id.toString());
+						}
 						break;
 					}
 				}
