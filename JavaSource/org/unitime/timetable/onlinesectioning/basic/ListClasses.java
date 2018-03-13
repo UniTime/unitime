@@ -90,7 +90,7 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 			for (XConfig config: offering.getConfigs())
 				for (XSubpart subpart: config.getSubparts())
 					for (XSection section: subpart.getSections()) {
-						if (section.getLimit() == 0) continue;
+						if (!section.isEnabledForScheduling()) continue;
 						String room = null;
 						if (section.getRooms() != null) {
 							for (XRoom rm: section.getRooms()) {
