@@ -260,8 +260,8 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 					Chip old = null;
 					for (Chip c: chips) { if (c.getCommand().equals("limit")) { old = c; break; } }
 					try {
-						Integer.parseInt(text);
-						suggestions.add(new Suggestion(new Chip("limit", text).withTranslatedCommand(GWT_MESSAGES.tagLimit()), old));
+						if (Integer.parseInt(text) <= 9999)
+							suggestions.add(new Suggestion(new Chip("limit", text).withTranslatedCommand(GWT_MESSAGES.tagLimit()), old));
 					} catch (NumberFormatException e) {}
 					
 					old = null;
@@ -271,19 +271,21 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 						String prefix = "";
 						if (text.startsWith("<=") || text.startsWith(">=")) { number = number.substring(2); prefix = text.substring(0, 2); }
 						else if (text.startsWith("<") || text.startsWith(">")) { number = number.substring(1); prefix = text.substring(0, 1); }
-						Integer.parseInt(number);
-						suggestions.add(new Suggestion(new Chip("credit", text).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
-						if (prefix.isEmpty()) {
-							suggestions.add(new Suggestion(new Chip("credit", "<=" + text).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
-							suggestions.add(new Suggestion(new Chip("credit", ">=" + text).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
+						if (Integer.parseInt(number) <= 99) {
+							suggestions.add(new Suggestion(new Chip("credit", text).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
+							if (prefix.isEmpty()) {
+								suggestions.add(new Suggestion(new Chip("credit", "<=" + text).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
+								suggestions.add(new Suggestion(new Chip("credit", ">=" + text).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
+							}
 						}
 					} catch (Exception e) {}
 					if (text.contains("..")) {
 						try {
 							String first = text.substring(0, text.indexOf('.'));
 							String second = text.substring(text.indexOf("..") + 2);
-							Integer.parseInt(first); Integer.parseInt(second);
-							suggestions.add(new Suggestion(new Chip("credit", text).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
+							if (Integer.parseInt(first) < Integer.parseInt(second) &&  Integer.parseInt(second) <= 99) {
+								suggestions.add(new Suggestion(new Chip("credit", text).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
+							}
 						} catch (Exception e) {}
 					}
 					
@@ -294,19 +296,21 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 						String prefix = "";
 						if (text.startsWith("<=") || text.startsWith(">=")) { number = number.substring(2); prefix = text.substring(0, 2); }
 						else if (text.startsWith("<") || text.startsWith(">")) { number = number.substring(1); prefix = text.substring(0, 1); }
-						Integer.parseInt(number);
-						suggestions.add(new Suggestion(new Chip("overlap", text).withTranslatedCommand(GWT_MESSAGES.tagOverlap()), old));
-						if (prefix.isEmpty()) {
-							suggestions.add(new Suggestion(new Chip("overlap", "<=" + text).withTranslatedCommand(GWT_MESSAGES.tagOverlap()), old));
-							suggestions.add(new Suggestion(new Chip("overlap", ">=" + text).withTranslatedCommand(GWT_MESSAGES.tagOverlap()), old));
+						if (Integer.parseInt(number) <= 999) {
+							suggestions.add(new Suggestion(new Chip("overlap", text).withTranslatedCommand(GWT_MESSAGES.tagOverlap()), old));
+							if (prefix.isEmpty()) {
+								suggestions.add(new Suggestion(new Chip("overlap", "<=" + text).withTranslatedCommand(GWT_MESSAGES.tagOverlap()), old));
+								suggestions.add(new Suggestion(new Chip("overlap", ">=" + text).withTranslatedCommand(GWT_MESSAGES.tagOverlap()), old));
+							}
 						}
 					} catch (Exception e) {}
 					if (text.contains("..")) {
 						try {
 							String first = text.substring(0, text.indexOf('.'));
 							String second = text.substring(text.indexOf("..") + 2);
-							Integer.parseInt(first); Integer.parseInt(second);
-							suggestions.add(new Suggestion(new Chip("overlap", text).withTranslatedCommand(GWT_MESSAGES.tagOverlap()), old));
+							if (Integer.parseInt(first) < Integer.parseInt(second) &&  Integer.parseInt(second) <= 999) {
+								suggestions.add(new Suggestion(new Chip("overlap", text).withTranslatedCommand(GWT_MESSAGES.tagOverlap()), old));
+							}
 						} catch (Exception e) {}
 					}
 					
