@@ -32,6 +32,7 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
@@ -286,7 +287,11 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			if (id > 0) {
 				instance.where("(" + where + ") or upper(trim(trailing ' ' from s.lastName || ', ' || s.firstName || ' ' || s.middleName)) = :name or s.externalUniqueId = :id");
 				instance.set("name", iRequest.getText().trim().toUpperCase());
-				instance.set("id", iRequest.getText().trim());
+				if (ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue()) {
+					instance.set("id", iRequest.getText().trim().replaceFirst("^0+(?!$)", ""));
+				} else {
+					instance.set("id", iRequest.getText().trim());
+				}
 				for (Student student: (List<Student>)instance.limit(20).query(helper.getHibSession()).list())
 					response.addSuggestion(helper.getStudentNameFormat().format(student), student.getExternalUniqueId(), "Student", "student");
 			}
@@ -435,7 +440,11 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			if (id > 0) {
 				student = "(" + student + ") or (upper(trim(trailing ' ' from s.lastName || ', ' || s.firstName || ' ' || s.middleName)) = :Xstd) or (s.externalUniqueId = :Xsid)";
 				query.addParameter("student", "Xstd", request.getOption("student").trim().toUpperCase());
-				query.addParameter("student", "Xsid", request.getOption("student").trim());
+				if (ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue()) {
+					query.addParameter("student", "Xsid", request.getOption("student").trim().replaceFirst("^0+(?!$)", ""));
+				} else {
+					query.addParameter("student", "Xsid", request.getOption("student").trim());
+				}
 				query.addWhere("student", student);
 			}
 		}

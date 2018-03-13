@@ -29,6 +29,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
@@ -675,7 +676,11 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			}
 			
 			if ("student".equals(attr)) {
-				return has(student().getName(), term) || eq(student().getExternalId(), term) || eq(student().getName(), term);
+				if (ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue() && term.startsWith("0")) {
+					return has(student().getName(), term) || eq(student().getExternalId(), term.replaceFirst("^0+(?!$)", "")) || eq(student().getName(), term);
+				} else {
+					return has(student().getName(), term) || eq(student().getExternalId(), term) || eq(student().getName(), term);
+				}
 			}
 			
 			if ("assignment".equals(attr)) {

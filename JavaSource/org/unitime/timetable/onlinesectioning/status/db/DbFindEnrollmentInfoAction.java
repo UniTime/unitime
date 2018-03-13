@@ -729,7 +729,11 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			}
 			
 			if ("student".equals(attr)) {
-				return has(iFormat.format(student()), term) || eq(student().getExternalUniqueId(), term) || eq(iFormat.format(student()), term);
+				if (ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue() && term.startsWith("0")) {
+					return has(iFormat.format(student()), term) || eq(student().getExternalUniqueId(), term.replaceFirst("^0+(?!$)", "")) || eq(iFormat.format(student()), term);
+				} else {
+					return has(iFormat.format(student()), term) || eq(student().getExternalUniqueId(), term) || eq(iFormat.format(student()), term);
+				}
 			}
 			
 			if ("assignment".equals(attr)) {

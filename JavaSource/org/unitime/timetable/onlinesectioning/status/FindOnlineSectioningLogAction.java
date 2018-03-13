@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
@@ -343,7 +344,11 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 			if (body != null && !body.isEmpty())
 				body = StringEscapeUtils.escapeSql(body);
 			if ("id".equalsIgnoreCase(attr) || "student".equalsIgnoreCase(attr)) {
-				return "s.externalUniqueId = '" + body + "'";
+				if (ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue() && body.startsWith("0")) {
+					return "s.externalUniqueId = '" + body.replaceFirst("^0+(?!$)", "") + "'";
+				} else {
+					return "s.externalUniqueId = '" + body + "'";
+				}
 			} else if ("operation".equalsIgnoreCase(attr) || "op".equalsIgnoreCase(attr)) {
 				return "lower(l.operation) = '" + body.toLowerCase() + "'";
 			} else if ("max-age".equalsIgnoreCase(attr) || "age".equalsIgnoreCase(attr)) {
