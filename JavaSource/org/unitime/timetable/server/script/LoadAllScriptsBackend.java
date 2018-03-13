@@ -21,6 +21,7 @@ package org.unitime.timetable.server.script;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.util.HtmlUtils;
@@ -35,6 +36,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RefTableEntry;
 import org.unitime.timetable.model.Room;
+import org.unitime.timetable.model.SavedHQL;
 import org.unitime.timetable.model.Script;
 import org.unitime.timetable.model.ScriptParameter;
 import org.unitime.timetable.model.SubjectArea;
@@ -133,6 +135,16 @@ public class LoadAllScriptsBackend implements GwtRpcImplementation<LoadAllScript
 				for (Location location: Location.findAll(context.getUser().getCurrentAcademicSessionId())) {
 					if (right != null && Location.class.equals(right.type()) && !context.hasPermission(location, right)) continue;
 					parameter.addOption(location.getUniqueId().toString(), location.getLabel());
+				}
+			} else {
+				for (SavedHQL.Option option: SavedHQL.Option.values()) {
+					if (p.getType().equalsIgnoreCase(option.name())) {
+						parameter.setMultiSelect(option.allowMultiSelection());
+						for (Map.Entry<Long, String> entry: option.values(context.getUser()).entrySet()) {
+							parameter.addOption(entry.getKey().toString(), entry.getValue());
+						}
+						break;
+					}
 				}
 			}
 			script.addParameter(parameter);
