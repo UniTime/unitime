@@ -1840,6 +1840,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					LoadingWidget.getInstance().hide();
 					iStartOver.setVisible(true);
 					iStartOver.setEnabled(true);
+					if (request.hasErrorMessage())
+						iStatus.warning(request.getErrorMessaeg());
 				}
 			}
 		};

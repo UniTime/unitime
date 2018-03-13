@@ -57,6 +57,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	private RequestedCourseStatus iMaxCreditOverrideStatus = null;
 	private String iMaxCreditOverrideExternalId = null;
 	private Date iMaxCreditOverrideTimeStamp = null;
+	private String iErrorMessage = null;
 	
 	public CourseRequestInterface() {}
 
@@ -1019,4 +1020,11 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	public void addConfirmationMessage(Long courseId, String course, String code, String message) {
 		addConfirmationMessage(courseId, course, code, message, null);
 	}
+	
+	public boolean hasErrorMessage() { return iErrorMessage != null && !iErrorMessage.isEmpty(); }
+	public void setErrorMessage(String message) {
+		if (iErrorMessage == null) iErrorMessage = message;
+		else if (!iErrorMessage.contains(message)) iErrorMessage += "\n" + message;
+	}
+	public String getErrorMessaeg() { return iErrorMessage; }
 }

@@ -1297,9 +1297,11 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						for (Change ch: r.changes)
 							if (ch.errors != null)
 								for (ChangeError er: ch.errors) {
-									if (RequestStatus.denied.name().equals(r.status))
+									if (RequestStatus.denied.name().equals(r.status)) {
 										request.addConfirmationError(rc.getCourseId(), rc.getCourseName(), er.code, "Denied " + er.message, status(r.status));
-									else
+										request.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.deniedOverrideError",
+												"One or more courses require registration overrides which have been denied.\nYou must remove or replace these courses in order to submit your registration request."));
+									} else
 										request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), er.code, er.message, status(r.status));
 								}
 				}
