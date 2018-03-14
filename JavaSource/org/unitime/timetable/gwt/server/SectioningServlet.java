@@ -2352,6 +2352,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					check.setMessage(status.getMessage());
 				}
 				check.setFlag(EligibilityFlag.CAN_REGISTER, getSessionContext().hasPermissionAnySession(student, Right.StudentSchedulingCanRegister));
+				if (!check.hasMessage() && !check.hasFlag(EligibilityFlag.CAN_REGISTER))
+					check.setMessage(MSG.exceptionAccessDisabled());
 				return check;
 			}
 			
