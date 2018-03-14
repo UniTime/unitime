@@ -155,7 +155,7 @@ public class StudentSectioningPage extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				if (widget.isChanged()) {
-					UniTimeConfirmationDialog.confirm(widget.useDefaultConfirmDialog(), MESSAGES.queryLeaveChanges(), new Command() {
+					UniTimeConfirmationDialog.confirm(widget.useDefaultConfirmDialog(), mode.isSectioning() ? MESSAGES.queryLeaveChangesOnClassSchedule() : MESSAGES.queryLeaveChangesOnCourseRequests(), new Command() {
 						@Override
 						public void execute() {
 							sessionSelector.selectSession();
@@ -171,7 +171,7 @@ public class StudentSectioningPage extends Composite {
 			public void onClick(ClickEvent event) {
 				if (CONSTANTS.allowUserLogin()) {
 					if (widget.isChanged()) {
-						UniTimeConfirmationDialog.confirm(widget.useDefaultConfirmDialog(), MESSAGES.queryLeaveChanges(), new Command() {
+						UniTimeConfirmationDialog.confirm(widget.useDefaultConfirmDialog(), mode.isSectioning() ? MESSAGES.queryLeaveChangesOnClassSchedule() : MESSAGES.queryLeaveChangesOnCourseRequests(), new Command() {
 							@Override
 							public void execute() {
 								if (userAuthentication.isLoggedIn())
@@ -242,7 +242,7 @@ public class StudentSectioningPage extends Composite {
 				if (widget.isChanged()) {
 					if (LoadingWidget.getInstance().isShowing())
 						LoadingWidget.getInstance().hide();
-					event.setMessage(MESSAGES.queryLeaveChanges());
+					event.setMessage(mode.isSectioning() ? MESSAGES.queryLeaveChangesOnClassSchedule() : MESSAGES.queryLeaveChangesOnCourseRequests());
 				}
 			}
 		});

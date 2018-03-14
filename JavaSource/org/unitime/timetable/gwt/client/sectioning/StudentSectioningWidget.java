@@ -686,7 +686,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			@Override
 			public void onClick(ClickEvent event) {
 				if (isChanged()) {
-					UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.queryLeaveChanges(), new Command() {
+					UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), iMode.isSectioning() ? MESSAGES.queryLeaveChangesOnClassSchedule() : MESSAGES.queryLeaveChangesOnCourseRequests(), new Command() {
 						@Override
 						public void execute() {
 							clearMessage();
@@ -931,7 +931,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (item >= iHistory.size()) item = iHistory.size() - 1;
 						if (item >= 0) iHistory.get(item).restore();
 					} else if (isChanged()) {
-						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.queryLeaveChanges(), new Command() {
+						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), iMode.isSectioning() ? MESSAGES.queryLeaveChangesOnClassSchedule() : MESSAGES.queryLeaveChangesOnCourseRequests(), new Command() {
 							@Override
 							public void execute() {
 								iCourseRequests.clear();
@@ -1890,7 +1890,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		
 		public void restore() {
 			if (isChanged() && ((iUser != null && !iUser.equals(iUserAuthentication.getUser())) || (iSessionId != null && !iSessionId.equals(iSessionSelector.getAcademicSessionId())))) {
-				UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.queryLeaveChanges(), new Command() {
+				UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), iMode.isSectioning() ? MESSAGES.queryLeaveChangesOnClassSchedule() : MESSAGES.queryLeaveChangesOnCourseRequests(), new Command() {
 					@Override
 					public void execute() {
 						doRestore();

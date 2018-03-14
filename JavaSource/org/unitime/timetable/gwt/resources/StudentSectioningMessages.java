@@ -468,7 +468,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("<u>T</u>ime Grid")
 	String tabTimetable();
 	
-	@DefaultMessage("Requests stored.")
+	@DefaultMessage("Course requests have been successfully submitted.")
 	String saveRequestsOK();
 	
 	@DefaultMessage("Course requests have been successfully submitted.\nDo you want to print a confirmation?")
@@ -1374,17 +1374,20 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("You have made some changes in your schedule. Please click the Submit Schedule button to update your registration.")
 	String warnScheduleChangedOnClassSchedule();
 	
-	@DefaultMessage("You are not registered for any courses yet. Please click the Submit Requests button in order to complete your registration.")
+	@DefaultMessage("You have not submitted any courses yet. Please click the Submit Requests button in order to complete your submission.")
 	String warnRequestsEmptyOnCourseRequest();
 	
-	@DefaultMessage("You have made some changes in your course requests. Please click the Submit Requests button to update your registration.")
+	@DefaultMessage("You have made some changes in your course requests. Please click the Submit Requests button to update your submission.")
 	String warnRequestsChangedOnCourseRequest();
 	
 	@DefaultMessage("You have made some changes in your special registration. Please click the Submit Special Registration button to update your special registration.")
 	String warnSpecialRegistrationChanged();
 		
 	@DefaultMessage("There are unsaved changes in your schedule. Do you really want to discard these changes without updating your registration?")
-	String queryLeaveChanges();
+	String queryLeaveChangesOnClassSchedule();
+	
+	@DefaultMessage("There are unsaved changes in your course requests.  Do you really want to discard these changes without updating your submission?")
+	String queryLeaveChangesOnCourseRequests();
 	
 	@DefaultMessage("Total Credit: {0,number,0.#}")
 	String totalCredit(float total);
@@ -1716,16 +1719,16 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Cancelled")
 	String reqStatusCancelled();
 
-	@DefaultMessage("Rejected")
+	@DefaultMessage("Denied")
 	String reqStatusRejected();
 	
-	@DefaultMessage("Registered")
+	@DefaultMessage("Submitted")
 	String reqStatusRegistered();
 	
 	@DefaultMessage("You are already enrolled in {0}.\nThis course request cannot be modified or deleted.")
 	String enrolled(String course);
 	
-	@DefaultMessage("You are currently registered for {0}.")
+	@DefaultMessage("{0} is already included in your current submission. No registration errors were detected.")
 	String requested(String course);
 	
 	@DefaultMessage("The following registration errors have been detected:\n{0}")
