@@ -131,7 +131,7 @@
 	<beans:bean id="casSingleLogoutFilter" class="org.jasig.cas.client.session.SingleSignOutFilter"/>
 	
 	<beans:bean id="casRequestSingleLogoutFilter" class="org.springframework.security.web.authentication.logout.LogoutFilter">
-		<beans:constructor-arg value="${unitime.cas.url}/logout"/>
+		<beans:constructor-arg value="${unitime.cas.url}/logout?url=${unitime.url}"/>
     	<beans:constructor-arg>
     		<beans:bean class="org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler"/>
     	</beans:constructor-arg>
