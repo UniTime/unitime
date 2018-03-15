@@ -13025,5 +13025,10 @@
 			select distinct r.role_id, 'StudentGroupTypeEdit'
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'PreferenceLevelEdit'
 		</sql>
-	</update>	
+	</update>
+	<update version="201" date="14-Mar-2018" comment="Student group type allow disabled">
+		<plsql>alter table %SCHEMA%.std_group_type add allow_disabled number(5, 0) default 0</plsql>
+		<plsql>alter table %SCHEMA%.std_group_type add constraint nn_std_group_type_disabled check (allow_disabled is not null)</plsql>
+		<mysql>alter table %SCHEMA%.std_group_type add allow_disabled int(5) not null default 0</mysql>
+	</update>
 </dbupdate>

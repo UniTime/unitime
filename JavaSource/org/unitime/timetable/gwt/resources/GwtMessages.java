@@ -4529,6 +4529,18 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Keep Students Together")
 	String fieldKeepTogether();
 	
+	@DefaultMessage("Disabled Sections")
+	String fieldAllowDisabledSections();
+	
+	@DefaultMessage("Not Allowed")
+	String itemAllowDisabledSectionsNotAllowed();
+	
+	@DefaultMessage("Allowed With Group Reservation")
+	String itemAllowDisabledSectionsAllowedReservation();
+	
+	@DefaultMessage("Always Allowed")
+	String itemAllowDisabledSectionsAlwaysAllowed();
+	
 	@DefaultMessage("Type")
 	String fieldStudentGroupType();
 	

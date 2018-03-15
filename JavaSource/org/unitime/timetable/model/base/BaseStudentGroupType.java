@@ -32,9 +32,11 @@ public abstract class BaseStudentGroupType extends RefTableEntry implements Seri
 	private static final long serialVersionUID = 1L;
 
 	private Boolean iKeepTogether;
+	private Short iAllowDisabled;
 
 
 	public static String PROP_TOGETHER = "keepTogether";
+	public static String PROP_ALLOW_DISABLED = "allowDisabled";
 
 	public BaseStudentGroupType() {
 		initialize();
@@ -50,6 +52,9 @@ public abstract class BaseStudentGroupType extends RefTableEntry implements Seri
 	public Boolean isKeepTogether() { return iKeepTogether; }
 	public Boolean getKeepTogether() { return iKeepTogether; }
 	public void setKeepTogether(Boolean keepTogether) { iKeepTogether = keepTogether; }
+
+	public Short getAllowDisabled() { return iAllowDisabled; }
+	public void setAllowDisabled(Short allowDisabled) { iAllowDisabled = allowDisabled; }
 
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof StudentGroupType)) return false;
@@ -68,6 +73,7 @@ public abstract class BaseStudentGroupType extends RefTableEntry implements Seri
 
 	public String toDebugString() {
 		return "StudentGroupType[" +
+			"\n	AllowDisabled: " + getAllowDisabled() +
 			"\n	KeepTogether: " + getKeepTogether() +
 			"\n	Label: " + getLabel() +
 			"\n	Reference: " + getReference() +

@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.server.admin;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.cpsolver.ifs.util.ToolBox;
@@ -32,6 +34,7 @@ import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.FieldType;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Flag;
+import org.unitime.timetable.gwt.shared.SimpleEditInterface.ListItem;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.PageName;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Record;
 import org.unitime.timetable.model.ChangeLog;
@@ -57,10 +60,16 @@ public class StudentGroupTypes implements AdminTable {
 	@Override
 	@PreAuthorize("checkPermission('StudentGroupTypes')")
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
+		List<ListItem> allow = new ArrayList<ListItem>();
+		allow.add(new ListItem(String.valueOf(StudentGroupType.AllowDisabledSection.NotAllowed.ordinal()), MESSAGES.itemAllowDisabledSectionsNotAllowed()));
+		allow.add(new ListItem(String.valueOf(StudentGroupType.AllowDisabledSection.WithGroupReservation.ordinal()), MESSAGES.itemAllowDisabledSectionsAllowedReservation()));
+		allow.add(new ListItem(String.valueOf(StudentGroupType.AllowDisabledSection.AlwaysAllowed.ordinal()), MESSAGES.itemAllowDisabledSectionsAlwaysAllowed()));
 		SimpleEditInterface data = new SimpleEditInterface(
 				new Field(MESSAGES.fieldCode(), FieldType.text, 150, 20, Flag.UNIQUE),
 				new Field(MESSAGES.fieldName(), FieldType.text, 400, 60, Flag.UNIQUE),
-				new Field(MESSAGES.fieldKeepTogether(), FieldType.toggle, 40));
+				new Field(MESSAGES.fieldKeepTogether(), FieldType.toggle, 40),
+				new Field(MESSAGES.fieldAllowDisabledSections(), FieldType.list, 100, allow, Flag.NOT_EMPTY)
+				);
 		data.setSortBy(1);
 		Set<Long> used = new HashSet<Long>(
 				StudentGroupTypeDAO.getInstance().getSession().createQuery(
@@ -70,6 +79,7 @@ public class StudentGroupTypes implements AdminTable {
 			r.setField(0, type.getReference());
 			r.setField(1, type.getLabel());
 			r.setField(2, type.isKeepTogether() ? "true" : "false");
+			r.setField(3, type.getAllowDisabled().toString());
 			r.setDeletable(!used.contains(type.getUniqueId()));
 		}
 		data.setEditable(context.hasPermission(Right.StudentGroupTypeEdit));
@@ -97,6 +107,7 @@ public class StudentGroupTypes implements AdminTable {
 		type.setReference(record.getField(0));
 		type.setLabel(record.getField(1));
 		type.setKeepTogether("true".equals(record.getField(2)));
+		type.setAllowDisabled(record.getField(3) == null ? 0 : Short.valueOf(record.getField(3)));
 		record.setUniqueId((Long)hibSession.save(type));
 		ChangeLog.addChange(hibSession,
 				context,
@@ -113,10 +124,12 @@ public class StudentGroupTypes implements AdminTable {
 		boolean changed = 
 				!ToolBox.equals(type.getReference(), record.getField(0)) ||
 				!ToolBox.equals(type.getLabel(), record.getField(1)) ||
-				!ToolBox.equals(type.isKeepTogether(), "true".equals(record.getField(2)));
+				!ToolBox.equals(type.isKeepTogether(), "true".equals(record.getField(2))) || 
+				!ToolBox.equals(type.getAllowDisabled().toString(), record.getField(3));
 		type.setReference(record.getField(0));
 		type.setLabel(record.getField(1));
 		type.setKeepTogether("true".equals(record.getField(2)));
+		type.setAllowDisabled(record.getField(3) == null ? 0 : Short.valueOf(record.getField(3)));
 		hibSession.saveOrUpdate(type);
 		if (changed)
 			ChangeLog.addChange(hibSession,

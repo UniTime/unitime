@@ -34,5 +34,24 @@ public class StudentGroupType extends BaseStudentGroupType {
 				"from StudentGroupType where reference = :reference"
 				).setString("reference", reference).setMaxResults(1).setCacheable(true).uniqueResult();
 	}
+	
+	public static enum AllowDisabledSection {
+		NotAllowed,
+		WithGroupReservation,
+		AlwaysAllowed,
+	}
+	
+	public AllowDisabledSection getAllowDisabledSection() {
+		if (getAllowDisabled() == null)
+			return AllowDisabledSection.NotAllowed;
+		return AllowDisabledSection.values()[getAllowDisabled()];
+	}
+	
+	public void setAllowDisabledSection(AllowDisabledSection allow) {
+		if (allow == null)
+			setAllowDisabled((short)AllowDisabledSection.NotAllowed.ordinal());
+		else
+			setAllowDisabled((short)allow.ordinal());
+	}
 
 }
