@@ -75,10 +75,13 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 		if (student == null) return false;
 		if (student.isAllowDisabled()) return true;
 		for (XReservation reservation: offering.getReservations())
-			if (reservation.isAllowDisabled() && reservation.isApplicable(student, course) && reservation.isIncluded(config.getConfigId(), section))
+			if (reservation.isAllowDisabled() && reservation.isApplicable(student, course) && reservation.isIncluded(offering, config.getConfigId(), section)) {
 				return true;
+			}
 		for (XEnrollment enrollment: enrollments.getEnrollmentsForSection(section.getSectionId()))
-			if (enrollment.getStudentId().equals(getStudentId())) return true;
+			if (enrollment.getStudentId().equals(getStudentId())) {
+				return true;
+			}
 		return false;
 	}
 

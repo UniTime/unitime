@@ -294,11 +294,15 @@ public abstract class XReservation extends XReservationId implements Comparable<
         return true;
     }
     
-    public boolean isIncluded(Long configId, XSection section) {
+    public boolean isIncluded(XOffering offering, Long configId, XSection section) {
     	if (!iConfigs.isEmpty() && !iConfigs.contains(configId)) return false;
     	
-    	Set<Long> reserved = iSections.get(section.getSubpartId());
-    	if (reserved != null && !reserved.contains(section.getSectionId())) return false;
+    	XSection s = section;
+    	while (s != null) {
+    		Set<Long> reserved = iSections.get(s.getSubpartId());
+    		if (reserved != null && !reserved.contains(s.getSectionId())) return false;
+    		s = (s.getParentId() == null ? null : offering.getSection(s.getParentId()));
+    	}
     	
     	return true;
     }
