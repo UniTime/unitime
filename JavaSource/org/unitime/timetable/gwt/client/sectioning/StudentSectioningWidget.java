@@ -385,7 +385,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							classes.setDataProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
 								@Override
 								public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {
-									iSectioningService.listClasses(iSessionSelector.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
+									iSectioningService.listClasses(iOnline, iSessionSelector.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 								}
 							});
 							if (iDegreePlanDialog == null) {
@@ -2216,7 +2216,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			classes.setDataProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
 				@Override
 				public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {
-					iSectioningService.listClasses(iSessionSelector.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
+					iSectioningService.listClasses(iOnline, iSessionSelector.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 				}
 			});
 			courses.setCourseDetails(details, classes);

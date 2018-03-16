@@ -53,7 +53,7 @@ public interface SectioningService extends RemoteService {
 	Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(Long sessionId, String query, Integer limit) throws SectioningException, PageAccessException;
 	Collection<AcademicSessionProvider.AcademicSessionInfo> listAcademicSessions(boolean sectioning) throws SectioningException, PageAccessException;
 	String retrieveCourseDetails(Long sessionId, String course) throws SectioningException, PageAccessException;
-	Collection<ClassAssignmentInterface.ClassAssignment> listClasses(Long sessionId, String course) throws SectioningException, PageAccessException;
+	Collection<ClassAssignmentInterface.ClassAssignment> listClasses(boolean online, Long sessionId, String course) throws SectioningException, PageAccessException;
 	Long retrieveCourseOfferingId(Long sessionId, String course) throws SectioningException, PageAccessException;
 	CheckCoursesResponse checkCourses(boolean online, boolean sectioning, CourseRequestInterface request) throws SectioningException, PageAccessException;
 	ClassAssignmentInterface section(boolean online, CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException, PageAccessException;

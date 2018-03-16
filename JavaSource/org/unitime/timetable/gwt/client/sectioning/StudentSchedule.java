@@ -486,8 +486,10 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		
 		iAssignments.setData(rowArray);
 		if (!iOnline) {
-			for (int row = 0; row < iAssignments.getTable().getRowCount(); row++)
-				iAssignments.getTable().getFlexCellFormatter().setVisible(row, iAssignments.getTable().getCellCount(row) - 2, false);
+			for (int row = 0; row < iAssignments.getTable().getRowCount(); row++) {
+				if (iAssignments.getTable().getCellCount(row) > 2)
+					iAssignments.getTable().getFlexCellFormatter().setVisible(row, iAssignments.getTable().getCellCount(row) - 2, false);
+			}
 		}
 	}
 	

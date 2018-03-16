@@ -119,7 +119,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		};
 
 		for (int i = 0; i < CONSTANTS.numberOfCourses(); i++) {
-			final CourseRequestLine line = new CourseRequestLine(iSessionProvider, i, false, iCheckForDuplicities, iSectioning, iSpecReg);
+			final CourseRequestLine line = new CourseRequestLine(iOnline, iSessionProvider, i, false, iCheckForDuplicities, iSectioning, iSpecReg);
 			iCourses.add(line);
 			if (i > 0) {
 				CourseRequestLine prev = iCourses.get(i - 1);
@@ -167,7 +167,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		}
 
 		for (int i=0; i<CONSTANTS.numberOfAlternatives(); i++) {
-			final CourseRequestLine line = new CourseRequestLine(iSessionProvider, i, true, iCheckForDuplicities, iSectioning, iSpecReg);
+			final CourseRequestLine line = new CourseRequestLine(iOnline, iSessionProvider, i, true, iCheckForDuplicities, iSectioning, iSpecReg);
 			iAlternatives.add(line);
 			if (i == 0) {
 				CourseRequestLine prev = iCourses.get(iCourses.size() - 1);
@@ -194,7 +194,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	
 	private void addCourseLine() {
 		int i = iCourses.size();
-		final CourseRequestLine line = new CourseRequestLine(iSessionProvider, i, false, iCheckForDuplicities, iSectioning, iSpecReg);
+		final CourseRequestLine line = new CourseRequestLine(iOnline, iSessionProvider, i, false, iCheckForDuplicities, iSectioning, iSpecReg);
 		iCourses.add(line);
 		CourseRequestLine prev = iCourses.get(i - 1);
 		prev.getCourses().get(0).setHint("");
@@ -229,7 +229,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 			add(iAltHeader);
 		}
 		int i = iAlternatives.size();
-		final CourseRequestLine line = new CourseRequestLine(iSessionProvider, i, true, iCheckForDuplicities, iSectioning, iSpecReg);
+		final CourseRequestLine line = new CourseRequestLine(iOnline, iSessionProvider, i, true, iCheckForDuplicities, iSectioning, iSpecReg);
 		iAlternatives.add(line);
 		CourseRequestLine prev = (i == 0 ? iCourses.get(iCourses.size() - 1) : iAlternatives.get(i - 1));
 		if (prev != null) {

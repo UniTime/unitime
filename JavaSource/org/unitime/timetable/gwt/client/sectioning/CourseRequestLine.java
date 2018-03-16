@@ -84,11 +84,12 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 	private CourseRequestLine iPrevious = null, iNext = null;
 	private Validator<CourseSelection> iValidator = null;
 	private SpecialRegistrationContext iSpecReg;
-	private boolean iSectioning;
+	private boolean iSectioning, iOnline;
 	private ImageButton iDelete;
 	
-	public CourseRequestLine(AcademicSessionProvider session, int priority, boolean alternate, Validator<CourseSelection> validator, boolean sectioning, SpecialRegistrationContext specreg) {
+	public CourseRequestLine(boolean online, AcademicSessionProvider session, int priority, boolean alternate, Validator<CourseSelection> validator, boolean sectioning, SpecialRegistrationContext specreg) {
 		super("unitime-CourseRequestLine");
+		iOnline = online;
 		iSessionProvider = session;
 		iValidator = validator;
 		iPriority = priority;
@@ -456,7 +457,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 					classes.setDataProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
 						@Override
 						public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {
-							sSectioningService.listClasses(iSessionProvider.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
+							sSectioningService.listClasses(iOnline, iSessionProvider.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 						}
 					});
 					courses.setCourseDetails(details, classes);
@@ -480,7 +481,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			setSectionsProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
 				@Override
 				public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {
-					sSectioningService.listClasses(iSessionProvider.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
+					sSectioningService.listClasses(iOnline, iSessionProvider.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 				}
 			});
 			

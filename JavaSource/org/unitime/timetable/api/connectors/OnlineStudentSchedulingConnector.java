@@ -172,7 +172,7 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 		listClasses(new OpExecution<Collection<ClassAssignmentInterface.ClassAssignment>>() {
 			@Override
 			public Collection<ClassAssignmentInterface.ClassAssignment> execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
-				return service.listClasses(sessionId, helper.getRequiredParameter("course"));
+				return service.listClasses(helper.getOptinalParameterBoolean("online", true), sessionId, helper.getRequiredParameter("course"));
 			}
 		}, Flag.GET),
 		retrieveCourseOfferingId(new OpExecution<Long>() {
