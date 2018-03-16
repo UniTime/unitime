@@ -102,19 +102,21 @@ public class StudentSchedulingAction extends Action {
 		SectioningService service = (SectioningService)applicationContext.getBean("sectioning.gwt");
 		if (sessionContext.isAuthenticated()) {
 			UserAuthority preferredAuthority = null;
-			for (AcademicSessionInfo session:  service.listAcademicSessions(true)) {
-				if (match(request, session)) {
-					for (UserAuthority auth: sessionContext.getUser().getAuthorities(null, new SimpleQualifier("Session", session.getSessionId()))) {
-						if (preferredAuthority == null && Roles.ROLE_STUDENT.equals(auth.getRole())) {
-							preferredAuthority = auth;
-						} else if ((preferredAuthority == null || !preferredAuthority.hasRight(Right.StudentSchedulingAdmin)) && auth.hasRight(Right.StudentSchedulingAdvisor)) {
-							preferredAuthority = auth;
-						} else if (auth.hasRight(Right.StudentSchedulingAdmin)) {
-							preferredAuthority = auth;
+			try {
+				for (AcademicSessionInfo session:  service.listAcademicSessions(true)) {
+					if (match(request, session)) {
+						for (UserAuthority auth: sessionContext.getUser().getAuthorities(null, new SimpleQualifier("Session", session.getSessionId()))) {
+							if (preferredAuthority == null && Roles.ROLE_STUDENT.equals(auth.getRole())) {
+								preferredAuthority = auth;
+							} else if ((preferredAuthority == null || !preferredAuthority.hasRight(Right.StudentSchedulingAdmin)) && auth.hasRight(Right.StudentSchedulingAdvisor)) {
+								preferredAuthority = auth;
+							} else if (auth.hasRight(Right.StudentSchedulingAdmin)) {
+								preferredAuthority = auth;
+							}
 						}
 					}
 				}
-			}
+			} catch (SectioningException e) {}
 			if (preferredAuthority == null && sessionContext.getUser().getCurrentAuthority() != null) {
 				for (UserAuthority auth: sessionContext.getUser().getAuthorities(null, sessionContext.getUser().getCurrentAuthority().getAcademicSession())) {
 					if (preferredAuthority == null && Roles.ROLE_STUDENT.equals(auth.getRole())) {
