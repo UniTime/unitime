@@ -43,7 +43,9 @@ import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserQualifier;
+import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.service.SolverServerService;
 
@@ -96,6 +98,39 @@ public class StudentSchedulingAction extends Action {
 			}
 		}
 		
+		// Select current role -> prefer advisor, than student in the matching academic session
+		SectioningService service = (SectioningService)applicationContext.getBean("sectioning.gwt");
+		if (sessionContext.isAuthenticated()) {
+			UserAuthority preferredAuthority = null;
+			for (AcademicSessionInfo session:  service.listAcademicSessions(true)) {
+				if (match(request, session)) {
+					for (UserAuthority auth: sessionContext.getUser().getAuthorities(null, new SimpleQualifier("Session", session.getSessionId()))) {
+						if (preferredAuthority == null && Roles.ROLE_STUDENT.equals(auth.getRole())) {
+							preferredAuthority = auth;
+						} else if ((preferredAuthority == null || !preferredAuthority.hasRight(Right.StudentSchedulingAdmin)) && auth.hasRight(Right.StudentSchedulingAdvisor)) {
+							preferredAuthority = auth;
+						} else if (auth.hasRight(Right.StudentSchedulingAdmin)) {
+							preferredAuthority = auth;
+						}
+					}
+				}
+			}
+			if (preferredAuthority == null && sessionContext.getUser().getCurrentAuthority() != null) {
+				for (UserAuthority auth: sessionContext.getUser().getAuthorities(null, sessionContext.getUser().getCurrentAuthority().getAcademicSession())) {
+					if (preferredAuthority == null && Roles.ROLE_STUDENT.equals(auth.getRole())) {
+						preferredAuthority = auth;
+					} else if ((preferredAuthority == null || !preferredAuthority.hasRight(Right.StudentSchedulingAdmin)) && auth.hasRight(Right.StudentSchedulingAdvisor)) {
+						preferredAuthority = auth;
+					} else if (auth.hasRight(Right.StudentSchedulingAdmin)) {
+						preferredAuthority = auth;
+					}
+				}
+			}
+			if (preferredAuthority != null)
+				sessionContext.getUser().setCurrentAuthority(preferredAuthority);
+		}
+		
+		
 		// Admins and advisors go to the scheduling dashboard
 		if (sessionContext.hasPermission(Right.SchedulingDashboard)) {
 			if (!sessionContext.hasPermission(Right.StudentSchedulingAdmin)) {
@@ -112,7 +147,6 @@ public class StudentSchedulingAction extends Action {
 		}
 		
 		// 1. Scheduling Assistant with the enrollment enabled
-		SectioningService service = (SectioningService)applicationContext.getBean("sectioning.gwt");
 		try {
 			for (AcademicSessionInfo session:  service.listAcademicSessions(true)) {
 				if (match(request, session)) {
