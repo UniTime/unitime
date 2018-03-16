@@ -51,6 +51,7 @@ import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
+import org.unitime.timetable.model.StudentGroupType;
 import org.unitime.timetable.model.StudentNote;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -72,6 +73,7 @@ public class XStudent extends XStudentId implements Externalizable {
     private XStudentNote iLastNote = null;
     private Float iMaxCredit = null;
     private XOverride iMaxCreditOverride = null;
+    private boolean iAllowDisabled = false;
 
     public XStudent() {
     	super();
@@ -94,8 +96,12 @@ public class XStudent extends XStudentId implements Externalizable {
         for (StudentAreaClassificationMajor acm: student.getAreaClasfMajors()) {
         	iMajors.add(new XAreaClassificationMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode()));
         }
-        for (StudentGroup group: student.getGroups())
+        for (StudentGroup group: student.getGroups()) {
         	iGroups.add(group.getGroupAbbreviation());
+        	StudentGroupType type = group.getType();
+        	if (type != null && type.getAllowDisabledSection() == StudentGroupType.AllowDisabledSection.AlwaysAllowed)
+        		iAllowDisabled = true;
+        }
         for (StudentAccomodation accomodation: student.getAccomodations())
         	iAccomodations.add(accomodation.getAbbreviation());
         
@@ -161,6 +167,7 @@ public class XStudent extends XStudentId implements Externalizable {
     	iGroups.addAll(student.getGroups());
     	iAccomodations.addAll(student.getAccomodations());
     	iRequests.addAll(student.getRequests());
+    	iAllowDisabled = student.iAllowDisabled;
     }
     
     public XStudent(XStudent student, Collection<CourseDemand> demands, OnlineSectioningHelper helper, BitSet freeTimePattern) {
@@ -173,6 +180,7 @@ public class XStudent extends XStudentId implements Externalizable {
     	iAccomodations.addAll(student.getAccomodations());
     	iMaxCredit = student.getMaxCredit();
     	iMaxCreditOverride = student.getMaxCreditOverride();
+    	iAllowDisabled = student.iAllowDisabled;
 
     	if (demands != null)
         	for (CourseDemand cd: demands) {
@@ -212,6 +220,7 @@ public class XStudent extends XStudentId implements Externalizable {
     public XStudent(org.cpsolver.studentsct.model.Student student, Assignment<Request, Enrollment> assignment) {
     	super(student);
     	iStatus = student.getStatus();
+    	iAllowDisabled = student.isAllowDisabled();
     	iEmailTimeStamp = (student.getEmailTimeStamp() == null ? null : new Date(student.getEmailTimeStamp()));
     	for (AreaClassificationMajor acm: student.getAreaClassificationMajors()) {
     		iMajors.add(new XAreaClassificationMajor(acm.getArea(), acm.getClassification(), acm.getMajor()));
@@ -254,6 +263,8 @@ public class XStudent extends XStudentId implements Externalizable {
     public boolean isMaxCreditOverridePending() {
     	return (iMaxCreditOverride == null || iMaxCreditOverride.getStatus() == null ? false : iMaxCreditOverride.getStatus().intValue() == CourseRequestOverrideStatus.PENDING.ordinal());
     }
+    public boolean isAllowDisabled() { return iAllowDisabled; }
+    public void setAllowDisabled(boolean allowDisabled) { iAllowDisabled = allowDisabled; }
 
     /**
      * List of academic area, classification, and major codes ({@link XAreaClassificationMajor}) for the given student
@@ -364,6 +375,7 @@ public class XStudent extends XStudentId implements Externalizable {
 		
 		if (in.readBoolean())
 			iLastNote = new XStudentNote(in);
+		iAllowDisabled = in.readBoolean();
 	}
 
 	@Override
@@ -402,6 +414,7 @@ public class XStudent extends XStudentId implements Externalizable {
 		out.writeBoolean(iLastNote != null);
 		if (iLastNote != null)
 			iLastNote.writeExternal(out);
+		out.writeBoolean(iAllowDisabled);
 	}
 	
 	public static class XStudentSerializer implements Externalizer<XStudent> {

@@ -573,6 +573,7 @@ public class XOffering implements Serializable, Externalizable {
 					clonedSection.setSpaceExpected(expectations == null ? 0.0 : expectations.getExpectedSpace(section.getSectionId()));
 					clonedSection.setEnrollment(enrl);
 					clonedSection.setCancelled(section.isCancelled());
+					clonedSection.setEnabled(std || section.isEnabledForScheduling());
 					if (distributions != null)
 						for (XDistribution distribution: distributions)
 							if (distribution.getDistributionType() == XDistributionType.IngoreConflicts && distribution.hasSection(section.getSectionId()))

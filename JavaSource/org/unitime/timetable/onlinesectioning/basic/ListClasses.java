@@ -41,8 +41,10 @@ import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
 import org.unitime.timetable.onlinesectioning.model.XInstructor;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XReservation;
 import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 
 /**
@@ -68,6 +70,17 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 	public Long getStudentId() {
 		return iStudentId;
 	}
+	
+	protected boolean isAllowDisabled(XEnrollments enrollments, XStudent student, XOffering offering, XCourseId course, XConfig config, XSection section) {
+		if (student == null) return false;
+		if (student.isAllowDisabled()) return true;
+		for (XReservation reservation: offering.getReservations())
+			if (reservation.isAllowDisabled() && reservation.isApplicable(student, course) && reservation.isIncluded(config.getConfigId(), section))
+				return true;
+		for (XEnrollment enrollment: enrollments.getEnrollmentsForSection(section.getSectionId()))
+			if (enrollment.getStudentId().equals(getStudentId())) return true;
+		return false;
+	}
 
 	@Override
 	public Collection<ClassAssignment> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
@@ -87,10 +100,11 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 			courseAssign.setTitle(c.getTitle());
 			courseAssign.setSubject(c.getSubjectArea());
 			courseAssign.setHasCrossList(offering.hasCrossList());
+			XStudent student = (getStudentId() == null ? null : server.getStudent(getStudentId()));
 			for (XConfig config: offering.getConfigs())
 				for (XSubpart subpart: config.getSubparts())
 					for (XSection section: subpart.getSections()) {
-						if (!section.isEnabledForScheduling()) continue;
+						if (!section.isEnabledForScheduling() && !isAllowDisabled(enrollments, student, offering, id, config, section)) continue;
 						String room = null;
 						if (section.getRooms() != null) {
 							for (XRoom rm: section.getRooms()) {

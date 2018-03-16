@@ -26,6 +26,7 @@ import java.io.ObjectOutput;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.StudentGroupReservation;
+import org.unitime.timetable.model.StudentGroupType;
 
 /**
  * @author Tomas Muller
@@ -49,6 +50,8 @@ public class XGroupReservation extends XReservation {
     	super(XReservationType.Group, offering, reservation);
         iLimit = (reservation.getLimit() == null ? -1 : reservation.getLimit());
         iGroup = reservation.getGroup().getGroupAbbreviation();
+        if (reservation.getGroup().getType() != null && reservation.getGroup().getType().getAllowDisabledSection() == StudentGroupType.AllowDisabledSection.WithGroupReservation)
+        	setAllowDisabled(true);
     }
     
     public String getGroup() {

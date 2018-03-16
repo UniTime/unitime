@@ -132,6 +132,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
         					clonedSection.setName(-1l, section.getName(-1l));
         					clonedSection.setNote(section.getNote());
         					clonedSection.setCancelled(section.isCancelled());
+        					clonedSection.setEnabled(section.isEnabledForScheduling());
         					for (XDistribution distribution: offering.getDistributions()) {
         						if (distribution.getDistributionType() == XDistributionType.IngoreConflicts && distribution.hasSection(section.getSectionId()))
         							for (Long id: distribution.getSectionIds())
@@ -211,6 +212,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 							gr.getStudentIds().add(student.getStudentId());
 				}
 				clonnedStudent.setNeedShortDistances(student.hasAccomodation(dm.getShortDistanceAccommodationReference()));
+				clonnedStudent.setAllowDisabled(student.isAllowDisabled());
 				for (XRequest r: student.getRequests()) {
 					if (r instanceof XFreeTimeRequest) {
 						XFreeTimeRequest ft = (XFreeTimeRequest)r;

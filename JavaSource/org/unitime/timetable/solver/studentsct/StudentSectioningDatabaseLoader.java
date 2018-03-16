@@ -114,6 +114,7 @@ import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
+import org.unitime.timetable.model.StudentGroupType;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.TeachingClassRequest;
@@ -486,9 +487,11 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
                 	}
                     if (ioc.isUnlimitedEnrollment() || limit >= 9999) limit = -1;
-                    if (iCheckEnabledForScheduling && !c.isEnabledForStudentScheduling()) limit = 0;
-                    Section section = new Section(c.getUniqueId().longValue(), limit, (c.getExternalUniqueId() == null ? c.getClassSuffix() == null ? c.getSectionNumberString() : c.getClassSuffix() : c.getExternalUniqueId()), subpart, p,
+                    // if (iCheckEnabledForScheduling && !c.isEnabledForStudentScheduling()) limit = 0;
+                    Section section = new Section(c.getUniqueId().longValue(), limit, (c.getClassSuffix() == null ? c.getSectionNumberString() : c.getClassSuffix()), subpart, p,
                     		getInstructors(c), parentSection);
+                    if (iCheckEnabledForScheduling && !c.isEnabledForStudentScheduling())
+                    	section.setEnabled(false);
                     for (CourseOffering course: io.getCourseOfferings()) {
                     	String suffix = c.getClassSuffix(course);
                     	if (suffix != null)
@@ -531,6 +534,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		r.setAllowOverlap(ApplicationProperty.ReservationAllowOverlapGroup.isTrue());
         		r.setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitGroup.isTrue());
         		r.setMustBeUsed(ApplicationProperty.ReservationMustBeUsedGroup.isTrue());
+        		StudentGroupType type = ((StudentGroupReservation)reservation).getGroup().getType();
+        		if (type != null && type.getAllowDisabledSection() == StudentGroupType.AllowDisabledSection.WithGroupReservation) r.setAllowDisabled(true);
         	} else if (reservation instanceof org.unitime.timetable.model.CurriculumReservation) {
         		org.unitime.timetable.model.CurriculumReservation cr = (org.unitime.timetable.model.CurriculumReservation)reservation;
         		List<String> classifications = new ArrayList<String>();
@@ -807,6 +812,13 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	for (StudentAccomodation ac: s.getAccomodations())
         		if (iShortDistanceAccomodationReference.equals(ac.getAbbreviation()))
         			student.setNeedShortDistances(true);
+        for (StudentGroup g: s.getGroups()) {
+        	StudentGroupType type = g.getType();
+        	if (type != null && type.getAllowDisabledSection() == StudentGroupType.AllowDisabledSection.AlwaysAllowed) {
+        		student.setAllowDisabled(true);
+        		break;
+        	}
+        }
 
 		TreeSet<CourseDemand> demands = new TreeSet<CourseDemand>(new Comparator<CourseDemand>() {
 			public int compare(CourseDemand d1, CourseDemand d2) {
@@ -1350,8 +1362,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             // student.getMajors().add(new AcademicAreaCode(acm.getAcademicArea().getAcademicAreaAbbreviation(),acm.getMajor().getCode()));
         	student.getAreaClassificationMajors().add(new AreaClassificationMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode()));
         }
-        for (StudentGroup g: s.getGroups())
+        for (StudentGroup g: s.getGroups()) {
         	student.getMinors().add(new AcademicAreaCode("", g.getGroupAbbreviation()));
+        }
         for (StudentAccomodation a: s.getAccomodations())
         	student.getMinors().add(new AcademicAreaCode("A", a.getAbbreviation()));
     }

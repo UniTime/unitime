@@ -58,6 +58,7 @@ public abstract class XReservation extends XReservationId implements Comparable<
     	MustBeUsed,
     	CanAssignOverLimit,
     	AllowOverlap,
+    	AllowDiabled,
     	;
     	public int flag() { return 1 << ordinal(); }
 		public boolean in(int flags) {
@@ -100,6 +101,7 @@ public abstract class XReservation extends XReservationId implements Comparable<
         	setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitIndividual.isTrue());
         	setMustBeUsed(ApplicationProperty.ReservationMustBeUsedIndividual.isTrue());
         	setAllowOverlap(ApplicationProperty.ReservationAllowOverlapIndividual.isTrue());
+        	
         	break;
         case Group:
         	setPriority(ApplicationProperty.ReservationPriorityGroup.intValue());
@@ -168,6 +170,7 @@ public abstract class XReservation extends XReservationId implements Comparable<
     	setMustBeUsed(reservation.mustBeUsed());
     	setCanAssignOverLimit(reservation.canAssignOverLimit());
     	setAllowOverlap(reservation.isAllowOverlap());
+    	setAllowDisabled(reservation.isAllowDisabled());
     }
     
     /**
@@ -252,6 +255,14 @@ public abstract class XReservation extends XReservationId implements Comparable<
     public void setAllowOverlap(boolean allowOverlap) { iFlags = Flags.AllowOverlap.set(iFlags, allowOverlap); }
     
     /**
+     * True if holding this reservation allows a student to have attend a class that is disabled for student scheduling. 
+     */
+    public boolean isAllowDisabled() { return Flags.AllowDiabled.in(iFlags); }
+    
+    public void setAllowDisabled(boolean allowDisabled) { iFlags = Flags.AllowDiabled.set(iFlags, allowDisabled); }
+
+    
+    /**
      * True if the reservation is expired. If a reservation is expired, it works as ordinary reservation
      * (especially the flags mutBeUsed and isAllowOverlap), except it does not block other students
      * of getting into the offering / config / section.
@@ -281,6 +292,15 @@ public abstract class XReservation extends XReservationId implements Comparable<
         }
         
         return true;
+    }
+    
+    public boolean isIncluded(Long configId, XSection section) {
+    	if (!iConfigs.isEmpty() && !iConfigs.contains(configId)) return false;
+    	
+    	Set<Long> reserved = iSections.get(section.getSubpartId());
+    	if (reserved != null && !reserved.contains(section.getSectionId())) return false;
+    	
+    	return true;
     }
     
     /**

@@ -87,6 +87,7 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
@@ -95,6 +96,8 @@ import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
+import org.unitime.timetable.model.StudentGroupReservation;
+import org.unitime.timetable.model.StudentGroupType;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
@@ -376,10 +379,19 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public Collection<ClassAssignmentInterface.ClassAssignment> listClasses(Long sessionId, String course) throws SectioningException, PageAccessException {
+	public Collection<ClassAssignmentInterface.ClassAssignment> listClasses(boolean online, Long sessionId, String course) throws SectioningException, PageAccessException {
 		if (sessionId==null) throw new SectioningException(MSG.exceptionNoAcademicSession());
+		if (!online) {
+			OnlineSectioningServer server = getStudentSolver();
+			if (server == null) 
+				throw new SectioningException(MSG.exceptionNoSolver());
+			else
+				return server.execute(server.createAction(ListClasses.class).forCourseAndStudent(course, getStudentId(sessionId)), currentUser());
+		}
 		setLastSessionId(sessionId);
+		Long studentId = getStudentId(sessionId);
 		OnlineSectioningServer server = getServerInstance(sessionId, false);
+		Set<Long> allowedClasses = null;
 		if (server == null) {
 			ArrayList<ClassAssignmentInterface.ClassAssignment> results = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
@@ -405,7 +417,42 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			Collections.sort(classes, new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
 			NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
 			for (Class_ clazz: classes) {
-				if (!clazz.isEnabledForStudentScheduling()) continue;
+				if (!clazz.isEnabledForStudentScheduling()) {
+					if (studentId != null && allowedClasses == null) {
+						allowedClasses = new HashSet<Long>();
+						for (Reservation reservation: courseOffering.getInstructionalOffering().getReservations()) {
+							if (reservation instanceof StudentGroupReservation) {
+								StudentGroupType type = ((StudentGroupReservation)reservation).getGroup().getType();
+								if (type != null && type.getAllowDisabledSection() == StudentGroupType.AllowDisabledSection.WithGroupReservation) {
+									boolean hasStudent = false;
+									for (Student student: ((StudentGroupReservation)reservation).getGroup().getStudents()) {
+										if (student.getUniqueId().equals(studentId)) {
+											hasStudent = true; break;
+										}
+									}
+									if (hasStudent) {
+										for (Class_ c: classes)
+											if (!c.isEnabledForStudentScheduling() && reservation.isMatching(c))
+												allowedClasses.add(c.getUniqueId());
+									}
+								}
+							}
+						}
+						Student student = StudentDAO.getInstance().get(studentId, hibSession);
+						if (student != null) {
+							for (StudentGroup group: student.getGroups()) {
+								StudentGroupType type = group.getType();
+								if (type != null && type.getAllowDisabledSection() == StudentGroupType.AllowDisabledSection.AlwaysAllowed) {
+									for (Class_ c: classes)
+										if (!c.isEnabledForStudentScheduling())
+											allowedClasses.add(c.getUniqueId());
+									break;
+								}
+							}
+						}
+					}
+					if (allowedClasses == null || !allowedClasses.contains(clazz.getUniqueId())) continue;
+				}
 				ClassAssignmentInterface.ClassAssignment a = new ClassAssignmentInterface.ClassAssignment();
 				a.setClassId(clazz.getUniqueId());
 				a.setSubpart(clazz.getSchedulingSubpart().getItypeDesc());

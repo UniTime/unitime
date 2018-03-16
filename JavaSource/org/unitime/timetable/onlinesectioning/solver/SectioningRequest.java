@@ -381,6 +381,7 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 		clonnedStudent.setExternalId(student.getExternalId());
 		clonnedStudent.setName(student.getName());
 		clonnedStudent.setNeedShortDistances(student.hasAccomodation(server.getDistanceMetric().getShortDistanceAccommodationReference()));
+		clonnedStudent.setAllowDisabled(student.isAllowDisabled());
 		CourseRequest ret = null;
 		for (XRequest r: student.getRequests()) {
 			if (r instanceof XFreeTimeRequest) {

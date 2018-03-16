@@ -159,6 +159,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				student.setExternalId(original.getExternalId());
 				student.setName(original.getName());
 				student.setNeedShortDistances(original.hasAccomodation(server.getDistanceMetric().getShortDistanceAccommodationReference()));
+				student.setAllowDisabled(original.isAllowDisabled());
 				action.getStudentBuilder().setUniqueId(original.getStudentId()).setExternalId(original.getExternalId()).setName(original.getName());
 				enrolled = new HashSet<IdPair>();
 				for (XRequest r: original.getRequests()) {
@@ -474,6 +475,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					clonedSection.setSpaceExpected(expectations.getExpectedSpace(section.getSectionId()));
 					clonedSection.setEnrollment(enrl);
 					clonedSection.setCancelled(section.isCancelled());
+					clonedSection.setEnabled(student || section.isEnabledForScheduling());
 					for (XDistribution distribution: offering.getDistributions())
 						if (distribution.getDistributionType() == XDistributionType.IngoreConflicts && distribution.hasSection(section.getSectionId()))
 							for (Long id: distribution.getSectionIds())
@@ -510,6 +512,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			Reservation clonedReservation = new OnlineReservation(reservation.getType().ordinal(), reservation.getReservationId(), clonedOffering,
 					reservation.getPriority(), reservation.canAssignOverLimit(), reservationLimit, 
 					applicable, reservation.mustBeUsed(), reservation.isAllowOverlap(), reservation.isExpired());
+			clonedReservation.setAllowDisabled(reservation.isAllowDisabled());
 			for (Long configId: reservation.getConfigsIds())
 				clonedReservation.addConfig(configs.get(configId));
 			for (Map.Entry<Long, Set<Long>> entry: reservation.getSections().entrySet()) {

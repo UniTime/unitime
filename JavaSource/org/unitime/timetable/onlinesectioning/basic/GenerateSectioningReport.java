@@ -153,6 +153,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
         					clonedSection.setName(-1l, section.getName(-1l));
         					clonedSection.setNote(section.getNote());
         					clonedSection.setCancelled(section.isCancelled());
+        					clonedSection.setEnabled(section.isEnabledForScheduling());
         					for (XDistribution distribution: offering.getDistributions()) {
         						if (distribution.getDistributionType() == XDistributionType.IngoreConflicts && distribution.hasSection(section.getSectionId())) {
         							for (Long id: distribution.getSectionIds())
@@ -230,6 +231,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 				clonnedStudent.setExternalId(student.getExternalId());
 				clonnedStudent.setName(student.getName());
 				clonnedStudent.setNeedShortDistances(student.hasAccomodation(dm.getShortDistanceAccommodationReference()));
+				clonnedStudent.setAllowDisabled(student.isAllowDisabled());
 				for (String g: student.getGroups()) {
 					clonnedStudent.getMinors().add(new AcademicAreaCode("", g));
 					List<GroupReservation> list = groups.get(g);

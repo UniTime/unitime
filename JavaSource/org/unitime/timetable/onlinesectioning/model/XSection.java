@@ -96,9 +96,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     	Assignment assignment = clazz.getCommittedAssignment();
     	iEnabledForScheduling = clazz.isEnabledForStudentScheduling();
     	iCancelled = clazz.isCancelled();
-        if (!clazz.isEnabledForStudentScheduling()) {
-        	iLimit = 0;
-        } else if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment()) {
+        if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment()) {
         	iLimit = -1;
         } else {
         	iLimit = clazz.getMaxExpectedCapacity();
@@ -164,6 +162,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     	iNote = section.getNote();
     	iTime = section.getTime() == null ? null : new XTime(section.getTime());
     	iCancelled = section.isCancelled();
+    	iEnabledForScheduling = section.isEnabled();
     	if (section.getNameByCourse() != null)
     		for (Map.Entry<Long, String> e: section.getNameByCourse().entrySet()) {
     			iNameByCourse.put(e.getKey(), e.getValue());

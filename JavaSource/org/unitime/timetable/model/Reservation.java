@@ -88,6 +88,14 @@ public abstract class Reservation extends BaseReservation implements Comparable<
 		return true;
 	}
 	
+	public boolean isMatching(Class_ clazz) {
+		if (!getConfigurations().isEmpty() && !getConfigurations().contains(clazz.getSchedulingSubpart().getInstrOfferingConfig()))
+			return false;
+		if (!getClasses().isEmpty() && !hasClass(clazz))
+			return false;
+		return true;
+	}
+	
 	public abstract int getPriority();
 	public abstract boolean isCanAssignOverLimit();
 	public abstract boolean isMustBeUsed();

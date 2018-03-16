@@ -139,6 +139,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 				student.setExternalId(original.getExternalId());
 				student.setName(original.getName());
 				student.setNeedShortDistances(original.hasAccomodation(server.getDistanceMetric().getShortDistanceAccommodationReference()));
+				student.setAllowDisabled(original.isAllowDisabled());
 				action.getStudentBuilder().setUniqueId(original.getStudentId()).setExternalId(original.getExternalId()).setName(original.getName());
 				enrolled = new HashSet<IdPair>();
 				for (XRequest r: original.getRequests()) {

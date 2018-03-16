@@ -82,6 +82,8 @@ public class XIndividualReservation extends XReservation {
         super(XReservationType.Group, reservation);
         iStudentIds.addAll(reservation.getStudentIds());
         iLimit = (int)Math.round(reservation.getReservationLimit());
+        if (reservation.isAllowDisabled())
+        	setAllowDisabled(true);
     }
 
     /**
