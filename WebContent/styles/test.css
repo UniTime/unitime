@@ -26,38 +26,18 @@
 	border: 1px solid #101010;
 }
 
-.unitime-MobilePage .body {
-	display: inline-block;
-	background-color: #fff;
-}
-
-.unitime-MobilePageHeader {
-	max-width: 100vw;
-}
-
-.unitime-MobileHeader {
-	max-width: 100vw;
-}
-
-.unitime-MobileNavigation {
-	max-width: 100vw;
-}
-
 .unitime-Footer {
 	color: #111;
 }
 
+.unitime-Page .footer {
+	margin-top: 5px;
+	padding: 0px;
+}
+
 .unitime-Footer .row {
 	color: #101010;
-}
-
-.unitime-MobileFooter {
-	color: #111;
-	background-color: #a37b2c;
-}
-
-.unitime-MobileFooter .row {
-	color: #101010;
+	padding: 2px;
 }
 
 a.unitime-FooterLink:link,a.unitime-FooterLink:visited,a.unitime-FooterLink:active,a.unitime-FooterLink:hover {
@@ -65,26 +45,15 @@ a.unitime-FooterLink:link,a.unitime-FooterLink:visited,a.unitime-FooterLink:acti
 }
 
 .unitime-Disclaimer {
-	border-top: solid 5px #a37b2c;
+	margin-top: 5px;
 	color: #999;
-	padding: 2px;
 	background-color: black;
-	max-width: none;
+	padding: 2px;
+	max-width: 100%;
 }
 
 .unitime-Disclaimer A.link:link,A.link:visited,A.link:active,A.link:hover {
 	color: #999;
-}
-
-.unitime-MobileFooter {
-	border-top: none;
-}
-
-.unitime-MobileDisclaimer {
-	border-top: solid 5px #a37b2c;
-	color: #999;
-	padding: 2px;
-	background-color: black;
 }
 
 .unitime-MenuHeaderLabel {
@@ -114,4 +83,20 @@ a.unitime-FooterLink:link,a.unitime-FooterLink:visited,a.unitime-FooterLink:acti
 
 .gwt-StackPanel .gwt-StackPanelContent {
   border: 1px solid #505050;
+}
+
+@media all and (max-width: 800px) {
+	.unitime-Page .body {
+		border: none;
+		margin-top: 0px;
+	}
+	.unitime-Page .footer {
+		max-width: 100vw;
+	}
+	.unitime-Footer {
+		border-top: none;
+	}
+	.unitime-Disclaimer {
+		width: 100vw;
+	}
 }
