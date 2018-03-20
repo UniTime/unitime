@@ -538,13 +538,13 @@ public class SectioningStatusPage extends Composite {
 				iStudentTable.clearTable();
 				iLogTable.clearTable();
 				if (event.getValue().endsWith("@")) {
-					iFilter.setValue(event.getValue().substring(0, event.getValue().length() - 1));
+					iFilter.setValue(event.getValue().substring(0, event.getValue().length() - 1), true);
 					iTabPanel.selectTab(1);
 				} else if (event.getValue().endsWith("$")) {
-					iFilter.setValue(event.getValue().substring(0, event.getValue().length() - 1));
+					iFilter.setValue(event.getValue().substring(0, event.getValue().length() - 1), true);
 					iTabPanel.selectTab(2);
 				} else {
-					iFilter.setValue(event.getValue());
+					iFilter.setValue(event.getValue(), true);
 					if (iTabIndex != 0)
 						iTabPanel.selectTab(0);
 					else
@@ -666,7 +666,7 @@ public class SectioningStatusPage extends Composite {
 			}
 		} else {
 			String q = SectioningStatusCookie.getInstance().getQuery(iOnline);
-			if (q != null) iFilter.setValue(q);
+			if (q != null) iFilter.setValue(q, true);
 			int t = SectioningStatusCookie.getInstance().getTab(iOnline);
 			if (t >= 0 && t < iTabPanel.getTabCount()) {
 				iTabPanel.selectTab(t, false);
