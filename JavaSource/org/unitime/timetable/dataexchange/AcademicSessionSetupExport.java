@@ -402,6 +402,8 @@ public class AcademicSessionSetupExport extends BaseExport {
 				groupEl.addAttribute("code", group.getGroupAbbreviation());
 			if (group.getGroupName() != null)
 				groupEl.addAttribute("name", group.getGroupName());
+			if (group.getType() != null)
+				groupEl.addAttribute("type", group.getType().getReference());
 		}
 	}
 	
