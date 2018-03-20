@@ -87,6 +87,12 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			return (iFlags & flag.flag()) != 0;
 		}
 		
+		public boolean hasFlag(EligibilityFlag... flags) {
+			for (EligibilityFlag flag: flags)
+				if ((iFlags & flag.flag()) != 0) return true;
+			return false;
+		}
+		
 		public void setMessage(String message) { iMessage = message; }
 		public boolean hasMessage() { return iMessage != null && !iMessage.isEmpty(); }
 		public String getMessage() { return iMessage; }

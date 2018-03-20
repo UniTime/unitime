@@ -1702,6 +1702,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				LoadingWidget.getInstance().hide();
 				iEligibilityCheck = null;
 				if (ret != null) ret.onFailure(caught);
+				iStatus.error(MESSAGES.exceptionFailedEligibilityCheck(caught.getMessage()), caught);
 			}
 		});
 	}
@@ -1809,7 +1810,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			public void onFailure(Throwable caught) {
 				LoadingWidget.getInstance().hide();
 				clear(changeViewIfNeeded);
-				iStatus.error(caught.getMessage(), caught);
+				if (!MESSAGES.exceptionNoStudent().equals(caught.getMessage()) || iEligibilityCheck == null || !iEligibilityCheck.hasFlag(EligibilityFlag.IS_ADMIN, EligibilityFlag.IS_ADVISOR))
+					iStatus.error(caught.getMessage(), caught);
 			}
 			public void onSuccess(final CourseRequestInterface request) {
 				if (request.isSaved())

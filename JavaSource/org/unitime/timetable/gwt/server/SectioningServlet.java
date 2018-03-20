@@ -2415,7 +2415,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			return ret;
 		} catch (Exception e) {
 			sLog.error(e.getMessage(), e);
-			return new EligibilityCheck(MSG.exceptionUnknown(e.getMessage()));
+			return new EligibilityCheck(MSG.exceptionUnknown(e.getMessage() != null && !e.getMessage().isEmpty() ? e.getMessage() : e.getCause() != null ? e.getCause().getClass().getSimpleName() : e.getClass().getSimpleName()));
 		}
 	}
 
