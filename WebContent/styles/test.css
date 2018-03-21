@@ -86,7 +86,7 @@ a.unitime-FooterLink:link,a.unitime-FooterLink:visited,a.unitime-FooterLink:acti
 }
 
 @media all and (max-width: 800px) {
-	.unitime-Page .body {
+	#unitime-Page {
 		border: none;
 		margin-top: 0px;
 	}
