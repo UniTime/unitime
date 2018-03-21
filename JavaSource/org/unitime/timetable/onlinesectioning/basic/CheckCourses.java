@@ -23,9 +23,11 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.CourseMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsValidationHolder;
 import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
@@ -58,9 +60,19 @@ public class CheckCourses implements OnlineSectioningAction<CheckCoursesResponse
 
 	@Override
 	public CheckCoursesResponse execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		OnlineSectioningLog.Action.Builder action = helper.getAction();
 		if (iMatcher != null) iMatcher.setServer(server);
 		CheckCoursesResponse response = new CheckCoursesResponse();
+		if (iRequest.getStudentId() != null)
+			action.setStudent(OnlineSectioningLog.Entity.newBuilder().setUniqueId(iRequest.getStudentId()));
 		XStudent student = (iRequest.getStudentId() == null ? null : server.getStudent(iRequest.getStudentId()));
+		if (student != null) {
+			action.getStudentBuilder().setExternalId(student.getExternalId());
+			action.getStudentBuilder().setName(student.getName());
+		}
+		for (OnlineSectioningLog.Request r: OnlineSectioningHelper.toProto(iRequest))
+			action.addRequest(r);
+		
 		for (CourseRequestInterface.Request cr: iRequest.getCourses()) {
 			if (cr.hasRequestedCourse()) {
 				for (RequestedCourse rc: cr.getRequestedCourse())
@@ -82,6 +94,15 @@ public class CheckCourses implements OnlineSectioningAction<CheckCoursesResponse
 		
 		if (iCustomValidation && CustomCourseRequestsValidationHolder.hasProvider())
 			CustomCourseRequestsValidationHolder.getProvider().validate(server, helper, iRequest, response);
+		
+		if (response.hasMessages())
+			for (CourseMessage m: response.getMessages())
+				if (m.hasCourse())
+					action.addMessageBuilder().setText(m.toString()).setLevel(m.isError() ? OnlineSectioningLog.Message.Level.ERROR : m.isConfirm() ? OnlineSectioningLog.Message.Level.WARN : OnlineSectioningLog.Message.Level.INFO);
+		if (response.isError())
+			action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
+		else
+			action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
 		
 		return response;
 	}
