@@ -43,6 +43,7 @@ import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
+import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.Debug;
@@ -59,6 +60,7 @@ import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.DivSecAssignmentComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
+import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.model.dao.SolutionInfoDAO;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
@@ -1514,4 +1516,38 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 	public Set<TimeBlock> getConflictingTimeBlocks(Long classId) {
 		return null;
 	}
+	
+	public static Hashtable<Long,Set<Long>> findConflictingStudents(Long classId, int startSlot, int length, List<Date> dates) {
+    	Hashtable<Long,Set<Long>> table = new Hashtable();
+    	if (dates.isEmpty()) return table;
+    	String datesStr = "";
+    	for (int i=0; i<dates.size(); i++) {
+    		if (i>0) datesStr += ", ";
+    		datesStr += ":date"+i;
+    	}
+    	Query q = LocationDAO.getInstance().getSession()
+    	    .createQuery("select distinct e.clazz.uniqueId, e.studentId "+
+    	        	"from StudentEnrollment e, ClassEvent c inner join c.meetings m, StudentEnrollment x "+
+    	        	"where x.clazz.uniqueId=:classId and x.studentId=e.studentId and " + // only look among students of the given class 
+    	        	"e.clazz=c.clazz and " + // link ClassEvent c with StudentClassEnrollment e
+            		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
+    	        	"e.solution.commited=true and x.solution.commited = true and " +
+            		"m.meetingDate in ("+datesStr+") and m.approvalStatus = 1")
+            .setLong("classId",classId)
+            .setInteger("startSlot", startSlot)
+            .setInteger("endSlot", startSlot + length);
+    	for (int i=0; i<dates.size(); i++) {
+    		q.setDate("date"+i, dates.get(i));
+    	}
+        for (Iterator i = q.setCacheable(true).list().iterator();i.hasNext();) {
+            Object[] o = (Object[])i.next();
+            Set<Long> set = table.get((Long)o[0]);
+            if (set==null) {
+            	set = new HashSet<Long>();
+            	table.put((Long)o[0], set);
+            }
+            set.add((Long)o[1]);
+        }
+        return table;
+    }
 }

@@ -102,6 +102,7 @@ public class ClassInfoModel implements Serializable {
     private Collection<ClassAssignment> iTimes = null;
     private Vector<ClassRoomInfo> iRooms = null;
     private boolean iShowStudentConflicts = ApplicationProperty.ClassAssignmentShowStudentConflicts.isTrue();
+    private boolean iUseRealStudents = true;
     private boolean iUnassignConflictingAssignments = false;
     private transient SessionContext iContext = null;
     
@@ -151,7 +152,7 @@ public class ClassInfoModel implements Serializable {
         iUnassignConflictingAssignments = !iForm.getKeepConflictingAssignments();
         iChange.getAssignments().clear();
         for (ClassAssignment assignment : assignments) {
-            iChange.getAssignments().add(new ClassAssignmentInfo(assignment.getClazz(),assignment.getTime(),assignment.getDate(),assignment.getRooms(),table));
+            iChange.getAssignments().add(new ClassAssignmentInfo(assignment.getClazz(),assignment.getTime(),assignment.getDate(),assignment.getRooms(),table, isUseRealStudents()));
         }
         if (assignments.isEmpty()) {
         	for (Iterator<ClassAssignment> i = iChange.getConflicts().iterator(); i.hasNext(); ) {
@@ -357,7 +358,7 @@ public class ClassInfoModel implements Serializable {
     public void setClazz(Class_ clazz) {
         iDates = null; iTimes = null; iRooms = null;
         if (clazz.getCommittedAssignment()!=null)
-            iClass = new ClassAssignmentInfo(clazz.getCommittedAssignment());
+            iClass = new ClassAssignmentInfo(clazz.getCommittedAssignment(), isUseRealStudents());
         else  
             iClass = new ClassInfo(clazz);
         if (iChange!=null) {
@@ -379,9 +380,9 @@ public class ClassInfoModel implements Serializable {
     public ClassAssignmentInfo getAssignmentInfo(ClassAssignment assignment) throws Exception {
         if (assignment instanceof ClassAssignmentInfo) return (ClassAssignmentInfo)assignment;
         if (iChange!=null)
-            return new ClassAssignmentInfo(assignment.getClazz(), assignment.getTime(), assignment.getDate(), assignment.getRooms(), iChange.getAssignmentTable());
+            return new ClassAssignmentInfo(assignment.getClazz(), assignment.getTime(), assignment.getDate(), assignment.getRooms(), iChange.getAssignmentTable(), isUseRealStudents());
         else
-            return new ClassAssignmentInfo(assignment.getClazz(), assignment.getTime(), assignment.getDate(), assignment.getRooms());
+            return new ClassAssignmentInfo(assignment.getClazz(), assignment.getTime(), assignment.getDate(), assignment.getRooms(), isUseRealStudents());
     }
     
     public ClassAssignmentInfo getSelectedAssignment() throws Exception {
@@ -402,7 +403,7 @@ public class ClassInfoModel implements Serializable {
             if (dateId.equals(date.getDateId())) {
                 List<Date> dates = (time == null || !date.hasDate() ? null : dm.getDates(clazz.getSchedulingSubpart().getMinutesPerWk(), date.getDate().getDatePattern(), time.getDayCode(), time.getMinutesPerMeeting()));
                 iChange.addChange(
-                		new ClassAssignmentInfo(getClazz().getClazz(), (time == null ? null : new ClassTimeInfo(time, date.getDate(), dates)), date.getDate(), rooms, iChange.getAssignmentTable()), 
+                		new ClassAssignmentInfo(getClazz().getClazz(), (time == null ? null : new ClassTimeInfo(time, date.getDate(), dates)), date.getDate(), rooms, iChange.getAssignmentTable(), isUseRealStudents()), 
                 		getClassOldAssignment());
             }
         }
@@ -416,13 +417,13 @@ public class ClassInfoModel implements Serializable {
 		for (ClassAssignment time : getAllTimes()) {
             if (timeId.equals(time.getTimeId())) {
                 iChange.addChange(
-                		new ClassAssignmentInfo(getClazz().getClazz(), time.getTime(), time.getDate(), null, iChange.getAssignmentTable()), 
+                		new ClassAssignmentInfo(getClazz().getClazz(), time.getTime(), time.getDate(), null, iChange.getAssignmentTable(), isUseRealStudents()), 
                 		getClassOldAssignment());
             }
 		}       
 		if ("-1".equals(timeId)) {
 			iChange.addChange(
-					new ClassAssignmentInfo(getClazz().getClazz(), null, null, null, iChange.getAssignmentTable()), 
+					new ClassAssignmentInfo(getClazz().getClazz(), null, null, null, iChange.getAssignmentTable(), isUseRealStudents()), 
             		getClassOldAssignment());
 		}
         if (iChange.isEmpty()) iChange = null; 
@@ -462,7 +463,7 @@ public class ClassInfoModel implements Serializable {
             if (room!=null) assignedRooms.add(room);
         }
         iChange.addChange(
-        		new ClassAssignmentInfo(getClazz().getClazz(), assignment.getTime(), assignment.getDate(), assignedRooms, iChange.getAssignmentTable()),
+        		new ClassAssignmentInfo(getClazz().getClazz(), assignment.getTime(), assignment.getDate(), assignedRooms, iChange.getAssignmentTable(), isUseRealStudents()),
         		getClassOldAssignment());
         if (iChange.isEmpty()) iChange = null; 
         update();
@@ -760,7 +761,8 @@ public class ClassInfoModel implements Serializable {
                             			child.getName(),
                             			child.getPatternBitSet(),
                             			prVal),
-                            	null));
+                            	null,
+                            	isUseRealStudents()));
         			} else {
             			iDates.add(new ClassAssignment(
                     			clazz,
@@ -785,7 +787,8 @@ public class ClassInfoModel implements Serializable {
                         			datePattern.getName(),
                         			datePattern.getPatternBitSet(),
                         			PreferenceLevel.sIntLevelNeutral),
-                        	null));
+                        	null,
+                        	isUseRealStudents()));
             	} else {
                 	iDates.add(new ClassAssignment(
                 			clazz,
@@ -897,7 +900,7 @@ public class ClassInfoModel implements Serializable {
         		List<Date> dates = dm.getDates(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, pattern.getExactDays(), minsPerMeeting);
         		ClassTimeInfo time = new ClassTimeInfo(clazz.getUniqueId(), pattern.getExactDays(),pattern.getExactStartSlot(),length,minsPerMeeting,PreferenceLevel.sIntLevelNeutral,timePref.getTimePattern(),date,breakTime,dates);
         		if (iShowStudentConflicts)
-        			times.add(new ClassAssignmentInfo(clazz, time, date, null, (iChange==null?null:iChange.getAssignmentTable())));
+        			times.add(new ClassAssignmentInfo(clazz, time, date, null, (iChange==null?null:iChange.getAssignmentTable()), isUseRealStudents()));
         		else
         			times.add(new ClassAssignment(clazz, time, date, null));
                 continue;
@@ -938,7 +941,7 @@ public class ClassInfoModel implements Serializable {
                     }
                     
                     if (iShowStudentConflicts)
-                    	 times.add(new ClassAssignmentInfo(clazz, loc, date, null, (iChange==null?null:iChange.getAssignmentTable())));
+                    	 times.add(new ClassAssignmentInfo(clazz, loc, date, null, (iChange==null?null:iChange.getAssignmentTable()), isUseRealStudents()));
                     else
                     	times.add(new ClassAssignment(clazz, loc, date, null));
                 }
@@ -1512,4 +1515,7 @@ public class ClassInfoModel implements Serializable {
     
     public void setSessionContext(SessionContext context) { iContext = context; }
     public SessionContext getSessionContext() { return iContext; }
+    
+    public boolean isUseRealStudents() { return iUseRealStudents; }
+    public void setUseRealStudents(boolean userReal) { iUseRealStudents = userReal; }
 }

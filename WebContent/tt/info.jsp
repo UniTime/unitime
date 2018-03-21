@@ -108,6 +108,9 @@
 		</logic:notEqual>
 		<tr><td colspan='2'><tt:section-title><br>Student Conflicts</tt:section-title></td></tr>
 		<tr><td colspan='2'><bean:write name="model" property="studentConflictTable" filter="false"/></td></tr>
+		<logic:notEqual name="model" property="useRealStudents" value="true">
+			<tr><td colspan='2' align="center"><i>There are no students enrolled yet, showing solution conflicts instead.</i></td></tr>
+		</logic:notEqual>
 		<logic:equal name="model" property="showDates" value="true">
 			<tr><td colspan='2'><tt:section-title>
 				<br>Available Dates for <bean:write name="clazz" property="className"/> &nbsp;&nbsp;

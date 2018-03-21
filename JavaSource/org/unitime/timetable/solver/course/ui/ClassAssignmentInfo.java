@@ -31,6 +31,7 @@ import java.util.TreeSet;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.dao.Class_DAO;
 
@@ -41,25 +42,29 @@ public class ClassAssignmentInfo extends ClassAssignment implements Serializable
 	private static final long serialVersionUID = -4277344877497509285L;
 	private TreeSet<StudentConflict> iStudentConflicts = new TreeSet();
 	
-	public ClassAssignmentInfo(Assignment assignment) {
+	public ClassAssignmentInfo(Assignment assignment, boolean useRealStudents) {
 		super(assignment);
-		findStudentConflicts(null);
+		findStudentConflicts(null, useRealStudents);
 	}
 
-	public ClassAssignmentInfo(Class_ clazz, ClassTimeInfo time, ClassDateInfo date, Collection<ClassRoomInfo> rooms) {
+	public ClassAssignmentInfo(Class_ clazz, ClassTimeInfo time, ClassDateInfo date, Collection<ClassRoomInfo> rooms, boolean useRealStudents) {
 		super(clazz, time, date, rooms);
-		findStudentConflicts(null);
+		findStudentConflicts(null, useRealStudents);
 	}
 	
-	public ClassAssignmentInfo(Class_ clazz, ClassTimeInfo time, ClassDateInfo date, Collection<ClassRoomInfo> rooms, Hashtable<Long,ClassAssignment> assignmentTable) {
+	public ClassAssignmentInfo(Class_ clazz, ClassTimeInfo time, ClassDateInfo date, Collection<ClassRoomInfo> rooms, Hashtable<Long,ClassAssignment> assignmentTable, boolean useRealStudents) {
 		super(clazz, time, date, rooms);
-		findStudentConflicts(assignmentTable);
+		findStudentConflicts(assignmentTable, useRealStudents);
 	}
 	
-	private void findStudentConflicts(Hashtable<Long,ClassAssignment> assignmentTable) {
+	private void findStudentConflicts(Hashtable<Long,ClassAssignment> assignmentTable, boolean useRealStudents) {
 		if (!hasTime()) return;
 		//TODO: This might be done much faster
-		Hashtable<Long,Set<Long>> conflicts = Student.findConflictingStudents(getClassId(), getTime().getStartSlot(), getTime().getLength(), getTime().getDates());
+		Hashtable<Long,Set<Long>> conflicts = null;
+		if (useRealStudents)
+			conflicts = Student.findConflictingStudents(getClassId(), getTime().getStartSlot(), getTime().getLength(), getTime().getDates());
+		else
+			conflicts = Solution.findConflictingStudents(getClassId(), getTime().getStartSlot(), getTime().getLength(), getTime().getDates());
 		for (Map.Entry<Long, Set<Long>> entry: conflicts.entrySet()) {
 			if (getClassId().equals(entry.getKey())) continue;
 			if (assignmentTable!=null && assignmentTable.containsKey(entry.getKey())) continue;

@@ -35,6 +35,7 @@ import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -65,6 +66,7 @@ public class ClassInfoAction extends Action {
         if (model==null) {
             model = new ClassInfoModel();
             request.getSession().setAttribute("ClassInfo.model", model);
+            model.setUseRealStudents(StudentClassEnrollment.sessionHasEnrollments(sessionContext.getUser().getCurrentAcademicSessionId()));
         }
         model.setSessionContext(sessionContext);
         
