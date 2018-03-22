@@ -182,6 +182,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private List<Long> iUpdatedStudents = new ArrayList<Long>();
 	private NameFormat iStudentNameFormat = null, iInstructorNameFormat = null;
 	private StudentSolver iValidator = null;
+	private boolean iCheckRequestStatusSkipCancelled = false, iCheckRequestStatusSkipPending = false;
     
     private Progress iProgress = null;
     
@@ -255,6 +256,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iShowConfigName = ApplicationProperty.SolverShowConfiguratioName.isTrue();
         iStudentNameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingStudentNameFormat.value());
         iInstructorNameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
+        iCheckRequestStatusSkipCancelled = model.getProperties().getPropertyBoolean("Load.CheckRequestStatusSkipCancelled", iCheckRequestStatusSkipCancelled);
+        iCheckRequestStatusSkipPending = model.getProperties().getPropertyBoolean("Load.CheckRequestStatusSkipPending", iCheckRequestStatusSkipPending);
     }
     
     public void load() {
@@ -857,6 +860,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 crs.addAll(cd.getCourseRequests());
                 for (org.unitime.timetable.model.CourseRequest cr: crs) {
                 	if (cr.isRequestRejected() && cr.getClassEnrollments().isEmpty()) continue;
+                	if (iCheckRequestStatusSkipCancelled && cr.isRequestCancelled() && cr.getClassEnrollments().isEmpty()) continue;
+                	if (iCheckRequestStatusSkipPending && cr.isRequestPending() && cr.getClassEnrollments().isEmpty()) continue;
                     Course course = courseTable.get(cr.getCourseOffering().getUniqueId());
                     if (course==null) {
                         iProgress.warn("Student " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ") requests course " + cr.getCourseOffering().getCourseName() + " that is not loaded.");
