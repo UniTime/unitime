@@ -30,6 +30,8 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.form.ClassInfoForm;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.DatePattern;
@@ -50,6 +52,7 @@ import org.unitime.timetable.util.RoomAvailability;
  */
 @Service("/classInfo")
 public class ClassInfoAction extends Action {
+	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
 	@Autowired SessionContext sessionContext;
     
@@ -74,7 +77,7 @@ public class ClassInfoAction extends Action {
             op="Apply";
         }
 
-        if ("Apply".equals(op)) {
+        if (MSG.actionFilterApply().equals(op) || "Apply".equals(op)) {
             myForm.save(request.getSession());
         } else if ("Refresh".equals(op)) {
             myForm.reset(mapping, request);
@@ -100,7 +103,7 @@ public class ClassInfoAction extends Action {
             myForm.save(request.getSession());
         }
         
-        if (model.getClazz()==null) throw new Exception("No class given.");
+        if (model.getClazz()==null) throw new Exception(MSG.errorNoClassGiven());
         
         sessionContext.checkPermission(model.getClazz().getClazz(), Right.ClassAssignment);
         
@@ -124,7 +127,7 @@ public class ClassInfoAction extends Action {
             }
         }
         
-        if ("Assign".equals(op)) {
+        if (MSG.actionClassAssign().equals(op) || "Assign".equals(op)) {
             synchronized (model) {
                 String message = model.assign(sessionContext);
                 if (message==null || message.trim().length()==0) {

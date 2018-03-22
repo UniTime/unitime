@@ -28,6 +28,8 @@ import javax.servlet.http.HttpSession;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeatureType;
@@ -41,6 +43,7 @@ import org.unitime.timetable.solver.course.ui.ClassInfoModel;
  */
 public class ClassInfoForm extends ActionForm {
 	private static final long serialVersionUID = -9085986972061220089L;
+	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
 	private String iOp;
     private ClassInfoModel iModel;
     private String iMessage;
@@ -51,11 +54,6 @@ public class ClassInfoForm extends ActionForm {
     private String iRoomOrder = null;
     private RoomBase iRoomBase = RoomBase.Departmental;
     private boolean iKeepConflictingAssignments = false;
-    public static String sRoomOrdNameAsc = "Name [asc]";
-    public static String sRoomOrdNameDesc = "Name [desc]";
-    public static String sRoomOrdSizeAsc = "Size [asc]";
-    public static String sRoomOrdSizeDesc = "Size [desc]";
-    public static String[] sRoomOrds = new String[] { sRoomOrdNameAsc, sRoomOrdNameDesc, sRoomOrdSizeAsc, sRoomOrdSizeDesc };
 	private Long[] iRoomFeatures = null;
 	private Long[] iRoomTypes = null;
 	private Long[] iRoomGroups = null;
@@ -64,16 +62,20 @@ public class ClassInfoForm extends ActionForm {
     private String iFilter = null;
     
     public static enum RoomBase {
-    	Departmental("Departmental"),
-    	Timetabling("Timetabling"),
-    	All("All"),
+    	Departmental,
+    	Timetabling,
+    	All,
     	;
     	
-    	private String iLabel;
-    	RoomBase(String label) { iLabel = label; }
-    	
     	public String getValue() { return name(); }
-    	public String getLabel() { return iLabel; }
+    	public String getLabel() {
+    		switch (this) {
+    		case Departmental: return MSG.roomTypeDepartmental();
+    		case Timetabling: return MSG.roomTypeTimetabling();
+    		case All: return MSG.roomTypeAll();
+    		default: return name();
+    		}
+    	}
     }
     
     public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
@@ -90,7 +92,7 @@ public class ClassInfoForm extends ActionForm {
         iRoomFilter = null;
         iAllowRoomConflict = false;
         iRoomBase = RoomBase.Departmental;
-        iRoomOrder = sRoomOrdNameAsc;
+        iRoomOrder = MSG.sortRoomNameAsc();
         iFilter = null;
         iKeepConflictingAssignments = false;
         iRoomTypes = null;
@@ -181,7 +183,9 @@ public class ClassInfoForm extends ActionForm {
     public void setRoomBase(String base) { iRoomBase = (base == null || base.isEmpty() ? RoomBase.Departmental : RoomBase.valueOf(base)); }
     public String getRoomOrder() { return iRoomOrder; }
     public void setRoomOrder(String ord) { iRoomOrder = ord; }
-    public String[] getRoomOrders() { return sRoomOrds; }
+    public String[] getRoomOrders() { 
+    	return new String[] { MSG.sortRoomNameAsc(), MSG.sortRoomNameDesc(), MSG.sortRoomSizeAsc(), MSG.sortRoomSizeDesc() }; 
+    }
     public String getFilter() { return iFilter; }
     public void setFilter(String filter) { iFilter = filter; }
 

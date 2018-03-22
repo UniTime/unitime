@@ -26,6 +26,8 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -36,6 +38,7 @@ import org.unitime.timetable.model.dao.Class_DAO;
  */
 public class ClassInfo implements Serializable, Comparable<ClassInfo> {
 	private static final long serialVersionUID = 7324981486913342471L;
+	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
 	protected String iClassName = null;
     protected String iClassTitle = null;
     protected Long iClassId = null;

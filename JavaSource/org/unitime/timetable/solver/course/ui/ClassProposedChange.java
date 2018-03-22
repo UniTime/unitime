@@ -25,6 +25,8 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -34,6 +36,7 @@ import org.unitime.timetable.security.rights.Right;
  */
 public class ClassProposedChange implements Serializable, Comparable<ClassProposedChange> {
 	private static final long serialVersionUID = 1510362646798301408L;
+	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
 	private Vector<ClassAssignmentInfo> iAssignments = null;
     private Vector<ClassAssignment> iConflicts = null;
     private Hashtable<Long,ClassAssignment> iInitials = null;
@@ -134,11 +137,11 @@ public class ClassProposedChange implements Serializable, Comparable<ClassPropos
     public String getHtmlTable(SessionContext context) {
         String ret = "<table border='0' cellspacing='0' cellpadding='3' width='100%'>";
         ret += "<tr>";
-        ret += "<td><i>Class</i></td>";
-        ret += "<td><i>Instructor</i></td>";
-        ret += "<td><i>Date Change</i></td>";
-        ret += "<td><i>Time Change</i></td>";
-        ret += "<td><i>Room Change</i></td>";
+        ret += "<td><i>"+MSG.columnClass()+"</i></td>";
+        ret += "<td><i>"+MSG.columnInstructor()+"</i></td>";
+        ret += "<td><i>"+MSG.columnDateChange()+"</i></td>";
+        ret += "<td><i>"+MSG.columnTimeChange()+"</i></td>";
+        ret += "<td><i>"+MSG.columnRoomChange()+"</i></td>";
         ret += "</tr>";
         for (ClassAssignment current : iAssignments) {
             ClassAssignment initial = iInitials.get(current.getClassId());
@@ -163,25 +166,25 @@ public class ClassProposedChange implements Serializable, Comparable<ClassPropos
             if (initial!=null && !initial.getDateId().equals(current.getDateId()))
                 ret += initial.getDateNameHtml() + " &rarr; ";
             if (initial==null)
-                ret += "<font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font> &rarr; ";
+                ret += "<font color='"+PreferenceLevel.prolog2color("P")+"'><i>"+MSG.notAssigned()+"</i></font> &rarr; ";
             ret += current.getDateNameHtml();
             ret += "</td><td nowrap>";
             if (initial!=null && !initial.getTimeId().equals(current.getTimeId()))
                 ret += initial.getTimeNameHtml() + " &rarr; ";
             if (initial==null)
-                ret += "<font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font> &rarr; ";
+                ret += "<font color='"+PreferenceLevel.prolog2color("P")+"'><i>"+MSG.notAssigned()+"</i></font> &rarr; ";
             ret += current.getTimeNameHtml();
             ret += "</td><td nowrap>";
             if (initial!=null && !initial.getRoomIds().equals(current.getRoomIds()))
                 ret += initial.getRoomNamesHtml(", ") + " &rarr; ";
             if (initial==null)
-                ret += "<font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font> &rarr; ";
+                ret += "<font color='"+PreferenceLevel.prolog2color("P")+"'><i>"+MSG.notAssigned()+"</i></font> &rarr; ";
             ret += current.getRoomNamesHtml(", ");
             if (current.getNrRooms()!=current.getNumberOfRooms()) {
                 if (current.getClassId().equals(iSelectedClassId))
-                    ret += "<i>Select below ...</i>";
+                    ret += "<i>"+MSG.assignmentRoomSelectBelow()+"</i>";
                 else
-                    ret += "<i><font color='red'>Not selected ...</font></i>";
+                    ret += "<i><font color='red'>"+MSG.assignmentRoomNotSelected()+"</font></i>";
             }
             ret += "</td></tr>";
         }
@@ -195,19 +198,19 @@ public class ClassProposedChange implements Serializable, Comparable<ClassPropos
             ret += "<td nowrap>";
             if (!canAssign && context.hasPermission(conflict.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering(), Right.OfferingCanLock)) {
             	ret += "<img src='images/error.png' border='0' " +
-            			"onclick='if (confirm(\"Course " + conflict.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseName() + " is not locked. Do you want to lock it?\")) " +
+            			"onclick='if (confirm(\"" + MSG.messageCourseNotLocked(conflict.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseName()) + "\")) " +
             			"document.location=\"classInfo.do?offering="+conflict.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId()+"&op=Lock&noCacheTS=" + new Date().getTime()+"\";event.cancelBubble=true;' " +
-            			"title=\"Course " + conflict.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseName() + " is not locked. Click the warning icon to lock it.\" style='cursor: pointer;'>&nbsp;";
+            			"title=\"" + MSG.titleCourseNotLocked(conflict.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseName()) + "\" style='cursor: pointer;'>&nbsp;";
             }
             ret += conflict.getClassNameHtml();
             ret += "</td><td nowrap>";
             ret += conflict.getLeadingInstructorNames(", ");
             ret += "</td><td nowrap>";
-            ret += conflict.getDateNameHtml() + " &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>"+"</td>";
+            ret += conflict.getDateNameHtml() + " &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>"+MSG.notAssigned()+"</i></font>"+"</td>";
             ret += "</td><td nowrap>";
-            ret += conflict.getTimeNameHtml() + " &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>"+"</td>";
+            ret += conflict.getTimeNameHtml() + " &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>"+MSG.notAssigned()+"</i></font>"+"</td>";
             ret += "</td><td nowrap>";
-            ret += conflict.getRoomNamesHtml(", ") + " &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>";
+            ret += conflict.getRoomNamesHtml(", ") + " &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>"+MSG.notAssigned()+"</i></font>";
             ret += "</td></tr>";
         }
         ret += "</table>";
@@ -218,12 +221,12 @@ public class ClassProposedChange implements Serializable, Comparable<ClassPropos
         String ret = "";
         for (ClassAssignment conflict : iConflicts) {
             if (ret.length()>0) ret+=delim;
-            ret += conflict.getClassName() + " " + conflict.getDate() + " " + conflict.getTime().getName()+" "+conflict.getRoomNames(", ") + " -> Not Assigned";
+            ret += conflict.getClassName() + " " + conflict.getDate() + " " + conflict.getTime().getName()+" "+conflict.getRoomNames(", ") + " -> " + MSG.assignmentNotAssigned();
         }
         for (ClassAssignment current : iAssignments) {
             if (ret.length()>0) ret+=delim;
             ClassAssignment initial = iInitials.get(current.getClassId());
-            ret += current.getClassName() + " " + (initial==null?"Not Assigned":initial.getDate()+" "+initial.getTime().getName()+" "+initial.getRoomNames(", ")) + " -> " + current.getDate()+" "+current.getTime().getName()+" "+current.getRoomNames(", ");
+            ret += current.getClassName() + " " + (initial==null?MSG.assignmentNotAssigned():initial.getDate()+" "+initial.getTime().getName()+" "+initial.getRoomNames(", ")) + " -> " + current.getDate()+" "+current.getTime().getName()+" "+current.getRoomNames(", ");
         }
         return ret;
     }

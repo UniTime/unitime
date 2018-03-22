@@ -50,6 +50,8 @@ import org.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import org.cpsolver.coursett.preference.PreferenceCombination;
 import org.cpsolver.coursett.preference.SumPreferenceCombination;
 import org.hibernate.LazyInitializationException;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ClassInfoForm;
 import org.unitime.timetable.form.ClassInfoForm.RoomBase;
@@ -94,6 +96,7 @@ import org.unitime.timetable.util.duration.DurationModel;
  */
 public class ClassInfoModel implements Serializable {
 	private static final long serialVersionUID = 1373805772613891251L;
+	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
 	private static Log sLog = LogFactory.getLog(ClassInfoModel.class);
     private ClassInfo iClass = null;
     private ClassInfoForm iForm = null;
@@ -272,9 +275,9 @@ public class ClassInfoModel implements Serializable {
     }
     
     public String assign(SessionContext context) {
-        if (iChange==null) return "Nothing to assign.";
+        if (iChange==null) return MSG.errorNothingToAssign();
         if (ApplicationProperty.ClassAssignmentAllowUnassignments.isFalse() && !iChange.getConflicts().isEmpty())
-        	return "It is not allowed to keep a class unassigned.";
+        	return MSG.errorNotAllowedToKeepClassUnassigned();
         sLog.info("About to be assigned: "+iChange);
         org.hibernate.Session hibSession = Class_DAO.getInstance().getSession();
         String message = null;
@@ -292,7 +295,7 @@ public class ClassInfoModel implements Serializable {
                 }
                 classIds.add(clazz.getUniqueId());
             } catch (Exception e) {
-                message = (message==null?"":message+"\n")+"Unassignment of "+assignment.getClassName()+" failed, reason: "+e.getMessage();
+                message = (message==null?"":message+"\n")+MSG.errorUnassignmentFailed(assignment.getClassName(), e.getMessage());
             }
         }
         for (ClassAssignment assignment : iChange.getAssignments()) {
@@ -308,7 +311,7 @@ public class ClassInfoModel implements Serializable {
                 }
                 classIds.add(clazz.getUniqueId());
             } catch (Exception e) {
-                message = (message==null?"":message+"\n")+"Assignment of "+assignment.getClassName()+" to "+assignment.getTime().getName()+" "+assignment.getRoomNames(", ")+" failed, reason: "+e.getMessage();
+                message = (message==null?"":message+"\n")+MSG.errorAssignmentFailed(assignment.getClassName(), assignment.getTime().getName()+" "+assignment.getRoomNames(", "), e.getMessage());
             }
         }
         
@@ -348,7 +351,7 @@ public class ClassInfoModel implements Serializable {
     }
     
     public String getAssignConfirm() {
-    	return "The selected assignment will be done directly in the database. Are you sure?";
+    	return MSG.confirmClassAssignment();
     }
     
     public void setForm(ClassInfoForm form) {
@@ -704,18 +707,18 @@ public class ClassInfoModel implements Serializable {
     public String getStudentConflictTable() {
         String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
         ret += "<tr>";
-        ret += "<td><i>Students</i></td>";
-        ret += "<td><i>Class</i></td>";
-        ret += "<td><i>Date</i></td>";
-        ret += "<td><i>Time</i></td>";
-        ret += "<td><i>Room</i></td>";
+        ret += "<td><i>"+MSG.columnStudentConflicts()+"</i></td>";
+        ret += "<td><i>"+MSG.columnClass()+"</i></td>";
+        ret += "<td><i>"+MSG.columnAssignedDatePattern()+"</i></td>";
+        ret += "<td><i>"+MSG.columnAssignedTime()+"</i></td>";
+        ret += "<td><i>"+MSG.columnAssignedRoom()+"</i></td>";
         ret += "</tr>";
         boolean empty = true;
         for (StudentConflict conf:getStudentConflicts()) {
         	ret += conf.toHtml2();
         	empty = false;
         }
-        if (empty) ret += "<tr><td colspan='5'><i>There are no student conflicts.</i></td></tr>";
+        if (empty) ret += "<tr><td colspan='5'><i>"+MSG.messageNoStudentConflicts()+"</i></td></tr>";
         ret += "</table>";
         return ret;
     }
@@ -730,7 +733,7 @@ public class ClassInfoModel implements Serializable {
             Class_ clazz = getClazz().getClazz();
             DatePattern datePattern = clazz.effectiveDatePattern();
             if (datePattern==null) {
-            	iForm.setMessage("Class "+getClazz().getClassName()+" has no date pattern selected.");
+            	iForm.setMessage(MSG.messageClassHasNoDatePatternSelected(getClazz().getClassName()));
             	return iTimes;
             }
             ClassTimeInfo time = (getClassAssignment() == null ? null : getClassAssignment().getTime());
@@ -811,7 +814,7 @@ public class ClassInfoModel implements Serializable {
             Class_ clazz = getClazz().getClazz();
             Set timePrefs = clazz.effectivePreferences(TimePref.class);
             if (timePrefs.isEmpty()) {
-            	iForm.setMessage("Class "+getClazz().getClassName()+" has no time pattern selected.");
+            	iForm.setMessage(MSG.messageClassHasNoTimePatternSelected(getClazz().getClassName()));
             	return iTimes;
             }
             ClassDateInfo date = getAssignedDate();
@@ -821,12 +824,12 @@ public class ClassInfoModel implements Serializable {
                 	date = dates.iterator().next().getDate();
             }
             if (date == null) {
-            	iForm.setMessage("Class "+getClazz().getClassName()+" has no date pattern selected.");
+            	iForm.setMessage(MSG.messageClassHasNoDatePatternSelected(getClazz().getClassName()));
             	return iTimes;
             }
             iTimes = getTimes(date);
             if (iTimes.isEmpty())
-            	iForm.setMessage("Class "+getClazz().getClassName()+" has no available time.");
+            	iForm.setMessage(MSG.messageClassHasNoAvailableTime(getClazz().getClassName()));
         }
         return iTimes;
     }
@@ -1256,7 +1259,7 @@ public class ClassInfoModel implements Serializable {
                 if (!allowConflicts && classIds!=null && !classIds.isEmpty()) {
                 	for (Long classId: classIds) {
                 		if (!clazz.canShareRoom(classId)) {
-                			if (room.getLabel().equals(filter)) iForm.setMessage("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to the class "+Class_DAO.getInstance().get(classId).getClassLabel(includeSuffix, includeConfig)+".");
+                			if (room.getLabel().equals(filter)) iForm.setMessage(MSG.messageRoomNotAvailable(room.getLabel(), period.getLongName(), Class_DAO.getInstance().get(classId).getClassLabel(includeSuffix, includeConfig)));
                 			continue rooms;
                 		}
                 	}
@@ -1273,7 +1276,7 @@ public class ClassInfoModel implements Serializable {
                 if (classIds!=null && iChange!=null) {
                 	for (Long classId: classIds) {
                 		if (iChange.getCurrent(classId)!=null && !clazz.canShareRoom(classId)) {
-                        	if (room.getLabel().equals(filter)) iForm.setMessage("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to the class "+Class_DAO.getInstance().get(classId).getClassLabel(includeSuffix, includeConfig)+".");
+                        	if (room.getLabel().equals(filter)) iForm.setMessage(MSG.messageRoomNotAvailable(room.getLabel(), period.getLongName(), Class_DAO.getInstance().get(classId).getClassLabel(includeSuffix, includeConfig)));
                         	continue rooms;
                 		}
                 	}
@@ -1282,8 +1285,8 @@ public class ClassInfoModel implements Serializable {
                 if (room2events!=null) {
                 	Set<Event> conflicts = room2events.get(room.getPermanentId());
                 	if (conflicts!=null && !conflicts.isEmpty()) {
-            			if (room.getLabel().equals(filter)) iForm.setMessage("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to "+conflicts);
-        				sLog.info("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to "+conflicts);
+            			if (room.getLabel().equals(filter)) iForm.setMessage(MSG.messageRoomNotAvailable2(room.getLabel(), period.getLongName(), conflicts.toString()));
+        				sLog.info(MSG.messageRoomNotAvailable2(room.getLabel(), period.getLongName(), conflicts.toString()));
         				continue rooms;
                 	}
                 } else if (RoomAvailability.getInstance()!=null) {
@@ -1304,8 +1307,8 @@ public class ClassInfoModel implements Serializable {
                 		}
                 		TimeBlock time = period.overlaps(timesToCheck);
                 		if (time!=null) {
-                			if (room.getLabel().equals(filter)) iForm.setMessage("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to "+time);
-            				sLog.info("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to "+time);
+                			if (room.getLabel().equals(filter)) iForm.setMessage(MSG.messageRoomNotAvailable2(room.getLabel(), period.getLongName(), time.toString()));
+            				sLog.info(MSG.messageRoomNotAvailable2(room.getLabel(), period.getLongName(), time.toString()));
             				continue rooms;
                 		}
             		}
@@ -1325,26 +1328,42 @@ public class ClassInfoModel implements Serializable {
             Collection<ClassRoomInfo> assigned = (ClassAssignment!=null?ClassAssignment.getRooms():isClassAssigned()?getClassAssignment().getRooms():null);
             Collection<ClassRoomInfo> original = (getClassOldAssignment()!=null?getClassOldAssignment().getRooms():null);
             if (rooms==null || rooms.isEmpty()) return "";
-            Collections.sort(rooms, new Comparator<ClassRoomInfo>() {
-                public int compare(ClassRoomInfo r1, ClassRoomInfo r2) {
-                    int cmp = 0;
-                    if (ClassInfoForm.sRoomOrdNameAsc.equals(iForm.getRoomOrder())) {
-                        cmp = r1.getName().compareTo(r2.getName());
-                    } else if (ClassInfoForm.sRoomOrdNameDesc.equals(iForm.getRoomOrder())) {
-                        cmp = -r1.getName().compareTo(r2.getName());
-                    } else if (ClassInfoForm.sRoomOrdSizeAsc.equals(iForm.getRoomOrder())) {
-                        cmp = Double.compare(r1.getCapacity(),r2.getCapacity());
-                    } else  if (ClassInfoForm.sRoomOrdSizeDesc.equals(iForm.getRoomOrder())) {
-                        cmp = -Double.compare(r1.getCapacity(),r2.getCapacity());
-                    } else {
-                        cmp = r1.getName().compareTo(r2.getName());
+            if (MSG.sortRoomNameAsc().equals(iForm.getRoomOrder()))
+            	Collections.sort(rooms, new Comparator<ClassRoomInfo>() {
+                    public int compare(ClassRoomInfo r1, ClassRoomInfo r2) {
+                        int cmp = r1.getName().compareTo(r2.getName());
+                        if (cmp!=0) return cmp;
+                        return r1.getLocationId().compareTo(r2.getLocationId());
                     }
-                    if (cmp!=0) return cmp;
-                    cmp = r1.getName().compareTo(r2.getName());;
-                    if (cmp!=0) return cmp;
-                    return r1.getLocationId().compareTo(r2.getLocationId());
-                }
-            });
+                });
+            else if (MSG.sortRoomNameDesc().equals(iForm.getRoomOrder()))
+            	Collections.sort(rooms, new Comparator<ClassRoomInfo>() {
+                    public int compare(ClassRoomInfo r1, ClassRoomInfo r2) {
+                        int cmp = r2.getName().compareTo(r1.getName());
+                        if (cmp!=0) return cmp;
+                        return r1.getLocationId().compareTo(r2.getLocationId());
+                    }
+                });
+            else if (MSG.sortRoomSizeAsc().equals(iForm.getRoomOrder()))
+            	Collections.sort(rooms, new Comparator<ClassRoomInfo>() {
+                    public int compare(ClassRoomInfo r1, ClassRoomInfo r2) {
+                        int cmp = Double.compare(r1.getCapacity(),r2.getCapacity());
+                        if (cmp!=0) return cmp;
+                        cmp = r1.getName().compareTo(r2.getName());;
+                        if (cmp!=0) return cmp;
+                        return r1.getLocationId().compareTo(r2.getLocationId());
+                    }
+                });
+            else if (MSG.sortRoomSizeDesc().equals(iForm.getRoomOrder()))
+            	Collections.sort(rooms, new Comparator<ClassRoomInfo>() {
+                    public int compare(ClassRoomInfo r1, ClassRoomInfo r2) {
+                        int cmp = Double.compare(r2.getCapacity(),r1.getCapacity());
+                        if (cmp!=0) return cmp;
+                        cmp = r1.getName().compareTo(r2.getName());;
+                        if (cmp!=0) return cmp;
+                        return r1.getLocationId().compareTo(r2.getLocationId());
+                    }
+                });
             String ret = "";
             ret += "<script language='javascript'>";
             ret += "function roomOver(source, id) { ";

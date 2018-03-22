@@ -1988,7 +1988,6 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Invalid instructor preference level.")
 	String errorInvalidInstructorPreferenceLevel();
 
-
 	@DefaultMessage("Null Operation not supported.")
 	String errorNullOperationNotSupported();
 	
@@ -2783,4 +2782,169 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage(" - Do Not Display Instructor.")
 	String toolTipInstructorDoNotDisplay();
+	
+	@DefaultMessage("No class given.")
+	String errorNoClassGiven();
+	
+	@DefaultMessage("Assign")
+	String actionClassAssign();
+	
+	@DefaultMessage("Apply")
+	String actionFilterApply();
+	
+	@DefaultMessage("Open Class Detail for {0} in a new window.")
+	String titleOpenClassDetail(String classNam);
+	
+	@DefaultMessage("Conflict Checked Instructor(s):")
+	String properyConflictCheckedInstructors();
+	
+	@DefaultMessage("Assigned Dates:")
+	String properyAssignedDates();
+	
+	@DefaultMessage("Selected Dates:")
+	String properySelectedDates();
+	
+	@DefaultMessage("Selected Time:")
+	String properySelectedTime();
+	
+	@DefaultMessage("Selected Room:")
+	String properySelectedRoom();
+	
+	@DefaultMessage("New Assignment(s)")
+	String sectionTitleNewAssignments();
+	
+	@DefaultMessage("Do not unassign conflicting classes:")
+	String toggleDoNotUnassignConflictingClasses();
+	
+	@DefaultMessage("Student Conflicts")
+	String sectionTitleStudentConflicts();
+	
+	@DefaultMessage("There are no students enrolled yet, showing solution conflicts instead.")
+	String messageNoStudentsEnrolledYetUsingSolutionConflicts();
+	
+	@DefaultMessage("Available Dates for {0}")
+	String sectionTitleAvailableDatesForClass(String className);
+	
+	@DefaultMessage("Available Times for {0}")
+	String sectionTitleAvailableTimesForClass(String className);
+	
+	@DefaultMessage("No times available.")
+	String messageNoTimesAvailable();
+	
+	@DefaultMessage("Available Rooms for {0}")
+	String sectionTitleAvailableRoomsForClass(String className);
+	
+	@DefaultMessage("selected size:")
+	String messageSelectedSize();
+	
+	@DefaultMessage("of")
+	String messageSelectedSizeOf();
+	
+	@DefaultMessage("Size:")
+	String properyRoomSize();
+	
+	@DefaultMessage("Filter:")
+	String properyRoomFilter();
+	
+	@DefaultMessage("Allow conflicts:")
+	String properyRoomAllowConflicts();
+	
+	@DefaultMessage("Order:")
+	String propertyRoomOrder();
+	
+	@DefaultMessage("Room Types:")
+	String propertyRoomTypes();
+	
+	@DefaultMessage("No room matching the above criteria was found.")
+	String messageNoMatchingRoomFound();
+	
+	@DefaultMessage("Name [asc]")
+	String sortRoomNameAsc();
+	
+	@DefaultMessage("Name [desc]")
+	String sortRoomNameDesc();
+	
+	@DefaultMessage("Size [asc]")
+	String sortRoomSizeAsc();
+	
+	@DefaultMessage("Size [desc]")
+	String sortRoomSizeDesc();
+	
+	@DefaultMessage("Departmental")
+	String roomTypeDepartmental();
+	
+	@DefaultMessage("Timetabling")
+	String roomTypeTimetabling();
+	
+	@DefaultMessage("All")
+	String roomTypeAll();
+	
+	@DefaultMessage("Nothing to assign.")
+	String errorNothingToAssign();
+	
+	@DefaultMessage("It is not allowed to keep a class unassigned.")
+	String errorNotAllowedToKeepClassUnassigned();
+	
+	@DefaultMessage("Unassignment of {0} failed, reason: {1}")
+	String errorUnassignmentFailed(String className, String reason);
+	
+	@DefaultMessage("Assignment of {0} to {1} failed, reason: {2}")
+	String errorAssignmentFailed(String className, String placement, String reason);
+	
+	@DefaultMessage("The selected assignment will be done directly in the database. Are you sure?")
+	String confirmClassAssignment();
+	
+	@DefaultMessage("N/A")
+	String dateNotApplicable();
+	
+	@DefaultMessage("N/A")
+	String timeNotApplicable();
+	
+	@DefaultMessage("Students")
+	String columnStudentConflicts();
+	
+	@DefaultMessage("There are no student conflicts.")
+	String messageNoStudentConflicts();
+	
+	@DefaultMessage("Class {0} has no date pattern selected.")
+	String messageClassHasNoDatePatternSelected(String className);
+	
+	@DefaultMessage("Class {0} has no time pattern selected.")
+	String messageClassHasNoTimePatternSelected(String className);
+	
+	@DefaultMessage("Class {0} has no available time.")
+	String messageClassHasNoAvailableTime(String className);
+	
+	@DefaultMessage("Room {0} is not available for {1} due to the class {2}.")
+	String messageRoomNotAvailable(String room, String time, String className);
+	
+	@DefaultMessage("Room {0} is not available for {1} due to {2}.")
+	String messageRoomNotAvailable2(String room, String time, String conflicts);
+	
+	@DefaultMessage("Date Change")
+	String columnDateChange();
+	
+	@DefaultMessage("Room Change")
+	String columnRoomChange();
+	
+	@DefaultMessage("Time Change")
+	String columnTimeChange();
+	
+	@DefaultMessage("not-assigned")
+	String notAssigned();
+	
+	@DefaultMessage("Not Assigned")
+	String assignmentNotAssigned();
+	
+	@DefaultMessage("Not selected ...")
+	String assignmentRoomNotSelected();
+	
+	@DefaultMessage("Select below ...")
+	String assignmentRoomSelectBelow();
+	
+	@DefaultMessage("Course {0} is not locked. Do you want to lock it?")
+	String messageCourseNotLocked(String courseName);
+	
+	@DefaultMessage("Course {0} is not locked. Click the warning icon to lock it.")
+	String titleCourseNotLocked(String courseName);
 }

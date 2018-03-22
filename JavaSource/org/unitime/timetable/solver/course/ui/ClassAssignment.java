@@ -200,11 +200,11 @@ public class ClassAssignment extends ClassInfo implements Serializable {
 	}
 	
 	public String getTimeNameHtml() {
-		return (hasTime()?getTime().getNameHtml():"<i>N/A</i>");
+		return (hasTime()?getTime().getNameHtml():"<i>" + MSG.timeNotApplicable() + "</i>");
 	}
 	
 	public String getTimeLongNameHtml() {
-		return (hasTime()?getTime().getLongNameHtml():"<i>N/A</i>");
+		return (hasTime()?getTime().getLongNameHtml():"<i>" + MSG.timeNotApplicable() + "</i>");
 	}
 
 	public int getRoomSize() {
@@ -214,10 +214,10 @@ public class ClassAssignment extends ClassInfo implements Serializable {
 	}
 	
 	public String getDateNameHtml() {
-		return (hasDate()?getDate().toHtml():"<i>N/A</i>");
+		return (hasDate()?getDate().toHtml():"<i>" + MSG.dateNotApplicable() + "</i>");
 	}
 	
 	public String getDateLongNameHtml() {
-		return (hasDate()?getDate().toLongHtml():"<i>N/A</i>");
+		return (hasDate()?getDate().toLongHtml():"<i>" + MSG.dateNotApplicable() + "</i>");
 	}
 }
