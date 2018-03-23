@@ -3795,6 +3795,12 @@ unitime-RoomSharingWidget .legend .blank {
 	margin: 10px;
 }
 
+.unitime-MainLogoFaded {
+	background-image: url('../images/logofaded.jpg');
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
 .unitime-MainContent .messages {
 	display: block;
 	padding: 5px;

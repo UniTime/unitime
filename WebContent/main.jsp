@@ -121,7 +121,7 @@
     	}
     </script>
 	</span>
-    <span class='main'><span class='body' id="unitime-Page" style="background-image:url('images/logofaded.jpg');backbackground-repeat:no-repeat;background-position: center;">
+    <span class='main'><span class='body unitime-MainLogoFaded' id="unitime-Page">
     	<span class="unitime-PageHeader" id="unitime-Header">
     		<span class="row">
     			<span class="mobile-menu-button" id='UniTimeGWT:MobileMenuButton'></span>
