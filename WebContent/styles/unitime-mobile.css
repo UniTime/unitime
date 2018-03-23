@@ -348,6 +348,70 @@
 	.unitime-CourseRequests .noarrowswaitlist .alt-line .course .unitime-FilterBox {
 		width: calc(99vw - 139px);
 	}
+	
+	.unitime-CourseRequests .line .course .unitime-WarningHint {
+		max-width: calc(99vw - 169px);
+	}
+
+	.unitime-CourseRequests .alt-line .course .unitime-WarningHint {
+		max-width: calc(99vw - 219px);
+	}
+	
+	.unitime-CourseRequests .nowaitlist .line .course .unitime-WarningHint {
+		max-width: calc(99vw - 144px);
+	}
+
+	.unitime-CourseRequests .nowaitlist .alt-line .course .unitime-WarningHint {
+		max-width: calc(99vw - 194px);
+	}
+
+	.unitime-CourseRequests .noarrows .line .course .unitime-WarningHint {
+		max-width: calc(99vw - 109px);
+	}
+
+	.unitime-CourseRequests .noarrows .alt-line .course .unitime-WarningHint {
+		max-width: calc(99vw - 159px);
+	}
+	
+	.unitime-CourseRequests .noarrowswaitlist .line .course .unitime-WarningHint {
+		max-width: calc(99vw - 89px);
+	}
+
+	.unitime-CourseRequests .noarrowswaitlist .alt-line .course .unitime-WarningHint {
+		max-width: calc(99vw - 139px);
+	}
+	
+	.unitime-CourseRequests .line .course .unitime-ErrorHint {
+		max-width: calc(99vw - 169px);
+	}
+
+	.unitime-CourseRequests .alt-line .course .unitime-ErrorHint {
+		max-width: calc(99vw - 219px);
+	}
+	
+	.unitime-CourseRequests .nowaitlist .line .course .unitime-ErrorHint {
+		max-width: calc(99vw - 144px);
+	}
+
+	.unitime-CourseRequests .nowaitlist .alt-line .course .unitime-ErrorHint {
+		max-width: calc(99vw - 194px);
+	}
+
+	.unitime-CourseRequests .noarrows .line .course .unitime-ErrorHint {
+		max-width: calc(99vw - 109px);
+	}
+
+	.unitime-CourseRequests .noarrows .alt-line .course .unitime-ErrorHint {
+		max-width: calc(99vw - 159px);
+	}
+	
+	.unitime-CourseRequests .noarrowswaitlist .line .course .unitime-ErrorHint {
+		max-width: calc(99vw - 89px);
+	}
+
+	.unitime-CourseRequests .noarrowswaitlist .alt-line .course .unitime-ErrorHint {
+		max-width: calc(99vw - 139px);
+	}
 
 	.unitime-CourseRequests .tip {
 		white-space: normal;
