@@ -651,6 +651,10 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	font-style: italic;
 }
 
+.unitime-WebTable .text-pre-wrap {
+	white-space: pre-wrap;
+}
+
 .unitime-WebTable .icon td {
 	padding-left: 0px;
 }
