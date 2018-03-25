@@ -25,8 +25,10 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.cpsolver.coursett.model.TimeLocation;
 import org.springframework.stereotype.Service;
@@ -35,22 +37,33 @@ import org.unitime.timetable.api.ApiHelper;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructorAttributePref;
+import org.unitime.timetable.model.InstructorCoursePref;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.PositionType;
+import org.unitime.timetable.model.Preference;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Room;
+import org.unitime.timetable.model.RoomFeaturePref;
+import org.unitime.timetable.model.RoomGroupPref;
+import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TeachingResponsibility;
+import org.unitime.timetable.model.TimePatternModel;
+import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
@@ -63,29 +76,47 @@ public class InstructorScheduleConnector extends ApiConnector{
 
 	@Override
 	public void doGet(ApiHelper helper) throws IOException {
-		Long sessionId = helper.getAcademicSessionId();
-		if (sessionId == null)
-			throw new IllegalArgumentException("Academic session not provided, please set the term parameter.");
-		
-		helper.getSessionContext().checkPermissionAnyAuthority(sessionId, "Session", Right.ApiRetrieveInstructorSchedule);
-		
 		String externalId = helper.getParameter("id");
 		if (externalId == null)
 			throw new IllegalArgumentException("Parameter ID not provided");
 		if (ApplicationProperty.ApiTrimLeadingZerosFromUserExternalIds.isTrue())
 			while (externalId.startsWith("0")) externalId = externalId.substring(1);
 
-		boolean checkStatus = !helper.getSessionContext().hasPermission(Right.HasRole);
-		InstructorScheduleInfo response = null;
-		for (DepartmentalInstructor di: (List<DepartmentalInstructor>)helper.getHibSession().createQuery(
-				"from DepartmentalInstructor d where d.externalUniqueId = :externalId and department.session.uniqueId = :sessionId")
-				.setString("externalId", externalId)
-				.setLong("sessionId", sessionId).setCacheable(true).list()) {
-			if (response == null) response = new InstructorScheduleInfo(di);
-			response.add(di, checkStatus);
-		}
+		boolean includePrefs = "1".equalsIgnoreCase(helper.getParameter("pref")) || "true".equalsIgnoreCase(helper.getParameter("pref"));
+		boolean allTerms = "1".equalsIgnoreCase(helper.getParameter("all")) || "true".equalsIgnoreCase(helper.getParameter("all"));
 
-		helper.setResponse(response);
+		Long sessionId = helper.getAcademicSessionId();
+		if (sessionId == null || allTerms) {
+			Map<Long, InstructorScheduleInfo> responses = new HashMap<Long, InstructorScheduleInfo>();
+			for (DepartmentalInstructor di: (List<DepartmentalInstructor>)helper.getHibSession().createQuery(
+					"from DepartmentalInstructor d where d.externalUniqueId = :externalId")
+					.setString("externalId", externalId).setCacheable(true).list()) {
+				Long sid = di.getDepartment().getSessionId();
+				InstructorScheduleInfo response = responses.get(sid);
+				if (response == null) {
+					if (!helper.getSessionContext().hasPermissionAnyAuthority(sid, "Session", Right.ApiRetrieveInstructorSchedule)) continue;
+					response = new InstructorScheduleInfo(di);
+					responses.put(sid, response);
+				}
+				response.add(di, helper.getSessionContext().hasPermissionAnyAuthority(sid, "Session", Right.HasRole), includePrefs);
+			}
+
+			helper.setResponse(responses.values());
+		} else {
+			helper.getSessionContext().checkPermissionAnyAuthority(sessionId, "Session", Right.ApiRetrieveInstructorSchedule);
+			
+			boolean checkStatus = !helper.getSessionContext().hasPermission(Right.HasRole);
+			InstructorScheduleInfo response = null;
+			for (DepartmentalInstructor di: (List<DepartmentalInstructor>)helper.getHibSession().createQuery(
+					"from DepartmentalInstructor d where d.externalUniqueId = :externalId and department.session.uniqueId = :sessionId")
+					.setString("externalId", externalId)
+					.setLong("sessionId", sessionId).setCacheable(true).list()) {
+				if (response == null) response = new InstructorScheduleInfo(di);
+				response.add(di, checkStatus, includePrefs);
+			}
+
+			helper.setResponse(response);
+		}
 	}
 	
 	class InstructorScheduleInfo {
@@ -101,8 +132,8 @@ public class InstructorScheduleConnector extends ApiConnector{
 			iSession = new SessionInfo(instructor.getDepartment().getSession());
 		}
 		
-		void add(DepartmentalInstructor instructor, boolean statusCheck) {
-			iInstructors.add(new InstructorInfo(instructor));
+		void add(DepartmentalInstructor instructor, boolean statusCheck, boolean includePrefs) {
+			iInstructors.add(new InstructorInfo(instructor, includePrefs));
 			if (!statusCheck || instructor.getDepartment().getSession().canNoRoleReportClass()) {
 				for (ClassInstructor ci: instructor.getClasses())
 					if (!ci.getClassInstructing().isCancelled())
@@ -122,9 +153,14 @@ public class InstructorScheduleConnector extends ApiConnector{
 	class SessionInfo {
 		Long iSessionId;
 		String iReference;
+		String iYear, iTerm, iCampus;
+		
 		SessionInfo(Session session) {
 			iSessionId = session.getUniqueId();
 			iReference = session.getReference();
+			iYear = session.getAcademicYear();
+			iTerm = session.getAcademicTerm();
+			iCampus = session.getAcademicInitiative();
 		}
 	}
 	
@@ -139,9 +175,14 @@ public class InstructorScheduleConnector extends ApiConnector{
 		String iEmail;
 		DepartmentInfo iDepartment;
 		String iAcademicTitle;
+		String iNote;
+		List<PreferenceInfo> iPreferences;
+		List<TimePrefInfo> iAvailabilities;
+		String iTeachingPreference;
+		Float iMaxLoad;
+		Boolean iIgnoreDistanceConflicts;
 		
-		
-		InstructorInfo(DepartmentalInstructor instructor) {
+		InstructorInfo(DepartmentalInstructor instructor, boolean includePrefs) {
 			iInstructorId = instructor.getUniqueId();
 			iExternalId = instructor.getExternalUniqueId();
 			iFirstName = instructor.getFirstName();
@@ -153,6 +194,51 @@ public class InstructorScheduleConnector extends ApiConnector{
 			iEmail = instructor.getEmail();
 			iDepartment = new DepartmentInfo(instructor.getDepartment());
 			iAcademicTitle = instructor.getAcademicTitle();
+			if (includePrefs) {
+				iNote = instructor.getNote();
+				if (instructor.getTeachingPreference() != null)
+					iTeachingPreference = instructor.getTeachingPreference().getPrefProlog();
+				iIgnoreDistanceConflicts = instructor.isIgnoreToFar();
+				iMaxLoad = instructor.getMaxLoad();
+				iPreferences = new ArrayList<PreferenceInfo>();
+				iAvailabilities = new ArrayList<TimePrefInfo>();
+				for (Preference preference: instructor.getPreferences()) {
+					if (preference instanceof TimePref) {
+						TimePatternModel model = ((TimePref)preference).getTimePatternModel();
+						for (int d = 0; d < model.getNrDays(); d++) {
+							int start = -1; String pref = null;
+							for (int t = 0; t < model.getNrTimes(); t++) {
+								String p = model.getPreference(d, t);
+								if (pref == null || !pref.equals(p)) {
+									if (pref != null && !pref.equals(PreferenceLevel.sNeutral)) {
+										int end = model.getStartSlot(t - 1);
+										iAvailabilities.add(new TimePrefInfo(d, start, 1 + end, pref));
+									}
+									start = model.getStartSlot(t); pref = p;
+								}
+							}
+							if (pref != null && !pref.equals(PreferenceLevel.sNeutral)) {
+								int end = model.getStartSlot(model.getNrTimes() - 1);
+								iAvailabilities.add(new TimePrefInfo(d, start, 1 + end, pref));
+							}
+						}
+					} else if (preference instanceof RoomPref) {
+						iPreferences.add(new PreferenceInfo((RoomPref)preference));
+					} else if (preference instanceof BuildingPref) {
+						iPreferences.add(new PreferenceInfo((BuildingPref)preference));
+					} else if (preference instanceof RoomGroupPref) {
+						iPreferences.add(new PreferenceInfo((RoomGroupPref)preference));
+					} else if (preference instanceof RoomFeaturePref) {
+						iPreferences.add(new PreferenceInfo((RoomFeaturePref)preference));
+					} else if (preference instanceof DistributionPref) {
+						iPreferences.add(new PreferenceInfo((DistributionPref)preference));
+					} else if (preference instanceof InstructorAttributePref) {
+						iPreferences.add(new PreferenceInfo((InstructorAttributePref)preference));
+					} else if (preference instanceof InstructorCoursePref) {
+						iPreferences.add(new PreferenceInfo((InstructorCoursePref)preference));
+					}
+				}
+			}
 		}
 
 	}
@@ -407,6 +493,92 @@ public class InstructorScheduleConnector extends ApiConnector{
 			}
 			iRoomType = room.getRoomTypeLabel();
 			iRoomCapacity = room.getCapacity();
+		}
+	}
+	
+	class PreferenceInfo {
+		String iType;
+		String iPreference;
+		String iPreferenceText;
+		String iReference;
+		String iValue;
+		String iExternalId;
+		
+		PreferenceInfo(RoomPref preference) {
+			iType = "room";
+			iPreference = preference.getPrefLevel().getPrefProlog();
+			iPreferenceText = preference.getPrefLevel().getPrefName();
+			iReference = preference.getRoom().getLabel();
+			iValue = preference.getRoom().getDisplayName();
+			if (iValue == null) iValue = preference.getRoom().getLabel();
+			iExternalId = preference.getRoom().getExternalUniqueId();
+		}
+		PreferenceInfo(BuildingPref preference) {
+			iType = "building";
+			iPreference = preference.getPrefLevel().getPrefProlog();
+			iPreferenceText = preference.getPrefLevel().getPrefName();
+			iValue = preference.getBuilding().getName();
+			iReference = preference.getBuilding().getAbbreviation();
+			iExternalId = preference.getBuilding().getExternalUniqueId();
+		}
+		PreferenceInfo(RoomFeaturePref preference) {
+			iType = "room-feature";
+			iPreference = preference.getPrefLevel().getPrefProlog();
+			iPreferenceText = preference.getPrefLevel().getPrefName();
+			iValue = preference.getRoomFeature().getLabel();
+			iReference = preference.getRoomFeature().getAbbv();
+		}
+		PreferenceInfo(RoomGroupPref preference) {
+			iType = "room-group";
+			iPreference = preference.getPrefLevel().getPrefProlog();
+			iPreferenceText = preference.getPrefLevel().getPrefName();
+			iValue = preference.getRoomGroup().getName();
+			iReference = preference.getRoomGroup().getAbbv();
+		}
+		PreferenceInfo(DistributionPref preference) {
+			iType = "distribution";
+			iPreference = preference.getPrefLevel().getPrefProlog();
+			iPreferenceText = preference.getPrefLevel().getPrefName();
+			iValue = preference.getDistributionType().getLabel();
+			iReference = preference.getDistributionType().getReference();
+		}
+		PreferenceInfo(InstructorAttributePref preference) {
+			iType = "attribute";
+			iPreference = preference.getPrefLevel().getPrefProlog();
+			iPreferenceText = preference.getPrefLevel().getPrefName();
+			iValue = preference.getAttribute().getName();
+			iReference = preference.getAttribute().getCode();
+		}
+		PreferenceInfo(InstructorCoursePref preference) {
+			iType = "course";
+			iPreference = preference.getPrefLevel().getPrefProlog();
+			iPreferenceText = preference.getPrefLevel().getPrefName();
+			iValue = preference.getCourse().getTitle();
+			iReference = preference.getCourse().getCourseName();
+			iExternalId = preference.getCourse().getExternalUniqueId();
+		}
+	}
+	
+	protected class TimePrefInfo {
+		String iDayOfWeek;
+		String iStartTime;
+		String iEndTime;
+		String iPreference;
+		String iPreferenceText;
+		
+		private String slot2time(int slot) {
+			int minutesSinceMidnight = slot*Constants.SLOT_LENGTH_MIN+Constants.FIRST_SLOT_TIME_MIN;
+			int hour = minutesSinceMidnight/60;
+		    int min = minutesSinceMidnight%60;
+			return hour + ":" + (min < 10 ? "0" : "") + min;
+		}
+		
+		TimePrefInfo(int day, int start, int end, String pref) {
+			iDayOfWeek = Constants.DAY_NAMES_FULL[day];
+			iStartTime = slot2time(start);
+			iEndTime = slot2time(end);
+			iPreference = pref;
+			iPreferenceText = PreferenceLevel.prolog2string(pref);
 		}
 	}
 	
