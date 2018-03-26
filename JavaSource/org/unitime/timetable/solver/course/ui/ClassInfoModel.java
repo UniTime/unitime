@@ -160,7 +160,7 @@ public class ClassInfoModel implements Serializable {
         if (assignments.isEmpty()) {
         	for (Iterator<ClassAssignment> i = iChange.getConflicts().iterator(); i.hasNext(); ) {
         		ClassAssignment assignment = i.next();
-        		if (!assignment.getClassId().equals(getClazz().getClassId())) i.remove();
+        		if (assignment == null || !assignment.getClassId().equals(getClazz().getClassId())) i.remove();
         	}
         } else {
         	iChange.getConflicts().clear();
