@@ -45,6 +45,7 @@ import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.FreeTime;
+import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.Session;
@@ -56,6 +57,9 @@ import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentEnrollmentMessage;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentSectioningQueue;
+import org.unitime.timetable.model.dao.InstructionalMethodDAO;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.util.Constants;
 
 /**
@@ -120,8 +124,8 @@ public class StudentSectioningImport extends BaseImport {
 	            		}
 	        	}
 	        }
-	        info("Enrollment mode set to " + mode.name() + ": " + mode.toString()); 
-
+	        info("Enrollment mode set to " + mode.name() + ": " + mode.toString());
+	        
 	        Session session = Session.getSessionUsingInitiativeYearTerm(campus, year, term);
 	        if(session == null)
 	           	throw new Exception("No session found for the given campus, year, and term.");
@@ -214,6 +218,13 @@ public class StudentSectioningImport extends BaseImport {
 				}
 				sameNameClasses.add(clazz);
 			}
+	 		
+	 		Map<String, InstructionalMethod> ref2im = new HashMap<String, InstructionalMethod>();
+	 		Map<String, InstructionalMethod> name2im = new HashMap<String, InstructionalMethod>();
+	 		for (InstructionalMethod meth: InstructionalMethodDAO.getInstance().findAll(getHibSession())) {
+	 			ref2im.put(meth.getReference(), meth);
+	 			name2im.put(meth.getLabel(), meth);
+	 		}
             
             Set<Long> updatedStudents = new HashSet<Long>();
             
@@ -632,6 +643,13 @@ public class StudentSectioningImport extends BaseImport {
             					}
             					cr.setAllowOverlap(false);
             					cr.setCredit(credits.get(order));
+            					OnlineSectioningLog.CourseRequestOption prefs = getPreferences(elements.get(order), co, course2extId2class.get(co.getUniqueId()), course2name2class.get(co.getUniqueId()), ref2im, name2im);
+            					if (prefs != null) {
+            						CourseRequestOption o = new CourseRequestOption();
+            						o.setCourseRequest(cr);
+            						o.setOption(prefs);
+            						cr.getCourseRequestOptions().add(o);
+            					}
             					cr.setOrder(order++);
             					cr.setCourseOffering(co);
             					course2request.put(co.getUniqueId(), cr);
@@ -938,5 +956,70 @@ public class StudentSectioningImport extends BaseImport {
     
 	private boolean eq(String a, String b) {
 		return (a == null ? b == null : a.equals(b));
+	}
+	
+	protected OnlineSectioningLog.CourseRequestOption getPreferences(Element requestEl, CourseOffering course, Map<String, Set<Class_>> extId2class, Map<String, Set<Class_>> name2class, Map<String, InstructionalMethod> ref2im, Map<String, InstructionalMethod> name2im) {
+		Element prefEl = requestEl.element("preferences");
+		if (prefEl == null) return null;
+		OnlineSectioningLog.CourseRequestOption.Builder preferences = OnlineSectioningLog.CourseRequestOption.newBuilder();
+		preferences.setType(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE);
+		Set<Class_> preferredClasses = new HashSet<Class_>();
+		for (Iterator i = prefEl.elementIterator("class"); i.hasNext(); ) {
+			Element classElement = (Element)i.next();
+			Set<Class_> classes = null;
+            
+    		String classExternalId  = classElement.attributeValue("externalId");
+    		if (classExternalId != null) {
+    			classes = extId2class.get(classExternalId);
+    			if (classes == null)
+    				classes = name2class.get(classExternalId);
+    		}
+    		
+    		if (classes == null) {
+        		String type = classElement.attributeValue("type");
+        		String suffix = classElement.attributeValue("suffix");
+        		if (type != null && suffix != null)
+        			classes = name2class.get(type.trim() + " " + suffix);
+    		}
+    		
+    		if (classes == null) {
+    			warn(course.getCourseName() + ": Class " + (classExternalId != null ? classExternalId : classElement.attributeValue("type") + " " + classElement.attributeValue("suffix")) + " not found.");
+    			continue;
+    		}
+    		
+    		preferredClasses.addAll(classes);
+		}
+		for (Class_ clazz: preferredClasses) {
+			preferences.addSection(OnlineSectioningHelper.toProto(clazz, course));
+		}
+		Set<InstructionalMethod> preferredIMs = new HashSet<InstructionalMethod>();
+		for (Iterator i = prefEl.elementIterator("instructional-method"); i.hasNext(); ) {
+			Element imElement = (Element)i.next();
+			
+			InstructionalMethod meth = null;
+			
+			String imExternalId = imElement.attributeValue("externalId", imElement.attributeValue("id"));
+    		if (imExternalId != null)
+    			meth = ref2im.get(imExternalId);
+    		
+    		if (meth == null) {
+    			String imName = imElement.attributeValue("name");
+    			if (imName != null)
+    				meth = name2im.get(imName);
+    		}
+    		
+    		if (meth == null) {
+    			warn(course.getCourseName() + ": Instructional Method " + (imExternalId != null ? imExternalId : imElement.attributeValue("name")) + " not found.");
+    			continue;
+    		}
+    		preferredIMs.add(meth);
+		}
+		for (InstructionalMethod meth: preferredIMs) {
+			preferences.addInstructionalMethod(OnlineSectioningLog.Entity.newBuilder()
+					.setUniqueId(meth.getUniqueId())
+					.setExternalId(meth.getReference())
+					.setName(meth.getLabel()));
+		}
+		return preferences.build();
 	}
 }

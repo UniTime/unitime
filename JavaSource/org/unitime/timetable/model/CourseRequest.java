@@ -92,6 +92,14 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
     	}
     }
     
+    public void clearCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType type) {
+    	if (getCourseRequestOptions() == null) return;
+    	for (Iterator<CourseRequestOption> i = getCourseRequestOptions().iterator(); i.hasNext(); ) {
+    		CourseRequestOption option = i.next();
+    		if (type == null || type.equals(option.getType())) i.remove();
+    	}
+    }
+    
     public void updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType type, OnlineSectioningLog.CourseRequestOption.Builder option) {
     	if (getCourseRequestOptions() == null)
     		setCourseRequestOptions(new HashSet<CourseRequestOption>());

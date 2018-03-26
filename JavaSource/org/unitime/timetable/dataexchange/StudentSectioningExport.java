@@ -28,6 +28,8 @@ import org.dom4j.Element;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseRequest;
+import org.unitime.timetable.model.CourseRequestOption;
+import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
@@ -35,8 +37,13 @@ import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.StudentAreaClassificationMinor;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
+import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.InstructionalMethodDAO;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
+
+import com.google.protobuf.InvalidProtocolBufferException;
 
 public class StudentSectioningExport extends BaseExport {
 	protected static Formats.Format<Number> sTwoNumbersDF = Formats.getNumberFormat("00");
@@ -123,6 +130,48 @@ public class StudentSectioningExport extends BaseExport {
 	        	        		classEl.addAttribute("type", clazz.getSchedulingSubpart().getItypeDesc().trim());
 	        	        		classEl.addAttribute("suffix", getClassSuffix(clazz));
 	        				}
+	        				for (CourseRequestOption option: cr.getCourseRequestOptions()) {
+	        	        		if (OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE.getNumber() == option.getOptionType()) {
+	        	        			try {
+	        	        				OnlineSectioningLog.CourseRequestOption pref = option.getOption();
+	        	        				Element prefEl = courseOfferingEl.addElement("preferences");
+	        	        				if (pref.getInstructionalMethodCount() > 0)
+	        	        					for (OnlineSectioningLog.Entity im: pref.getInstructionalMethodList()) {
+	        	        						InstructionalMethod meth = InstructionalMethodDAO.getInstance().get(im.getUniqueId(), getHibSession());
+	        	        						if (meth != null) {
+	        	        							Element imEl = prefEl.addElement("instructional-method");
+	        	        							imEl.addAttribute("externalId", meth.getReference());
+	        	        							imEl.addAttribute("name", meth.getLabel());
+	        	        						} else {
+		        	        						Element imEl = prefEl.addElement("instructional-method");
+		        	        						if (im.hasExternalId())
+		        	        							imEl.addAttribute("externalId", im.getExternalId());
+		        	        						if (im.hasName())
+		        	        							imEl.addAttribute("name", im.getName());
+	        	        						}
+	        	        					}
+	        	        				if (pref.getSectionCount() > 0)
+	        	        					for (OnlineSectioningLog.Section s: pref.getSectionList()) {
+	        	        						Class_ clazz = Class_DAO.getInstance().get(s.getClazz().getUniqueId(), getHibSession());
+	        	        						if (clazz != null) {
+	        	        							Element classEl = prefEl.addElement("class");
+	        	        							String extId = clazz.getExternalId(cr.getCourseOffering());
+	        	    	        	        		if (extId != null && !extId.isEmpty())
+	        	    	        	        			classEl.addAttribute("externalId", extId);
+	        	    	        	        		classEl.addAttribute("type", clazz.getSchedulingSubpart().getItypeDesc().trim());
+	        	    	        	        		classEl.addAttribute("suffix", getClassSuffix(clazz));
+	        	        						} else {
+		        	        						Element classEl = prefEl.addElement("class");
+		        	        						classEl.addAttribute("suffix", s.getClazz().getExternalId());
+		        	        						if (s.getSubpart().hasName())
+		        	        							classEl.addAttribute("type", s.getSubpart().getName());
+		        	        						else if (s.getSubpart().hasExternalId())
+		        	        							classEl.addAttribute("type", s.getSubpart().getExternalId().trim());
+	        	        						}
+	        	        					}
+	        	            		} catch (InvalidProtocolBufferException e) {}
+	        	        		}
+	        	        	}
 	        				first = false;
 	        			}
 	        		}

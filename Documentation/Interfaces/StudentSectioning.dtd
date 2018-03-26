@@ -25,7 +25,7 @@
 <!ELEMENT acknowledgement ( message* ) >
 <!ATTLIST acknowledgement result ( ok | fail ) #REQUIRED >
 
-<!ELEMENT alternative EMPTY >
+<!ELEMENT alternative (preferences?) >
 <!ATTLIST alternative courseNumber CDATA #REQUIRED >
 <!ATTLIST alternative subjectArea CDATA #REQUIRED >
 <!ATTLIST alternative title CDATA #IMPLIED >
@@ -61,7 +61,7 @@
 <!ATTLIST class type CDATA #IMPLIED >
 <!ATTLIST class suffix CDATA #IMPLIED >
 
-<!ELEMENT courseOffering ( alternative | class )* >
+<!ELEMENT courseOffering ( alternative | class | preferences)* >
 <!ATTLIST courseOffering alternative ( false | true ) #IMPLIED >
 <!ATTLIST courseOffering courseNumber CDATA #REQUIRED >
 <!ATTLIST courseOffering credit CDATA #IMPLIED >
@@ -146,3 +146,8 @@
 
 <!ELEMENT updateDemographics ( name, email?, acadArea+, major*, minor*, disability*, groupAffiliation* ) >
 
+<!ELEMENT preferences ( class | instructional-method )*>
+
+<!ELEMENT instructional-method EMPTY>
+<!ATTLIST instructional-method externalId CDATA #IMPLIED >
+<!ATTLIST instructional-method name CDATA #IMPLIED >
