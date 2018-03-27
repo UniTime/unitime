@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -35,6 +34,7 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.cpsolver.coursett.model.Placement;
+import org.hibernate.criterion.Order;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
@@ -63,6 +63,7 @@ import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAllSpecialRegistrationsRequest;
@@ -105,6 +106,7 @@ import org.unitime.timetable.model.StudentSectioningStatus.Option;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
+import org.unitime.timetable.model.dao.CourseTypeDAO;
 import org.unitime.timetable.model.dao.CurriculumDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -170,6 +172,8 @@ import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.studentsct.BatchEnrollStudent;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
+import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LoginManager;
 import org.unitime.timetable.util.NameFormat;
 
@@ -2132,17 +2136,100 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 		return true;
 	}
+	
+	private StudentStatusInfo toStudentStatusInfo(StudentSectioningStatus status, List<CourseType> types) {
+		StudentStatusInfo info = new StudentStatusInfo();
+		info.setUniqueId(status.getUniqueId());
+		info.setReference(status.getReference());
+		info.setLabel(status.getLabel());
+		info.setCanAccessAssistantPage(status.hasOption(StudentSectioningStatus.Option.enabled));
+		info.setCanAccessRequestsPage(status.hasOption(StudentSectioningStatus.Option.regenabled));
+		info.setCanStudentEnroll(status.hasOption(StudentSectioningStatus.Option.enrollment));
+		info.setCanStudentRegister(status.hasOption(StudentSectioningStatus.Option.registration));
+		info.setCanAdvisorEnroll(status.hasOption(StudentSectioningStatus.Option.advisor));
+		info.setCanAdvisorRegister(status.hasOption(StudentSectioningStatus.Option.regadvisor));
+		info.setCanAdminEnroll(status.hasOption(StudentSectioningStatus.Option.admin));
+		info.setCanAdminRegister(status.hasOption(StudentSectioningStatus.Option.regadmin));
+		info.setWaitList(status.hasOption(StudentSectioningStatus.Option.waitlist));
+		info.setEmail(status.hasOption(StudentSectioningStatus.Option.email));
+		info.setMessage(status.getMessage());
+		if (status.hasOption(Option.notype)) { // all but
+			Set<String> prohibited = new TreeSet<String>();
+			for (CourseType type: types)
+				if (status.getTypes() == null || !status.getTypes().contains(type))
+					prohibited.add(type.getReference());
+			if (!prohibited.isEmpty()) {
+				String refs = "";
+				for (String ref: prohibited)
+					refs += (refs.isEmpty() ? "" : ", ") + ref; 
+				info.setCourseTypes(MSG.courseTypesAllBut(refs));
+			}
+		} else {
+			Set<String> allowed = new TreeSet<String>();
+			for (CourseType type: status.getTypes())
+				allowed.add(type.getReference());
+			if (allowed.isEmpty()) {
+				info.setCourseTypes(MSG.courseTypesNoneAllowed());
+			} else {
+				String refs = "";
+				for (String ref: allowed)
+					refs += (refs.isEmpty() ? "" : ", ") + ref;
+				info.setCourseTypes(MSG.courseTypesAllowed(refs));
+			}
+		}
+		if (status.getEffectiveStartDate() != null || status.getEffectiveStartPeriod() != null) {
+			if (status.getEffectiveStartDate() == null)
+				info.setEffectiveStart(Constants.slot2str(status.getEffectiveStartPeriod()));
+			else if (status.getEffectiveStartPeriod() == null)
+				info.setEffectiveStart(Formats.getDateFormat(Formats.Pattern.DATE_EVENT).format(status.getEffectiveStartDate()));
+			else
+				info.setEffectiveStart(Formats.getDateFormat(Formats.Pattern.DATE_EVENT).format(status.getEffectiveStartDate()) + " " + Constants.slot2str(status.getEffectiveStartPeriod()));
+		}
+		if (status.getEffectiveStopDate() != null || status.getEffectiveStopPeriod() != null) {
+			if (status.getEffectiveStopDate() == null)
+				info.setEffectiveStop(Constants.slot2str(status.getEffectiveStopPeriod()));
+			else if (status.getEffectiveStopPeriod() == null)
+				info.setEffectiveStop(Formats.getDateFormat(Formats.Pattern.DATE_EVENT).format(status.getEffectiveStopDate()));
+			else
+				info.setEffectiveStop(Formats.getDateFormat(Formats.Pattern.DATE_EVENT).format(status.getEffectiveStopDate()) + " " + Constants.slot2str(status.getEffectiveStopPeriod()));
+		}
+		return info;
+	}
 
 	@Override
-	public Map<String, String> lookupStudentSectioningStates() throws SectioningException, PageAccessException {
-		Map<String, String> ret = new HashMap<String, String>();
+	public List<StudentStatusInfo> lookupStudentSectioningStates() throws SectioningException, PageAccessException {
+		List<CourseType> courseTypes = CourseTypeDAO.getInstance().findAll(Order.asc("reference"));
+		List<StudentStatusInfo> ret = new ArrayList<StudentStatusInfo>();
 		boolean advisor = (getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdvisor) &&
 				!getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdmin));
-		if (!advisor) ret.put("", "System Default (All Enabled)");
+		boolean email = ApplicationProperty.OnlineSchedulingEmailConfirmation.isTrue();
+		boolean waitlist = CustomStudentEnrollmentHolder.isAllowWaitListing();
+		if (!advisor) {
+			Session session = SessionDAO.getInstance().get(getStatusPageSessionId());
+			StudentStatusInfo info = null;
+			if (session.getDefaultSectioningStatus() != null) {
+				info = toStudentStatusInfo(session.getDefaultSectioningStatus(), courseTypes);
+				info.setUniqueId(null);
+				info.setReference("");
+				info.setLabel(MSG.studentStatusSessionDefault(session.getDefaultSectioningStatus().getLabel()));
+				info.setEffectiveStart(null); info.setEffectiveStop(null);
+			} else {
+				info = new StudentStatusInfo();
+				info.setReference("");
+				info.setLabel(MSG.studentStatusSystemDefault());
+				info.setAllEnabled();
+			}
+			if (!email) info.setEmail(false);
+			if (!waitlist) info.setWaitList(false);
+			ret.add(info);
+		}
 		for (StudentSectioningStatus s: StudentSectioningStatusDAO.getInstance().findAll()) {
 			if (s.isPast()) continue;
 			if (advisor && !s.hasOption(StudentSectioningStatus.Option.advcanset)) continue;
-			ret.put(s.getReference(), s.getLabel());
+			StudentStatusInfo info = toStudentStatusInfo(s, courseTypes);
+			if (!email) info.setEmail(false);
+			if (!waitlist) info.setWaitList(false);
+			ret.add(info);
 		}
 		return ret;
 	}

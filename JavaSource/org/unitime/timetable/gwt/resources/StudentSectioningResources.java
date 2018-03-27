@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.resources;
 
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.resources.client.ClientBundle.Source;
 
 /**
  * @author Tomas Muller
@@ -211,4 +212,10 @@ public interface StudentSectioningResources extends ClientBundle {
 	
 	@Source("org/unitime/timetable/gwt/resources/icons/stop.png")
 	ImageResource requestError();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/accept.png")
+	ImageResource on();
+
+	@Source("org/unitime/timetable/gwt/resources/icons/cross.png")
+	ImageResource off();
 }

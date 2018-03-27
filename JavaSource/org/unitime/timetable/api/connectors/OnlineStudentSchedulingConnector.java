@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -388,9 +389,9 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 				return service.savedResult(helper.getOptinalParameterBoolean("online", true), sessionId, studentId);
 			}
 		}, Flag.GET),
-		lookupStudentSectioningStates(new OpExecution<Map<String, String>>() {
+		lookupStudentSectioningStates(new OpExecution<List<StudentStatusInfo>>() {
 			@Override
-			public Map<String, String> execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
+			public List<StudentStatusInfo> execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
 				return service.lookupStudentSectioningStates();
 			}
 		}, Flag.GET),

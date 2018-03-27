@@ -6118,3 +6118,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-ChangeLog .top-border-dashed {
 	border-top: 1px dashed #9CB0CE;
 }
+
+.unitime-StatusAccess {
+	width: 100%;
+}

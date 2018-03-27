@@ -158,6 +158,21 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Warnings")
 	String colWarnings();
+	
+	@DefaultMessage("Page")
+	String colPage();
+	
+	@DefaultMessage("Can<br>Open")
+	String colCanOpen();
+	
+	@DefaultMessage("<br>Student")
+	String colCanStudentChange();
+	
+	@DefaultMessage("Changes<br>Advisor")
+	String colCanAdvisorChange();
+	
+	@DefaultMessage("<br>Admin")
+	String colCanAdminChange();
 
 	/* Academic Session Selector messages
 	 */
@@ -1163,9 +1178,12 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Changing student note...")
 	String changingStudentNote();
 	
+	@DefaultMessage("Set student status...")
+	String setStudentStatus();
+
 	@DefaultMessage("Set student note...")
 	String setStudentNote();
-	
+		
 	@DefaultMessage("Subject:")
 	String emailSubject();
 
@@ -1329,6 +1347,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Set Note")
 	String buttonSetNote();
 	
+	@DefaultMessage("Set Status")
+	String buttonSetStatus();
+	
 	@DefaultMessage("Cancelling selected students...")
 	String massCanceling();
 	
@@ -1361,6 +1382,24 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Note:")
 	String propNote();
+	
+	@DefaultMessage("Permissions:")
+	String propPermissions();
+	
+	@DefaultMessage("Course Wait-Lists:")
+	String propWaitLists();
+	
+	@DefaultMessage("Email Notification:")
+	String propEmailNotification();
+	
+	@DefaultMessage("Effective Period:")
+	String propEffectivePeriod();
+	
+	@DefaultMessage("Course Types:")
+	String propCourseTypes();
+	
+	@DefaultMessage("Message:")
+	String propStatusMessage();
 	
 	@DefaultMessage("You are not registered for any classes yet. Please click the Build Schedule button in order to complete your registration.")
 	String warnScheduleEmptyOnCourseRequest();
@@ -1748,4 +1787,91 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Requested override for {0} has been approved.")
 	String overrideApproved(String course);
+	
+	@DefaultMessage("Session Default ({0})")
+	String studentStatusSessionDefault(String name);
+	
+	@DefaultMessage("System Default (All Enabled)")
+	String studentStatusSystemDefault();
+	
+	@DefaultMessage("All except {0}")
+	String courseTypesAllBut(String prohibitedTypes);
+	
+	@DefaultMessage("{0}")
+	String courseTypesAllowed(String allowedTypes);
+	
+	@DefaultMessage("No course types are allowed")
+	String courseTypesNoneAllowed();
+	
+	@DefaultMessage("-")
+	String statusNoChange();
+	
+	@DefaultMessage("Course Requests page can be used by students, advisors, or admins to see the current requests.")
+	String messageStatusCanAccessCourseRequests();
+	
+	@DefaultMessage("Course Requests page can NOT be used.")
+	String messageStatusCanNotAccessCourseRequests();
+	
+	@DefaultMessage("Students can use the Course Requests to make changes to their course requests.")
+	String messageStatusStudentsCanRegister();
+	
+	@DefaultMessage("Students can NOT use the Course Requests to make changes.")
+	String messageStatusStudentsCanNotRegister();
+	
+	@DefaultMessage("Advisors can use the Course Requests to make changes to student course requests.")
+	String messageStatusAdvisorsCanRegister();
+	
+	@DefaultMessage("Advisors can NOT use the Course Requests to make changes.")
+	String messageStatusAdvisorsCanNotRegister();
+	
+	@DefaultMessage("Administrators can use the Course Requests to make changes to student course requests.")
+	String messageStatusAdminsCanRegister();
+	
+	@DefaultMessage("Administrators can NOT use the Course Requests to make changes.")
+	String messageStatusAdminsCanNotRegister();
+	
+	@DefaultMessage("Scheduling Assistant page can be used by students, advisors, or admins to see the current registration.")
+	String messageStatusCanAccessSchedulingAssistant();
+	
+	@DefaultMessage("Scheduling Assistant page can NOT be used.")
+	String messageStatusCanNotAccessSchedulingAssistant();
+	
+	@DefaultMessage("Students can use the Scheduling Assistant to make changes to their class enrollments.")
+	String messageStatusStudentsCanEnroll();
+	
+	@DefaultMessage("Students can NOT use the Scheduling Assistant to make changes.")
+	String messageStatusStudentsCanNotEnroll();
+	
+	@DefaultMessage("Advisors can use the Scheduling Assistant to make changes to student class enrollments.")
+	String messageStatusAdvisorsCanEnroll();
+	
+	@DefaultMessage("Advisors can NOT use the Scheduling Assistant to make changes.")
+	String messageStatusAdvisorsCanNotEnroll();
+	
+	@DefaultMessage("Administrators can use the Scheduling Assistant to make changes to student class enrollments.")
+	String messageStatusAdminsCanEnroll();
+	
+	@DefaultMessage("Administrators can NOT use the Scheduling Assistant to make changes.")
+	String messageStatusAdminsCanNotEnroll();
+	
+	@DefaultMessage("Courses can be wait-listed in UniTime.")
+	String messageStatusCanWaitList();
+	
+	@DefaultMessage("Courses can NOT be wait-listed in UniTime.")
+	String messageStatusCanNotWaitList();
+	
+	@DefaultMessage("Email notifications are enabled.")
+	String messageStatusCanEmail();
+	
+	@DefaultMessage("Email notifications are disabled.")
+	String messageStatusCanNotEmail();
+	
+	@DefaultMessage("Before {0}")
+	String messageEffectivePeriodBefore(String end);
+	
+	@DefaultMessage("After {0}")
+	String messageEffectivePeriodAfter(String start);
+	
+	@DefaultMessage("Between {0} and {1}")
+	String messageEffectivePeriodBetween(String start, String end);
 }

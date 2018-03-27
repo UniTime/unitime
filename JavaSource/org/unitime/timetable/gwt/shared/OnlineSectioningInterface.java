@@ -163,5 +163,87 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			return iEmail || iMassCancel || iChangeStatus || iRequestUpdate || iCheckStudentOverrides || iValidateStudentOverrides;
 		}
 	}
+	
+	public static class StudentStatusInfo implements IsSerializable, Serializable, Comparable<StudentStatusInfo> {
+		private static final long serialVersionUID = 1L;
+		private Long iUniqueId;
+		private String iReference, iLabel;
+		private boolean iAssistantPage = false, iRequestsPage = false;
+		private boolean iRegStudent = false, iRegAdvisor = false, iRegAdmin = false;
+		private boolean iEnrlStudent = false, iEnrlAdvisor = false, iEnrlAdmin = false;
+		private boolean iWaitList = false, iEmail = false;
+		private String iCourseTypes;
+		private String iEffectiveStart, iEffectiveStop;
+		private String iMessage;
+		
+		public StudentStatusInfo() {}
+		
+		public void setUniqueId(Long id) { iUniqueId = id; }
+		public Long getUniqueId() { return iUniqueId; }
+		
+		public void setReference(String reference) { iReference = reference; }
+		public String getReference() { return iReference; }
+		public void setLabel(String label) { iLabel = label; }
+		public String getLabel() { return iLabel; }
+		
+		public void setCanAccessAssistantPage(boolean assistantPage) { iAssistantPage = assistantPage; }
+		public boolean isCanAccessAssistantPage() { return iAssistantPage; }
+		public void setCanAccessRequestsPage(boolean requestPage) { iRequestsPage = requestPage; }
+		public boolean isCanAccessRequestsPage() { return iRequestsPage; }
+		
+		public void setCanStudentRegister(boolean regStudent) { iRegStudent = regStudent; }
+		public boolean isCanStudentRegister() { return iRegStudent; }
+		public void setCanAdvisorRegister(boolean regAdvisor) { iRegAdvisor = regAdvisor; }
+		public boolean isCanAdvisorRegister() { return iRegAdvisor; }
+		public void setCanAdminRegister(boolean regAdmin) { iRegAdmin = regAdmin; }
+		public boolean isCanAdminRegister() { return iRegAdmin; }
+		
+		public void setCanStudentEnroll(boolean enrlStudent) { iEnrlStudent = enrlStudent; }
+		public boolean isCanStudentEnroll() { return iEnrlStudent; }
+		public void setCanAdvisorEnroll(boolean enrlAdvisor) { iEnrlAdvisor = enrlAdvisor; }
+		public boolean isCanAdvisorEnroll() { return iEnrlAdvisor; }
+		public void setCanAdminEnroll(boolean enrlAdmin) { iEnrlAdmin = enrlAdmin; }
+		public boolean isCanAdminEnroll() { return iEnrlAdmin; }
+		
+		public void setWaitList(boolean waitlist) { iWaitList = waitlist; }
+		public boolean isWaitList() { return iWaitList; }
+		public void setEmail(boolean email) { iEmail = email; }
+		public boolean isEmail() { return iEmail; }
+		
+		public void setAllEnabled() {
+			iAssistantPage = true;
+			iRequestsPage = true;
+			iRegStudent = true; iRegAdvisor = true; iRegAdmin = true;
+			iEnrlStudent = true; iEnrlAdvisor = true; iEnrlAdmin = true;
+			iWaitList = true; iEmail = true;
+		}
+		
+		public void setCourseTypes(String courseTypes) { iCourseTypes = courseTypes; }
+		public boolean hasCourseTypes() { return iCourseTypes != null && !iCourseTypes.isEmpty(); }
+		public String getCourseTypes() { return iCourseTypes; }
+		
+		public void setEffectiveStart(String start) { iEffectiveStart = start; }
+		public boolean hasEffectiveStart() { return iEffectiveStart != null && !iEffectiveStart.isEmpty(); }
+		public String getEffectiveStart() { return iEffectiveStart; }
+		
+		public void setEffectiveStop(String stop) { iEffectiveStop = stop; }
+		public boolean hasEffectiveStop() { return iEffectiveStop != null && !iEffectiveStop.isEmpty(); }
+		public String getEffectiveStop() { return iEffectiveStop; }
+		
+		public void setMessage(String message) { iMessage = message; }
+		public boolean hasMessage() { return iMessage != null && !iMessage.isEmpty(); }
+		public String getMessage() { return iMessage; }
+		
+		@Override
+		public String toString() { return getReference(); }
+		
+		@Override
+		public int hashCode() { return getReference().hashCode(); }
+		
+		@Override
+		public int compareTo(StudentStatusInfo status) {
+			return getReference().compareTo(status.getReference());
+		}
+	}
 
 }
