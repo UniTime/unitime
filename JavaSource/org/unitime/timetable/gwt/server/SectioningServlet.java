@@ -357,8 +357,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 			try {
 				Student student = (studentId == null ? null : StudentDAO.getInstance().get(studentId, hibSession));
-				StudentSectioningStatus status = (student == null ? null : student.getSectioningStatus());
-				if (status == null) status = SessionDAO.getInstance().get(sessionId, hibSession).getDefaultSectioningStatus();
+				StudentSectioningStatus status = (student == null ? null : student.getEffectiveStatus());
 				if (status != null) {
 					for (CourseType type: status.getTypes())
 						allowedCourseTypes.add(type.getReference());
@@ -542,8 +541,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					if (studentId == null) continue;
 					Student student = StudentDAO.getInstance().get(studentId);
 					if (student == null) continue;
-					StudentSectioningStatus status = student.getSectioningStatus();
-					if (status == null) status = student.getSession().getDefaultSectioningStatus();
+					StudentSectioningStatus status = student.getEffectiveStatus();
 					if (status != null && !status.hasOption(StudentSectioningStatus.Option.enabled)) continue;
 				} else {
 					if (!getSessionContext().hasPermissionAnySession(session, Right.SchedulingAssistant)) continue;
@@ -565,8 +563,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						if (studentId == null) continue;
 						Student student = StudentDAO.getInstance().get(studentId);
 						if (student == null) continue;
-						StudentSectioningStatus status = student.getSectioningStatus();
-						if (status == null) status = student.getSession().getDefaultSectioningStatus();
+						StudentSectioningStatus status = student.getEffectiveStatus();
 						if (status != null && !status.hasOption(StudentSectioningStatus.Option.regenabled)) continue;
 					} else {
 						if (!getSessionContext().hasPermissionAnySession(session, Right.CourseRequests)) continue;
@@ -2139,8 +2136,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	@Override
 	public Map<String, String> lookupStudentSectioningStates() throws SectioningException, PageAccessException {
 		Map<String, String> ret = new HashMap<String, String>();
-		ret.put("", "System Default (All Enabled)");
+		boolean advisor = (getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdvisor) &&
+				!getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdmin));
+		if (!advisor) ret.put("", "System Default (All Enabled)");
 		for (StudentSectioningStatus s: StudentSectioningStatusDAO.getInstance().findAll()) {
+			if (s.isPast()) continue;
+			if (advisor && !s.hasOption(StudentSectioningStatus.Option.advcanset)) continue;
 			ret.put(s.getReference(), s.getLabel());
 		}
 		return ret;
@@ -2388,8 +2389,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						check.setMessage(MSG.exceptionEnrollNotStudent(SessionDAO.getInstance().get(sessionId).getLabel()));
 					return check;
 				}
-				StudentSectioningStatus status = student.getSectioningStatus();
-				if (status == null) status = student.getSession().getDefaultSectioningStatus();
+				StudentSectioningStatus status = student.getEffectiveStatus();
 				if (status == null) {
 					check.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, true);
 					check.setFlag(EligibilityFlag.CAN_WAITLIST, true);
@@ -2507,8 +2507,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		Student student = Student.findByExternalId(getSessionContext().getUser().getCurrentAcademicSessionId(), studentId);
 		if (student == null) return null;
 		getSessionContext().checkPermission(student, Right.StudentEnrollments);
-		StudentSectioningStatus status = student.getSectioningStatus();
-		if (status == null) status = student.getSession().getDefaultSectioningStatus();
+		StudentSectioningStatus status = student.getEffectiveStatus();
 		ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
 		st.setId(student.getUniqueId());
 		st.setSessionId(getSessionContext().getUser().getCurrentAcademicSessionId());
@@ -2635,8 +2634,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		Student student = StudentDAO.getInstance().get(studentId);
 		if (student == null) return null;
 		getSessionContext().checkPermission(student, Right.StudentEnrollments);
-		StudentSectioningStatus status = student.getSectioningStatus();
-		if (status == null) status = student.getSession().getDefaultSectioningStatus();
+		StudentSectioningStatus status = student.getEffectiveStatus();
 		ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
 		st.setId(student.getUniqueId());
 		st.setSessionId(getSessionContext().getUser().getCurrentAcademicSessionId());

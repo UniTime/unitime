@@ -99,8 +99,7 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 			st.setSessionId(session.getUniqueId());
 			st.setExternalId(student.getExternalUniqueId());
 			st.setCanShowExternalId(iCanShowExtIds);
-			StudentSectioningStatus status = student.getSectioningStatus();
-			if (status == null) status = student.getSession().getDefaultSectioningStatus();
+			StudentSectioningStatus status = student.getEffectiveStatus();
 			st.setCanRegister(iCanRegister && (status == null || status.hasOption(StudentSectioningStatus.Option.regenabled)));
 			st.setCanUseAssistant(iCanUseAssistant && (status == null || status.hasOption(StudentSectioningStatus.Option.enabled)));
 			st.setName(helper.getStudentNameFormat().format(student));

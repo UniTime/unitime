@@ -198,8 +198,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			if (dbStudent != null && dbStudent.getEmail() != null && !dbStudent.getEmail().isEmpty()) {
 				action.getStudentBuilder().setName(dbStudent.getEmail());
 				boolean emailEnabled = true;
-				StudentSectioningStatus status = dbStudent.getSectioningStatus();
-				if (status == null) status = dbStudent.getSession().getDefaultSectioningStatus();
+				StudentSectioningStatus status = dbStudent.getEffectiveStatus();
 				if (status != null && !status.hasOption(StudentSectioningStatus.Option.email)) {
 					emailEnabled = false;
 				}

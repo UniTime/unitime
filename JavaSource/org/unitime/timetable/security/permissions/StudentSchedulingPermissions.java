@@ -90,9 +90,7 @@ public class StudentSchedulingPermissions {
 				if (q == null || q.isEmpty()) return false;
 				Student student = StudentDAO.getInstance().get((Long)q.get(0).getQualifierId());
 				if (student == null) return false;
-				StudentSectioningStatus status = student.getSectioningStatus();
-				if (status == null)
-					status = source.getDefaultSectioningStatus();
+				StudentSectioningStatus status = student.getEffectiveStatus();
 				return (status == null || status.hasOption(StudentSectioningStatus.Option.enabled));
 			}
 			
@@ -128,9 +126,7 @@ public class StudentSchedulingPermissions {
 				if (q == null || q.isEmpty()) return false;
 				Student student = StudentDAO.getInstance().get((Long)q.get(0).getQualifierId());
 				if (student == null) return false;
-				StudentSectioningStatus status = student.getSectioningStatus();
-				if (status == null)
-					status = source.getDefaultSectioningStatus();
+				StudentSectioningStatus status = student.getEffectiveStatus();
 				return (status == null || status.hasOption(StudentSectioningStatus.Option.regenabled));
 			}
 			
@@ -265,9 +261,7 @@ public class StudentSchedulingPermissions {
 		public boolean check(UserContext user, Student source) {
 			if (!permissionSession.check(user, source.getSession()) && !source.getSession().getStatusType().can(Status.StudentsOnline)) return false; 
 			
-			StudentSectioningStatus status = source.getSectioningStatus();
-			if (status == null)
-				status = source.getSession().getDefaultSectioningStatus();
+			StudentSectioningStatus status = source.getEffectiveStatus();
 			
 			// Student check
 			if (Roles.ROLE_STUDENT.equals(user.getCurrentAuthority().getRole())) {
@@ -306,9 +300,7 @@ public class StudentSchedulingPermissions {
 		public boolean check(UserContext user, Student source) {
 			if (!permissionSession.check(user, source.getSession()) && !source.getSession().getStatusType().can(Status.StudentsPreRegister)) return false; 
 			
-			StudentSectioningStatus status = source.getSectioningStatus();
-			if (status == null)
-				status = source.getSession().getDefaultSectioningStatus();
+			StudentSectioningStatus status = source.getEffectiveStatus();
 			
 			// Student check
 			if (Roles.ROLE_STUDENT.equals(user.getCurrentAuthority().getRole())) {

@@ -229,11 +229,8 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     }
     
     public boolean hasSectioningStatusOption(StudentSectioningStatus.Option option) {
-    	if (getSectioningStatus() != null)
-    		return getSectioningStatus().hasOption(option);
-    	if (getSession().getDefaultSectioningStatus() != null)
-    		return getSession().getDefaultSectioningStatus().hasOption(option);
-    	return false;
+    	StudentSectioningStatus status = getEffectiveStatus();
+    	return status != null && status.hasOption(option);
     }
 
 	@Override
@@ -282,5 +279,21 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     
     public boolean isRequestRejected() {
     	return getOverrideStatus() != null && getOverrideStatus().intValue() == CourseRequestOverrideStatus.REJECTED.ordinal();
+    }
+    
+    public StudentSectioningStatus getEffectiveStatus() {
+    	if (getSectioningStatus() != null) {
+			if (getSectioningStatus().isEffectiveNow())
+				return getSectioningStatus();
+			StudentSectioningStatus fallback = getSectioningStatus().getFallBackStatus();
+			int depth = 10;
+			while (fallback != null && depth -- > 0) {
+				if (fallback.isEffectiveNow())
+					return fallback;
+				else
+					fallback = fallback.getFallBackStatus();
+			}
+		}
+    	return getSession().getDefaultSectioningStatus();
     }
 }

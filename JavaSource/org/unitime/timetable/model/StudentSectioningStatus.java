@@ -19,9 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.model.base.BaseStudentSectioningStatus;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 
@@ -44,6 +47,7 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 		/*  512 */ regenabled("Course Requests Access Enabled"),
 		/* 1024 */ regadvisor("Advisor Can Register"),
 		/* 2048 */ regadmin("Admin Can Register"),
+		/* 4196 */ advcanset("Advisor Can Set Status"),
 		;
 		
 		private String iName;
@@ -98,12 +102,57 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 		try {
 			Set<String> statuses = new HashSet<String>();
 			for (StudentSectioningStatus status: StudentSectioningStatusDAO.getInstance().findAll(hibSession)) {
-				if (status.hasOption(option))
+				if (status.hasOption(option) && status.isEffectiveNow())
 					statuses.add(status.getReference());
 			}
 			return statuses;
 		} finally {
 			hibSession.close();
 		}
+	}
+	
+	public boolean isEffectiveNow() {
+		Calendar cal = Calendar.getInstance(Localization.getJavaLocale());
+		int slot = 12 * cal.get(Calendar.HOUR_OF_DAY) + cal.get(Calendar.MINUTE) / 5;
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Date today = cal.getTime();
+		if (getEffectiveStartDate() != null && today.before(getEffectiveStartDate())) return false;
+		if (getEffectiveStartPeriod() != null && (getEffectiveStartDate() == null || today.equals(getEffectiveStartDate()))  && slot < getEffectiveStartPeriod()) return false;
+		if (getEffectiveStopDate() != null && today.after(getEffectiveStopDate())) return false;
+		if (getEffectiveStopPeriod() != null && (getEffectiveStopPeriod() == null || today.equals(getEffectiveStopDate())) && slot >= getEffectiveStopPeriod()) return false;
+		return true;
+	}
+	
+	public boolean isPast() {
+		Calendar cal = Calendar.getInstance(Localization.getJavaLocale());
+		int slot = 12 * cal.get(Calendar.HOUR_OF_DAY) + cal.get(Calendar.MINUTE) / 5;
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Date today = cal.getTime();
+		if (getEffectiveStopDate() != null && today.after(getEffectiveStopDate())) return true;
+		if (getEffectiveStopPeriod() != null && (getEffectiveStopPeriod() == null || today.equals(getEffectiveStopDate())) && slot >= getEffectiveStopPeriod()) return true;
+		return false;
+	}
+	
+	public static boolean hasEffectiveOption(StudentSectioningStatus status, Session session, Option option) {
+		if (status != null) {
+			if (status.isEffectiveNow())
+				return status.hasOption(option);
+			StudentSectioningStatus fallback = status.getFallBackStatus();
+			int depth = 10;
+			while (fallback != null && depth -- > 0) {
+				if (fallback.isEffectiveNow())
+					return fallback.hasOption(option);
+				else
+					fallback = fallback.getFallBackStatus();
+			}
+		}
+		StudentSectioningStatus defaultStatus = (session == null ? null : session.getDefaultSectioningStatus());
+		return (defaultStatus == null ? true : defaultStatus.hasOption(option));
 	}
 }

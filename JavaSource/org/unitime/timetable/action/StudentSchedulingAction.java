@@ -159,8 +159,7 @@ public class StudentSchedulingAction extends Action {
 						if (q == null || q.isEmpty()) continue;
 						Student student = StudentDAO.getInstance().get((Long)q.get(0).getQualifierId());
 						if (student == null) continue;
-						StudentSectioningStatus status = student.getSectioningStatus();
-						if (status == null) status = student.getSession().getDefaultSectioningStatus();
+						StudentSectioningStatus status = student.getEffectiveStatus();
 						if (status != null && !status.hasOption(StudentSectioningStatus.Option.enrollment)) continue;
 					}
 					response.sendRedirect("gwt.jsp?page=sectioning" + (target == null ? "" : "&" + target));
@@ -178,8 +177,7 @@ public class StudentSchedulingAction extends Action {
 						if (q == null || q.isEmpty()) continue;
 						Student student = StudentDAO.getInstance().get((Long)q.get(0).getQualifierId());
 						if (student == null) continue;
-						StudentSectioningStatus status = student.getSectioningStatus();
-						if (status == null) status = student.getSession().getDefaultSectioningStatus();
+						StudentSectioningStatus status = student.getEffectiveStatus();
 						if (status != null && !status.hasOption(StudentSectioningStatus.Option.regenabled)) continue;
 					}
 					response.sendRedirect("gwt.jsp?page=requests" + (target == null ? "" : "&" + target));

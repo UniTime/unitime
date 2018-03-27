@@ -123,8 +123,7 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 				action.getStudentBuilder().setExternalId(student.getExternalUniqueId());
 				action.getStudentBuilder().setName(helper.getStudentNameFormat().format(student));
 				
-				StudentSectioningStatus status = student.getSectioningStatus();
-				if (status == null) status = student.getSession().getDefaultSectioningStatus();
+				StudentSectioningStatus status = student.getEffectiveStatus();
 				boolean disabled = (status != null && !status.hasOption(StudentSectioningStatus.Option.enabled));
 				
 				boolean noenrl = false;

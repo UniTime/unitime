@@ -13031,4 +13031,20 @@
 		<plsql>alter table %SCHEMA%.std_group_type add constraint nn_std_group_type_disabled check (allow_disabled is not null)</plsql>
 		<mysql>alter table %SCHEMA%.std_group_type add allow_disabled int(5) not null default 0</mysql>
 	</update>
+	<update version="202" date="26-Mar-2018" comment="Student status effective period">
+	    <mysql>alter table %SCHEMA%.sectioning_status add fallback_id decimal(20,0) default null</mysql>
+	    <plsql>alter table %SCHEMA%.sectioning_status add fallback_id number(20,0)</plsql>
+	    <mysql>alter table %SCHEMA%.sectioning_status add start_date date default null</mysql>
+	    <plsql>alter table %SCHEMA%.sectioning_status add start_date date</plsql>
+	    <mysql>alter table %SCHEMA%.sectioning_status add stop_date date default null</mysql>
+	    <plsql>alter table %SCHEMA%.sectioning_status add stop_date date</plsql>
+	    <mysql>alter table %SCHEMA%.sectioning_status add start_slot bigint(10) default null</mysql>
+	    <plsql>alter table %SCHEMA%.sectioning_status add start_slot number(10,0)</plsql>
+	    <mysql>alter table %SCHEMA%.sectioning_status add stop_slot bigint(10) default null</mysql>
+	    <plsql>alter table %SCHEMA%.sectioning_status add stop_slot number(10,0)</plsql>
+	    <sql>
+			alter table %SCHEMA%.sectioning_status add constraint fk_sct_status_fallback foreign key (fallback_id)
+			references %SCHEMA%.sectioning_status (uniqueid) on delete set null
+		</sql>
+	</update>
 </dbupdate>

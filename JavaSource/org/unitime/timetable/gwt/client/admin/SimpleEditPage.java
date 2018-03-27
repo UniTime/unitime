@@ -37,10 +37,12 @@ import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.TimeSelector;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
+import org.unitime.timetable.gwt.client.widgets.TimeSelector.TimeUtils;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasCellAlignment;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
@@ -1340,6 +1342,27 @@ public class SimpleEditPage extends Composite {
 						});
 					}
 					break;
+				case time:
+					final TimeSelector time = new TimeSelector();
+					time.setValue(record.getField(index) == null || record.getField(index).isEmpty() ? null : Integer.valueOf(record.getField(index)));
+					time.addValueChangeHandler(new ValueChangeHandler<Integer>() {
+						@Override
+						public void onValueChange(ValueChangeEvent<Integer> event) {
+							record.setField(index, event.getValue() == null ? "" : event.getValue().toString());
+							setError(null);
+						}
+					});
+					initWidget(new UniTimeWidget<TimeSelector>(time));
+					if (iEditable && iData.isAddable() && record.getUniqueId() == null) {
+						time.addValueChangeHandler(new ValueChangeHandler<Integer>() {
+							@Override
+							public void onValueChange(ValueChangeEvent<Integer> event) {
+								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty())
+									fillRow(iData.addRecord(null), iTable.insertRow(iTable.getRowCount()));
+							}
+						});
+					}
+					break;
 				}
 			} else {
 				switch (field.getType()) {
@@ -1417,6 +1440,9 @@ public class SimpleEditPage extends Composite {
 					}
 				}
 				return text;
+			} else if (iField.getType() == FieldType.time) {
+				if (value == null || value.isEmpty()) return "";
+				return TimeUtils.slot2time(Integer.valueOf(value));
 			}
 			return value;
 		}
@@ -1439,6 +1465,9 @@ public class SimpleEditPage extends Composite {
 					}
 				}
 				return text;
+			} else if (iField.getType() == FieldType.time) {
+				if (value == null || value.isEmpty()) return "";
+				return TimeUtils.slot2time(Integer.valueOf(value));
 			}
 			return value;
 		}
@@ -1567,7 +1596,7 @@ public class SimpleEditPage extends Composite {
 					case date:
 						Date date = null;
 						try {
-							date = dateFormat.parse(value);
+							date = (value == null || value.isEmpty() ? null : dateFormat.parse(value));
 						} catch (Exception e) {
 							widget.setError(MESSAGES.errorNotValidDate(value));
 							if (valid == null && detailRecord == null) {
@@ -1633,7 +1662,7 @@ public class SimpleEditPage extends Composite {
 					case date:
 						Date date = null;
 						try {
-							date = dateFormat.parse(value);
+							date = (value == null || value.isEmpty() ? null : dateFormat.parse(value));
 						} catch (Exception e) {
 							widget.setError(MESSAGES.errorNotValidDate(value));
 							if (valid == null) {

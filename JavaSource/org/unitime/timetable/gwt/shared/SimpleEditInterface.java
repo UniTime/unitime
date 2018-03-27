@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.widgets.TimeSelector.TimeUtils;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 
@@ -34,7 +35,7 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 	
 	public static enum FieldType implements IsSerializable {
-		text, textarea, number, toggle, list, multi, students, person, date, parent;
+		text, textarea, number, toggle, list, multi, students, person, date, parent, time;
 	}
 	
 	public static enum Flag implements IsSerializable {
@@ -278,6 +279,9 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 					}
 				}
 				return text;
+			} else if (f.getType() == FieldType.time) {
+				if (value == null || value.isEmpty()) return "";
+				return TimeUtils.slot2time(Integer.valueOf(value));
 			}
 			return value;
 		}

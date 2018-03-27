@@ -34,7 +34,9 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -104,11 +106,12 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 			
 			Set<String> regStates = new HashSet<String>();
 			Set<String> assStates = new HashSet<String>();
-			for (StudentSectioningStatus status: StudentSectioningStatusDAO.getInstance().findAll(helper.getHibSession())) {
-				if (status.hasOption(StudentSectioningStatus.Option.enabled)) assStates.add(status.getReference());
-				if (status.hasOption(StudentSectioningStatus.Option.regenabled)) regStates.add(status.getReference());
-			}
 			AcademicSessionInfo session = server.getAcademicSession();
+			Session dbSession = SessionDAO.getInstance().get(session.getUniqueId());
+			for (StudentSectioningStatus status: StudentSectioningStatusDAO.getInstance().findAll(helper.getHibSession())) {
+				if (StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.enabled)) assStates.add(status.getReference());
+				if (StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.regenabled)) regStates.add(status.getReference());
+			}
 
 			XEnrollments requests = server.getEnrollments(iOfferingId);
 			for (XCourseRequest request: requests.getRequests()) {

@@ -254,9 +254,39 @@
 	                class="CourseType"
                 	column="course_type_id"
                 	foreign-key="fk_sect_course_type"/>
-        </set>
+        	</set>
 
-        </union-subclass>
+            <many-to-one
+            	name="fallBackStatus"
+            	class="StudentSectioningStatus"
+            	column="fallback_id"
+            	not-null="false"
+            	foreign-key="fk_sct_status_fallback"/>
+            
+            <property
+                name="effectiveStartDate"
+            	column="start_date"
+            	type="java.sql.Timestamp"
+            	not-null="false"/>
+            
+            <property
+                name="effectiveStopDate"
+            	column="stop_date"
+            	type="java.sql.Timestamp"
+            	not-null="false"/>
+            
+            <property
+            	name="effectiveStartPeriod"
+            	column="start_slot"
+            	type="java.lang.Integer"
+            	not-null="false"/>
+
+            <property
+            	name="effectiveStopPeriod"
+            	column="stop_slot"
+            	type="java.lang.Integer"
+            	not-null="false"/>
+		</union-subclass>
         
         <union-subclass name="ExamType"
         	table="exam_type"

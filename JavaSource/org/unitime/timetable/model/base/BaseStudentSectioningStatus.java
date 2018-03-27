@@ -20,6 +20,7 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,11 +37,20 @@ public abstract class BaseStudentSectioningStatus extends RefTableEntry implemen
 
 	private Integer iStatus;
 	private String iMessage;
+	private Date iEffectiveStartDate;
+	private Date iEffectiveStopDate;
+	private Integer iEffectiveStartPeriod;
+	private Integer iEffectiveStopPeriod;
 
+	private StudentSectioningStatus iFallBackStatus;
 	private Set<CourseType> iTypes;
 
 	public static String PROP_STATUS = "status";
 	public static String PROP_MESSAGE = "message";
+	public static String PROP_START_DATE = "effectiveStartDate";
+	public static String PROP_STOP_DATE = "effectiveStopDate";
+	public static String PROP_START_SLOT = "effectiveStartPeriod";
+	public static String PROP_STOP_SLOT = "effectiveStopPeriod";
 
 	public BaseStudentSectioningStatus() {
 		initialize();
@@ -58,6 +68,21 @@ public abstract class BaseStudentSectioningStatus extends RefTableEntry implemen
 
 	public String getMessage() { return iMessage; }
 	public void setMessage(String message) { iMessage = message; }
+
+	public Date getEffectiveStartDate() { return iEffectiveStartDate; }
+	public void setEffectiveStartDate(Date effectiveStartDate) { iEffectiveStartDate = effectiveStartDate; }
+
+	public Date getEffectiveStopDate() { return iEffectiveStopDate; }
+	public void setEffectiveStopDate(Date effectiveStopDate) { iEffectiveStopDate = effectiveStopDate; }
+
+	public Integer getEffectiveStartPeriod() { return iEffectiveStartPeriod; }
+	public void setEffectiveStartPeriod(Integer effectiveStartPeriod) { iEffectiveStartPeriod = effectiveStartPeriod; }
+
+	public Integer getEffectiveStopPeriod() { return iEffectiveStopPeriod; }
+	public void setEffectiveStopPeriod(Integer effectiveStopPeriod) { iEffectiveStopPeriod = effectiveStopPeriod; }
+
+	public StudentSectioningStatus getFallBackStatus() { return iFallBackStatus; }
+	public void setFallBackStatus(StudentSectioningStatus fallBackStatus) { iFallBackStatus = fallBackStatus; }
 
 	public Set<CourseType> getTypes() { return iTypes; }
 	public void setTypes(Set<CourseType> types) { iTypes = types; }
@@ -83,6 +108,11 @@ public abstract class BaseStudentSectioningStatus extends RefTableEntry implemen
 
 	public String toDebugString() {
 		return "StudentSectioningStatus[" +
+			"\n	EffectiveStartDate: " + getEffectiveStartDate() +
+			"\n	EffectiveStartPeriod: " + getEffectiveStartPeriod() +
+			"\n	EffectiveStopDate: " + getEffectiveStopDate() +
+			"\n	EffectiveStopPeriod: " + getEffectiveStopPeriod() +
+			"\n	FallBackStatus: " + getFallBackStatus() +
 			"\n	Label: " + getLabel() +
 			"\n	Message: " + getMessage() +
 			"\n	Reference: " + getReference() +

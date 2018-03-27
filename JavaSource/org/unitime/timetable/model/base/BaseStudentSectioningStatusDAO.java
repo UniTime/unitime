@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.model.base;
 
+import java.util.List;
+
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
@@ -38,5 +40,10 @@ public abstract class BaseStudentSectioningStatusDAO extends _RootDAO<StudentSec
 
 	public Class<StudentSectioningStatus> getReferenceClass() {
 		return StudentSectioningStatus.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<StudentSectioningStatus> findByFallBackStatus(org.hibernate.Session hibSession, Long fallBackStatusId) {
+		return hibSession.createQuery("from StudentSectioningStatus x where x.fallBackStatus.uniqueId = :fallBackStatusId").setLong("fallBackStatusId", fallBackStatusId).list();
 	}
 }

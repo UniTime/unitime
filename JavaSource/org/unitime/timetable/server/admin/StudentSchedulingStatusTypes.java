@@ -19,6 +19,9 @@
 */
 package org.unitime.timetable.server.admin;
 
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -35,6 +38,7 @@ import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.FieldType;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Flag;
+import org.unitime.timetable.gwt.shared.SimpleEditInterface.ListItem;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.PageName;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Record;
 import org.unitime.timetable.model.ChangeLog;
@@ -46,6 +50,7 @@ import org.unitime.timetable.model.dao.CourseTypeDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.Formats;
 
 /**
  * @author Tomas Muller
@@ -71,6 +76,7 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		Email(MESSAGES.toggleEmail(), StudentSectioningStatus.Option.email),
 		WaitListing(MESSAGES.toggleWaitList(), StudentSectioningStatus.Option.waitlist),
 		NoBatch(MESSAGES.toggleNoBatch(), StudentSectioningStatus.Option.nobatch),
+		AdvisorCanSet(MESSAGES.toggleAdvisorCanSetStatus(), StudentSectioningStatus.Option.advcanset),
 		;
 		
 		private StudentSectioningStatus.Option iOption;
@@ -88,7 +94,7 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 	@PreAuthorize("checkPermission('StudentSchedulingStatusTypes')")
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
 		List<CourseType> courseTypes = CourseTypeDAO.getInstance().findAll(Order.asc("reference"));
-		SimpleEditInterface.Field[] fields = new SimpleEditInterface.Field[courseTypes.isEmpty() ? 3 + StatusOption.values().length : 4 + StatusOption.values().length + courseTypes.size()];
+		SimpleEditInterface.Field[] fields = new SimpleEditInterface.Field[courseTypes.isEmpty() ? 8 + StatusOption.values().length : 9 + StatusOption.values().length + courseTypes.size()];
 		int idx = 0;
 		fields[idx++] = new Field(MESSAGES.fieldAbbreviation(), FieldType.text, 160, 20, Flag.UNIQUE);
 		fields[idx++] = new Field(MESSAGES.fieldName(), FieldType.text, 300, 60, Flag.UNIQUE);
@@ -100,8 +106,19 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 				fields[idx++] = new Field(courseTypes.get(i).getReference(), FieldType.toggle, 40);
 			fields[idx++] = new Field(MESSAGES.toggleNoCourseType(), FieldType.toggle, 40);
 		}
+		List<ListItem> fallbacks = new ArrayList<ListItem>();
+		for (StudentSectioningStatus status: StudentSectioningStatusDAO.getInstance().findAll()) {
+			fallbacks.add(new ListItem(status.getUniqueId().toString(), status.getLabel()));
+		}
+		fields[idx++] = new Field(MESSAGES.fieldStudentStatusEffectiveStartDate(), FieldType.date, 80);
+		fields[idx++] = new Field(MESSAGES.fieldStudentStatusEffectiveStartTime(), FieldType.time, 50);
+		fields[idx++] = new Field(MESSAGES.fieldStudentStatusEffectiveEndDate(), FieldType.date, 80);
+		fields[idx++] = new Field(MESSAGES.fieldStudentStatusEffectiveEndTime(), FieldType.time, 50);
+		fields[idx++] = new Field(MESSAGES.fieldStudentStatusFallback(), FieldType.list, 100, fallbacks);
+		
 		SimpleEditInterface data = new SimpleEditInterface(fields);
 		data.setSortBy(0, 1);
+		Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
 		for (StudentSectioningStatus status: StudentSectioningStatusDAO.getInstance().findAll()) {
 			Record r = data.addRecord(status.getUniqueId());
 			idx = 0;
@@ -115,6 +132,11 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 					r.setField(idx++, status.getTypes().contains(courseTypes.get(i)) ? "true" : "false");
 				r.setField(idx++, status.hasOption(StudentSectioningStatus.Option.notype) ? "false" : "true");
 			}
+			r.setField(idx++, status.getEffectiveStartDate() == null ? "" : dateFormat.format(status.getEffectiveStartDate()));
+			r.setField(idx++, status.getEffectiveStartPeriod() == null ? "" : status.getEffectiveStartPeriod().toString());
+			r.setField(idx++, status.getEffectiveStopDate() == null ? "" : dateFormat.format(status.getEffectiveStopDate()));
+			r.setField(idx++, status.getEffectiveStopPeriod() == null ? "" : status.getEffectiveStopPeriod().toString());
+			r.setField(idx++, status.getFallBackStatus() == null ? "" : status.getFallBackStatus().getUniqueId().toString());
 		}
 		data.setEditable(context.hasPermission(Right.StudentSchedulingStatusTypeEdit));
 		return data;
@@ -152,6 +174,26 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		status.setLabel(record.getField(1));
 		status.setStatus(value);
 		status.setMessage(record.getField(2 + StatusOption.values().length));
+		
+		int idx = (courseTypes.isEmpty() ? 3 + StatusOption.values().length : 4 + StatusOption.values().length + courseTypes.size());
+		Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
+		Date startDate = null;
+		try {
+			startDate = (record.getField(idx) == null || record.getField(idx).isEmpty() ? null : dateFormat.parse(record.getField(idx))); idx++;
+		} catch (ParseException e) {}
+		Integer startTime = (record.getField(idx) == null || record.getField(idx).isEmpty() ? null : Integer.valueOf(record.getField(idx))); idx++;
+		Date endDate = null;
+		try {
+			endDate = (record.getField(idx) == null || record.getField(idx).isEmpty() ? null : dateFormat.parse(record.getField(idx))); idx++;
+		} catch (ParseException e) {}
+		Integer endTime = (record.getField(idx) == null || record.getField(idx).isEmpty() ? null : Integer.valueOf(record.getField(idx))); idx++;
+		Long fallBackId = (record.getField(idx) == null || record.getField(idx).isEmpty() ? null : Long.valueOf(record.getField(idx))); idx++;
+		status.setEffectiveStartDate(startDate);
+		status.setEffectiveStartPeriod(startTime);
+		status.setEffectiveStopDate(endDate);
+		status.setEffectiveStopPeriod(endTime);
+		status.setFallBackStatus(fallBackId == null ? null : StudentSectioningStatusDAO.getInstance().get(fallBackId, hibSession));
+		
 		record.setUniqueId((Long)hibSession.save(status));
 		ChangeLog.addChange(hibSession,
 				context,
@@ -175,17 +217,41 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 				if ("true".equals(record.getField(3 + StatusOption.values().length + i))) types.add(courseTypes.get(i));
 			if (!"true".equals(record.getField(3 + StatusOption.values().length + courseTypes.size()))) value += StudentSectioningStatus.Option.notype.toggle();
 		}
+		
+		int idx = (courseTypes.isEmpty() ? 3 + StatusOption.values().length : 4 + StatusOption.values().length + courseTypes.size());
+		Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
+		Date startDate = null;
+		try {
+			startDate = (record.getField(idx) == null || record.getField(idx).isEmpty() ? null : dateFormat.parse(record.getField(idx))); idx++;
+		} catch (ParseException e) {}
+		Integer startTime = (record.getField(idx) == null || record.getField(idx).isEmpty() ? null : Integer.valueOf(record.getField(idx))); idx++;
+		Date endDate = null;
+		try {
+			endDate = (record.getField(idx) == null || record.getField(idx).isEmpty() ? null : dateFormat.parse(record.getField(idx))); idx++;
+		} catch (ParseException e) {}
+		Integer endTime = (record.getField(idx) == null || record.getField(idx).isEmpty() ? null : Integer.valueOf(record.getField(idx))); idx++;
+		Long fallBackId = (record.getField(idx) == null || record.getField(idx).isEmpty() ? null : Long.valueOf(record.getField(idx))); idx++;
+		
 		boolean changed = 
 			!ToolBox.equals(status.getReference(), record.getField(0)) ||
 			!ToolBox.equals(status.getLabel(), record.getField(1)) ||
 			!ToolBox.equals(status.getStatus(), value) ||
 			!ToolBox.equals(status.getTypes(), types) ||
-			!ToolBox.equals(status.getMessage(), record.getField(2 + StatusOption.values().length));
+			!ToolBox.equals(status.getMessage(), record.getField(2 + StatusOption.values().length)) ||
+			!ToolBox.equals(status.getEffectiveStartDate(), startDate) || !ToolBox.equals(status.getEffectiveStartPeriod(), startTime) ||
+			!ToolBox.equals(status.getEffectiveStopDate(), endDate) || !ToolBox.equals(status.getEffectiveStopPeriod(), endTime) ||
+			!ToolBox.equals(status.getFallBackStatus() == null ? null : status.getFallBackStatus().getUniqueId(), fallBackId)
+			;
 		status.setReference(record.getField(0));
 		status.setLabel(record.getField(1));
 		status.setStatus(value);
 		status.setTypes(types);
 		status.setMessage(record.getField(2 + StatusOption.values().length));
+		status.setEffectiveStartDate(startDate);
+		status.setEffectiveStartPeriod(startTime);
+		status.setEffectiveStopDate(endDate);
+		status.setEffectiveStopPeriod(endTime);
+		status.setFallBackStatus(fallBackId == null ? null : StudentSectioningStatusDAO.getInstance().get(fallBackId, hibSession));
 		hibSession.saveOrUpdate(status);
 		if (changed)
 			ChangeLog.addChange(hibSession,
@@ -206,6 +272,10 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 
 	protected void delete(StudentSectioningStatus status, SessionContext context, Session hibSession) {
 		if (status == null) return;
+		for (StudentSectioningStatus s: (List<StudentSectioningStatus>)hibSession.createQuery(
+				"from StudentSectioningStatus s where s.fallBackStatus.uniqueId = :statusId").setLong("statusId", status.getUniqueId()).list()) {
+			s.setFallBackStatus(null); hibSession.saveOrUpdate(s);
+		}
 		ChangeLog.addChange(hibSession,
 				context,
 				status,

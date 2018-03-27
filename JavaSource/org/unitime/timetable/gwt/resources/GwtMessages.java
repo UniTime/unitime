@@ -4532,6 +4532,21 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Disabled Sections")
 	String fieldAllowDisabledSections();
 	
+	@DefaultMessage("Start Date")
+	String fieldStudentStatusEffectiveStartDate();
+	
+	@DefaultMessage("Start Time")
+	String fieldStudentStatusEffectiveStartTime();
+	
+	@DefaultMessage("End Date")
+	String fieldStudentStatusEffectiveEndDate();
+	
+	@DefaultMessage("End Time")
+	String fieldStudentStatusEffectiveEndTime();
+	
+	@DefaultMessage("Fallback Status")
+	String fieldStudentStatusFallback();
+	
 	@DefaultMessage("Not Allowed")
 	String itemAllowDisabledSectionsNotAllowed();
 	
@@ -4579,6 +4594,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Admin Register")
 	String toggleRegAdmin();
+	
+	@DefaultMessage("Advisor Can Set Status")
+	String toggleAdvisorCanSetStatus();
 	
 	@DefaultMessage("Final Examinations")
 	String finalExaminations();
@@ -6130,4 +6148,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Difference in back-to-back instructor preferences")
 	String reportPertDeltaInstructorBTBPref();
+	
+	@DefaultMessage("Session Default")
+	String studentStatusDefault();
 }
