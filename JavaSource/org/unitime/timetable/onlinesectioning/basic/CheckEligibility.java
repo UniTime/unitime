@@ -164,7 +164,7 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 				
 				String effectivePeriod = (s != null ? s.getEffectivePeriod() : status != null ? status.getEffectivePeriod() : null);
 				if (effectivePeriod != null)
-					iCheck.setMessage(iCheck.getMessage() + "\n" + MSG.messageTimeWindow(effectivePeriod));
+					iCheck.setMessage((iCheck.hasMessage() ? iCheck.getMessage() + "\n" : "") + MSG.messageTimeWindow(effectivePeriod));
 					
 				xstudent = server.getStudent(iStudentId);
 			} finally {

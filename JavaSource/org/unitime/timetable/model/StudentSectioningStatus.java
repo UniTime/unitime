@@ -176,7 +176,7 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 			else if (getEffectiveStopPeriod() == null)
 				stop = Formats.getDateFormat(Formats.Pattern.DATE_EVENT).format(getEffectiveStopDate());
 			else
-				start = Formats.getDateFormat(Formats.Pattern.DATE_EVENT).format(getEffectiveStopDate()) + " " + Constants.slot2str(getEffectiveStopPeriod());
+				stop = Formats.getDateFormat(Formats.Pattern.DATE_EVENT).format(getEffectiveStopDate()) + " " + Constants.slot2str(getEffectiveStopPeriod());
 		}
 		if (start != null) {
 			if (stop != null) {

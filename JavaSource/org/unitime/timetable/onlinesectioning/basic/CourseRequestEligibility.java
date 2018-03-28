@@ -126,7 +126,7 @@ public class CourseRequestEligibility extends CheckEligibility {
 
 				String effectivePeriod = (s != null ? s.getEffectivePeriod() : status != null ? status.getEffectivePeriod() : null);
 				if (effectivePeriod != null)
-					iCheck.setMessage(iCheck.getMessage() + "\n" + MSG.messageTimeWindow(effectivePeriod));
+					iCheck.setMessage((iCheck.hasMessage() ? iCheck.getMessage() + "\n" : "") + MSG.messageTimeWindow(effectivePeriod));
 				
 				if (iCustomCheck) {
 					if (CustomCourseRequestsValidationHolder.hasProvider())

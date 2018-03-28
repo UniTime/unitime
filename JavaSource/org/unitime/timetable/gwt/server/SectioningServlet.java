@@ -34,7 +34,6 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.cpsolver.coursett.model.Placement;
-import org.hibernate.criterion.Order;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
@@ -2154,7 +2153,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		info.setWaitList(status.hasOption(StudentSectioningStatus.Option.waitlist));
 		info.setEmail(status.hasOption(StudentSectioningStatus.Option.email));
 		info.setMessage(status.getMessage());
-		if (status.hasOption(Option.notype)) { // all but
+		if (!status.hasOption(Option.notype)) { // all but
 			Set<String> prohibited = new TreeSet<String>();
 			for (CourseType type: types)
 				if (status.getTypes() == null || !status.getTypes().contains(type))
@@ -2199,7 +2198,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 
 	@Override
 	public List<StudentStatusInfo> lookupStudentSectioningStates() throws SectioningException, PageAccessException {
-		List<CourseType> courseTypes = CourseTypeDAO.getInstance().findAll(Order.asc("reference"));
+		List<CourseType> courseTypes = CourseTypeDAO.getInstance().getSession().createQuery(
+				"select distinct t from CourseOffering c inner join c.courseType t where c.instructionalOffering.session = :sessionId order by t.reference"
+				).setLong("sessionId", getStatusPageSessionId()).setCacheable(true).list();
 		List<StudentStatusInfo> ret = new ArrayList<StudentStatusInfo>();
 		boolean advisor = (getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdvisor) &&
 				!getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdmin));
