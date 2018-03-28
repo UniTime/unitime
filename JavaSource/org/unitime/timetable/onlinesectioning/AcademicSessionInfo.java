@@ -39,7 +39,7 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Ser
 	private BitSet iFreeTimePattern = null;
 	private Date iSessionBegin = null;
 	private Date iDatePatternFirstDate = null;
-	private boolean iSectioningEnabled = false;;
+	private boolean iSectioningEnabled = false;
 	private int iWkEnroll = 1, iWkChange = 1, iWkDrop = 4;
 	private String iDefaultStatus = null;
 	

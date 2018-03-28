@@ -71,6 +71,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesRespo
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CourseMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -88,10 +89,12 @@ import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Change;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ChangeError;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CourseCredit;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.EligibilityProblem;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Problem;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.RequestStatus;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ResponseStatus;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Schedule;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationResponseList;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationStatusResponse;
@@ -166,6 +169,14 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 	
 	protected String getSpecialRegistrationApiSiteSubmitRegistration() {
 		return ApplicationProperties.getProperty("purdue.specreg.site.submitRegistration", getSpecialRegistrationApiSite() + "/submitRegistration");
+	}
+	
+	protected String getSpecialRegistrationApiSiteCheckEligibility() {
+		return ApplicationProperties.getProperty("purdue.specreg.site.checkEligibility", getSpecialRegistrationApiSite() + "/checkEligibility");
+	}
+	
+	protected String getSpecialRegistrationDashboardUrl() {
+		return ApplicationProperties.getProperty("purdue.specreg.dashBoard");
 	}
 	
 	protected String getSpecialRegistrationApiKey() {
@@ -1157,12 +1168,16 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		XStudent original = (request.getStudentId() == null ? null : server.getStudent(request.getStudentId()));
 		if (original == null) return;
 		
+		Integer ORD_UNITIME = new Integer(0);
+		Integer ORD_BANNER = new Integer(1);
+		Integer ORD_CREDIT = new Integer(2);
+		
 		for (CourseRequestInterface.Request r: request.getCourses()) {
 			if (r.hasRequestedCourse() && r.getRequestedCourse().size() == 1) {
 				RequestedCourse rc = r.getRequestedCourse(0);
 				if (rc.getCourseId() != null && !rc.isReadOnly()) {
 					request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), "NO_ALT",
-							ApplicationProperties.getProperty("purdue.specreg.messages.courseHasNoAlt", "No alternative course provided.").replace("{course}", rc.getCourseName()));
+							ApplicationProperties.getProperty("purdue.specreg.messages.courseHasNoAlt", "No alternative course provided.").replace("{course}", rc.getCourseName()), ORD_UNITIME);
 				}
 			}
 		}
@@ -1184,7 +1199,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 										for (Class_ other: singleSections.keySet()) {
 											if (other.getCommittedAssignment().getTimeLocation().hasIntersection(time) && !clazz.isToIgnoreStudentConflictsWith(other)){
 												request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "OVERLAP",
-														ApplicationProperties.getProperty("purdue.specreg.messages.courseOverlaps", "Conflicts with {other}.").replace("{course}", course.getCourseName()).replace("{other}", singleSections.get(other).getCourseName()));
+														ApplicationProperties.getProperty("purdue.specreg.messages.courseOverlaps", "Conflicts with {other}.").replace("{course}", course.getCourseName()).replace("{other}", singleSections.get(other).getCourseName()),
+														ORD_UNITIME);
 											}
 										}
 										if (cr.getCourseIds().size() == 1) {
@@ -1213,7 +1229,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 									for (XSection other: singleSections.keySet()) {
 										if (section.isOverlapping(offering.getDistributions(), other)) {
 											request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "OVERLAP",
-													ApplicationProperties.getProperty("purdue.specreg.messages.courseOverlaps", "Conflicts with {other}.").replace("{course}", course.getCourseName()).replace("{other}", singleSections.get(other).getCourseName()));
+													ApplicationProperties.getProperty("purdue.specreg.messages.courseOverlaps", "Conflicts with {other}.").replace("{course}", course.getCourseName()).replace("{other}", singleSections.get(other).getCourseName()),
+													ORD_UNITIME);
 										}
 									}
 									if (cr.getCourseIds().size() == 1) {
@@ -1298,22 +1315,30 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							if (ch.errors != null)
 								for (ChangeError er: ch.errors) {
 									if (RequestStatus.denied.name().equals(r.status)) {
-										request.addConfirmationError(rc.getCourseId(), rc.getCourseName(), er.code, "Denied " + er.message, status(r.status));
+										request.addConfirmationError(rc.getCourseId(), rc.getCourseName(), er.code, "Denied " + er.message, status(r.status), ORD_BANNER);
 										request.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.deniedOverrideError",
 												"One or more courses require registration overrides which have been denied.\nYou must remove or replace these courses in order to submit your registration request."));
 									} else
-										request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), er.code, er.message, status(r.status));
+										request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), er.code, er.message, status(r.status), ORD_BANNER);
 								}
+					rc.setStatusNote(r.notes);
 				}
 			}
 			
 			if (maxCredit < request.getCredit()) {
 				for (RequestedCourse rc: getOverCreditRequests(request, maxCredit)) {
 					request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), "CREDIT",
-							ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())), request.getMaxCreditOverrideStatus());
+							ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())), request.getMaxCreditOverrideStatus(),
+							ORD_CREDIT);
 					if (request.getMaxCreditOverrideStatus() != null && rc.getStatus() == null || rc.getStatus() == RequestedCourseStatus.SAVED)
 						rc.setStatus(request.getMaxCreditOverrideStatus());
 				}
+			}
+			
+			if (OnlineSectioningLog.Entity.EntityType.MANAGER == helper.getUser().getType()) {
+				String dash = getSpecialRegistrationDashboardUrl();
+				if (dash != null)
+					request.setSpecRegDashboardUrl(dash.replace("{term}", term).replace("{campus}", campus).replace("{studentId}",getBannerId(original)));
 			}
 		} catch (SectioningException e) {
 			helper.getAction().setApiException(e.getMessage());
@@ -1888,5 +1913,70 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		if (changed || studentChanged) helper.getHibSession().flush();
 		
 		return changed || studentChanged;
+	}
+
+	@Override
+	public void checkEligibility(OnlineSectioningServer server, OnlineSectioningHelper helper, EligibilityCheck check, org.unitime.timetable.model.Student student) throws SectioningException {
+		if (student == null || !check.hasFlag(EligibilityCheck.EligibilityFlag.CAN_REGISTER)) return;
+		ClientResource resource = null;
+		try {
+			resource = new ClientResource(getSpecialRegistrationApiSiteCheckEligibility());
+			resource.setNext(iClient);
+			
+			AcademicSessionInfo session = server.getAcademicSession();
+			String term = getBannerTerm(session);
+			String campus = getBannerCampus(session);
+			resource.addQueryParameter("term", term);
+			resource.addQueryParameter("campus", campus);
+			resource.addQueryParameter("studentId", getBannerId(student));
+			resource.addQueryParameter("mode", getSpecialRegistrationApiMode());
+			helper.getAction().addOptionBuilder().setKey("term").setValue(term);
+			helper.getAction().addOptionBuilder().setKey("campus").setValue(campus);
+			helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
+			resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
+			
+			long t0 = System.currentTimeMillis();
+			
+			resource.get(MediaType.APPLICATION_JSON);
+			
+			helper.getAction().setApiGetTime(System.currentTimeMillis() - t0);
+			
+			SpecialRegistrationEligibilityResponse eligibility = (SpecialRegistrationEligibilityResponse)new GsonRepresentation<SpecialRegistrationEligibilityResponse>(resource.getResponseEntity(), SpecialRegistrationEligibilityResponse.class).getObject();
+			Gson gson = getGson(helper);
+			
+			if (helper.isDebugEnabled())
+				helper.debug("Eligibility: " + gson.toJson(eligibility));
+			helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(eligibility));
+			
+			if (!ResponseStatus.success.name().equals(eligibility.status))
+				throw new SectioningException(eligibility.message == null || eligibility.message.isEmpty() ? "Failed to check student eligibility (" + eligibility.status + ")." : eligibility.message);
+			
+			if (eligibility.data == null || eligibility.data.eligible == null || !eligibility.data.eligible.booleanValue()) {
+				check.setFlag(EligibilityCheck.EligibilityFlag.CAN_REGISTER, false);
+			}
+			if (eligibility.data != null && eligibility.data.eligibilityProblems != null) {
+				String m = null;
+				for (EligibilityProblem p: eligibility.data.eligibilityProblems)
+					if (m == null)
+						m = p.message;
+					else
+						m += "\n" + p.message;
+				if (m != null)
+					check.setMessage(MESSAGES.exceptionFailedEligibilityCheck(m));
+			}
+			
+		} catch (SectioningException e) {
+			helper.getAction().setApiException(e.getMessage());
+			throw (SectioningException)e;
+		} catch (Exception e) {
+			helper.getAction().setApiException(e.getMessage() == null ? "Null" : e.getMessage());
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(e.getMessage());
+		} finally {
+			if (resource != null) {
+				if (resource.getResponse() != null) resource.getResponse().release();
+				resource.release();
+			}
+		}
 	}
 }

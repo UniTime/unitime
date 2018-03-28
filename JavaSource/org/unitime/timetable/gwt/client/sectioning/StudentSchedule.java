@@ -195,6 +195,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									icon = RESOURCES.requestError(); iconText = (msg);
 							}
 						}
+						if (rc.hasStatusNote()) iconText += "\n" + MESSAGES.overrideNote(rc.getStatusNote());
 						Collection<String> prefs = null;
 						if (rc.hasSelectedIntructionalMethods()) {
 							if (rc.hasSelectedClasses()) {
@@ -235,7 +236,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 								credit, 
 								new WebTable.Cell(ToolBox.toString(prefs)),
-								new WebTable.NoteCell(check == null ? "" : check.getMessageWithColor(rc.getCourseName(), "<br>"), check == null ? null : check.getMessage(rc.getCourseName(), "\n")),
+								new WebTable.NoteCell(check == null ? "" : check.getMessageWithColor(rc.getCourseName(), "<br>") + (rc.hasStatusNote() ? "<br>" + rc.getStatusNote() : ""), check == null ? null : check.getMessage(rc.getCourseName(), "\n") + (rc.hasStatusNote() ? "\n" + MESSAGES.overrideNote(rc.getStatusNote()) : "")),
 								(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
 								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell("")),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
@@ -304,6 +305,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									icon = RESOURCES.requestError(); iconText = (msg);
 							}
 						}
+						if (rc.hasStatusNote()) iconText += "\n" + MESSAGES.overrideNote(rc.getStatusNote());
 						Collection<String> prefs = null;
 						if (rc.hasSelectedIntructionalMethods()) {
 							if (rc.hasSelectedClasses()) {
@@ -344,7 +346,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 								credit,
 								new WebTable.Cell(ToolBox.toString(prefs)),
-								new WebTable.NoteCell(check == null ? "" : check.getMessageWithColor(rc.getCourseName(), "<br>"), check == null ? null : check.getMessage(rc.getCourseName(), "\n")),
+								new WebTable.NoteCell(check == null ? "" : check.getMessageWithColor(rc.getCourseName(), "<br>") + (rc.hasStatusNote() ? "<br>" + rc.getStatusNote() : ""), check == null ? null : check.getMessage(rc.getCourseName(), "\n") + (rc.hasStatusNote() ? "\n" + MESSAGES.overrideNote(rc.getStatusNote()) : "")),
 								(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
 								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell("")),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")

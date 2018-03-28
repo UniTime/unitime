@@ -43,6 +43,15 @@ public class SpecialRegistrationInterface {
 		public String requestorRole;
 		public List<CourseCredit> courseCreditHrs;
 		public List<CourseCredit> alternateCourseCreditHrs;
+		public String notes;
+	}
+	
+	public static class SpecialRegistrationEligibility {
+		public String studentId;
+		public String term;
+		public String campus;
+		public Boolean eligible;
+		public List<EligibilityProblem> eligibilityProblems;
 	}
 	
 	public static enum RequestStatus {
@@ -69,6 +78,13 @@ public class SpecialRegistrationInterface {
 		public String message;
 	}
 	
+	public static class SpecialRegistrationEligibilityResponse {
+		public SpecialRegistrationEligibility data;
+		public String status;
+		public String message;
+	}
+
+	
 	public static class SpecialRegistrationStatus {
 		public Set<String> overrides;
 		public List<SpecialRegistrationRequest> requests;
@@ -93,6 +109,11 @@ public class SpecialRegistrationInterface {
 	}
 	
 	public static class ChangeError {
+		String code;
+		String message;
+	}
+	
+	public static class EligibilityProblem {
 		String code;
 		String message;
 	}

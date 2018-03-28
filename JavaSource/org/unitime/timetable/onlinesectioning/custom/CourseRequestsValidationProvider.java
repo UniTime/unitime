@@ -21,6 +21,7 @@ package org.unitime.timetable.onlinesectioning.custom;
 
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -31,6 +32,8 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
  * @author Tomas Muller
  */
 public interface CourseRequestsValidationProvider {
+	
+	public void checkEligibility(OnlineSectioningServer server, OnlineSectioningHelper helper, EligibilityCheck check, Student student) throws SectioningException;
 	
 	public void check(OnlineSectioningServer server, OnlineSectioningHelper helper, CourseRequestInterface request) throws SectioningException;
 	

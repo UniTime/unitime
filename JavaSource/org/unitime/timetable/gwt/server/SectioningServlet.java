@@ -118,6 +118,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.basic.CheckCourses;
 import org.unitime.timetable.onlinesectioning.basic.CheckEligibility;
+import org.unitime.timetable.onlinesectioning.basic.CourseRequestEligibility;
 import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
 import org.unitime.timetable.onlinesectioning.basic.GetDegreePlans;
 import org.unitime.timetable.onlinesectioning.basic.GetRequest;
@@ -2470,25 +2471,32 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			check.setStudentId(studentId);
 			
 			if (!sectioning) {
-				Student student = (studentId == null ? null : StudentDAO.getInstance().get(studentId));
-				if (student == null) {
-					if (!check.hasFlag(EligibilityFlag.IS_ADMIN) && !check.hasFlag(EligibilityFlag.IS_ADVISOR))
-						check.setMessage(MSG.exceptionEnrollNotStudent(SessionDAO.getInstance().get(sessionId).getLabel()));
+				OnlineSectioningServer server = getServerInstance(sessionId, true);
+				if (server == null) {
+					Student student = (studentId == null ? null : StudentDAO.getInstance().get(studentId));
+					if (student == null) {
+						if (!check.hasFlag(EligibilityFlag.IS_ADMIN) && !check.hasFlag(EligibilityFlag.IS_ADVISOR))
+							check.setMessage(MSG.exceptionEnrollNotStudent(SessionDAO.getInstance().get(sessionId).getLabel()));
+						return check;
+					}
+					StudentSectioningStatus status = student.getEffectiveStatus();
+					if (status == null) {
+						check.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, true);
+						check.setFlag(EligibilityFlag.CAN_WAITLIST, true);
+					} else {
+						check.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, status.hasOption(StudentSectioningStatus.Option.regenabled));
+						check.setFlag(EligibilityFlag.CAN_WAITLIST, status.hasOption(StudentSectioningStatus.Option.waitlist));
+						check.setMessage(status.getMessage());
+					}
+					check.setFlag(EligibilityFlag.CAN_REGISTER, getSessionContext().hasPermissionAnySession(student, Right.StudentSchedulingCanRegister));
+					
+					if (!check.hasMessage() && !check.hasFlag(EligibilityFlag.CAN_REGISTER))
+						check.setMessage(MSG.exceptionAccessDisabled());
 					return check;
-				}
-				StudentSectioningStatus status = student.getEffectiveStatus();
-				if (status == null) {
-					check.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, true);
-					check.setFlag(EligibilityFlag.CAN_WAITLIST, true);
 				} else {
-					check.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, status.hasOption(StudentSectioningStatus.Option.regenabled));
-					check.setFlag(EligibilityFlag.CAN_WAITLIST, status.hasOption(StudentSectioningStatus.Option.waitlist));
-					check.setMessage(status.getMessage());
+					return server.execute(server.createAction(CourseRequestEligibility.class).forStudent(studentId).withCheck(check).includeCustomCheck(includeCustomCheck)
+							.withPermission(getSessionContext().hasPermissionAnySession(studentId, "Student", Right.StudentSchedulingCanRegister)), currentUser());
 				}
-				check.setFlag(EligibilityFlag.CAN_REGISTER, getSessionContext().hasPermissionAnySession(student, Right.StudentSchedulingCanRegister));
-				if (!check.hasMessage() && !check.hasFlag(EligibilityFlag.CAN_REGISTER))
-					check.setMessage(MSG.exceptionAccessDisabled());
-				return check;
 			}
 			
 			OnlineSectioningServer server = getServerInstance(sessionId, false);

@@ -374,42 +374,46 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	protected void setErrors(CourseSelectionBox box, CheckCoursesResponse messages) {
 		String message = messages.getMessage(box.getText(), "\n");
 		if (message != null) {
+			String note = "";
+			if (box.getValue().hasStatusNote()) note = "\n<span class='status-note'>" + box.getValue().getStatusNote() + "</span>";
 			if (messages.isError(box.getText()) || messages.isConfirm(box.getText()))
-				box.setError(message);
+				box.setError(message + note);
 			else
-				box.setWarning(message);
+				box.setWarning(message + note);
 		}
 		RequestedCourseStatus status = messages.getStatus(box.getText());
 		if (status == null) status = box.getValue().getStatus();
 		if (!box.isCanDelete()) status = RequestedCourseStatus.ENROLLED;
+		String note = "";
+		if (box.getValue().hasStatusNote()) note = "\n" + MESSAGES.overrideNote(box.getValue().getStatusNote());
 		if (messages.isError(box.getText()) && (status == null || status != RequestedCourseStatus.OVERRIDE_REJECTED)) {
 			box.setStatus(RESOURCES.requestError(), message);
 		} else if (status != null) {
 			switch (status) {
 			case ENROLLED:
-				box.setStatus(RESOURCES.requestEnrolled(), MESSAGES.enrolled(box.getText()));
+				box.setStatus(RESOURCES.requestEnrolled(), MESSAGES.enrolled(box.getText()) + note);
 				break;
 			case OVERRIDE_NEEDED:
-				box.setStatus(RESOURCES.requestNeeded(), MESSAGES.overrideNeeded(message));
+				box.setStatus(RESOURCES.requestNeeded(), MESSAGES.overrideNeeded(message) + note);
 				break;
 			case SAVED:
-				box.setStatus(RESOURCES.requestSaved(), (message == null ? "" : MESSAGES.requestWarnings(message) + "\n\n") + MESSAGES.requested(box.getText()));
+				box.setStatus(RESOURCES.requestSaved(), (message == null ? "" : MESSAGES.requestWarnings(message) + "\n\n") + MESSAGES.requested(box.getText()) + note);
 				break;				
 			case OVERRIDE_REJECTED:
-				box.setStatus(RESOURCES.requestRejected(), (message == null ? "" : MESSAGES.requestWarnings(message) + "\n\n") + MESSAGES.overrideRejected(box.getText()));
+				box.setStatus(RESOURCES.requestRejected(), (message == null ? "" : MESSAGES.requestWarnings(message) + "\n\n") + MESSAGES.overrideRejected(box.getText()) + note);
 				break;
 			case OVERRIDE_PENDING:
-				box.setStatus(RESOURCES.requestPending(), (message == null ? "" : MESSAGES.requestWarnings(message) + "\n\n") + MESSAGES.overridePending(box.getText()));
+				box.setStatus(RESOURCES.requestPending(), (message == null ? "" : MESSAGES.requestWarnings(message) + "\n\n") + MESSAGES.overridePending(box.getText()) + note);
 				break;
 			case OVERRIDE_CANCELLED:
-				box.setStatus(RESOURCES.requestCancelled(), (message == null ? "" : MESSAGES.requestWarnings(message) + "\n\n") + MESSAGES.overrideCancelled(box.getText()));
+				box.setStatus(RESOURCES.requestCancelled(), (message == null ? "" : MESSAGES.requestWarnings(message) + "\n\n") + MESSAGES.overrideCancelled(box.getText()) + note);
 				break;
 			case OVERRIDE_APPROVED:
-				box.setStatus(RESOURCES.requestSaved(), (message == null ? "" : MESSAGES.requestWarnings(message) + "\n\n") + MESSAGES.overrideApproved(box.getText()));
+				box.setStatus(RESOURCES.requestSaved(), (message == null ? "" : MESSAGES.requestWarnings(message) + "\n\n") + MESSAGES.overrideApproved(box.getText()) + note);
 				break;
 			default:
 				if (messages.isError(box.getText()))
-					box.setStatus(RESOURCES.requestError(), message);
+					box.setStatus(RESOURCES.requestError(), message + note);
 				else
 					box.clearStatus();
 				break;

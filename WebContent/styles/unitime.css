@@ -6010,8 +6010,14 @@ unitime-RoomSharingWidget .legend .blank {
 	max-height: 200px;
 }
 
-.unitime-CourseRequestBox .unitime-ErrorHint {
-	white-space: pre-wrap;	
+.unitime-CourseRequestBox .unitime-ErrorHint .status-note {
+	color: #777777;	
+	font-style: italic;
+}
+
+.unitime-CourseRequestBox .unitime-WarningHint .status-note {
+	color: #777777;
+	font-style: italic;
 }
 
 .gwt-TabBarItem-disabled {

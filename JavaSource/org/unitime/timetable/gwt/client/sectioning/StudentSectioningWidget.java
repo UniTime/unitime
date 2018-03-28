@@ -1629,7 +1629,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				iCourseRequests.setCanWaitList(result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
 				iCourseRequests.setArrowsVisible(!result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.NO_REQUEST_ARROWS));
 				if (result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_USE_ASSISTANT)) {
-					if (result.hasMessage()) {
+					if (result.hasMessage() && (iMode.isSectioning() && !result.hasFlag(EligibilityFlag.CAN_ENROLL))) {
+						iStatus.error(iEligibilityCheck.getMessage());
+					} else if (result.hasMessage() && (!iMode.isSectioning() && !result.hasFlag(EligibilityFlag.CAN_REGISTER))) {
+						iStatus.error(iEligibilityCheck.getMessage());
+					} else if (result.hasMessage()) {
 						iStatus.warning(result.getMessage());
 					} else {
 						clearMessage();
@@ -2440,6 +2444,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								icon = RESOURCES.requestError(); iconText = (msg);
 						}
 					}
+					if (rc.hasStatusNote()) iconText += "\n" + MESSAGES.overrideNote(rc.getStatusNote());
 					Collection<String> prefs = null;
 					if (rc.hasSelectedIntructionalMethods()) {
 						if (rc.hasSelectedClasses()) {
@@ -2475,14 +2480,14 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					WebTable.Cell credit = new WebTable.Cell(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : "");
 					credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 					P messages = new P("text-pre-wrap");
-					if (check != null) messages.setText(check.getMessage(rc.getCourseName(), "\n"));
+					if (check != null) messages.setText(check.getMessage(rc.getCourseName(), "\n") + (rc.hasStatusNote() ? "\n" + rc.getStatusNote() : ""));
 					WebTable.Row row = new WebTable.Row(
 							new WebTable.Cell(first ? MESSAGES.courseRequestsPriority(priority) : ""),
 							new WebTable.Cell(rc.getCourseName()),
 							new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 							credit, 
 							new WebTable.Cell(ToolBox.toString(prefs)),
-							new WebTable.WidgetCell(messages, check == null ? null : check.getMessage(rc.getCourseName(), "\n")),
+							new WebTable.WidgetCell(messages, check == null ? null : check.getMessage(rc.getCourseName(), "\n") + (rc.hasStatusNote() ? "\n" + MESSAGES.overrideNote(rc.getStatusNote()) : "")),
 							(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
 							(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell(""))
 							);
@@ -2548,7 +2553,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							if (check.isError(rc.getCourseName()))
 								icon = RESOURCES.requestError(); iconText = (msg);
 						}
-					}					
+					}
+					if (rc.hasStatusNote()) iconText += "\n" + MESSAGES.overrideNote(rc.getStatusNote());
 					Collection<String> prefs = null;
 					if (rc.hasSelectedIntructionalMethods()) {
 						if (rc.hasSelectedClasses()) {
@@ -2584,14 +2590,14 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					WebTable.Cell credit = new WebTable.Cell(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : "");
 					credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 					P messages = new P("text-pre-wrap");
-					if (check != null) messages.setText(check.getMessage(rc.getCourseName(), "\n"));
+					if (check != null) messages.setText(check.getMessage(rc.getCourseName(), "\n") + (rc.hasStatusNote() ? "\n" + rc.getStatusNote() : ""));
 					WebTable.Row row = new WebTable.Row(
 							new WebTable.Cell(first ? MESSAGES.courseRequestsAlternative(priority) : ""),
 							new WebTable.Cell(rc.getCourseName()),
 							new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 							credit,
 							new WebTable.Cell(ToolBox.toString(prefs)),
-							new WebTable.WidgetCell(messages, check == null ? null : check.getMessage(rc.getCourseName(), "\n")),
+							new WebTable.WidgetCell(messages, check == null ? null : check.getMessage(rc.getCourseName(), "\n") + (rc.hasStatusNote() ? "\n" + MESSAGES.overrideNote(rc.getStatusNote()) : "")),
 							(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
 							(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell(""))
 							);

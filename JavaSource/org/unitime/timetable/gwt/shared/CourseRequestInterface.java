@@ -58,6 +58,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	private String iMaxCreditOverrideExternalId = null;
 	private Date iMaxCreditOverrideTimeStamp = null;
 	private String iErrorMessage = null;
+	private String iSpecRegDashboardUrl = null;
 	
 	public CourseRequestInterface() {}
 
@@ -366,6 +367,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		private Set<String> iSelectedClasses;
 		private float[] iCredit = null;
 		private RequestedCourseStatus iStatus = null;
+		private String iStatusNote = null;
 		private String iOverrideExternalId = null;
 		private Date iOverrideTimeStamp = null;
 		
@@ -397,6 +399,9 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public void setCredit(float[] credit) { iCredit = credit; }
 		public void setStatus(RequestedCourseStatus status) { iStatus = status; }
 		public RequestedCourseStatus getStatus() { return iStatus; }
+		public void setStatusNote(String note) { iStatusNote = note; }
+		public boolean hasStatusNote() { return iStatusNote != null && !iStatusNote.isEmpty(); }
+		public String getStatusNote() { return iStatusNote; }
 		public void setOverrideExternalId(String externalId) { iOverrideExternalId = externalId; }
 		public String getOverrideExternalId() { return iOverrideExternalId; }
 		public void setOverrideTimeStamp(Date timeStamp) { iOverrideTimeStamp = timeStamp; }
@@ -991,7 +996,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		}
 	}
 	
-	public void addConfirmationError(Long courseId, String course, String code, String message, RequestedCourseStatus status) {
+	public void addConfirmationError(Long courseId, String course, String code, String message, RequestedCourseStatus status, Integer order) {
 		if (iConfirmations == null) iConfirmations = new ArrayList<CourseMessage>();
 		CourseMessage m = new CourseMessage();
 		m.setCourseId(courseId);
@@ -1001,10 +1006,11 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		m.setError(true);
 		m.setConfirm(null);
 		m.setStatus(status);
+		m.setOrder(order);
 		iConfirmations.add(m);
 	}
 	
-	public void addConfirmationMessage(Long courseId, String course, String code, String message, RequestedCourseStatus status) {
+	public void addConfirmationMessage(Long courseId, String course, String code, String message, RequestedCourseStatus status, Integer order) {
 		if (iConfirmations == null) iConfirmations = new ArrayList<CourseMessage>();
 		CourseMessage m = new CourseMessage();
 		m.setCourseId(courseId);
@@ -1014,11 +1020,12 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		m.setError(false);
 		m.setConfirm(null);
 		m.setStatus(status);
+		m.setOrder(order);
 		iConfirmations.add(m);
 	}
 	
-	public void addConfirmationMessage(Long courseId, String course, String code, String message) {
-		addConfirmationMessage(courseId, course, code, message, null);
+	public void addConfirmationMessage(Long courseId, String course, String code, String message, Integer order) {
+		addConfirmationMessage(courseId, course, code, message, null, order);
 	}
 	
 	public boolean hasErrorMessage() { return iErrorMessage != null && !iErrorMessage.isEmpty(); }
@@ -1027,4 +1034,8 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		else if (!iErrorMessage.contains(message)) iErrorMessage += "\n" + message;
 	}
 	public String getErrorMessaeg() { return iErrorMessage; }
+	
+	public String getSpecRegDashboardUrl() { return iSpecRegDashboardUrl; }
+	public boolean hasSpecRegDashboardUrl() { return iSpecRegDashboardUrl != null && !iSpecRegDashboardUrl.isEmpty(); }
+	public void setSpecRegDashboardUrl(String url) { iSpecRegDashboardUrl = url; }
 }

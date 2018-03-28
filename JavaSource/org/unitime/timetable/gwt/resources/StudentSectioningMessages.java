@@ -1205,6 +1205,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Change <u>L</u>og")
 	String buttonChangeLog();
 	
+	@DefaultMessage("Special Registration")
+	String buttonSpecRegDashboard();
+	
 	@DefaultMessage("Loading change log for {0}...")
 	String loadingChangeLog(String student);
 
@@ -1787,6 +1790,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Requested override for {0} has been approved.")
 	String overrideApproved(String course);
+	
+	@DefaultMessage("Last Note: {0}")
+	String overrideNote(String course);
 	
 	@DefaultMessage("Session Default ({0})")
 	String studentStatusSessionDefault(String name);

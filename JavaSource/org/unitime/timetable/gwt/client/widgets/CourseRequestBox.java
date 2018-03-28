@@ -67,8 +67,8 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
@@ -82,7 +82,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 	protected static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 
 	private CourseRequestFilterBox iFilter;
-	private Label iError;
+	private HTML iError;
 	
 	private Map<String, CourseAssignment> iValidCourseNames = new HashMap<String, CourseAssignment>();
 
@@ -222,7 +222,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 			}
 		});
 		
-		iError = new Label();
+		iError = new HTML();
 		iError.setStyleName("unitime-ErrorHint");
 		iError.setVisible(false);
 		Roles.getPresentationRole().setAriaHiddenState(iError.getElement(), true);
@@ -282,9 +282,10 @@ public class CourseRequestBox extends P implements CourseSelection {
 			ret.setCourseName(course.getCourseName());
 			ret.setCourseTitle(course.getTitle());
 			ret.setCredit(course.guessCreditRange());
-			if (iLastCourse != null && iLastCourse.isCourse() && iLastCourse.hasCourseId() && courseName.equalsIgnoreCase(iLastCourse.getCourseName()))
+			if (iLastCourse != null && iLastCourse.isCourse() && iLastCourse.hasCourseId() && courseName.equalsIgnoreCase(iLastCourse.getCourseName())) {
 				ret.setStatus(iLastCourse.getStatus());
-			else
+				ret.setStatusNote(iLastCourse.getStatusNote());
+			} else
 				ret.setStatus(RequestedCourseStatus.NEW_REQUEST);
 		} else if (iLastCourse != null && iLastCourse.isCourse() && iLastCourse.hasCourseId() && courseName.equalsIgnoreCase(iLastCourse.getCourseName())) {
 			ret.setCourseId(iLastCourse.getCourseId());
@@ -292,6 +293,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 			ret.setCourseTitle(iLastCourse.getCourseTitle());
 			ret.setCredit(iLastCourse.getCredit());
 			ret.setStatus(iLastCourse.getStatus());
+			ret.setStatusNote(iLastCourse.getStatusNote());
 		} else if (iFreeTimeParser != null) {
 			try {
 				ret.setFreeTime(iFreeTimeParser.parseFreeTime(courseName));
@@ -469,10 +471,10 @@ public class CourseRequestBox extends P implements CourseSelection {
 	public void setError(String error) {
 		iError.setStyleName("unitime-ErrorHint");
 		if (error == null || error.isEmpty()) {
-			iError.setText("");
+			iError.setHTML("");
 			iError.setVisible(false);
 		} else {
-			iError.setText(error);
+			iError.setHTML(error);
 			iError.setVisible(true);
 			iFilter.setStatus(error);
 			// AriaStatus.getInstance().setText(error);
@@ -482,10 +484,10 @@ public class CourseRequestBox extends P implements CourseSelection {
 	public void setWarning(String error) {
 		iError.setStyleName("unitime-WarningHint");
 		if (error == null || error.isEmpty()) {
-			iError.setText("");
+			iError.setHTML("");
 			iError.setVisible(false);
 		} else {
-			iError.setText(error);
+			iError.setHTML(error);
 			iError.setVisible(true);
 			iFilter.setStatus(error);
 			// AriaStatus.getInstance().setText(error);

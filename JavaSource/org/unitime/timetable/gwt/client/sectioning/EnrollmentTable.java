@@ -239,7 +239,7 @@ public class EnrollmentTable extends Composite {
 			}
 
 			@Override
-			public void onSuccess(ClassAssignmentInterface result) {
+			public void onSuccess(final ClassAssignmentInterface result) {
 				callback.onSuccess(true);
 				iStudentSchedule.setValue(result);
 				SimpleForm form = new SimpleForm();
@@ -320,6 +320,14 @@ public class EnrollmentTable extends Composite {
 						}
 					});		
 					buttons.setEnabled("log", student.getSessionId() != null && (student.isCanUseAssistant() || student.isCanRegister()));
+				}
+				if (iOnline && result.getRequest() != null && result.getRequest().hasSpecRegDashboardUrl()) {
+					buttons.addButton("dashboard", MESSAGES.buttonSpecRegDashboard(), new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							Window.open(result.getRequest().getSpecRegDashboardUrl(), "_blank", "");
+						}
+					});
 				}
 				buttons.addButton("close", MESSAGES.buttonClose(), new ClickHandler() {
 					@Override
