@@ -1335,11 +1335,9 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				}
 			}
 			
-			if (OnlineSectioningLog.Entity.EntityType.MANAGER == helper.getUser().getType()) {
-				String dash = getSpecialRegistrationDashboardUrl();
-				if (dash != null)
-					request.setSpecRegDashboardUrl(dash.replace("{term}", term).replace("{campus}", campus).replace("{studentId}",getBannerId(original)));
-			}
+			String dash = getSpecialRegistrationDashboardUrl();
+			if (dash != null)
+				request.setSpecRegDashboardUrl(dash.replace("{term}", term).replace("{campus}", campus).replace("{studentId}",getBannerId(original)));
 		} catch (SectioningException e) {
 			helper.getAction().setApiException(e.getMessage());
 			throw (SectioningException)e;
