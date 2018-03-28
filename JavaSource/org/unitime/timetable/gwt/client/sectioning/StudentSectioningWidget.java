@@ -1851,8 +1851,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					LoadingWidget.getInstance().hide();
 					iStartOver.setVisible(true);
 					iStartOver.setEnabled(true);
-					if (request.hasErrorMessage())
-						iStatus.warning(request.getErrorMessaeg());
+					if (request.hasErrorMessage() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL, EligibilityFlag.CAN_REGISTER))
+						if (iEligibilityCheck.hasMessage())
+							iStatus.warning(iEligibilityCheck.getMessage() + "\n" + request.getErrorMessaeg());
+						else
+							iStatus.warning(request.getErrorMessaeg());
 				}
 			}
 		};
@@ -2479,15 +2482,17 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					if (prefs != null) hasPref = true;
 					WebTable.Cell credit = new WebTable.Cell(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : "");
 					credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-					P messages = new P("text-pre-wrap");
-					if (check != null) messages.setText(check.getMessage(rc.getCourseName(), "\n") + (rc.hasStatusNote() ? "\n" + rc.getStatusNote() : ""));
+					String note = null;
+					if (check != null) note = check.getMessage(rc.getCourseName(), "\n");
+					if (rc.hasStatusNote()) note = (note == null ? "" : note + "\n") + rc.getStatusNote();
+					P messages = new P("text-pre-wrap"); messages.setText(note);
 					WebTable.Row row = new WebTable.Row(
 							new WebTable.Cell(first ? MESSAGES.courseRequestsPriority(priority) : ""),
 							new WebTable.Cell(rc.getCourseName()),
 							new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 							credit, 
 							new WebTable.Cell(ToolBox.toString(prefs)),
-							new WebTable.WidgetCell(messages, check == null ? null : check.getMessage(rc.getCourseName(), "\n") + (rc.hasStatusNote() ? "\n" + MESSAGES.overrideNote(rc.getStatusNote()) : "")),
+							new WebTable.WidgetCell(messages, note),
 							(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
 							(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell(""))
 							);
@@ -2589,15 +2594,17 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					if (status.isEmpty()) status = MESSAGES.reqStatusRegistered();
 					WebTable.Cell credit = new WebTable.Cell(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : "");
 					credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-					P messages = new P("text-pre-wrap");
-					if (check != null) messages.setText(check.getMessage(rc.getCourseName(), "\n") + (rc.hasStatusNote() ? "\n" + rc.getStatusNote() : ""));
+					String note = null;
+					if (check != null) note = check.getMessage(rc.getCourseName(), "\n");
+					if (rc.hasStatusNote()) note = (note == null ? "" : note + "\n") + rc.getStatusNote();
+					P messages = new P("text-pre-wrap"); messages.setText(note);
 					WebTable.Row row = new WebTable.Row(
 							new WebTable.Cell(first ? MESSAGES.courseRequestsAlternative(priority) : ""),
 							new WebTable.Cell(rc.getCourseName()),
 							new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 							credit,
 							new WebTable.Cell(ToolBox.toString(prefs)),
-							new WebTable.WidgetCell(messages, check == null ? null : check.getMessage(rc.getCourseName(), "\n") + (rc.hasStatusNote() ? "\n" + MESSAGES.overrideNote(rc.getStatusNote()) : "")),
+							new WebTable.WidgetCell(messages, note),
 							(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
 							(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell(""))
 							);

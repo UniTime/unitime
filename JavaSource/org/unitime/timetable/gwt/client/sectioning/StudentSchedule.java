@@ -230,13 +230,16 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						if (prefs != null) hasPref = true;
 						WebTable.Cell credit = new WebTable.Cell(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : "");
 						credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+						String note = null, noteTitle = null;
+						if (check != null) { note = check.getMessageWithColor(rc.getCourseName(), "<br>"); noteTitle = check.getMessage(rc.getCourseName(), "\n"); }
+						if (rc.hasStatusNote()) { note = (note == null ? "" : note + "<br>") + rc.getStatusNote(); noteTitle = (noteTitle == null ? "" : noteTitle + "\n") + rc.getStatusNote(); }
 						WebTable.Row row = new WebTable.Row(
 								new WebTable.Cell(first ? MESSAGES.courseRequestsPriority(priority) : ""),
 								new WebTable.Cell(rc.getCourseName()),
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 								credit, 
 								new WebTable.Cell(ToolBox.toString(prefs)),
-								new WebTable.NoteCell(check == null ? "" : check.getMessageWithColor(rc.getCourseName(), "<br>") + (rc.hasStatusNote() ? "<br>" + rc.getStatusNote() : ""), check == null ? null : check.getMessage(rc.getCourseName(), "\n") + (rc.hasStatusNote() ? "\n" + MESSAGES.overrideNote(rc.getStatusNote()) : "")),
+								new WebTable.NoteCell(note, noteTitle),
 								(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
 								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell("")),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
@@ -340,13 +343,16 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						if (status.isEmpty()) status = MESSAGES.reqStatusRegistered();
 						WebTable.Cell credit = new WebTable.Cell(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : "");
 						credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+						String note = null, noteTitle = null;
+						if (check != null) { note = check.getMessageWithColor(rc.getCourseName(), "<br>"); noteTitle = check.getMessage(rc.getCourseName(), "\n"); }
+						if (rc.hasStatusNote()) { note = (note == null ? "" : note + "<br>") + rc.getStatusNote(); noteTitle = (noteTitle == null ? "" : noteTitle + "\n") + rc.getStatusNote(); }
 						WebTable.Row row = new WebTable.Row(
 								new WebTable.Cell(first ? MESSAGES.courseRequestsAlternative(priority) : ""),
 								new WebTable.Cell(rc.getCourseName()),
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 								credit,
 								new WebTable.Cell(ToolBox.toString(prefs)),
-								new WebTable.NoteCell(check == null ? "" : check.getMessageWithColor(rc.getCourseName(), "<br>") + (rc.hasStatusNote() ? "<br>" + rc.getStatusNote() : ""), check == null ? null : check.getMessage(rc.getCourseName(), "\n") + (rc.hasStatusNote() ? "\n" + MESSAGES.overrideNote(rc.getStatusNote()) : "")),
+								new WebTable.NoteCell(note, noteTitle),
 								(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
 								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell("")),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
