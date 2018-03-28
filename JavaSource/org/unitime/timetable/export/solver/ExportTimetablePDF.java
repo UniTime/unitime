@@ -264,6 +264,12 @@ public class ExportTimetablePDF extends TableExporter {
 						else
 							rect.setBackgroundColor(color);
 					}
+				} else {
+					Color color = new Color(240, 240, 240);
+					if (isStyle("header"))
+						rect.setBackgroundColor(color.darker());
+					else
+						rect.setBackgroundColor(color);
 				}
 			}
 			if (rect.getBackgroundColor() != null)
