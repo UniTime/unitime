@@ -25,14 +25,18 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.model.base.BaseStudentSectioningStatus;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
+import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 
 /**
  * @author Tomas Muller
  */
 public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 	private static final long serialVersionUID = -33276457852954947L;
+	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 
 	public static enum Option {
 		/*    1 */ enabled("Scheduling Assistant Access Enabled"),
@@ -154,5 +158,36 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 		}
 		StudentSectioningStatus defaultStatus = (session == null ? null : session.getDefaultSectioningStatus());
 		return (defaultStatus == null ? true : defaultStatus.hasOption(option));
+	}
+	
+	public String getEffectivePeriod() {
+		String start = null, stop = null;
+		if (getEffectiveStartDate() != null || getEffectiveStartPeriod() != null) {
+			if (getEffectiveStartDate() == null)
+				start = Constants.slot2str(getEffectiveStartPeriod());
+			else if (getEffectiveStartPeriod() == null)
+				start = Formats.getDateFormat(Formats.Pattern.DATE_EVENT).format(getEffectiveStartDate());
+			else
+				start = Formats.getDateFormat(Formats.Pattern.DATE_EVENT).format(getEffectiveStartDate()) + " " + Constants.slot2str(getEffectiveStartPeriod());
+		}
+		if (getEffectiveStopDate() != null || getEffectiveStopPeriod() != null) {
+			if (getEffectiveStopDate() == null)
+				stop = Constants.slot2str(getEffectiveStopPeriod());
+			else if (getEffectiveStopPeriod() == null)
+				stop = Formats.getDateFormat(Formats.Pattern.DATE_EVENT).format(getEffectiveStopDate());
+			else
+				start = Formats.getDateFormat(Formats.Pattern.DATE_EVENT).format(getEffectiveStopDate()) + " " + Constants.slot2str(getEffectiveStopPeriod());
+		}
+		if (start != null) {
+			if (stop != null) {
+				return MSG.messageEffectivePeriodBetween(start, stop);
+			} else {
+				return MSG.messageEffectivePeriodAfter(start);
+			}
+		} else if (stop != null) {
+			return MSG.messageEffectivePeriodBefore(stop);
+		} else {
+			return null;
+		}
 	}
 }

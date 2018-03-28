@@ -1872,12 +1872,15 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Email notifications are disabled.")
 	String messageStatusCanNotEmail();
 	
-	@DefaultMessage("Before {0}")
+	@DefaultMessage("before {0}")
 	String messageEffectivePeriodBefore(String end);
 	
-	@DefaultMessage("After {0}")
+	@DefaultMessage("after {0}")
 	String messageEffectivePeriodAfter(String start);
 	
-	@DefaultMessage("Between {0} and {1}")
+	@DefaultMessage("between {0} and {1}")
 	String messageEffectivePeriodBetween(String start, String end);
+	
+	@DefaultMessage("Your time window is {0}.")
+	String messageTimeWindow(String effectivePeriod);
 }

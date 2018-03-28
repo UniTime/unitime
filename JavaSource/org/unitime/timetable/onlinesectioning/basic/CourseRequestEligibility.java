@@ -112,8 +112,11 @@ public class CourseRequestEligibility extends CheckEligibility {
 					iCheck.setFlag(EligibilityFlag.CAN_REGISTER, false);
 				}
 				
-				if (student.getSectioningStatus() != null && student.getSectioningStatus().getMessage() != null)
-					iCheck.setMessage(student.getSectioningStatus().getMessage());
+				StudentSectioningStatus s = student.getSectioningStatus();
+				while (s != null && s.isPast() && s.getFallBackStatus() != null) s = s.getFallBackStatus();
+				
+				if (s != null && s.getMessage() != null)
+					iCheck.setMessage(s.getMessage());
 				else if (status != null && status.getMessage() != null)
 					iCheck.setMessage(status.getMessage());
 				else if (disabled)
@@ -121,6 +124,10 @@ public class CourseRequestEligibility extends CheckEligibility {
 				else if (noreg)
 					iCheck.setMessage(MSG.exceptionEnrollmentDisabled());
 
+				String effectivePeriod = (s != null ? s.getEffectivePeriod() : status != null ? status.getEffectivePeriod() : null);
+				if (effectivePeriod != null)
+					iCheck.setMessage(iCheck.getMessage() + "\n" + MSG.messageTimeWindow(effectivePeriod));
+				
 				if (iCustomCheck) {
 					if (CustomCourseRequestsValidationHolder.hasProvider())
 						CustomCourseRequestsValidationHolder.getProvider().checkEligibility(server, helper, iCheck, student);
