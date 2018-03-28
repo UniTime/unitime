@@ -271,6 +271,7 @@ public class ExportTimetablePDF extends TableExporter {
 	        
 	        if (hasText()) {
 	        	boolean bold = isStyle("grid-name", "horizontal-header", "vertical-header");
+	        	if (isStyle("header") && parent.isStyle("meeting")) bold = true;
 	        	boolean italics = iItalics;
 	        	int alignment = Element.ALIGN_CENTER;
 	        	Font font = PdfFont.getSmallFont(bold, italics);
