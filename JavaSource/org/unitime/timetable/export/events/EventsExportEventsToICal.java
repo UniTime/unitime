@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.springframework.stereotype.Service;
+import org.unitime.commons.CalendarVTimeZoneGenerator;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.gwt.client.events.EventComparator.EventMeetingSortBy;
@@ -108,6 +109,7 @@ public class EventsExportEventsToICal extends EventsExporter {
 		
         ICalWriter writer = new ICalWriter(helper.getWriter(), ICalVersion.V2_0);
         try {
+        	writer.getTimezoneInfo().setGenerator(new CalendarVTimeZoneGenerator());
         	writer.getTimezoneInfo().setDefaultTimeZone(TimeZone.getDefault());
         } catch (IllegalArgumentException e) {
         	sLog.warn("Failed to set default time zone: " + e.getMessage());

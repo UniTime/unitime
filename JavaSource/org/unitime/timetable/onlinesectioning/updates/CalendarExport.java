@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import org.unitime.commons.CalendarVTimeZoneGenerator;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -116,6 +117,7 @@ public class CalendarExport implements OnlineSectioningAction<String>{
 			StringWriter ret = new StringWriter();
 	        ICalWriter writer = new ICalWriter(ret, ICalVersion.V2_0);
 	        try {
+	        	writer.getTimezoneInfo().setGenerator(new CalendarVTimeZoneGenerator());
 	        	writer.getTimezoneInfo().setDefaultTimeZone(TimeZone.getDefault());
 			} catch (IllegalArgumentException e) {
 				helper.warn("Failed to set default time zone: " + e.getMessage());
@@ -162,6 +164,7 @@ public class CalendarExport implements OnlineSectioningAction<String>{
 		StringWriter ret = new StringWriter();
         ICalWriter writer = new ICalWriter(ret, ICalVersion.V2_0);
         try {
+        	writer.getTimezoneInfo().setGenerator(new CalendarVTimeZoneGenerator());
         	writer.getTimezoneInfo().setDefaultTimeZone(TimeZone.getDefault());
         } catch (IllegalArgumentException e) {
 			helper.warn("Failed to set default time zone: " + e.getMessage());

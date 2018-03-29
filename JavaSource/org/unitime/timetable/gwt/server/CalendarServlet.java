@@ -48,6 +48,7 @@ import org.cpsolver.coursett.model.TimeLocation;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
+import org.unitime.commons.CalendarVTimeZoneGenerator;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.action.PersonalizedExamReportAction;
@@ -278,6 +279,7 @@ public class CalendarServlet extends HttpServlet {
         ICalWriter writer = new ICalWriter(out, ICalVersion.V2_0);
 		try {
 			try {
+				writer.getTimezoneInfo().setGenerator(new CalendarVTimeZoneGenerator());
 				writer.getTimezoneInfo().setDefaultTimeZone(TimeZone.getDefault());
 			} catch (IllegalArgumentException e) {
 	        	sLog.warn("Failed to set default time zone: " + e.getMessage());

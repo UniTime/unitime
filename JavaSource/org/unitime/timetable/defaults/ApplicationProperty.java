@@ -2351,6 +2351,14 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Student Course Requests: show courses that are not offered (when the online scheduling server is not running).")
 	CourseRequestsShowNotOffered("unitime.courseRequests.showNotOffered"),
+	
+	@Description("Calendar: Time zone URL for given time zone %")
+	@Parameter("Time Zone ID")
+	CalendarVTimeZoneID("unitime.calendar.timezone.%"),
+	
+	@Description("Calendar: Time zone URL, where {id} is the time zone id, e.g., Europe/Prague")
+	@DefaultValue("http://www.tzurl.org/zoneinfo/{id}.ics")
+	CalendarVTimeZone("unitime.calendar.timezone"),
 
 	;
 

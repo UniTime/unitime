@@ -43,6 +43,7 @@ import javax.mail.internet.InternetAddress;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.log4j.Logger;
 import org.hibernate.type.LongType;
+import org.unitime.commons.CalendarVTimeZoneGenerator;
 import org.unitime.commons.Email;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -395,6 +396,7 @@ public class EventEmail {
         	StringWriter ret = new StringWriter();
 	        ICalWriter writer = new ICalWriter(ret, ICalVersion.V2_0);
 	        try {
+	        	writer.getTimezoneInfo().setGenerator(new CalendarVTimeZoneGenerator());
 	        	writer.getTimezoneInfo().setDefaultTimeZone(TimeZone.getDefault());
 	        } catch (IllegalArgumentException e) {
 	        	sLog.warn("Failed to set default time zone: " + e.getMessage());
