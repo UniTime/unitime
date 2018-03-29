@@ -1358,6 +1358,11 @@ public enum ApplicationProperty {
 
 	@Description("Event Email Confirmations: default email suffix (e.g., @unitime.org)")
 	EmailDefaultAddressSuffix("unitime.email.event.suffix"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Event Email Confirmations: Include iCalendar file for the event.")
+	EmailConfirmationIncludeCalendar("unitime.email.event.calendar"),
 
 	/**
 	 * Enable UniTime to receive replies on event confirmation emails.

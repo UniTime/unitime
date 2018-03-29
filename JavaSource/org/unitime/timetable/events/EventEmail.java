@@ -251,28 +251,34 @@ public class EventEmail {
 			if (attachment() != null)
 				email.addAttachment(attachment());
 			
-			final String ical = icalendar();
-			if (ical != null) {
-				email.addAttachment(new DataSource() {
-					@Override
-					public OutputStream getOutputStream() throws IOException {
-						throw new IOException("No output stream.");
+			if (ApplicationProperty.EmailConfirmationIncludeCalendar.isTrue()) {
+				try {
+					final String ical = icalendar();
+					if (ical != null) {
+						email.addAttachment(new DataSource() {
+							@Override
+							public OutputStream getOutputStream() throws IOException {
+								throw new IOException("No output stream.");
+							}
+							@Override
+							public String getName() {
+								return "event.ics";
+							}
+							@Override
+							public InputStream getInputStream() throws IOException {
+								return new ByteArrayInputStream(ical.getBytes("UTF-8"));
+							}
+							@Override
+							public String getContentType() {
+								return "text/calendar; charset=UTF-8";
+							}
+						});
 					}
-					@Override
-					public String getName() {
-						return "event.ics";
-					}
-					@Override
-					public InputStream getInputStream() throws IOException {
-						return new ByteArrayInputStream(ical.getBytes("UTF-8"));
-					}
-					@Override
-					public String getContentType() {
-						return "text/calendar; charset=UTF-8";
-					}
-				});
+				} catch (Exception e) {
+					sLog.warn("Failed to export calendar: " + e.getMessage());
+				}
 			}
-
+			
 			email.setHTML(message());
 			
 			Long eventId = (response().hasEventWithId() ? response().getEvent().getId() : request().getEvent().getId());
@@ -388,7 +394,11 @@ public class EventEmail {
         if (exp) {
         	StringWriter ret = new StringWriter();
 	        ICalWriter writer = new ICalWriter(ret, ICalVersion.V2_0);
-	    	writer.getTimezoneInfo().setDefaultTimeZone(TimeZone.getDefault());
+	        try {
+	        	writer.getTimezoneInfo().setDefaultTimeZone(TimeZone.getDefault());
+	        } catch (IllegalArgumentException e) {
+	        	sLog.warn("Failed to set default time zone: " + e.getMessage());
+	        }
 	        try {
 	        	writer.write(ical);
 	        	writer.flush();

@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
 
+import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.springframework.stereotype.Service;
@@ -83,6 +84,7 @@ import biweekly.util.Recurrence.Frequency;
  */
 @Service("org.unitime.timetable.export.Exporter:events.ics")
 public class EventsExportEventsToICal extends EventsExporter {
+	private static Logger sLog = Logger.getLogger(EventsExportEventsToICal.class);
 	
 	@Override
 	public String reference() {
@@ -105,7 +107,11 @@ public class EventsExportEventsToICal extends EventsExporter {
 			print(ical, event);
 		
         ICalWriter writer = new ICalWriter(helper.getWriter(), ICalVersion.V2_0);
-    	writer.getTimezoneInfo().setDefaultTimeZone(TimeZone.getDefault());
+        try {
+        	writer.getTimezoneInfo().setDefaultTimeZone(TimeZone.getDefault());
+        } catch (IllegalArgumentException e) {
+        	sLog.warn("Failed to set default time zone: " + e.getMessage());
+        }
         try {
         	writer.write(ical);
         	writer.flush();

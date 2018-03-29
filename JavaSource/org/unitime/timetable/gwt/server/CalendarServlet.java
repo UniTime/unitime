@@ -43,6 +43,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,7 +109,8 @@ import biweekly.util.Recurrence.Frequency;
 public class CalendarServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	protected static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
-	
+	private static Logger sLog = Logger.getLogger(CalendarServlet.class);
+
 	@Override
 	public void init() {
 		SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
@@ -275,7 +277,11 @@ public class CalendarServlet extends HttpServlet {
 		PrintWriter out = response.getWriter();
         ICalWriter writer = new ICalWriter(out, ICalVersion.V2_0);
 		try {
-	    	writer.getTimezoneInfo().setDefaultTimeZone(TimeZone.getDefault());
+			try {
+				writer.getTimezoneInfo().setDefaultTimeZone(TimeZone.getDefault());
+			} catch (IllegalArgumentException e) {
+	        	sLog.warn("Failed to set default time zone: " + e.getMessage());
+	        }
         	writer.write(ical);
         	writer.flush();
         	out.flush();

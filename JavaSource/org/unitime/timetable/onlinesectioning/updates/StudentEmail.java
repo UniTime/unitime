@@ -301,7 +301,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						
 						if (ApplicationProperty.OnlineSchedulingEmailICalendar.isTrue()) {
 							try {
-								final String calendar = CalendarExport.getCalendar(server, student);
+								final String calendar = CalendarExport.getCalendar(server, helper, student);
 								if (calendar != null)
 									email.addAttachment(new DataSource() {
 										@Override

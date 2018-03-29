@@ -115,7 +115,11 @@ public class CalendarExport implements OnlineSectioningAction<String>{
 			
 			StringWriter ret = new StringWriter();
 	        ICalWriter writer = new ICalWriter(ret, ICalVersion.V2_0);
-	    	writer.getTimezoneInfo().setDefaultTimeZone(TimeZone.getDefault());
+	        try {
+	        	writer.getTimezoneInfo().setDefaultTimeZone(TimeZone.getDefault());
+			} catch (IllegalArgumentException e) {
+				helper.warn("Failed to set default time zone: " + e.getMessage());
+	        }
 	        try {
 	        	writer.write(ical);
 	        	writer.flush();
@@ -128,7 +132,7 @@ public class CalendarExport implements OnlineSectioningAction<String>{
 		}
 	}
 	
-	public static String getCalendar(OnlineSectioningServer server, XStudent student) throws IOException {
+	public static String getCalendar(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) throws IOException {
 		if (student == null) return null;
 		ICalendar ical = new ICalendar();
 		ical.setVersion(ICalVersion.V2_0);
@@ -157,7 +161,11 @@ public class CalendarExport implements OnlineSectioningAction<String>{
 		
 		StringWriter ret = new StringWriter();
         ICalWriter writer = new ICalWriter(ret, ICalVersion.V2_0);
-    	writer.getTimezoneInfo().setDefaultTimeZone(TimeZone.getDefault());
+        try {
+        	writer.getTimezoneInfo().setDefaultTimeZone(TimeZone.getDefault());
+        } catch (IllegalArgumentException e) {
+			helper.warn("Failed to set default time zone: " + e.getMessage());
+        }
         try {
         	writer.write(ical);
         	writer.flush();
