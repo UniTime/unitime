@@ -427,7 +427,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		Set<XDistribution> distributions = new HashSet<XDistribution>();
 		for (CourseRequestInterface.Request c: request.getCourses())
 			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, false);
-		if (student.getRequests().isEmpty()) return;
+		// if (student.getRequests().isEmpty()) return;
 		for (CourseRequestInterface.Request c: request.getAlternatives())
 			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, false);
 		model.addStudent(student);
@@ -573,97 +573,99 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			}
 		}
 		
-		ValidationCheckResponse resp = null;
-		resource = null;
-		try {
-			resource = new ClientResource(getSpecialRegistrationApiValidationSite());
-			resource.setNext(iClient);
-			resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
-			
-			Gson gson = getGson(helper);
-			if (helper.isDebugEnabled())
-				helper.debug("Request: " + gson.toJson(req));
-			helper.getAction().addOptionBuilder().setKey("validation_request").setValue(gson.toJson(req));
-			long t1 = System.currentTimeMillis();
-			
-			resource.post(new GsonRepresentation<ValidationCheckRequest>(req));
-			
-			helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
-			
-			resp = (ValidationCheckResponse)new GsonRepresentation<ValidationCheckResponse>(resource.getResponseEntity(), ValidationCheckResponse.class).getObject();
-			if (helper.isDebugEnabled())
-				helper.debug("Response: " + gson.toJson(resp));
-			helper.getAction().addOptionBuilder().setKey("validation_response").setValue(gson.toJson(resp));
-		} catch (SectioningException e) {
-			helper.getAction().setApiException(e.getMessage());
-			throw (SectioningException)e;
-		} catch (Exception e) {
-			helper.getAction().setApiException(e.getMessage());
-			sLog.error(e.getMessage(), e);
-			throw new SectioningException(e.getMessage());
-		} finally {
-			if (resource != null) {
-				if (resource.getResponse() != null) resource.getResponse().release();
-				resource.release();
+		if (!req.schedule.isEmpty() || !req.alternatives.isEmpty()) {
+			ValidationCheckResponse resp = null;
+			resource = null;
+			try {
+				resource = new ClientResource(getSpecialRegistrationApiValidationSite());
+				resource.setNext(iClient);
+				resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
+				
+				Gson gson = getGson(helper);
+				if (helper.isDebugEnabled())
+					helper.debug("Request: " + gson.toJson(req));
+				helper.getAction().addOptionBuilder().setKey("validation_request").setValue(gson.toJson(req));
+				long t1 = System.currentTimeMillis();
+				
+				resource.post(new GsonRepresentation<ValidationCheckRequest>(req));
+				
+				helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
+				
+				resp = (ValidationCheckResponse)new GsonRepresentation<ValidationCheckResponse>(resource.getResponseEntity(), ValidationCheckResponse.class).getObject();
+				if (helper.isDebugEnabled())
+					helper.debug("Response: " + gson.toJson(resp));
+				helper.getAction().addOptionBuilder().setKey("validation_response").setValue(gson.toJson(resp));
+			} catch (SectioningException e) {
+				helper.getAction().setApiException(e.getMessage());
+				throw (SectioningException)e;
+			} catch (Exception e) {
+				helper.getAction().setApiException(e.getMessage());
+				sLog.error(e.getMessage(), e);
+				throw new SectioningException(e.getMessage());
+			} finally {
+				if (resource != null) {
+					if (resource.getResponse() != null) resource.getResponse().release();
+					resource.release();
+				}
 			}
+			
+			if (resp == null) return;
+			
+			if (resp.scheduleRestrictions != null && resp.scheduleRestrictions.problems != null)
+				for (Problem problem: resp.scheduleRestrictions.problems) {
+					if ("HOLD".equals(problem.code)) {
+						response.addError(null, null, problem.code, problem.message);
+						response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.holdError", problem.message));
+						//throw new SectioningException(problem.message);
+					}
+					XCourseId course = crn2course.get(problem.crn);
+					if (course == null) continue;
+					String bc = course2banner.get(course);
+					if ("DUPL".equals(problem.code)) continue;
+					if ("MAXI".equals(problem.code)) continue;
+					Map<String, RequestedCourseStatus> problems = (bc == null ? null : overrides.get(bc));
+					Set<String> denied = (bc == null ? null : deniedOverrides.get(bc));
+					if (denied != null && denied.contains(problem.code)) {
+						response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
+						response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.deniedOverrideError",
+								"One or more courses require registration overrides which have been denied.\nYou must remove or replace these courses in order to submit your registration request."));
+					} else {
+						RequestedCourseStatus status = (problems == null ? null : problems.get(problem.code));
+						response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, problem.message, status == null ? CONF_BANNER : CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_PENDING)
+							.setStatus(status == null ? RequestedCourseStatus.OVERRIDE_NEEDED : status);
+					}
+				}
+			if (resp.alternativesRestrictions != null && resp.alternativesRestrictions.problems != null)
+				for (Problem problem: resp.alternativesRestrictions.problems) {
+					if ("HOLD".equals(problem.code)) {
+						response.addError(null, null, problem.code, problem.message);
+						response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.holdError", problem.message));
+						// throw new SectioningException(problem.message);
+					}
+					XCourseId course = crn2course.get(problem.crn);
+					if (course == null) continue;
+					String bc = course2banner.get(course);
+					Map<String, RequestedCourseStatus> problems = (bc == null ? null : overrides.get(bc));
+					Set<String> denied = (bc == null ? null : deniedOverrides.get(bc));
+					if (denied != null && denied.contains(problem.code)) {
+						response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
+						response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.deniedOverrideError",
+								"One or more courses require registration overrides which have been denied.\nYou must remove or replace these courses in order to submit your registration request."));
+					} else {
+						RequestedCourseStatus status = (problems == null ? null : problems.get(problem.code));
+						response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, problem.message, status == null ? CONF_BANNER : CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_PENDING)
+							.setStatus(status == null ? RequestedCourseStatus.OVERRIDE_NEEDED : status);
+					}
+				}
+			
+			if (response.hasMessages())
+				for (CourseMessage m: response.getMessages()) {
+					if (m.getCourse() != null && m.getMessage().indexOf("this section") >= 0)
+						m.setMessage(m.getMessage().replace("this section", m.getCourse()));
+					if (m.getCourse() != null && m.getMessage().indexOf(" (CRN ") >= 0)
+						m.setMessage(m.getMessage().replaceFirst(" \\(CRN [0-9][0-9][0-9][0-9][0-9]\\) ", " "));
+				}
 		}
-		
-		if (resp == null) return;
-		
-		if (resp.scheduleRestrictions != null && resp.scheduleRestrictions.problems != null)
-			for (Problem problem: resp.scheduleRestrictions.problems) {
-				if ("HOLD".equals(problem.code)) {
-					response.addError(null, null, problem.code, problem.message);
-					response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.holdError", problem.message));
-					//throw new SectioningException(problem.message);
-				}
-				XCourseId course = crn2course.get(problem.crn);
-				if (course == null) continue;
-				String bc = course2banner.get(course);
-				if ("DUPL".equals(problem.code)) continue;
-				if ("MAXI".equals(problem.code)) continue;
-				Map<String, RequestedCourseStatus> problems = (bc == null ? null : overrides.get(bc));
-				Set<String> denied = (bc == null ? null : deniedOverrides.get(bc));
-				if (denied != null && denied.contains(problem.code)) {
-					response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
-					response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.deniedOverrideError",
-							"One or more courses require registration overrides which have been denied.\nYou must remove or replace these courses in order to submit your registration request."));
-				} else {
-					RequestedCourseStatus status = (problems == null ? null : problems.get(problem.code));
-					response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, problem.message, status == null ? CONF_BANNER : CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_PENDING)
-						.setStatus(status == null ? RequestedCourseStatus.OVERRIDE_NEEDED : status);
-				}
-			}
-		if (resp.alternativesRestrictions != null && resp.alternativesRestrictions.problems != null)
-			for (Problem problem: resp.alternativesRestrictions.problems) {
-				if ("HOLD".equals(problem.code)) {
-					response.addError(null, null, problem.code, problem.message);
-					response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.holdError", problem.message));
-					// throw new SectioningException(problem.message);
-				}
-				XCourseId course = crn2course.get(problem.crn);
-				if (course == null) continue;
-				String bc = course2banner.get(course);
-				Map<String, RequestedCourseStatus> problems = (bc == null ? null : overrides.get(bc));
-				Set<String> denied = (bc == null ? null : deniedOverrides.get(bc));
-				if (denied != null && denied.contains(problem.code)) {
-					response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
-					response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.deniedOverrideError",
-							"One or more courses require registration overrides which have been denied.\nYou must remove or replace these courses in order to submit your registration request."));
-				} else {
-					RequestedCourseStatus status = (problems == null ? null : problems.get(problem.code));
-					response.addMessage(course.getCourseId(), course.getCourseName(), problem.code, problem.message, status == null ? CONF_BANNER : CONF_NONE).setStatus(RequestedCourseStatus.OVERRIDE_PENDING)
-						.setStatus(status == null ? RequestedCourseStatus.OVERRIDE_NEEDED : status);
-				}
-			}
-		
-		if (response.hasMessages())
-			for (CourseMessage m: response.getMessages()) {
-				if (m.getCourse() != null && m.getMessage().indexOf("this section") >= 0)
-					m.setMessage(m.getMessage().replace("this section", m.getCourse()));
-				if (m.getCourse() != null && m.getMessage().indexOf(" (CRN ") >= 0)
-					m.setMessage(m.getMessage().replaceFirst(" \\(CRN [0-9][0-9][0-9][0-9][0-9]\\) ", " "));
-			}
 		
 		boolean questionMinCred = false;
 		String minCreditLimit = ApplicationProperties.getProperty("purdue.specreg.minCreditCheck");
