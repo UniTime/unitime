@@ -661,7 +661,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Long iSessionId = null;
 		private String iExternalId, iName;
 		private List<String> iArea, iClassification, iMajor, iGroup, iAccommodation;
-		private boolean iCanShowExternalId = false;
+		private boolean iCanShowExternalId = false, iCanSelect = false;
 		private boolean iCanUseAssitant = false, iCanRegister = false;
 		
 		public Student() {}
@@ -683,6 +683,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public void setCanRegister(boolean canRegister) { iCanRegister = canRegister; }
 		public boolean isCanRegister() { return iCanRegister; }
+		
+		public void setCanSelect(boolean canSelect) { iCanSelect = canSelect; }
+		public boolean isCanSelect() { return iCanSelect; }
 		
 		public String getName() { return iName; }
 		public void setName(String name) { iName = name; }

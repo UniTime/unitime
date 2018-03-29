@@ -1056,8 +1056,11 @@ public class SectioningStatusPage extends Composite {
 					for (int row = 0; row < iStudentTable.getRowCount(); row++) {
 						StudentInfo i = iStudentTable.getData(row);
 						if (i != null && i.getStudent() != null) {
-							((CheckBox)iStudentTable.getWidget(row, 0)).setValue(true);
-							iSelectedStudentIds.add(i.getStudent().getId());
+							Widget w = iStudentTable.getWidget(row, 0);
+							if (w instanceof CheckBox) {
+								((CheckBox)w).setValue(true);
+								iSelectedStudentIds.add(i.getStudent().getId());
+							}
 						}
 					}
 				}
@@ -1080,8 +1083,12 @@ public class SectioningStatusPage extends Composite {
 					iSelectedStudentIds.clear();
 					for (int row = 0; row < iStudentTable.getRowCount(); row++) {
 						StudentInfo i = iStudentTable.getData(row);
-						if (i != null && i.getStudent() != null)
-							((CheckBox)iStudentTable.getWidget(row, 0)).setValue(false);
+						if (i != null && i.getStudent() != null) {
+							Widget w = iStudentTable.getWidget(row, 0);
+							if (w instanceof CheckBox) {
+								((CheckBox)w).setValue(false);
+							}
+						}
 					}
 				}
 			});
@@ -1305,9 +1312,12 @@ public class SectioningStatusPage extends Composite {
 								public void onSuccess(Boolean result) {
 									for (int row = 0; row < iStudentTable.getRowCount(); row++) {
 										StudentInfo i = iStudentTable.getData(row);
-										if (i != null && i.getStudent() != null && ((CheckBox)iStudentTable.getWidget(row, 0)).getValue()) { 
-											i.setStatus(info.getReference());
-											((HTML)iStudentTable.getWidget(row, iStatusColumn)).setHTML(info.getReference());
+										if (i != null && i.getStudent() != null) {
+											Widget w = iStudentTable.getWidget(row, 0);
+											if (w instanceof CheckBox && ((CheckBox)w).getValue()) {
+												i.setStatus(info.getReference());
+												((HTML)iStudentTable.getWidget(row, iStatusColumn)).setHTML(info.getReference());
+											}
 										}
 									}
 									LoadingWidget.getInstance().hide();
@@ -1351,9 +1361,12 @@ public class SectioningStatusPage extends Composite {
 								public void onSuccess(Boolean result) {
 									for (int row = 0; row < iStudentTable.getRowCount(); row++) {
 										StudentInfo i = iStudentTable.getData(row);
-										if (i != null && i.getStudent() != null && ((CheckBox)iStudentTable.getWidget(row, 0)).getValue()) { 
-											i.setStatus(statusRef);
-											((HTML)iStudentTable.getWidget(row, iStatusColumn)).setHTML(statusRef);
+										if (i != null && i.getStudent() != null) {
+											Widget w = iStudentTable.getWidget(row, 0);
+											if (w instanceof CheckBox && ((CheckBox)w).getValue()) {
+												i.setStatus(statusRef);
+												((HTML)iStudentTable.getWidget(row, iStatusColumn)).setHTML(statusRef);
+											}
 										}
 									}
 									LoadingWidget.getInstance().hide();
@@ -1398,15 +1411,18 @@ public class SectioningStatusPage extends Composite {
 								public void onSuccess(Boolean result) {
 									for (int row = 0; row < iStudentTable.getRowCount(); row++) {
 										StudentInfo i = iStudentTable.getData(row);
-										if (i != null && i.getStudent() != null && ((CheckBox)iStudentTable.getWidget(row, 0)).getValue()) {
-											if (!"-".equals(statusRef)) {
-												i.setStatus(statusRef);
-												((HTML)iStudentTable.getWidget(row, iStatusColumn)).setHTML(statusRef);
-											}
-											i.setNote(note);
-											if (iNoteColumn >= 0) {
-												HTML w = ((HTML)iStudentTable.getWidget(row, iNoteColumn));
-												w.setHTML(note); w.setTitle(w.getText());
+										if (i != null && i.getStudent() != null) {
+											Widget w = iStudentTable.getWidget(row, 0);
+											if (w instanceof CheckBox && ((CheckBox)w).getValue()) {
+												if (!"-".equals(statusRef)) {
+													i.setStatus(statusRef);
+													((HTML)iStudentTable.getWidget(row, iStatusColumn)).setHTML(statusRef);
+												}
+												i.setNote(note);
+												if (iNoteColumn >= 0) {
+													HTML n = ((HTML)iStudentTable.getWidget(row, iNoteColumn));
+													n.setHTML(note); n.setTitle(n.getText());
+												}
 											}
 										}
 									}
@@ -1646,34 +1662,38 @@ public class SectioningStatusPage extends Composite {
 			List<Widget> line = new ArrayList<Widget>();
 			if (info.getStudent() != null) {
 				if (iOnline && iProperties != null && iProperties.isCanSelectStudent()) {
-					CheckBox ch = new CheckBox();
-					ch.addClickHandler(new ClickHandler() {
-						@Override
-						public void onClick(ClickEvent event) {
-							event.stopPropagation();
+					if (info.getStudent().isCanSelect()) {
+						CheckBox ch = new CheckBox();
+						ch.addClickHandler(new ClickHandler() {
+							@Override
+							public void onClick(ClickEvent event) {
+								event.stopPropagation();
+							}
+						});
+						final Long sid = info.getStudent().getId();
+						if (iSelectedStudentIds.contains(sid)) {
+							ch.setValue(true);
+							newlySelected.add(sid);
 						}
-					});
-					final Long sid = info.getStudent().getId();
-					if (iSelectedStudentIds.contains(sid)) {
-						ch.setValue(true);
-						newlySelected.add(sid);
+						ch.addClickHandler(new ClickHandler() {
+							@Override
+							public void onClick(ClickEvent event) {
+								event.stopPropagation();
+							}
+						});
+						ch.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+							@Override
+							public void onValueChange(ValueChangeEvent<Boolean> event) {
+								if (event.getValue())
+									iSelectedStudentIds.add(sid);
+								else
+									iSelectedStudentIds.remove(sid);
+							}
+						});
+						line.add(ch);
+					} else {
+						line.add(new Label(""));
 					}
-					ch.addClickHandler(new ClickHandler() {
-						@Override
-						public void onClick(ClickEvent event) {
-							event.stopPropagation();
-						}
-					});
-					ch.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
-						@Override
-						public void onValueChange(ValueChangeEvent<Boolean> event) {
-							if (event.getValue())
-								iSelectedStudentIds.add(sid);
-							else
-								iSelectedStudentIds.remove(sid);
-						}
-					});
-					line.add(ch);
 				}
 				if (hasExtId) {
 					line.add(new Label(info.getStudent().isCanShowExternalId() ? info.getStudent().getExternalId() : "", false));

@@ -69,6 +69,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 	protected boolean iConsentToDoCourse;
 	protected boolean iCanShowExtIds = false, iCanRegister = false, iCanUseAssistant = false;
 	protected Set<Long> iMyStudents;
+	protected boolean iIsAdmin = false, iIsAdvisor = false, iCanEditMyStudents = false, iCanEditOtherStudents = false;
 	
 	public FindEnrollmentAction withParams(String query, Long courseId, Long classId, boolean isConsentToDoCourse, boolean canShowExtIds, boolean canRegister, boolean canUseAssistant, Set<Long> myStudents) {
 		iQuery = new Query(query);
@@ -79,6 +80,12 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 		iCanRegister = canRegister;
 		iCanUseAssistant = canUseAssistant;
 		iMyStudents = myStudents;
+		return this;
+	}
+	
+	public FindEnrollmentAction withPermissions(boolean isAdmin, boolean isAdvisor, boolean canEditMyStudents, boolean canEditOtherStudents) {
+		iIsAdmin = isAdmin; iIsAdvisor = isAdvisor;
+		iCanEditMyStudents = canEditMyStudents; iCanEditOtherStudents = canEditOtherStudents;
 		return this;
 	}
 	
@@ -98,6 +105,14 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 	
 	public boolean isMyStudent(XStudentId student) {
 		return iMyStudents != null && iMyStudents.contains(student.getStudentId());
+	}
+	
+	public boolean isCanSelect(XStudentId student) {
+		if (iIsAdmin) return true;
+		if (iIsAdvisor) {
+			if (iCanEditOtherStudents || (iCanEditMyStudents && isMyStudent(student))) return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -139,6 +154,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 			String status = (student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
 			st.setCanRegister(iCanRegister && (status == null || regStates.contains(status)));
 			st.setCanUseAssistant(iCanUseAssistant && (status == null || assStates.contains(status)));
+			st.setCanSelect(isCanSelect(student));
 			st.setName(student.getName());
 			for (XAreaClassificationMajor acm: student.getMajors()) {
 				st.addArea(acm.getArea());

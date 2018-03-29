@@ -69,6 +69,14 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 	public boolean isMyStudent(Student student) {
 		return iMyStudents != null && iMyStudents.contains(student.getUniqueId());
 	}
+	
+	public boolean isCanSelect(Student student) {
+		if (iIsAdmin) return true;
+		if (iIsAdvisor) {
+			if (iCanEditOtherStudents || (iCanEditMyStudents && isMyStudent(student))) return true;
+		}
+		return false;
+	}
 
 	@Override
 	public List<StudentInfo> execute(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
@@ -119,6 +127,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					StudentSectioningStatus status = student.getEffectiveStatus();
 					st.setCanRegister(iCanRegister && (status == null || status.hasOption(StudentSectioningStatus.Option.regenabled)));
 					st.setCanUseAssistant(iCanUseAssistant && (status == null || status.hasOption(StudentSectioningStatus.Option.enabled)));
+					st.setCanSelect(isCanSelect(student));
 					st.setName(helper.getStudentNameFormat().format(student));
 					for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(student.getAreaClasfMajors())) {
 						st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation());
@@ -438,6 +447,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 				StudentSectioningStatus status = student.getEffectiveStatus();
 				st.setCanRegister(iCanRegister && (status == null || status.hasOption(StudentSectioningStatus.Option.regenabled)));
 				st.setCanUseAssistant(iCanUseAssistant && (status == null || status.hasOption(StudentSectioningStatus.Option.enabled)));
+				st.setCanSelect(isCanSelect(student));
 				st.setName(helper.getStudentNameFormat().format(student));
 				for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(student.getAreaClasfMajors())) {
 					st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation());

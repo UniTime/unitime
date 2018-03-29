@@ -75,6 +75,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 	protected Set<Long> iCoursesIcoordinate, iCoursesIcanApprove, iMyStudents;
 	protected Set<String> iSubjectAreas;
 	protected boolean iCanShowExtIds = false, iCanRegister = false, iCanUseAssistant = false;
+	protected boolean iIsAdmin = false, iIsAdvisor = false, iCanEditMyStudents = false, iCanEditOtherStudents = false;
 	
 	public FindStudentInfoAction withParams(String query, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove, Set<Long> myStudents, Set<String> subjects, boolean canShowExtIds, boolean canRegister, boolean canUseAssistant) {
 		iQuery = new Query(query);
@@ -89,6 +90,12 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		if (m.find()) {
 			iLimit = Integer.parseInt(m.group(1));
 		}
+		return this;
+	}
+	
+	public FindStudentInfoAction withPermissions(boolean isAdmin, boolean isAdvisor, boolean canEditMyStudents, boolean canEditOtherStudents) {
+		iIsAdmin = isAdmin; iIsAdvisor = isAdvisor;
+		iCanEditMyStudents = canEditMyStudents; iCanEditOtherStudents = canEditOtherStudents;
 		return this;
 	}
 	
@@ -116,6 +123,14 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 	
 	public boolean isMyStudent(XStudentId student) {
 		return iMyStudents != null && iMyStudents.contains(student.getStudentId());
+	}
+	
+	public boolean isCanSelect(XStudentId student) {
+		if (iIsAdmin) return true;
+		if (iIsAdvisor) {
+			if (iCanEditOtherStudents || (iCanEditMyStudents && isMyStudent(student))) return true;
+		}
+		return false;
 	}
 	
 	@Override
@@ -167,6 +182,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						String status = (student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
 						st.setCanRegister(iCanRegister && (status == null || regStates.contains(status)));
 						st.setCanUseAssistant(iCanUseAssistant && (status == null || assStates.contains(status)));
+						st.setCanSelect(isCanSelect(student));
 						st.setName(student.getName());
 						for (XAreaClassificationMajor acm: student.getMajors()) {
 							st.addArea(acm.getArea());
@@ -459,6 +475,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 					String status = (student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
 					st.setCanRegister(iCanRegister && (status == null || regStates.contains(status)));
 					st.setCanUseAssistant(iCanUseAssistant && (status == null || assStates.contains(status)));
+					st.setCanSelect(isCanSelect(student));
 					st.setName(student.getName());
 					for (XAreaClassificationMajor acm: student.getMajors()) {
 						st.addArea(acm.getArea());
@@ -488,6 +505,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 					String status = (student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
 					st.setCanRegister(iCanRegister && (status == null || regStates.contains(status)));
 					st.setCanUseAssistant(iCanUseAssistant && (status == null || assStates.contains(status)));
+					st.setCanSelect(isCanSelect(student));
 					st.setName(student.getName());
 					for (XAreaClassificationMajor acm: student.getMajors()) {
 						st.addArea(acm.getArea());
