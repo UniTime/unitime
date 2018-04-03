@@ -84,6 +84,7 @@ public class DataImportForm extends ActionForm {
     	PREFERENCES("preferences", "Course Timetabling Preferences"),
     	SESSION_SETUP("sessionSetup", "Academic Session Setup"),
     	STUDENT_ADVISORS("studentAdvisors", "Student Advisors"),
+    	STUDENT_STATUSES("studentStatuses", "Student Scheduling Statuses")
     	;
     	
     	private String iType, iLabel;

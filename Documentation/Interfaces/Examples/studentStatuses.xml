@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE studentStatuses PUBLIC "-//UniTime//UniTime Student Scheduling Statuses DTD/EN" "http://www.unitime.org/interface/StudentStatuses.dtd">
+
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<studentStatuses created="Tue Apr 03 15:06:12 CEST 2018" dateFormat="yyyy/M/d" timeFormat="HHmm" incremental="true">
+  <status reference="Disabled" name="Access disabled">
+    <permissions assistantEnabled="false" assistantAdvisorEdit="false" emaiNotifications="true" mustHaveCourseType="false" waitListing="false" doNotScheduleInBatch="false" assistantStudentEdit="false" assistantAdminEdit="false" requestsStudentEdit="false" requestsEnabled="false" requestsAdvisorEdit="false" requestsAdminEdit="false" advisorCanSetStatus="true"/>
+  </status>
+  <status reference="Enabled" name="Access enabled">
+    <permissions assistantEnabled="true" assistantAdvisorEdit="true" emaiNotifications="true" mustHaveCourseType="false" waitListing="false" doNotScheduleInBatch="false" assistantStudentEdit="true" assistantAdminEdit="true" requestsStudentEdit="true" requestsEnabled="true" requestsAdvisorEdit="true" requestsAdminEdit="true" advisorCanSetStatus="false"/>
+  </status>
+  <status reference="Enrollment" name="Scheduling Assistant Enabled">
+    <permissions assistantEnabled="true" assistantAdvisorEdit="true" emaiNotifications="true" mustHaveCourseType="false" waitListing="false" doNotScheduleInBatch="false" assistantStudentEdit="true" assistantAdminEdit="true" requestsStudentEdit="false" requestsEnabled="false" requestsAdvisorEdit="false" requestsAdminEdit="false" advisorCanSetStatus="true"/>
+    <effective-dates startDate="2018/7/1" stopDate="2018/7/31"/>
+    <message>Enrollment is enabled.</message>
+    <fallback reference="Disabled"/>
+  </status>
+  <status reference="No Email" name="Access enabled, no email notification">
+    <permissions assistantEnabled="true" assistantAdvisorEdit="true" emaiNotifications="false" mustHaveCourseType="false" waitListing="false" doNotScheduleInBatch="false" assistantStudentEdit="true" assistantAdminEdit="true" requestsStudentEdit="true" requestsEnabled="true" requestsAdvisorEdit="true" requestsAdminEdit="true" advisorCanSetStatus="false"/>
+  </status>
+  <status reference="Not Available" name="Temporarily not available">
+    <permissions assistantEnabled="true" assistantAdvisorEdit="true" emaiNotifications="true" mustHaveCourseType="false" waitListing="false" doNotScheduleInBatch="false" assistantStudentEdit="false" assistantAdminEdit="true" requestsStudentEdit="false" requestsEnabled="false" requestsAdvisorEdit="false" requestsAdminEdit="false" advisorCanSetStatus="false"/>
+    <message>Access is temporarily disabled. Please try again later...</message>
+  </status>
+  <status reference="Requests" name="Course Requests Enabled">
+    <permissions assistantEnabled="false" assistantAdvisorEdit="false" emaiNotifications="true" mustHaveCourseType="false" waitListing="false" doNotScheduleInBatch="false" assistantStudentEdit="false" assistantAdminEdit="false" requestsStudentEdit="true" requestsEnabled="true" requestsAdvisorEdit="true" requestsAdminEdit="true" advisorCanSetStatus="true"/>
+    <effective-dates startDate="2018/4/1" startPeriod="0800" stopDate="2018/5/31" stopPeriod="2200"/>
+    <message>Registration is enabled.</message>
+    <fallback reference="Disabled"/>
+  </status>
+</studentStatuses>

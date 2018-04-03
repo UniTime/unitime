@@ -1,0 +1,58 @@
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+ 
+<!ELEMENT studentStatuses ( status+ ) >
+<!ATTLIST studentStatuses created CDATA #IMPLIED >
+<!ATTLIST studentStatuses dateFormat CDATA #IMPLIED >
+<!ATTLIST studentStatuses timeFormat CDATA #IMPLIED >
+<!ATTLIST studentStatuses incremental (true|false) "true">
+ 
+<!ELEMENT status ( permissions, effective-dates?, message?, course*, fallback? ) >
+<!ATTLIST status reference CDATA #REQUIRED >
+<!ATTLIST status name CDATA #REQUIRED >
+
+<!ELEMENT permissions EMPTY >
+<!ATTLIST permissions assistantEnabled (true|false) "false">
+<!ATTLIST permissions assistantAdminEdit (true|false) "false">
+<!ATTLIST permissions assistantAdvisorEdit (true|false) "false">
+<!ATTLIST permissions assistantStudentEdit (true|false) "false">
+<!ATTLIST permissions requestsEnabled (true|false) "false">
+<!ATTLIST permissions requestsAdminEdit (true|false) "false">
+<!ATTLIST permissions requestsAdvisorEdit (true|false) "false">
+<!ATTLIST permissions requestsStudentEdit (true|false) "false">
+<!ATTLIST permissions emaiNotifications (true|false) "false">
+<!ATTLIST permissions doNotScheduleInBatch (true|false) "false">
+<!ATTLIST permissions mustHaveCourseType (true|false) "false">
+<!ATTLIST permissions waitListing (true|false) "false">
+<!ATTLIST permissions advisorCanSetStatus (true|false) "false">
+
+<!ELEMENT effective-dates EMPTY >
+<!ATTLIST effective-dates startDate CDATA #IMPLIED >
+<!ATTLIST effective-dates startPeriod CDATA #IMPLIED >
+<!ATTLIST effective-dates stopDate CDATA #IMPLIED >
+<!ATTLIST effective-dates stopPeriod CDATA #IMPLIED >
+
+<!ELEMENT message (#PCDATA) >
+
+<!ELEMENT course EMPTY >
+<!ATTLIST course type CDATA #REQUIRED >
+
+<!ELEMENT fallback EMPTY >
+<!ATTLIST fallback reference CDATA #REQUIRED >
