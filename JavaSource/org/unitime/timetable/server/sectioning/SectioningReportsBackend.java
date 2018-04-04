@@ -82,17 +82,19 @@ public class SectioningReportsBackend implements GwtRpcImplementation<Sectioning
 			throw new GwtRpcException("No report was created.");
 		
 		SectioningReportRpcResponse response = new SectioningReportRpcResponse();
-		String[] header = new String[csv.getHeader().getFields().size()];
-		for (int i = 0; i < csv.getHeader().getFields().size(); i++)
-			header[i] = csv.getHeader().getField(i).toString();
-		response.addLine(header);
-		if (csv.getLines() != null)
-			for (CSVLine line: csv.getLines()) {
-				String[] row = new String[line.getFields().size()];
-				for (int i = 0; i < line.getFields().size(); i++)
-					row[i] = line.getField(i).toString();
-				response.addLine(row);
-			}
+		synchronized (csv) {
+			String[] header = new String[csv.getHeader().getFields().size()];
+			for (int i = 0; i < csv.getHeader().getFields().size(); i++)
+				header[i] = csv.getHeader().getField(i).toString();
+			response.addLine(header);
+			if (csv.getLines() != null)
+				for (CSVLine line: csv.getLines()) {
+					String[] row = new String[line.getFields().size()];
+					for (int i = 0; i < line.getFields().size(); i++)
+						row[i] = line.getField(i).toString();
+					response.addLine(row);
+				}
+		}
 	
 		return response;
 	}

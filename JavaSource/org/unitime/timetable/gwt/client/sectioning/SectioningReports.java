@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.client.sectioning;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -36,10 +37,10 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasCellAlignment;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
-import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 
@@ -56,6 +57,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.rpc.IsSerializable;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -67,7 +69,6 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class SectioningReports extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	protected static final StudentSectioningMessages SCT_MSG = GWT.create(StudentSectioningMessages.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static NumberFormat PF = NumberFormat.getFormat("0.0%");
 	private static NumberFormat DF = NumberFormat.getFormat("0.00");
@@ -83,37 +84,7 @@ public class SectioningReports extends Composite {
 	private int iLastSort = 0;
 	private String iLastHistory = null;
 	private boolean iOnline = false;
-	
-	public static enum ReportType {
-		TIME_CONFLICTS("Time Conflicts", "org.cpsolver.studentsct.report.SectionConflictTable", "type", "OVERLAPS", "overlapsIncludeAll", "true"),
-		AVAILABLE_CONFLICTS("Availability Conflicts", "org.cpsolver.studentsct.report.SectionConflictTable", "type", "UNAVAILABILITIES", "overlapsIncludeAll", "true"),
-		SECTION_CONFLICTS("Time & Availability Conflicts", "org.cpsolver.studentsct.report.SectionConflictTable", "type", "OVERLAPS_AND_UNAVAILABILITIES", "overlapsIncludeAll", "true"),
-		UNBALANCED_SECTIONS("Unbalanced Classes", "org.cpsolver.studentsct.report.UnbalancedSectionsTable"),
-		DISTANCE_CONFLICTS("Distance Conflicts", "org.cpsolver.studentsct.report.DistanceConflictTable"),
-		TIME_OVERLAPS("Time Overlaps", "org.cpsolver.studentsct.report.TimeOverlapConflictTable"),
-		REQUEST_GROUPS("Request Groups", "org.cpsolver.studentsct.report.RequestGroupTable"),
-		INDIVIDUAL_TIME_OVERLAPS("Individual Student Time Overlaps", "org.unitime.timetable.reports.studentsct.IndividualStudentTimeOverlaps"),
-		NOT_ALLOWED_TIME_OVERLAPS("Not Allowed Time Overlaps", "org.unitime.timetable.reports.studentsct.IndividualStudentTimeOverlaps", "includeAllowedOverlaps", "false"),
-		INDIVIDUAL_TIME_OVERLAPS_BT("Individual Student Time Overlaps (Exclude Break Times)", "org.unitime.timetable.reports.studentsct.IndividualStudentTimeOverlaps", "ignoreBreakTimeConflicts", "true"),
-		NOT_ALLOWED_TIME_OVERLAPS_BT("Not Allowed Time Overlaps (Exclude Break Times)", "org.unitime.timetable.reports.studentsct.IndividualStudentTimeOverlaps", "ignoreBreakTimeConflicts", "true", "includeAllowedOverlaps", "false"),
-		TEACHING_CONFLICTS("Teaching Conflicts", "org.unitime.timetable.reports.studentsct.StudentAvailabilityConflicts"),
-		TEACHING_CONFLICTS_NA("Teaching Conflicts (Exclude Allowed)", "org.unitime.timetable.reports.studentsct.StudentAvailabilityConflicts", "includeAllowedOverlaps", "false"),
-		NOT_ASSIGNED_COURSE_REQUESTS(SCT_MSG.reportUnassignedCourseRequests(), "org.unitime.timetable.reports.studentsct.UnasignedCourseRequests"),
-		UNUSED_GROUP_RES(SCT_MSG.reportUnusedGroupReservations(), "org.unitime.timetable.reports.studentsct.UnusedReservations", "type", "group"),
-		UNUSED_INDIVIDUAL_RES(SCT_MSG.reportUnusedIndividualReservations(), "org.unitime.timetable.reports.studentsct.UnusedReservations", "type", "individual"),
-		UNUSED_OVERRIDE_RES(SCT_MSG.reportUnusedOverrideReservations(), "org.unitime.timetable.reports.studentsct.UnusedReservations", "type", "override"),
-		;
-		
-		String iName, iImplementation;
-		String[] iParameters;
-		ReportType(String name, String implementation, String... params) {
-			iName = name; iImplementation = implementation; iParameters = params;
-		}
-		
-		public String getName() { return iName; }
-		public String getImplementation() { return iImplementation; }
-		public String[] getParameters() { return iParameters; }
-	}
+	private List<ReportTypeInterface> iReportTypes = null;
 	
 	public SectioningReports(boolean online) {
 		iOnline = online;
@@ -209,8 +180,8 @@ public class SectioningReports extends Composite {
 					iHeader.setErrorMessage(MESSAGES.errorNoReportSelected());
 					return;
 				}
-				ReportType type = ReportType.valueOf(iReportSelector.getWidget().getValue(iReportSelector.getWidget().getSelectedIndex()));
-				String query = "output=sct-report.csv&name=" + type.name() + "&report=" + type.getImplementation() + "&online=" + (iOnline ? "true" : "false") + "&sort=" + iLastSort;
+				ReportTypeInterface type = getReportType(iReportSelector.getWidget().getValue(iReportSelector.getWidget().getSelectedIndex()));
+				String query = "output=sct-report.csv&name=" + type.getReference() + "&report=" + type.getImplementation() + "&online=" + (iOnline ? "true" : "false") + "&sort=" + iLastSort;
 				for (int i = 0; i + 1 < type.getParameters().length; i += 2)
 					query += "&" + type.getParameters()[i] + "=" + type.getParameters()[i + 1];
 				
@@ -235,9 +206,21 @@ public class SectioningReports extends Composite {
 		iForm.getColumnFormatter().setWidth(1, "100%");
 
 		iReportSelector = new UniTimeWidget<ListBox>(new ListBox());
-		iReportSelector.getWidget().addItem(MESSAGES.itemSelect(), "");
-		for (ReportType type: ReportType.values())
-			iReportSelector.getWidget().addItem(type.getName(), type.name());
+		RPC.execute(new SectioningReportTypesRpcRequest(iOnline), new AsyncCallback<GwtRpcResponseList<ReportTypeInterface>>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				iTableHeader.setErrorMessage(caught.getMessage());
+			}
+
+			@Override
+			public void onSuccess(GwtRpcResponseList<ReportTypeInterface> result) {
+				iReportTypes = result;
+				iReportSelector.getWidget().addItem(MESSAGES.itemSelect(), "");
+				for (ReportTypeInterface type: result)
+					iReportSelector.getWidget().addItem(type.getName(), type.getReference());
+				reload(History.getToken());
+			}
+		});
 		iForm.addRow(MESSAGES.propReport(), iReportSelector);
 		iReportSelector.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
@@ -303,8 +286,13 @@ public class SectioningReports extends Composite {
 				}
 			}
 		});
-		
-		reload(History.getToken());
+	}
+	
+	protected ReportTypeInterface getReportType(String reference) {
+		if (iReportTypes == null || reference == null) return null;
+		for (ReportTypeInterface type: iReportTypes)
+			if (reference.equals(type.getReference())) return type;
+		return null;
 	}
 	
 	private void queryChanged() {
@@ -412,9 +400,13 @@ public class SectioningReports extends Composite {
 			history = history.substring(0, history.indexOf('&')); 
 		if (history.isEmpty()) return;
 		String[] params = history.split(":");
-		ReportType type = ReportType.valueOf(params[0]);
+		ReportTypeInterface type = getReportType(params[0]);
 		if (type == null) return;
-		iReportSelector.getWidget().setSelectedIndex(1 + type.ordinal());
+		for (int i = 1; i < iReportSelector.getWidget().getItemCount(); i++) {
+			if (type.getReference().equals(iReportSelector.getWidget().getValue(i))) {
+				iReportSelector.getWidget().setSelectedIndex(i); break;
+			}
+		}
 		queryChanged();
 		iFirstLine = Integer.parseInt(params[1]);
 		iLastSort = Integer.parseInt(params[2]);
@@ -429,8 +421,8 @@ public class SectioningReports extends Composite {
 			return;
 		}
 		
-		ReportType type = ReportType.valueOf(iReportSelector.getWidget().getValue(iReportSelector.getWidget().getSelectedIndex()));
-		iLastHistory = type.name();
+		ReportTypeInterface type = getReportType(iReportSelector.getWidget().getValue(iReportSelector.getWidget().getSelectedIndex()));
+		iLastHistory = type.getReference();
 		iTable.clearTable();
 		iTableHeader.clearMessage();
 		iHeader.clearMessage();
@@ -474,6 +466,44 @@ public class SectioningReports extends Composite {
 				LoadingWidget.getInstance().hide();
 			}
 		});
+	}
+	
+	public static class ReportTypeInterface implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		String iReference, iName, iImplementation;
+		String[] iParameters;
+		
+		public ReportTypeInterface() {}
+		public ReportTypeInterface(String reference, String name, String implementation, String... params) {
+			iReference = reference; iName = name; iImplementation = implementation; iParameters = params;
+		}
+		
+		public void setReference(String reference) { iReference = reference; }
+		public String getReference() { return iReference; }
+		public void setName(String name) { iName = name; }
+		public String getName() { return iName; }
+		public void setImplementation(String implementation) { iImplementation = implementation; }
+		public String getImplementation() { return iImplementation; }
+		public void setParameters(String... params) { iParameters = params; }
+		public String[] getParameters() { return iParameters; }
+		
+		@Override
+		public int hashCode() { return getReference().hashCode(); }
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof ReportTypeInterface)) return false;
+			return getReference().equals(((ReportTypeInterface)o).getReference());
+		}
+	}
+	
+	public static class SectioningReportTypesRpcRequest implements GwtRpcRequest<GwtRpcResponseList<ReportTypeInterface>> {
+		private boolean iOnline = false;
+		
+		public SectioningReportTypesRpcRequest() {}
+		public SectioningReportTypesRpcRequest(boolean online) { iOnline = online; }
+		
+		public void setOnline(boolean online) { iOnline = online; }
+		public boolean isOnline() { return iOnline; }
 	}
 	
 	public static class SectioningReportRpcRequest implements GwtRpcRequest<SectioningReportRpcResponse> {

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -35,10 +36,8 @@ import java.util.TreeSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.solver.Solver;
-import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
-import org.cpsolver.ifs.util.CSVFile.CSVLine;
 import org.cpsolver.studentsct.StudentSectioningSaver;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
@@ -73,6 +72,9 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.solver.studentsct.InMemoryReport;
+import org.unitime.timetable.solver.studentsct.StudentSolver;
+import org.unitime.timetable.util.Formats;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -102,7 +104,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 	private String iRegistrationDate = null;
 	private String iActionAdd = null, iActionDrop = null;
 	private boolean iConditionalAddDrop = true;
-	private CSVFile iCSV;
+	private InMemoryReport iCSV;
 	private boolean iAutoOverrides = false;
 	private Set<String> iAllowedOverrides = new HashSet<String>();
 	private int iNrThreads = 1;
@@ -139,6 +141,8 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		if (allowedOverrides != null && !allowedOverrides.isEmpty())
 			iAllowedOverrides = new HashSet<String>(Arrays.asList(allowedOverrides.split(",")));
 		iNrThreads = solver.getProperties().getPropertyInt("Save.XE.NrSaveThreads", 10);
+		iCSV = new InMemoryReport("XE", "Last XE Enrollment Results (" + Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP_SHORT).format(new Date()) + ")");
+		((StudentSolver)solver).setReport(iCSV);
 	}
 
 	@Override
@@ -148,7 +152,6 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		protocols.add(Protocol.HTTP);
 		protocols.add(Protocol.HTTPS);
 		iClient = new Client(protocols);
-		iCSV = new CSVFile();
 		iCSV.setHeader(new CSVField[] {
 				new CSVField("PUID"),
 				new CSVField("Name"),
@@ -194,14 +197,6 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 				sLog.error(e.getMessage(), e);
 			}
 		}
-		StringBuffer csv = new StringBuffer();
-		csv.append(iCSV.getHeader().toString());
-		if (iCSV.getLines() != null)
-			for (CSVLine line: iCSV.getLines()) {
-				csv.append("\n");
-				csv.append(line.toString());
-			}
-		iProgress.info("CSV:<br><pre>\n" + csv + "</pre>");
 	}
 	
 	public void save(Session session, org.hibernate.Session hibSession) {

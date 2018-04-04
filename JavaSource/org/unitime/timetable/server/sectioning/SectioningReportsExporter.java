@@ -108,68 +108,70 @@ public class SectioningReportsExporter implements Exporter {
 		Printer out = new CSVPrinter(helper.getWriter(), false);
 		helper.setup(out.getContentType(), helper.getParameter("name").toLowerCase().replace('_', '-') + ".csv", false);
 		
-		String[] header = new String[csv.getHeader().getFields().size()];
-		for (int i = 0; i < csv.getHeader().getFields().size(); i++)
-			header[i] = csv.getHeader().getField(i).toString();
-		if (header.length >= 1 && header[0].startsWith("__")) out.hideColumn(0);
-		out.printHeader(header);
-		
-		DecimalFormat pf = new DecimalFormat("0.00%");
-		List<Row> rows = new ArrayList<Row>();
-		Row prev = null;
-		if (csv.getLines() != null)
-			for (CSVLine line: csv.getLines()) {
-				if (line.getFields().isEmpty()) continue;
-				Row data = new Row(line);
-				while (prev != null) {
-					if (data.getNrBlanks() > prev.getNrBlanks()) break;
-					prev = prev.getParent();
+		synchronized (csv) {
+			String[] header = new String[csv.getHeader().getFields().size()];
+			for (int i = 0; i < csv.getHeader().getFields().size(); i++)
+				header[i] = csv.getHeader().getField(i).toString();
+			if (header.length >= 1 && header[0].startsWith("__")) out.hideColumn(0);
+			out.printHeader(header);
+			
+			DecimalFormat pf = new DecimalFormat("0.00%");
+			List<Row> rows = new ArrayList<Row>();
+			Row prev = null;
+			if (csv.getLines() != null)
+				for (CSVLine line: csv.getLines()) {
+					if (line.getFields().isEmpty()) continue;
+					Row data = new Row(line);
+					while (prev != null) {
+						if (data.getNrBlanks() > prev.getNrBlanks()) break;
+						prev = prev.getParent();
+					}
+					if (prev != null)
+						data.setParent(prev);
+					rows.add(data);
+					prev = data;
 				}
-				if (prev != null)
-					data.setParent(prev);
-				rows.add(data);
-				prev = data;
+			
+			String sort = helper.getParameter("sort");
+			if (sort != null && !"0".equals(sort)) {
+				final boolean asc = Integer.parseInt(sort) > 0;
+				final int col = Math.abs(Integer.parseInt(sort)) - 1;
+				Collections.sort(rows, new Comparator<Row>() {
+					@Override
+					public int compare(Row o1, Row o2) {
+						return (asc ? o1.compareTo(o2, col) : o2.compareTo(o1, col));
+					}
+				});
 			}
+			
+			prev = null;
+			for (Row row: rows) {
+				boolean prevHide = true;
+				String[] line = new String[csv.getHeader().size()];
+				for (int x = 0; x < csv.getHeader().size(); x++) {
+					boolean hide = true;
+					if (prev == null || !prevHide || !prev.getCell(x).equals(row.getCell(x))) hide = false;
+					String text = row.getCell(x);
+					boolean number = false;
+					if (csv.getHeader().getField(x).toString().contains("%")) {
+						if (x > 0)
+							try {
+								Double.parseDouble(text);
+								number = true;
+							} catch (Exception e) {}
+						if (number)
+							text = pf.format(Double.parseDouble(text));
+					}
+					line[x] = (hide ? "" : text);
+					prevHide = hide;
+				}
+				if (prev != null && !prev.getCell(0).equals(row.getCell(0)))
+					out.printLine();
+				out.printLine(line);
+				prev = row;
+			}
+		}
 
-		String sort = helper.getParameter("sort");
-		if (sort != null && !"0".equals(sort)) {
-			final boolean asc = Integer.parseInt(sort) > 0;
-			final int col = Math.abs(Integer.parseInt(sort)) - 1;
-			Collections.sort(rows, new Comparator<Row>() {
-				@Override
-				public int compare(Row o1, Row o2) {
-					return (asc ? o1.compareTo(o2, col) : o2.compareTo(o1, col));
-				}
-			});
-		}
-		
-		prev = null;
-		for (Row row: rows) {
-			boolean prevHide = true;
-			String[] line = new String[csv.getHeader().size()];
-			for (int x = 0; x < csv.getHeader().size(); x++) {
-				boolean hide = true;
-				if (prev == null || !prevHide || !prev.getCell(x).equals(row.getCell(x))) hide = false;
-				String text = row.getCell(x);
-				boolean number = false;
-				if (csv.getHeader().getField(x).toString().contains("%")) {
-					if (x > 0)
-						try {
-							Double.parseDouble(text);
-							number = true;
-						} catch (Exception e) {}
-					if (number)
-						text = pf.format(Double.parseDouble(text));
-				}
-				line[x] = (hide ? "" : text);
-				prevHide = hide;
-			}
-			if (prev != null && !prev.getCell(0).equals(row.getCell(0)))
-				out.printLine();
-			out.printLine(line);
-			prev = row;
-		}
-		
 		out.flush();
 		out.close();
 	}

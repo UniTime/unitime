@@ -19,19 +19,26 @@
 */
 package org.unitime.timetable.solver.studentsct;
 
-import java.util.Collection;
-
 import org.cpsolver.ifs.util.CSVFile;
-import org.cpsolver.ifs.util.DataProperties;
-import org.unitime.timetable.gwt.client.sectioning.SectioningReports.ReportTypeInterface;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.solver.CommonSolverInterface;
-
 
 /**
  * @author Tomas Muller
  */
-public interface StudentSolverProxy extends OnlineSectioningServer, CommonSolverInterface {
-    public CSVFile getReport(DataProperties parameters);
-    public Collection<ReportTypeInterface> getReportTypes();
+public class InMemoryReport extends CSVFile implements Comparable<InMemoryReport> {
+	private static final long serialVersionUID = 1L;
+	private String iReference, iName;
+	
+	public InMemoryReport() {}
+	public InMemoryReport(String reference, String name) {
+		iReference = reference; iName = name;
+	}
+	
+	public String getReference() { return iReference; }
+	public void setReference(String reference) { iReference = reference; }
+	public String getName() { return iName; }
+	public void setName(String name) { iName = name; }
+	@Override
+	public int compareTo(InMemoryReport o) {
+		return getName().compareTo(o.getName());
+	}
 }

@@ -28,6 +28,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.assignment.Assignment;
@@ -64,6 +65,7 @@ import org.cpsolver.studentsct.report.SectionConflictTable;
 import org.cpsolver.studentsct.report.StudentSectioningReport;
 import org.dom4j.Document;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.client.sectioning.SectioningReports.ReportTypeInterface;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -102,6 +104,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
     private transient Map<Long, XCourse> iCourseInfoCache = null;
     private Map<String, Object> iOnlineProperties = new HashMap<String, Object>();
+    private Map<String, InMemoryReport> iReports = new HashMap<String, InMemoryReport>();
     
     public StudentSolver(DataProperties properties, SolverDisposeListener disposeListener) {
         super(properties, disposeListener);
@@ -738,6 +741,10 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	public CSVFile getReport(DataProperties parameters) {
 		try {
 			String name = parameters.getProperty("report", SectionConflictTable.class.getName());
+			if (StudentSolver.class.getName().equals(name)) {
+				String reference = parameters.getProperty("reference");
+				return (reference == null ? null : iReports.get(reference));
+			}
 			Class<StudentSectioningReport> clazz = (Class<StudentSectioningReport>) Class.forName(name);
 			StudentSectioningReport report = clazz.getConstructor(StudentSectioningModel.class).newInstance(currentSolution().getModel());
 			return report.create(currentSolution().getAssignment(), parameters);
@@ -805,5 +812,21 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 				iWorkThread.join();
 			} catch (InterruptedException e) {}
 		}
+	}
+
+	@Override
+	public Collection<ReportTypeInterface> getReportTypes() {
+		List<ReportTypeInterface> ret = new ArrayList<ReportTypeInterface>();
+		for (InMemoryReport report: new TreeSet<InMemoryReport>(iReports.values()))
+			ret.add(new ReportTypeInterface(report.getReference(), report.getName(), StudentSolver.class.getName(), "reference", report.getReference()));
+		return ret;
+	}
+	
+	public void setReport(InMemoryReport report) {
+		iReports.put(report.getReference(), report);
+	}
+	
+	public InMemoryReport getReport(String reference) {
+		return iReports.get(reference);
 	}
 }
