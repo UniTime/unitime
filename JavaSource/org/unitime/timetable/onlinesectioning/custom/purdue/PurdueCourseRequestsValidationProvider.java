@@ -105,6 +105,7 @@ import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XDistribution;
 import org.unitime.timetable.onlinesectioning.model.XDistributionType;
+import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XFreeTimeRequest;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
@@ -425,11 +426,33 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		Student student = new Student(request.getStudentId());
 		Map<Long, Section> classTable = new HashMap<Long, Section>();
 		Set<XDistribution> distributions = new HashSet<XDistribution>();
+		Hashtable<CourseRequest, Set<Section>> preferredSections = new Hashtable<CourseRequest, Set<Section>>();
 		for (CourseRequestInterface.Request c: request.getCourses())
 			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, false);
 		// if (student.getRequests().isEmpty()) return;
 		for (CourseRequestInterface.Request c: request.getAlternatives())
 			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, false);
+		for (XRequest r: original.getRequests()) {
+			if (r instanceof XCourseRequest) {
+				XCourseRequest cr = (XCourseRequest)r;
+				XEnrollment en = cr.getEnrollment();
+				if (en != null) {
+					for (Request q: student.getRequests())
+						if (q instanceof CourseRequest) {
+							Course course = ((CourseRequest)q).getCourse(en.getCourseId());
+							if (course != null) {
+								Set<Section> sections = new HashSet<Section>();
+								for (Long sectionId: en.getSectionIds()) {
+									Section section = course.getOffering().getSection(sectionId);
+									if (section != null) sections.add(section);
+								}
+								if (!sections.isEmpty())
+									preferredSections.put((CourseRequest)q, sections);
+							}
+						}
+				}
+			}
+		}
 		model.addStudent(student);
 		model.setDistanceConflict(new DistanceConflict(server.getDistanceMetric(), model.getProperties()));
 		model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
@@ -500,7 +523,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		}
 		
 		selection.setModel(model);
-		selection.setPreferredSections(new Hashtable<CourseRequest, Set<Section>>());
+		selection.setPreferredSections(preferredSections);
 		selection.setRequiredSections(new Hashtable<CourseRequest, Set<Section>>());
 		selection.setRequiredFreeTimes(new HashSet<FreeTimeRequest>());
 		selection.setRequiredUnassinged(new HashSet<CourseRequest>());
@@ -1512,6 +1535,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		Student s = new Student(student.getUniqueId());
 		Map<Long, Section> classTable = new HashMap<Long, Section>();
 		Set<XDistribution> distributions = new HashSet<XDistribution>();
+		Hashtable<CourseRequest, Set<Section>> preferredSections = new Hashtable<CourseRequest, Set<Section>>();
 		
 		for (XRequest r: original.getRequests()) {
 			action.addRequest(OnlineSectioningHelper.toProto(r));
@@ -1522,13 +1546,24 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						-1l, "Free Time", server.getAcademicSession().getFreeTimePattern(), 0));
 			} else {
 				XCourseRequest cr = (XCourseRequest)r;
+				XEnrollment enrollment = cr.getEnrollment();
 				List<Course> courses = new ArrayList<Course>();
+				Set<Section> sections = new HashSet<Section>();
 				for (XCourseId c: cr.getCourseIds()) {
 					XOffering offering = server.getOffering(c.getOfferingId());
-					courses.add(offering.toCourse(c.getCourseId(), original, server.getExpectations(c.getOfferingId()), offering.getDistributions(), server.getEnrollments(c.getOfferingId())));
+					Course clonnedCourse = offering.toCourse(c.getCourseId(), original, server.getExpectations(c.getOfferingId()), offering.getDistributions(), server.getEnrollments(c.getOfferingId()));
+					courses.add(clonnedCourse);
 					distributions.addAll(offering.getDistributions());
+					if (enrollment != null && enrollment.getCourseId().equals(c.getCourseId())) {
+						for (Long sectionId: enrollment.getSectionIds()) {
+							Section section = clonnedCourse.getOffering().getSection(sectionId);
+							if (section != null) sections.add(section);
+						}
+					}
 				}
 				CourseRequest clonnedRequest = new CourseRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), s, courses, cr.isWaitlist(), cr.getTimeStamp() == null ? null : cr.getTimeStamp().getTime());
+				if (!sections.isEmpty())
+					preferredSections.put(clonnedRequest, sections);
 				cr.fillChoicesIn(clonnedRequest);
 			}
 		}
@@ -1569,7 +1604,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		}
 		
 		selection.setModel(model);
-		selection.setPreferredSections(new Hashtable<CourseRequest, Set<Section>>());
+		selection.setPreferredSections(preferredSections);
 		selection.setRequiredSections(new Hashtable<CourseRequest, Set<Section>>());
 		selection.setRequiredFreeTimes(new HashSet<FreeTimeRequest>());
 		selection.setRequiredUnassinged(new HashSet<CourseRequest>());
@@ -1823,7 +1858,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			
 			resource.post(new GsonRepresentation<SpecialRegistrationRequest>(submitRequest));
 			
-			action.setApiPostTime(System.currentTimeMillis() - t1);
+			action.setApiPostTime(action.getApiPostTime() + System.currentTimeMillis() - t1);
 			
 			response = (SpecialRegistrationResponseList)new GsonRepresentation<SpecialRegistrationResponseList>(resource.getResponseEntity(), SpecialRegistrationResponseList.class).getObject();
 			if (helper.isDebugEnabled())
@@ -1854,6 +1889,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						if (r.changes != null)
 							for (Change ch: r.changes) {
 								if (cr.getCourseOffering().getSubjectAreaAbbv().equals(ch.subject) && cr.getCourseOffering().getCourseNbr().equals(ch.courseNbr)) {
+									Integer oldStatus = cr.getOverrideStatus();
 									if (RequestStatus.denied.name().equals(r.status))
 										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.REJECTED);
 									else if (RequestStatus.approved.name().equals(r.status))
@@ -1862,10 +1898,13 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.CANCELLED);
 									else
 										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.PENDING);
+									if (oldStatus == null || !oldStatus.equals(cr.getOverrideStatus()))
+										changed = true;
+									if (cr.getOverrideExternalId() == null || !cr.getOverrideExternalId().equals(r.requestId))
+										changed = true;
 									cr.setOverrideExternalId(r.requestId);
 									cr.setOverrideTimeStamp(r.dateCreated == null ? null : r.dateCreated.toDate());
 									helper.getHibSession().update(cr);
-									changed = true;
 									continue cr;
 								}
 							}
@@ -1880,31 +1919,36 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			}
 		}
 		boolean studentChanged = false;
-		if (student.getOverrideExternalId() != null) {
-			SpecialRegistrationRequest req = null;
-			if (response != null && response.data != null)
-				for (SpecialRegistrationRequest r: response.data) {
-					if (student.getOverrideExternalId().equals(r.requestId)) { req = r; break; }
+		if (submitRequest.maxCredit != null) {
+			for (SpecialRegistrationRequest r: response.data) {
+				if (r.maxCredit != null) {
+					Integer oldStatus = student.getOverrideStatus();
+					if (RequestStatus.denied.name().equals(r.status))
+						student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.REJECTED);
+					else if (RequestStatus.approved.name().equals(r.status))
+						student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.APPROVED);
+					else if (RequestStatus.cancelled.name().equals(r.status))
+						student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.CANCELLED);
+					else
+						student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.PENDING);
+					if (oldStatus == null || !oldStatus.equals(student.getOverrideStatus()))
+						studentChanged = true;
+					if (student.getOverrideMaxCredit() == null || !student.getOverrideMaxCredit().equals(r.maxCredit))
+						studentChanged = true;
+					student.setOverrideMaxCredit(r.maxCredit);
+					if (student.getOverrideExternalId() == null || !student.getOverrideExternalId().equals(r.requestId))
+						studentChanged = true;
+					student.setOverrideExternalId(r.requestId);
+					student.setOverrideTimeStamp(r.dateCreated == null ? null : r.dateCreated.toDate());
+					break;
 				}
-			if (req == null) {
-				student.setOverrideExternalId(null);
-				student.setOverrideMaxCredit(null);
-				student.setOverrideStatus(null);
-				student.setOverrideTimeStamp(null);
-				studentChanged = true;
-			} else {
-				Integer oldStatus = student.getOverrideStatus();
-				if (RequestStatus.denied.name().equals(req.status))
-					student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.REJECTED);
-				else if (RequestStatus.approved.name().equals(req.status))
-					student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.APPROVED);
-				else if (RequestStatus.cancelled.name().equals(req.status))
-					student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.CANCELLED);
-				else
-					student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.PENDING);
-				if (oldStatus == null || !oldStatus.equals(student.getOverrideStatus()))
-					studentChanged = true;
 			}
+		} else if (student.getOverrideExternalId() != null) {
+			student.setOverrideExternalId(null);
+			student.setOverrideMaxCredit(null);
+			student.setOverrideStatus(null);
+			student.setOverrideTimeStamp(null);
+			studentChanged = true;
 		}
 		if (studentChanged) helper.getHibSession().update(student);
 		
