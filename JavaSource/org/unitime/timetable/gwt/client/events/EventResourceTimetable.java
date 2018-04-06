@@ -648,6 +648,15 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 					});
 					exportCsv.getElement().getStyle().setCursor(Cursor.POINTER);
 					menu.addItem(exportCsv);
+					MenuItem exportXls = new MenuItem(MESSAGES.opExportXLS(), true, new Command() {
+						@Override
+						public void execute() {
+							popup.hide();
+							export("output=" + (getSelectedTab() <= 1 ? "events" : "meetings") + ".xls&flags=" + EventCookie.getInstance().getFlags(), true);
+						}
+					});
+					exportXls.getElement().getStyle().setCursor(Cursor.POINTER);
+					menu.addItem(exportXls);
 					MenuItem exportIcs = new MenuItem(MESSAGES.opExportICalendar(), true, new Command() {
 						@Override
 						public void execute() {
