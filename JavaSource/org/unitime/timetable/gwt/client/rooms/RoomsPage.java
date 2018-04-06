@@ -531,6 +531,28 @@ public class RoomsPage extends Composite {
 			}
 		});
 		
+		iRoomsTable.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				export("rooms.xls");
+			}
+			
+			@Override
+			public boolean isApplicable() {
+				return iRoomsTable.getRowCount() > 0 && (iProperties != null && iProperties.isCanExportCsv());
+			}
+			
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			
+			@Override
+			public String getName() {
+				return MESSAGES.opExportXLS();
+			}
+		});
+		
 		iRoomsTable.addMouseClickListener(new MouseClickListener<RoomDetailInterface>() {
 			@Override
 			public void onMouseClick(final TableEvent<RoomDetailInterface> event) {

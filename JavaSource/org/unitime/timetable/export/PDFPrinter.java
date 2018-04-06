@@ -20,9 +20,11 @@
 package org.unitime.timetable.export;
 
 import java.awt.Color;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,6 +32,7 @@ import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import org.unitime.timetable.export.Exporter.Printer;
+import org.unitime.timetable.util.Formats.Format;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
 
@@ -299,8 +302,12 @@ public class PDFPrinter implements Printer {
 		private String iText = null;
 		private int iFlag = 0;
 		private String iColor = null;
+		private BufferedImage iBufferedImage = null;
 		private Image iImage = null;
 		private Float iMaxWidth = null;
+		private Double iNumber = null;
+		private Date iDate = null;
+		private Format<?> iFormat = null;
 		
 		public A() {}
 		
@@ -312,6 +319,27 @@ public class PDFPrinter implements Printer {
 				iText = (text == null ? null : text.replace("<br>", "\n")); 
 		}
 		
+		public A(Date date, Format<Date> format, F... flags) {
+			iDate = date; iFormat = format;
+			iText = (date == null ? null : format.format(date));
+			for (F f: flags)
+				iFlag = f.set(iFlag);
+		}
+		
+		public A(Number number, Format<Number> format, F... flags) {
+			iNumber = (number == null ? null : new Double(number.doubleValue())); iFormat = format;
+			iText = (number == null ? null : format.format(number));
+			for (F f: flags)
+				iFlag = f.set(iFlag);
+		}
+		
+		public A(Number number, F... flags) {
+			iNumber = (number == null ? null : new Double(number.doubleValue())); iFormat = null;
+			iText = (number == null ? null : number.toString());
+			for (F f: flags)
+				iFlag = f.set(iFlag);
+		}
+		
 		public A(A... chunks) {
 			iChunks = new ArrayList<A>();
 			for (A ch: chunks)
@@ -320,6 +348,8 @@ public class PDFPrinter implements Printer {
 		
 		public A(java.awt.Image image) {
 			try {
+				if (image instanceof BufferedImage)
+					iBufferedImage = (BufferedImage)image;
 				iImage = Image.getInstance(image, Color.WHITE);
 			} catch (Exception e) {}
 		}
@@ -351,6 +381,9 @@ public class PDFPrinter implements Printer {
 		
 		public boolean hasImage() { return iImage != null; }
 		public Image getImage() { return iImage; }
+		
+		public boolean hasBufferedImage() { return iBufferedImage != null; }
+		public BufferedImage getBufferedImage() { return iBufferedImage; }
 		
 		public A add(A chunk) {
 			if (iChunks == null) iChunks = new ArrayList<A>();
@@ -387,6 +420,12 @@ public class PDFPrinter implements Printer {
 		public boolean hasMaxWidth() { return iMaxWidth != null; }
 		public A maxWidth(Float maxWidth) { iMaxWidth = maxWidth; return this; }
 		public Float getMaxWidth() { return iMaxWidth; }
+		
+		public boolean isNumber() { return iNumber != null; }
+		public Double getNumber() { return iNumber; }
+		public boolean isDate() { return iDate != null; }
+		public Date getDate() { return iDate; }
+		public String getPattern() { return iFormat == null ? null : iFormat.toPattern(); }
 		
 		private float width(String text, Font font) {
 			float ret = font.getBaseFont().getWidthPoint(text, font.getSize());

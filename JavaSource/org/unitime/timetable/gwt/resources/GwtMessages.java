@@ -149,6 +149,9 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Export CSV")
 	String opExportCSV();
+	
+	@DefaultMessage("Export XLS")
+	String opExportXLS();
 
 	@DefaultMessage("Export iCalendar")
 	String opExportICalendar();
@@ -1697,6 +1700,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Export&nbsp;<u>P</u>DF")
 	String buttonExportPDF();
+	
+	@DefaultMessage("Export&nbsp;<u>X</u>LS")
+	String buttonExportXLS();
 	
 	@DefaultMessage("Add&nbsp;<u>R</u>eservation")
 	String buttonAddReservation();

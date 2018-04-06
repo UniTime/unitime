@@ -127,13 +127,13 @@ public class RoomsExportPDF extends RoomsExporter {
 			return new A(room.getRoomType().getLabel());
 
 		case CAPACITY:
-			return new A(room.getCapacity() == null ? "0" : room.getCapacity().toString()).right();
+			return new A(room.getCapacity() == null ? 0 : room.getCapacity()).right();
 		
 		case EXAM_CAPACITY:
-			return new A(room.getExamCapacity() == null ? "" : room.getExamCapacity().toString()).right();
+			return new A(room.getExamCapacity()).right();
 			
 		case AREA:
-			return new A(room.getArea() == null ? "" : context.getAreaFormat().format(room.getArea())).right();
+			return new A(room.getArea(), context.getAreaFormat()).right();
 			
 		case COORDINATES:
 			return new A(room.hasCoordinates() ? context.getCoordinateFormat().format(room.getX()) + "," + context.getCoordinateFormat().format(room.getY()) : "");
