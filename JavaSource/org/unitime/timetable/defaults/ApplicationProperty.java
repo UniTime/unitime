@@ -2359,6 +2359,32 @@ public enum ApplicationProperty {
 	@Description("Calendar: Time zone URL, where {id} is the time zone id, e.g., Europe/Prague")
 	@DefaultValue("http://www.tzurl.org/zoneinfo/{id}.ics")
 	CalendarVTimeZone("unitime.calendar.timezone"),
+	
+	@Type(Double.class)
+	@DefaultValue("16.0")
+	@Description("Time Grid XLS Export: 1st column width")
+	TimeGridXLSHeaderWidth("unitime.timeGrid.xls.headerWidth"),
+	
+	
+	@Type(Double.class)
+	@DefaultValue("2.0")
+	@Description("Time Grid XLS Export: cell width (horizontal display)")
+	TimeGridXLSCellWidth("unitime.timeGrid.xls.horizontalCellWidth"),
+	
+	@Type(Double.class)
+	@DefaultValue("16.0")
+	@Description("Time Grid XLS Export: cell width (vertical display)")
+	TimeGridXLSCellWidthVertical("unitime.timeGrid.xls.verticalCellWidth"),
+	
+	@Type(Integer.class)
+	@DefaultValue("12")
+	@Description("Time Grid XLS Export: font size")
+	TimeGridXLSFontSize("unitime.timeGrid.xls.fontSize"),
+	
+	@Type(String.class)
+	@DefaultValue("Arial")
+	@Description("Time Grid XLS Export: font name")
+	TimeGridXLSFontName("unitime.timeGrid.xls.fontName"),
 
 	;
 

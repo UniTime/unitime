@@ -105,10 +105,17 @@ public class TimetablePage extends Composite {
 		iFilter.getFooter().addButton("export", MESSAGES.buttonExportPDF(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				exportData();
+				exportData("pdf");
 			}
 		});
 		iFilter.getFooter().setEnabled("export", false);
+		iFilter.getFooter().addButton("export-xls", MESSAGES.buttonExportXLS(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				exportData("xls");
+			}
+		});
+		iFilter.getFooter().setEnabled("export-xls", false);
 		iRootPanel = new SimplePanel(iPanel);
 		iRootPanel.addStyleName("unitime-TimetablePage");
 		initWidget(iRootPanel);
@@ -228,8 +235,8 @@ public class TimetablePage extends Composite {
 		ToolBox.print(pages);
 	}
 	
-	private void exportData() {
-		String query = "output=timetable.pdf" + iFilter.getQuery();
+	private void exportData(String format) {
+		String query = "output=timetable." + format + iFilter.getQuery();
 		RPC.execute(EncodeQueryRpcRequest.encode(query), new AsyncCallback<EncodeQueryRpcResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -246,6 +253,7 @@ public class TimetablePage extends Composite {
 		iLastResponse = response;
 		iFilter.getFooter().setEnabled("print", false);
 		iFilter.getFooter().setEnabled("export", false);
+		iFilter.getFooter().setEnabled("export-xls", false);
 		for (int row = iPanel.getRowCount() - 1; row > 0; row--)
 			iPanel.removeRow(row);
 		
@@ -253,6 +261,7 @@ public class TimetablePage extends Composite {
 			iFilter.getFooter().setMessage(MESSAGES.errorTimetableGridNoDataReturned());
 			iFilter.getFooter().setEnabled("print", false);
 			iFilter.getFooter().setEnabled("export", false);
+			iFilter.getFooter().setEnabled("export-xls", false);
 			return;
 		}
 		
@@ -271,6 +280,7 @@ public class TimetablePage extends Composite {
 		iPanel.addRow(scroll);
 		iFilter.getFooter().setEnabled("print", true);
 		iFilter.getFooter().setEnabled("export", true);
+		iFilter.getFooter().setEnabled("export-xls", true);
 		
 		if (!response.getAssignedLegend().isEmpty() || !response.getNotAssignedLegend().isEmpty()) {
 			iPanel.addHeaderRow(new UniTimeHeaderPanel(MESSAGES.sectLegend()));
