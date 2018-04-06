@@ -475,6 +475,11 @@
 			<artifactId>biweekly</artifactId>
 			<version>${biweekly.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>${poi.version}</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<sourceDirectory>${project.build.directory}/src</sourceDirectory>
@@ -777,6 +782,7 @@
 		<gson.version>2.3.1</gson.version>
 		<biweekly.version>0.4.3</biweekly.version>
 		<jboss-logging.version>1.2.1.Final</jboss-logging.version>
+		<poi.version>3.17</poi.version>
 	</properties>
 	
 	<distributionManagement>
