@@ -236,7 +236,7 @@ public class XLSPrinter implements Printer {
 				font.add(new Object[] {text.length(), (short)0});
 				HSSFRichTextString value = new HSSFRichTextString(text.toString());
 				for (int i = 0; i < font.size() - 1; i++)
-					value.applyFont((int)font.get(i)[0], (int)font.get(1 + i)[0], (short)font.get(i)[1]);
+					value.applyFont((Integer)font.get(i)[0], (Integer)font.get(1 + i)[0], (Short)font.get(i)[1]);
 				cell.setCellValue(value);
 			}
 		}
