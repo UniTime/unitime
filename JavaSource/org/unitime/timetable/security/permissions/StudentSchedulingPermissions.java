@@ -228,6 +228,14 @@ public class StudentSchedulingPermissions {
 		}
 	}
 	
+	@PermissionForRight(Right.StudentSchedulingChangeStudentGroup)
+	public static class StudentSchedulingChangeStudentGroup extends SimpleSessionPermission {
+		@Override
+		public boolean check(UserContext user, Session source) {
+			return super.check(user, source) && (source.getStatusType().can(Status.StudentsOnline) || source.getStatusType().can(Status.StudentsAssistant) || source.getStatusType().can(Status.StudentsPreRegister));
+		}
+	}
+	
 	@PermissionForRight(Right.StudentSchedulingRequestStudentUpdate)
 	public static class StudentSchedulingRequestStudentUpdate extends SimpleSessionPermission {
 		@Override

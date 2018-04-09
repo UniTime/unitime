@@ -689,6 +689,12 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Sort By")
 	String opSort();
 	
+	@DefaultMessage("Add To Group")
+	String opAddToGroup();
+	
+	@DefaultMessage("Remove From Group")
+	String opRemoveFromGroup();
+	
 	@DefaultMessage("Student")
 	String colStudent();
 

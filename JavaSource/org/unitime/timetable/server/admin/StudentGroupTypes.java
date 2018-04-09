@@ -68,7 +68,8 @@ public class StudentGroupTypes implements AdminTable {
 				new Field(MESSAGES.fieldCode(), FieldType.text, 150, 20, Flag.UNIQUE),
 				new Field(MESSAGES.fieldName(), FieldType.text, 400, 60, Flag.UNIQUE),
 				new Field(MESSAGES.fieldKeepTogether(), FieldType.toggle, 40),
-				new Field(MESSAGES.fieldAllowDisabledSections(), FieldType.list, 100, allow, Flag.NOT_EMPTY)
+				new Field(MESSAGES.fieldAllowDisabledSections(), FieldType.list, 100, allow, Flag.NOT_EMPTY),
+				new Field(MESSAGES.fieldAdvisorsCanSet(), FieldType.toggle, 40)
 				);
 		data.setSortBy(1);
 		Set<Long> used = new HashSet<Long>(
@@ -80,6 +81,7 @@ public class StudentGroupTypes implements AdminTable {
 			r.setField(1, type.getLabel());
 			r.setField(2, type.isKeepTogether() ? "true" : "false");
 			r.setField(3, type.getAllowDisabled().toString());
+			r.setField(4, type.isAdvisorsCanSet() ? "true" : "false");
 			r.setDeletable(!used.contains(type.getUniqueId()));
 		}
 		data.setEditable(context.hasPermission(Right.StudentGroupTypeEdit));
@@ -108,6 +110,7 @@ public class StudentGroupTypes implements AdminTable {
 		type.setLabel(record.getField(1));
 		type.setKeepTogether("true".equals(record.getField(2)));
 		type.setAllowDisabled(record.getField(3) == null ? 0 : Short.valueOf(record.getField(3)));
+		type.setAdvisorsCanSet("true".equals(record.getField(4)));
 		record.setUniqueId((Long)hibSession.save(type));
 		ChangeLog.addChange(hibSession,
 				context,
@@ -125,11 +128,13 @@ public class StudentGroupTypes implements AdminTable {
 				!ToolBox.equals(type.getReference(), record.getField(0)) ||
 				!ToolBox.equals(type.getLabel(), record.getField(1)) ||
 				!ToolBox.equals(type.isKeepTogether(), "true".equals(record.getField(2))) || 
-				!ToolBox.equals(type.getAllowDisabled().toString(), record.getField(3));
+				!ToolBox.equals(type.getAllowDisabled().toString(), record.getField(3)) ||
+				!ToolBox.equals(type.isAdvisorsCanSet(), "true".equals(record.getField(4)));
 		type.setReference(record.getField(0));
 		type.setLabel(record.getField(1));
 		type.setKeepTogether("true".equals(record.getField(2)));
 		type.setAllowDisabled(record.getField(3) == null ? 0 : Short.valueOf(record.getField(3)));
+		type.setAdvisorsCanSet("true".equals(record.getField(4)));
 		hibSession.saveOrUpdate(type);
 		if (changed)
 			ChangeLog.addChange(hibSession,

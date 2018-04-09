@@ -33,10 +33,12 @@ public abstract class BaseStudentGroupType extends RefTableEntry implements Seri
 
 	private Boolean iKeepTogether;
 	private Short iAllowDisabled;
+	private Boolean iAdvisorsCanSet;
 
 
 	public static String PROP_TOGETHER = "keepTogether";
 	public static String PROP_ALLOW_DISABLED = "allowDisabled";
+	public static String PROP_ADVISOR = "advisorsCanSet";
 
 	public BaseStudentGroupType() {
 		initialize();
@@ -56,6 +58,10 @@ public abstract class BaseStudentGroupType extends RefTableEntry implements Seri
 	public Short getAllowDisabled() { return iAllowDisabled; }
 	public void setAllowDisabled(Short allowDisabled) { iAllowDisabled = allowDisabled; }
 
+	public Boolean isAdvisorsCanSet() { return iAdvisorsCanSet; }
+	public Boolean getAdvisorsCanSet() { return iAdvisorsCanSet; }
+	public void setAdvisorsCanSet(Boolean advisorsCanSet) { iAdvisorsCanSet = advisorsCanSet; }
+
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof StudentGroupType)) return false;
 		if (getUniqueId() == null || ((StudentGroupType)o).getUniqueId() == null) return false;
@@ -73,6 +79,7 @@ public abstract class BaseStudentGroupType extends RefTableEntry implements Seri
 
 	public String toDebugString() {
 		return "StudentGroupType[" +
+			"\n	AdvisorsCanSet: " + getAdvisorsCanSet() +
 			"\n	AllowDisabled: " + getAllowDisabled() +
 			"\n	KeepTogether: " + getKeepTogether() +
 			"\n	Label: " + getLabel() +

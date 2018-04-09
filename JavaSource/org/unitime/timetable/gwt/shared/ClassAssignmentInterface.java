@@ -752,7 +752,15 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			if (iGroup == null) iGroup = new ArrayList<String>();
 			iGroup.add(group);
 		}
+		public void removeGroup(String group) {
+			if (iGroup == null) return;
+			iGroup.remove(group);
+		}
 		public List<String> getGroups() { return iGroup; }
+		public boolean hasGroup(String group) {
+			if (iGroup == null) return false;
+			return iGroup.contains(group);
+		}
 		
 		public boolean hasAccommodation() { return iAccommodation != null && !iAccommodation.isEmpty(); }
 		public String getAccommodation(String delim) { 

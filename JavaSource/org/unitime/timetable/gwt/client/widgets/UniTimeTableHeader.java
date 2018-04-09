@@ -94,18 +94,30 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 			if (op.hasSeparator() && !first)
 				menu.addSeparator();
 			first = false;
-			MenuItem item = new MenuItem(op.getName(), true, new Command() {
-				@Override
-				public void execute() {
-					popup.hide();
-					op.execute();
-				}
-			});
-			if (op instanceof AriaOperation)
-				Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), ((AriaOperation)op).getAriaLabel());
-			else
-				Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), UniTimeHeaderPanel.stripAccessKey(op.getName()));
-			menu.addItem(item);
+			if (op instanceof MenuOperation) {
+				MenuBar submenu = new MenuBar(true);
+				((MenuOperation)op).generate(popup, submenu);
+				MenuItem item = new MenuItem(op.getName(), true, submenu);
+				if (op instanceof AriaOperation)
+					Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), ((AriaOperation)op).getAriaLabel());
+				else
+					Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), UniTimeHeaderPanel.stripAccessKey(op.getName()));
+				item.getElement().getStyle().setCursor(Cursor.POINTER);
+				menu.addItem(item);
+			} else {
+				MenuItem item = new MenuItem(op.getName(), true, new Command() {
+					@Override
+					public void execute() {
+						popup.hide();
+						op.execute();
+					}
+				});
+				if (op instanceof AriaOperation)
+					Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), ((AriaOperation)op).getAriaLabel());
+				else
+					Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), UniTimeHeaderPanel.stripAccessKey(op.getName()));
+				menu.addItem(item);
+			}
 		}
 		if (first) return false;
 		menu.setVisible(true);
@@ -171,6 +183,10 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 	
 	public static interface AriaOperation extends Operation {
 		public String getAriaLabel();
+	}
+	
+	public static interface MenuOperation extends Operation {
+		public void generate(PopupPanel popup, MenuBar menu);
 	}
 	
 	public static interface HasColumnName {

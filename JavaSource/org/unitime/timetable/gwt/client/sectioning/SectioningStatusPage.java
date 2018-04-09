@@ -46,6 +46,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.AriaOperation;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.HasColumnName;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.MenuOperation;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
@@ -67,6 +68,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentGroupInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
 
 import com.google.gwt.aria.client.Roles;
@@ -166,7 +168,7 @@ public class SectioningStatusPage extends Composite {
 	private SectioningStatusFilterRpcRequest iCourseFilterRequest = null;
 	private Set<StudentStatusInfo> iStates = null;
 	private StudentStatusDialog iStudentStatusDialog = null;
-	private int iStatusColumn = 0, iNoteColumn = 0;
+	private int iStatusColumn = 0, iNoteColumn = 0, iGroupColumn = 0;
 	private Set<Long> iSelectedStudentIds = new HashSet<Long>();
 	private Set<Long> iSelectedCourseIds = new HashSet<Long>();
 	private boolean iOnline; 
@@ -226,20 +228,32 @@ public class SectioningStatusPage extends Composite {
 						if (op.hasSeparator() && !first)
 							menu.addSeparator();
 						first = false;
-						MenuItem item = new MenuItem(op.getName(), true, new Command() {
-							@Override
-							public void execute() {
-								popup.hide();
-								op.execute();
-							}
-						});
-						if (op instanceof AriaOperation)
-							Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), ((AriaOperation)op).getAriaLabel());
-						else
-							Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), UniTimeHeaderPanel.stripAccessKey(op.getName()));
-						menu.addItem(item);
+						if (op instanceof MenuOperation) {
+							MenuBar submenu = new MenuBar(true);
+							((MenuOperation)op).generate(popup, submenu); op.execute();
+							MenuItem item = new MenuItem(op.getName(), true, submenu);
+							if (op instanceof AriaOperation)
+								Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), ((AriaOperation)op).getAriaLabel());
+							else
+								Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), UniTimeHeaderPanel.stripAccessKey(op.getName()));
+							item.getElement().getStyle().setCursor(Cursor.POINTER);
+							menu.addItem(item);
+						} else {
+							MenuItem item = new MenuItem(op.getName(), true, new Command() {
+								@Override
+								public void execute() {
+									popup.hide();
+									op.execute();
+								}
+							});
+							if (op instanceof AriaOperation)
+								Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), ((AriaOperation)op).getAriaLabel());
+							else
+								Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), UniTimeHeaderPanel.stripAccessKey(op.getName()));
+							menu.addItem(item);
+						}
 					}
-
+					
 					if (!iSortOperations.isEmpty()) {
 						if (!first) menu.addSeparator();
 						MenuBar submenu = new MenuBar(true);
@@ -1433,6 +1447,159 @@ public class SectioningStatusPage extends Composite {
 					});
 				}
 			});
+			hSelect.addOperation(new MenuOperation() {
+				@Override
+				public String getName() {
+					return MESSAGES.opAddToGroup();
+				}
+				@Override
+				public boolean hasSeparator() {
+					return true;
+				}
+				@Override
+				public boolean isApplicable() {
+					if (iOnline && iSelectedStudentIds.size() > 0 && iProperties != null && iProperties.hasEditableGroups()) {
+						for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+							StudentInfo i = iStudentTable.getData(row);
+							if (i != null && i.getStudent() != null && iSelectedStudentIds.contains(i.getStudent().getId())) {
+								for (StudentGroupInfo g: iProperties.getEditableGroups())
+									if (!i.getStudent().hasGroup(g.getReference())) return true;
+							}
+						}
+					}
+					return false;
+				}
+				@Override
+				public void execute() {}
+				@Override
+				public void generate(final PopupPanel popup, MenuBar menu) {
+					for (final StudentGroupInfo g: iProperties.getEditableGroups()) {
+						boolean canAdd = false;
+						for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+							StudentInfo i = iStudentTable.getData(row);
+							if (i != null && i.getStudent() != null && iSelectedStudentIds.contains(i.getStudent().getId())) {
+								if (!i.getStudent().hasGroup(g.getReference())) {
+									canAdd = true; break;
+								}
+							}
+						}
+						if (!canAdd) continue;
+						MenuItem item = new MenuItem(g.getReference() + " - " + g.getLabel(), true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
+								LoadingWidget.getInstance().show(MESSAGES.pleaseWait());
+								iSectioningService.changeStudentGroup(studentIds, g.getUniqueId(), false, new AsyncCallback<Boolean>() {
+									@Override
+									public void onFailure(Throwable caught) {
+										LoadingWidget.getInstance().hide();
+										UniTimeNotifications.error(caught);
+									}
+
+									@Override
+									public void onSuccess(Boolean result) {
+										for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+											StudentInfo i = iStudentTable.getData(row);
+											if (i != null && i.getStudent() != null) {
+												Widget w = iStudentTable.getWidget(row, 0);
+												if (w instanceof CheckBox && ((CheckBox)w).getValue()) {
+													i.getStudent().addGroup(g.getReference());
+													if (iGroupColumn >= 0)
+														((HTML)iStudentTable.getWidget(row, iGroupColumn)).setHTML(i.getStudent().getGroup("<br>"));
+												}
+											}
+										}
+										LoadingWidget.getInstance().hide();
+									}
+								});
+							}
+						});
+						menu.addItem(item);
+					}
+				}
+			});
+			hSelect.addOperation(new MenuOperation() {
+				@Override
+				public String getName() {
+					return MESSAGES.opRemoveFromGroup();
+				}
+				@Override
+				public boolean hasSeparator() {
+					if (iOnline && iSelectedStudentIds.size() > 0 && iProperties != null && iProperties.hasEditableGroups()) {
+						for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+							StudentInfo i = iStudentTable.getData(row);
+							if (i != null && i.getStudent() != null && iSelectedStudentIds.contains(i.getStudent().getId())) {
+								for (StudentGroupInfo g: iProperties.getEditableGroups())
+									if (!i.getStudent().hasGroup(g.getReference())) return false;
+							}
+						}
+					}
+					return true;
+				}
+				@Override
+				public boolean isApplicable() {
+					if (iOnline && iSelectedStudentIds.size() > 0 && iProperties != null && iProperties.hasEditableGroups()) {
+						for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+							StudentInfo i = iStudentTable.getData(row);
+							if (i != null && i.getStudent() != null && iSelectedStudentIds.contains(i.getStudent().getId())) {
+								for (StudentGroupInfo g: iProperties.getEditableGroups())
+									if (i.getStudent().hasGroup(g.getReference())) return true;
+							}
+						}
+					}
+					return false;
+				}
+				@Override
+				public void execute() {}
+				@Override
+				public void generate(final PopupPanel popup, MenuBar menu) {
+					for (final StudentGroupInfo g: iProperties.getEditableGroups()) {
+						boolean canDrop = false;
+						for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+							StudentInfo i = iStudentTable.getData(row);
+							if (i != null && i.getStudent() != null && iSelectedStudentIds.contains(i.getStudent().getId())) {
+								if (i.getStudent().hasGroup(g.getReference())) {
+									canDrop = true; break;
+								}
+							}
+						}
+						if (!canDrop) continue;
+						MenuItem item = new MenuItem(g.getReference() + " - " + g.getLabel(), true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
+								LoadingWidget.getInstance().show(MESSAGES.pleaseWait());
+								iSectioningService.changeStudentGroup(studentIds, g.getUniqueId(), true, new AsyncCallback<Boolean>() {
+									@Override
+									public void onFailure(Throwable caught) {
+										LoadingWidget.getInstance().hide();
+										UniTimeNotifications.error(caught);
+									}
+
+									@Override
+									public void onSuccess(Boolean result) {
+										for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+											StudentInfo i = iStudentTable.getData(row);
+											if (i != null && i.getStudent() != null) {
+												Widget w = iStudentTable.getWidget(row, 0);
+												if (w instanceof CheckBox && ((CheckBox)w).getValue()) {
+													i.getStudent().removeGroup(g.getReference());
+													if (iGroupColumn >= 0)
+														((HTML)iStudentTable.getWidget(row, iGroupColumn)).setHTML(i.getStudent().getGroup("<br>"));
+												}
+											}
+										}
+										LoadingWidget.getInstance().hide();
+									}
+								});
+							}
+						});
+						menu.addItem(item);
+					}
+				}
+			});
 		}
 		
 		boolean hasExtId = false;
@@ -1484,6 +1651,7 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		if (iProperties != null && iProperties.isChangeStatus()) hasNote = true;
+		if (iProperties != null && iProperties.hasEditableGroups()) hasGroup = true;
 		
 		UniTimeTableHeader hArea = null, hClasf = null;
 		if (hasArea) {
@@ -1508,10 +1676,13 @@ public class SectioningStatusPage extends Composite {
 		
 		UniTimeTableHeader hGroup = null;
 		if (hasGroup) {
+			iGroupColumn = header.size() - 1;
 			hGroup = new UniTimeTableHeader(MESSAGES.colGroup());
 			//hGroup.setWidth("100px");
 			header.add(hGroup);
 			addSortOperation(hGroup, StudentComparator.SortBy.GROUP, MESSAGES.colGroup());
+		} else {
+			iGroupColumn = -1;
 		}
 		
 		UniTimeTableHeader hAcmd = null;

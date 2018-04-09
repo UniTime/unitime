@@ -83,6 +83,7 @@ public interface SectioningServiceAsync {
 	void lookupStudentSectioningStates(AsyncCallback<List<StudentStatusInfo>> callback) throws SectioningException, PageAccessException;
 	void sendEmail(Long studentId, String subject, String message, String cc, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	void changeStatus(List<Long> studentIds, String note, String status, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
+	void changeStudentGroup(List<Long> studentIds, Long groupId, boolean remove, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	void changeLog(String query, AsyncCallback<List<ClassAssignmentInterface.SectioningAction>> callback) throws SectioningException, PageAccessException;
 	void massCancel(List<Long> studentIds, String status, String subject, String message, String cc, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	void requestStudentUpdate(List<Long> studentIds, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;

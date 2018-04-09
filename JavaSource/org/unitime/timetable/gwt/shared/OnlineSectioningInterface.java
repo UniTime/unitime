@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -124,6 +125,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private boolean iChangeLog = false;
 		private boolean iCheckStudentOverrides = false;
 		private boolean iValidateStudentOverrides = false;
+		private Set<StudentGroupInfo> iEditableGroups = null;
 		
 		public SectioningProperties() {
 		}
@@ -161,6 +163,50 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		
 		public boolean isCanSelectStudent() {
 			return iEmail || iMassCancel || iChangeStatus || iRequestUpdate || iCheckStudentOverrides || iValidateStudentOverrides;
+		}
+		
+		public boolean hasEditableGroups() { return iEditableGroups != null && !iEditableGroups.isEmpty(); }
+		public Set<StudentGroupInfo> getEditableGroups() { return iEditableGroups; }
+		public void setEditableGroups(Set<StudentGroupInfo> groups) { iEditableGroups = groups; }
+		public void addEditableGroup(StudentGroupInfo group) {
+			if (iEditableGroups == null) iEditableGroups = new TreeSet<StudentGroupInfo>();
+			iEditableGroups.add(group);
+		}
+	}
+	
+	public static class StudentGroupInfo implements IsSerializable, Serializable, Comparable<StudentGroupInfo> {
+		private static final long serialVersionUID = 1L;
+		private Long iUniqueId;
+		private String iReference, iLabel;
+		
+		public StudentGroupInfo() {}
+		public StudentGroupInfo(Long id, String reference, String label) {
+			iUniqueId = id; iReference = reference; iLabel = label;
+		}
+		
+		public void setUniqueId(Long id) { iUniqueId = id; }
+		public Long getUniqueId() { return iUniqueId; }
+		
+		public void setReference(String reference) { iReference = reference; }
+		public String getReference() { return iReference; }
+		public void setLabel(String label) { iLabel = label; }
+		public String getLabel() { return iLabel; }
+
+		@Override
+		public String toString() { return getReference(); }
+		
+		@Override
+		public int hashCode() { return getReference().hashCode(); }
+		
+		@Override
+		public int compareTo(StudentGroupInfo status) {
+			return getReference().compareTo(status.getReference());
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof StudentGroupInfo)) return false;
+			return getUniqueId().equals(((StudentGroupInfo)o).getUniqueId());
 		}
 	}
 	
@@ -243,6 +289,12 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		@Override
 		public int compareTo(StudentStatusInfo status) {
 			return getReference().compareTo(status.getReference());
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof StudentStatusInfo)) return false;
+			return getUniqueId().equals(((StudentStatusInfo)o).getUniqueId());
 		}
 	}
 

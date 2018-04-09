@@ -13047,4 +13047,9 @@
 			references %SCHEMA%.sectioning_status (uniqueid) on delete set null
 		</sql>
 	</update>
+	<update version="203" date="9-Apr-2018" comment="Student group type advisors">
+	    <plsql>alter table %SCHEMA%.std_group_type add advisor number(1) default 0</plsql>
+		<plsql>alter table %SCHEMA%.std_group_type add constraint nn_std_group_type_advisor check (advisor is not null)</plsql>
+		<mysql>alter table %SCHEMA%.std_group_type add advisor int(1) not null default 0</mysql>
+	</update>
 </dbupdate>

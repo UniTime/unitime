@@ -4538,6 +4538,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Disabled Sections")
 	String fieldAllowDisabledSections();
 	
+	@DefaultMessage("Advisors Can Set")
+	String fieldAdvisorsCanSet();
+	
 	@DefaultMessage("Start Date")
 	String fieldStudentStatusEffectiveStartDate();
 	

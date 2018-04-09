@@ -62,6 +62,7 @@ import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentGroupInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -110,6 +111,7 @@ import org.unitime.timetable.model.dao.CurriculumDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.model.dao.StudentGroupDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -154,6 +156,7 @@ import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoActi
 import org.unitime.timetable.onlinesectioning.status.db.DbFindOnlineSectioningLogAction;
 import org.unitime.timetable.onlinesectioning.status.db.DbFindStudentInfoAction;
 import org.unitime.timetable.onlinesectioning.updates.ApproveEnrollmentsAction;
+import org.unitime.timetable.onlinesectioning.updates.ChangeStudentGroup;
 import org.unitime.timetable.onlinesectioning.updates.ChangeStudentStatus;
 import org.unitime.timetable.onlinesectioning.updates.EnrollStudent;
 import org.unitime.timetable.onlinesectioning.updates.MassCancelAction;
@@ -2331,6 +2334,37 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 	}
 	
+	@Override
+	public Boolean changeStudentGroup(List<Long> studentIds, Long groupId, boolean remove) throws SectioningException, PageAccessException {
+		try {
+			OnlineSectioningServer server = getServerInstance(getStatusPageSessionId(), true);
+			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+			getSessionContext().checkPermission(server.getAcademicSession(), Right.StudentSchedulingChangeStudentGroup);
+			if (!getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdmin) &&
+				getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdvisor) &&
+				!getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyAllStudents)) {
+				getSessionContext().checkPermission(Right.StudentSchedulingAdvisorCanModifyMyStudents);
+				Set<Long> myStudentIds = getMyStudents(getStatusPageSessionId());
+				for (Long studentId: studentIds) {
+					if (!myStudentIds.contains(studentId)) {
+						Student student = StudentDAO.getInstance().get(studentId);
+						throw new PageAccessException(SEC_MSG.permissionCheckFailed(Right.StudentSchedulingChangeStudentGroup.toString(),
+								(student == null ? studentId.toString() : student.getName(NameFormat.LAST_FIRST_MIDDLE.reference()))));
+					}
+				}
+			}
+			return server.execute(server.createAction(ChangeStudentGroup.class).forStudents(studentIds).withGroup(groupId, remove), currentUser());
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (SectioningException e) {
+			throw e;
+		} catch (Exception e) {
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
+		}
+
+	}
+	
 	private OnlineSectioningLog.Entity currentUser() {
 		UserContext user = getSessionContext().getUser();
 		UniTimePrincipal principal = (UniTimePrincipal)getSessionContext().getAttribute("user");
@@ -2569,6 +2603,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			properties.setRequestUpdate(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingRequestStudentUpdate));
 			properties.setCheckStudentOverrides(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingCheckStudentOverrides));
 			properties.setValidateStudentOverrides(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingValidateStudentOverrides));
+			if (getSessionContext().hasPermission(sessionId, Right.StudentSchedulingChangeStudentGroup))
+				for (StudentGroup g: (List<StudentGroup>)StudentGroupDAO.getInstance().getSession().createQuery(
+						"from StudentGroup g where g.type.advisorsCanSet = true and g.session = :sessionId order by g.groupAbbreviation"
+						).setLong("sessionId", sessionId).setCacheable(true).list()) {
+					properties.addEditableGroup(new StudentGroupInfo(g.getUniqueId(), g.getGroupAbbreviation(), g.getGroupName()));
+				}
 		}
 		return properties;
 	}
