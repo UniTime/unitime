@@ -122,7 +122,7 @@ public class CourseRequestEligibility extends CheckEligibility {
 				else if (disabled)
 					iCheck.setMessage(MSG.exceptionAccessDisabled());
 				else if (noreg)
-					iCheck.setMessage(MSG.exceptionEnrollmentDisabled());
+					iCheck.setMessage(MSG.exceptionRegistrationDisabled());
 
 				String effectivePeriod = (s != null ? s.getEffectivePeriod() : status != null ? status.getEffectivePeriod() : null);
 				if (effectivePeriod != null)

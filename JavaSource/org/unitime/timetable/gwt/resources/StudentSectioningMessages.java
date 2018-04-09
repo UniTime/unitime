@@ -1142,6 +1142,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Enrollment disabled.")
 	String exceptionEnrollmentDisabled();
 	
+	@DefaultMessage("Registration disabled.")
+	String exceptionRegistrationDisabled();
+	
 	@DefaultMessage("Access disabled.")
 	String exceptionAccessDisabled();
 	
