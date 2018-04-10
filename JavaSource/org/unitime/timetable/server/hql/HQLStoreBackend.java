@@ -19,13 +19,20 @@
 */
 package org.unitime.timetable.server.hql;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseLong;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.shared.SavedHQLInterface;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface.HQLStoreRpcRequest;
 import org.unitime.timetable.model.SavedHQL;
+import org.unitime.timetable.model.SavedHQLParameter;
 import org.unitime.timetable.model.dao.SavedHQLDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -50,11 +57,40 @@ public class HQLStoreBackend implements GwtRpcImplementation<HQLStoreRpcRequest,
 		}
 		if (hql == null) {
 			hql = new SavedHQL();
+			hql.setParameters(new HashSet<SavedHQLParameter>());
 		}
 		hql.setName(query.getName());
 		hql.setDescription(query.getDescription());
 		hql.setType(query.getFlags());
 		hql.setQuery(query.getQuery());
+		
+		if (query.hasParameters()) {
+			Map<String, SavedHQLParameter> params = new HashMap<String, SavedHQLParameter>();
+			for (SavedHQLParameter parameter: hql.getParameters())
+				params.put(parameter.getName(), parameter);
+			for (SavedHQLInterface.Parameter p: query.getParameters()) {
+				SavedHQLParameter parameter = params.remove(p.getName());
+				if (parameter == null) {
+					parameter = new SavedHQLParameter();
+					parameter.setName(p.getName());
+					parameter.setSavedHQL(hql);
+					hql.getParameters().add(parameter);
+				}
+				parameter.setType(p.getType());
+				parameter.setLabel(p.getLabel());
+				parameter.setDefaultValue(p.getDefaultValue());
+			}
+			for (SavedHQLParameter parameter: params.values()) {
+				hibSession.delete(parameter);
+				hql.getParameters().remove(parameter);
+			}
+		} else {
+			for (Iterator<SavedHQLParameter> i = hql.getParameters().iterator(); i.hasNext(); ) {
+				hibSession.delete(i.next());
+				i.remove();
+			}
+		}
+		
 		hibSession.saveOrUpdate(hql);
 		hibSession.flush();
 		hibSession.refresh(hql);

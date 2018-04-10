@@ -59,6 +59,54 @@
             type="java.lang.Integer"
             not-null="true"
             length="10"/>
-            
+
+		<set
+            name="parameters"
+            cascade="all"
+            inverse="true">
+
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="hql_id"/>
+            <one-to-many class="SavedHQLParameter"/>
+        </set>
     </class>
+    
+    <class name="SavedHQLParameter" table="hql_parameter">
+        <cache include="non-lazy" usage="transactional"/>
+        
+        <composite-id>
+        	<key-many-to-one
+        		name="savedHQL"
+        		class="SavedHQL"
+        		column="hql_id"
+        		foreign-key="fk_hql_parameter"
+        	/>
+            <key-property
+                name="name"
+                column="name"
+                type="java.lang.String"
+                length="128"/>
+        </composite-id>
+
+        <property
+            name="label"
+            column="label"
+            type="java.lang.String"
+            not-null="false"
+            length="256"/>
+
+        <property
+            name="type"
+            column="type"
+            type="java.lang.String"
+            not-null="true"
+            length="2048"/>
+
+       	<property
+            name="defaultValue"
+            column="default_value"
+            type="java.lang.String"
+            not-null="false"
+            length="2048"/>
+   	</class>
 </hibernate-mapping>

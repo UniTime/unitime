@@ -13052,4 +13052,27 @@
 		<plsql>alter table %SCHEMA%.std_group_type add constraint nn_std_group_type_advisor check (advisor is not null)</plsql>
 		<mysql>alter table %SCHEMA%.std_group_type add advisor int(1) not null default 0</mysql>
 	</update>
+	<update version="204" date="10-Apr-2018" comment="Saved HQL Parameters">
+		<mysql>
+			create table %SCHEMA%.hql_parameter (
+				hql_id decimal(20,0) not null,
+				name varchar(128) not null,
+				label varchar(256) null,
+				type varchar(2048) not null,
+				default_value varchar(2048) null,
+				primary key (hql_id, name)
+			) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.hql_parameter (
+				hql_id number(20,0) constraint nn_script_param_id not null,
+				name varchar2(128 char) constraint nn_script_param_name not null,
+				label varchar2(256 char),
+				type varchar2(2048 char) constraint nn_script_param_type not null,
+				default_value varchar2(2048 char)
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.hql_parameter add constraint pk_hql_parameter primary key (hql_id, name)</plsql>
+		<sql>alter table %SCHEMA%.hql_parameter add constraint fk_hql_parameter foreign key (hql_id) references %SCHEMA%.saved_hql(uniqueid) on delete cascade</sql>
+	</update>
 </dbupdate>

@@ -19,6 +19,9 @@
 */
 package org.unitime.timetable.server.hql;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
@@ -27,7 +30,10 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface.HQLQueriesRpcRequest;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface.Query;
+import org.unitime.timetable.model.RefTableEntry;
 import org.unitime.timetable.model.SavedHQL;
+import org.unitime.timetable.model.SavedHQLParameter;
+import org.unitime.timetable.model.dao.RefTableEntryDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 
@@ -53,6 +59,42 @@ public class HQLQueriesBackend implements GwtRpcImplementation<HQLQueriesRpcRequ
 			query.setQuery(hql.getQuery());
 			query.setFlags(hql.getType());
 			query.setId(hql.getUniqueId());
+			for (SavedHQLParameter p: hql.getParameters()) {
+				SavedHQLInterface.Parameter parameter = new SavedHQLInterface.Parameter();
+				parameter.setLabel(p.getLabel() == null ? p.getName() : p.getLabel());
+				parameter.setName(p.getName());
+				parameter.setDefaultValue(p.getDefaultValue());
+				parameter.setType(p.getType());
+				if (p.getType().startsWith("enum(") && p.getType().endsWith(")")) {
+					for (String option: p.getType().substring("enum(".length(), p.getType().length() - 1).split(","))
+						parameter.addOption(option, option);
+				} else if (p.getType().startsWith("reference(") && p.getType().endsWith(")")) {
+					try {
+						String clazz = p.getType().substring("reference(".length(), p.getType().length() - 1);
+						for (RefTableEntry entry: (List<RefTableEntry>)RefTableEntryDAO.getInstance().getSession().createQuery("from " + clazz).setCacheable(true).list()) {
+							parameter.addOption(entry.getReference(), entry.getLabel());
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				} else {
+					for (SavedHQL.Option option: SavedHQL.Option.values()) {
+						if (p.getType().equalsIgnoreCase(option.name())) {
+							parameter.setMultiSelect(option.allowMultiSelection());
+							for (Map.Entry<Long, String> entry: option.values(context.getUser()).entrySet()) {
+								parameter.addOption(entry.getKey().toString(), entry.getValue());
+							}
+							if (p.getDefaultValue() != null) {
+								Long id = option.lookupValue(context.getUser(), p.getDefaultValue());
+								if (id != null)
+									parameter.setValue(id.toString());
+							}
+							break;
+						}
+					}
+				}
+				query.addParameter(parameter);
+			}
 			ret.add(query);
 		}
 		return ret;

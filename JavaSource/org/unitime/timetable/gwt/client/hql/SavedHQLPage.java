@@ -21,14 +21,23 @@ package org.unitime.timetable.gwt.client.hql;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.admin.ScriptPage.DateTimeBox;
+import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.TimeSelector;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
@@ -41,7 +50,9 @@ import org.unitime.timetable.gwt.command.client.GwtRpcResponseLong;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
@@ -52,11 +63,14 @@ import org.unitime.timetable.gwt.shared.SavedHQLInterface.HQLOptionsRpcRequest;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface.HQLQueriesRpcRequest;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface.HQLSetBackRpcRequest;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface.HQLStoreRpcRequest;
+import org.unitime.timetable.gwt.shared.SavedHQLInterface.ListItem;
+import org.unitime.timetable.gwt.shared.SavedHQLInterface.Parameter;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface.Query;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface.Table;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -64,6 +78,8 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.http.client.URL;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
@@ -71,10 +87,13 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextArea;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -82,12 +101,15 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class SavedHQLPage extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
+	protected static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
+	protected static final GwtResources RESOURCES = GWT.create(GwtResources.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
 	private SimpleForm iForm = null;
-	private UniTimeHeaderPanel iHeader = null, iTableHeader = null, iTableFooter = null;
+	private UniTimeHeaderPanel iHeader = null, iFooter = null, iTableHeader = null, iTableFooter = null;
 	private UniTimeWidget<ListBox> iQuerySelector = null;
 	private HTML iDescription = null;
+	private Map<String, String> iParams = new HashMap<String, String>();
 	
 	private List<SavedHQLInterface.Query> iQueries = new ArrayList<SavedHQLInterface.Query>();
 	private List<SavedHQLInterface.Flag> iFlags = new ArrayList<SavedHQLInterface.Flag>();
@@ -98,6 +120,7 @@ public class SavedHQLPage extends Composite {
 	private int iFirstLine = 0;
 	private int iLastSort = 0;
 	private String iLastHistory = null;
+	private int iParametersRow = -1;
 	
 	public SavedHQLPage() {
 		iAppearance = Window.Location.getParameter("appearance");
@@ -176,6 +199,38 @@ public class SavedHQLPage extends Composite {
 						}
 						request.addOption(option.getType(), value);
 						form.addRow(option.getName() + ":", new Label(values, true));
+					}
+				}
+				if (request.getQuery().hasParameters()) {
+					for (Parameter p: request.getQuery().getParameters()) {
+						String value = iParams.get(p.getName());
+						if (value != null)
+							request.addOption(p.getName(), value);
+						if (value == null) value = p.getDefaultValue();
+						if (p.hasOptions()) {
+							if (p.isMultiSelect()) {
+								if (value == null || value.isEmpty()) {
+									form.addRow(p.getLabel() + ":", new Label(MESSAGES.itemAll(), true));
+								} else {
+									List<String> selection = new ArrayList<String>();
+									for (ListItem i: p.getOptions())
+										for (String v: value.split(","))
+											if (i.getValue().equals(v)) selection.add(i.getText());
+									form.addRow(p.getLabel() + ":", new Label(ToolBox.toString(selection), true));
+								}
+							} else {
+								if (value == null || value.isEmpty()) {
+									iHeader.setErrorMessage(MESSAGES.errorItemNotSelected(p.getLabel()));
+									return;
+								} else {
+									for (ListItem i: p.getOptions())
+										if (i.getValue().equals(value))
+											form.addRow(p.getLabel() + ":", new Label(p.getLabel(), true));
+								}
+							}
+						} else {
+							form.addRow(p.getLabel() + ":", new Label(value != null ? value : "", true));
+						}
 					}
 				}
 				LoadingWidget.getInstance().show(MESSAGES.waitExecuting(request.getQuery().getName()));
@@ -307,6 +362,10 @@ public class SavedHQLPage extends Composite {
 						if (!params.isEmpty()) params += ":";
 						params += (list.isMultipleSelect() && allSelected ? "" : value);
 					}
+				}
+				if (query.hasParameters()) {
+					for (Map.Entry<String, String> e: iParams.entrySet())
+						params += "&" + e.getKey() + "=" + URL.encodeQueryString(e.getValue());
 				}
 				String reportId = iQuerySelector.getWidget().getValue(iQuerySelector.getWidget().getSelectedIndex());
 				
@@ -444,12 +503,13 @@ public class SavedHQLPage extends Composite {
 				});
 				iTableHeader.setEnabled("previous", false);
 				iTableHeader.setEnabled("next", false);
-				iForm.addHeaderRow(iTableHeader);
+				iParametersRow = iForm.addHeaderRow(iTableHeader);
 				iForm.addRow(iTable);
 				iTableFooter = iTableHeader.clonePanel("");
 				iTableFooter.setVisible(false);
 				iForm.addRow(iTableFooter);
-				iForm.addBottomRow(iHeader.clonePanel(""));
+				iFooter = iHeader.clonePanel("");
+				iForm.addBottomRow(iFooter);
 				loadQueries(null, true);
 			}
 		});
@@ -496,6 +556,85 @@ public class SavedHQLPage extends Composite {
 	TextArea iDialogDescription = null;
 	TextArea iDialogQueryArea = null;
 	ListBox iDialogAppearance = null;
+	UniTimeTable<Parameter> iDialogParams = null;
+	
+	private void addParam(final Parameter param) {
+		List<Widget> line = new ArrayList<Widget>();
+		
+		final TextBox name = new TextBox();
+		name.setStyleName("unitime-TextBox");
+		name.setMaxLength(128);
+		name.setWidth("185px");
+		if (param.getName() != null) name.setText(param.getName());
+		name.addValueChangeHandler(new ValueChangeHandler<String>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<String> event) {
+				param.setName(event.getValue());
+				if (!event.getValue().isEmpty()) {
+					if (iDialogParams.getWidget(iDialogParams.getRowCount() - 1, 0).equals(name))
+						addParam(new Parameter());
+				}
+				iDialogHeader.clearMessage();
+			}
+		});
+		line.add(name);
+		
+		TextBox label = new TextBox();
+		label.setStyleName("unitime-TextBox");
+		label.setMaxLength(256);
+		label.setWidth("185px");
+		if (param.getLabel() != null) label.setText(param.getLabel());
+		label.addValueChangeHandler(new ValueChangeHandler<String>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<String> event) {
+				param.setLabel(event.getValue());
+				iDialogHeader.clearMessage();
+			}
+		});
+		line.add(label);
+		
+		TextBox type = new TextBox();
+		type.setStyleName("unitime-TextBox");
+		type.setMaxLength(2048);
+		type.setWidth("185px");
+		if (param.getType() != null) type.setText(param.getType());
+		type.addValueChangeHandler(new ValueChangeHandler<String>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<String> event) {
+				param.setType(event.getValue());
+				iDialogHeader.clearMessage();
+			}
+		});
+		line.add(type);
+		
+		TextBox defaultValue = new TextBox();
+		defaultValue.setStyleName("unitime-TextBox");
+		defaultValue.setMaxLength(2048);
+		defaultValue.setWidth("185px");
+		if (param.getDefaultValue() != null) defaultValue.setText(param.getDefaultValue());
+		defaultValue.addValueChangeHandler(new ValueChangeHandler<String>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<String> event) {
+				param.setDefaultValue(event.getValue());
+				iDialogHeader.clearMessage();
+			}
+		});
+		line.add(defaultValue);
+		
+		Image delete = new Image(RESOURCES.delete());
+		delete.setTitle(MESSAGES.titleDeleteRow());
+		delete.getElement().getStyle().setCursor(Cursor.POINTER);
+		delete.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				if (iDialogParams.getRowCount() > 2)
+					iDialogParams.removeRow(iDialogParams.getCellForEvent(event).getRowIndex());
+			}
+		});
+		line.add(delete);
+		
+		iDialogParams.addRow(param, line);
+	}
 	
 	public void openDialog(SavedHQLInterface.Query q) {
 		iDialogQuery = q;
@@ -521,6 +660,17 @@ public class SavedHQLPage extends Composite {
 				CheckBox ch = new CheckBox(f.getText());
 				iDialogForm.addRow(i == 0 ? MESSAGES.propFlags() : "", ch);
 			}
+			iDialogParams = new UniTimeTable<Parameter>();
+			iDialogForm.addRow(MESSAGES.propParameters(), iDialogParams);
+			
+			List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
+			header.add(new UniTimeTableHeader(MESSAGES.colName()));
+			header.add(new UniTimeTableHeader(MESSAGES.colLabel()));
+			header.add(new UniTimeTableHeader(MESSAGES.colType()));
+			header.add(new UniTimeTableHeader(MESSAGES.colDefaultValue()));
+			header.add(new UniTimeTableHeader(""));
+			iDialogParams.addRow(null, header);
+			
 			iDialogHeader = new UniTimeHeaderPanel();
 			iDialogForm.addBottomRow(iDialogHeader);
 			iDialogHeader.addButton("save", MESSAGES.opQuerySave(), 75, new ClickHandler() {
@@ -552,6 +702,22 @@ public class SavedHQLPage extends Composite {
 						return;
 					}
 					iDialogQuery.setFlags(flags);
+					iDialogQuery.clearParameters();
+					Set<String> names = new HashSet<String>();
+					for (int i = 1; i < iDialogParams.getRowCount(); i++) {
+						Parameter p = iDialogParams.getData(i);
+						if (p != null && p.getName() != null && !p.getName().isEmpty()) {
+							if (!names.add(p.getName())) {
+								iDialogHeader.setErrorMessage(MESSAGES.errorParameterNameNotUnique(p.getName()));
+								return;
+							}
+							if (p.getType() == null || p.getType().isEmpty()) {
+								iDialogHeader.setErrorMessage(MESSAGES.errorParameterTypeRequired(p.getName()));
+								return;
+							}
+							iDialogQuery.addParameter(p);
+						}
+					}
 					RPC.execute(new HQLStoreRpcRequest(iDialogQuery), new AsyncCallback<GwtRpcResponseLong>() {
 						@Override
 						public void onFailure(Throwable caught) {
@@ -574,6 +740,22 @@ public class SavedHQLPage extends Composite {
 						return;
 					}
 					iDialogQuery.setQuery(iDialogQueryArea.getText());
+					iDialogQuery.clearParameters();
+					Set<String> names = new HashSet<String>();
+					for (int i = 1; i < iDialogParams.getRowCount(); i++) {
+						Parameter p = iDialogParams.getData(i);
+						if (p != null && p.getName() != null && !p.getName().isEmpty()) {
+							if (!names.add(p.getName())) {
+								iDialogHeader.setErrorMessage(MESSAGES.errorParameterNameNotUnique(p.getName()));
+								return;
+							}
+							if (p.getType() == null || p.getType().isEmpty()) {
+								iDialogHeader.setErrorMessage(MESSAGES.errorParameterTypeRequired(p.getName()));
+								return;
+							}
+							iDialogQuery.addParameter(p);
+						}
+					}
 					LoadingWidget.getInstance().show(MESSAGES.waitTestingQuery());
 					HQLExecuteRpcRequest request = new HQLExecuteRpcRequest();
 					request.setQuery(iDialogQuery);
@@ -646,6 +828,17 @@ public class SavedHQLPage extends Composite {
 			CheckBox ch = (CheckBox)iDialogForm.getWidget(3 + i, 1);
 			ch.setValue(q == null ? iAppearance.equals(f.getAppearance()) : (q.getFlags() & f.getValue()) != 0); 
 		}
+		iDialogParams.clearTable(1);
+		if (q != null && q.hasParameters())
+			for (Parameter param: q.getParameters()) {
+				Parameter p = new Parameter();
+				p.setDefaultValue(param.getDefaultValue());
+				p.setLabel(param.getLabel());
+				p.setType(param.getType());
+				p.setName(param.getName());
+				addParam(p);
+			}
+		addParam(new Parameter());
 		if (iDialogQuery == null) iDialogQuery = new SavedHQLInterface.Query();
 		iDialog.center();
 	}
@@ -686,6 +879,9 @@ public class SavedHQLPage extends Composite {
 	
 	private void queryChanged() {
 		iHeader.clearMessage();
+		while (iForm.getRowCount() > iParametersRow)
+			iForm.removeRow(iParametersRow);
+		iParams.clear();
 		if (iQuerySelector.getWidget().getSelectedIndex() <= 0) {
 			iHeader.setEnabled("execute", false);
 			iHeader.setEnabled("edit", false);
@@ -703,9 +899,173 @@ public class SavedHQLPage extends Composite {
 						SavedHQLInterface.Option option = iOptions.get(i);
 						iForm.getRowFormatter().setVisible(3 + i, q.getQuery().contains("%" + option.getType() + "%"));
 					}
+					if (q.hasParameters()) {
+						for (final Parameter param: q.getParameters()) {
+							if (param.getValue() != null) iParams.put(param.getName(), param.getValue());
+							Widget widget = null;
+							if (param.hasOptions()) {
+								final ListBox list = new ListBox();
+								list.setMultipleSelect(param.isMultiSelect());
+								if (!param.isMultiSelect()) list.addItem(MESSAGES.itemSelect());
+								for (ListItem item: param.getOptions()) {
+									list.addItem(item.getText(), item.getValue());
+									if (param.getDefaultValue() != null) {
+										if (param.isMultiSelect()) {
+											for (String pid: param.getDefaultValue().split(","))
+												if (!pid.isEmpty() && (pid.equalsIgnoreCase(item.getValue()) || pid.equalsIgnoreCase(item.getText()) || item.getText().startsWith(pid + " - "))) {
+													list.setItemSelected(list.getItemCount() - 1, true); break;
+												}
+										} else if (param.getDefaultValue().equalsIgnoreCase(item.getValue()) || param.getDefaultValue().equalsIgnoreCase(item.getText()) || item.getText().startsWith(param.getDefaultValue() + " - "))
+											list.setSelectedIndex(list.getItemCount() - 1);
+									}
+								}
+								list.addChangeHandler(new ChangeHandler() {
+									@Override
+									public void onChange(ChangeEvent event) {
+										if (param.isMultiSelect()) {
+											String value = "";
+											for (int i = 0; i < list.getItemCount(); i++)
+												if (list.isItemSelected(i))
+													value += (value.isEmpty() ? "" : ",") + list.getValue(i);
+											iParams.put(param.getName(), value);
+										} else {
+											if (list.getSelectedIndex() <= 0)
+												iParams.remove(param.getName());
+											else
+												iParams.put(param.getName(), list.getValue(list.getSelectedIndex()));
+										}
+									}
+								});
+								widget = list;
+							} else if ("boolean".equalsIgnoreCase(param.getType())) {
+								CheckBox ch = new CheckBox();
+								ch.setValue("true".equalsIgnoreCase(param.getDefaultValue()));
+								ch.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+									@Override
+									public void onValueChange(ValueChangeEvent<Boolean> event) {
+										if (event.getValue() == null)
+											iParams.remove(param.getName());
+										else
+											iParams.put(param.getName(), event.getValue() ? "true" : "false");
+									}
+								});
+								widget = ch;
+							} else if ("textarea".equalsIgnoreCase(param.getType())) {
+								TextArea textarea = new TextArea();
+								textarea.setStyleName("unitime-TextArea");
+								textarea.setVisibleLines(5);
+								textarea.setCharacterWidth(80);
+								if (param.getDefaultValue() != null)textarea.setText(param.getDefaultValue());
+								textarea.addValueChangeHandler(new ValueChangeHandler<String>() {
+									@Override
+									public void onValueChange(ValueChangeEvent<String> event) {
+										if (event.getValue() == null)
+											iParams.remove(param.getName());
+										else
+											iParams.put(param.getName(), event.getValue());
+									}
+								});
+								widget = textarea;
+							} else if ("integer".equalsIgnoreCase(param.getType()) || "int".equalsIgnoreCase(param.getType()) || "long".equalsIgnoreCase(param.getType()) || "short".equalsIgnoreCase(param.getType()) || "byte".equalsIgnoreCase(param.getType())) {
+								NumberBox text = new NumberBox();
+								text.setDecimal(false); text.setNegative(true);
+								if (param.getDefaultValue() != null)
+									text.setText(param.getDefaultValue());
+								text.addValueChangeHandler(new ValueChangeHandler<String>() {
+									@Override
+									public void onValueChange(ValueChangeEvent<String> event) {
+										if (event.getValue() == null)
+											iParams.remove(param.getName());
+										else
+											iParams.put(param.getName(), event.getValue());
+									}
+								});
+								widget = text;
+							} else if ("number".equalsIgnoreCase(param.getType()) || "float".equalsIgnoreCase(param.getType()) || "double".equalsIgnoreCase(param.getType())) {
+								NumberBox text = new NumberBox();
+								text.setDecimal(true); text.setNegative(true);
+								if (param.getDefaultValue() != null)
+									text.setText(param.getDefaultValue());
+								text.addValueChangeHandler(new ValueChangeHandler<String>() {
+									@Override
+									public void onValueChange(ValueChangeEvent<String> event) {
+										if (event.getValue() == null)
+											iParams.remove(param.getName());
+										else
+											iParams.put(param.getName(), event.getValue());
+									}
+								});
+								widget = text;
+							} else if ("date".equalsIgnoreCase(param.getType())) {
+								SingleDateSelector text = new SingleDateSelector();
+								if (param.getDefaultValue() != null)
+									text.setText(param.getDefaultValue());
+								final DateTimeFormat format = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
+								text.addValueChangeHandler(new ValueChangeHandler<Date>() {
+									@Override
+									public void onValueChange(ValueChangeEvent<Date> event) {
+										if (event.getValue() == null)
+											iParams.remove(param.getName());
+										else
+											iParams.put(param.getName(), format.format(event.getValue()));
+									}
+								});
+								widget = text;
+							} else if ("slot".equalsIgnoreCase(param.getType()) || "time".equalsIgnoreCase(param.getType())) {
+								TimeSelector text = new TimeSelector();
+								if (param.getDefaultValue() != null)
+									text.setText(param.getDefaultValue());
+								text.addValueChangeHandler(new ValueChangeHandler<Integer>() {
+									@Override
+									public void onValueChange(ValueChangeEvent<Integer> event) {
+										if (event.getValue() == null)
+											iParams.remove(param.getName());
+										else
+											iParams.put(param.getName(), event.getValue().toString());
+									}
+								});
+								widget = text;
+							} else if ("datetime".equalsIgnoreCase(param.getType()) || "timestamp".equalsIgnoreCase(param.getType())) {
+								DateTimeBox text = new DateTimeBox();
+								if (param.getDefaultValue() != null)
+									text.setText(param.getDefaultValue());
+								text.addValueChangeHandler(new ValueChangeHandler<String>() {
+									@Override
+									public void onValueChange(ValueChangeEvent<String> event) {
+										if (event.getValue() == null)
+											iParams.remove(param.getName());
+										else
+											iParams.put(param.getName(), event.getValue());
+									}
+								});
+								widget = text;
+							} else {
+								TextBox text = new TextBox();
+								text.setStyleName("unitime-TextBox");
+								text.setWidth("400px");
+								if (param.getDefaultValue() != null)
+									text.setText(param.getDefaultValue());
+								text.addValueChangeHandler(new ValueChangeHandler<String>() {
+									@Override
+									public void onValueChange(ValueChangeEvent<String> event) {
+										if (event.getValue() == null)
+											iParams.remove(param.getName());
+										else
+											iParams.put(param.getName(), event.getValue());
+									}
+								});
+								widget = text;
+							}
+							iForm.addRow((param.getLabel() == null || param.getLabel().isEmpty() ? param.getName() : param.getLabel()) + ":", widget);
+						}
+					}
 				}
 			}
 		}
+		iForm.addHeaderRow(iTableHeader);
+		iForm.addRow(iTable);
+		iForm.addRow(iTableFooter);
+		iForm.addBottomRow(iFooter);
 	}
 	
 	public static int compare(String[] a, String[] b, int col) {
@@ -864,6 +1224,39 @@ public class SavedHQLPage extends Composite {
 				}
 			}
 		}
+		if (query.hasParameters()) {
+			int i = 0;
+			for (Parameter p: query.getParameters()) {
+				String param = params[idx++];
+				if (param == null || param.isEmpty()) { i++; continue; }
+				param = param.replace('|', ':');
+				Widget w = iForm.getWidget(iParametersRow + i, 1); i++;
+				iParams.put(p.getName(), param);
+				if (w instanceof HasText) {
+					((HasText)w).setText(param);
+				} else if (w instanceof CheckBox) {
+					((CheckBox)w).setValue("true".equalsIgnoreCase(param));
+				} else if (w instanceof SingleDateSelector) {
+					((SingleDateSelector)w).setText(param);
+				} else if (w instanceof ListBox) {
+					ListBox list = (ListBox)w;
+					if (list.isMultipleSelect()) {
+						for (int j = 0; j < list.getItemCount(); j++) {
+							String value = list.getValue(j);
+							boolean contains = false;
+							for (String o: param.split(",")) if (o.equals(value)) { contains = true; break; }
+							list.setItemSelected(j, contains);
+						}
+					} else {
+						for (int j = 1; j < list.getItemCount(); j++) {
+							if (list.getValue(j).equals(param)) {
+								list.setSelectedIndex(j); break;
+							}
+						}
+					}
+				}
+			}
+		}
 		iFirstLine = Integer.parseInt(params[idx++]);
 		iLastSort = Integer.parseInt(params[idx++]);
 		execute();
@@ -912,6 +1305,21 @@ public class SavedHQLPage extends Composite {
 				iLastHistory += ":" + (list.isMultipleSelect() && allSelected ? "" : value);
 			}
 		}
+		if (request.getQuery().hasParameters()) {
+			for (Parameter p: request.getQuery().getParameters()) {
+				String value = iParams.get(p.getName());
+				if (p.hasOptions() && !p.isMultiSelect()) {
+					String v = iParams.get(p.getName());
+					if (v == null) v = p.getDefaultValue();
+					if (v == null || v.isEmpty()) {
+						iHeader.setErrorMessage(MESSAGES.errorItemNotSelected(p.getLabel()));
+						return;
+					}
+				}
+				if (value != null) request.addOption(p.getName(), value);
+				iLastHistory += ":" + (value == null ? "" : value).replace(':', '|');
+			}
+		}
 		
 		iTable.clearTable(); iFirstField = null;
 		iTableHeader.clearMessage();
@@ -933,6 +1341,5 @@ public class SavedHQLPage extends Composite {
 				LoadingWidget.getInstance().hide();
 			}
 		});		
-	}
-	
+	}	
 }

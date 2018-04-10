@@ -21,8 +21,10 @@ package org.unitime.timetable.export.hql;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -47,6 +49,7 @@ import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SavedHQLException;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface;
 import org.unitime.timetable.model.SavedHQL;
+import org.unitime.timetable.model.SavedHQLParameter;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SavedHQLDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -55,6 +58,7 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.AccessDeniedException;
+import org.unitime.timetable.util.Formats;
 
 /**
  * @author Tomas Muller
@@ -144,6 +148,13 @@ public class SavedHqlExportToCSV implements Exporter {
 				params.add(v);
 			}
 		}
+		for (SavedHQLParameter p: hql.getParameters()) {
+			SavedHQLInterface.IdValue v = new SavedHQLInterface.IdValue();
+			v.setValue(p.getName());
+			String value = helper.getParameter(p.getName());
+			v.setText(value == null ? p.getDefaultValue() : value);
+			params.add(v);
+		}
 		
 		boolean hasAppearancePermission = false;
 		for (SavedHQL.Flag flag: SavedHQL.Flag.values()) {
@@ -159,7 +170,7 @@ public class SavedHqlExportToCSV implements Exporter {
 		BufferedPrinter out = new BufferedPrinter(new CSVPrinter(helper.getWriter(), false));
 		helper.setup(out.getContentType(), hql.getName().replace('/', '-').replace('\\', '-').replace(':', '-') + ".csv", false);
 		
-		execute(context.getUser(), out, hql.getQuery(), params, 0, -1);
+		execute(context.getUser(), out, hql.getQuery(), params, 0, -1, hql.getParameters());
 		
 		String sort = helper.getParameter("sort");
 		if (sort != null && !"0".equals(sort)) {
@@ -189,7 +200,7 @@ public class SavedHqlExportToCSV implements Exporter {
 		out.close();
 	}
 	
-	public static void execute(UserContext user, Printer out, String hql, List<SavedHQLInterface.IdValue> options, int fromRow, int maxRows) throws SavedHQLException, PageAccessException {
+	public static void execute(UserContext user, Printer out, String hql, List<SavedHQLInterface.IdValue> options, int fromRow, int maxRows, Collection<SavedHQLParameter> parameters) throws SavedHQLException, PageAccessException {
 		try {
 			for (SavedHQL.Option o: SavedHQL.Option.values()) {
 				if (hql.indexOf("%" + o.name() + "%") >= 0) {
@@ -216,6 +227,65 @@ public class SavedHqlExportToCSV implements Exporter {
 			if (fromRow > 0)
 				q.setFirstResult(fromRow);
 			q.setCacheable(true);
+			if (parameters != null && !parameters.isEmpty()) {
+				parameters: for (SavedHQLParameter parameter: parameters) {
+					String value = parameter.getDefaultValue();
+					for (SavedHQLInterface.IdValue v: options)
+						if (parameter.getName().equals(v.getValue())) { value = v.getText(); break; }
+					if (parameter.getType().equalsIgnoreCase("boolean")) {
+						q.setBoolean(parameter.getName(), value == null ? null : new Boolean("true".equalsIgnoreCase(value)));
+					} else if (parameter.getType().equalsIgnoreCase("long")) {
+						q.setLong(parameter.getName(), value == null || value.isEmpty() ? null : Long.valueOf(value));
+					} else if (parameter.getType().equalsIgnoreCase("int") || parameter.getType().equalsIgnoreCase("integer") || parameter.getType().equalsIgnoreCase("slot") || parameter.getType().equalsIgnoreCase("time")) {
+						q.setInteger(parameter.getName(), value == null || value.isEmpty() ? null : Integer.valueOf(value));
+					} else if (parameter.getType().equalsIgnoreCase("double")) {
+						q.setDouble(parameter.getName(), value == null || value.isEmpty() ? null : Double.valueOf(value));
+					} else if (parameter.getType().equalsIgnoreCase("float")) {
+						q.setFloat(parameter.getName(), value == null || value.isEmpty() ? null : Float.valueOf(value));
+					} else if (parameter.getType().equalsIgnoreCase("short")) {
+						q.setShort(parameter.getName(), value == null || value.isEmpty() ? null : Short.valueOf(value));
+					} else if (parameter.getType().equalsIgnoreCase("byte")) {
+						q.setByte(parameter.getName(), value == null || value.isEmpty() ? null : Byte.valueOf(value));
+					} else if (parameter.getType().equalsIgnoreCase("date")) {
+						Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
+						q.setDate(parameter.getName(), value == null || value.isEmpty() ? null : dateFormat.parse(value));
+					} else if (parameter.getType().equalsIgnoreCase("datetime") || parameter.getType().equalsIgnoreCase("timestamp")) {
+						Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
+						q.setDate(parameter.getName(), value == null || value.isEmpty() ? null : dateFormat.parse(value));
+					} else {
+						for (SavedHQL.Option option: SavedHQL.Option.values()) {
+							if (parameter.getType().equalsIgnoreCase(option.name())) {
+								if (option.allowMultiSelection()) {
+									List<Long> ids = new ArrayList<Long>();
+									if (value != null && !value.isEmpty()) {
+										for (String idStr: value.split(",")) {
+											try {
+												ids.add(Long.parseLong(idStr));
+											} catch (NumberFormatException e) {
+												Long id = option.lookupValue(user, idStr);
+												if (id != null) ids.add(id);
+											}
+										}
+									} else {
+										ids.addAll(option.values(user).keySet());
+									}
+									q.setParameterList(parameter.getName(), ids);
+								} else {
+									Long id = null;
+									try {
+										id = Long.parseLong(value);
+									} catch (NumberFormatException e) {
+										id  =  option.lookupValue(user, value);
+									}
+									q.setLong(parameter.getName(), id == null ? -1l : id);
+								}
+								continue parameters;
+							}
+						}
+						q.setString(parameter.getName(), value);
+					}
+				}
+			}
 			int len = -1;
 			for (Object o: q.list()) {
 				if (len < 0) {

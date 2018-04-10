@@ -20,6 +20,8 @@
 package org.unitime.timetable.server.hql;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,8 +33,11 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.PageAccessException;
+import org.unitime.timetable.gwt.shared.SavedHQLInterface;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface.HQLExecuteRpcRequest;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface.Table;
+import org.unitime.timetable.model.SavedHQL;
+import org.unitime.timetable.model.SavedHQLParameter;
 import org.unitime.timetable.model.dao.SavedHQLDAO;
 import org.unitime.timetable.security.SessionContext;
 
@@ -75,11 +80,32 @@ public class HQLExecuteBackend implements GwtRpcImplementation<HQLExecuteRpcRequ
 				@Override
 				public void close() throws IOException {}
 			};
+			String query = null;
+			Collection<SavedHQLParameter> parameters = null;
+			if (request.getQuery() != null) {
+				query = request.getQuery().getQuery();
+				parameters = new ArrayList<SavedHQLParameter>();
+				if (request.getQuery().hasParameters()) {
+					for (SavedHQLInterface.Parameter p: request.getQuery().getParameters()) {
+						SavedHQLParameter parameter = new SavedHQLParameter();
+						parameter.setDefaultValue(p.getDefaultValue());
+						parameter.setLabel(p.getLabel());
+						parameter.setName(p.getName());
+						parameter.setType(p.getType());
+						parameters.add(parameter);
+					}
+				}
+			} else {
+				SavedHQL hql = SavedHQLDAO.getInstance().get(request.getQuery().getId());
+				query = hql.getQuery();
+				parameters = hql.getParameters();
+			}
 			SavedHqlExportToCSV.execute(sessionContext.getUser(), out, 
-					request.getQuery().getQuery() == null ? SavedHQLDAO.getInstance().get(request.getQuery().getId()).getQuery() : request.getQuery().getQuery(),
+					query,
 					request.getOptions(),
 					request.getFromRow(),
-					request.getMaxRows());
+					request.getMaxRows(),
+					parameters);
 		
 			return ret;
 		} catch (PageAccessException e) {

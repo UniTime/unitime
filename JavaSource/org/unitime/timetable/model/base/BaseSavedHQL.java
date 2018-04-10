@@ -20,8 +20,11 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.unitime.timetable.model.SavedHQL;
+import org.unitime.timetable.model.SavedHQLParameter;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
@@ -36,6 +39,7 @@ public abstract class BaseSavedHQL implements Serializable {
 	private String iQuery;
 	private Integer iType;
 
+	private Set<SavedHQLParameter> iParameters;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_NAME = "name";
@@ -68,6 +72,13 @@ public abstract class BaseSavedHQL implements Serializable {
 
 	public Integer getType() { return iType; }
 	public void setType(Integer type) { iType = type; }
+
+	public Set<SavedHQLParameter> getParameters() { return iParameters; }
+	public void setParameters(Set<SavedHQLParameter> parameters) { iParameters = parameters; }
+	public void addToparameters(SavedHQLParameter savedHQLParameter) {
+		if (iParameters == null) iParameters = new HashSet<SavedHQLParameter>();
+		iParameters.add(savedHQLParameter);
+	}
 
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof SavedHQL)) return false;

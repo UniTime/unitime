@@ -21,6 +21,8 @@ package org.unitime.timetable.gwt.shared;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
@@ -101,6 +103,7 @@ public class SavedHQLInterface implements IsSerializable {
 		private Long iId = null;
 		private String iName, iDescription, iQuery;
 		private int iFlags = 0;
+		private Set<Parameter> iParameters;
 
 		public Query() {}
 		
@@ -115,8 +118,86 @@ public class SavedHQLInterface implements IsSerializable {
 		public int getFlags() { return iFlags; }
 		public void setFlags(int flags) { iFlags = flags; }
 		
+		public boolean hasParameters() { return iParameters != null && !iParameters.isEmpty(); }
+		public Set<Parameter> getParameters() { return iParameters; }
+		public void addParameter(Parameter parameter) {
+			if (iParameters == null)
+				iParameters = new TreeSet<Parameter>();
+			iParameters.add(parameter);
+		}
+		public void clearParameters() {
+			if (iParameters != null) iParameters.clear();
+		}
+		
 		@Override
 		public String toString() { return getName(); }
+	}
+	
+	public static class Parameter implements IsSerializable, Comparable<Parameter> {
+		private String iName, iLabel, iType, iValue, iDefault;
+		private Set<ListItem> iOptions = null;
+		private boolean iMultiSelect = false;
+		
+		public Parameter() {}
+		public Parameter(Parameter p) {
+			iName = p.iName; iLabel = p.iLabel; iType = p.iType; iValue = p.iValue; iDefault = p.iDefault;
+			iOptions = p.iOptions; iMultiSelect = p.iMultiSelect;
+		}
+		
+		public String getName() { return iName; }
+		public void setName(String name) { iName = name; }
+		
+		public String getLabel() { return iLabel; }
+		public void setLabel(String label) { iLabel = label; }
+		
+		public String getType() { return iType; }
+		public void setType(String type) { iType = type; }
+		
+		public String getValue() { return iValue; }
+		public void setValue(String value) { iValue = value; }
+
+		public String getDefaultValue() { return iDefault; }
+		public void setDefaultValue(String defaultValue) { iDefault = defaultValue; }
+		
+		public boolean hasOptions() { return iOptions != null && !iOptions.isEmpty(); }
+		public void addOption(String value, String text) {
+			if (iOptions == null)
+				iOptions = new TreeSet<ListItem>();
+			iOptions.add(new ListItem(value, text));
+		}
+		public Set<ListItem> getOptions() { return iOptions; }
+		
+		public boolean isMultiSelect() { return iMultiSelect; }
+		public void setMultiSelect(boolean multiSelect) { iMultiSelect = multiSelect; }
+		
+		@Override
+		public String toString() {
+			return getName() + "=" + (getValue() == null ? getDefaultValue() : getValue());
+		}
+		
+		@Override
+		public int compareTo(Parameter o) {
+			int cmp = getLabel().compareTo(o.getLabel());
+			if (cmp != 0) return cmp;
+			return getName().compareTo(o.getName());
+		}
+	}
+	
+	public static class ListItem implements IsSerializable, Comparable<ListItem> {
+		private String iValue, iText;
+		public ListItem() {}
+		public ListItem(String value, String text) {
+			iValue = value; iText = text;
+		}
+		public String getValue() { return iValue; }
+		public String getText() { return iText; }
+		
+		@Override
+		public int compareTo(ListItem item) {
+			int cmp = getText().compareTo(item.getText());
+			if (cmp != 0) return cmp;
+			return getValue().compareTo(item.getValue());
+		}
 	}
 	
 	public static class HQLOptionsInterface implements GwtRpcResponse {
@@ -205,6 +286,9 @@ public class SavedHQLInterface implements IsSerializable {
 			setDescription(query.getDescription());
 			setQuery(query.getQuery());
 			setFlags(query.getFlags());
+			if (query.hasParameters())
+				for (Parameter p: query.getParameters())
+					addParameter(new Parameter(p));
 		}
 	}
 	
