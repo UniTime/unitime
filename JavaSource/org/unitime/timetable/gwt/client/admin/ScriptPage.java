@@ -32,7 +32,9 @@ import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
+import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.TimeSelector;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -66,6 +68,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
@@ -76,6 +79,8 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasText;
+import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -499,6 +504,34 @@ public class ScriptPage extends Composite {
 							}
 						});
 						widget = text;
+					} else if ("slot".equalsIgnoreCase(param.getType()) || "time".equalsIgnoreCase(param.getType())) {
+						TimeSelector text = new TimeSelector();
+						if (param.getDefaultValue() != null)
+							text.setText(param.getDefaultValue());
+						text.addValueChangeHandler(new ValueChangeHandler<Integer>() {
+							@Override
+							public void onValueChange(ValueChangeEvent<Integer> event) {
+								if (event.getValue() == null)
+									iParams.remove(param.getName());
+								else
+									iParams.put(param.getName(), event.getValue().toString());
+							}
+						});
+						widget = text;
+					} else if ("datetime".equalsIgnoreCase(param.getType()) || "timestamp".equalsIgnoreCase(param.getType())) {
+						DateTimeBox text = new DateTimeBox();
+						if (param.getDefaultValue() != null)
+							text.setText(param.getDefaultValue());
+						text.addValueChangeHandler(new ValueChangeHandler<String>() {
+							@Override
+							public void onValueChange(ValueChangeEvent<String> event) {
+								if (event.getValue() == null)
+									iParams.remove(param.getName());
+								else
+									iParams.put(param.getName(), event.getValue());
+							}
+						});
+						widget = text;
 					} else {
 						TextBox text = new TextBox();
 						text.setStyleName("unitime-TextBox");
@@ -911,6 +944,84 @@ public class ScriptPage extends Composite {
 			iEngine.addItem(MESSAGES.itemSelect(), "");
 			for (String engine: options.getEngines())
 				iEngine.addItem(engine);
+		}
+		
+	}
+	
+	public static class DateTimeBox extends P implements HasText, HasValue<String> {
+		private SingleDateSelector iDate;
+		private TimeSelector iTime;
+		private DateTimeFormat iFormat = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
+		
+		public DateTimeBox() {
+			super("unitime-DateTimeBox");
+			iDate = new SingleDateSelector(); iDate.addStyleName("date"); add(iDate);
+			iTime = new TimeSelector(); iTime.addStyleName("time"); add(iTime);
+			iDate.addValueChangeHandler(new ValueChangeHandler<Date>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<Date> event) {
+					ValueChangeEvent.fire(DateTimeBox.this, getText());
+				}
+			});
+			iTime.addValueChangeHandler(new ValueChangeHandler<Integer>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<Integer> event) {
+					ValueChangeEvent.fire(DateTimeBox.this, getText());
+				}
+			});
+		}
+
+		@Override
+		@SuppressWarnings("deprecation")
+		public String getText() {
+			Date date = iDate.getValue();
+			if (date == null) return null;
+			Integer slot = iTime.getValue();
+			if (slot != null) {
+				int h = (slot * 5) / 60;
+				int m = (slot * 5) % 60;
+				date.setHours(h); date.setMinutes(m);
+			}
+			return iFormat.format(date);
+		}
+
+		@Override
+		@SuppressWarnings("deprecation")
+		public void setText(String text) {
+			if (text == null || text.isEmpty()) {
+				iDate.setValue(null); iTime.setValue(null);
+			} else {
+				try {
+					Date date = iFormat.parse(text);
+					iDate.setValue(date);
+					int slot = date.getHours() * 12 + date.getMinutes() / 5;
+					iTime.setValue(slot == 0 ? null : slot);
+				} catch (IllegalArgumentException e) {
+					iDate.setValue(null); iTime.setValue(null);
+				}
+			}
+		}
+
+		@Override
+		public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
+			return addHandler(handler, ValueChangeEvent.getType());
+		}
+
+		@Override
+		public String getValue() {
+			return getText();
+		}
+
+		@Override
+		public void setValue(String value) {
+			setText(value);
+		}
+
+		@Override
+		public void setValue(String value, boolean fireEvents) {
+			setText(value);
+			if (fireEvents)
+				ValueChangeEvent.fire(this, value);
 		}
 		
 	}

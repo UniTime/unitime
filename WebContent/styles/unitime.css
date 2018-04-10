@@ -6128,3 +6128,12 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-StatusAccess {
 	width: 100%;
 }
+
+.unitime-DateTimeBox {
+	display: inline;
+}
+
+.unitime-DateTimeBox .time {
+	vertical-align: top;
+	margin-left: 5px;
+}

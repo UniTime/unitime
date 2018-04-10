@@ -206,7 +206,7 @@ public class ScriptExecution extends QueueItem {
 					engine.put(parameter.getName(), "true".equalsIgnoreCase(value));
 				} else if (parameter.getType().equalsIgnoreCase("long")) {
 					engine.put(parameter.getName(), value == null || value.isEmpty() ? null : Long.valueOf(value));
-				} else if (parameter.getType().equalsIgnoreCase("int") || parameter.getType().equalsIgnoreCase("integer")) {
+				} else if (parameter.getType().equalsIgnoreCase("int") || parameter.getType().equalsIgnoreCase("integer") || parameter.getType().equalsIgnoreCase("time") || parameter.getType().equalsIgnoreCase("slot")) {
 					engine.put(parameter.getName(), value == null || value.isEmpty() ? null : Integer.valueOf(value));
 				} else if (parameter.getType().equalsIgnoreCase("double")) {
 					engine.put(parameter.getName(), value == null || value.isEmpty() ? null : Double.valueOf(value));
@@ -218,6 +218,9 @@ public class ScriptExecution extends QueueItem {
 					engine.put(parameter.getName(), value == null || value.isEmpty() ? null : Byte.valueOf(value));
 				} else if (parameter.getType().equalsIgnoreCase("date")) {
 					Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
+					engine.put(parameter.getName(), dateFormat.parse(value));
+				} else if (parameter.getType().equalsIgnoreCase("datetime") || parameter.getType().equalsIgnoreCase("timestamp")) {
+					Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
 					engine.put(parameter.getName(), dateFormat.parse(value));
 				} else if (parameter.getType().equalsIgnoreCase("department")) {
 					engine.put(parameter.getName(), lookupDepartment(hibSession, value));

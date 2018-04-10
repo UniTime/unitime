@@ -50,6 +50,7 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Focusable;
+import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
@@ -59,7 +60,7 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 /**
  * @author Tomas Muller
  */
-public class TimeSelector extends Composite implements HasValue<Integer>, Focusable, HasAllKeyHandlers, HasAllFocusHandlers, HasSelectionHandlers<Integer> {
+public class TimeSelector extends Composite implements HasValue<Integer>, Focusable, HasAllKeyHandlers, HasAllFocusHandlers, HasSelectionHandlers<Integer>, HasText {
 	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private TimeSelector iStart;
@@ -684,5 +685,23 @@ public class TimeSelector extends Composite implements HasValue<Integer>, Focusa
 	
 	private void fireSuggestionEvent(Integer selectedTimeSlot) {
 		SelectionEvent.fire(this, selectedTimeSlot);
+	}
+
+	@Override
+	public String getText() {
+		Integer value = getValue();
+		return (value == null ? "" : value.toString());
+	}
+
+	@Override
+	public void setText(String text) {
+		if (text == null || text.isEmpty()) setValue(null);
+		else {
+			try {
+				setValue(Integer.parseInt(text));
+			} catch (NumberFormatException e) {
+				setValue(null);
+			}
+		}
 	}
 }
