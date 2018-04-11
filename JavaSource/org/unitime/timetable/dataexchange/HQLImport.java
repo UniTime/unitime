@@ -19,10 +19,14 @@
 */
 package org.unitime.timetable.dataexchange;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.dom4j.Element;
 import org.unitime.timetable.model.SavedHQL;
+import org.unitime.timetable.model.SavedHQLParameter;
 
 /**
  * @author Tomas Muller
@@ -60,6 +64,7 @@ public class HQLImport extends BaseImport {
 		if (report == null) {
 			report = new SavedHQL();
 			report.setName(name);
+			report.setParameters(new HashSet<SavedHQLParameter>());
 		}
 		report.setType(0);
 		Element flags = reportEl.element("flags");
@@ -79,6 +84,32 @@ public class HQLImport extends BaseImport {
 			report.setDescription(descriptionEl.getText());
 		else
 			report.setDescription(null);
+		
+		Map<String, SavedHQLParameter> params = new HashMap<String, SavedHQLParameter>();
+		for (SavedHQLParameter parameter: report.getParameters())
+			params.put(parameter.getName(), parameter);
+		
+		for (Iterator i = reportEl.elementIterator("parameter"); i.hasNext(); ) {
+			Element paramEl = (Element) i.next();
+			String pName = paramEl.attributeValue("name");
+			if (pName == null) continue;
+			SavedHQLParameter parameter = params.remove(pName);
+			if (parameter == null) {
+				parameter = new SavedHQLParameter();
+				parameter.setName(pName);
+				parameter.setSavedHQL(report);
+				report.getParameters().add(parameter);
+			}
+			parameter.setLabel(paramEl.attributeValue("label"));
+			parameter.setType(paramEl.attributeValue("type"));
+			parameter.setDefaultValue(paramEl.attributeValue("default"));
+		}
+		
+		for (SavedHQLParameter parameter: params.values()) {
+			getHibSession().delete(parameter);
+			report.getParameters().remove(parameter);
+		}
+		
 		getHibSession().saveOrUpdate(report);
 	}
 

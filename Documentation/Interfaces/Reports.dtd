@@ -20,9 +20,14 @@
 
 <!ELEMENT reports (report+) >
 <!ATTLIST reports created CDATA #IMPLIED >
-<!ELEMENT report (flag*, description?, query) >
+<!ELEMENT report (flag*, description?, query, parameter*) >
 <!ATTLIST report created CDATA #IMPLIED >
 <!ATTLIST report name CDATA #REQUIRED >
 <!ELEMENT description (#PCDATA) >
 <!ELEMENT query (#PCDATA) >
 <!ELEMENT flag (#PCDATA) >
+<!ELEMENT parameter EMPTY >
+<!ATTLIST parameter name CDATA #REQUIRED >
+<!ATTLIST parameter label CDATA #IMPLIED >
+<!ATTLIST parameter type CDATA #REQUIRED >
+<!ATTLIST parameter default CDATA #IMPLIED >

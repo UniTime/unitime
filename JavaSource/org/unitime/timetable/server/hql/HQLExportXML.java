@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.Exporter;
 import org.unitime.timetable.model.SavedHQL;
+import org.unitime.timetable.model.SavedHQLParameter;
 import org.unitime.timetable.model.dao.SavedHQLDAO;
 import org.unitime.timetable.security.rights.Right;
 
@@ -74,6 +75,15 @@ public class HQLExportXML implements Exporter {
 			reportEl.addElement("description").add(new DOMCDATA(report.getDescription()));
 		if (report.getQuery() != null)
 			reportEl.addElement("query").add(new DOMCDATA(report.getQuery()));
+        for (SavedHQLParameter parameter: report.getParameters()) {
+        	Element paramEl = reportEl.addElement("parameter");
+        	paramEl.addAttribute("name", parameter.getName());
+        	if (parameter.getLabel() != null)
+        		paramEl.addAttribute("label", parameter.getLabel());
+        	paramEl.addAttribute("type", parameter.getType());
+        	if (parameter.getDefaultValue() != null)
+        		paramEl.addAttribute("default", parameter.getDefaultValue());
+        }
 		reportEl.addAttribute("created", new Date().toString());
 
 		OutputStream out = helper.getOutputStream();
