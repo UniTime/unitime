@@ -87,6 +87,7 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 	private PopupPanel iPopup;
 	private SingleMonth iMonth;
 	private DateTimeFormat iFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
+	private DateTimeFormat iDefaultFormat = DateTimeFormat.getFormat("MM/dd/yyyy");
 	private AcademicSessionProvider iAcademicSession;
 	
 	AriaTextBox iPicker;
@@ -845,8 +846,13 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 	public void setText(String text) {
 		if (text == null || text.isEmpty())
 			setValue(null);
-		else
-			setValue(iFormat.parse(text));
+		else {
+			try {
+				setValue(iFormat.parse(text));
+			} catch (IllegalArgumentException e) {
+				setValue(iDefaultFormat.parse(text));
+			}
+		}
 	}
 
 	@Override

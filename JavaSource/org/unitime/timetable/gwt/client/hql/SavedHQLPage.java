@@ -998,8 +998,12 @@ public class SavedHQLPage extends Composite {
 								widget = text;
 							} else if ("date".equalsIgnoreCase(param.getType())) {
 								SingleDateSelector text = new SingleDateSelector();
-								if (param.getDefaultValue() != null)
-									text.setText(param.getDefaultValue());
+								try {
+									if (param.getDefaultValue() != null)
+										text.setText(param.getDefaultValue());
+								} catch (IllegalArgumentException e) {
+									UniTimeNotifications.error(MESSAGES.errorNotValidDate(e.getMessage()));
+								}
 								final DateTimeFormat format = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 								text.addValueChangeHandler(new ValueChangeHandler<Date>() {
 									@Override

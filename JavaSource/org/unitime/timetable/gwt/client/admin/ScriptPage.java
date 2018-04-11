@@ -952,6 +952,7 @@ public class ScriptPage extends Composite {
 		private SingleDateSelector iDate;
 		private TimeSelector iTime;
 		private DateTimeFormat iFormat = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
+		private DateTimeFormat iDefaultFormat = DateTimeFormat.getFormat("MM/dd/yyyy hh:mmaa");
 		
 		public DateTimeBox() {
 			super("unitime-DateTimeBox");
@@ -992,11 +993,17 @@ public class ScriptPage extends Composite {
 				iDate.setValue(null); iTime.setValue(null);
 			} else {
 				try {
-					Date date = iFormat.parse(text);
+					Date date = null;
+					try {
+						date = iFormat.parse(text);
+					} catch (IllegalArgumentException e) {
+						date = iDefaultFormat.parse(text);
+					}
 					iDate.setValue(date);
 					int slot = date.getHours() * 12 + date.getMinutes() / 5;
 					iTime.setValue(slot == 0 ? null : slot);
 				} catch (IllegalArgumentException e) {
+					UniTimeNotifications.error(MESSAGES.errorNotValidDate(e.getMessage()));
 					iDate.setValue(null); iTime.setValue(null);
 				}
 			}
