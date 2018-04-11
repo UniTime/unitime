@@ -509,7 +509,10 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 					// "(select coalesce(sum(fixedUnits),0) from FixedCreditUnitConfig where subpartOwner in (select clazz.schedulingSubpart.uniqueId from StudentClassEnrollment where student = s)) + " +
 					// "(select coalesce(sum(minUnits),0) from VariableFixedCreditUnitConfig where subpartOwner in (select clazz.schedulingSubpart.uniqueId from StudentClassEnrollment where student = s)) + " +
 					"(select coalesce(sum(minUnits),0) from VariableFixedCreditUnitConfig where courseOwner in (select courseOffering.uniqueId from StudentClassEnrollment where student = s)))";
-			if (im != null) {
+			if ("!".equals(im)) {
+				creditTerm = "((select coalesce(sum(fixedUnits),0) from FixedCreditUnitConfig where courseOwner in (select courseOffering.uniqueId from StudentClassEnrollment where student = s and clazz.schedulingSubpart.instrOfferingConfig.instructionalMethod is not null)) + " +
+						"(select coalesce(sum(minUnits),0) from VariableFixedCreditUnitConfig where courseOwner in (select courseOffering.uniqueId from StudentClassEnrollment where student = s and clazz.schedulingSubpart.instrOfferingConfig.instructionalMethod is not null)))";
+			} else if (im != null) {
 				creditTerm = "((select coalesce(sum(fixedUnits),0) from FixedCreditUnitConfig where courseOwner in (select courseOffering.uniqueId from StudentClassEnrollment where student = s and lower(clazz.schedulingSubpart.instrOfferingConfig.instructionalMethod.reference) = :Xim)) + " +
 						"(select coalesce(sum(minUnits),0) from VariableFixedCreditUnitConfig where courseOwner in (select courseOffering.uniqueId from StudentClassEnrollment where student = s and lower(clazz.schedulingSubpart.instrOfferingConfig.instructionalMethod.reference) = :Xim)))";
 				query.addParameter("credit", "Xim", im.toLowerCase());

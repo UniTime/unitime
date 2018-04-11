@@ -856,7 +856,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				for (StudentClassEnrollment e: student().getClassEnrollments()) {
 					if (courseIds.add(e.getCourseOffering().getUniqueId())) {
 						CourseCreditUnitConfig config = e.getCourseOffering().getCredit();
-						if (im != null && (e.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() == null || !im.equalsIgnoreCase(e.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getReference())))
+						if ("!".equals(im) && e.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() != null) continue;
+						if (im != null && !"!".equals(im) && (e.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() == null || !im.equalsIgnoreCase(e.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getReference())))
 							continue;
 						if (config != null)
 							credit += config.getMinCredit();
@@ -1192,7 +1193,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				for (StudentClassEnrollment e: student().getClassEnrollments()) {
 					if (courseIds.add(e.getCourseOffering().getUniqueId())) {
 						CourseCreditUnitConfig config = e.getCourseOffering().getCredit();
-						if (im != null && (e.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() == null || !im.equalsIgnoreCase(e.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getReference())))
+						if ("!".equals(im) && e.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() != null) continue;
+						if (im != null && !"!".equals(im) && (e.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() == null || !im.equalsIgnoreCase(e.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getReference())))
 							continue;
 						if (config != null)
 							credit += config.getMinCredit();
