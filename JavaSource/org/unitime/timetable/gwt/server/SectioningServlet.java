@@ -34,6 +34,7 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.cpsolver.coursett.model.Placement;
+import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
@@ -2323,7 +2324,15 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					}
 				}
 			}
-			return server.execute(server.createAction(ChangeStudentStatus.class).forStudents(studentIds).withStatus(ref).withNote(note), currentUser());
+			Boolean ret = server.execute(server.createAction(ChangeStudentStatus.class).forStudents(studentIds).withStatus(ref).withNote(note), currentUser());
+			try {
+		        SessionFactory hibSessionFactory = SessionDAO.getInstance().getSession().getSessionFactory();
+		        for (Long studentId: studentIds)
+		        	hibSessionFactory.getCache().evictEntity(Student.class, studentId);
+	        } catch (Exception e) {
+	        	sLog.warn("Failed to evict cache: " + e.getMessage());
+	        }
+			return ret;
 		} catch (PageAccessException e) {
 			throw e;
 		} catch (SectioningException e) {
