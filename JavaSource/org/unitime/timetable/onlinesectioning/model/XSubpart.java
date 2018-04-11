@@ -179,6 +179,17 @@ public class XSubpart implements Serializable, Externalizable {
     	}
     	return iCredit == null ? null : iCredit.getAbbreviation() + "|" + iCredit.getText();
     }
+    public float getCreditMin(Long courseId) {
+    	XCredit credit = (courseId != null ? iCreditByCourse.get(courseId) : null);
+    	return (credit != null ? credit.getMinCredit() : iCredit != null ? iCredit.getMinCredit() : 0f);
+    }
+    public float getCreditMax(Long courseId) {
+    	XCredit credit = (courseId != null ? iCreditByCourse.get(courseId) : null);
+    	return (credit != null ? credit.getMaxCredit() : iCredit != null ? iCredit.getMaxCredit() : 0f);
+    }
+    public float getCreditValue(Long courseId) {
+    	return getCreditMin(courseId);
+    }
     
     @Override
     public boolean equals(Object o) {

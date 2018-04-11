@@ -207,11 +207,21 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 									tConNeed ++; gtConNeed ++;
 								}
 								if (assigned.getCourseOffering().getCredit() != null) {
-									tCred += guessCredit(assigned.getCourseOffering().getCredit().creditAbbv());
+									tCred += assigned.getCourseOffering().getCredit().getMinCredit();
+									for (StudentClassEnrollment e: enrollment) {
+										InstructionalMethod im = e.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod();
+										if (im != null)
+											s.addIMTotalCredit(im.getReference(), assigned.getCourseOffering().getCredit().getMinCredit());
+										break;
+									}
 								} else {
 									for (StudentClassEnrollment e: enrollment) {
-										if (e.getClazz().getSchedulingSubpart().getCredit() != null)
-											tCred += guessCredit(e.getClazz().getSchedulingSubpart().getCredit().creditAbbv());
+										if (e.getClazz().getSchedulingSubpart().getCredit() != null) {
+											tCred += e.getClazz().getSchedulingSubpart().getCredit().getMinCredit();
+											InstructionalMethod im = e.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod();
+											if (im != null)
+												s.addIMTotalCredit(im.getReference(), e.getClazz().getSchedulingSubpart().getCredit().getMinCredit());
+										}
 									}
 								}
 								
@@ -332,11 +342,21 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 							}
 						}
 						if (course.getCredit() != null) {
-							s.setCredit(s.getCredit() + guessCredit(course.getCredit().creditAbbv()));
+							s.setCredit(s.getCredit() + course.getCredit().getMinCredit());
+							for (StudentClassEnrollment e: crm.enrollment()) {
+								InstructionalMethod im = e.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod();
+								if (im != null)
+									s.addIMCredit(im.getReference(), course.getCredit().getMinCredit());
+								break;
+							}
 						} else {
 							for (StudentClassEnrollment e: crm.enrollment()) {
-								if (e.getClazz().getSchedulingSubpart().getCredit() != null)
-									s.setCredit(s.getCredit() + guessCredit(e.getClazz().getSchedulingSubpart().getCredit().creditAbbv()));
+								if (e.getClazz().getSchedulingSubpart().getCredit() != null) {
+									s.setCredit(s.getCredit() + e.getClazz().getSchedulingSubpart().getCredit().getMinCredit());
+									InstructionalMethod im = e.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod();
+									if (im != null)
+										s.addIMCredit(im.getReference(), e.getClazz().getSchedulingSubpart().getCredit().getMinCredit());
+								}
 							}
 						}
 						

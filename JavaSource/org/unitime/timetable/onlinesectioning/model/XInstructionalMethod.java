@@ -28,6 +28,7 @@ import java.io.Serializable;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.InstructionalMethod;
+import org.unitime.timetable.model.dao.InstructionalMethodDAO;
 
 /**
  * @author Tomas Muller
@@ -55,6 +56,8 @@ public class XInstructionalMethod implements Serializable, Externalizable {
 		iUniqueId = id;
 		iReference = label;
 		iLabel = label;
+		InstructionalMethod im = InstructionalMethodDAO.getInstance().get(id);
+		if (im != null) iReference = im.getReference();
 	}
 	
 	public Long getUniqueId() { return iUniqueId; }

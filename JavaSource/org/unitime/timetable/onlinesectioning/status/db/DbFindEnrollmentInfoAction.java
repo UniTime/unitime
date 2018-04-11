@@ -29,6 +29,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
 import org.unitime.commons.NaturalOrderComparator;
@@ -803,7 +805,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			}
 			
 			if ("credit".equals(attr)) {
-				int min = 0, max = Integer.MAX_VALUE;
+				float min = 0, max = Float.MAX_VALUE;
 				Credit prefix = Credit.eq;
 				String number = term;
 				if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
@@ -811,8 +813,9 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
 				else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
 				else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+				String im = null;
 				try {
-					int a = Integer.parseInt(number);
+					float a = Float.parseFloat(number);
 					switch (prefix) {
 						case eq: min = max = a; break; // = a
 						case le: max = a; break; // <= a
@@ -820,19 +823,41 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 						case lt: max = a - 1; break; // < a
 						case gt: min = a + 1; break; // > a
 					}
-				} catch (NumberFormatException e) {}
+				} catch (NumberFormatException e) {
+					Matcher m = Pattern.compile("([0-9]+\\.?[0-9]*)([^0-9\\.].*)").matcher(number);
+					if (m.matches()) {
+						float a = Float.parseFloat(m.group(1));
+						im = m.group(2).trim();
+						switch (prefix) {
+							case eq: min = max = a; break; // = a
+							case le: max = a; break; // <= a
+							case ge: min = a; break; // >= a
+							case lt: max = a - 1; break; // < a
+							case gt: min = a + 1; break; // > a
+						}
+					}
+				}
 				if (term.contains("..")) {
 					try {
 						String a = term.substring(0, term.indexOf('.'));
 						String b = term.substring(term.indexOf("..") + 2);
-						min = Integer.parseInt(a); max = Integer.parseInt(b);
-					} catch (NumberFormatException e) {}
+						min = Float.parseFloat(a); max = Float.parseFloat(b);
+					} catch (NumberFormatException e) {
+						Matcher m = Pattern.compile("([0-9]+\\.?[0-9]*)\\.\\.([0-9]+\\.?[0-9]*)([^0-9].*)").matcher(term);
+						if (m.matches()) {
+							min = Float.parseFloat(m.group(1));
+							max = Float.parseFloat(m.group(2));
+							im = m.group(3).trim();
+						}
+					}
 				}
 				float credit = 0;
 				Set<Long> courseIds = new HashSet<Long>();
 				for (StudentClassEnrollment e: student().getClassEnrollments()) {
 					if (courseIds.add(e.getCourseOffering().getUniqueId())) {
 						CourseCreditUnitConfig config = e.getCourseOffering().getCredit();
+						if (im != null && (e.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() == null || !im.equalsIgnoreCase(e.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getReference())))
+							continue;
 						if (config != null)
 							credit += config.getMinCredit();
 					}
@@ -1116,7 +1141,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					return iStudent.getSectioningStatus() == null;
 				return term.equalsIgnoreCase(status());
 			}  else if ("credit".equals(attr)) {
-				int min = 0, max = Integer.MAX_VALUE;
+				float min = 0, max = Float.MAX_VALUE;
 				Credit prefix = Credit.eq;
 				String number = term;
 				if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
@@ -1124,8 +1149,9 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
 				else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
 				else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+				String im = null;
 				try {
-					int a = Integer.parseInt(number);
+					float a = Float.parseFloat(number);
 					switch (prefix) {
 						case eq: min = max = a; break; // = a
 						case le: max = a; break; // <= a
@@ -1133,19 +1159,41 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 						case lt: max = a - 1; break; // < a
 						case gt: min = a + 1; break; // > a
 					}
-				} catch (NumberFormatException e) {}
+				} catch (NumberFormatException e) {
+					Matcher m = Pattern.compile("([0-9]+\\.?[0-9]*)([^0-9\\.].*)").matcher(number);
+					if (m.matches()) {
+						float a = Float.parseFloat(m.group(1));
+						im = m.group(2).trim();
+						switch (prefix) {
+							case eq: min = max = a; break; // = a
+							case le: max = a; break; // <= a
+							case ge: min = a; break; // >= a
+							case lt: max = a - 1; break; // < a
+							case gt: min = a + 1; break; // > a
+						}
+					}
+				}
 				if (term.contains("..")) {
 					try {
 						String a = term.substring(0, term.indexOf('.'));
 						String b = term.substring(term.indexOf("..") + 2);
-						min = Integer.parseInt(a); max = Integer.parseInt(b);
-					} catch (NumberFormatException e) {}
+						min = Float.parseFloat(a); max = Float.parseFloat(b);
+					} catch (NumberFormatException e) {
+						Matcher m = Pattern.compile("([0-9]+\\.?[0-9]*)\\.\\.([0-9]+\\.?[0-9]*)([^0-9].*)").matcher(term);
+						if (m.matches()) {
+							min = Float.parseFloat(m.group(1));
+							max = Float.parseFloat(m.group(2));
+							im = m.group(3).trim();
+						}
+					}
 				}
 				float credit = 0;
 				Set<Long> courseIds = new HashSet<Long>();
 				for (StudentClassEnrollment e: student().getClassEnrollments()) {
 					if (courseIds.add(e.getCourseOffering().getUniqueId())) {
 						CourseCreditUnitConfig config = e.getCourseOffering().getCredit();
+						if (im != null && (e.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() == null || !im.equalsIgnoreCase(e.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getReference())))
+							continue;
 						if (config != null)
 							credit += config.getMinCredit();
 					}

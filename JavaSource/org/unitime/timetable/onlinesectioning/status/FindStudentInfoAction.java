@@ -254,8 +254,11 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 									XOffering o = server.getOffering(cr.getEnrollment().getOfferingId());
 									XConfig g = (o == null ? null : o.getConfig(cr.getEnrollment().getConfigId()));
 									if (g != null) {
-										for (XSubpart xs: g.getSubparts())
-											tCred += guessCredit(xs.getCreditAbbv(cr.getEnrollment().getCourseId()));
+										for (XSubpart xs: g.getSubparts()) {
+											tCred += xs.getCreditValue(cr.getEnrollment().getCourseId());
+											if (g.getInstructionalMethod() != null)
+												s.addIMTotalCredit(g.getInstructionalMethod().getReference(), xs.getCreditValue(cr.getEnrollment().getCourseId()));
+										}
 									}
 									
 									if (o != null)
@@ -365,8 +368,11 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 							XOffering o = server.getOffering(m.enrollment().getOfferingId());
 							XConfig g = (o == null ? null : o.getConfig(m.enrollment().getConfigId()));
 							if (g != null) {
-								for (XSubpart xs: g.getSubparts())
-									s.setCredit(s.getCredit() + guessCredit(xs.getCreditAbbv(m.enrollment().getCourseId())));
+								for (XSubpart xs: g.getSubparts()) {
+									s.setCredit(s.getCredit() + xs.getCreditValue(m.enrollment().getCourseId()));
+									if (g.getInstructionalMethod() != null)
+										s.addIMCredit(g.getInstructionalMethod().getReference(), xs.getCreditValue(m.enrollment().getCourseId()));
+								}
 								
 								OnlineSectioningLog.CourseRequestOption pref = m.request().getPreferences(m.enrollment());
 								if (pref != null) {
@@ -590,15 +596,6 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		} else {
 			 return server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas,iQuery));
 		}
-	}
-	
-	protected static Pattern sCreditPattern = Pattern.compile("\\d+\\.?\\d*");
-	public static float guessCredit(String creditAbbv) {
-		if (creditAbbv == null) return 0f;
-		Matcher m = Pattern.compile("[0-9]+\\.?[0-9]*").matcher(creditAbbv);
-		if (m.find())
-			return Float.parseFloat(m.group(0));
-		return 0f;
 	}
 
 	@Override

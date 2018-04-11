@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -108,7 +110,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			List<Entity> majors = new ArrayList<Entity>();
 			for (Object[] o: (List<Object[]>)query.select("aac.major.uniqueId, aac.major.code, aac.major.name, count(distinct s)")
 					.order("aac.major.code, aac.major.name").group("aac.major.uniqueId, aac.major.code, aac.major.name")
-					.exclude("major").query(helper.getHibSession()).list()) {
+					.exclude("major").exclude("course").query(helper.getHibSession()).list()) {
 				Entity m = new Entity(
 						(Long)o[0],
 						(String)o[1],
@@ -457,16 +459,17 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		
 		if (request.hasOption("credit") && !(server instanceof StudentSolver)) {
 			String term = request.getOption("credit");
+			float min = 0, max = Float.MAX_VALUE;
 			Credit prefix = Credit.eq;
-			int min = 0, max = Integer.MAX_VALUE;
 			String number = term;
 			if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
-			else if (number.startsWith(">=")) { prefix = Credit.ge; number = number.substring(2); }
+			else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
 			else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
 			else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
 			else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+			String im = null;
 			try {
-				int a = Integer.parseInt(number);
+				float a = Float.parseFloat(number);
 				switch (prefix) {
 					case eq: min = max = a; break; // = a
 					case le: max = a; break; // <= a
@@ -474,18 +477,43 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 					case lt: max = a - 1; break; // < a
 					case gt: min = a + 1; break; // > a
 				}
-			} catch (NumberFormatException e) {}
+			} catch (NumberFormatException e) {
+				Matcher m = Pattern.compile("([0-9]+\\.?[0-9]*)([^0-9\\.].*)").matcher(number);
+				if (m.matches()) {
+					float a = Float.parseFloat(m.group(1));
+					im = m.group(2).trim();
+					switch (prefix) {
+						case eq: min = max = a; break; // = a
+						case le: max = a; break; // <= a
+						case ge: min = a; break; // >= a
+						case lt: max = a - 1; break; // < a
+						case gt: min = a + 1; break; // > a
+					}
+				}
+			}
 			if (term.contains("..")) {
 				try {
 					String a = term.substring(0, term.indexOf('.'));
 					String b = term.substring(term.indexOf("..") + 2);
-					min = Integer.parseInt(a); max = Integer.parseInt(b);
-				} catch (NumberFormatException e) {}
+					min = Float.parseFloat(a); max = Float.parseFloat(b);
+				} catch (NumberFormatException e) {
+					Matcher m = Pattern.compile("([0-9]+\\.?[0-9]*)\\.\\.([0-9]+\\.?[0-9]*)([^0-9].*)").matcher(term);
+					if (m.matches()) {
+						min = Float.parseFloat(m.group(1));
+						max = Float.parseFloat(m.group(2));
+						im = m.group(3).trim();
+					}
+				}
 			}
 			String creditTerm = "((select coalesce(sum(fixedUnits),0) from FixedCreditUnitConfig where courseOwner in (select courseOffering.uniqueId from StudentClassEnrollment where student = s)) + " +
 					// "(select coalesce(sum(fixedUnits),0) from FixedCreditUnitConfig where subpartOwner in (select clazz.schedulingSubpart.uniqueId from StudentClassEnrollment where student = s)) + " +
 					// "(select coalesce(sum(minUnits),0) from VariableFixedCreditUnitConfig where subpartOwner in (select clazz.schedulingSubpart.uniqueId from StudentClassEnrollment where student = s)) + " +
 					"(select coalesce(sum(minUnits),0) from VariableFixedCreditUnitConfig where courseOwner in (select courseOffering.uniqueId from StudentClassEnrollment where student = s)))";
+			if (im != null) {
+				creditTerm = "((select coalesce(sum(fixedUnits),0) from FixedCreditUnitConfig where courseOwner in (select courseOffering.uniqueId from StudentClassEnrollment where student = s and lower(clazz.schedulingSubpart.instrOfferingConfig.instructionalMethod.reference) = :Xim)) + " +
+						"(select coalesce(sum(minUnits),0) from VariableFixedCreditUnitConfig where courseOwner in (select courseOffering.uniqueId from StudentClassEnrollment where student = s and lower(clazz.schedulingSubpart.instrOfferingConfig.instructionalMethod.reference) = :Xim)))";
+				query.addParameter("credit", "Xim", im.toLowerCase());
+			}
 			if (min > 0) {
 				if (max < Integer.MAX_VALUE) {
 					query.addWhere("credit", creditTerm + " >= :Xmin and " + creditTerm + " <= :Xmax");

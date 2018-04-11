@@ -23,7 +23,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -1090,6 +1092,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Date iRequestedDate = null, iEnrolledDate = null, iApprovedDate = null, iEmailDate = null;
 		private String iStatus, iNote;
 		private Float iCredit, iTotalCredit;
+		private Map<String, Float> iIMCredit, iIMTotalCredit;
 		private Integer iNrDistanceConflicts, iLongestDistanceMinutes, iOverlappingMinutes;
 		private Integer iTotalNrDistanceConflicts, iTotalLongestDistanceMinutes, iTotalOverlappingMinutes;
 		private Integer iFreeTimeOverlappingMins, iTotalFreeTimeOverlappingMins;
@@ -1185,6 +1188,56 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public boolean hasTotalCredit() { return iTotalCredit != null && iTotalCredit > 0; }
 		public void setTotalCredit(Float totalCredit) { iTotalCredit = totalCredit; }
 		public Float getTotalCredit() { return iTotalCredit; }
+		
+		public boolean hasIMCredit() { return iIMCredit != null && !iIMCredit.isEmpty(); }
+		public Map<String, Float> getIMCredit() { return iIMCredit; }
+		public void setIMCredit(String im, Float credit) {
+			if (iIMCredit == null) iIMCredit = new HashMap<String, Float>();
+			if (credit == null || credit.floatValue() == 0f) {
+				iIMCredit.remove(im);
+			} else {
+				iIMCredit.put(im, credit);
+			}
+		}
+		public void addIMCredit(String im, float credit) {
+			if (credit <= 0f) return;
+			if (iIMCredit == null) iIMCredit = new HashMap<String, Float>();
+			Float prev = iIMCredit.get(im);
+			iIMCredit.put(im, credit + (prev == null ? 0f: prev.floatValue()));
+		}
+		public float getIMCredit(String im) {
+			if (iIMCredit == null) return 0f;
+			Float cred = iIMCredit.get(im);
+			return (cred == null ? 0f : cred.floatValue());
+		}
+		public Set<String> getCreditIMs() {
+			return (iIMCredit == null ? new TreeSet<String>() : new TreeSet<String>(iIMCredit.keySet()));
+		}
+		
+		public boolean hasIMTotalCredit() { return iIMTotalCredit != null && !iIMTotalCredit.isEmpty(); }
+		public Map<String, Float> getIMTotalCredit() { return iIMTotalCredit; }
+		public void setIMTotalCredit(String im, Float credit) {
+			if (iIMTotalCredit == null) iIMTotalCredit = new HashMap<String, Float>();
+			if (credit == null || credit.floatValue() == 0f) {
+				iIMTotalCredit.remove(im);
+			} else {
+				iIMTotalCredit.put(im, credit);
+			}
+		}
+		public void addIMTotalCredit(String im, float credit) {
+			if (credit <= 0f) return;
+			if (iIMTotalCredit == null) iIMTotalCredit = new HashMap<String, Float>();
+			Float prev = iIMTotalCredit.get(im);
+			iIMTotalCredit.put(im, credit + (prev == null ? 0f: prev.floatValue()));
+		}
+		public float getIMTotalCredit(String im) {
+			if (iIMTotalCredit == null) return 0f;
+			Float cred = iIMTotalCredit.get(im);
+			return (cred == null ? 0f : cred.floatValue());
+		}
+		public Set<String> getTotalCreditIMs() {
+			return (iIMTotalCredit == null ? new TreeSet<String>() : new TreeSet<String>(iIMTotalCredit.keySet()));
+		}
 		
 		public boolean hasRequestCredit() { return iRequestCredit != null && iRequestCredit[1] > 0f; }
 		public void setRequestCredit(float min, float max) { iRequestCredit = new float[] { min, max }; }

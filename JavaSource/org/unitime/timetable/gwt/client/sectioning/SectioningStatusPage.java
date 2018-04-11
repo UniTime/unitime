@@ -1911,7 +1911,7 @@ public class SectioningStatusPage extends Composite {
 			if (hasOverride)
 				line.add(new NumberCell(info.getOverrideNeeded(), info.getTotalOverrideNeeded()));
 			if (hasCredit)
-				line.add(new CreditCell(info.getCredit(), info.getTotalCredit()));
+				line.add(new CreditCell(info));
 			if (hasReqCred)
 				line.add(new RequestCreditCell(info.getRequestCreditMin(), info.getRequestCreditMax(), info.getTotalRequestCreditMin(), info.getTotalRequestCreditMax()));
 			if (hasDistances) {
@@ -2699,16 +2699,40 @@ public class SectioningStatusPage extends Composite {
 	public static class CreditCell extends HTML implements HasCellAlignment {
 		private static NumberFormat df = NumberFormat.getFormat("0.#");
 		
-		public CreditCell(Float value, Float total) {
+		public CreditCell(StudentInfo info) {
 			super();
+			Float value = info.getCredit();
+			Float total = info.getTotalCredit();
 			if (total != null && total > 0f) {
-				if (total.equals(value))
-					setHTML(df.format(total));
-				else
-					setHTML(df.format(value) + " / " + df.format(total));
+				if (total.equals(value)) {
+					String html = df.format(total);
+					if (info.hasIMTotalCredit()) {
+						html += " (";
+						for (Iterator<String> i = info.getTotalCreditIMs().iterator(); i.hasNext();) {
+							String im = i.next();
+							html += im + ": " + df.format(info.getIMTotalCredit(im));
+							if (i.hasNext()) html += ", ";
+						}
+						html += ")";
+					}
+					setHTML(html);
+				} else {
+					String html = df.format(value) + " / " + df.format(total);
+					if (info.hasIMCredit()) {
+						html += " (";
+						for (Iterator<String> i = info.getCreditIMs().iterator(); i.hasNext();) {
+							String im = i.next();
+							html += im + ": " + df.format(info.getIMCredit(im));
+							if (i.hasNext()) html += ", ";
+						}
+						html += ")";
+					}
+					setHTML(html);
+				}
 			} else {
 				setHTML("&nbsp;");
 			}
+			setWordWrap(false);
 		}
 
 		@Override

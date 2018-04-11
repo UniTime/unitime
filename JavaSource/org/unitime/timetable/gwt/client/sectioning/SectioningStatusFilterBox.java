@@ -51,6 +51,8 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.regexp.shared.MatchResult;
+import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Label;
@@ -271,23 +273,45 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 						String prefix = "";
 						if (text.startsWith("<=") || text.startsWith(">=")) { number = number.substring(2); prefix = text.substring(0, 2); }
 						else if (text.startsWith("<") || text.startsWith(">")) { number = number.substring(1); prefix = text.substring(0, 1); }
-						if (Integer.parseInt(number) <= 99) {
+						try {
+						if (Float.parseFloat(number) <= 99) {
 							suggestions.add(new Suggestion(new Chip("credit", text).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
 							if (prefix.isEmpty()) {
 								suggestions.add(new Suggestion(new Chip("credit", "<=" + text).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
 								suggestions.add(new Suggestion(new Chip("credit", ">=" + text).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
 							}
 						}
-					} catch (Exception e) {}
-					if (text.contains("..")) {
-						try {
-							String first = text.substring(0, text.indexOf('.'));
-							String second = text.substring(text.indexOf("..") + 2);
-							if (Integer.parseInt(first) < Integer.parseInt(second) &&  Integer.parseInt(second) <= 99) {
-								suggestions.add(new Suggestion(new Chip("credit", text).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
+						} catch (NumberFormatException e) {
+							RegExp rx = RegExp.compile("^([0-9]+\\.?[0-9]*)([^0-9\\.].*)$");
+							MatchResult m = rx.exec(number);
+							if (m != null) {
+								Float.parseFloat(m.getGroup(1));
+								String im = m.getGroup(2).trim();
+								suggestions.add(new Suggestion(new Chip("credit", prefix + m.getGroup(1) + " " + im).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
+								if (prefix.isEmpty()) {
+									suggestions.add(new Suggestion(new Chip("credit", "<=" + m.getGroup(1) + " " + im).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
+									suggestions.add(new Suggestion(new Chip("credit", ">=" + m.getGroup(1) + " " + im).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
+								}
 							}
-						} catch (Exception e) {}
-					}
+						}
+					} catch (Exception e) {}
+					try {
+						if (text.contains("..")) {
+							try {
+								String first = text.substring(0, text.indexOf('.'));
+								String second = text.substring(text.indexOf("..") + 2);
+								if (Float.parseFloat(first) < Float.parseFloat(second) &&  Float.parseFloat(second) <= 99) {
+									suggestions.add(new Suggestion(new Chip("credit", text).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
+								}
+							} catch (NumberFormatException e) {
+								RegExp rx = RegExp.compile("^([0-9]+\\.?[0-9]*)\\.\\.([0-9]+\\.?[0-9]*)([^0-9].*)$");
+								MatchResult m = rx.exec(text);
+								if (m != null) {
+									suggestions.add(new Suggestion(new Chip("credit", m.getGroup(1) + ".." + m.getGroup(2) + " " + m.getGroup(3).trim()).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
+								}
+							}
+						}
+					} catch (Exception e) {}
 					
 					old = null;
 					for (Chip c: chips) { if (c.getCommand().equals("overlap")) { old = c; break; } }
