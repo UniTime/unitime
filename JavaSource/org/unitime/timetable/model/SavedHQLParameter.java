@@ -22,6 +22,7 @@ package org.unitime.timetable.model;
 import org.unitime.timetable.model.base.BaseSavedHQLParameter;
 
 public class SavedHQLParameter extends BaseSavedHQLParameter {
+	private static final long serialVersionUID = 1L;
 
 	public SavedHQLParameter() {
 		super();

@@ -141,8 +141,6 @@ public class RoomUtilization extends BasePointInTimeDataReports {
 	protected List<PitClass> findAllPitClassesWithContactHoursForRoomDepartmentAndRoomTypes(Long departmentId,
 			PointInTimeData pointInTimeData, Session hibSession) {
 		
-		HashSet<PitClass> pitClasses = new HashSet<PitClass>();
-		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select pc ")
 		  .append(" from PitClass pc ")

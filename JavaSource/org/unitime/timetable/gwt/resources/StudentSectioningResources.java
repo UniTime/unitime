@@ -21,7 +21,6 @@ package org.unitime.timetable.gwt.resources;
 
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.ClientBundle.Source;
 
 /**
  * @author Tomas Muller

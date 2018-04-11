@@ -33,7 +33,6 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.PitClass;
 import org.unitime.timetable.model.PointInTimeData;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.reports.pointintimedata.WSCHByDayOfWeekAndHourOfDay.PeriodEnrollment;
 import org.unitime.timetable.util.Constants;
 
 /**
@@ -126,20 +125,6 @@ public class WSCHByDayOfWeekAndHourOfDay extends BasePointInTimeDataReports {
 	@Override
 	public String reportDescription() {
 		return(MSG.wseByDayOfWeekAndHourOfDayReportNote());
-	}
-
-	private String getPeriodTag(Date meetingDate, int timeSlot) {
-        Calendar d = Calendar.getInstance(Locale.US);
-        d.setTime(meetingDate);
-		int minuteOfDay = ((timeSlot*Constants.SLOT_LENGTH_MIN) + Constants.FIRST_SLOT_TIME_MIN);
-		int hour;
-		int minute = (startOnHalfHour? 30 : 0);
-		if (startOnHalfHour && (minuteOfDay%60) < 30) {
-			hour = (minuteOfDay/60) - 1;
-		} else {
-			hour = (minuteOfDay/60);			
-		}
-		return(d.get(Calendar.DAY_OF_WEEK) + " " + hour + " " + minute);
 	}
 
 	private String getPeriodTag(int dayOfWeek, int hourOfDay, int minute) {
