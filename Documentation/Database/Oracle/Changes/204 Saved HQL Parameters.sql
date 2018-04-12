@@ -19,10 +19,10 @@
 */
 
 create table hql_parameter (
-	hql_id number(20,0) constraint nn_script_param_id not null,
-	name varchar2(128 char) constraint nn_script_param_name not null,
+	hql_id number(20,0) constraint nn_hql_param_id not null,
+	name varchar2(128 char) constraint nn_hql_param_name not null,
 	label varchar2(256 char),
-	type varchar2(2048 char) constraint nn_script_param_type not null,
+	type varchar2(2048 char) constraint nn_hql_param_type not null,
 	default_value varchar2(2048 char)
 );
 alter table hql_parameter add constraint pk_hql_parameter primary key (hql_id, name);
