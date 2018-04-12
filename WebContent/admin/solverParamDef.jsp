@@ -88,7 +88,7 @@
 		<TR>
 			<TD>Type:</TD>
 			<TD>
-				<html:text property="type" size="50" maxlength="250"/>
+				<html:text property="type" size="100" maxlength="1000"/>
 				&nbsp;<html:errors property="type"/>
 			</TD>
 		</TR>

@@ -124,9 +124,13 @@ public class SolverParamDefAction extends Action {
             				dao.save(d,hibSession);
             			}
             			myForm.setOrder(-1);
+            			def.getGroup().getParameters().remove(def);
+            			group.getParameters().add(def);
             		}
+            		if (def.getGroup() == null && group != null)
+            			group.getParameters().add(def);
             		if (myForm.getOrder()<0) {
-            			def.setOrder(new Integer(group==null?0:group.getParameters().size()));
+            			def.setOrder(new Integer(group == null ? 0 : group.getParameters().size() - 1));
             		}
                 	def.setGroup(group);
                 	dao.saveOrUpdate(def,hibSession);
@@ -191,6 +195,8 @@ public class SolverParamDefAction extends Action {
     				d.setOrder(new Integer(d.getOrder().intValue()-1));
     				dao.save(d,hibSession);
     			}
+    			if (def.getGroup() != null)
+    				def.getGroup().getParameters().remove(def);
     			
     			dao.delete(def, hibSession);
     			
@@ -299,9 +305,14 @@ public class SolverParamDefAction extends Action {
 		        if (parameters.isEmpty()) {
 		        	webTable.addLine(null, new String[] {"No parameter defined in group <i>"+group.getDescription()+"</i>."}, null, null );
 		        }
+		        int order = 0;
 		        for (Iterator j=parameters.iterator();j.hasNext();) {
 		        	SolverParameterDef def= (SolverParameterDef)j.next();
                     String ops = "";
+                    if (def.getOrder() != order) {
+                    	def.setOrder(order); hibSession.saveOrUpdate(def);
+                    }
+                    order ++;
                     if (def.getOrder().intValue()>0) {
                         ops += "<img src='images/arrow_up.png' border='0' align='absmiddle' title='Move Up' " +
                                 "onclick=\"solverParamDefForm.op2.value='Move Up';solverParamDefForm.uniqueId.value='"+def.getUniqueId()+"';solverParamDefForm.submit(); event.cancelBubble=true;\">";

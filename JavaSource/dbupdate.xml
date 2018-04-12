@@ -13075,4 +13075,8 @@
 		<plsql>alter table %SCHEMA%.hql_parameter add constraint pk_hql_parameter primary key (hql_id, name)</plsql>
 		<sql>alter table %SCHEMA%.hql_parameter add constraint fk_hql_parameter foreign key (hql_id) references %SCHEMA%.saved_hql(uniqueid) on delete cascade</sql>
 	</update>
+	<update version="205" date="12-Apr-2018" comment="Longer Solver Parameter Type">
+	    <plsql>alter table %SCHEMA%.solver_parameter_def modify type varchar2(1000 char)</plsql>
+	    <mysql>alter table %SCHEMA%.solver_parameter_def modify type varchar(1000)</mysql>
+	</update>
 </dbupdate>

@@ -58,7 +58,7 @@
             column="type"
             type="java.lang.String"
             not-null="false"
-            length="250"/>
+            length="1000"/>
 
         <property
             name="order"
