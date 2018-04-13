@@ -26,6 +26,8 @@
 <%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
 
 <html:form action="/hibernateQueryTest">
+	<html:hidden property="start"/>
+	<html:hidden property="next"/>
 
 	<TABLE width="100%">
 		<TR>
@@ -71,7 +73,18 @@
 		<logic:notEmpty name="hibernateQueryTestForm" property="listSize">		
 			<TR>
 				<TD colspan='2'>
-					<tt:section-title>Result (<bean:write name="hibernateQueryTestForm" property="listSize" /> lines)</tt:section-title>
+					<tt:section-header>
+						<tt:section-title>Result (<bean:write name="hibernateQueryTestForm" property="listSize" />)</tt:section-title>
+						<logic:greaterThan value="0" name="hibernateQueryTestForm" property="start">
+							<html:submit property="op" accesskey="P" value="Previous" title="Previous (Alt+P)"/>
+						</logic:greaterThan>
+						<logic:equal value="true" name="hibernateQueryTestForm" property="next">
+							<html:submit property="op" accesskey="N" value="Next" title="Next (Alt+N)"/>
+						</logic:equal>
+						<logic:equal value="true" name="hibernateQueryTestForm" property="export">
+							<html:submit property="op" accesskey="E" value="Export CSV" title="Export CSV (Alt+E)"/>
+						</logic:equal>
+					</tt:section-header>
 				</TD>
 			</TR>
 		

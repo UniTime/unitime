@@ -46,6 +46,10 @@ public class HibernateQueryTestForm extends ActionForm {
 
     /** listSize property */
     private String listSize;
+    
+    private int start = 0;
+    private boolean next = false;
+    private boolean export = false;
 
     // --------------------------------------------------------- Methods
 
@@ -74,6 +78,9 @@ public class HibernateQueryTestForm extends ActionForm {
     public void reset(ActionMapping mapping, HttpServletRequest request) {
         query = "";
         listSize = "";
+        start = 0;
+        next = false;
+        export = false;
     }
 
     /** 
@@ -107,5 +114,13 @@ public class HibernateQueryTestForm extends ActionForm {
     public void setListSize(String listSize) {
         this.listSize = listSize;
     }
-
+    
+    public int getStart() { return start; }
+    public void setStart(int start) { this.start = start; }
+    
+    public boolean isNext() { return next; }
+    public void setNext(boolean next) { this.next = next; }
+    
+    public boolean isExport() { return export; }
+    public void setExport(boolean export) { this.export = export; }
 }
