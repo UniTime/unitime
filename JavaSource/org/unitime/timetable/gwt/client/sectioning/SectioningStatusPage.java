@@ -214,7 +214,7 @@ public class SectioningStatusPage extends Composite {
 		iMore.addStyleName("unitime-NoPrint");
 		iFilterPanel.add(iMore);
 		iFilterPanel.setCellVerticalAlignment(iMore, HasVerticalAlignment.ALIGN_TOP);
-		iMore.setVisible(false); iMore.setEnabled(false);
+		iMore.setVisible(false);
 		iMore.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -340,6 +340,10 @@ public class SectioningStatusPage extends Composite {
 			@Override
 			public void onSelection(SelectionEvent<Integer> event) {
 				iTabIndex = event.getSelectedItem();
+				iMore.setVisible(
+						(iTabIndex == 0 && iCourseTable.getRowCount() > 2) ||
+						(iTabIndex == 1 && iStudentTable.getRowCount() > 2) ||
+						(iTabIndex == 2 && iLogTable.getRowCount() > 1));
 				loadDataIfNeeded();
 			}
 		});
@@ -668,7 +672,12 @@ public class SectioningStatusPage extends Composite {
 		iSearch.setVisible(!loading);
 		iExport.setVisible(!loading);
 		if (loading) {
-			iMore.setVisible(false); iMore.setEnabled(false);
+			iMore.setVisible(false);
+		} else {
+			iMore.setVisible(
+					(iTabIndex == 0 && iCourseTable.getRowCount() > 2) ||
+					(iTabIndex == 1 && iStudentTable.getRowCount() > 2) ||
+					(iTabIndex == 2 && iLogTable.getRowCount() > 1));
 		}
 	}
 	
@@ -717,11 +726,9 @@ public class SectioningStatusPage extends Composite {
 						iError.setHTML(MESSAGES.exceptionNoMatchingResultsFound(iCourseFilter));
 						iError.setVisible(true);
 						iTabPanel.setVisible(false);
-						iMore.setVisible(false); iMore.setEnabled(false);
 					} else {
 						populateCourseTable(result);
 						iTabPanel.setVisible(true);
-						iMore.setVisible(true); iMore.setEnabled(true);
 					}
 					setLoading(false);
 					LoadingWidget.getInstance().hide();
@@ -737,7 +744,6 @@ public class SectioningStatusPage extends Composite {
 						iError.setHTML(caught.getMessage());
 						iError.setVisible(true);
 						iTabPanel.setVisible(false);
-						iMore.setVisible(false); iMore.setEnabled(false);
 						ToolBox.checkAccess(caught);
 					}
 
@@ -747,11 +753,9 @@ public class SectioningStatusPage extends Composite {
 							iError.setHTML(MESSAGES.exceptionNoMatchingResultsFound(iCourseFilter));
 							iError.setVisible(true);
 							iTabPanel.setVisible(false);
-							iMore.setVisible(false); iMore.setEnabled(false);
 						} else {
 							populateStudentTable(result);
 							iTabPanel.setVisible(true);
-							iMore.setVisible(true); iMore.setEnabled(true);
 						}
 						setLoading(false);
 						LoadingWidget.getInstance().hide();
@@ -766,7 +770,6 @@ public class SectioningStatusPage extends Composite {
 						iError.setHTML(caught.getMessage());
 						iError.setVisible(true);
 						iTabPanel.setVisible(false);
-						iMore.setVisible(false); iMore.setEnabled(false);
 						ToolBox.checkAccess(caught);
 					}
 
@@ -776,11 +779,9 @@ public class SectioningStatusPage extends Composite {
 							iError.setHTML(MESSAGES.exceptionNoMatchingResultsFound(iCourseFilter));
 							iError.setVisible(true);
 							iTabPanel.setVisible(false);
-							iMore.setVisible(false); iMore.setEnabled(false);
 						} else {
 							populateStudentTable(result);
 							iTabPanel.setVisible(true);
-							iMore.setVisible(true); iMore.setEnabled(true);
 						}
 						setLoading(false);
 						LoadingWidget.getInstance().hide();
@@ -796,7 +797,6 @@ public class SectioningStatusPage extends Composite {
 					iError.setHTML(caught.getMessage());
 					iError.setVisible(true);
 					iTabPanel.setVisible(false);
-					iMore.setVisible(false); iMore.setEnabled(false);
 					ToolBox.checkAccess(caught);
 				}
 
@@ -804,7 +804,6 @@ public class SectioningStatusPage extends Composite {
 				public void onSuccess(final List<SectioningAction> result) {
 					populateChangeLog(result);
 					iTabPanel.setVisible(true);
-					iMore.setVisible(true); iMore.setEnabled(true);
 					setLoading(false);
 					LoadingWidget.getInstance().hide();
 				}
