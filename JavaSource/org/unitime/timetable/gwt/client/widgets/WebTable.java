@@ -297,6 +297,7 @@ public class WebTable extends Composite implements HasMobileScroll {
 						Roles.getGridcellRole().setAriaLabelProperty(iTable.getCellFormatter().getElement(i + getHeaderRowsCount(), j), cell.getAriaLabel());
 				} else
 					iTable.setWidget(i+getHeaderRowsCount(), j, cell.getWidget());
+				iTable.getFlexCellFormatter().setVisible(i+getHeaderRowsCount(), j, true);
 				iTable.getFlexCellFormatter().setWordWrap(i+getHeaderRowsCount(), j, cell.getWordWrap());
 				iTable.getFlexCellFormatter().setColSpan(i+getHeaderRowsCount(), j, cell.getColSpan());
 				iTable.getFlexCellFormatter().setStyleName(i+getHeaderRowsCount(), j, cell.getStyleName());
