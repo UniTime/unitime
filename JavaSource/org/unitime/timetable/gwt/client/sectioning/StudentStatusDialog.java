@@ -197,6 +197,7 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 		iForm.clear();
 		iForm.addRow(MESSAGES.propNote(), iNote);
 		iStatusRow = iForm.addRow(MESSAGES.newStatus(), iStatus);
+		iStatus.setSelectedIndex(0);
 		iForm.addBottomRow(iButtons);
 		iButtons.setEnabled("set-note", true);
 		iButtons.setEnabled("send-email", false);
@@ -232,6 +233,7 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 		iForm.addRow(MESSAGES.emailSubject(), iSubject);
 		iForm.addRow(MESSAGES.emailCC(), iCC);
 		iForm.addRow(MESSAGES.emailBody(), iMessage);
+		iStatus.setSelectedIndex(0);
 		for (int i = 0; i < iStatus.getItemCount(); i++)
 			if ("Cancelled".equalsIgnoreCase(iStatus.getValue(i))) {
 				iStatus.setSelectedIndex(i);
