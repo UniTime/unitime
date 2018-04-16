@@ -57,6 +57,8 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	private RequestedCourseStatus iMaxCreditOverrideStatus = null;
 	private String iMaxCreditOverrideExternalId = null;
 	private Date iMaxCreditOverrideTimeStamp = null;
+	private String iCreditWarning = null;
+	private String iCreditNote = null;
 	private String iErrorMessage = null;
 	private String iSpecRegDashboardUrl = null;
 	
@@ -111,6 +113,12 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	public String getMaxCreditOverrideExternalId() { return iMaxCreditOverrideExternalId; }
 	public void setMaxCreditOverrideTimeStamp(Date timeStamp) { iMaxCreditOverrideTimeStamp = timeStamp; }
 	public Date getMaxCreditOverrideTimeStamp() { return iMaxCreditOverrideTimeStamp; }
+	public boolean hasCreditWarning() { return iCreditWarning != null && !iCreditWarning.isEmpty(); }
+	public String getCreditWarning() { return iCreditWarning; }
+	public void setCreditWarning(String warning) { iCreditWarning = warning; }
+	public boolean hasCreditNote() { return iCreditNote != null && !iCreditNote.isEmpty(); }
+	public String getCreditNote() { return iCreditNote; }
+	public void setCreditNote(String note) { iCreditNote = note; }
 	
 	public boolean addCourse(RequestedCourse course) {
 		iLastCourse = course;
@@ -353,6 +361,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		OVERRIDE_PENDING,
 		OVERRIDE_NEEDED,
 		OVERRIDE_REJECTED,
+		CREDIT_LOW, CREDIT_HIGH,
 	}
 	
 	public static class RequestedCourse implements IsSerializable, Serializable, Comparable<RequestedCourse> {
@@ -399,7 +408,12 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public void setCredit(float[] credit) { iCredit = credit; }
 		public void setStatus(RequestedCourseStatus status) { iStatus = status; }
 		public RequestedCourseStatus getStatus() { return iStatus; }
-		public void setStatusNote(String note) { iStatusNote = note; }
+		public void setStatusNote(String note) {
+			if (note == null)
+				iStatusNote = null;
+			else
+				iStatusNote = note.replace("<br>", "\n");
+		}
 		public boolean hasStatusNote() { return iStatusNote != null && !iStatusNote.isEmpty(); }
 		public String getStatusNote() { return iStatusNote; }
 		public void setOverrideExternalId(String externalId) { iOverrideExternalId = externalId; }
@@ -731,6 +745,9 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		private Set<CourseMessage> iMessages = new TreeSet<CourseMessage>();
 		private Map<Integer, String[]> iConfirmationSetup = null;
 		private String iErrorMessage = null;
+		private String iCreditWarning = null;
+		private String iCreditNote = null;
+		private RequestedCourseStatus iMaxCreditOverrideStatus = null;
 		
 		public CheckCoursesResponse() {}
 		
@@ -809,12 +826,14 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			return ret;
 		}
 		
-		public String getMessage(String courseName, String delim) {
+		public String getMessage(String courseName, String delim, String... exclude) {
 			if (!hasMessages()) return null;
 			String ret = null;
 			if (hasMessages())
-				for (CourseMessage m: getMessages())
+				m: for (CourseMessage m: getMessages())
 					if (m.hasCourse() && courseName.equals(m.getCourse())) {
+						for (String e: exclude)
+							if (e.equals(m.getCode())) continue m;
 						if (ret == null)
 							ret = m.getMessage();
 						else
@@ -834,12 +853,14 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			return status;
 		}
 		
-		public String getMessageWithColor(String courseName, String delim) {
+		public String getMessageWithColor(String courseName, String delim, String... exclude) {
 			if (!hasMessages()) return null;
 			String ret = null;
 			if (hasMessages())
-				for (CourseMessage m: getMessages())
+				m: for (CourseMessage m: getMessages())
 					if (m.hasCourse() && courseName.equals(m.getCourse())) {
+						for (String e: exclude)
+							if (e.equals(m.getCode())) continue m;
 						if (ret == null)
 							ret = (m.isError() ? "<span class='text-red'>" : "<span class='text-orange'>") + m.getMessage() + "</span>";
 						else
@@ -925,6 +946,16 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			else if (!iErrorMessage.contains(message)) iErrorMessage += "\n" + message;
 		}
 		public String getErrorMessaeg() { return iErrorMessage; }
+		
+		public boolean hasCreditWarning() { return iCreditWarning != null && !iCreditWarning.isEmpty(); }
+		public String getCreditWarning() { return iCreditWarning; }
+		public void setCreditWarning(String warning) { iCreditWarning = warning; }
+		public boolean hasCreditNote() { return iCreditNote != null && !iCreditNote.isEmpty(); }
+		public String getCreditNote() { return iCreditNote; }
+		public void setCreditNote(String note) { iCreditNote = note; }
+		
+		public void setMaxCreditOverrideStatus(RequestedCourseStatus status) { iMaxCreditOverrideStatus = status; }
+		public RequestedCourseStatus getMaxCreditOverrideStatus() { return iMaxCreditOverrideStatus; }
 		
 		@Override
 		public String toString() { return hasMessages() ? getMessages().toString() : "[]"; }

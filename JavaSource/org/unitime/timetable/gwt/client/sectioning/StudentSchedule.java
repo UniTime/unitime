@@ -218,20 +218,12 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); hasStat = true; break;
 							}
 						}
-						if (status.isEmpty() && iAssignment.getRequest().getMaxCreditOverrideStatus() != null && check.hasMessage(rc.getCourseName(), "CREDIT")) {
-							switch (iAssignment.getRequest().getMaxCreditOverrideStatus()) {
-							case OVERRIDE_APPROVED: status = MESSAGES.reqStatusApproved(); hasStat = true; break;
-							case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); hasStat = true; break;
-							case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); hasStat = true; break;
-							case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); hasStat = true; break;
-							}
-						}
 						if (status.isEmpty()) status = MESSAGES.reqStatusRegistered();
 						if (prefs != null) hasPref = true;
 						WebTable.Cell credit = new WebTable.Cell(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : "");
 						credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 						String note = null, noteTitle = null;
-						if (check != null) { note = check.getMessageWithColor(rc.getCourseName(), "<br>"); noteTitle = check.getMessage(rc.getCourseName(), "\n"); }
+						if (check != null) { note = check.getMessageWithColor(rc.getCourseName(), "<br>", "CREDIT"); noteTitle = check.getMessage(rc.getCourseName(), "\n", "CREDIT"); }
 						if (rc.hasStatusNote()) { note = (note == null ? "" : note + "<br>") + rc.getStatusNote(); noteTitle = (noteTitle == null ? "" : noteTitle + "\n") + rc.getStatusNote(); }
 						WebTable.Row row = new WebTable.Row(
 								new WebTable.Cell(first ? MESSAGES.courseRequestsPriority(priority) : ""),
@@ -332,19 +324,11 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); hasStat = true; break;
 							}
 						}
-						if (status.isEmpty() && iAssignment.getRequest().getMaxCreditOverrideStatus() != null && check.hasMessage(rc.getCourseName(), "CREDIT")) {
-							switch (iAssignment.getRequest().getMaxCreditOverrideStatus()) {
-							case OVERRIDE_APPROVED: status = MESSAGES.reqStatusApproved(); hasStat = true; break;
-							case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); hasStat = true; break;
-							case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); hasStat = true; break;
-							case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); hasStat = true; break;
-							}
-						}
 						if (status.isEmpty()) status = MESSAGES.reqStatusRegistered();
 						WebTable.Cell credit = new WebTable.Cell(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : "");
 						credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 						String note = null, noteTitle = null;
-						if (check != null) { note = check.getMessageWithColor(rc.getCourseName(), "<br>"); noteTitle = check.getMessage(rc.getCourseName(), "\n"); }
+						if (check != null) { note = check.getMessageWithColor(rc.getCourseName(), "<br>", "CREDIT"); noteTitle = check.getMessage(rc.getCourseName(), "\n", "CREDIT"); }
 						if (rc.hasStatusNote()) { note = (note == null ? "" : note + "<br>") + rc.getStatusNote(); noteTitle = (noteTitle == null ? "" : noteTitle + "\n") + rc.getStatusNote(); }
 						WebTable.Row row = new WebTable.Row(
 								new WebTable.Cell(first ? MESSAGES.courseRequestsAlternative(priority) : ""),
@@ -382,6 +366,83 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				}
 				priority ++;
 			}
+		}
+		
+		if (iAssignment.getRequest().getMaxCreditOverrideStatus() != null) {
+			ImageResource icon = null;
+			String status = "";
+			String note = null, noteTitle = null;
+			String iconText = null;
+			if (iAssignment.getRequest().hasCreditWarning()) {
+				note = iAssignment.getRequest().getCreditWarning().replace("\n", "<br>");
+				noteTitle = iAssignment.getRequest().getCreditWarning();
+				iconText = iAssignment.getRequest().getCreditWarning();
+				hasWarn = true;
+			}
+			switch (iAssignment.getRequest().getMaxCreditOverrideStatus()) {
+			case CREDIT_HIGH:
+				icon = RESOURCES.requestError();
+				status = MESSAGES.reqStatusRejected();
+				note = "<span class='text-red'>" + note + "</span>";
+				iconText += "\n" + MESSAGES.creditStatusTooHigh();
+				break;
+			case OVERRIDE_REJECTED:
+				icon = RESOURCES.requestError();
+				status = MESSAGES.reqStatusRejected();
+				note = "<span class='text-red'>" + note + "</span>";
+				iconText += "\n" + MESSAGES.creditStatusDenied();
+				break;
+			case CREDIT_LOW:
+			case OVERRIDE_NEEDED:
+				icon = RESOURCES.requestNeeded();
+				status = MESSAGES.reqStatusWarning();
+				note = "<span class='text-orange'>" + note + "</span>";
+				break;
+			case OVERRIDE_CANCELLED:
+				icon = RESOURCES.requestNeeded();
+				status = MESSAGES.reqStatusCancelled();
+				iconText += "\n" + MESSAGES.creditStatusCancelled();
+				note = "<span class='text-orange'>" + note + "</span>";
+				break;
+			case OVERRIDE_PENDING:
+				icon = RESOURCES.requestPending();
+				status = MESSAGES.reqStatusPending();
+				iconText += "\n" + MESSAGES.creditStatusPending();
+				note = "<span class='text-orange'>" + note + "</span>";
+				break;
+			case OVERRIDE_APPROVED:
+				icon = RESOURCES.requestSaved();
+				status = MESSAGES.reqStatusApproved();
+				iconText += (iconText == null ? "" : iconText + "\n") + MESSAGES.creditStatusApproved();
+				break;
+			case SAVED:
+				icon = RESOURCES.requestSaved();
+				status = MESSAGES.reqStatusRegistered();
+				break;
+			}
+			if (!status.isEmpty()) hasStat = true;
+			if (iAssignment.getRequest().hasCreditNote()) {
+				note = (note == null ? "" : note + "<br>") + iAssignment.getRequest().getCreditNote().replace("\n", "<br>");
+				noteTitle = (noteTitle == null ? "" : noteTitle + "\n") + MESSAGES.overrideNote(iAssignment.getRequest().getCreditNote());
+				iconText = (iconText == null ? "" : iconText + "\n") + iAssignment.getRequest().getCreditNote();
+				hasWarn = true;
+			}
+			float[] range = iAssignment.getRequest().getCreditRange();
+			WebTable.Cell credit = new WebTable.Cell(range != null ? range[0] < range[1] ? df.format(range[0]) + " - " + df.format(range[1]) : df.format(range[0]) : "");
+			credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+			WebTable.Row row = new WebTable.Row(
+					new WebTable.Cell(MESSAGES.rowRequestedCredit(), 2, null),
+					new WebTable.Cell(""),
+					credit,
+					new WebTable.Cell(""),
+					new WebTable.NoteCell(note, noteTitle),
+					(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
+					new WebTable.Cell(""),
+					new WebTable.Cell("")
+					);
+			for (WebTable.Cell cell: row.getCells()) cell.setStyleName("top-border-solid");
+			row.getCell(0).setStyleName("top-border-solid text-bold");
+			rows.add(row);
 		}
 
 		WebTable.Row[] rowArray = new WebTable.Row[rows.size()];

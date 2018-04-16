@@ -152,6 +152,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private CheckBox iShowUnassignments;
 	private Label iTotalCredit;
 	private P iGridMessage;
+	private Image iTotalCreditRequestsStatus;
 	private P iTotalCreditRequests;
 	
 	private ArrayList<ClassAssignmentInterface.ClassAssignment> iLastResult, iLastEnrollment;
@@ -192,6 +193,54 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			@Override
 			public void onValueChange(ValueChangeEvent<CourseRequestInterface> event) {
 				if (iTotalCreditRequests != null) {
+					iTotalCreditRequestsStatus.setVisible(false);
+					if (!isChanged() && iSavedRequest != null && iSavedRequest.getMaxCreditOverrideStatus() != null) {
+						switch (iSavedRequest.getMaxCreditOverrideStatus()) {
+						case CREDIT_HIGH:
+							iTotalCreditRequestsStatus.setResource(RESOURCES.requestError());
+							iTotalCreditRequestsStatus.setAltText(iSavedRequest.getCreditWarning() + "\n" + MESSAGES.creditStatusTooHigh() + (iSavedRequest.hasCreditNote() ? "\n" + MESSAGES.overrideNote(iSavedRequest.getCreditNote()) : ""));
+							iTotalCreditRequestsStatus.setTitle(iTotalCreditRequestsStatus.getAltText());
+							iTotalCreditRequestsStatus.setVisible(true);
+							break;
+						case OVERRIDE_REJECTED:
+							iTotalCreditRequestsStatus.setResource(RESOURCES.requestError());
+							iTotalCreditRequestsStatus.setAltText(iSavedRequest.getCreditWarning() + "\n" + MESSAGES.creditStatusDenied() + (iSavedRequest.hasCreditNote() ? "\n" + MESSAGES.overrideNote(iSavedRequest.getCreditNote()) : ""));
+							iTotalCreditRequestsStatus.setTitle(iTotalCreditRequestsStatus.getAltText());
+							iTotalCreditRequestsStatus.setVisible(true);
+							break;
+						case OVERRIDE_CANCELLED:
+							iTotalCreditRequestsStatus.setResource(RESOURCES.requestNeeded());
+							iTotalCreditRequestsStatus.setAltText(iSavedRequest.getCreditWarning() + "\n" + MESSAGES.creditStatusCancelled() + (iSavedRequest.hasCreditNote() ? "\n" + MESSAGES.overrideNote(iSavedRequest.getCreditNote()) : ""));
+							iTotalCreditRequestsStatus.setTitle(iTotalCreditRequestsStatus.getAltText());
+							iTotalCreditRequestsStatus.setVisible(true);
+							break;
+						case CREDIT_LOW:
+						case OVERRIDE_NEEDED:
+							iTotalCreditRequestsStatus.setResource(RESOURCES.requestNeeded());
+							iTotalCreditRequestsStatus.setAltText(iSavedRequest.getCreditWarning() + (iSavedRequest.hasCreditNote() ? "\n" + MESSAGES.overrideNote(iSavedRequest.getCreditNote()) : ""));
+							iTotalCreditRequestsStatus.setTitle(iTotalCreditRequestsStatus.getAltText());
+							iTotalCreditRequestsStatus.setVisible(true);
+							break;
+						case OVERRIDE_PENDING:
+							iTotalCreditRequestsStatus.setResource(RESOURCES.requestPending());
+							iTotalCreditRequestsStatus.setAltText(iSavedRequest.getCreditWarning() + "\n" + MESSAGES.creditStatusPending() + (iSavedRequest.hasCreditNote() ? "\n" + MESSAGES.overrideNote(iSavedRequest.getCreditNote()) : ""));
+							iTotalCreditRequestsStatus.setTitle(iTotalCreditRequestsStatus.getAltText());
+							iTotalCreditRequestsStatus.setVisible(true);
+							break;
+						case OVERRIDE_APPROVED:
+							iTotalCreditRequestsStatus.setResource(RESOURCES.requestSaved());
+							iTotalCreditRequestsStatus.setAltText(MESSAGES.creditStatusApproved() + (iSavedRequest.hasCreditNote() ? "\n" + MESSAGES.overrideNote(iSavedRequest.getCreditNote()) : ""));
+							iTotalCreditRequestsStatus.setTitle(iTotalCreditRequestsStatus.getAltText());
+							iTotalCreditRequestsStatus.setVisible(true);
+							break;
+						case SAVED:
+							iTotalCreditRequestsStatus.setResource(RESOURCES.requestSaved());
+							iTotalCreditRequestsStatus.setAltText(iSavedRequest.hasCreditNote() ? MESSAGES.overrideNote(iSavedRequest.getCreditNote()) : "");
+							iTotalCreditRequestsStatus.setTitle(iTotalCreditRequestsStatus.getAltText());
+							iTotalCreditRequestsStatus.setVisible(true);
+							break;
+						}
+					}
 					float[] credit = iCourseRequests.getRequest().getCreditRange();
 					if (credit[1] > 0) {
 						if (credit[0] != credit[1])
@@ -262,8 +311,19 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iFooter.add(leftFooterPanel);
 		
 		if (mode == StudentSectioningPage.Mode.REQUESTS) {
-			iTotalCreditRequests = new P("center-panel");
-			iFooter.add(iTotalCreditRequests);
+			iTotalCreditRequestsStatus = new Image(); iTotalCreditRequestsStatus.addStyleName("credit-status"); iTotalCreditRequestsStatus.setVisible(false);
+			iTotalCreditRequestsStatus.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					UniTimeConfirmationDialog.info(iTotalCreditRequestsStatus.getAltText());
+				}
+			});
+			iCourseRequests.setCreditStatusIcon(iTotalCreditRequestsStatus);
+			iTotalCreditRequests = new P("credit-text");
+			P credit = new P("center-panel", "total-request-credit");
+			credit.add(iTotalCreditRequestsStatus);
+			credit.add(iTotalCreditRequests);
+			iFooter.add(credit);
 		}
 
 		P rightFooterPanel = new P("right-panel");
@@ -2416,7 +2476,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			for (RequestedCourse rc: request.getRequestedCourse()) {
 				if (rc.isCourse()) {
 					ImageResource icon = null; String iconText = null;
-					String msg = check.getMessage(rc.getCourseName(), "\n");
+					String msg = check.getMessage(rc.getCourseName(), "\n", "CREDIT");
 					if (check.isError(rc.getCourseName()) && (rc.getStatus() == null || rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED)) {
 						icon = RESOURCES.requestError(); iconText = (msg);
 					} else if (rc.getStatus() != null) {
@@ -2470,20 +2530,12 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); break;
 						}
 					}
-					if (status.isEmpty() && savedRequests.getMaxCreditOverrideStatus() != null && check.hasMessage(rc.getCourseName(), "CREDIT")) {
-						switch (savedRequests.getMaxCreditOverrideStatus()) {
-						case OVERRIDE_APPROVED: status = MESSAGES.reqStatusApproved(); break;
-						case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); break;
-						case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); break;
-						case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); break;
-						}
-					}
 					if (status.isEmpty()) status = MESSAGES.reqStatusRegistered();
 					if (prefs != null) hasPref = true;
 					WebTable.Cell credit = new WebTable.Cell(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : "");
 					credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 					String note = null;
-					if (check != null) note = check.getMessage(rc.getCourseName(), "\n");
+					if (check != null) note = check.getMessage(rc.getCourseName(), "\n", "CREDIT");
 					if (rc.hasStatusNote()) note = (note == null ? "" : note + "\n") + rc.getStatusNote();
 					P messages = new P("text-pre-wrap"); messages.setText(note);
 					WebTable.Row row = new WebTable.Row(
@@ -2528,7 +2580,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			for (RequestedCourse rc: request.getRequestedCourse()) {
 				if (rc.isCourse()) {
 					ImageResource icon = null; String iconText = null;
-					String msg = check.getMessage(rc.getCourseName(), "\n");
+					String msg = check.getMessage(rc.getCourseName(), "\n", "CREDIT");
 					if (check.isError(rc.getCourseName()) && (rc.getStatus() == null || rc.getStatus() != RequestedCourseStatus.OVERRIDE_REJECTED)) {
 						icon = RESOURCES.requestError(); iconText = (msg);
 					} else if (rc.getStatus() != null) {
@@ -2583,19 +2635,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); break;
 						}
 					}
-					if (status.isEmpty() && savedRequests.getMaxCreditOverrideStatus() != null && check.hasMessage(rc.getCourseName(), "CREDIT")) {
-						switch (savedRequests.getMaxCreditOverrideStatus()) {
-						case OVERRIDE_APPROVED: status = MESSAGES.reqStatusApproved(); break;
-						case OVERRIDE_CANCELLED: status = MESSAGES.reqStatusCancelled(); break;
-						case OVERRIDE_PENDING: status = MESSAGES.reqStatusPending(); break;
-						case OVERRIDE_REJECTED: status = MESSAGES.reqStatusRejected(); break;
-						}
-					}
 					if (status.isEmpty()) status = MESSAGES.reqStatusRegistered();
 					WebTable.Cell credit = new WebTable.Cell(rc.hasCredit() ? (rc.getCreditMin().equals(rc.getCreditMax()) ? df.format(rc.getCreditMin()) : df.format(rc.getCreditMin()) + " - " + df.format(rc.getCreditMax())) : "");
 					credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 					String note = null;
-					if (check != null) note = check.getMessage(rc.getCourseName(), "\n");
+					if (check != null) note = check.getMessage(rc.getCourseName(), "\n", "CREDIT");
 					if (rc.hasStatusNote()) note = (note == null ? "" : note + "\n") + rc.getStatusNote();
 					P messages = new P("text-pre-wrap"); messages.setText(note);
 					WebTable.Row row = new WebTable.Row(
@@ -2632,6 +2676,74 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			}
 			priority ++;
 		}
+		
+		if (savedRequests.getMaxCreditOverrideStatus() != null) {
+			ImageResource icon = null;
+			String status = "";
+			String note = null;
+			String iconText = null;
+			if (savedRequests.hasCreditWarning()) {
+				note = savedRequests.getCreditWarning();
+				iconText = savedRequests.getCreditWarning();
+				hasWarn = true;
+			}
+			switch (savedRequests.getMaxCreditOverrideStatus()) {
+			case CREDIT_HIGH:
+				icon = RESOURCES.requestError();
+				status = MESSAGES.reqStatusRejected();
+				iconText += "\n" + MESSAGES.creditStatusTooHigh();
+				break;
+			case OVERRIDE_REJECTED:
+				icon = RESOURCES.requestError();
+				status = MESSAGES.reqStatusRejected();
+				iconText += "\n" + MESSAGES.creditStatusDenied();
+				break;
+			case CREDIT_LOW:
+			case OVERRIDE_NEEDED:
+				icon = RESOURCES.requestNeeded();
+				status = MESSAGES.reqStatusWarning();
+				break;
+			case OVERRIDE_CANCELLED:
+				icon = RESOURCES.requestNeeded();
+				status = MESSAGES.reqStatusCancelled();
+				iconText += "\n" + MESSAGES.creditStatusCancelled();
+				break;
+			case OVERRIDE_PENDING:
+				icon = RESOURCES.requestPending();
+				status = MESSAGES.reqStatusPending();
+				iconText += "\n" + MESSAGES.creditStatusPending();
+				break;
+			case OVERRIDE_APPROVED:
+				icon = RESOURCES.requestSaved();
+				status = MESSAGES.reqStatusApproved();
+				iconText += (iconText == null ? "" : iconText + "\n") + MESSAGES.creditStatusApproved();
+				break;
+			case SAVED:
+				icon = RESOURCES.requestSaved();
+				status = MESSAGES.reqStatusRegistered();
+				break;
+			}
+			if (savedRequests.hasCreditNote()) {
+				note = (note == null ? "" : note + "\n") + savedRequests.getCreditNote();
+				hasWarn = true;
+			}
+			float[] range = savedRequests.getCreditRange();
+			WebTable.Cell credit = new WebTable.Cell(range != null ? range[0] < range[1] ? df.format(range[0]) + " - " + df.format(range[1]) : df.format(range[0]) : "");
+			credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+			P messages = new P("text-pre-wrap"); messages.setText(note);
+			WebTable.Row row = new WebTable.Row(
+					new WebTable.Cell(MESSAGES.rowRequestedCredit(), 2, null),
+					new WebTable.Cell(""),
+					credit,
+					new WebTable.Cell(""),
+					new WebTable.WidgetCell(messages, note),
+					(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
+					new WebTable.Cell("")
+					);
+			for (WebTable.Cell cell: row.getCells()) cell.setStyleName("top-border-solid");
+			row.getCell(0).setStyleName("top-border-solid text-bold");
+			rows.add(row);
+		}
 
 		WebTable.Row[] rowArray = new WebTable.Row[rows.size()];
 		int idx = 0;
@@ -2652,7 +2764,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		ToolBox.print(GWT_MESSAGES.pageStudentCourseRequests(),
 				iUserAuthentication.getUser(),
 				iSessionSelector.getAcademicSessionName(),
-				requests, credit
+				requests//, credit
 				);
 	}
 }

@@ -191,9 +191,35 @@ public class WebTable extends Composite implements HasMobileScroll {
 		}
 	}
 	
+	public boolean isColumnVisible(int col) {
+		if (iTable.getRowCount() <= 0) return true;
+		for (int c = 0; c < iTable.getCellCount(0); c++) {
+			col -= iTable.getFlexCellFormatter().getColSpan(0, c);
+			if (col < 0) return iTable.getCellFormatter().isVisible(0, c);
+		}
+		return true;
+	}
+	
 	public void setColumnVisible(int col, boolean visible) {
-		for (int row = 0; row < iTable.getRowCount(); row++) {
-			iTable.getFlexCellFormatter().setVisible(row, col, visible);
+		for (int r = 0; r < iTable.getRowCount(); r++) {
+			int x = 0;
+			for (int c = 0; c < iTable.getCellCount(r); c++) {
+				int colSpan = iTable.getFlexCellFormatter().getColSpan(r, c);
+				x += colSpan;
+				if (x > col) {
+					if (colSpan > 1 && r > 0) {
+						// use first row to count the colspan
+						int span = 0;
+						for (int h = x - colSpan; h < x; h++)
+							if (isColumnVisible(h)) span ++;
+						iTable.getCellFormatter().setVisible(r, c, span > 0);
+						iTable.getFlexCellFormatter().setColSpan(r, c, Math.max(1, span));
+					} else {
+						iTable.getCellFormatter().setVisible(r, c, visible);
+					}
+					break;
+				}
+			}
 		}
 	}
 
@@ -634,13 +660,15 @@ public class WebTable extends Composite implements HasMobileScroll {
 				iIcon.getElement().getStyle().setPaddingRight(3, Unit.PX);
 				iPanel.setCellVerticalAlignment(iIcon, HasVerticalAlignment.ALIGN_MIDDLE);
 			}
-			iIcon.addClickHandler(new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					event.stopPropagation();
-					UniTimeConfirmationDialog.info(title);
-				}
-			});
+			if (title != null && !title.isEmpty()) {
+				iIcon.addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						event.stopPropagation();
+						UniTimeConfirmationDialog.info(title);
+					}
+				});
+			}
 		}
 		
 		public String getValue() { return (iPanel == null ? iIcon.getTitle() : iLabel.getText()); }

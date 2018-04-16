@@ -628,6 +628,10 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	color: blue;
 }
 
+.unitime-WebTable .text-bold {
+	font-weight: bold;
+}
+
 .unitime-WebTable .text-gray {
 	color: gray;
 	font-style: italic;
@@ -6136,4 +6140,19 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-DateTimeBox .time {
 	vertical-align: top;
 	margin-left: 5px;
+}
+
+.unitime-SchedulingAssistantButtons .total-request-credit {
+	margin-top: 3px;
+}
+
+.unitime-SchedulingAssistantButtons .total-request-credit .credit-status {
+	display: inline;
+	vertical-align: middle;
+}
+
+.unitime-SchedulingAssistantButtons .total-request-credit .credit-text {
+	display: inline;
+	white-space: nowrap;
+	padding-left: 3px;
 }

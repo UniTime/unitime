@@ -55,6 +55,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HasValue;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 
 /**
@@ -82,6 +83,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	private P iHeader, iHeaderTitle, iHeaderWaitlist;
 	private P iAltHeader, iAltHeaderTitle, iAltHeaderNote;
 	private boolean iArrowsVisible = true;
+	private Image iCreditStatusIcon = null;
 
 	public CourseRequestsTable(AcademicSessionProvider sessionProvider, boolean sectioning, boolean online, SpecialRegistrationContext specreg) {
 		super("unitime-CourseRequests");
@@ -295,6 +297,33 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 					new AsyncCallback<CheckCoursesResponse>() {
 						public void onSuccess(final CheckCoursesResponse result) {
 							iLastCheck = result;
+							if (iCreditStatusIcon != null) {
+								if (result != null && result.hasCreditWarning()) {
+									String warning = result.getCreditWarning();
+									if (result.getMaxCreditOverrideStatus() != null) {
+										switch (result.getMaxCreditOverrideStatus()) {
+										case CREDIT_HIGH:
+											iCreditStatusIcon.setResource(RESOURCES.requestError());
+											warning += "\n" + MESSAGES.creditStatusTooHigh();
+											break;
+										case OVERRIDE_REJECTED:
+											iCreditStatusIcon.setResource(RESOURCES.requestError());
+											warning += "\n" + MESSAGES.creditStatusDenied();
+											break;
+										default:
+											iCreditStatusIcon.setResource(RESOURCES.requestNeeded());
+											break;
+										}
+									} else {
+										iCreditStatusIcon.setResource(RESOURCES.requestNeeded());
+									}
+									iCreditStatusIcon.setAltText(warning);
+									iCreditStatusIcon.setTitle(warning);
+									iCreditStatusIcon.setVisible(true);
+								} else {
+									iCreditStatusIcon.setVisible(false);
+								}
+							}
 							for (CourseRequestLine line: iCourses) {
 								for (CourseSelectionBox box: line.getCourses()) {
 									String message = box.validate();
@@ -634,4 +663,6 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 					}
 		}
 	}
+	
+	public void setCreditStatusIcon(Image image) { iCreditStatusIcon = image; }
 }

@@ -1452,6 +1452,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Requested Credit: {0,number,0.#} - {1,number,0.#}")
 	String requestedCreditRange(float minTotal, float maxTotal);
 	
+	@DefaultMessage("Requested Credit")
+	String rowRequestedCredit();
+	
 	@DefaultMessage("Request Update")
 	String requestStudentUpdate();
 	
@@ -1776,6 +1779,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Submitted")
 	String reqStatusRegistered();
 	
+	@DefaultMessage("Warning")
+	String reqStatusWarning();
+	
 	@DefaultMessage("You are already enrolled in {0}.\nThis course request cannot be modified or deleted.")
 	String enrolled(String course);
 	
@@ -1892,4 +1898,19 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Your time window is {0}.")
 	String messageTimeWindow(String effectivePeriod);
+	
+	@DefaultMessage("The request to increase the maximum credit hours has been denied.\nYou must remove some course requests in order to submit your registration request.")
+	String creditStatusDenied();
+	
+	@DefaultMessage("You must remove some course requests in order to submit your registration request.")
+	String creditStatusTooHigh();
+	
+	@DefaultMessage("A max credit hours override has been requested.\nWaiting for approval...")
+	String creditStatusPending();
+	
+	@DefaultMessage("The request to increase the maximum credit hours has been cancelled.\nClick the Submit Requests button to re-validate this request and request a new override if it is still needed.")
+	String creditStatusCancelled();
+	
+	@DefaultMessage("The request to increase the maximum credit hours has been approved.")
+	String creditStatusApproved();
 }
