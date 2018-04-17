@@ -315,7 +315,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iTotalCreditRequestsStatus.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					UniTimeConfirmationDialog.info(iTotalCreditRequestsStatus.getAltText());
+					if (iTotalCreditRequestsStatus.getAltText() != null && !iTotalCreditRequestsStatus.getAltText().isEmpty())
+						UniTimeConfirmationDialog.info(iTotalCreditRequestsStatus.getAltText());
 				}
 			});
 			iCourseRequests.setCreditStatusIcon(iTotalCreditRequestsStatus);
