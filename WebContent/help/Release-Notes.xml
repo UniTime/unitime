@@ -43,6 +43,28 @@
 				<line>Using unitime.timePattern.firstDayOfWeek application property (0 is Monday, 1 is Tuesday, etc.).</line>
 			</description>
 		</item>
+		<item>
+			<name>Timetable Grid</name>
+			<description>
+				<line>Added ability to show course titles on the timetable grid (there is a new toggle in the Filter named Show Course Titles).</line>
+				<line>Added ability to split class label into two lines (enable by setting the application property unitime.timeGrid.classNameTwoLines to true, defaults to false).</line>
+				<line>Export XLS: added ability to export the timetable grid to Excel Spreadsheet (XLS format).</line>
+				<line>Export PDF: show one table per each day of week when in the "In Row [horizontal]" mode (instead showing one table very wide table with all the days of the week inside).</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Cross Lists: Keep Course Requests</name>
+			<description>
+				<line>Added an ablitity to keep course requests on the course that is added to or dropped from a cross-list.</line>
+				<line>Enable this feature by setting unitime.crossList.keepCourseRequests to true (default is false).</line>
+			</description>
+		</item>
+		<item>
+			<name>Class Assignment: Solution Conflicts</name>
+			<description>
+				<line>Added ability to use solution conflicts instead of the real student class enrollments when there are no real enrollments yet.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Online Student Scheduling</title>
@@ -58,16 +80,34 @@
 			</description>
 		</item>
 		<item>
+			<name>Course Requests Validation</name>
+			<description>
+				<line>The following work has been done to support course requests at Purdue.</line>
+				<line>Added ability to validate course requests and to provide errors and warnings back to the student.</line>
+				<line>These include student's eligibility to register, credit checking, providing alternatives, time conflicts of single section courses, etc.</line>
+			</description>
+		</item>
+		<item>
 			<name>Scheduling Dashboard</name>
 			<description>
 				<line>Include distance conflicts and time overlaps in the dashboard.</line>
 				<line>Enrollments table: show only primary requests in the Not-Enrolled column; show alternative requests in the (newly added) Alternative column.</line>
+				<line>Students table: show both Enrollment Credit and Request Credit columns.</line>
 				<line>Students table: added time overlaps, distance conflicts, and satisfaction of section and instructional method preferences.</line>
 				<line>Filter: added ability to filter by the number of credits and time overlaps.</line>
 				<line>Filter: added My Students mode showing only students associated with the current advisor role.</line>
 				<line>When a student is clicked, also include course requests and time grid in the view (Classes for student dialog).
 					<line>There are now three tabs: Course Requests, List of Classes, and Time Grid.</line>
 				</line>
+				<line>Added ability for advisors to assign students to student groups and student statuses.</line>
+				<line>Added More button combining the operations of the individual columns of the table displayed.</line>
+				<line>Enrollment Credit: added ability to show credit information related to particular Instructional Mode.
+					<line>For instance, when a student has 18 credit hours, 6 of which are online, the column will show 18 (online: 6)</line>
+					<line>Added ability to filter students by IM credit or by credit hours that are not associated with any instructional method.</line>
+				</line>
+				<line>Show more details about the selected status when using the Set student note... dialog.</line>
+				<line>Change Log: show course requests in a table, including selected sections and instructional method.</line>
+				<line>Added ability to see the change log even when the online scheduling server is not running.</line>
 			</description>
 		</item>
 		<item>
@@ -77,6 +117,10 @@
 				<line>Added XML import and export.</line>
 				<line>Added Administration &gt; Academic Sessions &gt; Student Advisors page.</line>
 				<line>Authentication can use the advisor table (to associate the authenticated user with an advisor role).</line>
+				<line>Added a few new permissions related to
+					<line>whether it is allowed to edit his/her students (Student Scheduling Advisor Can Modify My Students) or all students (Student Scheduling Advisor Can Modify All Students)</line>
+					<line>whether it is allowed to change status (Student Scheduling Change Student Status) or student group association (Student Scheduling Change Student Group)</line>
+				</line>
 			</description>
 		</item>
 		<item>
@@ -86,6 +130,52 @@
 				<line>Degree Plan: when updating course requests with a degree plan, do not remove course requests that cannot be deleted (student is already enrolled in the course).
 					<line>Also, include alternatives from choice groups.</line>
 				</line>
+				<line>Automatically open 1st alternative when a course is entered in the Course Requests table.</line>
+				<line>When course requests are successfully submitted, a confirmation dialog is displayed. If agreed, a print dialog is opened with a printer-friendly version of the course requests table.</line>
+				<line>Added course request and credit status icons (when supported by the custom course request validation).</line>
+				<line>Added ability to open the Course Finder (in a read-only mode) for course requests that cannot be changed.</line>
+				<line>Added ability to hide Alternate Course Requests table (unless the student has some alternatives already, set StudentSectioningConstants.numberOfAlternatives to zero).</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling Status</name>
+			<description>
+				<line>Registration statuses made more granular:
+					<line>Assistant: formerly Access, only applies to the Scheduling Assistant</line>
+					<line>Student Enroll: renamed, formerly Enrollment</line>
+					<line>Advisor Enroll: formerly Advisor, only applies to the Scheduling Assistant</line>
+					<line>Admin Enroll: formerly Advisor, only applies to the Scheduling Assistant</line>
+					<line>Registration: Course Requests page is available (instead of using Access)</line>
+					<line>Student Register: renamed, formerly Registration (student can save requests)</line>
+					<line>Advisor Register: new status, advisor can save requests</line>
+					<line>Admin Register: new status, admin can save requests</line>
+				</line>
+				<line>Added a flag on whether the advisor can set this status.</line>
+				<line>Added effective dates and times, and a fall-back status (when outside of the effective period).</line>
+			</description>
+		</item>
+		<item>
+			<name>Disabled Sections</name>
+			<description>
+				<line>Added ability to allow some students to enroll into sections that are marked as not enabled for student scheduling.</line>
+				<line>Student must have a student group reservation for a student group of a type that allows for disabled sections (with a reservation).</line>
+				<line>Student must be of a student group that is of a type that allows for disabled sections (whithout a reservation).</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling Entry Page</name>
+			<description>
+				<line>Added an entry page UniTime/studentScheduling.do</line>
+				<line>Admins and advisors are redirected to the Online Student Scheduling Dashboard (advisors with students will have mode:"My Students" selected).</line>
+				<line>Students are redirected (first match in this order):
+					<line>1. Scheduling Assistant page when enrollment is enabled</line>
+					<line>2. Course Requests page when registration is enabled</line>
+					<line>3. Scheduling Assistant page when access is enabled</line>
+					<line>4. Course Requests page when registration is enabled</line>
+				</line>
+				<line>When there is no mach, the main page is opened.</line>
+				<line>Term, campus, and session parameters can be used to select the academic session.</line>
+				<line>Other parameters are passed on to the target page.</line>
 			</description>
 		</item>
 	</category>
@@ -167,6 +257,12 @@
 			</description>
 		</item>
 		<item>
+			<name>Course Timetabling: Individual Reservations</name>
+			<description>
+				<line>Added checking for individual reservations (only useful when course requests are used as student course demand).</line>
+			</description>
+		</item>
+		<item>
 			<name>Examination Timetabling: Period Preferences</name>
 			<description>
 				<line>Added additional information about how well are the period preferences satisfied into the solution extended info
@@ -216,6 +312,13 @@
 				<line>Added ability to consider Short Distances student accommodation.</line>
 				<line>When a student needs short distances, there is a distance conflict between two back-to-back classes if the distance in minutes is greater than zero.</line>
 				<line>The reference of the accommodation for students that need short distances is defined by solver property Distances.ShortDistanceAccommodationReference (defaults to SD).</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling: Disabled Sections</name>
+			<description>
+				<line>Added ability to mark certain sections as disabled.</line>
+				<line>Such sections cannot be used, unless the student allows for disabled sections, or there is a (group) reservation that allows for disabled sections.</line>
 			</description>
 		</item>
      </category>
@@ -281,6 +384,14 @@
 				<line>Added ability to provide multiple defaults (separated by a comma) when the list allows for multiple selection.</line>
 			</description>
 		</item>
+		<item>
+			<name>Scripts: Parameter Types</name>
+			<description>
+				<line>Added ability to use the parameters that are available in HQL Reports (e.g., use type ACCOMODATION for student accommodation).</line>
+				<line>Added slot format (using a time selector).</line>
+				<line>Added timestamp format (using combination of a single date selector and a time selector).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>
@@ -299,12 +410,61 @@
 			</description>
 		</item>
 		<item>
+			<name>Student Group Types</name>
+			<description>
+				<line>Added ability to associate student groups with a type.</line>
+				<line>Additional properties can be set on a group type.</line>
+			</description>
+		</item>
+		<item>
 			<name>Data Exchange: Course Offering Import</name>
 			<description>
 				<line>When there is action=&quot;create-if-not-exists&quot; on the offering element:
 					<line>If the course already exists, do not update its offered/not-offered status, configurations, and exams (that is, only update courses and their title, schedule book note and credit information).</line>
 					<line>If the course does not exist, create the course with all its content.</line>
 				</line>
+			</description>
+		</item>
+		<item>
+			<name>HQL Reports</name>
+			<description>
+				<line>Added ability to provide additional parameters, just like in the scripts.</line>
+				<line>Each parameter has a name, a label, a type, and a default value.</line>
+				<line>These parameters could be strings, numbers, dates, enums, etc.</line>
+				<line>Use :name to inject the parameter value in the HQL (where name is the name of the parameter).</line>
+				<line>Added ability to filter by
+					<line>student groups (STUDENT_GROUP or STUDENT_GROUPS)</line>
+					<line>student accommodations (ACCOMODATION or ACCOMODATIONS)</line>
+					<line>academic areas (ACADEMIC_AREA or ACADEMIC_AREAS)</line>
+					<line>majors (POS_MAJOR or POS_MAJORS)</line>
+				</line>
+				<line>Aadded %SESSIONS% parameter listing unique ids of available academic sessions.</line>
+			</description>
+		</item>
+		<item>
+			<name>Test HQL</name>
+			<description>
+				<line>Added ability to export table in CSV.</line>
+				<line>Improved table formatting: show return aliases (column names) when set, added pagination (when more lines than tmtbl.test_hql.max_line is returned).</line>
+				<line>Replace parameters like %SESSION% with the user's data.</line>
+				<line>Improved navigation: table is clickable when the first column has a unique id and is named _Class, __Offering, __Subpart, __Room, __Instructor, __Exam, or __Event.</line>
+			</description>
+		</item>
+		<item>
+			<name>UniTime API: Instructor Schedule</name>
+			<description>
+				<line>Added ability to export instructor preferences (when pref=1 in the request URL).</line>
+				<line>Added ability to export instructors with the matching external id across all academic session (when no session is selected, or all=1 in the request URL).</line>
+			</description>
+		</item>
+		<item>
+			<name>Data Exchange: Course Requests XML</name>
+			<description>
+				<line>Import: added ability to only add / drop certain requests of a student.
+					<line>Use addCourseRequests and dropCourseRequests elements instead of updateCourseRequests.</line>
+					<line>These elements have the same format as updateCourseRequests.</line>
+				</line>
+				<line>Added export/import of section and instructional method preferences.</line>
 			</description>
 		</item>
 	</category>
@@ -323,6 +483,14 @@
 				<line>Fall back to base 36 big integers, but pad with sign bytes (0xff) when IllegalBlockSizeException is seen.
 					<line>Using BigInteger to map bytes to strings is not ideal because of the sign bytes may get ignored, causing IllegalBlockSizeException during decoding.</line>
 				</line>
+			</description>
+		</item>
+		<item>
+			<name>Various iCalendar Exports: Custom VTimeZone Generator</name>
+			<description>
+				<line>Created a variant of the TzUrlDotOrgGenerator which is more configurable using the new unitime.calendar.timezone properties.</line>
+				<line>For all time zones: unitime.calendar.timezone=http://www.tzurl.org/zoneinfo/{id}.ics</line>
+				<line>For a particular time zone: unitime.calendar.timezone.US/East-Indiana=http://www.tzurl.org/zoneinfo/America/Indiana/Indianapolis.ics</line>
 			</description>
 		</item>
 	</category>
