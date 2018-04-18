@@ -219,14 +219,31 @@ public class SectioningReportsExporter implements Exporter {
 		
 		public int compareTo(Row b, int col) {
 			Row a = this;
-			while (a.getLevel() > b.getLevel()) a = a.getParent();
-			while (b.getLevel() > a.getLevel()) b = b.getParent();
+			if (a.getLevel() != b.getLevel()) {
+				Row aP = a, bP = b;
+				while (aP.getLevel() > bP.getLevel()) aP = aP.getParent();
+				while (bP.getLevel() > aP.getLevel()) bP = bP.getParent();
+				int cmp = aP.compareTo(bP, col);
+				if (cmp != 0) return cmp;
+			} else if (a.getParent() != null) {
+				int cmp = a.getParent().compareTo(b.getParent(), col);
+				if (cmp != 0) return cmp;
+			}
 			try {
 				int cmp = Double.valueOf(a.getCell(col) == null ? "0" : a.getCell(col)).compareTo(Double.valueOf(b.getCell(col) == null ? "0" : b.getCell(col)));
 				if (cmp != 0) return cmp;
 			} catch (NumberFormatException e) {
 				int cmp = (a.getCell(col) == null ? "" : a.getCell(col)).compareTo(b.getCell(col) == null ? "" : b.getCell(col));
 				if (cmp != 0) return cmp;
+			}
+			for (int c = 0; c < getLength(); c++) {
+				try {
+					int cmp = Double.valueOf(a.getCell(c) == null ? "0" : a.getCell(c)).compareTo(Double.valueOf(b.getCell(c) == null ? "0" : b.getCell(c)));
+					if (cmp != 0) return cmp;
+				} catch (NumberFormatException e) {
+					int cmp = (a.getCell(c) == null ? "" : a.getCell(c)).compareTo(b.getCell(c) == null ? "" : b.getCell(c));
+					if (cmp != 0) return cmp;
+				}
 			}
 			return 0;
 		}
