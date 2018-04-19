@@ -1892,6 +1892,10 @@ public enum ApplicationProperty {
 	@DefaultValue("https://docs.google.com/document/d/1QTCKwLhU62yGtr6XlW_XM68q3hgohxLpwWXdyajr30g")
 	@Description("Manuals: Student Scheduling Asisstant user manual")
 	ManualSchedulingAssistant("tmtbl.help.manual.schedulingAssistant"),
+	
+	@DefaultValue("https://docs.google.com/document/d/1ap13URaw7UVT0FN9NZtgSROEKoS-V7S1uq0214Sh43M")
+	@Description("Manuals: Student Scheduling Dashboard user manual")
+	ManualSchedulinDashboard("tmtbl.help.manual.schedulingDashboard"),
 
 	@DefaultValue("help/Release-Notes.xml")
 	@Description("Help: release notes")
