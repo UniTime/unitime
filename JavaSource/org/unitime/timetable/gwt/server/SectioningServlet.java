@@ -2239,6 +2239,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				!getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdmin));
 		boolean email = ApplicationProperty.OnlineSchedulingEmailConfirmation.isTrue();
 		boolean waitlist = CustomStudentEnrollmentHolder.isAllowWaitListing();
+		boolean specreg = CustomSpecialRegistrationHolder.hasProvider();
+		boolean reqval = CustomCourseRequestsValidationHolder.hasProvider();
 		if (!advisor) {
 			Session session = SessionDAO.getInstance().get(getStatusPageSessionId());
 			StudentStatusInfo info = null;
@@ -2254,16 +2256,20 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				info.setLabel(MSG.studentStatusSystemDefault());
 				info.setAllEnabled();
 			}
-			if (!email) info.setEmail(false);
-			if (!waitlist) info.setWaitList(false);
+			info.setEmail(email);
+			info.setWaitList(waitlist);
+			info.setSpecialRegistration(specreg);
+			info.setRequestValiadtion(reqval);
 			ret.add(info);
 		}
 		for (StudentSectioningStatus s: StudentSectioningStatusDAO.getInstance().findAll()) {
 			if (s.isPast()) continue;
 			if (advisor && !s.hasOption(StudentSectioningStatus.Option.advcanset)) continue;
 			StudentStatusInfo info = toStudentStatusInfo(s, courseTypes);
-			if (!email) info.setEmail(false);
-			if (!waitlist) info.setWaitList(false);
+			info.setEmail(email && s.hasOption(StudentSectioningStatus.Option.email));
+			info.setWaitList(waitlist && s.hasOption(StudentSectioningStatus.Option.waitlist));
+			info.setSpecialRegistration(specreg && s.hasOption(StudentSectioningStatus.Option.specreg));
+			info.setRequestValiadtion(reqval && s.hasOption(StudentSectioningStatus.Option.reqval));
 			ret.add(info);
 		}
 		return ret;

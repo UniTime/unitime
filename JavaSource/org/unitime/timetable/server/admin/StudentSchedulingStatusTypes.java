@@ -77,6 +77,8 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		WaitListing(MESSAGES.toggleWaitList(), StudentSectioningStatus.Option.waitlist),
 		NoBatch(MESSAGES.toggleNoBatch(), StudentSectioningStatus.Option.nobatch),
 		AdvisorCanSet(MESSAGES.toggleAdvisorCanSetStatus(), StudentSectioningStatus.Option.advcanset),
+		CReqValidation(MESSAGES.toggleCourseRequestValidation(), StudentSectioningStatus.Option.reqval),
+		SpecReg(MESSAGES.toggleSpecialRequests(), StudentSectioningStatus.Option.specreg),
 		;
 		
 		private StudentSectioningStatus.Option iOption;

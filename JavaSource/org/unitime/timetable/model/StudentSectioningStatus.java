@@ -52,6 +52,8 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 		/* 1024 */ regadvisor("Advisor Can Register"),
 		/* 2048 */ regadmin("Admin Can Register"),
 		/* 4196 */ advcanset("Advisor Can Set Status"),
+		/* 8192 */ reqval("Course Request Validation"),
+		/*16384 */ specreg("Special Registration"),
 		;
 		
 		private String iName;

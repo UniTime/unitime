@@ -109,6 +109,8 @@ public class StudentSchedulingStatusExport extends BaseExport {
 		case notype: return "mustHaveCourseType";
 		case waitlist: return "waitListing";
 		case advcanset: return "advisorCanSetStatus";
+		case specreg: return "specialRegistration";
+		case reqval: return "requestValidation";
 		default: return option.name();
 		}
 	}

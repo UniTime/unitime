@@ -1413,6 +1413,12 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Message:")
 	String propStatusMessage();
 	
+	@DefaultMessage("Special Registration:")
+	String propSpecialRegistration();
+	
+	@DefaultMessage("Course Request Validation:")
+	String propCourseRequestValidation();
+	
 	@DefaultMessage("You are not registered for any classes yet. Please click the Build Schedule button in order to complete your registration.")
 	String warnScheduleEmptyOnCourseRequest();
 	
@@ -1904,6 +1910,18 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Email notifications are disabled.")
 	String messageStatusCanNotEmail();
+	
+	@DefaultMessage("Special registration is enabled.")
+	String messageStatusCanSpecialRegistration();
+	
+	@DefaultMessage("Special registration is disabled.")
+	String messageStatusCanNotSpecialRegistration();
+	
+	@DefaultMessage("Custom course request validation is enabled.")
+	String messageStatusCanRequestValidation();
+	
+	@DefaultMessage("Custom course request validation is disabled.")
+	String messageStatusCanNotRequestValidation();
 	
 	@DefaultMessage("before {0}")
 	String messageEffectivePeriodBefore(String end);

@@ -4607,6 +4607,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Advisor Can Set Status")
 	String toggleAdvisorCanSetStatus();
 	
+	@DefaultMessage("Course Request Validation")
+	String toggleCourseRequestValidation();
+	
+	@DefaultMessage("Special Requests")
+	String toggleSpecialRequests();
+	
 	@DefaultMessage("Final Examinations")
 	String finalExaminations();
 	

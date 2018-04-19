@@ -13079,4 +13079,10 @@
 	    <plsql>alter table %SCHEMA%.solver_parameter_def modify type varchar2(1000 char)</plsql>
 	    <mysql>alter table %SCHEMA%.solver_parameter_def modify type varchar(1000)</mysql>
 	</update>
+	<update version="206" date="19-Apr-2018" comment="Spec Reg and Validation Student Status">
+	    <mysql><![CDATA[update %SCHEMA%.sectioning_status set status = status + 16384 where (status & 1) = 1 and (status & 16384) = 0]]></mysql>
+	    <mysql><![CDATA[update %SCHEMA%.sectioning_status set status = status + 8192 where (status & 256) = 256 and (status & 8192) = 0]]></mysql>
+	    <plsql>update %SCHEMA%.sectioning_status set status = status + 16384 where bitand(status, 1) = 1 and bitand(status, 16384) = 0</plsql>
+	    <plsql>update %SCHEMA%.sectioning_status set status = status + 8192 where bitand(status, 256) = 256 and bitand(status, 8192) = 0</plsql>
+	</update>
 </dbupdate>

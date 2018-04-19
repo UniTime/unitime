@@ -77,6 +77,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -311,6 +312,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		Map<String, Set<String>> deniedOverrides = new HashMap<String, Set<String>>();
 		Float maxCredit = null, maxCreditOverride = null;
 		RequestedCourseStatus maxCreditOverrideStatus = null;
+		boolean validationEnabled = isValidationEnabled(server, helper, original);
 		try {
 			resource = new ClientResource(getSpecialRegistrationApiSiteCheckSpecialRegistrationStatus());
 			resource.setNext(iClient);
@@ -389,8 +391,23 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				}
 			}
 			
-			String maxCreditLimitStr = ApplicationProperties.getProperty("purdue.specreg.maxCreditCheck");
 			boolean creditError = false;
+			if (!validationEnabled && maxCredit < request.getCredit()) {
+				for (RequestedCourse rc: getOverCreditRequests(request, maxCredit)) {
+					response.addError(rc.getCourseId(), rc.getCourseName(), "CREDIT",
+							ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit()))
+							);
+				}
+				response.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())));
+				response.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_HIGH);
+				response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.maxCreditError",
+						"Maximum of {max} credit hours exceeded.\nYou must remove some course requests in order to submit your registration request.")
+						.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit()))
+				);
+				creditError = true;
+			}
+			
+			String maxCreditLimitStr = ApplicationProperties.getProperty("purdue.specreg.maxCreditCheck");
 			if (maxCreditDenied != null && request.getCredit() >= maxCreditDenied) {
 				for (RequestedCourse rc: getOverCreditRequests(request, maxCredit)) {
 					response.addError(rc.getCourseId(), rc.getCourseName(), "CREDIT",
@@ -679,7 +696,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					if ("MAXI".equals(problem.code)) continue;
 					Map<String, RequestedCourseStatus> problems = (bc == null ? null : overrides.get(bc));
 					Set<String> denied = (bc == null ? null : deniedOverrides.get(bc));
-					if (denied != null && denied.contains(problem.code)) {
+					if (!validationEnabled) {
+						RequestedCourseStatus status = (problems == null ? null : problems.get(problem.code));
+						response.addError(course.getCourseId(), course.getCourseName(), problem.code, problem.message).setStatus(status == null ? RequestedCourseStatus.OVERRIDE_NEEDED : status);
+					} else if (denied != null && denied.contains(problem.code)) {
 						response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
 						response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.deniedOverrideError",
 								"One or more courses require registration overrides which have been denied.\nYou must remove or replace these courses in order to submit your registration request."));
@@ -701,7 +721,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					String bc = course2banner.get(course);
 					Map<String, RequestedCourseStatus> problems = (bc == null ? null : overrides.get(bc));
 					Set<String> denied = (bc == null ? null : deniedOverrides.get(bc));
-					if (denied != null && denied.contains(problem.code)) {
+					if (!validationEnabled) {
+						RequestedCourseStatus status = (problems == null ? null : problems.get(problem.code));
+						response.addError(course.getCourseId(), course.getCourseName(), problem.code, problem.message).setStatus(status == null ? RequestedCourseStatus.OVERRIDE_NEEDED : status);
+					} else if (denied != null && denied.contains(problem.code)) {
 						response.addError(course.getCourseId(), course.getCourseName(), problem.code, "Denied " + problem.message).setStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
 						response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.deniedOverrideError",
 								"One or more courses require registration overrides which have been denied.\nYou must remove or replace these courses in order to submit your registration request."));
@@ -1482,6 +1505,20 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		}
 	}
 	
+	protected boolean isValidationEnabled(org.unitime.timetable.model.Student student) {
+		if (student == null) return false;
+		StudentSectioningStatus status = student.getEffectiveStatus();
+		return status == null || status.hasOption(StudentSectioningStatus.Option.reqval);
+	}
+	
+	protected boolean isValidationEnabled(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) {
+		String status = student.getStatus();
+		if (status == null) status = server.getAcademicSession().getDefaultSectioningStatus();
+		if (status == null) return true;
+		StudentSectioningStatus dbStatus = StudentSectioningStatus.getStatus(status, server.getAcademicSession().getUniqueId(), helper.getHibSession());
+		return dbStatus != null && dbStatus.hasOption(StudentSectioningStatus.Option.reqval);
+	}
+	
 	protected boolean hasPendingOverride(org.unitime.timetable.model.Student student) {
 		if (student.getOverrideExternalId() != null && student.getMaxCreditOverrideStatus() == CourseRequestOverrideStatus.PENDING) return true;
 		for (CourseDemand cd: student.getCourseDemands()) {
@@ -1626,6 +1663,9 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		if (hasPendingOverride(student))
 			updateStudent(server, helper, student, action);
 		
+		// Do not re-validate when validation is disabled
+		if (!isValidationEnabled(student)) return false;
+
 		// All course requests are approved -> nothing to do
 		if (!hasNotApprovedCourseRequestOverride(student) && !"true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.forceRevalidation", "false"))) return false;
 		

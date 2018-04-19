@@ -46,6 +46,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -333,6 +334,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 	@Override
 	public SpecialRegistrationEligibilityResponse checkEligibility(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, SpecialRegistrationEligibilityRequest input) throws SectioningException {
 		if (student == null) return new SpecialRegistrationEligibilityResponse(false, "No student.");
+		if (!isSpecialRegistrationEnabled(server, helper, student)) return new SpecialRegistrationEligibilityResponse(false, "Special registration is disabled.");
 		ClientResource resource = null;
 		try {
 			if (getSpecialRegistrationApiSiteCheckEligibility() != null) {
@@ -1004,6 +1006,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 	@Override
 	public List<RetrieveSpecialRegistrationResponse> retrieveAllRegistrations(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) throws SectioningException {
 		if (student == null) return null;
+		if (!isSpecialRegistrationEnabled(server, helper, student)) return null;
 		ClientResource resource = null;
 		try {
 			if (getSpecialRegistrationApiSiteGetAllRegistrations() != null) {
@@ -1098,7 +1101,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 
 	@Override
 	public void checkEligibility(OnlineSectioningServer server, OnlineSectioningHelper helper, EligibilityCheck check, XStudent student) throws SectioningException {
-		if (student == null) {
+		if (student == null || !isSpecialRegistrationEnabled(server, helper, student)) {
 			check.setFlag(EligibilityFlag.CAN_SPECREG, false);
 			return;
 		}
@@ -1157,5 +1160,20 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				resource.release();
 			}
 		}
+	}
+	
+	protected boolean isSpecialRegistrationEnabled(org.unitime.timetable.model.Student student) {
+		if (student == null) return false;
+		StudentSectioningStatus status = student.getEffectiveStatus();
+		return status == null || status.hasOption(StudentSectioningStatus.Option.specreg);
+	}
+	
+	protected boolean isSpecialRegistrationEnabled(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) {
+		if (student == null) return false;
+		String status = student.getStatus();
+		if (status == null) status = server.getAcademicSession().getDefaultSectioningStatus();
+		if (status == null) return true;
+		StudentSectioningStatus dbStatus = StudentSectioningStatus.getStatus(status, server.getAcademicSession().getUniqueId(), helper.getHibSession());
+		return dbStatus != null && dbStatus.hasOption(StudentSectioningStatus.Option.specreg);
 	}
 }
