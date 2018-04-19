@@ -1563,6 +1563,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Submitted")
 	String colSpecRegSubmitted();
 	
+	@DefaultMessage("Last Note")
+	String colSpecRegNote();
+	
 	@DefaultMessage("<u>S</u>elect")
 	String buttonDegreePlanSelect();
 	
@@ -1610,6 +1613,21 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("This special registration has been processed.")
 	String hintSpecRegCanEnroll();
+	
+	@DefaultMessage("This special registration has been approved.")
+	String hintSpecRegApproved();
+	
+	@DefaultMessage("This special registration has been cancelled.")
+	String hintSpecRegCancelled();
+	
+	@DefaultMessage("This special registration has been submitted for processing. Waiting for approval...")
+	String hintSpecRegPending();
+	
+	@DefaultMessage("This special registration has not been submitted for processing. It can still be edited.")
+	String hintSpecRegDraft();
+	
+	@DefaultMessage("This special registration has been denied.")
+	String hintSpecRegRejected();
 	
 	@DefaultMessage("{0}, {1}")
 	String courseSeparatorMiddle(String list, String item);

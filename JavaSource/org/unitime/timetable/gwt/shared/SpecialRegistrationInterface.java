@@ -172,14 +172,21 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void setRequestKey(String requestKey) { iRequestKey = requestKey; }
 	}
 	
+	public static enum SpecialRegistrationStatus implements IsSerializable, Serializable {
+		Draft, Pending, Approved, Rejected, Cancelled,
+		;
+	}
+	
 	public static class RetrieveSpecialRegistrationResponse implements IsSerializable, Serializable, Comparable<RetrieveSpecialRegistrationResponse> {
 		private static final long serialVersionUID = 1L;
 		private ClassAssignmentInterface iClassAssignment;
+		private SpecialRegistrationStatus iStatus;
 		private boolean iCanSubmit;
 		private boolean iCanEnroll;
 		private Date iSubmitDate;
 		private String iRequestId;
 		private String iDescription;
+		private String iNote;
 		
 		public RetrieveSpecialRegistrationResponse() {}
 		
@@ -201,6 +208,12 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		
 		public String getDescription() { return iDescription; }
 		public void setDescription(String description) { iDescription = description; }
+		
+		public String getNote() { return iNote; }
+		public void setNote(String note) { iNote = note; }
+		
+		public SpecialRegistrationStatus getStatus() { return iStatus; }
+		public void setStatus(SpecialRegistrationStatus status) { iStatus = status; }
 		
 		@Override
 		public int compareTo(RetrieveSpecialRegistrationResponse o) {

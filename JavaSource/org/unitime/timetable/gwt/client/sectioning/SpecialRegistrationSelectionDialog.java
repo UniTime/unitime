@@ -48,6 +48,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
@@ -98,6 +99,7 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 		header.add(new UniTimeTableHeader(""));
 		header.add(new UniTimeTableHeader(MESSAGES.colSpecRegSubmitted()));
 		header.add(new UniTimeTableHeader(MESSAGES.colSpecRegName()));
+		header.add(new UniTimeTableHeader(MESSAGES.colSpecRegNote()));
 		iTable.addRow(null, header);
 		
 		
@@ -140,7 +142,35 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 		for (RetrieveSpecialRegistrationResponse reg: registrations) {
 			List<Widget> row = new ArrayList<Widget>();
 			P p = new P("icons");
-			if (reg.isCanEnroll()) {
+			if (reg.getStatus() != null) {
+				switch (reg.getStatus()) {
+				case Approved:
+					Image approved = new Image(RESOURCES.specRegApproved());
+					approved.setTitle(MESSAGES.hintSpecRegApproved());
+					p.add(approved);
+					break;
+				case Cancelled:
+					Image cancelled = new Image(RESOURCES.specRegCancelled());
+					cancelled.setTitle(MESSAGES.hintSpecRegCancelled());
+					p.add(cancelled);
+					break;
+				case Pending:
+					Image pending = new Image(RESOURCES.specRegPending());
+					pending.setTitle(MESSAGES.hintSpecRegPending());
+					p.add(pending);
+					break;
+				case Rejected:
+					Image denied = new Image(RESOURCES.specRegRejected());
+					denied.setTitle(MESSAGES.hintSpecRegRejected());
+					p.add(denied);
+					break;
+				case Draft:
+					Image draft = new Image(RESOURCES.specRegDraft());
+					draft.setTitle(MESSAGES.hintSpecRegDraft());
+					p.add(draft);
+					break;
+				}
+			} else if (reg.isCanEnroll()) {
 				Image canEnroll = new Image(RESOURCES.specRegCanEnroll());
 				canEnroll.setTitle(MESSAGES.hintSpecRegCanEnroll());
 				p.add(canEnroll);
@@ -152,6 +182,7 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 			row.add(p);
 			row.add(new Label(reg.getSubmitDate() == null ? "" : sModifiedDateFormat.format(reg.getSubmitDate())));
 			row.add(new Label(reg.getDescription() == null ? "" : reg.getDescription()));
+			row.add(new HTML(reg.getNote() == null ? "" : reg.getNote()));
 			if (reg.getRequestId().equals(iSpecReg.getRequestId()))
 				select = iTable.getRowCount();
 			iTable.addRow(reg, row);
@@ -191,6 +222,7 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 				row --;
 				if (row <= 0) row = iTable.getRowCount() - 1;
 				iTable.setSelected(row, true);
+				iTable.getRowFormatter().getElement(row).scrollIntoView();
 				updateAriaStatus(false);
 			} else if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_DOWN) {
 				int row = iTable.getSelectedRow();
@@ -199,6 +231,7 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 				row ++;
 				if (row >= iTable.getRowCount()) row = 1;
 				iTable.setSelected(row, true);
+				iTable.getRowFormatter().getElement(row).scrollIntoView();
 				updateAriaStatus(false);
 			}
 		}

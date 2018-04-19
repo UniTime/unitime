@@ -58,6 +58,7 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityChe
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationStatus;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationRequest;
@@ -74,6 +75,7 @@ import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.E
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Change;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ChangeError;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ChangeOperation;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.EligibilityProblem;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.RequestStatus;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ResponseStatus;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationRequest;
@@ -171,7 +173,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 	}
 	
 	protected String getSpecialRegistrationMode() {
-		return ApplicationProperties.getProperty("purdue.specreg.mode", "");
+		return ApplicationProperties.getProperty("purdue.specreg.mode", "REG");
 	}
 	
 	protected String getBannerTerm(AcademicSessionInfo session) {
@@ -334,6 +336,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		ClientResource resource = null;
 		try {
 			if (getSpecialRegistrationApiSiteCheckEligibility() != null) {
+				/** -- POST
 				Gson gson = getGson(helper);
 				SpecialRegistrationRequest request = new SpecialRegistrationRequest();
 				AcademicSessionInfo session = server.getAcademicSession();
@@ -365,7 +368,53 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					helper.debug("Response: " + gson.toJson(response));
 				helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(response));
 				
-				return new SpecialRegistrationEligibilityResponse(response != null && ResponseStatus.success.name().equals(response.status), response != null ? response.message : null);				
+				return new SpecialRegistrationEligibilityResponse(response != null && ResponseStatus.success.name().equals(response.status), response != null ? response.message : null);
+				*/
+				resource = new ClientResource(getSpecialRegistrationApiSiteCheckEligibility());
+				resource.setNext(iClient);
+				
+				AcademicSessionInfo session = server.getAcademicSession();
+				String term = getBannerTerm(session);
+				String campus = getBannerCampus(session);
+				resource.addQueryParameter("term", term);
+				resource.addQueryParameter("campus", campus);
+				resource.addQueryParameter("studentId", getBannerId(student));
+				resource.addQueryParameter("mode", getSpecialRegistrationMode());
+				helper.getAction().addOptionBuilder().setKey("term").setValue(term);
+				helper.getAction().addOptionBuilder().setKey("campus").setValue(campus);
+				helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
+				resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
+				
+				long t0 = System.currentTimeMillis();
+				
+				resource.get(MediaType.APPLICATION_JSON);
+				
+				helper.getAction().setApiGetTime(System.currentTimeMillis() - t0);
+				
+				SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse eligibility = (SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse)
+						new GsonRepresentation<SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse>(resource.getResponseEntity(), SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse.class).getObject();
+				Gson gson = getGson(helper);
+				
+				if (helper.isDebugEnabled())
+					helper.debug("Eligibility: " + gson.toJson(eligibility));
+				helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(eligibility));
+				
+				if (!ResponseStatus.success.name().equals(eligibility.status))
+					return new SpecialRegistrationEligibilityResponse(false, eligibility.message == null || eligibility.message.isEmpty() ? "Failed to check student eligibility (" + eligibility.status + ")." : eligibility.message);
+				
+				boolean eligible = true;
+				if (eligibility.data == null || eligibility.data.eligible == null || !eligibility.data.eligible.booleanValue()) {
+					eligible = false;
+				}
+				String message = null;
+				if (eligibility.data != null && eligibility.data.eligibilityProblems != null) {
+					for (EligibilityProblem p: eligibility.data.eligibilityProblems)
+						if (message == null)
+							message = p.message;
+						else
+							message += "\n" + p.message;
+				}
+				return new SpecialRegistrationEligibilityResponse(eligible, message);
 			} else {
 				if (!input.hasErrors()) return new SpecialRegistrationEligibilityResponse(true, null);
 
@@ -464,7 +513,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			
 			helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
 			
-			SpecialRegistrationResponseList response = (SpecialRegistrationResponseList)new GsonRepresentation<SpecialRegistrationResponseList>(resource.getResponseEntity(), SpecialRegistrationResponseList.class).getObject();
+			SpecialRegistrationResponse response = (SpecialRegistrationResponse)new GsonRepresentation<SpecialRegistrationResponse>(resource.getResponseEntity(), SpecialRegistrationResponse.class).getObject();
 			if (helper.isDebugEnabled())
 				helper.debug("Response: " + gson.toJson(response));
 			helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(response));
@@ -472,10 +521,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			SubmitSpecialRegistrationResponse ret = new SubmitSpecialRegistrationResponse();
 			ret.setMessage(response.message);
 			ret.setSuccess(ResponseStatus.success.name().equals(response.status));
-			if (response.data != null && !response.data.isEmpty()) {
-				ret.setRequestId(response.data.get(0).requestId);
-				ret.setCanEnroll(RequestStatus.maySubmit.name().equals(response.data.get(0).status) || RequestStatus.approved.name().equals(response.data.get(0).status));
-				ret.setCanSubmit(RequestStatus.mayEdit.name().equals(response.data.get(0).status) || RequestStatus.draft.name().equals(response.data.get(0).status));
+			if (response.data != null) {
+				ret.setRequestId(response.data.requestId);
+				ret.setCanEnroll(RequestStatus.maySubmit.name().equals(response.data.status) || RequestStatus.approved.name().equals(response.data.status));
+				ret.setCanSubmit(RequestStatus.mayEdit.name().equals(response.data.status) || RequestStatus.draft.name().equals(response.data.status));
 			} else {
 				ret.setCanEnroll(false);
 				ret.setCanSubmit(false);
@@ -844,6 +893,17 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		ret.setCanSubmit(RequestStatus.mayEdit.name().equals(specialRequest.status) || RequestStatus.newRequest.name().equals(specialRequest.status) || RequestStatus.draft.name().equals(specialRequest.status));
 		ret.setRequestId(specialRequest.requestId);
 		ret.setSubmitDate(specialRequest.dateCreated == null ? null : specialRequest.dateCreated.toDate());
+		ret.setNote(specialRequest.notes);
+		if (RequestStatus.mayEdit.name().equals(specialRequest.status) || RequestStatus.newRequest.name().equals(specialRequest.status) || RequestStatus.draft.name().equals(specialRequest.status))
+			ret.setStatus(SpecialRegistrationStatus.Draft);
+		else if (RequestStatus.approved.name().equals(specialRequest.status))
+			ret.setStatus(SpecialRegistrationStatus.Approved);
+		else if (RequestStatus.cancelled.name().equals(specialRequest.status))
+			ret.setStatus(SpecialRegistrationStatus.Cancelled);
+		else if (RequestStatus.denied.name().equals(specialRequest.status))
+			ret.setStatus(SpecialRegistrationStatus.Rejected);
+		else
+			ret.setStatus(SpecialRegistrationStatus.Pending);
 		return ret;
 	}
 	
@@ -979,7 +1039,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				if (specialRequests.data != null) {
 					List<RetrieveSpecialRegistrationResponse> ret = new ArrayList<RetrieveSpecialRegistrationResponse>(specialRequests.data.size());
 					for (SpecialRegistrationRequest specialRequest: specialRequests.data)
-						ret.add(convert(server, helper, student, specialRequest));
+						if (specialRequest.requestId != null)
+							ret.add(convert(server, helper, student, specialRequest));
 					return ret;
 				}				
 			} else {
@@ -1013,7 +1074,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				if (response != null && ResponseStatus.success.name().equals(response.status) && response.data != null && response.data.requests != null) {
 					List<RetrieveSpecialRegistrationResponse> ret = new ArrayList<RetrieveSpecialRegistrationResponse>(response.data.requests.size());
 					for (SpecialRegistrationRequest specialRequest: response.data.requests)
-						ret.add(convert(server, helper, student, specialRequest));
+						if (specialRequest.requestId != null)
+							ret.add(convert(server, helper, student, specialRequest));
 					return ret;
 				}
 			}
