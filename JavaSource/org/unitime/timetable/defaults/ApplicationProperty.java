@@ -2365,6 +2365,11 @@ public enum ApplicationProperty {
 	CalendarVTimeZone("unitime.calendar.timezone"),
 	
 	@Type(Double.class)
+	@DefaultValue("17.0")
+	@Description("Time Grid XLS Export: row height")
+	TimeGridXLSRowHeight("unitime.timeGrid.xls.rowHeight"),
+	
+	@Type(Double.class)
 	@DefaultValue("16.0")
 	@Description("Time Grid XLS Export: 1st column width")
 	TimeGridXLSHeaderWidth("unitime.timeGrid.xls.headerWidth"),

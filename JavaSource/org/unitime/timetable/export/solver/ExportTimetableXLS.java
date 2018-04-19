@@ -213,6 +213,10 @@ public class ExportTimetableXLS extends TableExporter {
 			if (isStyle("unitime-TimetableGrid")) {
 				for (int r = y; r < y + getHeight(); r++ ) {
 					Row row = sheet.createRow(r);
+					if (cx.getRowHeight() != null)
+						row.setHeightInPoints(cx.getRowHeight());
+					else
+						row.setHeightInPoints(sheet.getDefaultRowHeightInPoints());
 					for (int c = x; c < x + getWidth(); c++) {
 						row.createCell(c);
 					}
@@ -908,14 +912,18 @@ public class ExportTimetableXLS extends TableExporter {
 		private Map<String, Short> iColors = new HashMap<String, Short>();
 		private int iFontSize = 12;
 		private String iFontName = "Arial";
+		private Float iRowHeight = null;
 
 		public ExportContext() {
 			iWorkbook = new HSSFWorkbook();
 			iFontSize = ApplicationProperty.TimeGridXLSFontSize.intValue();
 			iFontName = ApplicationProperty.TimeGridXLSFontName.value();
+			iRowHeight = ApplicationProperty.TimeGridXLSRowHeight.floatValue();
 		}
 		
 		public Workbook getWorkbook() { return iWorkbook; } 
+		
+		public Float getRowHeight() { return iRowHeight; }
 		
 		protected Font getFont(boolean bold, boolean italic, boolean underline, Color c) {
 			Short color = null;
