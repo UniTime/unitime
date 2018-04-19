@@ -84,11 +84,22 @@ public class SpecialRegistrationInterface {
 		public String message;
 	}
 
+	public static class SpecialRegistrationMultipleStatusResponse {
+		public SpecialRegistrationMultipleStatus data;
+		public String status;
+		public String message;
+	}
+	
+	public static class SpecialRegistrationMultipleStatus {
+		public Set<String> overrides;
+		public List<SpecialRegistrationStatus> students;
+	}
 	
 	public static class SpecialRegistrationStatus {
 		public Set<String> overrides;
 		public List<SpecialRegistrationRequest> requests;
 		public Float maxCredit;
+		public String studentId;
 	}
 
 	public static enum ResponseStatus {

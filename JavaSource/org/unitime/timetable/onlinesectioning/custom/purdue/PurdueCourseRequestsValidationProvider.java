@@ -23,6 +23,7 @@ import java.lang.reflect.Type;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -95,8 +96,10 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ResponseStatus;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Schedule;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationMultipleStatusResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationResponseList;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationStatus;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationStatusResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ValidationCheckRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ValidationCheckResponse;
@@ -115,6 +118,7 @@ import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction;
+import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.Formats.Format;
 
@@ -174,6 +178,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 	
 	protected String getSpecialRegistrationApiSiteCheckEligibility() {
 		return ApplicationProperties.getProperty("purdue.specreg.site.checkEligibility", getSpecialRegistrationApiSite() + "/checkEligibility");
+	}
+	
+	protected String getSpecialRegistrationApiSiteCheckAllSpecialRegistrationStatus() {
+		return ApplicationProperties.getProperty("purdue.specreg.site.checkAllSpecialRegistrationStatus", getSpecialRegistrationApiSite() + "/checkAllSpecialRegistrationStatus");
 	}
 	
 	protected String getSpecialRegistrationDashboardUrl() {
@@ -2118,5 +2126,168 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				resource.release();
 			}
 		}
+	}
+	
+	protected void checkStudentStatuses(OnlineSectioningServer server, OnlineSectioningHelper helper, Map<String, org.unitime.timetable.model.Student> id2student, List<Long> reloadIds, int batchNumber) throws SectioningException {
+		ClientResource resource = null;
+		try {
+			resource = new ClientResource(getSpecialRegistrationApiSiteCheckAllSpecialRegistrationStatus());
+			resource.setNext(iClient);
+			
+			AcademicSessionInfo session = (server == null ? null : server.getAcademicSession());
+			String studentIds = null;
+			List<String> ids = new ArrayList<String>();
+			for (Map.Entry<String, org.unitime.timetable.model.Student> e: id2student.entrySet()) {
+				if (session == null) session = new AcademicSessionInfo(e.getValue().getSession());
+				if (studentIds == null) studentIds = e.getKey();
+				else studentIds += "," + e.getKey();
+				ids.add(e.getKey());
+			}
+			String term = getBannerTerm(session);
+			String campus = getBannerCampus(session);
+			resource.addQueryParameter("term", term);
+			resource.addQueryParameter("campus", campus);
+			resource.addQueryParameter("studentIds", studentIds);
+			resource.addQueryParameter("mode", getSpecialRegistrationApiMode());
+			resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
+			OnlineSectioningLog.Action.Builder action = helper.getAction();
+			if (action != null) {
+				action.addOptionBuilder().setKey("term").setValue(term);
+				action.addOptionBuilder().setKey("campus").setValue(campus);
+				action.addOptionBuilder().setKey("studentIds-" + batchNumber).setValue(studentIds);
+			}
+			
+			long t0 = System.currentTimeMillis();
+			
+			resource.get(MediaType.APPLICATION_JSON);
+			
+			if (action != null) action.setApiGetTime(action.getApiGetTime() + System.currentTimeMillis() - t0);
+			
+			SpecialRegistrationMultipleStatusResponse response = (SpecialRegistrationMultipleStatusResponse)new GsonRepresentation<SpecialRegistrationMultipleStatusResponse>(resource.getResponseEntity(), SpecialRegistrationMultipleStatusResponse.class).getObject();
+			Gson gson = getGson(helper);
+			
+			if (helper.isDebugEnabled())
+				helper.debug("Response: " + gson.toJson(response));
+			if (action != null) action.addOptionBuilder().setKey("response-" + batchNumber).setValue(gson.toJson(response));
+			
+			if (!ResponseStatus.success.name().equals(response.status))
+				throw new SectioningException(response.message == null || response.message.isEmpty() ? "Failed to check student statuses (" + response.status + ")." : response.message);
+			
+			if (response.data != null && response.data.students != null) {
+				int index = 0;
+				for (SpecialRegistrationStatus status: response.data.students) {
+					String studentId = status.studentId;
+					if (studentId == null && status.requests != null)
+						for (SpecialRegistrationRequest req: status.requests) {
+							if (req.studentId != null) { studentId = req.studentId; break; }
+						}
+					if (studentId == null) studentId = ids.get(index);
+					index++;
+					org.unitime.timetable.model.Student student = id2student.get(studentId);
+					if (student == null) continue;
+					
+					boolean changed = false;
+					for (CourseDemand cd: student.getCourseDemands()) {
+						for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests()) {
+							if (cr.getOverrideExternalId() != null) {
+								SpecialRegistrationRequest req = null;
+								for (SpecialRegistrationRequest r: status.requests) {
+									if (cr.getOverrideExternalId().equals(r.requestId)) { req = r; break; }
+								}
+								if (req == null) {
+									if (cr.getCourseRequestOverrideStatus() != CourseRequestOverrideStatus.CANCELLED) {
+										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.CANCELLED);
+										helper.getHibSession().update(cr);
+										changed = true;
+									}
+								} else {
+									Integer oldStatus = cr.getOverrideStatus();
+									if (RequestStatus.denied.name().equals(req.status))
+										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.REJECTED);
+									else if (RequestStatus.approved.name().equals(req.status))
+										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.APPROVED);
+									else if (RequestStatus.cancelled.name().equals(req.status))
+										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.CANCELLED);
+									else
+										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.PENDING);
+									if (oldStatus == null || !oldStatus.equals(cr.getOverrideStatus())) {
+										helper.getHibSession().update(cr);
+										changed = true;
+									}
+								}
+							}
+						}
+					}
+					
+					boolean studentChanged = false;
+					if (status.maxCredit != null && !status.maxCredit.equals(student.getMaxCredit())) {
+						student.setMaxCredit(status.maxCredit);
+						studentChanged = true;
+					}
+					if (student.getOverrideExternalId() != null) {
+						SpecialRegistrationRequest req = null;
+						for (SpecialRegistrationRequest r: status.requests) {
+							if (student.getOverrideExternalId().equals(r.requestId)) { req = r; break; }
+						}
+						if (req == null) {
+							student.setOverrideExternalId(null);
+							student.setOverrideMaxCredit(null);
+							student.setOverrideStatus(null);
+							student.setOverrideTimeStamp(null);
+							studentChanged = true;
+						} else {
+							Integer oldStatus = student.getOverrideStatus();
+							if (RequestStatus.denied.name().equals(req.status))
+								student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.REJECTED);
+							else if (RequestStatus.approved.name().equals(req.status))
+								student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.APPROVED);
+							else if (RequestStatus.cancelled.name().equals(req.status))
+								student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.CANCELLED);
+							else
+								student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.PENDING);
+							if (oldStatus == null || !oldStatus.equals(student.getOverrideStatus()))
+								studentChanged = true;
+						}
+					}
+					if (studentChanged) helper.getHibSession().update(student);
+					
+					if (changed || studentChanged) reloadIds.add(student.getUniqueId());
+				}
+			}
+		} catch (SectioningException e) {
+			throw (SectioningException)e;
+		} catch (Exception e) {
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(e.getMessage());
+		} finally {
+			if (resource != null) {
+				if (resource.getResponse() != null) resource.getResponse().release();
+				resource.release();
+			}
+		}
+	}
+
+	@Override
+	public Collection<Long> updateStudents(OnlineSectioningServer server, OnlineSectioningHelper helper, List<org.unitime.timetable.model.Student> students) throws SectioningException {
+		Map<String, org.unitime.timetable.model.Student> id2student = new HashMap<String, org.unitime.timetable.model.Student>();
+		List<Long> reloadIds = new ArrayList<Long>();
+		int batchNumber = 1;
+		for (int i = 0; i < students.size(); i++) {
+			org.unitime.timetable.model.Student student = students.get(i);
+			if (student == null || !hasPendingOverride(student)) continue;
+			String id = getBannerId(student);
+			id2student.put(id, student);
+			if (id2student.size() >= 100) {
+				checkStudentStatuses(server, helper, id2student, reloadIds, batchNumber++);
+				id2student.clear();
+			}
+		}
+		if (!id2student.isEmpty())
+			checkStudentStatuses(server, helper, id2student, reloadIds, batchNumber++);
+		if (!reloadIds.isEmpty())
+			helper.getHibSession().flush();
+		if (!reloadIds.isEmpty() && server != null && !(server instanceof DatabaseServer))
+			server.execute(server.createAction(ReloadStudent.class).forStudents(reloadIds), helper.getUser());
+		return reloadIds;
 	}
 }

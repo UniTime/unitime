@@ -119,91 +119,20 @@ public class CustomCourseRequestsValidationHolder {
 		@Override
 		public Boolean execute(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 			if (!CustomCourseRequestsValidationHolder.hasProvider()) return false;
-			final List<Long> reloadIds = new ArrayList<Long>();
-			try {
-				int nrThreads = server.getConfig().getPropertyInt("CourseRequestsValidation.NrThreads", 10);
-				if (nrThreads <= 1 || getStudentIds().size() <= 1) {
-					for (Long studentId: getStudentIds()) {
-						if (updateStudent(server, helper, studentId)) reloadIds.add(studentId);
-					}
-				} else {
-					List<Worker> workers = new ArrayList<Worker>();
-					Iterator<Long> studentIds = getStudentIds().iterator();
-					for (int i = 0; i < nrThreads; i++)
-						workers.add(new Worker(i, studentIds) {
-							@Override
-							protected void process(Long studentId) {
-								if (updateStudent(server, new OnlineSectioningHelper(helper), studentId)) {
-									synchronized (reloadIds) {
-										reloadIds.add(studentId);
-									}
-								}
-							}
-						});
-					for (Worker worker: workers) worker.start();
-					for (Worker worker: workers) {
-						try {
-							worker.join();
-						} catch (InterruptedException e) {
-						}
-					}
-				}
-			} finally {
-				if (!reloadIds.isEmpty() && !(server instanceof DatabaseServer))
-					server.execute(server.createAction(ReloadStudent.class).forStudents(reloadIds), helper.getUser());
+			
+			List<Student> students = new ArrayList<Student>();
+			for (Long studentId: getStudentIds()) {
+				Student student = StudentDAO.getInstance().get(studentId, helper.getHibSession());
+				if (student != null) students.add(student);
 			}
-
-			return !reloadIds.isEmpty();
+			
+			Collection<Long> updatedStudentIds = null;
+			if (!students.isEmpty())
+				updatedStudentIds = CustomCourseRequestsValidationHolder.getProvider().updateStudents(server, helper, students);
+			
+			return updatedStudentIds != null && !updatedStudentIds.isEmpty();
 		}
 		
-		protected boolean updateStudent(OnlineSectioningServer server, OnlineSectioningHelper helper, Long studentId) {
-			helper.beginTransaction();
-			try {
-				Student student = StudentDAO.getInstance().get(studentId, helper.getHibSession());
-				boolean changed = false;
-				
-				if (student != null) {
-					OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
-					action.setStudent(OnlineSectioningLog.Entity.newBuilder()
-							.setUniqueId(studentId)
-							.setExternalId(student.getExternalUniqueId())
-							.setName(helper.getStudentNameFormat().format(student))
-							.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
-					long c0 = OnlineSectioningHelper.getCpuTime();
-					try {
-						if (CustomCourseRequestsValidationHolder.getProvider().updateStudent(server, helper, student, action)) {
-							changed = true;
-							action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
-						} else {
-							action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
-						}
-					} catch (SectioningException e) {
-						action.setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
-						if (e.getCause() != null) {
-							action.addMessage(OnlineSectioningLog.Message.newBuilder()
-									.setLevel(OnlineSectioningLog.Message.Level.FATAL)
-									.setText(e.getCause().getClass().getName() + ": " + e.getCause().getMessage()));
-						} else {
-							action.addMessage(OnlineSectioningLog.Message.newBuilder()
-									.setLevel(OnlineSectioningLog.Message.Level.FATAL)
-									.setText(e.getMessage() == null ? "null" : e.getMessage()));
-						}
-					} finally {
-						action.setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
-						action.setEndTime(System.currentTimeMillis());
-					}
-				}
-				helper.commitTransaction();
-				return changed;
-			} catch (Exception e) {
-				helper.rollbackTransaction();
-				if (e instanceof SectioningException)
-					throw (SectioningException)e;
-				throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
-			}
-
-		}
-
 		@Override
 		public String name() {
 			return "update-overrides";

@@ -19,6 +19,9 @@
 */
 package org.unitime.timetable.onlinesectioning.custom;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
@@ -45,6 +48,8 @@ public interface CourseRequestsValidationProvider {
 	
 	public void submit(OnlineSectioningServer server, OnlineSectioningHelper helper, CourseRequestInterface request) throws SectioningException;
 	
+	public Collection<Long> updateStudents(OnlineSectioningServer server, OnlineSectioningHelper helper, List<Student> students) throws SectioningException;
+	
 	public void dispose();
-
+	
 }
