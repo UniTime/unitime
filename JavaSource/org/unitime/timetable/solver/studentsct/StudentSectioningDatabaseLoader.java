@@ -183,6 +183,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private NameFormat iStudentNameFormat = null, iInstructorNameFormat = null;
 	private StudentSolver iValidator = null;
 	private boolean iCheckRequestStatusSkipCancelled = false, iCheckRequestStatusSkipPending = false;
+	private int iNrValidationThreads = 1;
+	private boolean iCanContinue = true;
     
     private Progress iProgress = null;
     
@@ -224,6 +226,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	} catch (Exception e) {
         		iProgress.error("Failed to create course request validation provider: " + e.getMessage());
         	}
+        	iNrValidationThreads = model.getProperties().getPropertyInt("CourseRequestsValidation.NrThreads", 10);
         }
         try {
         	String studentCourseDemandsClassName = getModel().getProperties().getProperty("StudentSct.ProjectedCourseDemadsClass", LastLikeStudentCourseDemands.class.getName());
@@ -701,44 +704,54 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     	updateCurriculumCounts(s);    	
     }
     
-    protected void checkOverrideStatus(org.hibernate.Session hibSession, org.unitime.timetable.model.Student s) {
-    	OnlineSectioningLog.Action.Builder action = OnlineSectioningLog.Action.newBuilder();
-    	action.setOperation("update-overrides");
-		action.setSession(OnlineSectioningLog.Entity.newBuilder()
-    			.setUniqueId(iSessionId)
-    			.setName(iTerm + iYear + iInitiative)
-    			);
-    	action.setStartTime(System.currentTimeMillis());
-    	OnlineSectioningLog.Entity user = Entity.newBuilder().setExternalId(iOwnerId).setType(Entity.EntityType.MANAGER).build(); 
-    	action.setUser(user);
-    	action.setStudent(OnlineSectioningLog.Entity.newBuilder()
-				.setUniqueId(s.getUniqueId())
-				.setExternalId(s.getExternalUniqueId())
-				.setName(iStudentNameFormat.format(s))
-				.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
-		long c0 = OnlineSectioningHelper.getCpuTime();
-		try {
-        	if (iValidationProvider.updateStudent(null, new OnlineSectioningHelper(hibSession, user), s, action)) {
-        		iUpdatedStudents.add(s.getUniqueId());
-        		action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
-        	} else {
-        		action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
+    protected void checkOverrideStatuses(org.hibernate.Session hibSession, List<org.unitime.timetable.model.Student> students) {
+    	List<org.unitime.timetable.model.Student> filteredStudents = new ArrayList<org.unitime.timetable.model.Student>();
+		for (org.unitime.timetable.model.Student s: students) {
+			if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty() && s.getWaitlists().isEmpty()) continue;
+    		if (iCheckForNoBatchStatus && s.hasSectioningStatusOption(StudentSectioningStatus.Option.nobatch)) continue;
+            if (iStudentQuery != null && !iStudentQuery.match(new DbStudentMatcher(s))) continue;
+            filteredStudents.add(s);
+		}
+		setPhase("Checking override statuses...", filteredStudents.size());
+    	OnlineSectioningLog.Entity user = Entity.newBuilder().setExternalId(iOwnerId).setType(Entity.EntityType.MANAGER).build();
+    	Collection<Long> updatedStudentIds = iValidationProvider.updateStudents(null, new OnlineSectioningHelper(hibSession, user), filteredStudents);
+    	if (updatedStudentIds != null) iUpdatedStudents.addAll(updatedStudentIds);
+    }
+    
+    protected void validateOverrides(org.hibernate.Session hibSession, List<org.unitime.timetable.model.Student> students) {
+    	if (iNrValidationThreads <= 1) {
+    		setPhase("Validate overrides...", students.size());
+    		for (org.unitime.timetable.model.Student s: students) {
+        		incProgress();
+        		if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty() && s.getWaitlists().isEmpty()) continue;
+        		if (iCheckForNoBatchStatus && s.hasSectioningStatusOption(StudentSectioningStatus.Option.nobatch)) continue;
+                if (iStudentQuery != null && !iStudentQuery.match(new DbStudentMatcher(s))) continue;
+        		validateOverrides(hibSession, s);
         	}
-		} catch (SectioningException e) {
-			action.setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
-			if (e.getCause() != null) {
-				action.addMessage(OnlineSectioningLog.Message.newBuilder()
-						.setLevel(OnlineSectioningLog.Message.Level.FATAL)
-						.setText(e.getCause().getClass().getName() + ": " + e.getCause().getMessage()));
-			} else {
-				action.addMessage(OnlineSectioningLog.Message.newBuilder()
-						.setLevel(OnlineSectioningLog.Message.Level.FATAL)
-						.setText(e.getMessage() == null ? "null" : e.getMessage()));
+		} else {
+			List<org.unitime.timetable.model.Student> filteredStudents = new ArrayList<org.unitime.timetable.model.Student>();
+			for (org.unitime.timetable.model.Student s: students) {
+				if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty() && s.getWaitlists().isEmpty()) continue;
+        		if (iCheckForNoBatchStatus && s.hasSectioningStatusOption(StudentSectioningStatus.Option.nobatch)) continue;
+                if (iStudentQuery != null && !iStudentQuery.match(new DbStudentMatcher(s))) continue;
+                filteredStudents.add(s);
 			}
-		} finally {
-			action.setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
-			action.setEndTime(System.currentTimeMillis());
-			OnlineSectioningLogger.getInstance().record(OnlineSectioningLog.Log.newBuilder().addAction(action).build());
+			setPhase("Validate overrides...", filteredStudents.size());
+			List<Worker> workers = new ArrayList<Worker>();
+			Iterator<org.unitime.timetable.model.Student> iterator = filteredStudents.iterator();
+			for (int i = 0; i < iNrValidationThreads; i++)
+				workers.add(new Worker(hibSession, i, iterator));
+			for (Worker worker: workers) worker.start();
+			for (Worker worker: workers) {
+				try {
+					worker.join();
+				} catch (InterruptedException e) {
+					iCanContinue = false;
+					try { worker.join(); } catch (InterruptedException x) {}
+				}
+			}
+			if (!iCanContinue)
+				throw new RuntimeException("The validate was interrupted.");
 		}
     }
     
@@ -799,11 +812,6 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	skipStudent(s, courseTable, classTable);
         	return null;
         }
-        
-        if (iValidateOverrides && iValidationProvider != null)
-        	validateOverrides(hibSession, s);
-        else if (iCheckOverrideStatus && iValidationProvider != null)
-        	checkOverrideStatus(hibSession, s);
         
         iProgress.debug("Loading student "+s.getUniqueId()+" (id="+s.getExternalUniqueId()+", name="+iStudentNameFormat.format(s)+")");
         Student student = new Student(s.getUniqueId().longValue());
@@ -1690,6 +1698,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     "where s.session.uniqueId=:sessionId").
                     setLong("sessionId",session.getUniqueId().longValue()).
                     setFetchSize(1000).list();
+            if (iValidateOverrides && iValidationProvider != null) {
+            	validateOverrides(hibSession, students);
+            } else if (iCheckOverrideStatus && iValidationProvider != null) {
+            	checkOverrideStatuses(hibSession, students);
+            }
+            
             setPhase("Loading student requests...", students.size());
             for (Iterator i=students.iterator();i.hasNext();) {
                 org.unitime.timetable.model.Student s = (org.unitime.timetable.model.Student)i.next(); incProgress();
@@ -1957,4 +1971,44 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     	checkTermination();
     	iProgress.incProgress();
     }
+    
+    protected class Worker extends Thread {
+    	private org.hibernate.Session iHibSession;
+		private Iterator<org.unitime.timetable.model.Student> iStudents;
+		
+		public Worker(org.hibernate.Session hibSession, int index, Iterator<org.unitime.timetable.model.Student> students) {
+			setName("OverrideValidator-" + (1 + index));
+			iStudents = students;
+			iHibSession = hibSession;
+		}
+		
+		@Override
+	    public void run() {
+			iProgress.debug(getName() + " has started.");
+			org.hibernate.Session hibSession = null;
+			try {
+				hibSession = StudentDAO.getInstance().createNewSession();
+				while (true) {
+					org.unitime.timetable.model.Student student = null;
+					synchronized (iStudents) {
+						if (!iCanContinue) {
+							iProgress.debug(getName() + " has stopped.");
+							return;
+						}
+						if (!iStudents.hasNext()) break;
+						student = iStudents.next();
+						iProgress.incProgress();
+					}
+					org.unitime.timetable.model.Student newStudent = StudentDAO.getInstance().get(student.getUniqueId(), hibSession);
+		    		validateOverrides(hibSession, newStudent);
+		    		synchronized (iStudents) {
+		    			iHibSession.merge(newStudent);
+					}
+				}
+			} finally {
+				hibSession.close();
+			}
+			iProgress.debug(getName() + " has finished.");
+		}
+	}
 }
