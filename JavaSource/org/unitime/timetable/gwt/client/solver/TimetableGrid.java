@@ -312,7 +312,7 @@ public class TimetableGrid extends Composite {
 			for (int i = 0; i < nrTimes; i++) {
 				P hi = new P("header-interval");
 				hi.setSize(iCellWidth, headerLines * sLineHeight);
-				if (i % 2 == 0) hi.setText(TimeUtils.slot2time(startSlot + i * step));
+				hi.setText(TimeUtils.slot2time(startSlot + i * step));
 				horizontalHeader.add(hi, i * iCellWidth, 0);
 				
 				P vs = new P("vertical-separator");
