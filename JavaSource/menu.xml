@@ -1316,7 +1316,7 @@
 					<hasPermission name="SchedulingAssistant" authority="any" check="false"/>
 				</condition>
 			</item>
-			<item name="Student Scheduling Dashbard" page="tmtbl.help.manual.schedulingDashboard" type="property" target="tab">
+			<item name="Student Scheduling Dashboard" page="tmtbl.help.manual.schedulingDashboard" type="property" target="tab">
 			    <condition>
 					<hasPermission name="SchedulingDashboard" authority="any" check="false"/>
 				</condition>
