@@ -1885,7 +1885,7 @@ public enum ApplicationProperty {
 	@Description("Manuals: administrative user manual")
 	ManualAdministration("tmtbl.help.manual.administration"),
 	
-	@DefaultValue("https://docs.google.com/document/d/18TH8LtNzbKE7_m99wks2POKsw6hali8xMnCroBK4ylc")
+	@DefaultValue("https://docs.google.com/document/d/1kBWAhXm2r5uR2-b0tuZYZMRFjQ0ZqnHpJn78tQ7xJiE")
 	@Description("Manuals: other UniTime documentation")
 	ManualOtherDocumentation("tmtbl.help.manual.other"),
 	
