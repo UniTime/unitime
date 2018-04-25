@@ -129,7 +129,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("&nbsp;")
 	String colNoteIcon();
 	
-	@DefaultMessage("&nbsp;")
+	@DefaultMessage("Pref")
 	String colClassSelection();
 	
 	@DefaultMessage("Distance<br>Conflicts")
@@ -1949,4 +1949,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("The request to increase the maximum credit hours has been approved.")
 	String creditStatusApproved();
+	
+	@DefaultMessage("Instructional Method Preference:")
+	String labelInstructionalMethodPreference();
 }

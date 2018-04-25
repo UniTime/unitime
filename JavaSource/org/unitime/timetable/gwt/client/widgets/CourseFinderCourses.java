@@ -328,6 +328,7 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 			iInstructionalMethodsPanel.clear();
 			iInstructionalMethods.clear();
 			if (record.hasInstructionalMethodSelection()) {
+				P imp = new P("preference-label"); imp.setText(MESSAGES.labelInstructionalMethodPreference()); iInstructionalMethodsPanel.add(imp);
 				for (final IdValue m: record.getInstructionalMethods()) {
 					CheckBox ch = new CheckBox(m.getValue());
 					ch.setValue(iSelectedMethods.contains(m.getValue()));
@@ -346,6 +347,7 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 					iInstructionalMethodsPanel.add(ch);
 				}
 			} else if (record.hasInstructionalMethods()) {
+				P imp = new P("preference-label"); imp.setText(MESSAGES.labelInstructionalMethodPreference()); iInstructionalMethodsPanel.add(imp);
 				for (IdValue m: record.getInstructionalMethods()) {
 					CheckBox ch = new CheckBox(m.getValue());
 					ch.addStyleName("instructional-method");

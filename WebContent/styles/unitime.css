@@ -4848,7 +4848,16 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-CourseFinderDialog .instructional-methods {
 	vertical-align: middle;	
+	text-align: right;
+	padding-right: 15px;
 }
+
+.unitime-CourseFinderDialog .instructional-methods .preference-label {
+	display: inline-block;
+	padding: 2px 2px 4px 2px;
+	vertical-align: bottom;
+}
+
 
 .unitime-CourseFinderDialog .instructional-method {
 	display: inline-block;

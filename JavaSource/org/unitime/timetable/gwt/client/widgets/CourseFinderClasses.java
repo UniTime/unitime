@@ -53,6 +53,8 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -143,7 +145,7 @@ public class CourseFinderClasses extends UniTimeTable<ClassAssignment> implement
 							List<Widget> line = new ArrayList<Widget>();
 							if (isAllowSelection()) {
 								if (!clazz.isCancelled() && (clazz.isSaved() || clazz.isAvailable() || isSpecialRegistration())) {
-									AriaCheckBox ch = new AriaCheckBox();
+									AriaCheckBox ch = new Selection();
 									ch.setValue(iSelectedClasses.contains(clazz.getSelection()));
 									ch.setAriaLabel(ARIA.courseFinderPreferClass(MESSAGES.clazz(clazz.getSubject(), clazz.getCourseNbr(), clazz.getSubpart(), clazz.getSection())));
 									ch.setEnabled(isEnabled());
@@ -367,6 +369,13 @@ public class CourseFinderClasses extends UniTimeTable<ClassAssignment> implement
 			Widget w = getWidget(row, 0);
 			if (w != null && w instanceof CheckBox && ((CheckBox)w).getValue())
 				course.setSelectedClass(clazz.getSelection(), true);
+		}
+	}
+	
+	public static class Selection extends AriaCheckBox implements UniTimeTable.HasCellAlignment {
+		@Override
+		public HorizontalAlignmentConstant getCellAlignment() {
+			return HasHorizontalAlignment.ALIGN_CENTER;
 		}
 	}
 }
