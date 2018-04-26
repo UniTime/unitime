@@ -648,8 +648,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 	            crn.courseOverride = override;
 	            Set<String> list = overrides.get(id);
 	            if (list == null) { list = new TreeSet<String>(); overrides.put(id, list); }
-	            list.add(override);
-	            return true;
+	            return list.add(override);
 			}
 		}
 		iProgress.warn("[" + student.getExternalId() + "] " + "Failed to add override " + override + " for " + id);
