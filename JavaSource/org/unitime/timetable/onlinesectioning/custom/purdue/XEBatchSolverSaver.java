@@ -776,7 +776,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		} catch (SectioningException e) {
 			throw e;
 		} catch (Throwable t) {
-			throw new SectioningException(t.getMessage(), t);
+			throw new SectioningException(exception.getMessage(), exception);
 		}
 	}
 	
