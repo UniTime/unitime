@@ -1241,7 +1241,7 @@ public class SectioningStatusPage extends Composite {
 				@Override
 				public void execute() {
 					List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
-					LoadingWidget.getInstance().show(MESSAGES.requestingStudentUpdate());
+					LoadingWidget.getInstance().show(MESSAGES.checkingOverrideStatus());
 					iSectioningService.checkStudentOverrides(studentIds, new AsyncCallback<Boolean>() {
 						@Override
 						public void onFailure(Throwable caught) {
@@ -1274,7 +1274,7 @@ public class SectioningStatusPage extends Composite {
 				@Override
 				public void execute() {
 					List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
-					LoadingWidget.getInstance().show(MESSAGES.requestingStudentUpdate());
+					LoadingWidget.getInstance().show(MESSAGES.validatingStudentOverrides());
 					iSectioningService.validateStudentOverrides(studentIds, new AsyncCallback<Boolean>() {
 						@Override
 						public void onFailure(Throwable caught) {

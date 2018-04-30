@@ -1473,6 +1473,12 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Requesting student update...")
 	String requestingStudentUpdate();
 	
+	@DefaultMessage("Checking override status...")
+	String checkingOverrideStatus();
+	
+	@DefaultMessage("Validating student overrides...")
+	String validatingStudentOverrides();
+	
 	@DefaultMessage("Student update request not allowed.")
 	String exceptionRequestStudentUpdateNotAllowed();
 	
