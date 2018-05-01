@@ -290,7 +290,7 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 	}
 	
 	protected String getSpecialRegistrationApiMode() {
-		return ApplicationProperties.getProperty("purdue.specreg.mode.validation", "STAR");
+		return ApplicationProperties.getProperty("purdue.specreg.mode.batch", "REG");
 	}
 	
 	protected void validate(Student student, OnlineSectioningLog.Action.Builder action, List<CSVField[]> csv) {
