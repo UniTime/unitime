@@ -261,7 +261,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 	}
 	
 	protected boolean isSpecialRegistration() {
-		return iSpecReg != null && iSpecReg.isSpecRegMode();
+		return iSpecReg != null && iSpecReg.isEnabled();
 	}
 	
 	@Override

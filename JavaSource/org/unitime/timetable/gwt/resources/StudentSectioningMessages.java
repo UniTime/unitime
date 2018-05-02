@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.gwt.resources;
 
-import com.google.gwt.i18n.client.Messages;
-
 /**
  * @author Tomas Muller
  */
@@ -429,7 +427,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("<u>S</u>ubmit Schedule")
 	String buttonEnroll();
 	
-	@DefaultMessage("Submit Special Registration")
+	@DefaultMessage("Submit Override Requests")
 	String buttonSubmitSpecReg();
 	
 	@DefaultMessage("Register for the above schedule.")
@@ -468,10 +466,10 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Discard all changes and go back to your current registration.")
 	String hintStartOver();
 	
-	@DefaultMessage("Special Registrations")
+	@DefaultMessage("Override Requests")
 	String buttonGetSpecRegs();
 	
-	@DefaultMessage("Select one of the open special registrations.")
+	@DefaultMessage("Select one of the override requests.")
 	String hintGetSpecRegs();
 	
 	@DefaultMessage("<u>C</u>ourse Requests")
@@ -492,13 +490,13 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Unable to store requests: {0}")
 	String saveRequestsFail(String reason);
 	
-	@DefaultMessage("Unable to retrieve special registration: {0}")
+	@DefaultMessage("Unable to retrieve override requests: {0}")
 	String requestSpecialRegistrationFail(String reason);
 	
 	@DefaultMessage("Special registration failed: {0}")
 	String submitSpecialRegistrationFail(String reason);
 	
-	@DefaultMessage("Failed to load special registrations: {0}")
+	@DefaultMessage("Failed to load override requests: {0}")
 	String retrieveAllSpecialRegistrationsFail(String reason);
 
 	@DefaultMessage("Success!")
@@ -1437,7 +1435,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("You have made some changes in your course requests. Please click the Submit Requests button to update your submission.")
 	String warnRequestsChangedOnCourseRequest();
 	
-	@DefaultMessage("You have made some changes in your special registration. Please click the Submit Special Registration button to update your special registration.")
+	@DefaultMessage("You have made some changes in your schedule. Please click the Submit Override Requests button to validate your changes and request overrides if needed.")
 	String warnSpecialRegistrationChanged();
 		
 	@DefaultMessage("There are unsaved changes in your schedule. Do you really want to discard these changes without updating your registration?")
@@ -1542,7 +1540,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("There are multiple degree plans available, please select one to continue...")
 	String dialogSelectDegreePlan();
 	
-	@DefaultMessage("Special Registrations")
+	@DefaultMessage("Override Requests")
 	String dialogSpecialRegistrations();
 	
 	@DefaultMessage("Degree Plan: {0}")
@@ -1574,6 +1572,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Submitted")
 	String colSpecRegSubmitted();
+	
+	@DefaultMessage("Registration Errors")
+	String colSpecRegErrors();
 	
 	@DefaultMessage("Last Note")
 	String colSpecRegNote();
@@ -1608,7 +1609,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("No degree plan is available.")
 	String failedNoDegreePlans();
 	
-	@DefaultMessage("No special registration is available.")
+	@DefaultMessage("No override requests are available.")
 	String failedNoSpecialRegistrations();
 	
 	@DefaultMessage("Failed to load degree plan: {0}")
@@ -1620,25 +1621,25 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("This plan is active.")
 	String hintActivePlan();
 	
-	@DefaultMessage("This special registration has been submitted for processing.")
+	@DefaultMessage("These override requests have been submitted for processing.")
 	String hintSpecRegCanNotSubmit();
 	
-	@DefaultMessage("This special registration has been processed.")
+	@DefaultMessage("These override requests have been processed.")
 	String hintSpecRegCanEnroll();
 	
-	@DefaultMessage("This special registration has been approved.")
+	@DefaultMessage("These override requests have been approved.")
 	String hintSpecRegApproved();
 	
-	@DefaultMessage("This special registration has been cancelled.")
+	@DefaultMessage("These override requests have been cancelled.")
 	String hintSpecRegCancelled();
 	
-	@DefaultMessage("This special registration has been submitted for processing. Waiting for approval...")
+	@DefaultMessage("These override requests have been submitted for processing. Waiting for approval...")
 	String hintSpecRegPending();
 	
-	@DefaultMessage("This special registration has not been submitted for processing. It can still be edited.")
+	@DefaultMessage("These override requests have not been submitted for processing. It can still be edited.")
 	String hintSpecRegDraft();
 	
-	@DefaultMessage("This special registration has been denied.")
+	@DefaultMessage("These override requests have been denied.")
 	String hintSpecRegRejected();
 	
 	@DefaultMessage("{0}, {1}")
@@ -1767,10 +1768,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Section is full, overlaps with {0}")
 	String noteFullSectionOverlapFirst(String classOrCourse);
 	
-	@DefaultMessage("Do you want to submit the enrollment changes to special registration?")
-	String confirmSpecialRegistrationSubmit();
-	
-	@DefaultMessage("Based on your course selections, a conflict-free schedule is not possible. Under extenuating circumstances, the faculty may approve student enrollments that include schedule conflicts.")
+	@DefaultMessage(
+			"Based on your course selections, a conflict-free schedule is not possible.\n" +
+			"Under extenuating circumstances, the faculty may approve student enrollments that include schedule conflicts.")
 	String disclaimerNoSuggestionsWarning();
 	
 	@DefaultMessage("Do you want to explore approval for a schedule with time conflicts?")
@@ -1958,4 +1958,39 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Instructional Method Preference:")
 	String labelInstructionalMethodPreference();
+	
+	@DefaultMessage("Request Overrides")
+	String dialogRequestOverrides();
+	
+	@DefaultMessage("Request Overrides")
+	String buttonRequestOverrides();
+	
+	@DefaultMessage("Request overrides for the above registration errors")
+	String titleRequestOverrides();
+	
+	@DefaultMessage("Cancel Request")
+	String buttonCancelRequest();
+	
+	@DefaultMessage("Go back to explore other scheduling options")
+	String titleCancelRequest();
+	
+	@DefaultMessage("The following registration errors have been detected:")
+	String messageRegistrationErrorsDetected();
+	
+	@DefaultMessage(
+			"Please, select Request Overrides to request registration overrides or other approvals required to register\n" +
+			"for the courses listed above.\n" +
+			"Click Cancel Request to cancel this request and go back to explore other scheduling options.")
+	String messageRequestOverridesOptions();
+	
+	@DefaultMessage(
+			"\n<b>Disclaimer:</b>\n" +
+			"I understand that requesting approval does not guarantee that I will be given permission to register for these courses,\n" +
+			"and even if the approvals are granted, I may not be able to register for these courses due to space limitations,\n" +
+			"schedule conflicts or other policies. I also understand that if approvals are granted, it may be my responsibility\n" +
+			"to process the schedule change within the established registration deadlines.")
+	String messageRequestOverridesDisclaimer();
+	
+	@DefaultMessage("No registration errors have been detected.")
+	String errorNoRegistrationErrorsDetected();
 }

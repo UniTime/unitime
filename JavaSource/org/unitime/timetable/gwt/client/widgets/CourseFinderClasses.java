@@ -114,7 +114,7 @@ public class CourseFinderClasses extends UniTimeTable<ClassAssignment> implement
 	}
 	
 	protected boolean isSpecialRegistration() {
-		return iSpecReg != null && iSpecReg.isSpecRegMode();
+		return iSpecReg != null && iSpecReg.isEnabled();
 	}
 	
 	@Override

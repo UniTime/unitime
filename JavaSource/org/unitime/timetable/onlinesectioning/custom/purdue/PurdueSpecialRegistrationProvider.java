@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
+import org.cpsolver.coursett.model.Placement;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.restlet.Client;
@@ -43,13 +44,17 @@ import org.restlet.resource.ClientResource;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
@@ -77,12 +82,16 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ChangeError;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ChangeOperation;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.EligibilityProblem;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Problem;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.RequestStatus;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ResponseStatus;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Schedule;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationResponseList;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationStatusResponse;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ValidationCheckRequest;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ValidationCheckResponse;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -96,6 +105,7 @@ import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.util.DefaultExternalClassLookup;
+import org.unitime.timetable.util.NameFormat;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -169,6 +179,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		return ApplicationProperties.getProperty("purdue.specreg.site.checkSpecialRegistrationStatus", getSpecialRegistrationApiSite() + "/checkSpecialRegistrationStatus");
 	}
 	
+	protected String getSpecialRegistrationApiValidationSite() {
+		return ApplicationProperties.getProperty("purdue.specreg.site.validation", getSpecialRegistrationApiSite() + "/checkRestrictionsForSTAR");
+	}
+	
 	protected String getSpecialRegistrationApiKey() {
 		return ApplicationProperties.getProperty("purdue.specreg.apiKey");
 	}
@@ -204,8 +218,22 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		return (user.getExternalId().equals(student.getExternalId()) ? "STUDENT" : "MANAGER");
 	}
 	
-	protected List<Change> buildChangeList(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, Collection<ClassAssignmentInterface.ClassAssignment> assignment, Collection<ErrorMessage> errors) {
-		List<Change> changes = new ArrayList<Change>();
+	protected SpecialRegistrationStatus getStatus(String status) {
+		if (RequestStatus.mayEdit.name().equals(status) || RequestStatus.newRequest.name().equals(status) || RequestStatus.draft.name().equals(status))
+			return SpecialRegistrationStatus.Draft;
+		else if (RequestStatus.approved.name().equals(status))
+			return SpecialRegistrationStatus.Approved;
+		else if (RequestStatus.cancelled.name().equals(status))
+			return SpecialRegistrationStatus.Cancelled;
+		else if (RequestStatus.denied.name().equals(status))
+			return SpecialRegistrationStatus.Rejected;
+		else
+			return SpecialRegistrationStatus.Pending;
+	}
+	
+	protected void buildChangeList(SpecialRegistrationRequest request, OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, Collection<ClassAssignmentInterface.ClassAssignment> assignment, Collection<ErrorMessage> errors) {
+		request.changes = new ArrayList<Change>();
+		request.maxCredit = 0f;
 		Map<XCourse, List<XSection>> enrollments = new HashMap<XCourse, List<XSection>>();
 		Map<Long, XOffering> offerings = new HashMap<Long, XOffering>();
 		for (ClassAssignmentInterface.ClassAssignment ca: assignment) {
@@ -252,7 +280,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		check: for (Map.Entry<XCourse, List<XSection>> e: enrollments.entrySet()) {
 			XCourse course = e.getKey();
 			List<XSection> sections = e.getValue();
-
+			
+			if (course.hasCredit())
+				request.maxCredit += course.getMinCredit();
+			
 			for (XRequest r: student.getRequests()) {
 				if (r instanceof XCourseRequest) {
 					XEnrollment enrollment = ((XCourseRequest)r).getEnrollment();
@@ -264,7 +295,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								ch.courseNbr = course.getCourseNumber();
 								ch.crn = s.getExternalId(course.getCourseId());
 								ch.operation = ChangeOperation.ADD.name();
-								if (crns.add(ch.crn)) changes.add(ch);
+								if (crns.add(ch.crn)) request.changes.add(ch);
 							}
 						}
 						for (Long id: enrollment.getSectionIds()) {
@@ -275,7 +306,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								ch.courseNbr = course.getCourseNumber();
 								ch.crn = s.getExternalId(course.getCourseId());
 								ch.operation = ChangeOperation.DROP.name();
-								if (crns.add(ch.crn)) changes.add(ch);
+								if (crns.add(ch.crn)) request.changes.add(ch);
 							}
 						}
 						continue check;
@@ -290,7 +321,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				ch.courseNbr = course.getCourseNumber();
 				ch.crn = section.getExternalId(course.getCourseId());
 				ch.operation = ChangeOperation.ADD.name();
-				if (crns.add(ch.crn)) changes.add(ch);
+				if (crns.add(ch.crn)) request.changes.add(ch);
 			}
 		}
 		
@@ -308,7 +339,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							ch.courseNbr = course.getCourseNumber();
 							ch.crn = section.getExternalId(course.getCourseId());
 							ch.operation = ChangeOperation.DROP.name();
-							changes.add(ch);
+							if (crns.add(ch.crn)) request.changes.add(ch);
 						}
 				}
 			}
@@ -316,7 +347,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		
 		if (errors != null) {
 			Set<ErrorMessage> added = new HashSet<ErrorMessage>();
-			for (Change ch: changes) {
+			for (Change ch: request.changes) {
 				for (ErrorMessage m: errors)
 					if (ch.crn.equals(m.getSection()) && added.add(m)) {
 						if (ch.errors == null) ch.errors = new ArrayList<ChangeError>();
@@ -327,8 +358,6 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					}
 			}
 		}
-		
-		return changes;
 	}
 
 	@Override
@@ -416,7 +445,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 						else
 							message += "\n" + p.message;
 				}
-				return new SpecialRegistrationEligibilityResponse(eligible, message);
+				SpecialRegistrationEligibilityResponse ret = new SpecialRegistrationEligibilityResponse(eligible, message);
+				if (ret.isCanSubmit())
+					ret.setErrors(validate(server, helper, student, input.getClassAssignments()));
+				return ret;
 			} else {
 				if (!input.hasErrors()) return new SpecialRegistrationEligibilityResponse(true, null);
 
@@ -478,6 +510,95 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			}
 		}
 	}
+	
+	protected Set<ErrorMessage> validate(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, Collection<ClassAssignment> classAssignments) {
+		ValidationCheckRequest req = new ValidationCheckRequest();
+		req.studentId = getBannerId(student);
+		req.term = getBannerTerm(server.getAcademicSession());
+		req.campus = getBannerCampus(server.getAcademicSession());
+		req.schedule = new ArrayList<Schedule>();
+		req.alternatives = new ArrayList<Schedule>();
+		req.mode = getSpecialRegistrationMode();
+		req.includeReg = "N";
+		req.schedule = new ArrayList<Schedule>();
+		Set<ErrorMessage> errors = new TreeSet<ErrorMessage>();
+		Map<String, String> crn2course = new HashMap<String, String>();
+		Map<Long, Schedule> schedules = new HashMap<Long, Schedule>();
+		List<String> newCourses = new ArrayList<String>();
+		if (classAssignments != null)
+			for (ClassAssignment ca: classAssignments) {
+				if (ca == null || ca.isFreeTime() || ca.getClassId() == null || ca.isDummy() || ca.isTeachingAssignment()) continue;
+				XCourse course = server.getCourse(ca.getCourseId());
+				if (course == null) continue;
+				XOffering offering = server.getOffering(course.getOfferingId());
+				if (offering == null) continue;
+				XSection section = offering.getSection(ca.getClassId());
+				if (section == null) continue;
+				Schedule ch = schedules.get(course.getCourseId());
+				String crn = section.getExternalId(course.getCourseId());
+				if (ch == null) {
+					ch = new Schedule();
+					schedules.put(course.getCourseId(), ch);
+					ch.subject = course.getSubjectArea();
+					ch.courseNbr = course.getCourseNumber();
+					ch.crns = new HashSet<String>();
+					req.schedule.add(ch);
+					if (!ca.isSaved())
+						newCourses.add(crn);
+				}
+				ch.crns.add(crn);
+				crn2course.put(crn, course.getCourseName());
+			}
+		if (!req.schedule.isEmpty()) {
+			ValidationCheckResponse resp = null;
+			ClientResource resource = null;
+			try {
+				resource = new ClientResource(getSpecialRegistrationApiValidationSite());
+				resource.setNext(iClient);
+				resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
+				
+				Gson gson = getGson(helper);
+				if (helper.isDebugEnabled())
+					helper.debug("Request: " + gson.toJson(req));
+				helper.getAction().addOptionBuilder().setKey("validation_request").setValue(gson.toJson(req));
+				long t1 = System.currentTimeMillis();
+				
+				resource.post(new GsonRepresentation<ValidationCheckRequest>(req));
+				
+				helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
+				
+				resp = (ValidationCheckResponse)new GsonRepresentation<ValidationCheckResponse>(resource.getResponseEntity(), ValidationCheckResponse.class).getObject();
+				if (helper.isDebugEnabled())
+					helper.debug("Response: " + gson.toJson(resp));
+				helper.getAction().addOptionBuilder().setKey("validation_response").setValue(gson.toJson(resp));
+			} catch (SectioningException e) {
+				helper.getAction().setApiException(e.getMessage());
+				throw (SectioningException)e;
+			} catch (Exception e) {
+				helper.getAction().setApiException(e.getMessage());
+				sLog.error(e.getMessage(), e);
+				throw new SectioningException(e.getMessage());
+			} finally {
+				if (resource != null) {
+					if (resource.getResponse() != null) resource.getResponse().release();
+					resource.release();
+				}
+			}
+			
+			if (resp != null && resp.scheduleRestrictions != null && resp.scheduleRestrictions.problems != null)
+				for (Problem problem: resp.scheduleRestrictions.problems) {
+					if ("MAXI".equals(problem.code) && !newCourses.isEmpty()) {
+						// Move max credit error message to the last added course
+						String crn = newCourses.remove(newCourses.size() - 1);
+						errors.add(new ErrorMessage(crn2course.get(crn), crn, problem.code, problem.message));
+					} else {
+						errors.add(new ErrorMessage(crn2course.get(problem.crn), problem.crn, problem.code, problem.message));
+					}
+				}
+		}
+		
+		return errors;		
+	}
 
 	@Override
 	public SubmitSpecialRegistrationResponse submitRegistration(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, SubmitSpecialRegistrationRequest input) throws SectioningException {
@@ -488,7 +609,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			request.term = getBannerTerm(session);
 			request.campus = getBannerCampus(session);
 			request.studentId = getBannerId(student);
-			request.changes = buildChangeList(server, helper, student, input.getClassAssignments(), input.getErrors());
+			buildChangeList(request, server, helper, student, input.getClassAssignments(), input.hasErrors() ? input.getErrors() : validate(server, helper, student, input.getClassAssignments()));
+			// buildChangeList(request, server, helper, student, input.getClassAssignments(), validate(server, helper, student, input.getClassAssignments()));
 			request.requestId = input.getRequestId();
 			request.mode = getSpecialRegistrationMode(); 
 			if (helper.getUser() != null) {
@@ -524,12 +646,9 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			ret.setMessage(response.message);
 			ret.setSuccess(ResponseStatus.success.name().equals(response.status));
 			if (response.data != null) {
-				ret.setRequestId(response.data.requestId);
-				ret.setCanEnroll(RequestStatus.maySubmit.name().equals(response.data.status) || RequestStatus.approved.name().equals(response.data.status));
-				ret.setCanSubmit(RequestStatus.mayEdit.name().equals(response.data.status) || RequestStatus.draft.name().equals(response.data.status));
+				ret.setStatus(getStatus(response.data.status));
 			} else {
-				ret.setCanEnroll(false);
-				ret.setCanSubmit(false);
+				ret.setSuccess(false);
 			}
 			return ret;
 		} catch (SectioningException e) {
@@ -643,8 +762,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		return requests;
 	}
 	
-	protected Set<ErrorMessage> checkRequests(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<XRequest> xrequests, boolean allowTimeConf, boolean allowSpaceConf) {
-		Set<ErrorMessage> errors = new TreeSet<ErrorMessage>();
+	protected void checkRequests(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<XRequest> xrequests, Set<ErrorMessage> errors, boolean allowTimeConf, boolean allowSpaceConf) {
 		List<EnrollmentRequest> requests = new ArrayList<EnrollmentRequest>();
 		Hashtable<Long, XOffering> courseId2offering = new Hashtable<Long, XOffering>();
 		for (XRequest req: xrequests) {
@@ -835,12 +953,13 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					}
 				}
 		}
-		return errors;
 	}
 	
 	protected RetrieveSpecialRegistrationResponse convert(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, SpecialRegistrationRequest specialRequest) {
+		RetrieveSpecialRegistrationResponse ret = new RetrieveSpecialRegistrationResponse();
 		Map<CourseOffering, List<Class_>> adds = new HashMap<CourseOffering, List<Class_>>();
 		Map<CourseOffering, List<Class_>> drops = new HashMap<CourseOffering, List<Class_>>();
+		Set<ErrorMessage> errors = new TreeSet<ErrorMessage>();
 		TreeSet<CourseOffering> courses = new TreeSet<CourseOffering>();
 		if (specialRequest.changes != null)
 			for (Change change: specialRequest.changes) {
@@ -855,9 +974,14 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					}
 					for (Class_ clazz: classes)
 						list.add(clazz);
+					if (change.errors != null)
+						for (ChangeError err: change.errors)
+							for (Class_ clazz: classes)
+								errors.add(new ErrorMessage(course.getCourseName(), clazz.getExternalId(course), err.code, err.message));
 				}
 			}
 		String desc = "";
+		NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
 		for (CourseOffering course: courses) {
 			if (!desc.isEmpty()) desc += ", ";
 			desc += course.getCourseName();
@@ -870,17 +994,164 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			} else if (drops.containsKey(course)) {
 				desc += " (drop)";
 			}
+			CourseCreditUnitConfig credit = course.getCredit();
+			if (adds.containsKey(course)) {
+				for (Class_ clazz: adds.get(course)) {
+					ClassAssignment ca = new ClassAssignment();
+					ca.setCourseId(course.getUniqueId());
+					ca.setSubject(course.getSubjectAreaAbbv());
+					ca.setCourseNbr(course.getCourseNbr());
+					ca.setCourseAssigned(true);
+					ca.setTitle(course.getTitle());
+					ca.setClassId(clazz.getUniqueId());
+					ca.setSection(clazz.getClassSuffix(course));
+					if (ca.getSection() == null)
+						ca.setSection(clazz.getSectionNumberString(helper.getHibSession()));
+					ca.setClassNumber(clazz.getSectionNumberString(helper.getHibSession()));
+					ca.setSubpart(clazz.getSchedulingSubpart().getItypeDesc());
+					ca.setExternalId(clazz.getExternalId(course));
+					if (clazz.getParentClass() != null) {
+						ca.setParentSection(clazz.getParentClass().getClassSuffix(course));
+						if (ca.getParentSection() == null)
+							ca.setParentSection(clazz.getParentClass().getSectionNumberString(helper.getHibSession()));
+					}
+					if (clazz.getSchedulePrintNote() != null)
+						ca.addNote(clazz.getSchedulePrintNote());
+					Placement placement = clazz.getCommittedAssignment() == null ? null : clazz.getCommittedAssignment().getPlacement();
+					int minLimit = clazz.getExpectedCapacity();
+                	int maxLimit = clazz.getMaxExpectedCapacity();
+                	int limit = maxLimit;
+                	if (minLimit < maxLimit && placement != null) {
+                		// int roomLimit = Math.round((enrollment.getClazz().getRoomRatio() == null ? 1.0f : enrollment.getClazz().getRoomRatio()) * placement.getRoomSize());
+                		int roomLimit = (int) Math.floor(placement.getRoomSize() / (clazz.getRoomRatio() == null ? 1.0f : clazz.getRoomRatio()));
+                		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
+                	}
+                    if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment() || limit >= 9999) limit = -1;
+                    ca.setCancelled(clazz.isCancelled());
+					ca.setLimit(new int[] { clazz.getEnrollment(), limit});
+					if (placement != null) {
+						if (placement.getTimeLocation() != null) {
+							for (DayCode d : DayCode.toDayCodes(placement.getTimeLocation().getDayCode()))
+								ca.addDay(d.getIndex());
+							ca.setStart(placement.getTimeLocation().getStartSlot());
+							ca.setLength(placement.getTimeLocation().getLength());
+							ca.setBreakTime(placement.getTimeLocation().getBreakTime());
+							ca.setDatePattern(placement.getTimeLocation().getDatePatternName());
+						}
+						if (clazz.getCommittedAssignment() != null)
+							for (Location loc: clazz.getCommittedAssignment().getRooms())
+								ca.addRoom(loc.getUniqueId(), loc.getLabelWithDisplayName());
+					}
+					if (clazz.getDisplayInstructor())
+						for (ClassInstructor ci : clazz.getClassInstructors()) {
+							if (!ci.isLead()) continue;
+							ca.addInstructor(nameFormat.format(ci.getInstructor()));
+							ca.addInstructoEmail(ci.getInstructor().getEmail() == null ? "" : ci.getInstructor().getEmail());
+						}
+					if (clazz.getSchedulingSubpart().getCredit() != null) {
+						ca.setCredit(clazz.getSchedulingSubpart().getCredit().creditAbbv() + "|" + clazz.getSchedulingSubpart().getCredit().creditText());
+					} else if (credit != null) {
+						ca.setCredit(credit.creditAbbv() + "|" + credit.creditText());
+					}
+					credit = null;
+					if (ca.getParentSection() == null)
+						ca.setParentSection(course.getConsentType() == null ? null : course.getConsentType().getLabel());
+					for (ErrorMessage error: errors) {
+						if (ca.getCourseName().equals(error.getCourse()) && ca.getExternalId().equals(error.getSection())) {
+							if (ca.hasError())
+								ca.setError(ca.getError() + "\n" + error.getMessage());
+							else
+								ca.setError(error.getMessage());
+						}
+					}
+					ret.addChange(ca);
+				}
+			}
+			if (drops.containsKey(course)) {
+				for (Class_ clazz: drops.get(course)) {
+					ClassAssignment ca = new ClassAssignment();
+					ca.setCourseId(course.getUniqueId());
+					ca.setSubject(course.getSubjectAreaAbbv());
+					ca.setCourseNbr(course.getCourseNbr());
+					ca.setCourseAssigned(false);
+					ca.setTitle(course.getTitle());
+					ca.setClassId(clazz.getUniqueId());
+					ca.setSection(clazz.getClassSuffix(course));
+					if (ca.getSection() == null)
+						ca.setSection(clazz.getSectionNumberString(helper.getHibSession()));
+					ca.setClassNumber(clazz.getSectionNumberString(helper.getHibSession()));
+					ca.setSubpart(clazz.getSchedulingSubpart().getItypeDesc());
+					ca.setExternalId(clazz.getExternalId(course));
+					if (clazz.getParentClass() != null) {
+						ca.setParentSection(clazz.getParentClass().getClassSuffix(course));
+						if (ca.getParentSection() == null)
+							ca.setParentSection(clazz.getParentClass().getSectionNumberString(helper.getHibSession()));
+					}
+					if (clazz.getSchedulePrintNote() != null)
+						ca.addNote(clazz.getSchedulePrintNote());
+					Placement placement = clazz.getCommittedAssignment() == null ? null : clazz.getCommittedAssignment().getPlacement();
+					int minLimit = clazz.getExpectedCapacity();
+                	int maxLimit = clazz.getMaxExpectedCapacity();
+                	int limit = maxLimit;
+                	if (minLimit < maxLimit && placement != null) {
+                		// int roomLimit = Math.round((enrollment.getClazz().getRoomRatio() == null ? 1.0f : enrollment.getClazz().getRoomRatio()) * placement.getRoomSize());
+                		int roomLimit = (int) Math.floor(placement.getRoomSize() / (clazz.getRoomRatio() == null ? 1.0f : clazz.getRoomRatio()));
+                		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
+                	}
+                    if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment() || limit >= 9999) limit = -1;
+                    ca.setCancelled(clazz.isCancelled());
+					ca.setLimit(new int[] { clazz.getEnrollment(), limit});
+					if (placement != null) {
+						if (placement.getTimeLocation() != null) {
+							for (DayCode d : DayCode.toDayCodes(placement.getTimeLocation().getDayCode()))
+								ca.addDay(d.getIndex());
+							ca.setStart(placement.getTimeLocation().getStartSlot());
+							ca.setLength(placement.getTimeLocation().getLength());
+							ca.setBreakTime(placement.getTimeLocation().getBreakTime());
+							ca.setDatePattern(placement.getTimeLocation().getDatePatternName());
+						}
+						if (clazz.getCommittedAssignment() != null)
+							for (Location loc: clazz.getCommittedAssignment().getRooms())
+								ca.addRoom(loc.getUniqueId(), loc.getLabelWithDisplayName());
+					}
+					if (clazz.getDisplayInstructor())
+						for (ClassInstructor ci : clazz.getClassInstructors()) {
+							if (!ci.isLead()) continue;
+							ca.addInstructor(nameFormat.format(ci.getInstructor()));
+							ca.addInstructoEmail(ci.getInstructor().getEmail() == null ? "" : ci.getInstructor().getEmail());
+						}
+					if (clazz.getSchedulingSubpart().getCredit() != null) {
+						ca.setCredit(clazz.getSchedulingSubpart().getCredit().creditAbbv() + "|" + clazz.getSchedulingSubpart().getCredit().creditText());
+					} else if (credit != null) {
+						ca.setCredit(credit.creditAbbv() + "|" + credit.creditText());
+					}
+					credit = null;
+					if (ca.getParentSection() == null)
+						ca.setParentSection(course.getConsentType() == null ? null : course.getConsentType().getLabel());
+					for (ErrorMessage error: errors) {
+						if (ca.getCourseName().equals(error.getCourse()) && ca.getExternalId().equals(error.getSection())) {
+							if (ca.hasError())
+								ca.setError(ca.getError() + "\n" + error.getMessage());
+							else
+								ca.setError(error.getMessage());
+						}
+					}
+					ret.addChange(ca);
+				}
+			}
 		}
 		
-		RetrieveSpecialRegistrationResponse ret = new RetrieveSpecialRegistrationResponse();
 		List<XRequest> requests = getRequests(server, helper, student, adds, drops);
-		Set<ErrorMessage> errors = checkRequests(server, helper, student, requests, false, false);
+		checkRequests(server, helper, student, requests, errors, false, false);
 		ret.setClassAssignments(GetAssignment.computeAssignment(server, helper, student, requests, null, errors, true));
+		if (helper.getAction().getEnrollmentCount() > 0)
+			helper.getAction().getEnrollmentBuilder(helper.getAction().getEnrollmentCount() - 1).setType(OnlineSectioningLog.Enrollment.EnrollmentType.EXTERNAL);
+		helper.getAction().clearRequest();
 		ret.setDescription(desc);
 		
 		if (ret.hasClassAssignments())
 			for (CourseAssignment course: ret.getClassAssignments().getCourseAssignments()) {
-				if (course.isFreeTime()) continue;
+				if (course.isFreeTime() || course.isTeachingAssignment()) continue;
 				List<Class_> add = null;
 				for (Map.Entry<CourseOffering, List<Class_>> e: adds.entrySet())
 					if (course.getCourseId().equals(e.getKey().getUniqueId())) { add = e.getValue(); break; }
@@ -891,21 +1162,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								if (c.getUniqueId().equals(ca.getClassId())) ca.setSaved(false);
 			}
 		
-		ret.setCanEnroll(RequestStatus.maySubmit.name().equals(specialRequest.status) || RequestStatus.newRequest.name().equals(specialRequest.status) || RequestStatus.approved.name().equals(specialRequest.status));
-		ret.setCanSubmit(RequestStatus.mayEdit.name().equals(specialRequest.status) || RequestStatus.newRequest.name().equals(specialRequest.status) || RequestStatus.draft.name().equals(specialRequest.status));
 		ret.setRequestId(specialRequest.requestId);
 		ret.setSubmitDate(specialRequest.dateCreated == null ? null : specialRequest.dateCreated.toDate());
 		ret.setNote(specialRequest.notes);
-		if (RequestStatus.mayEdit.name().equals(specialRequest.status) || RequestStatus.newRequest.name().equals(specialRequest.status) || RequestStatus.draft.name().equals(specialRequest.status))
-			ret.setStatus(SpecialRegistrationStatus.Draft);
-		else if (RequestStatus.approved.name().equals(specialRequest.status))
-			ret.setStatus(SpecialRegistrationStatus.Approved);
-		else if (RequestStatus.cancelled.name().equals(specialRequest.status))
-			ret.setStatus(SpecialRegistrationStatus.Cancelled);
-		else if (RequestStatus.denied.name().equals(specialRequest.status))
-			ret.setStatus(SpecialRegistrationStatus.Rejected);
-		else
-			ret.setStatus(SpecialRegistrationStatus.Pending);
+		ret.setStatus(getStatus(specialRequest.status));
 		return ret;
 	}
 	
@@ -949,8 +1209,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			}
 			
 			RetrieveSpecialRegistrationResponse ret = new RetrieveSpecialRegistrationResponse();
-			ret.setCanSubmit(true);
-			ret.setCanEnroll(true);
+			ret.setStatus(getStatus(response.status));
 			ret.setDescription(response.message != null && !response.message.isEmpty() ? response.message : "New Special Registration");
 			// ret.setRequestId(input.getRequestKey());
 			return ret;
@@ -1142,8 +1401,6 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				check.setFlag(EligibilityFlag.SR_TIME_CONF, check.hasOverride("TIME"));
 				check.setFlag(EligibilityFlag.SR_LIMIT_CONF, check.hasOverride("CLOS"));
 				check.setFlag(EligibilityFlag.HAS_SPECREG, response.data != null && response.data.requests != null && !response.data.requests.isEmpty());
-				if (!check.hasFlag(EligibilityFlag.CAN_ENROLL))
-					check.setFlag(EligibilityFlag.SR_ENABLED, true);
 			} else {
 				check.setFlag(EligibilityFlag.CAN_SPECREG, false);
 			}

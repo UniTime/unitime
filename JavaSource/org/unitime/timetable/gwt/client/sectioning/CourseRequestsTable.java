@@ -473,8 +473,8 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		cr.setAcademicSessionId(iSessionProvider.getAcademicSessionId());
 		fillInCourses(cr);
 		fillInAlternatives(cr);
-		cr.setTimeConflictsAllowed(iSpecReg.isSpecRegMode() && iSpecReg.isDisclaimerAccepted() && iSpecReg.areTimeConflictsAllowed());
-		cr.setSpaceConflictsAllowed(iSpecReg.isSpecRegMode() && iSpecReg.isDisclaimerAccepted() && iSpecReg.areSpaceConflictsAllowed());
+		cr.setTimeConflictsAllowed(iSpecReg.isEnabled() && iSpecReg.isDisclaimerAccepted() && iSpecReg.areTimeConflictsAllowed());
+		cr.setSpaceConflictsAllowed(iSpecReg.isEnabled() && iSpecReg.isDisclaimerAccepted() && iSpecReg.areSpaceConflictsAllowed());
 		if (iLastCheck != null) cr.setConfirmations(iLastCheck.getMessages());
 		return cr;
 	}

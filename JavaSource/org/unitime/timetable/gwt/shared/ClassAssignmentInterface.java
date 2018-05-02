@@ -51,6 +51,13 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	
 	public ArrayList<CourseAssignment> getCourseAssignments() { return iAssignments; }
 	public void add(CourseAssignment a) { iAssignments.add(a); }
+	public List<ClassAssignment> getClassAssignments() {
+		List<ClassAssignment> ret = new ArrayList<ClassAssignment>();
+		for (CourseAssignment a: iAssignments)
+			ret.addAll(a.getClassAssignments());
+		return ret;
+	}
+	
 	public void clear() {
 		iAssignments.clear();
 		if (iMessages != null) iMessages.clear();

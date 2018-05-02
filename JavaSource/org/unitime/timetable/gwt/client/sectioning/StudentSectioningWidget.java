@@ -65,6 +65,7 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpeci
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
@@ -754,6 +755,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							clear(false);
 							iStartOver.setVisible(false);
 							iStartOver.setEnabled(false);
+							iSpecRegCx.reset(iEligibilityCheck);
 							addHistory();
 							lastRequest(iSessionSelector.getAcademicSessionId(), null, true, false);
 						}
@@ -763,6 +765,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					clear(false);
 					iStartOver.setVisible(false);
 					iStartOver.setEnabled(false);
+					iSpecRegCx.reset(iEligibilityCheck);
 					addHistory();
 					lastRequest(iSessionSelector.getAcademicSessionId(), null, true, false);
 				}
@@ -827,7 +830,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 											});
 								}
 								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG) && result.hasMessages())
-									checkSpecialRegistrationAfterFailedSubmitSchedule(lastEnrollment);
+									checkSpecialRegistrationAfterFailedSubmitSchedule(lastEnrollment, false);
 							}
 							public void onFailure(Throwable caught) {
 								LoadingWidget.getInstance().hide();
@@ -877,7 +880,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									}
 								}
 								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG))
-									checkSpecialRegistrationAfterFailedSubmitSchedule(lastEnrollment);
+									checkSpecialRegistrationAfterFailedSubmitSchedule(lastEnrollment, false);
 							}
 						});
 					}
@@ -890,42 +893,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iSubmitSpecReg.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				clearMessage();
-				LoadingWidget.getInstance().show(MESSAGES.waitSpecialRegistration());
-				iSectioningService.submitSpecialRequest(
-						new SubmitSpecialRegistrationRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iSpecRegCx.getRequestKey(), iSpecRegCx.getRequestId(), iCourseRequests.getRequest(),
-								iLastEnrollment != null ? iLastEnrollment : iLastResult, iLastAssignment == null ? null : iLastAssignment.getErrors()),
-						new AsyncCallback<SubmitSpecialRegistrationResponse>() {
-							@Override
-							public void onFailure(Throwable caught) {
-								LoadingWidget.getInstance().hide();
-								iStatus.error(MESSAGES.submitSpecialRegistrationFail(caught.getMessage()), caught);
-								updateHistory();
-							}
-
-							@Override
-							public void onSuccess(SubmitSpecialRegistrationResponse respose) {
-								LoadingWidget.getInstance().hide();
-								if (respose.isSuccess()) {
-									iSpecialRegAssignment = iLastAssignment;
-									iStatus.done(respose.hasMessage() ? respose.getMessage() : MESSAGES.submitSecialRegistrationOK());
-								} else {
-									iStatus.error(respose.getMessage());
-								}
-								iSpecRegCx.setCanSubmit(respose.isCanSubmit());
-								iSpecRegCx.setCanEnroll(respose.isCanEnroll() || !iSpecRegCx.hasRequestKey());
-								if (!iSpecRegCx.isCanEnroll()) { iEnroll.setEnabled(false); iEnroll.setVisible(false); }
-								iSpecRegCx.setRequestId(respose.getRequestId());
-								iSubmitSpecReg.setEnabled(iSpecRegCx.isCanSubmit());
-								iSubmitSpecReg.setVisible(iSpecRegCx.isCanSubmit());
-								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG)) {
-									iEligibilityCheck.setFlag(EligibilityFlag.HAS_SPECREG, true);
-									iGetSpecRegs.setVisible(true);
-									iGetSpecRegs.setEnabled(true);
-								}
-								updateHistory();
-							}
-						});
+				checkSpecialRegistrationAfterFailedSubmitSchedule(new ArrayList<ClassAssignmentInterface.ClassAssignment>(iLastResult), true);
 			}
 		});
 		
@@ -1170,7 +1138,30 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						else if (!clazz.isFreeTime() && result.isCanEnroll())
 							icons.add(RESOURCES.assignment(), MESSAGES.assignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
 						if (clazz.hasError()) {
-							icons.add(RESOURCES.error(), clazz.getError());
+							if (iSpecRegCx.hasRequestId() && iSpecRegCx.getStatus() != null) {
+								switch (iSpecRegCx.getStatus()) {
+								case Draft:
+									icons.add(RESOURCES.specRegDraft(), clazz.getError() + "\n" + MESSAGES.hintSpecRegDraft());
+									break;
+								case Approved:
+									icons.add(RESOURCES.specRegApproved(), clazz.getError() + "\n" + MESSAGES.hintSpecRegApproved());
+									break;
+								case Cancelled:
+									icons.add(RESOURCES.specRegCancelled(), clazz.getError() + "\n" + MESSAGES.hintSpecRegCancelled());
+									break;
+								case Pending:
+									icons.add(RESOURCES.specRegPending(), clazz.getError() + "\n" + MESSAGES.hintSpecRegPending());
+									break;
+								case Rejected:
+									icons.add(RESOURCES.specRegRejected(), clazz.getError() + "\n" + MESSAGES.hintSpecRegRejected());
+									break;
+								default:
+									icons.add(RESOURCES.error(), clazz.getError());
+									break;
+								}
+							} else {
+								icons.add(RESOURCES.error(), clazz.getError());
+							}
 							style += " text-red";
 							hasError = true;
 						}
@@ -1415,8 +1406,32 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							WebTable.Row row = null;
 							
 							WebTable.IconsCell icons = new WebTable.IconsCell();
-							if (clazz.hasError())
-								icons.add(RESOURCES.error(), clazz.getError());
+							if (clazz.hasError()) {
+								if (iSpecRegCx.hasRequestId() && iSpecRegCx.getStatus() != null) {
+									switch (iSpecRegCx.getStatus()) {
+									case Draft:
+										icons.add(RESOURCES.specRegDraft(), clazz.getError() + "\n" + MESSAGES.hintSpecRegDraft());
+										break;
+									case Approved:
+										icons.add(RESOURCES.specRegApproved(), clazz.getError() + "\n" + MESSAGES.hintSpecRegApproved());
+										break;
+									case Cancelled:
+										icons.add(RESOURCES.specRegCancelled(), clazz.getError() + "\n" + MESSAGES.hintSpecRegCancelled());
+										break;
+									case Pending:
+										icons.add(RESOURCES.specRegPending(), clazz.getError() + "\n" + MESSAGES.hintSpecRegPending());
+										break;
+									case Rejected:
+										icons.add(RESOURCES.specRegRejected(), clazz.getError() + "\n" + MESSAGES.hintSpecRegRejected());
+										break;
+									default:
+										icons.add(RESOURCES.error(), clazz.getError());
+										break;
+									}
+								} else {
+									icons.add(RESOURCES.error(), clazz.getError());
+								}
+							}
 							if (clazz.isSaved())
 								icons.add(RESOURCES.unassignment(), MESSAGES.unassignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
 							if (clazz.isOfHighDemand())
@@ -1481,8 +1496,32 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						WebTable.Row row = null;
 						
 						WebTable.IconsCell icons = new WebTable.IconsCell();
-						if (clazz.hasError())
-							icons.add(RESOURCES.error(), clazz.getError());
+						if (clazz.hasError()) {
+							if (iSpecRegCx.hasRequestId() && iSpecRegCx.getStatus() != null) {
+								switch (iSpecRegCx.getStatus()) {
+								case Draft:
+									icons.add(RESOURCES.specRegDraft(), clazz.getError() + "\n" + MESSAGES.hintSpecRegDraft());
+									break;
+								case Approved:
+									icons.add(RESOURCES.specRegApproved(), clazz.getError() + "\n" + MESSAGES.hintSpecRegApproved());
+									break;
+								case Cancelled:
+									icons.add(RESOURCES.specRegCancelled(), clazz.getError() + "\n" + MESSAGES.hintSpecRegCancelled());
+									break;
+								case Pending:
+									icons.add(RESOURCES.specRegPending(), clazz.getError() + "\n" + MESSAGES.hintSpecRegPending());
+									break;
+								case Rejected:
+									icons.add(RESOURCES.specRegRejected(), clazz.getError() + "\n" + MESSAGES.hintSpecRegRejected());
+									break;
+								default:
+									icons.add(RESOURCES.error(), clazz.getError());
+									break;
+								}
+							} else {
+								icons.add(RESOURCES.error(), clazz.getError());
+							}
+						}
 						if (clazz.isSaved())
 							icons.add(RESOURCES.unassignment(), MESSAGES.unassignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
 						if (clazz.isOfHighDemand())
@@ -1567,9 +1606,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iRequests.setVisible(true); iRequests.setEnabled(true);
 			if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_RESET)) { iReset.setVisible(true); iReset.setEnabled(true); }
 			if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.QUICK_ADD_DROP)) { iQuickAdd.setVisible(true); iQuickAdd.setEnabled(true); }
-			iEnroll.setVisible(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL) && iSpecRegCx.isCanEnroll());
-			iSubmitSpecReg.setVisible(iSpecRegCx.isCanSubmit() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
-			iSubmitSpecReg.setEnabled(iSpecRegCx.isCanSubmit() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
+			iEnroll.setVisible(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL));
+			iSubmitSpecReg.setVisible(!iEnroll.isVisible() && iSpecRegCx.isCanSubmit() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
+			iSubmitSpecReg.setEnabled(!iEnroll.isVisible() && iSpecRegCx.isCanSubmit() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
 			iGetSpecRegs.setVisible(iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.HAS_SPECREG));
 			iGetSpecRegs.setEnabled(iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.HAS_SPECREG));
 			if (iEligibilityCheck != null && iEligibilityCheck.hasCheckboxMessage()) {
@@ -1589,7 +1628,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				iCustomCheckbox.setEnabled(true);
 				iCustomCheckbox.setVisible(true);
 			} else {
-				iEnroll.setEnabled(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL) && iSpecRegCx.isCanEnroll());
+				iEnroll.setEnabled(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL));
 			}
 			iPrint.setVisible(true); iPrint.setEnabled(true);
 			iStartOver.setVisible(iSavedAssignment != null);
@@ -1792,19 +1831,16 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						public void onFailure(Throwable caught) {
 							iSpecRegCx.update(iEligibilityCheck);
 							iSpecRegCx.setSpecRegRequestKeyValid(false);
-							iSpecRegCx.setCanEnroll(null);
-							iSpecRegCx.setCanSubmit(false);
+							iSpecRegCx.setStatus(null);
 							fillIn(saved);
 							updateHistory();
 							iStatus.error(MESSAGES.requestSpecialRegistrationFail(caught.getMessage()), caught);
 						}
 						@Override
 						public void onSuccess(RetrieveSpecialRegistrationResponse specReg) {
-							iSpecRegCx.setSpecRegMode(true);
 							iSpecRegCx.setSpecRegRequestKeyValid(true);
-							iSpecRegCx.setCanSubmit(specReg.isCanSubmit());
-							iSpecRegCx.setCanEnroll(specReg.isCanEnroll());
 							iSpecRegCx.setRequestId(specReg.getRequestId());
+							iSpecRegCx.setStatus(specReg.getStatus());
 							if (specReg.hasClassAssignments() && specReg.getRequestId() != null)
 								iSpecRegCx.setDisclaimerAccepted(true);
 							iSpecialRegAssignment = specReg.getClassAssignments();
@@ -2042,11 +2078,24 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iScheduleChanged = false;
 			clearMessage();
 		}
-		if (iLastAssignment == null || !iLastAssignment.isCanEnroll() || iEligibilityCheck == null || !iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL) || !iSpecRegCx.isCanEnroll()) {
-			if (iLastAssignment != null && iSpecialRegAssignment != null && iSpecRegCx.isCanSubmit()) {
+		if (iLastAssignment == null || !iLastAssignment.isCanEnroll() || iEligibilityCheck == null || !iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL)) {
+			if (iLastAssignment != null && (iSpecialRegAssignment != null || iSavedAssignment != null) && iSpecRegCx.isCanSubmit() && iSubmitSpecReg.isVisible()) {
 				for (ClassAssignmentInterface.CourseAssignment course: iLastAssignment.getCourseAssignments()) {
 					if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
-					for (ClassAssignmentInterface.CourseAssignment saved: iSpecialRegAssignment.getCourseAssignments()) {
+					classes: for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
+						for (ClassAssignmentInterface.CourseAssignment saved: (iSpecialRegAssignment == null ? iSavedAssignment : iSpecialRegAssignment).getCourseAssignments()) {
+							if (!saved.isAssigned() || saved.isFreeTime() || saved.isTeachingAssignment() || !course.getCourseId().equals(saved.getCourseId())) continue;
+							for (ClassAssignmentInterface.ClassAssignment x: saved.getClassAssignments()) {
+								if (clazz.getClassId().equals(x.getClassId())) continue classes;
+							}
+						}
+						//if (!clazz.isSaved() && !clazz.hasError()) {
+						iScheduleChanged = true;
+						iSubmitSpecReg.addStyleName("unitime-EnrollButton");
+						iStatus.warning(MESSAGES.warnSpecialRegistrationChanged(), false);
+						//}
+					}
+					for (ClassAssignmentInterface.CourseAssignment saved: (iSpecialRegAssignment == null ? iSavedAssignment : iSpecialRegAssignment).getCourseAssignments()) {
 						if (!saved.isAssigned() || saved.isFreeTime() || saved.isTeachingAssignment() || !course.getCourseId().equals(saved.getCourseId())) continue;
 						classes: for (ClassAssignmentInterface.ClassAssignment clazz: saved.getClassAssignments()) {
 							for (ClassAssignmentInterface.ClassAssignment x: course.getClassAssignments()) {
@@ -2060,7 +2109,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						}
 					}
 				}
-				courses: for (ClassAssignmentInterface.CourseAssignment course: iSpecialRegAssignment.getCourseAssignments()) {
+				courses: for (ClassAssignmentInterface.CourseAssignment course: (iSpecialRegAssignment == null ? iSavedAssignment : iSpecialRegAssignment).getCourseAssignments()) {
 					if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
 					for (ClassAssignmentInterface.CourseAssignment x: iLastAssignment.getCourseAssignments())
 						if (course.getCourseId().equals(x.getCourseId())) continue courses;
@@ -2363,56 +2412,100 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		return iQuickAddFinder;
 	}
 	
-	protected void checkSpecialRegistrationAfterFailedSubmitSchedule(ArrayList<ClassAssignmentInterface.ClassAssignment> lastEnrollment) {
+	protected void checkSpecialRegistrationAfterFailedSubmitSchedule(ArrayList<ClassAssignmentInterface.ClassAssignment> lastEnrollment, final boolean showWaiting) {
+		if (!iSpecRegCx.isCanSubmit()) return;
 		iLastEnrollment = lastEnrollment;
-		if (!iSpecRegCx.isCanSubmit() && !iSpecRegCx.hasRequestId()) {
-			/*
-			if (iLastAssignment != null && iLastAssignment.hasErrors()) {
-				for (ErrorMessage e: iLastAssignment.getErrors()) {
-					if (!iEligibilityCheck.hasOverride(e.getCode())) return;
-				}
-			}
-			iSubmitSpecReg.setEnabled(true);
-			iSubmitSpecReg.setVisible(true);
-			iSubmitSpecReg.addStyleName("unitime-EnrollButton");
-			iEnroll.setEnabled(false);
-			iEnroll.setVisible(false);
-			UniTimeConfirmationDialog.confirm(MESSAGES.confirmSpecialRegistrationSubmit(), new Command() {
-				@Override
-				public void execute() {
-					iSubmitSpecReg.click();
-				}
-			});
-			*/
-			iSectioningService.checkSpecialRequestEligibility(
-					new SpecialRegistrationEligibilityRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iLastEnrollment, iLastAssignment == null ? null : iLastAssignment.getErrors()),
-					new AsyncCallback<SpecialRegistrationEligibilityResponse>() {
-						@Override
-						public void onFailure(Throwable caught) {
-							iStatus.error(MESSAGES.requestSpecialRegistrationFail(caught.getMessage()), caught);
-						}
+		if (showWaiting) LoadingWidget.getInstance().show(MESSAGES.waitSpecialRegistration());
+		iSectioningService.checkSpecialRequestEligibility(
+				new SpecialRegistrationEligibilityRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iLastEnrollment, iLastAssignment == null ? null : iLastAssignment.getErrors()),
+				new AsyncCallback<SpecialRegistrationEligibilityResponse>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						if (showWaiting) LoadingWidget.getInstance().hide();
+						iStatus.error(MESSAGES.requestSpecialRegistrationFail(caught.getMessage()), caught);
+					}
 
-						@Override
-						public void onSuccess(SpecialRegistrationEligibilityResponse response) {
-							iSubmitSpecReg.setEnabled(response.isCanSubmit());
-							iSubmitSpecReg.setVisible(response.isCanSubmit());
-							if (response.isCanSubmit()) {
-								iEnroll.setEnabled(false);
-								iEnroll.setVisible(false);
+					@Override
+					public void onSuccess(SpecialRegistrationEligibilityResponse response) {
+						if (showWaiting) LoadingWidget.getInstance().hide();
+						final Collection<ErrorMessage> errors = (response.hasErrors() ? response.getErrors() : iLastAssignment != null && iLastAssignment.hasErrors() ? iLastAssignment.getErrors() : null);
+						if (response.isCanSubmit() && errors != null && !errors.isEmpty()) {
+							CheckCoursesResponse confirm = new CheckCoursesResponse();
+							confirm.setConfirmation(0, MESSAGES.dialogRequestOverrides(),
+									MESSAGES.buttonRequestOverrides(), MESSAGES.buttonCancelRequest(),
+									MESSAGES.titleRequestOverrides(), MESSAGES.titleCancelRequest());
+							confirm.addConfirmation(MESSAGES.messageRegistrationErrorsDetected(), 0, -1);
+							confirm.addConfirmation(MESSAGES.messageRequestOverridesOptions(), 0, 2);
+							confirm.addConfirmation(MESSAGES.messageRequestOverridesDisclaimer(), 0, 3);
+							for (ErrorMessage e: errors) {
+								if ("IGNORE".equals(e.getCode())) {
+									continue;
+								} else if (iEligibilityCheck.hasOverride(e.getCode())) {
+									confirm.addMessage(null, e.getCourse(), e.getCode(), e.getMessage(), 0);
+								} else {
+									confirm.addMessage(null, e.getCourse(), e.getCode(), e.getMessage() + " (" + e.getCode() + ")", 0);
+								}
 							}
-							if (response.isCanSubmit()) {
-								 UniTimeConfirmationDialog.confirm(response.hasMessage() ? response.getMessage() + " " + MESSAGES.confirmSpecialRegistrationSubmit(): MESSAGES.confirmSpecialRegistrationSubmit(), new Command() {
-									@Override
-									public void execute() {
-										iSubmitSpecReg.click();
+							CourseRequestsConfirmationDialog.confirm(confirm, 0, new AsyncCallback<Boolean>() {
+								@Override
+								public void onSuccess(Boolean result) {
+									if (result) {
+										clearMessage();
+										LoadingWidget.getInstance().show(MESSAGES.waitSpecialRegistration());
+										iSectioningService.submitSpecialRequest(
+												new SubmitSpecialRegistrationRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iSpecRegCx.getRequestKey(), iSpecRegCx.getRequestId(), iCourseRequests.getRequest(),
+														iLastEnrollment != null ? iLastEnrollment : iLastResult, errors),
+												new AsyncCallback<SubmitSpecialRegistrationResponse>() {
+													@Override
+													public void onFailure(Throwable caught) {
+														LoadingWidget.getInstance().hide();
+														iStatus.error(MESSAGES.submitSpecialRegistrationFail(caught.getMessage()), caught);
+														updateHistory();
+													}
+
+													@Override
+													public void onSuccess(SubmitSpecialRegistrationResponse response) {
+														LoadingWidget.getInstance().hide();
+														if (response.isSuccess()) {
+															iSpecialRegAssignment = iLastAssignment;
+															iStatus.done(response.hasMessage() ? response.getMessage() : MESSAGES.submitSecialRegistrationOK());
+														} else {
+															iStatus.error(response.getMessage());
+														}
+														iSpecRegCx.setStatus(response.getStatus());
+														iSpecRegCx.setRequestId(response.getRequestId());
+														if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG)) {
+															iEligibilityCheck.setFlag(EligibilityFlag.HAS_SPECREG, true);
+															iGetSpecRegs.setVisible(true);
+															iGetSpecRegs.setEnabled(true);
+														}
+														if (!iSpecRegCx.isCanSubmit()) {
+															iSubmitSpecReg.setVisible(false);
+															iSubmitSpecReg.setEnabled(false);
+														}
+														updateHistory();
+													}
+												});
 									}
-								});
-							} else if (response.hasMessage()) {
+								}
+								@Override
+								public void onFailure(Throwable caught) {
+									iStatus.error(MESSAGES.requestSpecialRegistrationFail(caught.getMessage()), caught);
+								}
+							});
+						} else if (response.hasMessage()) {
+							if (showWaiting)
+								iStatus.warning(response.getMessage());
+							else
 								UniTimeConfirmationDialog.alert(response.getMessage());
-							}
+						} else if (response.isCanSubmit()) {
+							if (showWaiting)
+								iStatus.warning(MESSAGES.errorNoRegistrationErrorsDetected());
+							else
+								UniTimeConfirmationDialog.alert(MESSAGES.errorNoRegistrationErrorsDetected());
 						}
-					});
-		}
+					}
+				});
 	}
 	
 	protected SpecialRegistrationSelectionDialog getSpecialRegistrationSelectionDialog() {
@@ -2422,18 +2515,14 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					super.doSubmit(specReg);
 					if (specReg == null) {
 						iSpecRegCx.update(iEligibilityCheck);
-						iSpecRegCx.setSpecRegMode(true);
 						iSpecRegCx.setRequestId(null);
-						iSpecRegCx.setCanSubmit(true);
-						iSpecRegCx.setCanEnroll(null);
+						iSpecRegCx.setStatus(null);
 						iSpecialRegAssignment = iSavedAssignment;
 						fillIn(iSavedAssignment);
 						addHistory();
 					} else {
-						iSpecRegCx.setSpecRegMode(true);
 						iSpecRegCx.setRequestId(specReg.getRequestId());
-						iSpecRegCx.setCanSubmit(specReg.isCanSubmit());
-						iSpecRegCx.setCanEnroll(specReg.isCanEnroll());
+						iSpecRegCx.setStatus(specReg.getStatus());
 						iSpecialRegAssignment = specReg.getClassAssignments();
 						if (specReg.hasClassAssignments()) {
 							fillIn(specReg.getClassAssignments());

@@ -282,9 +282,9 @@ public class SuggestionsBox extends UniTimeDialogBox {
 					if (!suggestion.getCourseAssignments().isEmpty()) { hasSuggestions = true; break; }
 				}	
 				showResults(result);
-				if (iAllChoices != null && !iAllChoices.getValue() && iSpecReg.isSpecRegMode() && (iSpecReg.areTimeConflictsAllowed() || iSpecReg.areSpaceConflictsAllowed()) && // !iSpecReg.isDisclaimerAccepted() &&
+				if (iAllChoices != null && !iAllChoices.getValue() && iSpecReg.isEnabled() && (iSpecReg.areTimeConflictsAllowed() || iSpecReg.areSpaceConflictsAllowed()) && // !iSpecReg.isDisclaimerAccepted() &&
 					!hasSuggestions && iFilter.getText().isEmpty() && !iCurrent.get(iIndex).isAssigned() && !iCurrent.get(iIndex).isFreeTime()) {
-					UniTimeConfirmationDialog.confirm((iSpecReg.isDisclaimerAccepted() ? "" : MESSAGES.disclaimerNoSuggestionsWarning() + " ") + (iSpecReg.areSpaceConflictsAllowed() ? (iSpecReg.areTimeConflictsAllowed() ?
+					UniTimeConfirmationDialog.confirm((iSpecReg.isDisclaimerAccepted() ? "" : MESSAGES.disclaimerNoSuggestionsWarning() + "\n") + (iSpecReg.areSpaceConflictsAllowed() ? (iSpecReg.areTimeConflictsAllowed() ?
 							MESSAGES.disclaimerSpecRegAllowForTimeSpaceConflicts() : MESSAGES.disclaimerSpecRegAllowForSpaceConflicts())
 							: MESSAGES.disclaimerSpecRegAllowForTimeConflicts()),
 							new Command() {
@@ -292,6 +292,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 								public void execute() {
 									iSpecReg.setDisclaimerAccepted(true);
 									iAllChoices.setValue(true);
+									SectioningCookie.getInstance().setAllChoices(true);
 									LoadingWidget.getInstance().show(MESSAGES.suggestionsLoading());
 									iRequest.setTimeConflictsAllowed(iAllChoices.getValue() && iSpecReg.areTimeConflictsAllowed());
 									iRequest.setSpaceConflictsAllowed(iAllChoices.getValue() && iSpecReg.areSpaceConflictsAllowed());
@@ -729,7 +730,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 	public void open(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> rows, int index, boolean quickDrop, boolean useGwtConfirmations) {
 		ClassAssignmentInterface.ClassAssignment row = rows.get(index);
 		if (iAllChoices != null) {
-			iAllChoices.setVisible(iSpecReg.isSpecRegMode() && (iSpecReg.areTimeConflictsAllowed() || iSpecReg.areSpaceConflictsAllowed()));
+			iAllChoices.setVisible(iSpecReg.isEnabled() && (iSpecReg.areTimeConflictsAllowed() || iSpecReg.areSpaceConflictsAllowed()));
 			iAllChoices.setValue(SectioningCookie.getInstance().isAllChoices() && iSpecReg.isDisclaimerAccepted());
 		}
 		if (row == null || row.isTeachingAssignment()) return;
@@ -769,8 +770,8 @@ public class SuggestionsBox extends UniTimeDialogBox {
 			iQuickDrop.setVisible(false); iQuickDrop.setEnabled(false);
 		}
 		iCustomCallback = null;
-		iRequest.setTimeConflictsAllowed(iAllChoices != null && iAllChoices.getValue() && iSpecReg.isSpecRegMode() && iSpecReg.areTimeConflictsAllowed());
-		iRequest.setSpaceConflictsAllowed(iAllChoices != null && iAllChoices.getValue() && iSpecReg.isSpecRegMode() && iSpecReg.areSpaceConflictsAllowed());
+		iRequest.setTimeConflictsAllowed(iAllChoices != null && iAllChoices.getValue() && iSpecReg.isEnabled() && iSpecReg.areTimeConflictsAllowed());
+		iRequest.setSpaceConflictsAllowed(iAllChoices != null && iAllChoices.getValue() && iSpecReg.isEnabled() && iSpecReg.areSpaceConflictsAllowed());
 		iSectioningService.computeSuggestions(iOnline, request, rows, index, iFilter.getText(), iCallback);
 	}
 	
@@ -794,7 +795,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		request.addCourse(course);
 		iCustomCallback = callback;
 		if (iAllChoices != null) {
-			iAllChoices.setVisible(iSpecReg.isSpecRegMode() && (iSpecReg.areTimeConflictsAllowed() || iSpecReg.areSpaceConflictsAllowed()));
+			iAllChoices.setVisible(iSpecReg.isEnabled() && (iSpecReg.areTimeConflictsAllowed() || iSpecReg.areSpaceConflictsAllowed()));
 			iAllChoices.setValue(false);
 		}
 		request.setTimeConflictsAllowed(false);
@@ -854,7 +855,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 								command.execute();
 							else {
 								LoadingWidget.getInstance().hide();
-								UniTimeConfirmationDialog.confirm(MESSAGES.disclaimerNoSuggestionsWarning() + " " + (iSpecReg.areSpaceConflictsAllowed() ? (iSpecReg.areTimeConflictsAllowed() ?
+								UniTimeConfirmationDialog.confirm(MESSAGES.disclaimerNoSuggestionsWarning() + "\n" + (iSpecReg.areSpaceConflictsAllowed() ? (iSpecReg.areTimeConflictsAllowed() ?
 										MESSAGES.disclaimerSpecRegAllowForTimeSpaceConflicts() : MESSAGES.disclaimerSpecRegAllowForSpaceConflicts())
 										: MESSAGES.disclaimerSpecRegAllowForTimeConflicts()),
 										new Command() {

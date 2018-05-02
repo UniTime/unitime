@@ -767,7 +767,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					}
 					if (error == null && response.registrationException != null) {
 						error = response.registrationException;
-						errors.add(new EnrollmentError("UNKNOWN", response.registrationException));
+						errors.add(new EnrollmentError("Unable to make requested changes so your schedule was not changed.".equals(response.registrationException) ? "IGNORE" : "UNKNOWN", response.registrationException));
 					}
 					XCourse course = id2course.get(id);
 					if (course != null)
@@ -810,7 +810,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						em = response.registrationException;
 					else
 						em += "\n" + response.registrationException;
-					error.add(new EnrollmentError("UNKNOWN", response.registrationException));
+					error.add(new EnrollmentError("Unable to make requested changes so your schedule was not changed.".equals(response.registrationException) ? "IGNORE" : "UNKNOWN", response.registrationException));
 				}
 				for (EnrollmentRequest request: enrollments) {
 					XCourse course = request.getCourse();
@@ -832,13 +832,14 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					if (!"Unable to make requested changes so your schedule was not changed.".equals(f.getMessage()))
 						message += (message.isEmpty() ? "" : "<br>") + f;
 				}
-				SectioningException e = new SectioningException(message);
+				SectioningException e = new SectioningException(message.replace("\n", " "));
 				for (EnrollmentFailure f: fails) {
 					if (f.getSection() != null && !"Unable to make requested changes so your schedule was not changed.".equals(f.getMessage()))
 						e.setSectionMessage(f.getSection().getSectionId(), f.getMessage());
 					if (f.hasErrors())
 						for (EnrollmentError err: f.getErrors())
-							e.addError(new ErrorMessage(f.getCourse().getCourseName(), f.getSection().getExternalId(f.getCourse().getCourseId()), err.getCode(), err.getMessage()));
+							if (!"IGNORE".equals(err.getCode()))
+								e.addError(new ErrorMessage(f.getCourse().getCourseName(), f.getSection().getExternalId(f.getCourse().getCourseId()), err.getCode(), err.getMessage()));
 				}
 				throw e;
 			}

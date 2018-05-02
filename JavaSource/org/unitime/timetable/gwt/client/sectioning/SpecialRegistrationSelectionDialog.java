@@ -21,12 +21,14 @@ package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
@@ -35,6 +37,8 @@ import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
@@ -45,6 +49,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
@@ -85,9 +90,9 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 		iForm.addStyleName("unitime-SpecialRegistrations");
 		
 		iTable = new UniTimeTable<RetrieveSpecialRegistrationResponse>();
-		iTable.addStyleName("plans-table");
+		iTable.addStyleName("registrations-table");
 		iTable.setAllowSelection(true);
-		iTable.setAllowMultiSelect(false);
+		iTable.setAllowMultiSelect(true);
 		iForm.addRow(iTable);
 		
 		iFooter = new UniTimeHeaderPanel();
@@ -98,8 +103,14 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		header.add(new UniTimeTableHeader(""));
 		header.add(new UniTimeTableHeader(MESSAGES.colSpecRegSubmitted()));
-		header.add(new UniTimeTableHeader(MESSAGES.colSpecRegName()));
-		header.add(new UniTimeTableHeader(MESSAGES.colSpecRegNote()));
+		header.add(new UniTimeTableHeader(MESSAGES.colSubject()));
+		header.add(new UniTimeTableHeader(MESSAGES.colCourse()));
+		header.add(new UniTimeTableHeader(MESSAGES.colSubpart()));
+		header.add(new UniTimeTableHeader(MESSAGES.colClass()));
+		header.add(new UniTimeTableHeader(MESSAGES.colLimit()));
+		header.add(new UniTimeTableHeader(MESSAGES.colCredit()));
+		header.add(new UniTimeTableHeader(MESSAGES.colSpecRegErrors()));
+		header.add(new UniTimeTableHeader(""));
 		iTable.addRow(null, header);
 		
 		
@@ -135,60 +146,100 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 	}
 	
 	public void open(List<RetrieveSpecialRegistrationResponse> registrations) {
-		iFooter.setEnabled("create", iSpecReg.isSpecRegMode() && iSpecReg.hasRequestKey() && iSpecReg.isSpecRegRequestKeyValid());
+		iFooter.setEnabled("create", iSpecReg.isEnabled() && iSpecReg.hasRequestKey() && iSpecReg.isSpecRegRequestKeyValid());
 		iTable.clearTable(1);
-		int select = -1;
 		Collections.sort(registrations);
 		for (RetrieveSpecialRegistrationResponse reg: registrations) {
-			List<Widget> row = new ArrayList<Widget>();
 			P p = new P("icons");
 			if (reg.getStatus() != null) {
 				switch (reg.getStatus()) {
 				case Approved:
-					Image approved = new Image(RESOURCES.specRegApproved());
-					approved.setTitle(MESSAGES.hintSpecRegApproved());
-					p.add(approved);
+					p.add(new Icon(RESOURCES.specRegApproved(), MESSAGES.hintSpecRegApproved()));
 					break;
 				case Cancelled:
-					Image cancelled = new Image(RESOURCES.specRegCancelled());
-					cancelled.setTitle(MESSAGES.hintSpecRegCancelled());
-					p.add(cancelled);
+					p.add(new Icon(RESOURCES.specRegCancelled(), MESSAGES.hintSpecRegCancelled()));
 					break;
 				case Pending:
-					Image pending = new Image(RESOURCES.specRegPending());
-					pending.setTitle(MESSAGES.hintSpecRegPending());
-					p.add(pending);
+					p.add(new Icon(RESOURCES.specRegPending(), MESSAGES.hintSpecRegPending()));
 					break;
 				case Rejected:
-					Image denied = new Image(RESOURCES.specRegRejected());
-					denied.setTitle(MESSAGES.hintSpecRegRejected());
-					p.add(denied);
+					p.add(new Icon(RESOURCES.specRegRejected(), MESSAGES.hintSpecRegRejected()));
 					break;
 				case Draft:
-					Image draft = new Image(RESOURCES.specRegDraft());
-					draft.setTitle(MESSAGES.hintSpecRegDraft());
-					p.add(draft);
+					p.add(new Icon(RESOURCES.specRegDraft(), MESSAGES.hintSpecRegDraft()));
 					break;
 				}
-			} else if (reg.isCanEnroll()) {
-				Image canEnroll = new Image(RESOURCES.specRegCanEnroll());
-				canEnroll.setTitle(MESSAGES.hintSpecRegCanEnroll());
-				p.add(canEnroll);
-			} else if (!reg.isCanSubmit()) {
-				Image canNotSubmit = new Image(RESOURCES.specRegCanNotSubmit());
-				canNotSubmit.setTitle(MESSAGES.hintSpecRegCanNotSubmit());
-				p.add(canNotSubmit);
 			} 
-			row.add(p);
-			row.add(new Label(reg.getSubmitDate() == null ? "" : sModifiedDateFormat.format(reg.getSubmitDate())));
-			row.add(new Label(reg.getDescription() == null ? "" : reg.getDescription()));
-			row.add(new HTML(reg.getNote() == null ? "" : reg.getNote()));
-			if (reg.getRequestId().equals(iSpecReg.getRequestId()))
-				select = iTable.getRowCount();
-			iTable.addRow(reg, row);
-			
+			if (reg.hasChanges()) {
+				Long lastCourseId = null;
+				for (ClassAssignment ca: reg.getChanges()) {
+					List<Widget> row = new ArrayList<Widget>();
+					if (lastCourseId == null) {
+						row.add(p);
+						row.add(new DateAndNoteCell(reg.getSubmitDate(), reg.getNote()));
+					} else {
+						row.add(new P("icons"));
+						row.add(new Label());
+					}
+					if (lastCourseId == null || !lastCourseId.equals(ca.getCourseId())) {
+						row.add(new Label(ca.getSubject()));
+						row.add(new Label(ca.getCourseNbr()));
+					} else {
+						row.add(new Label());
+						row.add(new Label());
+					}
+					row.add(new Label(ca.getSubpart()));
+					row.add(new Label(ca.getSection()));
+					row.add(new HTML(ca.getLimitString()));
+					row.add(new CreditCell(ca.getCredit()));
+					Label errorsLabel = new Label(ca.hasError() ? ca.getError() : ""); errorsLabel.addStyleName("registration-errors");
+					row.add(errorsLabel);
+					P s = new P("icons");
+					if (ca.isCourseAssigned()) {
+						s.add(new Icon(RESOURCES.assignment(), MESSAGES.assignment(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection())));
+					} else {
+						s.add(new Icon(RESOURCES.unassignment(), MESSAGES.unassignment(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection())));
+					}
+					row.add(s);
+					int idx = iTable.addRow(reg, row);
+					if (reg.getRequestId().equals(iSpecReg.getRequestId()))
+						iTable.setSelected(idx, true);
+					if (idx > 1 && lastCourseId == null)
+						for (int c = 0; c < iTable.getCellCount(idx); c++)
+							iTable.getCellFormatter().addStyleName(idx, c, "top-border-solid");
+					if (lastCourseId != null && !lastCourseId.equals(ca.getCourseId()))
+						for (int c = 0; c < iTable.getCellCount(idx); c++)
+							iTable.getCellFormatter().addStyleName(idx, c, "top-border-dashed");
+					if (!ca.isCourseAssigned()) {
+						for (int c = 0; c < iTable.getCellCount(idx); c++)
+							iTable.getCellFormatter().addStyleName(idx, c, "change-drop");
+					} else  {
+						for (int c = 0; c < iTable.getCellCount(idx); c++)
+							iTable.getCellFormatter().addStyleName(idx, c, "change-add");
+					}
+					lastCourseId = ca.getCourseId();
+				}
+			} else {
+				List<Widget> row = new ArrayList<Widget>();
+				row.add(p);
+				row.add(new DateAndNoteCell(reg.getSubmitDate(), reg.getNote()));
+				row.add(new DescriptionCell(reg.getDescription()));
+				String errors = "";
+				if (reg.hasClassAssignments() && reg.getClassAssignments().hasErrors()) {
+					for (ErrorMessage err: reg.getClassAssignments().getErrors()) {
+						if (!errors.isEmpty()) errors += "\n";
+						errors += err.getCourse() + (err.getSection() == null ? "" : " " + err.getSection()) + ": " + err.getMessage();
+					}
+				}
+				Label errorsLabel = new Label(errors); errorsLabel.addStyleName("registration-errors");
+				row.add(errorsLabel);
+				row.add(new Label());
+				int idx = iTable.addRow(reg, row);
+				if (reg.getRequestId().equals(iSpecReg.getRequestId()))
+					iTable.setSelected(idx, true);
+				if (idx > 1) iTable.getRowFormatter().addStyleName(idx, "top-border-solid");
+			}
 		}
-		iTable.setSelected(select < 0 ? 1 : select, true);
 		center();
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			@Override
@@ -247,5 +298,55 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 			text += (text.isEmpty() ? "" : " ") + ARIA.showingSpecReg(row, iTable.getRowCount() - 1, reg.getDescription(), reg.getSubmitDate());
 		}
 		AriaStatus.getInstance().setText(text);
+	}
+	
+	protected class DateAndNoteCell extends Label {
+		
+		public DateAndNoteCell(Date date, String note) {
+			super(date == null ? note == null ? "" : note : sModifiedDateFormat.format(date) + (note == null || note.isEmpty() ? "" : "\n" + note));
+			addStyleName("date-and-note");
+		}
+	}
+	
+	protected class DescriptionCell extends Label implements UniTimeTable.HasColSpan {
+		
+		public DescriptionCell(String text) {
+			super(text == null ? "" : text);
+		}
+	
+		@Override
+		public int getColSpan() {
+			return 6;
+		}
+		
+	}
+	
+	protected class Icon extends Image {
+		public Icon(ImageResource image, final String text) {
+			super(image);
+			if (text != null && !text.isEmpty()) {
+				setAltText(text);
+				setTitle(text);
+				addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						event.preventDefault(); event.stopPropagation();
+						UniTimeConfirmationDialog.info(text);
+					}
+				});
+			}
+		}
+	}
+	
+	protected class CreditCell extends HTML {
+		public CreditCell(String text) {
+			if (text != null && text.indexOf('|') >= 0) {
+				setHTML(text.substring(0, text.indexOf('|')));
+				setTitle(text.substring(text.indexOf('|') + 1).replace("\n", "<br>"));
+			} else {
+				setHTML(text == null ? "" : text.replace("\n", "<br>"));
+				if (text != null) setTitle(text);
+			}
+		}
 	}
 }

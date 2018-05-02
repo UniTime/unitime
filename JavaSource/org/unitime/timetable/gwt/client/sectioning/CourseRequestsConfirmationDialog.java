@@ -89,7 +89,7 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 				last = cm.getCourse();
 			} else {
 				if (ctab != null) { mp.add(ctab); ctab = null; }
-				P m = new P("message"); m.setText(cm.getMessage());
+				P m = new P("message"); m.setHTML(cm.getMessage());
 				mp.add(m);
 			}
 		}

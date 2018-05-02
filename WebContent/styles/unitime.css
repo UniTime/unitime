@@ -372,6 +372,10 @@ h1 {
 	border-top: 1px dashed #9CB0CE;
 }
 
+.unitime-MainTable .top-border-solid {
+	border-top: 1px solid #9CB0CE;
+}
+
 .unitime-MainTable .unitime-HeaderPanel .left {
 	padding-left: 0px;
 }
@@ -6013,7 +6017,23 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-SpecialRegistrations .table-row {
-	max-height: 200px;
+	max-height: 70vh;
+}
+
+.unitime-SpecialRegistrations .registration-errors {
+	white-space: pre;
+	color: red;
+}
+
+.unitime-SpecialRegistrations .date-and-note {
+	white-space: pre;
+	color: black;
+	font-style: normal;
+}
+
+.unitime-SpecialRegistrations .change-drop {
+	color: gray;
+    font-style: italic;
 }
 
 .unitime-CourseRequestBox .unitime-ErrorHint .status-note {
