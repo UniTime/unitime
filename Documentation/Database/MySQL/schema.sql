@@ -22,7 +22,7 @@ use mysql;
 
 drop user timetable@localhost;
 
-create user timetable@localhost identified by password '*2E46E61A1C47ADC309CADC6DF8D89654F013D3DD';
+create user timetable@localhost identified by 'unitime';
 
 grant all on timetable.* to timetable@localhost;
 
