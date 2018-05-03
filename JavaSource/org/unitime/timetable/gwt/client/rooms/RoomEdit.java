@@ -68,17 +68,11 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomUpdateRpcRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomsPageMode;
 
-import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.ScriptInjector;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyPressEvent;
-import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.dom.client.MouseOutEvent;
 import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.event.dom.client.MouseOverEvent;
@@ -87,8 +81,6 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.AbsolutePanel;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
@@ -134,9 +126,7 @@ public class RoomEdit extends Composite {
 	private NumberBox iArea;
 	private P iAreaFormat;
 	private CheckBox iDistanceCheck, iRoomCheck;
-	private AbsolutePanel iGoogleMap;
-	private AbsolutePanel iGoogleMapControl;
-	private boolean iGoogleMapInitialized = false;
+	private MapWidget iMap;
 	private ListBox iEventDepartment;
 	private UniTimeWidget<ListBox> iEventStatus;
 	private P iBreakTimePanel;
@@ -345,20 +335,6 @@ public class RoomEdit extends Composite {
 		iCoordinates.getWidget().add(iY);
 		iCoordinatesFormat = new P("format");
 		iCoordinates.getWidget().add(iCoordinatesFormat);
-		iX.addValueChangeHandler(new ValueChangeHandler<String>() {
-			@Override
-			public void onValueChange(ValueChangeEvent<String> event) {
-				if (iProperties.isGoogleMap())
-					setMarker();
-			}
-		});
-		iY.addValueChangeHandler(new ValueChangeHandler<String>() {
-			@Override
-			public void onValueChange(ValueChangeEvent<String> event) {
-				if (iProperties.isGoogleMap())
-					setMarker();
-			}
-		});
 		
 		iArea = new NumberBox();
 		iArea.setDecimal(true);
@@ -544,7 +520,7 @@ public class RoomEdit extends Composite {
 	public void setProperties(RoomPropertiesInterface properties) {
 		iProperties = properties;
 		
-		iForm.setColSpan(iProperties.isGoogleMap() ? 3 : 2);
+		iForm.setColSpan(iProperties.isGoogleMap() || iProperties.isLeafletMap() ? 3 : 2);
 		
 		iBuilding.getWidget().clear();
 		iBuilding.getWidget().addItem(MESSAGES.itemSelect(), "-1");
@@ -602,45 +578,8 @@ public class RoomEdit extends Composite {
 			}
 		}
 		
-		if (iProperties.isGoogleMap() && iGoogleMap == null) {
-			iGoogleMap = new AbsolutePanel();
-			iGoogleMap.setStyleName("map");
-			
-			iGoogleMapControl = new AbsolutePanel(); iGoogleMapControl.setStyleName("control");
-			final TextBox searchBox = new TextBox();
-			searchBox.setStyleName("unitime-TextBox"); searchBox.addStyleName("searchBox");
-			searchBox.getElement().setId("mapSearchBox");
-			searchBox.setTabIndex(-1);
-			iGoogleMapControl.add(searchBox);
-			Button button = new Button(MESSAGES.buttonGeocode(), new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					geocodeAddress();
-				}
-			});
-			button.setTabIndex(-1);
-			searchBox.addKeyPressHandler(new KeyPressHandler() {
-				@Override
-				public void onKeyPress(KeyPressEvent event) {
-					switch (event.getNativeEvent().getKeyCode()) {
-					case KeyCodes.KEY_ENTER:
-	            		event.preventDefault();
-	            		geocodeAddress();
-	            		return;
-					}
-				}
-			});
-			button.addStyleName("geocode");
-			ToolBox.setWhiteSpace(button.getElement().getStyle(), "nowrap");
-			Character accessKey = UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonGeocode());
-			if (accessKey != null)
-				button.setAccessKey(accessKey);
-			iGoogleMapControl.add(button);
-			
-			iGoogleMap.add(iGoogleMapControl);
-
-			addGoogleMap(iGoogleMap.getElement(), iGoogleMapControl.getElement());
-		}
+		if (iMap == null)
+			iMap = MapWidget.createMap(iX, iY, iProperties);
 		
 		iGroups.clear();
 		iGroupPanel.clear();
@@ -839,7 +778,7 @@ public class RoomEdit extends Composite {
 			iRoomCheck.setValue(!iRoom.isIgnoreRoomCheck());
 			roomCheckChanged();
 			iForm.addRow(MESSAGES.propRoomCheck(), iRoomCheck, 1);
-			if (iGoogleMapControl != null) iGoogleMapControl.setVisible(true);
+			if (iMap != null) iMap.setEnabled(true);
 		} else {
 			if (iRoom.hasCoordinates()) {
 				P coordinates = new P("coordinates");
@@ -860,7 +799,7 @@ public class RoomEdit extends Composite {
 			} else if (iProperties.isCanSeeEvents()) {
 				iForm.addRow(MESSAGES.propRoomCheck(), new Check(!room.isIgnoreRoomCheck(), MESSAGES.infoRoomCheckOn(), MESSAGES.infoRoomCheckOff()), 1);
 			}
-			if (iGoogleMapControl != null) iGoogleMapControl.setVisible(false);
+			if (iMap != null) iMap.setEnabled(false);
 		}
 		
 		
@@ -945,11 +884,11 @@ public class RoomEdit extends Composite {
 				iForm.addRow(MESSAGES.propAvailableServices(), new RoomDetail.ServicesCell(iRoom.getServices(), iRoom.getEventDepartment()), 1);
 		}
 		
-		if (iProperties.isGoogleMap()) {
+		if (iMap != null) {
 			if (Window.getClientWidth() <= 800) {
-				iForm.addRow(iGoogleMap);
+				iForm.addRow(iMap.asWidget());
 			} else {
-				iForm.setWidget(firstRow, 2, iGoogleMap);
+				iForm.setWidget(firstRow, 2, iMap.asWidget());
 				iForm.getFlexCellFormatter().setRowSpan(firstRow, 2, iForm.getRowCount() - firstRow - 1);
 			}
 		}
@@ -1261,8 +1200,7 @@ public class RoomEdit extends Composite {
 			iX.setValue(building.getX());
 			iY.setValue(building.getY());
 		}
-		if (iProperties.isGoogleMap())
-			setMarker();
+		if (iMap != null) iMap.setMarker();
 	}
 	
 	protected void futureChanged() {
@@ -1294,29 +1232,12 @@ public class RoomEdit extends Composite {
 		onShow();
 		Window.scrollTo(0, 0);
 		
-		if (iGoogleMap != null) {
-			if (isGoogleMapEditable() || iRoom.hasCoordinates()) {
-				iGoogleMap.setVisible(true);
-				if (!iGoogleMapInitialized) {
-					iGoogleMapInitialized = true;
-					ScriptInjector.fromUrl("https://maps.googleapis.com/maps/api/js?" + (iProperties != null && iProperties.hasGoogleMapApiKey() ? "key=" + iProperties.getGoogleMapApiKey() + "&" : "") +
-							"sensor=false&callback=setupGoogleMap").setWindow(ScriptInjector.TOP_WINDOW).setCallback(
-							new Callback<Void, Exception>() {
-								@Override
-								public void onSuccess(Void result) {
-								}
-								@Override
-								public void onFailure(Exception e) {
-									UniTimeNotifications.error(e.getMessage(), e);
-									iGoogleMap = null;
-									iGoogleMapControl = null;
-								}
-							}).inject();
-				} else if (iGoogleMap != null) {
-					setMarker();
-				}
+		if (iMap != null) {
+			if (iMap.isEnabled() || iRoom.hasCoordinates()) {
+				iMap.setVisible(true);
+				iMap.onShow();
 			} else {
-				iGoogleMap.setVisible(false);
+				iMap.setVisible(false);
 			}
 		}
 	}
@@ -1613,10 +1534,6 @@ public class RoomEdit extends Composite {
 		return result;
 	}
 	
-	public boolean isGoogleMapEditable() {
-		return iGoogleMapControl != null && iGoogleMapControl.isVisible();
-	}
-	
 	public void hide(RoomDetailInterface room, boolean canShowDetail, String message) {
 		setVisible(false);
 		onHide(room, canShowDetail, message);
@@ -1628,101 +1545,6 @@ public class RoomEdit extends Composite {
 	
 	protected void onShow() {
 	}
-	
-	protected native void addGoogleMap(Element canvas, Element control) /*-{
-		$wnd.geoceodeMarker = function geoceodeMarker() {
-			var searchBox = $doc.getElementById('mapSearchBox'); 
-			$wnd.geocoder.geocode({'location': $wnd.marker.getPosition()}, function(results, status) {
-				if (status == $wnd.google.maps.GeocoderStatus.OK) {
-					if (results[0]) {
-						$wnd.marker.setTitle(results[0].formatted_address);
-						searchBox.value = results[0].formatted_address;
-					} else {
-						$wnd.marker.setTitle(null);
-						searchBox.value = "";
-					}
-				} else {
-					$wnd.marker.setTitle(null);
-					searchBox.value = "";
-				}
-			});
-		}
-		$wnd.that = this
-		
-		$wnd.setupGoogleMap = function setupGoogleMap() {
-			var latlng = new $wnd.google.maps.LatLng(50, -58);
-			var myOptions = {
-				zoom: 2,
-				center: latlng,
-				mapTypeId: $wnd.google.maps.MapTypeId.ROADMAP
-			};
-		
-			$wnd.geocoder = new $wnd.google.maps.Geocoder();
-			$wnd.map = new $wnd.google.maps.Map(canvas, myOptions);
-			$wnd.marker = new $wnd.google.maps.Marker({
-				position: latlng,
-				map: $wnd.map,
-				draggable: true,
-				visible: false
-			});
-		
-			$wnd.map.controls[$wnd.google.maps.ControlPosition.BOTTOM_LEFT].push(control);		
-		
-			var t = null;
-			
-			$wnd.google.maps.event.addListener($wnd.marker, 'position_changed', function() {
-				$doc.getElementById("coordX").value = '' + $wnd.marker.getPosition().lat().toFixed(6);
-				$doc.getElementById("coordY").value = '' + $wnd.marker.getPosition().lng().toFixed(6);
-				if (t != null) clearTimeout(t);
-				t = setTimeout($wnd.geoceodeMarker, 500);
-			});
-			
-			$wnd.google.maps.event.addListener($wnd.map, 'rightclick', function(event) {
-				if ($wnd.marker.getDraggable()) {
-					$wnd.marker.setPosition(event.latLng);
-					$wnd.marker.setVisible(true);
-				}
-			});
-			
-			$wnd.that.@org.unitime.timetable.gwt.client.rooms.RoomEdit::setMarker()();
-		};
-	}-*/;
-	
-	protected native void setMarker() /*-{
-		try {
-			var x = $doc.getElementById("coordX").value;
-			var y = $doc.getElementById("coordY").value;
-			if (x && y) {
-				var pos = new $wnd.google.maps.LatLng(x, y);
-				$wnd.marker.setPosition(pos);
-				$wnd.marker.setVisible(true);
-				if ($wnd.marker.getMap().getZoom() <= 10) $wnd.marker.getMap().setZoom(16);
-				$wnd.marker.getMap().panTo(pos);
-			} else {
-				$wnd.marker.setVisible(false);
-			}
-			$wnd.marker.setDraggable(this.@org.unitime.timetable.gwt.client.rooms.RoomEdit::isGoogleMapEditable()());
-		} catch (error) {}
-	}-*/;
-	
-	protected native void geocodeAddress() /*-{
-		var address = $doc.getElementById("mapSearchBox").value;
-		$wnd.geocoder.geocode({ 'address': address }, function(results, status) {
-			if (status == $wnd.google.	maps.GeocoderStatus.OK) {
-				if (results[0]) {
-					$wnd.marker.setPosition(results[0].geometry.location);
-					$wnd.marker.setTitle(results[0].formatted_address);
-					$wnd.marker.setVisible(true);
-					if ($wnd.map.getZoom() <= 10) $wnd.map.setZoom(16);
-					$wnd.map.panTo(results[0].geometry.location);
-				} else {
-					$wnd.marker.setVisible(false);
-				}
-			} else {
-				$wnd.marker.setVisible(false);
-			}
-		});
-	}-*/;
 	
 	protected String getFutureOperationLabel(FutureOperation op) {
 		switch (op) {

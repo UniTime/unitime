@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.client.page.UniTimeMobileMenu;
 import org.unitime.timetable.gwt.client.page.UniTimeSideBar;
 import org.unitime.timetable.gwt.client.page.UniTimeVersion;
 import org.unitime.timetable.gwt.client.reservations.ReservationTable;
+import org.unitime.timetable.gwt.client.rooms.MapWidget;
 import org.unitime.timetable.gwt.client.rooms.PeriodPreferencesWidget;
 import org.unitime.timetable.gwt.client.rooms.RoomNoteChanges;
 import org.unitime.timetable.gwt.client.rooms.RoomSharingWidget;
@@ -79,6 +80,7 @@ public enum Components {
 	teachingRequests("UniTimeGWT:TeachingRequests", new ComponentFactory() { public void insert(RootPanel panel) { new TeachingRequestsWidget().insert(panel); } }),
 	studentEnrollments("UniTimeGWT:StudentEnrollments", new ComponentFactory() { public void insert(RootPanel panel) { new StudentScheduleTable(true, true, false).insert(panel); } }),
 	teachingAssignments("UniTimeGWT:TeachingAssignments", new ComponentFactory() { public void insert(RootPanel panel) { new TeachingAssignmentsWidget().insert(panel); } }),
+	dynamicMap("UniTimeGWT:Map", new ComponentFactory() { public void insert(RootPanel panel) { MapWidget.insert(panel); } }),
 	;
 	
 	private String iId;

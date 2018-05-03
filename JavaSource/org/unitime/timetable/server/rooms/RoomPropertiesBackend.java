@@ -236,6 +236,10 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		response.setGoogleMap(ApplicationProperty.RoomUseGoogleMap.isTrue());
 		response.setGoogleMapApiKey(ApplicationProperty.GoogleMapsApiKey.value());
 		
+		response.setLeafletMap(!response.isGoogleMap() && ApplicationProperty.RoomUseLeafletMap.isTrue());
+		response.setLeafletMapTiles(ApplicationProperty.RoomUseLeafletMapTiles.value());
+		response.setLeafletMapAttribution(ApplicationProperty.RoomUseLeafletMapAttribution.value());
+		
 		if (response.getAcademicSession() != null) {
 			for (Session session: (List<Session>)SessionDAO.getInstance().getSession().createQuery(
 					"select f from Session f, Session s where " +

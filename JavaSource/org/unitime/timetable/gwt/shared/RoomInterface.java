@@ -1932,6 +1932,35 @@ public class RoomInterface implements IsSerializable {
 		}
 	}
 	
+	public static class MapPropertiesRequest implements GwtRpcRequest<MapPropertiesInterface> {
+		public MapPropertiesRequest() {}
+	}
+
+	public static class MapPropertiesInterface implements GwtRpcResponse {
+		private boolean iGoogleMap = false, iLeafletMap = false;
+		private String iGoogleMapApiKey = null, iLeafletMapTiles = null, iLeafletMapAttribution = null;
+		
+		public MapPropertiesInterface() {}
+		
+		public void setGoogleMap(boolean map) { iGoogleMap = map; }
+		public boolean isGoogleMap() { return iGoogleMap; }
+		
+		public void setLeafletMap(boolean map) { iLeafletMap = map; }
+		public boolean isLeafletMap() { return iLeafletMap; }
+		
+		public void setGoogleMapApiKey(String apiKey) { iGoogleMapApiKey = apiKey; }
+		public boolean hasGoogleMapApiKey() { return iGoogleMapApiKey != null && !iGoogleMapApiKey.isEmpty(); }
+		public String getGoogleMapApiKey() { return iGoogleMapApiKey; }
+		
+		public void setLeafletMapTiles(String tileUrl) { iLeafletMapTiles = tileUrl; }
+		public boolean hasLeafletMapTiles() { return iLeafletMapTiles != null && !iLeafletMapTiles.isEmpty(); }
+		public String getLeafletMapTiles() { return iLeafletMapTiles; }
+		
+		public void setLeafletMapAttribution(String tileAttribution) { iLeafletMapAttribution = tileAttribution; }
+		public boolean hasLeafletMapAttribution() { return iLeafletMapAttribution != null && !iLeafletMapAttribution.isEmpty(); }
+		public String getLeafletMapAttribution() { return iLeafletMapAttribution; }		
+	}
+	
 	public static class RoomPropertiesRequest implements GwtRpcRequest<RoomPropertiesInterface> {
 		private Long iSessionId = null;
 		private String iMode = null;
@@ -1954,8 +1983,8 @@ public class RoomInterface implements IsSerializable {
 		@Override
 		public String toString() { return (hasSessionId() ? getSessionId().toString() : ""); }
 	}
-	
-	public static class RoomPropertiesInterface implements GwtRpcResponse {
+
+	public static class RoomPropertiesInterface extends MapPropertiesInterface implements GwtRpcResponse {
 		private AcademicSessionInterface iSession = null;
 		private boolean iCanExportPdf = false, iCanExportCsv = false;
 		private boolean iCanEditDepartments = false;
@@ -1971,8 +2000,7 @@ public class RoomInterface implements IsSerializable {
 		private List<PreferenceInterface> iPreferences = new ArrayList<PreferenceInterface>();
 		private List<AttachmentTypeInterface> iPictureTypes = new ArrayList<AttachmentTypeInterface>();
 		private boolean iCanSeeCourses = false, iCanSeeExams = false, iCanSeeEvents = false;
-		private boolean iGridAsText = false, iHorizontal = false, iGoogleMap = false;
-		private String iGoogleMapApiKey = null;
+		private boolean iGridAsText = false, iHorizontal = false;
 		private List<RoomSharingDisplayMode> iModes;
 		private String iEllipsoid = null;
 		private boolean iCanChangeAvailability = false, iCanChangeControll = false, iCanChangeExternalId = false, iCanChangeExamStatus = false,
@@ -2156,13 +2184,6 @@ public class RoomInterface implements IsSerializable {
 		public String getEllipsoid() { return iEllipsoid; }
 		public boolean hasEllipsoid() { return iEllipsoid != null & !iEllipsoid.isEmpty(); }
 		public void setEllipsoid(String ellipsoid) { iEllipsoid = ellipsoid; }
-		
-		public void setGoogleMap(boolean map) { iGoogleMap = map; }
-		public boolean isGoogleMap() { return iGoogleMap; }
-		
-		public void setGoogleMapApiKey(String apiKey) { iGoogleMapApiKey = apiKey; }
-		public boolean hasGoogleMapApiKey() { return iGoogleMapApiKey != null && !iGoogleMapApiKey.isEmpty(); }
-		public String getGoogleMapApiKey() { return iGoogleMapApiKey; }
 		
 		public boolean isCanChangeAvailability() { return iCanChangeAvailability; }
 		public void setCanChangeAvailability(boolean canChangeAvailability) { iCanChangeAvailability = canChangeAvailability; }
@@ -2696,5 +2717,57 @@ public class RoomInterface implements IsSerializable {
 			else
 				return "DELETE " + getDeleteFeatureId();
 		}		
+	}
+
+	public static class GeocodeRequest implements GwtRpcRequest<GeocodeResponse> {
+		private boolean iReverse = false;
+		private Double iLat = null, iLon = null;
+		private String iViewbox = null;
+		private String iQuery = null;
+		
+		public GeocodeRequest() {}
+		
+		public GeocodeRequest(String query, String viewbox) {
+			iReverse = false; iQuery = query; iViewbox = viewbox;
+		}
+		
+		public GeocodeRequest(double lat, double lon) {
+			iReverse = true; iLat = lat; iLon = lon;
+		}
+		
+		public boolean isReverse() { return iReverse; }
+		public void setReverse(boolean reverse) { iReverse = reverse; }
+		
+		public void setCoordinates(double lat, double lon) { iLat = lat; iLon = lon; }
+		public boolean hasCoordinates() { return iLat != null && iLon != null; }
+		public Double getLat() { return iLat; }
+		public Double getLon() { return iLon; }
+		
+		public boolean hasViewBox() { return iViewbox != null; }
+		public void setViewBox(double x1, double y1, double x2, double y2) {
+			iViewbox = x1 + "," + y1 + "," + x2 + "," + y2;
+		}
+		public void setViewBox(String viewbox) { iViewbox = viewbox; }
+		public String getViewBox() { return iViewbox; }
+		
+		public String getQuery() { return iQuery; }
+		public boolean hasQuery() { return iQuery != null && !iQuery.isEmpty(); }
+		public void setQuery(String query) { iQuery = query; }
+	}
+	
+	public static class GeocodeResponse implements GwtRpcResponse {
+		private Double iLat, iLon;
+		private String iQuery = null;
+		
+		public GeocodeResponse() {}
+		
+		public void setCoordinates(Double lat, Double lon) { iLat = lat; iLon = lon; }
+		public boolean hasCoordinates() { return iLat != null && iLon != null; }
+		public Double getLat() { return iLat; }
+		public Double getLon() { return iLon; }
+		
+		public String getQuery() { return iQuery; }
+		public boolean hasQuery() { return iQuery != null && !iQuery.isEmpty(); }
+		public void setQuery(String query) { iQuery = query; }
 	}
 }
