@@ -31,6 +31,7 @@ import java.util.TreeSet;
 import org.hibernate.Hibernate;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Query;
+import org.springframework.web.util.HtmlUtils;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
@@ -164,17 +165,57 @@ public class DistributionPref extends BaseDistributionPref {
 		return sb.toString();
     }
     
-    public String preferenceHtml() {
-    	StringBuffer sb = new StringBuffer();
-    	String color = getPrefLevel().prefcolor();
-    	if (PreferenceLevel.sNeutral.equals(getPrefLevel().getPrefProlog()))
-    		color = "gray";
-    	sb.append("<span style='color:"+color+";font-weight:bold;' onmouseover=\"showGwtHint(this, '" + 
-    			getPrefLevel().getPrefName() + " " + preferenceText(true,false,"<ul><li>","<li>","</ul>")
-    			+ "');\" onmouseout=\"hideGwtHint();\">" );
-    	sb.append(preferenceText(false,true, "", "", ""));
-    	sb.append("</span>");
-    	return sb.toString();
+    public String preferenceHtml(String nameFormat, boolean highlightClassPrefs) {
+    	StringBuffer sb = new StringBuffer("<span ");
+    	String style = "font-weight:bold;";
+		if (this.getPrefLevel().getPrefId().intValue() != 4) {
+			style += "color:" + this.getPrefLevel().prefcolor() + ";";
+		}
+		if (this.getOwner() != null && this.getOwner() instanceof Class_ && highlightClassPrefs) {
+			style += "background: #ffa;";
+		}
+		sb.append("style='" + style + "' ");
+		String owner = "";
+		if (getOwner() != null && getOwner() instanceof Class_) {
+			owner = " (" + MSG.prefOwnerClass() + ")";
+		} else if (getOwner() != null && getOwner() instanceof SchedulingSubpart) {
+			owner = " (" + MSG.prefOwnerSchedulingSubpart() + ")";
+		} else if (getOwner() != null && getOwner() instanceof DepartmentalInstructor) {
+			owner = " (" +((DepartmentalInstructor)getOwner()).getName(nameFormat != null ? nameFormat : DepartmentalInstructor.sNameFormatShort) + ")";
+		} else if (getOwner() != null && getOwner() instanceof Exam) {
+			owner = " (" + MSG.prefOwnerExamination() + ")";
+		} else if (getOwner() != null && getOwner() instanceof Department) {
+			owner = " (" + ((Department)getOwner()).getLabel() + ")";
+		} else if (getOwner() != null && getOwner() instanceof Session) {
+			owner = " (" + MSG.prefOwnerSession() + ")";
+		}
+		String hint = HtmlUtils.htmlEscape(getPrefLevel().getPrefName() + " " + getLabel() + owner);
+		if (getDistributionObjects()!=null && !getDistributionObjects().isEmpty()) {
+			hint += "<ul><li>";
+			for (Iterator<DistributionObject> it = getOrderedSetOfDistributionObjects().iterator(); it.hasNext();) {
+				DistributionObject distObj = it.next();
+				hint += HtmlUtils.htmlEscape(distObj.preferenceText());
+				if (it.hasNext())
+					hint += "<li>";
+			}
+			hint += "</ul>";
+		} else if (getOwner() instanceof DepartmentalInstructor) {
+			hint += "<ul><li>";
+			for (Iterator<ClassInstructor> it = ((DepartmentalInstructor)getOwner()).getClasses().iterator(); it.hasNext();) {
+				ClassInstructor ci = (ClassInstructor)it.next();
+				hint += HtmlUtils.htmlEscape(ci.getClassInstructing().getClassLabel());
+				if (it.hasNext())
+					hint += "<li>";
+			}
+			hint += "</ul>";
+		}
+		String description = preferenceDescription();
+		if (description != null && !description.isEmpty())
+			hint += "<br>" + HtmlUtils.htmlEscape(description.replace("\'", "\\\'")).replace("\n", "<br>");
+		sb.append("onmouseover=\"showGwtHint(this, '" + hint + "');\" onmouseout=\"hideGwtHint();\">");
+		sb.append(getAbbreviation());
+		sb.append("</span>");
+		return sb.toString();
     }
     
 	/**
