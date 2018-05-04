@@ -30,6 +30,7 @@ import org.restlet.data.Protocol;
 import org.restlet.resource.ClientResource;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -66,9 +67,9 @@ public class GeocodingBackend implements GwtRpcImplementation<GeocodeRequest, Ge
 		ClientResource resource = null;
 		try {
 			if (request.isReverse()) {
-				resource = new ClientResource("https://nominatim.openstreetmap.org/reverse");
+				resource = new ClientResource(ApplicationProperty.RoomGeocodeReverse.value());
 			} else {
-				resource = new ClientResource("https://nominatim.openstreetmap.org/search");
+				resource = new ClientResource(ApplicationProperty.RoomGeocodeSearch.value());
 			}
 			resource.setNext(iClient);
 			resource.addQueryParameter("format", "json");
@@ -97,6 +98,8 @@ public class GeocodingBackend implements GwtRpcImplementation<GeocodeRequest, Ge
 				return response;
 			}
 			throw new GwtRpcException("No match.");
+		} catch (GwtRpcException e) {
+			throw e;
 		} catch (Exception e) {
 			sLog.error("Failed to geocode: " + e.getMessage(), e);
 			throw new GwtRpcException("Failed to geocode: " + e.getMessage());

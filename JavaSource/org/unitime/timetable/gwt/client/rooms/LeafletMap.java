@@ -98,8 +98,8 @@ public class LeafletMap extends MapWidget {
 	}
 	
 	public void setup() {
-		loadCss("https://unpkg.com/leaflet@1.3.1/dist/leaflet.css");
-		ScriptInjector.fromUrl("https://unpkg.com/leaflet@1.3.1/dist/leaflet.js").setWindow(ScriptInjector.TOP_WINDOW).setCallback(
+		loadCss(GWT.getHostPageBaseURL() + "leaflet/leaflet.css");
+		ScriptInjector.fromUrl(GWT.getHostPageBaseURL() + "leaflet/leaflet.js").setWindow(ScriptInjector.TOP_WINDOW).setCallback(
 				new Callback<Void, Exception>() {
 					@Override
 					public void onSuccess(Void result) {

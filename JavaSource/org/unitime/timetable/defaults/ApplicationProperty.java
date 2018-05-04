@@ -1618,6 +1618,16 @@ public enum ApplicationProperty {
 	@DefaultValue("&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors")
 	@Description("Rooms: Laflet maps tiles attribution.")
 	RoomUseLeafletMapAttribution("unitime.coordinates.leafletmap.tilesAttribution"),
+	
+	@Type(String.class)
+	@DefaultValue("https://nominatim.openstreetmap.org/search")
+	@Description("Rooms: OpenSearchMap geocoding service URL (search, see https://wiki.openstreetmap.org/wiki/Nominatim#Search)")
+	RoomGeocodeSearch("unitime.coordinates.geocode.search"),
+	
+	@Type(String.class)
+	@DefaultValue("https://nominatim.openstreetmap.org/reverse")
+	@Description("Rooms: OpenSearchMap geocoding service URL (reverse geocoding, see https://wiki.openstreetmap.org/wiki/Nominatim#Reverse_Geocoding)")
+	RoomGeocodeReverse("unitime.coordinates.geocode.reverse"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
