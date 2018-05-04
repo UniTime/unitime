@@ -689,11 +689,13 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.holdError", problem.message));
 						//throw new SectioningException(problem.message);
 					}
+					if ("DUPL".equals(problem.code)) continue;
+					if ("MAXI".equals(problem.code)) continue;
+					if ("CLOS".equals(problem.code)) continue;
+					if ("TIME".equals(problem.code)) continue;
 					XCourseId course = crn2course.get(problem.crn);
 					if (course == null) continue;
 					String bc = course2banner.get(course);
-					if ("DUPL".equals(problem.code)) continue;
-					if ("MAXI".equals(problem.code)) continue;
 					Map<String, RequestedCourseStatus> problems = (bc == null ? null : overrides.get(bc));
 					Set<String> denied = (bc == null ? null : deniedOverrides.get(bc));
 					if (!validationEnabled) {
@@ -716,6 +718,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.holdError", problem.message));
 						// throw new SectioningException(problem.message);
 					}
+					if ("DUPL".equals(problem.code)) continue;
+					if ("MAXI".equals(problem.code)) continue;
+					if ("CLOS".equals(problem.code)) continue;
+					if ("TIME".equals(problem.code)) continue;
 					XCourseId course = crn2course.get(problem.crn);
 					if (course == null) continue;
 					String bc = course2banner.get(course);
@@ -1871,10 +1877,12 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		if (validation.scheduleRestrictions != null && validation.scheduleRestrictions.problems != null)
 			problems: for (Problem problem: validation.scheduleRestrictions.problems) {
 				if ("HOLD".equals(problem.code)) continue;
-				Course course = crn2course.get(problem.crn);
-				if (course == null) continue;
 				if ("DUPL".equals(problem.code)) continue;
 				if ("MAXI".equals(problem.code)) continue;
+				if ("CLOS".equals(problem.code)) continue;
+				if ("TIME".equals(problem.code)) continue;
+				Course course = crn2course.get(problem.crn);
+				if (course == null) continue;
 				Change change = null;
 				for (Change ch: submitRequest.changes) {
 					if (ch.subject.equals(course.getSubjectArea()) && ch.courseNbr.equals(course.getCourseNumber())) { change = ch; break; }
@@ -1903,10 +1911,12 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		if (validation.alternativesRestrictions != null && validation.alternativesRestrictions.problems != null)
 			problems: for (Problem problem: validation.alternativesRestrictions.problems) {
 				if ("HOLD".equals(problem.code)) continue;
-				Course course = crn2course.get(problem.crn);
-				if (course == null) continue;
 				if ("DUPL".equals(problem.code)) continue;
 				if ("MAXI".equals(problem.code)) continue;
+				if ("CLOS".equals(problem.code)) continue;
+				if ("TIME".equals(problem.code)) continue;
+				Course course = crn2course.get(problem.crn);
+				if (course == null) continue;
 				Change change = null;
 				for (Change ch: submitRequest.changes) {
 					if (ch.subject.equals(course.getSubjectArea()) && ch.courseNbr.equals(course.getCourseNumber())) { change = ch; break; }
