@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import javax.activation.DataSource;
 import javax.activation.FileTypeMap;
@@ -160,6 +161,7 @@ public class ScriptConnector extends ApiConnector {
 		
 		if (!helper.getOptinalParameterBoolean("queue", true)) {
 			ScriptExecution item = new ScriptExecution(request, helper.getSessionContext());
+			item.setId(UUID.randomUUID().toString());
 			item.executeItem();
 			if (item.hasOutput()) {
 				FileInputStream is = new FileInputStream(item.output());
