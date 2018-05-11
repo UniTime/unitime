@@ -64,12 +64,16 @@ import org.cpsolver.studentsct.online.OnlineConfig;
 import org.cpsolver.studentsct.online.OnlineReservation;
 import org.cpsolver.studentsct.online.OnlineSection;
 import org.cpsolver.studentsct.online.OnlineSectioningModel;
+import org.cpsolver.studentsct.online.expectations.MinimizeConflicts;
+import org.cpsolver.studentsct.online.expectations.NeverOverExpected;
 import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
+import org.cpsolver.studentsct.online.selection.BestPenaltyCriterion;
 import org.cpsolver.studentsct.online.selection.MultiCriteriaBranchAndBoundSelection;
 import org.cpsolver.studentsct.online.selection.OnlineSectioningSelection;
 import org.cpsolver.studentsct.online.selection.SuggestionSelection;
 import org.cpsolver.studentsct.reservation.Reservation;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
@@ -144,7 +148,11 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	@Override
 	public List<ClassAssignmentInterface> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		long t0 = System.currentTimeMillis();
-		OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig(), server.getOverExpectedCriterion());
+		OverExpectedCriterion overExpected = server.getOverExpectedCriterion();
+		if ((getRequest().areSpaceConflictsAllowed() || getRequest().areTimeConflictsAllowed()) && server.getConfig().getPropertyBoolean("OverExpected.MinimizeConflicts", false)) {
+			overExpected = new MinimizeConflicts(server.getConfig(), overExpected);
+		}
+		OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig(), overExpected);
 		boolean linkedClassesMustBeUsed = server.getConfig().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
 		Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 		
@@ -274,6 +282,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		HashSet<FreeTimeRequest> requiredFreeTimes = new HashSet<FreeTimeRequest>();
 		HashSet<CourseRequest> requiredUnassigned = new HashSet<CourseRequest>();
 
+		int notAssigned = 0;
+		double selectedPenalty = 0;
 		if (getAssignment() != null && !getAssignment().isEmpty()) {
 
 			OnlineSectioningLog.Enrollment.Builder requested = OnlineSectioningLog.Enrollment.newBuilder();
@@ -283,6 +293,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					requested.addSection(OnlineSectioningHelper.toProto(a));
 			action.addEnrollment(requested);
 			
+			
+			Enrollment[] enrollmentArry = new Enrollment[student.getRequests().size()]; int idx = 0;
 			for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
 				Request r = (Request)e.next();
 				OnlineSectioningLog.Request.Builder rq = OnlineSectioningHelper.toProto(r); 
@@ -331,6 +343,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								}
 								requiredOrSavedSections.add(section);
 							}
+							selectedPenalty += model.getOverExpected(assignment, enrollmentArry, idx, section, cr);
 							preferredSections.add(section);
 							// cr.getSelectedChoices().add(section.getChoice());
 							rq.addSection(OnlineSectioningHelper.toProto(section, cr.getCourse(a.getCourseId())).setPreference(
@@ -371,10 +384,15 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							requiredOrSavedSections.add(section);
 							rq.addSection(OnlineSectioningHelper.toProto(section, cr.getCourse(a.getCourseId())).setPreference(OnlineSectioningLog.Section.Preference.ADD));
 						}
+					if (preferredSections.isEmpty()) notAssigned ++;
 					preferredSectionsForCourse.put(cr, preferredSections);
 					requiredSectionsForCourse.put(cr, requiredSections);
 					if (!conflict)
 						requiredOrSavedSectionsForCourse.put(cr, requiredOrSavedSections);
+					if (!preferredSections.isEmpty()) {
+						Section section = preferredSections.iterator().next();
+						enrollmentArry[idx] = new Enrollment(cr, 0, section.getSubpart().getConfig(), preferredSections, assignment);
+					}
 				} else {
 					FreeTimeRequest ft = (FreeTimeRequest)r;
 					for (ClassAssignmentInterface.ClassAssignment a: getAssignment()) {
@@ -390,12 +408,48 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					}
 				}
 				action.addRequest(rq);
+				idx++;
 			}
 		} else {
 			for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();)
 				action.addRequest(OnlineSectioningHelper.toProto(e.next())); 
 		}
 		long t1 = System.currentTimeMillis();
+		
+		boolean avoidOverExpected = server.getAcademicSession().isSectioningEnabled();
+		if (avoidOverExpected && helper.getUser() != null && helper.getUser().hasType() && helper.getUser().getType() != OnlineSectioningLog.Entity.EntityType.STUDENT)
+			avoidOverExpected = false;
+		String override = ApplicationProperty.OnlineSchedulingAllowOverExpected.value();
+		if (override != null)
+			avoidOverExpected = "false".equalsIgnoreCase(override);
+		
+		double maxOverExpected = -1.0;
+		if (avoidOverExpected && !(model.getOverExpectedCriterion() instanceof NeverOverExpected)) {
+			if (notAssigned == 0 && getAssignment() != null && !getAssignment().isEmpty()) {
+				maxOverExpected = selectedPenalty;
+			} else {
+				long x0 = System.currentTimeMillis();
+				MultiCriteriaBranchAndBoundSelection selection = new MultiCriteriaBranchAndBoundSelection(model.getProperties());
+				selection.setModel(model);
+				selection.setPreferredSections(preferredSectionsForCourse);
+				selection.setRequiredSections(requiredSectionsForCourse);
+				selection.setRequiredFreeTimes(requiredFreeTimes);
+				selection.setTimeout(100);
+				BranchBoundNeighbour neighbour = selection.select(assignment, student, new BestPenaltyCriterion(student, model));
+				long x1 = System.currentTimeMillis();
+				if (neighbour != null) {
+					maxOverExpected = 0;
+					for (int i = 0; i < neighbour.getAssignment().length; i++) {
+						Enrollment enrollment = neighbour.getAssignment()[i];
+						if (enrollment != null && enrollment.getAssignments() != null && enrollment.isCourseRequest())
+							for (Section section: enrollment.getSections())
+								maxOverExpected += model.getOverExpected(assignment, neighbour.getAssignment(), i, section, enrollment.getRequest());
+					}
+					if (maxOverExpected < selectedPenalty) maxOverExpected = selectedPenalty;
+					helper.debug("Maximum number of over-expected sections limited to " + maxOverExpected + " (computed in " + (x1 - x0) + " ms).");
+				}
+			}
+		}
 		
 		OnlineSectioningSelection selection = null;
 		
@@ -410,6 +464,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		selection.setRequiredSections(requiredOrSavedSectionsForCourse);
 		selection.setRequiredFreeTimes(requiredFreeTimes);
 		selection.setRequiredUnassinged(requiredUnassigned);
+		if (maxOverExpected >= 0.0) selection.setMaxOverExpected(maxOverExpected);
 		
 		BranchBoundNeighbour neighbour = selection.select(assignment, student);
 		if (neighbour == null && student.getRequests().isEmpty())
