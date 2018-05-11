@@ -1918,6 +1918,9 @@ public enum ApplicationProperty {
 	@Description("Manuals: Student Scheduling Asisstant user manual")
 	ManualSchedulingAssistant("tmtbl.help.manual.schedulingAssistant"),
 	
+	@Description("Manuals: Student Course Requests user manual")
+	ManualCourseRequests("tmtbl.help.manual.courseRequests"),
+	
 	@DefaultValue("https://docs.google.com/document/d/1ap13URaw7UVT0FN9NZtgSROEKoS-V7S1uq0214Sh43M")
 	@Description("Manuals: Student Scheduling Dashboard user manual")
 	ManualSchedulinDashboard("tmtbl.help.manual.schedulingDashboard"),
