@@ -112,6 +112,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	private static StudentSectioningConstants CONSTANTS = Localization.create(StudentSectioningConstants.class);
 	private CourseRequestInterface iRequest;
 	private Collection<ClassAssignmentInterface.ClassAssignment> iAssignment;
+	private Collection<ClassAssignmentInterface.ClassAssignment> iSpecialRegistration;
 	
 	public FindAssignmentAction forRequest(CourseRequestInterface request) {
 		iRequest = request;
@@ -129,6 +130,15 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	
 	public Collection<ClassAssignmentInterface.ClassAssignment> getAssignment() {
 		return iAssignment;
+	}
+	
+	public FindAssignmentAction withSpecialRegistration(Collection<ClassAssignmentInterface.ClassAssignment> assignment) {
+		iSpecialRegistration = assignment;
+		return this;
+	}
+	
+	public Collection<ClassAssignmentInterface.ClassAssignment> getSpecialRegistration() {
+		return iSpecialRegistration;
 	}
 
 	@Override
@@ -291,6 +301,13 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							if (section == null || section.getLimit() == 0) {
 								continue a;
 							}
+							// check for drops
+							if (getSpecialRegistration() != null)
+								for (ClassAssignmentInterface.ClassAssignment b: getSpecialRegistration())
+									if (!b.isCourseAssigned() && a.getClassId().equals(b.getClassId())) {
+										rq.addSection(OnlineSectioningHelper.toProto(section, cr.getCourse(a.getCourseId())).setPreference(OnlineSectioningLog.Section.Preference.DROP));
+										continue a;
+									}
 							if (a.isPinned())
 								requiredSections.add(section);
 							if (a.isPinned() || a.isSaved() || getRequest().isNoChange()) {
@@ -323,6 +340,37 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					if (!assigned && getRequest().isNoChange()) {
 						requiredUnassigned.add(cr);
 					}
+					// check for adds
+					if (getSpecialRegistration() != null)
+						for (ClassAssignmentInterface.ClassAssignment a: getSpecialRegistration()) {
+							if (!a.isCourseAssigned()) continue;
+							Section section = cr.getSection(a.getClassId());
+							if (section == null) continue;
+							selectedPenalty += model.getOverExpected(assignment, enrollmentArry, idx, section, cr);
+							preferredSections.add(section);
+							if (a.isPinned())
+								requiredSections.add(section);
+							if (!conflict) {
+								for (Section s: requiredOrSavedSections)
+									if (s.isOverlapping(section)) { conflict = true; break; }
+								boolean allowOverlap = false;
+								for (Reservation rx: cr.getReservations(cr.getCourse(a.getCourseId()))) {
+									if (rx.isAllowOverlap()) { allowOverlap = true; break; }
+								}
+								if (allowOverlap) {
+									allowOverlaps.add(cr);
+								} else {
+									for (Map.Entry<CourseRequest, Set<Section>> x: requiredOrSavedSectionsForCourse.entrySet()) {
+										if (!allowOverlaps.contains(x.getKey()))
+											for (Section s: x.getValue())
+												if (s.isOverlapping(section)) { conflict = true; break; }
+											if (conflict) break;
+									}
+								}
+							}
+							requiredOrSavedSections.add(section);
+							rq.addSection(OnlineSectioningHelper.toProto(section, cr.getCourse(a.getCourseId())).setPreference(OnlineSectioningLog.Section.Preference.ADD));
+						}
 					preferredSectionsForCourse.put(cr, preferredSections);
 					requiredSectionsForCourse.put(cr, requiredSections);
 					if (!conflict)
@@ -875,6 +923,10 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					if (a.getParentSection() == null)
 						a.setParentSection(server.getCourse(course.getId()).getConsentLabel());
 					a.setExpected(overExp.getExpected(section.getLimit(), section.getSpaceExpected()));
+					if (getSpecialRegistration() != null)
+						for (ClassAssignmentInterface.ClassAssignment b: getSpecialRegistration())
+							if (b.getClassId().equals(a.getClassId()) && b.hasError())
+								a.setError(b.getError());
 				}
 				ret.add(ca);
 			} else {

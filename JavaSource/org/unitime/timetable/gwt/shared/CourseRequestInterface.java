@@ -388,6 +388,9 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			iCourseId = course.getCourseId();
 			iCourseName = (course.hasUniqueName() && !showTitle ? course.getCourseName() : course.getCourseNameWithTitle()); 
 		}
+		public RequestedCourse(Long courseId, String courseName) {
+			iCourseId = courseId; iCourseName = courseName;
+		}
 		
 		public boolean isCourse() { return hasCourseId() || hasCourseName(); }
 		public Long getCourseId() { return iCourseId; }

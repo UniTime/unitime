@@ -2874,4 +2874,31 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 		return st;
 	}
+
+	@Override
+	public ClassAssignmentInterface section(boolean online, CourseRequestInterface request, List<ClassAssignment> currentAssignment, List<ClassAssignment> specialRegistration) throws SectioningException, PageAccessException {
+		try {
+			setLastSessionId(request.getAcademicSessionId());
+			setLastRequest(request);
+			request.setStudentId(getStudentId(request.getAcademicSessionId()));
+			OnlineSectioningServer server = getServerInstance(request.getAcademicSessionId(), true);
+			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+			ClassAssignmentInterface ret = server.execute(server.createAction(FindAssignmentAction.class).forRequest(request).withAssignment(currentAssignment).withSpecialRegistration(specialRegistration), currentUser()).get(0);
+			if (ret != null) {
+				ret.setCanEnroll(server.getAcademicSession().isSectioningEnabled());
+				if (ret.isCanEnroll()) {
+					if (getStudentId(request.getAcademicSessionId()) == null)
+						ret.setCanEnroll(false);
+				}
+			}
+			return ret;
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (SectioningException e) {
+			throw e;
+		} catch (Exception e) {
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(MSG.exceptionSectioningFailed(e.getMessage()), e);
+		}
+	}
 }

@@ -98,4 +98,5 @@ public interface SectioningService extends RemoteService {
 	SubmitSpecialRegistrationResponse submitSpecialRequest(SubmitSpecialRegistrationRequest request) throws SectioningException, PageAccessException;
 	SpecialRegistrationEligibilityResponse checkSpecialRequestEligibility(SpecialRegistrationEligibilityRequest request) throws SectioningException, PageAccessException;
 	List<RetrieveSpecialRegistrationResponse> retrieveAllSpecialRequests(RetrieveAllSpecialRegistrationsRequest request) throws SectioningException, PageAccessException;
+	ClassAssignmentInterface section(boolean online, CourseRequestInterface request, List<ClassAssignmentInterface.ClassAssignment> currentAssignment, List<ClassAssignmentInterface.ClassAssignment> specialRegistration) throws SectioningException, PageAccessException;
 }

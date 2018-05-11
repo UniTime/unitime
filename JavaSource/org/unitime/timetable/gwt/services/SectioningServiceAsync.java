@@ -97,4 +97,5 @@ public interface SectioningServiceAsync {
 	void submitSpecialRequest(SubmitSpecialRegistrationRequest request, AsyncCallback<SubmitSpecialRegistrationResponse> callback) throws SectioningException, PageAccessException;
 	void checkSpecialRequestEligibility(SpecialRegistrationEligibilityRequest request, AsyncCallback<SpecialRegistrationEligibilityResponse> callback) throws SectioningException, PageAccessException;
 	void retrieveAllSpecialRequests(RetrieveAllSpecialRegistrationsRequest request, AsyncCallback<List<RetrieveSpecialRegistrationResponse>> callback) throws SectioningException, PageAccessException;
+	void section(boolean online, CourseRequestInterface request, List<ClassAssignmentInterface.ClassAssignment> currentAssignment, List<ClassAssignmentInterface.ClassAssignment> specialRegistration, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;
 }

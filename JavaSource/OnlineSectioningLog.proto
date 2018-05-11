@@ -58,6 +58,8 @@ message Section {
 		REQUIRED = 0;
 		PREFERRED = 1;
 		SELECTED = 2;
+		ADD = 3;
+		DROP = 4;
 	}
 	optional Entity clazz = 1;
 	optional Time time = 2;

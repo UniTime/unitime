@@ -2511,7 +2511,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	protected SpecialRegistrationSelectionDialog getSpecialRegistrationSelectionDialog() {
 		if (iSpecialRegistrationSelectionDialog == null) {
 			iSpecialRegistrationSelectionDialog = new SpecialRegistrationSelectionDialog(iSpecRegCx) {
-				public void doSubmit(RetrieveSpecialRegistrationResponse specReg) {
+				public void doSubmit(final RetrieveSpecialRegistrationResponse specReg) {
 					super.doSubmit(specReg);
 					if (specReg == null) {
 						iSpecRegCx.update(iEligibilityCheck);
@@ -2523,12 +2523,30 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					} else {
 						iSpecRegCx.setRequestId(specReg.getRequestId());
 						iSpecRegCx.setStatus(specReg.getStatus());
-						iSpecialRegAssignment = specReg.getClassAssignments();
 						if (specReg.hasClassAssignments()) {
+							iSpecialRegAssignment = specReg.getClassAssignments();
 							fillIn(specReg.getClassAssignments());
 							if (specReg.getClassAssignments().hasRequest())
 								iCourseRequests.setRequest(specReg.getClassAssignments().getRequest());
 							addHistory();
+						} else if (specReg.hasChanges()) {
+							final CourseRequestInterface courseRequests = iCourseRequests.getRequest();
+							courseRequests.setTimeConflictsAllowed(iSpecRegCx.areSpaceConflictsAllowed()); courseRequests.setSpaceConflictsAllowed(iSpecRegCx.areTimeConflictsAllowed());
+							for (ClassAssignmentInterface.ClassAssignment ch: specReg.getChanges()) {
+								if (ch.isCourseAssigned()) courseRequests.addCourse(new RequestedCourse(ch.getCourseId(), CONSTANTS.showCourseTitle() ? ch.getCourseNameWithTitle() : ch.getCourseName()));
+							}
+							LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
+							iSectioningService.section(iOnline, courseRequests, iLastResult, specReg.getChanges(), new AsyncCallback<ClassAssignmentInterface>() {
+								public void onSuccess(ClassAssignmentInterface result) {
+									fillIn(result);
+									iCourseRequests.setRequest(courseRequests);
+									addHistory();
+								}
+								public void onFailure(Throwable caught) {
+									iStatus.error(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
+									LoadingWidget.getInstance().hide();
+								}
+							});
 						} else {
 							fillIn(iSavedAssignment);
 							addHistory();

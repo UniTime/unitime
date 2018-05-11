@@ -43,8 +43,6 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpe
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -113,22 +111,6 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 		header.add(new UniTimeTableHeader(""));
 		iTable.addRow(null, header);
 		
-		
-		iFooter.addButton("create", MESSAGES.buttonSpecRegCreateNew(), new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				doSubmit(null);
-			}
-		});
-		
-		iFooter.addButton("select", MESSAGES.buttonSpecRegSelect(), new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				if (iTable.getSelectedRow() > 0)
-					doSubmit(iTable.getData(iTable.getSelectedRow()));
-			}
-		});
-		
 		iFooter.addButton("cancel", MESSAGES.buttonSpecRegCancel(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -146,7 +128,6 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 	}
 	
 	public void open(List<RetrieveSpecialRegistrationResponse> registrations) {
-		iFooter.setEnabled("create", iSpecReg.isEnabled() && iSpecReg.hasRequestKey() && iSpecReg.isSpecRegRequestKeyValid());
 		iTable.clearTable(1);
 		Collections.sort(registrations);
 		for (RetrieveSpecialRegistrationResponse reg: registrations) {
@@ -241,12 +222,6 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 			}
 		}
 		center();
-		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-			@Override
-			public void execute() {
-				iFooter.setFocus("select", true);
-			}
-		});
 		updateAriaStatus(true);
 	}
 	

@@ -74,7 +74,6 @@ import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentRequest;
@@ -959,6 +958,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		RetrieveSpecialRegistrationResponse ret = new RetrieveSpecialRegistrationResponse();
 		Map<CourseOffering, List<Class_>> adds = new HashMap<CourseOffering, List<Class_>>();
 		Map<CourseOffering, List<Class_>> drops = new HashMap<CourseOffering, List<Class_>>();
+		Set<Long> pinned = new HashSet<Long>();
 		Set<ErrorMessage> errors = new TreeSet<ErrorMessage>();
 		TreeSet<CourseOffering> courses = new TreeSet<CourseOffering>();
 		if (specialRequest.changes != null)
@@ -976,8 +976,11 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 						list.add(clazz);
 					if (change.errors != null)
 						for (ChangeError err: change.errors)
-							for (Class_ clazz: classes)
+							for (Class_ clazz: classes) {
 								errors.add(new ErrorMessage(course.getCourseName(), clazz.getExternalId(course), err.code, err.message));
+								pinned.add(clazz.getUniqueId());
+							}
+								
 				}
 			}
 		String desc = "";
@@ -1002,6 +1005,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					ca.setSubject(course.getSubjectAreaAbbv());
 					ca.setCourseNbr(course.getCourseNbr());
 					ca.setCourseAssigned(true);
+					ca.setPinned(pinned.contains(clazz.getUniqueId()));
 					ca.setTitle(course.getTitle());
 					ca.setClassId(clazz.getUniqueId());
 					ca.setSection(clazz.getClassSuffix(course));
@@ -1141,12 +1145,14 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			}
 		}
 		
+		/*
 		List<XRequest> requests = getRequests(server, helper, student, adds, drops);
 		checkRequests(server, helper, student, requests, errors, false, false);
 		ret.setClassAssignments(GetAssignment.computeAssignment(server, helper, student, requests, null, errors, true));
 		if (helper.getAction().getEnrollmentCount() > 0)
 			helper.getAction().getEnrollmentBuilder(helper.getAction().getEnrollmentCount() - 1).setType(OnlineSectioningLog.Enrollment.EnrollmentType.EXTERNAL);
 		helper.getAction().clearRequest();
+		*/
 		ret.setDescription(desc);
 		
 		if (ret.hasClassAssignments())

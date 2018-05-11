@@ -2526,6 +2526,14 @@ public final class OnlineSectioningLog {
        * <code>SELECTED = 2;</code>
        */
       SELECTED(2, 2),
+      /**
+       * <code>ADD = 3;</code>
+       */
+      ADD(3, 3),
+      /**
+       * <code>DROP = 4;</code>
+       */
+      DROP(4, 4),
       ;
 
       /**
@@ -2540,6 +2548,14 @@ public final class OnlineSectioningLog {
        * <code>SELECTED = 2;</code>
        */
       public static final int SELECTED_VALUE = 2;
+      /**
+       * <code>ADD = 3;</code>
+       */
+      public static final int ADD_VALUE = 3;
+      /**
+       * <code>DROP = 4;</code>
+       */
+      public static final int DROP_VALUE = 4;
 
 
       public final int getNumber() { return value; }
@@ -2549,6 +2565,8 @@ public final class OnlineSectioningLog {
           case 0: return REQUIRED;
           case 1: return PREFERRED;
           case 2: return SELECTED;
+          case 3: return ADD;
+          case 4: return DROP;
           default: return null;
         }
       }
@@ -15826,51 +15844,52 @@ public final class OnlineSectioningLog {
       "\n\022COURSE_RESERVATION\020\n\022\013\n\007MANAGER\020\013\022\t\n\005O",
       "THER\020\014\"m\n\004Time\022\014\n\004days\030\001 \002(\005\022\r\n\005start\030\002 " +
       "\002(\005\022\016\n\006length\030\003 \002(\005\022\017\n\007pattern\030\004 \001(\t\022\'\n\n" +
-      "preference\030\005 \001(\0162\023.Section.Preference\"\265\002" +
+      "preference\030\005 \001(\0162\023.Section.Preference\"\310\002" +
       "\n\007Section\022\026\n\005clazz\030\001 \001(\0132\007.Entity\022\023\n\004tim" +
       "e\030\002 \001(\0132\005.Time\022\033\n\ninstructor\030\003 \003(\0132\007.Ent" +
       "ity\022\031\n\010location\030\004 \003(\0132\007.Entity\022\'\n\nprefer" +
       "ence\030\005 \001(\0162\023.Section.Preference\022\027\n\006cours" +
       "e\030\006 \001(\0132\007.Entity\022\034\n\013reservation\030\007 \001(\0132\007." +
       "Entity\022\022\n\ntime_stamp\030\010 \001(\003\022\030\n\007subpart\030\t " +
-      "\001(\0132\007.Entity\"7\n\nPreference\022\014\n\010REQUIRED\020\000",
-      "\022\r\n\tPREFERRED\020\001\022\014\n\010SELECTED\020\002\"\277\001\n\007Reques" +
-      "t\022\n\n\002id\030\001 \001(\003\022\020\n\010priority\030\002 \002(\005\022\032\n\013alter" +
-      "native\030\003 \001(\010:\005false\022\030\n\tfree_time\030\004 \003(\0132\005" +
-      ".Time\022\027\n\006course\030\005 \003(\0132\007.Entity\022\031\n\007sectio" +
-      "n\030\006 \003(\0132\010.Section\022\022\n\ntime_stamp\030\010 \001(\003\022\030\n" +
-      "\twait_list\030\t \001(\010:\005false\"\323\001\n\nEnrollment\022(" +
-      "\n\004type\030\001 \002(\0162\032.Enrollment.EnrollmentType" +
-      "\022\031\n\007section\030\002 \003(\0132\010.Section\022\r\n\005value\030\003 \001" +
-      "(\001\"q\n\016EnrollmentType\022\r\n\tREQUESTED\020\000\022\014\n\010C" +
-      "OMPUTED\020\001\022\014\n\010PREVIOUS\020\002\022\n\n\006STORED\020\003\022\014\n\010A",
-      "PPROVED\020\004\022\014\n\010REJECTED\020\005\022\014\n\010EXTERNAL\020\006\"\327\003" +
-      "\n\006Action\022\021\n\toperation\030\001 \002(\t\022\030\n\007session\030\002" +
-      " \002(\0132\007.Entity\022\030\n\007student\030\003 \001(\0132\007.Entity\022" +
-      "\022\n\nstart_time\030\004 \001(\003\022\020\n\010end_time\030\005 \001(\003\022\020\n" +
-      "\010cpu_time\030\006 \001(\003\022\031\n\007request\030\007 \003(\0132\010.Reque" +
-      "st\022\037\n\nenrollment\030\010 \003(\0132\013.Enrollment\022\026\n\005o" +
-      "ther\030\t \003(\0132\007.Entity\022\031\n\007message\030\n \003(\0132\010.M" +
-      "essage\022\"\n\006result\030\013 \001(\0162\022.Action.ResultTy" +
-      "pe\022\025\n\004user\030\014 \001(\0132\007.Entity\022\031\n\006option\030\r \003(" +
-      "\0132\t.Property\022\024\n\014api_get_time\030\016 \001(\003\022\025\n\rap",
-      "i_post_time\030\017 \001(\003\022\025\n\rapi_exception\030\020 \001(\t" +
-      "\"E\n\nResultType\022\013\n\007SUCCESS\020\000\022\013\n\007FAILURE\020\001" +
-      "\022\010\n\004TRUE\020\002\022\t\n\005FALSE\020\003\022\010\n\004NULL\020\004\"\233\001\n\007Mess" +
-      "age\022\035\n\005level\030\001 \002(\0162\016.Message.Level\022\014\n\004te" +
-      "xt\030\002 \002(\t\022\021\n\texception\030\003 \001(\t\022\022\n\ntime_stam" +
-      "p\030\004 \001(\003\"<\n\005Level\022\t\n\005DEBUG\020\000\022\010\n\004INFO\020\001\022\010\n" +
-      "\004WARN\020\002\022\t\n\005ERROR\020\003\022\t\n\005FATAL\020\004\"&\n\010Propert" +
-      "y\022\013\n\003key\030\001 \002(\t\022\r\n\005value\030\002 \002(\t\"9\n\003Log\022\027\n\006" +
-      "action\030\001 \003(\0132\007.Action\022\031\n\007message\030\002 \003(\0132\010" +
-      ".Message\"\304\001\n\023CourseRequestOption\022-\n\004type",
-      "\030\001 \002(\0162\037.CourseRequestOption.OptionType\022" +
-      "\031\n\007section\030\002 \003(\0132\010.Section\022$\n\023instructio" +
-      "nalMethod\030\003 \003(\0132\007.Entity\"=\n\nOptionType\022\027" +
-      "\n\023ORIGINAL_ENROLLMENT\020\000\022\026\n\022REQUEST_PREFE" +
-      "RENCE\020\001\"7\n\013ExportedLog\022\017\n\007student\030\001 \002(\t\022" +
-      "\027\n\006action\030\002 \003(\0132\007.ActionB(\n&org.unitime." +
-      "timetable.onlinesectioning"
+      "\001(\0132\007.Entity\"J\n\nPreference\022\014\n\010REQUIRED\020\000",
+      "\022\r\n\tPREFERRED\020\001\022\014\n\010SELECTED\020\002\022\007\n\003ADD\020\003\022\010" +
+      "\n\004DROP\020\004\"\277\001\n\007Request\022\n\n\002id\030\001 \001(\003\022\020\n\010prio" +
+      "rity\030\002 \002(\005\022\032\n\013alternative\030\003 \001(\010:\005false\022\030" +
+      "\n\tfree_time\030\004 \003(\0132\005.Time\022\027\n\006course\030\005 \003(\013" +
+      "2\007.Entity\022\031\n\007section\030\006 \003(\0132\010.Section\022\022\n\n" +
+      "time_stamp\030\010 \001(\003\022\030\n\twait_list\030\t \001(\010:\005fal" +
+      "se\"\323\001\n\nEnrollment\022(\n\004type\030\001 \002(\0162\032.Enroll" +
+      "ment.EnrollmentType\022\031\n\007section\030\002 \003(\0132\010.S" +
+      "ection\022\r\n\005value\030\003 \001(\001\"q\n\016EnrollmentType\022" +
+      "\r\n\tREQUESTED\020\000\022\014\n\010COMPUTED\020\001\022\014\n\010PREVIOUS",
+      "\020\002\022\n\n\006STORED\020\003\022\014\n\010APPROVED\020\004\022\014\n\010REJECTED" +
+      "\020\005\022\014\n\010EXTERNAL\020\006\"\327\003\n\006Action\022\021\n\toperation" +
+      "\030\001 \002(\t\022\030\n\007session\030\002 \002(\0132\007.Entity\022\030\n\007stud" +
+      "ent\030\003 \001(\0132\007.Entity\022\022\n\nstart_time\030\004 \001(\003\022\020" +
+      "\n\010end_time\030\005 \001(\003\022\020\n\010cpu_time\030\006 \001(\003\022\031\n\007re" +
+      "quest\030\007 \003(\0132\010.Request\022\037\n\nenrollment\030\010 \003(" +
+      "\0132\013.Enrollment\022\026\n\005other\030\t \003(\0132\007.Entity\022\031" +
+      "\n\007message\030\n \003(\0132\010.Message\022\"\n\006result\030\013 \001(" +
+      "\0162\022.Action.ResultType\022\025\n\004user\030\014 \001(\0132\007.En" +
+      "tity\022\031\n\006option\030\r \003(\0132\t.Property\022\024\n\014api_g",
+      "et_time\030\016 \001(\003\022\025\n\rapi_post_time\030\017 \001(\003\022\025\n\r" +
+      "api_exception\030\020 \001(\t\"E\n\nResultType\022\013\n\007SUC" +
+      "CESS\020\000\022\013\n\007FAILURE\020\001\022\010\n\004TRUE\020\002\022\t\n\005FALSE\020\003" +
+      "\022\010\n\004NULL\020\004\"\233\001\n\007Message\022\035\n\005level\030\001 \002(\0162\016." +
+      "Message.Level\022\014\n\004text\030\002 \002(\t\022\021\n\texception" +
+      "\030\003 \001(\t\022\022\n\ntime_stamp\030\004 \001(\003\"<\n\005Level\022\t\n\005D" +
+      "EBUG\020\000\022\010\n\004INFO\020\001\022\010\n\004WARN\020\002\022\t\n\005ERROR\020\003\022\t\n" +
+      "\005FATAL\020\004\"&\n\010Property\022\013\n\003key\030\001 \002(\t\022\r\n\005val" +
+      "ue\030\002 \002(\t\"9\n\003Log\022\027\n\006action\030\001 \003(\0132\007.Action" +
+      "\022\031\n\007message\030\002 \003(\0132\010.Message\"\304\001\n\023CourseRe",
+      "questOption\022-\n\004type\030\001 \002(\0162\037.CourseReques" +
+      "tOption.OptionType\022\031\n\007section\030\002 \003(\0132\010.Se" +
+      "ction\022$\n\023instructionalMethod\030\003 \003(\0132\007.Ent" +
+      "ity\"=\n\nOptionType\022\027\n\023ORIGINAL_ENROLLMENT" +
+      "\020\000\022\026\n\022REQUEST_PREFERENCE\020\001\"7\n\013ExportedLo" +
+      "g\022\017\n\007student\030\001 \002(\t\022\027\n\006action\030\002 \003(\0132\007.Act" +
+      "ionB(\n&org.unitime.timetable.onlinesecti" +
+      "oning"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
