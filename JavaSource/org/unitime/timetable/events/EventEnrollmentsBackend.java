@@ -239,7 +239,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
         			"select s1.student.uniqueId, m1" +
         			" from StudentClassEnrollment s1, ClassEvent e1 inner join e1.meetings m1, StudentClassEnrollment s2" +
         			" where s2.clazz.uniqueId = :classId and e1.clazz = s1.clazz and s1.student = s2.student" +
-        			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod")
+        			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod and m1.approvalStatus = 1")
         			.setDate("meetingDate", meeting.getMeetingDate())
         			.setInteger("startPeriod", meeting.getStartSlot())
         			.setInteger("stopPeriod", meeting.getEndSlot())
@@ -259,7 +259,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
             			"select s1.student.uniqueId, m1" +
             			" from StudentClassEnrollment s1, ExamEvent e1 inner join e1.meetings m1 inner join e1.exam.owners o1, StudentClassEnrollment s2" +
             			" where s2.clazz.uniqueId = :classId and s1.student = s2.student" + where(t1, 1) +
-            			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod")
+            			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod and m1.approvalStatus = 1")
             			.setDate("meetingDate", meeting.getMeetingDate())
             			.setInteger("startPeriod", meeting.getStartSlot())
             			.setInteger("stopPeriod", meeting.getEndSlot())
@@ -304,7 +304,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
         			"select s1.student.uniqueId, m1" +
         			" from StudentClassEnrollment s1, ClassEvent e1 inner join e1.meetings m1, StudentClassEnrollment s2" +
         			" where s2.clazz.schedulingSubpart.instrOfferingConfig.uniqueId = :configId and e1.clazz = s1.clazz and s1.student = s2.student" +
-        			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod")
+        			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod and m1.approvalStatus = 1")
         			.setDate("meetingDate", meeting.getMeetingDate())
         			.setInteger("startPeriod", meeting.getStartSlot())
         			.setInteger("stopPeriod", meeting.getEndSlot())
@@ -324,7 +324,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
             			"select s1.student.uniqueId, m1" +
             			" from StudentClassEnrollment s1, ExamEvent e1 inner join e1.meetings m1 inner join e1.exam.owners o1, StudentClassEnrollment s2" +
             			" where s2.clazz.schedulingSubpart.instrOfferingConfig.uniqueId = :configId and s1.student = s2.student" + where(t1, 1) +
-            			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod")
+            			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod and m1.approvalStatus = 1")
             			.setDate("meetingDate", meeting.getMeetingDate())
             			.setInteger("startPeriod", meeting.getStartSlot())
             			.setInteger("stopPeriod", meeting.getEndSlot())
@@ -369,7 +369,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
         			"select s1.student.uniqueId, m1" +
         			" from StudentClassEnrollment s1, ClassEvent e1 inner join e1.meetings m1, StudentClassEnrollment s2" +
         			" where s2.courseOffering.uniqueId = :courseId and e1.clazz = s1.clazz and s1.student = s2.student" +
-        			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod")
+        			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod and m1.approvalStatus = 1")
         			.setDate("meetingDate", meeting.getMeetingDate())
         			.setInteger("startPeriod", meeting.getStartSlot())
         			.setInteger("stopPeriod", meeting.getEndSlot())
@@ -389,7 +389,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
             			"select s1.student.uniqueId, m1" +
             			" from StudentClassEnrollment s1, ExamEvent e1 inner join e1.meetings m1 inner join e1.exam.owners o1, StudentClassEnrollment s2" +
             			" where s2.courseOffering.uniqueId = :courseId and s1.student = s2.student" + where(t1, 1) +
-            			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod")
+            			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod and m1.approvalStatus = 1")
             			.setDate("meetingDate", meeting.getMeetingDate())
             			.setInteger("startPeriod", meeting.getStartSlot())
             			.setInteger("stopPeriod", meeting.getEndSlot())
@@ -434,7 +434,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
         			"select s1.student.uniqueId, m1" +
         			" from StudentClassEnrollment s1, ClassEvent e1 inner join e1.meetings m1, StudentClassEnrollment s2" +
         			" where s2.courseOffering.instructionalOffering.uniqueId = :offeringId and e1.clazz = s1.clazz and s1.student = s2.student" +
-        			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod")
+        			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod and m1.approvalStatus = 1")
         			.setDate("meetingDate", meeting.getMeetingDate())
         			.setInteger("startPeriod", meeting.getStartSlot())
         			.setInteger("stopPeriod", meeting.getEndSlot())
@@ -454,7 +454,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
             			"select s1.student.uniqueId, m1" +
             			" from StudentClassEnrollment s1, ExamEvent e1 inner join e1.meetings m1 inner join e1.exam.owners o1, StudentClassEnrollment s2" +
             			" where s2.courseOffering.instructionalOffering.uniqueId = :offeringId and s1.student = s2.student" + where(t1, 1) +
-            			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod")
+            			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod and m1.approvalStatus = 1")
             			.setDate("meetingDate", meeting.getMeetingDate())
             			.setInteger("startPeriod", meeting.getStartSlot())
             			.setInteger("stopPeriod", meeting.getEndSlot())
@@ -672,7 +672,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
     			"select s1.student.uniqueId, m1" +
     			" from StudentClassEnrollment s1, ClassEvent e1 inner join e1.meetings m1, ClassEvent e2 inner join e2.meetings m2, StudentClassEnrollment s2" +
     			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and e1.clazz = s1.clazz and e2.clazz = s2.clazz and s1.student = s2.student" +
-    			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod")
+    			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod and m1.approvalStatus = 1 and m2.approvalStatus = 1")
     			.setLong("eventId", event.getUniqueId()).list()) {
     		Long studentId = (Long)o[0];
     		Meeting meeting = (Meeting)o[1];
@@ -690,7 +690,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
         			" from StudentClassEnrollment s1, ExamEvent e1 inner join e1.meetings m1 inner join e1.exam.owners o1, ClassEvent e2 inner join e2.meetings m2, StudentClassEnrollment s2" +
         			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and e2.clazz = s2.clazz and s1.student = s2.student" +
         			where(t1, 1) +
-        			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod")
+        			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod and m1.approvalStatus = 1 and m2.approvalStatus = 1")
         			.setLong("eventId", event.getUniqueId()).list()) {
         		Long studentId = (Long)o[0];
         		Meeting meeting = (Meeting)o[1];
@@ -709,7 +709,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
         			" from StudentClassEnrollment s1, CourseEvent e1 inner join e1.meetings m1 inner join e1.relatedCourses o1, ClassEvent e2 inner join e2.meetings m2, StudentClassEnrollment s2" +
         			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and e2.clazz = s2.clazz and s1.student = s2.student" +
         			where(t1, 1) +
-        			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod and e1.reqAttendance = true and m1.approvalStatus = 1")
+        			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod and e1.reqAttendance = true and m1.approvalStatus = 1 and m2.approvalStatus = 1")
         			.setLong("eventId", event.getUniqueId()).list()) {
         		Long studentId = (Long)o[0];
         		Meeting meeting = (Meeting)o[1];
@@ -736,7 +736,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
         			" from StudentClassEnrollment s1, ClassEvent e1 inner join e1.meetings m1, ExamEvent e2 inner join e2.meetings m2 inner join e2.exam.owners o2, StudentClassEnrollment s2" +
         			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and e1.clazz = s1.clazz and s1.student = s2.student" +
         			where(t2, 2) + 
-        			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod")
+        			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod and m1.approvalStatus = 1 and m2.approvalStatus = 1")
         			.setLong("eventId", event.getUniqueId()).list()) {
         		Long studentId = (Long)o[0];
         		Meeting meeting = (Meeting)o[1];
@@ -756,7 +756,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
             			" from StudentClassEnrollment s1, ExamEvent e1 inner join e1.meetings m1 inner join e1.exam.owners o1, ExamEvent e2 inner join e2.meetings m2 inner join e2.exam.owners o2, StudentClassEnrollment s2" +
             			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and s1.student = s2.student and e1.exam.examType != e2.exam.examType" +
             			where(t1, 1) + where(t2, 2) +
-            			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod")
+            			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod and m1.approvalStatus = 1 and m2.approvalStatus = 1")
             			.setLong("eventId", event.getUniqueId()).list()) {
             		Long studentId = (Long)o[0];
             		Meeting meeting = (Meeting)o[1];
@@ -777,7 +777,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
             			" from StudentClassEnrollment s1, CourseEvent e1 inner join e1.meetings m1 inner join e1.relatedCourses o1, ExamEvent e2 inner join e2.meetings m2 inner join e2.exam.owners o2, StudentClassEnrollment s2" +
             			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and s1.student = s2.student" +
             			where(t1, 1) + where(t2, 2) +
-            			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod and e1.reqAttendance = true and m1.approvalStatus = 1")
+            			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod and e1.reqAttendance = true and m1.approvalStatus = 1 and m2.approvalStatus = 1")
             			.setLong("eventId", event.getUniqueId()).list()) {
             		Long studentId = (Long)o[0];
             		Meeting meeting = (Meeting)o[1];
@@ -805,7 +805,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
         			" from StudentClassEnrollment s1, ClassEvent e1 inner join e1.meetings m1, CourseEvent e2 inner join e2.meetings m2 inner join e2.relatedCourses o2, StudentClassEnrollment s2" +
         			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and e1.clazz = s1.clazz and s1.student = s2.student" +
         			where(t2, 2) + 
-        			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod and m2.approvalStatus <= 1")
+        			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod and m2.approvalStatus <= 1 and m1.approvalStatus = 1")
         			.setLong("eventId", event.getUniqueId()).list()) {
         		Long studentId = (Long)o[0];
         		Meeting meeting = (Meeting)o[1];
@@ -825,7 +825,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
             			" from StudentClassEnrollment s1, ExamEvent e1 inner join e1.meetings m1 inner join e1.exam.owners o1, CourseEvent e2 inner join e2.meetings m2 inner join e2.relatedCourses o2, StudentClassEnrollment s2" +
             			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and s1.student = s2.student" +
             			where(t1, 1) + where(t2, 2) +
-            			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod and m2.approvalStatus <= 1")
+            			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod and m2.approvalStatus <= 1 and m1.approvalStatus = 1")
             			.setLong("eventId", event.getUniqueId()).list()) {
             		Long studentId = (Long)o[0];
             		Meeting meeting = (Meeting)o[1];
