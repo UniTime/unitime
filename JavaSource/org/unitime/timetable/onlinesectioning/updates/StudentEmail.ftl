@@ -128,6 +128,7 @@
 <#macro classTableLine line>
 	<#assign style="white-space: nowrap;">
 	<#assign stylebr="">
+	<#assign stylelink="color: inherit;">
 	<#if line.first>
 		<#assign style="white-space: nowrap; border-top: 1px dashed #9CB0CE;">
 		<#assign stylebr="border-top: 1px dashed #9CB0CE;">
@@ -150,8 +151,13 @@
 	<#elseif line.assigned>
 		<tr style='vertical-align: top'>
 			<#if line.first>
-				<td style="${style}">${line.subject}</td>
-	 			<td style="${style}">${line.courseNumber}</td>
+				<#if line.url??>
+					<td style="${style}"><a href="${line.url}" style="${stylelink}">${line.subject}</a></td>
+		 			<td style="${style}"><a href="${line.url}" style="${stylelink}">${line.courseNumber}</a></td>
+				<#else>
+					<td style="${style}">${line.subject}</td>
+		 			<td style="${style}">${line.courseNumber}</td>
+				</#if>
 	 		<#else>
 	 			<td style="${style}" colspan='2'></td>
 	 		</#if>
@@ -180,9 +186,15 @@
 	<#else>
 		<#assign style="white-space: nowrap; color: red; border-top: 1px dashed #9CB0CE;">
 		<#assign stylebr="color: red; border-top: 1px dashed #9CB0CE;">
+		<#assign stylelink="color: inherit;">
 	 	<tr style='vertical-align: top'>
-	 		<td style="${style}">${line.subject}</td>
-	 		<td style="${style}">${line.courseNumber}</td>
+	 		<#if line.url??>
+				<td style="${style}"><a href="${line.url}" style="${stylelink}">${line.subject}</a></td>
+		 		<td style="${style}"><a href="${line.url}" style="${stylelink}">${line.courseNumber}</a></td>
+			<#else>
+				<td style="${style}">${line.subject}</td>
+	 			<td style="${style}">${line.courseNumber}</td>
+			</#if>
 	 		<td style="${style}"></td>
 	 		<td style="${style}"></td>
 	 		<td style="${stylebr}" colspan="9" align="center">${line.note}</td>

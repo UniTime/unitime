@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -60,11 +61,13 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.custom.CourseUrlProvider;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -112,6 +115,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	private XEnrollment iOldEnrollment;
 	private XStudent iOldStudent;
 	private XStudent iStudent;
+	private CourseUrlProvider iCourseUrlProvider = null;
 	
 	public StudentEmail forStudent(Long studentId) {
 		iStudentId = studentId;
@@ -151,6 +155,11 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 
 	@Override
 	public Boolean execute(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
+		try {
+			String providerClass = ApplicationProperty.CustomizationCourseLink.value();
+			if (providerClass != null)
+				iCourseUrlProvider = (CourseUrlProvider)Class.forName(providerClass).newInstance();
+		} catch (Exception e) {}
 		Lock lock = server.lockStudent(getStudentId(), null, name());
 		try {
 			OnlineSectioningLog.Action.Builder action = helper.getAction();
@@ -427,6 +436,11 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			"C4A883"
 	};
 	
+	protected URL getCourseUrl(AcademicSessionInfo session, XCourse course) {
+		if (iCourseUrlProvider == null) return null;
+		return iCourseUrlProvider.getCourseUrl(session, course.getSubjectArea(), course.getCourseNumber());
+	}
+	
 	private String generateMessage(org.unitime.timetable.model.Student student, OnlineSectioningServer server, OnlineSectioningHelper helper)  throws IOException, TemplateException {
 		Configuration cfg = new Configuration(Configuration.VERSION_2_3_0);
 		cfg.setClassForTemplateLoading(StudentEmail.class, "/");
@@ -475,6 +489,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				input.put("timetable", "<img src='cid:timetable.png' border='0' alt='Timetable Grid'/>");
 		}
 		
+		AcademicSessionInfo session = server.getAcademicSession();
 		if (getOldOffering() != null) {
 			Table listOfChanges = new Table();
 
@@ -508,7 +523,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					} else {
 						requires = consent; consent = null;
 					}
-					listOfChanges.add(new TableSectionLine(newRequest, course, subpart, section, requires));
+					listOfChanges.add(new TableSectionLine(newRequest, course, subpart, section, requires, getCourseUrl(session, course)));
 				}
 				input.put("changes", listOfChanges);
 			} else if (getOldEnrollment() != null && newRequest != null && newRequest.getEnrollment() != null) {
@@ -537,7 +552,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 								consent = null;
 							}
 
-							listOfChanges.add(new TableSectionModifiedLine(newRequest, course, oldSubpart, subpart, old, section, oldRequires, requires));
+							listOfChanges.add(new TableSectionModifiedLine(newRequest, course, oldSubpart, subpart, old, section, oldRequires, requires, getCourseUrl(session, course)));
 							continue sections;
 						}
 					}
@@ -548,7 +563,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					} else {
 						requires = consent; consent = null;
 					}
-					listOfChanges.add(new TableSectionLine(newRequest, course, subpart, section, requires));
+					listOfChanges.add(new TableSectionLine(newRequest, course, subpart, section, requires, getCourseUrl(session, course)));
 				}
 				sections: for (XSection old: getOldOffering().getSections(getOldEnrollment())) {
 					for (XSection section: newOffering.getSections(newRequest.getEnrollment()))
@@ -559,7 +574,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					String requires = null;
 					if (parent != null)
 						requires = parent.getName(course.getCourseId());
-					listOfChanges.add(new TableSectionDeletedLine(newRequest, course, subpart, old, requires));
+					listOfChanges.add(new TableSectionDeletedLine(newRequest, course, subpart, old, requires, getCourseUrl(session, course)));
 				}
 
 				input.put("changes", listOfChanges);
@@ -606,7 +621,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 									} else {
 										requires = consent; consent = null;
 									}
-									listOfChanges.add(new TableSectionLine(ncr, course, subpart, section, requires));
+									listOfChanges.add(new TableSectionLine(ncr, course, subpart, section, requires, getCourseUrl(session, course)));
 								}
 							} else if (ncr.getEnrollment() == null) {
 								XOffering oo = server.getOffering(ocr.getEnrollment().getOfferingId());
@@ -618,7 +633,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 									String requires = null;
 									if (parent != null)
 										requires = parent.getName(course.getCourseId());
-									listOfChanges.add(new TableSectionDeletedLine(ncr, course, subpart, section, requires));
+									listOfChanges.add(new TableSectionDeletedLine(ncr, course, subpart, section, requires, getCourseUrl(session, course)));
 								}
 							} else {
 								XOffering no = server.getOffering(ncr.getEnrollment().getOfferingId());
@@ -649,7 +664,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 												consent = null;
 											}
 											
-											listOfChanges.add(new TableSectionModifiedLine(ncr, course, oldSubpart, subpart, old, section, oldRequires, requires));
+											listOfChanges.add(new TableSectionModifiedLine(ncr, course, oldSubpart, subpart, old, section, oldRequires, requires, getCourseUrl(session, course)));
 											continue sections;
 										}
 									}
@@ -662,7 +677,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 									} else {
 										requires = consent; consent = null;
 									}
-									listOfChanges.add(new TableSectionLine(ncr, course, subpart, section, requires));
+									listOfChanges.add(new TableSectionLine(ncr, course, subpart, section, requires, getCourseUrl(session, course)));
 								}
 								course = oo.getCourse(ocr.getEnrollment().getCourseId());
 								sections: for (XSection old: oo.getSections(ocr.getEnrollment())) {
@@ -675,7 +690,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 									if (parent != null)
 										requires = parent.getName(course.getCourseId());
 
-									listOfChanges.add(new TableSectionDeletedLine(ocr, course, subpart, old, requires));
+									listOfChanges.add(new TableSectionDeletedLine(ocr, course, subpart, old, requires, getCourseUrl(session, course)));
 								}
 							}
 							continue requests;
@@ -695,7 +710,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 							} else {
 								requires = consent; consent = null;
 							}
-							listOfChanges.add(new TableSectionLine(ncr, course, subpart, section, requires));
+							listOfChanges.add(new TableSectionLine(ncr, course, subpart, section, requires, getCourseUrl(session, course)));
 						}
 					}
 				}
@@ -716,7 +731,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						if (parent != null)
 							requires = parent.getName(course.getCourseId());
 
-						listOfChanges.add(new TableSectionDeletedLine(ocr, course, subpart, section, requires));
+						listOfChanges.add(new TableSectionDeletedLine(ocr, course, subpart, section, requires, getCourseUrl(session, course)));
 					}
 				}
 				
@@ -744,6 +759,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	
 	Table generateListOfClasses(org.unitime.timetable.model.Student student, OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		Table listOfClasses = new Table();
+		AcademicSessionInfo session = server.getAcademicSession();
 		for (XRequest request: getStudent().getRequests()) {
 			if (request instanceof XCourseRequest) {
 				XCourseRequest cr = (XCourseRequest)request;
@@ -751,7 +767,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				if (enrollment == null) {
 					if (!getStudent().canAssign(cr)) continue;
 					XCourse course = server.getCourse(cr.getCourseIds().get(0).getCourseId());
-					listOfClasses.add(new TableCourseLine(cr, course));
+					listOfClasses.add(new TableCourseLine(cr, course, getCourseUrl(session, course)));
 				} else {
 					XOffering offering = server.getOffering(enrollment.getOfferingId());
 					XCourse course = offering.getCourse(enrollment.getCourseId());
@@ -765,7 +781,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						} else {
 							requires = consent; consent = null;
 						}
-						listOfClasses.add(new TableSectionLine(cr, course, subpart, section, requires));
+						listOfClasses.add(new TableSectionLine(cr, course, subpart, section, requires, getCourseUrl(session, course)));
 					}
 				}
 			}
@@ -1170,6 +1186,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		public String getCourseTitle();
 		public String getType();
 		public String getName();
+		public String getUrl();
 		
 		public XTime getTime();
 		public String getRooms();
@@ -1198,10 +1215,12 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		protected XCourseRequest iRequest;
 		protected XCourse iCourse;
 		protected Table iTable;
+		protected String iUrl;
 		
-		public TableCourseLine(XCourseRequest request, XCourse course) {
+		public TableCourseLine(XCourseRequest request, XCourse course, URL url) {
 			iRequest = request;
 			iCourse = course;
+			iUrl = (url == null ? null : url.toString());
 		}
 
 		public XRequest getRequest() { return iRequest; }
@@ -1281,6 +1300,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		
 		@Override
 		public boolean isFirst() { return iTable.isFirst(this); }
+
+		@Override
+		public String getUrl() { return iUrl; }
 	}
 	
 	public static class TableSectionLine extends TableCourseLine {
@@ -1288,8 +1310,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		protected XSubpart iSubpart;
 		protected String iRequires;
 		
-		public TableSectionLine(XCourseRequest request, XCourse course, XSubpart subpart, XSection section, String requires) {
-			super(request, course);
+		public TableSectionLine(XCourseRequest request, XCourse course, XSubpart subpart, XSection section, String requires, URL url) {
+			super(request, course, url);
 			iCourse = course;
 			iSubpart = subpart;
 			iSection = section;
@@ -1446,12 +1468,15 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		
 		@Override
 		public boolean isFirst() { return true; }
+		
+		@Override
+		public String getUrl() { return null; }
 	}
 	
 	public static class TableSectionDeletedLine extends TableSectionLine {
 		
-		public TableSectionDeletedLine(XCourseRequest request, XCourse course, XSubpart subpart, XSection section, String requires) {
-			super(request, course, subpart, section, requires);
+		public TableSectionDeletedLine(XCourseRequest request, XCourse course, XSubpart subpart, XSection section, String requires, URL url) {
+			super(request, course, subpart, section, requires, url);
 		}
 		
 		@Override
@@ -1463,8 +1488,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		private XSection iOldSection;
 		private String iOldRequires;
 		
-		public TableSectionModifiedLine(XCourseRequest request, XCourse course, XSubpart oldSubpart, XSubpart subpart, XSection oldSection, XSection section, String oldRequires, String requires) {
-			super(request, course, subpart, section, requires);
+		public TableSectionModifiedLine(XCourseRequest request, XCourse course, XSubpart oldSubpart, XSubpart subpart, XSection oldSection, XSection section, String oldRequires, String requires, URL url) {
+			super(request, course, subpart, section, requires, url);
 			iOldSection = oldSection;
 			iOldSubpart = oldSubpart;
 			iOldRequires = oldRequires;

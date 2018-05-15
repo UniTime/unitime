@@ -167,6 +167,13 @@
 				<line>To do this, set the StudentSectioningConstants.numberOfAlternatives constant to zero.</line>
 			</description>
 		</item>
+		<item>
+			<name>Email Notification</name>
+			<description>
+				<line>Added ability to use the CourseUrlProvider to make the Subject and Course clickable.</line>
+				<line>When the unitime.custom.CourseUrlProvider application property is configured.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>
