@@ -68,6 +68,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Event Detail: Enrollments Conflicts</name>
+			<description>
+				<line>Make sure that cancelled class or examination meetings do not show up as conflicts in the Enrollments table.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>
