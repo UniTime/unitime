@@ -23,11 +23,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.GwtHint;
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.events.EventAdd.EventPropertiesProvider;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.EventMeetingRow;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
+import org.unitime.timetable.gwt.client.sectioning.SectioningCookie;
 import org.unitime.timetable.gwt.client.sectioning.CourseDetailsWidget.CourseDetailsRpcRequest;
 import org.unitime.timetable.gwt.client.sectioning.CourseDetailsWidget.CourseDetailsRpcResponse;
 import org.unitime.timetable.gwt.client.widgets.ImageLink;
@@ -51,6 +53,8 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApproveEventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.EventEnrollmentsRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventServiceProviderInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
@@ -250,6 +254,22 @@ public class EventDetail extends Composite {
 		iEnrollmentHeader = new UniTimeHeaderPanel(MESSAGES.sectEnrollments());
 		iEnrollments = new EnrollmentTable(false, true);
 		iEnrollments.getTable().setStyleName("unitime-Enrollments");
+		iEnrollmentHeader.addButton("export", MESSAGES.opExportCSV(), 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				RPC.execute(EncodeQueryRpcRequest.encode("output=event-enrollments.csv&sid=" + iProperties.getSessionId() + "&event=" + iEvent.getId() +
+						"&suffix=" + (SectioningCookie.getInstance().getShowClassNumbers() ? "1" : "0") +
+						"&sort=" + SectioningCookie.getInstance().getEnrollmentSortBy() +
+						"&subpart=" + SectioningCookie.getInstance().getEnrollmentSortBySubpart()), new AsyncCallback<EncodeQueryRpcResponse>() {
+					@Override
+					public void onFailure(Throwable caught) {}
+					@Override
+					public void onSuccess(EncodeQueryRpcResponse result) {
+						ToolBox.open(GWT.getHostPageBaseURL() + "export?q=" + result.getQuery());
+					}
+				});
+			}
+		});
 		
 		iNotes = new UniTimeTable<NoteInterface>();
 		iNotes.setStyleName("unitime-EventNotes");
@@ -563,6 +583,7 @@ public class EventDetail extends Composite {
 		if (iEvent.hasEnrollment()) {
 			final int enrollmentsRow = iForm.addHeaderRow(iEnrollmentHeader);
 			iForm.addRow(iEnrollments.getTable());
+			iEnrollmentHeader.setEnabled("export", false);
 			iEnrollmentHeader.showLoading();
 			final Long eventId = iEvent.getId();
 			RPC.execute(EventEnrollmentsRpcRequest.getEnrollmentsForEvent(eventId, iProperties.getSessionId()), new AsyncCallback<GwtRpcResponseList<ClassAssignmentInterface.Enrollment>>() {
@@ -591,6 +612,7 @@ public class EventDetail extends Composite {
 							((Label)iForm.getWidget(row, 1)).setText(String.valueOf(conf));
 							iForm.getRowFormatter().setVisible(row, true);
 						}
+						iEnrollmentHeader.setEnabled("export", !result.isEmpty());
 					}
 				}
 			});
