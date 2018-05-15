@@ -69,9 +69,10 @@
 			</description>
 		</item>
 		<item>
-			<name>Event Detail: Enrollments Conflicts</name>
+			<name>Event Detail: Enrollments</name>
 			<description>
-				<line>Make sure that cancelled class or examination meetings do not show up as conflicts in the Enrollments table.</line>
+				<line>Conflicts: Make sure that cancelled class or examination meetings do not show up as conflicts in the Enrollments table.</line>
+				<line>Export CSV: Added ability to export the Enrollments table into a CSV file.</line>
 			</description>
 		</item>
 	</category>

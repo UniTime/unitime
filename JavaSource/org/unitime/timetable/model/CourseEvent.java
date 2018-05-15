@@ -81,5 +81,11 @@ public class CourseEvent extends BaseCourseEvent {
             enrollments.addAll(owner.getStudentClassEnrollments());
         return enrollments;
 	}
+	
+	public Session getSession() {
+		for (RelatedCourseInfo rc: getRelatedCourses())
+			return rc.getCourse().getInstructionalOffering().getSession();
+		return null;
+	}
 
 }

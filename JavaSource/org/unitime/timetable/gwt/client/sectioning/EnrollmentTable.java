@@ -1367,7 +1367,7 @@ public class EnrollmentTable extends Composite {
 				boolean asc = !subpart.startsWith("-");
 				UniTimeTableHeader h = hSubparts.get(asc ? subpart : subpart.substring(1));
 				if (h != null)
-					iEnrollments.sort(h, new EnrollmentComparator(asc ? subpart : subpart.substring(1)), asc);
+					iEnrollments.sort(h, new EnrollmentComparator(asc ? subpart : subpart.substring(1), SectioningCookie.getInstance().getShowClassNumbers()), asc);
 			}
 		}
 	}
@@ -1572,7 +1572,7 @@ public class EnrollmentTable extends Composite {
 		header.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iEnrollments.sort(header, new EnrollmentComparator(subpart));
+				iEnrollments.sort(header, new EnrollmentComparator(subpart, SectioningCookie.getInstance().getShowClassNumbers()));
 				SectioningCookie.getInstance().setEnrollmentSortBySubpart(header.getOrder() ? subpart : "-" + subpart);
 			}
 			@Override
@@ -1591,7 +1591,7 @@ public class EnrollmentTable extends Composite {
 	}
 	
 	public static class EnrollmentComparator implements Comparator<Enrollment> {
-		public enum SortBy {
+		public static enum SortBy {
 			EXTERNAL_ID,
 			STUDENT,
 			COURSE,
@@ -1623,9 +1623,9 @@ public class EnrollmentTable extends Composite {
 			iSortBy = sortBy;
 		}
 		
-		public EnrollmentComparator(String subpart) {
+		public EnrollmentComparator(String subpart, boolean showClassNumbers) {
 			iSubpart = subpart;
-			iShowClassNumbers = SectioningCookie.getInstance().getShowClassNumbers();
+			iShowClassNumbers = showClassNumbers;
 		}
 		
 		protected int doCompare(Conflict c1, Conflict c2) {
