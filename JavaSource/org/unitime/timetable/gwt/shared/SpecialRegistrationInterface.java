@@ -47,6 +47,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private boolean iSpecRegTimeConfs = false;
 		private boolean iSpecRegSpaceConfs = false;
 		private SpecialRegistrationStatus iSpecRegStatus = null;
+		private String iNote;
 
 		public SpecialRegistrationContext() {}
 		public SpecialRegistrationContext(SpecialRegistrationContext cx) {
@@ -81,12 +82,15 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void setSpaceConflictsAllowed(boolean allow) { iSpecRegSpaceConfs = allow; }
 		public SpecialRegistrationStatus getStatus() { return iSpecRegStatus; }
 		public void setStatus(SpecialRegistrationStatus status) { iSpecRegStatus = status; }
+		public String getNote() { return iNote; }
+		public void setNote(String note) { iNote = note; }
 		public void update(EligibilityCheck check) {
 			iSpecRegTimeConfs = check != null && check.hasFlag(EligibilityFlag.SR_TIME_CONF);
 			iSpecRegSpaceConfs = check != null && check.hasFlag(EligibilityFlag.SR_LIMIT_CONF);
 			iSpecReg = check != null && check.hasFlag(EligibilityFlag.CAN_SPECREG);
 		}
 		public void reset() {
+			iNote = null;
 			iSpecReg = false;
 			iSpecRegRequestId = null;
 			iSpecRegRequestKeyValid = false;
@@ -237,6 +241,16 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			if (cmp != 0) return -cmp;
 			return getRequestId().compareTo(o.getRequestId());
 		}
+		
+		public int hashCode() {
+			return getRequestId().hashCode();
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof RetrieveSpecialRegistrationResponse)) return false;
+			return getRequestId().equals(((RetrieveSpecialRegistrationResponse)o).getRequestId());
+		}
 	}
 	
 	public static class SubmitSpecialRegistrationRequest implements IsSerializable, Serializable {
@@ -248,9 +262,10 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private CourseRequestInterface iCourses;
 		private Collection<ClassAssignmentInterface.ClassAssignment> iClassAssignments;
 		private ArrayList<ErrorMessage> iErrors = null;
+		private String iNote;
 		
 		public SubmitSpecialRegistrationRequest() {}
-		public SubmitSpecialRegistrationRequest(Long sessionId, Long studentId, String requestKey, String requestId, CourseRequestInterface courses, Collection<ClassAssignmentInterface.ClassAssignment> assignments, Collection<ErrorMessage> errors) {
+		public SubmitSpecialRegistrationRequest(Long sessionId, Long studentId, String requestKey, String requestId, CourseRequestInterface courses, Collection<ClassAssignmentInterface.ClassAssignment> assignments, Collection<ErrorMessage> errors, String note) {
 			iRequestKey = requestKey;
 			iRequestId = requestId;
 			iStudentId = studentId;
@@ -259,6 +274,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			iClassAssignments = assignments;
 			if (errors != null)
 				iErrors = new ArrayList<ErrorMessage>(errors);
+			iNote = note;
 		}
 		
 		public Collection<ClassAssignmentInterface.ClassAssignment> getClassAssignments() { return iClassAssignments; }
@@ -280,7 +296,9 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public boolean hasErrors() {
 			return iErrors != null && !iErrors.isEmpty();
 		}
-		public ArrayList<ErrorMessage> getErrors() { return iErrors; }		
+		public ArrayList<ErrorMessage> getErrors() { return iErrors; }
+		public String getNote() { return iNote; }
+		public void setNote(String note) { iNote = note; }
 	}
 	
 	public static class SubmitSpecialRegistrationResponse implements IsSerializable, Serializable {

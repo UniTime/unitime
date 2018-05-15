@@ -810,8 +810,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			response.addConfirmation("", CONF_BANNER, 1);
 			response.addConfirmation(
 					ApplicationProperties.getProperty("purdue.specreg.messages.requestOverrides",
-							"If you have already discussed these courses with your advisor and were advised to request\n" +
-							"registration in them please select Request Overrides & Submit. If you aren’t sure, click Cancel Submit and\n" +
+							"If you have already discussed these courses with your advisor and were advised to request " +
+							"registration in them please select Request Overrides & Submit. If you aren’t sure, click Cancel Submit and " +
 							"consult with your advisor before coming back to your Course Request page."),
 					CONF_BANNER, 2);
 		}
@@ -831,11 +831,11 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		}
 		if (questionNoAlt)
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.noAlternatives", (questionMinCred ? "\n" : "") +
-					"One or more of the newly requested courses have no alternatives provided.\nYou may not be able to get a full schedule because you did not provide an alternative course."),
+					"One or more of the newly requested courses have no alternatives provided. You may not be able to get a full schedule because you did not provide an alternative course."),
 					CONF_UNITIME, 3);
 		if (questionTimeConflict)
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.timeConflicts", (questionMinCred || questionNoAlt ? "\n" : "") +
-					"Two or more single section courses are conflicting with each other.\nYou will likely not be able to get the conflicting course, so please provide an alternative course if possible."),
+					"Two or more single section courses are conflicting with each other. You will likely not be able to get the conflicting course, so please provide an alternative course if possible."),
 					CONF_UNITIME, 4);
 		if (questionNoAlt || questionMinCred || questionTimeConflict)
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.confirmation", "\nDo you want to proceed?"), CONF_UNITIME, 5);

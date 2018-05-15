@@ -524,6 +524,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		Map<String, String> crn2course = new HashMap<String, String>();
 		Map<Long, Schedule> schedules = new HashMap<Long, Schedule>();
 		List<String> newCourses = new ArrayList<String>();
+		Set<String> saved = new HashSet<String>();
 		if (classAssignments != null)
 			for (ClassAssignment ca: classAssignments) {
 				if (ca == null || ca.isFreeTime() || ca.getClassId() == null || ca.isDummy() || ca.isTeachingAssignment()) continue;
@@ -545,6 +546,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					if (!ca.isSaved())
 						newCourses.add(crn);
 				}
+				if (ca.isSaved())
+					saved.add(crn);
 				ch.crns.add(crn);
 				crn2course.put(crn, course.getCourseName());
 			}
@@ -586,6 +589,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			
 			if (resp != null && resp.scheduleRestrictions != null && resp.scheduleRestrictions.problems != null)
 				for (Problem problem: resp.scheduleRestrictions.problems) {
+					if ("CLOS".equals(problem.code) && saved.contains(problem.crn)) continue;
 					if ("MAXI".equals(problem.code) && !newCourses.isEmpty()) {
 						// Move max credit error message to the last added course
 						String crn = newCourses.remove(newCourses.size() - 1);
@@ -596,7 +600,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				}
 		}
 		
-		return errors;		
+		return errors;
 	}
 
 	@Override
@@ -616,6 +620,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				request.requestorId = getRequestorId(helper.getUser());
 				request.requestorRole = getRequestorType(helper.getUser(), student);
 			}
+			request.notes = input.getNote();
 			
 			if (request.changes == null || request.changes.isEmpty())
 				throw new SectioningException("There are no changes.");

@@ -1832,6 +1832,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							iSpecRegCx.update(iEligibilityCheck);
 							iSpecRegCx.setSpecRegRequestKeyValid(false);
 							iSpecRegCx.setStatus(null);
+							iSpecRegCx.setNote(null);
 							fillIn(saved);
 							updateHistory();
 							iStatus.error(MESSAGES.requestSpecialRegistrationFail(caught.getMessage()), caught);
@@ -1840,6 +1841,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						public void onSuccess(RetrieveSpecialRegistrationResponse specReg) {
 							iSpecRegCx.setSpecRegRequestKeyValid(true);
 							iSpecRegCx.setRequestId(specReg.getRequestId());
+							iSpecRegCx.setNote(specReg.getNote());
 							iSpecRegCx.setStatus(specReg.getStatus());
 							if (specReg.hasClassAssignments() && specReg.getRequestId() != null)
 								iSpecRegCx.setDisclaimerAccepted(true);
@@ -2435,8 +2437,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									MESSAGES.buttonRequestOverrides(), MESSAGES.buttonCancelRequest(),
 									MESSAGES.titleRequestOverrides(), MESSAGES.titleCancelRequest());
 							confirm.addConfirmation(MESSAGES.messageRegistrationErrorsDetected(), 0, -1);
-							confirm.addConfirmation(MESSAGES.messageRequestOverridesOptions(), 0, 2);
-							confirm.addConfirmation(MESSAGES.messageRequestOverridesDisclaimer(), 0, 3);
+							confirm.addConfirmation(MESSAGES.messageRequestOverridesNote(), 0, 2);
+							final CourseRequestInterface.CourseMessage note = confirm.addConfirmation(iSpecRegCx.getNote() == null ? "" : iSpecRegCx.getNote(), 0, 3); note.setCode("REQUEST_NOTE");
+							confirm.addConfirmation(MESSAGES.messageRequestOverridesOptions(), 0, 4);
+							confirm.addConfirmation(MESSAGES.messageRequestOverridesDisclaimer(), 0, 5);
 							for (ErrorMessage e: errors) {
 								if ("IGNORE".equals(e.getCode())) {
 									continue;
@@ -2454,7 +2458,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 										LoadingWidget.getInstance().show(MESSAGES.waitSpecialRegistration());
 										iSectioningService.submitSpecialRequest(
 												new SubmitSpecialRegistrationRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iSpecRegCx.getRequestKey(), iSpecRegCx.getRequestId(), iCourseRequests.getRequest(),
-														iLastEnrollment != null ? iLastEnrollment : iLastResult, errors),
+														iLastEnrollment != null ? iLastEnrollment : iLastResult, errors, note.getMessage()),
 												new AsyncCallback<SubmitSpecialRegistrationResponse>() {
 													@Override
 													public void onFailure(Throwable caught) {
@@ -2474,6 +2478,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 														}
 														iSpecRegCx.setStatus(response.getStatus());
 														iSpecRegCx.setRequestId(response.getRequestId());
+														iSpecRegCx.setNote(note.getMessage());
 														if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG)) {
 															iEligibilityCheck.setFlag(EligibilityFlag.HAS_SPECREG, true);
 															iGetSpecRegs.setVisible(true);
@@ -2517,12 +2522,14 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						iSpecRegCx.update(iEligibilityCheck);
 						iSpecRegCx.setRequestId(null);
 						iSpecRegCx.setStatus(null);
+						iSpecRegCx.setNote(null);
 						iSpecialRegAssignment = iSavedAssignment;
 						fillIn(iSavedAssignment);
 						addHistory();
 					} else {
 						iSpecRegCx.setRequestId(specReg.getRequestId());
 						iSpecRegCx.setStatus(specReg.getStatus());
+						iSpecRegCx.setNote(specReg.getNote());
 						if (specReg.hasClassAssignments()) {
 							iSpecialRegAssignment = specReg.getClassAssignments();
 							fillIn(specReg.getClassAssignments());

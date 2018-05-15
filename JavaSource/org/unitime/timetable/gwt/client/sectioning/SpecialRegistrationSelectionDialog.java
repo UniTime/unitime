@@ -22,7 +22,9 @@ package org.unitime.timetable.gwt.client.sectioning;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.widgets.P;
@@ -87,7 +89,7 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 		iForm = new SimpleForm();
 		iForm.addStyleName("unitime-SpecialRegistrations");
 		
-		iTable = new UniTimeTable<RetrieveSpecialRegistrationResponse>();
+		iTable = new Table<RetrieveSpecialRegistrationResponse>();
 		iTable.addStyleName("registrations-table");
 		iTable.setAllowSelection(true);
 		iTable.setAllowMultiSelect(true);
@@ -110,6 +112,15 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 		header.add(new UniTimeTableHeader(MESSAGES.colSpecRegErrors()));
 		header.add(new UniTimeTableHeader(""));
 		iTable.addRow(null, header);
+		
+		iFooter.addButton("select", MESSAGES.buttonSpecRegSelect(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				if (iTable.getSelectedRow() > 0)
+					doSubmit(iTable.getData(iTable.getSelectedRow()));
+			}
+		});
+		iFooter.setEnabled("select", false);
 		
 		iFooter.addButton("cancel", MESSAGES.buttonSpecRegCancel(), new ClickHandler() {
 			@Override
@@ -221,6 +232,7 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 				if (idx > 1) iTable.getRowFormatter().addStyleName(idx, "top-border-solid");
 			}
 		}
+		iFooter.setEnabled("select", iTable.getSelectedRow() >= 0);
 		center();
 		updateAriaStatus(true);
 	}
@@ -237,28 +249,53 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 		hide();
 	}
 	
+	protected int setSelected(RetrieveSpecialRegistrationResponse data) {
+		int row = -1;
+		for (int i = 0; i < iTable.getRowCount(); i++) {
+			RetrieveSpecialRegistrationResponse d = iTable.getData(i);
+			if (d == null) continue;
+			if (row < 0 && d.equals(data)) row = i;
+			iTable.setSelected(i, d.equals(data));
+		}
+		return row;
+	}
+	
 	@Override
 	protected void onPreviewNativeEvent(NativePreviewEvent event) {
 		super.onPreviewNativeEvent(event);
 		if (event.getTypeInt() == Event.ONKEYDOWN) {
 			if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_UP) {
-				int row = iTable.getSelectedRow();
+				RetrieveSpecialRegistrationResponse prev = null;
+				RetrieveSpecialRegistrationResponse selected = null;
+				RetrieveSpecialRegistrationResponse last = null;
+				for (int row = 0; row < iTable.getRowCount(); row ++) {
+					RetrieveSpecialRegistrationResponse d = iTable.getData(row);
+					if (d == null) continue;
+					if (iTable.isSelected(row)) selected = d;
+					else if (selected == null) prev = d;
+					last = d;
+				}
+				int row = setSelected(prev == null ? last : prev);
 				if (row >= 0)
-					iTable.setSelected(row, false);
-				row --;
-				if (row <= 0) row = iTable.getRowCount() - 1;
-				iTable.setSelected(row, true);
-				iTable.getRowFormatter().getElement(row).scrollIntoView();
+					iTable.getRowFormatter().getElement(row).scrollIntoView();
 				updateAriaStatus(false);
+				iFooter.setEnabled("select", iTable.getSelectedRow() >= 0);
 			} else if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_DOWN) {
-				int row = iTable.getSelectedRow();
+				RetrieveSpecialRegistrationResponse first = null;
+				RetrieveSpecialRegistrationResponse selected = null;
+				RetrieveSpecialRegistrationResponse next = null;
+				for (int row = 0; row < iTable.getRowCount(); row ++) {
+					RetrieveSpecialRegistrationResponse d = iTable.getData(row);
+					if (d == null) continue;
+					if (first == null) first = d;
+					if (iTable.isSelected(row)) selected = d;
+					else if (selected != null && next == null) next = d;
+				}
+				int row = setSelected(next == null ? first : next);
 				if (row >= 0)
-					iTable.setSelected(row, false);
-				row ++;
-				if (row >= iTable.getRowCount()) row = 1;
-				iTable.setSelected(row, true);
-				iTable.getRowFormatter().getElement(row).scrollIntoView();
+					iTable.getRowFormatter().getElement(row).scrollIntoView();
 				updateAriaStatus(false);
+				iFooter.setEnabled("select", iTable.getSelectedRow() >= 0);
 			}
 		}
 	}
@@ -322,6 +359,87 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 				setHTML(text == null ? "" : text.replace("\n", "<br>"));
 				if (text != null) setTitle(text);
 			}
+		}
+	}
+	
+	public class Table<T> extends UniTimeTable<T> {
+		protected Set<Integer> iLastHoverRows = new HashSet<Integer>();
+		
+		protected void updateHover() {
+			// clear hover if needed
+			if (!iLastHoverRows.isEmpty() && (iLastHoverRow < 0 || !iLastHoverRows.contains(iLastHoverRow))) {
+				for (int row: iLastHoverRows) {
+					boolean selected = false;
+					String style = getRowFormatter().getStyleName(row);
+					if (isAllowSelection()) {
+						if ("unitime-TableRowSelected".equals(style)) {
+							selected = true;
+						} else if ("unitime-TableRowHover".equals(style)) {
+							getRowFormatter().setStyleName(row, null);	
+						} else if ("unitime-TableRowSelectedHover".equals(style)) {
+							getRowFormatter().setStyleName(row, "unitime-TableRowSelected");
+							selected = true;
+						}
+					} else {
+						getRowFormatter().removeStyleName(row, "unitime-TableRowHover");
+					}
+					if (!selected) {
+						String color = iLastHoverBackgroundColor.remove(row);
+						if (color != null && !color.isEmpty()) {
+							getRowFormatter().getElement(row).getStyle().setBackgroundColor(color);
+						}
+					}
+				}
+				iLastHoverRows.clear();
+			}
+
+			// set hover if needed
+			if (iLastHoverRow >= 0 && iLastHoverRows.isEmpty()) {
+				T data = getData(iLastHoverRow);
+				if (data != null) {
+					for (int row = 0; row < getRowCount(); row++) {
+						if (data.equals(getData(row))) {
+							iLastHoverRows.add(row);
+							boolean selected = false;
+							String style = getRowFormatter().getStyleName(row);
+							if (isAllowSelection()) {
+								if ("unitime-TableRowSelectedHover".equals(style)) {
+									selected = true;
+								} else if ("unitime-TableRowSelected".equals(style)) {
+									getRowFormatter().setStyleName(row, "unitime-TableRowSelectedHover");
+									selected = true;
+								} else {
+									getRowFormatter().setStyleName(row, "unitime-TableRowHover");
+								}
+							} else {
+								getRowFormatter().addStyleName(row, "unitime-TableRowHover");
+							}
+							if (!selected) {
+								String color = getRowFormatter().getElement(row).getStyle().getBackgroundColor();
+								if (color != null && !color.isEmpty()) {
+									getRowFormatter().getElement(row).getStyle().clearBackgroundColor();
+									iLastHoverBackgroundColor.put(row, color);
+								} else {
+									iLastHoverBackgroundColor.remove(row);
+								}
+							}
+							
+						}
+					}
+				}
+			}
+		}
+		
+		@Override
+		public void onBrowserEvent(final Event event) {
+			super.onBrowserEvent(event);
+			updateHover();
+		}
+		
+		@Override
+		public void clearHover() {
+			super.clearHover();
+			updateHover();
 		}
 	}
 }

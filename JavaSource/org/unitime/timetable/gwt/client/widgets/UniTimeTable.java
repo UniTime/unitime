@@ -63,10 +63,10 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 	private List<DataChangedListener<T>> iDataChangedListeners = new ArrayList<DataChangedListener<T>>();
 	
 	private PopupPanel iHintPanel = null;
-	private HintProvider<T> iHintProvider = null;
+	protected HintProvider<T> iHintProvider = null;
 	
-	private int iLastHoverRow = -1;
-	private Map<Integer,String> iLastHoverBackgroundColor = new HashMap<Integer, String>();
+	protected int iLastHoverRow = -1;
+	protected Map<Integer,String> iLastHoverBackgroundColor = new HashMap<Integer, String>();
 	private boolean iAllowSelection = false, iAllowMultiSelect= true;
 	private boolean iEnabled = true;
 	

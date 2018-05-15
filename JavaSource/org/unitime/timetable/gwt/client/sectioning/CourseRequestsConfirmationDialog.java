@@ -36,9 +36,12 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.TextArea;
 
 /**
  * @author Tomas Muller
@@ -51,6 +54,7 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 	private AsyncCallback<Boolean> iCommand;
 	private String iMessage;
 	private boolean iValue = false;
+	private TextArea iNote = null;
 
 	public CourseRequestsConfirmationDialog(CheckCoursesResponse response, int confirm, AsyncCallback<Boolean> callback) {
 		super(true, true);
@@ -75,7 +79,7 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 		cp.add(mp);
 		P ctab = null;
 		String last = null;
-		for (CourseMessage cm: response.getMessages()) {
+		for (final CourseMessage cm: response.getMessages()) {
 			if (confirm != cm.getConfirm()) continue;
 			if (cm.hasCourse()) {
 				if (ctab == null) { ctab = new P("course-table"); last = null; }
@@ -87,10 +91,24 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 				crow.add(cn); crow.add(m);
 				ctab.add(crow);
 				last = cm.getCourse();
+			} else if ("REQUEST_NOTE".equals(cm.getCode())) {
+				iNote = new TextArea();
+				iNote.setStyleName("unitime-TextArea"); iNote.addStyleName("request-note");
+				iNote.setVisibleLines(5);
+				iNote.setCharacterWidth(80);
+				if (cm.getMessage() != null) iNote.setText(cm.getMessage());
+				iNote.addValueChangeHandler(new ValueChangeHandler<String>() {
+					@Override
+					public void onValueChange(ValueChangeEvent<String> event) {
+						cm.setMessage(event.getValue());
+					}
+				});
+				mp.add(iNote);
 			} else {
 				if (ctab != null) { mp.add(ctab); ctab = null; }
 				P m = new P("message"); m.setHTML(cm.getMessage());
 				mp.add(m);
+				
 			}
 		}
 		
@@ -144,7 +162,10 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			@Override
 			public void execute() {
-				iYes.setFocus(true);
+				if (iNote != null)
+					iNote.setFocus(true);
+				else
+					iYes.setFocus(true);
 			}
 		});
 	}
@@ -152,6 +173,10 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 	protected void submit() {
 		iValue = true;
 		hide();
+	}
+	
+	public String getNote() {
+		return iNote == null ? null : iNote.getText();
 	}
 	
 	public static void confirm(CheckCoursesResponse response, int confirm, AsyncCallback<Boolean> callback) {

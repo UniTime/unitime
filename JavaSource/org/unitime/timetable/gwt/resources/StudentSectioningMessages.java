@@ -1978,17 +1978,22 @@ public interface StudentSectioningMessages extends Messages {
 	String messageRegistrationErrorsDetected();
 	
 	@DefaultMessage(
-			"Please, select Request Overrides to request registration overrides or other approvals required to register\n" +
-			"for the courses listed above.\n" +
-			"Click Cancel Request to cancel this request and go back to explore other scheduling options.")
+			"\nPlease, select <b>Request Overrides</b> to request registration overrides or other approvals required to register " +
+			"for the courses listed above. " +
+			"Click <b>Cancel Request</b> to cancel this request and go back to explore other scheduling options.")
 	String messageRequestOverridesOptions();
 	
 	@DefaultMessage(
+			"<b>Request Note:</b>")
+	String messageRequestOverridesNote();
+	
+	@DefaultMessage(
 			"\n<b>Disclaimer:</b>\n" +
-			"I understand that requesting approval does not guarantee that I will be given permission to register for these courses,\n" +
-			"and even if the approvals are granted, I may not be able to register for these courses due to space limitations,\n" +
-			"schedule conflicts or other policies. I also understand that if approvals are granted, it may be my responsibility\n" +
-			"to process the schedule change within the established registration deadlines.")
+			"I understand that requesting approval does not guarantee that I will be given permission to register "+
+			"for these courses, and even if the approvals are granted, I may not be able to register for these "+
+			"courses due to space limitations, schedule conflicts or other policies. I also understand that if "+
+			"approvals are granted, it may be my responsibility to process the schedule change within the established "+
+			"registration deadlines.")
 	String messageRequestOverridesDisclaimer();
 	
 	@DefaultMessage("No registration errors have been detected.")

@@ -4234,6 +4234,13 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-ConfirmationPanel .message-panel .message {
 	white-space: pre-wrap;
+	max-width: 550px;
+	text-align: justify;
+}
+
+.unitime-ConfirmationPanel .message-panel .request-note {
+	margin-top: 2px;
+	margin-left: 15px;
 }
 
 .unitime-ConfirmationPanel .question-panel {
