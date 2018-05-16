@@ -1577,6 +1577,31 @@ public enum ApplicationProperty {
 	@Type(String.class)
 	@Description("Rooms: Google maps optional API key (see https://developers.google.com/maps/documentation/javascript/get-api-key#key for more details).")
 	GoogleMapsApiKey("unitime.coordinates.googlemap.apikey"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Rooms: use Leaflet maps to enter room / building coordinates")
+	RoomUseLeafletMap("unitime.coordinates.leafletmap"),
+	
+	@Type(String.class)
+	@DefaultValue("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
+	@Description("Rooms: Laflet maps tiles url template.")
+	RoomUseLeafletMapTiles("unitime.coordinates.leafletmap.tilesUrl"),
+	
+	@Type(String.class)
+	@DefaultValue("&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors")
+	@Description("Rooms: Laflet maps tiles attribution.")
+	RoomUseLeafletMapAttribution("unitime.coordinates.leafletmap.tilesAttribution"),
+	
+	@Type(String.class)
+	@DefaultValue("https://nominatim.openstreetmap.org/search")
+	@Description("Rooms: OpenSearchMap geocoding service URL (search, see https://wiki.openstreetmap.org/wiki/Nominatim#Search)")
+	RoomGeocodeSearch("unitime.coordinates.geocode.search"),
+	
+	@Type(String.class)
+	@DefaultValue("https://nominatim.openstreetmap.org/reverse")
+	@Description("Rooms: OpenSearchMap geocoding service URL (reverse geocoding, see https://wiki.openstreetmap.org/wiki/Nominatim#Reverse_Geocoding)")
+	RoomGeocodeReverse("unitime.coordinates.geocode.reverse"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")

@@ -158,15 +158,16 @@
 		<copy todir="${war.dir}" overwrite="Yes" preservelastmodified="Yes">
 			<fileset dir="${jsp.dir}">
 				<include name="**/*.js" />
+				<include name="**/*.js.map" />
 				<include name="**/*.jsp" />
 				<include name="**/*.jspf" />
 				<include name="**/*.htm" />
 				<include name="**/*.html" />
 				<include name="**/*.css" />
-				<include name="images/*.jpg" />
-				<include name="images/*.png" />
-				<include name="images/*.gif" />
-				<include name="images/*.ico" />
+				<include name="**/images/*.jpg" />
+				<include name="**/images/*.png" />
+				<include name="**/images/*.gif" />
+				<include name="**/images/*.ico" />
 				<include name="solver/*.jar" />
 				<include name="solver/*.jnlp" />
 				<include name="help/**/*.*" />
