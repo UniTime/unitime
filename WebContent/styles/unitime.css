@@ -6190,3 +6190,51 @@ unitime-RoomSharingWidget .legend .blank {
 	height: 22px;
 	margin-right: 4px;
 }
+
+.unitime-PeriodicTaskTable .parameters {
+	max-width: 200px;
+	text-overflow: ellipsis;
+	white-space: pre;
+	overflow: hidden;
+}
+
+.unitime-PeriodicTaskTable .status-created {
+	color: black;
+	white-space: nowrap;
+}
+
+.unitime-PeriodicTaskTable .status-queued {
+	color: orange;
+	white-space: nowrap;
+}
+
+.unitime-PeriodicTaskTable .status-running {
+	color: green;
+	white-space: nowrap;
+}
+
+.unitime-PeriodicTaskTable .status-finished {
+	color: gray;
+	font-style: italic;
+	white-space: nowrap;
+}
+
+.unitime-PeriodicTaskTable .status-failed {
+	color: red;
+	white-space: nowrap;
+}
+
+.unitime-PeriodicTaskTable .status-message {
+	max-width: 200px;
+	text-overflow: ellipsis;
+	white-space: pre;
+	overflow: hidden;
+}
+
+.unitime-PeriodicTaskEditor .unitime-DateSelector {
+	max-width: 900px;
+}
+
+.unitime-PeriodicTaskEditor .unitime-MainTable .label-td {
+	width: 5%;
+}

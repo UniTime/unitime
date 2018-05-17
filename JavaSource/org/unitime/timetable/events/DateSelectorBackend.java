@@ -45,7 +45,14 @@ public class DateSelectorBackend extends EventAction<RequestSessionDetails, GwtR
 	@Override
 	public GwtRpcResponseList<SessionMonth> execute(RequestSessionDetails command, EventContext context) {
 		Session session = SessionDAO.getInstance().get(command.getSessionId());
-		
+		return listMonths(session, context.hasPermission(Right.EventDateMappings), context);
+	}
+	
+	public static GwtRpcResponseList<SessionMonth> listMonths(Session session, boolean includeEventDateMappings, HasPastOrOutside check) {
+		return listMonths(session, includeEventDateMappings, check, 0, true);
+	}
+	
+	public static GwtRpcResponseList<SessionMonth> listMonths(Session session, boolean includeEventDateMappings, HasPastOrOutside check, int extraMonths, boolean disableOutsideEventDates) {
 		GwtRpcResponseList<SessionMonth> response = new GwtRpcResponseList<SessionMonth>();
 		
 		Calendar calendar = Calendar.getInstance();
@@ -53,7 +60,7 @@ public class DateSelectorBackend extends EventAction<RequestSessionDetails, GwtR
 		List<Date> finals = new ArrayList<Date>();
 		for (Number dateOffset: (List<Number>)SessionDAO.getInstance().getSession().createQuery(
 				"select distinct dateOffset from ExamPeriod where session.uniqueId = :sessionId and examType.type = :finalType and examType.highlightInEvents = true")
-				.setLong("sessionId", command.getSessionId()).setInteger("finalType", ExamType.sExamTypeFinal).setCacheable(true).list()) {
+				.setLong("sessionId", session.getUniqueId()).setInteger("finalType", ExamType.sExamTypeFinal).setCacheable(true).list()) {
 		    calendar.setTime(session.getExamBeginDate());
 		    calendar.add(Calendar.DAY_OF_YEAR, dateOffset.intValue());
 		    finals.add(calendar.getTime());
@@ -61,13 +68,13 @@ public class DateSelectorBackend extends EventAction<RequestSessionDetails, GwtR
 		List<Date> midterms = new ArrayList<Date>();
 		for (Number dateOffset: (List<Number>)SessionDAO.getInstance().getSession().createQuery(
 				"select distinct dateOffset from ExamPeriod where session.uniqueId = :sessionId and examType.type = :midtermType and examType.highlightInEvents = true")
-				.setLong("sessionId", command.getSessionId()).setInteger("midtermType", ExamType.sExamTypeMidterm).setCacheable(true).list()) {
+				.setLong("sessionId", session.getUniqueId()).setInteger("midtermType", ExamType.sExamTypeMidterm).setCacheable(true).list()) {
 		    calendar.setTime(session.getExamBeginDate());
 		    calendar.add(Calendar.DAY_OF_YEAR, dateOffset.intValue());
 		    midterms.add(calendar.getTime());
 		}
 		
-		EventDateMapping.Class2EventDateMap class2eventDateMap = (context.hasPermission(Right.EventDateMappings) ? EventDateMapping.getMapping(command.getSessionId()) : null);
+		EventDateMapping.Class2EventDateMap class2eventDateMap = (includeEventDateMappings ? EventDateMapping.getMapping(session.getUniqueId()) : null);
 		
 		int firstDayOfWeek = ApplicationProperty.EventGridStartDay.intValue();
 		int firstDay = Calendar.MONDAY;
@@ -81,7 +88,7 @@ public class DateSelectorBackend extends EventAction<RequestSessionDetails, GwtR
 		case 6: firstDay = Calendar.SUNDAY; break;
 		}
 		
-		for (int month = session.getStartMonth(); month <= session.getEndMonth(); month ++) {
+		for (int month = session.getStartMonth() - extraMonths; month <= session.getEndMonth() + extraMonths; month ++) {
 			calendar.setTime(DateUtils.getDate(1, month, session.getSessionStartYear()));
 			
 			SessionMonth m = new SessionMonth(
@@ -118,9 +125,9 @@ public class DateSelectorBackend extends EventAction<RequestSessionDetails, GwtR
 						m.setFlag(i, SessionMonth.Flag.MIDTERMS);
 				}
 				
-				if (compare(calendar.getTime(), session.getEventBeginDate()) < 0 || compare(calendar.getTime(), session.getEventEndDate()) > 0)
+				if (disableOutsideEventDates && (compare(calendar.getTime(), session.getEventBeginDate()) < 0 || compare(calendar.getTime(), session.getEventEndDate()) > 0))
 					m.setFlag(i, SessionMonth.Flag.DISABLED);
-				else if (context.isPastOrOutside(calendar.getTime()))
+				else if (check.isPastOrOutside(calendar.getTime()))
 					m.setFlag(i, SessionMonth.Flag.PAST);
 				
 				int dayInv = (7 + calendar.get(Calendar.DAY_OF_WEEK) - firstDay) % 7;
@@ -142,7 +149,7 @@ public class DateSelectorBackend extends EventAction<RequestSessionDetails, GwtR
 		return response;
 	}
 	
-	private int compare(Date d1, Date d2) {
+	private static int compare(Date d1, Date d2) {
 		Calendar c1 = Calendar.getInstance(); c1.setTime(d1);
 		Calendar c2 = Calendar.getInstance(); c2.setTime(d2);
 		int cmp = compare(c1, c2, Calendar.YEAR);
@@ -150,7 +157,7 @@ public class DateSelectorBackend extends EventAction<RequestSessionDetails, GwtR
 		return compare(c1, c2, Calendar.DAY_OF_YEAR);
 	}
 	
-	private int compare(Calendar c1, Calendar c2, int field) {
+	private static int compare(Calendar c1, Calendar c2, int field) {
 		return new Integer(c1.get(field)).compareTo(c2.get(field));
 	}
 

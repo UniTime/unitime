@@ -79,6 +79,11 @@ public abstract class AbstractSolverServer implements SolverServer {
 	public boolean isCoordinator() {
 		return true;
 	}
+	
+	@Override
+	public boolean isLocalCoordinator() {
+		return isLocal() && isCoordinator();
+	}
 
 	@Override
 	public Address getAddress() {

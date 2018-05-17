@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.client;
 import org.unitime.timetable.gwt.client.admin.PasswordPage;
 import org.unitime.timetable.gwt.client.admin.ScriptPage;
 import org.unitime.timetable.gwt.client.admin.SimpleEditPage;
+import org.unitime.timetable.gwt.client.admin.TasksPage;
 import org.unitime.timetable.gwt.client.curricula.CurriculaPage;
 import org.unitime.timetable.gwt.client.curricula.CurriculumProjectionRulesPage;
 import org.unitime.timetable.gwt.client.events.EventResourceTimetable;
@@ -250,6 +251,10 @@ public enum Pages {
 	solutionReports(new PageFactory() {
 		public Widget create() { return new SolutionReportsPage(); }
 		public String name(GwtMessages messages) { return messages.pageSolutionReports(); }
+		}),
+	tasks(new PageFactory() {
+		public Widget create() { return new TasksPage(); }
+		public String name(GwtMessages messages) { return messages.pageTasks(); }
 		}),
 	;
 	

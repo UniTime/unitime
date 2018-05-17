@@ -474,6 +474,18 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Load Empty Solution")
 	String opSolverLoadEmptySolution();
 	
+	@DefaultMessage("Save")
+	String opTaskSave();
+	
+	@DefaultMessage("Delete")
+	String opTaskDelete();
+	
+	@DefaultMessage("Update")
+	String opTaskUpdate();
+	
+	@DefaultMessage("Back")
+	String opTaskBack();
+	
 	@DefaultMessage("Press Ctrl + C to copy the selected URL, and Escape to hide this dialog.")
 	String hintCtrlCToCopy();
 
@@ -1149,6 +1161,42 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Students")
 	String colStudents();
 	
+	@DefaultMessage("Task Name")
+	String colTaskName();
+	
+	@DefaultMessage("Owner")
+	String colTaskOwner();
+	
+	@DefaultMessage("Script")
+	String colTaskScript();
+	
+	@DefaultMessage("Parameters")
+	String colTaskParameters();
+	
+	@DefaultMessage("Date")
+	String colTaskScheduleDate();
+	
+	@DefaultMessage("Time")
+	String colTaskScheduleTime();
+	
+	@DefaultMessage("Status")
+	String colTaskStatus();
+	
+	@DefaultMessage("Queued")
+	String colTaskQueued();
+	
+	@DefaultMessage("Started")
+	String colTaskStarted();
+	
+	@DefaultMessage("Finished")
+	String colTaskFinished();
+	
+	@DefaultMessage("Status Message")
+	String colTaskStatusMessage();
+	
+	@DefaultMessage("Output")
+	String colTaskOutput();
+	
 	@DefaultMessage("pending")
 	String approvalNotApproved();
 	
@@ -1370,6 +1418,15 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Course Registrations:")
 	String propCourseRequests();
+	
+	@DefaultMessage("Owner:")
+	String propTaskOwner();
+	
+	@DefaultMessage("Dates:")
+	String propTaskExecutionDates();
+	
+	@DefaultMessage("Time:")
+	String propTaskStartTime();
 	
 	@DefaultMessage("Snap Proj")
 	String abbvSnapshotProjectedByRule();
@@ -1808,6 +1865,15 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Apply")
 	String buttonApply();
+	
+	@DefaultMessage("<u>A</u>dd New")
+	String buttonAddNewTask();
+	
+	@DefaultMessage("<u>E</u>dit Task")
+	String buttonEditTask();
+	
+	@DefaultMessage("<u>D</u>elete Task")
+	String buttonDeleteTask();
 
 	@DefaultMessage("Filter")
 	String sectFilter();
@@ -1916,6 +1982,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Saved Timetables")
 	String sectSavedSolutions();
+	
+	@DefaultMessage("Scheduled Tasks for {0}")
+	String sectScheduledTasks(String session);
+	
+	@DefaultMessage("Scheduled Executions")
+	String sectTaskExecutions();
 	
 	@DefaultMessage("Loading {0}...")
 	String waitLoading(String name);
@@ -3592,7 +3664,15 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Student Group Types")
 	@DoNotTranslate
-	String pageStudentGroupTypes();
+	String pageStudentGroupTypes(); 
+	
+	@DefaultMessage("Task Scheduler")
+	@DoNotTranslate
+	String pageTasks();
+	
+	@DefaultMessage("Task Details")
+	@DoNotTranslate
+	String pageTaskDetails();
 	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -4943,6 +5023,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("The selected assignment will be done directly in the database. Are you sure?")
 	String confirmInstructorAssignmentChangesNoSolver();
 	
+	@DefaultMessage("Do you realy want to delete this task?")
+	String confirmDeleteTask();
+	
 	@DefaultMessage("&nbsp;(of&nbsp;{0})")
 	String curriculumProjectionRulesOfTotal(int total);
 	
@@ -6166,4 +6249,10 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Session Default")
 	String studentStatusDefault();
+	
+	@DefaultMessage("Add Task...")
+	String dialogAddTask();
+	
+	@DefaultMessage("Edit {0}")
+	String dialogEditTask(String name);
 }

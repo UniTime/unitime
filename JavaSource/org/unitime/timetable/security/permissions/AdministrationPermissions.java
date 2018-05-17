@@ -550,5 +550,13 @@ public class AdministrationPermissions {
 
 	@PermissionForRight(Right.EventServiceProviderEditDepartment)
 	public static class EventServiceProviderEditDepartment extends SimpleDepartmentPermission {}
+	
+	@PermissionForRight(Right.Tasks)
+	public static class Tasks extends SimpleSessionPermission {}
 
+	@PermissionForRight(Right.TaskDetail)
+	public static class TaskDetail extends SimpleSessionPermission {}
+
+	@PermissionForRight(Right.TaskEdit)
+	public static class TaskEdit extends SimpleSessionPermission {}
 }

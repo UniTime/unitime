@@ -46,6 +46,8 @@ public interface SolverServer {
 	
 	public boolean isCoordinator();
 	
+	public boolean isLocalCoordinator();
+	
 	public Address getAddress();
 	
 	public Address getLocalAddress();

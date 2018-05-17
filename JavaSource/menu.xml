@@ -935,6 +935,11 @@
 					<hasPermission name="LastChanges"/>
 				</condition>
 			</item>
+			<item name="Task Scheduler" page="tasks" type="gwt">
+			    <condition>
+					<hasPermission name="Tasks"/>
+				</condition>
+			</item>
 			<item name="Reports" page="hql" type="gwt">
 				<parameter name="appearance">administration</parameter>
 				<condition>

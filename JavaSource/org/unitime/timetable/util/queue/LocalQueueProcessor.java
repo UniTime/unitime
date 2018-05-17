@@ -182,6 +182,21 @@ public class LocalQueueProcessor extends Thread implements QueueProcessor {
 		return null;
 	}
 	
+	public QueueItem getByExecutionId(Long id) {
+		synchronized (iQueue) {
+			for (Iterator<QueueItem> i = iQueue.iterator(); i.hasNext();) {
+				QueueItem item = i.next();
+				if (id.equals(item.getTaskExecutionId())) return item;
+			}
+			for (Iterator<QueueItem> i = iFinished.iterator(); i.hasNext();) {
+				QueueItem item = i.next();
+				if (id.equals(item.getTaskExecutionId())) return item;
+			}
+		}
+		if (iItem != null && id.equals(iItem.getTaskExecutionId())) return iItem;
+		return null;
+	}
+	
 	public boolean remove(String id) {
 		synchronized (iQueue) {
 			for (Iterator<QueueItem> i = iQueue.iterator(); i.hasNext();) {

@@ -2436,6 +2436,10 @@ public enum ApplicationProperty {
 	@Description("Time Grid XLS Export: font name")
 	TimeGridXLSFontName("unitime.timeGrid.xls.fontName"),
 
+	@Type(Integer.class)
+	@DefaultValue("1")
+	@Description("Task Scheduler: task execution service check interval in minutes")
+	TaskSchedulerCheckIntervalInMinutes("unitime.taskScheduler.checkIntervalInMinutes"),
 	;
 
 	String iKey;

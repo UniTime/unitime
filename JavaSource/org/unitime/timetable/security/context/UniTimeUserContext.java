@@ -244,6 +244,42 @@ public class UniTimeUserContext extends AbstractUserContext {
 		if (iName == null) iName = iLogin;
 	}
 	
+	public UniTimeUserContext(TimetableManager manager, Session session) {
+		iLogin = null; iPassword = null;
+		iId = manager.getExternalUniqueId();
+		iName = manager.getName();
+		iEmail = manager.getEmailAddress();
+		for (ManagerRole role: manager.getManagerRoles()) {
+			if (!role.getRole().isEnabled()) continue;
+			
+			boolean hasSession = false;
+			for (Department department: manager.getDepartments())
+				if (session.equals(department.getSession())) { hasSession = true; break; }
+
+			if (role.getRole().hasRight(Right.SessionIndependent)) {
+			} else if (role.getRole().hasRight(Right.SessionIndependentIfNoSessionGiven)) {
+				if (!hasSession && !manager.getDepartments().isEmpty()) continue;
+			} else {
+				if (!hasSession) continue;
+			}
+			
+			UserAuthority authority = new RoleAuthority(manager.getUniqueId(), role.getRole());
+			authority.addQualifier(session);
+			authority.addQualifier(manager);
+			for (Department department: manager.getDepartments())
+				if (department.getSession().equals(session))
+					authority.addQualifier(department);
+			for (SolverGroup group: manager.getSolverGroups())
+				for (Department department: group.getDepartments())
+					if (department.getSession().equals(session)) {
+						authority.addQualifier(group); break;
+					}
+			addAuthority(authority);
+			if (getCurrentAuthority() == null || role.isPrimary())
+				setCurrentAuthority(authority);
+		}
+	}
+	
 	public static Session defaultSession(TreeSet<Session> sessions, HasRights role, String primaryCampus) {
 		if (sessions==null || sessions.isEmpty()) return null; // no session -> no default
 		

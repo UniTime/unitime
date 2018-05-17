@@ -13085,4 +13085,106 @@
 	    <plsql>update %SCHEMA%.sectioning_status set status = status + 16384 where bitand(status, 1) = 1 and bitand(status, 16384) = 0</plsql>
 	    <plsql>update %SCHEMA%.sectioning_status set status = status + 8192 where bitand(status, 256) = 256 and bitand(status, 8192) = 0</plsql>
 	</update>
+	<update version="207" date="16-May-2018" comment="Automation">
+		<mysql>
+			create table %SCHEMA%.task (
+				uniqueid decimal(20,0) primary key not null,
+				name varchar(128) not null,
+				session_id decimal(20,0) not null,
+				script_id decimal(20,0) not null,
+				owner_id decimal(20,0) not null,
+				email varchar(1000) null,
+				input_file longblob null
+			) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.task (
+				uniqueid number(20,0) constraint nn_task_uniqueid not null,
+				name varchar2(128 char) constraint nn_task_name not null,
+				session_id number(20,0) constraint nn_task_session not null,
+				script_id number(20,0) constraint nn_task_script not null,
+				owner_id number(20,0) constraint nn_task_owner not null,
+				email varchar2(1000 char),
+				input_file blob
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.task add constraint pk_task primary key (uniqueid)</plsql>
+		<sql>alter table %SCHEMA%.task add constraint fk_task_sesssion foreign key (session_id) references %SCHEMA%.sessions (uniqueid) on delete cascade</sql>
+		<sql>alter table %SCHEMA%.task add constraint fk_task_script foreign key (script_id) references %SCHEMA%.script (uniqueid) on delete cascade</sql>
+		<sql>alter table %SCHEMA%.task add constraint fk_task_owner foreign key (owner_id) references %SCHEMA%.timetable_manager (uniqueid) on delete cascade</sql>
+		<mysql>
+		    create table %SCHEMA%.task_parameter (
+		    	task_id decimal(20,0) not null,
+				name varchar(128) not null,
+				value varchar(2048),
+				primary key (task_id, name)
+			) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.task_parameter (
+				task_id number(20,0) constraint nn_taskparm_id not null,
+				name varchar2(128 char) constraint nn_taskparm_name not null,
+				value varchar2(2048 char)
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.task_parameter add constraint pk_task_parameter primary key (task_id, name)</plsql>
+		<sql>alter table %SCHEMA%.task_parameter add constraint fk_taskparam_task foreign key (task_id) references %SCHEMA%.task (uniqueid) on delete cascade</sql>
+		<mysql>
+			create table %SCHEMA%.task_execution (
+				uniqueid decimal(20,0) primary key not null,
+				task_id decimal(20,0) not null,
+				exec_date bigint(10) not null,
+				exec_period bigint(10) not null,
+				status bigint(10) not null,
+				created_date datetime not null,
+				scheduled_date datetime not null,
+				queued_date datetime null,
+				started_date datetime null,
+				finished_date datetime null,
+				log_file longtext binary null,
+				output_file longblob null,
+				output_name varchar(260) null,
+				output_content varchar(260) null,
+				status_message varchar(200) null
+			) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.task_execution (
+				uniqueid number(20,0) constraint nn_taskexe_uniqueid not null,
+				task_id number(20,0) constraint nn_taskexe_task not null,
+				exec_date number(10) constraint nn_taskexe_date not null,
+				exec_period number(10) constraint nn_taskexe_period not null,
+				status number(10) constraint nn_taskexe_status not null,
+				created_date timestamp constraint nn_taskexe_created not null,
+				scheduled_date timestamp constraint nn_taskexe_scheduled not null,
+				queued_date timestamp,
+				started_date timestamp,
+				finished_date timestamp,
+				log_file clob,
+				output_file blob,
+				output_name varchar2(260 char),
+				output_content varchar2(260 char),
+				status_message varchar2(200 char)
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.task_execution add constraint pk_task_execution primary key (uniqueid)</plsql>
+		<sql>alter table %SCHEMA%.task_execution add constraint fk_taskexec_task foreign key (task_id) references %SCHEMA%.task (uniqueid) on delete cascade</sql>
+		<mysql>create index idx_taskexe_schdstatus on %SCHEMA%.task_execution(status, scheduled_date)</mysql>
+		<plsql>create index %SCHEMA%.idx_taskexe_schdstatus on %SCHEMA%.task_execution(status, scheduled_date)</plsql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'Tasks'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'Scripts'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'TaskDetail'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'Scripts'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'TaskEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'ScriptEdit'
+		</sql>
+	</update>
 </dbupdate>

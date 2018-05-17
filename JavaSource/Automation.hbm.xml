@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="PeriodicTask" table="task">
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">pref_group_seq</param>
+            </generator>
+        </id>
+
+        <property
+            name="name"
+            column="name"
+            type="java.lang.String"
+            not-null="true"
+            length="128"/>
+        
+        <many-to-one
+            name="session"
+            class="Session"
+            column="session_id"
+            foreign-key="fk_task_sesssion"
+            not-null="true"/>
+        
+        <many-to-one
+            name="script"
+            class="Script"
+            column="script_id"
+            foreign-key="fk_task_script"
+            not-null="true"/>
+        
+        <many-to-one
+            name="owner"
+            class="TimetableManager"
+            column="owner_id"
+            foreign-key="fk_task_manager"
+            not-null="true"/>
+        
+		<set
+            name="parameters"
+            cascade="all"
+            inverse="true">
+
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="task_id"/>
+            <one-to-many class="TaskParameter"/>
+        </set>
+        
+		<set
+            name="schedule"
+            cascade="all"
+            inverse="true">
+
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="task_id"/>
+            <one-to-many class="TaskExecution"/>
+        </set>
+        
+        <property
+            name="email"
+            column="email"
+            type="java.lang.String"
+            not-null="false"
+            length="1000"/>
+        
+        <property
+            name="inputFile"
+            column="input_file"
+            type="byte[]"
+            not-null="false"
+            lazy="true"/>
+   	</class>
+   	
+    <class name="TaskParameter" table="task_parameter">
+        <cache include="non-lazy" usage="transactional"/>
+        
+        <composite-id>
+        	<key-many-to-one
+        		name="task"
+        		class="PeriodicTask"
+        		column="task_id"
+        		foreign-key="fk_taskparam_task"
+        	/>
+        	<key-property
+                name="name"
+                column="name"
+                type="java.lang.String"
+                length="128"/>
+        </composite-id>
+
+       	<property
+            name="value"
+            column="value"
+            type="java.lang.String"
+            not-null="true"
+            length="2048"/>
+   	</class>
+   	
+    <class name="TaskExecution" table="task_execution">
+        <cache include="non-lazy" usage="transactional"/>
+        
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">pref_group_seq</param>
+            </generator>
+        </id>
+        
+        <many-to-one
+            name="task"
+            class="PeriodicTask"
+            column="task_id"
+            foreign-key="fk_taskexec_task"
+            not-null="true"/>
+
+        <property
+            name="executionDate"
+            column="exec_date"
+            type="java.lang.Integer"
+            not-null="true"/>
+
+        <property
+            name="executionPeriod"
+            column="exec_period"
+            type="java.lang.Integer"
+            not-null="true"/>
+        
+        <property
+        	name="executionStatus"
+        	column="status"
+        	type="java.lang.Integer"
+        	not-null="true"/>
+
+        <property
+            name="createdDate"
+            column="created_date"
+            type="java.sql.Timestamp"
+            not-null="true"/>
+        
+        <property
+            name="scheduledDate"
+            column="scheduled_date"
+            type="java.sql.Timestamp"
+            not-null="true"/>
+
+        <property
+            name="queuedDate"
+            column="queued_date"
+            type="java.sql.Timestamp"
+            not-null="false"/>
+        
+        <property
+            name="startedDate"
+            column="started_date"
+            type="java.sql.Timestamp"
+            not-null="false"/>
+        
+        <property
+            name="finishedDate"
+            column="finished_date"
+            type="java.sql.Timestamp"
+            not-null="false"/>
+        
+        <property
+            name="logFile"
+            column="log_file"
+            type="java.lang.String"
+            not-null="false"
+            lazy="true"/>
+        
+        <property
+            name="outputFile"
+            column="output_file"
+            type="byte[]"
+            not-null="false"
+            lazy="true"/>
+            
+        <property
+            name="outputName"
+            column="output_name"
+            type="java.lang.String"
+            length="260"
+            not-null="false"/>
+
+        <property
+            name="outputContentType"
+            column="output_content"
+            type="java.lang.String"
+            length="260"
+            not-null="false"/>
+        
+        <property
+            name="statusMessage"
+            column="status_message"
+            type="java.lang.String"
+            length="260"
+            not-null="false"/>
+   	</class>
+</hibernate-mapping>

@@ -70,6 +70,18 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 			iParameters = new ArrayList<ScriptParameterInterface>();
 		iParameters.add(parameter);
 	}
+	public ScriptParameterInterface getParameter(String name) {
+		if (iParameters == null) return null;
+		for (ScriptParameterInterface p: iParameters)
+			if (name.equals(p.getName())) return p;
+		return null;
+	}
+	public boolean isFileParameter(String name) {
+		if (iParameters == null) return false;
+		for (ScriptParameterInterface p: iParameters)
+			if (name.equals(p.getName())) return "file".equalsIgnoreCase(p.getType());
+		return false;
+	}
 	
 	public boolean canEdit() { return iCanEdit; }
 	public void setCanEdit(boolean canEdit) { iCanEdit = canEdit; }
@@ -119,6 +131,12 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 			iOptions.add(new ListItem(value, text));
 		}
 		public Set<ListItem> getOptions() { return iOptions; }
+		public String getOption(String key) {
+			if (iOptions == null || key == null) return key;
+			for (ListItem o: iOptions)
+				if (key.equals(o.getValue())) return o.getText();
+			return key;
+		}
 		
 		public boolean isMultiSelect() { return iMultiSelect; }
 		public void setMultiSelect(boolean multiSelect) { iMultiSelect = multiSelect; }

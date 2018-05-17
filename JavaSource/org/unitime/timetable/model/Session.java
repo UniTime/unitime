@@ -360,6 +360,14 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 	public String getHolidaysHtml(boolean editable) {
 		return getHolidaysHtml(getSessionBeginDateTime(), getSessionEndDateTime(), getClassesEndDateTime(), getExamBeginDate(), getEventBeginDate(), getEventEndDate(), getSessionStartYear(), getHolidays(), editable, EventDateMapping.getMapping(getUniqueId()));
 	}
+	
+	
+	public Date getDate(int index) {
+		Calendar sessionBeginDate = Calendar.getInstance(Locale.US);
+		sessionBeginDate.setTime(getSessionBeginDateTime());
+		sessionBeginDate.add(Calendar.DAY_OF_YEAR, index);
+		return sessionBeginDate.getTime();
+	}
 
 	public static String getHolidaysHtml(
 			Date sessionBeginTime, 

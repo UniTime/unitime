@@ -167,6 +167,25 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 	}
 	
 	@Override
+	public boolean isLocalCoordinator() {
+		if (!isLocal()) return false;
+		try {
+			int myIndex = iChannel.getView().getMembers().indexOf(iChannel.getAddress());
+			RspList<Boolean> ret = iDispatcher.callRemoteMethods(null, "isLocal", new Object[] {}, new Class[] {}, sAllResponses);
+			for (Rsp<Boolean> local: ret) {
+				if (Boolean.TRUE.equals(local.getValue())) {
+					int idx = iChannel.getView().getMembers().indexOf(local.getSender());
+					if (idx < myIndex) return false;
+				}
+			}
+			return true;
+		} catch (Exception e) {
+			sLog.error("Failed to retrieve local address: " + e.getMessage(), e);
+			return false;
+		}
+	}
+	
+	@Override
 	public String getHost() {
 		return iChannel.getAddressAsString();
 	}

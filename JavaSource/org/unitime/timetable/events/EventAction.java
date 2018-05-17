@@ -98,7 +98,7 @@ public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpc
 		}
 	}
 	
-	public static class EventContext implements SessionContext {
+	public static class EventContext implements SessionContext, HasPastOrOutside {
 		private SessionContext iContext;
 		private Qualifiable[] iFilter;
 		
@@ -149,12 +149,15 @@ public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpc
 			this(context, context.getUser(), sessionId);
 		}
 		
+		@Override
 		public boolean isOutside(Date date) {
 			return date == null || (iBegin != null && date.before(iBegin)) || (iEnd != null && !date.before(iEnd));
 		}
+		@Override
 		public boolean isPast(Date date) {
 			return !iAllowEditPast && (date == null || date.before(iToday));
 		}
+		@Override
 		public boolean isPastOrOutside(Date date) {
 			return isPast(date) || isOutside(date);
 		}
@@ -269,5 +272,10 @@ public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpc
 			iContext.checkPermissionAnySession(targetObject, right, filter == null || filter.length == 0 ? iFilter : filter);
 		}
 	}
-
+	
+	public static interface HasPastOrOutside {
+		public boolean isOutside(Date date);
+		public boolean isPast(Date date);
+		public boolean isPastOrOutside(Date date);
+	}
 }

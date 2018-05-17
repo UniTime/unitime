@@ -465,4 +465,13 @@ public interface GwtConstants extends Constants {
 	
 	@DefaultStringValue("%")
 	String percentageSign();
+	
+	@DefaultStringArrayValue({
+		"Created",
+		"Queued",
+		"Running",
+		"Finished",
+		"Failed"
+	})
+	String[] taskStatus();
 }

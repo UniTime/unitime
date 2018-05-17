@@ -628,6 +628,9 @@ public enum Right {
     
     Scripts,
     ScriptEdit,
+    Tasks(Session.class),
+    TaskDetail(Session.class),
+    TaskEdit(Session.class),
     
     /** API */
     ApiRetrieveEvents(Session.class),

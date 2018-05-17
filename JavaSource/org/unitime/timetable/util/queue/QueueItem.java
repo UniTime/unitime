@@ -62,7 +62,8 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 	private double iMaxProgress = 100.0;
 	
 	private String iId = null;
-	private Address iAddress = null;;
+	private Address iAddress = null;
+	private Long iTaskExecutionId = null;
 	
 	public QueueItem(Long sessionId, UserContext owner) {
 		iSessionId = sessionId;
@@ -88,6 +89,8 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 	public boolean hasOwnerEmail() { return iOwnerEmail != null && !iOwnerEmail.isEmpty(); }
 	public String getOwnerEmail() { return iOwnerEmail; }
 	public String getLocale() { return iLocale; }
+	public Long getTaskExecutionId() { return iTaskExecutionId; }
+	public void setTaskExecutionId(Long executionId) { iTaskExecutionId = executionId; }
 	
 	public abstract String type();
 	public abstract String name();

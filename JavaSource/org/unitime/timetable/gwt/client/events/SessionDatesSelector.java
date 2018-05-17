@@ -104,6 +104,12 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 		});
 	}
 	
+	public SessionDatesSelector(List<SessionMonth> months) {
+		iPanel = new UniTimeWidget<DatesPanel>(new DatesPanel());
+		initWidget(iPanel);
+		init(months);
+	}
+	
 	public boolean isCanSelectPast() { return iCanSelectPast; }
 	public void setCanSelectPast(boolean canSelectPast) { iCanSelectPast = canSelectPast; }
 	
