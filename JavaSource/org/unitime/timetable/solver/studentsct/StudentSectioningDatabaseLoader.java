@@ -90,6 +90,7 @@ import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequestOption;
@@ -192,6 +193,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private boolean iUseAmPm = true;
     private String iDatePatternFormat = null;
     private boolean iShowClassSuffix = false, iShowConfigName = false;
+    private boolean iMaxCreditChecking = false;
+    private float iMaxDefaultCredit = -1f;
     
     public StudentSectioningDatabaseLoader(StudentSectioningModel model, org.cpsolver.ifs.assignment.Assignment<Request, Enrollment> assignment) {
         super(model, assignment);
@@ -261,6 +264,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iInstructorNameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
         iCheckRequestStatusSkipCancelled = model.getProperties().getPropertyBoolean("Load.CheckRequestStatusSkipCancelled", iCheckRequestStatusSkipCancelled);
         iCheckRequestStatusSkipPending = model.getProperties().getPropertyBoolean("Load.CheckRequestStatusSkipPending", iCheckRequestStatusSkipPending);
+        iMaxCreditChecking = model.getProperties().getPropertyBoolean("Load.MaxCreditChecking", iMaxCreditChecking);
+        iMaxDefaultCredit = model.getProperties().getPropertyFloat("Load.DefaultMaxCredit", iMaxDefaultCredit);
     }
     
     public void load() {
@@ -830,6 +835,17 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		break;
         	}
         }
+        float maxCredit = iMaxDefaultCredit;
+        if (s.getMaxCredit() != null)
+        	maxCredit = s.getMaxCredit();
+        if (s.getOverrideMaxCredit() != null) {
+        	if (s.isRequestApproved())
+        		maxCredit = s.getOverrideMaxCredit();
+        	else if (s.isRequestCancelled() && !iCheckRequestStatusSkipCancelled)
+        		maxCredit = s.getOverrideMaxCredit();
+        	else if (s.isRequestPending() && !iCheckRequestStatusSkipPending)
+        		maxCredit = s.getOverrideMaxCredit();
+        }
 
 		TreeSet<CourseDemand> demands = new TreeSet<CourseDemand>(new Comparator<CourseDemand>() {
 			public int compare(CourseDemand d1, CourseDemand d2) {
@@ -842,6 +858,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 		});
 		Set<CourseOffering> alternatives = new HashSet<CourseOffering>();
 		demands.addAll(s.getCourseDemands());
+		float credit = 0f;
         for (CourseDemand cd: demands) {
             if (cd.getFreeTime()!=null) {
             	TimeLocation ft = new TimeLocation(
@@ -866,15 +883,27 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 	}
 				});
                 crs.addAll(cd.getCourseRequests());
+                float creditThisRequest = 0;
                 for (org.unitime.timetable.model.CourseRequest cr: crs) {
-                	if (cr.isRequestRejected() && cr.getClassEnrollments().isEmpty()) continue;
-                	if (iCheckRequestStatusSkipCancelled && cr.isRequestCancelled() && cr.getClassEnrollments().isEmpty()) continue;
-                	if (iCheckRequestStatusSkipPending && cr.isRequestPending() && cr.getClassEnrollments().isEmpty()) continue;
+                	if (cr.isRequestRejected() && cr.getClassEnrollments().isEmpty()) {
+                		iProgress.info("Requested course " + cr.getCourseOffering().getCourseName() + " has rejected override for " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ")");
+                		continue;
+                	}
+                	if (iCheckRequestStatusSkipCancelled && cr.isRequestCancelled() && cr.getClassEnrollments().isEmpty()) {
+                		iProgress.info("Requested course " + cr.getCourseOffering().getCourseName() + " has cancelled override for " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ")");
+                		continue;
+                	}
+                	if (iCheckRequestStatusSkipPending && cr.isRequestPending() && cr.getClassEnrollments().isEmpty()) {
+                		iProgress.info("Requested course " + cr.getCourseOffering().getCourseName() + " has pending override for " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ")");
+                		continue;
+                	}
                     Course course = courseTable.get(cr.getCourseOffering().getUniqueId());
                     if (course==null) {
                         iProgress.warn("Student " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ") requests course " + cr.getCourseOffering().getCourseName() + " that is not loaded.");
                         continue;
                     }
+                    CourseCreditUnitConfig creditCfg = cr.getCourseOffering().getCredit();
+                    if (creditCfg != null && creditThisRequest < creditCfg.getMinCredit()) creditThisRequest = creditCfg.getMinCredit();
                     for (Iterator<ClassWaitList> k=cr.getClassWaitLists().iterator();k.hasNext();) {
                         ClassWaitList cwl = k.next();
                         Section section = course.getOffering().getSection(cwl.getClazz().getUniqueId().longValue());
@@ -949,6 +978,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         if (course == null) {
                             iProgress.warn("Course " + co.getCourseName() + "has an alternative course " + alt.getCourseName() + " that is not loaded (" + s.getExternalUniqueId() + ").");
                         } else {
+                            CourseCreditUnitConfig creditCfg = alt.getCredit();
+                            if (creditCfg != null && creditThisRequest < creditCfg.getMinCredit()) creditThisRequest = creditCfg.getMinCredit();
                         	if (assignedConfig==null) {
                                 HashSet<Long> subparts = new HashSet<Long>();
                                 for (StudentClassEnrollment enrl: alt.getClassEnrollments(s)) {
@@ -974,10 +1005,11 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 	}
                 }
                 if (courses.isEmpty()) continue;
+                credit += creditThisRequest;
                 CourseRequest request = new CourseRequest(
                         cd.getUniqueId(),
                         cd.getPriority(),
-                        cd.isAlternative(),
+                        cd.isAlternative() || (iMaxCreditChecking && maxCredit > 0 && credit > maxCredit),
                         student,
                         courses,
                         cd.isWaitlist(), 
@@ -988,6 +1020,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections, getAssignment());
                     request.setInitialAssignment(enrollment);
                 }
+                if (!cd.isAlternative() && (iMaxCreditChecking && maxCredit > 0 && credit > maxCredit))
+                	iProgress.info("Request " + request + " is treated as alternative (" + credit + " > " + maxCredit + ") for " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ")");
                 if (assignedConfig!=null && assignedSections.size() != assignedConfig.getSubparts().size()) {
                 	iProgress.error("There is a problem assigning " + request.getName() + " to " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ") wrong number of classes (" +
                 			"has " + assignedSections.size() + ", expected " + assignedConfig.getSubparts().size() + ").");
