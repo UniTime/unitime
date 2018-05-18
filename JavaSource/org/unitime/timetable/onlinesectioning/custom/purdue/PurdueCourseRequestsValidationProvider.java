@@ -1527,6 +1527,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 	
 	protected boolean hasPendingOverride(org.unitime.timetable.model.Student student) {
 		if (student.getOverrideExternalId() != null && student.getMaxCreditOverrideStatus() == CourseRequestOverrideStatus.PENDING) return true;
+		if (student.getMaxCredit() == null) return true;
 		for (CourseDemand cd: student.getCourseDemands()) {
 			for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests()) {
 				if (cr.getOverrideExternalId() != null && cr.getCourseRequestOverrideStatus() == CourseRequestOverrideStatus.PENDING)
