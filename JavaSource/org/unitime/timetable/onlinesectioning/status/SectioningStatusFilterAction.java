@@ -33,6 +33,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
@@ -246,8 +247,11 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 	
 	public FilterRpcResponse suggestions(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		FilterRpcResponse response = new FilterRpcResponse();
+		
+		String studentIdPattern = ApplicationProperty.OnlineSchedulingStudentIdPattern.value();
+		boolean studentIdMatch = (studentIdPattern != null && !studentIdPattern.isEmpty() && iRequest.getText().trim().matches(studentIdPattern));
 
-		if (!iRequest.getText().isEmpty() && (response.getSuggestions() == null || response.getSuggestions().size() < 20)) {
+		if (!iRequest.getText().isEmpty() && (response.getSuggestions() == null || response.getSuggestions().size() < 20) && !studentIdMatch) {
 			List<SubjectArea> subjects = helper.getHibSession().createQuery("select s from SubjectArea s where s.session.uniqueId = :sessionId and (" +
 					"lower(s.subjectAreaAbbreviation) like :name or lower(' ' || s.title) like :title) " +
 					"order by s.subjectAreaAbbreviation")
@@ -274,21 +278,9 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		
 		StudentQuery query = getQuery(iRequest, server);
 		if (!iRequest.getText().isEmpty() && (response.getSuggestions() == null || response.getSuggestions().size() < 20)) {
-			StudentQuery.QueryInstance instance = query.select("distinct s").exclude("student").order("s.lastName, s.firstName, s.middleName");
-			
-			int id = 0;
-			String where = "";
-			for (StringTokenizer s = new StringTokenizer(iRequest.getText().trim(),", "); s.hasMoreTokens(); ) {
-				String token = s.nextToken().toUpperCase();
-				if (!where.isEmpty())
-					where += " and ";
-				where += "(upper(s.firstName) like :cn" + id + " || '%' or upper(s.middleName) like :cn" + id + " || '%' or upper(s.lastName) like :cn" + id + " || '%' or upper(s.email) like :cn" + id + ")";
-				instance.set("cn" + id, token);
-				id++;
-            }
-			if (id > 0) {
-				instance.where("(" + where + ") or upper(trim(trailing ' ' from s.lastName || ', ' || s.firstName || ' ' || s.middleName)) = :name or s.externalUniqueId = :id");
-				instance.set("name", iRequest.getText().trim().toUpperCase());
+			if (studentIdMatch) {
+				StudentQuery.QueryInstance instance = query.select("distinct s").exclude("student").order("s.lastName, s.firstName, s.middleName");
+				instance.where("s.externalUniqueId = :id");
 				if (ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue()) {
 					instance.set("id", iRequest.getText().trim().replaceFirst("^0+(?!$)", ""));
 				} else {
@@ -296,6 +288,30 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				}
 				for (Student student: (List<Student>)instance.limit(20).query(helper.getHibSession()).list())
 					response.addSuggestion(helper.getStudentNameFormat().format(student), student.getExternalUniqueId(), "Student", "student");
+			} else {
+				StudentQuery.QueryInstance instance = query.select("distinct s").exclude("student").order("s.lastName, s.firstName, s.middleName");
+				
+				int id = 0;
+				String where = "";
+				for (StringTokenizer s = new StringTokenizer(iRequest.getText().trim(),", "); s.hasMoreTokens(); ) {
+					String token = s.nextToken().toUpperCase();
+					if (!where.isEmpty())
+						where += " and ";
+					where += "(upper(s.firstName) like :cn" + id + " || '%' or upper(s.middleName) like :cn" + id + " || '%' or upper(s.lastName) like :cn" + id + " || '%' or upper(s.email) like :cn" + id + ")";
+					instance.set("cn" + id, token);
+					id++;
+	            }
+				if (id > 0) {
+					instance.where("(" + where + ") or upper(trim(trailing ' ' from s.lastName || ', ' || s.firstName || ' ' || s.middleName)) = :name or s.externalUniqueId = :id");
+					instance.set("name", iRequest.getText().trim().toUpperCase());
+					if (ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue()) {
+						instance.set("id", iRequest.getText().trim().replaceFirst("^0+(?!$)", ""));
+					} else {
+						instance.set("id", iRequest.getText().trim());
+					}
+					for (Student student: (List<Student>)instance.limit(20).query(helper.getHibSession()).list())
+						response.addSuggestion(helper.getStudentNameFormat().format(student), student.getExternalUniqueId(), "Student", "student");
+				}
 			}
 		}
 		
@@ -318,16 +334,31 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			}
 		}
 		
-		if (iRequest.getText().length() > 1 && (response.getSuggestions() == null || response.getSuggestions().size() < 20)) {
-			StudentQuery.QueryInstance instance = query.select("distinct l.operation").exclude("operation").order("l.operation")
-					.from("OnlineSectioningLog l").where("l.session.uniqueId = :sessionId").where("l.student = s.externalUniqueId");
-			String q = iRequest.getText();
-			if (!"operation".startsWith(q.toLowerCase())) {
-				instance.set("q", q);
-				instance.where("l.operation like :q || '%'");
-			}
-			for (String op: (List<String>)instance.limit(20).query(helper.getHibSession()).list()) {
-				response.addSuggestion(Constants.toInitialCase(op.replace('-', ' ')), op, "Operation", "operation");
+		if (iRequest.getText().length() > 1 && (response.getSuggestions() == null || response.getSuggestions().size() < 20) && iRequest.getText().matches(ApplicationProperty.OnlineSchedulingDashboardSuggestionsOperationPattern.value())) {
+			int days = ApplicationProperty.OnlineSchedulingDashboardSuggestionsLogDays.intValue();
+			if (days > 0) {
+				StudentQuery.QueryInstance instance = query.select("distinct l.operation").exclude("operation").order("l.operation")
+						.from("OnlineSectioningLog l").where("l.session.uniqueId = :sessionId").where("l.student = s.externalUniqueId")
+						.where("l.timeStamp > " + HibernateUtil.addDate("current_date()", ":days")).set("days", -days);
+				String q = iRequest.getText();
+				if (!"operation".startsWith(q.toLowerCase())) {
+					instance.set("q", q);
+					instance.where("l.operation like :q || '%'");
+				}
+				for (String op: (List<String>)instance.limit(20).query(helper.getHibSession()).list()) {
+					response.addSuggestion(Constants.toInitialCase(op.replace('-', ' ')), op, "Operation", "operation");
+				}
+			} else if (days < 0) {
+				StudentQuery.QueryInstance instance = query.select("distinct l.operation").exclude("operation").order("l.operation")
+						.from("OnlineSectioningLog l").where("l.session.uniqueId = :sessionId").where("l.student = s.externalUniqueId");
+				String q = iRequest.getText();
+				if (!"operation".startsWith(q.toLowerCase())) {
+					instance.set("q", q);
+					instance.where("l.operation like :q || '%'");
+				}
+				for (String op: (List<String>)instance.limit(20).query(helper.getHibSession()).list()) {
+					response.addSuggestion(Constants.toInitialCase(op.replace('-', ' ')), op, "Operation", "operation");
+				}
 			}
 		}
 		

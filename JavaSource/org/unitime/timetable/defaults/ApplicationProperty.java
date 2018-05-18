@@ -577,6 +577,19 @@ public enum ApplicationProperty {
 	@DefaultValue("initial-last")
 	@Description("Online Student Scheduling: instructor name format")
 	OnlineSchedulingInstructorNameFormat("unitime.enrollment.instructor.name"),
+	
+	@DefaultValue("0{0,2}[0-9]{8}")
+	@Description("Online Student Scheduling: student external id regular expression pattern (e.g., use [0-9]+ if it must be a number)")
+	OnlineSchedulingStudentIdPattern("unitime.enrollment.student.externalIdPattern"),
+	
+	@DefaultValue("[a-zA-Z\\-]{4,20}")
+	@Description("Student Scheduling Dashboard: sectioning log regular expression pattern")
+	OnlineSchedulingDashboardSuggestionsOperationPattern("unitime.enrollment.suggestions.operationPattern"),
+	
+	@DefaultValue("7")
+	@Type(Integer.class)
+	@Description("Student Scheduling Dashboard: when giving operation suggestions, scan sectioning log for the last given number of days (use -1 for no limit, 0 for no operation suggestions)")
+	OnlineSchedulingDashboardSuggestionsLogDays("unitime.enrollment.suggestions.sectioningLogDays"),
 
 	@Type(Boolean.class)
 	@DefaultValue("true")
