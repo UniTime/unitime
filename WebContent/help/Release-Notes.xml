@@ -392,6 +392,13 @@
 				<line>Added timestamp format (using combination of a single date selector and a time selector).</line>
 			</description>
 		</item>
+		<item>
+			<name>Task Scheduler</name>
+			<description>
+				<line>Added ability to schedule periodic executions of scripts.</line>
+				<line>Periodic tasks are academic session dependent, available under Administration &gt; Academic Sessions &gt; Task Scheduler.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>

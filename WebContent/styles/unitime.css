@@ -6231,6 +6231,10 @@ unitime-RoomSharingWidget .legend .blank {
 	overflow: hidden;
 }
 
+.unitime-PeriodicTaskTable {
+	min-width: 780px;
+}
+
 .unitime-PeriodicTaskEditor .unitime-DateSelector {
 	max-width: 900px;
 }

@@ -126,7 +126,9 @@ public class TaskInterface implements GwtRpcResponse, Comparable<TaskInterface> 
 
 	@Override
 	public int compareTo(TaskInterface o) {
-		return getName().compareTo(o.getName());
+		int cmp = getName().compareTo(o.getName());
+		if (cmp != 0) return cmp;
+		return (getId() == null ? new Long(0) : getId()).compareTo(o.getId() == null ? 0 : o.getId());
 	}
 	
 	@Override
