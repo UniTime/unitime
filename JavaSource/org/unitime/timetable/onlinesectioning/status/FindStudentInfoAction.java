@@ -466,7 +466,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		
 		if (iSubjectAreas == null && iCoursesIcoordinate == null) {
 			if (studentIds != null && (studentIds.size() < 1000 || server instanceof DatabaseServer)) {
-				FindStudentInfoMatcher m = new FindStudentInfoMatcher(session, query()); m.setServer(server);
+				FindStudentInfoMatcher m = new FindStudentInfoMatcher(session, query(), iMyStudents); m.setServer(server);
 				for (Long id: studentIds) {
 					if (students.containsKey(id)) continue;
 					XStudent student = server.getStudent(id);
@@ -500,7 +500,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 					ret.add(s);
 				}
 			} else {
-				for (XStudentId id: server.findStudents(new FindStudentInfoMatcher(session, query()))) {
+				for (XStudentId id: server.findStudents(new FindStudentInfoMatcher(session, query(), iMyStudents))) {
 					XStudent student = (id instanceof XStudent ? (XStudent)id : server.getStudent(id.getStudentId()));
 					StudentInfo s = new StudentInfo();
 					ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student(); s.setStudent(st);
@@ -607,16 +607,22 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		private static final long serialVersionUID = 1L;
 		protected Query iQuery;
 		protected String iDefaultSectioningStatus;
+		protected Set<Long> iMyStudents;
 		
-		public FindStudentInfoMatcher(AcademicSessionInfo session, Query query) {
+		public FindStudentInfoMatcher(AcademicSessionInfo session, Query query, Set<Long> myStudents) {
 			iQuery = query;
 			iDefaultSectioningStatus = session.getDefaultSectioningStatus();
+			iMyStudents = myStudents;
+		}
+		
+		public boolean isMyStudent(XStudentId student) {
+			return iMyStudents != null && iMyStudents.contains(student.getStudentId());
 		}
 
 		@Override
 		public boolean match(XStudentId id) {
 			XStudent student = (id instanceof XStudent ? (XStudent)id : getServer().getStudent(id.getStudentId()));
-			return student != null && student.getRequests().isEmpty() && iQuery.match(new StudentMatcher(student, iDefaultSectioningStatus, getServer()));
+			return student != null && student.getRequests().isEmpty() && iQuery.match(new StudentMatcher(student, iDefaultSectioningStatus, getServer(), isMyStudent(student)));
 		}
 	}
 }

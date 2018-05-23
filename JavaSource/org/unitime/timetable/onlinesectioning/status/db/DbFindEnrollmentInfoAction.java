@@ -1095,11 +1095,13 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 		private Student iStudent;
 		private String iDefaultStatus;
 		private NameFormat iFormat = null;
+		private boolean iMyStudent = false;
 		
-		public DbStudentMatcher(Student student, String defaultStatus, NameFormat format) {
+		public DbStudentMatcher(Student student, String defaultStatus, NameFormat format, boolean myStudent) {
 			iStudent = student;
 			iDefaultStatus = defaultStatus;
 			iFormat = format;
+			iMyStudent = myStudent;
 		}
 		
 		public DbStudentMatcher(Student student) {
@@ -1255,6 +1257,11 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					}
 				}
 				return false;
+			} else if ("mode".equals(attr)) {
+				if (eq("My Students", term)) {
+					return iMyStudent;
+				}
+				return true;
 			}
 			return false;
 		}
@@ -1277,13 +1284,17 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 		private static final long serialVersionUID = 1L;
 		protected NameFormat iFormat;
 		
-		public DbFindStudentInfoMatcher(AcademicSessionInfo session, Query query, NameFormat format) {
-			super(session, query);
+		public DbFindStudentInfoMatcher(AcademicSessionInfo session, Query query, NameFormat format, Set<Long> myStudents) {
+			super(session, query, myStudents);
 			iFormat = format;
+		}
+		
+		public boolean isMyStudent(Student student) {
+			return iMyStudents != null && iMyStudents.contains(student.getUniqueId());
 		}
 
 		public boolean match(Student student) {
-			return student != null && iQuery.match(new DbStudentMatcher(student, iDefaultSectioningStatus, iFormat));
+			return student != null && iQuery.match(new DbStudentMatcher(student, iDefaultSectioningStatus, iFormat, isMyStudent(student)));
 		}
 	}
 

@@ -1079,11 +1079,13 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		private XStudent iStudent;
 		private String iDefaultStatus;
 		private OnlineSectioningServer iServer;
+		private boolean iMyStudent;
 		
-		public StudentMatcher(XStudent student, String defaultStatus, OnlineSectioningServer server) {
+		public StudentMatcher(XStudent student, String defaultStatus, OnlineSectioningServer server, boolean myStudent) {
 			iStudent = student;
 			iDefaultStatus = defaultStatus;
 			iServer = server;
+			iMyStudent = myStudent;
 		}
 
 		public XStudent student() { return iStudent; }
@@ -1253,6 +1255,11 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				}
 				return false;
 				
+			} else if ("mode".equals(attr)) {
+				if (eq("My Students", term)) {
+					return iMyStudent;
+				}
+				return true;
 			}
 			return false;
 		}

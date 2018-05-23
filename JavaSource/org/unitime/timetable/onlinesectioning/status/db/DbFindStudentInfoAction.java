@@ -94,7 +94,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		AcademicSessionInfo session = server.getAcademicSession();
 		DistanceMetric dm = server.getDistanceMetric();
 		
-		DbFindStudentInfoMatcher sm = new DbFindStudentInfoMatcher(session, iQuery, helper.getStudentNameFormat()); sm.setServer(server);
+		DbFindStudentInfoMatcher sm = new DbFindStudentInfoMatcher(session, iQuery, helper.getStudentNameFormat(), iMyStudents); sm.setServer(server);
 		
 		Map<CourseOffering, List<CourseRequest>> requests = new HashMap<CourseOffering, List<CourseRequest>>();
 		for (CourseRequest cr: (List<CourseRequest>)SectioningStatusFilterAction.getCourseQuery(iFilter, server).select("distinct cr").query(helper.getHibSession()).list()) {
