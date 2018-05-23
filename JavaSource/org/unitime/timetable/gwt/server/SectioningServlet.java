@@ -1697,6 +1697,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	
 	public List<EnrollmentInfo> findEnrollmentInfos(boolean online, String query, SectioningStatusFilterRpcRequest filter, Long courseId) throws SectioningException, PageAccessException {
 		try {
+			if (filter != null && sessionContext.isAuthenticated()) {
+				filter.setOption("user", sessionContext.getUser().getExternalUserId());
+				if (sessionContext.getUser().getCurrentAuthority() != null)
+					filter.setOption("role", sessionContext.getUser().getCurrentAuthority().getRole());
+			}
 			if (online) {
 				final Long sessionId = getStatusPageSessionId();
 				
@@ -1744,6 +1749,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	
 	public List<ClassAssignmentInterface.StudentInfo> findStudentInfos(boolean online, String query, SectioningStatusFilterRpcRequest filter) throws SectioningException, PageAccessException {
 		try {
+			if (filter != null && sessionContext.isAuthenticated()) {
+				filter.setOption("user", sessionContext.getUser().getExternalUserId());
+				if (sessionContext.getUser().getCurrentAuthority() != null)
+					filter.setOption("role", sessionContext.getUser().getCurrentAuthority().getRole());
+			}
 			if (online) {
 				Long sessionId = getStatusPageSessionId();
 				
@@ -1845,6 +1855,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			boolean online, String query, SectioningStatusFilterRpcRequest filter, Long courseId, Long classId)
 			throws SectioningException, PageAccessException {
 		try {
+			if (filter != null && sessionContext.isAuthenticated()) {
+				filter.setOption("user", sessionContext.getUser().getExternalUserId());
+				if (sessionContext.getUser().getCurrentAuthority() != null)
+					filter.setOption("role", sessionContext.getUser().getCurrentAuthority().getRole());
+			}
 			if (online) {
 				Long sessionId = getStatusPageSessionId();
 				
