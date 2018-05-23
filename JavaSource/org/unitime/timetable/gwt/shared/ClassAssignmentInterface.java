@@ -505,7 +505,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			return ret;
 		}
 		
-		public boolean isUnlimited() { return iLimit != null && iLimit[1] >= 9999; }
+		public boolean isUnlimited() { return iLimit != null && (iLimit[1] < 0 || iLimit[1] >= 9999); }
 		public int[] getLimit() { return iLimit; }
 		public void setLimit(int[] limit) { iLimit = limit; }
 		public String getLimitString() {
@@ -516,6 +516,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		}
 		public boolean isAvailable() {
 			if (iLimit == null) return true;
+			if (iLimit[1] < 0) return true;
 			if (iLimit[0] < 0) return (iLimit[1] != 0);
 			return iLimit[0] < iLimit[1];
 		}
