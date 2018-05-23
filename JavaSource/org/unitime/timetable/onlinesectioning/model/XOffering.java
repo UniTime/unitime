@@ -430,6 +430,60 @@ public class XOffering implements Serializable, Externalizable {
         return available - reserved;
     }
     
+    /**
+     * Return minimum of two limits where -1 counts as unlimited (any limit is smaller)
+     */
+    private static int min(int l1, int l2) {
+        return (l1 < 0 ? l2 : l2 < 0 ? l1 : Math.min(l1, l2));
+    }
+    
+    /**
+     * Add two limits where -1 counts as unlimited (unlimited plus anything is unlimited)
+     */
+    private static int add(int l1, int l2) {
+        return (l1 < 0 ? -1 : l2 < 0 ? -1 : l1 + l2);
+    }
+    
+    /**
+     * Course availability excluding disabled sections and enrollments using disabled sections
+     * @param requests course requests for this offering
+     * @param courseId course in question
+     * @return [number of enrollments, course limit]
+     */
+    public int[] getCourseAvailability(Collection<XCourseRequest> requests, XCourse course) {
+    	int offeringLimit = 0;
+    	Set<Long> hidden = new HashSet<Long>();
+    	for (XConfig config: getConfigs()) {
+    		Integer configLimit = null;
+    		for (XSubpart subpart: config.getSubparts()) {
+    			int subpartLimit = 0;
+    			for (XSection section: subpart.getSections()) {
+    				if (section.isEnabledForScheduling() && !section.isCancelled()) {
+    					subpartLimit = add(subpartLimit, section.getLimit());
+    				} else {
+    					hidden.add(section.getSectionId());
+    				}
+    			}
+    			if (configLimit == null)
+    				configLimit = subpartLimit;
+    			else
+    				configLimit = min(configLimit, subpartLimit);
+    		}
+    		if (configLimit != null)
+    			offeringLimit = add(offeringLimit, min(configLimit, config.getLimit()));
+    	}
+    	int enrl = 0;
+    	if (requests != null)
+    		requests: for (XCourseRequest r: requests)
+				if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(course.getCourseId())) {
+					if (!hidden.isEmpty())
+						for (Long s: r.getEnrollment().getSectionIds())
+		    				if (hidden.contains(s)) continue requests;
+					enrl ++;
+				}
+    	return new int[] { enrl,  min(course.getLimit(), offeringLimit) };
+    }
+    
     /** True if there are reservations for this offering */
     public boolean hasReservations() { return !iReservations.isEmpty(); }
     

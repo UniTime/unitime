@@ -253,6 +253,15 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			if (iEnrollment < 0) return "&infin;";
 			return iEnrollment.toString();
 		}
+		public void setAvailability(int[] availability) {
+			if (availability == null) {
+				iEnrollment = null;
+				iLimit = null;
+			} else {
+				iEnrollment = availability[0];
+				iLimit = availability[1];
+			}
+		}
 		
 		public boolean isWaitListed() { return iWaitListed; }
 		public void setWaitListed(boolean waitListed) { iWaitListed = waitListed; }

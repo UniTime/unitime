@@ -51,7 +51,7 @@ import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.purdue.XEInterface.PlaceHolder;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
-import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 
 import com.google.gson.Gson;
@@ -380,14 +380,9 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 						ca.setTitle(xc.getTitle());
 						ca.setHasUniqueName(xc.hasUniqueName());
 						ca.setLimit(xc.getLimit());
-						Collection<XCourseRequest> requests = server.getRequests(id.getOfferingId());
-						if (requests != null) {
-							int enrl = 0;
-							for (XCourseRequest r: requests)
-								if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(id.getCourseId()))
-									enrl ++;
-							ca.setEnrollment(enrl);
-						}
+						XOffering offering = server.getOffering(id.getCourseId());
+						if (offering != null)
+							ca.setAvailability(offering.getCourseAvailability(server.getRequests(id.getOfferingId()), xc));
 						course.addCourse(ca);
 					}
 				}

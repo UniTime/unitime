@@ -33,7 +33,6 @@ import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
-import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 
 /**
@@ -90,16 +89,9 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 		course.setTitle(c.getTitle());
 		course.setHasUniqueName(c.hasUniqueName());
 		course.setLimit(c.getLimit());
-		Collection<XCourseRequest> requests = server.getRequests(c.getOfferingId());
-		int enrl = 0;
-		if (requests != null) {
-			for (XCourseRequest r: requests)
-				if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(course.getCourseId()))
-					enrl ++;
-		}
-		course.setEnrollment(enrl);
 		XOffering offering = server.getOffering(c.getOfferingId());
 		if (offering != null) {
+			course.setAvailability(offering.getCourseAvailability(server.getRequests(c.getOfferingId()), c));
 			for (XConfig config: offering.getConfigs()) {
 				if (config.getInstructionalMethod() != null)
 					course.addInstructionalMethod(config.getInstructionalMethod().getUniqueId(), config.getInstructionalMethod().getLabel());
