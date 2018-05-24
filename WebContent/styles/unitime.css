@@ -2024,12 +2024,24 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	padding: 1px;
 	margin: 0px 3px 0px 10px;
 	cursor: pointer;
-	display: -moz-inline-box;
-	display: inline-block;
+	display: inline-flex;
 	-webkit-border-radius: 2px;
 	-moz-border-radius: 2px;
 	width: 30%;
 	overflow: hidden;
+}
+
+.unitime-FilterBoxPopup .value .value-text {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.unitime-FilterBoxPopup .value .value-hint {
+	color: #909090;
+	vertical-align: top;
+	font-size: xx-small;
+	padding-left: 2px;
 }
 
 .unitime-FilterBoxPopup .value:hover {

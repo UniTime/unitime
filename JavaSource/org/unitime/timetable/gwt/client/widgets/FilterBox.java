@@ -1038,9 +1038,9 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 					for (final Chip value: values) {
 						String html = SafeHtmlUtils.htmlEscape(value.getLabel());
 						if (value.hasCount())
-							html += "<span class='item-hint'>(" + value.getCount() + ")</span>";
+							html = "<span class='value-text'>" + html + "&nbsp;</span><span class='value-hint'>(" + value.getCount() + ")</span>";
 						else if (value.hasToolTip())
-							html += "<span class='item-hint'>" + value.getToolTip() + "</span>";
+							html = "<span class='value-text'>" + html + "&nbsp;</span><span class='value-hint'>" + value.getToolTip() + "</span>";
 						HTML item = new HTML(html, false);
 						if (value.hasToolTip())
 							item.setTitle(value.getToolTip());
