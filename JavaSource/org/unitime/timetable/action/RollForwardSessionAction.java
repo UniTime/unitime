@@ -373,6 +373,11 @@ public class RollForwardSessionAction extends Action {
         	    sessionRollForward.rollReservationsForward(iErrors, iForm);
         	}
 	        iProgress++;
+	        if (iErrors.isEmpty() && iForm.getRollForwardPeriodicTasks()) {
+				setStatus("Scheduled Tasks ...");
+        	    sessionRollForward.rollPeriodicTasksForward(iErrors, iForm);
+        	}
+	        iProgress++;
 	        if (!iErrors.isEmpty()) {
 	        	setError(new Exception(((ActionMessage)iErrors.get().next()).getValues()[0].toString()));
 	        } else {
@@ -402,6 +407,7 @@ public class RollForwardSessionAction extends Action {
         	if (iForm.getRollForwardStudents()) names.add("students");
         	if (iForm.getRollForwardCurricula()) names.add("curricula");
         	if (iForm.getRollForwardReservations()) names.add("reservations");
+        	if (iForm.getRollForwardPeriodicTasks()) names.add("scheduled tasks");
         	String name = names.toString().replace("[", "").replace("]", "");
         	if (name.length() > 50) name = name.substring(0, 47) + "...";
         	return name;

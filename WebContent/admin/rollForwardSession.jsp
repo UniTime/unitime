@@ -375,6 +375,12 @@
 			<script>document.getElementById('groupReservationDetail').style.display = 'table-row';</script>
 		</logic:equal>
 		<tr>
+			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardPeriodicTasks"/> Roll Scheduled Tasks Forward From Session: 
+			<html:select style="width:200px;" property="sessionToRollPeriodicTasksFrom">
+			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
+			</td>
+		</tr>
+		<tr>
 			<td class="WelcomeRowHead">
 			&nbsp;
 			</td>

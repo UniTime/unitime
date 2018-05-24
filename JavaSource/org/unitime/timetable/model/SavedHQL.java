@@ -64,6 +64,7 @@ public class SavedHQL extends BaseSavedHQL {
 	private static interface OptionImplementation {
 		public Map<Long, String> getValues(UserContext user);
 		public Long lookupValue(UserContext user, String value);
+		public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId);
 	}
 
 	private static class RefTableOptions implements OptionImplementation {
@@ -80,6 +81,10 @@ public class SavedHQL extends BaseSavedHQL {
 			for (RefTableEntry ref: (List<RefTableEntry>)SessionDAO.getInstance().getSession().createCriteria(iReference).setCacheable(true).list())
 				if (value.equalsIgnoreCase(ref.getReference())) return ref.getUniqueId();
 			return null;
+		}
+		@Override
+		public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
+			return originalId;
 		}
 	}
 
@@ -103,6 +108,11 @@ public class SavedHQL extends BaseSavedHQL {
 						"s.academicTerm || s.academicYear || s.academicInitiative = :term").
 						setString("term", value).setMaxResults(1).uniqueResult();
 			}
+
+			@Override
+			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
+				return newSessionId;
+			}
 		}),
 		DEPARTMENT("Department", true, false, new OptionImplementation() {
 			@Override
@@ -124,6 +134,12 @@ public class SavedHQL extends BaseSavedHQL {
 					if (value.equalsIgnoreCase(d.getDeptCode())) return d.getUniqueId();
 				return null;
 			}
+			
+			@Override
+			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
+				return (Long)hibSession.createQuery("select d2.uniqueId from Department d1, Department d2 where d1.uniqueId = :id and d1.deptCode = d2.deptCode and d1.session = :s1 and d2.session = :s2")
+						.setLong("id", originalId).setLong("s1", sessionId).setLong("s2", newSessionId).setMaxResults(1).uniqueResult();
+			}
 		}),
 		DEPARTMENTS("Departments", true, true, DEPARTMENT.iImplementation),
 		SUBJECT("Subject Area", true, false, new OptionImplementation() {
@@ -143,6 +159,12 @@ public class SavedHQL extends BaseSavedHQL {
 				for (SubjectArea s: SubjectArea.getUserSubjectAreas(user))
 					if (value.equalsIgnoreCase(s.getSubjectAreaAbbreviation())) return s.getUniqueId();
 				return null;
+			}
+			
+			@Override
+			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
+				return (Long)hibSession.createQuery("select d2.uniqueId from SubjectArea d1, SubjectArea d2 where d1.uniqueId = :id and d1.subjectAreaAbbreviation = d2.subjectAreaAbbreviation and d1.session = :s1 and d2.session = :s2")
+						.setLong("id", originalId).setLong("s1", sessionId).setLong("s2", newSessionId).setMaxResults(1).uniqueResult();
 			}
 		}),
 		SUBJECTS("Subject Areas", true, true, SUBJECT.iImplementation),
@@ -166,6 +188,12 @@ public class SavedHQL extends BaseSavedHQL {
 					for (Map.Entry<Long, String> e: values.entrySet())
 						if (value.equalsIgnoreCase(e.getValue())) return e.getKey();
 				return null;
+			}
+			
+			@Override
+			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
+				return (Long)hibSession.createQuery("select d2.uniqueId from Building d1, Building d2 where d1.uniqueId = :id and d1.abbreviation = d2.abbreviation and d1.session = :s1 and d2.session = :s2")
+						.setLong("id", originalId).setLong("s1", sessionId).setLong("s2", newSessionId).setMaxResults(1).uniqueResult();
 			}
 		}),
 		BUILDINGS("Buildings", true, true, BUILDING.iImplementation),
@@ -191,6 +219,12 @@ public class SavedHQL extends BaseSavedHQL {
 						if (value.equalsIgnoreCase(e.getValue())) return e.getKey();
 				return null;
 			}
+			
+			@Override
+			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
+				return (Long)hibSession.createQuery("select d2.uniqueId from Room d1, Room d2 where d1.uniqueId = :id and d1.permanentId = d2.permanentId and d1.session = :s1 and d2.session = :s2")
+						.setLong("id", originalId).setLong("s1", sessionId).setLong("s2", newSessionId).setMaxResults(1).uniqueResult();
+			}
 		}),
 		ROOMS("Rooms", true, true, ROOM.iImplementation),
 		LOCATION("Location", true, false, new OptionImplementation() {
@@ -215,6 +249,12 @@ public class SavedHQL extends BaseSavedHQL {
 						if (value.equalsIgnoreCase(e.getValue())) return e.getKey();
 				return null;
 			}
+			
+			@Override
+			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
+				return (Long)hibSession.createQuery("select d2.uniqueId from Location d1, Location d2 where d1.uniqueId = :id and d1.permanentId = d2.permanentId and d1.session = :s1 and d2.session = :s2")
+						.setLong("id", originalId).setLong("s1", sessionId).setLong("s2", newSessionId).setMaxResults(1).uniqueResult();
+			}
 		}),
 		LOCATIONS("Locations", true, true, LOCATION.iImplementation),
 		PITD("Point In Time Data", true, false, new OptionImplementation() {
@@ -238,6 +278,10 @@ public class SavedHQL extends BaseSavedHQL {
 						if (value.equalsIgnoreCase(e.getValue())) return e.getKey();
 				return null;
 			}
+			@Override
+			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
+				return null;
+			}
 		}),
 		SESSIONS("Academic Sessions", true, true, new OptionImplementation() {
 			@Override
@@ -259,6 +303,11 @@ public class SavedHQL extends BaseSavedHQL {
 						"s.academicTerm || s.academicYear || s.academicInitiative = :term").
 						setString("term", value).setMaxResults(1).uniqueResult();
 			}
+			
+			@Override
+			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
+				return originalId;
+			}
 		}),
 		STUDENT_GROUP("Student Group", true, false, new OptionImplementation() {
 			@Override
@@ -277,6 +326,12 @@ public class SavedHQL extends BaseSavedHQL {
 						"select uniqueId from StudentGroup where session.uniqueId = :sessionId and groupAbbreviation = :value"
 						).setLong("sessionId", user.getCurrentAcademicSessionId())
 						.setString("value", value).setCacheable(true).setMaxResults(1).uniqueResult();
+			}
+			
+			@Override
+			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
+				return (Long)hibSession.createQuery("select d2.uniqueId from StudentGroup d1, StudentGroup d2 where d1.uniqueId = :id and d1.groupAbbreviation = d2.groupAbbreviation and d1.session = :s1 and d2.session = :s2")
+						.setLong("id", originalId).setLong("s1", sessionId).setLong("s2", newSessionId).setMaxResults(1).uniqueResult();
 			}
 		}),
 		STUDENT_GROUPS("Student Groups", true, true, STUDENT_GROUP.iImplementation),
@@ -297,6 +352,12 @@ public class SavedHQL extends BaseSavedHQL {
 						"select uniqueId from AcademicArea where session.uniqueId = :sessionId and academicAreaAbbreviation = :value"
 						).setLong("sessionId", user.getCurrentAcademicSessionId())
 						.setString("value", value).setCacheable(true).setMaxResults(1).uniqueResult();
+			}
+			
+			@Override
+			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
+				return (Long)hibSession.createQuery("select d2.uniqueId from AcademicArea d1, AcademicArea d2 where d1.uniqueId = :id and d1.academicAreaAbbreviation = d2.academicAreaAbbreviation and d1.session = :s1 and d2.session = :s2")
+						.setLong("id", originalId).setLong("s1", sessionId).setLong("s2", newSessionId).setMaxResults(1).uniqueResult();
 			}
 		}),
 		ACADEMIC_AREAS("Academic Areas", true, true, ACADEMIC_AREA.iImplementation),
@@ -324,6 +385,11 @@ public class SavedHQL extends BaseSavedHQL {
 						).setLong("sessionId", user.getCurrentAcademicSessionId())
 						.setString("value", value).setCacheable(true).setMaxResults(1).uniqueResult();
 			}
+			@Override
+			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
+				return (Long)hibSession.createQuery("select d2.uniqueId from PosMajor d1 inner join d1.academicAreas a1, PosMajor d2 inner join d2.academicAreas a2 where d1.uniqueId = :id and d1.code = d2.code and a1.academicAreaAbbreviation = a2.academicAreaAbbreviation and d1.session = :s1 and d2.session = :s2")
+						.setLong("id", originalId).setLong("s1", sessionId).setLong("s2", newSessionId).setMaxResults(1).uniqueResult();
+			}
 		}),
 		POS_MAJORS("Majors", true, true, POS_MAJOR.iImplementation),
 		ACCOMODATION("Student Accomodation", true, false, new OptionImplementation() {
@@ -343,6 +409,11 @@ public class SavedHQL extends BaseSavedHQL {
 						"select uniqueId from StudentAccomodation where session.uniqueId = :sessionId and abbreviation = :value"
 						).setLong("sessionId", user.getCurrentAcademicSessionId())
 						.setString("value", value).setCacheable(true).setMaxResults(1).uniqueResult();
+			}
+			@Override
+			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
+				return (Long)hibSession.createQuery("select d2.uniqueId from StudentAccomodation d1, StudentAccomodation d2 where d1.uniqueId = :id and d1.abbreviation = d2.abbreviation and d1.session = :s1 and d2.session = :s2")
+						.setLong("id", originalId).setLong("s1", sessionId).setLong("s2", newSessionId).setMaxResults(1).uniqueResult();
 			}
 		}),
 		ACCOMODATIONS("Student Accomodations", true, true, ACCOMODATION.iImplementation),
@@ -395,6 +466,30 @@ public class SavedHQL extends BaseSavedHQL {
 		public boolean allowMultiSelection() { return iAllowSelection && iMultiSelect; }
 		public Map<Long, String> values(UserContext user) { return iImplementation.getValues(user); }
 		public Long lookupValue(UserContext user, String value) { return iImplementation.lookupValue(user, value); }
+		public String rollForward(org.hibernate.Session hibSession, String value, Long sessionId, Long newSessionId) {
+			if (value == null || value.isEmpty()) return value;
+			if (iMultiSelect) {
+				String ret = "";
+				for (String id: value.split(",")) {
+					try {
+						Long converted = iImplementation.rollForward(hibSession, Long.valueOf(id), sessionId, newSessionId);
+						if (converted != null)
+							ret += (ret.isEmpty() ? "" : ",") + converted;
+					} catch (Exception e) {
+						ret += (ret.isEmpty() ? "" : ",") + id;
+					}
+				}
+				return ret;
+			} else {
+				try {
+					Long converted = iImplementation.rollForward(hibSession, Long.valueOf(value), sessionId, newSessionId);
+					if (converted != null) return converted.toString();
+					return null;
+				} catch (Exception e) {
+					return value;
+				}
+			}
+		}
 	}
 	
 	public static void main(String args[]) {

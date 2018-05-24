@@ -135,6 +135,8 @@ public class RollForwardSessionForm extends ActionForm {
 	private String[] rollForwardOfferingCoordinatorsSubjectIds;
 	private Boolean rollForwardTeachingRequests;
 	private String[] rollForwardTeachingRequestsSubjectIds;
+	private Boolean rollForwardPeriodicTasks;
+	private Long sessionToRollPeriodicTasksFrom;
 	
 	/** 
 	 * Method validate
@@ -339,6 +341,12 @@ public class RollForwardSessionForm extends ActionForm {
 			validateRollForward(errors, toAcadSession, getSessionToRollCurriculaForwardFrom(), "Curricula", curDao.getQuery("from Curriculum c where c.department.session.uniqueId = " + toAcadSession.getUniqueId().toString()).list());			
 		}
 	}
+	
+	public void validatePeriodicTasksForward(Session toAcadSession,ActionErrors errors){
+		if (getRollForwardPeriodicTasks()){
+			validateRollForward(errors, toAcadSession, getSessionToRollCurriculaForwardFrom(), "Scheduled Tasks", null);			
+		}
+	}
 
 	public void validateSessionToRollForwardTo(ActionErrors errors){
 		Session toAcadSession = Session.getSessionById(getSessionToRollForwardTo());
@@ -353,8 +361,6 @@ public class RollForwardSessionForm extends ActionForm {
 		validateDatePatternRollForward(toAcadSession, errors);
 		validateTimePatternRollForward(toAcadSession, errors);
 		validateSubjectAreaRollForward(toAcadSession, errors);
-// TODO: remove this line of code once testing is done.
-//		validateInstructorDataRollForward(toAcadSession, errors);
 		validateCourseOfferingRollForward(toAcadSession, errors);
 		validateTeachingRequestsRollForward(toAcadSession, errors);
 		validateClassInstructorRollForward(toAcadSession, errors);
@@ -364,7 +370,7 @@ public class RollForwardSessionForm extends ActionForm {
 		validateFinalExamRollForward(toAcadSession, errors);
 		validateLastLikeDemandRollForward(toAcadSession, errors);
 		validateCurriculaRollForward(toAcadSession, errors);
-		
+		validatePeriodicTasksForward(toAcadSession, errors);
 	}
 	
 	/** 
@@ -432,6 +438,8 @@ public class RollForwardSessionForm extends ActionForm {
 		rollForwardTeachingRequestsSubjectIds = new String[0];
 		rollForwardOfferingCoordinators = new Boolean(false);
 		rollForwardOfferingCoordinatorsSubjectIds = new String[0];
+		rollForwardPeriodicTasks = false;
+		sessionToRollPeriodicTasksFrom = null;
 	}
 
 	/** 
@@ -978,6 +986,8 @@ public class RollForwardSessionForm extends ActionForm {
 		form.rollForwardTeachingRequests = rollForwardTeachingRequests;
 		form.rollForwardTeachingRequestsSubjectIds = rollForwardTeachingRequestsSubjectIds;
 		form.rollForwardDistributions = rollForwardDistributions;
+		form.rollForwardPeriodicTasks = rollForwardPeriodicTasks;
+		form.sessionToRollPeriodicTasksFrom = sessionToRollPeriodicTasksFrom;
 	}
 	
 	public Boolean getRollForwardTeachingRequests() {
@@ -1007,6 +1017,12 @@ public class RollForwardSessionForm extends ActionForm {
 			}
 		}
 	}
+	
+	public Boolean getRollForwardPeriodicTasks() { return rollForwardPeriodicTasks; }
+	public void setRollForwardPeriodicTasks(Boolean rollForwardPeriodicTasks) { this.rollForwardPeriodicTasks = rollForwardPeriodicTasks; }
+	
+	public Long getSessionToRollPeriodicTasksFrom() { return sessionToRollPeriodicTasksFrom; }
+	public void setSessionToRollPeriodicTasksFrom(Long sessionToRollPeriodicTasksFrom) { this.sessionToRollPeriodicTasksFrom = sessionToRollPeriodicTasksFrom; }
 	
 	public Object clone() {
 		RollForwardSessionForm form = new RollForwardSessionForm();

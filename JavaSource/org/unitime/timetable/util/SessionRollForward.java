@@ -41,6 +41,7 @@ import org.hibernate.Transaction;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.RollForwardSessionForm;
+import org.unitime.timetable.gwt.shared.TaskInterface.ExecutionStatus;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Building;
@@ -86,6 +87,7 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.NonUniversityLocationPicture;
 import org.unitime.timetable.model.OfferingCoordinator;
+import org.unitime.timetable.model.PeriodicTask;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.Preference;
@@ -101,7 +103,9 @@ import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPicture;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.RoomTypeOption;
+import org.unitime.timetable.model.SavedHQL;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.ScriptParameter;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SessionConfig;
 import org.unitime.timetable.model.SolverGroup;
@@ -111,6 +115,8 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.TaskExecution;
+import org.unitime.timetable.model.TaskParameter;
 import org.unitime.timetable.model.TeachingClassRequest;
 import org.unitime.timetable.model.TeachingRequest;
 import org.unitime.timetable.model.TimePattern;
@@ -140,6 +146,7 @@ import org.unitime.timetable.model.dao.InstructorAttributeDAO;
 import org.unitime.timetable.model.dao.LastLikeCourseDemandDAO;
 import org.unitime.timetable.model.dao.NonUniversityLocationDAO;
 import org.unitime.timetable.model.dao.OfferingCoordinatorDAO;
+import org.unitime.timetable.model.dao.PeriodicTaskDAO;
 import org.unitime.timetable.model.dao.PosMajorDAO;
 import org.unitime.timetable.model.dao.PosMinorDAO;
 import org.unitime.timetable.model.dao.ReservationDAO;
@@ -157,6 +164,7 @@ import org.unitime.timetable.model.dao.TimePatternDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.model.dao.TravelTimeDAO;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.server.script.SaveTaskBackend;
 
 
 /**
@@ -3231,6 +3239,71 @@ public class SessionRollForward {
 		}
 	}
 	
+	private String convertParameter(org.hibernate.Session hibSession, String type, String value, RollForwardSessionForm form) {
+		if (value == null || value.isEmpty()) return value;
+		for (SavedHQL.Option option: SavedHQL.Option.values()) {
+			if (type.equalsIgnoreCase(option.name()))
+				return option.rollForward(hibSession, value, form.getSessionToRollPeriodicTasksFrom(), form.getSessionToRollForwardTo());
+		}
+		return value;
+	}
+	
+	public void rollPeriodicTasksForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
+		org.hibernate.Session hibSession = PeriodicTaskDAO.getInstance().getSession();
+		Set<String> existing = new HashSet<String>();
+		for (PeriodicTask task: (List<PeriodicTask>)hibSession.createQuery("from PeriodicTask where session = :sessionId")
+				.setLong("sessionId", rollForwardSessionForm.getSessionToRollForwardTo()).list()) {
+			existing.add(task.getName());
+		}
+
+		Date now = new Date();
+		Date firstDate = DateUtils.getDate(1, toSession.getStartMonth() - ApplicationProperty.DatePatternNrExessMonth.intValue(), toSession.getSessionStartYear());
+		Date lastDate = DateUtils.getDate(1, toSession.getEndMonth() + ApplicationProperty.DatePatternNrExessMonth.intValue(), toSession.getSessionStartYear());
+		for (PeriodicTask original: (List<PeriodicTask>)hibSession.createQuery("from PeriodicTask where session = :sessionId")
+				.setLong("sessionId", rollForwardSessionForm.getSessionToRollPeriodicTasksFrom()).list()) {
+			if (existing.contains(original.getName())) continue;
+			PeriodicTask task = new PeriodicTask();
+			task = new PeriodicTask();
+			task.setName(original.getName());
+			task.setInputFile(original.getInputFile());
+			task.setEmail(original.getEmail());
+			task.setOwner(original.getOwner());
+			task.setScript(original.getScript());
+			task.setSession(toSession);
+			task.setParameters(new HashSet<TaskParameter>());
+			task.setSchedule(new HashSet<TaskExecution>());
+			for (TaskParameter originalParameter: original.getParameters()) {
+				TaskParameter parameter = new TaskParameter();
+				parameter.setName(originalParameter.getName());
+				parameter.setValue(originalParameter.getValue());
+				for (ScriptParameter sp: task.getScript().getParameters()) {
+					if (sp.getName().equals(originalParameter.getName()))  {
+						parameter.setValue(convertParameter(hibSession, sp.getType(), originalParameter.getValue(), rollForwardSessionForm));
+					}
+				}
+				if (parameter.getValue() == null) continue;
+				parameter.setTask(task);
+				task.getParameters().add(parameter);
+			}
+			for (TaskExecution originalExecution: original.getSchedule()) {
+				Date date = SaveTaskBackend.getScheduleDate(toSession, originalExecution.getExecutionDate(), originalExecution.getExecutionPeriod());
+				if (date.before(now)) continue;
+				if (date.before(firstDate) || !date.before(lastDate)) continue;
+				TaskExecution execution = new TaskExecution();
+				execution.setCreatedDate(now);
+				execution.setExecutionDate(originalExecution.getExecutionDate());
+				execution.setExecutionPeriod(originalExecution.getExecutionPeriod());
+				execution.setExecutionStatus(ExecutionStatus.CREATED.ordinal());
+				execution.setScheduledDate(date);
+				execution.setTask(task);
+				task.getSchedule().add(execution);
+			}
+			if (task.getSchedule().isEmpty()) continue;
+			hibSession.save(task);
+		}
+		hibSession.flush(); hibSession.clear();
+	}
 
 	/**
 	 * @return the subpartTimeRollForward
