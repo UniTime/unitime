@@ -13187,4 +13187,12 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'ScriptEdit'
 		</sql>
 	</update>
+	<update version="208" date="29-May-2018" comment="Grouping">
+	    <plsql>
+			alter table %SCHEMA%.distribution_pref rename column `grouping` to dist_grouping
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.distribution_pref change column `grouping` dist_grouping bigint(10) null
+		</mysql>
+	</update>
 </dbupdate>

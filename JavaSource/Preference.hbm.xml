@@ -151,7 +151,7 @@
             abstract="false">
             <property
                 name="grouping"
-                column="grouping"
+                column="dist_grouping"
                 type="java.lang.Integer"
                 length="4"
                 not-null="false"/>
