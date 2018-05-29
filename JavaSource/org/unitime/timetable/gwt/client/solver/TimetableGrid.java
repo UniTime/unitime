@@ -108,7 +108,7 @@ public class TimetableGrid extends Composite {
 		
 		if (displayMode == 0) {
 			int headerLines = 2;
-			if ((index % 3) != 0) headerLines = 0;
+			if ((index % 10) != 0) headerLines = 0;
 			int nrLines = 0;
 			int[] dayIndex = new int[7];
 			int x = 0;
