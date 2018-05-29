@@ -165,7 +165,11 @@ public class XLSPrinter implements Printer {
 			cell.setCellStyle(iStyles.get(number ? "number" : "plain"));
 			if (f == null || f.isEmpty()) {
 			} else if (number) {
-				cell.setCellValue(Double.valueOf(f));
+				try {
+					cell.setCellValue(Double.valueOf(f));
+				} catch (NumberFormatException e) {
+					cell.setCellValue(f);
+				}
 			} else {
 				nrLines = Math.max(nrLines, f.split("\n").length);
 				cell.setCellValue(f);
@@ -208,7 +212,11 @@ public class XLSPrinter implements Printer {
 			} else if (f.hasText()) {
 				boolean number = sNumber.matcher(f.getText()).matches();
 				if (number && f.has(F.RIGHT)) {
-					cell.setCellValue(Double.valueOf(f.getText()));
+					try {
+						cell.setCellValue(Double.valueOf(f.getText()));
+					} catch (NumberFormatException e) {
+						cell.setCellValue(f.getText());
+					}
 				} else {
 					cell.setCellValue(f.getText());
 					nrLines = Math.max(nrLines, f.getText().split("\n").length);
