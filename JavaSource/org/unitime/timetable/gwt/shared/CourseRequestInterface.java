@@ -116,7 +116,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	public boolean hasCreditWarning() { return iCreditWarning != null && !iCreditWarning.isEmpty(); }
 	public String getCreditWarning() { return iCreditWarning; }
 	public void setCreditWarning(String warning) { iCreditWarning = warning; }
-	public boolean hasCreditNote() { return iCreditNote != null && !iCreditNote.isEmpty(); }
+	public boolean hasCreditNote() { return iCreditNote != null && !iCreditNote.isEmpty() && !" ".equals(iCreditNote); }
 	public String getCreditNote() { return iCreditNote; }
 	public void setCreditNote(String note) { iCreditNote = note; }
 	
@@ -414,7 +414,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			else
 				iStatusNote = note.replace("<br>", "\n");
 		}
-		public boolean hasStatusNote() { return iStatusNote != null && !iStatusNote.isEmpty(); }
+		public boolean hasStatusNote() { return iStatusNote != null && !iStatusNote.isEmpty() && !" ".equals(iStatusNote); }
 		public String getStatusNote() { return iStatusNote; }
 		public void setOverrideExternalId(String externalId) { iOverrideExternalId = externalId; }
 		public String getOverrideExternalId() { return iOverrideExternalId; }
@@ -950,7 +950,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public boolean hasCreditWarning() { return iCreditWarning != null && !iCreditWarning.isEmpty(); }
 		public String getCreditWarning() { return iCreditWarning; }
 		public void setCreditWarning(String warning) { iCreditWarning = warning; }
-		public boolean hasCreditNote() { return iCreditNote != null && !iCreditNote.isEmpty(); }
+		public boolean hasCreditNote() { return iCreditNote != null && !iCreditNote.isEmpty() && !" ".equals(iCreditNote); }
 		public String getCreditNote() { return iCreditNote; }
 		public void setCreditNote(String note) { iCreditNote = note; }
 		
