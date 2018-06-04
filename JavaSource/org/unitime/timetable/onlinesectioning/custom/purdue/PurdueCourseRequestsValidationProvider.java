@@ -914,7 +914,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			
 			if (status != null && status.data != null && status.data.requests != null) {
 				for (SpecialRegistrationRequest r: status.data.requests) {
-					if (RequestStatus.inProgress.name().equals(r.status) && r.changes != null)
+					if (status(r.status) == RequestedCourseStatus.OVERRIDE_PENDING && r.changes != null)
 						for (Change ch: r.changes) {
 							String course = ch.subject + " " + ch.courseNbr;
 							Set<String> problems = overrides.get(course);
