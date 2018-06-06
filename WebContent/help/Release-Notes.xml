@@ -28,6 +28,19 @@
 	<version>4.2.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Administration</title>
+		<item>
+			<name>Data Exchange: Preferences XML</name>
+			<description>
+				<line>Fixed the SQLException: ORDER BY clause is not in SELECT list exception when using MySQL.</line>
+			</description>
+		</item>
+	</category>
+</release>
+<release>
+	<version>4.2.201</version>
+	<release-date>Wed, 16 May 2018</release-date>
+	<category>
 		<title>Event Management</title>
 		<item>
 			<name>Personal Schedule: Meeting Contacts</name>
