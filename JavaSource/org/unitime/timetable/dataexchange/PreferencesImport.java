@@ -145,8 +145,8 @@ public class PreferencesImport  extends BaseImport {
     protected DepartmentalInstructor lookupInstructor(Element element) {
     	if (iInstructors == null)
     		iInstructors = (List<DepartmentalInstructor>)getHibSession().createQuery(
-	        		"select distinct i from DepartmentalInstructor i left join fetch i.preferences p where i.department.session.uniqueId = :sessionId " +
-	        		"order by i.department.deptCode, i.lastName, i.firstName").setLong("sessionId", iSession.getUniqueId()).list();
+	        		"select distinct i from DepartmentalInstructor i left join fetch i.preferences p where i.department.session.uniqueId = :sessionId"
+    				).setLong("sessionId", iSession.getUniqueId()).list();
     	String externalId = element.attributeValue("externalId");
     	String deptCode = element.attributeValue("department", "not-set");
     	if (externalId != null) {
@@ -177,8 +177,8 @@ public class PreferencesImport  extends BaseImport {
     protected DepartmentalInstructor lookupInstructor(String externalId, String deptCode) {
     	if (iInstructors == null)
     		iInstructors = (List<DepartmentalInstructor>)getHibSession().createQuery(
-	        		"select distinct i from DepartmentalInstructor i left join fetch i.preferences p where i.department.session.uniqueId = :sessionId " +
-	        		"order by i.department.deptCode, i.lastName, i.firstName").setLong("sessionId", iSession.getUniqueId()).list();
+	        		"select distinct i from DepartmentalInstructor i left join fetch i.preferences p where i.department.session.uniqueId = :sessionId"
+    				).setLong("sessionId", iSession.getUniqueId()).list();
     	for (Iterator<DepartmentalInstructor> i = iInstructors.iterator(); i.hasNext(); ) {
     		DepartmentalInstructor instructor = i.next();
     		if (externalId.equals(instructor.getExternalUniqueId()) && deptCode.equals(instructor.getDepartment().getDeptCode())) { return instructor; }
@@ -210,8 +210,7 @@ public class PreferencesImport  extends BaseImport {
 	        		"left join fetch ss.classes c " +
 	        		"left join fetch ss.preferences sp " +
 	        		"left join fetch c.preferences cp " +
-	        		"where ss.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId and co.isControl = true " +
-	        		"order by co.subjectAreaAbbv, co.courseNbr, ioc.uniqueId, ss.uniqueId"
+	        		"where ss.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId and co.isControl = true"
 	        		).setLong("sessionId", iSession.getUniqueId()).list();
     		iClasses = new ArrayList<Class_>();
     		for (SchedulingSubpart subpart: iSubparts)
@@ -249,8 +248,7 @@ public class PreferencesImport  extends BaseImport {
 	        		"left join fetch ss.classes c " +
 	        		"left join fetch ss.preferences sp " +
 	        		"left join fetch c.preferences cp " +
-	        		"where ss.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId and co.isControl = true " +
-	        		"order by co.subjectAreaAbbv, co.courseNbr, ioc.uniqueId, ss.uniqueId"
+	        		"where ss.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId and co.isControl = true"
 	        		).setLong("sessionId", iSession.getUniqueId()).list();
     		iClasses = new ArrayList<Class_>();
     		for (SchedulingSubpart subpart: iSubparts)

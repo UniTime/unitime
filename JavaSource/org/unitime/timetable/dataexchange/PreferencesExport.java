@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.dom4j.Document;
@@ -95,12 +96,33 @@ public class PreferencesExport extends BaseExport{
 	        		.setLong("sessionId", session.getUniqueId()).list()) {
 				exportPrefGroup(root, department);
 			}
-	        for (DepartmentalInstructor instructor: (List<DepartmentalInstructor>)getHibSession().createQuery(
-	        		"select distinct i from DepartmentalInstructor i left join fetch i.preferences p where i.department.session.uniqueId = :sessionId " +
-	        		"order by i.department.deptCode, i.lastName, i.firstName").setLong("sessionId", session.getUniqueId()).list()) {
+	        Set<DepartmentalInstructor> instructors = new TreeSet<DepartmentalInstructor>(new Comparator<DepartmentalInstructor>() {
+				@Override
+				public int compare(DepartmentalInstructor i1, DepartmentalInstructor i2) {
+					int cmp = i1.getDepartment().getDeptCode().compareTo(i2.getDepartment().getDeptCode());
+					if (cmp != 0) return cmp;
+					cmp = i1.nameLastNameFirst().compareTo(i2.nameLastNameFirst());
+					if (cmp != 0) return cmp;
+					return i1.getUniqueId().compareTo(i2.getUniqueId());
+				}
+			});
+	        instructors.addAll((List<DepartmentalInstructor>)getHibSession().createQuery(
+	        		"select distinct i from DepartmentalInstructor i left join fetch i.preferences p where i.department.session.uniqueId = :sessionId"
+	        		).setLong("sessionId", session.getUniqueId()).list());
+	        for (DepartmentalInstructor instructor: instructors) {
 				exportPrefGroup(root, instructor);
 			}
-	        for (SchedulingSubpart subpart: (List<SchedulingSubpart>)getHibSession().createQuery(
+	        Set<SchedulingSubpart> subparts = new TreeSet<SchedulingSubpart>(new Comparator<SchedulingSubpart>() {
+				@Override
+				public int compare(SchedulingSubpart s1, SchedulingSubpart s2) {
+					int cmp = s1.getControllingCourseOffering().getCourseName().compareTo(s2.getControllingCourseOffering().getCourseName());
+					if (cmp != 0) return cmp;
+					cmp = s1.getInstrOfferingConfig().getUniqueId().compareTo(s2.getInstrOfferingConfig().getUniqueId());
+					if (cmp != 0) return cmp;
+					return s1.getUniqueId().compareTo(s2.getUniqueId());
+				}
+			});
+	        subparts.addAll((List<SchedulingSubpart>)getHibSession().createQuery(
 	        		"select distinct ss from SchedulingSubpart ss " +
 	        		"left join fetch ss.instrOfferingConfig as ioc " +
 	        		"left join fetch ioc.instructionalOffering as io " +
@@ -108,9 +130,9 @@ public class PreferencesExport extends BaseExport{
 	        		"left join fetch ss.classes c " +
 	        		"left join fetch ss.preferences sp " +
 	        		"left join fetch c.preferences cp " +
-	        		"where ss.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId and co.isControl = true " +
-	        		"order by co.subjectAreaAbbv, co.courseNbr, ioc.uniqueId, ss.uniqueId"
-	        		).setLong("sessionId", session.getUniqueId()).list()) {
+	        		"where ss.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId and co.isControl = true"
+	        		).setLong("sessionId", session.getUniqueId()).list());
+	        for (SchedulingSubpart subpart: subparts) {
 				exportPrefGroup(root, subpart);
 				for (Class_ clazz: subpart.getClasses())
 					exportPrefGroup(root, clazz);
