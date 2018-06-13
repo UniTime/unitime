@@ -21,14 +21,14 @@
 		<td class='unitime-MainTableHeader' colspan='2'> ${syllabusCourse.get("name").getAsString()}</td>
 	</tr>
 	<tr>
-		<td>Osoba odpowiedzialna:</td><td class='unitime-SubTitle'> ${owner.get("title").getAsString()}  ${owner.get("name").getAsString()}, ${owner.get("email").getAsString()}  </td>
+		<td>Osoba odpowiedzialna:</td><td class='unitime-SubTitle'><#if owner.get("title")??> ${owner.get("title").getAsString()} </#if>${owner.get("name").getAsString()}, ${owner.get("email").getAsString()}  </td>
 	</tr>
 	<tr>
 	<td>Prowadzący: </td>
 	</tr>
 	<#list instructorsList as instructor>
 	<tr>
-	<td> </td><td>${instructor.get("title").getAsString()} ${instructor.get("name").getAsString()}, ${instructor.get("email").getAsString()} </td>
+	<td> </td><td><#if instructor.get("title")??>${instructor.get("title").getAsString()} </#if>${instructor.get("name").getAsString()}, ${instructor.get("email").getAsString()} </td>
 	</tr>
 	</#list>	
 	<#list classList as module>
