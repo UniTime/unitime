@@ -433,6 +433,16 @@
 			</description>
 		</item>
 		<item>
+			<name>Data Exchange: ZIP / GZIP</name>
+			<description>
+				<line>Added ability to import ZIP or GZIP files.
+					<line>Use .xml.gz or .zxml extension for a gzipped XML file.</line>
+					<line>Use .dat.gz or .zdat extension for a gzipped DAT file.</line>
+					<line>Use .zip extension for a zipped, the file may contain multiple files.</line>
+				</line>
+			</description>
+		</item>
+		<item>
 			<name>HQL Reports</name>
 			<description>
 				<line>Added ability to provide additional parameters, just like in the scripts.</line>

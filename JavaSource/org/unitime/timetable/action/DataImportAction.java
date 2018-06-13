@@ -20,10 +20,15 @@
 package org.unitime.timetable.action;
 
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -302,6 +307,29 @@ public class DataImportAction extends Action {
 			if (iForm.getFile().getFileName().toLowerCase().endsWith(".dat")) {
 				SessionRestoreInterface restore = (SessionRestoreInterface)Class.forName(ApplicationProperty.SessionRestoreInterface.value()).getConstructor().newInstance();
 				restore.restore(iForm.getFile().getInputStream(), this);
+			} else if (iForm.getFile().getFileName().toLowerCase().endsWith(".dat.gz") || iForm.getFile().getFileName().toLowerCase().endsWith(".zdat")) {
+				SessionRestoreInterface restore = (SessionRestoreInterface)Class.forName(ApplicationProperty.SessionRestoreInterface.value()).getConstructor().newInstance();
+				GZIPInputStream gzipInput = new GZIPInputStream(iForm.getFile().getInputStream());
+				restore.restore(gzipInput, this);
+				gzipInput.close();
+			} else if (iForm.getFile().getFileName().toLowerCase().endsWith(".xml.gz") || iForm.getFile().getFileName().toLowerCase().endsWith(".zxml")) {
+				GZIPInputStream gzipInput = new GZIPInputStream(iForm.getFile().getInputStream());
+				DataExchangeHelper.importDocument((new SAXReader()).read(gzipInput), getOwnerId(), this);
+				gzipInput.close();
+			} else if (iForm.getFile().getFileName().toLowerCase().endsWith(".zip")) {
+				ZipInputStream zipInput = new ZipInputStream(iForm.getFile().getInputStream());
+				ZipEntry ze = null;
+				while ((ze = zipInput.getNextEntry()) != null) {
+					if (ze.isDirectory()) continue;
+					setStatus("Importing " + ze.getName() + "...");
+					if (ze.getName().endsWith(".dat")) {
+						SessionRestoreInterface restore = (SessionRestoreInterface)Class.forName(ApplicationProperty.SessionRestoreInterface.value()).getConstructor().newInstance();
+						restore.restore(zipInput, this);
+					} else {
+						DataExchangeHelper.importDocument((new SAXReader()).read(new NotClosingInputStream(zipInput)), getOwnerId(), this);
+					}
+				}
+				zipInput.close();
 			} else {
 				DataExchangeHelper.importDocument((new SAXReader()).read(iForm.getFile().getInputStream()), getOwnerId(), this);
 			}
@@ -344,5 +372,26 @@ public class DataImportAction extends Action {
                 }
         	}
 		}
+	}
+	
+	public static class NotClosingInputStream extends InputStream {
+		private InputStream iParent;
+		
+		public NotClosingInputStream(InputStream in) { iParent = in; }
+
+		@Override
+		public int read() throws IOException { return iParent.read(); }
+		
+		@Override
+		public int read(byte b[], int off, int len) throws IOException { return iParent.read(b, off, len); }
+		
+		@Override
+		public long skip(long n) throws IOException { return iParent.skip(n); }
+		
+		@Override
+		public int available() throws IOException { return iParent.available(); }
+		
+		@Override
+		public void close() throws IOException {}
 	}
 }
