@@ -65,6 +65,8 @@ public class StudentSectioningExport extends BaseExport {
 	        		.setLong("sessionId", session.getUniqueId()).list()) {
 	        	Element studentEl = root.addElement("student");
 	        	studentEl.addAttribute("key", student.getExternalUniqueId() == null || student.getExternalUniqueId().isEmpty() ? student.getUniqueId().toString() : student.getExternalUniqueId());
+	        	if (student.getSectioningStatus() != null)
+	        		studentEl.addAttribute("status", student.getSectioningStatus().getReference());
 	        	
 	        	// Student demographics
 	        	Element demographicsEl = studentEl.addElement("updateDemographics");

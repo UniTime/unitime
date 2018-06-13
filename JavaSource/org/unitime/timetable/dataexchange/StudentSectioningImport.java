@@ -57,6 +57,7 @@ import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentEnrollmentMessage;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentSectioningQueue;
+import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.InstructionalMethodDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -538,6 +539,18 @@ public class StudentSectioningImport extends BaseImport {
                 	}
             	}
             	
+	            String status = studentElement.attributeValue("status");
+	            if (status != null) {
+	            	if (status.isEmpty())
+	            		student.setSectioningStatus(null);
+	            	else {
+	            		StudentSectioningStatus s = StudentSectioningStatus.getStatus(status, null, getHibSession());
+	            		if (s != null)
+	            			student.setSectioningStatus(s);
+	            		else
+	            			warn("Student sectioning status " + status + " not found.");
+	            	}
+	            }
             	
             	if (student.getUniqueId() == null) {
             		updatedStudents.add((Long)getHibSession().save(student));
