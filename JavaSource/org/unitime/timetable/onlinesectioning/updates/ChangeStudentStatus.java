@@ -114,7 +114,7 @@ public class ChangeStudentStatus implements OnlineSectioningAction<Boolean> {
 						}
 						
 						if (changeStatus()) {
-							student.setStatus(getStatus());
+							student.setStatus(status == null ? null : status.getReference());
 							dbStudent.setSectioningStatus(status);
 						}
 						
