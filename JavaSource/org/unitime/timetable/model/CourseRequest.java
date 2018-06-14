@@ -105,7 +105,7 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
     		setCourseRequestOptions(new HashSet<CourseRequestOption>());
     	for (Iterator<CourseRequestOption> i = getCourseRequestOptions().iterator(); i.hasNext(); ) {
     		CourseRequestOption o = i.next();
-    		if (type.equals(type)) {
+    		if (type.equals(o.getType())) {
     			if (option == null) {
     				i.remove();
     			} else {
