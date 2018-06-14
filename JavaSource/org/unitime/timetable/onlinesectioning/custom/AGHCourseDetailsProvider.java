@@ -76,11 +76,16 @@ public class AGHCourseDetailsProvider implements CourseDetailsProvider, CourseUr
 		try {
 			String years = findYears(session, subject, courseNbr);
 			String url = ApplicationProperty.CustomizationDefaultCourseUrl.value();
+			String externalId=course.getExternalUniqueId();
+			if (externalId == null || externalId.isEmpty())
+				return null;
+			
 			if (url == null || url.isEmpty())
 				return null;
+			
 			return new URL(url.replace(":years", URLEncoder.encode(years, "utf-8"))
 					.replace(":term", URLEncoder.encode(session.getTerm(), "utf-8"))
-					.replace(":courseNbr", URLEncoder.encode(course.getExternalUniqueId(), "utf-8")));
+					.replace(":courseNbr", URLEncoder.encode(externalId, "utf-8")));
 		} catch (Exception e) {
 			throw new SectioningException("Failed to get course URL: " + e.getMessage(), e);
 		}
@@ -156,12 +161,17 @@ public class AGHCourseDetailsProvider implements CourseDetailsProvider, CourseUr
 		try {
 			String url = ApplicationProperties.getConfigProperties().getProperty("unitime.custom.default.course_api_url",
 					"http://syllabuskrk.agh.edu.pl/api/:years/modules/:courseNbr");
+			String externalId=course.getExternalUniqueId();
+			if (externalId == null || externalId.isEmpty())
+				return null;
+			
 			if (url == null || url.isEmpty())
 				return null;
+			
 			String years = findYears(session, subject, courseNbr);
 			return new URL(url.replace(":years", URLEncoder.encode(years, "utf-8"))
 					.replace(":term", URLEncoder.encode(session.getTerm(), "utf-8"))
-					.replace(":courseNbr", URLEncoder.encode(course.getExternalUniqueId(), "utf-8")));
+					.replace(":courseNbr", URLEncoder.encode(externalId, "utf-8")));
 		} catch (Exception e) {
 			throw new SectioningException("Failed to get course URL: " + e.getMessage(), e);
 		}
@@ -286,7 +296,9 @@ public class AGHCourseDetailsProvider implements CourseDetailsProvider, CourseUr
 
 	public static void main(String[] args) {
 		try {
+			
 			BasicConfigurator.configure();
+			Debug.init(ApplicationProperties.getProperties());
 			Debug.info(" - Initializing Hibernate ... ");
 			_RootDAO.initialize();
 
