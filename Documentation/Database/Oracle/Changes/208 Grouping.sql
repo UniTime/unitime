@@ -18,7 +18,7 @@
  *
 */
 
-alter table distribution_pref rename column `grouping` to dist_grouping;
+alter table distribution_pref rename column grouping to dist_grouping;
 
 /*
  * Update database version

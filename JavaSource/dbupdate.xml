@@ -13189,7 +13189,7 @@
 	</update>
 	<update version="208" date="29-May-2018" comment="Grouping">
 	    <plsql>
-			alter table %SCHEMA%.distribution_pref rename column `grouping` to dist_grouping
+			alter table %SCHEMA%.distribution_pref rename column grouping to dist_grouping
 		</plsql>
 		<mysql>
 			alter table %SCHEMA%.distribution_pref change column `grouping` dist_grouping bigint(10) null
