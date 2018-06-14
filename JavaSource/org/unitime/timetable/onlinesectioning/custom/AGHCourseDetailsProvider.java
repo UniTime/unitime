@@ -211,6 +211,7 @@ public class AGHCourseDetailsProvider implements CourseDetailsProvider, CourseUr
 		try {
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();
 			con.setRequestProperty("Accept", "application/json");
+			con.setRequestProperty("Accept-Language","pl");
 
 			Gson gson = new Gson();
 			InputStream is = con.getInputStream();
