@@ -868,6 +868,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		    "PREQ", "PRE-REQ",
 		    "PROG", "PROGRAM",
 		    "TIME", "TIME-CNFLT",
+		    "CHRT", "COHORT",
 		    };
 	
 	protected String getDefaultOverride(Student student, String crn, String messageType) {
