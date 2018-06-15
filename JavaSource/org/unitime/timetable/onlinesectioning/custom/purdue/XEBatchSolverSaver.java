@@ -809,7 +809,7 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 				for (Section section: enrollment.getSections()) {
 					Class_ clazz = iClasses.get(section.getId());
 					if (clazz != null && course != null && crn.equals(clazz.getExternalId(course)))
-						course.getConsentType();
+						return course.getConsentType();
 				}
 			}
 		}
@@ -871,15 +871,20 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		    };
 	
 	protected String getDefaultOverride(Student student, String crn, String messageType) {
+	    String override = null;
 	    if ("DEPT".equals(messageType) || "SAPR".equals(messageType)) {
 	    	OfferingConsentType consent = getConsent(student, crn);
-	    	if (consent != null && "IN".equals(consent.getReference())) return "INST-PERMT";
-	    	else if (consent != null && "DP".equals(consent.getReference())) return "DPT-PERMIT";
-	    	else return "HONORS";
-	    }
-	    String override = null;
-	    for (int i = 0; i < defaultOverrides.length; i+= 2) {
-	    	if (messageType.equals(defaultOverrides[i])) override = defaultOverrides[i + 1];
+	    	if (consent != null && "IN".equals(consent.getReference())) {
+	    		override = "INST-PERMT";
+	    	} else if (consent != null && "DP".equals(consent.getReference())) {
+	    		override = "DPT-PERMIT";
+	    	} else {
+	    		override = "HONORS";
+	    	}
+	    } else {
+		    for (int i = 0; i < defaultOverrides.length; i+= 2) {
+		    	if (messageType.equals(defaultOverrides[i])) override = defaultOverrides[i + 1];
+		    }
 	    }
 	    return getSolver().getProperties().getProperty("Save.XE.Override." + messageType, override);
 	}
