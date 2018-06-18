@@ -102,7 +102,7 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		fields[idx++] = new Field(MESSAGES.fieldName(), FieldType.text, 300, 60, Flag.UNIQUE);
 		for (StatusOption t: StatusOption.values())
 			fields[idx++] = new Field(t.getLabel(), FieldType.toggle, 40);
-		fields[idx++] = new Field(MESSAGES.fieldMessage(), FieldType.textarea, 40, 200);
+		fields[idx++] = new Field(MESSAGES.fieldMessage(), FieldType.textarea, 40, 500);
 		if (!courseTypes.isEmpty()) {
 			for (int i = 0; i < courseTypes.size(); i++)
 				fields[idx++] = new Field(courseTypes.get(i).getReference(), FieldType.toggle, 40);

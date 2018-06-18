@@ -242,7 +242,7 @@
                 column="message"
                 type="java.lang.String"
                 not-null="false"
-                length="200"/>
+                length="500"/>
 
 	        <set
     	        name="types"

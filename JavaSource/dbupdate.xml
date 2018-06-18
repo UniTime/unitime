@@ -13195,4 +13195,8 @@
 			alter table %SCHEMA%.distribution_pref change column `grouping` dist_grouping bigint(10) null
 		</mysql>
 	</update>
+	<update version="209" date="18-Jun-2018" comment="Longer student status message">
+		<plsql>alter table %SCHEMA%.sectioning_status modify message varchar2(500 char)</plsql>
+		<mysql>alter table %SCHEMA%.sectioning_status modify message varchar(500)</mysql>
+	</update>
 </dbupdate>
