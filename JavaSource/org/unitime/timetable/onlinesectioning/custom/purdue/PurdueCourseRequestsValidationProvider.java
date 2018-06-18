@@ -515,16 +515,18 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					model.addLinkedSections(linkedClassesMustBeUsed, sections);
 			}
 		}
-		for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
-			Request r = (Request)e.next();
-			if (r instanceof CourseRequest) {
-				CourseRequest cr = (CourseRequest)r;
-				for (Course course: cr.getCourses()) {
-					new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), -100, true, 1, true, true, true, true) {
-						@Override
-						public boolean mustBeUsed() { return true; }
-					};
-					continue;
+		if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.dummyReservation", "false"))) {
+			for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
+				Request r = (Request)e.next();
+				if (r instanceof CourseRequest) {
+					CourseRequest cr = (CourseRequest)r;
+					for (Course course: cr.getCourses()) {
+						new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), 5000, true, 1, true, true, true, true) {
+							@Override
+							public boolean mustBeUsed() { return true; }
+						};
+						continue;
+					}
 				}
 			}
 		}
@@ -1732,16 +1734,18 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					model.addLinkedSections(linkedClassesMustBeUsed, sections);
 			}
 		}
-		for (Iterator<Request> e = s.getRequests().iterator(); e.hasNext();) {
-			Request r = (Request)e.next();
-			if (r instanceof CourseRequest) {
-				CourseRequest cr = (CourseRequest)r;
-				for (Course course: cr.getCourses()) {
-					new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), -100, true, 1, true, true, true, true) {
-						@Override
-						public boolean mustBeUsed() { return true; }
-					};
-					continue;
+		if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.dummyReservation", "false"))) {
+			for (Iterator<Request> e = s.getRequests().iterator(); e.hasNext();) {
+				Request r = (Request)e.next();
+				if (r instanceof CourseRequest) {
+					CourseRequest cr = (CourseRequest)r;
+					for (Course course: cr.getCourses()) {
+						new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), -100, true, 1, true, true, true, true) {
+							@Override
+							public boolean mustBeUsed() { return true; }
+						};
+						continue;
+					}
 				}
 			}
 		}
