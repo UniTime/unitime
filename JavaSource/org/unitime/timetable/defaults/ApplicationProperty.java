@@ -590,6 +590,11 @@ public enum ApplicationProperty {
 	@Type(Integer.class)
 	@Description("Student Scheduling Dashboard: when giving operation suggestions, scan sectioning log for the last given number of days (use -1 for no limit, 0 for no operation suggestions)")
 	OnlineSchedulingDashboardSuggestionsLogDays("unitime.enrollment.suggestions.sectioningLogDays"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Student Scheduling Dashboard: filter credits using database query")
+	OnlineSchedulingDashboardCreditFilterUseDatabase("unitime.enrollment.suggestions.creditFilterUseDatabase"),
 
 	@Type(Boolean.class)
 	@DefaultValue("true")

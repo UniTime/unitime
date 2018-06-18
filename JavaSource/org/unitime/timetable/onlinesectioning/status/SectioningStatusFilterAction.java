@@ -57,6 +57,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.solver.studentsct.StudentSolver;
 import org.unitime.timetable.util.Constants;
 
@@ -488,7 +489,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			query.addFrom("course", "inner join s.courseDemands cd inner join cd.courseRequests cr inner join cr.courseOffering co");
 		}
 		
-		if (request.hasOption("credit") && !(server instanceof StudentSolver)) {
+		if (request.hasOption("credit") && !(server instanceof StudentSolver) && (server instanceof DatabaseServer || ApplicationProperty.OnlineSchedulingDashboardCreditFilterUseDatabase.isTrue())) {
 			String term = request.getOption("credit");
 			float min = 0, max = Float.MAX_VALUE;
 			Credit prefix = Credit.eq;
@@ -536,21 +537,16 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 					}
 				}
 			}
-			String creditTerm = "((select coalesce(sum(fixedUnits),0) from FixedCreditUnitConfig where courseOwner in (select courseOffering.uniqueId from StudentClassEnrollment where student = s)) + " +
-					// "(select coalesce(sum(fixedUnits),0) from FixedCreditUnitConfig where subpartOwner in (select clazz.schedulingSubpart.uniqueId from StudentClassEnrollment where student = s)) + " +
-					// "(select coalesce(sum(minUnits),0) from VariableFixedCreditUnitConfig where subpartOwner in (select clazz.schedulingSubpart.uniqueId from StudentClassEnrollment where student = s)) + " +
-					"(select coalesce(sum(minUnits),0) from VariableFixedCreditUnitConfig where courseOwner in (select courseOffering.uniqueId from StudentClassEnrollment where student = s)))";
+			String creditTerm = "(select coalesce(sum(fixedUnits),0) + coalesce(sum(minUnits),0) from CourseCreditUnitConfig where courseOwner in (select courseOffering.uniqueId from StudentClassEnrollment where student = s))";
 			if ("!".equals(im)) {
-				creditTerm = "((select coalesce(sum(fixedUnits),0) from FixedCreditUnitConfig where courseOwner in (select courseOffering.uniqueId from StudentClassEnrollment where student = s and clazz.schedulingSubpart.instrOfferingConfig.instructionalMethod is not null)) + " +
-						"(select coalesce(sum(minUnits),0) from VariableFixedCreditUnitConfig where courseOwner in (select courseOffering.uniqueId from StudentClassEnrollment where student = s and clazz.schedulingSubpart.instrOfferingConfig.instructionalMethod is not null)))";
+				creditTerm = "(select coalesce(sum(fixedUnits),0) + coalesce(sum(minUnits),0) from CourseCreditUnitConfig where courseOwner in (select courseOffering.uniqueId from StudentClassEnrollment where student = s and clazz.schedulingSubpart.instrOfferingConfig.instructionalMethod is null))";
 			} else if (im != null) {
-				creditTerm = "((select coalesce(sum(fixedUnits),0) from FixedCreditUnitConfig where courseOwner in (select courseOffering.uniqueId from StudentClassEnrollment where student = s and lower(clazz.schedulingSubpart.instrOfferingConfig.instructionalMethod.reference) = :Xim)) + " +
-						"(select coalesce(sum(minUnits),0) from VariableFixedCreditUnitConfig where courseOwner in (select courseOffering.uniqueId from StudentClassEnrollment where student = s and lower(clazz.schedulingSubpart.instrOfferingConfig.instructionalMethod.reference) = :Xim)))";
+				creditTerm = "(select coalesce(sum(fixedUnits),0) + coalesce(sum(minUnits),0) from CourseCreditUnitConfig where courseOwner in (select courseOffering.uniqueId from StudentClassEnrollment where student = s and lower(clazz.schedulingSubpart.instrOfferingConfig.instructionalMethod.reference) = :Xim))";
 				query.addParameter("credit", "Xim", im.toLowerCase());
 			}
 			if (min > 0) {
 				if (max < Integer.MAX_VALUE) {
-					query.addWhere("credit", creditTerm + " >= :Xmin and " + creditTerm + " <= :Xmax");
+					query.addWhere("credit", creditTerm + " between :Xmin and :Xmax");
 					query.addParameter("credit", "Xmin", min);
 					query.addParameter("credit", "Xmax", max);
 				} else {
@@ -707,6 +703,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			}
 			
 			public org.hibernate.Query query(org.hibernate.Session hibSession) {
+				System.out.println("Q:" + query());
 				org.hibernate.Query query = setParams(hibSession.createQuery(query()), iExclude).setLong("sessionId", iSessionId).setCacheable(true);
 				for (Map.Entry<String, Object> param: iParams.entrySet()) {
 					if (param.getValue() instanceof Integer) {
