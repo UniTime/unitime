@@ -703,7 +703,6 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			}
 			
 			public org.hibernate.Query query(org.hibernate.Session hibSession) {
-				System.out.println("Q:" + query());
 				org.hibernate.Query query = setParams(hibSession.createQuery(query()), iExclude).setLong("sessionId", iSessionId).setCacheable(true);
 				for (Map.Entry<String, Object> param: iParams.entrySet()) {
 					if (param.getValue() instanceof Integer) {
