@@ -620,7 +620,7 @@ public class XOffering implements Serializable, Externalizable {
 						if (std && limit == 0) limit = 1; // allow enrolled student in
 					}
 					OnlineSection clonedSection = new OnlineSection(section.getSectionId(), limit,
-							section.getName(), clonedSubpart, section.toPlacement(), section.toInstructors(),
+							section.getName(course.getCourseId()), clonedSubpart, section.toPlacement(), section.toInstructors(),
 							(section.getParentId() == null ? null : sections.get(section.getParentId())));
 					clonedSection.setName(-1l, section.getName(-1l));
 					clonedSection.setNote(section.getNote());
