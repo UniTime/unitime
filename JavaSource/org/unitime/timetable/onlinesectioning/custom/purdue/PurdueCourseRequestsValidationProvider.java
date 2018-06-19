@@ -47,6 +47,7 @@ import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Offering;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
@@ -57,6 +58,7 @@ import org.cpsolver.studentsct.online.OnlineSectioningModel;
 import org.cpsolver.studentsct.online.selection.MultiCriteriaBranchAndBoundSelection;
 import org.cpsolver.studentsct.online.selection.OnlineSectioningSelection;
 import org.cpsolver.studentsct.online.selection.SuggestionSelection;
+import org.cpsolver.studentsct.reservation.Reservation;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.restlet.Client;
@@ -1686,7 +1688,6 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		if (original == null) original = new XStudent(student, helper, server.getAcademicSession().getFreeTimePattern());
 		
 		Student s = new Student(student.getUniqueId());
-		Map<Long, Section> classTable = new HashMap<Long, Section>();
 		Set<XDistribution> distributions = new HashSet<XDistribution>();
 		Hashtable<CourseRequest, Set<Section>> preferredSections = new Hashtable<CourseRequest, Set<Section>>();
 		
@@ -1717,6 +1718,27 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				CourseRequest clonnedRequest = new CourseRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), s, courses, cr.isWaitlist(), cr.getTimeStamp() == null ? null : cr.getTimeStamp().getTime());
 				if (!sections.isEmpty())
 					preferredSections.put(clonnedRequest, sections);
+				for (Course clonnedCourse: clonnedRequest.getCourses()) {
+					if (!clonnedCourse.getOffering().hasReservations()) continue;
+					if (enrollment != null && enrollment.getCourseId().equals(clonnedCourse.getId())) {
+						boolean needReservation = clonnedCourse.getOffering().getUnreservedSpace(assignment, clonnedRequest) < 1.0;
+						if (!needReservation) {
+							boolean configChecked = false;
+							for (Section section: sections) {
+								if (section.getUnreservedSpace(assignment, clonnedRequest) < 1.0) { needReservation = true; break; }
+								if (!configChecked && section.getSubpart().getConfig().getUnreservedSpace(assignment, clonnedRequest) < 1.0) { needReservation = true; break; }
+								configChecked = true;
+							}
+						}
+						if (needReservation) {
+							Reservation reservation = new OnlineReservation(XReservationType.Dummy.ordinal(),
+									-original.getStudentId(), clonnedCourse.getOffering(), 1000, false, 1, true, false, false, true);
+							for (Section section: sections)
+								reservation.addSection(section);
+						}
+						break;
+					}
+				}
 				cr.fillChoicesIn(clonnedRequest);
 			}
 		}
@@ -1727,8 +1749,13 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			if (link.getDistributionType() == XDistributionType.LinkedSections) {
 				List<Section> sections = new ArrayList<Section>();
 				for (Long sectionId: link.getSectionIds()) {
-					Section x = classTable.get(sectionId);
-					if (x != null) sections.add(x);
+					for (Offering offering: model.getOfferings()) {
+						Section x = offering.getSection(sectionId);
+						if (x != null) {
+							sections.add(x);
+							break;
+						}
+					}
 				}
 				if (sections.size() >= 2)
 					model.addLinkedSections(linkedClassesMustBeUsed, sections);
