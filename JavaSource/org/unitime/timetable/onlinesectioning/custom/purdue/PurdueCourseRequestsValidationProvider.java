@@ -575,8 +575,13 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		}
 		
 		selection.setModel(model);
-		selection.setPreferredSections(preferredSections);
-		selection.setRequiredSections(new Hashtable<CourseRequest, Set<Section>>());
+		if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.fixCurrentEnrollments", "false"))) {
+			selection.setPreferredSections(new Hashtable<CourseRequest, Set<Section>>());
+			selection.setRequiredSections(preferredSections);
+		} else {
+			selection.setPreferredSections(preferredSections);
+			selection.setRequiredSections(new Hashtable<CourseRequest, Set<Section>>());
+		}
 		selection.setRequiredFreeTimes(new HashSet<FreeTimeRequest>());
 		selection.setRequiredUnassinged(new HashSet<CourseRequest>());
 		
@@ -1786,8 +1791,13 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		}
 		
 		selection.setModel(model);
-		selection.setPreferredSections(preferredSections);
-		selection.setRequiredSections(new Hashtable<CourseRequest, Set<Section>>());
+		if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.fixCurrentEnrollments", "false"))) {
+			selection.setPreferredSections(new Hashtable<CourseRequest, Set<Section>>());
+			selection.setRequiredSections(preferredSections);
+		} else {
+			selection.setPreferredSections(preferredSections);
+			selection.setRequiredSections(new Hashtable<CourseRequest, Set<Section>>());
+		}
 		selection.setRequiredFreeTimes(new HashSet<FreeTimeRequest>());
 		selection.setRequiredUnassinged(new HashSet<CourseRequest>());
 		
