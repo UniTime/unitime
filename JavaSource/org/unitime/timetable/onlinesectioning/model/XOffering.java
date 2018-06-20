@@ -664,6 +664,7 @@ public class XOffering implements Serializable, Externalizable {
 					reservation.getReservationId(), clonedOffering,
 					reservation.getPriority(), reservation.canAssignOverLimit(), reservationLimit, 
 					applicable, reservation.mustBeUsed(), reservation.isAllowOverlap(), reservation.isExpired());
+			clonedReservation.setAllowDisabled(reservation.isAllowDisabled());
 			for (Long configId: reservation.getConfigsIds())
 				clonedReservation.addConfig(configs.get(configId));
 			for (Map.Entry<Long, Set<Long>> entry: reservation.getSections().entrySet()) {
