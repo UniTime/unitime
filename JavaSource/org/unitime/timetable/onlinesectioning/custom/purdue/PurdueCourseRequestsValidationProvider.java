@@ -474,6 +474,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 		
 		Student student = new Student(request.getStudentId());
+		student.setExternalId(original.getExternalId());
+		student.setName(original.getName());
+		student.setNeedShortDistances(original.hasAccomodation(server.getDistanceMetric().getShortDistanceAccommodationReference()));
+		student.setAllowDisabled(original.isAllowDisabled());
 		Map<Long, Section> classTable = new HashMap<Long, Section>();
 		Set<XDistribution> distributions = new HashSet<XDistribution>();
 		Hashtable<CourseRequest, Set<Section>> preferredSections = new Hashtable<CourseRequest, Set<Section>>();
@@ -1693,6 +1697,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		if (original == null) original = new XStudent(student, helper, server.getAcademicSession().getFreeTimePattern());
 		
 		Student s = new Student(student.getUniqueId());
+		s.setExternalId(original.getExternalId());
+		s.setName(original.getName());
+		s.setNeedShortDistances(original.hasAccomodation(server.getDistanceMetric().getShortDistanceAccommodationReference()));
+		s.setAllowDisabled(original.isAllowDisabled());
 		Set<XDistribution> distributions = new HashSet<XDistribution>();
 		Hashtable<CourseRequest, Set<Section>> preferredSections = new Hashtable<CourseRequest, Set<Section>>();
 		
@@ -1712,6 +1720,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					XOffering offering = server.getOffering(c.getOfferingId());
 					Course clonnedCourse = offering.toCourse(c.getCourseId(), original, server.getExpectations(c.getOfferingId()), offering.getDistributions(), server.getEnrollments(c.getOfferingId()));
 					courses.add(clonnedCourse);
+					model.addOffering(clonnedCourse.getOffering());
 					distributions.addAll(offering.getDistributions());
 					if (enrollment != null && enrollment.getCourseId().equals(c.getCourseId())) {
 						for (Long sectionId: enrollment.getSectionIds()) {
