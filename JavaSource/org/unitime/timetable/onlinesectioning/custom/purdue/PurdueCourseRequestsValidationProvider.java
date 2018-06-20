@@ -481,11 +481,17 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		Map<Long, Section> classTable = new HashMap<Long, Section>();
 		Set<XDistribution> distributions = new HashSet<XDistribution>();
 		Hashtable<CourseRequest, Set<Section>> preferredSections = new Hashtable<CourseRequest, Set<Section>>();
+		boolean hasAssignment = false;
+		for (XRequest reqest: original.getRequests()) {
+			if (reqest instanceof XCourseRequest && ((XCourseRequest)reqest).getEnrollment() != null) {
+				hasAssignment = true; break;
+			}
+		}
 		for (CourseRequestInterface.Request c: request.getCourses())
-			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, false);
+			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, hasAssignment);
 		// if (student.getRequests().isEmpty()) return;
 		for (CourseRequestInterface.Request c: request.getAlternatives())
-			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, false);
+			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, hasAssignment);
 		for (XRequest r: original.getRequests()) {
 			if (r instanceof XCourseRequest) {
 				XCourseRequest cr = (XCourseRequest)r;
@@ -1735,21 +1741,22 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				for (Course clonnedCourse: clonnedRequest.getCourses()) {
 					if (!clonnedCourse.getOffering().hasReservations()) continue;
 					if (enrollment != null && enrollment.getCourseId().equals(clonnedCourse.getId())) {
-						boolean needReservation = clonnedCourse.getOffering().getUnreservedSpace(assignment, clonnedRequest) < 1.0;
-						if (!needReservation) {
-							boolean configChecked = false;
-							for (Section section: sections) {
-								if (section.getUnreservedSpace(assignment, clonnedRequest) < 1.0) { needReservation = true; break; }
-								if (!configChecked && section.getSubpart().getConfig().getUnreservedSpace(assignment, clonnedRequest) < 1.0) { needReservation = true; break; }
-								configChecked = true;
-							}
+						boolean hasMustUse = false;
+						for (Reservation reservation: clonnedCourse.getOffering().getReservations()) {
+							if (reservation.isApplicable(s) && reservation.mustBeUsed() && !reservation.isExpired())
+								hasMustUse = true;
 						}
-						if (needReservation) {
-							Reservation reservation = new OnlineReservation(XReservationType.Dummy.ordinal(),
-									-original.getStudentId(), clonnedCourse.getOffering(), 1000, false, 1, true, false, false, true);
-							for (Section section: sections)
-								reservation.addSection(section);
+						Reservation reservation = null;
+						if (hasMustUse) {
+							reservation = new OnlineReservation(XReservationType.Dummy.ordinal(), -original.getStudentId(), clonnedCourse.getOffering(), 1000, false, 1, true, true, false, true) {
+								@Override
+								public boolean mustBeUsed() { return true; }
+							};
+						} else {
+							reservation = new OnlineReservation(XReservationType.Dummy.ordinal(), -original.getStudentId(), clonnedCourse.getOffering(), 1000, false, 1, true, false, false, true);
 						}
+						for (Section section: sections)
+							reservation.addSection(section);
 						break;
 					}
 				}
