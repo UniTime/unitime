@@ -1673,7 +1673,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         final Hashtable<Long, Section> classTable = new Hashtable<Long, Section>();
         List<InstructionalOffering> offerings = hibSession.createQuery(
                 "select distinct io from InstructionalOffering io " +
-                "left join fetch io.courseOfferings as co "+
+                "left join io.courseOfferings as co "+
                 "left join fetch io.instrOfferingConfigs as ioc "+
                 "left join fetch ioc.schedulingSubparts as ss "+
                 "left join fetch ss.classes as c "+

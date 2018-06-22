@@ -117,18 +117,12 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 				Map<Long, Map<Long, Double>> spaceMap = new HashMap<Long, Map<Long,Double>>();
 				List<InstructionalOffering> offerings = helper.getHibSession().createQuery(
 						"select distinct io from InstructionalOffering io " +
-						"left join fetch io.courseOfferings co " +
+						"left join io.courseOfferings co " +
 						"left join fetch io.instrOfferingConfigs cf " +
 						"left join fetch cf.schedulingSubparts ss " +
-						"left join fetch ss.classes c " +
-						"left join fetch c.assignments a " +
-						"left join fetch a.rooms r " +
-						"left join fetch c.classInstructors i " +
+						"left join fetch ss.classes as c "+
 						"left join fetch io.reservations x " +
-						"left join fetch co.creditConfigs cc " +
-						"left join fetch ss.creditConfigs sc " +
-						"inner join io.courseOfferings cox " +
-						"where io.session.uniqueId = :sessionId and io.notOffered = false and cox.subjectArea.department.allowStudentScheduling = true")
+						"where io.session.uniqueId = :sessionId and io.notOffered = false and co.subjectArea.department.allowStudentScheduling = true")
 						.setLong("sessionId", server.getAcademicSession().getUniqueId()).list();
 				for (InstructionalOffering io: offerings) {
 					XOffering offering = loadOffering(io, distributions.get(io.getUniqueId()), server, helper);
