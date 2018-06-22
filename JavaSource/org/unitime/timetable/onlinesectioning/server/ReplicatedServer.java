@@ -49,6 +49,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerContext;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
 import org.unitime.timetable.onlinesectioning.match.StudentMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
@@ -931,6 +932,17 @@ public class ReplicatedServer extends AbstractServer {
 		Lock lock = readLock();
 		try {
 			return iInstructedOfferings.get(instructorExternalId);
+		} finally {
+			lock.release();
+		}
+	}
+	
+	@Override
+	public Set<Long> getRequestedCourseIds(Long studentId) {
+		Lock lock = readLock();
+		try {
+			XStudent student = iStudentTable.get(studentId);
+			return (student == null ? null : student.getRequestedCourseIds());
 		} finally {
 			lock.release();
 		}

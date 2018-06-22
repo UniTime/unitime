@@ -22,8 +22,10 @@ package org.unitime.timetable.onlinesectioning.server;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.cpsolver.coursett.constraint.GroupConstraint;
 import org.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
@@ -276,5 +278,12 @@ public class DatabaseServer extends AbstractLockingServer {
 				.setLong("sessionId", getAcademicSession().getUniqueId())
 				.setString("instructorExternalId", instructorExternalId)
 				.setCacheable(true).list();
+	}
+	
+	@Override
+	public Set<Long> getRequestedCourseIds(Long studentId) {
+		return new HashSet<Long>(getCurrentHelper().getHibSession().createQuery(
+				"select cr.courseOffering.uniqueId from CourseRequest cr where cr.courseDemand.student.uniqueId = :studentId"
+				).setLong("studentId", studentId).setCacheable(true).list());
 	}
 }

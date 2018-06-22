@@ -268,9 +268,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (sessionId==null) throw new SectioningException(MSG.exceptionNoAcademicSession());
 		setLastSessionId(sessionId);
 		
-		CourseMatcher matcher = getCourseMatcher(sessionId);
-		
 		OnlineSectioningServer server = getServerInstance(sessionId, false);
+		
+		CourseMatcher matcher = getCourseMatcher(sessionId, server);
 		
 		if (server == null) {
 			String types = "";
@@ -355,10 +355,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 	}
 	
-	public CourseMatcher getCourseMatcher(Long sessionId) {
+	public CourseMatcher getCourseMatcher(Long sessionId, OnlineSectioningServer server) {
 		boolean noCourseType = true, allCourseTypes = false;
 		Set<String> allowedCourseTypes = new HashSet<String>();
 		Long studentId = getStudentId(sessionId);
+		Set<Long> courseIds = null;
 		if (getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingAdvisor)) {
 			allCourseTypes = true;
 		} else {
@@ -371,11 +372,23 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						allowedCourseTypes.add(type.getReference());
 					noCourseType = !status.hasOption(Option.notype);
 				}
+				if (student != null) {
+					if (server != null && !(server instanceof DatabaseServer)) {
+						courseIds = server.getRequestedCourseIds(studentId);
+					} else {
+						courseIds = new HashSet<Long>();
+						for (CourseDemand cd: student.getCourseDemands()) {
+							for (CourseRequest cr: cd.getCourseRequests()) {
+								courseIds.add(cr.getCourseOffering().getUniqueId());
+							}
+						}
+					}
+				}
 			} finally {
 				hibSession.close();
 			}
 		}
-		CourseMatcher matcher = new CourseMatcher(allCourseTypes, noCourseType, allowedCourseTypes);
+		CourseMatcher matcher = new CourseMatcher(allCourseTypes, noCourseType, allowedCourseTypes, courseIds);
 		
 		if (studentId != null) {
 			CourseMatcherProvider provider = getCourseMatcherProvider();
@@ -677,11 +690,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			if (server == null) {
 				if (!sectioning && CustomCourseRequestsValidationHolder.hasProvider()) {
 					OnlineSectioningServer dummy = getServerInstance(request.getAcademicSessionId(), true);
-					return dummy.execute(dummy.createAction(CheckCourses.class).forRequest(request).withMatcher(getCourseMatcher(request.getAcademicSessionId())).withCustomValidation(true), currentUser());
+					return dummy.execute(dummy.createAction(CheckCourses.class).forRequest(request).withMatcher(getCourseMatcher(request.getAcademicSessionId(), server)).withCustomValidation(true), currentUser());
 				}
 				org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 				CheckCoursesResponse response = new CheckCoursesResponse();
-				CourseMatcher matcher = getCourseMatcher(request.getAcademicSessionId());
+				CourseMatcher matcher = getCourseMatcher(request.getAcademicSessionId(), server);
 				Long studentId = getStudentId(request.getAcademicSessionId());
 				for (CourseRequestInterface.Request cr: request.getCourses()) {
 					if (cr.hasRequestedCourse()) {
@@ -703,7 +716,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				}
 				return response;
 			} else {
-				return server.execute(server.createAction(CheckCourses.class).forRequest(request).withMatcher(getCourseMatcher(request.getAcademicSessionId())).withCustomValidation(!sectioning), currentUser());
+				return server.execute(server.createAction(CheckCourses.class).forRequest(request).withMatcher(getCourseMatcher(request.getAcademicSessionId(), server)).withCustomValidation(!sectioning), currentUser());
 			}
 		} catch (PageAccessException e) {
 			throw e;
@@ -2472,9 +2485,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		private static final long serialVersionUID = 1L;
 		private boolean iAllCourseTypes, iNoCourseType;
 		private Set<String> iAllowedCourseTypes;
+		private Set<Long> iAllowedCourseIds;
 		
-		public CourseMatcher(boolean allCourseTypes, boolean noCourseType, Set<String> allowedCourseTypes) {
-			iAllCourseTypes = allCourseTypes; iNoCourseType = noCourseType; iAllowedCourseTypes = allowedCourseTypes;
+		public CourseMatcher(boolean allCourseTypes, boolean noCourseType, Set<String> allowedCourseTypes, Set<Long> allowedCourseIds) {
+			iAllCourseTypes = allCourseTypes; iNoCourseType = noCourseType; iAllowedCourseTypes = allowedCourseTypes; iAllowedCourseIds = allowedCourseIds;
 		}
 		
 		public boolean isAllCourseTypes() { return iAllCourseTypes; }
@@ -2485,12 +2499,19 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		
 		public Set<String> getAllowedCourseTypes() { return iAllowedCourseTypes; }
 		
+		public Set<Long> getAllowedCourseIds() { return iAllowedCourseIds; }
+		
+		public boolean isAllowedCourseId(XCourseId course) {
+			return iAllowedCourseIds != null && course != null && iAllowedCourseIds.contains(course.getCourseId());
+		}
+		
 		public org.unitime.timetable.onlinesectioning.match.CourseMatcher getParentCourseMatcher() { return iParent; }
 		
 		public void setParentCourseMatcher(org.unitime.timetable.onlinesectioning.match.CourseMatcher parent) { iParent = parent; }
 
 		@Override
 		public boolean match(XCourseId course) {
+			if (isAllowedCourseId(course)) return true;
 			return course != null && course.matchType(iAllCourseTypes, iNoCourseType, iAllowedCourseTypes) && (iParent == null || iParent.match(course));
 		}
 	}

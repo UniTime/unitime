@@ -796,6 +796,21 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	}
 	
 	@Override
+	public Set<Long> getRequestedCourseIds(Long studentId) {
+		for (Student student: ((StudentSectioningModel)currentSolution().getModel()).getStudents())
+			if (!student.isDummy() && student.getId() == studentId) {
+				Set<Long> courseIds = new HashSet<Long>();
+				for (Request request: student.getRequests()) {
+					if (request instanceof CourseRequest)
+						for (Course course: ((CourseRequest)request).getCourses())
+							courseIds.add(course.getId());
+				}
+				return courseIds;
+			}
+		return null;
+	}
+
+	@Override
 	public boolean isRunning() {
 		if (super.isRunning()) return true;
 		if (iWorking && iWorkThread != null && iWorkThread instanceof InterruptibleThread && iWorkThread.isAlive() && !iWorkThread.isInterrupted())

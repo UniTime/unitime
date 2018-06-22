@@ -21,6 +21,7 @@ package org.unitime.timetable.onlinesectioning;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.DistanceMetric;
@@ -74,6 +75,7 @@ public interface OnlineSectioningServer {
 	public XEnrollments getEnrollments(Long offeringId);
 	public XExpectations getExpectations(Long offeringId);
 	public Collection<Long> getInstructedOfferings(String instructorExternalId);
+	public Set<Long> getRequestedCourseIds(Long studentId);
 	
 	@CheckMaster(Master.REQUIRED)
 	public void update(XExpectations expectations);

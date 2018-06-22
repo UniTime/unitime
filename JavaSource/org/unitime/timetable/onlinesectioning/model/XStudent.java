@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -338,6 +339,15 @@ public class XStudent extends XStudentId implements Externalizable {
             }
         }
         return (alt >= 0);
+    }
+    
+    public Set<Long> getRequestedCourseIds() {
+    	Set<Long> courseIds = new HashSet<Long>();
+    	for (XRequest request: getRequests())
+    		if (request instanceof XCourseRequest)
+    			for (XCourseId course: ((XCourseRequest)request).getCourseIds())
+    				courseIds.add(course.getCourseId());
+    	return courseIds;
     }
     
     @Override

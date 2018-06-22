@@ -441,5 +441,16 @@ public class InMemoryServer extends AbstractLockingServer {
 			lock.release();
 		}
 	}
+	
+	@Override
+	public Set<Long> getRequestedCourseIds(Long studentId) {
+		Lock lock = readLock();
+		try {
+			XStudent student = iStudentTable.get(studentId);
+			return (student == null ? null : student.getRequestedCourseIds());
+		} finally {
+			lock.release();
+		}
+	}
 
 }
