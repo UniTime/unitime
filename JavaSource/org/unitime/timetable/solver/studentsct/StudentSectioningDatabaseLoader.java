@@ -1122,16 +1122,6 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 			if (r.getInitialAssignment() != null && student.isAvailable(r.getInitialAssignment()) && r.getModel().conflictValues(getAssignment(), r.getInitialAssignment()).isEmpty())
 				getAssignment().assign(0, r.getInitialAssignment());
 		}
-		for (Request r: student.getRequests()) {
-			if (r instanceof FreeTimeRequest) {
-				FreeTimeRequest ft = (FreeTimeRequest)r;
-				Enrollment enrollment = ft.createEnrollment();
-				if (r.getModel().conflictValues(getAssignment(), enrollment).isEmpty()) {
-					ft.setInitialAssignment(enrollment);
-					getAssignment().assign(0, enrollment);
-				}
-			}
-		}
     }
     
     public void checkForConflicts(Student student) {
