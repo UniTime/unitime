@@ -165,6 +165,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private BitSet iFreeTimePattern = null;
 	private Date iDatePatternFirstDate = null;
 	private boolean iTweakLimits = false;
+	private boolean iAllowToKeepCurrentEnrollment = false;
+	private long iMakeupReservationId = 0;
 	private boolean iLoadSectioningInfos = false;
 	private boolean iProjections = false;
 	private boolean iFixWeights = true;
@@ -208,6 +210,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iOwnerId = model.getProperties().getProperty("General.OwnerPuid");
         iSessionId = model.getProperties().getPropertyLong("General.SessionId", null);
         iTweakLimits = model.getProperties().getPropertyBoolean("Load.TweakLimits", iTweakLimits);
+        iAllowToKeepCurrentEnrollment = model.getProperties().getPropertyBoolean("Load.AllowToKeepCurrentEnrollment", iAllowToKeepCurrentEnrollment);
         iLoadSectioningInfos = model.getProperties().getPropertyBoolean("Load.LoadSectioningInfos",iLoadSectioningInfos);
         iProgress = Progress.getInstance(getModel());
         iFixWeights = model.getProperties().getPropertyBoolean("Load.FixWeights", iFixWeights);
@@ -1137,6 +1140,61 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     		}
            	CourseRequest cr = (CourseRequest)r;
            	Enrollment enrl = (Enrollment)r.getInitialAssignment();
+    		if (iAllowToKeepCurrentEnrollment && student.getId() >= 0) {
+    			boolean hasMustUse = false;
+				for (Reservation reservation: enrl.getOffering().getReservations()) {
+					if (reservation.isApplicable(student) && reservation.mustBeUsed() && !reservation.isExpired())
+						hasMustUse = true;
+				}
+				boolean hasLimit = false, hasOverlap = false, hasDisabled = false;
+	           	for (Iterator<Section> i = enrl.getSections().iterator(); i.hasNext();) {
+	           		Section section = i.next();
+	           		if (section.getTime() != null) {
+	               		for (Request q: student.getRequests()) {
+	               			Enrollment enrlx = getAssignment().getValue(q);
+	               			if (enrlx == null || !(q instanceof CourseRequest)) continue;
+	               			for (Iterator<Section> j = enrlx.getSections().iterator(); j.hasNext();) {
+	               				Section sectionx = j.next();
+	               				if (sectionx.getTime() == null) continue;
+	               				if (sectionx.isOverlapping(section)) {
+	               					hasOverlap = true; break;
+	               				}
+	               			}
+	               		}
+	           		}
+	           		if (section.getLimit() >= 0 && section.getLimit() < 1 + section.getEnrollments(getAssignment()).size()) {
+	           			hasLimit = true;
+	           		}
+	           		if (enrl.getConfig().getLimit() >= 0 && enrl.getConfig().getLimit() < 1 + enrl.getConfig().getEnrollments(getAssignment()).size()) {
+	           			hasLimit = true;
+	           		}
+	           		if (enrl.getCourse() != null && enrl.getCourse().getLimit() >= 0 && enrl.getCourse().getLimit() < 1 + enrl.getCourse().getEnrollments(getAssignment()).size()) {
+	           			hasLimit = true;
+	           		}
+	           		if (!section.isEnabled())
+	           			hasDisabled = true;
+	           	}
+           		Reservation reservation = new ReservationOverride(--iMakeupReservationId, enrl.getOffering(), student.getId());
+           		if (hasLimit) reservation.setCanAssignOverLimit(true);
+           		if (hasOverlap) reservation.setAllowOverlap(true);
+				if (hasDisabled) reservation.setAllowDisabled(hasDisabled);
+				if (hasMustUse) { reservation.setMustBeUsed(true); reservation.setExpired(false); }
+				else { reservation.setExpired(true); }
+				Set<String> props = new TreeSet<String>();
+				if (reservation.mustBeUsed()) props.add("mustBeUsed");
+				if (reservation.isAllowOverlap()) props.add("allowOverlap");
+				if (reservation.canAssignOverLimit()) props.add("allowOverLimit");
+				if (reservation.isAllowDisabled()) props.add("allowDisabled");
+				if (reservation.isExpired()) props.add("expired");
+				iProgress.info("Created an override reservation for " + cr.getName() + " of " + student.getName() + " (" + student.getExternalId() + ") " + props);
+				for (Section section: enrl.getSections())
+					reservation.addSection(section);
+				enrl.guessReservation(getAssignment(), true);
+				if (r.getModel().conflictValues(getAssignment(), enrl).isEmpty()) {
+	    			getAssignment().assign(0, enrl);
+	    			continue;
+	    		}
+    		}
            	org.unitime.timetable.model.Student s = (student.getId() >= 0 ? StudentDAO.getInstance().get(student.getId()) : null);
            	iProgress.error("There is a problem assigning " + cr.getName() + " to " + (s == null ? student.getId() : iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ")" ));
            	boolean hasLimit = false, hasOverlap = false;
