@@ -35,6 +35,7 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.reports.studentsct.IndividualStudentTimeOverlaps;
+import org.unitime.timetable.reports.studentsct.PerturbationsReport;
 import org.unitime.timetable.reports.studentsct.StudentAvailabilityConflicts;
 import org.unitime.timetable.reports.studentsct.UnasignedCourseRequests;
 import org.unitime.timetable.reports.studentsct.UnusedReservations;
@@ -58,6 +59,7 @@ public class SectioningReportTypesBackend implements GwtRpcImplementation<Sectio
 		DISTANCE_CONFLICTS("Distance Conflicts", DistanceConflictTable.class.getName()),
 		TIME_OVERLAPS("Time Overlaps", TimeOverlapConflictTable.class.getName()),
 		REQUEST_GROUPS("Request Groups", RequestGroupTable.class.getName()),
+		PERTURBATIONS("Perturbations", PerturbationsReport.class.getName()),
 		INDIVIDUAL_TIME_OVERLAPS("Individual Student Time Overlaps", IndividualStudentTimeOverlaps.class.getName()),
 		NOT_ALLOWED_TIME_OVERLAPS("Not Allowed Time Overlaps", IndividualStudentTimeOverlaps.class.getName(), "includeAllowedOverlaps", "false"),
 		INDIVIDUAL_TIME_OVERLAPS_BT("Individual Student Time Overlaps (Exclude Break Times)", IndividualStudentTimeOverlaps.class.getName(), "ignoreBreakTimeConflicts", "true"),
