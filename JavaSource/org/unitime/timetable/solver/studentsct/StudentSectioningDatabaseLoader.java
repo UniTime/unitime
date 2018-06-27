@@ -47,6 +47,7 @@ import org.cpsolver.coursett.model.Lecture;
 import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.RoomLocation;
 import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.ifs.model.Constraint;
 import org.cpsolver.ifs.solution.Solution;
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.IdGenerator;
@@ -1140,7 +1141,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     		}
            	CourseRequest cr = (CourseRequest)r;
            	Enrollment enrl = (Enrollment)r.getInitialAssignment();
-    		if (iAllowToKeepCurrentEnrollment && student.getId() >= 0) {
+    		if ((iAllowToKeepCurrentEnrollment || iTweakLimits) && student.getId() >= 0) {
+    			iProgress.info("There was a problem assigning " + cr.getName() + " to " + student.getName() + " (" + student.getExternalId() + ") ");
     			boolean hasMustUse = false;
 				for (Reservation reservation: enrl.getOffering().getReservations()) {
 					if (reservation.isApplicable(student) && reservation.mustBeUsed() && !reservation.isExpired())
@@ -1163,32 +1165,50 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	               		}
 	           		}
 	           		if (section.getLimit() >= 0 && section.getLimit() < 1 + section.getEnrollments(getAssignment()).size()) {
-	           			hasLimit = true;
+    					if (iTweakLimits) {
+    						section.setLimit(section.getEnrollments(getAssignment()).size() + 1);
+    						section.clearReservationCache();
+    						iProgress.info("Limit of " + section.getSubpart().getConfig().getOffering().getName() + " section " + section.getSubpart().getName() + " " + section.getName() + " increased to "+section.getLimit());
+    					} else {
+    						hasLimit = true;
+    					}
 	           		}
-	           		if (enrl.getConfig().getLimit() >= 0 && enrl.getConfig().getLimit() < 1 + enrl.getConfig().getEnrollments(getAssignment()).size()) {
-	           			hasLimit = true;
-	           		}
-	           		if (enrl.getCourse() != null && enrl.getCourse().getLimit() >= 0 && enrl.getCourse().getLimit() < 1 + enrl.getCourse().getEnrollments(getAssignment()).size()) {
-	           			hasLimit = true;
-	           		}
-	           		if (!section.isEnabled())
-	           			hasDisabled = true;
+	           		if (!section.isEnabled()) hasDisabled = true;
 	           	}
-           		Reservation reservation = new ReservationOverride(--iMakeupReservationId, enrl.getOffering(), student.getId());
-           		if (hasLimit) reservation.setCanAssignOverLimit(true);
-           		if (hasOverlap) reservation.setAllowOverlap(true);
-				if (hasDisabled) reservation.setAllowDisabled(hasDisabled);
-				if (hasMustUse) { reservation.setMustBeUsed(true); reservation.setExpired(false); }
-				else { reservation.setExpired(true); }
-				Set<String> props = new TreeSet<String>();
-				if (reservation.mustBeUsed()) props.add("mustBeUsed");
-				if (reservation.isAllowOverlap()) props.add("allowOverlap");
-				if (reservation.canAssignOverLimit()) props.add("allowOverLimit");
-				if (reservation.isAllowDisabled()) props.add("allowDisabled");
-				if (reservation.isExpired()) props.add("expired");
-				iProgress.info("Created an override reservation for " + cr.getName() + " of " + student.getName() + " (" + student.getExternalId() + ") " + props);
-				for (Section section: enrl.getSections())
-					reservation.addSection(section);
+	           	if (enrl.getConfig().getLimit() >= 0 && enrl.getConfig().getLimit() < 1 + enrl.getConfig().getEnrollments(getAssignment()).size()) {
+           			if (iTweakLimits) {
+    					enrl.getConfig().setLimit(enrl.getConfig().getEnrollments(getAssignment()).size() + 1);
+    					enrl.getConfig().clearReservationCache();
+    					iProgress.info("Limit of " + enrl.getConfig().getOffering().getName() + " configuration " + enrl.getConfig().getName() + " increased to "+enrl.getConfig().getLimit());
+           			} else {
+           				hasLimit = true;
+           			}
+           		}
+           		if (enrl.getCourse() != null && enrl.getCourse().getLimit() >= 0 && enrl.getCourse().getLimit() < 1 + enrl.getCourse().getEnrollments(getAssignment()).size()) {
+           			if (iTweakLimits) {
+    					enrl.getCourse().setLimit(enrl.getCourse().getEnrollments(getAssignment()).size() + 1);
+    					iProgress.info("Limit of " + enrl.getConfig().getOffering().getName() + " course increased to " + enrl.getCourse().getLimit());
+    				} else {
+    					hasLimit = true;
+    				}
+           		}
+           		if (iAllowToKeepCurrentEnrollment) {
+               		Reservation reservation = new ReservationOverride(--iMakeupReservationId, enrl.getOffering(), student.getId());
+               		if (hasLimit) reservation.setCanAssignOverLimit(true);
+               		if (hasOverlap) reservation.setAllowOverlap(true);
+    				if (hasDisabled) reservation.setAllowDisabled(hasDisabled);
+    				if (hasMustUse) { reservation.setMustBeUsed(true); reservation.setExpired(false); }
+    				else { reservation.setExpired(true); }
+    				Set<String> props = new TreeSet<String>();
+    				if (reservation.mustBeUsed()) props.add("mustBeUsed");
+    				if (reservation.isAllowOverlap()) props.add("allowOverlap");
+    				if (reservation.canAssignOverLimit()) props.add("allowOverLimit");
+    				if (reservation.isAllowDisabled()) props.add("allowDisabled");
+    				if (reservation.isExpired()) props.add("expired");
+    				iProgress.info("Created an override reservation for " + cr.getName() + " of " + student.getName() + " (" + student.getExternalId() + ") " + props);
+    				for (Section section: enrl.getSections())
+    					reservation.addSection(section);
+           		}
 				enrl.guessReservation(getAssignment(), true);
 				if (r.getModel().conflictValues(getAssignment(), enrl).isEmpty()) {
 	    			getAssignment().assign(0, enrl);
@@ -1200,6 +1220,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
            	boolean hasLimit = false, hasOverlap = false;
            	for (Iterator<Section> i = enrl.getSections().iterator(); i.hasNext();) {
            		Section section = i.next();
+           		iProgress.info("  " + section.getSubpart().getName() + " " + section.getName() + (section.getTime() == null ? "" : " " + section.getTime().getLongName(iUseAmPm)));
            		if (section.getTime() != null) {
                		for (Request q: student.getRequests()) {
                			Enrollment enrlx = getAssignment().getValue(q);
@@ -1208,8 +1229,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                				Section sectionx = j.next();
                				if (sectionx.getTime() == null) continue;
                				if (sectionx.isOverlapping(section)) {
-               					iProgress.info("  " + section.getSubpart().getName() + " " + section.getName() + " " + section.getTime().getLongName(iUseAmPm) +
-               							" overlaps with " + sectionx.getSubpart().getConfig().getOffering().getName() + " " + sectionx.getSubpart().getName() + " " +
+               					iProgress.info("    overlaps with " + sectionx.getSubpart().getConfig().getOffering().getName() + " " + sectionx.getSubpart().getName() + " " +
                							sectionx.getName() + " " + sectionx.getTime().getLongName(iUseAmPm));
                					hasOverlap = true;
                				}
@@ -1217,48 +1237,32 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                		}
            		}
            		if (section.getLimit() >= 0 && section.getLimit() < 1 + section.getEnrollments(getAssignment()).size()) {
-    					iProgress.info("  " + section.getSubpart().getName() + " " + section.getName() + (section.getTime() == null ? "" : " " + section.getTime().getLongName(iUseAmPm)) +
-    							" has no space available (limit is "+ section.getLimit() + ")");
-    					if (iTweakLimits) {
-    						section.setLimit(section.getEnrollments(getAssignment()).size() + 1);
-    						section.clearReservationCache();
-    						iProgress.info("    limit increased to "+section.getLimit());
-    					}
+           			iProgress.info("    has no space available (limit is "+ section.getLimit() + ")");
            			hasLimit = true;
            		}
-    				iProgress.info("  " + section.getSubpart().getName() + " " + section.getName() + (section.getTime() == null ? "" : " " + section.getTime().getLongName(iUseAmPm)));
            	}
            	if (enrl.getConfig().getLimit() >= 0 && enrl.getConfig().getLimit() < 1 + enrl.getConfig().getEnrollments(getAssignment()).size()) {
-    				iProgress.info("  config " + enrl.getConfig().getName() + " has no space available (limit is "+ enrl.getConfig().getLimit() + ")");
-    				if (iTweakLimits) {
-    					enrl.getConfig().setLimit(enrl.getConfig().getEnrollments(getAssignment()).size() + 1);
-    					enrl.getConfig().clearReservationCache();
-    					iProgress.info("    limit increased to "+enrl.getConfig().getLimit());
-    				}
+           		iProgress.info("  config " + enrl.getConfig().getName() + " has no space available (limit is "+ enrl.getConfig().getLimit() + ")");
        			hasLimit = true;
            	}
            	if (enrl.getCourse() != null && enrl.getCourse().getLimit() >= 0 && enrl.getCourse().getLimit() < 1 + enrl.getCourse().getEnrollments(getAssignment()).size()) {
-    				iProgress.info("  course " + enrl.getCourse().getName() + " has no space available (limit is "+ enrl.getCourse().getLimit() + ")");
-    				if (iTweakLimits) {
-    					enrl.getCourse().setLimit(enrl.getCourse().getEnrollments(getAssignment()).size() + 1);
-    					iProgress.info("    limit increased to "+enrl.getCourse().getLimit());
-    				}
+           		iProgress.info("  course " + enrl.getCourse().getName() + " has no space available (limit is "+ enrl.getCourse().getLimit() + ")");
        			hasLimit = true;
            	}
            	if (!hasLimit && !hasOverlap) {
-           		for (Iterator<Enrollment> i = r.getModel().conflictValues(getAssignment(), r.getInitialAssignment()).iterator(); i.hasNext();) {
-           			Enrollment enrlx = i.next();
-           			for (Iterator<Section> j = enrlx.getSections().iterator(); j.hasNext();) {
-           				Section sectionx = j.next();
-           				iProgress.info("    conflicts with " + sectionx.getSubpart().getConfig().getOffering().getName() + " " + sectionx.getSubpart().getName() + " " +
-       							sectionx.getName() + (sectionx.getTime() == null ? "" : " " + sectionx.getTime().getLongName(iUseAmPm)));
-           			}
-       				if (enrlx.getRequest().getStudent().getId() != student.getId())
-       					iProgress.info("    of a different student");
+           		for (Map.Entry<Constraint<Request, Enrollment>, Set<Enrollment>> e: r.getModel().conflictConstraints(getAssignment(), r.getInitialAssignment()).entrySet()) {
+           			for (Iterator<Enrollment> i = e.getValue().iterator(); i.hasNext();) {
+               			Enrollment enrlx = i.next();
+               			for (Iterator<Section> j = enrlx.getSections().iterator(); j.hasNext();) {
+               				Section sectionx = j.next();
+               				iProgress.info("    conflicts with " + sectionx.getSubpart().getConfig().getOffering().getName() + " " + sectionx.getSubpart().getName() + " " +
+           							sectionx.getName() + (sectionx.getTime() == null ? "" : " " + sectionx.getTime().getLongName(iUseAmPm)) +
+           							" due to " + e.getKey().getClass().getSimpleName());
+               			}
+           				if (enrlx.getRequest().getStudent().getId() != student.getId())
+           					iProgress.info("    of a different student (" + enrlx.getRequest().getStudent().getExternalId() + ")");
+               		}
            		}
-           	}
-           	if (hasLimit && !hasOverlap && iTweakLimits && r.getModel().conflictValues(getAssignment(), r.getInitialAssignment()).isEmpty()) {
-           		getAssignment().assign(0, r.getInitialAssignment());
            	}
     	}
     }
