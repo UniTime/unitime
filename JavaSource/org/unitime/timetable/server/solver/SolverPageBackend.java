@@ -126,7 +126,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 		SolverService<? extends CommonSolverInterface> service = getSolverService(request.getType());
 		CommonSolverInterface solver = executeOperation(context, service, request, response);
 		
-		fillHosts(context, request, response);
+		fillHosts(context, solver, request, response);
 		fillOwners(context, request, response);
 		fillParameters(context, request, response);
 		fillSolverInfos(context, solver, request, response);
@@ -303,7 +303,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 		return solver;
 	}
 	
-	protected void fillHosts(SessionContext context, SolverPageRequest request, SolverPageResponse response) {
+	protected void fillHosts(SessionContext context, CommonSolverInterface solver, SolverPageRequest request, SolverPageResponse response) {
 		if (context.hasPermission(Right.CanSelectSolverServer)) {
 			for (SolverServer server: solverServerService.getServers(true))
 				response.addHost(server.getHost());
@@ -312,6 +312,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 			if (ApplicationProperty.SolverLocalEnabled.isTrue() && (!response.hasHosts() || !response.getHosts().contains("local")))
 				response.addHost(0, "local");
 			response.addHost(0, "auto");
+			if (solver != null) response.setHost(solver.getHost());
 		}
 	}
 	
