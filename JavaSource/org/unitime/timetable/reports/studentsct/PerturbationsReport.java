@@ -188,6 +188,7 @@ public class PerturbationsReport implements StudentSectioningReport {
         	            	line.add(new CSVFile.CSVField(""));
         	            	line.add(new CSVFile.CSVField(""));
         	            	line.add(new CSVFile.CSVField(""));
+        	            	line.add(new CSVFile.CSVField(""));
         	            }
         	            if (sct != null) {
         	            	line.add(new CSVFile.CSVField(sct.getSubpart().getName() + " " + sct.getName(i.getCourse().getId())));
