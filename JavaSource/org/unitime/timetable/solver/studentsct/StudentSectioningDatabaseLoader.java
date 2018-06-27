@@ -1263,6 +1263,31 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     	}
     }
     
+    public void moveAssignedRequestsFirst(Student student) {
+    	int assigned = 0;
+    	for (Request r: student.getRequests()) {
+    		if (r instanceof CourseRequest) {
+    			if (r.getInitialAssignment() != null && getAssignment().getValue(r) != null)
+    				assigned ++;
+    		}
+    	}
+    	if (assigned > 0) {
+			Collections.sort(student.getRequests(), new Comparator<Request>() {
+				@Override
+				public int compare(Request r1, Request r2) {
+					if (r1.isAlternative() != r2.isAlternative()) return r1.isAlternative() ? 1 : -1;
+					boolean a1 = (r1 instanceof CourseRequest && r1.getInitialAssignment() != null && getAssignment().getValue(r1) != null);
+					boolean a2 = (r2 instanceof CourseRequest && r2.getInitialAssignment() != null && getAssignment().getValue(r2) != null);
+					if (a1 != a2) return a1 ? -1 : 1;
+					return r1.getPriority() < r2.getPriority() ? -1 : 1;
+				}
+			});
+			int p = 0;
+			for (Request r: student.getRequests())
+				r.setPriority(p++);
+		}
+    }
+    
     private String curriculum(Student student) {
     	if (!student.getAreaClassificationMajors().isEmpty()) {
     		AreaClassificationMajor acm = student.getAreaClassificationMajors().get(0);
@@ -1881,6 +1906,14 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         for (Student student: getModel().getStudents()) {
         	incProgress();
         	checkForConflicts(student);
+        }
+        
+        if (getModel().isMPP() && getModel().getKeepInitialAssignments()) {
+        	setPhase("Moving assigned requests first...", getModel().getStudents().size());
+            for (Student student: getModel().getStudents()) {
+            	incProgress();
+            	moveAssignedRequestsFirst(student);
+            }
         }
         
         if (iStudentCourseDemands != null) {
