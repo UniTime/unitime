@@ -253,7 +253,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
                 for (Section s: enrollment.getSections()) {
                     Section section = cr.getSection(s.getId());
                     if (section == null) {
-                        iProgress.warn("WARNING: Section "+s.getName()+" is not available for "+cr.getName());
+                        iProgress.warn("Section "+s.getName()+" is not available for "+cr.getName());
                         return null;
                     }
                     sections.add(section);
@@ -262,23 +262,29 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
             }
         }
         
-        private void assign(Enrollment enrollment) {
+        private void assign(Enrollment enrollment, boolean warn) {
         	if (!enrollment.getStudent().isAvailable(enrollment)) {
-        		iProgress.warn("Unable to assign "+enrollment.variable().getName()+" := "+enrollment.getName() + " (student not available)");
+        		if (warn)
+        			iProgress.warn("There is a problem assigning " + enrollment.getName() + " to " + enrollment.getStudent().getName() + " (" + enrollment.getStudent().getExternalId() + "): Student not available.");
+        		else
+        			iProgress.info("There is a problem assigning " + enrollment.getName() + " to " + enrollment.getStudent().getName() + " (" + enrollment.getStudent().getExternalId() + "): Student not available.");
         		return;
         	}
         	Map<Constraint<Request, Enrollment>, Set<Enrollment>> conflictConstraints = currentSolution().getModel().conflictConstraints(currentSolution().getAssignment(), enrollment);
             if (conflictConstraints.isEmpty()) {
             	currentSolution().getAssignment().assign(0, enrollment);
             } else {
-                iProgress.warn("Unable to assign "+enrollment.variable().getName()+" := "+enrollment.getName());
-                iProgress.warn("&nbsp;&nbsp;Reason:");
+            	if (warn)
+            		iProgress.warn("There is a problem assigning " + enrollment.getName() + " to " + enrollment.getStudent().getName() + " (" + enrollment.getStudent().getExternalId() + ")");
+            	else
+            		iProgress.info("There is a problem assigning " + enrollment.getName() + " to " + enrollment.getStudent().getName() + " (" + enrollment.getStudent().getExternalId() + ")");
                 for (Constraint<Request, Enrollment> c: conflictConstraints.keySet()) {
                 	Set<Enrollment> vals = conflictConstraints.get(c);
                     for (Enrollment enrl: vals) {
-                        iProgress.warn("&nbsp;&nbsp;&nbsp;&nbsp;"+enrl.getRequest().getName()+" = "+enrl.getName());
+                    	iProgress.info("    conflicts with " + enrl.getName() +
+                    			(enrl.getRequest().getStudent().getId() != enrollment.getStudent().getId() ? " of a different student (" + enrl.getRequest().getStudent().getExternalId() + ")" : "") +
+                    			" due to " + c.getClass().getSimpleName());
                     }
-                    iProgress.debug("&nbsp;&nbsp;&nbsp;&nbsp;in constraint "+c);
                 }
             }
         }
@@ -313,7 +319,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
                 		Request request = r.get(e2.getKey());
                 		if (request == null) continue;
                 		Enrollment enrollment = getEnrollment(request, e2.getValue());
-                        if (enrollment!=null) assign(enrollment);
+                        if (enrollment!=null) assign(enrollment, false);
                 	}
                 }
                 currentSolution().saveBest();
@@ -343,7 +349,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
                 		Request request = r.get(e2.getKey());
                 		if (request == null) continue;
                 		Enrollment enrollment = getEnrollment(request, e2.getValue());
-                        if (enrollment!=null) assign(enrollment);
+                        if (enrollment!=null) assign(enrollment, true);
                 	}
                 }
             }
