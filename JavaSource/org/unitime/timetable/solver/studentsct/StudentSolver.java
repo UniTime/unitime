@@ -647,11 +647,12 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	@Override
 	public Collection<XCourseRequest> getRequests(Long offeringId) {
 		List<XCourseRequest> ret = new ArrayList<XCourseRequest>();
+		Set<Long> reqIds = new HashSet<Long>();
 		for (Offering offering: ((StudentSectioningModel)currentSolution().getModel()).getOfferings())
 			if (offering.getId() == offeringId) {
 				for (Course course: offering.getCourses())
 					for (CourseRequest req: course.getRequests()) {
-						if (!req.getStudent().isDummy())
+						if (!req.getStudent().isDummy() && reqIds.add(req.getId()))
 							ret.add(new XCourseRequest(req, currentSolution().getAssignment().getValue(req)));
 					}
 				break;
