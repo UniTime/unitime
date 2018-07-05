@@ -98,6 +98,10 @@ public abstract class DatabaseUpdate {
             Element dialectElement = (Element)i.next();
             if (dialect.equals(dialectElement.getTextTrim())) iDialectSQL = dialectElement.attributeValue("type");
         }
+        if (iDialectSQL == null) {
+        	sLog.warn("Dialect " + dialect + " not recognized, falling back to mysql.");
+        	iDialectSQL = "mysql";
+        }
         for (Iterator i=iRoot.elementIterator("update");i.hasNext();) {
             Element updateElement = (Element)i.next();
             int updateVersion = Integer.parseInt(updateElement.attributeValue("version"));
