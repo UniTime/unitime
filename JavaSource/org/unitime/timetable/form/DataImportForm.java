@@ -42,7 +42,7 @@ import org.apache.struts.upload.FormFile;
  */
 public class DataImportForm extends ActionForm {
 	private static final long serialVersionUID = 7165669008085313647L;
-	private FormFile iFile;
+	private transient FormFile iFile;
 	private String iOp;
 	private String iExport;
     private boolean iEmail = false;
