@@ -320,7 +320,10 @@ public class TimetableDatabaseSaver extends TimetableSaver {
         		solution.setCommitDate(null);
         		solution.setCreated(new Timestamp((new Date()).getTime()));
         		solution.setCreator(Test.getVersionString());
-        		solution.setNote(getModel().getProperties().getProperty("General.Note"));
+        		String note = getModel().getProperties().getProperty("General.Note");
+   				if (note != null && note.length() > 1000)
+   					note = note.substring(0,1000);
+        		solution.setNote(note);
         		solution.setOwner(solverGroup);
         		solverGroup.getSolutions().add(solution);
         		solution.setValid(Boolean.TRUE);

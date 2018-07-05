@@ -144,7 +144,12 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
             				}
             			}
             			touchedSolutionSet.add(solution);
-            			if (context.hasPermission(solution, Right.TimetablesSolutionChangeNote)) solution.setNote(request.getNote());
+            			if (context.hasPermission(solution, Right.TimetablesSolutionChangeNote)) {
+            				String note = request.getNote();
+    	       				if (note != null && note.length() > 1000)
+    	       					note = note.substring(0,1000);
+    	       				solution.setNote(note);
+            			}
             			response.setSuccess(solution.commitSolution(response.getErrors(), hibSession, context.getUser().getExternalUserId()));
             			hibSession.update(solution);
             	    	String className = ApplicationProperty.ExternalActionSolutionCommit.value();
@@ -164,7 +169,12 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
 						Solution solution = SolutionDAO.getInstance().get(solutionId, hibSession);
 						context.checkPermission(solution.getOwner(), Right.TimetablesSolutionCommit);
 						ids.add(solutionId);
-						if (context.hasPermission(solution, Right.TimetablesSolutionChangeNote)) solution.setNote(request.getNote());
+						if (context.hasPermission(solution, Right.TimetablesSolutionChangeNote)) {
+							String note = request.getNote();
+    	       				if (note != null && note.length() > 1000)
+    	       					note = note.substring(0,1000);
+    	       				solution.setNote(note);
+						}
 						solution.uncommitSolution(hibSession, context.getUser().getExternalUserId());
             			String className = ApplicationProperty.ExternalActionSolutionCommit.value();
             			if (className != null && !className.isEmpty()) {

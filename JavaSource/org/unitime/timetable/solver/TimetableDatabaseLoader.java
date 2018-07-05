@@ -2618,11 +2618,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         			return;
         		}
        			iProgress.debug("solution["+(i+1)+"] version: "+solution.getUniqueId()+" (created "+solution.getCreated()+", solver group "+solution.getOwner().getName()+")");
-       			if (solution.getNote()!=null) {
+       			if (solution.getNote() != null && !note.contains(solution.getNote())) {
         			if (note.length()>0) note += "\n";
         			note += solution.getNote();
         		}
         		solutions.put(solution.getOwner().getUniqueId(),solution);
+        		if (note.length() > 1000) note = note.substring(0,1000);
         	}
         	getModel().getProperties().setProperty("General.Note",note);
             String solutionIdStr = "";
