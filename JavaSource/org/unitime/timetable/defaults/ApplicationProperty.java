@@ -2445,6 +2445,11 @@ public enum ApplicationProperty {
 	@DefaultValue("1")
 	@Description("Task Scheduler: task execution service check interval in minutes")
 	TaskSchedulerCheckIntervalInMinutes("unitime.taskScheduler.checkIntervalInMinutes"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Task Scheduler: is task scheduler enabled (set to false to disable automatic task execution)")
+	TaskSchedulerEnabled("unitime.taskScheduler.enabled"),
 	;
 
 	String iKey;

@@ -144,7 +144,7 @@ public class TaskExecutorService implements InitializingBean, DisposableBean {
 		}
 		
 		protected boolean isEnabled() {
-			return iActive && solverServerService.getLocalServer() != null && solverServerService.getLocalServer().isActive() && solverServerService.getLocalServer().isLocalCoordinator();
+			return iActive && ApplicationProperty.TaskSchedulerEnabled.isTrue() && solverServerService.getLocalServer() != null && solverServerService.getLocalServer().isActive() && solverServerService.getLocalServer().isLocalCoordinator();
 		}
 		
 		@Override
