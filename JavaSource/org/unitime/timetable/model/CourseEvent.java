@@ -83,6 +83,7 @@ public class CourseEvent extends BaseCourseEvent {
 	}
 	
 	public Session getSession() {
+		if (getRelatedCourses() == null) return null;
 		for (RelatedCourseInfo rc: getRelatedCourses())
 			return rc.getCourse().getInstructionalOffering().getSession();
 		return null;
