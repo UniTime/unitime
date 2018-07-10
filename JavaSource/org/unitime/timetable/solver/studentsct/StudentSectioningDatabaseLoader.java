@@ -1766,36 +1766,6 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             if (offering!=null) getModel().addOffering(offering);
         }
         
-        List<DistributionPref> distPrefs = hibSession.createQuery(
-        		"select p from DistributionPref p, Department d where p.distributionType.reference in (:ref1, :ref2) and d.session.uniqueId = :sessionId" +
-        		" and p.owner = d and p.prefLevel.prefProlog = :pref")
-        		.setString("ref1", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference())
-        		.setString("ref2", IgnoreStudentConflictsConstraint.REFERENCE)
-        		.setString("pref", PreferenceLevel.sRequired)
-        		.setLong("sessionId", iSessionId)
-        		.list();
-        if (!distPrefs.isEmpty()) {
-        	setPhase("Loading distribution preferences...", distPrefs.size());
-        	SectionProvider p = new SectionProvider() {
-				@Override
-				public Section get(Long classId) {
-					return classTable.get(classId);
-				}
-			};
-        	for (DistributionPref pref: distPrefs) {
-        		incProgress();
-        		for (Collection<Section> sections: getSections(pref, p)) {
-        			if (GroupConstraint.ConstraintType.LINKED_SECTIONS.reference().equals(pref.getDistributionType().getReference())) {
-        				getModel().addLinkedSections(iLinkedClassesMustBeUsed, sections);
-        			} else {
-        				for (Section s1: sections)
-                			for (Section s2: sections)
-                				if (!s1.equals(s2)) s1.addIgnoreConflictWith(s2.getId());
-        			}
-        		}
-        	}
-        }
-        
         Map<String, Student> ext2student = new HashMap<String, Student>();
         if (iIncludeCourseDemands || iProjections) {
             List students = hibSession.createQuery(
@@ -1897,6 +1867,36 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         			}
         		}
         		
+        	}
+        }
+        
+        List<DistributionPref> distPrefs = hibSession.createQuery(
+        		"select p from DistributionPref p, Department d where p.distributionType.reference in (:ref1, :ref2) and d.session.uniqueId = :sessionId" +
+        		" and p.owner = d and p.prefLevel.prefProlog = :pref")
+        		.setString("ref1", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference())
+        		.setString("ref2", IgnoreStudentConflictsConstraint.REFERENCE)
+        		.setString("pref", PreferenceLevel.sRequired)
+        		.setLong("sessionId", iSessionId)
+        		.list();
+        if (!distPrefs.isEmpty()) {
+        	setPhase("Loading distribution preferences...", distPrefs.size());
+        	SectionProvider p = new SectionProvider() {
+				@Override
+				public Section get(Long classId) {
+					return classTable.get(classId);
+				}
+			};
+        	for (DistributionPref pref: distPrefs) {
+        		incProgress();
+        		for (Collection<Section> sections: getSections(pref, p)) {
+        			if (GroupConstraint.ConstraintType.LINKED_SECTIONS.reference().equals(pref.getDistributionType().getReference())) {
+        				getModel().addLinkedSections(iLinkedClassesMustBeUsed, sections);
+        			} else {
+        				for (Section s1: sections)
+                			for (Section s2: sections)
+                				if (!s1.equals(s2)) s1.addIgnoreConflictWith(s2.getId());
+        			}
+        		}
         	}
         }
         
