@@ -21,6 +21,7 @@ package org.unitime.timetable.server.solver;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -88,24 +89,26 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 			model.setNameColor(PreferenceLevel.prolog2color(PreferenceLevel.sStronglyDiscouraged));
 		
 		Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
-
-		if (context.getFirstDay() < 0) {
-			Vector placements = new Vector();
-			for (Lecture lecture: room.variables()) {
-				Placement placement = assignment.getValue(lecture);
-				if (placement == null) continue;
-				if (placement.hasRoomLocation(model.getResourceId()))
-					placements.add(placement);
+		List<Placement> assignments = new ArrayList<Placement>();
+		BitSet week = null;
+		if (context.getFirstDay() >= 0) {
+			week = new BitSet();
+			for (int i = 0; i < 7; i++) {
+				int d = context.getFirstDay() + i - context.getWeekOffset();
+				if (d >= 0)
+					week.set(d);
 			}
-			createCells(model, solver, placements, context, false);
-		} else {
-			if (context.getWeekOffset() == 0) {
-				createCells(model, solver, room.getResourceOfWeek(assignment, context.getFirstDay()), context, 0, Constants.DAY_CODES.length);
-			} else {
-				createCells(model, solver, room.getResourceOfWeek(assignment, context.getFirstDay() - context.getWeekOffset()), context, context.getWeekOffset(), Constants.DAY_CODES.length);
-				createCells(model, solver, room.getResourceOfWeek(assignment, context.getFirstDay() - context.getWeekOffset() + 7), context, 0, context.getWeekOffset());
+			week = null;
+		}
+		for (Lecture lecture: room.variables()) {
+			Placement placement = assignment.getValue(lecture);
+			if (placement == null) continue;
+			if (placement.hasRoomLocation(model.getResourceId())) {
+				if (week == null || placement.getTimeLocation().shareWeeks(week))
+					assignments.add(placement);
 			}
 		}
+		createCells(model, solver, assignments, context, false);
 		
 		Set<Long> deptIds = new HashSet<Long>();
 		String deptIdsStr = solver.getProperties().getProperty("General.DepartmentIds");
@@ -163,7 +166,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 					List<Placement> placements = room.getAvailableArray()[i * Constants.SLOTS_PER_DAY + j];
 					if (placements!=null && !placements.isEmpty()) {
 				        for (Placement p: placements) {
-				        	if ((context.isShowEvents() || p.getAssignmentId() != null) && done.add(p))
+				        	if ((context.isShowEvents() || p.getAssignmentId() != null) && done.add(p) && (week == null || p.getTimeLocation().shareWeeks(week)))
 				        		createCells(model, solver, p, context, true);
 				        }
 				    }
@@ -183,25 +186,27 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
     	model.setFirstDate(context.getFirstDate());
     	
     	Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
-    	if (context.getFirstDay() < 0) {
-			List<Placement> placements = new ArrayList<Placement>();
-			for (Lecture lecture: instructor.variables()) {
-				Placement placement = assignment.getValue(lecture);
-				if (placement != null)
-					placements.add(placement);
-			}
-			createCells(model, solver, placements, context, false);
-		} else {
-			if (context.getWeekOffset() == 0) {
-				createCells(model, solver, instructor.getContext(assignment).getResourceOfWeek(context.getFirstDay()), context, 0, Constants.DAY_CODES.length);
-			} else {
-				createCells(model, solver, instructor.getContext(assignment).getResourceOfWeek(context.getFirstDay() - context.getWeekOffset()), context, context.getWeekOffset(), Constants.DAY_CODES.length);
-				createCells(model, solver, instructor.getContext(assignment).getResourceOfWeek(context.getFirstDay() - context.getWeekOffset() + 7), context, 0, context.getWeekOffset());
+    	List<Placement> assignments = new ArrayList<Placement>();
+		BitSet week = null;
+		if (context.getFirstDay() >= 0) {
+			week = new BitSet();
+			for (int i = 0; i < 7; i++) {
+				int d = context.getFirstDay() + i - context.getWeekOffset();
+				if (d >= 0)
+					week.set(d);
 			}
 		}
+		for (Lecture lecture: instructor.variables()) {
+			Placement placement = assignment.getValue(lecture);
+			if (placement == null) continue;
+			if (week == null || placement.getTimeLocation().shareWeeks(week))
+				assignments.add(placement);
+		}
+    	createCells(model, solver, assignments, context, false);
+
 		if (instructor.getUnavailabilities() != null) {
 			for (Placement p: instructor.getUnavailabilities()) {
-				if (context.isShowEvents() || p.getAssignmentId() != null)
+				if ((context.isShowEvents() || p.getAssignmentId() != null) && (week == null || p.getTimeLocation().shareWeeks(week)))
 					createCells(model, solver, p, context, true);
 			}
 		}
@@ -209,7 +214,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 			if (instructor.equals(student.getInstructor())) {
 				for (Lecture lecture: student.getLectures()) {
 					Placement placement = assignment.getValue(lecture);
-					if (placement != null && !instructor.variables().contains(lecture)) {
+					if (placement != null && !instructor.variables().contains(lecture) && (week == null || placement.getTimeLocation().shareWeeks(week))) {
 						for (TimetableGridCell cell: createCells(model, solver, placement, context, false)) {
 							cell.setItalics(true);
 						}
