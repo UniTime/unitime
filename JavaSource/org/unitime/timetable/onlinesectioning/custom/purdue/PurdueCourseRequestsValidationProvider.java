@@ -984,7 +984,6 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						if (course == null) continue;
 						String subject = course.getSubjectArea();
 						String courseNbr = course.getCourseNumber();
-						overrides.remove(subject + " " + courseNbr);
 						List<ChangeError> errors = new ArrayList<ChangeError>();
 						for (CourseMessage m: request.getConfirmations()) {
 							if ("CREDIT".equals(m.getCode())) continue;
@@ -1005,7 +1004,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							ch.errors = errors;
 							ch.operation = "ADD";
 							req.changes.add(ch);
-							
+							overrides.remove(subject + " " + courseNbr);
 						}
 					}
 				}
@@ -1018,7 +1017,6 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						if (course == null) continue;
 						String subject = course.getSubjectArea();
 						String courseNbr = course.getCourseNumber();
-						overrides.remove(subject + " " + courseNbr);
 						List<ChangeError> errors = new ArrayList<ChangeError>();
 						for (CourseMessage m: request.getConfirmations()) {
 							if ("CREDIT".equals(m.getCode())) continue;
@@ -1039,6 +1037,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							ch.errors = errors;
 							ch.operation = "ADD";
 							req.changes.add(ch);
+							overrides.remove(subject + " " + courseNbr);
 						}
 					}
 				}
@@ -2121,7 +2120,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 								}
 							}
 				}
-				if (cr.getOverrideExternalId() != null) {
+				if (cr.getOverrideExternalId() != null || cr.getOverrideStatus() != null) {
 					cr.setOverrideExternalId(null);
 					cr.setOverrideStatus(null);
 					cr.setOverrideTimeStamp(null);
@@ -2155,7 +2154,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					break;
 				}
 			}
-		} else if (student.getOverrideExternalId() != null) {
+		} else if (student.getOverrideExternalId() != null || student.getOverrideMaxCredit() != null) {
 			student.setOverrideExternalId(null);
 			student.setOverrideMaxCredit(null);
 			student.setOverrideStatus(null);

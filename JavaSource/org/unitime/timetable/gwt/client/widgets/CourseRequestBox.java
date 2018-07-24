@@ -285,6 +285,8 @@ public class CourseRequestBox extends P implements CourseSelection {
 			if (iLastCourse != null && iLastCourse.isCourse() && iLastCourse.hasCourseId() && courseName.equalsIgnoreCase(iLastCourse.getCourseName())) {
 				ret.setStatus(iLastCourse.getStatus());
 				ret.setStatusNote(iLastCourse.getStatusNote());
+				ret.setOverrideExternalId(iLastCourse.getOverrideExternalId());
+				ret.setOverrideTimeStamp(iLastCourse.getOverrideTimeStamp());
 			} else
 				ret.setStatus(RequestedCourseStatus.NEW_REQUEST);
 		} else if (iLastCourse != null && iLastCourse.isCourse() && iLastCourse.hasCourseId() && courseName.equalsIgnoreCase(iLastCourse.getCourseName())) {
@@ -293,6 +295,8 @@ public class CourseRequestBox extends P implements CourseSelection {
 			ret.setCourseTitle(iLastCourse.getCourseTitle());
 			ret.setCredit(iLastCourse.getCredit());
 			ret.setStatus(iLastCourse.getStatus());
+			ret.setOverrideExternalId(iLastCourse.getOverrideExternalId());
+			ret.setOverrideTimeStamp(iLastCourse.getOverrideTimeStamp());
 			ret.setStatusNote(iLastCourse.getStatusNote());
 		} else if (iFreeTimeParser != null) {
 			try {
