@@ -2343,7 +2343,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							@Override
 							public void onSuccess(ClassAssignmentInterface result) {
 								clearMessage();
-								iCourseRequests.addCourse(event.getSelectedItem());
+								if (!iCourseRequests.hasCourse(event.getSelectedItem()))
+									iCourseRequests.addCourse(event.getSelectedItem());
 								fillIn(result);
 								addHistory();
 								iQuickAddFinder.setValue(null, true);
