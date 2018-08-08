@@ -235,6 +235,18 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			return SpecialRegistrationStatus.Pending;
 	}
 	
+	protected SpecialRegistrationStatus combine(SpecialRegistrationStatus s1, SpecialRegistrationStatus s2) {
+		if (s1 == null) return s2;
+		if (s2 == null) return s1;
+		if (s1 == s2) return s1;
+		if (s1 == SpecialRegistrationStatus.Draft || s2 == SpecialRegistrationStatus.Draft) return SpecialRegistrationStatus.Draft;
+		if (s1 == SpecialRegistrationStatus.Pending || s2 == SpecialRegistrationStatus.Pending) return SpecialRegistrationStatus.Pending;
+		if (s1 == SpecialRegistrationStatus.Cancelled || s2 == SpecialRegistrationStatus.Cancelled) return SpecialRegistrationStatus.Cancelled;
+		if (s1 == SpecialRegistrationStatus.Rejected || s2 == SpecialRegistrationStatus.Rejected) return SpecialRegistrationStatus.Rejected;
+		if (s1 == SpecialRegistrationStatus.Approved || s2 == SpecialRegistrationStatus.Approved) return SpecialRegistrationStatus.Approved;
+		return s1;
+	}
+	
 	protected boolean canCancel(String status) {
 		return true;
 	}
@@ -662,7 +674,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			
 			helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
 			
-			SpecialRegistrationResponse response = (SpecialRegistrationResponse)new GsonRepresentation<SpecialRegistrationResponse>(resource.getResponseEntity(), SpecialRegistrationResponse.class).getObject();
+			SpecialRegistrationResponseList response = (SpecialRegistrationResponseList)new GsonRepresentation<SpecialRegistrationResponseList>(resource.getResponseEntity(), SpecialRegistrationResponseList.class).getObject();
 			if (helper.isDebugEnabled())
 				helper.debug("Response: " + gson.toJson(response));
 			helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(response));
@@ -670,8 +682,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			SubmitSpecialRegistrationResponse ret = new SubmitSpecialRegistrationResponse();
 			ret.setMessage(response.message);
 			ret.setSuccess(ResponseStatus.success.name().equals(response.status));
-			if (response.data != null) {
-				ret.setStatus(getStatus(response.data.status));
+			if (response.data != null && !response.data.isEmpty()) {
+				ret.setStatus(getStatus(response.data.get(0).status));
 			} else {
 				ret.setSuccess(false);
 			}
@@ -981,33 +993,39 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 	}
 	
 	protected RetrieveSpecialRegistrationResponse convert(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, SpecialRegistrationRequest specialRequest) {
+		if (specialRequest.changes != null)
+			for (Change change: specialRequest.changes)
+				if (RequestStatus.cancelled.name().equals(change.status)) return null;
 		RetrieveSpecialRegistrationResponse ret = new RetrieveSpecialRegistrationResponse();
-		Map<CourseOffering, List<Class_>> adds = new HashMap<CourseOffering, List<Class_>>();
-		Map<CourseOffering, List<Class_>> drops = new HashMap<CourseOffering, List<Class_>>();
+		Map<CourseOffering, Set<Class_>> adds = new HashMap<CourseOffering, Set<Class_>>();
+		Map<CourseOffering, Set<Class_>> drops = new HashMap<CourseOffering, Set<Class_>>();
 		Set<Long> pinned = new HashSet<Long>();
 		Set<ErrorMessage> errors = new TreeSet<ErrorMessage>();
 		TreeSet<CourseOffering> courses = new TreeSet<CourseOffering>();
+		SpecialRegistrationStatus status = null;
 		if (specialRequest.changes != null)
 			for (Change change: specialRequest.changes) {
 				CourseOffering course = findCourseByExternalId(server.getAcademicSession().getUniqueId(), change.crn);
 				List<Class_> classes = findClassesByExternalId(server.getAcademicSession().getUniqueId(), change.crn);
 				if (course != null && classes != null && !classes.isEmpty()) {
 					courses.add(course);
-					List<Class_> list = (!ChangeOperation.DROP.name().equals(change.operation) ? adds : drops).get(course);
+					Set<Class_> list = (!ChangeOperation.DROP.name().equals(change.operation) ? adds : drops).get(course);
 					if (list == null) {
-						list = new ArrayList<Class_>();
+						list = new HashSet<Class_>();
 						 (!ChangeOperation.DROP.name().equals(change.operation) ? adds : drops).put(course, list);
 					}
-					for (Class_ clazz: classes)
+					for (Class_ clazz: classes) {
 						list.add(clazz);
+					}
 					if (change.errors != null)
 						for (ChangeError err: change.errors)
 							for (Class_ clazz: classes) {
-								errors.add(new ErrorMessage(course.getCourseName(), clazz.getExternalId(course), err.code, err.message));
+								errors.add(new ErrorMessage(course.getCourseName(), clazz.getExternalId(course), err.code, err.message + (change.status == null || change.status.isEmpty() ? "" : " (" + change.status + ")")));
 								pinned.add(clazz.getUniqueId());
 							}
-								
 				}
+				if (change.status != null)
+					status = combine(status, getStatus(change.status));
 			}
 		String desc = "";
 		NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
@@ -1172,6 +1190,14 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				}
 			}
 		}
+		if (desc.isEmpty() && specialRequest.maxCredit != null) {
+			for (Change change: specialRequest.changes) {
+				if (change.crn == null && change.overrides != null)
+					for (SpecialRegistrationInterface.Override o: change.overrides)
+						if (o.message != null && !o.message.isEmpty())
+							desc += (desc.isEmpty() ? "" : "\n") + o.message + (change.status == null || change.status.isEmpty() ? "" : " (" + change.status + ")");
+			}
+		}
 		
 		/*
 		List<XRequest> requests = getRequests(server, helper, student, adds, drops);
@@ -1199,7 +1225,12 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		ret.setRequestId(specialRequest.requestId);
 		ret.setSubmitDate(specialRequest.dateCreated == null ? null : specialRequest.dateCreated.toDate());
 		ret.setNote(specialRequest.notes);
-		ret.setStatus(getStatus(specialRequest.status));
+		if (specialRequest.status != null)
+			ret.setStatus(getStatus(specialRequest.status));
+		else if (status != null)
+			ret.setStatus(status);
+		else
+			ret.setStatus(SpecialRegistrationStatus.Pending);
 		ret.setCanCancel(canCancel(specialRequest.status));
 		return ret;
 	}
@@ -1243,9 +1274,14 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					throw new SectioningException(response.message);
 			}
 			
-			RetrieveSpecialRegistrationResponse ret = new RetrieveSpecialRegistrationResponse();
-			ret.setStatus(getStatus(response.status));
-			ret.setDescription(response.message != null && !response.message.isEmpty() ? response.message : "New Special Registration");
+			RetrieveSpecialRegistrationResponse ret = null;
+			if (response.data != null) {
+				ret = convert(server, helper, student, response.data);
+			} else {
+				ret = new RetrieveSpecialRegistrationResponse();
+				ret.setStatus(getStatus(response.status));
+				ret.setDescription(response.message != null && !response.message.isEmpty() ? response.message : "New Special Registration");
+			}
 			// ret.setRequestId(input.getRequestKey());
 			return ret;
 		} catch (SectioningException e) {
@@ -1338,7 +1374,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					for (SpecialRegistrationRequest specialRequest: specialRequests.data)
 						if (specialRequest.requestId != null) {
 							RetrieveSpecialRegistrationResponse req = convert(server, helper, student, specialRequest);
-							if (req != null && req.getStatus() != SpecialRegistrationStatus.Cancelled && req.hasChanges())
+							if (req != null)
 								ret.add(req);
 						}
 					return ret;
@@ -1376,7 +1412,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					for (SpecialRegistrationRequest specialRequest: response.data.requests)
 						if (specialRequest.requestId != null) {
 							RetrieveSpecialRegistrationResponse req = convert(server, helper, student, specialRequest);
-							if (req != null && req.getStatus() != SpecialRegistrationStatus.Cancelled && req.hasChanges())
+							if (req != null)
 								ret.add(convert(server, helper, student, specialRequest));
 						}
 					return ret;

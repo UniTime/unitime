@@ -120,6 +120,7 @@ public class SpecialRegistrationInterface {
 		public String operation;
 		public List<ChangeError> errors;
 		public List<Override> overrides;
+		public String status;
 	}
 	
 	public static class ChangeError {
