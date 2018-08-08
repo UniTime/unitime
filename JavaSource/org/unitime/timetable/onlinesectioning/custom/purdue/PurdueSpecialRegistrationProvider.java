@@ -65,6 +65,8 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationStatus;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationRequest;
@@ -84,13 +86,13 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Problem;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.RequestStatus;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ResponseStatus;
-import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Schedule;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.RestrictionsCheckRequest;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.RestrictionsCheckResponse;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationCancelResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationResponseList;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationStatusResponse;
-import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ValidationCheckRequest;
-import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ValidationCheckResponse;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -179,7 +181,11 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 	}
 	
 	protected String getSpecialRegistrationApiValidationSite() {
-		return ApplicationProperties.getProperty("purdue.specreg.site.validation", getSpecialRegistrationApiSite() + "/checkRestrictionsForSTAR");
+		return ApplicationProperties.getProperty("purdue.specreg.site.validation", getSpecialRegistrationApiSite() + "/checkRestrictionsForOPEN");
+	}
+	
+	protected String getSpecialRegistrationApiSiteCancelSpecialRegistration() {
+		return ApplicationProperties.getProperty("purdue.specreg.site.cancelSpecialRegistration", getSpecialRegistrationApiSite() + "/cancelRegistrationRequestFromUniTime");
 	}
 	
 	protected String getSpecialRegistrationApiKey() {
@@ -228,6 +234,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			return SpecialRegistrationStatus.Rejected;
 		else
 			return SpecialRegistrationStatus.Pending;
+	}
+	
+	protected boolean canCancel(String status) {
+		return true;
 	}
 	
 	protected void buildChangeList(SpecialRegistrationRequest request, OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, Collection<ClassAssignmentInterface.ClassAssignment> assignment, Collection<ErrorMessage> errors) {
@@ -511,20 +521,36 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 	}
 	
 	protected Set<ErrorMessage> validate(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, Collection<ClassAssignment> classAssignments) {
-		ValidationCheckRequest req = new ValidationCheckRequest();
-		req.studentId = getBannerId(student);
+		RestrictionsCheckRequest req = new RestrictionsCheckRequest();
+		req.sisId = getBannerId(student);
 		req.term = getBannerTerm(server.getAcademicSession());
 		req.campus = getBannerCampus(server.getAcademicSession());
-		req.schedule = new ArrayList<Schedule>();
-		req.alternatives = new ArrayList<Schedule>();
 		req.mode = getSpecialRegistrationMode();
-		req.includeReg = "N";
-		req.schedule = new ArrayList<Schedule>();
-		Set<ErrorMessage> errors = new TreeSet<ErrorMessage>();
+		req.includeReg = "Y";
+		Set<String> current = new HashSet<String>();
 		Map<String, String> crn2course = new HashMap<String, String>();
-		Map<Long, Schedule> schedules = new HashMap<Long, Schedule>();
 		List<String> newCourses = new ArrayList<String>();
-		Set<String> saved = new HashSet<String>();
+		Set<String> adds = new HashSet<String>();
+		Set<String> courses = new HashSet<String>();
+		for (XRequest r: student.getRequests())
+			if (r instanceof XCourseRequest) {
+				XCourseRequest cr = (XCourseRequest)r;
+				XEnrollment enr = cr.getEnrollment();
+				if (enr != null) {
+					XCourse course = server.getCourse(enr.getCourseId());
+					if (course == null) continue;
+					XOffering offering = server.getOffering(enr.getOfferingId());
+					if (offering == null) continue;
+					for (Long id: enr.getSectionIds()) {
+						XSection section = offering.getSection(id);
+						String crn = section.getExternalId(enr.getCourseId());
+						current.add(crn);
+						crn2course.put(crn, course.getCourseName());
+						courses.add(course.getCourseName());
+					}
+				}
+			}
+		
 		if (classAssignments != null)
 			for (ClassAssignment ca: classAssignments) {
 				if (ca == null || ca.isFreeTime() || ca.getClassId() == null || ca.isDummy() || ca.isTeachingAssignment()) continue;
@@ -534,25 +560,20 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				if (offering == null) continue;
 				XSection section = offering.getSection(ca.getClassId());
 				if (section == null) continue;
-				Schedule ch = schedules.get(course.getCourseId());
 				String crn = section.getExternalId(course.getCourseId());
-				if (ch == null) {
-					ch = new Schedule();
-					schedules.put(course.getCourseId(), ch);
-					ch.subject = course.getSubjectArea();
-					ch.courseNbr = course.getCourseNumber();
-					ch.crns = new HashSet<String>();
-					req.schedule.add(ch);
-					if (!ca.isSaved())
-						newCourses.add(crn);
+				if (!current.remove(crn)) {
+					req.add(crn);
+					crn2course.put(crn, course.getCourseName());
+					if (courses.add(course.getCourseName())) newCourses.add(crn);
+					adds.add(crn);
 				}
-				if (ca.isSaved())
-					saved.add(crn);
-				ch.crns.add(crn);
-				crn2course.put(crn, course.getCourseName());
 			}
-		if (!req.schedule.isEmpty()) {
-			ValidationCheckResponse resp = null;
+		for (String crn: current)
+			req.drop(crn);
+		
+		Set<ErrorMessage> errors = new TreeSet<ErrorMessage>();
+		if (req.actions != null) {
+			RestrictionsCheckResponse resp = null;
 			ClientResource resource = null;
 			try {
 				resource = new ClientResource(getSpecialRegistrationApiValidationSite());
@@ -565,11 +586,11 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				helper.getAction().addOptionBuilder().setKey("validation_request").setValue(gson.toJson(req));
 				long t1 = System.currentTimeMillis();
 				
-				resource.post(new GsonRepresentation<ValidationCheckRequest>(req));
+				resource.post(new GsonRepresentation<RestrictionsCheckRequest>(req));
 				
 				helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
 				
-				resp = (ValidationCheckResponse)new GsonRepresentation<ValidationCheckResponse>(resource.getResponseEntity(), ValidationCheckResponse.class).getObject();
+				resp = (RestrictionsCheckResponse)new GsonRepresentation<RestrictionsCheckResponse>(resource.getResponseEntity(), RestrictionsCheckResponse.class).getObject();
 				if (helper.isDebugEnabled())
 					helper.debug("Response: " + gson.toJson(resp));
 				helper.getAction().addOptionBuilder().setKey("validation_response").setValue(gson.toJson(resp));
@@ -587,10 +608,11 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				}
 			}
 			
-			if (resp != null && resp.scheduleRestrictions != null && resp.scheduleRestrictions.problems != null)
-				for (Problem problem: resp.scheduleRestrictions.problems) {
-					if ("CLOS".equals(problem.code) && saved.contains(problem.crn)) continue;
-					if ("MAXI".equals(problem.code) && !newCourses.isEmpty()) {
+			if (resp != null && resp.problems != null)
+				for (Problem problem: resp.problems) {
+					if ("CLOS".equals(problem.code) && !adds.contains(problem.crn)) {
+						// Ignore closed section error on sections that are not being added
+					} else if ("MAXI".equals(problem.code) && !newCourses.isEmpty()) {
 						// Move max credit error message to the last added course
 						String crn = newCourses.remove(newCourses.size() - 1);
 						errors.add(new ErrorMessage(crn2course.get(crn), crn, problem.code, problem.message));
@@ -1177,6 +1199,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		ret.setSubmitDate(specialRequest.dateCreated == null ? null : specialRequest.dateCreated.toDate());
 		ret.setNote(specialRequest.notes);
 		ret.setStatus(getStatus(specialRequest.status));
+		ret.setCanCancel(canCancel(specialRequest.status));
 		return ret;
 	}
 	
@@ -1312,8 +1335,11 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				if (specialRequests.data != null) {
 					List<RetrieveSpecialRegistrationResponse> ret = new ArrayList<RetrieveSpecialRegistrationResponse>(specialRequests.data.size());
 					for (SpecialRegistrationRequest specialRequest: specialRequests.data)
-						if (specialRequest.requestId != null)
-							ret.add(convert(server, helper, student, specialRequest));
+						if (specialRequest.requestId != null) {
+							RetrieveSpecialRegistrationResponse req = convert(server, helper, student, specialRequest);
+							if (req != null && req.getStatus() != SpecialRegistrationStatus.Cancelled && req.hasChanges())
+								ret.add(req);
+						}
 					return ret;
 				}				
 			} else {
@@ -1347,8 +1373,11 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				if (response != null && ResponseStatus.success.name().equals(response.status) && response.data != null && response.data.requests != null) {
 					List<RetrieveSpecialRegistrationResponse> ret = new ArrayList<RetrieveSpecialRegistrationResponse>(response.data.requests.size());
 					for (SpecialRegistrationRequest specialRequest: response.data.requests)
-						if (specialRequest.requestId != null)
-							ret.add(convert(server, helper, student, specialRequest));
+						if (specialRequest.requestId != null) {
+							RetrieveSpecialRegistrationResponse req = convert(server, helper, student, specialRequest);
+							if (req != null && req.getStatus() != SpecialRegistrationStatus.Cancelled && req.hasChanges())
+								ret.add(convert(server, helper, student, specialRequest));
+						}
 					return ret;
 				}
 			}
@@ -1443,5 +1472,60 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		if (status == null) return true;
 		StudentSectioningStatus dbStatus = StudentSectioningStatus.getStatus(status, server.getAcademicSession().getUniqueId(), helper.getHibSession());
 		return dbStatus != null && dbStatus.hasOption(StudentSectioningStatus.Option.specreg);
+	}
+
+	@Override
+	public CancelSpecialRegistrationResponse cancelRegistration(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, CancelSpecialRegistrationRequest request) throws SectioningException {
+		ClientResource resource = null;
+		try {
+			Gson gson = getGson(helper);
+
+			resource = new ClientResource(getSpecialRegistrationApiSiteCancelSpecialRegistration());
+			resource.setNext(iClient);
+			
+			AcademicSessionInfo session = server.getAcademicSession();
+			String term = getBannerTerm(session);
+			String campus = getBannerCampus(session);
+			resource.addQueryParameter("term", term);
+			resource.addQueryParameter("campus", campus);
+			resource.addQueryParameter("studentId", getBannerId(student));
+			resource.addQueryParameter("regRequestId", request.getRequestId());
+			helper.getAction().addOptionBuilder().setKey("term").setValue(term);
+			helper.getAction().addOptionBuilder().setKey("campus").setValue(campus);
+			helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
+			helper.getAction().addOptionBuilder().setKey("regRequestId").setValue(request.getRequestId());
+			resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
+			
+			long t1 = System.currentTimeMillis();
+			
+			resource.get(MediaType.APPLICATION_JSON);
+			
+			helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
+			
+			SpecialRegistrationCancelResponse response = (SpecialRegistrationCancelResponse)new GsonRepresentation<SpecialRegistrationCancelResponse>(resource.getResponseEntity(), SpecialRegistrationCancelResponse.class).getObject();
+			
+			if (helper.isDebugEnabled())
+				helper.debug("Response: " + gson.toJson(response));
+			helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(response));
+			
+			CancelSpecialRegistrationResponse ret = new CancelSpecialRegistrationResponse();
+			if (response != null) {
+				ret.setSuccess(ResponseStatus.success.name().equals(response.status));
+				ret.setMessage(response.message);
+			}
+			return ret;
+		} catch (SectioningException e) {
+			helper.getAction().setApiException(e.getMessage());
+			throw (SectioningException)e;
+		} catch (Exception e) {
+			helper.getAction().setApiException(e.getMessage());
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(e.getMessage());
+		} finally {
+			if (resource != null) {
+				if (resource.getResponse() != null) resource.getResponse().release();
+				resource.release();
+			}
+		}
 	}
 }

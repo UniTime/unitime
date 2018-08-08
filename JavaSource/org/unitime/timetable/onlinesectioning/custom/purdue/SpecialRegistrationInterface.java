@@ -19,7 +19,10 @@
 */
 package org.unitime.timetable.onlinesectioning.custom.purdue;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.joda.time.DateTime;
@@ -177,5 +180,39 @@ public class SpecialRegistrationInterface {
 		public String title;
 		public Float creditHrs;
 		public List<CourseCredit> alternatives;
+	}
+	
+	public static class RestrictionsCheckRequest {
+		public String sisId;
+		public String term;
+		public String campus;
+		public String includeReg;
+		public String mode;
+		public Map<String, List<Crn>> actions;
+		public void addOperation(String op, String crn) {
+			if (actions == null) actions = new HashMap<String, List<Crn>>();
+			List<Crn> crns = actions.get(op);
+			if (crns == null) {
+				crns = new ArrayList<Crn>();
+				actions.put(op, crns);
+			}
+			Crn c = new Crn(); c.crn = crn;
+			crns.add(c);
+		}
+		public void add(String crn) { addOperation("ADD", crn); }
+		public void drop(String crn) { addOperation("DROP", crn); }
+	}
+	
+	public static class Crn {
+		String crn;
+	}
+	
+	public static class RestrictionsCheckResponse extends ScheduleRestrictions {
+	}
+	
+	public static class SpecialRegistrationCancelResponse {
+		public String data;
+		public String status;
+		public String message;
 	}
 }

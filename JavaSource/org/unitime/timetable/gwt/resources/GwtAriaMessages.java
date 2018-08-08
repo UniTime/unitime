@@ -510,4 +510,7 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Press Enter to accept, Escape to reject.")
 	String confirmationEnterToAcceptEscapeToReject();
+	
+	@DefaultMessage("Cancel this override request.")
+	String altCancelOverrideRequest();
 }

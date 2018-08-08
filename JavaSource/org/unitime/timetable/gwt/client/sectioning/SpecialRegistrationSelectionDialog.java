@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
+import org.unitime.timetable.gwt.client.aria.ImageButton;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -53,6 +54,7 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
@@ -111,6 +113,7 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 		header.add(new UniTimeTableHeader(MESSAGES.colCredit()));
 		header.add(new UniTimeTableHeader(MESSAGES.colSpecRegErrors()));
 		header.add(new UniTimeTableHeader(""));
+		header.add(new UniTimeTableHeader(""));
 		iTable.addRow(null, header);
 		
 		iFooter.addButton("select", MESSAGES.buttonSpecRegSelect(), new ClickHandler() {
@@ -141,7 +144,7 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 	public void open(List<RetrieveSpecialRegistrationResponse> registrations) {
 		iTable.clearTable(1);
 		Collections.sort(registrations);
-		for (RetrieveSpecialRegistrationResponse reg: registrations) {
+		for (final RetrieveSpecialRegistrationResponse reg: registrations) {
 			P p = new P("icons");
 			if (reg.getStatus() != null) {
 				switch (reg.getStatus()) {
@@ -161,7 +164,41 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 					p.add(new Icon(RESOURCES.specRegDraft(), MESSAGES.hintSpecRegDraft()));
 					break;
 				}
-			} 
+			}
+			ImageButton delete = null;
+			if (reg.canCancel()) {
+				delete = new ImageButton(RESOURCES.delete(), RESOURCES.delete_Down(), RESOURCES.delete_Over());
+				delete.addStyleName("unitime-NoPrint");
+				delete.addClickHandler(new ClickHandler() {
+					public void onClick(ClickEvent event) {
+						UniTimeConfirmationDialog.confirm(MESSAGES.confirmOverrideRequestCancel(), new Command() {
+							@Override
+							public void execute() {
+								doCancel(reg.getRequestId(), new AsyncCallback<Boolean>() {
+									@Override
+									public void onFailure(Throwable caught) {}
+
+									@Override
+									public void onSuccess(Boolean result) {
+										if (result) {
+											iTable.clearHover();
+											for (int i = iTable.getRowCount() - 1; i > 0; i --) {
+												if (iTable.getData(i).equals(reg)) {
+													iTable.removeRow(i);
+												}
+											}
+										}
+									}
+								});
+							}
+						});
+						event.preventDefault();
+						event.stopPropagation();
+					}
+				});
+				delete.addStyleName("delete");
+				delete.setAltText(ARIA.altCancelOverrideRequest());
+			}
 			if (reg.hasChanges()) {
 				Long lastCourseId = null;
 				for (ClassAssignment ca: reg.getChanges()) {
@@ -193,6 +230,10 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 						s.add(new Icon(RESOURCES.unassignment(), MESSAGES.unassignment(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection())));
 					}
 					row.add(s);
+					if (delete != null) {
+						row.add(delete); delete = null;
+					} else
+						row.add(new Label());
 					int idx = iTable.addRow(reg, row);
 					if (reg.getRequestId().equals(iSpecReg.getRequestId()))
 						iTable.setSelected(idx, true);
@@ -226,10 +267,16 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 				Label errorsLabel = new Label(errors); errorsLabel.addStyleName("registration-errors");
 				row.add(errorsLabel);
 				row.add(new Label());
+				if (delete != null)
+					row.add(delete);
+				else
+					row.add(new Label());
 				int idx = iTable.addRow(reg, row);
 				if (reg.getRequestId().equals(iSpecReg.getRequestId()))
 					iTable.setSelected(idx, true);
-				if (idx > 1) iTable.getRowFormatter().addStyleName(idx, "top-border-solid");
+				if (idx > 1)
+					for (int c = 0; c < iTable.getCellCount(idx); c++)
+						iTable.getCellFormatter().addStyleName(idx, c, "top-border-solid");
 			}
 		}
 		iFooter.setEnabled("select", iTable.getSelectedRow() >= 0);
@@ -441,5 +488,8 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 			super.clearHover();
 			updateHover();
 		}
+	}
+	
+	public void doCancel(String requestId, AsyncCallback<Boolean> callback) {
 	}
 }

@@ -206,6 +206,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private String iDescription;
 		private String iNote;
 		private List<ClassAssignmentInterface.ClassAssignment> iChanges;
+		private boolean iCanCancel = false;
 		
 		public RetrieveSpecialRegistrationResponse() {}
 		
@@ -234,6 +235,9 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			if (iChanges == null) iChanges = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 			iChanges.add(ca);
 		}
+		
+		public boolean canCancel() { return iCanCancel; }
+		public void setCanCancel(boolean canCancel) { iCanCancel = canCancel; }
 		
 		@Override
 		public int compareTo(RetrieveSpecialRegistrationResponse o) {
@@ -340,5 +344,46 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 		public Long getStudentId() { return iStudentId; }
 		public void setStudentId(Long studentId) { iStudentId = studentId; }
+	}
+	
+	public static class CancelSpecialRegistrationRequest implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		private Long iSessionId;
+		private Long iStudentId;
+		private String iRequestKey;
+		private String iRequestId;
+		
+		public CancelSpecialRegistrationRequest() {}
+		public CancelSpecialRegistrationRequest(Long sessionId, Long studentId, String requestKey, String requestId) {
+			iRequestKey = requestKey;
+			iRequestId = requestId;
+			iStudentId = studentId;
+			iSessionId = sessionId;
+		}
+		
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		public Long getStudentId() { return iStudentId; }
+		public void setStudentId(Long studentId) { iStudentId = studentId; }
+		public String getRequestId() { return iRequestId; }
+		public void setRequestId(String requestId) { iRequestId = requestId; }
+		public String getRequestKey() { return iRequestKey; }
+		public void setRequestKey(String requestKey) { iRequestKey = requestKey; }
+	}
+	
+	public static class CancelSpecialRegistrationResponse implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		private boolean iSuccess;
+		private String iMessage;
+		
+		public CancelSpecialRegistrationResponse() {}
+		
+		public boolean isSuccess() { return iSuccess; }
+		public boolean isFailure() { return !iSuccess; }
+		public void setSuccess(boolean success) { iSuccess = success; }
+		
+		public boolean hasMessage() { return iMessage != null && !iMessage.isEmpty(); }
+		public String getMessage() { return iMessage; }
+		public void setMessage(String message) { iMessage = message; }
 	}
 }

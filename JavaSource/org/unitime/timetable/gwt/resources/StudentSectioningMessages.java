@@ -496,6 +496,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Special registration failed: {0}")
 	String submitSpecialRegistrationFail(String reason);
 	
+	@DefaultMessage("Failed to cancel override request: {0}")
+	String cancelSpecialRegistrationFail(String reason);
+	
 	@DefaultMessage("Failed to load override requests: {0}")
 	String retrieveAllSpecialRegistrationsFail(String reason);
 
@@ -1998,4 +2001,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("No registration errors have been detected.")
 	String errorNoRegistrationErrorsDetected();
+	
+	@DefaultMessage("Do you want to cancel this override request?")
+	String confirmOverrideRequestCancel();
 }

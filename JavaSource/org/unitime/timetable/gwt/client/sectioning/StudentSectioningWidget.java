@@ -54,6 +54,8 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAllSpecialRegistrationsRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
@@ -2559,7 +2561,27 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							addHistory();
 						}
 					}
-				}				
+				}
+				public void doCancel(String requestId, final AsyncCallback<Boolean> callback) {
+					CancelSpecialRegistrationRequest req = new CancelSpecialRegistrationRequest();
+					req.setRequestId(requestId);
+					req.setSessionId(iSessionSelector.getAcademicSessionId());
+					req.setStudentId(iEligibilityCheck.getStudentId());
+					iSectioningService.cancelSpecialRequest(req, new AsyncCallback<CancelSpecialRegistrationResponse>() {
+						@Override
+						public void onSuccess(CancelSpecialRegistrationResponse result) {
+							if (result.isFailure() && result.hasMessage())
+								iStatus.error(MESSAGES.cancelSpecialRegistrationFail(result.getMessage()));
+							callback.onSuccess(result.isSuccess());
+						}
+						
+						@Override
+						public void onFailure(Throwable caught) {
+							callback.onFailure(caught);
+							iStatus.error(MESSAGES.cancelSpecialRegistrationFail(caught.getMessage()), caught);
+						}
+					});
+				}
 			};
 		}
 		return iSpecialRegistrationSelectionDialog;

@@ -36,6 +36,8 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProp
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAllSpecialRegistrationsRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
@@ -98,4 +100,5 @@ public interface SectioningServiceAsync {
 	void checkSpecialRequestEligibility(SpecialRegistrationEligibilityRequest request, AsyncCallback<SpecialRegistrationEligibilityResponse> callback) throws SectioningException, PageAccessException;
 	void retrieveAllSpecialRequests(RetrieveAllSpecialRegistrationsRequest request, AsyncCallback<List<RetrieveSpecialRegistrationResponse>> callback) throws SectioningException, PageAccessException;
 	void section(boolean online, CourseRequestInterface request, List<ClassAssignmentInterface.ClassAssignment> currentAssignment, List<ClassAssignmentInterface.ClassAssignment> specialRegistration, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;
+	void cancelSpecialRequest(CancelSpecialRegistrationRequest request, AsyncCallback<CancelSpecialRegistrationResponse> callback) throws SectioningException, PageAccessException;
 }

@@ -67,6 +67,8 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentGroupIn
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationRequest;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAllSpecialRegistrationsRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
@@ -143,6 +145,7 @@ import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.onlinesectioning.solver.ComputeSuggestionsAction;
 import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction;
+import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationCancel;
 import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationEligibility;
 import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationRetrieve;
 import org.unitime.timetable.onlinesectioning.specreg.SpecialRegistrationRetrieveAll;
@@ -2900,5 +2903,29 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			sLog.error(e.getMessage(), e);
 			throw new SectioningException(MSG.exceptionSectioningFailed(e.getMessage()), e);
 		}
+	}
+
+	@Override
+	public CancelSpecialRegistrationResponse cancelSpecialRequest(CancelSpecialRegistrationRequest request) throws SectioningException, PageAccessException {
+		if (request.getSessionId() == null) {
+			request.setSessionId(getLastSessionId());
+		}
+		if (request.getStudentId() == null) {
+			Long sessionId = request.getSessionId();
+			if (sessionId == null) sessionId = getLastSessionId();
+			if (sessionId != null) request.setStudentId(getStudentId(sessionId));
+		}
+		
+		if (request.getSessionId() == null) throw new SectioningException(MSG.exceptionNoAcademicSession());
+		if (request.getStudentId() == null) throw new SectioningException(MSG.exceptionNoStudent());
+		
+		OnlineSectioningServer server = getServerInstance(request.getSessionId(), false);
+		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+		if (!server.getAcademicSession().isSectioningEnabled() || !CustomSpecialRegistrationHolder.hasProvider())
+			throw new SectioningException(MSG.exceptionNotSupportedFeature());
+		
+		setLastSessionId(request.getSessionId());
+
+		return server.execute(server.createAction(SpecialRegistrationCancel.class).withRequest(request), currentUser());
 	}
 }
