@@ -2540,7 +2540,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							addHistory();
 						} else if (specReg.hasChanges()) {
 							final CourseRequestInterface courseRequests = iCourseRequests.getRequest();
-							courseRequests.setTimeConflictsAllowed(iSpecRegCx.areSpaceConflictsAllowed()); courseRequests.setSpaceConflictsAllowed(iSpecRegCx.areTimeConflictsAllowed());
+							courseRequests.setTimeConflictsAllowed(specReg.hasTimeConflict()); courseRequests.setSpaceConflictsAllowed(specReg.hasSpaceConflict());
 							for (ClassAssignmentInterface.ClassAssignment ch: specReg.getChanges()) {
 								if (ch.isCourseAssigned()) courseRequests.addCourse(new RequestedCourse(ch.getCourseId(), CONSTANTS.showCourseTitle() ? ch.getCourseNameWithTitle() : ch.getCourseName()));
 							}

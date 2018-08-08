@@ -306,6 +306,18 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					HashSet<CourseRequest> allowOverlaps = new HashSet<CourseRequest>();
 					boolean conflict = false;
 					boolean assigned = false;
+					List<ClassAssignmentInterface.ClassAssignment> specRegAdds = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
+					Set<Long> specRegDrops = new HashSet<Long>();
+					if (getSpecialRegistration() != null)
+						for (ClassAssignmentInterface.ClassAssignment b: getSpecialRegistration()) {
+							if (cr.getCourse(b.getCourseId()) != null) {
+								if (b.isCourseAssigned()) {
+									specRegAdds.add(b);
+								} else {
+									specRegDrops.add(b.getClassId());
+								}
+							}
+						}
 					a: for (ClassAssignmentInterface.ClassAssignment a: getAssignment()) {
 						if (a != null && !a.isFreeTime() && cr.getCourse(a.getCourseId()) != null && a.getClassId() != null) {
 							assigned = true;
@@ -314,12 +326,10 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								continue a;
 							}
 							// check for drops
-							if (getSpecialRegistration() != null)
-								for (ClassAssignmentInterface.ClassAssignment b: getSpecialRegistration())
-									if (!b.isCourseAssigned() && a.getClassId().equals(b.getClassId())) {
-										rq.addSection(OnlineSectioningHelper.toProto(section, cr.getCourse(a.getCourseId())).setPreference(OnlineSectioningLog.Section.Preference.DROP));
-										continue a;
-									}
+							if (specRegDrops.contains(a.getClassId())) {
+								rq.addSection(OnlineSectioningHelper.toProto(section, cr.getCourse(a.getCourseId())).setPreference(OnlineSectioningLog.Section.Preference.DROP));
+								continue a;
+							}
 							if (a.isPinned())
 								requiredSections.add(section);
 							if (a.isPinned() || a.isSaved() || getRequest().isNoChange()) {
@@ -352,11 +362,12 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					}
 					if (!assigned && getRequest().isNoChange()) {
 						requiredUnassigned.add(cr);
+					} else if (!specRegDrops.isEmpty() && specRegAdds.isEmpty()) {
+						requiredUnassigned.add(cr);
 					}
 					// check for adds
-					if (getSpecialRegistration() != null)
-						for (ClassAssignmentInterface.ClassAssignment a: getSpecialRegistration()) {
-							if (!a.isCourseAssigned()) continue;
+					if (!specRegAdds.isEmpty()) {
+						for (ClassAssignmentInterface.ClassAssignment a: specRegAdds) {
 							Section section = cr.getSection(a.getClassId());
 							if (section == null) continue;
 							selectedPenalty += model.getOverExpected(assignment, enrollmentArry, idx, section, cr);
@@ -364,6 +375,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							if (a.isPinned())
 								requiredSections.add(section);
 							if (!conflict) {
+								if (section.getLimit() == 0 && !getRequest().areSpaceConflictsAllowed())
+									conflict = true;
 								for (Section s: requiredOrSavedSections)
 									if (s.isOverlapping(section)) { conflict = true; break; }
 								boolean allowOverlap = false;
@@ -384,6 +397,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							requiredOrSavedSections.add(section);
 							rq.addSection(OnlineSectioningHelper.toProto(section, cr.getCourse(a.getCourseId())).setPreference(OnlineSectioningLog.Section.Preference.ADD));
 						}
+					}
+
 					if (preferredSections.isEmpty()) notAssigned ++;
 					preferredSectionsForCourse.put(cr, preferredSections);
 					requiredSectionsForCourse.put(cr, requiredSections);
@@ -461,7 +476,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		
 		selection.setModel(model);
 		selection.setPreferredSections(preferredSectionsForCourse);
-		selection.setRequiredSections(requiredOrSavedSectionsForCourse);
+		selection.setRequiredSections(getSpecialRegistration() == null ? requiredOrSavedSectionsForCourse : requiredSectionsForCourse);
 		selection.setRequiredFreeTimes(requiredFreeTimes);
 		selection.setRequiredUnassinged(requiredUnassigned);
 		if (maxOverExpected >= 0.0) selection.setMaxOverExpected(maxOverExpected);

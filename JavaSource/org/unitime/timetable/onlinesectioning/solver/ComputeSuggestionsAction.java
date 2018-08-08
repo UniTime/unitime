@@ -291,7 +291,8 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 						}
 						if (section == null || (section.getLimit() == 0  && !hasIndividualReservation)) {
 							messages.addMessage((a.isSaved() ? "Enrolled class " : a.isPinned() ? "Required class " : "Previously selected class ") + a.getSubject() + " " + a.getCourseNbr() + " " + a.getSubpart() + " " + a.getSection() + " is no longer available.");
-							continue a;
+							if (getSelection().getCourseId() != null && cr.getCourse(getSelection().getCourseId()) != null)
+								continue a;
 						}
 						selectedPenalty += model.getOverExpected(assignment, enrollmentArray, idx, section, cr);
 						if (a.isPinned() && !getSelection().equals(a)) 

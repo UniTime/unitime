@@ -57,7 +57,6 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
-import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
@@ -1089,6 +1088,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 						ca.setParentSection(course.getConsentType() == null ? null : course.getConsentType().getLabel());
 					for (ErrorMessage error: errors) {
 						if (ca.getCourseName().equals(error.getCourse()) && ca.getExternalId().equals(error.getSection())) {
+							if ("TIME".equals(error.getCode())) ret.setHasTimeConflict(true);
+							if ("CLOS".equals(error.getCode())) ret.setHasSpaceConflict(true);
 							if (ca.hasError())
 								ca.setError(ca.getError() + "\n" + error.getMessage());
 							else
@@ -1179,8 +1180,6 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		if (helper.getAction().getEnrollmentCount() > 0)
 			helper.getAction().getEnrollmentBuilder(helper.getAction().getEnrollmentCount() - 1).setType(OnlineSectioningLog.Enrollment.EnrollmentType.EXTERNAL);
 		helper.getAction().clearRequest();
-		*/
-		ret.setDescription(desc);
 		
 		if (ret.hasClassAssignments())
 			for (CourseAssignment course: ret.getClassAssignments().getCourseAssignments()) {
@@ -1194,7 +1193,9 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							for (Class_ c: add)
 								if (c.getUniqueId().equals(ca.getClassId())) ca.setSaved(false);
 			}
-		
+		*/
+
+		ret.setDescription(desc);
 		ret.setRequestId(specialRequest.requestId);
 		ret.setSubmitDate(specialRequest.dateCreated == null ? null : specialRequest.dateCreated.toDate());
 		ret.setNote(specialRequest.notes);

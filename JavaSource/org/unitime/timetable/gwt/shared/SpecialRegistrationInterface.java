@@ -207,6 +207,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private String iNote;
 		private List<ClassAssignmentInterface.ClassAssignment> iChanges;
 		private boolean iCanCancel = false;
+		private boolean iHasTimeConflict, iHasSpaceConflict;
 		
 		public RetrieveSpecialRegistrationResponse() {}
 		
@@ -238,6 +239,12 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		
 		public boolean canCancel() { return iCanCancel; }
 		public void setCanCancel(boolean canCancel) { iCanCancel = canCancel; }
+		
+		public boolean hasTimeConflict() { return iHasTimeConflict; }
+		public void setHasTimeConflict(boolean hasTimeConflict) { iHasTimeConflict = hasTimeConflict; }
+		
+		public boolean hasSpaceConflict() { return iHasSpaceConflict; }
+		public void setHasSpaceConflict(boolean hasSpaceConflict) { iHasSpaceConflict = hasSpaceConflict; }
 		
 		@Override
 		public int compareTo(RetrieveSpecialRegistrationResponse o) {
