@@ -2516,6 +2516,7 @@ public class CurriculaServlet implements CurriculaService {
 					a.setClassId(clazz.getUniqueId());
 					a.setSubpart(clazz.getSchedulingSubpart().getItypeDesc().trim());
 					a.setSection(clazz.getClassSuffix(courseOffering));
+					a.setExternalId(clazz.getExternalId(courseOffering));
 					a.setClassNumber(clazz.getSectionNumberString(hibSession));
 					if (a.getSection() == null)
 						a.setSection(a.getClassNumber());

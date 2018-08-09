@@ -197,6 +197,11 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		;
 	}
 	
+	public static enum SpecialRegistrationOperation implements IsSerializable, Serializable {
+		Add, Drop, Keep,
+		;
+	}
+	
 	public static class RetrieveSpecialRegistrationResponse implements IsSerializable, Serializable, Comparable<RetrieveSpecialRegistrationResponse> {
 		private static final long serialVersionUID = 1L;
 		private ClassAssignmentInterface iClassAssignment;

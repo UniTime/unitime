@@ -901,6 +901,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					a.setClassId(section.getId());
 					a.setSubpart(section.getSubpart().getName());
 					a.setSection(section.getName(course.getId()));
+					a.setExternalId(offering.getSection(section.getId()).getExternalId(course.getId()));
 					a.setClassNumber(section.getName(-1l));
 					a.setCancelled(section.isCancelled());
 					a.setLimit(new int[] {enrl.countEnrollmentsForSection(section.getId()), offering.getSection(section.getId()).getLimit()});
@@ -995,8 +996,11 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					a.setExpected(overExp.getExpected(section.getLimit(), section.getSpaceExpected()));
 					if (getSpecialRegistration() != null)
 						for (ClassAssignmentInterface.ClassAssignment b: getSpecialRegistration())
-							if (b.getClassId().equals(a.getClassId()) && b.hasError())
-								a.setError(b.getError());
+							if (b.getClassId().equals(a.getClassId())) {
+								a.setSpecRegStatus(b.getSpecRegStatus());
+								a.setSpecRegOperation(b.getSpecRegOperation());
+								if (b.hasError()) a.setError(b.getError());
+							}
 				}
 				ret.add(ca);
 			} else {

@@ -520,6 +520,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				a.setSubpart(section.getSubpartName());
 				a.setClassNumber(section.getName(-1l));
 				a.setSection(section.getName(courseId()));
+				a.setExternalId(section.getExternalId(courseId()));
 				a.setCancelled(section.isCancelled());
 				a.setLimit(new int[] {enrollments.countEnrollmentsForSection(section.getSectionId()), section.getLimit()});
 				if (section.getTime() != null) {

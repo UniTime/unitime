@@ -110,7 +110,7 @@ public class SpecialRegistrationInterface {
 	}
 	
 	public static enum ChangeOperation {
-		ADD, DROP,
+		ADD, DROP, KEEP,
 	}
 	
 	public static class Change {

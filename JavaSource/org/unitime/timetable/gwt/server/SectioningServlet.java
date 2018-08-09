@@ -482,6 +482,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() != null)
 					a.setSubpart(clazz.getSchedulingSubpart().getItypeDesc() + " (" + clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getLabel() + ")");
 				a.setSection(clazz.getClassSuffix(courseOffering));
+				a.setExternalId(clazz.getExternalId(courseOffering));
 				a.setClassNumber(clazz.getSectionNumberString(hibSession));
 				a.addNote(clazz.getSchedulePrintNote());
 
@@ -1272,6 +1273,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						c.setSection(enrollment.getClazz().getClassSuffix(enrollment.getCourseOffering()));
 						if (c.getSection() == null)
 							c.setSection(enrollment.getClazz().getSectionNumberString(hibSession));
+						c.setExternalId(enrollment.getClazz().getExternalId(enrollment.getCourseOffering()));
 						c.setClassNumber(enrollment.getClazz().getSectionNumberString(hibSession));
 						c.setSubpart(enrollment.getClazz().getSchedulingSubpart().getItypeDesc());
 					}
@@ -1423,6 +1425,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							clazz.setSection(enrollment.getClazz().getClassSuffix(enrollment.getCourseOffering()));
 							if (clazz.getSection() == null)
 								clazz.setSection(enrollment.getClazz().getSectionNumberString(hibSession));
+							clazz.setExternalId(enrollment.getClazz().getExternalId(enrollment.getCourseOffering()));
 							clazz.setClassNumber(enrollment.getClazz().getSectionNumberString(hibSession));
 							clazz.setSubpart(enrollment.getClazz().getSchedulingSubpart().getItypeDesc());
 							if (enrollment.getClazz().getParentClass() != null) {

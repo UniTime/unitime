@@ -63,6 +63,7 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityChe
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationOperation;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationStatus;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationResponse;
@@ -377,6 +378,20 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 						ch.errors.add(er);
 					}
 			}
+			for (ErrorMessage m: errors)
+				if (added.add(m)) {
+					Change ch = new Change();
+					ch.subject = m.getCourse().substring(0, m.getCourse().lastIndexOf(' '));
+					ch.courseNbr = m.getCourse().substring(m.getCourse().lastIndexOf(' ') + 1);
+					ch.crn = m.getSection();
+					ch.operation = ChangeOperation.KEEP.name();
+					ch.errors = new ArrayList<ChangeError>();
+					ChangeError er = new ChangeError();
+					er.code = m.getCode();
+					er.message = m.getMessage();
+					ch.errors.add(er);
+					request.changes.add(ch);
+				}
 		}
 	}
 
@@ -992,15 +1007,19 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		}
 	}
 	
-	protected RetrieveSpecialRegistrationResponse convert(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, SpecialRegistrationRequest specialRequest) {
+	protected boolean isCancelled(SpecialRegistrationRequest specialRequest) {
 		if (specialRequest.changes != null)
 			for (Change change: specialRequest.changes)
-				if (RequestStatus.cancelled.name().equals(change.status)) return null;
+				if (RequestStatus.cancelled.name().equals(change.status)) return true;
+		return false;
+	}
+	
+	protected RetrieveSpecialRegistrationResponse convert(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, SpecialRegistrationRequest specialRequest) {
+		if (isCancelled(specialRequest)) return null;
 		RetrieveSpecialRegistrationResponse ret = new RetrieveSpecialRegistrationResponse();
 		Map<CourseOffering, Set<Class_>> adds = new HashMap<CourseOffering, Set<Class_>>();
 		Map<CourseOffering, Set<Class_>> drops = new HashMap<CourseOffering, Set<Class_>>();
-		Set<Long> pinned = new HashSet<Long>();
-		Set<ErrorMessage> errors = new TreeSet<ErrorMessage>();
+		Map<Class_, Change> changes = new HashMap<Class_, Change>();
 		TreeSet<CourseOffering> courses = new TreeSet<CourseOffering>();
 		SpecialRegistrationStatus status = null;
 		if (specialRequest.changes != null)
@@ -1015,14 +1034,9 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 						 (!ChangeOperation.DROP.name().equals(change.operation) ? adds : drops).put(course, list);
 					}
 					for (Class_ clazz: classes) {
-						list.add(clazz);
+						if (list.add(clazz))
+							changes.put(clazz, change);
 					}
-					if (change.errors != null)
-						for (ChangeError err: change.errors)
-							for (Class_ clazz: classes) {
-								errors.add(new ErrorMessage(course.getCourseName(), clazz.getExternalId(course), err.code, err.message + (change.status == null || change.status.isEmpty() ? "" : " (" + change.status + ")")));
-								pinned.add(clazz.getUniqueId());
-							}
 				}
 				if (change.status != null)
 					status = combine(status, getStatus(change.status));
@@ -1045,11 +1059,14 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			if (adds.containsKey(course)) {
 				for (Class_ clazz: adds.get(course)) {
 					ClassAssignment ca = new ClassAssignment();
+					Change change = changes.get(clazz);
+					ca.setSpecRegOperation(ChangeOperation.ADD.name().equals(change.operation) ? SpecialRegistrationOperation.Add : SpecialRegistrationOperation.Keep);
+					if (change.status != null && !change.status.isEmpty())
+						ca.setSpecRegStatus(getStatus(change.status));
 					ca.setCourseId(course.getUniqueId());
 					ca.setSubject(course.getSubjectAreaAbbv());
 					ca.setCourseNbr(course.getCourseNbr());
 					ca.setCourseAssigned(true);
-					ca.setPinned(pinned.contains(clazz.getUniqueId()));
 					ca.setTitle(course.getTitle());
 					ca.setClassId(clazz.getUniqueId());
 					ca.setSection(clazz.getClassSuffix(course));
@@ -1104,22 +1121,34 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					credit = null;
 					if (ca.getParentSection() == null)
 						ca.setParentSection(course.getConsentType() == null ? null : course.getConsentType().getLabel());
-					for (ErrorMessage error: errors) {
-						if (ca.getCourseName().equals(error.getCourse()) && ca.getExternalId().equals(error.getSection())) {
-							if ("TIME".equals(error.getCode())) ret.setHasTimeConflict(true);
-							if ("CLOS".equals(error.getCode())) ret.setHasSpaceConflict(true);
+					
+					if (change.errors != null)
+						for (ChangeError err: change.errors) {
+							if ("TIME".equals(err.code)) ret.setHasTimeConflict(true);
+							if ("CLOS".equals(err.code)) ret.setHasSpaceConflict(true);
+							String message = err.message;
+							switch (getStatus(change.status)) {
+							case Approved:
+								message += " (approved)"; break;
+							case Rejected:
+								message += " (rejected)"; break;
+							}
 							if (ca.hasError())
-								ca.setError(ca.getError() + "\n" + error.getMessage());
+								ca.setError(ca.getError() + "\n" + message);
 							else
-								ca.setError(error.getMessage());
+								ca.setError(message);
+							ca.setPinned(true);
 						}
-					}
 					ret.addChange(ca);
 				}
 			}
 			if (drops.containsKey(course)) {
 				for (Class_ clazz: drops.get(course)) {
 					ClassAssignment ca = new ClassAssignment();
+					Change change = changes.get(clazz);
+					ca.setSpecRegOperation(SpecialRegistrationOperation.Drop);
+					if (change.status != null && !change.status.isEmpty())
+						ca.setSpecRegStatus(getStatus(change.status));
 					ca.setCourseId(course.getUniqueId());
 					ca.setSubject(course.getSubjectAreaAbbv());
 					ca.setCourseNbr(course.getCourseNbr());
@@ -1178,14 +1207,22 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					credit = null;
 					if (ca.getParentSection() == null)
 						ca.setParentSection(course.getConsentType() == null ? null : course.getConsentType().getLabel());
-					for (ErrorMessage error: errors) {
-						if (ca.getCourseName().equals(error.getCourse()) && ca.getExternalId().equals(error.getSection())) {
+
+					if (change.errors != null)
+						for (ChangeError err: change.errors) {
+							String message = err.message;
+							switch (getStatus(change.status)) {
+							case Approved:
+								message += " (approved)"; break;
+							case Rejected:
+								message += " (rejected)"; break;
+							}
 							if (ca.hasError())
-								ca.setError(ca.getError() + "\n" + error.getMessage());
+								ca.setError(ca.getError() + "\n" + message);
 							else
-								ca.setError(error.getMessage());
+								ca.setError(message);
 						}
-					}
+
 					ret.addChange(ca);
 				}
 			}
@@ -1477,7 +1514,14 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					check.setOverrides(response.data.overrides);
 				check.setFlag(EligibilityFlag.SR_TIME_CONF, check.hasOverride("TIME"));
 				check.setFlag(EligibilityFlag.SR_LIMIT_CONF, check.hasOverride("CLOS"));
-				check.setFlag(EligibilityFlag.HAS_SPECREG, response.data != null && response.data.requests != null && !response.data.requests.isEmpty());
+				if (response.data != null && response.data.requests != null && !response.data.requests.isEmpty()) {
+					for (SpecialRegistrationRequest r: response.data.requests) {
+						if (!isCancelled(r)) {
+							check.setFlag(EligibilityFlag.HAS_SPECREG, true);
+							break;
+						}
+					}
+				}
 			} else {
 				check.setFlag(EligibilityFlag.CAN_SPECREG, false);
 			}

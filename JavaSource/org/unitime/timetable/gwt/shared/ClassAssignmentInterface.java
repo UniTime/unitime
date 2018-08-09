@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationOperation;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationStatus;
 import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
 
 import com.google.gwt.regexp.shared.MatchResult;
@@ -326,6 +328,8 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private String iError = null;
 		private Date iEnrolledDate = null;
 		private String iExternalId = null;
+		private SpecialRegistrationStatus iSpecRegStatus = null;
+		private SpecialRegistrationOperation iSpecRegOperation = null;
 		
 		public ClassAssignment() {}
 		public ClassAssignment(CourseAssignment course) {
@@ -672,6 +676,12 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public Date getEnrolledDate() { return iEnrolledDate; }
 		public void setEnrolledDate(Date ts) { iEnrolledDate = ts; }
+		
+		public SpecialRegistrationStatus getSpecRegStatus() { return iSpecRegStatus; }
+		public void setSpecRegStatus(SpecialRegistrationStatus status) { iSpecRegStatus = status; }
+		
+		public SpecialRegistrationOperation getSpecRegOperation() { return iSpecRegOperation; }
+		public void setSpecRegOperation(SpecialRegistrationOperation operation) { iSpecRegOperation = operation; }
 	}
 	
 	public static class Student implements IsSerializable, Serializable {

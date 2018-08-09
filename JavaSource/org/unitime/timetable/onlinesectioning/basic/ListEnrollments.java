@@ -205,6 +205,7 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 							XSubpart subpart = offering.getSubpart(section.getSubpartId());
 							a.setSubpart(subpart.getName());
 							a.setSection(section.getName(course.getCourseId()));
+							a.setExternalId(section.getExternalId(c.getCourseId()));
 							a.setClassNumber(section.getName(-1l));
 							a.setCancelled(section.isCancelled());
 							a.setLimit(new int[] {requests.countEnrollmentsForSection(section.getSectionId()), section.getLimit()});

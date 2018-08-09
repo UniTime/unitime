@@ -77,6 +77,7 @@ public class ListCourseOfferingsByExternalId extends ListCourseOfferings {
 							XSubpart subpart = offering.getSubpart(section.getSubpartId());
 							a.setSubpart(subpart.getName());
 							a.setSection(section.getName(courseId));
+							a.setExternalId(section.getExternalId(courseId));
 							a.setClassNumber(section.getName(-1l));
 							a.setCancelled(section.isCancelled());
 							a.addNote(course.getNote());

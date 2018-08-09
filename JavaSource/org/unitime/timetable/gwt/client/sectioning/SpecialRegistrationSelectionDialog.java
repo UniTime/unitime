@@ -224,10 +224,18 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 					Label errorsLabel = new Label(ca.hasError() ? ca.getError() : ""); errorsLabel.addStyleName("registration-errors");
 					row.add(errorsLabel);
 					P s = new P("icons");
-					if (ca.isCourseAssigned()) {
+					switch (ca.getSpecRegOperation()) {
+					case Add:
 						s.add(new Icon(RESOURCES.assignment(), MESSAGES.assignment(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection())));
-					} else {
+						break;
+					case Drop:
 						s.add(new Icon(RESOURCES.unassignment(), MESSAGES.unassignment(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection())));
+						break;
+					case Keep:
+						// s.add(new Icon(RESOURCES.saved(), MESSAGES.saved(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection())));
+						// break;
+					default:
+						s.add(new Label());
 					}
 					row.add(s);
 					if (delete != null) {

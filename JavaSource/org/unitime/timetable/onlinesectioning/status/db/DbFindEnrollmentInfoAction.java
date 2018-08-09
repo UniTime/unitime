@@ -483,6 +483,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					a.setSubpart(a.getSubpart() + " (" + subpart.getInstrOfferingConfig().getInstructionalMethod().getLabel() + ")");
 				a.setClassNumber(section.getClassSuffix() == null ? section.getSectionNumber(helper.getHibSession()) + section.getSchedulingSubpart().getSchedulingSubpartSuffix(helper.getHibSession()) : section.getClassSuffix());
 				a.setSection(section.getClassSuffix(course));
+				a.setExternalId(section.getExternalId(course));
 				a.setCancelled(section.isCancelled());
 				a.setLimit(new int[] { section.getEnrollment(), section.getSectioningLimit()});
 				Assignment assignment = section.getCommittedAssignment();

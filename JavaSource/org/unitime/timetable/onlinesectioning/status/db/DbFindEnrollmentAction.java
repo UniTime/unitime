@@ -216,6 +216,7 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 						a.setSubpart(a.getSubpart() + " (" + subpart.getInstrOfferingConfig().getInstructionalMethod().getLabel() + ")");
 					a.setClassNumber(section.getSectionNumberString());
 					a.setSection(section.getClassSuffix(course));
+					a.setExternalId(section.getExternalId(course));
 					a.setCancelled(section.isCancelled());
 					a.setLimit(new int[] { section.getEnrollment(), section.getSectioningLimit()});
 					Assignment assignment = section.getCommittedAssignment();
