@@ -260,6 +260,7 @@ public class XStudent extends XStudentId implements Externalizable {
     
     public Float getMaxCredit() { return iMaxCredit; }
     public boolean hasMaxCredit() { return iMaxCredit != null; }
+    public void setMaxCredit(Float maxCredit) { iMaxCredit = maxCredit; }
     public XOverride getMaxCreditOverride() { return iMaxCreditOverride; }
     public boolean isMaxCreditOverridePending() {
     	return (iMaxCreditOverride == null || iMaxCreditOverride.getStatus() == null ? false : iMaxCreditOverride.getStatus().intValue() == CourseRequestOverrideStatus.PENDING.ordinal());

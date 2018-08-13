@@ -1834,15 +1834,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							iSpecRegCx.setRequestId(specReg.getRequestId());
 							iSpecRegCx.setNote(specReg.getNote());
 							iSpecRegCx.setStatus(specReg.getStatus());
-							if (specReg.hasClassAssignments() && specReg.getRequestId() != null)
-								iSpecRegCx.setDisclaimerAccepted(true);
-							iSpecialRegAssignment = specReg.getClassAssignments();
-							if (specReg.hasClassAssignments()) {
-								fillIn(specReg.getClassAssignments());
-								if (specReg.getClassAssignments().hasRequest())
-									iCourseRequests.setRequest(specReg.getClassAssignments().getRequest());
-								updateHistory();
-							} else if (specReg.hasChanges()) {
+							if (specReg.hasChanges()) {
 								final CourseRequestInterface courseRequests = iCourseRequests.getRequest();
 								courseRequests.setTimeConflictsAllowed(specReg.hasTimeConflict()); courseRequests.setSpaceConflictsAllowed(specReg.hasSpaceConflict());
 								for (ClassAssignmentInterface.ClassAssignment ch: specReg.getChanges()) {
@@ -1852,6 +1844,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								iSectioningService.section(iOnline, courseRequests, iLastResult, specReg.getChanges(), new AsyncCallback<ClassAssignmentInterface>() {
 									public void onSuccess(ClassAssignmentInterface result) {
 										fillIn(result);
+										iSpecialRegAssignment = iLastAssignment;
 										iCourseRequests.setRequest(courseRequests);
 										addHistory();
 									}
@@ -2449,7 +2442,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							confirm.addConfirmation(MESSAGES.messageRequestOverridesNote(), 0, 2);
 							final CourseRequestInterface.CourseMessage note = confirm.addConfirmation(iSpecRegCx.getNote() == null ? "" : iSpecRegCx.getNote(), 0, 3); note.setCode("REQUEST_NOTE");
 							confirm.addConfirmation(MESSAGES.messageRequestOverridesOptions(), 0, 4);
-							confirm.addConfirmation(MESSAGES.messageRequestOverridesDisclaimer(), 0, 5);
+							confirm.addConfirmation(MESSAGES.messageRequestOverridesDisclaimer(), 0, 7);
 							for (ErrorMessage e: errors) {
 								if ("IGNORE".equals(e.getCode())) {
 									continue;
@@ -2458,6 +2451,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								} else {
 									confirm.addMessage(null, e.getCourse(), e.getCode(), e.getMessage() + " (" + e.getCode() + ")", 0);
 								}
+							}
+							if (response.hasCancelErrors()) {
+								confirm.addConfirmation(MESSAGES.messageRequestOverridesCancel(), 0, 5);
+								for (ErrorMessage e: response.getCancelErrors())
+									confirm.addMessage(null, e.getCourse(), e.getCode(), e.getMessage(), 0, 6);
 							}
 							CourseRequestsConfirmationDialog.confirm(confirm, 0, new AsyncCallback<Boolean>() {
 								@Override
@@ -2553,13 +2551,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						iSpecRegCx.setRequestId(specReg.getRequestId());
 						iSpecRegCx.setStatus(specReg.getStatus());
 						iSpecRegCx.setNote(specReg.getNote());
-						if (specReg.hasClassAssignments()) {
-							iSpecialRegAssignment = specReg.getClassAssignments();
-							fillIn(specReg.getClassAssignments());
-							if (specReg.getClassAssignments().hasRequest())
-								iCourseRequests.setRequest(specReg.getClassAssignments().getRequest());
-							addHistory();
-						} else if (specReg.hasChanges()) {
+						if (specReg.hasChanges()) {
 							final CourseRequestInterface courseRequests = iCourseRequests.getRequest();
 							courseRequests.setTimeConflictsAllowed(specReg.hasTimeConflict()); courseRequests.setSpaceConflictsAllowed(specReg.hasSpaceConflict());
 							for (ClassAssignmentInterface.ClassAssignment ch: specReg.getChanges()) {

@@ -111,6 +111,7 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 				
 			}
 		}
+		if (ctab != null) { mp.add(ctab); ctab = null; }
 		
 		P bp = new P("buttons-panel");
 		panel.add(bp);

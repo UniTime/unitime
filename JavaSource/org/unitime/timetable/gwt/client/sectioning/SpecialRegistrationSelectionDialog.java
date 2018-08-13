@@ -41,7 +41,6 @@ import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
-import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
@@ -266,12 +265,6 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 				row.add(new DateAndNoteCell(reg.getSubmitDate(), reg.getNote()));
 				row.add(new DescriptionCell(reg.getDescription()));
 				String errors = "";
-				if (reg.hasClassAssignments() && reg.getClassAssignments().hasErrors()) {
-					for (ErrorMessage err: reg.getClassAssignments().getErrors()) {
-						if (!errors.isEmpty()) errors += "\n";
-						errors += err.getCourse() + (err.getSection() == null ? "" : " " + err.getSection()) + ": " + err.getMessage();
-					}
-				}
 				Label errorsLabel = new Label(errors); errorsLabel.addStyleName("registration-errors");
 				row.add(errorsLabel);
 				row.add(new Label());

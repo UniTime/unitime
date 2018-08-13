@@ -1999,6 +1999,9 @@ public interface StudentSectioningMessages extends Messages {
 			"registration deadlines.")
 	String messageRequestOverridesDisclaimer();
 	
+	@DefaultMessage("\nIf you proceed, the following pending override requests will be canceled/replaced:")
+	String messageRequestOverridesCancel();
+	
 	@DefaultMessage("No registration errors have been detected.")
 	String errorNoRegistrationErrorsDetected();
 	

@@ -141,7 +141,8 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private static final long serialVersionUID = 1L;
 		private String iMessage;
 		private boolean iCanSubmit;
-		private ArrayList<ErrorMessage> iErrors = null;
+		private List<ErrorMessage> iErrors = null;
+		private List<ErrorMessage> iCancelErrors = null;
 		
 		public SpecialRegistrationEligibilityResponse() {}
 		public SpecialRegistrationEligibilityResponse(boolean canSubmit, String message) {
@@ -162,12 +163,27 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public boolean hasErrors() {
 			return iErrors != null && !iErrors.isEmpty();
 		}
-		public ArrayList<ErrorMessage> getErrors() { return iErrors; }
+		public List<ErrorMessage> getErrors() { return iErrors; }
 		public void setErrors(Collection<ErrorMessage> messages) {
 			if (messages == null)
 				iErrors = null;
 			else
 				iErrors = new ArrayList<ErrorMessage>(messages);
+		}
+		
+		public void addCancelError(ErrorMessage error) {
+			if (iCancelErrors == null) iCancelErrors = new ArrayList<ErrorMessage>();
+			iCancelErrors.add(error);
+		}
+		public boolean hasCancelErrors() {
+			return iCancelErrors != null && !iCancelErrors.isEmpty();
+		}
+		public List<ErrorMessage> getCancelErrors() { return iCancelErrors; }
+		public void setCancelErrors(Collection<ErrorMessage> messages) {
+			if (messages == null)
+				iCancelErrors = null;
+			else
+				iCancelErrors = new ArrayList<ErrorMessage>(messages);
 		}
 	}
 	
@@ -204,7 +220,6 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 	
 	public static class RetrieveSpecialRegistrationResponse implements IsSerializable, Serializable, Comparable<RetrieveSpecialRegistrationResponse> {
 		private static final long serialVersionUID = 1L;
-		private ClassAssignmentInterface iClassAssignment;
 		private SpecialRegistrationStatus iStatus;
 		private Date iSubmitDate;
 		private String iRequestId;
@@ -213,13 +228,10 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private List<ClassAssignmentInterface.ClassAssignment> iChanges;
 		private boolean iCanCancel = false;
 		private boolean iHasTimeConflict, iHasSpaceConflict;
+		private ArrayList<ErrorMessage> iErrors = null;
 		
 		public RetrieveSpecialRegistrationResponse() {}
 		
-		public boolean hasClassAssignments() { return iClassAssignment != null; }
-		public ClassAssignmentInterface getClassAssignments() { return iClassAssignment; }
-		public void setClassAssignments(ClassAssignmentInterface assignments) { iClassAssignment = assignments; }
-
 		public Date getSubmitDate() { return iSubmitDate; }
 		public void setSubmitDate(Date date) { iSubmitDate = date; }
 		
@@ -250,6 +262,15 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		
 		public boolean hasSpaceConflict() { return iHasSpaceConflict; }
 		public void setHasSpaceConflict(boolean hasSpaceConflict) { iHasSpaceConflict = hasSpaceConflict; }
+		
+		public void addError(ErrorMessage error) {
+			if (iErrors == null) iErrors = new ArrayList<ErrorMessage>();
+			iErrors.add(error);
+		}
+		public boolean hasErrors() {
+			return iErrors != null && !iErrors.isEmpty();
+		}
+		public ArrayList<ErrorMessage> getErrors() { return iErrors; }
 		
 		@Override
 		public int compareTo(RetrieveSpecialRegistrationResponse o) {

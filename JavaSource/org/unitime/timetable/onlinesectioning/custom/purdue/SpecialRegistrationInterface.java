@@ -47,6 +47,8 @@ public class SpecialRegistrationInterface {
 		public List<CourseCredit> courseCreditHrs;
 		public List<CourseCredit> alternateCourseCreditHrs;
 		public String notes;
+		public String requestorNotes;
+		public String completionStatus;
 	}
 	
 	public static class SpecialRegistrationEligibility {
@@ -121,6 +123,7 @@ public class SpecialRegistrationInterface {
 		public List<ChangeError> errors;
 		public List<Override> overrides;
 		public String status;
+		public String notes;
 	}
 	
 	public static class ChangeError {

@@ -765,6 +765,19 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			iMessages.add(message);
 		}
 		
+		public CourseMessage addMessage(Long courseId, String course, String code, String message, Integer confirm, int order) {
+			CourseMessage m = new CourseMessage();
+			m.setCourseId(courseId);
+			m.setCourse(course);
+			m.setCode(code);
+			m.setMessage(message);
+			m.setError(false);
+			m.setConfirm(confirm);
+			m.setOrder(order);
+			addMessage(m);
+			return m;
+		}
+		
 		public CourseMessage addMessage(Long courseId, String course, String code, String message, Integer confirm) {
 			CourseMessage m = new CourseMessage();
 			m.setCourseId(courseId);
