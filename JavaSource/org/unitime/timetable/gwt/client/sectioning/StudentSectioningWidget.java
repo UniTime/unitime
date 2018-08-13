@@ -2421,7 +2421,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iLastEnrollment = lastEnrollment;
 		if (showWaiting) LoadingWidget.getInstance().show(MESSAGES.waitSpecialRegistration());
 		iSectioningService.checkSpecialRequestEligibility(
-				new SpecialRegistrationEligibilityRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iLastEnrollment, iLastAssignment == null ? null : iLastAssignment.getErrors()),
+				new SpecialRegistrationEligibilityRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iSpecRegCx.getRequestId(), iLastEnrollment, iLastAssignment == null ? null : iLastAssignment.getErrors()),
 				new AsyncCallback<SpecialRegistrationEligibilityResponse>() {
 					@Override
 					public void onFailure(Throwable caught) {

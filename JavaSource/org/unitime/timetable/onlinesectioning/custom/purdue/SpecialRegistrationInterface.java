@@ -62,6 +62,7 @@ public class SpecialRegistrationInterface {
 	public static enum RequestStatus {
 		 mayEdit, mayNotEdit, maySubmit, newRequest,
 		 draft, inProgress, approved, denied, cancelled,
+		 completed, deferred, escalated,
 		 ;
 	}
 	

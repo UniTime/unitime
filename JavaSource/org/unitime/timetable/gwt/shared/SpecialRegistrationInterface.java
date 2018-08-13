@@ -73,7 +73,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public boolean hasRequestId() { return iSpecRegRequestId != null; }
 		public String getRequestId() { return iSpecRegRequestId; }
 		public void setRequestId(String id) { iSpecRegRequestId = id; }
-		public boolean isCanSubmit() { return iSpecRegStatus == null || iSpecRegStatus == SpecialRegistrationStatus.Draft; }
+		public boolean isCanSubmit() { return iSpecRegStatus == null || iSpecRegStatus == SpecialRegistrationStatus.Draft || iSpecRegStatus == SpecialRegistrationStatus.Pending; }
 		public boolean isDisclaimerAccepted() { return iSpecRegDisclaimerAccepted; }
 		public void setDisclaimerAccepted(boolean accepted) { iSpecRegDisclaimerAccepted = accepted; }
 		public boolean areTimeConflictsAllowed() { return iSpecRegTimeConfs; }
@@ -109,14 +109,16 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private static final long serialVersionUID = 1L;
 		private Long iSessionId;
 		private Long iStudentId;
+		private String iRequestId;
 		private Collection<ClassAssignmentInterface.ClassAssignment> iClassAssignments;
 		private ArrayList<ErrorMessage> iErrors = null;
 		
 		public SpecialRegistrationEligibilityRequest() {}
-		public SpecialRegistrationEligibilityRequest(Long sessionId, Long studentId, Collection<ClassAssignmentInterface.ClassAssignment> assignments, Collection<ErrorMessage> errors) {
+		public SpecialRegistrationEligibilityRequest(Long sessionId, Long studentId, String requestId, Collection<ClassAssignmentInterface.ClassAssignment> assignments, Collection<ErrorMessage> errors) {
 			iClassAssignments = assignments;
 			iStudentId = studentId;
 			iSessionId = sessionId;
+			iRequestId = requestId;
 			if (errors != null)
 				iErrors = new ArrayList<ErrorMessage>(errors);
 		}
@@ -125,6 +127,9 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 		public Long getStudentId() { return iStudentId; }
 		public void setStudentId(Long studentId) { iStudentId = studentId; }
+		public String getRequestId() { return iRequestId; }
+		public boolean hasRequestId() { return iRequestId != null && !iRequestId.isEmpty(); }
+		public void setRequestId(String requestId) { iRequestId = requestId; }
 		public Collection<ClassAssignmentInterface.ClassAssignment> getClassAssignments() { return iClassAssignments; }
 		public void setClassAssignments(Collection<ClassAssignmentInterface.ClassAssignment> assignments) { iClassAssignments = assignments; }
 		public void addError(ErrorMessage error) {

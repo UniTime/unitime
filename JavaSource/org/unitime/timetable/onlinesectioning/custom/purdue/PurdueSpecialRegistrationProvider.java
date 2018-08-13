@@ -238,6 +238,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			return SpecialRegistrationStatus.Pending;
 	}
 	
+	protected boolean isPending(String status) {
+		return status != null && !RequestStatus.cancelled.name().equals(status) && !RequestStatus.approved.name().equals(status) && !RequestStatus.denied.name().equals(status); 
+	}
+	
 	protected SpecialRegistrationStatus combine(SpecialRegistrationStatus s1, SpecialRegistrationStatus s2) {
 		if (s1 == null) return s2;
 		if (s2 == null) return s1;
@@ -253,7 +257,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 	protected boolean canCancel(SpecialRegistrationRequest request) {
 		if (request.changes != null) {
 			for (Change ch: request.changes) {
-				if (RequestStatus.inProgress.name().equals(ch.status)) return true;
+				if (isPending(ch.status)) return true;
 			}
 		}
 		return false;
@@ -522,37 +526,60 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			
 			if (ret.hasErrors() && response.data != null && response.data.requests != null) {
 				Set<ErrorMessage> errors = new TreeSet<ErrorMessage>();
+				Set<String> denials = new HashSet<String>();
 				for (SpecialRegistrationRequest r: response.data.requests) {
-					if (r.changes != null) {
-						boolean cancel = false;;
-						String maxi = null;
-						Set<String> adds = new TreeSet<String>(), drops = new TreeSet<String>();
+					if (r.changes == null) continue;
+					boolean cancel = false;
+					String maxi = null;
+					if (r.requestId.equals(input.getRequestId())) {
+						cancel = true;
 						for (Change ch: r.changes) {
-							if (RequestStatus.inProgress.name().equals(ch.status)) {
-								if (ch.subject == null || ch.courseNbr == null) {
-									if (ch.errors != null)
-										for (ChangeError e: ch.errors)
-											if ("MAXI".equals(e.code)) maxi = e.message;
-									continue;
-								}
+							if (RequestStatus.denied.name().equals(ch.status)) {
 								String course = ch.subject + " " + ch.courseNbr;
 								for (ErrorMessage error: ret.getErrors())
 									if (course.equals(error.getCourse())) {
 										if (ch.errors != null)
 											for (ChangeError e: ch.errors) {
-												errors.add(new ErrorMessage(course, ch.crn, e.code, e.message));
-												cancel = true;
+												if (e.code.equals(error.getCode()) && denials.add(course + ":" + e.code)) {
+													ret.setMessage((ret.hasMessage() ? ret.getMessage() + "\n" : "") + error.getCourse() + " " + error.getMessage() + " has been denied.");
+													ret.setCanSubmit(false);
+												}
 											}
 									}
 							}
+						}
+					} else {
+						for (Change ch: r.changes) {
+							if (isPending(ch.status)) {
+								if (ch.subject == null || ch.courseNbr == null) {
+									if (ch.errors != null)
+										for (ChangeError e: ch.errors)
+											if ("MAXI".equals(e.code)) maxi = e.message;
+								} else {
+									String course = ch.subject + " " + ch.courseNbr;
+									for (ErrorMessage error: ret.getErrors())
+										if (course.equals(error.getCourse()) && ch.errors != null && !ch.errors.isEmpty()) cancel = true;
+								}
+							}
+						}
+					}
+					if (cancel) {
+						Set<String> adds = new TreeSet<String>(), drops = new TreeSet<String>();
+						for (Change ch: r.changes) {
 							if (ch.subject != null && ch.courseNbr != null) {
+								if (isPending(ch.status)) {
+									if (ch.errors != null)
+										for (ChangeError e: ch.errors) {
+											errors.add(new ErrorMessage(ch.subject + " " + ch.courseNbr, ch.crn, e.code, e.message));
+										}
+								}
 								if (ChangeOperation.ADD.name().equals(ch.operation))
 									adds.add(ch.subject + " " + ch.courseNbr);
 								else
 									drops.add(ch.subject + " " + ch.courseNbr);
 							}
 						}
-						if (maxi != null && cancel)
+						if (maxi != null)
 							for (String c: adds)
 								if (!drops.contains(c))
 									errors.add(new ErrorMessage(c, "", "MAXI", maxi));
