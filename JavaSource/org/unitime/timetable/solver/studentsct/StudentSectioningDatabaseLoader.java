@@ -850,6 +850,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	else if (s.isRequestPending() && !iCheckRequestStatusSkipPending)
         		maxCredit = s.getOverrideMaxCredit();
         }
+        if (maxCredit > 0f)
+        	student.setMaxCredit(maxCredit);
 
 		TreeSet<CourseDemand> demands = new TreeSet<CourseDemand>(new Comparator<CourseDemand>() {
 			public int compare(CourseDemand d1, CourseDemand d2) {
@@ -1024,8 +1026,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections, getAssignment());
                     request.setInitialAssignment(enrollment);
                 }
-                if (!cd.isAlternative() && (iMaxCreditChecking && maxCredit > 0 && credit > maxCredit))
-                	iProgress.info("Request " + request + " is treated as alternative (" + credit + " > " + maxCredit + ") for " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ")");
+                if (!cd.isAlternative() && maxCredit > 0 && credit > maxCredit) {
+                	if (iMaxCreditChecking)
+                		iProgress.info("Request " + request + " is treated as alternative (" + credit + " > " + maxCredit + ") for " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ")");
+                	else
+                		iProgress.info("Request " + request + " is over the max cerdit limit for " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ")");
+                }
                 if (assignedConfig!=null && assignedSections.size() != assignedConfig.getSubparts().size()) {
                 	iProgress.error("There is a problem assigning " + request.getName() + " to " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ") wrong number of classes (" +
                 			"has " + assignedSections.size() + ", expected " + assignedConfig.getSubparts().size() + ").");
@@ -1129,6 +1135,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     }
     
     public void checkForConflicts(Student student) {
+		float credit = 0f;
     	for (Request r: student.getRequests()) {
     		if (getAssignment().getValue(r) != null || r.getInitialAssignment() == null || !(r instanceof CourseRequest)) continue;
     		if (!student.isAvailable(r.getInitialAssignment())) {
@@ -1141,6 +1148,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     		}
            	CourseRequest cr = (CourseRequest)r;
            	Enrollment enrl = (Enrollment)r.getInitialAssignment();
+           	if (enrl != null) credit += enrl.getCredit();
     		if ((iAllowToKeepCurrentEnrollment || iTweakLimits) && student.getId() >= 0) {
     			iProgress.info("There was a problem assigning " + cr.getName() + " to " + student.getName() + " (" + student.getExternalId() + ") ");
     			boolean hasMustUse = false;
@@ -1192,6 +1200,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     					hasLimit = true;
     				}
            		}
+       			if (iAllowToKeepCurrentEnrollment && student.hasMaxCredit() && credit > student.getMaxCredit()) {
+       				student.setMaxCredit(credit);
+       				iProgress.info("Max credit increased to " + credit + " for " + student.getName() + " (" + student.getExternalId() + ") ");
+       			}
            		if (iAllowToKeepCurrentEnrollment) {
                		Reservation reservation = new ReservationOverride(--iMakeupReservationId, enrl.getOffering(), student.getId());
                		if (hasLimit) reservation.setCanAssignOverLimit(true);

@@ -94,7 +94,7 @@ public class XStudent extends XStudentId implements Externalizable {
     	iStatus = student.getSectioningStatus() == null ? null : student.getSectioningStatus().getReference();
     	iEmail = student.getEmail();
     	iEmailTimeStamp = student.getScheduleEmailedDate() == null ? null : student.getScheduleEmailedDate();
-        for (StudentAreaClassificationMajor acm: student.getAreaClasfMajors()) {
+    	for (StudentAreaClassificationMajor acm: student.getAreaClasfMajors()) {
         	iMajors.add(new XAreaClassificationMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode()));
         }
         for (StudentGroup group: student.getGroups()) {
@@ -223,6 +223,8 @@ public class XStudent extends XStudentId implements Externalizable {
     	iStatus = student.getStatus();
     	iAllowDisabled = student.isAllowDisabled();
     	iEmailTimeStamp = (student.getEmailTimeStamp() == null ? null : new Date(student.getEmailTimeStamp()));
+    	if (student.hasMaxCredit())
+    		iMaxCredit = student.getMaxCredit();
     	for (AreaClassificationMajor acm: student.getAreaClassificationMajors()) {
     		iMajors.add(new XAreaClassificationMajor(acm.getArea(), acm.getClassification(), acm.getMajor()));
     	}
