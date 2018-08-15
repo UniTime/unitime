@@ -147,6 +147,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private DockPanel iAssignmentDock;
 	private FocusPanel iAssignmentPanel;
 	private ImageLink iCalendar = null;
+	private P iWaiting = null, iWaitingMessage;
 	
 	private CourseRequestsTable iCourseRequests;
 	private WebTable iAssignments;
@@ -367,6 +368,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iEnroll.setEnabled(false);
 		iEnroll.getElement().getStyle().setMarginLeft(4, Unit.PX);
 		rightFooterPanel.add(iEnroll);
+		
+		iWaiting = new P("unitime-Waiting");
+		iWaiting.add(new Image(RESOURCES.loading_small()));
+		iWaitingMessage = new P("waiting-message");
+		iWaiting.add(iWaitingMessage);
+		iWaiting.setVisible(false);
+		rightFooterPanel.add(iWaiting);
 		
 		iSubmitSpecReg = new AriaButton(MESSAGES.buttonSubmitSpecReg());
 		iSubmitSpecReg.setTitle(MESSAGES.hintSpecialRegistration());
@@ -2419,19 +2427,42 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	protected void checkSpecialRegistrationAfterFailedSubmitSchedule(ArrayList<ClassAssignmentInterface.ClassAssignment> lastEnrollment, final boolean showWaiting) {
 		if (!iSpecRegCx.isCanSubmit()) return;
 		iLastEnrollment = lastEnrollment;
-		if (showWaiting) LoadingWidget.getInstance().show(MESSAGES.waitSpecialRegistration());
+		final boolean enrl = iEnroll.isVisible();
+		final boolean print = iPrint.isVisible();
+		final boolean spreg = iSubmitSpecReg.isVisible();
+		if (showWaiting)
+			LoadingWidget.getInstance().show(MESSAGES.waitOverridesCheck());
+		else {
+			iEnroll.setEnabled(false); iEnroll.setVisible(false);
+			iPrint.setEnabled(false); iPrint.setVisible(false);
+			iSubmitSpecReg.setEnabled(false); iSubmitSpecReg.setVisible(false);
+			iWaitingMessage.setText(MESSAGES.waitOverridesCheck());
+			iWaiting.setVisible(true);
+		}
 		iSectioningService.checkSpecialRequestEligibility(
 				new SpecialRegistrationEligibilityRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iSpecRegCx.getRequestId(), iLastEnrollment, iLastAssignment == null ? null : iLastAssignment.getErrors()),
 				new AsyncCallback<SpecialRegistrationEligibilityResponse>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						if (showWaiting) LoadingWidget.getInstance().hide();
+						else {
+							iWaiting.setVisible(false);
+							iEnroll.setEnabled(enrl); iEnroll.setVisible(enrl);
+							iSubmitSpecReg.setEnabled(spreg); iSubmitSpecReg.setVisible(spreg);
+							iPrint.setEnabled(print); iPrint.setVisible(print);
+						}
 						iStatus.error(MESSAGES.requestSpecialRegistrationFail(caught.getMessage()), caught);
 					}
 
 					@Override
 					public void onSuccess(SpecialRegistrationEligibilityResponse response) {
 						if (showWaiting) LoadingWidget.getInstance().hide();
+						else {
+							iWaiting.setVisible(false);
+							iEnroll.setEnabled(enrl); iEnroll.setVisible(enrl);
+							iSubmitSpecReg.setEnabled(spreg); iSubmitSpecReg.setVisible(spreg);
+							iPrint.setEnabled(print); iPrint.setVisible(print);
+						}
 						final Collection<ErrorMessage> errors = (response.hasErrors() ? response.getErrors() : iLastAssignment != null && iLastAssignment.hasErrors() ? iLastAssignment.getErrors() : null);
 						if (response.isCanSubmit() && errors != null && !errors.isEmpty()) {
 							CheckCoursesResponse confirm = new CheckCoursesResponse();

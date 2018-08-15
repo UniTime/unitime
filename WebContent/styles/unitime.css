@@ -3407,7 +3407,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-ImageButton {
 	cursor: pointer;
   	cursor: hand;
-  	vertical-align: middle;
+  	vertical-align: bottom;
 }
 
 .unitime-ImageButton-disabled {
@@ -6281,3 +6281,16 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-PeriodicTaskEditor .unitime-MainTable .label-td {
 	width: 5%;
 }
+
+.unitime-Waiting {
+	text-align: center;
+	display: inline-block;
+	padding: 1px 2px 1px 2px;
+	vertical-align: bottom;
+}
+
+.unitime-Waiting .waiting-message {
+	display: inline;
+	padding-left: 3px;
+	vertical-align: top;
+}}

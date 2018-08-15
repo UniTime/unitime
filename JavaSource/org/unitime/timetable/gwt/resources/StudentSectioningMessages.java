@@ -984,6 +984,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Checking eligibility...")
 	String waitEligibilityCheck();
 	
+	@DefaultMessage("Checking overrides...")
+	String waitOverridesCheck();
+	
 	@DefaultMessage("Filter assignments of the selected class by name, day, start time, date, room or instructor." +
 			"<br><br>You can also use the following tags:" +
 			"<ul>" +
