@@ -74,7 +74,7 @@ public class Constants extends org.cpsolver.coursett.Constants {
     public static int EVENING_SLOTS_LAST = (23*60 + 00)/5 - 1; // evening ends at 23:00
 
     /** version */
-    public static String VERSION = "4.3";
+    public static String VERSION = "4.4";
     
     /** release date */
     private static String REL_DATE = "${build.date}";
