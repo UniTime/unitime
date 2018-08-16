@@ -27,6 +27,7 @@
 <!ELEMENT status ( permissions, effective-dates?, message?, course*, fallback? ) >
 <!ATTLIST status reference CDATA #REQUIRED >
 <!ATTLIST status name CDATA #REQUIRED >
+<!ATTLIST status session (true|false) "false">
 
 <!ELEMENT permissions EMPTY >
 <!ATTLIST permissions assistantEnabled (true|false) "false">

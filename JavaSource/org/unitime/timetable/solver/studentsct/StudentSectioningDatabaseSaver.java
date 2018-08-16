@@ -348,7 +348,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             	iStatusToSet = null; iResetStatus = true;
             	iProgress.info("Setting student sectioning status to " + (session.getDefaultSectioningStatus() == null ? "System Default (All Enabled)" : "Session Default (" + session.getDefaultSectioningStatus().getLabel() + ")") + ".");
             } else if (statusToSet != null && !statusToSet.isEmpty() && !statusToSet.equals("N/A")) {
-            	iStatusToSet = StudentSectioningStatus.getStatus(statusToSet, null, hibSession);
+            	iStatusToSet = StudentSectioningStatus.getStatus(statusToSet, session.getUniqueId(), hibSession);
             	if (iStatusToSet == null)
             		iProgress.warn("Student sectioning status " + statusToSet + " does not exist.");
             	else

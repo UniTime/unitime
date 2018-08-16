@@ -37,7 +37,6 @@ import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningStatus;
-import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.IdValue;
 import org.unitime.timetable.util.ReferenceList;
@@ -392,7 +391,7 @@ public class SessionEditForm extends ActionForm {
     public void setSectStatus(Long sectStatus) { this.sectStatus = sectStatus; }
     public List<IdValue> getSectStates() {
     	List<IdValue> ret = new ArrayList<IdValue>();
-    	for (StudentSectioningStatus status: StudentSectioningStatusDAO.getInstance().findAll())
+    	for (StudentSectioningStatus status: StudentSectioningStatus.findAll(getSessionId()))
     		ret.add(new IdValue(status.getUniqueId(), status.getLabel()));
     	return ret;
     }

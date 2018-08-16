@@ -286,6 +286,13 @@
             	column="stop_slot"
             	type="java.lang.Integer"
             	not-null="false"/>
+            
+            <many-to-one
+                name="session"
+                class="Session"
+                column="session_id"
+                not-null="false"
+                foreign-key="fk_sct_status_session"/>
 		</union-subclass>
         
         <union-subclass name="ExamType"

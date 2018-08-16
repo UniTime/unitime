@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.unitime.timetable.model.CourseType;
 import org.unitime.timetable.model.RefTableEntry;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningStatus;
 
 /**
@@ -43,6 +44,7 @@ public abstract class BaseStudentSectioningStatus extends RefTableEntry implemen
 	private Integer iEffectiveStopPeriod;
 
 	private StudentSectioningStatus iFallBackStatus;
+	private Session iSession;
 	private Set<CourseType> iTypes;
 
 	public static String PROP_STATUS = "status";
@@ -84,6 +86,9 @@ public abstract class BaseStudentSectioningStatus extends RefTableEntry implemen
 	public StudentSectioningStatus getFallBackStatus() { return iFallBackStatus; }
 	public void setFallBackStatus(StudentSectioningStatus fallBackStatus) { iFallBackStatus = fallBackStatus; }
 
+	public Session getSession() { return iSession; }
+	public void setSession(Session session) { iSession = session; }
+
 	public Set<CourseType> getTypes() { return iTypes; }
 	public void setTypes(Set<CourseType> types) { iTypes = types; }
 	public void addTotypes(CourseType courseType) {
@@ -116,6 +121,7 @@ public abstract class BaseStudentSectioningStatus extends RefTableEntry implemen
 			"\n	Label: " + getLabel() +
 			"\n	Message: " + getMessage() +
 			"\n	Reference: " + getReference() +
+			"\n	Session: " + getSession() +
 			"\n	Status: " + getStatus() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";

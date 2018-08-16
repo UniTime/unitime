@@ -15,25 +15,18 @@
  *
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
 */
-package org.unitime.timetable.model.dao;
 
-import java.util.List;
+alter table sectioning_status add session_id number(20,0);
 
-import org.unitime.timetable.model.StudentSectioningStatus;
-import org.unitime.timetable.model.base.BaseStudentSectioningStatusDAO;
+alter table sectioning_status add constraint fk_sct_status_session foreign key (session_id)
+	references sessions (uniqueid) on delete cascade;
 
-/**
- * @author Tomas Muller
+/*
+ * Update database version
  */
-public class StudentSectioningStatusDAO extends BaseStudentSectioningStatusDAO {
 
-	public StudentSectioningStatusDAO() {}
-	
-	@Override
-	public List<StudentSectioningStatus> findAll () {
-		return super.findAll();
-	}
+update application_config set value='210' where name='tmtbl.db.version';
 
-}
+commit;

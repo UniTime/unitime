@@ -41,7 +41,7 @@ public abstract class BaseDistributionPref extends Preference implements Seriali
 	private DistributionType iDistributionType;
 	private Set<DistributionObject> iDistributionObjects;
 
-	public static String PROP_GROUPING = "grouping";
+	public static String PROP_DIST_GROUPING = "grouping";
 	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
 
 	public BaseDistributionPref() {

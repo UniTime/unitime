@@ -544,7 +544,7 @@ public class StudentSectioningImport extends BaseImport {
 	            	if (status.isEmpty())
 	            		student.setSectioningStatus(null);
 	            	else {
-	            		StudentSectioningStatus s = StudentSectioningStatus.getStatus(status, null, getHibSession());
+	            		StudentSectioningStatus s = StudentSectioningStatus.getStatus(status, session.getUniqueId(), getHibSession());
 	            		if (s != null)
 	            			student.setSectioningStatus(s);
 	            		else

@@ -22,6 +22,7 @@ package org.unitime.timetable.model;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.unitime.localization.impl.Localization;
@@ -85,8 +86,8 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 	
 	public static StudentSectioningStatus getStatus(String reference, Long sessionId, org.hibernate.Session hibSession) {
 		if (reference != null) {
-			StudentSectioningStatus status = (StudentSectioningStatus)hibSession.createQuery("from StudentSectioningStatus s where s.reference = :reference")
-					.setString("reference", reference).setMaxResults(1).setCacheable(true).uniqueResult();
+			StudentSectioningStatus status = (StudentSectioningStatus)hibSession.createQuery("from StudentSectioningStatus s where s.reference = :reference and (s.session is null or s.session = :sessionId)")
+					.setString("reference", reference).setLong("sessionId", sessionId == null ? -1l : sessionId.longValue()).setMaxResults(1).setCacheable(true).uniqueResult();
 			if (status != null)
 				return status;
 		}
@@ -191,5 +192,20 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 		} else {
 			return null;
 		}
+	}
+	
+	public static List<StudentSectioningStatus> findAll(Long sessionId) {
+		return findAll(null, sessionId);
+	}
+	
+	public static List<StudentSectioningStatus> findAll(org.hibernate.Session hibSession, Long sessionId) {
+		if (sessionId == null)
+			return (List<StudentSectioningStatus>)(hibSession == null ? StudentSectioningStatusDAO.getInstance().getSession() : hibSession).createQuery(
+					"from StudentSectioningStatus where session is null order by label"
+					).setCacheable(true).list();
+		else
+			return (List<StudentSectioningStatus>)(hibSession == null ? StudentSectioningStatusDAO.getInstance().getSession() : hibSession).createQuery(
+					"from StudentSectioningStatus where session is null or session = :sessionId order by label"
+					).setLong("sessionId", sessionId).setCacheable(true).list();
 	}
 }

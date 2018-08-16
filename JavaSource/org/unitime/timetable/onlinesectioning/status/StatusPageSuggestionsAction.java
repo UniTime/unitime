@@ -462,10 +462,10 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 							"Default - Academic session default (" + (session.getDefaultSectioningStatus() == null ? "No Restrictions" : session.getDefaultSectioningStatus()) + ")"
 					});
 				for (StudentSectioningStatus status: (List<StudentSectioningStatus>)StudentSectioningStatusDAO.getInstance().getSession().createQuery(
-						"select a from StudentSectioningStatus a where " +
+						"select a from StudentSectioningStatus a where (a.session is null or a.session = :sessionId) and " +
 						" (lower(a.reference) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(a.label) like '%' || :q || '%'") + ")" +
 						" order by a.reference"
-						).setString("q", m.group(2).toLowerCase()).setMaxResults(iLimit).list()) {
+						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", server.getAcademicSession().getUniqueId()).setMaxResults(iLimit).list()) {
 					ret.add(new String[] {
 							m.group(1) + (status.getReference().indexOf(' ') >= 0 ? "\"" + status.getReference() + "\"" : status.getReference()),
 							status.getReference() + " - " + status.getLabel()

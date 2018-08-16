@@ -44,6 +44,9 @@ public class StudentSchedulingStatusExport extends BaseExport {
 			beginTransaction();
 			
 			Element root = document.addElement("studentStatuses");
+			root.addAttribute("campus", session.getAcademicInitiative());
+	        root.addAttribute("year", session.getAcademicYear());
+	        root.addAttribute("term", session.getAcademicTerm());
 	        root.addAttribute("created", new Date().toString());
 	        root.addAttribute("dateFormat", sDateFormat.toPattern());
             root.addAttribute("timeFormat", sTimeFormat.toPattern());
@@ -51,10 +54,13 @@ public class StudentSchedulingStatusExport extends BaseExport {
 	        
 	        document.addDocType("studentStatuses", "-//UniTime//UniTime Student Scheduling Statuses DTD/EN", "http://www.unitime.org/interface/StudentStatuses.dtd");
 	        
-	        for (StudentSectioningStatus status: (List<StudentSectioningStatus>)getHibSession().createQuery("from StudentSectioningStatus order by reference").list()) {
+	        for (StudentSectioningStatus status: (List<StudentSectioningStatus>)getHibSession().createQuery(
+	        		"from StudentSectioningStatus where session is null or session = :sessionId order by reference"
+	        		).setLong("sessionId", session.getUniqueId()).list()) {
 	        	Element statusElement = root.addElement("status");
 	        	statusElement.addAttribute("reference", status.getReference());
 	        	statusElement.addAttribute("name", status.getLabel());
+	        	statusElement.addAttribute("session", status.getSession() == null ? "false" : "true");
 	        	Element permissionsEl = statusElement.addElement("permissions");
 	        	for (StudentSectioningStatus.Option option: StudentSectioningStatus.Option.values())
 	        		permissionsEl.addAttribute(getAttribute(option), status.hasOption(option) ? "true" : "false");

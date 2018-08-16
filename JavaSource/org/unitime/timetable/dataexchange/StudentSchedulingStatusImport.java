@@ -28,9 +28,9 @@ import java.util.Map;
 
 import org.dom4j.Element;
 import org.unitime.timetable.model.CourseType;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.CourseTypeDAO;
-import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.util.Formats;
 
 /**
@@ -49,12 +49,22 @@ public class StudentSchedulingStatusImport extends BaseImport {
 		try {
 			beginTransaction();
 			
+			Session session = null;
+            String campus = root.attributeValue("campus");
+            String year   = root.attributeValue("year");
+            String term   = root.attributeValue("term");
+            if (campus != null && year != null && term != null) {
+            	session = Session.getSessionUsingInitiativeYearTerm(campus, year, term);
+            	if (session == null)
+    	           	throw new Exception("No session found for the given campus, year, and term.");
+            }
+			
 			boolean incremental = "true".equalsIgnoreCase(root.attributeValue("incremental", "true"));
 			dateFormat = Formats.getDateFormat(root.attributeValue("dateFormat", "yyyy/M/d"));
 			timeFormat = Formats.getDateFormat(root.attributeValue("timeFormat", "HHmm"));
 			
 			Map<String, StudentSectioningStatus> statuses = new HashMap<String, StudentSectioningStatus>();
-			for (StudentSectioningStatus status: StudentSectioningStatusDAO.getInstance().findAll(getHibSession())) {
+			for (StudentSectioningStatus status: StudentSectioningStatus.findAll(session == null ? null : session.getUniqueId())) {
 				statuses.put(status.getReference(), status);
 			}
 			Map<String, CourseType> courseTypes = new HashMap<String, CourseType>();
@@ -75,6 +85,7 @@ public class StudentSchedulingStatusImport extends BaseImport {
                 	status.setTypes(new HashSet<CourseType>());
                 }
                 status.setLabel(statusEl.attributeValue("name"));
+                status.setSession("true".equalsIgnoreCase(statusEl.attributeValue("session","false")) ? session : null);
                 
                 Element permissionsEl = statusEl.element("permissions");
                 status.setStatus(0);

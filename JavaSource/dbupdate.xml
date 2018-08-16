@@ -13199,4 +13199,12 @@
 		<plsql>alter table %SCHEMA%.sectioning_status modify message varchar2(500 char)</plsql>
 		<mysql>alter table %SCHEMA%.sectioning_status modify message varchar(500)</mysql>
 	</update>
+	<update version="210" date="16-Aug-2018" comment="Student Sectioning Session Status">
+		<plsql>alter table %SCHEMA%.sectioning_status add session_id number(20,0)</plsql>
+		<mysql>alter table %SCHEMA%.sectioning_status add session_id decimal(20,0)</mysql>
+		<sql>
+			alter table %SCHEMA%.sectioning_status add constraint fk_sct_status_session foreign key (session_id)
+			references %SCHEMA%.sessions (uniqueid) on delete cascade
+		</sql>
+	</update>
 </dbupdate>
