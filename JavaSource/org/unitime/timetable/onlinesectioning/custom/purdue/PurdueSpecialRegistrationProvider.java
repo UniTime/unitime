@@ -577,6 +577,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 									adds.add(ch.subject + " " + ch.courseNbr);
 								else
 									drops.add(ch.subject + " " + ch.courseNbr);
+							} else if (r.requestId.equals(input.getRequestId()) && isPending(ch.status)) {
+								if (ch.errors != null)
+									for (ChangeError e: ch.errors)
+										if ("MAXI".equals(e.code)) maxi = e.message;
 							}
 						}
 						if (maxi != null)
@@ -1082,7 +1086,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		TreeSet<CourseOffering> courses = new TreeSet<CourseOffering>();
 		SpecialRegistrationStatus status = null;
 		String maxi = null;
-		SpecialRegistrationStatus maxStatus = null;
+		String maxStatus = null;
 		String maxiNote = null;
 		if (specialRequest.changes != null)
 			for (Change change: specialRequest.changes) {
@@ -1091,7 +1095,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 						for (ChangeError err: change.errors)
 							if ("MAXI".equals(err.code)) {
 								maxi = err.message;
-								maxStatus = getStatus(change.status);
+								maxStatus = change.status;
 								maxiNote = change.notes;
 							}
 					continue;
@@ -1210,16 +1214,18 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								String message = err.message;
 								switch (getStatus(ch.status)) {
 								case Approved:
-									message += " (approved)";
+									message = "Approved: " + message;
 									if (excludeApprovedOrRejected) continue;
 									break;
 								case Rejected:
-									message += " (rejected)";
+									message = "Rejected: " + message;
 									if (excludeApprovedOrRejected) continue;
 									break;
 								}
 								if (ch.notes != null && !ch.notes.toString().isEmpty())
-									message += "\n  " + ch.notes.trim();
+									message += "\n  <span class='note'>" + ch.notes.trim() + "</span>";
+								if (ch.status != null)
+									message = "<span class='" + ch.status + "'>" + message + "</span>";
 								if (ca.hasError())
 									ca.setError(ca.getError() + "\n" + message);
 								else
@@ -1235,18 +1241,21 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 						}
 						if (first) {
 							String message = maxi;
-							switch (maxStatus) {
+							switch (getStatus(maxStatus)) {
 							case Approved:
-								message += " (approved)";
+								message = "Approved: " + message;
 								if (excludeApprovedOrRejected) continue;
 								break;
 							case Rejected:
-								message += " (rejected)";
+								message = "Rejected: " + message;
 								if (excludeApprovedOrRejected) continue;
 								break;
 							}
 							if (maxiNote != null && !maxiNote.toString().isEmpty())
-								message += "\n  " + maxiNote.trim();
+								message += "\n  <span class='note'>" + maxiNote.trim() + "</span>";
+							
+							if (maxStatus != null)
+								message = "<span class='" + maxStatus + "'>" + message + "</span>";
 							if (ca.hasError())
 								ca.setError(ca.getError() + "\n" + message);
 							else
@@ -1333,16 +1342,18 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								String message = err.message;
 								switch (getStatus(ch.status)) {
 								case Approved:
-									message += " (approved)";
+									message = "Approved: " + message;
 									if (excludeApprovedOrRejected) continue;
 									break;
 								case Rejected:
-									message += " (rejected)";
+									message = "Rejected: " + message;
 									if (excludeApprovedOrRejected) continue;
 									break;
 								}
 								if (ch.notes != null && !ch.notes.toString().isEmpty())
-									message += "\n  " + ch.notes.trim();
+									message += "\n  <span class='note'>" + ch.notes.trim() + "</span>";
+								if (ch.status != null)
+									message = "<span class='" + ch.status + "'>" + message + "</span>";
 								if (ca.hasError())
 									ca.setError(ca.getError() + "\n" + message);
 								else
@@ -1353,14 +1364,6 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 
 					ret.addChange(ca);
 				}
-			}
-		}
-		if (desc.isEmpty() && specialRequest.maxCredit != null) {
-			for (Change change: specialRequest.changes) {
-				if (change.crn == null && change.overrides != null)
-					for (SpecialRegistrationInterface.Override o: change.overrides)
-						if (o.message != null && !o.message.isEmpty())
-							desc += (desc.isEmpty() ? "" : "\n") + o.message + (change.status == null || change.status.isEmpty() ? "" : " (" + change.status + ")");
 			}
 		}
 		

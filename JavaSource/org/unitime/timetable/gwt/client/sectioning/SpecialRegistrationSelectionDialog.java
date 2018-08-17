@@ -220,7 +220,7 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 					row.add(new Label(ca.getSection()));
 					row.add(new HTML(ca.getLimitString()));
 					row.add(new CreditCell(ca.getCredit()));
-					Label errorsLabel = new Label(ca.hasError() ? ca.getError() : ""); errorsLabel.addStyleName("registration-errors");
+					HTML errorsLabel = new HTML(ca.hasError() ? ca.getError() : ""); errorsLabel.addStyleName("registration-errors");
 					row.add(errorsLabel);
 					P s = new P("icons");
 					switch (ca.getSpecRegOperation()) {

@@ -62,6 +62,7 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpe
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationStatus;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
@@ -1150,22 +1151,22 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (clazz.getSpecRegStatus() != null) {
 							switch (clazz.getSpecRegStatus()) {
 							case Draft:
-								icons.add(RESOURCES.specRegDraft(), (clazz.hasError() ? clazz.getError() + "\n" : "") + MESSAGES.hintSpecRegDraft());
+								icons.add(RESOURCES.specRegDraft(), (clazz.hasError() ? clazz.getError() + "\n" : "") + MESSAGES.hintSpecRegDraft(), true);
 								break;
 							case Approved:
-								icons.add(RESOURCES.specRegApproved(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegApproved());
+								icons.add(RESOURCES.specRegApproved(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegApproved(), true);
 								break;
 							case Cancelled:
-								icons.add(RESOURCES.specRegCancelled(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegCancelled());
+								icons.add(RESOURCES.specRegCancelled(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegCancelled(), true);
 								break;
 							case Pending:
-								icons.add(RESOURCES.specRegPending(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegPending());
+								icons.add(RESOURCES.specRegPending(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegPending(), true);
 								break;
 							case Rejected:
-								icons.add(RESOURCES.specRegRejected(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegRejected());
+								icons.add(RESOURCES.specRegRejected(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegRejected(), true);
 								break;
 							}
-							if (clazz.hasError()) {
+							if (clazz.hasError() && clazz.getSpecRegStatus() != SpecialRegistrationStatus.Approved) {
 								style += " text-red";
 								hasError = true;
 							}
@@ -1418,19 +1419,19 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							if (clazz.getSpecRegStatus() != null) {
 								switch (clazz.getSpecRegStatus()) {
 								case Draft:
-									icons.add(RESOURCES.specRegDraft(), (clazz.hasError() ? clazz.getError() + "\n" : "") + MESSAGES.hintSpecRegDraft());
+									icons.add(RESOURCES.specRegDraft(), (clazz.hasError() ? clazz.getError() + "\n" : "") + MESSAGES.hintSpecRegDraft(), true);
 									break;
 								case Approved:
-									icons.add(RESOURCES.specRegApproved(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegApproved());
+									icons.add(RESOURCES.specRegApproved(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegApproved(), true);
 									break;
 								case Cancelled:
-									icons.add(RESOURCES.specRegCancelled(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegCancelled());
+									icons.add(RESOURCES.specRegCancelled(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegCancelled(), true);
 									break;
 								case Pending:
-									icons.add(RESOURCES.specRegPending(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegPending());
+									icons.add(RESOURCES.specRegPending(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegPending(), true);
 									break;
 								case Rejected:
-									icons.add(RESOURCES.specRegRejected(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegRejected());
+									icons.add(RESOURCES.specRegRejected(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegRejected(), true);
 									break;
 								}
 							} else if (clazz.hasError()) {
@@ -1503,19 +1504,19 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (clazz.getSpecRegStatus() != null) {
 							switch (clazz.getSpecRegStatus()) {
 							case Draft:
-								icons.add(RESOURCES.specRegDraft(), (clazz.hasError() ? clazz.getError() + "\n" : "") + MESSAGES.hintSpecRegDraft());
+								icons.add(RESOURCES.specRegDraft(), (clazz.hasError() ? clazz.getError() + "\n" : "") + MESSAGES.hintSpecRegDraft(), true);
 								break;
 							case Approved:
-								icons.add(RESOURCES.specRegApproved(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegApproved());
+								icons.add(RESOURCES.specRegApproved(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegApproved(), true);
 								break;
 							case Cancelled:
-								icons.add(RESOURCES.specRegCancelled(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegCancelled());
+								icons.add(RESOURCES.specRegCancelled(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegCancelled(), true);
 								break;
 							case Pending:
-								icons.add(RESOURCES.specRegPending(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegPending());
+								icons.add(RESOURCES.specRegPending(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegPending(), true);
 								break;
 							case Rejected:
-								icons.add(RESOURCES.specRegRejected(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegRejected());
+								icons.add(RESOURCES.specRegRejected(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegRejected(), true);
 								break;
 							}
 						} else if (clazz.hasError()) {

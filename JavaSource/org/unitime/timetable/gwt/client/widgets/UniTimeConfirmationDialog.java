@@ -65,10 +65,18 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 	private String iMessage;
 	
 	protected UniTimeConfirmationDialog(Type type, String message, String question, String answer, Command command) {
-		this(type, type.getTitle(), type.getIcon(), message, question, answer, command);
+		this(type, message, false, question, answer, command);
+	}
+	
+	protected UniTimeConfirmationDialog(Type type, String title, ImageResource icon, String message, String question, String answer, Command command) {
+		this(type, title, icon, message, false, question, answer, command);
+	}
+	
+	protected UniTimeConfirmationDialog(Type type, String message, boolean html, String question, String answer, Command command) {
+		this(type, type.getTitle(), type.getIcon(), message, html, question, answer, command);
 	}
 
-	protected UniTimeConfirmationDialog(Type type, String title, ImageResource icon, String message, String question, String answer, Command command) {
+	protected UniTimeConfirmationDialog(Type type, String title, ImageResource icon, String message, boolean html, String question, String answer, Command command) {
 		super(true, true);
 		this.setText(title);
 		iAnswer = answer;
@@ -97,7 +105,11 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 		if (message != null && !message.isEmpty()) {
 			P mp = new P("message-panel");
 			cp.add(mp);
-			P m = new P("message"); m.setText(message);
+			P m = new P("message");
+			if (html)
+				m.setHTML(message);
+			else
+				m.setText(message);
 			mp.add(m);
 		}
 		
@@ -193,6 +205,10 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 	
 	public static void info(String message) {
 		new UniTimeConfirmationDialog(Type.INFO, message, null, null, null).center();
+	}
+	
+	public static void info(String message, boolean html) {
+		new UniTimeConfirmationDialog(Type.INFO, message, html, null, null, null).center();
 	}
 
 	public static void alert(boolean useDefault, String message) {

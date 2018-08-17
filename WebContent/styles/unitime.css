@@ -4238,6 +4238,18 @@ unitime-RoomSharingWidget .legend .blank {
 	text-align: justify;
 }
 
+.unitime-ConfirmationPanel .message-panel .message .approved {
+	color: green;
+}
+
+.unitime-ConfirmationPanel .message-panel .message .denied {
+	color: red;
+}
+
+.unitime-ConfirmationPanel .message-panel .message .note {
+	font-style: italic;
+}
+
 .unitime-ConfirmationPanel .message-panel .request-note {
 	margin-top: 2px;
 	margin-left: 15px;
@@ -6029,7 +6041,18 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-SpecialRegistrations .registration-errors {
 	white-space: pre;
+}
+
+.unitime-SpecialRegistrations .registration-errors .denied {
 	color: red;
+}
+
+.unitime-SpecialRegistrations .registration-errors .approved {
+	color: green;
+}
+
+.unitime-SpecialRegistrations .registration-errors .note {
+	font-style: italic;
 }
 
 .unitime-SpecialRegistrations .date-and-note {

@@ -693,10 +693,16 @@ public class WebTable extends Composite implements HasMobileScroll {
 		}
 		
 		public IconsCell add(ImageResource resource, final String title) {
+			return add(resource, title, false);
+		}
+		
+		public IconsCell add(ImageResource resource, final String title, final boolean html) {
 			if (resource == null) return this;
 			Image icon = new Image(resource);
-			icon.setTitle(title);
-			icon.setAltText(title);
+			String text = title;
+			if (html) { HTML h = new HTML(title); text = h.getText(); }
+			icon.setTitle(text);
+			icon.setAltText(text);
 			if (iPanel.getWidgetCount() > 0)
 				icon.getElement().getStyle().setPaddingLeft(3, Unit.PX);
 			iPanel.add(icon);
@@ -706,7 +712,7 @@ public class WebTable extends Composite implements HasMobileScroll {
 					@Override
 					public void onClick(ClickEvent event) {
 						event.stopPropagation();
-						UniTimeConfirmationDialog.info(title);
+						UniTimeConfirmationDialog.info(title, html);
 					}
 				});
 			}
