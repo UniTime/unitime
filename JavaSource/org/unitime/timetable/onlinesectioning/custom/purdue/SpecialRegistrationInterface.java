@@ -124,12 +124,34 @@ public class SpecialRegistrationInterface {
 		public List<ChangeError> errors;
 		public List<Override> overrides;
 		public String status;
-		public String notes;
+		public List<ChangeNote> notes;
+		
+		public boolean hasLastNote() {
+			if (notes == null || notes.isEmpty()) return false;
+			for (ChangeNote n: notes)
+				if (n.notes != null && !n.notes.isEmpty()) return true;
+			return false;
+		}
+		public String getLastNote() {
+			if (notes == null || notes.isEmpty()) return null;
+			ChangeNote note = null;
+			for (ChangeNote n: notes)
+				if (n.notes != null && !n.notes.isEmpty() && (note == null || note.dateCreated.isBefore(n.dateCreated)))
+					note = n;
+			return (note == null ? null : note.notes);
+		}
 	}
 	
 	public static class ChangeError {
 		String code;
 		String message;
+	}
+	
+	public static class ChangeNote {
+		public DateTime dateCreated;
+		public String fullName;
+		public String notes;
+		public String purpose;
 	}
 	
 	public static class EligibilityProblem {

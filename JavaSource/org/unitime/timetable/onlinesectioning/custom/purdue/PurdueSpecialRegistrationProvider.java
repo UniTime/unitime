@@ -1096,7 +1096,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							if ("MAXI".equals(err.code)) {
 								maxi = err.message;
 								maxStatus = change.status;
-								maxiNote = change.notes;
+								maxiNote = change.getLastNote();
 							}
 					continue;
 				}
@@ -1218,12 +1218,12 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 									if (excludeApprovedOrRejected) continue;
 									break;
 								case Rejected:
-									message = "Rejected: " + message;
+									message = "Denied: " + message;
 									if (excludeApprovedOrRejected) continue;
 									break;
 								}
-								if (ch.notes != null && !ch.notes.toString().isEmpty())
-									message += "\n  <span class='note'>" + ch.notes.trim() + "</span>";
+								if (ch.hasLastNote())
+									message += "\n  <span class='note'>" + ch.getLastNote() + "</span>";
 								if (ch.status != null)
 									message = "<span class='" + ch.status + "'>" + message + "</span>";
 								if (ca.hasError())
@@ -1247,7 +1247,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								if (excludeApprovedOrRejected) continue;
 								break;
 							case Rejected:
-								message = "Rejected: " + message;
+								message = "Denied: " + message;
 								if (excludeApprovedOrRejected) continue;
 								break;
 							}
@@ -1346,12 +1346,12 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 									if (excludeApprovedOrRejected) continue;
 									break;
 								case Rejected:
-									message = "Rejected: " + message;
+									message = "Denied: " + message;
 									if (excludeApprovedOrRejected) continue;
 									break;
 								}
-								if (ch.notes != null && !ch.notes.toString().isEmpty())
-									message += "\n  <span class='note'>" + ch.notes.trim() + "</span>";
+								if (ch.hasLastNote())
+									message += "\n  <span class='note'>" + ch.getLastNote() + "</span>";
 								if (ch.status != null)
 									message = "<span class='" + ch.status + "'>" + message + "</span>";
 								if (ca.hasError())
