@@ -1028,6 +1028,12 @@
 					<hasPermission name="InstructionalMethods"/>
 				</condition>
 			</item>
+			<item name="Override Types" page="admin" type="gwt">
+				<parameter name="type">overrideType</parameter>
+				<condition>
+					<hasPermission name="OverrideTypes"/>
+				</condition>
+			</item>
 			<item name="Instructor Attribute Types" page="admin" type="gwt">
 				<parameter name="type">attributeType</parameter>
 				<condition>

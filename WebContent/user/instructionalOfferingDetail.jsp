@@ -252,6 +252,9 @@
 							<TD align="left" class="WebTableHeader"><loc:message name="columnAlternativeCourse"/></TD>
 						</logic:equal>
 						<TD align="left" class="WebTableHeader"><loc:message name="columnConsent"/></TD>
+						<logic:equal name="instructionalOfferingDetailForm" property="hasDisabledOverrides" value="true">
+							<TD align="left" class="WebTableHeader"><loc:message name="columnDisabledOverrides"/></TD>
+						</logic:equal>
 						<tt:hasProperty name="unitime.custom.CourseUrlProvider">
 						<TD align="left" class="WebTableHeader"><loc:message name="columnCourseCatalog"/></TD>
 						</tt:hasProperty>
@@ -323,6 +326,14 @@
 								<bean:write name="consentType" property="abbv"/>
 							</logic:notEmpty>
 						</TD>
+						<logic:equal name="instructionalOfferingDetailForm" property="hasDisabledOverrides" value="true">
+							<TD class="BottomBorderGray">
+								<bean:size id="nbrOverrides" name="co" property="disabledOverrides"/>
+								<logic:iterate id="override" name="co" property="disabledOverrides" indexId="idx">
+									<span title='${override.label}'><bean:write name="override" property="reference"/></span><logic:lessThan name="idx" value="${nbrOverrides-1}">, </logic:lessThan>
+								</logic:iterate>
+							</TD>
+						</logic:equal>
 						<tt:hasProperty name="unitime.custom.CourseUrlProvider">
 							<TD class="BottomBorderGray">
 								<span name='UniTimeGWT:CourseLink' style="display: none;"><bean:write name="co" property="uniqueId"/></span>

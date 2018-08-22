@@ -2947,4 +2947,10 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Course {0} is not locked. Click the warning icon to lock it.")
 	String titleCourseNotLocked(String courseName);
+	
+	@DefaultMessage("Not-Allowed Overrides:")
+	String propertyDisabledOverrides();
+
+	@DefaultMessage("Not-Allowed Overrides")
+	String columnDisabledOverrides();
 }

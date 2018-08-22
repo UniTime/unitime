@@ -30,6 +30,7 @@ import org.unitime.timetable.model.CourseType;
 import org.unitime.timetable.model.DemandOfferingType;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.OfferingConsentType;
+import org.unitime.timetable.model.OverrideType;
 import org.unitime.timetable.model.SubjectArea;
 
 /**
@@ -64,6 +65,7 @@ public abstract class BaseCourseOffering implements Serializable {
 	private OfferingConsentType iConsentType;
 	private CourseOffering iAlternativeOffering;
 	private Set<CourseCreditUnitConfig> iCreditConfigs;
+	private Set<OverrideType> iDisabledOverrides;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_IS_CONTROL = "isControl";
@@ -166,6 +168,13 @@ public abstract class BaseCourseOffering implements Serializable {
 	public void addTocreditConfigs(CourseCreditUnitConfig courseCreditUnitConfig) {
 		if (iCreditConfigs == null) iCreditConfigs = new HashSet<CourseCreditUnitConfig>();
 		iCreditConfigs.add(courseCreditUnitConfig);
+	}
+
+	public Set<OverrideType> getDisabledOverrides() { return iDisabledOverrides; }
+	public void setDisabledOverrides(Set<OverrideType> disabledOverrides) { iDisabledOverrides = disabledOverrides; }
+	public void addTodisabledOverrides(OverrideType overrideType) {
+		if (iDisabledOverrides == null) iDisabledOverrides = new HashSet<OverrideType>();
+		iDisabledOverrides.add(overrideType);
 	}
 
 	public boolean equals(Object o) {

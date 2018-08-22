@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import org.hibernate.LazyInitializationException;
@@ -35,6 +37,7 @@ import org.unitime.timetable.interfaces.ExternalInstructionalOfferingAddAction;
 import org.unitime.timetable.model.base.BaseCourseOffering;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
+import org.unitime.timetable.model.dao.OverrideTypeDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.ComboBoxLookup;
@@ -412,6 +415,15 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
     	List<StudentClassEnrollment> ret = new ArrayList<StudentClassEnrollment>();
     	for (StudentClassEnrollment e: s.getClassEnrollments()) {
     		if (this.equals(e.getCourseOffering())) ret.add(e);
+    	}
+    	return ret;
+    }
+    
+    public Set<OverrideType> getEnabledOverrides() {
+    	Set<OverrideType> ret = new TreeSet<OverrideType>();
+    	for (OverrideType override: OverrideTypeDAO.getInstance().findAll()) {
+    		if (!getDisabledOverrides().contains(override))
+    			ret.add(override);
     	}
     	return ret;
     }

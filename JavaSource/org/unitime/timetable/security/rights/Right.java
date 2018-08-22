@@ -566,6 +566,9 @@ public enum Right {
 	StudentGroupTypes,
 	StudentGroupTypeEdit,
 	
+	OverrideTypes,
+	OverrideTypeEdit,
+	
 	EventServiceProviders,
 	EventServiceProviderEditGlobal,
 	EventServiceProviderEditSession(Session.class),

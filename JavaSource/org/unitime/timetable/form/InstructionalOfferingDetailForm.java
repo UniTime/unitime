@@ -32,6 +32,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.dao.OverrideTypeDAO;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 
@@ -394,6 +395,18 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     		if (co.getExternalUniqueId() != null && !co.getExternalUniqueId().isEmpty()) return true;
     	}
     	return false;
+    }
+    
+    public boolean getHasDisabledOverrides() {
+    	for (Iterator i=courseOfferings.iterator();i.hasNext();) {
+    		CourseOffering co = (CourseOffering)i.next();
+    		if (!co.getDisabledOverrides().isEmpty()) return true;
+    	}
+    	return false; 
+    }
+    
+    public boolean getHasOverrides() {
+    	return !OverrideTypeDAO.getInstance().findAll().isEmpty();
     }
     
     public String getNotes() { return notes; }

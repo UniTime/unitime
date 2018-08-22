@@ -628,6 +628,19 @@
 			<html:hidden property="notes"/>
 		</sec:authorize>		
 	</logic:equal>
+	
+	<logic:notEmpty name="courseOfferingEditForm" property="overrideTypes">
+		<TR>
+			<TD valign="top"><loc:message name="propertyDisabledOverrides"/> </TD>
+			<TD>
+				<logic:iterate id="type" name="courseOfferingEditForm" property="overrideTypes" type="org.unitime.timetable.model.OverrideType" indexId="idx">
+					<logic:greaterThan value="0" name="idx"><br></logic:greaterThan>
+					<html:checkbox name="courseOfferingEditForm" property="courseOverride(${type.uniqueId})"/>
+					<bean:write name="type" property="reference"/>: <bean:write name="type" property="label"/>
+				</logic:iterate>
+			</TD>
+		</TR>
+	</logic:notEmpty>
 
 <!-- Buttons -->
 		<TR>

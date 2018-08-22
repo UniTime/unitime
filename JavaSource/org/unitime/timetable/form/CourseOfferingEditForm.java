@@ -20,7 +20,9 @@
 package org.unitime.timetable.form;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,17 +32,19 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.hibernate.criterion.Order;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.OverrideType;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TeachingResponsibility;
+import org.unitime.timetable.model.dao.OverrideTypeDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
-
 
 /**
  * MyEclipse Struts
@@ -93,6 +97,7 @@ public class CourseOfferingEditForm extends ActionForm {
     private boolean allowAlternativeCourseOfferings;
     private String notes;
     private String defaultTeachingResponsibilityId;
+    private Set<String> overrides;
 
     // --------------------------------------------------------- Methods
 
@@ -216,6 +221,7 @@ public class CourseOfferingEditForm extends ActionForm {
         	defaultTeachingResponsibilityId = tr.getUniqueId().toString();
         else
         	defaultTeachingResponsibilityId = "";
+        overrides = new HashSet<String>();
     }
     
     public boolean isAdd() { return add; }
@@ -436,4 +442,13 @@ public class CourseOfferingEditForm extends ActionForm {
     
     public String getDefaultTeachingResponsibilityId() { return defaultTeachingResponsibilityId; }
     public void setDefaultTeachingResponsibilityId(String defaultTeachingResponsibilityId) { this.defaultTeachingResponsibilityId = defaultTeachingResponsibilityId; }
+    
+    public void addCourseOverride(String override) { overrides.add(override); }
+    public String getCourseOverride(String id) { return String.valueOf(overrides.contains(id)); }
+    public void setCourseOverride(String id, String value) { overrides.add(id); }
+    public Set<String> getCourseOverrides() { return overrides; }
+    
+    public List<OverrideType> getOverrideTypes() {
+    	return OverrideTypeDAO.getInstance().findAll(Order.asc("reference"));
+    }
 }

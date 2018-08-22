@@ -521,6 +521,9 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				for (ErrorMessage error: ret.getErrors()) {
 					if (!response.data.overrides.contains(error.getCode()))
 						return new SpecialRegistrationEligibilityResponse(false, "No overrides are allowed for " + error + ".");
+					XCourseId courseId = server.getCourse(error.getCourse());
+					if (courseId != null && !server.getCourse(courseId.getCourseId()).isOverrideEnabled(error.getCode()))
+						return new SpecialRegistrationEligibilityResponse(false, "No overrides are allowed for " + error + ".");
 				}
 			}
 			

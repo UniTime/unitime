@@ -3149,6 +3149,14 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Course Types")
 	@DoNotTranslate
 	String pageCourseTypes();
+	
+	@DefaultMessage("Override Type")
+	@DoNotTranslate
+	String pageOverrideType();
+	
+	@DefaultMessage("Override Types")
+	@DoNotTranslate
+	String pageOverrideTypes();
 
 	@DefaultMessage("Event Date Mapping")
 	@DoNotTranslate

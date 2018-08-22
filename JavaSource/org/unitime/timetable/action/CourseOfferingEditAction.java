@@ -60,6 +60,7 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.LastLikeCourseDemand;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.OfferingCoordinator;
+import org.unitime.timetable.model.OverrideType;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningQueue;
@@ -72,6 +73,7 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.CourseTypeDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.OfferingConsentTypeDAO;
+import org.unitime.timetable.model.dao.OverrideTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.model.dao.TeachingResponsibilityDAO;
@@ -270,6 +272,10 @@ public class CourseOfferingEditAction extends Action {
 	        
 	        if (!limitedEdit || updateNote)
 	        	co.setScheduleBookNote(note);
+	        
+	        co.getDisabledOverrides().clear();
+            for (String override: frm.getCourseOverrides())
+            	co.getDisabledOverrides().add(OverrideTypeDAO.getInstance().get(Long.valueOf(override)));	
 
 	        if ((!limitedEdit || updateCoordinators) && co.isIsControl().booleanValue()) {
 		        boolean assignTeachingRequest = Department.isInstructorSchedulingCommitted(co.getDepartment().getUniqueId());
@@ -533,6 +539,10 @@ public class CourseOfferingEditAction extends Action {
 		    io.addTocourseOfferings(co);
 
             co.setScheduleBookNote(frm.getScheduleBookNote());
+            
+            co.setDisabledOverrides(new HashSet<OverrideType>());
+            for (String override: frm.getCourseOverrides())
+            	co.getDisabledOverrides().add(OverrideTypeDAO.getInstance().get(Long.valueOf(override)));	
 
             io.setOfferingCoordinators(new HashSet<OfferingCoordinator>());
             int idx = 0;
@@ -718,6 +728,9 @@ public class CourseOfferingEditAction extends Action {
             frm.getResponsibilities().add(coordinator.getResponsibility() == null ? Constants.BLANK_OPTION_VALUE : coordinator.getResponsibility().getUniqueId().toString());
             frm.getPercentShares().add(coordinator.getPercentShare() == null ? "0" : coordinator.getPercentShare().toString());
         }
+        
+        for (OverrideType override: co.getDisabledOverrides())
+        	frm.addCourseOverride(override.getUniqueId().toString());
 
         if (sessionContext.hasPermission(crsOfferingId, "CourseOffering", Right.EditCourseOfferingCoordinators) ||
         	sessionContext.hasPermission(crsOfferingId, "CourseOffering", Right.EditCourseOffering)) {

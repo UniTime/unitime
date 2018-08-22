@@ -22,7 +22,8 @@ package org.unitime.timetable.onlinesectioning.model;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-
+import java.util.HashSet;
+import java.util.Set;
 
 import org.cpsolver.studentsct.model.Course;
 import org.infinispan.commons.marshall.Externalizer;
@@ -30,6 +31,7 @@ import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.OverrideType;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
@@ -52,6 +54,7 @@ public class XCourse extends XCourseId {
     private XCredit iCredit = null;
     private Long iAlternativeCourseId = null;
     private boolean iControl = false;
+    private Set<String> iDisabledOverrides = new HashSet<String>();
 
     public XCourse() {
     	super();
@@ -91,6 +94,8 @@ public class XCourse extends XCourseId {
 		}
         if (course.getCredit() != null)
         	iCredit = new XCredit(course.getCredit());
+        for (OverrideType override: course.getDisabledOverrides())
+        	iDisabledOverrides.add(override.getReference());
         iAlternativeCourseId = (course.getAlternativeOffering() == null ? null : course.getAlternativeOffering().getUniqueId());
         iControl = course.isIsControl();
     }
@@ -130,6 +135,11 @@ public class XCourse extends XCourseId {
 	public String getDepartment() { return iDepartment; }
 	public String getConsentLabel() { return iConsentLabel; }
 	public String getConsentAbbv() { return iConsentAbbv; }
+	public boolean isOverrideEnabled(String override) {
+		return !iDisabledOverrides.contains(override);
+	}
+	public boolean areTimeConflictOverridesAllowed() { return isOverrideEnabled("TIME"); }
+	public boolean areSpaceConflictOverridesAllowed() { return isOverrideEnabled("CLOS"); }
 
     /** Course note */
     public String getNote() { return iNote; }
@@ -174,6 +184,9 @@ public class XCourse extends XCourseId {
 		iCredit = (in.readBoolean() ? new XCredit(in) : null);
 		iAlternativeCourseId = (in.readBoolean() ? in.readLong() : null);
 		iControl = in.readBoolean();
+		int overrides = in.readInt();
+		for (int i = 0; i < overrides; i++)
+			iDisabledOverrides.add((String)in.readObject());
 	}
 
 	@Override
@@ -204,6 +217,9 @@ public class XCourse extends XCourseId {
 		if (iAlternativeCourseId != null)
 			out.writeLong(iAlternativeCourseId);
 		out.writeBoolean(iControl);
+		out.writeInt(iDisabledOverrides.size());
+		for (String override: iDisabledOverrides)
+			out.writeObject(override);
 	}
 	
 	public static class XCourseSerializer implements Externalizer<XCourse> {

@@ -431,5 +431,7 @@
                 type="java.lang.Boolean"
                 not-null="true"/>
 			</union-subclass>
+
+        <union-subclass name="OverrideType" table="override_type" abstract="false"/>
     </class>
 </hibernate-mapping>

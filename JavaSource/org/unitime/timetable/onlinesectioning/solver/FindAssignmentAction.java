@@ -252,10 +252,15 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					if (r instanceof CourseRequest) {
 						CourseRequest cr = (CourseRequest)r;
 						for (Course course: cr.getCourses()) {
-							new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), -100, getRequest().areSpaceConflictsAllowed(), 1, true, true, getRequest().areTimeConflictsAllowed(), true) {
-								@Override
-								public boolean mustBeUsed() { return true; }
-							};
+							XCourse xc = server.getCourse(course.getId());
+							boolean time = getRequest().areTimeConflictsAllowed() && xc.areTimeConflictOverridesAllowed();
+							boolean space = getRequest().areSpaceConflictsAllowed() && xc.areSpaceConflictOverridesAllowed();
+							if (time || space) {
+								new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), -100, space, 1, true, true, time, true) {
+									@Override
+									public boolean mustBeUsed() { return true; }
+								};
+							}
 						}
 					}
 				}

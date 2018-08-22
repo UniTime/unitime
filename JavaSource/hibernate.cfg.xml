@@ -236,6 +236,5 @@
 	<mapping resource="EventServiceProvider.hbm.xml"/>
 	<mapping resource="Advisor.hbm.xml"/>
 	<mapping resource="Automation.hbm.xml"/>
-
 </session-factory>
 </hibernate-configuration>

@@ -223,5 +223,13 @@
             type="java.sql.Timestamp"
             not-null="false"/>
 
+        <set name="disabledOverrides" table="disabled_override" lazy="true">
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="course_id" foreign-key="fk_disb_override_course"/>
+            <many-to-many
+                class="OverrideType"
+                column="type_id"
+                foreign-key="fk_disb_override_type"/>
+        </set>
     </class>
 </hibernate-mapping>

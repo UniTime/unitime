@@ -13207,4 +13207,53 @@
 			references %SCHEMA%.sessions (uniqueid) on delete cascade
 		</sql>
 	</update>
+	<update version="211" date="20-Aug-2018" comment="Disabled Overrides">
+		<plsql>
+			create table %SCHEMA%.override_type (
+				uniqueid number(20,0) constraint nn_override_type_id not null,
+				reference varchar2(20 char) constraint nn_override_type_ref not null,
+				label varchar2(60 char) constraint nn_override_type_label not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.override_type add constraint pk_override_type primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.override_type (
+				uniqueid decimal(20,0) primary key not null,
+				reference varchar(20) not null,
+				label varchar(60) not null
+			) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.disabled_override (
+				course_id number(20,0) constraint nn_disb_override_course not null,
+				type_id number(20,0) constraint nn_disb_override_type not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.disabled_override add constraint pk_disabled_overrides primary key (course_id, type_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.disabled_override (
+				course_id decimal(20,0) not null,
+				type_id decimal(20,0) not null,
+				primary key (course_id, type_id)
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.disabled_override add constraint fk_disb_override_course foreign key (course_id)
+			references %SCHEMA%.course_offering (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.disabled_override add constraint fk_disb_override_type foreign key (type_id)
+			references %SCHEMA%.override_type (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'OverrideTypes'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'CourseTypes'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'OverrideTypeEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'CourseTypeEdit'
+		</sql>
+	</update>
 </dbupdate>
