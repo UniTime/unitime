@@ -494,6 +494,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			resource.addQueryParameter("term", term);
 			resource.addQueryParameter("campus", campus);
 			resource.addQueryParameter("studentId", getBannerId(student));
+			resource.addQueryParameter("mode", getSpecialRegistrationMode());
 			helper.getAction().addOptionBuilder().setKey("term").setValue(term);
 			helper.getAction().addOptionBuilder().setKey("campus").setValue(campus);
 			helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
@@ -1553,6 +1554,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				resource.addQueryParameter("term", term);
 				resource.addQueryParameter("campus", campus);
 				resource.addQueryParameter("studentId", getBannerId(student));
+				resource.addQueryParameter("mode", getSpecialRegistrationMode());
 				helper.getAction().addOptionBuilder().setKey("term").setValue(term);
 				helper.getAction().addOptionBuilder().setKey("campus").setValue(campus);
 				helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
@@ -1615,6 +1617,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			resource.addQueryParameter("term", term);
 			resource.addQueryParameter("campus", campus);
 			resource.addQueryParameter("studentId", getBannerId(student));
+			resource.addQueryParameter("mode", getSpecialRegistrationMode());
 			helper.getAction().addOptionBuilder().setKey("term").setValue(term);
 			helper.getAction().addOptionBuilder().setKey("campus").setValue(campus);
 			helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
