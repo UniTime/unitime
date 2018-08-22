@@ -629,6 +629,10 @@
 	.unitime-MainLogo {
 		margin:0px;
 	}
+	
+	.unitime-ConfirmationPanel .request-note {
+		max-width: calc(80vw - 95px);
+	}
 }
 
 @media all and (max-width: 400px) {
