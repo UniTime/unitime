@@ -89,6 +89,12 @@ public class SpecialRegistrationInterface {
 		public String status;
 		public String message;
 	}
+	
+	public static class CheckEligibilityResponse extends SpecialRegistrationEligibilityResponse {
+		public Set<String> overrides;
+		public Float maxCredit;
+		public Boolean hasNonCanceledRequest;
+	}
 
 	public static class SpecialRegistrationMultipleStatusResponse {
 		public SpecialRegistrationMultipleStatus data;
@@ -241,5 +247,21 @@ public class SpecialRegistrationInterface {
 		public String data;
 		public String status;
 		public String message;
+	}
+	
+	public static class CheckRestrictionsRequest {
+		public String studentId;
+		public String term;
+		public String campus;
+		public String mode;
+		public RestrictionsCheckRequest changes;
+	}
+	
+	public static class CheckRestrictionsResponse {
+		public List<SpecialRegistrationRequest> cancelRegistrationRequests;
+		public SpecialRegistrationEligibilityResponse eligible;
+		public Float maxCredit;
+		public RestrictionsCheckResponse outJson;
+		public Set<String> overrides;
 	}
 }

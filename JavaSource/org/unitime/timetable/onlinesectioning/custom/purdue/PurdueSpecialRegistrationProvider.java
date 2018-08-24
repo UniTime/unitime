@@ -84,6 +84,9 @@ import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.E
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Change;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ChangeError;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ChangeOperation;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CheckEligibilityResponse;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CheckRestrictionsRequest;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CheckRestrictionsResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.EligibilityProblem;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Problem;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.RequestStatus;
@@ -184,6 +187,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 	
 	protected String getSpecialRegistrationApiValidationSite() {
 		return ApplicationProperties.getProperty("purdue.specreg.site.validation", getSpecialRegistrationApiSite() + "/checkRestrictionsForOPEN");
+	}
+	
+	protected String getSpecialRegistrationApiCheckRestrictions() {
+		return ApplicationProperties.getProperty("purdue.specreg.site.checkRestrictions", getSpecialRegistrationApiSite() + "/checkRestrictions");
 	}
 	
 	protected String getSpecialRegistrationApiSiteCancelSpecialRegistration() {
@@ -417,187 +424,87 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		if (student == null) return new SpecialRegistrationEligibilityResponse(false, "No student.");
 		if (!isSpecialRegistrationEnabled(server, helper, student)) return new SpecialRegistrationEligibilityResponse(false, "Special registration is disabled.");
 		
-		String message = null;
-		Gson gson = getGson(helper);
-		
-		if (getSpecialRegistrationApiSiteCheckEligibility() != null) {
-			ClientResource resource = null;
-			try {
-				resource = new ClientResource(getSpecialRegistrationApiSiteCheckEligibility());
-				resource.setNext(iClient);
-				
-				AcademicSessionInfo session = server.getAcademicSession();
-				String term = getBannerTerm(session);
-				String campus = getBannerCampus(session);
-				resource.addQueryParameter("term", term);
-				resource.addQueryParameter("campus", campus);
-				resource.addQueryParameter("studentId", getBannerId(student));
-				resource.addQueryParameter("mode", getSpecialRegistrationMode());
-				resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
-				
-				long t0 = System.currentTimeMillis();
-				
-				resource.get(MediaType.APPLICATION_JSON);
-				
-				helper.getAction().setApiGetTime(System.currentTimeMillis() - t0);
-				
-				SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse eligibility = (SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse)
-						new GsonRepresentation<SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse>(resource.getResponseEntity(), SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse.class).getObject();
-				
-				if (helper.isDebugEnabled())
-					helper.debug("Eligibility: " + gson.toJson(eligibility));
-				helper.getAction().addOptionBuilder().setKey("specreg_eligibility").setValue(gson.toJson(eligibility));
-				
-				if (!ResponseStatus.success.name().equals(eligibility.status))
-					return new SpecialRegistrationEligibilityResponse(false, eligibility.message == null || eligibility.message.isEmpty() ? "Failed to check student eligibility (" + eligibility.status + ")." : eligibility.message);
-				
-				boolean eligible = true;
-				if (eligibility.data == null || eligibility.data.eligible == null || !eligibility.data.eligible.booleanValue()) {
-					eligible = false;
-				}
-				
-				if (eligibility.data != null && eligibility.data.eligibilityProblems != null) {
-					for (EligibilityProblem p: eligibility.data.eligibilityProblems)
-						if (message == null)
-							message = p.message;
-						else
-							message += "\n" + p.message;
-				}
+		CheckRestrictionsRequest req = new CheckRestrictionsRequest();
+		req.term = getBannerTerm(server.getAcademicSession());
+		req.campus = getBannerCampus(server.getAcademicSession());
+		req.mode = getSpecialRegistrationMode();
+		req.studentId = getBannerId(student);
+		req.changes = new RestrictionsCheckRequest();
+		req.changes.sisId = req.studentId;
+		req.changes.term = req.term;
+		req.changes.campus = req.campus;
+		req.changes.includeReg = "Y";
+		req.changes.mode = req.mode;
 
-				if (!eligible)
-					return new SpecialRegistrationEligibilityResponse(false, message);
-			} catch (SectioningException e) {
-				helper.getAction().setApiException(e.getMessage());
-				throw (SectioningException)e;
-			} catch (Exception e) {
-				helper.getAction().setApiException(e.getMessage());
-				sLog.error(e.getMessage(), e);
-				throw new SectioningException(e.getMessage());
-			} finally {
-				if (resource != null) {
-					if (resource.getResponse() != null) resource.getResponse().release();
-					resource.release();
+		Set<String> current = new HashSet<String>();
+		Map<String, String> crn2course = new HashMap<String, String>();
+		List<String> newCourses = new ArrayList<String>();
+		Set<String> adds = new HashSet<String>();
+		Map<String, XCourse> courses = new HashMap<String, XCourse>();
+		for (XRequest r: student.getRequests())
+			if (r instanceof XCourseRequest) {
+				XCourseRequest cr = (XCourseRequest)r;
+				XEnrollment enr = cr.getEnrollment();
+				if (enr != null) {
+					XCourse course = server.getCourse(enr.getCourseId());
+					if (course == null) continue;
+					XOffering offering = server.getOffering(enr.getOfferingId());
+					if (offering == null) continue;
+					for (Long id: enr.getSectionIds()) {
+						XSection section = offering.getSection(id);
+						String crn = section.getExternalId(enr.getCourseId());
+						current.add(crn);
+						crn2course.put(crn, course.getCourseName());
+						courses.put(course.getCourseName(), course);
+					}
 				}
 			}
-		} else {
-			helper.getAction().setApiGetTime(0l);
-		}
 		
+		if (input.getClassAssignments() != null)
+			for (ClassAssignment ca: input.getClassAssignments()) {
+				if (ca == null || ca.isFreeTime() || ca.getClassId() == null || ca.isDummy() || ca.isTeachingAssignment()) continue;
+				XCourse course = server.getCourse(ca.getCourseId());
+				if (course == null) continue;
+				XOffering offering = server.getOffering(course.getOfferingId());
+				if (offering == null) continue;
+				XSection section = offering.getSection(ca.getClassId());
+				if (section == null) continue;
+				String crn = section.getExternalId(course.getCourseId());
+				if (!current.remove(crn)) {
+					req.changes.add(crn);
+					crn2course.put(crn, course.getCourseName());
+					if (!courses.containsKey(course.getCourseName())) {
+						courses.put(course.getCourseName(), course);
+						newCourses.add(crn);
+					}
+					adds.add(crn);
+				}
+			}
+		for (String crn: current)
+			req.changes.drop(crn);
+		
+		CheckRestrictionsResponse resp = null;
 		ClientResource resource = null;
 		try {
-			resource = new ClientResource(getSpecialRegistrationApiSiteCheckSpecialRegistrationStatus());
+			resource = new ClientResource(getSpecialRegistrationApiCheckRestrictions());
 			resource.setNext(iClient);
-			
-			AcademicSessionInfo session = server.getAcademicSession();
-			String term = getBannerTerm(session);
-			String campus = getBannerCampus(session);
-			resource.addQueryParameter("term", term);
-			resource.addQueryParameter("campus", campus);
-			resource.addQueryParameter("studentId", getBannerId(student));
-			resource.addQueryParameter("mode", getSpecialRegistrationMode());
-			helper.getAction().addOptionBuilder().setKey("term").setValue(term);
-			helper.getAction().addOptionBuilder().setKey("campus").setValue(campus);
-			helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
 			resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
 			
+			Gson gson = getGson(helper);
+			if (helper.isDebugEnabled())
+				helper.debug("Request: " + gson.toJson(req));
+			helper.getAction().addOptionBuilder().setKey("request").setValue(gson.toJson(req));
 			long t1 = System.currentTimeMillis();
 			
-			resource.get(MediaType.APPLICATION_JSON);
+			resource.post(new GsonRepresentation<CheckRestrictionsRequest>(req));
 			
-			helper.getAction().setApiGetTime(helper.getAction().getApiGetTime() + System.currentTimeMillis() - t1);
+			helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
 			
-			SpecialRegistrationStatusResponse response = (SpecialRegistrationStatusResponse)new GsonRepresentation<SpecialRegistrationStatusResponse>(resource.getResponseEntity(), SpecialRegistrationStatusResponse.class).getObject();
-			
+			resp = (CheckRestrictionsResponse)new GsonRepresentation<CheckRestrictionsResponse>(resource.getResponseEntity(), CheckRestrictionsResponse.class).getObject();
+
 			if (helper.isDebugEnabled())
-				helper.debug("Response: " + gson.toJson(response));
-			helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(response));
-			
-			if (response == null || !ResponseStatus.success.name().equals(response.status))
-				return new SpecialRegistrationEligibilityResponse(false, response == null || response.message == null ? "No overrides are allowed" : response.message);
-			
-			SpecialRegistrationEligibilityResponse ret = new SpecialRegistrationEligibilityResponse(true, message);
-			ret.setErrors(validate(server, helper, student, input.getClassAssignments()));
-			
-			if (ret.hasErrors() && response.data != null && response.data.overrides != null) {
-				for (ErrorMessage error: ret.getErrors()) {
-					if (!response.data.overrides.contains(error.getCode()))
-						return new SpecialRegistrationEligibilityResponse(false, "No overrides are allowed for " + error + ".");
-					XCourseId courseId = server.getCourse(error.getCourse());
-					if (courseId != null && !server.getCourse(courseId.getCourseId()).isOverrideEnabled(error.getCode()))
-						return new SpecialRegistrationEligibilityResponse(false, "No overrides are allowed for " + error + ".");
-				}
-			}
-			
-			if (ret.hasErrors() && response.data != null && response.data.requests != null) {
-				Set<ErrorMessage> errors = new TreeSet<ErrorMessage>();
-				Set<String> denials = new HashSet<String>();
-				for (SpecialRegistrationRequest r: response.data.requests) {
-					if (r.changes == null) continue;
-					boolean cancel = false;
-					String maxi = null;
-					if (r.requestId.equals(input.getRequestId())) {
-						cancel = true;
-						for (Change ch: r.changes) {
-							if (RequestStatus.denied.name().equals(ch.status)) {
-								String course = ch.subject + " " + ch.courseNbr;
-								for (ErrorMessage error: ret.getErrors())
-									if (course.equals(error.getCourse())) {
-										if (ch.errors != null)
-											for (ChangeError e: ch.errors) {
-												if (e.code.equals(error.getCode()) && denials.add(course + ":" + e.code)) {
-													ret.setMessage((ret.hasMessage() ? ret.getMessage() + "\n" : "") + error.getCourse() + " " + error.getMessage() + " has been denied.");
-													ret.setCanSubmit(false);
-												}
-											}
-									}
-							}
-						}
-					} else {
-						for (Change ch: r.changes) {
-							if (isPending(ch.status)) {
-								if (ch.subject == null || ch.courseNbr == null) {
-									if (ch.errors != null)
-										for (ChangeError e: ch.errors)
-											if ("MAXI".equals(e.code)) maxi = e.message;
-								} else {
-									String course = ch.subject + " " + ch.courseNbr;
-									for (ErrorMessage error: ret.getErrors())
-										if (course.equals(error.getCourse()) && ch.errors != null && !ch.errors.isEmpty()) cancel = true;
-								}
-							}
-						}
-					}
-					if (cancel) {
-						Set<String> adds = new TreeSet<String>(), drops = new TreeSet<String>();
-						for (Change ch: r.changes) {
-							if (ch.subject != null && ch.courseNbr != null) {
-								if (isPending(ch.status)) {
-									if (ch.errors != null)
-										for (ChangeError e: ch.errors) {
-											errors.add(new ErrorMessage(ch.subject + " " + ch.courseNbr, ch.crn, e.code, e.message));
-										}
-								}
-								if (ChangeOperation.ADD.name().equals(ch.operation))
-									adds.add(ch.subject + " " + ch.courseNbr);
-								else
-									drops.add(ch.subject + " " + ch.courseNbr);
-							} else if (r.requestId.equals(input.getRequestId()) && isPending(ch.status)) {
-								if (ch.errors != null)
-									for (ChangeError e: ch.errors)
-										if ("MAXI".equals(e.code)) maxi = e.message;
-							}
-						}
-						if (maxi != null)
-							for (String c: adds)
-								if (!drops.contains(c))
-									errors.add(new ErrorMessage(c, "", "MAXI", maxi));
-					}
-				}
-				if (!errors.isEmpty())
-					ret.setCancelErrors(errors);
-			}
-			
-			return ret;
+				helper.debug("Response: " + gson.toJson(resp));
+			helper.getAction().addOptionBuilder().setKey("validation_response").setValue(gson.toJson(resp));
 		} catch (SectioningException e) {
 			helper.getAction().setApiException(e.getMessage());
 			throw (SectioningException)e;
@@ -611,9 +518,111 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				resource.release();
 			}
 		}
+		
+		String message = null;
+		if (resp.eligible != null) {
+			if (!ResponseStatus.success.name().equals(resp.eligible.status))
+				return new SpecialRegistrationEligibilityResponse(false, resp.eligible.message == null || resp.eligible.message.isEmpty() ? "Failed to check student eligibility (" + resp.eligible.status + ")." : resp.eligible.message);
+			
+			boolean eligible = true;
+			if (resp.eligible.data == null || resp.eligible.data.eligible == null || !resp.eligible.data.eligible.booleanValue()) {
+				eligible = false;
+			}
+			
+			if (resp.eligible.data != null && resp.eligible.data.eligibilityProblems != null) {
+				for (EligibilityProblem p: resp.eligible.data.eligibilityProblems)
+					if (message == null)
+						message = p.message;
+					else
+						message += "\n" + p.message;
+			}
+
+			if (!eligible)
+				return new SpecialRegistrationEligibilityResponse(false, message != null ? message : "Student not eligible.");
+		}
+		
+		SpecialRegistrationEligibilityResponse ret = new SpecialRegistrationEligibilityResponse(true, message);
+		if (resp.outJson != null && resp.outJson.problems != null) {
+			Set<ErrorMessage> errors = new TreeSet<ErrorMessage>();
+			for (Problem problem: resp.outJson.problems) {
+				if ("CLOS".equals(problem.code) && !adds.contains(problem.crn)) {
+					// Ignore closed section error on sections that are not being added
+				} else if ("MAXI".equals(problem.code) && !newCourses.isEmpty()) {
+					// Move max credit error message to the last added course
+					String crn = newCourses.remove(newCourses.size() - 1);
+					errors.add(new ErrorMessage(crn2course.get(crn), crn, problem.code, problem.message));
+				} else {
+					errors.add(new ErrorMessage(crn2course.get(problem.crn), problem.crn, problem.code, problem.message));
+				}
+			}
+			ret.setErrors(errors);
+		}
+		
+		if (ret.hasErrors() && resp.overrides != null) {
+			for (ErrorMessage error: ret.getErrors()) {
+				if (!resp.overrides.contains(error.getCode()))
+					return new SpecialRegistrationEligibilityResponse(false, "No overrides are allowed for " + error + ".");
+				XCourse course = courses.get(error.getCourse());
+				if (course != null && !course.isOverrideEnabled(error.getCode()))
+					return new SpecialRegistrationEligibilityResponse(false, "No overrides are allowed for " + error + ".");
+			}
+		}
+		
+		if (resp.cancelRegistrationRequests != null) {
+			Set<ErrorMessage> errors = new TreeSet<ErrorMessage>();
+			Set<String> denials = new HashSet<String>();
+			for (SpecialRegistrationRequest r: resp.cancelRegistrationRequests) {
+				if (r.changes == null) continue;
+				String maxi = null;
+				if (r.requestId.equals(input.getRequestId())) {
+					for (Change ch: r.changes) {
+						if (RequestStatus.denied.name().equals(ch.status)) {
+							String course = ch.subject + " " + ch.courseNbr;
+							for (ErrorMessage error: ret.getErrors())
+								if (course.equals(error.getCourse())) {
+									if (ch.errors != null)
+										for (ChangeError e: ch.errors) {
+											if (e.code.equals(error.getCode()) && denials.add(course + ":" + e.code)) {
+												ret.setMessage((ret.hasMessage() ? ret.getMessage() + "\n" : "") + error.getCourse() + " " + error.getMessage() + " has been denied.");
+												ret.setCanSubmit(false);
+											}
+										}
+								}
+						}
+					}
+				}
+				Set<String> rAdds = new TreeSet<String>(), rDrops = new TreeSet<String>();
+				for (Change ch: r.changes) {
+					if (ch.subject != null && ch.courseNbr != null) {
+						if (isPending(ch.status)) {
+							if (ch.errors != null)
+								for (ChangeError e: ch.errors) {
+									errors.add(new ErrorMessage(ch.subject + " " + ch.courseNbr, ch.crn, e.code, e.message));
+								}
+						}
+						if (ChangeOperation.ADD.name().equals(ch.operation))
+							rAdds.add(ch.subject + " " + ch.courseNbr);
+						else
+							rDrops.add(ch.subject + " " + ch.courseNbr);
+					} else if (r.requestId.equals(input.getRequestId()) && isPending(ch.status)) {
+						if (ch.errors != null)
+							for (ChangeError e: ch.errors)
+								if ("MAXI".equals(e.code)) maxi = e.message;
+					}
+				}
+				if (maxi != null)
+					for (String c: rAdds)
+						if (!rDrops.contains(c))
+							errors.add(new ErrorMessage(c, "", "MAXI", maxi));
+			}
+			if (!errors.isEmpty())
+				ret.setCancelErrors(errors);
+		}
+		return ret;
 	}
 	
 	protected Set<ErrorMessage> validate(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, Collection<ClassAssignment> classAssignments) {
+		if (getSpecialRegistrationApiValidationSite() == null) return null;
 		RestrictionsCheckRequest req = new RestrictionsCheckRequest();
 		req.sisId = getBannerId(student);
 		req.term = getBannerTerm(server.getAcademicSession());
@@ -1516,6 +1525,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				resource.addQueryParameter("term", term);
 				resource.addQueryParameter("campus", campus);
 				resource.addQueryParameter("studentId", getBannerId(student));
+				resource.addQueryParameter("mode", getSpecialRegistrationMode());
 				helper.getAction().addOptionBuilder().setKey("term").setValue(term);
 				helper.getAction().addOptionBuilder().setKey("campus").setValue(campus);
 				helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
@@ -1608,7 +1618,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		try {
 			Gson gson = getGson(helper);
 
-			resource = new ClientResource(getSpecialRegistrationApiSiteCheckSpecialRegistrationStatus());
+			resource = new ClientResource(getSpecialRegistrationApiSiteCheckEligibility());
 			resource.setNext(iClient);
 			
 			AcademicSessionInfo session = server.getAcademicSession();
@@ -1629,37 +1639,37 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			
 			helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
 			
-			SpecialRegistrationStatusResponse response = (SpecialRegistrationStatusResponse)new GsonRepresentation<SpecialRegistrationStatusResponse>(resource.getResponseEntity(), SpecialRegistrationStatusResponse.class).getObject();
+			CheckEligibilityResponse response = (CheckEligibilityResponse)new GsonRepresentation<CheckEligibilityResponse>(resource.getResponseEntity(), CheckEligibilityResponse.class).getObject();
 			
 			if (helper.isDebugEnabled())
 				helper.debug("Response: " + gson.toJson(response));
 			helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(response));
 			
 			if (response != null && ResponseStatus.success.name().equals(response.status)) {
-				check.setFlag(EligibilityFlag.CAN_SPECREG, true);
-				if (response.data != null) 
-					check.setOverrides(response.data.overrides);
-				check.setFlag(EligibilityFlag.SR_TIME_CONF, check.hasOverride("TIME"));
-				check.setFlag(EligibilityFlag.SR_LIMIT_CONF, check.hasOverride("CLOS"));
-				if (response.data != null && response.data.requests != null && !response.data.requests.isEmpty()) {
-					for (SpecialRegistrationRequest r: response.data.requests) {
-						if (!isCancelled(r)) {
-							check.setFlag(EligibilityFlag.HAS_SPECREG, true);
-							break;
-						}
-					}
+				boolean eligible = true;
+				if (response.data == null || response.data.eligible == null || !response.data.eligible.booleanValue()) {
+					eligible = false;
+				}
+				check.setFlag(EligibilityFlag.CAN_SPECREG, eligible);
+				if (eligible) {
+					check.setOverrides(response.overrides);
+					check.setFlag(EligibilityFlag.SR_TIME_CONF, check.hasOverride("TIME"));
+					check.setFlag(EligibilityFlag.SR_LIMIT_CONF, check.hasOverride("CLOS"));
 				}
 			} else {
 				check.setFlag(EligibilityFlag.CAN_SPECREG, false);
 			}
 			
-			if (response != null && response.data != null && response.data.maxCredit != null && !response.data.maxCredit.equals(student.getMaxCredit())) {
+			if (response.hasNonCanceledRequest != null && response.hasNonCanceledRequest.booleanValue())
+				check.setFlag(EligibilityFlag.HAS_SPECREG, true);
+			
+			if (response != null && response.maxCredit != null && !response.maxCredit.equals(student.getMaxCredit())) {
 				Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
 				if (dbStudent != null) {
-					dbStudent.setMaxCredit(response.data.maxCredit);
+					dbStudent.setMaxCredit(response.maxCredit);
 					helper.getHibSession().update(dbStudent);
 				}
-				student.setMaxCredit(response.data.maxCredit);
+				student.setMaxCredit(response.maxCredit);
 				server.update(student, false);
 			}
 		} catch (SectioningException e) {
