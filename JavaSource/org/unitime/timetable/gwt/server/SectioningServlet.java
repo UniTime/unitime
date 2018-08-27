@@ -1667,6 +1667,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 
 		if (!getSessionContext().hasPermission(Right.HasRole) || getSessionContext().hasPermission(Right.DepartmentIndependent)) return null; // only applies to users with a role that is department dependent
 		
+		// scheduling advisors and admins can see all courses of a student regardless of whether they have the Department Independent permission or not
+		if (getSessionContext().hasPermission(Right.StudentSchedulingAdmin) || getSessionContext().hasPermission(Right.StudentSchedulingAdvisor)) return null; 
+		
 		HashSet<String> subjects = new HashSet<String>();
 		for (SubjectArea subject: SubjectArea.getUserSubjectAreas(user)) {
 			subjects.add(subject.getSubjectAreaAbbreviation());
