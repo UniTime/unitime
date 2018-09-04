@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <config xmlns="http://zanata.org/namespace/config/">
-    <url>https://translate.zanata.org/zanata/</url>
+    <url>https://translate.zanata.org/</url>
     <project>unitime</project>
     <project-version>4.3</project-version>
     <project-type>utf8properties</project-type>
