@@ -120,6 +120,7 @@ import org.unitime.timetable.model.StudentGroupType;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.TeachingClassRequest;
+import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TravelTime;
@@ -336,6 +337,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         for (Iterator i=ts.iterator();i.hasNext();) {
             ClassInstructor ci = (ClassInstructor)i.next();
             if (!ci.isLead().booleanValue()) continue;
+            if (ci.getResponsibility() != null && ci.getResponsibility().hasOption(TeachingResponsibility.Option.auxiliary)) continue;
             ret.add(new Instructor(ci.getInstructor().getUniqueId(), ci.getInstructor().getExternalUniqueId(), iInstructorNameFormat.format(ci.getInstructor()), ci.getInstructor().getEmail()));
         }
         return ret;

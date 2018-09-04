@@ -30,6 +30,7 @@ import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.TeachingClassRequest;
+import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
 /**
@@ -57,7 +58,8 @@ public class XInstructor implements Serializable, Externalizable {
 		iExternalId = instructor.getInstructor().getExternalUniqueId();
 		iName = helper.getInstructorNameFormat().format(instructor.getInstructor());
 		iEmail = instructor.getInstructor().getEmail();
-		iDisplay = instructor.getClassInstructing().isDisplayInstructor();
+		iDisplay = instructor.getClassInstructing().isDisplayInstructor() &&
+				(instructor.getResponsibility() == null || !instructor.getResponsibility().hasOption(TeachingResponsibility.Option.auxiliary));
 		iAllowOverlap = !instructor.isLead();
 		iInstructing = true;
 		if (instructor.getTeachingRequest() != null)
