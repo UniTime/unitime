@@ -93,7 +93,7 @@ public abstract class RoomsExporter implements Exporter {
     				request.addOption(command.substring(2), value);
     		}
     	}
-    	request.setOption("flag", "plain");
+    	request.addOption("flag", "plain");
     	
     	EventContext context = new EventContext(helper.getSessionContext(), helper.getSessionContext().getUser(), sessionId);
     	if (context.isAuthenticated() && context.getUser().getExternalUserId() != null)

@@ -53,6 +53,16 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Event Management</title>
+		<item>
+			<name>Rooms: CSV/XML/XLS Export</name>
+			<description>
+				<line>Corrected handling of the filter flag attributes (flag:plain is added to the filter, not replacing the existing flag(s)).</line>
+				<line>This fixes the issue with event rooms not being properly exported (flag:Event).</line>
+			</description>
+		</item>
+	</category>
 </release>
 <release>
 	<version>4.3.129</version>
