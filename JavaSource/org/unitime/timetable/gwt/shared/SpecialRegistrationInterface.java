@@ -25,10 +25,14 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 
+import com.gargoylesoftware.htmlunit.javascript.host.fetch.Response;
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
@@ -48,6 +52,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private boolean iSpecRegSpaceConfs = false;
 		private SpecialRegistrationStatus iSpecRegStatus = null;
 		private String iNote;
+		private List<ClassAssignmentInterface.ClassAssignment> iChanges = null;
 
 		public SpecialRegistrationContext() {}
 		public SpecialRegistrationContext(SpecialRegistrationContext cx) {
@@ -102,6 +107,39 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void reset(EligibilityCheck check) {
 			reset();
 			if (check != null) update(check);
+		}
+		public void clearChanges() {
+			iChanges = null;
+		}
+		public void setChanges(RetrieveSpecialRegistrationResponse reponse) {
+			iChanges = (reponse == null ? null : reponse.getChanges());
+		}
+		public void setChanges(ClassAssignmentInterface reponse) {
+			iChanges = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
+			if (reponse != null) {
+				for (CourseAssignment ca: reponse.getCourseAssignments())
+					for (ClassAssignment a: ca.getClassAssignments()) {
+						if (a.getSpecRegStatus() != null)
+							iChanges.add(a);
+					}
+			}
+		}
+		public SpecialRegistrationStatus getStatus(ClassAssignment a) {
+			if (a.getSpecRegStatus() != null) return a.getSpecRegStatus();
+			if (iChanges != null && a.getClassId() != null)
+				for (ClassAssignment ch: iChanges)
+					if (a.getClassId().equals(ch.getClassId()))
+						return ch.getSpecRegStatus();
+			return null;
+		}
+		
+		public String getError(ClassAssignment a) {
+			if (a.getSpecRegStatus() != null) return (a.hasError() ? a.getError() : null);
+			if (iChanges != null && a.getClassId() != null)
+				for (ClassAssignment ch: iChanges)
+					if (a.getClassId().equals(ch.getClassId()))
+						return (ch.hasError() ? ch.getError() : null);
+			return null;
 		}
 	}
 	

@@ -1148,25 +1148,27 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							icons.add(RESOURCES.unassignment(), MESSAGES.unassignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
 						else if (!clazz.isFreeTime() && result.isCanEnroll())
 							icons.add(RESOURCES.assignment(), MESSAGES.assignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
-						if (clazz.getSpecRegStatus() != null) {
-							switch (clazz.getSpecRegStatus()) {
+						SpecialRegistrationStatus specRegStatus = iSpecRegCx.getStatus(clazz);
+						if (specRegStatus != null) {
+							String error = iSpecRegCx.getError(clazz);
+							switch (specRegStatus) {
 							case Draft:
-								icons.add(RESOURCES.specRegDraft(), (clazz.hasError() ? clazz.getError() + "\n" : "") + MESSAGES.hintSpecRegDraft(), true);
+								icons.add(RESOURCES.specRegDraft(), (error != null ? error + "\n" : "") + MESSAGES.hintSpecRegDraft(), true);
 								break;
 							case Approved:
-								icons.add(RESOURCES.specRegApproved(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegApproved(), true);
+								icons.add(RESOURCES.specRegApproved(), (error != null ? error + "\n" : "") + "\n" + MESSAGES.hintSpecRegApproved(), true);
 								break;
 							case Cancelled:
-								icons.add(RESOURCES.specRegCancelled(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegCancelled(), true);
+								icons.add(RESOURCES.specRegCancelled(), (error != null ? error + "\n" : "") + "\n" + MESSAGES.hintSpecRegCancelled(), true);
 								break;
 							case Pending:
-								icons.add(RESOURCES.specRegPending(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegPending(), true);
+								icons.add(RESOURCES.specRegPending(), (error != null ? error + "\n" : "") + "\n" + MESSAGES.hintSpecRegPending(), true);
 								break;
 							case Rejected:
-								icons.add(RESOURCES.specRegRejected(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegRejected(), true);
+								icons.add(RESOURCES.specRegRejected(), (error != null ? error + "\n" : "") + "\n" + MESSAGES.hintSpecRegRejected(), true);
 								break;
 							}
-							if (clazz.hasError() && clazz.getSpecRegStatus() != SpecialRegistrationStatus.Approved) {
+							if (clazz.hasError() && specRegStatus != SpecialRegistrationStatus.Approved) {
 								style += " text-red";
 								hasError = true;
 							}
@@ -1416,22 +1418,24 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							WebTable.Row row = null;
 							
 							WebTable.IconsCell icons = new WebTable.IconsCell();
-							if (clazz.getSpecRegStatus() != null) {
-								switch (clazz.getSpecRegStatus()) {
+							SpecialRegistrationStatus specRegStatus = iSpecRegCx.getStatus(clazz);
+							if (specRegStatus != null) {
+								String error = iSpecRegCx.getError(clazz);
+								switch (specRegStatus) {
 								case Draft:
-									icons.add(RESOURCES.specRegDraft(), (clazz.hasError() ? clazz.getError() + "\n" : "") + MESSAGES.hintSpecRegDraft(), true);
+									icons.add(RESOURCES.specRegDraft(), (error != null ? error + "\n" : "") + MESSAGES.hintSpecRegDraft(), true);
 									break;
 								case Approved:
-									icons.add(RESOURCES.specRegApproved(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegApproved(), true);
+									icons.add(RESOURCES.specRegApproved(), (error != null ? error + "\n" : "") + "\n" + MESSAGES.hintSpecRegApproved(), true);
 									break;
 								case Cancelled:
-									icons.add(RESOURCES.specRegCancelled(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegCancelled(), true);
+									icons.add(RESOURCES.specRegCancelled(), (error != null ? error + "\n" : "") + "\n" + MESSAGES.hintSpecRegCancelled(), true);
 									break;
 								case Pending:
-									icons.add(RESOURCES.specRegPending(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegPending(), true);
+									icons.add(RESOURCES.specRegPending(), (error != null ? error + "\n" : "") + "\n" + MESSAGES.hintSpecRegPending(), true);
 									break;
 								case Rejected:
-									icons.add(RESOURCES.specRegRejected(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegRejected(), true);
+									icons.add(RESOURCES.specRegRejected(), (error != null ? error + "\n" : "") + "\n" + MESSAGES.hintSpecRegRejected(), true);
 									break;
 								}
 							} else if (clazz.hasError()) {
@@ -1501,22 +1505,24 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						WebTable.Row row = null;
 						
 						WebTable.IconsCell icons = new WebTable.IconsCell();
-						if (clazz.getSpecRegStatus() != null) {
-							switch (clazz.getSpecRegStatus()) {
+						SpecialRegistrationStatus specRegStatus = iSpecRegCx.getStatus(clazz);
+						if (specRegStatus != null) {
+							String error = iSpecRegCx.getError(clazz);
+							switch (specRegStatus) {
 							case Draft:
-								icons.add(RESOURCES.specRegDraft(), (clazz.hasError() ? clazz.getError() + "\n" : "") + MESSAGES.hintSpecRegDraft(), true);
+								icons.add(RESOURCES.specRegDraft(), (error != null ? error + "\n" : "") + MESSAGES.hintSpecRegDraft(), true);
 								break;
 							case Approved:
-								icons.add(RESOURCES.specRegApproved(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegApproved(), true);
+								icons.add(RESOURCES.specRegApproved(), (error != null ? error + "\n" : "") + "\n" + MESSAGES.hintSpecRegApproved(), true);
 								break;
 							case Cancelled:
-								icons.add(RESOURCES.specRegCancelled(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegCancelled(), true);
+								icons.add(RESOURCES.specRegCancelled(), (error != null ? error + "\n" : "") + "\n" + MESSAGES.hintSpecRegCancelled(), true);
 								break;
 							case Pending:
-								icons.add(RESOURCES.specRegPending(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegPending(), true);
+								icons.add(RESOURCES.specRegPending(), (error != null ? error + "\n" : "") + "\n" + MESSAGES.hintSpecRegPending(), true);
 								break;
 							case Rejected:
-								icons.add(RESOURCES.specRegRejected(), (clazz.hasError() ? clazz.getError() + "\n" : "") + "\n" + MESSAGES.hintSpecRegRejected(), true);
+								icons.add(RESOURCES.specRegRejected(), (error != null ? error + "\n" : "") + "\n" + MESSAGES.hintSpecRegRejected(), true);
 								break;
 							}
 						} else if (clazz.hasError()) {
@@ -1834,6 +1840,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							iSpecRegCx.setSpecRegRequestKeyValid(false);
 							iSpecRegCx.setStatus(null);
 							iSpecRegCx.setNote(null);
+							iSpecRegCx.clearChanges();
 							fillIn(saved);
 							updateHistory();
 							iStatus.error(MESSAGES.requestSpecialRegistrationFail(caught.getMessage()), caught);
@@ -1844,6 +1851,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							iSpecRegCx.setRequestId(specReg.getRequestId());
 							iSpecRegCx.setNote(specReg.getNote());
 							iSpecRegCx.setStatus(specReg.getStatus());
+							iSpecRegCx.setChanges(specReg);
 							if (specReg.hasChanges()) {
 								final CourseRequestInterface courseRequests = iCourseRequests.getRequest();
 								courseRequests.setTimeConflictsAllowed(specReg.hasTimeConflict()); courseRequests.setSpaceConflictsAllowed(specReg.hasSpaceConflict());
@@ -2576,6 +2584,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 																}
 															}
 														fillIn(iLastAssignment);
+														iSpecRegCx.setChanges(iLastAssignment);
 														if (response.isSuccess()) {
 															iStatus.done(response.hasMessage() ? response.getMessage() : MESSAGES.submitSecialRegistrationOK());
 														} else {
@@ -2616,6 +2625,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						iSpecRegCx.setRequestId(null);
 						iSpecRegCx.setStatus(null);
 						iSpecRegCx.setNote(null);
+						iSpecRegCx.clearChanges();
 						iSpecialRegAssignment = iSavedAssignment;
 						fillIn(iSavedAssignment);
 						addHistory();
@@ -2623,6 +2633,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						iSpecRegCx.setRequestId(specReg.getRequestId());
 						iSpecRegCx.setStatus(specReg.getStatus());
 						iSpecRegCx.setNote(specReg.getNote());
+						iSpecRegCx.setChanges(specReg);
 						iSpecialRegAssignment = null;
 						if (specReg.hasChanges()) {
 							final CourseRequestInterface courseRequests = iCourseRequests.getRequest();
