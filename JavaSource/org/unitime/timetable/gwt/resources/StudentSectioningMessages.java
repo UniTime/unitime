@@ -2005,7 +2005,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("\nIf you proceed, the following pending override requests will be canceled/replaced:")
 	String messageRequestOverridesCancel();
 	
-	@DefaultMessage("No registration errors have been detected.")
+	@DefaultMessage("There are no registration errors for which an override can be requested.")
 	String errorNoRegistrationErrorsDetected();
 	
 	@DefaultMessage("Do you want to cancel this override request?")
