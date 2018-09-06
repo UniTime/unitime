@@ -1583,7 +1583,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		if (PreferenceLevel.sRequired.equals(pref.getPrefProlog()))
     			gc = new IgnoreStudentConflictsConstraint();
     	} else {
-    		GroupConstraint.ConstraintType gcType = GroupConstraint.ConstraintType.get(type.getReference());
+    		GroupConstraint.ConstraintTypeInterface gcType = GroupConstraint.getConstraintType(type.getReference());
     		if (gcType == null) {
     			iProgress.error(MSG.warnDistributionConstraintNotImplemented(type.getReference()));
     			return null;
@@ -2136,7 +2136,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 
     	if (variables.size()==1) return false;
     	
-    	GroupConstraint gc = new GroupConstraint(null, GroupConstraint.ConstraintType.get(type), PreferenceLevel.sRequired);
+    	GroupConstraint gc = new GroupConstraint(null, GroupConstraint.getConstraintType(type), PreferenceLevel.sRequired);
 		for (Lecture var: variables)
 			gc.addVariable(var);
     	
