@@ -21,8 +21,10 @@ package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
@@ -2638,9 +2640,12 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (specReg.hasChanges()) {
 							final CourseRequestInterface courseRequests = iCourseRequests.getRequest();
 							courseRequests.setTimeConflictsAllowed(specReg.hasTimeConflict()); courseRequests.setSpaceConflictsAllowed(specReg.hasSpaceConflict());
-							for (ClassAssignmentInterface.ClassAssignment ch: specReg.getChanges()) {
-								if (ch.isCourseAssigned()) courseRequests.addCourse(new RequestedCourse(ch.getCourseId(), CONSTANTS.showCourseTitle() ? ch.getCourseNameWithTitle() : ch.getCourseName()));
-							}
+							Set<Long> specRegDrops = new HashSet<Long>();
+							for (ClassAssignmentInterface.ClassAssignment ch: specReg.getChanges())
+								if (!ch.isCourseAssigned()) specRegDrops.add(ch.getCourseId());
+							for (ClassAssignmentInterface.ClassAssignment ch: specReg.getChanges())
+								if (ch.isCourseAssigned() && (!specRegDrops.contains(ch.getCourseId()) || ch.getSpecRegStatus() != null))
+									courseRequests.addCourse(new RequestedCourse(ch.getCourseId(), CONSTANTS.showCourseTitle() ? ch.getCourseNameWithTitle() : ch.getCourseName()));
 							LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
 							iSectioningService.section(iOnline, courseRequests, iLastResult, specReg.getChanges(), new AsyncCallback<ClassAssignmentInterface>() {
 								public void onSuccess(ClassAssignmentInterface result) {

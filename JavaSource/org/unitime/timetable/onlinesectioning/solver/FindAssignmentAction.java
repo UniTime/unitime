@@ -340,7 +340,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							}
 							if (a.isPinned())
 								requiredSections.add(section);
-							if (a.isPinned() || a.isSaved() || getRequest().isNoChange()) {
+							if (a.isPinned() || (getSpecialRegistration() == null && a.isSaved()) || getRequest().isNoChange()) {
 								if (!conflict) {
 									for (Section s: requiredOrSavedSections)
 										if (s.isOverlapping(section)) { conflict = true; break; }
@@ -359,7 +359,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 										}
 									}
 								}
-								requiredOrSavedSections.add(section);
+								if (!conflict) requiredOrSavedSections.add(section);
 							}
 							selectedPenalty += model.getOverExpected(assignment, enrollmentArry, idx, section, cr);
 							preferredSections.add(section);
@@ -370,7 +370,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					}
 					if (!assigned && getRequest().isNoChange()) {
 						requiredUnassigned.add(cr);
-					} else if (!specRegDrops.isEmpty() && specRegAdds.isEmpty()) {
+					} else if ((!specRegDrops.isEmpty() || !assigned) && specRegAdds.isEmpty()) {
 						requiredUnassigned.add(cr);
 					}
 					// check for adds
@@ -382,7 +382,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							preferredSections.add(section);
 							if (a.isPinned())
 								requiredSections.add(section);
-							if (!conflict) {
+							if (!conflict && a.isPinned()) {
 								if (section.getLimit() == 0 && !getRequest().areSpaceConflictsAllowed())
 									conflict = true;
 								for (Section s: requiredOrSavedSections)
@@ -401,8 +401,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 											if (conflict) break;
 									}
 								}
+								if (!conflict) requiredOrSavedSections.add(section);
 							}
-							requiredOrSavedSections.add(section);
 							rq.addSection(OnlineSectioningHelper.toProto(section, cr.getCourse(a.getCourseId())).setPreference(OnlineSectioningLog.Section.Preference.ADD));
 						}
 					}
@@ -484,12 +484,21 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		
 		selection.setModel(model);
 		selection.setPreferredSections(preferredSectionsForCourse);
-		selection.setRequiredSections(getSpecialRegistration() == null ? requiredOrSavedSectionsForCourse : requiredSectionsForCourse);
+		selection.setRequiredSections(requiredOrSavedSectionsForCourse);
 		selection.setRequiredFreeTimes(requiredFreeTimes);
 		selection.setRequiredUnassinged(requiredUnassigned);
 		if (maxOverExpected >= 0.0) selection.setMaxOverExpected(maxOverExpected);
 		
 		BranchBoundNeighbour neighbour = selection.select(assignment, student);
+		boolean assigned = false;
+		if (neighbour != null)
+			for (Enrollment e: neighbour.getAssignment())
+				if (e != null) { assigned = true; break; }
+		if (!assigned) {
+			selection.setRequiredSections(new Hashtable<CourseRequest, Set<Section>>());
+			selection.setRequiredFreeTimes(new HashSet<FreeTimeRequest>());
+			neighbour = selection.select(assignment, student);
+		}
 		if (neighbour == null && student.getRequests().isEmpty())
 			neighbour = new BranchBoundNeighbour(student, 0, new Enrollment[] {});
 		if (neighbour == null) throw new SectioningException(MSG.exceptionNoSolution());
