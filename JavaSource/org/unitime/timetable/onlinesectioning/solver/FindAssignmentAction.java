@@ -644,6 +644,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					if (enrollment.getStudentId().equals(studentId)) { applicable = true; break; }
 			}
 			if (applicable && reservation.mustBeUsed() && !reservation.isExpired()) hasMustUse = true;
+			if (!applicable && reservation.isExpired()) continue;
 			Reservation clonedReservation = new OnlineReservation(reservation.getType().ordinal(), reservation.getReservationId(), clonedOffering,
 					reservation.getPriority(), reservation.canAssignOverLimit(), reservationLimit, 
 					applicable, reservation.mustBeUsed(), reservation.isAllowOverlap(), reservation.isExpired());

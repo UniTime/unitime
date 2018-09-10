@@ -660,6 +660,7 @@ public class XOffering implements Serializable, Externalizable {
 				for (XEnrollment enrollment: enrollments.getEnrollmentsForCourse(courseId))
 					if (enrollment.getStudentId().equals(student.getStudentId())) { applicable = true; break; }
 			}
+			if (!applicable && reservation.isExpired()) continue;
 			org.cpsolver.studentsct.reservation.Reservation clonedReservation = new OnlineReservation(reservation.getType().ordinal(),
 					reservation.getReservationId(), clonedOffering,
 					reservation.getPriority(), reservation.canAssignOverLimit(), reservationLimit, 
