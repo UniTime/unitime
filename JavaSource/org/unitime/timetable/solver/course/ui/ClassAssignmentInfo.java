@@ -42,19 +42,28 @@ public class ClassAssignmentInfo extends ClassAssignment implements Serializable
 	private static final long serialVersionUID = -4277344877497509285L;
 	private TreeSet<StudentConflict> iStudentConflicts = new TreeSet();
 	
-	public ClassAssignmentInfo(Assignment assignment, boolean useRealStudents) {
+	public ClassAssignmentInfo(Assignment assignment, boolean useRealStudents, Map<ClassAssignment, Set<Long>> conflicts) {
 		super(assignment);
-		findStudentConflicts(null, useRealStudents);
+		if (conflicts != null)
+			findStudentConflicts(null, conflicts);
+		else
+			findStudentConflicts(null, useRealStudents);
 	}
 
-	public ClassAssignmentInfo(Class_ clazz, ClassTimeInfo time, ClassDateInfo date, Collection<ClassRoomInfo> rooms, boolean useRealStudents) {
+	public ClassAssignmentInfo(Class_ clazz, ClassTimeInfo time, ClassDateInfo date, Collection<ClassRoomInfo> rooms, boolean useRealStudents, Map<ClassAssignment, Set<Long>> conflicts) {
 		super(clazz, time, date, rooms);
-		findStudentConflicts(null, useRealStudents);
+		if (conflicts != null)
+			findStudentConflicts(null, conflicts);
+		else
+			findStudentConflicts(null, useRealStudents);
 	}
 	
-	public ClassAssignmentInfo(Class_ clazz, ClassTimeInfo time, ClassDateInfo date, Collection<ClassRoomInfo> rooms, Hashtable<Long,ClassAssignment> assignmentTable, boolean useRealStudents) {
+	public ClassAssignmentInfo(Class_ clazz, ClassTimeInfo time, ClassDateInfo date, Collection<ClassRoomInfo> rooms, Hashtable<Long,ClassAssignment> assignmentTable, boolean useRealStudents, Map<ClassAssignment, Set<Long>> conflicts) {
 		super(clazz, time, date, rooms);
-		findStudentConflicts(assignmentTable, useRealStudents);
+		if (conflicts != null)
+			findStudentConflicts(assignmentTable, conflicts);
+		else
+			findStudentConflicts(assignmentTable, useRealStudents);
 	}
 	
 	private void findStudentConflicts(Hashtable<Long,ClassAssignment> assignmentTable, boolean useRealStudents) {
@@ -79,6 +88,16 @@ public class ClassAssignmentInfo extends ClassAssignment implements Serializable
 			Set<Long> conf = merge(getStudents(), entry.getValue().getStudents());
 			if (!conf.isEmpty())
 				iStudentConflicts.add(new StudentConflict(entry.getValue(), conf));
+		}
+	}
+	
+	private void findStudentConflicts(Map<Long,ClassAssignment> assignmentTable, Map<ClassAssignment, Set<Long>> conflicts) {
+		for (Map.Entry<ClassAssignment, Set<Long>> e: conflicts.entrySet()) {
+			ClassAssignment a = e.getKey();
+			ClassAssignment b = (assignmentTable != null ? assignmentTable.get(a.getClassId()) : null);
+			if (b != null) a = b;
+			if (!a.getClassId().equals(getClassId()) && a.hasTime() && a.getTime().overlaps(getTime()))
+				iStudentConflicts.add(new StudentConflict(a, e.getValue()));
 		}
 	}
 	
@@ -179,5 +198,5 @@ public class ClassAssignmentInfo extends ClassAssignment implements Serializable
             return ret;
         }
 	}
-
+	
 }

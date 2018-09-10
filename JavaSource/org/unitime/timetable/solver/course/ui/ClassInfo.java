@@ -21,17 +21,23 @@ package org.unitime.timetable.solver.course.ui;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.hibernate.Query;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.LocationDAO;
 
 /**
  * @author Tomas Muller
@@ -177,5 +183,35 @@ public class ClassInfo implements Serializable, Comparable<ClassInfo> {
 			}
 		}
 		return false;
+	}
+	
+	public static Map<ClassAssignment, Set<Long>> findAllRelatedAssignments(Long classId, boolean useRealStudents) {
+		Map<Long, ClassAssignment> assignments = new HashMap<Long, ClassAssignment>();
+		Map<ClassAssignment, Set<Long>> conflicts = new HashMap<ClassAssignment, Set<Long>>();
+		Query q = null;
+		if (!useRealStudents) {			
+			q = LocationDAO.getInstance().getSession()
+		    	    .createQuery("select e.clazz.committedAssignment, e.studentId "+
+		    	        	"from StudentEnrollment e, StudentEnrollment x "+
+		    	        	"where x.clazz.uniqueId = :classId and x.studentId = e.studentId and e.clazz != x.clazz and " + 
+		    	        	"e.solution.commited = true and x.solution.commited = true")
+		            .setLong("classId", classId);
+		} else {
+			q = LocationDAO.getInstance().getSession()
+		    	    .createQuery("select e.clazz.committedAssignment, e.student.uniqueId "+
+		    	        	"from StudentClassEnrollment e, StudentClassEnrollment x "+
+		    	        	"where x.clazz.uniqueId = :classId and x.student = e.student and e.clazz != x.clazz ")
+		            .setLong("classId", classId);
+		}
+		for (Object[] line:(List<Object[]>) q.setCacheable(true).list()) {
+			Assignment assignment = (Assignment) line[0];
+			Long studentId = (Long) line[1];
+			ClassAssignment ca = assignments.get(assignment.getClassId());
+			if (ca == null) { ca = new ClassAssignment(assignment); assignments.put(assignment.getClassId(), ca); }
+			Set<Long> studentIds = conflicts.get(ca);
+			if (studentIds == null) { studentIds = new HashSet<Long>(); conflicts.put(ca, studentIds); }
+			studentIds.add(studentId);
+		}
+		return conflicts;
 	}
 }

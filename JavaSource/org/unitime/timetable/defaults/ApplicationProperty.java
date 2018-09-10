@@ -445,6 +445,11 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Class Assignment: allow unassignments of conflicting classes")
 	ClassAssignmentAllowUnassignments("tmtbl.classAssign.allowUnassignment"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Class Assignment: try to compute student conflicts faster by pre-fetching a table of all classes that students of the selected class are also taking")
+	ClassAssignmentPrefetchConflicts("tmtbl.classAssign.prefetchConflicts"),
 
 	@Type(Boolean.class)
 	@DefaultValue("true")
