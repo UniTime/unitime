@@ -370,7 +370,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					}
 					if (!assigned && getRequest().isNoChange()) {
 						requiredUnassigned.add(cr);
-					} else if ((!specRegDrops.isEmpty() || !assigned) && specRegAdds.isEmpty()) {
+					} else if (getSpecialRegistration() != null && (!specRegDrops.isEmpty() || !assigned) && specRegAdds.isEmpty()) {
 						requiredUnassigned.add(cr);
 					}
 					// check for adds
