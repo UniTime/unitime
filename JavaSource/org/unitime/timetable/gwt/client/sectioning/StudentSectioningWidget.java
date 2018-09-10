@@ -1170,10 +1170,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								icons.add(RESOURCES.specRegRejected(), (error != null ? error + "\n" : "") + "\n" + MESSAGES.hintSpecRegRejected(), true);
 								break;
 							}
-							if (clazz.hasError() && specRegStatus != SpecialRegistrationStatus.Approved) {
-								style += " text-red";
+							style += (specRegStatus != SpecialRegistrationStatus.Rejected ? " text-blue" : " text-red");
+							if (clazz.hasError())
 								hasError = true;
-							}
 						} else if (clazz.hasError()) {
 							icons.add(RESOURCES.error(), clazz.getError());
 							style += " text-red";
