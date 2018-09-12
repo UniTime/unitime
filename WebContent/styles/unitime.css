@@ -4441,6 +4441,10 @@ unitime-RoomSharingWidget .legend .blank {
 	-moz-border-radius: 6px;
 }
 
+.unitime-ClassScheduleTabPanel .body {
+	max-width: calc(100vw - 20px);
+}
+
 .unitime-RestrictionsTable .cancelled {
 	font-style: italic;
 	color: gray;
@@ -6145,6 +6149,12 @@ unitime-RoomSharingWidget .legend .blank {
 	padding-bottom: 10px;
 }
 
+.unitime-CourseRequestsConfirmationDialog .error-message {
+	padding-top: 5px;
+	padding-left: 10px;
+	padding-bottom: 10px;
+}
+
 .unitime-CourseRequestsConfirmationDialog .course-table .course-row {
 	display: table-row;
 }
@@ -6317,4 +6327,63 @@ unitime-RoomSharingWidget .legend .blank {
 	display: inline;
 	padding-left: 3px;
 	vertical-align: top;
-}}
+}
+
+.unitime-SpecialRegistrationsPanel {
+	padding-top: 5px;
+}
+
+.unitime-SpecialRegistrationsPanel .registrations-header {
+    padding: 5px 0px 0px 5px;
+    border-top: 1px solid #9CB0CE;	
+}
+
+.unitime-SpecialRegistrationsPanel .registrations-header .icon {
+	display: inline-block;
+	margin: 0px 5px 2px 1px;
+}
+
+.unitime-SpecialRegistrationsPanel .registrations-header .title {
+	display: inline-block;
+	font-size: large;
+	font-weight: bold;
+    color: black;
+}
+
+.unitime-SpecialRegistrationsPanel .registrations-panel {
+	border: 1px solid #9CB0CE;	
+	overflow: auto;
+	overflow-x: scroll;
+	max-width: calc(100vw - 20px);
+}
+
+.unitime-SpecialRegistrationsPanel .registrations-panel:focus {
+	outline: none;
+}
+
+.unitime-SpecialRegistrationsPanel .registration-errors {
+	white-space: pre;
+}
+
+.unitime-SpecialRegistrationsPanel .registration-errors .denied {
+	color: red;
+}
+
+.unitime-SpecialRegistrationsPanel .registration-errors .approved {
+	color: green;
+}
+
+.unitime-SpecialRegistrationsPanel .registration-errors .note {
+	font-style: italic;
+}
+
+.unitime-SpecialRegistrationsPanel .date-and-note {
+	white-space: pre;
+	color: black;
+	font-style: normal;
+}
+
+.unitime-SpecialRegistrationsPanel .change-drop {
+	color: gray;
+    font-style: italic;
+}

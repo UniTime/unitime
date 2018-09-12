@@ -564,7 +564,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					return new SpecialRegistrationEligibilityResponse(false, "No overrides are allowed for " + error + ".");
 				XCourse course = courses.get(error.getCourse());
 				if (course != null && !course.isOverrideEnabled(error.getCode()))
-					return new SpecialRegistrationEligibilityResponse(false, "No overrides are allowed for " + error + ".");
+					return new SpecialRegistrationEligibilityResponse(false, course.getCourseName() + " does not allow overrides for " + error + ".");
 			}
 		}
 		
@@ -572,6 +572,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			Set<ErrorMessage> errors = new TreeSet<ErrorMessage>();
 			Set<String> denials = new HashSet<String>();
 			for (SpecialRegistrationRequest r: resp.cancelRegistrationRequests) {
+				ret.addCancelRequestId(r.requestId);
 				if (r.changes == null) continue;
 				String maxi = null;
 				if (r.requestId.equals(input.getRequestId())) {
@@ -775,6 +776,13 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			ret.setSuccess(ResponseStatus.success.name().equals(response.status));
 			if (response.data != null && !response.data.isEmpty()) {
 				ret.setStatus(getStatus(response.data.get(0).status));
+				for (SpecialRegistrationRequest r: response.data) {
+					if (r.changes != null)
+						for (Change ch: r.changes)
+							if (ch.errors != null && !ch.errors.isEmpty() && ch.status == null)
+								ch.status = RequestStatus.inProgress.name();
+					ret.addRequest(convert(server, helper, student, r, false));
+				}
 			} else {
 				ret.setSuccess(false);
 			}

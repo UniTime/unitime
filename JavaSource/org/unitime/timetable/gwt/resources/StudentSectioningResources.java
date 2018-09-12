@@ -203,6 +203,9 @@ public interface StudentSectioningResources extends ClientBundle {
 	@Source("org/unitime/timetable/gwt/resources/icons/reply.png")
 	ImageResource specRegDraft();
 	
+	@Source("org/unitime/timetable/gwt/resources/icons/tick.png")
+	ImageResource specRegApplied();
+	
 	@Source("org/unitime/timetable/gwt/resources/icons/action_check.png")
 	ImageResource requestsWaitList();
 	

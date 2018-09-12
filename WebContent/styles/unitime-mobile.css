@@ -633,6 +633,11 @@
 	.unitime-ConfirmationPanel .request-note {
 		max-width: calc(80vw - 95px);
 	}
+	
+	.unitime-SpecialRegistrationsPanel .registrations-panel {
+		border: none;
+		margin-top: 0px;
+	}
 }
 
 @media all and (max-width: 400px) {

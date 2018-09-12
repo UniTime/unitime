@@ -23,16 +23,16 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
-import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 
-import com.gargoylesoftware.htmlunit.javascript.host.fetch.Response;
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
@@ -62,10 +62,13 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			iSpecReg = cx.iSpecReg;
 			iSpecRegRequestId = cx.iSpecRegRequestId;
 			iSpecRegRequestKey = cx.iSpecRegRequestKey;
+			iSpecRegRequestKeyValid = cx.iSpecRegRequestKeyValid;
 			iSpecRegDisclaimerAccepted = cx.iSpecRegDisclaimerAccepted;
 			iSpecRegTimeConfs = cx.iSpecRegTimeConfs;
 			iSpecRegSpaceConfs = cx.iSpecRegSpaceConfs;
 			iSpecRegStatus = cx.iSpecRegStatus;
+			iNote = cx.iNote;
+			iChanges = (cx.iChanges == null ? null : new ArrayList<ClassAssignmentInterface.ClassAssignment>(cx.iChanges));
 		}
 		
 		public boolean isEnabled() { return iSpecReg; }
@@ -141,6 +144,19 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 						return (ch.hasError() ? ch.getError() : null);
 			return null;
 		}
+		
+		public boolean isDrop(Long courseId) {
+			if (courseId == null || iChanges == null) return false;
+			boolean hasDrop = false, hasAdd = false;
+			for (ClassAssignmentInterface.ClassAssignment ca: iChanges)
+				if (courseId.equals(ca.getCourseId())) {
+					switch (ca.getSpecRegOperation()) {
+					case Add: hasAdd = true; break;
+					case Drop: hasDrop = true; break;
+					}
+				}
+			return hasDrop && !hasAdd;
+		}
 	}
 	
 	public static class SpecialRegistrationEligibilityRequest implements IsSerializable, Serializable {
@@ -186,6 +202,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private boolean iCanSubmit;
 		private List<ErrorMessage> iErrors = null;
 		private List<ErrorMessage> iCancelErrors = null;
+		private Set<String> iCancelRequestIds = null;
 		
 		public SpecialRegistrationEligibilityResponse() {}
 		public SpecialRegistrationEligibilityResponse(boolean canSubmit, String message) {
@@ -228,6 +245,13 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			else
 				iCancelErrors = new ArrayList<ErrorMessage>(messages);
 		}
+		public void addCancelRequestId(String id) {
+			if (iCancelRequestIds == null) iCancelRequestIds = new HashSet<String>();
+			iCancelRequestIds.add(id);
+		}
+		public boolean hasCancelRequestIds() { return iCancelRequestIds != null && !iCancelRequestIds.isEmpty(); }
+		public Set<String> getCancelRequestIds() { return iCancelRequestIds; }
+		public boolean isToBeCancelled(String requestId) { return iCancelRequestIds != null && iCancelRequestIds.contains(requestId); }
 	}
 	
 	public static class RetrieveSpecialRegistrationRequest implements IsSerializable, Serializable {
@@ -295,6 +319,130 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void addChange(ClassAssignmentInterface.ClassAssignment ca) {
 			if (iChanges == null) iChanges = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 			iChanges.add(ca);
+		}
+		public boolean isAdd(Long courseId) {
+			boolean hasDrop = false, hasAdd = false;
+			for (ClassAssignmentInterface.ClassAssignment ca: iChanges)
+				if (courseId.equals(ca.getCourseId())) {
+					switch (ca.getSpecRegOperation()) {
+					case Add: hasAdd = true; break;
+					case Drop: hasDrop = true; break;
+					}
+				}
+			return hasAdd && !hasDrop;
+		}
+		
+		public boolean isDrop(Long courseId) {
+			boolean hasDrop = false, hasAdd = false;
+			for (ClassAssignmentInterface.ClassAssignment ca: iChanges)
+				if (courseId.equals(ca.getCourseId())) {
+					switch (ca.getSpecRegOperation()) {
+					case Add: hasAdd = true; break;
+					case Drop: hasDrop = true; break;
+					}
+				}
+			return hasDrop && !hasAdd;
+		}
+		
+		public boolean hasErrors(Long courseId) {
+			for (ClassAssignmentInterface.ClassAssignment ca: iChanges)
+				if (courseId.equals(ca.getCourseId()) && ca.hasError()) return true;
+			return false;
+		}
+		
+		public boolean isApproved(Long courseId) {
+			boolean approved = false;
+			for (ClassAssignmentInterface.ClassAssignment ca: iChanges)
+				if (!ca.hasError()) {
+					if (ca.getSpecRegStatus() == SpecialRegistrationStatus.Approved) approved = true;
+					else return false;
+				}
+			return approved;
+		}
+		
+		public boolean isFullyApplied(ClassAssignmentInterface saved) {
+			if (!hasChanges()) return getStatus() == SpecialRegistrationStatus.Approved;
+			if (saved == null) return false;
+			Set<Long> courseIds = new HashSet<Long>();
+			changes: for (ClassAssignmentInterface.ClassAssignment ch: iChanges) {
+				if (ch.getSpecRegOperation() == SpecialRegistrationOperation.Keep) continue;
+				Long courseId = ch.getCourseId();
+				if (courseIds.add(courseId)) {
+					boolean hasDrop = false, hasAdd = false;
+					for (ClassAssignmentInterface.ClassAssignment ca: iChanges)
+						if (courseId.equals(ca.getCourseId())) {
+							switch (ca.getSpecRegOperation()) {
+							case Add: hasAdd = true; break;
+							case Drop: hasDrop = true; break;
+							}
+						}
+					if (hasAdd && !hasDrop) {
+						// continue, if the course is already added (ignore sections)
+						for (ClassAssignmentInterface.ClassAssignment ca: saved.getClassAssignments())
+							if (ca.isSaved() && courseId.equals(ca.getCourseId())) continue changes;
+						return false;
+					} else if (hasDrop && !hasAdd) {
+						// continue, if the course is already dropped (ignore sections)
+						for (ClassAssignmentInterface.ClassAssignment ca: saved.getClassAssignments())
+							if (ca.isSaved() && courseId.equals(ca.getCourseId())) return false;
+					} else {
+						// check sections with an error
+						for (ClassAssignmentInterface.ClassAssignment ca: iChanges) {
+							if (courseId.equals(ca.getCourseId()) && ca.hasError()) {
+								boolean match = false;
+								for (ClassAssignmentInterface.ClassAssignment x: saved.getClassAssignments()) {
+									if (x.isSaved() && ca.getClassId().equals(x.getClassId())) { match = true; break; }
+								}
+								// drop operation but section was found
+								if (match && ca.getSpecRegOperation() == SpecialRegistrationOperation.Drop) return false;
+								// add operation but section was NOT found
+								if (!match && ca.getSpecRegOperation() == SpecialRegistrationOperation.Add) return false;
+							}
+						}
+					}
+				}
+			}
+			return true;
+		}
+		
+		public boolean isApplied(Long courseId, ClassAssignmentInterface saved) {
+			if (saved == null) return false;
+			boolean hasDrop = false, hasAdd = false, hasKeep = false;
+			for (ClassAssignmentInterface.ClassAssignment ca: iChanges)
+				if (courseId.equals(ca.getCourseId())) {
+					switch (ca.getSpecRegOperation()) {
+					case Add: hasAdd = true; break;
+					case Drop: hasDrop = true; break;
+					case Keep: hasKeep = true; break;
+					}
+				}
+			if (hasKeep) {
+				return false;
+			} else if (hasAdd && !hasDrop) {
+				// course is already added (ignore sections)
+				for (ClassAssignmentInterface.ClassAssignment ca: saved.getClassAssignments())
+					if (ca.isSaved() && courseId.equals(ca.getCourseId())) return true;
+				return false;
+			} else if (hasDrop && !hasAdd) {
+				// course is already dropped (ignore sections)
+				for (ClassAssignmentInterface.ClassAssignment ca: saved.getClassAssignments())
+					if (ca.isSaved() && courseId.equals(ca.getCourseId())) return false;
+				return true;
+			} else {
+				// course is changed, check sections with errors
+				for (ClassAssignmentInterface.ClassAssignment ca: iChanges) 
+					if (courseId.equals(ca.getCourseId()) && ca.hasError()) {
+						boolean match = false;
+						for (ClassAssignmentInterface.ClassAssignment x: saved.getClassAssignments()) {
+							if (x.isSaved() && ca.getClassId().equals(x.getClassId())) {
+								match = true; break;
+							}
+						}
+						if (match && ca.getSpecRegOperation() == SpecialRegistrationOperation.Drop) return false;
+						if (!match && ca.getSpecRegOperation() == SpecialRegistrationOperation.Add) return false;
+					}
+				return true;
+			}
 		}
 		
 		public boolean canCancel() { return iCanCancel; }
@@ -387,6 +535,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private String iMessage;
 		private boolean iSuccess;
 		private SpecialRegistrationStatus iStatus = null;
+		private List<RetrieveSpecialRegistrationResponse> iRequests = null;
 		
 		public SubmitSpecialRegistrationResponse() {}
 		
@@ -403,6 +552,19 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		
 		public SpecialRegistrationStatus getStatus() { return iStatus; }
 		public void setStatus(SpecialRegistrationStatus status) { iStatus = status; }
+		
+		public List<RetrieveSpecialRegistrationResponse> getRequests() { return iRequests; }
+		public void addRequest(RetrieveSpecialRegistrationResponse request) {
+			if (iRequests == null) iRequests = new ArrayList<RetrieveSpecialRegistrationResponse>();
+			iRequests.add(request);
+		}
+		public boolean hasRequests() { return iRequests != null && !iRequests.isEmpty(); }
+		public boolean hasRequest(String requestId) {
+			if (iRequests == null) return false;
+			for (RetrieveSpecialRegistrationResponse r: iRequests)
+				if (requestId.equals(r.getRequestId())) return true;
+			return false;
+		}
 	}
 	
 	public static class RetrieveAllSpecialRegistrationsRequest implements IsSerializable, Serializable {

@@ -1648,6 +1648,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("These override requests have been denied.")
 	String hintSpecRegRejected();
 	
+	@DefaultMessage("These override requests have been already applied.")
+	String hintSpecRegApplied();
+	
 	@DefaultMessage("{0}, {1}")
 	String courseSeparatorMiddle(String list, String item);
 	
@@ -2008,6 +2011,45 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("There are no registration errors for which an override can be requested.")
 	String errorNoRegistrationErrorsDetected();
 	
+	@DefaultMessage("No overrides can be requested at this time.")
+	String errorRegistrationErrorsBadResponse();
+	
 	@DefaultMessage("Do you want to cancel this override request?")
 	String confirmOverrideRequestCancel();
+	
+	@DefaultMessage("Registration Errors")
+	String dialogEnrollmentConfirmation();
+	
+	@DefaultMessage("Registration failed with the following registration errors:")
+	String messageEnrollmentFailedWithErrors();
+	
+	@DefaultMessage("Registration for the selected schedule was partially successful.\n" +
+			"Some of the changes have been denied due to the following registration errors:")
+	String messageEnrollmentSucceededWithErrors();
+	
+	@DefaultMessage("Checking overrides ...\nClick <b>Close Dialog</b> to hide this dialog without requesting any overrides.")
+	String messageCheckingOverrides();
+	
+	@DefaultMessage("Request Overrides")
+	String buttonEnrollmentRequestOverrides();
+	
+	@DefaultMessage("Review and request overrides for the above registration errrors.")
+	String titleEnrollmentRequestOverrides();
+	
+	@DefaultMessage("Close Dialog")
+	String buttonEnrollmentHideConfirmation();
+	
+	@DefaultMessage("Hide the Registration Errors dialog without requesting any overrides.")
+	String titleEnrollmentHideConfirmation();
+	
+	@DefaultMessage("Overrides cannot be requested: {0}\nClick <b>Close Dialog</b> to hide this dialog without requesting any overrides.")
+	String messageCannotRequestOverrides(String message);
+	
+	@DefaultMessage("It is possible to request overrides for all of the above registration errors.\n"+
+			"Click <b>Request Overrides</b> to review and request overrides. Click <b>Close Dialog</b> to hide this dialog without requesting any overrides.")
+	String messageCanRequestOverridesAll();
+	
+	@DefaultMessage("It is possible to request overrides for some of the above registration errors.\n"+
+			"Click <b>Request Overrides</b> to review and request overrides. Click <b>Close Dialog</b> to hide this dialog without requesting any overrides.")
+	String messageCanRequestOverridesSome();
 }

@@ -704,7 +704,7 @@ public class WebTable extends Composite implements HasMobileScroll {
 			icon.setTitle(text);
 			icon.setAltText(text);
 			if (iPanel.getWidgetCount() > 0)
-				icon.getElement().getStyle().setPaddingLeft(3, Unit.PX);
+				icon.getElement().getStyle().setMarginLeft(3, Unit.PX);
 			iPanel.add(icon);
 			iPanel.setCellVerticalAlignment(icon, HasVerticalAlignment.ALIGN_MIDDLE);
 			if (title != null && !title.isEmpty()) {

@@ -30,10 +30,7 @@ import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.ImageButton;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat;
-import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
-import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
-import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
@@ -49,12 +46,14 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
@@ -63,45 +62,109 @@ import com.google.gwt.user.client.ui.Widget;
 /**
  * @author Tomas Muller
  */
-public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
+public class SpecialRegistrationsPanel extends P {
 	protected static StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	protected static StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	protected static StudentSectioningResources RESOURCES = GWT.create(StudentSectioningResources.class);
 	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private static DateTimeFormat sModifiedDateFormat = ServerDateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
 	
-	private SimpleForm iForm;
 	private UniTimeTable<RetrieveSpecialRegistrationResponse> iTable;
-	private UniTimeHeaderPanel iFooter;
+	private FocusPanel iPanel;
 	private SpecialRegistrationContext iSpecReg;
+	private Image iWaiting = null;
 	private List<RetrieveSpecialRegistrationResponse> iRegistrations = new ArrayList<RetrieveSpecialRegistrationResponse>();
-
-	public SpecialRegistrationSelectionDialog(SpecialRegistrationContext specReg) {
-		super(true, true);
+	
+	public SpecialRegistrationsPanel(SpecialRegistrationContext specReg) {
+		addStyleName("unitime-SpecialRegistrationsPanel");
 		iSpecReg = specReg;
-		setEscapeToHide(true);
-		setEnterToSubmit(new Command() {
-			@Override
-			public void execute() {
-				if (iTable.getSelectedRow() > 0)
-					doSubmit(iTable.getData(iTable.getSelectedRow()));
-			}
-		});
-		setText(MESSAGES.dialogSpecialRegistrations());
 		
-		iForm = new SimpleForm();
-		iForm.addStyleName("unitime-SpecialRegistrations");
+		P title = new P("registrations-header");
+		iWaiting = new Image(RESOURCES.loading_small()); iWaiting.addStyleName("icon");
+		iWaiting.setVisible(false);
+		title.add(iWaiting);
+		P label = new P("title"); label.setText(MESSAGES.dialogSpecialRegistrations());
+		title.add(label);
+		add(title);
 		
 		iTable = new Table<RetrieveSpecialRegistrationResponse>();
 		iTable.addStyleName("registrations-table");
 		iTable.setAllowSelection(true);
 		iTable.setAllowMultiSelect(true);
-		iForm.addRow(iTable);
 		
-		iFooter = new UniTimeHeaderPanel();
-		iForm.addBottomRow(iFooter);
+		iPanel = new FocusPanel(iTable);
+		iPanel.addStyleName("registrations-panel");
+		add(iPanel);
 		
-		setWidget(iForm);
+		iPanel.addKeyUpHandler(new KeyUpHandler() {
+			@Override
+			public void onKeyUp(KeyUpEvent event) {
+				if (event.getNativeKeyCode() == KeyCodes.KEY_UP) {
+					RetrieveSpecialRegistrationResponse prev = null;
+					RetrieveSpecialRegistrationResponse selected = null;
+					RetrieveSpecialRegistrationResponse last = null;
+					for (int row = 0; row < iTable.getRowCount(); row ++) {
+						RetrieveSpecialRegistrationResponse d = iTable.getData(row);
+						if (d == null) continue;
+						if (iTable.isSelected(row)) selected = d;
+						else if (selected == null) prev = d;
+						last = d;
+					}
+					int row = setSelected(prev == null ? last : prev);
+					if (row >= 0)
+						iTable.getRowFormatter().getElement(row).scrollIntoView();
+					updateAriaStatus();
+					event.preventDefault();
+					event.stopPropagation();
+					iPanel.setFocus(true);
+				} else if (event.getNativeKeyCode() == KeyCodes.KEY_DOWN) {
+					RetrieveSpecialRegistrationResponse first = null;
+					RetrieveSpecialRegistrationResponse selected = null;
+					RetrieveSpecialRegistrationResponse next = null;
+					for (int row = 0; row < iTable.getRowCount(); row ++) {
+						RetrieveSpecialRegistrationResponse d = iTable.getData(row);
+						if (d == null) continue;
+						if (first == null) first = d;
+						if (iTable.isSelected(row)) selected = d;
+						else if (selected != null && next == null) next = d;
+					}
+					int row = setSelected(next == null ? first : next);
+					if (row >= 0)
+						iTable.getRowFormatter().getElement(row).scrollIntoView();
+					updateAriaStatus();
+					event.preventDefault();
+					event.stopPropagation();
+					iPanel.setFocus(true);
+				} else if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER || event.getNativeKeyCode() == KeyCodes.KEY_SPACE) {
+					if (iTable.getSelectedRow() > 0)
+						doSubmit(iTable.getData(iTable.getSelectedRow()));
+					event.preventDefault();
+					event.stopPropagation();
+					iPanel.setFocus(true);
+				} else if (event.getNativeKeyCode() == KeyCodes.KEY_DELETE) {
+					if (iTable.getSelectedRow() > 0) {
+						RetrieveSpecialRegistrationResponse reg = iTable.getData(iTable.getSelectedRow());
+						if (reg != null && reg.canCancel()) {
+							doCancel(reg.getRequestId(), new AsyncCallback<Boolean>() {
+								@Override
+								public void onFailure(Throwable caught) {}
+								@Override
+								public void onSuccess(Boolean result) {
+									if (result) {
+										iTable.clearHover();
+										for (int i = iTable.getRowCount() - 1; i > 0; i --) {
+											if (iTable.getData(i).equals(reg)) {
+												iTable.removeRow(i);
+											}
+										}
+									}
+								}
+							});
+						}
+					}
+				}
+			}
+		});
 
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		header.add(new UniTimeTableHeader(""));
@@ -117,22 +180,6 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 		header.add(new UniTimeTableHeader(""));
 		iTable.addRow(null, header);
 		
-		iFooter.addButton("select", MESSAGES.buttonSpecRegSelect(), new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				if (iTable.getSelectedRow() > 0)
-					doSubmit(iTable.getData(iTable.getSelectedRow()));
-			}
-		});
-		iFooter.setEnabled("select", false);
-		
-		iFooter.addButton("cancel", MESSAGES.buttonSpecRegCancel(), new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				hide();				
-			}
-		});
-		
 		iTable.addMouseClickListener(new UniTimeTable.MouseClickListener<RetrieveSpecialRegistrationResponse>() {
 			@Override
 			public void onMouseClick(UniTimeTable.TableEvent<RetrieveSpecialRegistrationResponse> event) {
@@ -140,21 +187,31 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 					doSubmit(event.getData());
 			}
 		});
+		
+		setVisible(false);
 	}
 	
-	public List<RetrieveSpecialRegistrationResponse> getRegistrations() {
-		return iRegistrations;
+	public void showWaiting() {
+		iWaiting.setVisible(true);
+		iPanel.setVisible(false);
+		setVisible(true);
 	}
 	
-	public void open(List<RetrieveSpecialRegistrationResponse> registrations, ClassAssignmentInterface saved) {
+	public void hideWaiting() {
+		iWaiting.setVisible(false);
+		iPanel.setVisible(true);
+		setVisible(iTable.getRowCount() > 1);
+	}
+	
+	public List<RetrieveSpecialRegistrationResponse> getRegistrations() { return iRegistrations; }
+	
+	public void populate(List<RetrieveSpecialRegistrationResponse> registrations, ClassAssignmentInterface saved) {
 		iRegistrations = registrations;
 		iTable.clearTable(1);
 		Collections.sort(registrations);
 		for (final RetrieveSpecialRegistrationResponse reg: registrations) {
 			P p = new P("icons");
-			if (reg.isFullyApplied(saved)) {
-				p.add(new Icon(RESOURCES.saved(), MESSAGES.hintSpecRegApplied()));
-			} else if (reg.getStatus() != null) {
+			if (reg.getStatus() != null) {
 				switch (reg.getStatus()) {
 				case Approved:
 					p.add(new Icon(RESOURCES.specRegApproved(), MESSAGES.hintSpecRegApproved()));
@@ -179,6 +236,10 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 				delete.addStyleName("unitime-NoPrint");
 				delete.addClickHandler(new ClickHandler() {
 					public void onClick(ClickEvent event) {
+						for (int row = 1; row < iTable.getRowCount(); row ++) {
+							RetrieveSpecialRegistrationResponse data = iTable.getData(row);
+							iTable.setSelected(row, data != null && data.equals(reg));
+						}
 						UniTimeConfirmationDialog.confirm(MESSAGES.confirmOverrideRequestCancel(), new Command() {
 							@Override
 							public void execute() {
@@ -208,8 +269,11 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 				delete.setAltText(ARIA.altCancelOverrideRequest());
 			}
 			if (reg.hasChanges()) {
+				if (reg.isFullyApplied(saved)) continue;
 				Long lastCourseId = null;
 				for (ClassAssignment ca: reg.getChanges()) {
+					if (reg.isApplied(ca.getCourseId(), saved) || (!reg.hasErrors(ca.getCourseId()) && !reg.isDrop(ca.getCourseId()))) continue;
+					if (ca.getParentSection() != null && ca.getParentSection().equals(ca.getSection())) continue;
 					List<Widget> row = new ArrayList<Widget>();
 					if (lastCourseId == null) {
 						row.add(p);
@@ -289,21 +353,7 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 						iTable.getCellFormatter().addStyleName(idx, c, "top-border-solid");
 			}
 		}
-		iFooter.setEnabled("select", iTable.getSelectedRow() >= 0);
-		center();
-		updateAriaStatus(true);
-	}
-	
-	@Override
-	public void show() {
-		super.show();
-		updateAriaStatus(true);
-	}
-	
-	public void doSubmit(RetrieveSpecialRegistrationResponse reg) {
-		if (reg != null)
-			AriaStatus.getInstance().setText(ARIA.selectedSpecReg(reg.getDescription()));
-		hide();
+		setVisible(iTable.getRowCount() > 1);
 	}
 	
 	protected int setSelected(RetrieveSpecialRegistrationResponse data) {
@@ -317,56 +367,12 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 		return row;
 	}
 	
-	@Override
-	protected void onPreviewNativeEvent(NativePreviewEvent event) {
-		super.onPreviewNativeEvent(event);
-		if (event.getTypeInt() == Event.ONKEYDOWN) {
-			if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_UP) {
-				RetrieveSpecialRegistrationResponse prev = null;
-				RetrieveSpecialRegistrationResponse selected = null;
-				RetrieveSpecialRegistrationResponse last = null;
-				for (int row = 0; row < iTable.getRowCount(); row ++) {
-					RetrieveSpecialRegistrationResponse d = iTable.getData(row);
-					if (d == null) continue;
-					if (iTable.isSelected(row)) selected = d;
-					else if (selected == null) prev = d;
-					last = d;
-				}
-				int row = setSelected(prev == null ? last : prev);
-				if (row >= 0)
-					iTable.getRowFormatter().getElement(row).scrollIntoView();
-				updateAriaStatus(false);
-				iFooter.setEnabled("select", iTable.getSelectedRow() >= 0);
-			} else if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_DOWN) {
-				RetrieveSpecialRegistrationResponse first = null;
-				RetrieveSpecialRegistrationResponse selected = null;
-				RetrieveSpecialRegistrationResponse next = null;
-				for (int row = 0; row < iTable.getRowCount(); row ++) {
-					RetrieveSpecialRegistrationResponse d = iTable.getData(row);
-					if (d == null) continue;
-					if (first == null) first = d;
-					if (iTable.isSelected(row)) selected = d;
-					else if (selected != null && next == null) next = d;
-				}
-				int row = setSelected(next == null ? first : next);
-				if (row >= 0)
-					iTable.getRowFormatter().getElement(row).scrollIntoView();
-				updateAriaStatus(false);
-				iFooter.setEnabled("select", iTable.getSelectedRow() >= 0);
-			}
-		}
-	}
-	
-	protected void updateAriaStatus(boolean justOpened) {
-		String text = "";
-		if (justOpened)
-			text = ARIA.showingSpecRegs(iTable.getRowCount() - 1);
+	protected void updateAriaStatus() {
 		int row = iTable.getSelectedRow();
 		RetrieveSpecialRegistrationResponse reg = iTable.getData(row);
 		if (row >= 0 && reg != null) {
-			text += (text.isEmpty() ? "" : " ") + ARIA.showingSpecReg(row, iTable.getRowCount() - 1, reg.getDescription(), reg.getSubmitDate());
+			AriaStatus.getInstance().setText(ARIA.showingSpecReg(row, iTable.getRowCount() - 1, reg.getDescription(), reg.getSubmitDate()));
 		}
-		AriaStatus.getInstance().setText(text);
 	}
 	
 	protected class DateAndNoteCell extends Label {
@@ -421,6 +427,11 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 	
 	public class Table<T> extends UniTimeTable<T> {
 		protected Set<Integer> iLastHoverRows = new HashSet<Integer>();
+		
+		public Table() {
+			super();
+			sinkEvents(Event.ONKEYDOWN);
+		}
 		
 		protected void updateHover() {
 			// clear hover if needed
@@ -488,18 +499,27 @@ public class SpecialRegistrationSelectionDialog extends UniTimeDialogBox {
 		}
 		
 		@Override
-		public void onBrowserEvent(final Event event) {
-			super.onBrowserEvent(event);
-			updateHover();
-		}
-		
-		@Override
 		public void clearHover() {
 			super.clearHover();
 			updateHover();
 		}
+		
+		@Override
+		public void onBrowserEvent(Event event) {
+			super.onBrowserEvent(event);
+			updateHover();
+		}
+	}
+
+	public void doCancel(String requestId, AsyncCallback<Boolean> callback) {
 	}
 	
-	public void doCancel(String requestId, AsyncCallback<Boolean> callback) {
+	public void doSubmit(RetrieveSpecialRegistrationResponse reg) {
+		if (reg != null)
+			AriaStatus.getInstance().setText(ARIA.selectedSpecReg(reg.getDescription()));
+		for (int row = 1; row < iTable.getRowCount(); row ++) {
+			RetrieveSpecialRegistrationResponse data = iTable.getData(row);
+			iTable.setSelected(row, data != null && data.equals(reg));
+		}
 	}
 }

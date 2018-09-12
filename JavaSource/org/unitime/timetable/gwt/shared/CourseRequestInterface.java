@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -133,6 +134,27 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		r.addRequestedCourse(course);
 		getCourses().add(r);
 		return true;
+	}
+	
+	public boolean dropCourse(RequestedCourse course) {
+		iLastCourse = course;
+		for (CourseRequestInterface.Request r: getCourses()) {
+			if (r.hasRequestedCourse(course)) {
+				for (Iterator<RequestedCourse> i = r.getRequestedCourse().iterator(); i.hasNext(); ) {
+					if (course.equals(i.next())) i.remove();
+				}
+				return true;
+			}
+		}
+		for (CourseRequestInterface.Request r: getAlternatives()) {
+			if (r.hasRequestedCourse(course)) {
+				for (Iterator<RequestedCourse> i = r.getRequestedCourse().iterator(); i.hasNext(); ) {
+					if (course.equals(i.next())) i.remove();
+				}
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public boolean hasLastCourse() { return iLastCourse != null; }

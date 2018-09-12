@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -161,6 +162,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private P iGridMessage;
 	private Image iTotalCreditRequestsStatus;
 	private P iTotalCreditRequests;
+	private SpecialRegistrationsPanel iSpecialRegistrationsPanel;
 	
 	private ArrayList<ClassAssignmentInterface.ClassAssignment> iLastResult, iLastEnrollment;
 	private ClassAssignmentInterface iLastAssignment, iSavedAssignment = null, iSpecialRegAssignment = null;
@@ -588,6 +590,78 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		bottom.add(iShowUnassignments);
 		bottom.add(iTotalCredit);
 		panel.add(bottom);
+		
+		iSpecialRegistrationsPanel = new SpecialRegistrationsPanel(iSpecRegCx) {
+			public void doSubmit(final RetrieveSpecialRegistrationResponse specReg) {
+				super.doSubmit(specReg);
+				if (specReg == null) {
+					iSpecRegCx.update(iEligibilityCheck);
+					iSpecRegCx.setRequestId(null);
+					iSpecRegCx.setStatus(null);
+					iSpecRegCx.setNote(null);
+					iSpecRegCx.clearChanges();
+					iSpecialRegAssignment = iSavedAssignment;
+					fillIn(iSavedAssignment);
+					addHistory();
+				} else {
+					iSpecRegCx.setRequestId(specReg.getRequestId());
+					iSpecRegCx.setStatus(specReg.getStatus());
+					iSpecRegCx.setNote(specReg.getNote());
+					iSpecRegCx.setChanges(specReg);
+					iSpecialRegAssignment = null;
+					if (specReg.hasChanges()) {
+						final CourseRequestInterface courseRequests = iCourseRequests.getRequest();
+						courseRequests.setTimeConflictsAllowed(specReg.hasTimeConflict()); courseRequests.setSpaceConflictsAllowed(specReg.hasSpaceConflict());
+						Set<Long> specRegDrops = new HashSet<Long>();
+						Set<Long> specRegAdds = new HashSet<Long>();
+						for (ClassAssignmentInterface.ClassAssignment ch: specReg.getChanges())
+							if (!ch.isCourseAssigned()) specRegDrops.add(ch.getCourseId()); else specRegAdds.add(ch.getCourseId());
+						for (ClassAssignmentInterface.ClassAssignment ch: specReg.getChanges())
+							if (ch.isCourseAssigned() && (!specRegDrops.contains(ch.getCourseId()) || ch.getSpecRegStatus() != null))
+								courseRequests.addCourse(new RequestedCourse(ch.getCourseId(), CONSTANTS.showCourseTitle() ? ch.getCourseNameWithTitle() : ch.getCourseName()));
+							else if (!ch.isCourseAssigned() && !specRegAdds.contains(ch.getCourseId()))
+								courseRequests.dropCourse(new RequestedCourse(ch.getCourseId(), CONSTANTS.showCourseTitle() ? ch.getCourseNameWithTitle() : ch.getCourseName()));
+						LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
+						iSectioningService.section(iOnline, courseRequests, iLastResult, specReg.getChanges(), new AsyncCallback<ClassAssignmentInterface>() {
+							public void onSuccess(ClassAssignmentInterface result) {
+								fillIn(result);
+								iCourseRequests.setRequest(courseRequests);
+								addHistory();
+							}
+							public void onFailure(Throwable caught) {
+								iStatus.error(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
+								LoadingWidget.getInstance().hide();
+							}
+						});
+					} else {
+						fillIn(iSavedAssignment);
+						addHistory();
+					}
+				}
+			}
+
+			public void doCancel(String requestId, final AsyncCallback<Boolean> callback) {
+				CancelSpecialRegistrationRequest req = new CancelSpecialRegistrationRequest();
+				req.setRequestId(requestId);
+				req.setSessionId(iSessionSelector.getAcademicSessionId());
+				req.setStudentId(iEligibilityCheck.getStudentId());
+				iSectioningService.cancelSpecialRequest(req, new AsyncCallback<CancelSpecialRegistrationResponse>() {
+					@Override
+					public void onSuccess(CancelSpecialRegistrationResponse result) {
+						if (result.isFailure() && result.hasMessage())
+							iStatus.error(MESSAGES.cancelSpecialRegistrationFail(result.getMessage()));
+						callback.onSuccess(result.isSuccess());
+					}
+					
+					@Override
+					public void onFailure(Throwable caught) {
+						callback.onFailure(caught);
+						iStatus.error(MESSAGES.cancelSpecialRegistrationFail(caught.getMessage()), caught);
+					}
+				});
+			}
+		};
+		panel.add(iSpecialRegistrationsPanel);
 
 		iShowUnassignments.setVisible(false);
 		String showUnassignments = Cookies.getCookie("UniTime:Unassignments");
@@ -822,7 +896,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								iSavedAssignment = result;
 								iStartOver.setVisible(iSavedAssignment != null && !iSavedAssignment.getCourseAssignments().isEmpty());
 								iStartOver.setEnabled(iSavedAssignment != null && !iSavedAssignment.getCourseAssignments().isEmpty());
-								fillIn(result);
+								fillIn(result, iEligibilityCheck == null || !iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
 								if (result.hasRequest())
 									iCourseRequests.setRequest(result.getRequest());
 								if (!result.hasMessages())
@@ -842,12 +916,19 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 												}
 											});
 								}
-								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG) && result.hasMessages())
-									checkSpecialRegistrationAfterFailedSubmitSchedule(lastEnrollment, false);
+								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG)) {
+									if (result.hasMessages()) {
+										checkSpecialRegistrationAfterFailedSubmitSchedule(lastEnrollment, null, result);
+									}
+									iSpecialRegistrationsPanel.populate(iSpecialRegistrationsPanel.getRegistrations(), iSavedAssignment);
+								}
 							}
 							public void onFailure(Throwable caught) {
 								LoadingWidget.getInstance().hide();
-								iStatus.error(MESSAGES.enrollFailed(caught.getMessage()), caught);
+								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG))
+									iStatus.error(MESSAGES.enrollFailed(caught.getMessage()), false);
+								else
+									iStatus.error(MESSAGES.enrollFailed(caught.getMessage()), caught);
 								updateHistory();
 								if (caught instanceof SectioningException) {
 									SectioningException se = (SectioningException) caught;
@@ -892,8 +973,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 										iStatus.error(caught.getMessage() , false);
 									}
 								}
-								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG))
-									checkSpecialRegistrationAfterFailedSubmitSchedule(lastEnrollment, false);
+								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG)) {
+									checkSpecialRegistrationAfterFailedSubmitSchedule(lastEnrollment, caught, null);
+									
+								}
 							}
 						});
 					}
@@ -906,7 +989,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iSubmitSpecReg.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				checkSpecialRegistrationAfterFailedSubmitSchedule(new ArrayList<ClassAssignmentInterface.ClassAssignment>(iLastResult), true);
+				checkSpecialRegistrationAfterFailedSubmitSchedule(new ArrayList<ClassAssignmentInterface.ClassAssignment>(iLastResult));
 			}
 		});
 		
@@ -928,7 +1011,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						public void onSuccess(List<RetrieveSpecialRegistrationResponse> response) {
 							LoadingWidget.getInstance().hide();
 							if (!response.isEmpty())
-								getSpecialRegistrationSelectionDialog().open(response);
+								getSpecialRegistrationSelectionDialog().open(response, iSavedAssignment);
 							else
 								iStatus.info(MESSAGES.failedNoSpecialRegistrations());
 							updateHistory();
@@ -1118,6 +1201,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	}
 	
 	private void fillIn(ClassAssignmentInterface result) {
+		fillIn(result, true);
+	}
+	
+	private void fillIn(ClassAssignmentInterface result, boolean popup) {
 		iLastEnrollment = null;
 		iLastResult.clear();
 		iLastAssignment = result;
@@ -1129,8 +1216,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 			iAssignmentGrid.clear(true);
 			for (final ClassAssignmentInterface.CourseAssignment course: result.getCourseAssignments()) {
+				boolean firstClazz = true;
 				if (course.isAssigned()) {
-					boolean firstClazz = true;
 					for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
 						if (clazz.getClassId() != null)
 							calendarUrl += clazz.getCourseId() + "-" + clazz.getClassId() + ",";
@@ -1261,7 +1348,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							cell.setStyleName(style);
 						firstClazz = false;
 					}
-				} else {
+				} else if (!iSpecRegCx.isDrop(course.getCourseId())) {
 					String style = "text-red" + (!rows.isEmpty() ? " top-border-dashed": "");
 					WebTable.Row row = null;
 					String unassignedMessage = MESSAGES.courseNotAssigned();
@@ -1408,6 +1495,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						cell.setStyleName(style);
 					row.getCell(row.getNrCells() - 1).setStyleName("text-red-centered" + (!rows.isEmpty() ? " top-border-dashed": ""));
 					rows.add(row);
+					firstClazz = false;
 				}
 				if (iSavedAssignment != null && !course.isFreeTime() && !course.isTeachingAssignment() && iShowUnassignments.getValue()) {
 					for (ClassAssignmentInterface.CourseAssignment saved: iSavedAssignment.getCourseAssignments()) {
@@ -1417,7 +1505,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								if (clazz.getClassId().equals(x.getClassId())) continue classes;
 							String style = "text-gray";
 							WebTable.Row row = null;
-							
+							if (firstClazz && !rows.isEmpty()) style += " top-border-dashed";
 							WebTable.IconsCell icons = new WebTable.IconsCell();
 							SpecialRegistrationStatus specRegStatus = iSpecRegCx.getStatus(clazz);
 							if (specRegStatus != null) {
@@ -1452,8 +1540,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							if (clazz.isAssigned()) {
 								row = new WebTable.Row(
 										new WebTable.Cell(null),
-										new WebTable.Cell("").aria(course.getSubject()),
-										new WebTable.Cell("").aria(course.getCourseNbr(CONSTANTS.showCourseTitle())),
+										new WebTable.Cell(firstClazz ? course.getSubject() : "").aria(course.getSubject()),
+										new WebTable.Cell(firstClazz ? course.getCourseNbr(CONSTANTS.showCourseTitle()) : "").aria(course.getCourseNbr(CONSTANTS.showCourseTitle())),
 										new WebTable.Cell(clazz.getSubpart()),
 										new WebTable.Cell(clazz.getSection()),
 										new WebTable.Cell(clazz.getLimitString()),
@@ -1470,8 +1558,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							} else {
 								row = new WebTable.Row(
 										new WebTable.Cell(null),
-										new WebTable.Cell("").aria(course.getSubject()),
-										new WebTable.Cell("").aria(course.getCourseNbr(CONSTANTS.showCourseTitle())),
+										new WebTable.Cell(firstClazz ? course.getSubject() : "").aria(course.getSubject()),
+										new WebTable.Cell(firstClazz ? course.getCourseNbr(CONSTANTS.showCourseTitle()) : "").aria(course.getCourseNbr(CONSTANTS.showCourseTitle())),
 										new WebTable.Cell(clazz.getSubpart()),
 										new WebTable.Cell(clazz.getSection()),
 										new WebTable.Cell(clazz.getLimitString()),
@@ -1491,6 +1579,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							iLastResult.add(null);
 							for (WebTable.Cell cell: row.getCells())
 								cell.setStyleName(style);
+							firstClazz = false;
 						}
 					}
 				}
@@ -1661,9 +1750,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			}
 			if (result.hasMessages()) {
 				if (hasError) {
-					iStatus.error(result.getMessages("<br>"));
+					iStatus.error(result.getMessages("<br>"), popup);
 				} else { 
-					iStatus.warning(result.getMessages("<br>"));
+					iStatus.warning(result.getMessages("<br>"), popup);
 				}
 			} else {
 				updateScheduleChangedNoteIfNeeded();
@@ -1923,6 +2012,27 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						}
 					});
 				}
+				if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG)) {
+					iSpecialRegistrationsPanel.showWaiting();
+					iSectioningService.retrieveAllSpecialRequests(
+							new RetrieveAllSpecialRegistrationsRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId()),
+							new AsyncCallback<List<RetrieveSpecialRegistrationResponse>>() {
+								@Override
+								public void onFailure(Throwable caught) {
+									iStatus.error(MESSAGES.retrieveAllSpecialRegistrationsFail(caught.getMessage()), caught);
+									iSpecialRegistrationsPanel.hideWaiting();
+								}
+
+								@Override
+								public void onSuccess(List<RetrieveSpecialRegistrationResponse> response) {
+									iSpecialRegistrationsPanel.hideWaiting();
+									iSpecialRegistrationsPanel.populate(response, iSavedAssignment);
+									if (!iSpecialRegistrationsPanel.isVisible())
+										iStatus.info(MESSAGES.failedNoSpecialRegistrations());
+									updateHistory();
+								}
+							});
+				}
 			}
 		};
 		if (saved)
@@ -2045,6 +2155,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								if (result) {
 									iSpecRegCx.copy(iSRCx);
 									iSpecialRegAssignment = iSRassignment;
+									if (iSpecialRegistrationsPanel.isVisible())
+										iSpecialRegistrationsPanel.populate(iSpecialRegistrationsPanel.getRegistrations(), iSavedAssignment);
 									iCourseRequests.setRequest(iRequest);
 									if (iTab != iAssignmentTab.getSelectedTab())
 										iAssignmentTab.selectTab(iTab);
@@ -2472,146 +2584,162 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		return iQuickAddFinder;
 	}
 	
-	protected void checkSpecialRegistrationAfterFailedSubmitSchedule(ArrayList<ClassAssignmentInterface.ClassAssignment> lastEnrollment, final boolean showWaiting) {
+	protected void requestEnrollmentOverrides(final SpecialRegistrationEligibilityResponse eligibilityResponse) {
+		if (eligibilityResponse == null) return;
+		final Collection<ErrorMessage> errors = eligibilityResponse.getErrors();
+		CheckCoursesResponse confirm = new CheckCoursesResponse();
+		confirm.setConfirmation(0, MESSAGES.dialogRequestOverrides(),
+				MESSAGES.buttonRequestOverrides(), MESSAGES.buttonCancelRequest(),
+				MESSAGES.titleRequestOverrides(), MESSAGES.titleCancelRequest());
+		confirm.addConfirmation(MESSAGES.messageRegistrationErrorsDetected(), 0, -1);
+		confirm.addConfirmation(MESSAGES.messageRequestOverridesNote(), 0, 2);
+		final CourseRequestInterface.CourseMessage note = confirm.addConfirmation(iSpecRegCx.getNote() == null ? "" : iSpecRegCx.getNote(), 0, 3); note.setCode("REQUEST_NOTE");
+		confirm.addConfirmation(MESSAGES.messageRequestOverridesOptions(), 0, 4);
+		confirm.addConfirmation(MESSAGES.messageRequestOverridesDisclaimer(), 0, 7);
+		for (ErrorMessage e: errors) {
+			if ("IGNORE".equals(e.getCode())) {
+				continue;
+			} else if (iEligibilityCheck.hasOverride(e.getCode())) {
+				confirm.addMessage(null, e.getCourse(), e.getCode(), e.getMessage(), 0);
+			} else {
+				confirm.addMessage(null, e.getCourse(), e.getCode(), e.getMessage() + " (" + e.getCode() + ")", 0);
+			}
+		}
+		if (eligibilityResponse.hasCancelErrors()) {
+			confirm.addConfirmation(MESSAGES.messageRequestOverridesCancel(), 0, 5);
+			for (ErrorMessage e: eligibilityResponse.getCancelErrors())
+				confirm.addMessage(null, e.getCourse(), e.getCode(), e.getMessage(), 0, 6);
+		}
+		CourseRequestsConfirmationDialog.confirm(confirm, 0, new AsyncCallback<Boolean>() {
+			@Override
+			public void onSuccess(Boolean result) {
+				if (result) {
+					clearMessage();
+					LoadingWidget.getInstance().show(MESSAGES.waitSpecialRegistration());
+					iSectioningService.submitSpecialRequest(
+							new SubmitSpecialRegistrationRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iSpecRegCx.getRequestKey(), iSpecRegCx.getRequestId(), iCourseRequests.getRequest(),
+									iLastEnrollment != null ? iLastEnrollment : iLastResult, errors, note.getMessage()),
+							new AsyncCallback<SubmitSpecialRegistrationResponse>() {
+								@Override
+								public void onFailure(Throwable caught) {
+									LoadingWidget.getInstance().hide();
+									iStatus.error(MESSAGES.submitSpecialRegistrationFail(caught.getMessage()), caught);
+									updateHistory();
+								}
+
+								@Override
+								public void onSuccess(SubmitSpecialRegistrationResponse response) {
+									LoadingWidget.getInstance().hide();
+									if (response.isSuccess()) {
+										iSpecialRegAssignment = iLastAssignment;
+									}
+									iSpecRegCx.setStatus(response.getStatus());
+									iSpecRegCx.setRequestId(response.getRequestId());
+									iSpecRegCx.setNote(note.getMessage());
+									if (response.hasRequests()) {
+										List<RetrieveSpecialRegistrationResponse> requests = new ArrayList<RetrieveSpecialRegistrationResponse>(response.getRequests());
+										for (RetrieveSpecialRegistrationResponse r: iSpecialRegistrationsPanel.getRegistrations()) {
+											if (eligibilityResponse.isToBeCancelled(r.getRequestId())) continue;
+											if (response.hasRequest(r.getRequestId())) continue;
+											requests.add(r);
+										}
+										Collections.sort(requests);
+										iSpecialRegistrationsPanel.populate(requests, iSavedAssignment);
+									}
+									if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG)) {
+										iEligibilityCheck.setFlag(EligibilityFlag.HAS_SPECREG, true);
+										iGetSpecRegs.setVisible(true);
+										iGetSpecRegs.setEnabled(true);
+									}
+									if (!iSpecRegCx.isCanSubmit()) {
+										iSubmitSpecReg.setVisible(false);
+										iSubmitSpecReg.setEnabled(false);
+									}
+									for (CourseAssignment ca: iLastAssignment.getCourseAssignments())
+										for (ClassAssignment a: ca.getClassAssignments()) {
+											a.setError(null); a.setSpecRegStatus(null);
+											for (ErrorMessage f: errors) {
+												if (a.getExternalId() != null && a.getExternalId().equals(f.getSection())) {
+													if (a.hasError())
+														a.setError(a.getError() + "\n" + f.getMessage());
+													else
+														a.setError(f.getMessage());
+													a.setSpecRegStatus(response.getStatus());
+												}
+											}
+										}
+									fillIn(iLastAssignment);
+									iSpecRegCx.setChanges(iLastAssignment);
+									if (response.isSuccess()) {
+										iStatus.done(response.hasMessage() ? response.getMessage() : MESSAGES.submitSecialRegistrationOK());
+									} else {
+										iStatus.error(response.getMessage());
+									}
+									updateHistory();
+								}
+							});
+				}
+			}
+			@Override
+			public void onFailure(Throwable caught) {
+				iStatus.error(MESSAGES.requestSpecialRegistrationFail(caught.getMessage()), caught);
+			}
+		});
+	}
+	
+	protected void checkSpecialRegistrationAfterFailedSubmitSchedule(ArrayList<ClassAssignmentInterface.ClassAssignment> lastEnrollment) {
 		if (!iSpecRegCx.isCanSubmit()) return;
 		iLastEnrollment = lastEnrollment;
-		final boolean enrl = iEnroll.isVisible();
-		final boolean print = iPrint.isVisible();
-		final boolean spreg = iSubmitSpecReg.isVisible();
-		if (showWaiting)
-			LoadingWidget.getInstance().show(MESSAGES.waitOverridesCheck());
-		else {
-			iEnroll.setEnabled(false); iEnroll.setVisible(false);
-			iPrint.setEnabled(false); iPrint.setVisible(false);
-			iSubmitSpecReg.setEnabled(false); iSubmitSpecReg.setVisible(false);
-			iWaitingMessage.setText(MESSAGES.waitOverridesCheck());
-			iWaiting.setVisible(true);
-		}
+		LoadingWidget.getInstance().show(MESSAGES.waitOverridesCheck());
 		iSpecialRegAssignment = null;
 		iSectioningService.checkSpecialRequestEligibility(
 				new SpecialRegistrationEligibilityRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iSpecRegCx.getRequestId(), iLastEnrollment, iLastAssignment == null ? null : iLastAssignment.getErrors()),
 				new AsyncCallback<SpecialRegistrationEligibilityResponse>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						if (showWaiting) LoadingWidget.getInstance().hide();
-						else {
-							iWaiting.setVisible(false);
-							iEnroll.setEnabled(enrl); iEnroll.setVisible(enrl);
-							iSubmitSpecReg.setEnabled(spreg); iSubmitSpecReg.setVisible(spreg);
-							iPrint.setEnabled(print); iPrint.setVisible(print);
-						}
+						LoadingWidget.getInstance().hide();
 						iStatus.error(MESSAGES.requestSpecialRegistrationFail(caught.getMessage()), caught);
 					}
 
 					@Override
-					public void onSuccess(SpecialRegistrationEligibilityResponse response) {
-						if (showWaiting) LoadingWidget.getInstance().hide();
-						else {
-							iWaiting.setVisible(false);
-							iEnroll.setEnabled(enrl); iEnroll.setVisible(enrl);
-							iSubmitSpecReg.setEnabled(spreg); iSubmitSpecReg.setVisible(spreg);
-							iPrint.setEnabled(print); iPrint.setVisible(print);
+					public void onSuccess(final SpecialRegistrationEligibilityResponse eligibilityResponse) {
+						LoadingWidget.getInstance().hide();
+						final Collection<ErrorMessage> errors = eligibilityResponse.getErrors();
+						if (eligibilityResponse.isCanSubmit() && errors != null && !errors.isEmpty()) {
+							requestEnrollmentOverrides(eligibilityResponse);
+						} else if (eligibilityResponse.hasMessage()) {
+							iStatus.warning(eligibilityResponse.getMessage());
+						} else if (eligibilityResponse.isCanSubmit()) {
+							iStatus.warning(MESSAGES.errorNoRegistrationErrorsDetected());
 						}
-						final Collection<ErrorMessage> errors = response.getErrors();
-						if (response.isCanSubmit() && errors != null && !errors.isEmpty()) {
-							CheckCoursesResponse confirm = new CheckCoursesResponse();
-							confirm.setConfirmation(0, MESSAGES.dialogRequestOverrides(),
-									MESSAGES.buttonRequestOverrides(), MESSAGES.buttonCancelRequest(),
-									MESSAGES.titleRequestOverrides(), MESSAGES.titleCancelRequest());
-							confirm.addConfirmation(MESSAGES.messageRegistrationErrorsDetected(), 0, -1);
-							confirm.addConfirmation(MESSAGES.messageRequestOverridesNote(), 0, 2);
-							final CourseRequestInterface.CourseMessage note = confirm.addConfirmation(iSpecRegCx.getNote() == null ? "" : iSpecRegCx.getNote(), 0, 3); note.setCode("REQUEST_NOTE");
-							confirm.addConfirmation(MESSAGES.messageRequestOverridesOptions(), 0, 4);
-							confirm.addConfirmation(MESSAGES.messageRequestOverridesDisclaimer(), 0, 7);
-							for (ErrorMessage e: errors) {
-								if ("IGNORE".equals(e.getCode())) {
-									continue;
-								} else if (iEligibilityCheck.hasOverride(e.getCode())) {
-									confirm.addMessage(null, e.getCourse(), e.getCode(), e.getMessage(), 0);
-								} else {
-									confirm.addMessage(null, e.getCourse(), e.getCode(), e.getMessage() + " (" + e.getCode() + ")", 0);
-								}
-							}
-							if (response.hasCancelErrors()) {
-								confirm.addConfirmation(MESSAGES.messageRequestOverridesCancel(), 0, 5);
-								for (ErrorMessage e: response.getCancelErrors())
-									confirm.addMessage(null, e.getCourse(), e.getCode(), e.getMessage(), 0, 6);
-							}
-							CourseRequestsConfirmationDialog.confirm(confirm, 0, new AsyncCallback<Boolean>() {
-								@Override
-								public void onSuccess(Boolean result) {
-									if (result) {
-										clearMessage();
-										LoadingWidget.getInstance().show(MESSAGES.waitSpecialRegistration());
-										iSectioningService.submitSpecialRequest(
-												new SubmitSpecialRegistrationRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iSpecRegCx.getRequestKey(), iSpecRegCx.getRequestId(), iCourseRequests.getRequest(),
-														iLastEnrollment != null ? iLastEnrollment : iLastResult, errors, note.getMessage()),
-												new AsyncCallback<SubmitSpecialRegistrationResponse>() {
-													@Override
-													public void onFailure(Throwable caught) {
-														LoadingWidget.getInstance().hide();
-														iStatus.error(MESSAGES.submitSpecialRegistrationFail(caught.getMessage()), caught);
-														updateHistory();
-													}
+					}
+				});
+	}
+	
+	protected void checkSpecialRegistrationAfterFailedSubmitSchedule(ArrayList<ClassAssignmentInterface.ClassAssignment> lastEnrollment, Throwable exception, ClassAssignmentInterface result) {
+		if (!iSpecRegCx.isCanSubmit()) return;
+		iLastEnrollment = lastEnrollment;
+		EnrollmentConfirmationDialog dialog = new EnrollmentConfirmationDialog(exception, result, new AsyncCallback<SpecialRegistrationEligibilityResponse>() {
+			@Override
+			public void onSuccess(SpecialRegistrationEligibilityResponse result) {
+				requestEnrollmentOverrides(result);
+			}
+			@Override
+			public void onFailure(Throwable caught) {
+			}
+		});
+		dialog.center();
+		iSectioningService.checkSpecialRequestEligibility(
+				new SpecialRegistrationEligibilityRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iSpecRegCx.getRequestId(), iLastEnrollment, iLastAssignment == null ? null : iLastAssignment.getErrors()),
+				new AsyncCallback<SpecialRegistrationEligibilityResponse>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						dialog.showError(caught.getMessage());
+					}
 
-													@Override
-													public void onSuccess(SubmitSpecialRegistrationResponse response) {
-														LoadingWidget.getInstance().hide();
-														if (response.isSuccess())
-															iSpecialRegAssignment = iLastAssignment;
-														iSpecRegCx.setStatus(response.getStatus());
-														iSpecRegCx.setRequestId(response.getRequestId());
-														iSpecRegCx.setNote(note.getMessage());
-														if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG)) {
-															iEligibilityCheck.setFlag(EligibilityFlag.HAS_SPECREG, true);
-															iGetSpecRegs.setVisible(true);
-															iGetSpecRegs.setEnabled(true);
-														}
-														if (!iSpecRegCx.isCanSubmit()) {
-															iSubmitSpecReg.setVisible(false);
-															iSubmitSpecReg.setEnabled(false);
-														}
-														for (CourseAssignment ca: iLastAssignment.getCourseAssignments())
-															for (ClassAssignment a: ca.getClassAssignments()) {
-																a.setError(null); a.setSpecRegStatus(null);
-																for (ErrorMessage f: errors) {
-																	if (a.getExternalId() != null && a.getExternalId().equals(f.getSection())) {
-																		if (a.hasError())
-																			a.setError(a.getError() + "\n" + f.getMessage());
-																		else
-																			a.setError(f.getMessage());
-																		a.setSpecRegStatus(response.getStatus());
-																	}
-																}
-															}
-														fillIn(iLastAssignment);
-														iSpecRegCx.setChanges(iLastAssignment);
-														if (response.isSuccess()) {
-															iStatus.done(response.hasMessage() ? response.getMessage() : MESSAGES.submitSecialRegistrationOK());
-														} else {
-															iStatus.error(response.getMessage());
-														}
-														updateHistory();
-													}
-												});
-									}
-								}
-								@Override
-								public void onFailure(Throwable caught) {
-									iStatus.error(MESSAGES.requestSpecialRegistrationFail(caught.getMessage()), caught);
-								}
-							});
-						} else if (response.hasMessage()) {
-							if (showWaiting)
-								iStatus.warning(response.getMessage());
-							else
-								UniTimeConfirmationDialog.alert(response.getMessage());
-						} else if (response.isCanSubmit()) {
-							if (showWaiting)
-								iStatus.warning(MESSAGES.errorNoRegistrationErrorsDetected());
-							else
-								UniTimeConfirmationDialog.alert(MESSAGES.errorNoRegistrationErrorsDetected());
-						}
+					@Override
+					public void onSuccess(final SpecialRegistrationEligibilityResponse eligibilityResponse) {
+						dialog.setResponse(eligibilityResponse);
 					}
 				});
 	}
@@ -2628,6 +2756,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						iSpecRegCx.setNote(null);
 						iSpecRegCx.clearChanges();
 						iSpecialRegAssignment = iSavedAssignment;
+						iSpecialRegistrationsPanel.populate(iSpecialRegistrationsPanel.getRegistrations(), iSavedAssignment);
 						fillIn(iSavedAssignment);
 						addHistory();
 					} else {
@@ -2636,15 +2765,19 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						iSpecRegCx.setNote(specReg.getNote());
 						iSpecRegCx.setChanges(specReg);
 						iSpecialRegAssignment = null;
+						iSpecialRegistrationsPanel.populate(iSpecialRegistrationsPanel.getRegistrations(), iSavedAssignment);
 						if (specReg.hasChanges()) {
 							final CourseRequestInterface courseRequests = iCourseRequests.getRequest();
 							courseRequests.setTimeConflictsAllowed(specReg.hasTimeConflict()); courseRequests.setSpaceConflictsAllowed(specReg.hasSpaceConflict());
 							Set<Long> specRegDrops = new HashSet<Long>();
+							Set<Long> specRegAdds = new HashSet<Long>();
 							for (ClassAssignmentInterface.ClassAssignment ch: specReg.getChanges())
-								if (!ch.isCourseAssigned()) specRegDrops.add(ch.getCourseId());
+								if (!ch.isCourseAssigned()) specRegDrops.add(ch.getCourseId()); else specRegAdds.add(ch.getCourseId());
 							for (ClassAssignmentInterface.ClassAssignment ch: specReg.getChanges())
 								if (ch.isCourseAssigned() && (!specRegDrops.contains(ch.getCourseId()) || ch.getSpecRegStatus() != null))
 									courseRequests.addCourse(new RequestedCourse(ch.getCourseId(), CONSTANTS.showCourseTitle() ? ch.getCourseNameWithTitle() : ch.getCourseName()));
+								else if (!ch.isCourseAssigned() && !specRegAdds.contains(ch.getCourseId()))
+									courseRequests.dropCourse(new RequestedCourse(ch.getCourseId(), CONSTANTS.showCourseTitle() ? ch.getCourseNameWithTitle() : ch.getCourseName()));
 							LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
 							iSectioningService.section(iOnline, courseRequests, iLastResult, specReg.getChanges(), new AsyncCallback<ClassAssignmentInterface>() {
 								public void onSuccess(ClassAssignmentInterface result) {
