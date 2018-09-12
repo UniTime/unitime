@@ -174,13 +174,13 @@ public class EnrollmentConfirmationDialog extends UniTimeDialogBox {
 		setWidget(panel);
 	}
 	
-	public void showError(String message) {
+	protected void showError(String message) {
 		iWaiting.setVisible(false);
 		iOverrideMessage.setHTML(MESSAGES.messageCannotRequestOverrides(message));
 		super.center();
 	}
 	
-	public void showRequestOverrides() {
+	protected void showRequestOverrides() {
 		iWaiting.setVisible(false);
 		if (iAll)
 			iOverrideMessage.setHTML(MESSAGES.messageCanRequestOverridesAll());
@@ -193,6 +193,7 @@ public class EnrollmentConfirmationDialog extends UniTimeDialogBox {
 	}
 	
 	public void setResponse(SpecialRegistrationEligibilityResponse eligibilityResponse) {
+		if (!isVisible()) return;
 		iResponse = eligibilityResponse;
 		final Collection<ErrorMessage> errors = eligibilityResponse.getErrors();
 		if (eligibilityResponse.isCanSubmit() && errors != null && !errors.isEmpty()) {

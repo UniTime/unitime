@@ -6377,6 +6377,10 @@ unitime-RoomSharingWidget .legend .blank {
 	font-style: italic;
 }
 
+.unitime-SpecialRegistrationsPanel .registrations-toggle {
+	float: right;
+}
+
 .unitime-SpecialRegistrationsPanel .date-and-note {
 	white-space: pre;
 	color: black;

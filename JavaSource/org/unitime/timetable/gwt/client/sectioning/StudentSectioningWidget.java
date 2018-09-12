@@ -146,7 +146,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	
 	private VerticalPanel iPanel;
 	private P iFooter;
-	private AriaButton iRequests, iReset, iSchedule, iEnroll, iPrint, iExport = null, iSave, iStartOver, iDegreePlan, iSubmitSpecReg, iGetSpecRegs;
+	private AriaButton iRequests, iReset, iSchedule, iEnroll, iPrint, iExport = null, iSave, iStartOver, iDegreePlan, iSubmitSpecReg;
 	private AriaTabBar iAssignmentTab;
 	private DockPanel iAssignmentDock;
 	private FocusPanel iAssignmentPanel;
@@ -184,7 +184,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private CheckBox iCustomCheckbox = null;
 	private DegreePlansSelectionDialog iDegreePlansSelectionDialog = null;
 	private DegreePlanDialog iDegreePlanDialog = null;
-	private SpecialRegistrationSelectionDialog iSpecialRegistrationSelectionDialog = null;
 
 	public StudentSectioningWidget(boolean online, AcademicSessionProvider sessionSelector, UserAuthenticationProvider userAuthentication, StudentSectioningPage.Mode mode, boolean history) {
 		iMode = mode;
@@ -346,13 +345,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iStartOver.setEnabled(false);
 		iStartOver.getElement().getStyle().setMarginLeft(4, Unit.PX);
 		
-		iGetSpecRegs = new AriaButton(MESSAGES.buttonGetSpecRegs());
-		iGetSpecRegs.setTitle(MESSAGES.hintGetSpecRegs());
-		leftFooterPanel.add(iGetSpecRegs);
-		iGetSpecRegs.setVisible(false);
-		iGetSpecRegs.setEnabled(false);
-		iGetSpecRegs.getElement().getStyle().setMarginLeft(4, Unit.PX);
-
 		iSchedule = new AriaButton(MESSAGES.buttonSchedule(), RESOURCES.arrowForward());
 		iSchedule.setTitle(MESSAGES.hintSchedule());
 		if (mode.isSectioning())
@@ -993,33 +985,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			}
 		});
 		
-		iGetSpecRegs.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				LoadingWidget.getInstance().show(MESSAGES.waitSpecialRegistration());
-				iSectioningService.retrieveAllSpecialRequests(
-					new RetrieveAllSpecialRegistrationsRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId()),
-					new AsyncCallback<List<RetrieveSpecialRegistrationResponse>>() {
-						@Override
-						public void onFailure(Throwable caught) {
-							LoadingWidget.getInstance().hide();
-							iStatus.error(MESSAGES.retrieveAllSpecialRegistrationsFail(caught.getMessage()), caught);
-							updateHistory();
-						}
-
-						@Override
-						public void onSuccess(List<RetrieveSpecialRegistrationResponse> response) {
-							LoadingWidget.getInstance().hide();
-							if (!response.isEmpty())
-								getSpecialRegistrationSelectionDialog().open(response, iSavedAssignment);
-							else
-								iStatus.info(MESSAGES.failedNoSpecialRegistrations());
-							updateHistory();
-						}
-					});
-			}
-		});
-		
 		iPrint.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				boolean allSaved = true;
@@ -1144,7 +1109,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iShowUnassignments.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
-				Cookies.setCookie("UniTime:Unassignments", "1");
+				Cookies.setCookie("UniTime:Unassignments", event.getValue() ? "1" : "0");
 				fillIn(iLastAssignment);
 			}
 		});
@@ -1705,8 +1670,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iEnroll.setVisible(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL));
 			iSubmitSpecReg.setVisible(!iEnroll.isVisible() && iSpecRegCx.isCanSubmit() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
 			iSubmitSpecReg.setEnabled(!iEnroll.isVisible() && iSpecRegCx.isCanSubmit() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
-			iGetSpecRegs.setVisible(iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.HAS_SPECREG));
-			iGetSpecRegs.setEnabled(iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.HAS_SPECREG));
 			if (iEligibilityCheck != null && iEligibilityCheck.hasCheckboxMessage()) {
 				if (iCustomCheckbox == null) {
 					iCustomCheckbox = new CheckBox(iEligibilityCheck.getCheckboxMessage(), true);
@@ -1774,7 +1737,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iReset.setVisible(false); iReset.setEnabled(false);
 		iQuickAdd.setVisible(false); iQuickAdd.setEnabled(false);
 		iEnroll.setVisible(false); iEnroll.setEnabled(false);
-		iGetSpecRegs.setVisible(false); iGetSpecRegs.setEnabled(false);
 		iSubmitSpecReg.setVisible(false); iSubmitSpecReg.setEnabled(false);
 		if (iCustomCheckbox != null) {
 			iCustomCheckbox.setVisible(false); iCustomCheckbox.setEnabled(false);
@@ -2012,7 +1974,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						}
 					});
 				}
-				if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG)) {
+				if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG) && iEligibilityCheck.hasFlag(EligibilityFlag.HAS_SPECREG)) {
 					iSpecialRegistrationsPanel.showWaiting();
 					iSectioningService.retrieveAllSpecialRequests(
 							new RetrieveAllSpecialRegistrationsRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId()),
@@ -2648,8 +2610,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									}
 									if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG)) {
 										iEligibilityCheck.setFlag(EligibilityFlag.HAS_SPECREG, true);
-										iGetSpecRegs.setVisible(true);
-										iGetSpecRegs.setEnabled(true);
 									}
 									if (!iSpecRegCx.isCanSubmit()) {
 										iSubmitSpecReg.setVisible(false);
@@ -2742,83 +2702,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						dialog.setResponse(eligibilityResponse);
 					}
 				});
-	}
-	
-	protected SpecialRegistrationSelectionDialog getSpecialRegistrationSelectionDialog() {
-		if (iSpecialRegistrationSelectionDialog == null) {
-			iSpecialRegistrationSelectionDialog = new SpecialRegistrationSelectionDialog(iSpecRegCx) {
-				public void doSubmit(final RetrieveSpecialRegistrationResponse specReg) {
-					super.doSubmit(specReg);
-					if (specReg == null) {
-						iSpecRegCx.update(iEligibilityCheck);
-						iSpecRegCx.setRequestId(null);
-						iSpecRegCx.setStatus(null);
-						iSpecRegCx.setNote(null);
-						iSpecRegCx.clearChanges();
-						iSpecialRegAssignment = iSavedAssignment;
-						iSpecialRegistrationsPanel.populate(iSpecialRegistrationsPanel.getRegistrations(), iSavedAssignment);
-						fillIn(iSavedAssignment);
-						addHistory();
-					} else {
-						iSpecRegCx.setRequestId(specReg.getRequestId());
-						iSpecRegCx.setStatus(specReg.getStatus());
-						iSpecRegCx.setNote(specReg.getNote());
-						iSpecRegCx.setChanges(specReg);
-						iSpecialRegAssignment = null;
-						iSpecialRegistrationsPanel.populate(iSpecialRegistrationsPanel.getRegistrations(), iSavedAssignment);
-						if (specReg.hasChanges()) {
-							final CourseRequestInterface courseRequests = iCourseRequests.getRequest();
-							courseRequests.setTimeConflictsAllowed(specReg.hasTimeConflict()); courseRequests.setSpaceConflictsAllowed(specReg.hasSpaceConflict());
-							Set<Long> specRegDrops = new HashSet<Long>();
-							Set<Long> specRegAdds = new HashSet<Long>();
-							for (ClassAssignmentInterface.ClassAssignment ch: specReg.getChanges())
-								if (!ch.isCourseAssigned()) specRegDrops.add(ch.getCourseId()); else specRegAdds.add(ch.getCourseId());
-							for (ClassAssignmentInterface.ClassAssignment ch: specReg.getChanges())
-								if (ch.isCourseAssigned() && (!specRegDrops.contains(ch.getCourseId()) || ch.getSpecRegStatus() != null))
-									courseRequests.addCourse(new RequestedCourse(ch.getCourseId(), CONSTANTS.showCourseTitle() ? ch.getCourseNameWithTitle() : ch.getCourseName()));
-								else if (!ch.isCourseAssigned() && !specRegAdds.contains(ch.getCourseId()))
-									courseRequests.dropCourse(new RequestedCourse(ch.getCourseId(), CONSTANTS.showCourseTitle() ? ch.getCourseNameWithTitle() : ch.getCourseName()));
-							LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
-							iSectioningService.section(iOnline, courseRequests, iLastResult, specReg.getChanges(), new AsyncCallback<ClassAssignmentInterface>() {
-								public void onSuccess(ClassAssignmentInterface result) {
-									fillIn(result);
-									iCourseRequests.setRequest(courseRequests);
-									addHistory();
-								}
-								public void onFailure(Throwable caught) {
-									iStatus.error(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
-									LoadingWidget.getInstance().hide();
-								}
-							});
-						} else {
-							fillIn(iSavedAssignment);
-							addHistory();
-						}
-					}
-				}
-				public void doCancel(String requestId, final AsyncCallback<Boolean> callback) {
-					CancelSpecialRegistrationRequest req = new CancelSpecialRegistrationRequest();
-					req.setRequestId(requestId);
-					req.setSessionId(iSessionSelector.getAcademicSessionId());
-					req.setStudentId(iEligibilityCheck.getStudentId());
-					iSectioningService.cancelSpecialRequest(req, new AsyncCallback<CancelSpecialRegistrationResponse>() {
-						@Override
-						public void onSuccess(CancelSpecialRegistrationResponse result) {
-							if (result.isFailure() && result.hasMessage())
-								iStatus.error(MESSAGES.cancelSpecialRegistrationFail(result.getMessage()));
-							callback.onSuccess(result.isSuccess());
-						}
-						
-						@Override
-						public void onFailure(Throwable caught) {
-							callback.onFailure(caught);
-							iStatus.error(MESSAGES.cancelSpecialRegistrationFail(caught.getMessage()), caught);
-						}
-					});
-				}
-			};
-		}
-		return iSpecialRegistrationSelectionDialog;
 	}
 	
 	protected void printConfirmation(CourseRequestInterface savedRequests) {

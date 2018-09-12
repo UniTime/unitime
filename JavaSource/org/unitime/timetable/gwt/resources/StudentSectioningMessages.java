@@ -2052,4 +2052,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("It is possible to request overrides for some of the above registration errors.\n"+
 			"Click <b>Request Overrides</b> to review and request overrides. Click <b>Close Dialog</b> to hide this dialog without requesting any overrides.")
 	String messageCanRequestOverridesSome();
+	
+	@DefaultMessage("Show all changes")
+	String checkOverridesShowAllChanges();
 }

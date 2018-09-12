@@ -48,11 +48,15 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
@@ -73,7 +77,9 @@ public class SpecialRegistrationsPanel extends P {
 	private FocusPanel iPanel;
 	private SpecialRegistrationContext iSpecReg;
 	private Image iWaiting = null;
+	private CheckBox iShowAllChanges = null;
 	private List<RetrieveSpecialRegistrationResponse> iRegistrations = new ArrayList<RetrieveSpecialRegistrationResponse>();
+	private ClassAssignmentInterface iLastSaved = null;
 	
 	public SpecialRegistrationsPanel(SpecialRegistrationContext specReg) {
 		addStyleName("unitime-SpecialRegistrationsPanel");
@@ -95,6 +101,12 @@ public class SpecialRegistrationsPanel extends P {
 		iPanel = new FocusPanel(iTable);
 		iPanel.addStyleName("registrations-panel");
 		add(iPanel);
+		
+		iShowAllChanges = new CheckBox(MESSAGES.checkOverridesShowAllChanges());
+		String showAllChanges = Cookies.getCookie("UniTime:ShowAllChanges");
+		iShowAllChanges.setValue(showAllChanges != null && "1".equals(showAllChanges));
+		iShowAllChanges.addStyleName("registrations-toggle");
+		add(iShowAllChanges);
 		
 		iPanel.addKeyUpHandler(new KeyUpHandler() {
 			@Override
@@ -165,6 +177,15 @@ public class SpecialRegistrationsPanel extends P {
 				}
 			}
 		});
+		
+		iShowAllChanges.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				Cookies.setCookie("UniTime:ShowAllChanges", event.getValue() ? "1" : "0");
+				if (iLastSaved != null)
+					populate(getRegistrations(), iLastSaved);
+			}
+		});
 
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		header.add(new UniTimeTableHeader(""));
@@ -194,12 +215,14 @@ public class SpecialRegistrationsPanel extends P {
 	public void showWaiting() {
 		iWaiting.setVisible(true);
 		iPanel.setVisible(false);
+		iShowAllChanges.setVisible(false);
 		setVisible(true);
 	}
 	
 	public void hideWaiting() {
 		iWaiting.setVisible(false);
 		iPanel.setVisible(true);
+		iShowAllChanges.setVisible(true);
 		setVisible(iTable.getRowCount() > 1);
 	}
 	
@@ -207,11 +230,14 @@ public class SpecialRegistrationsPanel extends P {
 	
 	public void populate(List<RetrieveSpecialRegistrationResponse> registrations, ClassAssignmentInterface saved) {
 		iRegistrations = registrations;
+		iLastSaved = saved;
 		iTable.clearTable(1);
 		Collections.sort(registrations);
 		for (final RetrieveSpecialRegistrationResponse reg: registrations) {
 			P p = new P("icons");
-			if (reg.getStatus() != null) {
+			if (reg.isFullyApplied(saved)) {
+				p.add(new Icon(RESOURCES.specRegApplied(), MESSAGES.hintSpecRegApplied()));
+			} else if (reg.getStatus() != null) {
 				switch (reg.getStatus()) {
 				case Approved:
 					p.add(new Icon(RESOURCES.specRegApproved(), MESSAGES.hintSpecRegApproved()));
@@ -256,6 +282,8 @@ public class SpecialRegistrationsPanel extends P {
 													iTable.removeRow(i);
 												}
 											}
+											iRegistrations.remove(reg);
+											setVisible(iTable.getRowCount() > 1);
 										}
 									}
 								});
@@ -269,10 +297,10 @@ public class SpecialRegistrationsPanel extends P {
 				delete.setAltText(ARIA.altCancelOverrideRequest());
 			}
 			if (reg.hasChanges()) {
-				if (reg.isFullyApplied(saved)) continue;
+				if (!iShowAllChanges.getValue() && reg.isFullyApplied(saved)) continue;
 				Long lastCourseId = null;
 				for (ClassAssignment ca: reg.getChanges()) {
-					if (reg.isApplied(ca.getCourseId(), saved) || (!reg.hasErrors(ca.getCourseId()) && !reg.isDrop(ca.getCourseId()))) continue;
+					if (!iShowAllChanges.getValue() && (reg.isApplied(ca.getCourseId(), saved) || (!reg.hasErrors(ca.getCourseId()) && !reg.isDrop(ca.getCourseId())))) continue;
 					if (ca.getParentSection() != null && ca.getParentSection().equals(ca.getSection())) continue;
 					List<Widget> row = new ArrayList<Widget>();
 					if (lastCourseId == null) {
