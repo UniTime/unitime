@@ -201,6 +201,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private String iMessage;
 		private boolean iCanSubmit;
 		private List<ErrorMessage> iErrors = null;
+		private List<ErrorMessage> iDeniedErrors = null;
 		private List<ErrorMessage> iCancelErrors = null;
 		private Set<String> iCancelRequestIds = null;
 		
@@ -252,6 +253,21 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public boolean hasCancelRequestIds() { return iCancelRequestIds != null && !iCancelRequestIds.isEmpty(); }
 		public Set<String> getCancelRequestIds() { return iCancelRequestIds; }
 		public boolean isToBeCancelled(String requestId) { return iCancelRequestIds != null && iCancelRequestIds.contains(requestId); }
+		
+		public void addDeniedError(ErrorMessage error) {
+			if (iDeniedErrors == null) iDeniedErrors = new ArrayList<ErrorMessage>();
+			iDeniedErrors.add(error);
+		}
+		public boolean hasDeniedErrors() {
+			return iDeniedErrors != null && !iDeniedErrors.isEmpty();
+		}
+		public List<ErrorMessage> getDeniedErrors() { return iDeniedErrors; }
+		public void setDeniedErrors(Collection<ErrorMessage> messages) {
+			if (messages == null)
+				iDeniedErrors = null;
+			else
+				iDeniedErrors = new ArrayList<ErrorMessage>(messages);
+		}
 	}
 	
 	public static class RetrieveSpecialRegistrationRequest implements IsSerializable, Serializable {

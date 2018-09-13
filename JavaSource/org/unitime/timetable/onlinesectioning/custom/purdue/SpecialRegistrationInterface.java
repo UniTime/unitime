@@ -259,9 +259,18 @@ public class SpecialRegistrationInterface {
 	
 	public static class CheckRestrictionsResponse {
 		public List<SpecialRegistrationRequest> cancelRegistrationRequests;
+		public List<DeniedRequest> deniedRequests;
 		public SpecialRegistrationEligibilityResponse eligible;
 		public Float maxCredit;
 		public RestrictionsCheckResponse outJson;
 		public Set<String> overrides;
+	}
+	
+	public static class DeniedRequest {
+		public String subject;
+		public String courseNbr;
+		public String crn;
+		public String code;
+		public String errorMessage;
 	}
 }

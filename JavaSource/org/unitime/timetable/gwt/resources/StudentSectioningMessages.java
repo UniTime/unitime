@@ -2045,6 +2045,12 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Overrides cannot be requested: {0}\nClick <b>Close Dialog</b> to hide this dialog without requesting any overrides.")
 	String messageCannotRequestOverrides(String message);
 	
+	@DefaultMessage("Overrides cannot be requested due to the following registration errors that have been already denied:")
+	String messageCannotRequestOverridesErrors();
+	
+	@DefaultMessage("Click <b>Close Dialog</b> to hide this dialog without requesting any overrides.")
+	String messageCannotRequestOverridesErrorsBottom();
+	
 	@DefaultMessage("It is possible to request overrides for all of the above registration errors.\n"+
 			"Click <b>Request Overrides</b> to review and request overrides. Click <b>Close Dialog</b> to hide this dialog without requesting any overrides.")
 	String messageCanRequestOverridesAll();

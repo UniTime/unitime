@@ -87,6 +87,7 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CheckEligibilityResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CheckRestrictionsRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CheckRestrictionsResponse;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.DeniedRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.EligibilityProblem;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Problem;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.RequestStatus;
@@ -558,23 +559,52 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			ret.setErrors(errors);
 		}
 		
+		Set<ErrorMessage> denied = new TreeSet<ErrorMessage>();
 		if (ret.hasErrors() && resp.overrides != null) {
 			for (ErrorMessage error: ret.getErrors()) {
-				if (!resp.overrides.contains(error.getCode()))
-					return new SpecialRegistrationEligibilityResponse(false, "No overrides are allowed for " + error + ".");
-				XCourse course = courses.get(error.getCourse());
-				if (course != null && !course.isOverrideEnabled(error.getCode()))
-					return new SpecialRegistrationEligibilityResponse(false, course.getCourseName() + " does not allow overrides for " + error + ".");
+				if (!resp.overrides.contains(error.getCode())) {
+					ret.setMessage((ret.hasMessage() ? ret.getMessage() + "\n" : "") + "No overrides are allowed for " + error + ".");
+					ret.setCanSubmit(false);
+					denied.add(new ErrorMessage(error.getCourse(), "", error.getCode(), error.getMessage()));
+				} else {
+					XCourse course = courses.get(error.getCourse());
+					if (course != null && !course.isOverrideEnabled(error.getCode())) {
+						ret.setMessage((ret.hasMessage() ? ret.getMessage() + "\n" : "") + course.getCourseName() + " does not allow overrides for " + error + ".");
+						ret.setCanSubmit(false);
+						denied.add(new ErrorMessage(course.getCourseName(), "", error.getCode(), error.getMessage()));
+					}
+				}
+			}
+		}
+		
+		Set<String> denials = new HashSet<String>();
+		if (resp.deniedRequests != null && !resp.deniedRequests.isEmpty()) {
+			for (DeniedRequest r: resp.deniedRequests) {
+				String course = null;
+				if (r.subject != null) {
+					course = r.subject + " " + r.courseNbr;
+				} else if (r.crn != null) {
+					for (String crn: r.crn.split(",")) {
+						CourseOffering c = findCourseByExternalId(server.getAcademicSession().getUniqueId(), crn);
+						if (c != null) { course = c.getCourseName(); break; }
+					}
+				}
+				if (course == null) continue;
+				if (denials.add(course + ":" + r.code)) {
+					ret.setMessage((ret.hasMessage() ? ret.getMessage() + "\n" : "") + course + ": " + r.errorMessage);
+					ret.setCanSubmit(false);
+					denied.add(new ErrorMessage(course, r.crn, r.code, r.errorMessage));
+				}
 			}
 		}
 		
 		if (resp.cancelRegistrationRequests != null) {
 			Set<ErrorMessage> errors = new TreeSet<ErrorMessage>();
-			Set<String> denials = new HashSet<String>();
 			for (SpecialRegistrationRequest r: resp.cancelRegistrationRequests) {
 				ret.addCancelRequestId(r.requestId);
 				if (r.changes == null) continue;
 				String maxi = null;
+				/*
 				if (r.requestId.equals(input.getRequestId())) {
 					for (Change ch: r.changes) {
 						if (RequestStatus.denied.name().equals(ch.status)) {
@@ -586,12 +616,14 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 											if (e.code.equals(error.getCode()) && denials.add(course + ":" + e.code)) {
 												ret.setMessage((ret.hasMessage() ? ret.getMessage() + "\n" : "") + error.getCourse() + " " + error.getMessage() + " has been denied.");
 												ret.setCanSubmit(false);
+												denied.add(new ErrorMessage(course, ch.crn, e.code, e.message));
 											}
 										}
 								}
 						}
 					}
 				}
+				*/
 				Set<String> rAdds = new TreeSet<String>(), rDrops = new TreeSet<String>();
 				for (Change ch: r.changes) {
 					if (ch.subject != null && ch.courseNbr != null) {
@@ -619,6 +651,9 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			if (!errors.isEmpty())
 				ret.setCancelErrors(errors);
 		}
+		if (!denied.isEmpty())
+			ret.setDeniedErrors(denied);
+		
 		return ret;
 	}
 	

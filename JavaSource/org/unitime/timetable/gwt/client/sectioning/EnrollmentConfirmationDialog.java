@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.unitime.timetable.gwt.client.aria.AriaButton;
@@ -53,7 +54,7 @@ public class EnrollmentConfirmationDialog extends UniTimeDialogBox {
 	private AriaButton iYes, iNo;
 	private AsyncCallback<SpecialRegistrationEligibilityResponse> iCommand;
 	private boolean iValue = false;
-	private P iOverrideMessage = null, iWaiting = null;
+	private P iOverrideMessage = null, iWaiting = null, iMessagePannel = null;
 	private boolean iAll = true;
 	private SpecialRegistrationEligibilityResponse iResponse;
 	
@@ -76,11 +77,11 @@ public class EnrollmentConfirmationDialog extends UniTimeDialogBox {
 
 		P cp = new P("content-panel");
 		bd.add(cp);
-		P mp = new P("message-panel");
-		cp.add(mp);
+		iMessagePannel = new P("message-panel");
+		cp.add(iMessagePannel);
 		
 		if (exception != null) {
-			P m1 = new P("message"); m1.setHTML(MESSAGES.messageEnrollmentFailedWithErrors()); mp.add(m1);
+			P m1 = new P("message"); m1.setHTML(MESSAGES.messageEnrollmentFailedWithErrors()); iMessagePannel.add(m1);
 			if (exception instanceof SectioningException && ((SectioningException)exception).hasErrors()) {
 				P ctab = new P("course-table");
 				String last = null; Set<String> msg = new HashSet<String>();
@@ -96,12 +97,12 @@ public class EnrollmentConfirmationDialog extends UniTimeDialogBox {
 					ctab.add(crow);
 					last = cm.getCourse();
 				}
-				mp.add(ctab);
+				iMessagePannel.add(ctab);
 			} else {
-				P em = new P("message", "error-message"); em.setHTML(exception.getMessage()); mp.add(em);
+				P em = new P("message", "error-message"); em.setHTML(exception.getMessage()); iMessagePannel.add(em);
 			}
 		} else {
-			P m1 = new P("message"); m1.setHTML(MESSAGES.messageEnrollmentSucceededWithErrors()); mp.add(m1);
+			P m1 = new P("message"); m1.setHTML(MESSAGES.messageEnrollmentSucceededWithErrors()); iMessagePannel.add(m1);
 			if (result.hasErrors()) {
 				P ctab = new P("course-table");
 				String last = null; Set<String> msg = new HashSet<String>();
@@ -117,15 +118,15 @@ public class EnrollmentConfirmationDialog extends UniTimeDialogBox {
 					ctab.add(crow);
 					last = cm.getCourse();
 				}
-				mp.add(ctab);
+				iMessagePannel.add(ctab);
 			} else {
-				P em = new P("message", "error-message"); em.setHTML(result.getMessages("\n")); mp.add(em);
+				P em = new P("message", "error-message"); em.setHTML(result.getMessages("\n")); iMessagePannel.add(em);
 			}
 		}
 		
 		iOverrideMessage = new P("message", "override-message");
 		iOverrideMessage.setHTML(MESSAGES.messageCheckingOverrides());
-		mp.add(iOverrideMessage);
+		iMessagePannel.add(iOverrideMessage);
 		
 		P bp = new P("buttons-panel");
 		panel.add(bp);
@@ -180,6 +181,27 @@ public class EnrollmentConfirmationDialog extends UniTimeDialogBox {
 		super.center();
 	}
 	
+	protected void showErrors(List<ErrorMessage> errors) {
+		iWaiting.setVisible(false);
+		iOverrideMessage.setHTML(MESSAGES.messageCannotRequestOverridesErrors());
+		P ctab = new P("course-table");
+		String last = null; Set<String> msg = new HashSet<String>();
+		for (ErrorMessage cm: errors) {
+			P cn = new P("course-name");
+			if (last == null || !last.equals(cm.getCourse())) { msg.clear(); cn.setText(cm.getCourse()); }
+			if (!msg.add(cm.getMessage())) continue;
+			P m = new P("course-message"); m.setText(cm.getMessage());
+			P crow = new P("course-row");
+			if (last == null || !last.equals(cm.getCourse())) crow.addStyleName("first-course-line");
+			crow.add(cn); crow.add(m);
+			ctab.add(crow);
+			last = cm.getCourse();
+		}
+		iMessagePannel.add(ctab);
+		P m1 = new P("message"); m1.setHTML(MESSAGES.messageCannotRequestOverridesErrorsBottom()); iMessagePannel.add(m1);
+		super.center();
+	}
+	
 	protected void showRequestOverrides() {
 		iWaiting.setVisible(false);
 		if (iAll)
@@ -198,6 +220,8 @@ public class EnrollmentConfirmationDialog extends UniTimeDialogBox {
 		final Collection<ErrorMessage> errors = eligibilityResponse.getErrors();
 		if (eligibilityResponse.isCanSubmit() && errors != null && !errors.isEmpty()) {
 			showRequestOverrides();
+		} else if (eligibilityResponse.hasDeniedErrors()) {
+			showErrors(eligibilityResponse.getDeniedErrors());
 		} else if (eligibilityResponse.hasMessage()) {
 			showError(eligibilityResponse.getMessage());
 		} else if (eligibilityResponse.isCanSubmit()) {
