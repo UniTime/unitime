@@ -6334,20 +6334,26 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-SpecialRegistrationsPanel .registrations-header {
-    padding: 5px 0px 0px 5px;
+    padding: 5px 0px 0px 2px;
     border-top: 1px solid #9CB0CE;	
 }
 
 .unitime-SpecialRegistrationsPanel .registrations-header .icon {
 	display: inline-block;
-	margin: 0px 5px 2px 1px;
+	margin: 3px 5px 1px 1px;
+}
+
+.unitime-SpecialRegistrationsPanel .registrations-header .open-close-icon {
+	display: inline-block;
+	margin: 0px 1px 2px 1px;
 }
 
 .unitime-SpecialRegistrationsPanel .registrations-header .title {
 	display: inline-block;
-	font-size: large;
+	font-size: larger;
 	font-weight: bold;
     color: black;
+    cursor: pointer;
 }
 
 .unitime-SpecialRegistrationsPanel .registrations-panel {

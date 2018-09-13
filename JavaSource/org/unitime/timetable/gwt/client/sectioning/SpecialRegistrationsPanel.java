@@ -28,17 +28,21 @@ import java.util.Set;
 
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.ImageButton;
+import org.unitime.timetable.gwt.client.widgets.OpenCloseSectionImage;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationStatus;
@@ -53,7 +57,6 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -69,6 +72,7 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class SpecialRegistrationsPanel extends P {
 	protected static StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
+	protected static GwtMessages GWT_MESSAGES = GWT.create(GwtMessages.class);
 	protected static StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	protected static StudentSectioningResources RESOURCES = GWT.create(StudentSectioningResources.class);
 	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
@@ -81,6 +85,7 @@ public class SpecialRegistrationsPanel extends P {
 	private CheckBox iShowAllChanges = null;
 	private List<RetrieveSpecialRegistrationResponse> iRegistrations = new ArrayList<RetrieveSpecialRegistrationResponse>();
 	private ClassAssignmentInterface iLastSaved = null;
+	private OpenCloseSectionImage iOpenCloseImage;
 	
 	public SpecialRegistrationsPanel(SpecialRegistrationContext specReg) {
 		addStyleName("unitime-SpecialRegistrationsPanel");
@@ -90,6 +95,12 @@ public class SpecialRegistrationsPanel extends P {
 		iWaiting = new Image(RESOURCES.loading_small()); iWaiting.addStyleName("icon");
 		iWaiting.setVisible(false);
 		title.add(iWaiting);
+		
+		iOpenCloseImage = new OpenCloseSectionImage(true);
+		iOpenCloseImage.addStyleName("open-close-icon");
+		iOpenCloseImage.setVisible(true);
+		title.add(iOpenCloseImage);
+
 		P label = new P("title"); label.setText(MESSAGES.dialogSpecialRegistrations());
 		title.add(label);
 		add(title);
@@ -105,7 +116,7 @@ public class SpecialRegistrationsPanel extends P {
 		
 		iShowAllChanges = new CheckBox(MESSAGES.checkOverridesShowAllChanges());
 		String showAllChanges = Cookies.getCookie("UniTime:ShowAllChanges");
-		iShowAllChanges.setValue(showAllChanges != null && "1".equals(showAllChanges));
+		iShowAllChanges.setValue(showAllChanges != null && SectioningCookie.getInstance().isShowAllChanges());
 		iShowAllChanges.addStyleName("registrations-toggle");
 		add(iShowAllChanges);
 		
@@ -156,24 +167,7 @@ public class SpecialRegistrationsPanel extends P {
 					iPanel.setFocus(true);
 				} else if (event.getNativeKeyCode() == KeyCodes.KEY_DELETE) {
 					if (iTable.getSelectedRow() > 0) {
-						final RetrieveSpecialRegistrationResponse reg = iTable.getData(iTable.getSelectedRow());
-						if (reg != null && reg.canCancel()) {
-							doCancel(reg.getRequestId(), new AsyncCallback<Boolean>() {
-								@Override
-								public void onFailure(Throwable caught) {}
-								@Override
-								public void onSuccess(Boolean result) {
-									if (result) {
-										iTable.clearHover();
-										for (int i = iTable.getRowCount() - 1; i > 0; i --) {
-											if (iTable.getData(i).equals(reg)) {
-												iTable.removeRow(i);
-											}
-										}
-									}
-								}
-							});
-						}
+						cancel(iTable.getData(iTable.getSelectedRow()));
 					}
 				}
 			}
@@ -182,9 +176,25 @@ public class SpecialRegistrationsPanel extends P {
 		iShowAllChanges.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
-				Cookies.setCookie("UniTime:ShowAllChanges", event.getValue() ? "1" : "0");
+				SectioningCookie.getInstance().setShowAllChanges(event.getValue());
 				if (iLastSaved != null)
 					populate(getRegistrations(), iLastSaved);
+			}
+		});
+		
+		iOpenCloseImage.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				iPanel.setVisible(event.getValue());
+				iShowAllChanges.setVisible(event.getValue());
+				SectioningCookie.getInstance().setRequestOverridesOpened(event.getValue());
+			}
+		});
+		title.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				if (iOpenCloseImage.isVisible())
+					iOpenCloseImage.setValue(!iOpenCloseImage.getValue(), true);
 			}
 		});
 
@@ -210,11 +220,15 @@ public class SpecialRegistrationsPanel extends P {
 			}
 		});
 		
+		iOpenCloseImage.setValue(SectioningCookie.getInstance().isRequestOverridesOpened());
+		iPanel.setVisible(iOpenCloseImage.getValue());
+		iShowAllChanges.setVisible(iOpenCloseImage.getValue());
 		setVisible(false);
 	}
 	
 	public void showWaiting() {
 		iWaiting.setVisible(true);
+		iOpenCloseImage.setVisible(false);
 		iPanel.setVisible(false);
 		iShowAllChanges.setVisible(false);
 		setVisible(true);
@@ -222,8 +236,9 @@ public class SpecialRegistrationsPanel extends P {
 	
 	public void hideWaiting() {
 		iWaiting.setVisible(false);
-		iPanel.setVisible(true);
-		iShowAllChanges.setVisible(true);
+		iOpenCloseImage.setVisible(true);
+		iPanel.setVisible(iOpenCloseImage.getValue());
+		iShowAllChanges.setVisible(iOpenCloseImage.getValue());
 		setVisible(iTable.getRowCount() > 1);
 	}
 	
@@ -267,29 +282,7 @@ public class SpecialRegistrationsPanel extends P {
 							RetrieveSpecialRegistrationResponse data = iTable.getData(row);
 							iTable.setSelected(row, data != null && data.equals(reg));
 						}
-						UniTimeConfirmationDialog.confirm(MESSAGES.confirmOverrideRequestCancel(), new Command() {
-							@Override
-							public void execute() {
-								doCancel(reg.getRequestId(), new AsyncCallback<Boolean>() {
-									@Override
-									public void onFailure(Throwable caught) {}
-
-									@Override
-									public void onSuccess(Boolean result) {
-										if (result) {
-											iTable.clearHover();
-											for (int i = iTable.getRowCount() - 1; i > 0; i --) {
-												if (iTable.getData(i).equals(reg)) {
-													iTable.removeRow(i);
-												}
-											}
-											iRegistrations.remove(reg);
-											setVisible(iTable.getRowCount() > 1);
-										}
-									}
-								});
-							}
-						});
+						cancel(reg);
 						event.preventDefault();
 						event.stopPropagation();
 					}
@@ -360,13 +353,13 @@ public class SpecialRegistrationsPanel extends P {
 						for (int c = 0; c < iTable.getCellCount(idx); c++)
 							iTable.getCellFormatter().addStyleName(idx, c, "top-border-solid");
 					if (lastCourseId != null && !lastCourseId.equals(ca.getCourseId()))
-						for (int c = 0; c < iTable.getCellCount(idx); c++)
+						for (int c = 2; c < iTable.getCellCount(idx) - 1; c++)
 							iTable.getCellFormatter().addStyleName(idx, c, "top-border-dashed");
 					if (!ca.isCourseAssigned()) {
-						for (int c = 0; c < iTable.getCellCount(idx); c++)
+						for (int c = 2; c < iTable.getCellCount(idx) - 1; c++)
 							iTable.getCellFormatter().addStyleName(idx, c, "change-drop");
 					} else  {
-						for (int c = 0; c < iTable.getCellCount(idx); c++)
+						for (int c = 2; c < iTable.getCellCount(idx) - 1; c++)
 							iTable.getCellFormatter().addStyleName(idx, c, "change-add");
 					}
 					lastCourseId = ca.getCourseId();
@@ -600,5 +593,46 @@ public class SpecialRegistrationsPanel extends P {
 			}
 		}
 		return hasDrop && !hasAdd;
+	}
+	
+	protected void cancel(final RetrieveSpecialRegistrationResponse reg) {
+		if (reg != null && reg.canCancel()) {
+			CheckCoursesResponse confirm = new CheckCoursesResponse();
+			confirm.setConfirmation(0, GWT_MESSAGES.dialogConfirmation(), GWT_MESSAGES.buttonConfirmYes(), GWT_MESSAGES.buttonConfirmNo(), null, null);
+			confirm.addConfirmation(MESSAGES.confirmOverrideRequestCancel(), 0, 1);
+			if (reg.hasErrors()) {
+				confirm.addConfirmation(MESSAGES.confirmOverrideRequestCancelCancelledErrors(), 0, 2);
+				for (ErrorMessage e: reg.getErrors())
+					confirm.addMessage(null, e.getCourse(), e.getCode(), e.getMessage(), 0, 3);
+			}
+			CourseRequestsConfirmationDialog.confirm(confirm, 0, new AsyncCallback<Boolean>() {
+				@Override
+				public void onFailure(Throwable caught) {
+				}
+
+				@Override
+				public void onSuccess(Boolean result) {
+					if (result) {
+						doCancel(reg.getRequestId(), new AsyncCallback<Boolean>(){
+							@Override
+							public void onFailure(Throwable caught) {}
+							@Override
+							public void onSuccess(Boolean result) {
+								if (result) {
+									iTable.clearHover();
+									for (int i = iTable.getRowCount() - 1; i > 0; i --) {
+										if (iTable.getData(i).equals(reg)) {
+											iTable.removeRow(i);
+										}
+									}
+									iRegistrations.remove(reg);
+									setVisible(iTable.getRowCount() > 1);
+								}
+							}
+						});
+					}					
+				}
+			});
+		}
 	}
 }

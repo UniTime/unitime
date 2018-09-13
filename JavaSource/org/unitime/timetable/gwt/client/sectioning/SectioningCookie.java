@@ -31,6 +31,8 @@ public class SectioningCookie {
 	private int iEnrollmentSortBy = 0;
 	private String iEnrollmentSortBySubpart = "";
 	private boolean iAllChoices = false;
+	private boolean iShowAllChanges = false;
+	private boolean iRequestOverridesOpened = false;
 	
 	private static SectioningCookie sInstance = null;
 	
@@ -53,6 +55,8 @@ public class SectioningCookie {
 				iEnrollmentSortBy = Integer.parseInt(values[4]);
 				iEnrollmentSortBySubpart = values[5];
 				iAllChoices = "T".equals(values[6]);
+				iShowAllChanges = "T".equals(values[7]);
+				iRequestOverridesOpened = "T".equals(values[8]);
 			}
 		} catch (Exception e) {
 		}
@@ -62,7 +66,8 @@ public class SectioningCookie {
 		String cookie = 
 			(iCourseDetails ? "T": "F") + ":" +
 			(iShowClassNumbers ? "T": "F") + ":" + iRelatedSortBy + ":" + iEnrollmentFilter.ordinal() + ":" + iEnrollmentSortBy + ":" + iEnrollmentSortBySubpart +
-			(iAllChoices ? "T" : "F");
+			":" + (iAllChoices ? "T" : "F") + 
+			":" + (iShowAllChanges ? "T" : "F") + ":" + (iRequestOverridesOpened ? "T" : "F");
 		Cookies.setCookie("UniTime:Sectioning", cookie);
 	}
 	
@@ -129,4 +134,10 @@ public class SectioningCookie {
 	public boolean isAllChoices() { return iAllChoices; }
 	
 	public void setAllChoices(boolean allChoices) { iAllChoices = allChoices; save(); }
+	
+	public boolean isShowAllChanges() { return iShowAllChanges; }
+	public void setShowAllChanges(boolean showAllChanges) { iShowAllChanges = showAllChanges; save(); }
+	
+	public boolean isRequestOverridesOpened() { return iRequestOverridesOpened; }
+	public void setRequestOverridesOpened(boolean requestOverridesOpened) { iRequestOverridesOpened = requestOverridesOpened; save(); }
 }

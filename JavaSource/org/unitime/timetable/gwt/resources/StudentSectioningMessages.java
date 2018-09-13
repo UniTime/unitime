@@ -2011,6 +2011,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Do you want to cancel this override request?")
 	String confirmOverrideRequestCancel();
 	
+	@DefaultMessage("If you proceed, the following pending override requests will be canceled:")
+	String confirmOverrideRequestCancelCancelledErrors();
+	
 	@DefaultMessage("Registration Errors")
 	String dialogEnrollmentConfirmation();
 	

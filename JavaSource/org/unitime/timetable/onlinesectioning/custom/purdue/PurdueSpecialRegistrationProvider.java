@@ -1153,6 +1153,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								maxi = err.message;
 								maxStatus = change.status;
 								maxiNote = change.getLastNote();
+								ret.setMaxCredit(specialRequest.maxCredit);
 							}
 					continue;
 				}
@@ -1286,6 +1287,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 									ca.setError(ca.getError() + "\n" + message);
 								else
 									ca.setError(message);
+								if (isPending(ch.status))
+									ret.addError(new ErrorMessage(ch.subject + " " + ch.courseNbr, ch.crn, err.code, err.message));
 								ca.setPinned(true);
 							}
 					}
@@ -1318,6 +1321,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								ca.setError(message);
 							if (ca.getSpecRegStatus() == null)
 								ca.setSpecRegStatus(getStatus(maxStatus));
+							if (isPending(maxStatus))
+								ret.addError(new ErrorMessage(course.getCourseName(), "", "MAXI", maxi));
 						}
 					}
 					ret.addChange(ca);
@@ -1417,6 +1422,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								else
 									ca.setError(message);
 								ca.setPinned(true);
+								if (isPending(ch.status))
+									ret.addError(new ErrorMessage(ch.subject + " " + ch.courseNbr, ch.crn, err.code, err.message));
 							}
 					}
 
@@ -1449,7 +1456,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 
 		ret.setDescription(desc);
 		ret.setRequestId(specialRequest.requestId);
-		ret.setSubmitDate(specialRequest.dateCreated == null ? null : specialRequest.dateCreated.toDate());
+		ret.setSubmitDate(specialRequest.dateCreated == null ? new Date() : specialRequest.dateCreated.toDate());
 		ret.setNote(specialRequest.requestorNotes);
 		if (specialRequest.status != null)
 			ret.setStatus(getStatus(specialRequest.status));

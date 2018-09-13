@@ -262,6 +262,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private boolean iCanCancel = false;
 		private boolean iHasTimeConflict, iHasSpaceConflict;
 		private ArrayList<ErrorMessage> iErrors = null;
+		private Float iMaxCredit = null;
 		
 		public RetrieveSpecialRegistrationResponse() {}
 		
@@ -441,6 +442,10 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			return iErrors != null && !iErrors.isEmpty();
 		}
 		public ArrayList<ErrorMessage> getErrors() { return iErrors; }
+		
+		public void setMaxCredit(Float maxCredit) { iMaxCredit = maxCredit; }
+		public Float getMaxCredit() { return iMaxCredit; }
+		public boolean hasMaxCredit() { return iMaxCredit != null; }
 		
 		@Override
 		public int compareTo(RetrieveSpecialRegistrationResponse o) {
