@@ -41,6 +41,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationStatus;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -155,7 +156,7 @@ public class SpecialRegistrationsPanel extends P {
 					iPanel.setFocus(true);
 				} else if (event.getNativeKeyCode() == KeyCodes.KEY_DELETE) {
 					if (iTable.getSelectedRow() > 0) {
-						RetrieveSpecialRegistrationResponse reg = iTable.getData(iTable.getSelectedRow());
+						final RetrieveSpecialRegistrationResponse reg = iTable.getData(iTable.getSelectedRow());
 						if (reg != null && reg.canCancel()) {
 							doCancel(reg.getRequestId(), new AsyncCallback<Boolean>() {
 								@Override
@@ -300,8 +301,18 @@ public class SpecialRegistrationsPanel extends P {
 				if (!iShowAllChanges.getValue() && reg.isFullyApplied(saved)) continue;
 				Long lastCourseId = null;
 				for (ClassAssignment ca: reg.getChanges()) {
-					if (!iShowAllChanges.getValue() && (reg.isApplied(ca.getCourseId(), saved) || (!reg.hasErrors(ca.getCourseId()) && !reg.isDrop(ca.getCourseId())))) continue;
-					if (ca.getParentSection() != null && ca.getParentSection().equals(ca.getSection())) continue;
+					if (!iShowAllChanges.getValue() && (reg.isApplied(ca.getCourseId(), saved) || (!reg.hasErrors(ca.getCourseId()) && !reg.isDrop(ca.getCourseId())))) {
+						// UniTimeNotifications.info(ca.getCourseName() + ": applied=" + reg.isApplied(ca.getCourseId(), saved) + ", errors:" + reg.hasErrors(ca.getCourseId()) + ", drop: " + reg.isDrop(ca.getCourseId()));
+						continue;
+					}
+					if (!iShowAllChanges.getValue() && reg.isChange(ca.getCourseId()) && !ca.hasError()) {
+						// UniTimeNotifications.info(ca.getCourseName() + ": change:" + reg.isChange(ca.getCourseId()) + ", error:" + ca.hasError());
+						continue;
+					}
+					if (ca.getParentSection() != null && ca.getParentSection().equals(ca.getSection())) {
+						// UniTimeNotifications.info(ca.getCourseName() + ": this:" + ca.getSection() + ", parent:" + ca.getParentSection());
+						continue;
+					}
 					List<Widget> row = new ArrayList<Widget>();
 					if (lastCourseId == null) {
 						row.add(p);
@@ -549,5 +560,45 @@ public class SpecialRegistrationsPanel extends P {
 			RetrieveSpecialRegistrationResponse data = iTable.getData(row);
 			iTable.setSelected(row, data != null && data.equals(reg));
 		}
+	}
+	
+	public SpecialRegistrationStatus getStatus(ClassAssignment a) {
+		if (a.getSpecRegStatus() != null) return a.getSpecRegStatus();
+		if (iRegistrations != null && a.getClassId() != null)
+			for (RetrieveSpecialRegistrationResponse response: iRegistrations) {
+				if (response.hasChanges() && !response.isFullyApplied(iLastSaved) && !response.isApplied(a.getCourseId(), iLastSaved))
+					for (ClassAssignment ch: response.getChanges())
+						if (a.getCourseId().equals(ch.getCourseId()) && a.getSection().equals(ch.getSection()))
+							return ch.getSpecRegStatus();
+			}
+		return null;
+	}
+	
+	public String getError(ClassAssignment a) {
+		if (a.getSpecRegStatus() != null) return (a.hasError() ? a.getError() : null);
+		if (iRegistrations != null && a.getClassId() != null)
+			for (RetrieveSpecialRegistrationResponse response: iRegistrations) {
+				if (response.hasChanges())
+					for (ClassAssignment ch: response.getChanges())
+						if (a.getCourseId().equals(ch.getCourseId()) && a.getSection().equals(ch.getSection()))
+							if (ch.hasError()) return ch.getError();
+			}
+		return null;
+	}
+	
+	public boolean isDrop(Long courseId) {
+		if (courseId == null || iRegistrations == null) return false;
+		boolean hasDrop = false, hasAdd = false;
+		for (RetrieveSpecialRegistrationResponse response: iRegistrations) {
+			if (response.hasChanges())
+				for (ClassAssignment ca: response.getChanges())
+					if (courseId.equals(ca.getCourseId())) {
+						switch (ca.getSpecRegOperation()) {
+						case Add: hasAdd = true; break;
+						case Drop: hasDrop = true; break;
+						}
+			}
+		}
+		return hasDrop && !hasAdd;
 	}
 }

@@ -27,8 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
-import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
@@ -52,7 +50,6 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private boolean iSpecRegSpaceConfs = false;
 		private SpecialRegistrationStatus iSpecRegStatus = null;
 		private String iNote;
-		private List<ClassAssignmentInterface.ClassAssignment> iChanges = null;
 
 		public SpecialRegistrationContext() {}
 		public SpecialRegistrationContext(SpecialRegistrationContext cx) {
@@ -68,7 +65,6 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			iSpecRegSpaceConfs = cx.iSpecRegSpaceConfs;
 			iSpecRegStatus = cx.iSpecRegStatus;
 			iNote = cx.iNote;
-			iChanges = (cx.iChanges == null ? null : new ArrayList<ClassAssignmentInterface.ClassAssignment>(cx.iChanges));
 		}
 		
 		public boolean isEnabled() { return iSpecReg; }
@@ -110,52 +106,6 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void reset(EligibilityCheck check) {
 			reset();
 			if (check != null) update(check);
-		}
-		public void clearChanges() {
-			iChanges = null;
-		}
-		public void setChanges(RetrieveSpecialRegistrationResponse reponse) {
-			iChanges = (reponse == null ? null : reponse.getChanges());
-		}
-		public void setChanges(ClassAssignmentInterface reponse) {
-			iChanges = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
-			if (reponse != null) {
-				for (CourseAssignment ca: reponse.getCourseAssignments())
-					for (ClassAssignment a: ca.getClassAssignments()) {
-						if (a.getSpecRegStatus() != null)
-							iChanges.add(a);
-					}
-			}
-		}
-		public SpecialRegistrationStatus getStatus(ClassAssignment a) {
-			if (a.getSpecRegStatus() != null) return a.getSpecRegStatus();
-			if (iChanges != null && a.getClassId() != null)
-				for (ClassAssignment ch: iChanges)
-					if (a.getClassId().equals(ch.getClassId()))
-						return ch.getSpecRegStatus();
-			return null;
-		}
-		
-		public String getError(ClassAssignment a) {
-			if (a.getSpecRegStatus() != null) return (a.hasError() ? a.getError() : null);
-			if (iChanges != null && a.getClassId() != null)
-				for (ClassAssignment ch: iChanges)
-					if (a.getClassId().equals(ch.getClassId()))
-						return (ch.hasError() ? ch.getError() : null);
-			return null;
-		}
-		
-		public boolean isDrop(Long courseId) {
-			if (courseId == null || iChanges == null) return false;
-			boolean hasDrop = false, hasAdd = false;
-			for (ClassAssignmentInterface.ClassAssignment ca: iChanges)
-				if (courseId.equals(ca.getCourseId())) {
-					switch (ca.getSpecRegOperation()) {
-					case Add: hasAdd = true; break;
-					case Drop: hasDrop = true; break;
-					}
-				}
-			return hasDrop && !hasAdd;
 		}
 	}
 	
@@ -360,6 +310,19 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			return hasDrop && !hasAdd;
 		}
 		
+		public boolean isChange(Long courseId) {
+			boolean hasDrop = false, hasAdd = false, hasKeep = false;
+			for (ClassAssignmentInterface.ClassAssignment ca: iChanges)
+				if (courseId.equals(ca.getCourseId())) {
+					switch (ca.getSpecRegOperation()) {
+					case Add: hasAdd = true; break;
+					case Drop: hasDrop = true; break;
+					case Keep: hasKeep = true; break;
+					}
+				}
+			return hasKeep || (hasDrop && hasAdd);
+		}
+		
 		public boolean hasErrors(Long courseId) {
 			for (ClassAssignmentInterface.ClassAssignment ca: iChanges)
 				if (courseId.equals(ca.getCourseId()) && ca.hasError()) return true;
@@ -422,7 +385,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		}
 		
 		public boolean isApplied(Long courseId, ClassAssignmentInterface saved) {
-			if (saved == null) return false;
+			if (courseId == null || saved == null) return false;
 			boolean hasDrop = false, hasAdd = false, hasKeep = false;
 			for (ClassAssignmentInterface.ClassAssignment ca: iChanges)
 				if (courseId.equals(ca.getCourseId())) {

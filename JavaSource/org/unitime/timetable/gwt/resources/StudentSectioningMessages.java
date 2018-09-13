@@ -1627,28 +1627,22 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("This plan is active.")
 	String hintActivePlan();
 	
-	@DefaultMessage("These override requests have been submitted for processing.")
-	String hintSpecRegCanNotSubmit();
-	
-	@DefaultMessage("These override requests have been processed.")
-	String hintSpecRegCanEnroll();
-	
-	@DefaultMessage("These override requests have been approved.")
+	@DefaultMessage("The override request has been approved.")
 	String hintSpecRegApproved();
 	
-	@DefaultMessage("These override requests have been cancelled.")
+	@DefaultMessage("The override request has been cancelled.")
 	String hintSpecRegCancelled();
 	
-	@DefaultMessage("These override requests have been submitted for processing. Waiting for approval...")
+	@DefaultMessage("The override request has been submitted for processing. Waiting for approval...")
 	String hintSpecRegPending();
 	
-	@DefaultMessage("These override requests have not been submitted for processing. It can still be edited.")
+	@DefaultMessage("The override request has been submitted for processing. It can still be edited.")
 	String hintSpecRegDraft();
 	
-	@DefaultMessage("These override requests have been denied.")
+	@DefaultMessage("One or more of the registration errors have been denied.")
 	String hintSpecRegRejected();
 	
-	@DefaultMessage("These override requests have been already applied.")
+	@DefaultMessage("The override request has been already applied.")
 	String hintSpecRegApplied();
 	
 	@DefaultMessage("{0}, {1}")

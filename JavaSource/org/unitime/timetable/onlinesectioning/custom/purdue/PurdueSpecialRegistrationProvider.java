@@ -1316,6 +1316,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								ca.setError(ca.getError() + "\n" + message);
 							else
 								ca.setError(message);
+							if (ca.getSpecRegStatus() == null)
+								ca.setSpecRegStatus(getStatus(maxStatus));
 						}
 					}
 					ret.addChange(ca);

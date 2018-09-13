@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
@@ -85,7 +86,7 @@ public class EnrollmentConfirmationDialog extends UniTimeDialogBox {
 			if (exception instanceof SectioningException && ((SectioningException)exception).hasErrors()) {
 				P ctab = new P("course-table");
 				String last = null; Set<String> msg = new HashSet<String>();
-				for (ErrorMessage cm: ((SectioningException)exception).getErrors()) {
+				for (ErrorMessage cm: new TreeSet<ErrorMessage>(((SectioningException)exception).getErrors())) {
 					if (cm.getCode() != null && cm.getCode().startsWith("UT_")) iAll = false;
 					P cn = new P("course-name");
 					if (last == null || !last.equals(cm.getCourse())) { msg.clear(); cn.setText(cm.getCourse()); }
@@ -106,7 +107,7 @@ public class EnrollmentConfirmationDialog extends UniTimeDialogBox {
 			if (result.hasErrors()) {
 				P ctab = new P("course-table");
 				String last = null; Set<String> msg = new HashSet<String>();
-				for (ErrorMessage cm: result.getErrors()) {
+				for (ErrorMessage cm: new TreeSet<ErrorMessage>(result.getErrors())) {
 					if (cm.getCode() != null && cm.getCode().startsWith("UT_")) iAll = false;
 					P cn = new P("course-name");
 					if (last == null || !last.equals(cm.getCourse())) { msg.clear(); cn.setText(cm.getCourse()); }
