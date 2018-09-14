@@ -32,7 +32,7 @@ public class SectioningCookie {
 	private String iEnrollmentSortBySubpart = "";
 	private boolean iAllChoices = false;
 	private boolean iShowAllChanges = false;
-	private boolean iRequestOverridesOpened = false;
+	private boolean iRequestOverridesOpened = true;
 	
 	private static SectioningCookie sInstance = null;
 	

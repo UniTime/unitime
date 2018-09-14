@@ -193,11 +193,12 @@ public class SpecialRegistrationsPanel extends P {
 				SectioningCookie.getInstance().setRequestOverridesOpened(event.getValue());
 			}
 		});
-		title.addClickHandler(new ClickHandler() {
+		label.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				if (iOpenCloseImage.isVisible())
+				if (iOpenCloseImage.isVisible()) {
 					iOpenCloseImage.setValue(!iOpenCloseImage.getValue(), true);
+				}
 			}
 		});
 
