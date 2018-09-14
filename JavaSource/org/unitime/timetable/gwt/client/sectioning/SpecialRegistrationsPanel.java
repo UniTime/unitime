@@ -296,6 +296,8 @@ public class SpecialRegistrationsPanel extends P {
 			if (reg.hasChanges()) {
 				if (!iShowAllChanges.getValue() && reg.isFullyApplied(saved)) continue;
 				Long lastCourseId = null;
+				String[] dateAndNote = (reg.getSubmitDate() == null ? reg.getNote() == null ? "" : reg.getNote() : sModifiedDateFormat.format(reg.getSubmitDate()) + (reg.getNote() == null || reg.getNote().isEmpty() ? "" : "\n" + reg.getNote())).split("\n");
+				List<ClassAssignment> rows = new ArrayList<ClassAssignment>();
 				for (ClassAssignment ca: reg.getChanges()) {
 					if (!iShowAllChanges.getValue() && (reg.isApplied(ca.getCourseId(), saved) || (!reg.hasErrors(ca.getCourseId()) && !reg.isDrop(ca.getCourseId())))) {
 						// UniTimeNotifications.info(ca.getCourseName() + ": applied=" + reg.isApplied(ca.getCourseId(), saved) + ", errors:" + reg.hasErrors(ca.getCourseId()) + ", drop: " + reg.isDrop(ca.getCourseId()));
@@ -309,12 +311,29 @@ public class SpecialRegistrationsPanel extends P {
 						// UniTimeNotifications.info(ca.getCourseName() + ": this:" + ca.getSection() + ", parent:" + ca.getParentSection());
 						continue;
 					}
+					rows.add(ca);
+				}
+				
+				for (int r = 0; r < rows.size(); r++) {
+					ClassAssignment ca = rows.get(r);
 					List<Widget> row = new ArrayList<Widget>();
 					if (lastCourseId == null) {
 						row.add(p);
-						row.add(new DateAndNoteCell(reg.getSubmitDate(), reg.getNote()));
 					} else {
 						row.add(new P("icons"));
+					}
+					if (r < dateAndNote.length) {
+						if (r + 1 == rows.size()) {
+							String text = dateAndNote[r];
+							for (int i = r + 1; i < dateAndNote.length; i++)
+								text += "\n" + dateAndNote[i];
+							Label label = new Label(text); label.addStyleName("date-and-note");
+							row.add(label);
+						} else {
+							Label label = new Label(dateAndNote[r]); label.addStyleName("date-and-note");
+							row.add(label);
+						}
+					} else {
 						row.add(new Label());
 					}
 					if (lastCourseId == null || !lastCourseId.equals(ca.getCourseId())) {
@@ -411,7 +430,6 @@ public class SpecialRegistrationsPanel extends P {
 	}
 	
 	protected class DateAndNoteCell extends Label {
-		
 		public DateAndNoteCell(Date date, String note) {
 			super(date == null ? note == null ? "" : note : sModifiedDateFormat.format(date) + (note == null || note.isEmpty() ? "" : "\n" + note));
 			addStyleName("date-and-note");
