@@ -507,7 +507,9 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 					getRowFormatter().getElement(row).getStyle().setCursor(Cursor.POINTER);
 				boolean selected = false;
 				if (isAllowSelection()) {
-					if ("unitime-TableRowSelected".equals(style)) {
+					if ("unitime-TableRowSelectedHover".equals(style)) {
+						selected = true;
+					} else if ("unitime-TableRowSelected".equals(style)) {
 						getRowFormatter().setStyleName(row, "unitime-TableRowSelectedHover");
 						selected = true;
 					} else {
