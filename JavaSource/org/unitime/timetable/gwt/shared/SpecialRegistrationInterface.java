@@ -520,6 +520,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private boolean iSuccess;
 		private SpecialRegistrationStatus iStatus = null;
 		private List<RetrieveSpecialRegistrationResponse> iRequests = null;
+		private Set<String> iCancelledRequestIds;
 		
 		public SubmitSpecialRegistrationResponse() {}
 		
@@ -549,6 +550,14 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 				if (requestId.equals(r.getRequestId())) return true;
 			return false;
 		}
+		
+		public void addCancelledRequest(String requestId) {
+			if (iCancelledRequestIds == null) iCancelledRequestIds = new HashSet<String>();
+			iCancelledRequestIds.add(requestId);
+		}
+		public boolean hasCancelledRequestIds() { return iCancelledRequestIds != null && !iCancelledRequestIds.isEmpty(); }
+		public Set<String> getCancelledRequestIds() { return iCancelledRequestIds; }
+		public boolean isCancelledRequest(String requestId) { return iCancelledRequestIds != null && iCancelledRequestIds.contains(requestId); }
 	}
 	
 	public static class RetrieveAllSpecialRegistrationsRequest implements IsSerializable, Serializable {

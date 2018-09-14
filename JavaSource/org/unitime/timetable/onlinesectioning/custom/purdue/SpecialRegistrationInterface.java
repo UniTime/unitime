@@ -49,6 +49,7 @@ public class SpecialRegistrationInterface {
 		public String notes;
 		public String requestorNotes;
 		public String completionStatus;
+		public List<CancelledRequest> cancelledRequests;
 	}
 	
 	public static class SpecialRegistrationEligibility {
@@ -272,5 +273,18 @@ public class SpecialRegistrationInterface {
 		public String crn;
 		public String code;
 		public String errorMessage;
+	}
+	
+	public static class CancelledRequest {
+		public String subject;
+		public String courseNbr;
+		public String crn;
+		public String requestId;
+	}
+	
+	public static class ErrorResponse {
+		public String data;
+		public String status;
+		public String message;
 	}
 }

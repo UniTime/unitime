@@ -81,6 +81,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentRequest;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CancelledRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Change;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ChangeError;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ChangeOperation;
@@ -817,6 +818,9 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							if (ch.errors != null && !ch.errors.isEmpty() && ch.status == null)
 								ch.status = RequestStatus.inProgress.name();
 					ret.addRequest(convert(server, helper, student, r, false));
+					if (r.cancelledRequests != null)
+						for (CancelledRequest c: r.cancelledRequests)
+							ret.addCancelledRequest(c.requestId);
 				}
 			} else {
 				ret.setSuccess(false);

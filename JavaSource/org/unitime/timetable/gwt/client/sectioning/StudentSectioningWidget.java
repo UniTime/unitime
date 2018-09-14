@@ -2598,6 +2598,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 										List<RetrieveSpecialRegistrationResponse> requests = new ArrayList<RetrieveSpecialRegistrationResponse>(response.getRequests());
 										for (RetrieveSpecialRegistrationResponse r: iSpecialRegistrationsPanel.getRegistrations()) {
 											if (eligibilityResponse.isToBeCancelled(r.getRequestId())) continue;
+											if (response.isCancelledRequest(r.getRequestId())) continue;
 											if (response.hasRequest(r.getRequestId())) continue;
 											requests.add(r);
 										}
