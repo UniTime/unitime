@@ -36,6 +36,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
@@ -77,6 +78,8 @@ public class SpecialRegistrationsPanel extends P {
 	protected static StudentSectioningResources RESOURCES = GWT.create(StudentSectioningResources.class);
 	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private static DateTimeFormat sModifiedDateFormat = ServerDateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
+	protected static final GwtResources GWT_RESOURCES =  GWT.create(GwtResources.class);
+
 	
 	private UniTimeTable<RetrieveSpecialRegistrationResponse> iTable;
 	private FocusPanel iPanel;
@@ -605,7 +608,7 @@ public class SpecialRegistrationsPanel extends P {
 				for (ErrorMessage e: reg.getErrors())
 					confirm.addMessage(null, e.getCourse(), e.getCode(), e.getMessage(), 0, 3);
 			}
-			CourseRequestsConfirmationDialog.confirm(confirm, 0, new AsyncCallback<Boolean>() {
+			CourseRequestsConfirmationDialog.confirm(confirm, 0, GWT_RESOURCES.confirm(), new AsyncCallback<Boolean>() {
 				@Override
 				public void onFailure(Throwable caught) {
 				}

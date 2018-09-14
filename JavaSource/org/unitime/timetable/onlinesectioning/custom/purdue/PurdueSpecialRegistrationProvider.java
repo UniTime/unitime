@@ -817,6 +817,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 						for (Change ch: r.changes)
 							if (ch.errors != null && !ch.errors.isEmpty() && ch.status == null)
 								ch.status = RequestStatus.inProgress.name();
+					if (r.requestorNotes == null) r.requestorNotes = input.getNote();
 					ret.addRequest(convert(server, helper, student, r, false));
 					if (r.cancelledRequests != null)
 						for (CancelledRequest c: r.cancelledRequests)

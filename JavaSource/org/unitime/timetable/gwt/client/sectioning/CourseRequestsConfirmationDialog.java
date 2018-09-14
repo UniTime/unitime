@@ -38,6 +38,7 @@ import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -55,6 +56,7 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 	private String iMessage;
 	private boolean iValue = false;
 	private TextArea iNote = null;
+	private Image iImage;
 
 	public CourseRequestsConfirmationDialog(CheckCoursesResponse response, int confirm, AsyncCallback<Boolean> callback) {
 		super(true, true);
@@ -71,7 +73,8 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 
 		P ic = new P("icon-panel");
 		bd.add(ic);
-		ic.add(new Image(RESOURCES.statusWarning()));
+		iImage = new Image(RESOURCES.statusWarning());
+		ic.add(iImage);
 
 		P cp = new P("content-panel");
 		bd.add(cp);
@@ -155,6 +158,12 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 		setWidget(panel);
 	}
 	
+	public CourseRequestsConfirmationDialog withImage(ImageResource image) {
+		if (image != null) 
+			iImage.setResource(image);
+		return this;
+	}
+	
 	@Override
 	public void center() {
 		super.center();
@@ -182,5 +191,9 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 	
 	public static void confirm(CheckCoursesResponse response, int confirm, AsyncCallback<Boolean> callback) {
 		new CourseRequestsConfirmationDialog(response, confirm, callback).center();
+	}
+	
+	public static void confirm(CheckCoursesResponse response, int confirm, ImageResource image, AsyncCallback<Boolean> callback) {
+		new CourseRequestsConfirmationDialog(response, confirm, callback).withImage(image).center();
 	}
 }
