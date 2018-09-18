@@ -363,8 +363,7 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 	        	query.append(" and c.cancelled = false");
 	        }
 	        if (form.getFilterNeedInstructor()) {
-	        	query.append(" and (c.teachingLoad is not null or c.schedulingSubpart.teachingLoad is not null)");
-	        	query.append(" and ((c.nbrInstructors is null and c.schedulingSubpart.nbrInstructors > 0) or c.nbrInstructors > 0)");
+	        	query.append(" and (select sum(tr.teachingRequest.nbrInstructors) from TeachingClassRequest tr where tr.assignInstructor = true and  tr.teachingClass = c) > 0");
 	        }
 			Query q = hibSession.createQuery(query.toString());
 			q.setFetchSize(1000);
