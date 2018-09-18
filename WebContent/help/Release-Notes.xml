@@ -60,6 +60,15 @@
 		</item>
 	</category>
 	<category>
+		<title>Instructor Assignment</title>
+		<item>
+			<name>Classes: Need Instructor Assignment</name>
+			<description>
+				<line>Corrected the "Show only classes that need instructor assignment" filter (fixes the could not resolve property: teachingLoad error).</line>
+			</description>
+		</item>
+	</category>	
+	<category>
 		<title>Event Management</title>
 		<item>
 			<name>Rooms: CSV/XML/XLS Export</name>

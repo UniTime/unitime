@@ -826,7 +826,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Need Instructor Assignment:")
 	String filterNeedInstructorAssignment();
 	
-	@DefaultMessage("Show only classes that need instructor assignent")
+	@DefaultMessage("Show only classes that need instructor assignment")
 	String showNeedInstructorClasses();
 	
 	@DefaultMessage("Subject:")
