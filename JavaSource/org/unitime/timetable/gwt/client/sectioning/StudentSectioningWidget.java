@@ -1987,6 +1987,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									iSpecialRegistrationsPanel.populate(response, iSavedAssignment);
 									if (!iSpecialRegistrationsPanel.isVisible())
 										iStatus.info(MESSAGES.failedNoSpecialRegistrations());
+									else if (iSpecialRegistrationsPanel.hasOneOrMoreFullyApproved() && (iStatus.getLevel() == null || iStatus.getLevel() == ScheduleStatus.Level.INFO))
+										iStatus.info(MESSAGES.statusOneOrMoreFullyApprovedRequestsNotYetApplied());
 									updateHistory();
 								}
 							});
@@ -2113,8 +2115,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								if (result) {
 									iSpecRegCx.copy(iSRCx);
 									iSpecialRegAssignment = iSRassignment;
-									if (iSpecialRegistrationsPanel.isVisible())
+									if (iSpecialRegistrationsPanel.isVisible()) {
 										iSpecialRegistrationsPanel.populate(iSpecialRegistrationsPanel.getRegistrations(), iSavedAssignment);
+									}
 									iCourseRequests.setRequest(iRequest);
 									if (iTab != iAssignmentTab.getSelectedTab())
 										iAssignmentTab.selectTab(iTab);

@@ -20,6 +20,7 @@
 package org.unitime.timetable.onlinesectioning.custom.purdue;
 
 import java.lang.reflect.Type;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -1159,6 +1160,12 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								maxStatus = change.status;
 								maxiNote = change.getLastNote();
 								ret.setMaxCredit(specialRequest.maxCredit);
+								if (specialRequest.maxCredit != null && student.getMaxCredit() != null) {
+									DecimalFormat df = new DecimalFormat("0.#");
+									maxi = "Maximum hours exceeded. Currently allowed " + df.format(student.getMaxCredit()) + " but needs " + df.format(specialRequest.maxCredit) + ".";
+									if (student.getMaxCredit() >= specialRequest.maxCredit && getStatus(change.status) == SpecialRegistrationStatus.Pending)
+										maxStatus = RequestStatus.approved.name();
+								}
 							}
 					continue;
 				}
@@ -1219,7 +1226,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					if (ca.getSection() == null)
 						ca.setSection(clazz.getSectionNumberString(helper.getHibSession()));
 					ca.setClassNumber(clazz.getSectionNumberString(helper.getHibSession()));
-					ca.setSubpart(clazz.getSchedulingSubpart().getItypeDesc());
+					ca.setSubpart(clazz.getSchedulingSubpart().getItypeDesc().trim());
 					ca.setExternalId(clazz.getExternalId(course));
 					if (clazz.getParentClass() != null) {
 						ca.setParentSection(clazz.getParentClass().getClassSuffix(course));
@@ -1273,6 +1280,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							for (ChangeError err: ch.errors) {
 								if ("TIME".equals(err.code)) ret.setHasTimeConflict(true);
 								if ("CLOS".equals(err.code)) ret.setHasSpaceConflict(true);
+								if ("MAXI".equals(err.code) && maxi != null) continue;
 								String message = err.message;
 								switch (getStatus(ch.status)) {
 								case Approved:
@@ -1353,7 +1361,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					if (ca.getSection() == null)
 						ca.setSection(clazz.getSectionNumberString(helper.getHibSession()));
 					ca.setClassNumber(clazz.getSectionNumberString(helper.getHibSession()));
-					ca.setSubpart(clazz.getSchedulingSubpart().getItypeDesc());
+					ca.setSubpart(clazz.getSchedulingSubpart().getItypeDesc().trim());
 					ca.setExternalId(clazz.getExternalId(course));
 					if (clazz.getParentClass() != null) {
 						ca.setParentSection(clazz.getParentClass().getClassSuffix(course));
@@ -1407,6 +1415,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							for (ChangeError err: ch.errors) {
 								if ("TIME".equals(err.code)) ret.setHasTimeConflict(true);
 								if ("CLOS".equals(err.code)) ret.setHasSpaceConflict(true);
+								if ("MAXI".equals(err.code) && maxi != null) continue;
 								String message = err.message;
 								switch (getStatus(ch.status)) {
 								case Approved:

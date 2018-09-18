@@ -89,6 +89,7 @@ public class SpecialRegistrationsPanel extends P {
 	private List<RetrieveSpecialRegistrationResponse> iRegistrations = new ArrayList<RetrieveSpecialRegistrationResponse>();
 	private ClassAssignmentInterface iLastSaved = null;
 	private OpenCloseSectionImage iOpenCloseImage;
+	private boolean iHasOneOrMoreFullyApproved = false;
 	
 	public SpecialRegistrationsPanel(SpecialRegistrationContext specReg) {
 		addStyleName("unitime-SpecialRegistrationsPanel");
@@ -252,6 +253,7 @@ public class SpecialRegistrationsPanel extends P {
 		iRegistrations = registrations;
 		iLastSaved = saved;
 		iTable.clearTable(1);
+		iHasOneOrMoreFullyApproved = false;
 		Collections.sort(registrations);
 		for (final RetrieveSpecialRegistrationResponse reg: registrations) {
 			P p = new P("icons");
@@ -260,7 +262,7 @@ public class SpecialRegistrationsPanel extends P {
 			} else if (reg.getStatus() != null) {
 				switch (reg.getStatus()) {
 				case Approved:
-					p.add(new Icon(RESOURCES.specRegApproved(), MESSAGES.hintSpecRegApproved()));
+					p.add(new Icon(RESOURCES.specRegApproved(), MESSAGES.hintSpecRegApprovedNoteApply()));
 					break;
 				case Cancelled:
 					p.add(new Icon(RESOURCES.specRegCancelled(), MESSAGES.hintSpecRegCancelled()));
@@ -353,10 +355,10 @@ public class SpecialRegistrationsPanel extends P {
 					P s = new P("icons");
 					switch (ca.getSpecRegOperation()) {
 					case Add:
-						s.add(new Icon(RESOURCES.assignment(), MESSAGES.assignment(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection())));
+						s.add(new Icon(RESOURCES.assignment(), MESSAGES.specRegAssignment(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection())));
 						break;
 					case Drop:
-						s.add(new Icon(RESOURCES.unassignment(), MESSAGES.unassignment(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection())));
+						s.add(new Icon(RESOURCES.unassignment(), MESSAGES.specRegUnassignment(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection())));
 						break;
 					case Keep:
 						// s.add(new Icon(RESOURCES.saved(), MESSAGES.saved(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection())));
@@ -370,6 +372,11 @@ public class SpecialRegistrationsPanel extends P {
 					} else
 						row.add(new Label());
 					int idx = iTable.addRow(reg, row);
+					if (reg.getStatus() == SpecialRegistrationStatus.Approved) {
+						iTable.setBackGroundColor(idx, "#D7FFD7");
+						if (!reg.isFullyApplied(saved))
+							iHasOneOrMoreFullyApproved = true;
+					}
 					if (reg.getRequestId().equals(iSpecReg.getRequestId()))
 						iTable.setSelected(idx, true);
 					if (idx > 1 && lastCourseId == null)
@@ -409,6 +416,10 @@ public class SpecialRegistrationsPanel extends P {
 			}
 		}
 		setVisible(iTable.getRowCount() > 1);
+	}
+	
+	public boolean hasOneOrMoreFullyApproved() {
+		return iHasOneOrMoreFullyApproved;
 	}
 	
 	protected int setSelected(RetrieveSpecialRegistrationResponse data) {
@@ -491,21 +502,14 @@ public class SpecialRegistrationsPanel extends P {
 			// clear hover if needed
 			if (!iLastHoverRows.isEmpty() && (iLastHoverRow < 0 || !iLastHoverRows.contains(iLastHoverRow))) {
 				for (int row: iLastHoverRows) {
-					boolean selected = false;
 					String style = getRowFormatter().getStyleName(row);
-					if (isAllowSelection()) {
-						if ("unitime-TableRowSelected".equals(style)) {
-							selected = true;
-						} else if ("unitime-TableRowHover".equals(style)) {
-							getRowFormatter().setStyleName(row, null);	
-						} else if ("unitime-TableRowSelectedHover".equals(style)) {
-							getRowFormatter().setStyleName(row, "unitime-TableRowSelected");
-							selected = true;
-						}
-					} else {
-						getRowFormatter().removeStyleName(row, "unitime-TableRowHover");
+					if ("unitime-TableRowSelected".equals(style)) {
+					} else if ("unitime-TableRowHover".equals(style)) {
+						getRowFormatter().setStyleName(row, null);
+					} else if ("unitime-TableRowSelectedHover".equals(style)) {
+						getRowFormatter().setStyleName(row, "unitime-TableRowSelected");
 					}
-					if (!selected) {
+					if (getRowFormatter().getStyleName(row).isEmpty()) {
 						String color = iLastHoverBackgroundColor.remove(row);
 						if (color != null && !color.isEmpty()) {
 							getRowFormatter().getElement(row).getStyle().setBackgroundColor(color);
@@ -522,21 +526,14 @@ public class SpecialRegistrationsPanel extends P {
 					for (int row = 0; row < getRowCount(); row++) {
 						if (data.equals(getData(row))) {
 							iLastHoverRows.add(row);
-							boolean selected = false;
 							String style = getRowFormatter().getStyleName(row);
-							if (isAllowSelection()) {
-								if ("unitime-TableRowSelectedHover".equals(style)) {
-									selected = true;
-								} else if ("unitime-TableRowSelected".equals(style)) {
-									getRowFormatter().setStyleName(row, "unitime-TableRowSelectedHover");
-									selected = true;
-								} else {
-									getRowFormatter().setStyleName(row, "unitime-TableRowHover");
-								}
+							if ("unitime-TableRowSelectedHover".equals(style)) {
+							} else if ("unitime-TableRowSelected".equals(style)) {
+								getRowFormatter().setStyleName(row, "unitime-TableRowSelectedHover");
 							} else {
-								getRowFormatter().addStyleName(row, "unitime-TableRowHover");
+								getRowFormatter().setStyleName(row, "unitime-TableRowHover");
 							}
-							if (!selected) {
+							if (style.isEmpty()) {
 								String color = getRowFormatter().getElement(row).getStyle().getBackgroundColor();
 								if (color != null && !color.isEmpty()) {
 									getRowFormatter().getElement(row).getStyle().clearBackgroundColor();
@@ -544,8 +541,11 @@ public class SpecialRegistrationsPanel extends P {
 								} else {
 									iLastHoverBackgroundColor.remove(row);
 								}
+							} else if (!getRowFormatter().getElement(row).getStyle().getBackgroundColor().isEmpty()) {
+								String color = getRowFormatter().getElement(row).getStyle().getBackgroundColor();
+								getRowFormatter().getElement(row).getStyle().clearBackgroundColor();
+								iLastHoverBackgroundColor.put(row, color);
 							}
-							
 						}
 					}
 				}

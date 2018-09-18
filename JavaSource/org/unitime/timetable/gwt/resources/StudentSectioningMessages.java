@@ -1630,6 +1630,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("The override request has been approved.")
 	String hintSpecRegApproved();
 	
+	@DefaultMessage("This override request has been fully approved. Click on this request to apply it to your current schedule and then click Submit Schedule button to update your registration.")
+	String hintSpecRegApprovedNoteApply();
+	
 	@DefaultMessage("The override request has been cancelled.")
 	String hintSpecRegCancelled();
 	
@@ -2058,4 +2061,13 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Show all changes")
 	String checkOverridesShowAllChanges();
+	
+	@DefaultMessage("You are trying to drop {0} as part of this override request. Once this request is fully approved, click on this request to apply it to your current schedule and then click Submit Schedule button to update your registration.")
+	String specRegUnassignment(String clazz);
+
+	@DefaultMessage("You are trying to add {0} as part of this override request. Once this request is fully approved, click on this request to apply it to your current schedule and then click Submit Schedule button to update your registration.")
+	String specRegAssignment(String clazz);
+	
+	@DefaultMessage("One or more of your override requests have been fully approved. \nPlease click on the approved request to apply it to your current schedule, review the new schedule, and then click Submit Schedule button to update your registration.")
+	String statusOneOrMoreFullyApprovedRequestsNotYetApplied();
 }
