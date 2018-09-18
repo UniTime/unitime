@@ -62,6 +62,8 @@ public class XOverride implements Serializable, Externalizable {
 	
 	public Integer getStatus() { return iStatus; }
 	
+	public void setStatus(Integer status) { iStatus = status; }
+	
 	public Float getValue() { return iValue; }
 
 	@Override

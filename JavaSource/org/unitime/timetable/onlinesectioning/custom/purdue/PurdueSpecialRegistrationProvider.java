@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,12 +49,17 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
+import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentEnrollmentMessage;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.comparators.ClassComparator;
+import org.unitime.timetable.model.dao.CourseDemandDAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -108,6 +114,7 @@ import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XOverride;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XReservation;
 import org.unitime.timetable.onlinesectioning.model.XSection;
@@ -208,6 +215,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		return ApplicationProperties.getProperty("purdue.specreg.mode", "REG");
 	}
 	
+	protected boolean isUpdateUniTimeStatuses() {
+		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.updateUniTimeStatuses", "true"));
+	}
+	
 	protected String getBannerTerm(AcademicSessionInfo session) {
 		return iExternalTermProvider.getExternalTerm(session);
 	}
@@ -246,6 +257,27 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			return SpecialRegistrationStatus.Rejected;
 		else
 			return SpecialRegistrationStatus.Pending;
+	}
+	
+	protected int toStatus(String status) {
+		if (RequestStatus.approved.name().equals(status))
+			return CourseRequestOverrideStatus.APPROVED.ordinal();
+		else if (RequestStatus.cancelled.name().equals(status))
+			return CourseRequestOverrideStatus.CANCELLED.ordinal();
+		else if (RequestStatus.denied.name().equals(status))
+			return CourseRequestOverrideStatus.REJECTED.ordinal();
+		else
+			return CourseRequestOverrideStatus.PENDING.ordinal();
+	}
+	
+	protected int toStatus(SpecialRegistrationStatus status) {
+		if (status == null) return CourseRequestOverrideStatus.PENDING.ordinal();
+		switch (status) {
+		case Approved: return CourseRequestOverrideStatus.APPROVED.ordinal();
+		case Cancelled: return CourseRequestOverrideStatus.CANCELLED.ordinal();
+		case Rejected: return CourseRequestOverrideStatus.REJECTED.ordinal();
+		default: return CourseRequestOverrideStatus.PENDING.ordinal();
+		}
 	}
 	
 	protected boolean isPending(String status) {
@@ -819,6 +851,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							if (ch.errors != null && !ch.errors.isEmpty() && ch.status == null)
 								ch.status = RequestStatus.inProgress.name();
 					if (r.requestorNotes == null) r.requestorNotes = input.getNote();
+					if (r.maxCredit == null && request.maxCredit != null) r.maxCredit = request.maxCredit;
 					ret.addRequest(convert(server, helper, student, r, false));
 					if (r.cancelledRequests != null)
 						for (CancelledRequest c: r.cancelledRequests)
@@ -827,6 +860,124 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			} else {
 				ret.setSuccess(false);
 			}
+			
+			if (isUpdateUniTimeStatuses() && response.data != null && !response.data.isEmpty()) {
+				boolean studentChanged = false;
+				for (SpecialRegistrationRequest r: response.data) {
+					String maxiStatus = null;
+					Map<String, Set<String>> course2errors = new HashMap<String, Set<String>>();
+					Map<String, SpecialRegistrationStatus> course2status = new HashMap<String, SpecialRegistrationStatus>();
+					if (r.changes != null)
+						for (Change ch: r.changes) {
+							if (ch.subject != null && ch.courseNbr != null && ch.errors != null && !ch.errors.isEmpty()) {
+								String course = ch.subject + " " + ch.courseNbr;
+								Set<String> errors = course2errors.get(course);
+								if (errors == null) {
+									errors = new TreeSet<String>();
+									course2errors.put(course, errors);
+								}
+								for (ChangeError e: ch.errors) {
+									if (e.message != null) errors.add(e.message);
+								}
+								if (ch.status != null) {
+									SpecialRegistrationStatus s = course2status.get(course);
+									course2status.put(course, s == null ? getStatus(ch.status) : combine(s, getStatus(ch.status)));
+								}
+							} else if (ch.crn == null && ch.errors != null) {
+								for (ChangeError e: ch.errors) {
+									if ("MAXI".equals(e.code))
+										maxiStatus = ch.status;
+								}
+							}
+						}
+					if (r.maxCredit != null) {
+						student.setMaxCreditOverride(new XOverride(r.requestId, r.dateCreated == null ? new Date() : r.dateCreated.toDate(), toStatus(maxiStatus != null ? maxiStatus : r.status)));
+						Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
+						if (dbStudent != null) {
+							dbStudent.setOverrideStatus(toStatus(maxiStatus != null ? maxiStatus : r.status));
+							dbStudent.setOverrideMaxCredit(r.maxCredit);
+							dbStudent.setOverrideExternalId(r.requestId);
+							dbStudent.setOverrideTimeStamp(r.dateCreated == null ? new Date() : r.dateCreated.toDate());
+							helper.getHibSession().update(dbStudent);
+						}
+						studentChanged = true;
+					}
+					for (Map.Entry<String, Set<String>> e: course2errors.entrySet()) {
+						XCourseRequest cr = student.getRequestForCourseName(e.getKey());
+						if (cr != null) {
+							String message = "";
+							for (String m: e.getValue()) message += (m.isEmpty() ? "" : "\n") + m;
+							if (message.length() > 255)
+								message = message.substring(0, 252) + "...";
+							cr.setEnrollmentMessage(message);
+							for (XCourseId course: cr.getCourseIds()) {
+								if (course.getCourseName().equals(e.getKey())) {
+									cr.setOverride(course, new XOverride(r.requestId, r.dateCreated == null ? new Date() : r.dateCreated.toDate(), toStatus(course2status.get(e.getKey()))));
+								}
+							}
+							CourseDemand dbCourseDemand = CourseDemandDAO.getInstance().get(cr.getRequestId(), helper.getHibSession());
+							if (dbCourseDemand != null) {
+								StudentEnrollmentMessage m = new StudentEnrollmentMessage();
+								m.setCourseDemand(dbCourseDemand);
+								m.setLevel(0);
+								m.setType(0);
+								m.setTimestamp(r.dateCreated == null ? new Date() : r.dateCreated.toDate());
+								m.setMessage(message);
+								m.setOrder(0);
+								dbCourseDemand.getEnrollmentMessages().add(m);
+								helper.getHibSession().update(dbCourseDemand);
+								for (CourseRequest dbCourseRequest: dbCourseDemand.getCourseRequests()) {
+									if (dbCourseRequest.getCourseOffering().getCourseName().equals(e.getKey())) {
+										dbCourseRequest.setOverrideExternalId(r.requestId);
+										dbCourseRequest.setOverrideStatus(toStatus(course2status.get(e.getKey())));
+										dbCourseRequest.setOverrideTimeStamp(r.dateCreated == null ? new Date() : r.dateCreated.toDate());
+										helper.getHibSession().update(dbCourseRequest);
+									}
+								}
+							}
+							studentChanged = true;
+						}
+					}
+					if (ret.hasCancelledRequestIds()) {
+						if (student.getMaxCreditOverride() != null && ret.isCancelledRequest(student.getMaxCreditOverride().getExternalId())) {
+							student.getMaxCreditOverride().setStatus(CourseRequestOverrideStatus.CANCELLED.ordinal());
+							Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
+							if (dbStudent != null) {
+								dbStudent.setOverrideStatus(CourseRequestOverrideStatus.CANCELLED.ordinal());
+								helper.getHibSession().update(dbStudent);
+							}
+							studentChanged = true;
+						}
+						for (XRequest xr: student.getRequests()) {
+							if (xr instanceof XCourseRequest) {
+								XCourseRequest cr = (XCourseRequest)xr;
+								if (cr.hasOverrides())
+									for (Map.Entry<XCourseId, XOverride> e: cr.getOverrides().entrySet()) {
+										if (ret.isCancelledRequest(e.getValue().getExternalId())) {
+											e.getValue().setStatus(CourseRequestOverrideStatus.CANCELLED.ordinal());
+											CourseDemand dbCourseDemand = CourseDemandDAO.getInstance().get(cr.getRequestId(), helper.getHibSession());
+											if (dbCourseDemand != null) {
+												for (CourseRequest dbCourseRequest: dbCourseDemand.getCourseRequests()) {
+													if (dbCourseRequest.getCourseOffering().getUniqueId().equals(e.getKey().getCourseId())) {
+														dbCourseRequest.setOverrideStatus(CourseRequestOverrideStatus.CANCELLED.ordinal());
+														helper.getHibSession().update(dbCourseRequest);
+													}
+												}
+											}
+											studentChanged = true;
+										}
+									}
+							}
+						}
+					}
+				}
+				
+				if (studentChanged) {
+					server.update(student, false);
+					helper.getHibSession().flush();
+				}
+			}
+			
 			return ret;
 		} catch (SectioningException e) {
 			helper.getAction().setApiException(e.getMessage());
@@ -1649,6 +1800,111 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					helper.debug("Response: " + gson.toJson(response));
 				helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(response));
 				
+				if (isUpdateUniTimeStatuses() && response.data != null && response.data.requests != null && !response.data.requests.isEmpty()) {
+					boolean studentChanged = false;
+					Set<String> requestIds = new HashSet<String>();
+					for (SpecialRegistrationRequest r: response.data.requests) {
+						requestIds.add(r.requestId);
+						if (r.maxCredit != null) {
+							// max credit request -> get status
+							String maxiStatus = null;
+							if (r.changes != null)
+								for (Change ch: r.changes) {
+									if (ch.crn == null && ch.errors != null) {
+										for (ChangeError e: ch.errors) {
+											if ("MAXI".equals(e.code))
+												maxiStatus = ch.status;
+										}
+									}
+								}
+							// check student status
+							if (student.getMaxCreditOverride() != null && r.requestId.equals(student.getMaxCreditOverride().getExternalId()) && student.getMaxCreditOverride().getStatus() != toStatus(maxiStatus != null ? maxiStatus : r.status)) {
+								student.getMaxCreditOverride().setStatus(toStatus(maxiStatus != null ? maxiStatus : r.status));
+								Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
+								if (dbStudent != null) {
+									dbStudent.setOverrideStatus(toStatus(maxiStatus != null ? maxiStatus : r.status));
+									helper.getHibSession().update(dbStudent);
+								}
+								studentChanged = true;
+							}
+						}
+						// check other statuses
+						if (r.changes != null) {
+							Map<String, SpecialRegistrationStatus> course2status = new HashMap<String, SpecialRegistrationStatus>();
+							for (Change ch: r.changes) {
+								if (ch.subject != null && ch.courseNbr != null && ch.errors != null && !ch.errors.isEmpty()) {
+									String course = ch.subject + " " + ch.courseNbr;
+									if (ch.status != null) {
+										SpecialRegistrationStatus s = course2status.get(course);
+										course2status.put(course, s == null ? getStatus(ch.status) : combine(s, getStatus(ch.status)));
+									}
+								}
+							}
+							for (Map.Entry<String, SpecialRegistrationStatus> e: course2status.entrySet()) {
+								XCourseRequest cr = student.getRequestForCourseName(e.getKey());
+								if (cr != null) {
+									XCourseId id = cr.getCourseName(e.getKey());
+									XOverride override = cr.getOverride(id);
+									if (override != null && r.requestId.equals(override.getExternalId()) && toStatus(e.getValue()) != override.getStatus()) {
+										override.setStatus(toStatus(e.getValue()));
+										CourseDemand dbCourseDemand = CourseDemandDAO.getInstance().get(cr.getRequestId(), helper.getHibSession());
+										if (dbCourseDemand != null) {
+											for (CourseRequest dbCourseRequest: dbCourseDemand.getCourseRequests()) {
+												if (dbCourseRequest.getCourseOffering().getUniqueId().equals(id.getCourseId())) {
+													dbCourseRequest.setOverrideStatus(toStatus(e.getValue()));
+													helper.getHibSession().update(dbCourseRequest);
+												}
+											}
+										}
+										studentChanged = true;
+									}
+								}
+							}
+						}
+					}
+					if (student.getMaxCreditOverride() != null && !requestIds.contains(student.getMaxCreditOverride().getExternalId())) {
+						student.setMaxCreditOverride(null);
+						Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
+						if (dbStudent != null) {
+							dbStudent.setOverrideStatus(null);
+							dbStudent.setOverrideMaxCredit(null);
+							dbStudent.setOverrideExternalId(null);
+							dbStudent.setOverrideTimeStamp(null);
+							helper.getHibSession().update(dbStudent);
+						}
+						studentChanged = true;
+					}
+					for (XRequest request: student.getRequests()) {
+						if (request instanceof XCourseRequest) {
+							XCourseRequest cr = (XCourseRequest)request;
+							if (cr.hasOverrides())
+ 								for (Iterator<Map.Entry<XCourseId, XOverride>> i = cr.getOverrides().entrySet().iterator(); i.hasNext(); ) {
+ 									Map.Entry<XCourseId, XOverride> e = i.next();
+ 									if (!requestIds.contains(e.getValue().getExternalId())) {
+ 										i.remove();
+ 										CourseDemand dbCourseDemand = CourseDemandDAO.getInstance().get(cr.getRequestId(), helper.getHibSession());
+										if (dbCourseDemand != null) {
+											for (CourseRequest dbCourseRequest: dbCourseDemand.getCourseRequests()) {
+												if (dbCourseRequest.getCourseOffering().getUniqueId().equals(e.getKey().getCourseId())) {
+													dbCourseRequest.setOverrideStatus(null);
+													dbCourseRequest.setOverrideExternalId(null);
+													dbCourseRequest.setOverrideTimeStamp(null);
+													helper.getHibSession().update(dbCourseRequest);
+												}
+											}
+										}
+ 										studentChanged = true;
+ 									}
+ 									
+ 								}
+						}
+					}
+					if (studentChanged) {
+						server.update(student, false);
+						helper.getHibSession().flush();
+					}
+				}
+				
 				if (response != null && ResponseStatus.success.name().equals(response.status) && response.data != null && response.data.requests != null) {
 					List<RetrieveSpecialRegistrationResponse> ret = new ArrayList<RetrieveSpecialRegistrationResponse>(response.data.requests.size());
 					for (SpecialRegistrationRequest specialRequest: response.data.requests)
@@ -1734,6 +1990,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				if (dbStudent != null) {
 					dbStudent.setMaxCredit(response.maxCredit);
 					helper.getHibSession().update(dbStudent);
+					helper.getHibSession().flush();
 				}
 				student.setMaxCredit(response.maxCredit);
 				server.update(student, false);
@@ -1807,6 +2064,46 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				ret.setSuccess(ResponseStatus.success.name().equals(response.status));
 				ret.setMessage(response.message);
 			}
+			
+			if (isUpdateUniTimeStatuses() && ret.isSuccess()) {
+				boolean studentChanged = false;
+				if (student.getMaxCreditOverride() != null && request.getRequestId().equals(student.getMaxCreditOverride().getExternalId())) {
+					XOverride override = student.getMaxCreditOverride();
+					student.setMaxCreditOverride(new XOverride(override.getExternalId(), override.getTimeStamp(), CourseRequestOverrideStatus.CANCELLED.ordinal()));
+					Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
+					if (dbStudent != null) {
+						dbStudent.setOverrideStatus(CourseRequestOverrideStatus.CANCELLED.ordinal());
+						helper.getHibSession().update(dbStudent);
+					}
+					studentChanged = true;
+				}
+				for (XRequest xr: student.getRequests()) {
+					if (xr instanceof XCourseRequest) {
+						XCourseRequest cr = (XCourseRequest)xr;
+						if (cr.hasOverrides())
+							for (Map.Entry<XCourseId, XOverride> e: cr.getOverrides().entrySet()) {
+								if (request.getRequestId().equals(e.getValue().getExternalId())) {
+									e.getValue().setStatus(CourseRequestOverrideStatus.CANCELLED.ordinal());
+									CourseDemand dbCourseDemand = CourseDemandDAO.getInstance().get(cr.getRequestId(), helper.getHibSession());
+									if (dbCourseDemand != null) {
+										for (CourseRequest dbCourseRequest: dbCourseDemand.getCourseRequests()) {
+											if (dbCourseRequest.getCourseOffering().getUniqueId().equals(e.getKey().getCourseId())) {
+												dbCourseRequest.setOverrideStatus(CourseRequestOverrideStatus.CANCELLED.ordinal());
+												helper.getHibSession().update(dbCourseRequest);
+											}
+										}
+									}
+									studentChanged = true;
+								}
+							}
+					}
+				}
+				if (studentChanged) {
+					server.update(student, false);
+					helper.getHibSession().flush();
+				}
+			}
+			
 			return ret;
 		} catch (SectioningException e) {
 			helper.getAction().setApiException(e.getMessage());

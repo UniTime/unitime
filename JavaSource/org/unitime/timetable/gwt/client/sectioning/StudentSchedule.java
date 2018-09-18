@@ -378,6 +378,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				noteTitle = iAssignment.getRequest().getCreditWarning();
 				iconText = iAssignment.getRequest().getCreditWarning();
 				hasWarn = true;
+			} else {
+				note = noteTitle = iconText = MESSAGES.creditWarning(iAssignment.getRequest().getCredit());
 			}
 			switch (iAssignment.getRequest().getMaxCreditOverrideStatus()) {
 			case CREDIT_HIGH:

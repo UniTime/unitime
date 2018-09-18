@@ -253,6 +253,18 @@ public class XCourseRequest extends XRequest {
     	return false;
     }
     
+    public boolean hasCourseName(String course) {
+    	for (XCourseId id: iCourseIds)
+    		if (id.getCourseName().equals(course)) return true;
+    	return false;
+    }
+    
+    public XCourseId getCourseName(String course) {
+    	for (XCourseId id: iCourseIds)
+    		if (id.getCourseName().equals(course)) return id;
+    	return null;
+    }
+    
     public boolean isPrimary(Long courseId) {
     	return !iCourseIds.isEmpty() && iCourseIds.get(0).getCourseId().equals(courseId);
     }
@@ -308,6 +320,15 @@ public class XCourseRequest extends XRequest {
     public XOverride getOverride(XCourseId courseId) {
     	return (iOverrides == null ? null : iOverrides.get(courseId));
     }
+    public void setOverride(XCourseId courseId, XOverride override) {
+    	if (iOverrides == null) iOverrides = new HashMap<XCourseId, XOverride>();
+    	if (override == null)
+    		iOverrides.remove(courseId);
+    	else
+    		iOverrides.put(courseId, override);
+    }
+    public boolean hasOverrides() { return iOverrides != null && !iOverrides.isEmpty(); }
+    public Map<XCourseId, XOverride> getOverrides() { return iOverrides; }
     
     public Integer getOverrideStatus(XCourseId courseId) {
     	XOverride override = (iOverrides == null ? null : iOverrides.get(courseId));

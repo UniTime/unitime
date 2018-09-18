@@ -2070,4 +2070,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("One or more of your override requests have been fully approved. \nPlease click on the approved request to apply it to your current schedule, review the new schedule, and then click Submit Schedule button to update your registration.")
 	String statusOneOrMoreFullyApprovedRequestsNotYetApplied();
+	
+	@DefaultMessage("Maximum of {0,number,0.#} credit hours exceeded.")
+	String creditWarning(float credit);
 }

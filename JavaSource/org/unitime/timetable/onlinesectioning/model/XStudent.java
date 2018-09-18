@@ -260,6 +260,13 @@ public class XStudent extends XStudentId implements Externalizable {
     	return null;
     }
     
+    public XCourseRequest getRequestForCourseName(String courseName) {
+    	for (XRequest request: iRequests)
+    		if (request instanceof XCourseRequest && ((XCourseRequest)request).hasCourseName(courseName))
+    			return (XCourseRequest)request;
+    	return null;
+    }
+    
     public Float getMaxCredit() { return iMaxCredit; }
     public boolean hasMaxCredit() { return iMaxCredit != null; }
     public void setMaxCredit(Float maxCredit) { iMaxCredit = maxCredit; }

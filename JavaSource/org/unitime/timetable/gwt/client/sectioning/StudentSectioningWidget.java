@@ -203,35 +203,36 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				if (iTotalCreditRequests != null) {
 					iTotalCreditRequestsStatus.setVisible(false);
 					if (!isChanged() && iSavedRequest != null && iSavedRequest.getMaxCreditOverrideStatus() != null) {
+						String cw = (iSavedRequest.hasCreditWarning() ? iSavedRequest.getCreditWarning() : MESSAGES.creditWarning(iSavedRequest.getCredit()));
 						switch (iSavedRequest.getMaxCreditOverrideStatus()) {
 						case CREDIT_HIGH:
 							iTotalCreditRequestsStatus.setResource(RESOURCES.requestError());
-							iTotalCreditRequestsStatus.setAltText(iSavedRequest.getCreditWarning() + "\n" + MESSAGES.creditStatusTooHigh() + (iSavedRequest.hasCreditNote() ? "\n" + MESSAGES.overrideNote(iSavedRequest.getCreditNote()) : ""));
+							iTotalCreditRequestsStatus.setAltText(cw + "\n" + MESSAGES.creditStatusTooHigh() + (iSavedRequest.hasCreditNote() ? "\n" + MESSAGES.overrideNote(iSavedRequest.getCreditNote()) : ""));
 							iTotalCreditRequestsStatus.setTitle(iTotalCreditRequestsStatus.getAltText());
 							iTotalCreditRequestsStatus.setVisible(true);
 							break;
 						case OVERRIDE_REJECTED:
 							iTotalCreditRequestsStatus.setResource(RESOURCES.requestError());
-							iTotalCreditRequestsStatus.setAltText(iSavedRequest.getCreditWarning() + "\n" + MESSAGES.creditStatusDenied() + (iSavedRequest.hasCreditNote() ? "\n" + MESSAGES.overrideNote(iSavedRequest.getCreditNote()) : ""));
+							iTotalCreditRequestsStatus.setAltText(cw + "\n" + MESSAGES.creditStatusDenied() + (iSavedRequest.hasCreditNote() ? "\n" + MESSAGES.overrideNote(iSavedRequest.getCreditNote()) : ""));
 							iTotalCreditRequestsStatus.setTitle(iTotalCreditRequestsStatus.getAltText());
 							iTotalCreditRequestsStatus.setVisible(true);
 							break;
 						case OVERRIDE_CANCELLED:
 							iTotalCreditRequestsStatus.setResource(RESOURCES.requestNeeded());
-							iTotalCreditRequestsStatus.setAltText(iSavedRequest.getCreditWarning() + "\n" + MESSAGES.creditStatusCancelled() + (iSavedRequest.hasCreditNote() ? "\n" + MESSAGES.overrideNote(iSavedRequest.getCreditNote()) : ""));
+							iTotalCreditRequestsStatus.setAltText(cw + "\n" + MESSAGES.creditStatusCancelled() + (iSavedRequest.hasCreditNote() ? "\n" + MESSAGES.overrideNote(iSavedRequest.getCreditNote()) : ""));
 							iTotalCreditRequestsStatus.setTitle(iTotalCreditRequestsStatus.getAltText());
 							iTotalCreditRequestsStatus.setVisible(true);
 							break;
 						case CREDIT_LOW:
 						case OVERRIDE_NEEDED:
 							iTotalCreditRequestsStatus.setResource(RESOURCES.requestNeeded());
-							iTotalCreditRequestsStatus.setAltText(iSavedRequest.getCreditWarning() + (iSavedRequest.hasCreditNote() ? "\n" + MESSAGES.overrideNote(iSavedRequest.getCreditNote()) : ""));
+							iTotalCreditRequestsStatus.setAltText(cw + (iSavedRequest.hasCreditNote() ? "\n" + MESSAGES.overrideNote(iSavedRequest.getCreditNote()) : ""));
 							iTotalCreditRequestsStatus.setTitle(iTotalCreditRequestsStatus.getAltText());
 							iTotalCreditRequestsStatus.setVisible(true);
 							break;
 						case OVERRIDE_PENDING:
 							iTotalCreditRequestsStatus.setResource(RESOURCES.requestPending());
-							iTotalCreditRequestsStatus.setAltText(iSavedRequest.getCreditWarning() + "\n" + MESSAGES.creditStatusPending() + (iSavedRequest.hasCreditNote() ? "\n" + MESSAGES.overrideNote(iSavedRequest.getCreditNote()) : ""));
+							iTotalCreditRequestsStatus.setAltText(cw + "\n" + MESSAGES.creditStatusPending() + (iSavedRequest.hasCreditNote() ? "\n" + MESSAGES.overrideNote(iSavedRequest.getCreditNote()) : ""));
 							iTotalCreditRequestsStatus.setTitle(iTotalCreditRequestsStatus.getAltText());
 							iTotalCreditRequestsStatus.setVisible(true);
 							break;
