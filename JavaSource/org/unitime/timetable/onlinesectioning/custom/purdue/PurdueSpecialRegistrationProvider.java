@@ -1791,7 +1791,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				
 				resource.get(MediaType.APPLICATION_JSON);
 				
-				helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
+				helper.getAction().setApiGetTime(System.currentTimeMillis() - t1);
 				
 				SpecialRegistrationStatusResponse response = (SpecialRegistrationStatusResponse)new GsonRepresentation<SpecialRegistrationStatusResponse>(resource.getResponseEntity(), SpecialRegistrationStatusResponse.class).getObject();
 				Gson gson = getGson(helper);
