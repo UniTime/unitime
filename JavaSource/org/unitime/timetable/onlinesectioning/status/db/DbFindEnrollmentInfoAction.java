@@ -66,6 +66,10 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XOverride;
+import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.status.FindEnrollmentInfoAction;
 import org.unitime.timetable.onlinesectioning.status.SectioningStatusFilterAction;
 import org.unitime.timetable.onlinesectioning.status.FindStudentInfoAction.FindStudentInfoMatcher;
@@ -111,6 +115,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				}
 				list.add(cr);
 			}
+			boolean checkOverrides = !query().hasAttribute("override");
 			
 			for (Map.Entry<CourseOffering, List<CourseRequest>> entry: requests.entrySet()) {
 				CourseOffering course = entry.getKey();
@@ -134,6 +139,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 						"from CourseRequest where courseOffering.uniqueId = :courseId"
 						).setLong("courseId", course.getUniqueId()).setCacheable(true).list()) {
 					
+					if (checkOverrides && !request.isRequestApproved() && request.getClassEnrollments().isEmpty()) continue;
+					
 					DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(request.getCourseDemand().getStudent()), helper.getStudentNameFormat());
 					if (!query().match(crm)) {
 						if (!crm.enrollment().isEmpty()) {
@@ -151,6 +158,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 
 				Set<Long> addedStudents = new HashSet<Long>();
 				for (CourseRequest request: entry.getValue()) {
+					if (checkOverrides && !request.isRequestApproved() && request.getClassEnrollments().isEmpty()) continue;
+					
 					Student student = request.getCourseDemand().getStudent();
 					
 					if (students.add(student.getUniqueId()))
@@ -381,6 +390,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			        return s1.getUniqueId().compareTo(s2.getUniqueId());
 				}
 			});
+			boolean checkOverrides = !query().hasAttribute("override");
 			for (Class_ section: sections) {
 				EnrollmentInfo e = new EnrollmentInfo();
 				e.setCourseId(course.getUniqueId());
@@ -439,6 +449,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					DbCourseRequestMatcher m = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(request.getCourseDemand().getStudent()), helper.getStudentNameFormat());
 					if (!m.enrollment().isEmpty() || !request.getCourseOffering().equals(course)) continue;
 					if (!m.canAssign()) continue;
+					if (checkOverrides && !request.isRequestApproved()) continue;
 					
 					if (query().match(m)) {
 						match++;
@@ -911,6 +922,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			}
 			
 			if ("override".equals(attr)) {
+				if ("null".equalsIgnoreCase(term) || "None".equalsIgnoreCase(term))
+					return request().getOverrideStatus() == null;
 				CourseRequestOverrideStatus status = null;
 				for (CourseRequestOverrideStatus s: CourseRequestOverrideStatus.values()) {
 					if (s.name().equalsIgnoreCase(term)) { status = s; break; }
@@ -1246,6 +1259,14 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				}
 				return min <= share && share <= max;
 			} else if ("override".equals(attr)) {
+				if ("null".equalsIgnoreCase(term) || "None".equalsIgnoreCase(term)) {
+					for (CourseDemand cd: student().getCourseDemands()) {
+						for (CourseRequest cr: cd.getCourseRequests()) {
+							if (cr.getOverrideStatus() == null) return true;
+						}
+					}
+					return false;
+				}
 				CourseRequestOverrideStatus status = null;
 				for (CourseRequestOverrideStatus s: CourseRequestOverrideStatus.values()) {
 					if (s.name().equalsIgnoreCase(term)) { status = s; break; }

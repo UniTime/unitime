@@ -28,6 +28,7 @@ import java.util.Date;
 
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
+import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 
 /**
  * @author Tomas Muller
@@ -65,6 +66,12 @@ public class XOverride implements Serializable, Externalizable {
 	public void setStatus(Integer status) { iStatus = status; }
 	
 	public Float getValue() { return iValue; }
+	
+	public boolean isPending() { return iStatus == null || iStatus == CourseRequestOverrideStatus.PENDING.ordinal(); };
+	public boolean isApproved() { return iStatus != null && iStatus == CourseRequestOverrideStatus.APPROVED.ordinal(); };
+	public boolean isCancelled() { return iStatus != null && iStatus == CourseRequestOverrideStatus.CANCELLED.ordinal(); };
+	public boolean isRejected() { return iStatus != null && iStatus == CourseRequestOverrideStatus.REJECTED.ordinal(); };
+	public boolean isCancelledOrRejected() { return iStatus != null && (iStatus == CourseRequestOverrideStatus.CANCELLED.ordinal() || iStatus == CourseRequestOverrideStatus.REJECTED.ordinal()); };
 
 	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {

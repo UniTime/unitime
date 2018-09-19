@@ -58,6 +58,7 @@ import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
 import org.unitime.timetable.onlinesectioning.model.XInstructor;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XOverride;
 import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
@@ -156,11 +157,16 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				int conNeed = 0, tConNeed = 0, ovrNeed = 0, tOvrNeed = 0;
 				
 				Set<Long> addedStudents = new HashSet<Long>();
+				boolean checkOverrides = !query().hasAttribute("override");
 				for (XCourseRequest request: enrollments.getRequests()) {
 					if (!request.hasCourse(info.getCourseId())) continue;
 					if (students.add(request.getStudentId()))
 						addedStudents.add(request.getStudentId());
 					if (request.getEnrollment() != null && !request.getEnrollment().getCourseId().equals(info.getCourseId())) continue;
+					if (checkOverrides && request.getEnrollment() == null) {
+						XOverride override = request.getOverride(info);
+						if (override != null && !override.isApproved()) continue;
+					}
 					
 					if (studentIds != null && !studentIds.contains(request.getStudentId())) {
 						if (request.getEnrollment() != null) {
@@ -407,6 +413,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 			        return s1.getSectionId().compareTo(s2.getSectionId());
 				}
 			});
+			boolean checkOverrides = !query().hasAttribute("override");
 			for (XSection section: sections) {
 				EnrollmentInfo e = new EnrollmentInfo();
 				e.setCourseId(info.getCourseId());
@@ -460,6 +467,10 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					if (request.getEnrollment() != null || !request.hasCourse(courseId())) continue;
 					XStudent student = server.getStudent(request.getStudentId());
 					if (student == null || !student.canAssign(request)) continue;
+					if (checkOverrides && request.getEnrollment() == null) {
+						XOverride override = request.getOverride(info);
+						if (override != null && !override.isApproved()) continue;
+					}
 					CourseRequestMatcher m = new CourseRequestMatcher(session, info, student, offering, request, isConsentToDoCourse, isMyStudent(student), server);
 					
 					//TODO: Do we need this?
