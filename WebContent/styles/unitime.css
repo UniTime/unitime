@@ -4238,6 +4238,11 @@ unitime-RoomSharingWidget .legend .blank {
 	text-align: justify;
 }
 
+.unitime-ConfirmationPanel .message-panel .message .text-red {
+	color: red;
+	font-weight: bold;
+}
+
 .unitime-ConfirmationPanel .message-panel .message .approved {
 	color: green;
 }
@@ -4248,6 +4253,10 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-ConfirmationPanel .message-panel .message .note {
 	font-style: italic;
+}
+
+.unitime-ConfirmationPanel .message-panel .gwt-CheckBox {
+	display: block;
 }
 
 .unitime-ConfirmationPanel .message-panel .request-note {

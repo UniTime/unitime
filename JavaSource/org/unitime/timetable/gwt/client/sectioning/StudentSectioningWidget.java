@@ -2558,6 +2558,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		final CourseRequestInterface.CourseMessage note = confirm.addConfirmation(iSpecRegCx.getNote() == null ? "" : iSpecRegCx.getNote(), 0, 3); note.setCode("REQUEST_NOTE");
 		confirm.addConfirmation(MESSAGES.messageRequestOverridesOptions(), 0, 4);
 		confirm.addConfirmation(MESSAGES.messageRequestOverridesDisclaimer(), 0, 7);
+		confirm.addCheckBox(MESSAGES.messageRequestOverridesDisclaimerMessage(), 0, 8);
 		for (ErrorMessage e: errors) {
 			if ("IGNORE".equals(e.getCode())) {
 				continue;

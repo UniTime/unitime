@@ -1993,16 +1993,18 @@ public interface StudentSectioningMessages extends Messages {
 			"<b>Request Note:</b>")
 	String messageRequestOverridesNote();
 	
+	@DefaultMessage("\n<b>Disclaimer:</b>")
+	String messageRequestOverridesDisclaimer();
+	
 	@DefaultMessage(
-			"\n<b>Disclaimer:</b>\n" +
-			"I understand that requesting approval does not guarantee that I will be given permission to register "+
+			"By checking this box, I understand that requesting approval does not guarantee that I will be given permission to register "+
 			"for these courses, and even if the approvals are granted, I may not be able to register for these "+
 			"courses due to space limitations, schedule conflicts or other policies. I also understand that if "+
 			"approvals are granted, it may be my responsibility to process the schedule change within the established "+
 			"registration deadlines.")
-	String messageRequestOverridesDisclaimer();
+	String messageRequestOverridesDisclaimerMessage();
 	
-	@DefaultMessage("\nIf you proceed, the following pending override requests will be canceled/replaced:")
+	@DefaultMessage("\n<span class='text-red'>If you proceed, the following pending override requests will be canceled/replaced:</span>")
 	String messageRequestOverridesCancel();
 	
 	@DefaultMessage("There are no registration errors for which an override can be requested.")

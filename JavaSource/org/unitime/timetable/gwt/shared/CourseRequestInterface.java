@@ -834,6 +834,17 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			return m;
 		}
 		
+		public CourseMessage addCheckBox(String message, Integer confirm, Integer order) {
+			CourseMessage m = new CourseMessage();
+			m.setCode("CHECK_BOX");
+			m.setMessage(message);
+			m.setError(false);
+			m.setConfirm(confirm);
+			m.setOrder(order);
+			addMessage(m);
+			return m;
+		}
+		
 		public boolean isError() {
 			if (hasMessages())
 				for (CourseMessage m: getMessages())

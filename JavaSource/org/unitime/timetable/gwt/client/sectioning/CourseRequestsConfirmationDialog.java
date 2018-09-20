@@ -40,6 +40,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.TextArea;
@@ -57,6 +58,7 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 	private boolean iValue = false;
 	private TextArea iNote = null;
 	private Image iImage;
+	private CheckBox iCheckBox = null;
 
 	public CourseRequestsConfirmationDialog(CheckCoursesResponse response, int confirm, AsyncCallback<Boolean> callback) {
 		super(true, true);
@@ -107,6 +109,11 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 					}
 				});
 				mp.add(iNote);
+			} else if ("CHECK_BOX".equals(cm.getCode())) {
+				if (ctab != null) { mp.add(ctab); ctab = null; }
+				iCheckBox = new CheckBox(cm.getMessage());
+				iCheckBox.addStyleName("message");
+				mp.add(iCheckBox);
 			} else {
 				if (ctab != null) { mp.add(ctab); ctab = null; }
 				P m = new P("message"); m.setHTML(cm.getMessage());
@@ -129,6 +136,16 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 				submit();
 			}
 		});
+		
+		if (iCheckBox != null) {
+			iYes.setEnabled(false);
+			iCheckBox.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<Boolean> event) {
+					iYes.setEnabled(event.getValue());
+				}
+			});
+		}
 		
 		iNo = new AriaButton(response.getConfirmationNoButton(confirm, MESSAGES.buttonConfirmNo()));
 		iNo.addStyleName("no");
