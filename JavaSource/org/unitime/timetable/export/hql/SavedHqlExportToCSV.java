@@ -132,16 +132,18 @@ public class SavedHqlExportToCSV implements Exporter {
 				}
 			} else {
 				String value = helper.getParameter(option.name());
-				SavedHQLInterface.IdValue v = new SavedHQLInterface.IdValue();
-				v.setValue(option.name());
-				Long id = option.lookupValue(context.getUser(), value);
-				if (id == null) {
-					try {
-						id = Long.valueOf(value);
-					} catch (NumberFormatException e) {}
+				if (value != null) {
+					SavedHQLInterface.IdValue v = new SavedHQLInterface.IdValue();
+					v.setValue(option.name());
+					Long id = option.lookupValue(context.getUser(), value);
+					if (id == null) {
+						try {
+							id = Long.valueOf(value);
+						} catch (NumberFormatException e) {}
+					}
+					v.setText(id == null ? "" : id.toString());
+					params.add(v);
 				}
-				v.setText(id == null ? "" : id.toString());
-				params.add(v);
 			}
 		}
 		
