@@ -78,6 +78,15 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Other</title>
+		<item>
+			<name>HQL Reports: Export CSV</name>
+			<description>
+				<line>Fixed the ability to export an HQL report to CSV when the query contains a single-choice parameter (like SUBJECT or DEPARTMENT).</line>
+			</description>
+		</item>
+	</category>
 </release>
 <release>
 	<version>4.3.129</version>
