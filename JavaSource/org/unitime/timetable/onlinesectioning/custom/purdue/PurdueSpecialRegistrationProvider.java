@@ -541,10 +541,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				helper.debug("Response: " + gson.toJson(resp));
 			helper.getAction().addOptionBuilder().setKey("validation_response").setValue(gson.toJson(resp));
 		} catch (SectioningException e) {
-			helper.getAction().setApiException(e.getMessage());
+			helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
 			throw (SectioningException)e;
 		} catch (Exception e) {
-			helper.getAction().setApiException(e.getMessage());
+			helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
 			sLog.error(e.getMessage(), e);
 			throw new SectioningException(e.getMessage());
 		} finally {
@@ -767,10 +767,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					helper.debug("Response: " + gson.toJson(resp));
 				helper.getAction().addOptionBuilder().setKey("validation_response").setValue(gson.toJson(resp));
 			} catch (SectioningException e) {
-				helper.getAction().setApiException(e.getMessage());
+				helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
 				throw (SectioningException)e;
 			} catch (Exception e) {
-				helper.getAction().setApiException(e.getMessage());
+				helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
 				sLog.error(e.getMessage(), e);
 				throw new SectioningException(e.getMessage());
 			} finally {
@@ -980,10 +980,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			
 			return ret;
 		} catch (SectioningException e) {
-			helper.getAction().setApiException(e.getMessage());
+			helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
 			throw (SectioningException)e;
 		} catch (Exception e) {
-			helper.getAction().setApiException(e.getMessage());
+			helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
 			sLog.error(e.getMessage(), e);
 			throw new SectioningException(e.getMessage());
 		} finally {
@@ -1679,10 +1679,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			
 			return ret;
 		} catch (SectioningException e) {
-			helper.getAction().setApiException(e.getMessage());
+			helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
 			throw (SectioningException)e;
 		} catch (Exception e) {
-			helper.getAction().setApiException(e.getMessage());
+			helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
 			sLog.error(e.getMessage(), e);
 			throw new SectioningException(e.getMessage());
 		} finally {
@@ -1916,10 +1916,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			
 			return new ArrayList<RetrieveSpecialRegistrationResponse>();
 		} catch (SectioningException e) {
-			helper.getAction().setApiException(e.getMessage());
+			helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
 			throw (SectioningException)e;
 		} catch (Exception e) {
-			helper.getAction().setApiException(e.getMessage());
+			helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
 			sLog.error(e.getMessage(), e);
 			throw new SectioningException(e.getMessage());
 		} finally {
@@ -1996,10 +1996,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				server.update(student, false);
 			}
 		} catch (SectioningException e) {
-			helper.getAction().setApiException(e.getMessage());
+			helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
 			throw (SectioningException)e;
 		} catch (Exception e) {
-			helper.getAction().setApiException(e.getMessage());
+			helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
 			sLog.error(e.getMessage(), e);
 			throw new SectioningException(e.getMessage());
 		} finally {
@@ -2106,10 +2106,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			
 			return ret;
 		} catch (SectioningException e) {
-			helper.getAction().setApiException(e.getMessage());
+			helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
 			throw (SectioningException)e;
 		} catch (Exception e) {
-			helper.getAction().setApiException(e.getMessage());
+			helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
 			sLog.error(e.getMessage(), e);
 			throw new SectioningException(e.getMessage());
 		} finally {
