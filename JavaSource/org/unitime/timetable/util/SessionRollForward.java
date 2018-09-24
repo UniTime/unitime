@@ -2099,7 +2099,6 @@ public class SessionRollForward {
 			instrOffrRollFwd.setCancelledClassActionRollForwardParameter(rollForwardSessionForm.getCancelledClassAction());
 			for (Iterator saIt = subjects.iterator(); saIt.hasNext();){
 				subjectArea = (SubjectArea) saIt.next();
-				SubjectArea.loadSubjectAreas(toSession.getUniqueId());
 				instrOffrRollFwd.rollForwardInstructionalOfferingsForASubjectArea(subjectArea.getSubjectAreaAbbreviation(), fromSession, toSession);
 			}
 		}
@@ -2118,7 +2117,6 @@ public class SessionRollForward {
 			InstructionalOfferingRollForward instrOffrRollFwd = new InstructionalOfferingRollForward(iLog);
 			for (Iterator saIt = subjects.iterator(); saIt.hasNext();){
 				subjectArea = (SubjectArea) saIt.next();
-				SubjectArea.loadSubjectAreas(toSession.getUniqueId());
 				instrOffrRollFwd.addNewInstructionalOfferingsForASubjectArea(subjectArea.getSubjectAreaAbbreviation(), toSession);
 			}
 		}
@@ -2346,7 +2344,6 @@ public class SessionRollForward {
 			SubjectArea subjectArea = null;
 			for (Iterator saIt = subjects.iterator(); saIt.hasNext();){
 				subjectArea = (SubjectArea) saIt.next();
-				SubjectArea.loadSubjectAreas(toSession.getUniqueId());
 				rollForwardClassInstructorsForASubjectArea(subjectArea.getSubjectAreaAbbreviation(), toSession);
 			}
 		}		
@@ -2415,7 +2412,6 @@ public class SessionRollForward {
 			SubjectArea subjectArea = null;
 			for (Iterator saIt = subjects.iterator(); saIt.hasNext();){
 				subjectArea = (SubjectArea) saIt.next();
-				SubjectArea.loadSubjectAreas(toSession.getUniqueId());
 				rollForwardOfferingCoordinatorsForASubjectArea(subjectArea, toSession);
 			}
 		}		

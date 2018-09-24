@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -42,10 +41,7 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 	 * 
 	 */
 	private static final long serialVersionUID = 3256439188198207794L;
-	
-	private static HashMap subjectAreas = new HashMap(150);
-	private static List subjChanges = null;
-	
+		
     /** Request attribute name for available subject areas **/
     public static String SUBJ_AREA_ATTR_NAME = "subjectAreaList";
 	
@@ -80,41 +76,6 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 	}
 	
 	/**
-	 * Load subject abbreviation changes
-	 * @param sessionId
-	 */
-	public static void loadSubjAbbvChanges(Long sessionId) {
-		
-		subjChanges = 
-			SubjectHistory.getSubjectHistoryList(sessionId);
-	}
-	
-	/**
-	 * Load Subject Areas
-	 */
-	public static void loadSubjectAreas(Long sessionId) {
-		
-		List subjAreas = getSubjectAreaList(sessionId);
-		
-		for(int i = 0; i < subjAreas.size(); i++) {
-			SubjectArea subjArea = (SubjectArea)subjAreas.get(i);
-			String subjAreaAbbreviation = 
-				subjArea.getSubjectAreaAbbreviation();
-			subjectAreas.put(subjAreaAbbreviation, subjArea);
-		}
-	}
-
-	/**
-	 * Get the Subject Area
-	 * @param subjectAreaAbbr
-	 * @return SubjectArea
-	 */
-	public static SubjectArea getSubjectArea(String subjectAreaAbbr) {
-		
-		return (SubjectArea)subjectAreas.get(subjectAreaAbbr);
-	}
-	
-	/**
 	 * Retrieve a subject area for a given abbreviation and academic session
 	 * @param sessionId
 	 * @param subjectAreaAbbr
@@ -140,27 +101,6 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 				).setLong("sessionId", sessionId).setString("subjectAreaAbbr", subjectAreaAbbr).setMaxResults(1).uniqueResult();
 	}
 	
-	/**
-	 * Get the current (updated) subject area abbreviation
-	 * @param subjectAreaAbbr
-	 * @return SubjectArea
-	 */
-	 public static SubjectArea getUpdatedSubjectArea (
-			 String subjectAreaAbbr) {
-		 
-		 String sa = subjectAreaAbbr;
-		 
-		 for(int i = 0; i < subjChanges.size(); i++) {
-			 SubjectHistory sh = 
-				 (SubjectHistory)subjChanges.get(i);
-			 if(sa.equalsIgnoreCase(sh.getOldValue())) {
-				 sa = sh.getNewValue();
-			 }
-		 }
-		 
-		 return getSubjectArea(sa);
-	 }
-	 
 	public ArrayList getManagers() {
 		if (getDepartment() != null){
 			ArrayList al = new ArrayList();
