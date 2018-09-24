@@ -369,6 +369,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								ch.courseNbr = course.getCourseNumber();
 								ch.crn = s.getExternalId(course.getCourseId());
 								ch.operation = ChangeOperation.ADD.name();
+								ch.credit = course.getCreditAbbv();
 								if (crns.add(ch.crn)) request.changes.add(ch);
 							}
 						}
@@ -380,6 +381,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								ch.courseNbr = course.getCourseNumber();
 								ch.crn = s.getExternalId(course.getCourseId());
 								ch.operation = ChangeOperation.DROP.name();
+								ch.credit = course.getCreditAbbv();
 								if (crns.add(ch.crn)) request.changes.add(ch);
 							}
 						}
@@ -395,6 +397,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				ch.courseNbr = course.getCourseNumber();
 				ch.crn = section.getExternalId(course.getCourseId());
 				ch.operation = ChangeOperation.ADD.name();
+				ch.credit = course.getCreditAbbv();
 				if (crns.add(ch.crn)) request.changes.add(ch);
 			}
 		}
@@ -413,6 +416,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							ch.courseNbr = course.getCourseNumber();
 							ch.crn = section.getExternalId(course.getCourseId());
 							ch.operation = ChangeOperation.DROP.name();
+							ch.credit = course.getCreditAbbv();
 							if (crns.add(ch.crn)) request.changes.add(ch);
 						}
 				}
@@ -445,6 +449,12 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					er.message = m.getMessage();
 					ch.errors.add(er);
 					request.changes.add(ch);
+					XCourseId course = server.getCourse(m.getCourse());
+					if (course != null) {
+						XOffering offering = server.getOffering(course.getOfferingId());
+						if (offering != null)
+							ch.credit = offering.getCourse(course.getCourseId()).getCreditAbbv();
+					}
 				}
 				if ("MAXI".equals(m.getCode())) maxi = true;
 			}

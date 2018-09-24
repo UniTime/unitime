@@ -132,6 +132,7 @@ public class SpecialRegistrationInterface {
 		public List<Override> overrides;
 		public String status;
 		public List<ChangeNote> notes;
+		public String credit;
 		
 		public boolean hasLastNote() {
 			if (notes == null || notes.isEmpty()) return false;
