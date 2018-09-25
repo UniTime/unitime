@@ -141,6 +141,7 @@ import org.unitime.timetable.onlinesectioning.custom.RequestStudentUpdates;
 import org.unitime.timetable.onlinesectioning.match.AbstractCourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.onlinesectioning.solver.ComputeSuggestionsAction;
 import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction;
@@ -865,13 +866,13 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				throw new SectioningException(MSG.exceptionNoSolver());
 			org.hibernate.Session hibSession = StudentDAO.getInstance().createNewSession();
 			try {
-				Student student = StudentDAO.getInstance().get(Long.valueOf(password), hibSession);
+				XStudent student = server.getStudent(Long.valueOf(password));
 				if (student == null)
 					throw new SectioningException(MSG.exceptionLoginFailed());
 				UserContext user = getSessionContext().getUser();
-				UniTimePrincipal principal = new UniTimePrincipal(user.getTrueExternalUserId(), student.getExternalUniqueId(), user.getTrueName());
-				principal.addStudentId(student.getSession().getUniqueId(), student.getUniqueId());
-				principal.setName(NameFormat.defaultFormat().format(student));
+				UniTimePrincipal principal = new UniTimePrincipal(user.getTrueExternalUserId(), student.getExternalId(), user.getTrueName());
+				principal.addStudentId(server.getAcademicSession().getUniqueId(), student.getStudentId());
+				principal.setName(student.getName());
 				getSessionContext().setAttribute("user", principal);
 				getSessionContext().removeAttribute("request");
 				return principal.getName();

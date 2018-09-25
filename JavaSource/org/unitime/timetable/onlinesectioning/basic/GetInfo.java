@@ -117,6 +117,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
         			if (config.getInstructionalMethod() != null) {
         				clonedConfig.setInstructionalMethodId(config.getInstructionalMethod().getUniqueId());
         				clonedConfig.setInstructionalMethodName(config.getInstructionalMethod().getLabel());
+        				clonedConfig.setInstructionalMethodReference(config.getInstructionalMethod().getReference());
         			}
         			configs.put(config.getConfigId(), clonedConfig);
         			for (XSubpart subpart: config.getSubparts()) {

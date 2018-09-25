@@ -69,10 +69,8 @@ import org.unitime.timetable.gwt.client.sectioning.SectioningReports.ReportTypeI
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
-import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.SolverParameterGroup.SolverType;
-import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -400,18 +398,10 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 
 	private Map<Long, XCourse> getCourseInfoTable() {
 		if (iCourseInfoCache == null) {
-			org.hibernate.Session hibSession = CourseOfferingDAO.getInstance().createNewSession();
-			try {
-				iCourseInfoCache = new Hashtable<Long, XCourse>();
-				for (CourseOffering course: (List<CourseOffering>)hibSession.createQuery(
-						"from CourseOffering x where x.subjectArea.session.uniqueId = :sessionId and x.instructionalOffering.notOffered = false"
-						).setLong("sessionId", getSessionId()).setCacheable(true).list()) {
-					iCourseInfoCache.put(course.getUniqueId(), new XCourse(course));
-				}
-			} finally {
-				hibSession.close();
-			}
-
+			iCourseInfoCache = new Hashtable<Long, XCourse>();
+			for (Offering offering: getModel().getOfferings())
+				for (Course course: offering.getCourses())
+					iCourseInfoCache.put(course.getId(), new XCourse(course));
 		}
 		return iCourseInfoCache;
 	}

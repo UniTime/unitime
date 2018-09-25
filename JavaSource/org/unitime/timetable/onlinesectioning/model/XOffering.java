@@ -598,6 +598,7 @@ public class XOffering implements Serializable, Externalizable {
 			if (config.getInstructionalMethod() != null) {
 				clonedConfig.setInstructionalMethodId(config.getInstructionalMethod().getUniqueId());
 				clonedConfig.setInstructionalMethodName(config.getInstructionalMethod().getLabel());
+				clonedConfig.setInstructionalMethodReference(config.getInstructionalMethod().getReference());
 			}
 			clonedConfig.setEnrollment(configEnrl);
 			configs.put(config.getConfigId(), clonedConfig);

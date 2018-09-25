@@ -52,12 +52,10 @@ public class XInstructionalMethod implements Serializable, Externalizable {
 		iLabel = method.getLabel();
 	}
 	
-	public XInstructionalMethod(Long id, String label) {
+	public XInstructionalMethod(Long id, String label, String reference) {
 		iUniqueId = id;
-		iReference = label;
+		iReference = reference;
 		iLabel = label;
-		InstructionalMethod im = InstructionalMethodDAO.getInstance().get(id);
-		if (im != null) iReference = im.getReference();
 	}
 	
 	public Long getUniqueId() { return iUniqueId; }

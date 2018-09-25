@@ -64,6 +64,7 @@ import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.onlinesectioning.status.FindEnrollmentInfoAction.FindEnrollmentInfoCourseMatcher;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseRequestMatcher;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
+import org.unitime.timetable.solver.studentsct.StudentSolver;
 
 /**
  * @author Tomas Muller
@@ -153,7 +154,10 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 			if (StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.regenabled)) regStates.add(status.getReference());
 		}
 		DistanceMetric dm = server.getDistanceMetric();
-		Set<Long> studentIds = (iFilter == null ? null : server.createAction(SectioningStatusFilterAction.class).forRequest(iFilter).getStudentIds(server, helper));
+		boolean solver = (server instanceof StudentSolver);
+		Set<Long> studentIds = null;
+		if (!solver)
+			studentIds = (iFilter == null ? null : server.createAction(SectioningStatusFilterAction.class).forRequest(iFilter).getStudentIds(server, helper));
 		for (XCourseId info: findCourses(server, helper)) {
 			XOffering offering = server.getOffering(info.getOfferingId());
 			if (offering == null) continue;

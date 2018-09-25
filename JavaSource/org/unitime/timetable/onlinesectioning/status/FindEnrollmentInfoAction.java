@@ -68,6 +68,7 @@ import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseInfoMatcher;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseRequestMatcher;
+import org.unitime.timetable.solver.studentsct.StudentSolver;
 
 /**
  * @author Tomas Muller
@@ -127,7 +128,10 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 	public List<EnrollmentInfo> execute(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 		List<EnrollmentInfo> ret = new ArrayList<EnrollmentInfo>();
 		AcademicSessionInfo session = server.getAcademicSession();
-		Set<Long> studentIds = (iFilter == null ? null : server.createAction(SectioningStatusFilterAction.class).forRequest(iFilter).getStudentIds(server, helper));
+		boolean solver = (server instanceof StudentSolver);
+		Set<Long> studentIds = null;
+		if (!solver) 
+			studentIds = (iFilter == null ? null : server.createAction(SectioningStatusFilterAction.class).forRequest(iFilter).getStudentIds(server, helper));
 		if (courseId() == null) {
 			Set<Long> students = new HashSet<Long>();
 			Set<Long> matchingStudents = new HashSet<Long>();
@@ -202,6 +206,20 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 								wait ++;
 						}
 						if (m.request().isOverridePending(course)) ovrNeed ++;
+					} else if (solver) {
+						if (request.getEnrollment() != null) {
+							tEnrl ++;
+							if (request.getEnrollment().getReservation() != null) tRes ++;
+							if (course.getConsentLabel() != null && request.getEnrollment().getApproval() == null) tConNeed ++;
+						} else {
+							if (student != null && student.canAssign(request)) {
+								tUnasg ++;
+								if (!request.isAlternative() && request.isPrimary(info)) tUnasgPrim ++;
+								if (request.isWaitlist())
+									tWait ++;
+							}
+						}
+						continue;
 					}
 					
 					if (m.enrollment() != null) {

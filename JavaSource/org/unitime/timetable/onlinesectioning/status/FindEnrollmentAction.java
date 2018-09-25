@@ -57,6 +57,7 @@ import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
+import org.unitime.timetable.solver.studentsct.StudentSolver;
 
 /**
  * @author Tomas Muller
@@ -127,7 +128,10 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 		XExpectations expectations = server.getExpectations(offering.getOfferingId());
 		OverExpectedCriterion overExp = server.getOverExpectedCriterion();
 		AcademicSessionInfo session = server.getAcademicSession();
-		Set<Long> studentIds = (iFilter == null ? null : server.createAction(SectioningStatusFilterAction.class).forRequest(iFilter).getStudentIds(server, helper));
+		boolean solver = (server instanceof StudentSolver);
+		Set<Long> studentIds = null;
+		if (!solver)
+			studentIds = (iFilter == null ? null : server.createAction(SectioningStatusFilterAction.class).forRequest(iFilter).getStudentIds(server, helper));
 		Set<String> regStates = new HashSet<String>();
 		Set<String> assStates = new HashSet<String>();
 		Session dbSession = SessionDAO.getInstance().get(session.getUniqueId());
