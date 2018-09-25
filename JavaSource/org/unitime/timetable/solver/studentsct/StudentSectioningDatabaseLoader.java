@@ -199,6 +199,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private boolean iShowClassSuffix = false, iShowConfigName = false;
     private boolean iMaxCreditChecking = false;
     private float iMaxDefaultCredit = -1f;
+    private float iMinDefaultCredit = -1f;
     
     public StudentSectioningDatabaseLoader(StudentSectioningModel model, org.cpsolver.ifs.assignment.Assignment<Request, Enrollment> assignment) {
         super(model, assignment);
@@ -271,6 +272,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iCheckRequestStatusSkipPending = model.getProperties().getPropertyBoolean("Load.CheckRequestStatusSkipPending", iCheckRequestStatusSkipPending);
         iMaxCreditChecking = model.getProperties().getPropertyBoolean("Load.MaxCreditChecking", iMaxCreditChecking);
         iMaxDefaultCredit = model.getProperties().getPropertyFloat("Load.DefaultMaxCredit", iMaxDefaultCredit);
+        iMinDefaultCredit = model.getProperties().getPropertyFloat("Load.DefaultMinCredit", iMinDefaultCredit);
     }
     
     public void load() {
@@ -460,6 +462,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             if (ioc.getInstructionalMethod() != null) {
             	config.setInstructionalMethodId(ioc.getInstructionalMethod().getUniqueId());
             	config.setInstructionalMethodName(ioc.getInstructionalMethod().getLabel());
+            	config.setInstructionalMethodReference(ioc.getInstructionalMethod().getReference());
             }
             TreeSet<SchedulingSubpart> subparts = new TreeSet<SchedulingSubpart>(new SchedulingSubpartComparator());
             subparts.addAll(ioc.getSchedulingSubparts());
@@ -854,6 +857,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         }
         if (maxCredit > 0f)
         	student.setMaxCredit(maxCredit);
+        if (iMinDefaultCredit >= 0 && iMinDefaultCredit <= maxCredit)
+        	student.setMinCredit(iMinDefaultCredit);
 
 		TreeSet<CourseDemand> demands = new TreeSet<CourseDemand>(new Comparator<CourseDemand>() {
 			public int compare(CourseDemand d1, CourseDemand d2) {

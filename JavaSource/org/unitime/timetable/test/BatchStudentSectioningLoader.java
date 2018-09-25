@@ -267,6 +267,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
             if (ioc.getInstructionalMethod() != null) {
             	config.setInstructionalMethodId(ioc.getInstructionalMethod().getUniqueId());
             	config.setInstructionalMethodName(ioc.getInstructionalMethod().getLabel());
+            	config.setInstructionalMethodReference(ioc.getInstructionalMethod().getReference());
             }
             sLog.debug("  -- created config "+config);
             TreeSet subparts = new TreeSet(new SchedulingSubpartComparator());
