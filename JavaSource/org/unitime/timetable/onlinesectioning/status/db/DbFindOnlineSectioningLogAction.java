@@ -85,6 +85,7 @@ public class DbFindOnlineSectioningLogAction extends FindOnlineSectioningLogActi
 					st.setId(student.getUniqueId());
 					st.setSessionId(session.getUniqueId());
 					st.setExternalId(student.getExternalUniqueId());
+					st.setCanShowExternalId(iCanShowExtIds);
 					st.setName(helper.getStudentNameFormat().format(student));
 					for (StudentAreaClassificationMajor acm: new TreeSet<StudentAreaClassificationMajor>(student.getAreaClasfMajors())) {
 						st.addArea(acm.getAcademicArea().getAcademicAreaAbbreviation());

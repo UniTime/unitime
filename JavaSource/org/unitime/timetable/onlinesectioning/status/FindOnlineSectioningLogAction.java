@@ -61,13 +61,15 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 	
 	private Query iQuery;
 	private Integer iLimit = 100;
+	protected boolean iCanShowExtIds = false;
 	
-	public FindOnlineSectioningLogAction forQuery(String query) {
+	public FindOnlineSectioningLogAction forQuery(String query, boolean canShowExtIds) {
 		iQuery = new Query(query.isEmpty() ? "limit:100" : query);
 		Matcher m = Pattern.compile("limit:[ ]?([0-9]*)", Pattern.CASE_INSENSITIVE).matcher(query);
 		if (m.find()) {
 			iLimit = Integer.parseInt(m.group(1));
 		}
+		iCanShowExtIds = canShowExtIds;
 		return this;
 	}
 	
@@ -109,6 +111,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					st.setId(student.getStudentId());
 					st.setSessionId(session.getUniqueId());
 					st.setExternalId(student.getExternalId());
+					st.setCanShowExternalId(iCanShowExtIds);
 					st.setName(student.getName());
 					for (XAreaClassificationMajor acm: student.getMajors()) {
 						st.addArea(acm.getArea());

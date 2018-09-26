@@ -2452,8 +2452,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		OnlineSectioningServer server = getServerInstance(sessionId, true);
 		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
 		if (server instanceof DatabaseServer)
-			return server.execute(server.createAction(DbFindOnlineSectioningLogAction.class).forQuery(query), currentUser());
-		return server.execute(server.createAction(FindOnlineSectioningLogAction.class).forQuery(query), currentUser());
+			return server.execute(server.createAction(DbFindOnlineSectioningLogAction.class).forQuery(query, sessionContext.hasPermission(Right.EnrollmentsShowExternalId)), currentUser());
+		return server.execute(server.createAction(FindOnlineSectioningLogAction.class).forQuery(query, sessionContext.hasPermission(Right.EnrollmentsShowExternalId)), currentUser());
 	}
 
 	@Override

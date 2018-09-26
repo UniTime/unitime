@@ -357,7 +357,15 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		Printer out = new CSVPrinter(helper.getWriter(), false);
 		helper.setup(out.getContentType(), reference(), false);
 		
+		boolean hasExtId = false;
+		if (changelog != null)
+			for (SectioningAction e: changelog) {
+				if (e.getStudent() != null && e.getStudent().isCanShowExternalId()) { hasExtId = true; break; }
+			}
+		if (!hasExtId) out.hideColumn(0);
+		
 		out.printHeader(
+				MESSAGES.colStudentExternalId(),
 				MESSAGES.colStudent(),
 				MESSAGES.colOperation(),
 				MESSAGES.colTimeStamp(),
@@ -374,6 +382,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		if (changelog != null)
 			for (ClassAssignmentInterface.SectioningAction log: changelog) {
 				out.printLine(
+						log.getStudent().isCanShowExternalId() ? log.getStudent().getExternalId() : null,
 						log.getStudent().getName(),
 						log.getOperation(),
 						df.format(log.getTimeStamp()),

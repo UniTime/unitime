@@ -1998,6 +1998,18 @@ public class SectioningStatusPage extends Composite {
 		iSortOperations.clear();
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		
+		boolean hasExtId = false;
+		for (SectioningAction e: result) {
+			if (e.getStudent() != null && e.getStudent().isCanShowExternalId()) { hasExtId = true; break; }
+		}
+		
+		UniTimeTableHeader hExtId = null;
+		if (hasExtId) {
+			hExtId = new UniTimeTableHeader(MESSAGES.colStudentExternalId());
+			header.add(hExtId);
+			addSortOperation(hExtId, ChangeLogComparator.SortBy.EXTERNAL_ID, MESSAGES.colStudentExternalId());
+		}
+		
 		UniTimeTableHeader hStudent = new UniTimeTableHeader(MESSAGES.colStudent());
 		header.add(hStudent);
 		addSortOperation(hStudent, ChangeLogComparator.SortBy.STUDENT, MESSAGES.colStudent());
@@ -2029,15 +2041,28 @@ public class SectioningStatusPage extends Composite {
 		iLogTable.addRow(null, header);
 		
 		for (ClassAssignmentInterface.SectioningAction log: result) {
-			iLogTable.addRow(log,
-					new TopCell(log.getStudent().getName()),
-					new TopCell(log.getOperation()),
-					new TopCell(sTSF.format(log.getTimeStamp())),
-					new TopCell(log.getWallTime() == null ? "" : sNF.format(0.001 * log.getWallTime())),
-					new TopCell(log.getResult()),
-					new TopCell(log.getUser() == null ? "" : log.getUser()),
-					new HTML(log.getMessage() == null ? "" : log.getMessage())
-			);
+			if (hasExtId) {
+				iLogTable.addRow(log,
+						new TopCell(log.getStudent().isCanShowExternalId() ? log.getStudent().getExternalId() : ""),
+						new TopCell(log.getStudent().getName()),
+						new TopCell(log.getOperation()),
+						new TopCell(sTSF.format(log.getTimeStamp())),
+						new TopCell(log.getWallTime() == null ? "" : sNF.format(0.001 * log.getWallTime())),
+						new TopCell(log.getResult()),
+						new TopCell(log.getUser() == null ? "" : log.getUser()),
+						new HTML(log.getMessage() == null ? "" : log.getMessage())
+				);
+			} else {
+				iLogTable.addRow(log,
+						new TopCell(log.getStudent().getName()),
+						new TopCell(log.getOperation()),
+						new TopCell(sTSF.format(log.getTimeStamp())),
+						new TopCell(log.getWallTime() == null ? "" : sNF.format(0.001 * log.getWallTime())),
+						new TopCell(log.getResult()),
+						new TopCell(log.getUser() == null ? "" : log.getUser()),
+						new HTML(log.getMessage() == null ? "" : log.getMessage())
+				);
+			}
 		}
 		
 		if (SectioningStatusCookie.getInstance().getSortBy(iOnline, 2) != 0) {
@@ -2045,6 +2070,7 @@ public class SectioningStatusPage extends Composite {
 			ChangeLogComparator.SortBy sort = ChangeLogComparator.SortBy.values()[Math.abs(SectioningStatusCookie.getInstance().getSortBy(iOnline, 2)) - 1];
 			UniTimeTableHeader h = null;
 			switch (sort) {
+			case EXTERNAL_ID: h = hExtId; break;
 			case MESSAGE: h = hMessage; break;
 			case OPERATION: h = hOp; break;
 			case RESULT: h = hResult; break;
@@ -2605,6 +2631,7 @@ public class SectioningStatusPage extends Composite {
 			USER,
 			MESSAGE,
 			EXEC_TIME,
+			EXTERNAL_ID,
 			;
 		}
 		
@@ -2628,6 +2655,8 @@ public class SectioningStatusPage extends Composite {
 				return (e1.getResult() == null ? "" : e1.getResult()).compareTo(e2.getResult() == null ? "" : e2.getResult());
 			case MESSAGE:
 				return (e1.getMessage() == null ? "" : e1.getMessage()).compareTo(e2.getMessage() == null ? "" : e2.getMessage());
+			case EXTERNAL_ID:
+				return (e1.getStudent().isCanShowExternalId() ? e1.getStudent().getExternalId() : "").compareTo(e2.getStudent().isCanShowExternalId() ? e2.getStudent().getExternalId() : "");
 			default:
 				return 0;
 			}
