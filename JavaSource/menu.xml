@@ -433,10 +433,26 @@
 			</item>
 			<item name="Solver Reports" page="sctreport" type="gwt">
 				<condition>
-					<hasPermission name="StudentSectioningSolver"/>
+				    <hasPermission name="StudentSectioningSolver"/>
 				</condition>
 			</item>
 		</menu>
+		<item name="Batch Scheduling Dashboard" page="batchsctdash" type="gwt">
+			<condition>
+			    <not>
+			        <hasPermission name="StudentSectioningSolver"/>
+			    </not>
+				<hasPermission name="StudentSectioningSolverDashboard"/>
+			</condition>
+		</item>
+		<item name="Batch Scheduling Reports" page="sctreport" type="gwt">
+			<condition>
+			    <not>
+			        <hasPermission name="StudentSectioningSolver"/>
+			    </not>
+				<hasPermission name="StudentSectioningSolverReports"/>
+			</condition>
+		</item>
 		<separator>
 			<condition>
 				<or>

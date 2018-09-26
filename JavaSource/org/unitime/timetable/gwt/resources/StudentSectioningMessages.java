@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.gwt.resources;
 
+import com.google.gwt.i18n.client.Messages.DefaultMessage;
+
 /**
  * @author Tomas Muller
  */
@@ -884,6 +886,8 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Student sectioning solver is not loaded in memory.")
 	String exceptionNoSolver();
 
+	@DefaultMessage("No changes are allowed to the published solution.")
+	String exceptionSolverPublished();
 	
 	@DefaultMessage("You are not authenticated, please log in first.")
 	String exceptionEnrollNotAuthenticated();
@@ -2075,4 +2079,10 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Maximum of {0,number,0.#} credit hours exceeded.")
 	String creditWarning(float credit);
+	
+	@DefaultMessage("Published")
+	String infoPublished();
+	
+	@DefaultMessage("Solver Published")
+	String statusPublished();
 }

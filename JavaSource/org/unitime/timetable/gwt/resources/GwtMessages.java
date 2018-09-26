@@ -447,6 +447,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<u>R</u>efresh")
 	String opSolverLogRefresh();
 	
+	@DefaultMessage("Publish")
+	String opSolverPublish();
+	
+	@DefaultMessage("Clone")
+	String opSolverClone();
+	
 	@DefaultMessage("Deselect")
 	String opSolutionDeselect();
 	

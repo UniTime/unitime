@@ -80,6 +80,7 @@ import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
 import org.unitime.timetable.solver.jgroups.SolverServer;
 import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.service.SolverService;
+import org.unitime.timetable.solver.service.StudentSectioningSolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.solver.ui.LogInfo;
 import org.unitime.timetable.solver.ui.PropertiesInfo;
@@ -233,6 +234,19 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
         	solver.validate();
         	break;
         	
+		case PUBLISH:
+			if (solver == null) throw new GwtRpcException(MESSAGES.warnSolverNotStarted());
+        	if (solver.isWorking()) throw new GwtRpcException(MESSAGES.warnSolverIsWorking());
+        	((StudentSectioningSolverService)service).publishSolver(solver.getProperties(), ((StudentSolverProxy)solver).backupXml());
+        	break;
+        	
+		case CLONE:
+			if (solver == null) throw new GwtRpcException(MESSAGES.warnSolverNotStarted());
+        	if (solver.isWorking()) throw new GwtRpcException(MESSAGES.warnSolverIsWorking());
+        	solver = ((StudentSectioningSolverService)service).createSolver(solver.getProperties(), ((StudentSolverProxy)solver).backupXml());
+        	response.setRefresh(true);
+			break;			
+
 		case UNLOAD:
         	if (solver == null) throw new GwtRpcException(MESSAGES.warnSolverNotStarted());
         	if (solver.isWorking()) throw new GwtRpcException(MESSAGES.warnSolverIsWorking());
@@ -252,6 +266,8 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 		case START:
 		case LOAD:
 			if (solver != null && solver.isWorking()) throw new GwtRpcException(MESSAGES.warnSolverIsWorking());
+			if (solver != null && request.getType() == SolverType.STUDENT && ((StudentSolverProxy)solver).isPublished())
+				solver = null;
 			
 			Long settingsId = request.getConfigurationId();
 			DataProperties config = service.createConfig(settingsId, request.getParameters());
@@ -587,6 +603,14 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 		if (solver == null) {
 			response.setCanExecute(SolverOperation.LOAD, SolverOperation.START, SolverOperation.CHECK);
 		} else {
+			if (request.getType() == SolverType.STUDENT && ((StudentSolverProxy)solver).isPublished()) {
+				response.setCanExecute(SolverOperation.UNLOAD, SolverOperation.LOAD, SolverOperation.START, SolverOperation.CHECK);
+				if (context.hasPermission(Right.StudentSectioningSolverPublish))
+					response.setCanExecute(SolverOperation.CLONE);
+				if (context.hasPermission(Right.StudentSectioningSolutionExportXml))
+					response.setCanExecute(SolverOperation.EXPORT_XML);
+				return;
+			}
 			response.setCanExecute(SolverOperation.CHECK);
 			if (solver.isRunning())
 				response.setCanExecute(SolverOperation.STOP);
@@ -640,6 +664,9 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 					if (context.hasPermission(Right.StudentSectioningSolverSave)) {
 						hasSolution = Session.hasStudentSchedule(context.getUser().getCurrentAcademicSessionId());
 						response.setCanExecute(hasSolution ? SolverOperation.SAVE : SolverOperation.SAVE_AS_NEW);
+					}
+					if (context.hasPermission(Right.StudentSectioningSolverPublish)) {
+						response.setCanExecute(SolverOperation.PUBLISH);
 					}
 					break;
 				case INSTRUCTOR:

@@ -177,6 +177,66 @@ public class StudentSectioningSolverService implements SolverService<StudentSolv
 			throw (e instanceof RuntimeException ? (RuntimeException) e : new RuntimeException(e));
 		}
 	}
+	
+	public StudentSolverProxy publishSolver(DataProperties properties, byte[] backup) {
+		try {
+			if (!sessionContext.isAuthenticated() || sessionContext.getUser().getCurrentAcademicSessionId() == null) return null;
+			if (backup == null) return null;
+			
+			sessionContext.removeAttribute(SessionAttribute.StudentSectioningUser);
+			StudentSolverProxy oldSolver = getSolver("PUBLISHED_" + properties.getProperty("General.SessionId"), null);
+			if (oldSolver != null)
+				oldSolver.dispose();
+			
+			DataProperties config = new DataProperties(properties.toMap());
+			String host = config.getProperty("General.Host");
+			config.setProperty("StudentSct.Published", String.valueOf((new Date()).getTime()));
+			config.setProperty("General.OwnerPuid", "PUBLISHED_" + config.getProperty("General.SessionId"));
+		    
+		    StudentSolverProxy solver = solverServerService.createStudentSolver(host, "PUBLISHED_" + config.getProperty("General.SessionId"), config);
+		    if (!solver.restoreXml(backup)) {
+		    	solver.dispose();
+		    	return null;
+		    }
+		    
+	    	return solver;
+		} catch (Exception e) {
+			sLog.error("Failed to publish the solver: " + e.getMessage(), e);
+			throw (e instanceof RuntimeException ? (RuntimeException) e : new RuntimeException(e));
+		}
+	}
+	
+	public StudentSolverProxy createSolver(DataProperties properties, byte[] backup) {
+		try {
+			if (!sessionContext.isAuthenticated() || sessionContext.getUser().getCurrentAcademicSessionId() == null) return null;
+			if (backup == null) return null;
+			
+			removeSolver();
+			
+			DataProperties config = new DataProperties(properties.toMap());
+			config.setProperty("General.SessionId", sessionContext.getUser().getCurrentAcademicSessionId().toString());
+			config.setProperty("General.OwnerPuid", sessionContext.getUser().getExternalUserId());
+			config.setProperty("General.StartTime", String.valueOf((new Date()).getTime()));
+			config.remove("StudentSct.Published");
+			
+			String host = config.getProperty("General.Host");
+		    
+		    String instructorFormat = sessionContext.getUser().getProperty(UserProperty.NameFormat);
+		    if (instructorFormat != null)
+		    	config.setProperty("General.InstructorFormat",instructorFormat);
+		    
+		    StudentSolverProxy solver = solverServerService.createStudentSolver(host, sessionContext.getUser().getExternalUserId(), config);
+		    if (!solver.restoreXml(backup)) {
+		    	solver.dispose();
+		    	return null;
+		    }
+		    
+	    	return solver;
+		} catch (Exception e) {
+			sLog.error("Failed to publish the solver: " + e.getMessage(), e);
+			throw (e instanceof RuntimeException ? (RuntimeException) e : new RuntimeException(e));
+		}
+	}
 
 	public StudentSolverProxy getSolver(String puid, Long sessionId) {
 		try {
@@ -219,6 +279,11 @@ public class StudentSectioningSolverService implements SolverService<StudentSolv
 		solver = getSolver(sessionContext.getUser().getExternalUserId(), sessionId);
 		if (solver!=null)
 			sessionContext.setAttribute(SessionAttribute.StudentSectioningSolver, new ProxyHolder<String, StudentSolverProxy>(sessionContext.getUser().getExternalUserId(), solver));
+		if (solver == null) {
+			solver = getSolver("PUBLISHED_" + sessionId, sessionId);
+			if (solver!=null)
+				sessionContext.setAttribute(SessionAttribute.StudentSectioningSolver, new ProxyHolder<String, StudentSolverProxy>("PUBLISHED_" + sessionId, solver));
+		}
 		return solver;
 	}
 	

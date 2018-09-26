@@ -39,6 +39,8 @@ import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.UserQualifier;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.service.SolverServerService;
+import org.unitime.timetable.solver.service.SolverService;
+import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 
 /**
  * @author Tomas Muller
@@ -55,13 +57,32 @@ public class StudentSchedulingPermissions {
 	public static class StudentSectioningSolverLog extends StudentScheduling {}
 	
 	@PermissionForRight(Right.StudentSectioningSolverDashboard)
-	public static class StudentSectioningSolverDashboard extends StudentScheduling {}
+	public static class StudentSectioningSolverDashboard implements Permission<Session> {
+		@Autowired PermissionSession permissionSession;
+		
+		@Autowired SolverService<StudentSolverProxy> studentSectioningSolverService;
+		
+		@Override
+		public boolean check(UserContext user, Session source) {
+			if (!permissionSession.check(user, source)) return false;
+			return (user.getCurrentAuthority().hasRight(Right.StudentSectioningSolver) || studentSectioningSolverService.getSolver() != null);
+		}
+
+		@Override
+		public Class<Session> type() { return Session.class; }
+	}
+	
+	@PermissionForRight(Right.StudentSectioningSolverReports)
+	public static class StudentSectioningSolverReports extends StudentSectioningSolverDashboard {}
 	
 	@PermissionForRight(Right.StudentSectioningSolverSave)
 	public static class StudentSectioningSolverSave extends StudentScheduling {}
 
 	@PermissionForRight(Right.StudentSectioningSolutionExportXml)
 	public static class StudentSectioningSolutionExportXml extends StudentSectioningSolver {}
+	
+	@PermissionForRight(Right.StudentSectioningSolverPublish)
+	public static class StudentSectioningSolverPublish extends StudentSectioningSolver {}
 	
 	@PermissionForRight(Right.EnrollmentAuditPDFReports)
 	public static class EnrollmentAuditPDFReports extends SimpleSessionPermission {}

@@ -72,6 +72,8 @@ public class BatchEnrollStudent extends EnrollStudent {
 			throw new SectioningException(MSG.exceptionNoStudent());
 		
 		StudentSolver solver = (StudentSolver) server;
+		if (solver.isPublished())
+			throw new SectioningException(MSG.exceptionSolverPublished());
 		StudentSectioningModel model = (StudentSectioningModel) solver.currentSolution().getModel();
 		Assignment<Request, Enrollment> assignment = solver.currentSolution().getAssignment();
 		Student student = null;

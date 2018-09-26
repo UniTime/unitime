@@ -860,7 +860,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			}			
 		}
 		if ("BATCH".equals(userName)) {
-			getSessionContext().checkPermission(Right.StudentSectioningSolver);
+			getSessionContext().checkPermission(Right.StudentSectioningSolverDashboard);
 			OnlineSectioningServer server = getStudentSolver();
 			if (server == null) 
 				throw new SectioningException(MSG.exceptionNoSolver());
@@ -2536,7 +2536,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			if (includeCustomCheck) getSessionContext().removeAttribute("eligibility");
 			
 			if (!online) {
-				OnlineSectioningServer server = getStudentSolver();
+				StudentSolverProxy server = getStudentSolver();
 				if (server == null) 
 					return new EligibilityCheck(MSG.exceptionNoSolver());
 				
@@ -2544,7 +2544,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				check.setSessionId(server.getAcademicSession().getUniqueId());
 				check.setStudentId(studentId);
 				check.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, true);
-				check.setFlag(EligibilityFlag.CAN_ENROLL, true);
+				check.setFlag(EligibilityFlag.CAN_ENROLL, !server.isPublished());
 				check.setFlag(EligibilityFlag.CAN_WAITLIST, true);
 				check.setFlag(EligibilityFlag.CAN_RESET, true);
 				check.setFlag(EligibilityFlag.CONFIRM_DROP, false);

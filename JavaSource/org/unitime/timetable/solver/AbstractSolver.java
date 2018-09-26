@@ -537,8 +537,11 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
         return true;
     }
     
+    public boolean canPassivate() { return true; }
+    
     @Override
     public synchronized boolean passivate(File folder, String puid) {
+    	if (!canPassivate()) return false;
         if (isPassivated() || super.currentSolution()==null || super.currentSolution().getModel()==null) return false;
         sLog.debug("<passivate "+puid+">");
         System.gc();
@@ -564,6 +567,7 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
 
     @Override
     public synchronized boolean passivateIfNeeded(File folder, String puid) {
+    	if (!canPassivate()) return false;
 		long inactiveTimeToPassivate = 60000l * ApplicationProperty.SolverPasivationTime.intValue();
 		if (isPassivated() || inactiveTimeToPassivate <= 0 || timeFromLastUsed() < inactiveTimeToPassivate || isWorking()) return false;
         return passivate(folder, puid);

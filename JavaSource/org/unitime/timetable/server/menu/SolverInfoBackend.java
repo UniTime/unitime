@@ -38,8 +38,10 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.MenuInterface.InfoPairInterface;
 import org.unitime.timetable.gwt.shared.MenuInterface.SolverInfoInterface;
 import org.unitime.timetable.gwt.shared.MenuInterface.SolverInfoRpcRequest;
+import org.unitime.timetable.model.SolverParameterGroup.SolverType;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.CommonSolverInterface;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
@@ -63,11 +65,16 @@ public class SolverInfoBackend implements GwtRpcImplementation<SolverInfoRpcRequ
 
 	@Override
 	public SolverInfoInterface execute(SolverInfoRpcRequest request, SessionContext context) {
-		CommonSolverInterface solver = studentSectioningSolverService.getSolver();
+		CommonSolverInterface solver = null;
+		if (context.hasPermission(Right.StudentSectioningSolver) || context.hasPermission(Right.StudentSectioningSolverDashboard))
+			solver = studentSectioningSolverService.getSolver();
 		if (solver == null) solver = examinationSolverService.getSolver();
 		if (solver == null) solver = courseTimetablingSolverService.getSolver();
 		if (solver == null) solver = instructorSchedulingSolverService.getSolver();
-		return getInfo(solver, request.isIncludeSolutionInfo());
+		SolverInfoInterface info = getInfo(solver, request.isIncludeSolutionInfo());
+		if (solver != null && solver.getType() == SolverType.STUDENT && info != null && !context.hasPermission(Right.StudentSectioningSolver))
+			info.setUrl("gwt.jsp?page=batchsctdash");
+		return info;
 	}
 	
 	public SolverInfoInterface getInfo(CommonSolverInterface solver, boolean includeSolutionInfo) {

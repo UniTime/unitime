@@ -19,6 +19,9 @@
 */
 package org.unitime.timetable.solver.studentsct;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -44,6 +47,7 @@ import org.cpsolver.ifs.util.DistanceMetric;
 import org.cpsolver.ifs.util.ProblemLoader;
 import org.cpsolver.ifs.util.ProblemSaver;
 import org.cpsolver.ifs.util.Progress;
+import org.cpsolver.ifs.util.ProgressWriter;
 import org.cpsolver.studentsct.StudentSectioningModel;
 import org.cpsolver.studentsct.StudentSectioningXMLLoader;
 import org.cpsolver.studentsct.StudentSectioningXMLSaver;
@@ -64,6 +68,9 @@ import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
 import org.cpsolver.studentsct.report.SectionConflictTable;
 import org.cpsolver.studentsct.report.StudentSectioningReport;
 import org.dom4j.Document;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.SAXReader;
+import org.dom4j.io.XMLWriter;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.client.sectioning.SectioningReports.ReportTypeInterface;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -92,6 +99,7 @@ import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.solver.AbstractSolver;
 import org.unitime.timetable.solver.SolverDisposeListener;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.MemoryCounter;
 
 
@@ -99,7 +107,7 @@ import org.unitime.timetable.util.MemoryCounter;
  * @author Tomas Muller
  */
 public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSectioningModel> implements StudentSolverProxy {
-	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
+	private static StudentSectioningMessages SCT_MSG = Localization.create(StudentSectioningMessages.class);
     private transient Map<Long, XCourse> iCourseInfoCache = null;
     private Map<String, Object> iOnlineProperties = new HashMap<String, Object>();
     private Map<String, InMemoryReport> iReports = new HashMap<String, InMemoryReport>();
@@ -530,7 +538,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 			}
 			if (e instanceof SectioningException)
 				throw (SectioningException)e;
-			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
+			throw new SectioningException(SCT_MSG.exceptionUnknown(e.getMessage()), e);
 		} finally {
 			if (h.getAction() != null)
 				h.getAction().setEndTime(System.currentTimeMillis()).setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
@@ -840,5 +848,90 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	
 	public InMemoryReport getReport(String reference) {
 		return iReports.get(reference);
+	}
+
+	@Override
+	public byte[] backupXml() {
+		java.util.concurrent.locks.Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
+            ByteArrayOutputStream ret = new ByteArrayOutputStream();
+            
+            Document document = createCurrentSolutionBackup(false, false);
+            
+            (new XMLWriter(ret, OutputFormat.createCompactFormat())).write(document);
+            
+            ret.flush(); ret.close();
+
+            return ret.toByteArray();
+        } catch (Exception e) {
+            sLog.error(e.getMessage(),e);
+            return null;
+        } finally {
+        	lock.unlock();
+        }
+	}
+
+	@Override
+	public boolean restoreXml(byte[] data) {
+		StudentSectioningModel model = null;
+        try {
+            if (isRunning()) stopSolver();
+            disposeNoInherit(false);
+
+            Document document = (new SAXReader()).read(new ByteArrayInputStream(data));
+            readProperties(document);
+            
+            model = createModel(getProperties());
+            Progress.getInstance(model).addProgressListener(new ProgressWriter(System.out));
+            setInitalSolution(model);
+            initSolver();
+
+            restureCurrentSolutionFromBackup(document);
+            if (isPublished()) {
+            	Progress.getInstance(model).setStatus(SCT_MSG.statusPublished());
+                model.clearBest();
+            } else {
+            	Progress.getInstance(model).setStatus(MSG.statusReady());
+            }
+            
+            return true;
+        } catch (Exception e) {
+            sLog.error(e.getMessage(),e);
+            if (model!=null) Progress.removeInstance(model);
+            return false;
+        }
+	}
+
+	@Override
+	public boolean isPublished() {
+		return getProperties().getProperty("StudentSct.Published") != null;
+	}
+	
+	@Override
+    public Map<String,String> currentSolutionInfo() {
+		String published = getProperties().getProperty("StudentSct.Published");
+		if (published != null) {
+			Map<String,String> info = currentSolution().getModel().getExtendedInfo(currentSolution().getAssignment());
+			info.put(" "+SCT_MSG.infoPublished(), Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP).format(new Date(Long.valueOf(published))));
+			return info;
+		} else {
+			return super.currentSolutionInfo();
+		}
+	}
+	
+	@Override
+	public boolean canPassivate() {
+		return super.canPassivate() && !isPublished();
+	}
+	
+	@Override
+    public boolean restore(File folder, String puid, boolean removeFiles) {
+		if (super.restore(folder, puid, removeFiles)) {
+			if (isPublished())
+				Progress.getInstance(currentSolution().getModel()).setStatus(SCT_MSG.statusPublished());
+			return true;
+		}
+		return false;
 	}
 }

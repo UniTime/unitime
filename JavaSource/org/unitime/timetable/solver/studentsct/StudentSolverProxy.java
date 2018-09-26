@@ -34,4 +34,7 @@ import org.unitime.timetable.solver.CommonSolverInterface;
 public interface StudentSolverProxy extends OnlineSectioningServer, CommonSolverInterface {
     public CSVFile getReport(DataProperties parameters);
     public Collection<ReportTypeInterface> getReportTypes();
+    public byte[] backupXml();
+    public boolean restoreXml(byte[] data);
+    public boolean isPublished();
 }

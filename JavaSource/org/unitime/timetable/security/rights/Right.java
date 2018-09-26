@@ -330,7 +330,9 @@ public enum Right {
     StudentSectioningSolverSave(Session.class),
     StudentSectioningSolverLog(Session.class),
     StudentSectioningSolverDashboard(Session.class),
+    StudentSectioningSolverReports(Session.class),
     StudentSectioningSolutionExportXml(Session.class),
+    StudentSectioningSolverPublish(Session.class),
     
     /** Individual page rights: Online Students Scheduling */
 

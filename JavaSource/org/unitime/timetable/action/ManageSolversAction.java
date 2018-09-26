@@ -263,6 +263,7 @@ public class ManageSolversAction extends Action {
 	public static String getSolverOwner(DataProperties solverProperties) {
     	String owner = solverProperties.getProperty("General.OwnerPuid", null);
     	if (owner != null) {
+    		if (owner.startsWith("PUBLISHED_")) return "Published";
     		TimetableManager mgr = TimetableManager.findByExternalId(owner);
     		if (mgr != null)
     			owner = mgr.getShortName();
@@ -433,6 +434,7 @@ public class ManageSolversAction extends Action {
 		OWNER("Owner", new StringSolverProperty() {
 			@Override
 			public String getValue(CommonSolverInterface solver, SolverType type, DataProperties properties, Map<String, String> info) {
+				if (solver instanceof StudentSolverProxy && ((StudentSolverProxy)solver).isPublished()) return "Published";
 				return getSolverOwner(properties);
 			}
 		}),

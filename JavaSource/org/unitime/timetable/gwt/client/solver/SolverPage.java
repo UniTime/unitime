@@ -121,6 +121,8 @@ public class SolverPage extends SimpleForm {
 		iSolverButtons.addButton("sectioning", MESSAGES.opSolverStudentSectioning(), createClickHandler(SolverOperation.STUDENT_SECTIONING));
 		iSolverButtons.addButton("reload", MESSAGES.opSolverReload(), createClickHandler(SolverOperation.RELOAD));
 		iSolverButtons.addButton("validate", MESSAGES.opSolverValidate(), createClickHandler(SolverOperation.VALIDATE));
+		iSolverButtons.addButton("publish", MESSAGES.opSolverPublish(), createClickHandler(SolverOperation.PUBLISH));
+		iSolverButtons.addButton("clone", MESSAGES.opSolverClone(), createClickHandler(SolverOperation.CLONE));
 		iSolverButtons.addButton("save", MESSAGES.opSolverSave(), createClickHandler(SolverOperation.SAVE));
 		iSolverButtons.addButton("save new", MESSAGES.opSolverSaveAsNew(), createClickHandler(SolverOperation.SAVE_AS_NEW));
 		iSolverButtons.addButton("commit", MESSAGES.opSolverSaveCommit(), createClickHandler(SolverOperation.SAVE_COMMIT));
@@ -391,6 +393,8 @@ public class SolverPage extends SimpleForm {
 		iSolverButtons.setEnabled("sectioning", response.canExecute(SolverOperation.STUDENT_SECTIONING));
 		iSolverButtons.setEnabled("reload", response.canExecute(SolverOperation.RELOAD));
 		iSolverButtons.setEnabled("validate", response.canExecute(SolverOperation.VALIDATE));
+		iSolverButtons.setEnabled("publish", response.canExecute(SolverOperation.PUBLISH));
+		iSolverButtons.setEnabled("clone", response.canExecute(SolverOperation.CLONE));
 		iSolverButtons.setEnabled("save", iType != SolverType.COURSE && response.canExecute(SolverOperation.SAVE));
 		iSolverButtons.setEnabled("save new", iType != SolverType.COURSE && response.canExecute(SolverOperation.SAVE_AS_NEW));
 		iSolverButtons.setEnabled("commit", iType != SolverType.COURSE && response.canExecute(SolverOperation.SAVE_COMMIT));

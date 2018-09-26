@@ -69,7 +69,8 @@ public class SectioningReportsBackend implements GwtRpcImplementation<Sectioning
 			
 			csv = server.execute(server.createAction(GenerateSectioningReport.class).withParameters(parameters), user);
 		} else {
-			context.checkPermission(Right.StudentSectioningSolver);
+			if (!context.hasPermission(Right.StudentSectioningSolverReports))
+				context.checkPermission(Right.StudentSectioningSolver);
 			
 			StudentSolverProxy solver = studentSectioningSolverService.getSolver();
 			if (solver == null)
