@@ -35,6 +35,7 @@ import org.unitime.timetable.export.CSVPrinter;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.Exporter;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable.EnrollmentComparator;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Conflict;
@@ -61,6 +62,7 @@ import org.unitime.timetable.util.Formats.Format;
 @Service("org.unitime.timetable.export.Exporter:event-enrollments.csv")
 public class EventEnrollmentExport implements Exporter {
 	public static final StudentSectioningMessages MESSAGES = Localization.create(StudentSectioningMessages.class);
+	public static final GwtMessages GWT_MSG = Localization.create(GwtMessages.class);
 	protected static Format<Date> sDF = Formats.getDateFormat(Formats.Pattern.DATE_REQUEST);
 	protected static Format<Date> sTSF = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
 	
@@ -106,9 +108,14 @@ public class EventEnrollmentExport implements Exporter {
 				helper.getParameter("subpart"));
 	}
 	
-	protected void export(List<Enrollment> enrollments, ExportHelper helper, boolean suffix, int sort, String sortBySubpart) throws IOException {
+	protected Printer createPrinter(ExportHelper helper) throws IOException {
 		Printer out = new CSVPrinter(helper.getWriter(), false);
 		helper.setup(out.getContentType(), reference(), false);
+		return out;
+	}
+	
+	protected void export(List<Enrollment> enrollments, ExportHelper helper, boolean suffix, int sort, String sortBySubpart) throws IOException {
+		Printer out = createPrinter(helper);
 
 		if (enrollments == null) enrollments = new ArrayList<Enrollment>();
 
@@ -138,7 +145,10 @@ public class EventEnrollmentExport implements Exporter {
 		}
 		
 		List<String> header = new ArrayList<String>();
+		if (hasExtId)
+			header.add(MESSAGES.colStudentExternalId());
 		header.add(MESSAGES.colStudent());
+		header.add(GWT_MSG.colEmail());
 		
 		boolean crosslist = false;
 		Long courseId = null;
@@ -227,6 +237,7 @@ public class EventEnrollmentExport implements Exporter {
 			if (hasExtId)
 				line.add(enrollment.getStudent().isCanShowExternalId() ? enrollment.getStudent().getExternalId() : "");
 			line.add(enrollment.getStudent().getName());
+			line.add(enrollment.getStudent().getEmail());
 			if (crosslist)
 				line.add(enrollment.getCourseName());
 			if (hasPriority)

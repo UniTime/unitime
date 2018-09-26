@@ -77,6 +77,13 @@
 				<line>This fixes the issue with event rooms not being properly exported (flag:Event).</line>
 			</description>
 		</item>
+		<item>
+			<name>Event Detail: Enrollments</name>
+			<description>
+				<line>Added Export PDF to the Enrollments table.</line>
+				<line>Export CSV/PDF: added student's email address.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other</title>

@@ -270,6 +270,22 @@ public class EventDetail extends Composite {
 				});
 			}
 		});
+		iEnrollmentHeader.addButton("export-pdf", MESSAGES.opExportPDF(), 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				RPC.execute(EncodeQueryRpcRequest.encode("output=event-enrollments.pdf&sid=" + iProperties.getSessionId() + "&event=" + iEvent.getId() +
+						"&suffix=" + (SectioningCookie.getInstance().getShowClassNumbers() ? "1" : "0") +
+						"&sort=" + SectioningCookie.getInstance().getEnrollmentSortBy() +
+						"&subpart=" + SectioningCookie.getInstance().getEnrollmentSortBySubpart()), new AsyncCallback<EncodeQueryRpcResponse>() {
+					@Override
+					public void onFailure(Throwable caught) {}
+					@Override
+					public void onSuccess(EncodeQueryRpcResponse result) {
+						ToolBox.open(GWT.getHostPageBaseURL() + "export?q=" + result.getQuery());
+					}
+				});
+			}
+		});
 		
 		iNotes = new UniTimeTable<NoteInterface>();
 		iNotes.setStyleName("unitime-EventNotes");
@@ -584,6 +600,7 @@ public class EventDetail extends Composite {
 			final int enrollmentsRow = iForm.addHeaderRow(iEnrollmentHeader);
 			iForm.addRow(iEnrollments.getTable());
 			iEnrollmentHeader.setEnabled("export", false);
+			iEnrollmentHeader.setEnabled("export-pdf", false);
 			iEnrollmentHeader.showLoading();
 			final Long eventId = iEvent.getId();
 			RPC.execute(EventEnrollmentsRpcRequest.getEnrollmentsForEvent(eventId, iProperties.getSessionId()), new AsyncCallback<GwtRpcResponseList<ClassAssignmentInterface.Enrollment>>() {
@@ -613,6 +630,7 @@ public class EventDetail extends Composite {
 							iForm.getRowFormatter().setVisible(row, true);
 						}
 						iEnrollmentHeader.setEnabled("export", !result.isEmpty());
+						iEnrollmentHeader.setEnabled("export-pdf", !result.isEmpty());
 					}
 				}
 			});
