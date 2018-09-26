@@ -688,7 +688,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private long iId;
 		private Long iSessionId = null;
-		private String iExternalId, iName;
+		private String iExternalId, iName, iEmail;
 		private List<String> iArea, iClassification, iMajor, iGroup, iAccommodation;
 		private boolean iCanShowExternalId = false, iCanSelect = false;
 		private boolean iCanUseAssitant = false, iCanRegister = false;
@@ -718,6 +718,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public String getName() { return iName; }
 		public void setName(String name) { iName = name; }
+		
+		public String getEmail() { return iEmail; }
+		public void setEmail(String email) { iEmail = email; }
 		
 		public boolean hasArea() { return iArea != null && !iArea.isEmpty(); }
 		public String getArea(String delim) { 
