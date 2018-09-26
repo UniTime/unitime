@@ -482,6 +482,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		req.changes.mode = req.mode;
 
 		Set<String> current = new HashSet<String>();
+		Set<String> keep = new HashSet<String>();
 		Map<String, String> crn2course = new HashMap<String, String>();
 		List<String> newCourses = new ArrayList<String>();
 		Set<String> adds = new HashSet<String>();
@@ -515,18 +516,20 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				XSection section = offering.getSection(ca.getClassId());
 				if (section == null) continue;
 				String crn = section.getExternalId(course.getCourseId());
-				if (!current.remove(crn)) {
+				if (current.contains(crn)) {
+					keep.add(crn);
+				} else if (adds.add(crn)) {
 					req.changes.add(crn);
 					crn2course.put(crn, course.getCourseName());
 					if (!courses.containsKey(course.getCourseName())) {
 						courses.put(course.getCourseName(), course);
 						newCourses.add(crn);
 					}
-					adds.add(crn);
 				}
 			}
 		for (String crn: current)
-			req.changes.drop(crn);
+			if (!keep.contains(crn))
+				req.changes.drop(crn);
 		
 		CheckRestrictionsResponse resp = null;
 		ClientResource resource = null;
@@ -710,6 +713,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		req.mode = getSpecialRegistrationMode();
 		req.includeReg = "Y";
 		Set<String> current = new HashSet<String>();
+		Set<String> keep = new HashSet<String>();
 		Map<String, String> crn2course = new HashMap<String, String>();
 		List<String> newCourses = new ArrayList<String>();
 		Set<String> adds = new HashSet<String>();
@@ -743,15 +747,17 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				XSection section = offering.getSection(ca.getClassId());
 				if (section == null) continue;
 				String crn = section.getExternalId(course.getCourseId());
-				if (!current.remove(crn)) {
+				if (current.contains(crn)) {
+					keep.add(crn);
+				} else if (adds.add(crn)) {
 					req.add(crn);
 					crn2course.put(crn, course.getCourseName());
 					if (courses.add(course.getCourseName())) newCourses.add(crn);
-					adds.add(crn);
 				}
 			}
 		for (String crn: current)
-			req.drop(crn);
+			if (!keep.contains(crn))
+				req.drop(crn);
 		
 		Set<ErrorMessage> errors = new TreeSet<ErrorMessage>();
 		if (req.actions != null) {
