@@ -437,7 +437,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					}
 			}
 			for (ErrorMessage m: errors) {
-				if (added.add(m)) {
+				if (m.getCourse() != null && added.add(m)) {
 					Change ch = new Change();
 					ch.subject = m.getCourse().substring(0, m.getCourse().lastIndexOf(' '));
 					ch.courseNbr = m.getCourse().substring(m.getCourse().lastIndexOf(' ') + 1);
