@@ -65,6 +65,8 @@ public class TimetableGridContext implements Serializable {
         iWeekOffset = ApplicationProperty.TimeGridFirstDayOfWeek.intValue();
 		iLocale = Localization.getLocale();
 		DatePattern dp = session.getDefaultDatePatternNotNull();
+		if (dp == null)
+			throw new RuntimeException("No default date pattern is defined for " + session.getLabel() + ". Use the <a href='sessionEdit.do?doit=editSession&sessionId=" + session.getUniqueId() + "'>Edit Academic Session</a> page to set a default date pattern.");
 		iFilter = filter.getParameterValue("filter", "");
 		iStartDayDayOfWeek = Constants.getDayOfWeek(DateUtils.getDate(1, session.getPatternStartMonth(), session.getSessionStartYear()));
 		int week = Integer.parseInt(filter.getParameterValue("weeks", "-100"));
