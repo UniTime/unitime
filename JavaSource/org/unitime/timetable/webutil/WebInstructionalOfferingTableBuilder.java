@@ -173,6 +173,7 @@ public class WebInstructionalOfferingTableBuilder {
     private boolean iDisplayTimetable = true;
     private boolean iDisplayConflicts = false;
     private boolean iDisplayInstructorPrefs = true;
+    private boolean iDisplayDatePatternDifferentWarning = false;
     
     private String iBackType = null;
     private String iBackId = null;
@@ -206,7 +207,12 @@ public class WebInstructionalOfferingTableBuilder {
     	iDisplayConflicts = displayConflicts;
     }
     public boolean getDisplayConflicts() { return iDisplayConflicts; }
-    
+
+    public void setDisplayDatePatternDifferentWarning(boolean displayDatePatternDifferentWarning) {
+    	iDisplayDatePatternDifferentWarning = displayDatePatternDifferentWarning;
+    }
+    public boolean getDisplayDatePatternDifferentWarning() { return iDisplayDatePatternDifferentWarning; }
+
     private boolean iTimeVertical = false;
     public void setTimeVertival(boolean timeVertical) {
     	iTimeVertical = timeVertical;
@@ -664,7 +670,7 @@ public class WebInstructionalOfferingTableBuilder {
 			try {
 				a = classAssignment.getAssignment((Class_)prefGroup);
 				p = classAssignment.getAssignmentInfo((Class_)prefGroup);
-			} catch (Exception e) {
+			} catch (Exception e) { 
 				Debug.error(e);
 			}
     	}
@@ -688,7 +694,7 @@ public class WebInstructionalOfferingTableBuilder {
     	} else {
     		cell = initNormalCell("<div title='"+sDateFormat.format(dp.getStartDate())+" - "+sDateFormat.format(dp.getEndDate())+"' " +
     				(p == null || !isEditable ? "" : "style='color:" + PreferenceLevel.int2color(p.getDatePatternPref()) + ";'") +
-    				">"+dp.getName()+"</div>", isEditable);
+    				">"+dp.getName() +"</div>", isEditable);
     	}
         cell.setAlign("center");
         return(cell);
@@ -1526,7 +1532,42 @@ public class WebInstructionalOfferingTableBuilder {
         		}
         	}
         }
-        
+
+        if (getDisplayDatePatternDifferentWarning() && classAssignment != null) {
+        		Assignment a = null;
+        		boolean changedSinceCommit = false;
+        		DatePattern newDp = null;
+			try {
+				a = classAssignment.getAssignment(aClass);
+				if(a != null && a.getDatePattern() != null && !a.getDatePattern().equals(aClass.effectiveDatePattern())) {
+					if (aClass.effectiveDatePattern().getType() == DatePattern.sTypePatternSet 
+							&& a.getDatePattern().getParents() != null 
+							&& a.getDatePattern().getParents().contains(aClass.effectiveDatePattern())) {
+						changedSinceCommit = false;
+					} else {
+						changedSinceCommit = true;
+						newDp = aClass.effectiveDatePattern();
+					}
+				}
+			} catch (Exception e) { 
+				Debug.error(e);
+			}
+
+        	if (changedSinceCommit) {
+        		row.setBgColor("#fff0f0");
+        		row.setOnMouseOut("this.style.backgroundColor='#fff0f0';");
+    			String s = row.getTitle();
+    			if (s == null) { s = "";}
+			row.setTitle(s + MSG.datePatternCommittedIsDifferent(aClass.getClassLabel(co), a.getDatePattern().getName(), newDp.getName()));
+			if (icon == null) {
+    				icon = "";
+			}
+			icon += "<IMG alt='" + MSG.datePatternCommittedIsDifferent(aClass.getClassLabel(co), a.getDatePattern().getName(), newDp.getName()) + 
+						"' title='" + MSG.datePatternCommittedIsDifferent(aClass.getClassLabel(co), a.getDatePattern().getName(), newDp.getName()) + "' " +
+						"src='images/warning.png' style='margin-left: 1px; margin-right: 3px; vertical-align: top;'>";
+        	}
+        }
+
         this.buildClassOrSubpartRow(classAssignment, examAssignment, row, co, aClass, indentSpaces, isEditable && !aClass.isCancelled(), prevLabel, icon, context);
         table.addContent(row);
     }

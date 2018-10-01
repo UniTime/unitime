@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.cpsolver.coursett.model.RoomLocation;
 import org.cpsolver.coursett.model.TimeLocation;
@@ -256,6 +257,20 @@ public class ClassDetailAction extends PreferencesAction {
 	            }
 
 	            ClassAssignmentProxy proxy = classAssignmentService.getAssignment();
+	            if (proxy != null ) {
+	            	    Assignment a = proxy.getAssignment(c);
+	            	    if (a != null && a.getDatePattern() != null) {
+	            	    	  if (!a.getDatePattern().equals(c.effectiveDatePattern()) ) {    		  
+	            	    		if (a.getDatePattern().getParents() == null || !a.getDatePattern().getParents().contains(c.effectiveDatePattern())) {
+	            	    		  errors.add("datePatternChanged", 
+	            	                       new ActionMessage(
+	            	                               "errors.generic", 
+	            	                               MSG.datePatternCommittedIsDifferent(c.getClassLabel(), a.getDatePattern().getName(), c.effectiveDatePattern().getName())));
+	            	            saveErrors(request, errors);
+	            	    			 }
+	            	    	  }
+	            	    }
+	            }
 	        	Set<Assignment> conflicts = (proxy == null ? null : proxy.getConflicts(c.getUniqueId()));
 	        	if (conflicts != null && !conflicts.isEmpty()) {
 	        		TreeSet<Assignment> orderedConflicts = new TreeSet<Assignment>(new Comparator<Assignment>() {
