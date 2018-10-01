@@ -2576,7 +2576,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Class {0} conflicts with {1}.")
 	String classIsConflicting(String name, String conflicts);
 	
-	@DefaultMessage("Class {0} - Date Pattern: {1} used in commited solution does not match current date pattern: {2}.  Use the 'Assign' button to update the solution.")
+	@DefaultMessage("Class {0} - Date Pattern: {1} used in commited solution does not match current date pattern: {2}.  Use the \u201cAssign\u201d button to update the solution.")
 	String datePatternCommittedIsDifferent(String name, String commitedDatePattern, String currentDatePattern);
 
 	@DefaultMessage("Instructional Method:")
