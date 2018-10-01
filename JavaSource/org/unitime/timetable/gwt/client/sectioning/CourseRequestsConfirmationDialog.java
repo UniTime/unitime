@@ -25,6 +25,7 @@ import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CourseMessage;
@@ -52,6 +53,7 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 	protected static StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	protected static GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static StudentSectioningResources RESOURCES = GWT.create(StudentSectioningResources.class);
+	protected static StudentSectioningMessages SCT_MESSAGES = GWT.create(StudentSectioningMessages.class);
 	private AriaButton iYes, iNo;
 	private AsyncCallback<Boolean> iCommand;
 	private String iMessage;
@@ -90,7 +92,7 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 				if (ctab == null) { ctab = new P("course-table"); last = null; }
 				P cn = new P("course-name");
 				if (last == null || !last.equals(cm.getCourse())) cn.setText(cm.getCourse());
-				P m = new P("course-message"); m.setText(cm.getMessage());
+				P m = new P("course-message"); m.setText(SCT_MESSAGES.courseMessage(cm.getMessage()));
 				P crow = new P("course-row");
 				if (last == null || !last.equals(cm.getCourse())) crow.addStyleName("first-course-line");
 				crow.add(cn); crow.add(m);

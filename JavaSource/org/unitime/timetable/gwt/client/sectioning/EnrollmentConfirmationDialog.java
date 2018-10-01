@@ -91,7 +91,7 @@ public class EnrollmentConfirmationDialog extends UniTimeDialogBox {
 					P cn = new P("course-name");
 					if (last == null || !last.equals(cm.getCourse())) { msg.clear(); cn.setText(cm.getCourse()); }
 					if (!msg.add(cm.getMessage())) continue;
-					P m = new P("course-message"); m.setText(cm.getMessage());
+					P m = new P("course-message"); m.setText(MESSAGES.courseMessage(cm.getMessage()));
 					P crow = new P("course-row");
 					if (last == null || !last.equals(cm.getCourse())) crow.addStyleName("first-course-line");
 					crow.add(cn); crow.add(m);
@@ -112,7 +112,7 @@ public class EnrollmentConfirmationDialog extends UniTimeDialogBox {
 					P cn = new P("course-name");
 					if (last == null || !last.equals(cm.getCourse())) { msg.clear(); cn.setText(cm.getCourse()); }
 					if (!msg.add(cm.getMessage())) continue;
-					P m = new P("course-message"); m.setText(cm.getMessage());
+					P m = new P("course-message"); m.setText(MESSAGES.courseMessage(cm.getMessage()));
 					P crow = new P("course-row");
 					if (last == null || !last.equals(cm.getCourse())) crow.addStyleName("first-course-line");
 					crow.add(cn); crow.add(m);
@@ -191,7 +191,7 @@ public class EnrollmentConfirmationDialog extends UniTimeDialogBox {
 			P cn = new P("course-name");
 			if (last == null || !last.equals(cm.getCourse())) { msg.clear(); cn.setText(cm.getCourse()); }
 			if (!msg.add(cm.getMessage())) continue;
-			P m = new P("course-message"); m.setText(cm.getMessage());
+			P m = new P("course-message"); m.setText(MESSAGES.courseMessage(cm.getMessage()));
 			P crow = new P("course-row");
 			if (last == null || !last.equals(cm.getCourse())) crow.addStyleName("first-course-line");
 			crow.add(cn); crow.add(m);

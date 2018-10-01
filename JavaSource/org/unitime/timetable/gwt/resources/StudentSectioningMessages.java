@@ -2083,4 +2083,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Solver Published")
 	String statusPublished();
+	
+	@DefaultMessage("- {0}")
+	String courseMessage(String message);
 }
