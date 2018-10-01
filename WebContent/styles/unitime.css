@@ -6389,7 +6389,8 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-SpecialRegistrationsPanel .registration-errors {
-	white-space: pre;
+	white-space: pre-wrap;
+	min-width: 120px;
 }
 
 .unitime-SpecialRegistrationsPanel .registration-errors .denied {
@@ -6409,9 +6410,10 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-SpecialRegistrationsPanel .date-and-note {
-	white-space: pre;
+	white-space: pre-wrap;
 	color: black;
 	font-style: normal;
+	min-width: 120px;
 }
 
 .unitime-SpecialRegistrationsPanel .change-drop {

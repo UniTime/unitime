@@ -340,15 +340,15 @@ public class SpecialRegistrationsPanel extends P {
 						row.add(new Label());
 					}
 					if (lastCourseId == null || !lastCourseId.equals(ca.getCourseId())) {
-						row.add(new Label(ca.getSubject()));
-						row.add(new Label(ca.getCourseNbr()));
+						row.add(new Label(ca.getSubject(), false));
+						row.add(new Label(ca.getCourseNbr(), false));
 					} else {
 						row.add(new Label());
 						row.add(new Label());
 					}
-					row.add(new Label(ca.getSubpart()));
-					row.add(new Label(ca.getSection()));
-					row.add(new HTML(ca.getLimitString()));
+					row.add(new Label(ca.getSubpart(), false));
+					row.add(new Label(ca.getSection(), false));
+					row.add(new HTML(ca.getLimitString(), false));
 					row.add(new CreditCell(ca.getCredit()));
 					HTML errorsLabel = new HTML(ca.hasError() ? ca.getError() : ""); errorsLabel.addStyleName("registration-errors");
 					row.add(errorsLabel);
