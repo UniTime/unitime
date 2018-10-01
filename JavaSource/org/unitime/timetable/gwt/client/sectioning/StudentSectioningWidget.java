@@ -145,13 +145,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private UserAuthenticationProvider iUserAuthentication;
 	
 	private VerticalPanel iPanel;
-	private P iFooter;
-	private AriaButton iRequests, iReset, iSchedule, iEnroll, iPrint, iExport = null, iSave, iStartOver, iDegreePlan, iSubmitSpecReg;
+	private P iFooter, iHeader;
+	private AriaMultiButton iRequests, iReset, iSchedule, iEnroll, iPrint, iExport = null, iSave, iStartOver, iDegreePlan, iSubmitSpecReg;
+	
 	private AriaTabBar iAssignmentTab;
 	private DockPanel iAssignmentDock;
 	private FocusPanel iAssignmentPanel;
 	private ImageLink iCalendar = null;
-	private P iWaiting = null, iWaitingMessage;
 	
 	private CourseRequestsTable iCourseRequests;
 	private WebTable iAssignments;
@@ -294,30 +294,37 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			}
 		});
 		
+		iHeader = new P("unitime-SchedulingAssistantButtons", "unitime-SchedulingAssistantButtonsHeader");
+		iPanel.add(iHeader);
+		
 		iPanel.add(iCourseRequests);
 		
-		iFooter = new P("unitime-SchedulingAssistantButtons");
+		iFooter = new P("unitime-SchedulingAssistantButtons", "unitime-SchedulingAssistantButtonsFooter");
 		
 		P leftFooterPanel = new P("left-panel");
-		iDegreePlan = new AriaButton(MESSAGES.buttonDegreePlan());
+		P leftHeaderPanel = new P("left-panel");
+		iDegreePlan = new AriaMultiButton(MESSAGES.buttonDegreePlan());
 		iDegreePlan.setTitle(MESSAGES.hintDegreePlan());
 		iDegreePlan.setVisible(false);
 		iDegreePlan.setEnabled(false);
 		leftFooterPanel.add(iDegreePlan);
+		leftHeaderPanel.add(iDegreePlan.createClone());
 		
-		iRequests = new AriaButton(RESOURCES.arrowBack(), MESSAGES.buttonRequests());
+		iRequests = new AriaMultiButton(RESOURCES.arrowBack(), MESSAGES.buttonRequests());
 		iRequests.setTitle(MESSAGES.hintRequests());
 		iRequests.setVisible(false);
 		iRequests.setEnabled(false);
 		leftFooterPanel.add(iRequests);
+		leftHeaderPanel.add(iRequests.createClone());
 
-		iReset = new AriaButton(MESSAGES.buttonReset());
+		iReset = new AriaMultiButton(MESSAGES.buttonReset());
 		iReset.setTitle(MESSAGES.hintReset());
 		iReset.setVisible(false);
 		iReset.setEnabled(false);
-		iReset.getElement().getStyle().setMarginLeft(4, Unit.PX);
 		leftFooterPanel.add(iReset);
+		leftHeaderPanel.add(iReset.createClone());
 		iFooter.add(leftFooterPanel);
+		iHeader.add(leftHeaderPanel);
 		
 		if (mode == StudentSectioningPage.Mode.REQUESTS) {
 			iTotalCreditRequestsStatus = new Image(); iTotalCreditRequestsStatus.addStyleName("credit-status"); iTotalCreditRequestsStatus.setVisible(false);
@@ -338,63 +345,62 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 
 		P rightFooterPanel = new P("right-panel");
 		iFooter.add(rightFooterPanel);
+		P rightHeaderPanel = new P("right-panel");
+		iHeader.add(rightHeaderPanel);
 		
-		iStartOver = new AriaButton(MESSAGES.buttonStartOver());
+		iStartOver = new AriaMultiButton(MESSAGES.buttonStartOver());
 		iStartOver.setTitle(MESSAGES.hintStartOver());
 		leftFooterPanel.add(iStartOver);
 		iStartOver.setVisible(false);
 		iStartOver.setEnabled(false);
-		iStartOver.getElement().getStyle().setMarginLeft(4, Unit.PX);
+		leftHeaderPanel.add(iStartOver.createClone());
 		
-		iSchedule = new AriaButton(MESSAGES.buttonSchedule(), RESOURCES.arrowForward());
+		iSchedule = new AriaMultiButton(MESSAGES.buttonSchedule(), RESOURCES.arrowForward());
 		iSchedule.setTitle(MESSAGES.hintSchedule());
-		if (mode.isSectioning())
+		if (mode.isSectioning()) {
 			rightFooterPanel.add(iSchedule);
+			rightHeaderPanel.add(iSchedule.createClone());
+		}
 		iSchedule.setVisible(mode.isSectioning());
 		iSchedule.setEnabled(mode.isSectioning());
 		
-		iSave = new AriaButton(MESSAGES.buttonSave());
+		iSave = new AriaMultiButton(MESSAGES.buttonSave());
 		iSave.setTitle(MESSAGES.hintSave());
-		if (!mode.isSectioning())
+		if (!mode.isSectioning()) {
 			rightFooterPanel.add(iSave);
+			rightHeaderPanel.add(iSave.createClone());
+		}
 		iSave.setVisible(!mode.isSectioning());
 		iSave.setEnabled(false);
 
-		iEnroll = new AriaButton(MESSAGES.buttonEnroll());
+		iEnroll = new AriaMultiButton(MESSAGES.buttonEnroll());
 		iEnroll.setTitle(MESSAGES.hintEnroll());
 		iEnroll.setVisible(false);
 		iEnroll.setEnabled(false);
-		iEnroll.getElement().getStyle().setMarginLeft(4, Unit.PX);
 		rightFooterPanel.add(iEnroll);
+		rightHeaderPanel.add(iEnroll.createClone());
 		
-		iWaiting = new P("unitime-Waiting");
-		iWaiting.add(new Image(RESOURCES.loading_small()));
-		iWaitingMessage = new P("waiting-message");
-		iWaiting.add(iWaitingMessage);
-		iWaiting.setVisible(false);
-		rightFooterPanel.add(iWaiting);
-		
-		iSubmitSpecReg = new AriaButton(MESSAGES.buttonSubmitSpecReg());
+		iSubmitSpecReg = new AriaMultiButton(MESSAGES.buttonSubmitSpecReg());
 		iSubmitSpecReg.setTitle(MESSAGES.hintSpecialRegistration());
 		iSubmitSpecReg.setVisible(false);
 		iSubmitSpecReg.setEnabled(false);
-		iSubmitSpecReg.getElement().getStyle().setMarginLeft(4, Unit.PX);
 		rightFooterPanel.add(iSubmitSpecReg);
+		rightHeaderPanel.add(iSubmitSpecReg.createClone());
 
-		iPrint = new AriaButton(MESSAGES.buttonPrint());
+		iPrint = new AriaMultiButton(MESSAGES.buttonPrint());
 		iPrint.setTitle(MESSAGES.hintPrint());
 		iPrint.setVisible(false);
 		iPrint.setEnabled(false);
-		iPrint.getElement().getStyle().setMarginLeft(4, Unit.PX);
 		rightFooterPanel.add(iPrint);
+		rightHeaderPanel.add(iPrint.createClone());
 
 		if (CONSTANTS.allowCalendarExport()) {
-			iExport = new AriaButton(MESSAGES.buttonExport());
+			iExport = new AriaMultiButton(MESSAGES.buttonExport());
 			iExport.setTitle(MESSAGES.hintExport());
 			iExport.setVisible(false);
 			iExport.setEnabled(false);
-			iExport.getElement().getStyle().setMarginLeft(4, Unit.PX);
 			rightFooterPanel.add(iExport);
+			rightHeaderPanel.add(iExport.createClone());
 		}
 		
 		iPanel.add(iFooter);
@@ -1662,7 +1668,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			if (LoadingWidget.getInstance().isShowing())
 				LoadingWidget.getInstance().hide();
 			iPanel.remove(iCourseRequests);
-			iPanel.insert(iAssignmentDock, 0);
+			iPanel.insert(iAssignmentDock, 1);
 			iRequests.setVisible(true); iRequests.setEnabled(true);
 			if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_RESET)) { iReset.setVisible(true); iReset.setEnabled(true); }
 			if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.QUICK_ADD_DROP)) { iQuickAdd.setVisible(true); iQuickAdd.setEnabled(true); }
@@ -1731,7 +1737,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	
 	public void prev() {
 		iPanel.remove(iAssignmentDock);
-		iPanel.insert(iCourseRequests, 0);
+		iPanel.insert(iCourseRequests, 1);
 		iRequests.setVisible(false); iRequests.setEnabled(false);
 		iReset.setVisible(false); iReset.setEnabled(false);
 		iQuickAdd.setVisible(false); iQuickAdd.setEnabled(false);

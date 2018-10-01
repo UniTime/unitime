@@ -3852,7 +3852,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-ScheduleStatus {
-	margin: 4px 0px 1px 0px;
+	margin: 2px 0px 1px 0px;
 	display: table;
 	width: 100%;
 }
@@ -4441,6 +4441,7 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-ClassSchedulePanel {
 	width: 100%;
+	padding-top: 3px;
 }
 
 .unitime-ClassScheduleTabPanel {
@@ -5130,12 +5131,23 @@ unitime-RoomSharingWidget .legend .blank {
 	font-size: 1em;
 	font-weight: bold;
 	color: black;
-	padding-top: 5px;
 	text-align: center;
+}
+
+.unitime-SchedulingAssistantButtonsFooter {
+	padding-top: 3px;
+}
+
+.unitime-SchedulingAssistantButtonsHeader {
+}
+
+.unitime-SchedulingAssistantButtons button {
+	margin: 2px;
 }
 
 .unitime-SchedulingAssistantButtons .left-panel {
 	float: left;
+	text-align: left;
 }
 
 .unitime-SchedulingAssistantButtons .right-panel {
