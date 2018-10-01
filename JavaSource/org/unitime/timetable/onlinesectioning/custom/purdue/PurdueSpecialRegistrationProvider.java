@@ -1952,6 +1952,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			check.setFlag(EligibilityFlag.CAN_SPECREG, false);
 			return;
 		}
+		if (!check.hasFlag(EligibilityFlag.CAN_ENROLL) && !"true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.allowExtended", "false"))) {
+			check.setFlag(EligibilityFlag.CAN_SPECREG, false);
+			return;
+		}
 		ClientResource resource = null;
 		try {
 			Gson gson = getGson(helper);
