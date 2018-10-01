@@ -612,13 +612,13 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				if (!resp.overrides.contains(error.getCode())) {
 					ret.setMessage((ret.hasMessage() ? ret.getMessage() + "\n" : "") + "No overrides are allowed for " + error + ".");
 					ret.setCanSubmit(false);
-					denied.add(new ErrorMessage(error.getCourse(), "", error.getCode(), error.getMessage()));
+					denied.add(new ErrorMessage(error.getCourse(), "", error.getCode(), "Overrides are not allowed for: " + error.getMessage()));
 				} else {
 					XCourse course = courses.get(error.getCourse());
 					if (course != null && !course.isOverrideEnabled(error.getCode())) {
 						ret.setMessage((ret.hasMessage() ? ret.getMessage() + "\n" : "") + course.getCourseName() + " does not allow overrides for " + error + ".");
 						ret.setCanSubmit(false);
-						denied.add(new ErrorMessage(course.getCourseName(), "", error.getCode(), error.getMessage()));
+						denied.add(new ErrorMessage(course.getCourseName(), "", error.getCode(), "Overrides are not allowed for: " + error.getMessage()));
 					}
 				}
 			}

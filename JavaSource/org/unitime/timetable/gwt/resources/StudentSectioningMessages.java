@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.gwt.resources;
 
-import com.google.gwt.i18n.client.Messages.DefaultMessage;
-
 /**
  * @author Tomas Muller
  */
@@ -2051,7 +2049,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Overrides cannot be requested: {0}\nClick <b>Close Dialog</b> to hide this dialog without requesting any overrides.")
 	String messageCannotRequestOverrides(String message);
 	
-	@DefaultMessage("Overrides cannot be requested due to the following registration errors that have been already denied:")
+	@DefaultMessage("Overrides cannot be requested due to the following registration errors:")
 	String messageCannotRequestOverridesErrors();
 	
 	@DefaultMessage("Click <b>Close Dialog</b> to hide this dialog without requesting any overrides.")
