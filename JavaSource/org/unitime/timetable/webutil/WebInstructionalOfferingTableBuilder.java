@@ -1556,15 +1556,12 @@ public class WebInstructionalOfferingTableBuilder {
         	if (changedSinceCommit) {
         		row.setBgColor("#fff0f0");
         		row.setOnMouseOut("this.style.backgroundColor='#fff0f0';");
-    			String s = row.getTitle();
-    			if (s == null) { s = "";}
-			row.setTitle(s + MSG.datePatternCommittedIsDifferent(aClass.getClassLabel(co), a.getDatePattern().getName(), newDp.getName()));
-			if (icon == null) {
-    				icon = "";
-			}
-			icon += "<IMG alt='" + MSG.datePatternCommittedIsDifferent(aClass.getClassLabel(co), a.getDatePattern().getName(), newDp.getName()) + 
-						"' title='" + MSG.datePatternCommittedIsDifferent(aClass.getClassLabel(co), a.getDatePattern().getName(), newDp.getName()) + "' " +
-						"src='images/warning.png' style='margin-left: 1px; margin-right: 3px; vertical-align: top;'>";
+    			String msg = row.getTitle();
+    			if (msg == null) { msg = ""; }
+    			else { msg = msg + " "; }
+    			msg += MSG.datePatternCommittedIsDifferent(aClass.getClassLabel(co), a.getDatePattern().getName(), newDp.getName());
+				row.setTitle(msg);				
+				icon = "<IMG alt='" + msg + "' title='" + msg + "' " + "src='images/warning.png' style='margin-left: 1px; margin-right: 3px; vertical-align: top;'>";
         	}
         }
 

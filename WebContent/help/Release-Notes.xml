@@ -36,6 +36,22 @@
 					(only one class was displayed if there was a full overlap or the classes were displayed one after the other in case of a partial overlap).</line>
 			</description>
 		</item>
+		<item>
+			<name>Date Pattern: Changes after Solution Commit</name>
+			<description>
+				<line>In order to make it more obvious to the user when the assigned Date Pattern for a class has
+				 been changed after a solution has been committed, the following changes have been made:
+				<line>Updated the List of Classes on the Instructional Offering Detail Page and Scheduling Subpart
+				 Detail Page to provide a warning icon, mouseover message and different highlighting to indicate 
+				 the date pattern assigned to the class does not match the date pattern used in the committed 
+				 timetable for the class.  If a class has both a date pattern changed warning and a meeting 
+				 conflict warning then only one warning icon is displayed.</line>
+				 <line>Updated the Class Detail page to show an error message at the top indicating the date 
+				 pattern assigned to the class does not match the date pattern used in the committed timetable 
+				 for the class.</line>
+				 </line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>
