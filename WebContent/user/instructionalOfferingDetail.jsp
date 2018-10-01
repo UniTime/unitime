@@ -541,6 +541,7 @@
 		ioTableBuilder.setDisplayDistributionPrefs(false);
 		ioTableBuilder.setDisplayConfigOpButtons(true);
 		ioTableBuilder.setDisplayConflicts(true);
+		ioTableBuilder.setDisplayDatePatternDifferentWarning(true);
 		ioTableBuilder.htmlConfigTablesForInstructionalOffering(
 									sessionContext,
 				    		        WebSolver.getClassAssignmentProxy(session),
