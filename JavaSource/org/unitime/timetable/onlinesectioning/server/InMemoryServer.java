@@ -169,7 +169,8 @@ public class InMemoryServer extends AbstractLockingServer {
 	public Collection<XCourseRequest> getRequests(Long offeringId) {
 		Lock lock = readLock();
 		try {
-			return iOfferingRequests.get(offeringId);
+			Collection<XCourseRequest> requests = iOfferingRequests.get(offeringId);
+			return requests == null ? null : new ArrayList<XCourseRequest>(requests);
 		} finally {
 			lock.release();
 		}		
