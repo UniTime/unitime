@@ -44,6 +44,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.services.CurriculaService;
@@ -136,7 +137,7 @@ public class CurriculaServlet implements CurriculaService {
 			sLog.debug("findCurricula(filter='" + filter+"')");
 			Long s0 = System.currentTimeMillis();
 			TreeSet<CurriculumInterface> results = new TreeSet<CurriculumInterface>();
-			getSessionContext().setAttribute("Curricula.LastFilter", filter.toQueryString());
+			getSessionContext().setAttribute(SessionAttribute.CurriculaLastFilter, filter.toQueryString());
 			boolean hasSnapshotData = hasSnapshotData(CurriculumDAO.getInstance().getSession(), getAcademicSessionId());
 			for (Curriculum c: CurriculumFilterBackend.curricula(getSessionContext().getUser().getCurrentAcademicSessionId(), filter.getOptions(), new Query(filter.getText()), -1, null, Department.getUserDepartments(getSessionContext().getUser()))) {
 				CurriculumInterface ci = new CurriculumInterface();
@@ -2380,7 +2381,7 @@ public class CurriculaServlet implements CurriculaService {
 	public String lastCurriculaFilter() throws CurriculaException, PageAccessException {
 		sLog.debug("lastCurriculaFilter()");
 		Long s0 = System.currentTimeMillis();
-		String filter = (String)getSessionContext().getAttribute("Curricula.LastFilter");
+		String filter = (String)getSessionContext().getAttribute(SessionAttribute.CurriculaLastFilter);
 		if (filter == null)
 			filter = "department:Managed";
 		sLog.debug("Last filter is '" + filter + "'  (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");

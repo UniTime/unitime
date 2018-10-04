@@ -28,6 +28,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.struts.Globals;
 import org.apache.struts.util.MessageResources;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.security.SessionContext;
 
 /**
@@ -35,7 +36,7 @@ import org.unitime.timetable.security.SessionContext;
  */
 public class BackTracker {
 	public static int MAX_BACK_STEPS = 10;
-	public static String BACK_LIST = "BackTracker.back";
+	public static String BACK_LIST = SessionAttribute.Back.key();
 	
     protected static MessageResources getResources(HttpServletRequest request) {
     	return ((MessageResources) request.getAttribute(Globals.MESSAGES_KEY));
@@ -46,7 +47,7 @@ public class BackTracker {
 			Vector back = (Vector)session.getAttribute(BACK_LIST);
 			if (back==null) {
 				back = new Vector();
-				session.setAttribute("BackTracker.back", back);
+				session.setAttribute(BACK_LIST, back);
 			}
 			return back;
 		}
@@ -83,10 +84,10 @@ public class BackTracker {
 	}
 	
 	public static void markForBack(SessionContext context, String uri, String title, boolean back, boolean clear) {
-		Vector backList = (Vector)context.getAttribute(BACK_LIST);
+		Vector backList = (Vector)context.getAttribute(SessionAttribute.Back);
 		if (backList==null) {
 			backList = new Vector();
-			context.setAttribute("BackTracker.back", backList);
+			context.setAttribute(SessionAttribute.Back, backList);
 		}
 		if (clear) backList.clear();
 		if (back) {

@@ -35,7 +35,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.hibernate.Transaction;
 import org.unitime.commons.Email;
 import org.unitime.timetable.defaults.ApplicationProperty;
-import org.unitime.timetable.gwt.server.UploadServlet;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.shared.ScriptInterface.ExecuteScriptRpcRequest;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Department;
@@ -74,7 +74,7 @@ public class ScriptExecution extends QueueItem {
 		
 		for (ScriptParameter parameter: script.getParameters())
 			if ("file".equals(parameter.getType()))
-				iFile = (FileItem)context.getAttribute(UploadServlet.SESSION_LAST_FILE);
+				iFile = (FileItem)context.getAttribute(SessionAttribute.LastUploadedFile);
 	}
 	
 	public ExecuteScriptRpcRequest getRequest() { return iRequest; }

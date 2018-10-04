@@ -29,10 +29,10 @@ import java.util.Locale;
 
 import org.apache.commons.fileupload.FileItem;
 import org.hibernate.Transaction;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
-import org.unitime.timetable.gwt.server.UploadServlet;
 import org.unitime.timetable.gwt.shared.TaskInterface;
 import org.unitime.timetable.gwt.shared.TaskInterface.ExecutionStatus;
 import org.unitime.timetable.gwt.shared.TaskInterface.SaveTaskDetailsRpcRequest;
@@ -90,7 +90,7 @@ public class SaveTaskBackend implements GwtRpcImplementation<SaveTaskDetailsRpcR
 				}
 				String value = task.getParameter(p.getName());
 				if ("file".equals(p.getType())) {
-					FileItem file = (FileItem)context.getAttribute(UploadServlet.SESSION_LAST_FILE);
+					FileItem file = (FileItem)context.getAttribute(SessionAttribute.LastUploadedFile);
 					if (file != null) {
 						t.setInputFile(file.get());
 						value = file.getName();

@@ -48,6 +48,28 @@ public enum SessionAttribute {
 	
 	ExamType("Exam.Type", "Examination type"),
 	FormFactor("mgwt.formfactor", "Device form factor"),
+	
+	InstructionalOfferingConfigList("configsList", "Instructional Offering Config: Available ITypes"),
+	LastUploadedFile("LAST_FILE", "Last uploaded file"),
+	RoomPictures("ROOM_PICTURES", "Last uploaded room pictures"),
+	CallingPage("callingPage", "Calling page"),
+	CurriculaLastFilter("Curricula.LastFilter", "Curricula: last used filter"),
+	ReservationsLastFilter("Reservations.LastFilter", "Reservations: last used filter"),
+	PermissionRoles("Permissions.roleIds", "Permissions: last visible roles"),
+	EventStatusServices("EventStatuses.Services", "Event Statuses: last services"),
+	Back("BackTracker.back", "Last back"),
+	NavigationLastIds("lastDispIds", "Navigation: last displayed ids"),
+	SuggestionsModel("Suggestions.model", "Course Timetabling: last suggestions model"),
+	
+	OnlineSchedulingDummyServer("OnlineSectioning.DummyServer", "Online Student Scheduling: database server for academic sessions that are not loaded in"),
+	OnlineSchedulingUser("user", "Online Student Scheduling: looked up user"),
+	OnlineSchedulingPIN("pin", "Online Student Scheduling: last entered PIN"),
+	OnlineSchedulingEligibility("eligibility", "Online Student Scheduling: output of the last eligibility check"),
+	OnlineSchedulingLastRequest("request", "Online Student Scheduling: last course request"),
+	OnlineSchedulingLastSession("sessionId", "Online Student Scheduling: last academic session id"),
+	OnlineSchedulingLastSpecialRequest("specreq", "Online Student Scheduling: last special request id"),
+	
+	
 	;
 
 	String iKey, iDefault, iDescription;

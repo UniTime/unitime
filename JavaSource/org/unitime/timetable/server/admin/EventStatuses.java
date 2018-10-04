@@ -31,6 +31,7 @@ import org.hibernate.Session;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -86,7 +87,7 @@ public class EventStatuses implements AdminTable {
 			index2provider.put(extra.size(), provider);
 			extra.add(new Field(provider.getReference(), FieldType.toggle, 40));
 		}
-		context.setAttribute("EventStatuses.Services", index2service);
+		context.setAttribute(SessionAttribute.EventStatusServices, index2service);
 		Field[] fields = new Field[7 + extra.size()];
 		fields[0] = new Field("&otimes;", FieldType.parent, 50, Flag.READ_ONLY);
 		fields[1] = new Field(MESSAGES.fieldDepartment() + "|" + MESSAGES.fieldType(), FieldType.text, 160, Flag.READ_ONLY);
@@ -258,7 +259,7 @@ public class EventStatuses implements AdminTable {
 		if (location.getAllowedServices() != null)
 			for (EventServiceProvider service: location.getAllowedServices())
 				services.add(service.getUniqueId());
-		Map<Integer,Long> index2service = (Map<Integer,Long>)context.getAttribute("EventStatuses.Services");
+		Map<Integer,Long> index2service = (Map<Integer,Long>)context.getAttribute(SessionAttribute.EventStatusServices);
 		for (Map.Entry<Integer, Long> e: index2service.entrySet()) {
 			if ("true".equals(record.getField(7 + e.getKey()))) {
 				if (!services.contains(e.getValue())) return false;
@@ -272,7 +273,7 @@ public class EventStatuses implements AdminTable {
 	protected void setServiceProviders(Location location, SessionContext context, Record record) {
 		if (location.getAllowedServices() == null)
 			location.setAllowedServices(new HashSet<EventServiceProvider>());
-		Map<Integer,Long> index2service = (Map<Integer,Long>)context.getAttribute("EventStatuses.Services");
+		Map<Integer,Long> index2service = (Map<Integer,Long>)context.getAttribute(SessionAttribute.EventStatusServices);
 		for (Map.Entry<Integer, Long> e: index2service.entrySet()) {
 			if ("true".equals(record.getField(7 + e.getKey()))) 
 				location.getAllowedServices().add(EventServiceProviderDAO.getInstance().get(e.getValue()));

@@ -44,7 +44,7 @@ import org.unitime.timetable.api.ApiConnector;
 import org.unitime.timetable.api.ApiHelper;
 import org.unitime.timetable.api.BinaryFileApiHelper;
 import org.unitime.timetable.api.BinaryFileApiHelper.BinaryFile;
-import org.unitime.timetable.gwt.server.UploadServlet;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.shared.ScriptInterface.ExecuteScriptRpcRequest;
 import org.unitime.timetable.gwt.shared.ScriptInterface.QueueItemInterface;
 import org.unitime.timetable.model.SavedHQL;
@@ -147,7 +147,7 @@ public class ScriptConnector extends ApiConnector {
 				final BinaryFile file = helper.getRequest(BinaryFile.class);
 				if (file == null)
 					throw new IllegalArgumentException("Input file not provided.");
-				helper.getSessionContext().setAttribute(UploadServlet.SESSION_LAST_FILE, new BinaryFileItem(file));
+				helper.getSessionContext().setAttribute(SessionAttribute.LastUploadedFile, new BinaryFileItem(file));
 			} else {
 				String[] values = helper.getParameterValues(parameter.getName());
 				if (values == null || values.length == 0) continue;

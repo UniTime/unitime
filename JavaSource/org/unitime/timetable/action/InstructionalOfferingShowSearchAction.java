@@ -76,7 +76,7 @@ public class InstructionalOfferingShowSearchAction extends Action {
         
         BackTracker.markForBack(request, null, null, false, true); //clear back list
         
-        sessionContext.setAttribute("callingPage", "instructionalOfferingShowSearch");
+        sessionContext.setAttribute(SessionAttribute.CallingPage, "instructionalOfferingShowSearch");
         InstructionalOfferingListForm frm = (InstructionalOfferingListForm) form;
         
         // Check if subject area / course number saved to session

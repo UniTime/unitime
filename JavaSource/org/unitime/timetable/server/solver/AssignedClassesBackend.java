@@ -99,7 +99,7 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 		
 		context.getUser().setProperty("SuggestionsModel.simpleMode", request.getFilter().getParameterValue("simpleMode"));
 		boolean simple = "1".equals(request.getFilter().getParameterValue("simpleMode"));
-		SuggestionsModel model = (SuggestionsModel)context.getAttribute("Suggestions.model");
+		SuggestionsModel model = (SuggestionsModel)context.getAttribute(SessionAttribute.SuggestionsModel);
 		if (model != null)
 			model.setSimpleMode(simple);
 		

@@ -46,6 +46,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.SecurityMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -254,7 +255,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		OnlineSectioningServer server =  solverServerService.getOnlineStudentSchedulingContainer().getSolver(academicSessionId.toString());
 		if (server != null || !canReturnDummy) return server;
 		
-		ProxyHolder<Long, OnlineSectioningServer> h = (ProxyHolder<Long, OnlineSectioningServer>)sessionContext.getAttribute("OnlineSectioning.DummyServer");
+		SessionAttribute attribute = SessionAttribute.OnlineSchedulingDummyServer;
+		ProxyHolder<Long, OnlineSectioningServer> h = (ProxyHolder<Long, OnlineSectioningServer>)sessionContext.getAttribute(attribute);
 		if (h != null && h.isValid(academicSessionId))
 			return h.getProxy();
 		
@@ -262,7 +264,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (session == null)
 			throw new SectioningException(MSG.exceptionBadSession()); 
 		server = new DatabaseServer(new AcademicSessionInfo(session), false);
-		sessionContext.setAttribute("OnlineSectioning.DummyServer", new ProxyHolder<Long, OnlineSectioningServer>(academicSessionId, server));
+		sessionContext.setAttribute(attribute, new ProxyHolder<Long, OnlineSectioningServer>(academicSessionId, server));
 		
 		return server;
 	}
@@ -554,7 +556,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	public Collection<AcademicSessionProvider.AcademicSessionInfo> listAcademicSessions(boolean sectioning) throws SectioningException, PageAccessException {
 		ArrayList<AcademicSessionProvider.AcademicSessionInfo> ret = new ArrayList<AcademicSessionProvider.AcademicSessionInfo>();
 		ExternalTermProvider extTerm = getExternalTermProvider();
-		UniTimePrincipal principal = (UniTimePrincipal)getSessionContext().getAttribute("user");
+		UniTimePrincipal principal = (UniTimePrincipal)getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingUser);
 		if (sectioning) {
 			for (String s: solverServerService.getOnlineStudentSchedulingContainer().getSolvers()) {
 				OnlineSectioningServer server = solverServerService.getOnlineStudentSchedulingContainer().getSolver(s);
@@ -834,9 +836,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	
 	public String logIn(String userName, String password, String pin) throws SectioningException, PageAccessException {
 		if (pin != null && !pin.isEmpty())
-			getSessionContext().setAttribute("pin", pin);
+			getSessionContext().setAttribute(SessionAttribute.OnlineSchedulingPIN, pin);
 		else
-			getSessionContext().removeAttribute("pin");
+			getSessionContext().removeAttribute(SessionAttribute.OnlineSchedulingPIN);
 		if ("LOOKUP".equals(userName)) {
 			getSessionContext().checkPermissionAnySession(Right.StudentSchedulingAdvisor);
 			org.hibernate.Session hibSession = StudentDAO.getInstance().createNewSession();
@@ -851,8 +853,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							principal.setName(NameFormat.defaultFormat().format(s));
 						}
 					}
-					getSessionContext().setAttribute("user", principal);
-					getSessionContext().removeAttribute("request");
+					getSessionContext().setAttribute(SessionAttribute.OnlineSchedulingUser, principal);
+					getSessionContext().removeAttribute(SessionAttribute.OnlineSchedulingLastRequest);
 					return principal.getName();
 				}
 			} finally {
@@ -873,8 +875,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				UniTimePrincipal principal = new UniTimePrincipal(user.getTrueExternalUserId(), student.getExternalId(), user.getTrueName());
 				principal.addStudentId(server.getAcademicSession().getUniqueId(), student.getStudentId());
 				principal.setName(student.getName());
-				getSessionContext().setAttribute("user", principal);
-				getSessionContext().removeAttribute("request");
+				getSessionContext().setAttribute(SessionAttribute.OnlineSchedulingUser, principal);
+				getSessionContext().removeAttribute(SessionAttribute.OnlineSchedulingLastRequest);
 				return principal.getName();
 			} finally {
 				hibSession.close();
@@ -900,12 +902,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 	
 	public Boolean logOut() throws SectioningException, PageAccessException {
-		getSessionContext().removeAttribute("user");
-		getSessionContext().removeAttribute("pin");
-		getSessionContext().removeAttribute("sessionId");
-		getSessionContext().removeAttribute("request");
-		getSessionContext().removeAttribute("eligibility");
-		getSessionContext().removeAttribute("specreq");
+		getSessionContext().removeAttribute(SessionAttribute.OnlineSchedulingUser);
+		getSessionContext().removeAttribute(SessionAttribute.OnlineSchedulingPIN);
+		getSessionContext().removeAttribute(SessionAttribute.OnlineSchedulingLastSession);
+		getSessionContext().removeAttribute(SessionAttribute.OnlineSchedulingLastRequest);
+		getSessionContext().removeAttribute(SessionAttribute.OnlineSchedulingEligibility);
+		getSessionContext().removeAttribute(SessionAttribute.OnlineSchedulingLastSpecialRequest);
 		if (getSessionContext().hasPermission(Right.StudentSchedulingAdvisor)) 
 			return false;
 		SecurityContextHolder.getContext().setAuthentication(null);
@@ -913,7 +915,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 	
 	public String whoAmI() throws SectioningException, PageAccessException {
-		UniTimePrincipal principal = (UniTimePrincipal)getSessionContext().getAttribute("user");
+		UniTimePrincipal principal = (UniTimePrincipal)getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingUser);
 		if (principal != null) return principal.getName();
 		UserContext user = getSessionContext().getUser();
 		if (user == null || user instanceof AnonymousUserContext) return null;
@@ -921,7 +923,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 	
 	public Long getStudentId(Long sessionId) {
-		UniTimePrincipal principal = (UniTimePrincipal)getSessionContext().getAttribute("user");
+		UniTimePrincipal principal = (UniTimePrincipal)getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingUser);
 		if (principal != null)
 			return principal.getStudentId(sessionId);
 		UserContext user = getSessionContext().getUser();
@@ -932,7 +934,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 	
 	public Long getLastSessionId() {
-		Long lastSessionId = (Long)getSessionContext().getAttribute("sessionId");
+		Long lastSessionId = (Long)getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingLastSession);
 		if (lastSessionId == null) {
 			UserContext user = getSessionContext().getUser();
 			if (user != null) {
@@ -945,18 +947,18 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 
 	public void setLastSessionId(Long sessionId) {
-		getSessionContext().setAttribute("sessionId", sessionId);
+		getSessionContext().setAttribute(SessionAttribute.OnlineSchedulingLastSession, sessionId);
 	}
 	
 	public CourseRequestInterface getLastRequest() {
-		return (CourseRequestInterface)getSessionContext().getAttribute("request");
+		return (CourseRequestInterface)getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingLastRequest);
 	}
 	
 	public void setLastRequest(CourseRequestInterface request) {
 		if (request == null || request.getAcademicSessionId() == null)
-			getSessionContext().removeAttribute("request");
+			getSessionContext().removeAttribute(SessionAttribute.OnlineSchedulingLastRequest);
 		else if (request.isUpdateLastRequest())
-			getSessionContext().setAttribute("request", request);
+			getSessionContext().setAttribute(SessionAttribute.OnlineSchedulingLastRequest, request);
 	}
 	
 	public AcademicSessionProvider.AcademicSessionInfo lastAcademicSession(boolean sectioning) throws SectioningException, PageAccessException {
@@ -1968,7 +1970,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			
 			boolean recheckCustomEligibility = ApplicationProperty.OnlineSchedulingCustomEligibilityRecheck.isTrue();
 			if (!recheckCustomEligibility) {
-				EligibilityCheck last = (EligibilityCheck)getSessionContext().getAttribute("eligibility");
+				EligibilityCheck last = (EligibilityCheck)getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingEligibility);
 				if (last != null && (last.hasFlag(EligibilityFlag.RECHECK_BEFORE_ENROLLMENT) || !last.hasFlag(EligibilityFlag.CAN_ENROLL)))
 					recheckCustomEligibility = true;
 			}
@@ -2197,7 +2199,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	
 	@Override
 	public Boolean selectSession(Long sessionId) {
-		getSessionContext().setAttribute("sessionId", sessionId);
+		getSessionContext().setAttribute(SessionAttribute.OnlineSchedulingLastSession, sessionId);
 		UserContext user = getSessionContext().getUser();
 		if (user != null && user.getCurrentAuthority() != null) {
 			List<? extends UserAuthority> authorities = user.getAuthorities(user.getCurrentAuthority().getRole(), new SimpleQualifier("Session", sessionId));
@@ -2419,9 +2421,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	
 	private OnlineSectioningLog.Entity currentUser() {
 		UserContext user = getSessionContext().getUser();
-		UniTimePrincipal principal = (UniTimePrincipal)getSessionContext().getAttribute("user");
-		String pin = (String)getSessionContext().getAttribute("pin");
-		String specialRequestId = (String)getSessionContext().getAttribute("specreq");
+		UniTimePrincipal principal = (UniTimePrincipal)getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingUser);
+		String pin = (String)getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingPIN);
+		String specialRequestId = (String)getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingLastSpecialRequest);
 		if (user != null) {
 			OnlineSectioningLog.Entity.Builder entity = OnlineSectioningLog.Entity.newBuilder()
 					.setExternalId(user.getTrueExternalUserId())
@@ -2532,8 +2534,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	
 	public EligibilityCheck checkEligibility(boolean online, boolean sectioning, Long sessionId, Long studentId, String pin, boolean includeCustomCheck) throws SectioningException, PageAccessException {
 		try {
-			if (pin != null && !pin.isEmpty()) getSessionContext().setAttribute("pin", pin);
-			if (includeCustomCheck) getSessionContext().removeAttribute("eligibility");
+			if (pin != null && !pin.isEmpty()) getSessionContext().setAttribute(SessionAttribute.OnlineSchedulingPIN, pin);
+			if (includeCustomCheck) getSessionContext().removeAttribute(SessionAttribute.OnlineSchedulingEligibility);
 			
 			if (!online) {
 				StudentSolverProxy server = getStudentSolver();
@@ -2629,7 +2631,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			
 			EligibilityCheck ret = server.execute(server.createAction(CheckEligibility.class).forStudent(studentId).withCheck(check).includeCustomCheck(includeCustomCheck)
 					.withPermission(getSessionContext().hasPermissionAnySession(studentId, "Student", Right.StudentSchedulingCanEnroll)), currentUser());
-			if (includeCustomCheck) getSessionContext().setAttribute("eligibility", ret);
+			if (includeCustomCheck) getSessionContext().setAttribute(SessionAttribute.OnlineSchedulingEligibility, ret);
 			
 			return ret;
 		} catch (Exception e) {

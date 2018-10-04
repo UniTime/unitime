@@ -31,12 +31,12 @@ import java.util.TreeSet;
 import org.apache.commons.fileupload.FileItem;
 import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.events.EventAction.EventContext;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
-import org.unitime.timetable.gwt.server.UploadServlet;
 import org.unitime.timetable.gwt.shared.RoomInterface.AttachmentTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureRequest;
@@ -77,15 +77,15 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 			context = new EventContext(context, request.getSessionId());
 
 		RoomPictureResponse response = new RoomPictureResponse();
-		Map<Long, LocationPicture> temp = (Map<Long, LocationPicture>)context.getAttribute(RoomPictureServlet.TEMP_ROOM_PICTURES);
+		Map<Long, LocationPicture> temp = (Map<Long, LocationPicture>)context.getAttribute(SessionAttribute.RoomPictures);
 
 		org.hibernate.Session hibSession = LocationDAO.getInstance().getSession();
 		if (request.getOperation() == RoomPictureRequest.Operation.UPLOAD && request.getLocationId() == null) {
-			final FileItem file = (FileItem)context.getAttribute(UploadServlet.SESSION_LAST_FILE);
+			final FileItem file = (FileItem)context.getAttribute(SessionAttribute.LastUploadedFile);
 			if (file != null) {
 				if (temp == null) {
 					temp = new HashMap<Long, LocationPicture>();
-					context.setAttribute(RoomPictureServlet.TEMP_ROOM_PICTURES, temp);
+					context.setAttribute(SessionAttribute.RoomPictures, temp);
 				}
 				LocationPicture picture = new RoomPicture();
 				picture.setDataFile(file.get());
@@ -136,7 +136,7 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 				response.addPictureType(RoomPicturesBackend.getPictureType(type));
 			}
 			
-			context.setAttribute(RoomPictureServlet.TEMP_ROOM_PICTURES, null);
+			context.setAttribute(SessionAttribute.RoomPictures, null);
 			break;
 		case SAVE:
 			Map<Long, LocationPicture> pictures = new HashMap<Long, LocationPicture>();
@@ -207,14 +207,14 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 				}
 			}
 			hibSession.flush();
-			context.setAttribute(RoomPictureServlet.TEMP_ROOM_PICTURES, null);
+			context.setAttribute(SessionAttribute.RoomPictures, null);
 			break;
 		case UPLOAD:
-			final FileItem file = (FileItem)context.getAttribute(UploadServlet.SESSION_LAST_FILE);
+			final FileItem file = (FileItem)context.getAttribute(SessionAttribute.LastUploadedFile);
 			if (file != null) {
 				if (temp == null) {
 					temp = new HashMap<Long, LocationPicture>();
-					context.setAttribute(RoomPictureServlet.TEMP_ROOM_PICTURES, temp);
+					context.setAttribute(SessionAttribute.RoomPictures, temp);
 				}
 				LocationPicture picture = null;
 				if (location instanceof Room)

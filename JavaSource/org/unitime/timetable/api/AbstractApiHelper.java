@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.hibernate.CacheMode;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -89,7 +90,7 @@ public abstract class AbstractApiHelper implements ApiHelper {
 			if (iContext.isAuthenticated())
 				sessionId = (Long)(iContext.getUser().getCurrentAuthority() == null ? null : iContext.getUser().getCurrentAuthority().getAcademicSession().getQualifierId());
 			else
-				sessionId = (Long)iContext.getAttribute("sessionId");
+				sessionId = (Long)iContext.getAttribute(SessionAttribute.OnlineSchedulingLastSession);
 		}
 		if (getParameter("term") != null) {
 			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();

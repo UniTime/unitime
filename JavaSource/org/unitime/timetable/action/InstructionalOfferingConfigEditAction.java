@@ -48,6 +48,7 @@ import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.InstructionalOfferingConfigEditForm;
 import org.unitime.timetable.interfaces.ExternalInstrOffrConfigChangeAction;
 import org.unitime.timetable.interfaces.ExternalLinkLookup;
@@ -201,11 +202,11 @@ public class InstructionalOfferingConfigEditAction extends Action {
 //                createAsNew = true;
 
             if(sp!=null && sp.size()>0) {
-	            sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, sp);
+	            sessionContext.setAttribute(SessionAttribute.InstructionalOfferingConfigList, sp);
 	            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), configId.toString(), createAsNew, frm.getUnlimited().booleanValue(), frm.getDurationTypeText());
 	            request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
             } else {
-            	sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, null);
+            	sessionContext.setAttribute(SessionAttribute.InstructionalOfferingConfigList, null);
 	            request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, null);
             }
 
@@ -232,7 +233,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             sessionContext.checkPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.InstrOfferingConfigAdd);
 
             loadDetailFromCourseOffering(frm, new Long(courseOfferingId), true, false);
-            sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, null);
+            sessionContext.setAttribute(SessionAttribute.InstructionalOfferingConfigList, null);
             request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, "");
 
 		}
@@ -252,18 +253,18 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	        
             // Get first available config
             loadDetailFromCourseOffering(frm, new Long(courseOfferingId), true, true);
-            sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, null);
+            sessionContext.setAttribute(SessionAttribute.InstructionalOfferingConfigList, null);
             request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, "");
 
             // load existing config from database
             if (frm.getConfigId()!=null && frm.getConfigId().intValue()>0) {
 	            Vector sp = loadOriginalConfig(frm.getConfigId(), frm);
 	            if(sp!=null && sp.size()>0) {
-	            	sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, sp);
+	            	sessionContext.setAttribute(SessionAttribute.InstructionalOfferingConfigList, sp);
 		            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), courseOfferingId, false, frm.getUnlimited().booleanValue(), frm.getDurationTypeText());
 		            request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
 	            } else {
-	            	sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, null);
+	            	sessionContext.setAttribute(SessionAttribute.InstructionalOfferingConfigList, null);
 		            request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, null);
 	            }
             }
@@ -530,7 +531,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             throw new Exception ("Instructional Type not found");
 
         // Retrieve object containing user defined config from session
-        Vector sp = (Vector) sessionContext.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME);
+        Vector sp = (Vector) sessionContext.getAttribute(SessionAttribute.InstructionalOfferingConfigList);
         if(sp==null)
             sp = new Vector();
 
@@ -544,7 +545,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
         //Collections.sort(sp, new SicComparator());
 
         // Store back in session
-        sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, sp);
+        sessionContext.setAttribute(SessionAttribute.InstructionalOfferingConfigList, sp);
     }
 
     /**
@@ -558,7 +559,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             String id, String op) throws Exception {
 
         // Read user defined config
-        Vector sp = (Vector) sessionContext.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME);
+        Vector sp = (Vector) sessionContext.getAttribute(SessionAttribute.InstructionalOfferingConfigList);
 
         // No subparts
         if(sp==null || sp.size()==0)
@@ -730,7 +731,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             }
         }
 
-        sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, sp);
+        sessionContext.setAttribute(SessionAttribute.InstructionalOfferingConfigList, sp);
     }
 
 
@@ -744,7 +745,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
     private SimpleItypeConfig search(String id, Vector indx, boolean clearErrorFlags) {
 
         // Read user defined config
-        Vector sp = (Vector) sessionContext.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME);
+        Vector sp = (Vector) sessionContext.getAttribute(SessionAttribute.InstructionalOfferingConfigList);
 
         // No subparts
         if(sp==null || sp.size()==0)
@@ -768,7 +769,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
         }
 
         if (clearErrorFlags)
-            sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, sp);
+            sessionContext.setAttribute(SessionAttribute.InstructionalOfferingConfigList, sp);
 
         return result;
     }
@@ -893,7 +894,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             InstructionalOfferingConfigEditForm frm) throws Exception {
 
         // Read user defined config
-        Vector sp = (Vector) sessionContext.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME);
+        Vector sp = (Vector) sessionContext.getAttribute(SessionAttribute.InstructionalOfferingConfigList);
 
         // No subparts
         if(sp==null || sp.size()==0)

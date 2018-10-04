@@ -28,6 +28,7 @@ import org.hibernate.Session;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
@@ -62,10 +63,10 @@ public class Permissions implements AdminTable {
 			List<Long> roleIds = new ArrayList<Long>();
 			for (Roles role: roles)
 				roleIds.add(role.getRoleId());
-			context.setAttribute("Permissions.roleIds", roleIds);
+			context.setAttribute(SessionAttribute.PermissionRoles, roleIds);
 			return roles;
 		} else {
-			List<Long> roleIds = (List<Long>)context.getAttribute("Permissions.roleIds");
+			List<Long> roleIds = (List<Long>)context.getAttribute(SessionAttribute.PermissionRoles);
 			if (roleIds == null)
 				return getRoles(context, hibSession, true);
 			List<Roles> roles = new ArrayList<Roles>(roleIds.size());

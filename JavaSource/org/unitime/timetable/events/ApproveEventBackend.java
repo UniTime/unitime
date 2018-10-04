@@ -28,10 +28,10 @@ import org.apache.commons.fileupload.FileItem;
 import org.hibernate.Transaction;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
-import org.unitime.timetable.gwt.server.UploadServlet;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApproveEventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
@@ -175,7 +175,7 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
 			if (note.getTextNote() != null && note.getTextNote().length() > 2000)
 				note.setTextNote(note.getTextNote().substring(0, 2000));
 			
-			FileItem attachment = (FileItem)context.getAttribute(UploadServlet.SESSION_LAST_FILE);
+			FileItem attachment = (FileItem)context.getAttribute(SessionAttribute.LastUploadedFile);
 			if (attachment != null) {
 				note.setAttachedName(attachment.getName());
 				note.setAttachedFile(attachment.get());

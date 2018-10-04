@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.model.LocationPicture;
 import org.unitime.timetable.model.dao.LocationPictureDAO;
 
@@ -37,7 +38,7 @@ import org.unitime.timetable.model.dao.LocationPictureDAO;
 public class RoomPictureServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
-	public static final String TEMP_ROOM_PICTURES = "ROOM_PICTURES";
+	public static final String TEMP_ROOM_PICTURES = SessionAttribute.RoomPictures.key();
 	
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String idStr = request.getParameter("id");

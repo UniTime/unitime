@@ -36,6 +36,7 @@ import org.hibernate.Transaction;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.events.EventAction.EventContext;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
@@ -179,7 +180,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 					detail.setPeriodPreferenceModel(ppb.loadPeriodPreferences(location, type, context));
 				}
 			}
-			context.setAttribute(RoomPictureServlet.TEMP_ROOM_PICTURES, null);
+			context.setAttribute(SessionAttribute.RoomPictures, null);
 			if (exception != null) throw exception.withRoom(detail);
 			return detail;
 		} else {
@@ -660,7 +661,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
                     location.getControllingDepartment());
             
 			if (context.hasPermission(location, Right.RoomEditChangePicture) && FutureOperation.PICTURES.in(flags)) {
-				Map<Long, LocationPicture> temp = (Map<Long, LocationPicture>)context.getAttribute(RoomPictureServlet.TEMP_ROOM_PICTURES);
+				Map<Long, LocationPicture> temp = (Map<Long, LocationPicture>)context.getAttribute(SessionAttribute.RoomPictures);
 				Map<Long, LocationPicture> pictures = new HashMap<Long, LocationPicture>();
 				if (future) {
 					Set<LocationPicture> otherPictures = new HashSet<LocationPicture>(location.getPictures());
@@ -1064,7 +1065,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
                     location.getControllingDepartment());
             
 			if (context.hasPermission(location, Right.RoomEditChangePicture) && FutureOperation.PICTURES.in(flags)) {
-				Map<Long, LocationPicture> temp = (Map<Long, LocationPicture>)context.getAttribute(RoomPictureServlet.TEMP_ROOM_PICTURES);
+				Map<Long, LocationPicture> temp = (Map<Long, LocationPicture>)context.getAttribute(SessionAttribute.RoomPictures);
 				Map<Long, LocationPicture> pictures = new HashMap<Long, LocationPicture>();
 				if (future) {
 					Set<LocationPicture> otherPictures = new HashSet<LocationPicture>(location.getPictures());

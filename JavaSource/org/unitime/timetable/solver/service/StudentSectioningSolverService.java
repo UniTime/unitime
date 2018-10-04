@@ -233,7 +233,7 @@ public class StudentSectioningSolverService implements SolverService<StudentSolv
 		    
 	    	return solver;
 		} catch (Exception e) {
-			sLog.error("Failed to publish the solver: " + e.getMessage(), e);
+			sLog.error("Failed to clone the solver: " + e.getMessage(), e);
 			throw (e instanceof RuntimeException ? (RuntimeException) e : new RuntimeException(e));
 		}
 	}

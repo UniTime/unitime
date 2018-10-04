@@ -37,6 +37,7 @@ import org.cpsolver.ifs.util.Progress;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ListSolutionsForm;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
@@ -275,7 +276,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 				config.setProperty("General.Host", request.getHost());
 			config.setProperty("General.StartSolver", request.getOperation() == SolverOperation.START ? "true" : "false");
 			if (request.getType() == SolverType.COURSE) {
-	        	String solutionId = (String)context.getAttribute("Solver.selectedSolutionId");
+	        	String solutionId = (String)context.getAttribute(SessionAttribute.SelectedSolution);
 	    	    if (solutionId != null)
 	    	    	config.setProperty("General.SolutionId", solutionId);
 			}
@@ -513,7 +514,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 			}
 		}
 		if (solver == null && request.getType() == SolverType.COURSE) {
-			String id = (String)context.getAttribute("Solver.selectedSolutionId");
+			String id = (String)context.getAttribute(SessionAttribute.SelectedSolution);
 			if (id != null && !id.isEmpty()) {
 				for (StringTokenizer s = new StringTokenizer(id,","); s.hasMoreTokens();) {
 	 				Solution solution = SolutionDAO.getInstance().get(Long.valueOf(s.nextToken()));
@@ -727,7 +728,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
                 	response.addPageMessage(new PageMessage(PageMessageType.INFO, MESSAGES.infoCourseSolverRoomAvailabilityLastUpdated(ts)));
                 */
 			} else {
-				String id = (String)context.getAttribute("Solver.selectedSolutionId");
+				String id = (String)context.getAttribute(SessionAttribute.SelectedSolution);
 				String warn = "";
 				if (id != null && !id.isEmpty()) {
 					List<String> names = new ArrayList<String>();

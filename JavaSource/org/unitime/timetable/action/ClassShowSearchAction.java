@@ -78,7 +78,7 @@ public class ClassShowSearchAction extends Action {
         
     	sessionContext.checkPermission(Right.Classes);
         
-    	sessionContext.setAttribute("callingPage", "classShowSearch");
+    	sessionContext.setAttribute(SessionAttribute.CallingPage, "classShowSearch");
     	
 	    Object sas = sessionContext.getAttribute(SessionAttribute.ClassesSubjectAreas);
 	    Object cn = sessionContext.getAttribute(SessionAttribute.ClassesCourseNumber);

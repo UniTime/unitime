@@ -36,6 +36,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.server.CalendarServlet.HttpParams;
 import org.unitime.timetable.gwt.server.CalendarServlet.Params;
 import org.unitime.timetable.gwt.server.CalendarServlet.QParams;
@@ -53,7 +54,7 @@ public class UploadServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static final int DEFAULT_MAX_SIZE = 4096 * 1024;
 	
-	public static final String SESSION_LAST_FILE = "LAST_FILE";
+	public static final String SESSION_LAST_FILE = SessionAttribute.LastUploadedFile.key();
 	
 	protected SessionContext getSessionContext() {
 		return HttpSessionContext.getSessionContext(getServletContext());

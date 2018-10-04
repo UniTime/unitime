@@ -47,11 +47,11 @@ import org.unitime.commons.CalendarVTimeZoneGenerator;
 import org.unitime.commons.Email;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.export.events.EventsExportEventsToICal;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
-import org.unitime.timetable.gwt.server.UploadServlet;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
 import org.unitime.timetable.gwt.shared.EventInterface.ApproveEventRpcRequest;
@@ -226,7 +226,7 @@ public class EventEmail {
 			}
 			
 			if (context != null) {
-				final FileItem file = (FileItem)context.getAttribute(UploadServlet.SESSION_LAST_FILE);
+				final FileItem file = (FileItem)context.getAttribute(SessionAttribute.LastUploadedFile);
 				if (file != null) {
 					email.addAttachment(new DataSource() {
 						@Override

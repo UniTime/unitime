@@ -40,6 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ExamPeriodEditForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ExamPeriod;
@@ -239,7 +240,7 @@ public class ExamPeriodEditAction extends Action {
 	        
 	        if ("Reload".equals(myForm.getOp())) {
 	        	if (myForm.getExamType() != null && myForm.getExamType() >= 0) {
-	        		sessionContext.setAttribute("Exam.Type", myForm.getExamType());
+	        		sessionContext.setAttribute(SessionAttribute.ExamType, myForm.getExamType());
 	        		myForm.load(null, sessionContext);
 	        	} else {
 	        		myForm.reset(mapping, request);

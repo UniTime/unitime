@@ -20,11 +20,11 @@
 package org.unitime.timetable.events;
 
 import org.apache.commons.fileupload.FileItem;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload.FileUploadRpcRequest;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload.FileUploadRpcResponse;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
-import org.unitime.timetable.gwt.server.UploadServlet;
 import org.unitime.timetable.security.SessionContext;
 
 /**
@@ -36,10 +36,10 @@ public class FileUploadBackend implements GwtRpcImplementation<FileUploadRpcRequ
 	@Override
 	public FileUploadRpcResponse execute(FileUploadRpcRequest request, SessionContext helper) {
 		if (request.isReset()) {
-			helper.setAttribute(UploadServlet.SESSION_LAST_FILE, null);
+			helper.setAttribute(SessionAttribute.LastUploadedFile, null);
 			return new FileUploadRpcResponse();
 		} else {
-			FileItem file = (FileItem)helper.getAttribute(UploadServlet.SESSION_LAST_FILE);
+			FileItem file = (FileItem)helper.getAttribute(SessionAttribute.LastUploadedFile);
 			return (file == null ? new FileUploadRpcResponse() : new FileUploadRpcResponse(file.getName()));
 		}
 	}

@@ -33,9 +33,9 @@ import javax.mail.internet.InternetAddress;
 import org.apache.commons.fileupload.FileItem;
 import org.hibernate.Transaction;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
-import org.unitime.timetable.gwt.server.UploadServlet;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
@@ -453,7 +453,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				}
 			};
 			
-			FileItem attachment = (FileItem)context.getAttribute(UploadServlet.SESSION_LAST_FILE);
+			FileItem attachment = (FileItem)context.getAttribute(SessionAttribute.LastUploadedFile);
 			boolean attached = false;
 			int firstDayOfWeek = ApplicationProperty.EventGridStartDay.intValue();
 			if (response.hasCreatedMeetings()) {

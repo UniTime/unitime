@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamType;
@@ -152,7 +153,7 @@ public class ExamGridForm extends ActionForm {
         context.getUser().setProperty("ExamGrid.dispMode", String.valueOf(getDispMode()));
         context.getUser().setProperty("ExamGrid.order", String.valueOf(getOrder()));
         context.getUser().setProperty("ExamGrid.bgPref", getBgPreferences() ? "1" : "0");
-        context.setAttribute("Exam.Type", getExamType());
+        context.setAttribute(SessionAttribute.ExamType, getExamType());
         context.getUser().setProperty("ExamReport.showSections", getShowSections() ? "1" : "0");
     }
 

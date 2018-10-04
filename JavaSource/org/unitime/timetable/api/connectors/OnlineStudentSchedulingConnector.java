@@ -29,6 +29,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.api.ApiConnector;
 import org.unitime.timetable.api.ApiHelper;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox;
 import org.unitime.timetable.gwt.server.UniTimePrincipal;
 import org.unitime.timetable.gwt.services.SectioningService;
@@ -93,7 +94,7 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 					break;
 			}
 		
-		helper.getSessionContext().setAttribute("sessionId", sessionId);
+		helper.getSessionContext().setAttribute(SessionAttribute.OnlineSchedulingLastSession, sessionId);
 		
 		String studentId = helper.getParameter("studentId");
 		UniTimePrincipal principal = null;
@@ -108,11 +109,11 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 						principal.addStudentId(s.getSession().getUniqueId(), s.getUniqueId());
 						principal.setName(NameFormat.defaultFormat().format(s));
 					}
-					helper.getSessionContext().setAttribute("user", principal);
+					helper.getSessionContext().setAttribute(SessionAttribute.OnlineSchedulingUser, principal);
 				} else {
 					UserContext user = helper.getSessionContext().getUser();
 					principal = new UniTimePrincipal(user.getExternalUserId(), studentId, user.getName());
-					helper.getSessionContext().setAttribute("user", principal);
+					helper.getSessionContext().setAttribute(SessionAttribute.OnlineSchedulingUser, principal);
 				}
 			} finally {
 				hibSession.close();
@@ -121,7 +122,7 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 		
 		String pin = helper.getParameter("pin");
 		if (pin != null)
-			helper.getSessionContext().setAttribute("pin", pin);
+			helper.getSessionContext().setAttribute(SessionAttribute.OnlineSchedulingPIN, pin);
 		
 		op.execute(getSectioningService(), helper, type, sessionId, principal == null ? null : principal.getStudentId(sessionId));
 	}

@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.Vector;
 
 import org.unitime.commons.Debug;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.security.SessionContext;
 
 
@@ -31,14 +32,14 @@ import org.unitime.timetable.security.SessionContext;
  * @author Tomas Muller
  */
 public class Navigation {
-	public static String sLastDisplayedIdsSessionAttribute = "lastDispIds";
+	public static String sLastDisplayedIdsSessionAttribute = SessionAttribute.NavigationLastIds.key();
 	public static int sNrLevels = 3;
 	public static int sInstructionalOfferingLevel = 0;
 	public static int sSchedulingSubpartLevel = 1;
 	public static int sClassLevel = 2;
 	
 	public static Long getNext(SessionContext context, int level, Long id) {
-		Vector[] ids = (Vector[])context.getAttribute(sLastDisplayedIdsSessionAttribute);
+		Vector[] ids = (Vector[])context.getAttribute(SessionAttribute.NavigationLastIds);
 		int idx = (ids==null?-1:ids[level].indexOf(id));
 		if (idx>=0) {
 			try {
@@ -51,7 +52,7 @@ public class Navigation {
 	}
 
 	public static Long getPrevious(SessionContext context, int level, Long id) {
-		Vector[] ids = (Vector[])context.getAttribute(sLastDisplayedIdsSessionAttribute);
+		Vector[] ids = (Vector[])context.getAttribute(SessionAttribute.NavigationLastIds);
 		int idx = (ids==null?-1:ids[level].indexOf(id));
 		if (idx>=0) {
 			try {
@@ -64,12 +65,12 @@ public class Navigation {
 	}
 	
 	public static void set(SessionContext session, int level, Collection entities) {
-		Vector[] ids = (Vector[])session.getAttribute(sLastDisplayedIdsSessionAttribute);
+		Vector[] ids = (Vector[])session.getAttribute(SessionAttribute.NavigationLastIds);
 		if (ids==null) {
 			ids = new Vector[sNrLevels];
 			for (int i=0;i<sNrLevels;i++)
 				ids[i] = new Vector();
-			session.setAttribute(sLastDisplayedIdsSessionAttribute, ids);
+			session.setAttribute(SessionAttribute.NavigationLastIds, ids);
 		}
 		for (int i=level;i<sNrLevels;i++)
 			ids[i].clear();

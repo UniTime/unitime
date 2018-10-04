@@ -37,6 +37,7 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -307,7 +308,7 @@ public class ExamPeriodEditForm extends ActionForm {
 			Session session = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId());
 			iDate = df.format(session.getExamBeginDate());
 			iLength = 120;
-			iType = (Long)context.getAttribute("Exam.Type");
+			iType = (Long)context.getAttribute(SessionAttribute.ExamType);
 			TreeSet periods = ExamPeriod.findAll(context.getUser().getCurrentAcademicSessionId(), iType);
 			if (!periods.isEmpty()) {
 				iType = ((ExamPeriod)periods.last()).getExamType().getUniqueId();
@@ -359,7 +360,7 @@ public class ExamPeriodEditForm extends ActionForm {
 			iStopOffset = ep.getEventStopOffset() * Constants.SLOT_LENGTH_MIN;
 			iPrefLevel = ep.getPrefLevel().getUniqueId();
 			iType = ep.getExamType().getUniqueId();
-			context.setAttribute("Exam.Type", iType);
+			context.setAttribute(SessionAttribute.ExamType, iType);
 			iOp = "Update";
 			iEditable = !ep.isUsed();
 		}

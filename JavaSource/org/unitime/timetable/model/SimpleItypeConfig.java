@@ -22,6 +22,8 @@ package org.unitime.timetable.model;
 import java.io.Serializable;
 import java.util.Vector;
 
+import org.unitime.timetable.defaults.SessionAttribute;
+
 /**
  * Config for user manipulations
  * Not stored in database till user hits commit 
@@ -50,7 +52,7 @@ public class SimpleItypeConfig implements Serializable {
     private long managingDeptId;
     
     /** Request attribute name for user defined config **/
-    public static String CONFIGS_ATTR_NAME = "configsList";
+    public static String CONFIGS_ATTR_NAME = SessionAttribute.InstructionalOfferingConfigList.key();
 
     /** Default Constructor **/
     public SimpleItypeConfig(ItypeDesc itype) {

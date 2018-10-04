@@ -30,6 +30,7 @@ import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ItypeDesc;
@@ -65,7 +66,7 @@ public class SchedulingSubpartTableBuilder {
 		boolean varLimits = "y".equals(request.getParameter("varLimits"));
 		
         // Read user defined config
-        Vector sp = (Vector) context.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME);
+        Vector sp = (Vector) context.getAttribute(SessionAttribute.InstructionalOfferingConfigList);
         
         // Read setting for auto calculation 
         boolean autoCalc = true;

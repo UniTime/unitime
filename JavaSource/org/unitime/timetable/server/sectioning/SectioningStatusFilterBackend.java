@@ -22,6 +22,7 @@ package org.unitime.timetable.server.sectioning;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -75,7 +76,7 @@ public class SectioningStatusFilterBackend implements GwtRpcImplementation<Secti
 
 				OnlineSectioningServer server = solverServerService.getOnlineStudentSchedulingContainer().getSolver(sessionId.toString());
 				if (server == null) {
-					ProxyHolder<Long, OnlineSectioningServer> h = (ProxyHolder<Long, OnlineSectioningServer>)context.getAttribute("OnlineSectioning.DummyServer");
+					ProxyHolder<Long, OnlineSectioningServer> h = (ProxyHolder<Long, OnlineSectioningServer>)context.getAttribute(SessionAttribute.OnlineSchedulingDummyServer);
 					if (h != null && h.isValid(sessionId))
 						server = h.getProxy();
 					else {
@@ -83,7 +84,7 @@ public class SectioningStatusFilterBackend implements GwtRpcImplementation<Secti
 						if (session == null)
 							throw new SectioningException(MSG.exceptionBadSession()); 
 						server = new DatabaseServer(new AcademicSessionInfo(session), false);
-						context.setAttribute("OnlineSectioning.DummyServer", new ProxyHolder<Long, OnlineSectioningServer>(sessionId, server));
+						context.setAttribute(SessionAttribute.OnlineSchedulingDummyServer, new ProxyHolder<Long, OnlineSectioningServer>(sessionId, server));
 					}
 				}
 
@@ -125,7 +126,7 @@ public class SectioningStatusFilterBackend implements GwtRpcImplementation<Secti
 	}
 	
 	public Long getLastSessionId(SessionContext context) {
-		Long lastSessionId = (Long)context.getAttribute("sessionId");
+		Long lastSessionId = (Long)context.getAttribute(SessionAttribute.OnlineSchedulingLastSession);
 		if (lastSessionId == null) {
 			UserContext user = context.getUser();
 			if (user != null) {
@@ -139,7 +140,7 @@ public class SectioningStatusFilterBackend implements GwtRpcImplementation<Secti
 	
 	private OnlineSectioningLog.Entity currentUser(SessionContext context) {
 		UserContext user = context.getUser();
-		UniTimePrincipal principal = (UniTimePrincipal)context.getAttribute("user");
+		UniTimePrincipal principal = (UniTimePrincipal)context.getAttribute(SessionAttribute.OnlineSchedulingUser);
 		if (user != null) {
 			return OnlineSectioningLog.Entity.newBuilder()
 				.setExternalId(user.getTrueExternalUserId())
