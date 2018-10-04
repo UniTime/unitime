@@ -39,6 +39,7 @@ public class SectioningException extends GwtRpcException implements IsSerializab
 	private Type iType = null;
 	private Map<Long, String> iSectionMessages = null;
 	private ArrayList<ErrorMessage> iErrors = null;
+	private boolean iCanRequestOverride = false;
 	
 	public SectioningException() {
 		super();
@@ -88,6 +89,9 @@ public class SectioningException extends GwtRpcException implements IsSerializab
 		return iErrors != null && !iErrors.isEmpty();
 	}
 	public ArrayList<ErrorMessage> getErrors() { return iErrors; }
+	
+	public SectioningException setCanRequestOverride(boolean canRequestOverride) { iCanRequestOverride = canRequestOverride; return this; }
+	public boolean isCanRequestOverride() { return hasErrors() || iCanRequestOverride; }
 	
 	@Override
 	public String toString() {

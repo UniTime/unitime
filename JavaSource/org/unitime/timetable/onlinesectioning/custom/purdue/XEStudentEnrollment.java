@@ -436,7 +436,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				}
 				if (credit > maxCredit && credit > enrolled) {
 					throw new SectioningException(ApplicationProperties.getProperty("banner.xe.messages.maxCredit", "Maximum of {max} hours exceeded.")
-							.replace("{max}", sCreditFormat.format(maxCredit > enrolled ? maxCredit : enrolled)).replace("{credit}", sCreditFormat.format(credit)));
+							.replace("{max}", sCreditFormat.format(maxCredit > enrolled ? maxCredit : enrolled)).replace("{credit}", sCreditFormat.format(credit))).setCanRequestOverride(true);
 				}
 			}
 			
@@ -536,7 +536,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				}
 				if (credit > maxHours) {
 					throw new SectioningException(ApplicationProperties.getProperty("banner.xe.messages.maxHours", "Maximum of {max} hours exceeded.")
-							.replace("{max}", sCreditFormat.format(maxHours)).replace("{credit}", sCreditFormat.format(credit)));
+							.replace("{max}", sCreditFormat.format(maxHours)).replace("{credit}", sCreditFormat.format(credit))).setCanRequestOverride(true);
 				}
 			}
 			
@@ -832,7 +832,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					if (!"Unable to make requested changes so your schedule was not changed.".equals(f.getMessage()))
 						message += (message.isEmpty() ? "" : "<br>") + f;
 				}
-				SectioningException e = new SectioningException(message.replace("\n", " "));
+				SectioningException e = new SectioningException(message.replace("\n", " ")).setCanRequestOverride(true);
 				for (EnrollmentFailure f: fails) {
 					if (f.getSection() != null && !"Unable to make requested changes so your schedule was not changed.".equals(f.getMessage()))
 						e.setSectionMessage(f.getSection().getSectionId(), f.getMessage());
