@@ -25,6 +25,7 @@ import java.util.Iterator;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+import org.hibernate.NonUniqueResultException;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.PositionType;
@@ -100,7 +101,12 @@ public class StaffImport extends BaseImport {
 							// do nothing
 						}
 			        }
-	 				staff = findByExternalId(externalId, dept);
+		            try {
+		            	staff = findByExternalId(externalId, dept);
+		            } catch (NonUniqueResultException e) {
+		            	error("Multiple staff members exist for the external id " + externalId + ", please provide department code.");
+		            	continue;
+		            }
 				}
 				if(staff == null) {
 					staff = new Staff();

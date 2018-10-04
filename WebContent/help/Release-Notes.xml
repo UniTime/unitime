@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <?xml-stylesheet type="text/css" href="Release-Notes.css"?>
 <!DOCTYPE release-history PUBLIC "-//UniTime//UniTime Release Notes DTD/EN" "Release-Notes.dtd">
-<!-- 
+<!--
  * Licensed to The Apereo Foundation under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
  * additional information regarding copyright ownership.
@@ -18,7 +18,7 @@
  *
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  -->
 
 <release-history>
@@ -42,12 +42,12 @@
 				<line>In order to make it more obvious to the user when the assigned Date Pattern for a class has
 				 been changed after a solution has been committed, the following changes have been made:
 				<line>Updated the List of Classes on the Instructional Offering Detail Page and Scheduling Subpart
-				 Detail Page to provide a warning icon, mouseover message and different highlighting to indicate 
-				 the date pattern assigned to the class does not match the date pattern used in the committed 
-				 timetable for the class.  If a class has both a date pattern changed warning and a meeting 
+				 Detail Page to provide a warning icon, mouseover message and different highlighting to indicate
+				 the date pattern assigned to the class does not match the date pattern used in the committed
+				 timetable for the class.  If a class has both a date pattern changed warning and a meeting
 				 conflict warning then only one warning icon is displayed.</line>
-				 <line>Updated the Class Detail page to show an error message at the top indicating the date 
-				 pattern assigned to the class does not match the date pattern used in the committed timetable 
+				 <line>Updated the Class Detail page to show an error message at the top indicating the date
+				 pattern assigned to the class does not match the date pattern used in the committed timetable
 				 for the class.</line>
 				 </line>
 			</description>
@@ -83,7 +83,7 @@
 				<line>Corrected the "Show only classes that need instructor assignment" filter (fixes the could not resolve property: teachingLoad error).</line>
 			</description>
 		</item>
-	</category>	
+	</category>
 	<category>
 		<title>Event Management</title>
 		<item>
@@ -107,6 +107,12 @@
 			<name>HQL Reports: Export CSV</name>
 			<description>
 				<line>Fixed the ability to export an HQL report to CSV when the query contains a single-choice parameter (like SUBJECT or DEPARTMENT).</line>
+			</description>
+		</item>
+		<item>
+			<name>Data Exchange: Staff Import</name>
+			<description>
+					<line>Report an error when no department is provided and there are two or more staff members with the matching external id.</line>
 			</description>
 		</item>
 	</category>
