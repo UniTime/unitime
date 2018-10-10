@@ -279,7 +279,7 @@ public class SpecialRegistrationsPanel extends P {
 				}
 			}
 			ImageButton delete = null;
-			if (reg.canCancel()) {
+			if (reg.canCancel() && iSpecReg.isEnabled()) {
 				delete = new ImageButton(RESOURCES.delete(), RESOURCES.delete_Down(), RESOURCES.delete_Over());
 				delete.addStyleName("unitime-NoPrint");
 				delete.addClickHandler(new ClickHandler() {

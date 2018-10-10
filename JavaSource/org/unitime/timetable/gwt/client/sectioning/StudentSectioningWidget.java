@@ -1976,7 +1976,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						}
 					});
 				}
-				if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG) && iEligibilityCheck.hasFlag(EligibilityFlag.HAS_SPECREG)) {
+				if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.HAS_SPECREG)) { // && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG)
 					iSpecialRegistrationsPanel.showWaiting();
 					iSectioningService.retrieveAllSpecialRequests(
 							new RetrieveAllSpecialRegistrationsRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId()),
