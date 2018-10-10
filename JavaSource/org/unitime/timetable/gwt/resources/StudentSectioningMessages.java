@@ -2056,11 +2056,13 @@ public interface StudentSectioningMessages extends Messages {
 	String messageCannotRequestOverridesErrorsBottom();
 	
 	@DefaultMessage("It is possible to request overrides for all of the above registration errors.\n"+
-			"Click <b>Request Overrides</b> to review and request overrides. Click <b>Close Dialog</b> to hide this dialog without requesting any overrides.")
+			"If you have already discussed these courses with your advisor and were advised to request registration in them, please select <b>Request Overrides</b>. "+
+			"If you aren’t sure, click <b>Close Dialog</b> and consult with your advisor before registering for these courses.")
 	String messageCanRequestOverridesAll();
 	
 	@DefaultMessage("It is possible to request overrides for some of the above registration errors.\n"+
-			"Click <b>Request Overrides</b> to review and request overrides. Click <b>Close Dialog</b> to hide this dialog without requesting any overrides.")
+			"If you have already discussed these courses with your advisor and were advised to request registration in them, please select <b>Request Overrides</b>. "+
+			"If you aren’t sure, click <b>Close Dialog</b> and consult with your advisor before registering for these courses.")
 	String messageCanRequestOverridesSome();
 	
 	@DefaultMessage("Show all changes")
