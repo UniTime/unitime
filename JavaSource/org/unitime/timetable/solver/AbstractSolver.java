@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.solver;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -51,6 +52,7 @@ import org.cpsolver.ifs.util.ProblemSaver;
 import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.ifs.util.ProgressWriter;
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
@@ -635,6 +637,24 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
             return ret.toByteArray();
         } finally {
         	lock.unlock();
+        }
+    }
+    
+    public void importXml(byte[] data) throws IOException {
+        try {
+            Document document = (new SAXReader()).read(new ByteArrayInputStream(data));
+            readProperties(document);
+            
+            M model = createModel(getProperties());
+            Progress.getInstance(model).addProgressListener(new ProgressWriter(System.out));
+            
+            setInitalSolution(model);
+            initSolver();
+
+            restureCurrentSolutionFromBackup(document);
+            Progress.getInstance(model).setStatus(MSG.statusReady());
+        } catch (DocumentException e) {
+        	throw new IOException(e.getMessage(), e);
         }
     }
     

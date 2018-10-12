@@ -98,6 +98,10 @@ public class DataExchangeHelper {
         sImportRegister.put("sessionSetup", AcademicSessionSetupImport.class);
         sImportRegister.put("studentAdvisors", StudentAdvisorsImport.class);
         sImportRegister.put("studentStatuses", StudentSchedulingStatusImport.class);
+        sImportRegister.put("examtt", SolverImport.class);
+        sImportRegister.put("coursett", SolverImport.class);
+        sImportRegister.put("sectioning", SolverImport.class);
+        sImportRegister.put("instructor-schedule", SolverImport.class);
     }
     
     public DataExchangeHelper() {

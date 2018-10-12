@@ -96,6 +96,14 @@ public class CourseTimetableImport extends BaseImport {
         if (!rootElement.getName().equalsIgnoreCase("timetable"))
         	throw new Exception("Given XML file is not a course timetable import file.");
         
+        if (rootElement.attributeValue("campus") == null && rootElement.element("groupConstraints") != null) {
+        	SolverImport imp = new SolverImport();
+        	imp.setLog(getLog());
+        	imp.setManager(getManager());
+        	imp.loadXml(rootElement);
+        	return;
+        }
+        
 		try {
 	        String campus = rootElement.attributeValue("campus");
 	        String year   = rootElement.attributeValue("year");

@@ -50,6 +50,7 @@ public interface CommonSolverInterface {
 	public void clear();
     public void save();
     public byte[] exportXml() throws IOException;
+    public void importXml(byte[] data) throws IOException;
 
     public Map getProgress();
     public List<Progress.Message> getProgressLog(Integer level, String fromStage, Date since);
