@@ -1745,6 +1745,11 @@ public enum ApplicationProperty {
 	@DefaultValue("92")
 	@Description("Configuration: automatically remove hashed calendar queries that have not been used for the given number of days")
 	LogCleanupHashedQueries("unitime.cleanup.hashedQueries"),
+	
+	@Type(Integer.class)
+	@DefaultValue("92")
+	@Description("Configuration: automatically remove published batch student scheduling solutions after the given number of days")
+	LogCleanupSectioningSolutionLog("unitime.cleanup.hashedQueries"),
 
 	@DefaultValue("WARN")
 	@Values({"ERROR", "WARN", "INFO"})

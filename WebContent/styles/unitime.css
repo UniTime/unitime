@@ -4515,6 +4515,10 @@ unitime-RoomSharingWidget .legend .blank {
 	width: 100px;
 }
 
+.unitime-SolverPage .widget-cell {
+	white-space: pre-wrap;
+}
+
 .unitime-TeachingRequests {
 	width: 100%;
 }
@@ -6430,4 +6434,17 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-SpecialRegistrationsPanel .registrations-table td:nth-child(9) {
 	width: 400px;
+}
+
+.unitime-PublishedSectioningSolutions {
+	width: 100%;
+	white-space: pre-wrap;
+}
+
+.unitime-PublishedSectioningSolutions button {
+	margin: 2px;
+}
+
+.unitime-PublishedSectioningSolutions .loaded {
+	background-color: #D7FFD7;
 }

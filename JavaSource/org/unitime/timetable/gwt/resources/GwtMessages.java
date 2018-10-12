@@ -155,6 +155,9 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Export iCalendar")
 	String opExportICalendar();
+	
+	@DefaultMessage("Export XML")
+	String opExportXML();
 		
 	@DefaultMessage("Expand All")
 	String opExpandAll();
@@ -2898,6 +2901,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Showing selected solutions for {0}.")
 	String infoSolverShowingSelectedSolutions(String owners);
 	
+	@DefaultMessage("Showing published schedule run from {0}.")
+	String infoSolverShowingPublishedSectioningSolution(String timeStamp);
+	
 	@DefaultMessage("There is no {0} solution committed, {1} classes are not considered.")
 	String warnSolverNoCommittedSolutionExternal(String owner, String ext);
 	
@@ -3687,6 +3693,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Task Details")
 	@DoNotTranslate
 	String pageTaskDetails();
+	
+	@DefaultMessage("Published Schedule Runs")
+	@DoNotTranslate
+	String pagePublishedSectioningSolutions();
 	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -6269,4 +6279,67 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Edit {0}")
 	String dialogEditTask(String name);
+	
+	@DefaultMessage("Course<br>Requests")
+	String colAssignedCourseRequests();
+	
+	@DefaultMessage("Priority<br>Course")
+	String colAssignedPriorityCourseRequests();
+	
+	@DefaultMessage("Complete<br>Schedule")
+	String colStudentsWithCompleteSchedule();
+	
+	@DefaultMessage("Class / IM<br>Preference")
+	String colSectioningSelection();
+	
+	@DefaultMessage("Time<br>Conflicts")
+	String colTimeConflicts();
+	
+	@DefaultMessage("Distance<br>Conflicts")
+	String colDistanceConflicts();
+	
+	@DefaultMessage("Unbalanced<br>Sections")
+	String colDisbalancedSections();
+	
+	@DefaultMessage("Arrange<br>Hours")
+	String colClassesWithoutTime();
+	
+	@DefaultMessage("Operations")
+	String colOperations();
+	
+	@DefaultMessage("Publish")
+	String opSectioningSolutionPublish();
+	
+	@DefaultMessage("Unpublish")
+	String opSectioningSolutionUnpublish();
+	
+	@DefaultMessage("Load")
+	String opSectioningSolutionLoad();
+	
+	@DefaultMessage("Unload")
+	String opSectioningSolutionUnload();
+	
+	@DefaultMessage("Select")
+	String opSectioningSolutionSelect();
+	
+	@DefaultMessage("Deselect")
+	String opSectioningSolutionDeselect();
+	
+	@DefaultMessage("Remove")
+	String opSectioningSolutionRemove();
+	
+	@DefaultMessage("Published Schedule Runs")
+	String titlePublishedScheduleRuns();
+	
+	@DefaultMessage("Refresh")
+	String opRefresh();
+	
+	@DefaultMessage("Do you realy want to delete this published schedule run?")
+	String confirmDeletePublishedSectioningSolution();
+	
+	@DefaultMessage("Do you really want to unload this published student schedule?")
+	String confirmStudentSolverUnpublish();
+	
+	@DefaultMessage("Unpublish")
+	String opSolverUnpublish();
 }

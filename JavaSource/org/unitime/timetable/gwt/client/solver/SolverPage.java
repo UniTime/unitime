@@ -130,6 +130,7 @@ public class SolverPage extends SimpleForm {
 		iSolverButtons.addButton("clear", MESSAGES.opSolverClear(), createClickHandler(SolverOperation.CLEAR));
 		iSolverButtons.addButton("csv", MESSAGES.opSolverExportCSV(), createClickHandler(SolverOperation.EXPORT_CSV));
 		iSolverButtons.addButton("unload", MESSAGES.opSolverUnload(), createClickHandler(SolverOperation.UNLOAD));
+		iSolverButtons.addButton("unpublish", MESSAGES.opSolverUnpublish(), createClickHandler(SolverOperation.UNPUBLISH));
 		iSolverButtons.addButton("refresh", MESSAGES.opSolverRefresh(), createClickHandler(SolverOperation.CHECK));
 		
 		execute(SolverOperation.INIT);
@@ -186,6 +187,9 @@ public class SolverPage extends SimpleForm {
 				confirmation = MESSAGES.confirmStudentSolverUnload();
 			else
 				confirmation = MESSAGES.confirmSolverUnload();
+			break;
+		case UNPUBLISH:
+			confirmation = MESSAGES.confirmStudentSolverUnpublish();
 			break;
 		case CLEAR:
 			if (iType == SolverType.STUDENT)
@@ -402,6 +406,7 @@ public class SolverPage extends SimpleForm {
 		iSolverButtons.setEnabled("clear", response.canExecute(SolverOperation.CLEAR));
 		iSolverButtons.setEnabled("csv", response.canExecute(SolverOperation.EXPORT_CSV));
 		iSolverButtons.setEnabled("unload", response.canExecute(SolverOperation.UNLOAD));
+		iSolverButtons.setEnabled("unpublish", response.canExecute(SolverOperation.UNPUBLISH));
 		iSolverButtons.setEnabled("refresh", response.canExecute(SolverOperation.CHECK));
 		for (int row = getRowCount() - 1; row > iButtonsRow; row--)
 			removeRow(row);

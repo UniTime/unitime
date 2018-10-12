@@ -43,6 +43,7 @@ import org.unitime.timetable.gwt.client.rooms.RoomPicturesPage;
 import org.unitime.timetable.gwt.client.rooms.RoomSharingPage;
 import org.unitime.timetable.gwt.client.rooms.RoomsPage;
 import org.unitime.timetable.gwt.client.rooms.TravelTimes;
+import org.unitime.timetable.gwt.client.sectioning.PublishedSectioningSolutionsPage;
 import org.unitime.timetable.gwt.client.sectioning.SectioningReports;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusPage;
 import org.unitime.timetable.gwt.client.sectioning.StudentSectioningPage;
@@ -255,6 +256,10 @@ public enum Pages {
 	tasks(new PageFactory() {
 		public Widget create() { return new TasksPage(); }
 		public String name(GwtMessages messages) { return messages.pageTasks(); }
+		}),
+	publishedSolutions(new PageFactory() {
+		public Widget create() { return new PublishedSectioningSolutionsPage(); }
+		public String name(GwtMessages messages) { return messages.pagePublishedSectioningSolutions(); }
 		}),
 	;
 	

@@ -13256,4 +13256,29 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'CourseTypeEdit'
 		</sql>
 	</update>
+	<update version="212" date="5-Oct-2018" comment="Published student scheduling solutions">
+	    <plsql>
+			create table %SCHEMA%.sct_solution_log (
+				uniqueid number(20,0) constraint nn_sct_sol_log_id not null,
+				session_id number(20,0) constraint nn_sct_sol_log_session not null,
+				owner_id number(20,0) constraint nn_sct_sol_log_mgr not null,
+				time_stamp date constraint nn_sct_sol_log_ts not null,
+				data blob constraint nn_sct_sol_log_data not null,
+				info varchar2(2000 char) not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.sct_solution_log add constraint pk_sct_solution_log primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.sct_solution_log (
+				uniqueid decimal(20,0) primary key not null,
+				session_id decimal(20,0) not null,
+				owner_id decimal(20,0) not null,
+				time_stamp datetime not null,
+				data longblob not null,
+				info varchar(2000) not null
+			) engine = INNODB
+		</mysql>
+		<sql>alter table %SCHEMA%.sct_solution_log add constraint fk_sct_sol_log_session foreign key (session_id) references %SCHEMA%.sessions (uniqueid) on delete cascade</sql>
+		<sql>alter table %SCHEMA%.sct_solution_log add constraint fk_sct_sol_log_owner foreign key (owner_id) references %SCHEMA%.timetable_manager (uniqueid) on delete cascade</sql>
+	</update>
 </dbupdate>

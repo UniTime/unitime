@@ -436,6 +436,11 @@
 				    <hasPermission name="StudentSectioningSolver"/>
 				</condition>
 			</item>
+			<item name="Published Runs" page="publishedSolutions" type="gwt">
+				<condition>
+				    <hasPermission name="StudentSectioningSolverPublish"/>
+				</condition>
+			</item>
 		</menu>
 		<item name="Batch Scheduling Dashboard" page="batchsctdash" type="gwt">
 			<condition>

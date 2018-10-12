@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.assignment.Assignment;
@@ -856,12 +858,14 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
         lock.lock();
         try {
             ByteArrayOutputStream ret = new ByteArrayOutputStream();
+            GZIPOutputStream gz = new GZIPOutputStream(ret);
             
             Document document = createCurrentSolutionBackup(false, false);
+            saveProperties(document);
             
-            (new XMLWriter(ret, OutputFormat.createCompactFormat())).write(document);
+            new XMLWriter(gz, OutputFormat.createCompactFormat()).write(document);
             
-            ret.flush(); ret.close();
+            gz.flush(); gz.close();
 
             return ret.toByteArray();
         } catch (Exception e) {
@@ -879,13 +883,13 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
             if (isRunning()) stopSolver();
             disposeNoInherit(false);
 
-            Document document = (new SAXReader()).read(new ByteArrayInputStream(data));
-            readProperties(document);
-            
             model = createModel(getProperties());
             Progress.getInstance(model).addProgressListener(new ProgressWriter(System.out));
             setInitalSolution(model);
             initSolver();
+
+            Document document = (new SAXReader()).read(new GZIPInputStream(new ByteArrayInputStream(data)));
+            // readProperties(document);
 
             restureCurrentSolutionFromBackup(document);
             if (isPublished()) {

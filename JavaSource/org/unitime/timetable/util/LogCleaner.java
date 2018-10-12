@@ -152,13 +152,33 @@ public class LogCleaner {
 		}
 	}
 	
+	public static void cleanupSctSolutionLog(int days) {
+		if (days < 0) return;
+		org.hibernate.Session hibSession = new _RootDAO().createNewSession();
+		Transaction tx = null;
+		try {
+			tx = hibSession.beginTransaction();
+			int rows = hibSession.createQuery(
+					"delete from SectioningSolutionLog where timeStamp < " + HibernateUtil.addDate("current_date()", ":days")
+					).setInteger("days", - days).executeUpdate();
+			if (rows > 0)
+				sLog.info("All records older than " + days + " days deleted from the sectioning solutions log (" + rows + " records).");
+			tx.commit();
+		} catch (Throwable t) {
+			sLog.warn("Failed to sectioning solutions log: " + t.getMessage(), t);
+			if (tx != null) tx.rollback();
+		} finally {
+			hibSession.close();
+		}
+	}
+	
 	public static void cleanupLogs() {
 		cleanupChangeLog(ApplicationProperty.LogCleanupChangeLog.intValue());
 		cleanupQueryLog(ApplicationProperty.LogCleanupQueryLog.intValue());
 		cleanupOnlineSectioningLog(ApplicationProperty.LogCleanupOnlineSchedulingLog.intValue());
 		cleanupMessageLog(ApplicationProperty.LogCleanupMessageLog.intValue());
 		cleanupStudentSectioningQueue(ApplicationProperty.LogCleanupOnlineSchedulingQueue.intValue());
-		cleanupHashedQueries(ApplicationProperty.LogCleanupHashedQueries.intValue());
+		cleanupHashedQueries(ApplicationProperty.LogCleanupSectioningSolutionLog.intValue());
 	}
 
 }

@@ -178,7 +178,7 @@ public class StudentSectioningSolverService implements SolverService<StudentSolv
 		}
 	}
 	
-	public StudentSolverProxy publishSolver(DataProperties properties, byte[] backup) {
+	public StudentSolverProxy publishSolver(Long id, DataProperties properties, byte[] backup) {
 		try {
 			if (!sessionContext.isAuthenticated() || sessionContext.getUser().getCurrentAcademicSessionId() == null) return null;
 			if (backup == null) return null;
@@ -191,6 +191,7 @@ public class StudentSectioningSolverService implements SolverService<StudentSolv
 			DataProperties config = new DataProperties(properties.toMap());
 			String host = config.getProperty("General.Host");
 			config.setProperty("StudentSct.Published", String.valueOf((new Date()).getTime()));
+			config.setProperty("StudentSct.PublishId", id == null ? null : id.toString());
 			config.setProperty("General.OwnerPuid", "PUBLISHED_" + config.getProperty("General.SessionId"));
 		    
 		    StudentSolverProxy solver = solverServerService.createStudentSolver(host, "PUBLISHED_" + config.getProperty("General.SessionId"), config);

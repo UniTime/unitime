@@ -58,7 +58,7 @@ public class SolverInterface implements IsSerializable {
 		SAVE, SAVE_AS_NEW,
 		SAVE_COMMIT, SAVE_AS_NEW_COMMIT, SAVE_UNCOMMIT,
 		VALIDATE,
-		PUBLISH, CLONE,
+		PUBLISH, UNPUBLISH, CLONE,
 		;
 		public int flag() { return 1 << ordinal(); }
 		public boolean in(int flags) {
@@ -552,5 +552,29 @@ public class SolverInterface implements IsSerializable {
 		@Override
 		public String toString() { return getType() + ": " + getLevel(); }
 	}
+	
+	public static class SolverPageMessagesRequest implements GwtRpcRequest<SolverPageMessages> {
+		private SolverType iType;
 
+		public SolverPageMessagesRequest() {}
+		public SolverPageMessagesRequest(SolverType type) {
+			iType = type;
+		}
+
+		public SolverType getType() { return iType; }
+		public void setType(SolverType type) { iType = type; }
+	}
+	
+	public static class SolverPageMessages implements GwtRpcResponse, HasPageMessages {
+		private List<PageMessage> iPageMessages = null;
+		
+		public SolverPageMessages() {}
+
+		public boolean hasPageMessages() { return iPageMessages != null && !iPageMessages.isEmpty(); }
+		public List<PageMessage> getPageMessages() { return iPageMessages; }
+		public void addPageMessage(PageMessage message) {
+			if (iPageMessages == null) iPageMessages = new ArrayList<PageMessage>();
+			iPageMessages.add(message);
+		}
+	}
 }

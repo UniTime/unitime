@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
@@ -43,6 +44,11 @@ import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
+import org.unitime.timetable.gwt.shared.SolverInterface.PageMessage;
+import org.unitime.timetable.gwt.shared.SolverInterface.PageMessageType;
+import org.unitime.timetable.gwt.shared.SolverInterface.SolverPageMessages;
+import org.unitime.timetable.gwt.shared.SolverInterface.SolverPageMessagesRequest;
+import org.unitime.timetable.gwt.shared.SolverInterface.SolverType;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
@@ -62,6 +68,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -286,6 +293,39 @@ public class SectioningReports extends Composite {
 				}
 			}
 		});
+		
+		if (!online) {
+			RPC.execute(new SolverPageMessagesRequest(SolverType.STUDENT), new AsyncCallback<SolverPageMessages>() {
+
+				@Override
+				public void onFailure(Throwable caught) {
+				}
+
+				@Override
+				public void onSuccess(SolverPageMessages response) {
+					RootPanel cpm = RootPanel.get("UniTimeGWT:CustomPageMessages");
+					if (cpm != null) {
+						cpm.clear();
+						if (response.hasPageMessages()) {
+							for (final PageMessage pm: response.getPageMessages()) {
+								P p = new P(pm.getType() == PageMessageType.ERROR ? "unitime-PageError" : pm.getType() == PageMessageType.WARNING ? "unitime-PageWarn" : "unitime-PageMessage");
+								p.setHTML(pm.getMessage());
+								if (pm.hasUrl()) {
+									p.addStyleName("unitime-ClickablePageMessage");
+									p.addClickHandler(new ClickHandler() {
+										@Override
+										public void onClick(ClickEvent event) {
+											if (pm.hasUrl()) ToolBox.open(GWT.getHostPageBaseURL() + pm.getUrl());
+										}
+									});
+								}
+								cpm.add(p);
+							}
+						}
+					}
+				}
+			});
+		}
 	}
 	
 	protected ReportTypeInterface getReportType(String reference) {

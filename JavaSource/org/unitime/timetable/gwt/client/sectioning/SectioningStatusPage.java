@@ -70,6 +70,11 @@ import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentGroupInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
+import org.unitime.timetable.gwt.shared.SolverInterface.PageMessage;
+import org.unitime.timetable.gwt.shared.SolverInterface.PageMessageType;
+import org.unitime.timetable.gwt.shared.SolverInterface.SolverPageMessages;
+import org.unitime.timetable.gwt.shared.SolverInterface.SolverPageMessagesRequest;
+import org.unitime.timetable.gwt.shared.SolverInterface.SolverType;
 
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
@@ -626,6 +631,39 @@ public class SectioningStatusPage extends Composite {
 				iStudentStatusDialog = new StudentStatusDialog(iStates);
 			}
 		});
+
+		if (!online) {
+			RPC.execute(new SolverPageMessagesRequest(SolverType.STUDENT), new AsyncCallback<SolverPageMessages>() {
+
+				@Override
+				public void onFailure(Throwable caught) {
+				}
+
+				@Override
+				public void onSuccess(SolverPageMessages response) {
+					RootPanel cpm = RootPanel.get("UniTimeGWT:CustomPageMessages");
+					if (cpm != null) {
+						cpm.clear();
+						if (response.hasPageMessages()) {
+							for (final PageMessage pm: response.getPageMessages()) {
+								P p = new P(pm.getType() == PageMessageType.ERROR ? "unitime-PageError" : pm.getType() == PageMessageType.WARNING ? "unitime-PageWarn" : "unitime-PageMessage");
+								p.setHTML(pm.getMessage());
+								if (pm.hasUrl()) {
+									p.addStyleName("unitime-ClickablePageMessage");
+									p.addClickHandler(new ClickHandler() {
+										@Override
+										public void onClick(ClickEvent event) {
+											if (pm.hasUrl()) ToolBox.open(GWT.getHostPageBaseURL() + pm.getUrl());
+										}
+									});
+								}
+								cpm.add(p);
+							}
+						}
+					}
+				}
+			});
+		}
 	}
 	
 	private void checkLastQuery() {

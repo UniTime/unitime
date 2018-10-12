@@ -19,7 +19,10 @@
 */
 package org.unitime.timetable.server.solver;
 
+import java.lang.reflect.Type;
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,6 +37,8 @@ import java.util.TreeSet;
 
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.Progress;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -60,6 +65,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamType;
+import org.unitime.timetable.model.SectioningSolutionLog;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
@@ -67,7 +73,10 @@ import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.SolverParameterGroup;
 import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.ExamTypeDAO;
+import org.unitime.timetable.model.dao.SectioningSolutionLogDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.SolverParameterDefDAO;
@@ -88,6 +97,16 @@ import org.unitime.timetable.solver.ui.PropertiesInfo;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.Formats.Format;
 import org.unitime.timetable.webutil.BackTracker;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 
 /**
  * @author Tomas Muller
@@ -236,9 +255,19 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
         	break;
         	
 		case PUBLISH:
+			context.checkPermission(Right.StudentSectioningSolverPublish);
 			if (solver == null) throw new GwtRpcException(MESSAGES.warnSolverNotStarted());
         	if (solver.isWorking()) throw new GwtRpcException(MESSAGES.warnSolverIsWorking());
-        	((StudentSectioningSolverService)service).publishSolver(solver.getProperties(), ((StudentSolverProxy)solver).backupXml());
+        	byte[] data = ((StudentSolverProxy)solver).backupXml();
+        	SectioningSolutionLog log = new SectioningSolutionLog();
+        	log.setData(data);
+        	log.setInfo(getGson().toJson(solver.currentSolutionInfo()));
+        	log.setTimeStamp(new Date());
+        	log.setSession(SessionDAO.getInstance().get(solver.getSessionId()));
+        	String mgrId = solver.getProperties().getProperty("General.OwnerPuid");
+        	log.setOwner(TimetableManager.findByExternalId(mgrId == null ? context.getUser().getExternalUserId() : mgrId));
+        	Long publishId = SectioningSolutionLogDAO.getInstance().save(log);
+        	((StudentSectioningSolverService)service).publishSolver(publishId, solver.getProperties(), data);
         	break;
         	
 		case CLONE:
@@ -253,6 +282,18 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
         	if (solver.isWorking()) throw new GwtRpcException(MESSAGES.warnSolverIsWorking());
         	service.removeSolver();
         	request.clear();
+        	response.setRefresh(true);
+        	solver = null;
+        	break;
+        	
+		case UNPUBLISH:
+			context.removeAttribute(SessionAttribute.StudentSectioningSolver);
+			if (solver != null) {
+				solver.interrupt();
+				solver.dispose();
+			}
+			context.removeAttribute(SessionAttribute.StudentSectioningUser);
+			request.clear();
         	response.setRefresh(true);
         	solver = null;
         	break;
@@ -605,9 +646,9 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 			response.setCanExecute(SolverOperation.LOAD, SolverOperation.START, SolverOperation.CHECK);
 		} else {
 			if (request.getType() == SolverType.STUDENT && ((StudentSolverProxy)solver).isPublished()) {
-				response.setCanExecute(SolverOperation.UNLOAD, SolverOperation.LOAD, SolverOperation.START, SolverOperation.CHECK);
+				response.setCanExecute(SolverOperation.LOAD, SolverOperation.START, SolverOperation.CHECK);
 				if (context.hasPermission(Right.StudentSectioningSolverPublish))
-					response.setCanExecute(SolverOperation.CLONE);
+					response.setCanExecute(SolverOperation.UNPUBLISH, SolverOperation.CLONE);
 				if (context.hasPermission(Right.StudentSectioningSolutionExportXml))
 					response.setCanExecute(SolverOperation.EXPORT_XML);
 				return;
@@ -784,6 +825,13 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 				}
 			}
 			break;
+		case STUDENT:
+			if (solver != null && ((StudentSolverProxy)solver).isPublished()) {
+				String published = solver.getProperties().getProperty("StudentSct.Published");
+				if (published != null)
+					response.addPageMessage(new PageMessage(PageMessageType.INFO, MESSAGES.infoSolverShowingPublishedSectioningSolution(Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP).format(new Date(Long.valueOf(published)))),
+							context.hasPermission(Right.StudentSectioningSolverPublish) ? "gwt.jsp?page=publishedSolutions" : null));
+			}
 		}
 	}
 
@@ -829,5 +877,39 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 		case INSTRUCTOR: return SOLVERMSG.instructorInfoMessages();
 		default: return null;
 		}
+	}
+	
+	protected Gson getGson() {
+		GsonBuilder builder = new GsonBuilder()
+		.registerTypeAdapter(DateTime.class, new JsonSerializer<DateTime>() {
+			@Override
+			public JsonElement serialize(DateTime src, Type typeOfSrc, JsonSerializationContext context) {
+				return new JsonPrimitive(src.toString("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+			}
+		})
+		.registerTypeAdapter(DateTime.class, new JsonDeserializer<DateTime>() {
+			@Override
+			public DateTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+				return new DateTime(json.getAsJsonPrimitive().getAsString(), DateTimeZone.UTC);
+			}
+		})
+		.registerTypeAdapter(Date.class, new JsonSerializer<Date>() {
+			@Override
+			public JsonElement serialize(Date src, Type typeOfSrc, JsonSerializationContext context) {
+				return new JsonPrimitive(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(src));
+			}
+		})
+		.registerTypeAdapter(Date.class, new JsonDeserializer<Date>() {
+			@Override
+			public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+				try {
+					return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(json.getAsJsonPrimitive().getAsString());
+				} catch (ParseException e) {
+					throw new JsonParseException(e.getMessage(), e);
+				}
+			}
+		});
+		builder.setPrettyPrinting();
+		return builder.create();
 	}
 }
