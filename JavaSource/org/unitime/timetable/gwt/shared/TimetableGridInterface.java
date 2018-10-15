@@ -329,10 +329,21 @@ public class TimetableGridInterface implements GwtRpcResponse {
 			if (iRooms == null) iRooms = new ArrayList<String>();
 			iRooms.add(name);
 		}
-		public int getNrRooms() { return iRooms == null ? 0 : iRooms.size(); }
-		public List<String> getRooms() { return iRooms; }
+		public int getNrRooms() { return iRooms == null ? hasGroup() ? 1 : 0 : iRooms.size(); }
+		public List<String> getRooms() {
+			if (iRooms == null || iRooms.isEmpty()) {
+				List<String> rooms = new ArrayList<String>();
+				if (hasGroup()) rooms.add(getGroup());
+				return rooms;
+			} else {
+				List<String> rooms = new ArrayList<String>(iRooms);
+				if (hasGroup()) rooms.set(rooms.size() - 1, rooms.get(rooms.size() - 1) + " " + getGroup());
+				return rooms;
+			}
+		}
 		public String getRoom(String delim) {
-			if (iRooms == null) return "";
+			if (iRooms == null)
+				return (hasGroup() ? getGroup() : "");
 			String ret = "";
 			for (String name: iRooms)
 				ret += (ret.isEmpty() ? "" : delim) + name;

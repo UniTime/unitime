@@ -52,6 +52,12 @@
 				 </line>
 			</description>
 		</item>
+		<item>
+			<name>Timetable Grid: Groups</name>
+			<description>
+				<line>Show group / student enrollment info on classes that have no rooms assigned.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>
