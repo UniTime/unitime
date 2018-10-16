@@ -25976,7 +25976,9 @@ values (2, 'Default.Validate', 'Validate', 1);
 insert into SOLVER_PREDEF_SETTING (uniqueid, name, description, appearance)
 values (3, 'Default.Check', 'Check', 1);
 insert into SOLVER_PREDEF_SETTING (uniqueid, name, description, appearance)
-values (4, 'Default.Solver', 'Default', 1);
+values (4, 'Example.Woebegon', 'Woebegon Example', 1);
+insert into SOLVER_PREDEF_SETTING (uniqueid, name, description, appearance)
+values (5, 'Default.Solver', 'Default', 1);
 insert into SOLVER_PREDEF_SETTING (uniqueid, name, description, appearance)
 values (101, 'Exam.Default', 'Default', 2);
 insert into SOLVER_PREDEF_SETTING (uniqueid, name, description, appearance)
