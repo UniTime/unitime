@@ -4230,11 +4230,11 @@ unitime-RoomSharingWidget .legend .blank {
 	font-weight: bold;
 	font-size: small;
 	padding: 3px;
+	max-width: 550px;
 }
 
 .unitime-ConfirmationPanel .message-panel .message {
 	white-space: pre-wrap;
-	max-width: 550px;
 	text-align: justify;
 }
 
@@ -6190,6 +6190,9 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-CourseRequestsConfirmationDialog .course-table .course-message {
 	display: table-cell;
+	text-indent: -6pt;
+	padding-left: 6pt;
+	text-align: justify;
 }
 
 .unitime-CourseRequestsConfirmationDialog .course-table .course-name {
