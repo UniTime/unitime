@@ -115,7 +115,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
         iNote = clazz.getSchedulePrintNote();
         iExternalId = clazz.getExternalUniqueId();
         if (iExternalId == null)
-        	iExternalId = clazz.getClassLabel();
+        	iExternalId = clazz.getSchedulingSubpart().getItypeDesc().trim() + " " + clazz.getClassLabel();
         for (CourseOffering course: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings()) {
         	iNameByCourse.put(course.getUniqueId(), clazz.getClassSuffix(course));
         	String extId = clazz.getExternalId(course);

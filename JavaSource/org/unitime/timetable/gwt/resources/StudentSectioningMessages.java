@@ -1713,6 +1713,12 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Instructional Method")
 	String hintInstructionalMethod();
 	
+	@DefaultMessage("Required Instructional Method")
+	String hintRequiredInstructionalMethod();
+	
+	@DefaultMessage("Required {0}")
+	String hintRequiredSection(String section);
+	
 	@DefaultMessage("method")
 	String tagInstructionalMethod();
 	
@@ -2094,4 +2100,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("- {0}")
 	String courseMessage(String message);
+	
+	@DefaultMessage("Selection Required")
+	String checkPreferencesAreRequired();
 }

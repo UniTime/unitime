@@ -39,6 +39,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 
 import com.google.gwt.core.client.GWT;
@@ -78,16 +79,17 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 	private CourseFinderCourseDetails[] iDetails = null;
 	private String iLastQuery = null;
 	private P iInstructionalMethodsPanel = null;
-	private Map<String, CheckBox> iInstructionalMethods = new HashMap<String, CheckBox>();
-	private Set<String> iSelectedMethods = new HashSet<String>();
+	private Map<Preference, CheckBox> iInstructionalMethods = new HashMap<Preference, CheckBox>();
+	private Set<Preference> iSelectedMethods = new HashSet<Preference>();
+	private CheckBox iRequired = null;
 	
 	private boolean iShowCourseTitles = false, iShowDefaultSuggestions = false;
 	
 	public CourseFinderCourses() {
-		this(false, false);
+		this(false, false, false);
 	}
 	
-	public CourseFinderCourses(boolean showCourseTitles, boolean showDefaultSuggestions) {
+	public CourseFinderCourses(boolean showCourseTitles, boolean showDefaultSuggestions, boolean showRequired) {
 		super("courses");
 		
 		iShowCourseTitles = showCourseTitles;
@@ -148,6 +150,21 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 		});
 		iInstructionalMethodsPanel = new P("instructional-methods");
 		iCourseDetailsTabBar.setRestWidget(iInstructionalMethodsPanel);
+		
+		if (showRequired) {
+			iRequired = new CheckBox(MESSAGES.checkPreferencesAreRequired());
+			iRequired.addStyleName("required-check");
+			iRequired.setEnabled(isEnabled());
+			iRequired.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<Boolean> event) {
+					for (Preference p: iInstructionalMethods.keySet())
+						p.setRequired(event.getValue());
+					for (Preference p: iSelectedMethods)
+						p.setRequired(event.getValue());
+				}
+			});
+		}
 
 		add(iCoursesPanel);
 		add(iCourseDetailsTabBar);
@@ -188,7 +205,7 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 			rc.setCourseName(MESSAGES.courseNameWithTitle(record.getSubject(), record.getCourseNbr(), record.getTitle()));
 		rc.setCourseTitle(record.getTitle());
 		rc.setCredit(record.guessCreditRange());
-		for (Map.Entry<String, CheckBox> e: iInstructionalMethods.entrySet())
+		for (Map.Entry<Preference, CheckBox> e: iInstructionalMethods.entrySet())
 			if (e.getValue().isEnabled() && e.getValue().getValue())
 				rc.setSelectedIntructionalMethod(e.getKey(), true);
 		if (iDetails != null)
@@ -196,16 +213,30 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 				d.onGetValue(rc);
 		return rc;
 	}
+	
+	protected boolean isSelectedMethodRequired(Long id) {
+		for (Preference p: iSelectedMethods)
+			if (p.getId().equals(id)) return p.isRequired();
+		return iRequired != null && iRequired.getValue();
+	}
+	
+	protected boolean isSelectedMethod(Long id) {
+		for (Preference p: iSelectedMethods)
+			if (p.getId().equals(id)) return true;
+		return false;
+	}
 
 	@Override
 	public void setValue(RequestedCourse value, final boolean fireEvents) {
 		String query = (value == null || !value.isCourse() ? "" : value.getCourseName());
 		iSelectedMethods.clear();
+		if (iRequired != null) iRequired.setValue(false);
 		for (CheckBox ch: iInstructionalMethods.values())
 			if (ch.isEnabled()) ch.setValue(false);
 		if (value != null && value.hasSelectedIntructionalMethods())
-			for (String id: value.getSelectedIntructionalMethods()) {
+			for (Preference id: value.getSelectedIntructionalMethods()) {
 				iSelectedMethods.add(id);
+				if (id.isRequired() && iRequired != null) iRequired.setValue(true);
 				CheckBox ch = iInstructionalMethods.get(id);
 				if (ch != null && ch.isEnabled()) ch.setValue(true);
 			}
@@ -331,19 +362,20 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 				P imp = new P("preference-label"); imp.setText(MESSAGES.labelInstructionalMethodPreference()); iInstructionalMethodsPanel.add(imp);
 				for (final IdValue m: record.getInstructionalMethods()) {
 					CheckBox ch = new CheckBox(m.getValue());
-					ch.setValue(iSelectedMethods.contains(m.getValue()));
+					ch.setValue(isSelectedMethod(m.getId()));
 					ch.setEnabled(isEnabled());
+					final Preference p = new Preference(m.getId(), m.getValue(), isSelectedMethodRequired(m.getId()));
 					ch.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 						@Override
 						public void onValueChange(ValueChangeEvent<Boolean> event) {
 							if (event.getValue())
-								iSelectedMethods.add(m.getValue());
+								iSelectedMethods.add(p);
 							else
-								iSelectedMethods.remove(m.getValue());
+								iSelectedMethods.remove(p);
 						}
 					});
 					ch.addStyleName("instructional-method");
-					iInstructionalMethods.put(m.getValue(), ch);
+					iInstructionalMethods.put(p, ch);
 					iInstructionalMethodsPanel.add(ch);
 				}
 			} else if (record.hasInstructionalMethods()) {
@@ -352,10 +384,11 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 					CheckBox ch = new CheckBox(m.getValue());
 					ch.addStyleName("instructional-method");
 					ch.setValue(true); ch.setEnabled(false);
-					iInstructionalMethods.put(m.getValue(), ch);
+					iInstructionalMethods.put(new Preference(m.getId(), m.getValue(), isSelectedMethodRequired(m.getId())), ch);
 					iInstructionalMethodsPanel.add(ch);
 				}
 			}
+			iInstructionalMethodsPanel.add(iRequired);
 		}
 	}
 
@@ -453,5 +486,11 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 		if (iDetails != null)
 			for (CourseFinderCourseDetails details: iDetails)
 				details.setEnabled(enabled);
+		if (iRequired != null)
+			iRequired.setEnabled(enabled);
+	}
+	
+	public CheckBox getRequiredCheckbox() {
+		return iRequired;
 	}
 }

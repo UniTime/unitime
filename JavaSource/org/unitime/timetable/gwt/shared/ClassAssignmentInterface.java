@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationOperation;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationStatus;
@@ -369,7 +370,8 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public String getExternalId() { return iExternalId; }
 		public void setExternalId(String extId) { iExternalId = extId; }
 		
-		public String getSelection() { return iSection.length() <= 4 ? iSubpart + " " + iSection : iSection; }
+		public Preference getSelection() { return getSelection(false); }
+		public Preference getSelection(boolean required) { return new Preference(iClassId, iSection.length() <= 4 ? iSubpart + " " + iSection : iSection, required); }
 
 		public String getParentSection() { return iParentSection; }
 		public void setParentSection(String parentSection) { iParentSection = parentSection; }

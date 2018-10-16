@@ -164,6 +164,10 @@ public interface StudentSectioningConstants extends Constants {
 	@DoNotTranslate
 	boolean courseFinderSuggestWhenEmpty();
 	
+	@DefaultBooleanValue(true)
+	@DoNotTranslate
+	boolean courseFinderShowRequired();
+	
 	@DefaultStringArrayValue({
 		"Assigned",
 		"Reserved",

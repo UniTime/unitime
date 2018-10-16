@@ -131,14 +131,14 @@ public class BatchEnrollStudent extends EnrollStudent {
 								courses.add(c);
 								if (rc.hasSelectedIntructionalMethods()) {
 									for (Config config: c.getOffering().getConfigs())
-										if (config.getInstructionalMethodName() != null && rc.isSelectedIntructionalMethod(config.getInstructionalMethodName()))
+										if (config.getInstructionalMethodId() != null && rc.isSelectedIntructionalMethod(config.getInstructionalMethodId()))
 											selChoices.add(new Choice(config));
 								}
 								if (rc.hasSelectedClasses()) {
 									for (Config config: c.getOffering().getConfigs())
 										for (Subpart subpart: config.getSubparts())
 											for (Section section: subpart.getSections())
-												if (rc.isSelectedClass(section.getName(c.getId())) || rc.isSelectedClass(section.getSubpart().getName() + " " + section.getName()))
+												if (rc.isSelectedClass(section.getId()))
 													selChoices.add(new Choice(section));
 								}
 							}
@@ -228,14 +228,14 @@ public class BatchEnrollStudent extends EnrollStudent {
 								courses.add(c);
 								if (rc.hasSelectedIntructionalMethods()) {
 									for (Config config: c.getOffering().getConfigs())
-										if (config.getInstructionalMethodName() != null && rc.isSelectedIntructionalMethod(config.getInstructionalMethodName()))
+										if (rc.isSelectedIntructionalMethod(config.getInstructionalMethodId()))
 											selChoices.add(new Choice(config));
 								}
 								if (rc.hasSelectedClasses()) {
 									for (Config config: c.getOffering().getConfigs())
 										for (Subpart subpart: config.getSubparts())
 											for (Section section: subpart.getSections())
-												if (rc.isSelectedClass(section.getName(c.getId())) || rc.isSelectedClass(section.getSubpart().getName() + " " + section.getName()))
+												if (rc.isSelectedClass(section.getId()))
 													selChoices.add(new Choice(section));
 								}
 							}

@@ -74,6 +74,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignmen
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
@@ -2462,7 +2463,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					});
 				}
 			});
-			CourseFinderCourses courses = new CourseFinderCourses(CONSTANTS.showCourseTitle(), CONSTANTS.courseFinderSuggestWhenEmpty());
+			CourseFinderCourses courses = new CourseFinderCourses(CONSTANTS.showCourseTitle(), CONSTANTS.courseFinderSuggestWhenEmpty(), CONSTANTS.courseFinderShowRequired());
 			courses.setDataProvider(new DataProvider<String, Collection<CourseAssignment>>() {
 				@Override
 				public void getData(String source, AsyncCallback<Collection<CourseAssignment>> callback) {
@@ -2476,7 +2477,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					iSectioningService.retrieveCourseDetails(iSessionSelector.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 				}
 			});
-			CourseFinderClasses classes = new CourseFinderClasses(true, iSpecRegCx);
+			CourseFinderClasses classes = new CourseFinderClasses(true, iSpecRegCx, courses.getRequiredCheckbox());
 			classes.setDataProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
 				@Override
 				public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {
@@ -2773,17 +2774,17 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						}
 					}
 					if (rc.hasStatusNote()) iconText += "\n" + MESSAGES.overrideNote(rc.getStatusNote());
-					Collection<String> prefs = null;
+					Collection<Preference> prefs = null;
 					if (rc.hasSelectedIntructionalMethods()) {
 						if (rc.hasSelectedClasses()) {
-							prefs = new ArrayList<String>(rc.getSelectedIntructionalMethods().size() + rc.getSelectedClasses().size());
-							prefs.addAll(new TreeSet<String>(rc.getSelectedIntructionalMethods()));
-							prefs.addAll(new TreeSet<String>(rc.getSelectedClasses()));
+							prefs = new ArrayList<Preference>(rc.getSelectedIntructionalMethods().size() + rc.getSelectedClasses().size());
+							prefs.addAll(new TreeSet<Preference>(rc.getSelectedIntructionalMethods()));
+							prefs.addAll(new TreeSet<Preference>(rc.getSelectedClasses()));
 						} else {
-							prefs = new TreeSet<String>(rc.getSelectedIntructionalMethods());
+							prefs = new TreeSet<Preference>(rc.getSelectedIntructionalMethods());
 						}
 					} else if (rc.hasSelectedClasses()) {
-						prefs = new TreeSet<String>(rc.getSelectedClasses());
+						prefs = new TreeSet<Preference>(rc.getSelectedClasses());
 					}
 					String status = "";
 					if (rc.getStatus() != null) {
@@ -2877,17 +2878,17 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						}
 					}
 					if (rc.hasStatusNote()) iconText += "\n" + MESSAGES.overrideNote(rc.getStatusNote());
-					Collection<String> prefs = null;
+					Collection<Preference> prefs = null;
 					if (rc.hasSelectedIntructionalMethods()) {
 						if (rc.hasSelectedClasses()) {
-							prefs = new ArrayList<String>(rc.getSelectedIntructionalMethods().size() + rc.getSelectedClasses().size());
-							prefs.addAll(new TreeSet<String>(rc.getSelectedIntructionalMethods()));
-							prefs.addAll(new TreeSet<String>(rc.getSelectedClasses()));
+							prefs = new ArrayList<Preference>(rc.getSelectedIntructionalMethods().size() + rc.getSelectedClasses().size());
+							prefs.addAll(new TreeSet<Preference>(rc.getSelectedIntructionalMethods()));
+							prefs.addAll(new TreeSet<Preference>(rc.getSelectedClasses()));
 						} else {
-							prefs = new TreeSet<String>(rc.getSelectedIntructionalMethods());
+							prefs = new TreeSet<Preference>(rc.getSelectedIntructionalMethods());
 						}
 					} else if (rc.hasSelectedClasses()) {
-						prefs = new TreeSet<String>(rc.getSelectedClasses());
+						prefs = new TreeSet<Preference>(rc.getSelectedClasses());
 					}
 					if (prefs != null) hasPref = true;
 					String status = "";

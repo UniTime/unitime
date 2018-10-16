@@ -53,6 +53,7 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -684,11 +685,11 @@ public class OnlineSectioningHelper {
     				if (rc.hasCourseId()) e.setUniqueId(rc.getCourseId());
     				if (rc.hasCourseName()) e.setName(rc.getCourseName());
     				if (rc.hasSelectedClasses())
-    					for (String clazz: rc.getSelectedClasses())
-    						e.addParameterBuilder().setKey("sec_pref").setValue(clazz);
+    					for (Preference clazz: rc.getSelectedClasses())
+    						e.addParameterBuilder().setKey("sec_pref").setValue(clazz.toString());
     				if (rc.hasSelectedIntructionalMethods())
-    					for (String im: rc.getSelectedIntructionalMethods())
-    						e.addParameterBuilder().setKey("im_pref").setValue(im);
+    					for (Preference im: rc.getSelectedIntructionalMethods())
+    						e.addParameterBuilder().setKey("im_pref").setValue(im.toString());
     				rq.addCourse(e);
 				}
 			}
@@ -714,11 +715,11 @@ public class OnlineSectioningHelper {
     				if (rc.hasCourseId()) e.setUniqueId(rc.getCourseId());
     				if (rc.hasCourseName()) e.setName(rc.getCourseName());
     				if (rc.hasSelectedClasses())
-    					for (String clazz: rc.getSelectedClasses())
-    						e.addParameterBuilder().setKey("sec_pref").setValue(clazz);
+    					for (Preference clazz: rc.getSelectedClasses())
+    						e.addParameterBuilder().setKey("sec_pref").setValue(clazz.toString());
     				if (rc.hasSelectedIntructionalMethods())
-    					for (String im: rc.getSelectedIntructionalMethods())
-    						e.addParameterBuilder().setKey("im_pref").setValue(im);
+    					for (Preference im: rc.getSelectedIntructionalMethods())
+    						e.addParameterBuilder().setKey("im_pref").setValue(im.toString());
     				rq.addCourse(e);
 				}
 			}
@@ -814,11 +815,13 @@ public class OnlineSectioningHelper {
     
     public static OnlineSectioningLog.Section.Builder toProto(Class_ clazz, CourseOffering course) {
 		OnlineSectioningLog.Section.Builder section = OnlineSectioningLog.Section.newBuilder();
+		String extId = clazz.getExternalId(course);
+		String suffix = clazz.getClassSuffix(course);
 		section.setClazz(
 				OnlineSectioningLog.Entity.newBuilder()
 				.setUniqueId(clazz.getUniqueId())
-				.setExternalId(clazz.getExternalId(course))
-				.setName(clazz.getClassSuffix(course))
+				.setExternalId(extId == null ? clazz.getSchedulingSubpart().getItypeDesc().trim() + " " + clazz.getSectionNumberString() : extId)
+				.setName(suffix == null ? clazz.getSectionNumberString() : suffix)
 				);
 		section.setSubpart(
 				OnlineSectioningLog.Entity.newBuilder()
@@ -928,19 +931,30 @@ public class OnlineSectioningHelper {
 		preference.setType(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE);
 		if (rc.hasSelectedIntructionalMethods()) {
 			for (XConfig config: offering.getConfigs()) {
-				if (config.getInstructionalMethod() != null && (rc.isSelectedIntructionalMethod(config.getInstructionalMethod().getLabel()) || rc.isSelectedIntructionalMethod(config.getInstructionalMethod().getReference())))
-					preference.addInstructionalMethod(OnlineSectioningLog.Entity.newBuilder()
-							.setUniqueId(config.getInstructionalMethod().getUniqueId())
-							.setExternalId(config.getInstructionalMethod().getReference())
-							.setName(config.getInstructionalMethod().getLabel()));
+				if (config.getInstructionalMethod() != null) {
+					Preference p = rc.getIntructionalMethodSelection(config.getInstructionalMethod().getUniqueId());
+					if (p != null) {
+						OnlineSectioningLog.Entity.Builder e = OnlineSectioningLog.Entity.newBuilder()
+								.setUniqueId(config.getInstructionalMethod().getUniqueId())
+								.setExternalId(config.getInstructionalMethod().getReference())
+								.setName(config.getInstructionalMethod().getLabel());
+						if (p.isRequired()) e.addParameterBuilder().setKey("required").setValue("true");
+						preference.addInstructionalMethod(e);
+					}
+				}
 			}
 		}
 		if (rc.hasSelectedClasses()) {
 			for (XConfig config: offering.getConfigs())
 				for (XSubpart subpart: config.getSubparts())
-					for (XSection section: subpart.getSections())
-						if (rc.isSelectedClass(section.getName(c.getCourseId())) || rc.isSelectedClass(subpart.getName() + " " + section.getName(c.getCourseId())) || rc.isSelectedClass(section.getExternalId(c.getCourseId())))
-							preference.addSection(OnlineSectioningHelper.toProto(section));
+					for (XSection section: subpart.getSections()) {
+						Preference p = rc.getClassSelection(section.getSectionId());
+						if (p != null) {
+							OnlineSectioningLog.Section.Builder s = OnlineSectioningHelper.toProto(section);
+							s.setPreference(p.isRequired() ? OnlineSectioningLog.Section.Preference.REQUIRED : OnlineSectioningLog.Section.Preference.PREFERRED);
+							preference.addSection(s);
+						}
+					}
 		}
 		return preference;
 	}
@@ -951,19 +965,30 @@ public class OnlineSectioningHelper {
 		preference.setType(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE);
 		if (rc.hasSelectedIntructionalMethods()) {
 			for (InstrOfferingConfig config: co.getInstructionalOffering().getInstrOfferingConfigs()) {
-				if (config.getInstructionalMethod() != null && (rc.isSelectedIntructionalMethod(config.getInstructionalMethod().getLabel()) || rc.isSelectedIntructionalMethod(config.getInstructionalMethod().getReference())))
-					preference.addInstructionalMethod(OnlineSectioningLog.Entity.newBuilder()
-							.setUniqueId(config.getInstructionalMethod().getUniqueId())
-							.setExternalId(config.getInstructionalMethod().getReference())
-							.setName(config.getInstructionalMethod().getLabel()));
+				if (config.getInstructionalMethod() != null) {
+					Preference p = rc.getIntructionalMethodSelection(config.getInstructionalMethod().getUniqueId());
+					if (p != null) {
+						OnlineSectioningLog.Entity.Builder e = OnlineSectioningLog.Entity.newBuilder()
+								.setUniqueId(config.getInstructionalMethod().getUniqueId())
+								.setExternalId(config.getInstructionalMethod().getReference())
+								.setName(config.getInstructionalMethod().getLabel());
+						if (p.isRequired()) e.addParameterBuilder().setKey("required").setValue("true");
+						preference.addInstructionalMethod(e);
+					}
+				}
 			}
 		}
 		if (rc.hasSelectedClasses()) {
 			for (InstrOfferingConfig config: co.getInstructionalOffering().getInstrOfferingConfigs())
 				for (SchedulingSubpart subpart: config.getSchedulingSubparts())
-					for (Class_ clazz: subpart.getClasses())
-						if (rc.isSelectedClass(clazz.getClassSuffix(co)) || rc.isSelectedClass(clazz.getExternalId(co)) || rc.isSelectedClass(clazz.getItypeDesc().trim() + " " + clazz.getSectionNumberString()))
-							preference.addSection(OnlineSectioningHelper.toProto(clazz, co));
+					for (Class_ clazz: subpart.getClasses()) {
+						Preference p = rc.getClassSelection(clazz.getUniqueId());
+						if (p != null) {
+							OnlineSectioningLog.Section.Builder s = OnlineSectioningHelper.toProto(clazz, co);
+							s.setPreference(p.isRequired() ? OnlineSectioningLog.Section.Preference.REQUIRED : OnlineSectioningLog.Section.Preference.PREFERRED);
+							preference.addSection(s);
+						}
+					}
 		}
 		return preference;
 	}
@@ -971,11 +996,18 @@ public class OnlineSectioningHelper {
 	public static void fillPreferencesIn(RequestedCourse rc, OnlineSectioningLog.CourseRequestOption pref) {
 		if (pref != null) {
 			if (pref.getInstructionalMethodCount() > 0)
-				for (OnlineSectioningLog.Entity im: pref.getInstructionalMethodList())
-					rc.setSelectedIntructionalMethod(im.getName(), true);
+				for (OnlineSectioningLog.Entity im: pref.getInstructionalMethodList()) {
+					boolean required = false;
+					if (im.getParameterCount() > 0)
+						for (OnlineSectioningLog.Property p: im.getParameterList())
+							if ("required".equals(p.getKey()))
+								required = "true".equals(p.getValue());
+					rc.setSelectedIntructionalMethod(im.getUniqueId(), im.getName(), required, true);
+				}
 			if (pref.getSectionCount() > 0)
 				for (OnlineSectioningLog.Section s: pref.getSectionList())
-					rc.setSelectedClass((s.getClazz().getExternalId().length() <= 4 ? s.getSubpart().getName() + " ": "") + s.getClazz().getExternalId(), true);
+					rc.setSelectedClass(s.getClazz().getUniqueId(), (s.getClazz().getExternalId().length() <= 4 ? s.getSubpart().getName() + " ": "") + s.getClazz().getExternalId(),
+							s.hasPreference() && s.getPreference() == OnlineSectioningLog.Section.Preference.REQUIRED, true);
 		}
 	}
 }

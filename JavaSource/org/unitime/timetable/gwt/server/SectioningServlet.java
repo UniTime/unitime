@@ -481,11 +481,15 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				}
 				ClassAssignmentInterface.ClassAssignment a = new ClassAssignmentInterface.ClassAssignment();
 				a.setClassId(clazz.getUniqueId());
-				a.setSubpart(clazz.getSchedulingSubpart().getItypeDesc());
+				a.setSubpart(clazz.getSchedulingSubpart().getItypeDesc().trim());
 				if (clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() != null)
-					a.setSubpart(clazz.getSchedulingSubpart().getItypeDesc() + " (" + clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getLabel() + ")");
+					a.setSubpart(clazz.getSchedulingSubpart().getItypeDesc().trim() + " (" + clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getLabel() + ")");
 				a.setSection(clazz.getClassSuffix(courseOffering));
+				if (a.getSection() == null)
+	    			a.setSection(clazz.getSectionNumberString(hibSession));
 				a.setExternalId(clazz.getExternalId(courseOffering));
+				if (a.getExternalId() == null)
+					a.setExternalId(clazz.getSchedulingSubpart().getItypeDesc().trim() + " " + clazz.getSectionNumberString());
 				a.setClassNumber(clazz.getSectionNumberString(hibSession));
 				a.addNote(clazz.getSchedulePrintNote());
 
@@ -1279,7 +1283,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							c.setSection(enrollment.getClazz().getSectionNumberString(hibSession));
 						c.setExternalId(enrollment.getClazz().getExternalId(enrollment.getCourseOffering()));
 						c.setClassNumber(enrollment.getClazz().getSectionNumberString(hibSession));
-						c.setSubpart(enrollment.getClazz().getSchedulingSubpart().getItypeDesc());
+						c.setSubpart(enrollment.getClazz().getSchedulingSubpart().getItypeDesc().trim());
 					}
 					if (classOrOfferingId >= 0)
 						for (CourseRequest request: (List<CourseRequest>)hibSession.createQuery(
@@ -1431,7 +1435,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								clazz.setSection(enrollment.getClazz().getSectionNumberString(hibSession));
 							clazz.setExternalId(enrollment.getClazz().getExternalId(enrollment.getCourseOffering()));
 							clazz.setClassNumber(enrollment.getClazz().getSectionNumberString(hibSession));
-							clazz.setSubpart(enrollment.getClazz().getSchedulingSubpart().getItypeDesc());
+							clazz.setSubpart(enrollment.getClazz().getSchedulingSubpart().getItypeDesc().trim());
 							if (enrollment.getClazz().getParentClass() != null) {
 								clazz.setParentSection(enrollment.getClazz().getParentClass().getClassSuffix(enrollment.getCourseOffering()));
 								if (clazz.getParentSection() == null)

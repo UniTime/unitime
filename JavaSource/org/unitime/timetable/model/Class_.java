@@ -1677,7 +1677,7 @@ public class Class_ extends BaseClass_ {
 	public String getClassSuffix(CourseOffering courseOffering) {
 		return(getExternalClassNameHelper().getClassSuffix(this, courseOffering));
 	}
-
+	
 	public String getClassLabelWithTitle(CourseOffering courseOffering) {
 		return(getExternalClassNameHelper().getClassLabelWithTitle(this,courseOffering));
 	}

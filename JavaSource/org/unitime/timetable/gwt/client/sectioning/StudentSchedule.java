@@ -37,6 +37,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
@@ -196,17 +197,17 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							}
 						}
 						if (rc.hasStatusNote()) iconText += "\n" + MESSAGES.overrideNote(rc.getStatusNote());
-						Collection<String> prefs = null;
+						Collection<Preference> prefs = null;
 						if (rc.hasSelectedIntructionalMethods()) {
 							if (rc.hasSelectedClasses()) {
-								prefs = new ArrayList<String>(rc.getSelectedIntructionalMethods().size() + rc.getSelectedClasses().size());
-								prefs.addAll(new TreeSet<String>(rc.getSelectedIntructionalMethods()));
-								prefs.addAll(new TreeSet<String>(rc.getSelectedClasses()));
+								prefs = new ArrayList<Preference>(rc.getSelectedIntructionalMethods().size() + rc.getSelectedClasses().size());
+								prefs.addAll(new TreeSet<Preference>(rc.getSelectedIntructionalMethods()));
+								prefs.addAll(new TreeSet<Preference>(rc.getSelectedClasses()));
 							} else {
-								prefs = new TreeSet<String>(rc.getSelectedIntructionalMethods());
+								prefs = new TreeSet<Preference>(rc.getSelectedIntructionalMethods());
 							}
 						} else if (rc.hasSelectedClasses()) {
-							prefs = new TreeSet<String>(rc.getSelectedClasses());
+							prefs = new TreeSet<Preference>(rc.getSelectedClasses());
 						}
 						String status = "";
 						if (rc.getStatus() != null) {
@@ -301,17 +302,17 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							}
 						}
 						if (rc.hasStatusNote()) iconText += "\n" + MESSAGES.overrideNote(rc.getStatusNote());
-						Collection<String> prefs = null;
+						Collection<Preference> prefs = null;
 						if (rc.hasSelectedIntructionalMethods()) {
 							if (rc.hasSelectedClasses()) {
-								prefs = new ArrayList<String>(rc.getSelectedIntructionalMethods().size() + rc.getSelectedClasses().size());
-								prefs.addAll(new TreeSet<String>(rc.getSelectedIntructionalMethods()));
-								prefs.addAll(new TreeSet<String>(rc.getSelectedClasses()));
+								prefs = new ArrayList<Preference>(rc.getSelectedIntructionalMethods().size() + rc.getSelectedClasses().size());
+								prefs.addAll(new TreeSet<Preference>(rc.getSelectedIntructionalMethods()));
+								prefs.addAll(new TreeSet<Preference>(rc.getSelectedClasses()));
 							} else {
-								prefs = new TreeSet<String>(rc.getSelectedIntructionalMethods());
+								prefs = new TreeSet<Preference>(rc.getSelectedIntructionalMethods());
 							}
 						} else if (rc.hasSelectedClasses()) {
-							prefs = new TreeSet<String>(rc.getSelectedClasses());
+							prefs = new TreeSet<Preference>(rc.getSelectedClasses());
 						}
 						if (prefs != null) hasPref = true;
 						String status = "";

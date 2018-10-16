@@ -706,7 +706,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 						cr.add(course);
 						if (rc.hasSelectedIntructionalMethods()) {
 							for (Config config: course.getOffering().getConfigs()) {
-								if (config.getInstructionalMethodName() != null && rc.isSelectedIntructionalMethod(config.getInstructionalMethodName()))
+								if (config.getInstructionalMethodId() != null && rc.isSelectedIntructionalMethod(config.getInstructionalMethodId()))
 									selChoices.add(new Choice(config));
 							}
 						}
@@ -714,7 +714,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							for (Config config: course.getOffering().getConfigs())
 								for (Subpart subpart: config.getSubparts())
 									for (Section section: subpart.getSections())
-										if (rc.isSelectedClass(section.getName(course.getId())) || rc.isSelectedClass(subpart.getName() + " " + section.getName()))
+										if (rc.isSelectedClass(section.getId()))
 											selChoices.add(new Choice(section));
 						}
 						distributions.addAll(offering.getDistributions());

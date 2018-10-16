@@ -442,7 +442,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 				public CourseFinder createCourseFinder() {
 					CourseFinder finder = new CourseFinderDialog();
 					
-					CourseFinderCourses courses = new CourseFinderCourses(CONSTANTS.showCourseTitle(), CONSTANTS.courseFinderSuggestWhenEmpty());
+					CourseFinderCourses courses = new CourseFinderCourses(CONSTANTS.showCourseTitle(), CONSTANTS.courseFinderSuggestWhenEmpty(), CONSTANTS.courseFinderShowRequired());
 					courses.setDataProvider(new DataProvider<String, Collection<CourseAssignment>>() {
 						@Override
 						public void getData(String source, AsyncCallback<Collection<CourseAssignment>> callback) {
@@ -456,7 +456,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 							sSectioningService.retrieveCourseDetails(iSessionProvider.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 						}
 					});
-					CourseFinderClasses classes = new CourseFinderClasses(true, iSpecReg);
+					CourseFinderClasses classes = new CourseFinderClasses(true, iSpecReg, courses.getRequiredCheckbox());
 					classes.setDataProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
 						@Override
 						public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {

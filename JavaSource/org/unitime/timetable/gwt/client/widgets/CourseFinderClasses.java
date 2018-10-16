@@ -37,6 +37,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
@@ -69,14 +70,19 @@ public class CourseFinderClasses extends UniTimeTable<ClassAssignment> implement
 	
 	private CourseAssignment iValue = null;
 	private DataProvider<CourseAssignment, Collection<ClassAssignment>> iDataProvider = null;
-	private Set<String> iSelectedClasses = new HashSet<String>();
+	private Set<Preference> iSelectedClasses = new HashSet<Preference>();
 	private SpecialRegistrationContext iSpecReg;
+	private CheckBox iRequired = null;
 	
 	public CourseFinderClasses(boolean allowSelection) {
-		this(allowSelection, null);
+		this(allowSelection, null, null);
 	}
 	
 	public CourseFinderClasses(boolean allowSelection, SpecialRegistrationContext specreg) {
+		this(allowSelection, specreg, null);
+	}
+	
+	public CourseFinderClasses(boolean allowSelection, SpecialRegistrationContext specreg, CheckBox required) {
 		super();
 		setAllowSelection(allowSelection);
 		iSpecReg = specreg;
@@ -110,6 +116,15 @@ public class CourseFinderClasses extends UniTimeTable<ClassAssignment> implement
 					selectClass(event.getRow(), isSelected(event.getRow()));
 				}
 			});
+			iRequired = required;
+			if (iRequired != null)
+				iRequired.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+					@Override
+					public void onValueChange(ValueChangeEvent<Boolean> event) {
+						for (Preference p: iSelectedClasses)
+							p.setRequired(event.getValue());
+					}
+				});
 		}
 	}
 	
@@ -142,11 +157,12 @@ public class CourseFinderClasses extends UniTimeTable<ClassAssignment> implement
 					if (!result.isEmpty()) {
 						Long lastSubpartId = null;
 						for (final ClassAssignment clazz: result) {
+							final Preference p = getSelection(clazz);
 							List<Widget> line = new ArrayList<Widget>();
 							if (isAllowSelection()) {
 								if (!clazz.isCancelled() && (clazz.isSaved() || clazz.isAvailable() || isSpecialRegistration())) {
 									AriaCheckBox ch = new Selection();
-									ch.setValue(iSelectedClasses.contains(clazz.getSelection()));
+									ch.setValue(iSelectedClasses.contains(p));
 									ch.setAriaLabel(ARIA.courseFinderPreferClass(MESSAGES.clazz(clazz.getSubject(), clazz.getCourseNbr(), clazz.getSubpart(), clazz.getSection())));
 									ch.setEnabled(isEnabled());
 									ch.addClickHandler(new ClickHandler() {
@@ -160,9 +176,9 @@ public class CourseFinderClasses extends UniTimeTable<ClassAssignment> implement
 										public void onValueChange(ValueChangeEvent<Boolean> event) {
 											setSelected(getRow(clazz.getClassId()), event.getValue());
 											if (event.getValue())
-												iSelectedClasses.add(clazz.getSelection());
+												iSelectedClasses.add(p);
 											else
-												iSelectedClasses.remove(clazz.getSelection());
+												iSelectedClasses.remove(p);
 										}
 									});
 									line.add(ch);									
@@ -205,7 +221,7 @@ public class CourseFinderClasses extends UniTimeTable<ClassAssignment> implement
 							if (clazz.isCancelled() || (!clazz.isSaved() && !clazz.isAvailable()))
 								for (int c = 0; c < getCellCount(row); c++)
 									getCellFormatter().addStyleName(row, c, "text-gray");
-							if (isAllowSelection() && !clazz.isCancelled() && (clazz.isSaved() || clazz.isAvailable() || isSpecialRegistration()) && iSelectedClasses.contains(clazz.getSelection()))
+							if (isAllowSelection() && !clazz.isCancelled() && (clazz.isSaved() || clazz.isAvailable() || isSpecialRegistration()) && iSelectedClasses.contains(p))
 								setSelected(row, true);
 							lastSubpartId = clazz.getSubpartId();
 						}
@@ -320,14 +336,26 @@ public class CourseFinderClasses extends UniTimeTable<ClassAssignment> implement
 		}
 	}
 	
+	protected boolean isSelectedClassRequired(Long id) {
+		if (id == null) return false;
+		for (Preference p: iSelectedClasses)
+			if (p.getId().equals(id)) return p.isRequired();
+		return iRequired != null && iRequired.getValue();
+	}
+	
+	protected Preference getSelection(ClassAssignment a) {
+		return a.getSelection(isSelectedClassRequired(a.getClassId()));
+	}
+	
 	public void selectClass(int row, boolean value) {
 		Widget w = getWidget(row, 0);
 		if (w != null && w instanceof CheckBox) {
 			((CheckBox)w).setValue(value);
+			ClassAssignment a = getData(row);
 			if (value)
-				iSelectedClasses.add(getData(row).getSelection());
+				iSelectedClasses.add(getSelection(a));
 			else
-				iSelectedClasses.remove(getData(row).getSelection());
+				iSelectedClasses.remove(getSelection(a));
 		}
 	}
 	
@@ -348,14 +376,17 @@ public class CourseFinderClasses extends UniTimeTable<ClassAssignment> implement
 	@Override
 	public void onSetValue(RequestedCourse course) {
 		iSelectedClasses.clear();
-		if (course != null && course.hasSelectedClasses())
+		if (course != null && course.hasSelectedClasses()) {
 			iSelectedClasses.addAll(course.getSelectedClasses());
+			for (Preference p: course.getSelectedClasses())
+				if (p.isRequired() && iRequired != null) iRequired.setValue(true);
+		}
 		for (int row = 1; row < getRowCount(); row++) {
 			ClassAssignment a = getData(row);
 			CheckBox ch = getClassSelection(row);
 			if (ch != null && a != null) {
-				ch.setValue(iSelectedClasses.contains(a.getSelection()));
-				setSelected(row, iSelectedClasses.contains(a.getSelection()));
+				ch.setValue(iSelectedClasses.contains(getSelection(a)));
+				setSelected(row, iSelectedClasses.contains(getSelection(a)));
 			}
 		}
 	}
@@ -368,7 +399,7 @@ public class CourseFinderClasses extends UniTimeTable<ClassAssignment> implement
 			if (clazz == null) continue;
 			Widget w = getWidget(row, 0);
 			if (w != null && w instanceof CheckBox && ((CheckBox)w).getValue())
-				course.setSelectedClass(clazz.getSelection(), true);
+				course.setSelectedClass(getSelection(clazz), true);
 		}
 	}
 	

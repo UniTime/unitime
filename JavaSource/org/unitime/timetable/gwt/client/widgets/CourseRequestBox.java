@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
@@ -151,20 +152,29 @@ public class CourseRequestBox extends P implements CourseSelection {
 							List<Suggestion> suggestions = new ArrayList<Suggestion>();
 							if (course.hasInstructionalMethods()) {
 								for (IdValue im: course.getInstructionalMethods()) {
-									if (im.getValue().toLowerCase().startsWith(query.toLowerCase()))
-										suggestions.add(new CourseSuggestion(course, im));
+									if (im.getValue().toLowerCase().startsWith(query.toLowerCase())) {
+										suggestions.add(new CourseSuggestion(course, im, false));
+										suggestions.add(new CourseSuggestion(course, im, true));
+									} else if ((im.getValue() + "!").equalsIgnoreCase(query)) {
+										suggestions.add(new CourseSuggestion(course, im, true));
+									}
 								}
 							}
 							for (ClassAssignment clazz: result) {
 								if (clazz.isCancelled() || (!clazz.isSaved() && !clazz.isAvailable() && !isSpecialRegistration())) continue;
-								if (clazz.getSection().toLowerCase().startsWith(query.toLowerCase()) || clazz.getSelection().toLowerCase().startsWith(query.toLowerCase()))
-									suggestions.add(new CourseSuggestion(course, clazz));
-								else if (clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrangeHours()).toLowerCase().startsWith(query.toLowerCase()))
-									suggestions.add(new CourseSuggestion(course, clazz));
+								if (clazz.getSection().equalsIgnoreCase(query) || clazz.getSelection().getText().equalsIgnoreCase(query)) {
+									suggestions.add(new CourseSuggestion(course, clazz, false));
+									suggestions.add(new CourseSuggestion(course, clazz, true));
+								} else if ((clazz.getSection() + "!").equalsIgnoreCase(query) || (clazz.getSelection().getText() + "!").equalsIgnoreCase(query)) {
+									suggestions.add(new CourseSuggestion(course, clazz, true));
+								} else if (clazz.getSection().toLowerCase().startsWith(query.toLowerCase()) || clazz.getSelection().getText().toLowerCase().startsWith(query.toLowerCase())) {
+									suggestions.add(new CourseSuggestion(course, clazz, false));
+								} else if (clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrangeHours()).toLowerCase().startsWith(query.toLowerCase()))
+									suggestions.add(new CourseSuggestion(course, clazz, false));
 								else if (clazz.hasInstructors())
 									for (String instructor: clazz.getInstructors())
 										if (instructor.toLowerCase().startsWith(query.toLowerCase())) {
-											suggestions.add(new CourseSuggestion(course, clazz));
+											suggestions.add(new CourseSuggestion(course, clazz, false));
 											break;
 										}
 							}
@@ -208,11 +218,11 @@ public class CourseRequestBox extends P implements CourseSelection {
 								iValidCourseNames.put(suggestion.getReplacementString().toLowerCase(), course);
 								if (course.getClassAssignments() != null) {
 									for (ClassAssignment clazz: course.getClassAssignments())
-										suggestions.add(new CourseSuggestion(course, clazz));
+										suggestions.add(new CourseSuggestion(course, clazz, false));
 								}
 								if (result.size() <= 5 && course.hasInstructionalMethodSelection()) {
 									for (IdValue im: course.getInstructionalMethods()) {
-										suggestions.add(new CourseSuggestion(course, im));
+										suggestions.add(new CourseSuggestion(course, im, false));
 									}
 								}
 							}
@@ -307,10 +317,14 @@ public class CourseRequestBox extends P implements CourseSelection {
 		} else {
 			ret.setCourseName(courseName);
 		}
-		for (Chip chip: iFilter.getChips("section"))
-			ret.setSelectedClass(chip.getValue(), true);
-		for (Chip chip: iFilter.getChips("method"))
-			ret.setSelectedIntructionalMethod(chip.getValue(), true);
+		for (Chip chip: iFilter.getChips("section")) {
+			if (chip instanceof PreferenceChip)
+				ret.setSelectedClass(((PreferenceChip)chip).getPreference(), true);
+		}
+		for (Chip chip: iFilter.getChips("method")) {
+			if (chip instanceof PreferenceChip)
+				ret.setSelectedIntructionalMethod(((PreferenceChip)chip).getPreference(), true);
+		}
 		if (!iFilter.isEnabled() && ret.isCourse()) ret.setReadOnly(true);
 		ret.setCanDelete(iCanDelete);
 		return ret;
@@ -330,11 +344,11 @@ public class CourseRequestBox extends P implements CourseSelection {
 			if (value.isCourse()) {
 				iFilter.setText(value.getCourseName());
 				if (value.hasSelectedIntructionalMethods())
-					for (String im: value.getSelectedIntructionalMethods())
-						iFilter.addChip(new Chip("method", im).withTranslatedCommand(MESSAGES.tagInstructionalMethod()), false);
+					for (Preference im: value.getSelectedIntructionalMethods())
+						iFilter.addChip(new PreferenceChip("method", im).withTranslatedCommand(MESSAGES.tagInstructionalMethod()), false);
 				if (value.hasSelectedClasses())
-					for (String clazz: value.getSelectedClasses())
-						iFilter.addChip(new Chip("section", clazz).withTranslatedCommand(MESSAGES.tagSection()), false);
+					for (Preference clazz: value.getSelectedClasses())
+						iFilter.addChip(new PreferenceChip("section", clazz).withTranslatedCommand(MESSAGES.tagSection()), false);
 			} else if (value.isFreeTime() && iFreeTimeParser != null) {
 				iFilter.setText(iFreeTimeParser.freeTimesToString(value.getFreeTime()));
 			} else {
@@ -606,28 +620,30 @@ public class CourseRequestBox extends P implements CourseSelection {
 			if (getText().equals(course.getCourseName()) || getText().startsWith(course.getCourseName() + " ") || 
 				getText().equals(course.getCourseNameWithTitle()) || getText().startsWith(course.getCourseNameWithTitle() + " ")) {
 				for (Chip chip: iFilter.getChips("section"))
-					iCourse.setSelectedClass(chip.getValue(), true);
+					if (chip instanceof PreferenceChip)
+						iCourse.setSelectedClass(((PreferenceChip)chip).getPreference(), true);
 				for (Chip chip: iFilter.getChips("method"))
-					iCourse.setSelectedIntructionalMethod(chip.getValue(), true);
+					if (chip instanceof PreferenceChip)
+						iCourse.setSelectedIntructionalMethod(((PreferenceChip)chip).getPreference(), true);
 			}
 		}
 		
-		public CourseSuggestion(CourseAssignment course, IdValue im) {
+		public CourseSuggestion(CourseAssignment course, IdValue im, boolean required) {
 			this(course);
-			setDisplayString(course.getCourseName() + " " + im.getValue());
-			setHint("<span class='item-hint'>" + MESSAGES.hintInstructionalMethod() + "</span>");
+			setDisplayString(course.getCourseName() + " " + im.getValue() + (required ? "!" : ""));
+			setHint("<span class='item-hint'>" + (required ? MESSAGES.hintRequiredInstructionalMethod() : MESSAGES.hintInstructionalMethod()) + "</span>");
 			if (iCourse.hasSelectedIntructionalMethods()) iCourse.getSelectedIntructionalMethods().clear();
-			iCourse.setSelectedIntructionalMethod(im.getValue(), true);
+			iCourse.setSelectedIntructionalMethod(new Preference(im.getId(), im.getValue(), required), true);
 		}
 		
-		public CourseSuggestion(CourseAssignment course, ClassAssignment clazz) {
+		public CourseSuggestion(CourseAssignment course, ClassAssignment clazz, boolean required) {
 			this(course);
-			setDisplayString(course.getCourseName() + " " + clazz.getSelection());
-			setHint("<span class='item-hint'>" +
-					(clazz.getSelection().startsWith(clazz.getSubpart()) ? "" : clazz.getSubpart() + " ") +
+			setDisplayString(course.getCourseName() + " " + clazz.getSelection(required));
+			String section = (clazz.getSelection(required).getText().startsWith(clazz.getSubpart()) ? "" : clazz.getSubpart() + " ") +
 					clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.emailArrangeHours()) +
-					(clazz.hasNote() ? " " + clazz.getNote() : "") + "</span>");
-			iCourse.setSelectedClass(clazz.getSelection(), !iCourse.isSelectedClass(clazz.getSelection()));
+					(clazz.hasNote() ? " " + clazz.getNote() : ""); 
+			setHint("<span class='item-hint'>" + (required ? MESSAGES.hintRequiredSection(section) : section) + "</span>");
+			iCourse.setSelectedClass(clazz.getSelection(required), !iCourse.isSelectedClass(clazz.getSelection(required)));
 		}
 		
 		public RequestedCourse getRequestedCourse() { return iCourse; }
@@ -866,5 +882,16 @@ public class CourseRequestBox extends P implements CourseSelection {
 		public void setAriaLabel(String text) {
 			setAltText(text);
 		}
+	}
+	
+	public static class PreferenceChip extends Chip {
+		Preference iPreference;
+		
+		public PreferenceChip(String command, Preference preference) {
+			super(command, preference.toString());
+			iPreference = preference;
+		}
+		
+		public Preference getPreference() { return iPreference; }
 	}
 }

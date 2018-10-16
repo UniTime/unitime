@@ -315,17 +315,17 @@ public class ToolBox {
 		public Element getBody();
 	}
 	
-	public static String toString(Collection<String> items) {
+	public static String toString(Collection<?> items) {
 		if (items == null || items.isEmpty()) return "";
-		if (items.size() == 1) return items.iterator().next();
+		if (items.size() == 1) return items.iterator().next().toString();
 		if (items.size() == 2) {
-			Iterator<String> i = items.iterator();
-			return MESSAGES.itemSeparatorPair(i.next(), i.next());
+			Iterator<?> i = items.iterator();
+			return MESSAGES.itemSeparatorPair(i.next().toString(), i.next().toString());
 		} else {
-			Iterator<String> i = items.iterator();
-			String list = i.next();
+			Iterator<?> i = items.iterator();
+			String list = i.next().toString();
 			while (i.hasNext()) {
-				String item = i.next();
+				String item = i.next().toString();
 				if (i.hasNext())
 					list = MESSAGES.itemSeparatorMiddle(list, item);
 				else
