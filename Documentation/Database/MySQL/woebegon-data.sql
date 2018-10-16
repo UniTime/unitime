@@ -14049,7 +14049,8 @@ insert into `solver_predef_setting` values
 	(1,'Default.Interactive','Interactive',0),
 	(2,'Default.Validate','Validate',1),
 	(3,'Default.Check','Check',1),
-	(4,'Default.Solver','Default',1),
+	(4,'Example.Woebegon','Woebegon Example',1),
+	(5,'Default.Solver','Default',1),
 	(101,'Exam.Default','Default',2),
 	(121,'StudentSct.Default','Default',3);
 
