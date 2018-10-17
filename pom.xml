@@ -762,7 +762,7 @@
 		<configuration.version>1.10</configuration.version>
 		<dbcp.version>1.4</dbcp.version>
 		<io.version>1.4</io.version>
-		<restlet.version>2.3.4</restlet.version>
+		<restlet.version>2.3.12</restlet.version>
 		<aspectj.version>1.8.7</aspectj.version>
 		<slf4j.version>1.7.12</slf4j.version>
 		<log4j.version>1.2.17</log4j.version>
