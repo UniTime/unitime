@@ -94,6 +94,7 @@ public class BatchEnrollStudent extends EnrollStudent {
 			for (CourseRequestInterface.Request r: getRequest().getCourses()) {
 				List<Course> courses = new ArrayList<Course>();
 				Set<Choice> selChoices = new HashSet<Choice>();
+				Set<Choice> reqChoices = new HashSet<Choice>();
 				if (r.hasRequestedCourse()) {
 					for (RequestedCourse rc: r.getRequestedCourse()) {
 						if (rc.isFreeTime()) {
@@ -132,14 +133,23 @@ public class BatchEnrollStudent extends EnrollStudent {
 								if (rc.hasSelectedIntructionalMethods()) {
 									for (Config config: c.getOffering().getConfigs())
 										if (config.getInstructionalMethodId() != null && rc.isSelectedIntructionalMethod(config.getInstructionalMethodId()))
-											selChoices.add(new Choice(config));
+											(rc.isSelectedIntructionalMethod(config.getInstructionalMethodId(), true) ? reqChoices : selChoices).add(new Choice(config));
 								}
 								if (rc.hasSelectedClasses()) {
 									for (Config config: c.getOffering().getConfigs())
 										for (Subpart subpart: config.getSubparts())
 											for (Section section: subpart.getSections())
-												if (rc.isSelectedClass(section.getId()))
-													selChoices.add(new Choice(section));
+												if (rc.isSelectedClass(section.getId())) {
+													if (rc.isSelectedClass(section.getId(), true)) {
+														Section s = section;
+														while (s != null) {
+															reqChoices.add(new Choice(s)); s = s.getParent();
+														}
+														reqChoices.add(new Choice(section.getSubpart().getConfig()));
+													} else {
+														selChoices.add(new Choice(section));
+													}
+												}
 								}
 							}
 						}
@@ -185,12 +195,18 @@ public class BatchEnrollStudent extends EnrollStudent {
 					courseRequest.getSelectedChoices().addAll(selChoices);
 				}
 				
+				if (!courseRequest.getRequiredChoices().equals(reqChoices)) {
+					courseRequest.getRequiredChoices().clear();
+					courseRequest.getRequiredChoices().addAll(reqChoices);
+				}
+				
 				priority++;
 			}
 			
 			for (CourseRequestInterface.Request r: getRequest().getAlternatives()) {
 				List<Course> courses = new ArrayList<Course>();
 				Set<Choice> selChoices = new HashSet<Choice>();
+				Set<Choice> reqChoices = new HashSet<Choice>();
 				if (r.hasRequestedCourse()) {
 					for (RequestedCourse rc: r.getRequestedCourse()) {
 						if (rc.isFreeTime()) {
@@ -228,15 +244,24 @@ public class BatchEnrollStudent extends EnrollStudent {
 								courses.add(c);
 								if (rc.hasSelectedIntructionalMethods()) {
 									for (Config config: c.getOffering().getConfigs())
-										if (rc.isSelectedIntructionalMethod(config.getInstructionalMethodId()))
-											selChoices.add(new Choice(config));
+										if (config.getInstructionalMethodId() != null && rc.isSelectedIntructionalMethod(config.getInstructionalMethodId()))
+											(rc.isSelectedIntructionalMethod(config.getInstructionalMethodId(), true) ? reqChoices : selChoices).add(new Choice(config));
 								}
 								if (rc.hasSelectedClasses()) {
 									for (Config config: c.getOffering().getConfigs())
 										for (Subpart subpart: config.getSubparts())
 											for (Section section: subpart.getSections())
-												if (rc.isSelectedClass(section.getId()))
-													selChoices.add(new Choice(section));
+												if (rc.isSelectedClass(section.getId())) {
+													if (rc.isSelectedClass(section.getId(), true)) {
+														Section s = section;
+														while (s != null) {
+															reqChoices.add(new Choice(s)); s = s.getParent();
+														}
+														reqChoices.add(new Choice(section.getSubpart().getConfig()));
+													} else {
+														selChoices.add(new Choice(section));
+													}
+												}
 								}
 							}
 						}
@@ -276,6 +301,11 @@ public class BatchEnrollStudent extends EnrollStudent {
 				if (!courseRequest.getSelectedChoices().equals(selChoices)) {
 					courseRequest.getSelectedChoices().clear();
 					courseRequest.getSelectedChoices().addAll(selChoices);
+				}
+				
+				if (!courseRequest.getRequiredChoices().equals(reqChoices)) {
+					courseRequest.getRequiredChoices().clear();
+					courseRequest.getRequiredChoices().addAll(reqChoices);
 				}
 				
 				priority++;

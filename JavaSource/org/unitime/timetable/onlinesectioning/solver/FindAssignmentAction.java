@@ -685,6 +685,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		if (request.hasRequestedCourse()) {
 			Vector<Course> cr = new Vector<Course>();
 			Set<Choice> selChoices = new HashSet<Choice>();
+			Set<Choice> reqChoices = new HashSet<Choice>();
 			for (RequestedCourse rc: request.getRequestedCourse()) {
 				if (rc.isFreeTime()) {
 					for (CourseRequestInterface.FreeTime freeTime: rc.getFreeTime()) {
@@ -706,16 +707,26 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 						cr.add(course);
 						if (rc.hasSelectedIntructionalMethods()) {
 							for (Config config: course.getOffering().getConfigs()) {
-								if (config.getInstructionalMethodId() != null && rc.isSelectedIntructionalMethod(config.getInstructionalMethodId()))
+								if (config.getInstructionalMethodId() != null && rc.isSelectedIntructionalMethod(config.getInstructionalMethodId())) {
 									selChoices.add(new Choice(config));
+									if (rc.isSelectedIntructionalMethod(config.getInstructionalMethodId(), true)) reqChoices.add(new Choice(config));
+								}
 							}
 						}
 						if (rc.hasSelectedClasses()) {
 							for (Config config: course.getOffering().getConfigs())
 								for (Subpart subpart: config.getSubparts())
 									for (Section section: subpart.getSections())
-										if (rc.isSelectedClass(section.getId()))
+										if (rc.isSelectedClass(section.getId())) {
 											selChoices.add(new Choice(section));
+											if (rc.isSelectedClass(section.getId(), true)) {
+												Section s = section;
+												while (s != null) {
+													reqChoices.add(new Choice(s)); s = s.getParent();
+												}
+												reqChoices.add(new Choice(section.getSubpart().getConfig()));
+											}
+										}
 						}
 						distributions.addAll(offering.getDistributions());
 					}	
@@ -724,27 +735,40 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			if (!cr.isEmpty()) {
 				CourseRequest clonnedRequest = new CourseRequest(student.getRequests().size() + 1, student.getRequests().size(), alternative, student, cr, request.isWaitList(), null);
 				clonnedRequest.getSelectedChoices().addAll(selChoices);
+				clonnedRequest.getRequiredChoices().addAll(reqChoices);
 				if (originalStudent != null)
 					for (XRequest originalRequest: originalStudent.getRequests()) {
 						XEnrollment originalEnrollment = (originalRequest instanceof XCourseRequest ? ((XCourseRequest)originalRequest).getEnrollment() : null);
 						for (Course clonnedCourse: clonnedRequest.getCourses()) {
-							if (!clonnedCourse.getOffering().hasReservations()) continue;
 							if (originalEnrollment != null && originalEnrollment.getCourseId().equals(clonnedCourse.getId())) {
-								boolean needReservation = clonnedCourse.getOffering().getUnreservedSpace(assignment, clonnedRequest) < 1.0;
-								if (!needReservation) {
-									boolean configChecked = false;
+								if (!clonnedRequest.getRequiredChoices().isEmpty()) {
+									boolean config = false;
 									for (Long originalSectionId: originalEnrollment.getSectionIds()) {
-										Section clonnedSection = classTable.get(originalSectionId); 
-										if (clonnedSection.getUnreservedSpace(assignment, clonnedRequest) < 1.0) { needReservation = true; break; }
-										if (!configChecked && clonnedSection.getSubpart().getConfig().getUnreservedSpace(assignment, clonnedRequest) < 1.0) { needReservation = true; break; }
-										configChecked = true;
+										Section clonnedSection = classTable.get(originalSectionId);
+										clonnedRequest.getRequiredChoices().add(new Choice(clonnedSection));
+										if (!config) {
+											clonnedRequest.getRequiredChoices().add(new Choice(clonnedSection.getSubpart().getConfig()));
+											config = true;
+										}
 									}
 								}
-								if (needReservation) {
-									Reservation reservation = new OnlineReservation(XReservationType.Dummy.ordinal(),
-											-originalStudent.getStudentId(), clonnedCourse.getOffering(), 1000, false, 1, true, false, false, true);
-									for (Long originalSectionId: originalEnrollment.getSectionIds())
-										reservation.addSection(classTable.get(originalSectionId));
+								if (clonnedCourse.getOffering().hasReservations()) {
+									boolean needReservation = clonnedCourse.getOffering().getUnreservedSpace(assignment, clonnedRequest) < 1.0;
+									if (!needReservation) {
+										boolean configChecked = false;
+										for (Long originalSectionId: originalEnrollment.getSectionIds()) {
+											Section clonnedSection = classTable.get(originalSectionId);
+											if (clonnedSection.getUnreservedSpace(assignment, clonnedRequest) < 1.0) { needReservation = true; break; }
+											if (!configChecked && clonnedSection.getSubpart().getConfig().getUnreservedSpace(assignment, clonnedRequest) < 1.0) { needReservation = true; break; }
+											configChecked = true;
+										}
+									}
+									if (needReservation) {
+										Reservation reservation = new OnlineReservation(XReservationType.Dummy.ordinal(),
+												-originalStudent.getStudentId(), clonnedCourse.getOffering(), 1000, false, 1, true, false, false, true);
+										for (Long originalSectionId: originalEnrollment.getSectionIds())
+											reservation.addSection(classTable.get(originalSectionId));
+									}
 								}
 								break;
 							}

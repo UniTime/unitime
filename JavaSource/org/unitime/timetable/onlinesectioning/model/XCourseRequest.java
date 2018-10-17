@@ -212,7 +212,7 @@ public class XCourseRequest extends XRequest {
     	iTimeStamp = request.getTimeStamp() == null ? null : new Date(request.getTimeStamp());
     	iEnrollment = enrollment == null ? null : new XEnrollment(enrollment);
 
-    	if (!request.getSelectedChoices().isEmpty()) {
+    	if (!request.getSelectedChoices().isEmpty() || !request.getRequiredChoices().isEmpty()) {
         	for (Course course: request.getCourses()) {
             	Set<Long> im = new HashSet<Long>();
             	OnlineSectioningLog.CourseRequestOption.Builder preference = OnlineSectioningLog.CourseRequestOption.newBuilder();
@@ -227,6 +227,26 @@ public class XCourseRequest extends XRequest {
             			for (Config config: choice.getOffering().getConfigs()) {
             				if (choice.getConfigId().equals(config.getId()) && config.getInstructionalMethodId() != null && im.add(config.getInstructionalMethodId())) {
             					preference.addInstructionalMethod(OnlineSectioningLog.Entity.newBuilder().setUniqueId(config.getInstructionalMethodId()).setName(config.getInstructionalMethodName()));
+            				}
+            			}
+            		}
+            	}
+            	for (Choice choice: request.getRequiredChoices()) {
+            		if (!course.getOffering().equals(choice.getOffering())) continue;
+            		if (choice.getSectionId() != null) {
+            			Section section = choice.getOffering().getSection(choice.getSectionId());
+            			if (section != null)
+            				preference.addSection(OnlineSectioningHelper.toProto(section, course).setPreference(OnlineSectioningLog.Section.Preference.REQUIRED));
+            		} else if (choice.getConfigId() != null) {
+            			for (Config config: choice.getOffering().getConfigs()) {
+            				if (choice.getConfigId().equals(config.getId()) && config.getInstructionalMethodId() != null && im.add(config.getInstructionalMethodId())) {
+            					OnlineSectioningLog.Entity.Builder e = OnlineSectioningLog.Entity.newBuilder();
+            					e.setUniqueId(config.getInstructionalMethodId());
+            					e.setName(config.getInstructionalMethodName());
+            					if (config.getInstructionalMethodReference() != null)
+            						e.setExternalId(config.getInstructionalMethodReference());
+            					e.addParameterBuilder().setKey("required").setValue("true");
+            					preference.addInstructionalMethod(e);
             				}
             			}
             		}
@@ -397,16 +417,31 @@ public class XCourseRequest extends XRequest {
     					OnlineSectioningLog.CourseRequestOption option = OnlineSectioningLog.CourseRequestOption.parseFrom(entry.getValue());
     					if (option.getInstructionalMethodCount() > 0) {
     						for (OnlineSectioningLog.Entity e: option.getInstructionalMethodList()) {
+    							boolean required = false;
+    							if (e.getParameterCount() > 0)
+    								for (OnlineSectioningLog.Property p: e.getParameterList())
+    									if ("required".equals(p.getKey()))
+    										required = "true".equals(p.getValue());
     							for (Config config: course.getOffering().getConfigs())
     								if (config.getInstructionalMethodId() != null && config.getInstructionalMethodId().equals(e.getUniqueId()))
-    									request.getSelectedChoices().add(new Choice(config));
+    									(required ? request.getRequiredChoices() : request.getSelectedChoices()).add(new Choice(config));
     						}
     					}
     					if (option.getSectionCount() > 0) {
     						for (OnlineSectioningLog.Section s: option.getSectionList()) {
+    							boolean required = (s.hasPreference() && s.getPreference() == OnlineSectioningLog.Section.Preference.REQUIRED);
     							Section section = course.getOffering().getSection(s.getClazz().getUniqueId());
-    							if (section != null)
-    								request.getSelectedChoices().add(new Choice(section));
+    							if (section != null) {
+    								if (required) {
+    									Section x = section;
+										while (x != null) {
+											request.getRequiredChoices().add(new Choice(x)); x = x.getParent();
+										}
+										request.getRequiredChoices().add(new Choice(section.getSubpart().getConfig()));
+    								} else {
+    									request.getSelectedChoices().add(new Choice(section));
+    								}
+    							}
     						}
     					}
     	    		} catch (InvalidProtocolBufferException e) {}

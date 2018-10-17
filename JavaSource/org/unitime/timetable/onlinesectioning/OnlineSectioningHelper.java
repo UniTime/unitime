@@ -616,6 +616,19 @@ public class OnlineSectioningHelper {
             			}
             		}
             	}
+    			for (Choice choice: cr.getRequiredChoices()) {
+            		if (!course.getOffering().equals(choice.getOffering())) continue;
+            		if (choice.getSectionId() != null) {
+            			Section section = choice.getOffering().getSection(choice.getSectionId());
+            			if (section != null)
+            				entity.addParameterBuilder().setKey("sec_pref").setValue(section.getName(course.getId()) + "!");
+            		} else if (choice.getConfigId() != null) {
+            			for (Config config: choice.getOffering().getConfigs()) {
+            				if (choice.getConfigId().equals(config.getId()) && config.getInstructionalMethodName() != null && im.add(config.getInstructionalMethodName()))
+            					entity.addParameterBuilder().setKey("im_pref").setValue(config.getInstructionalMethodName() + "!");
+            			}
+            		}
+            	}
     			request.addCourse(entity);
     		}
     		if (cr.getTimeStamp() != null)

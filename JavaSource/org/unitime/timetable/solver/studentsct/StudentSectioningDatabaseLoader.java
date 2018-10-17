@@ -887,6 +887,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             } else if (!cd.getCourseRequests().isEmpty()) {
                 Vector<Course> courses = new Vector<Course>();
                 HashSet<Choice> selChoices = new HashSet<Choice>();
+                HashSet<Choice> reqChoices = new HashSet<Choice>();
                 HashSet<Choice> wlChoices = new HashSet<Choice>();
                 HashSet<Section> assignedSections = new HashSet<Section>();
                 Config assignedConfig = null;
@@ -931,24 +932,39 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     if (pref != null) {
     					if (pref.getInstructionalMethodCount() > 0) {
     						for (OnlineSectioningLog.Entity e: pref.getInstructionalMethodList()) {
+    							boolean required = false;
+    							if (e.getParameterCount() > 0)
+    								for (OnlineSectioningLog.Property p: e.getParameterList())
+    									if ("required".equals(p.getKey()))
+    										required = "true".equals(p.getValue());
     							for (Config config: course.getOffering().getConfigs())
     								if (config.getInstructionalMethodName() != null && config.getInstructionalMethodName().equals(e.getName()))
-    									selChoices.add(new Choice(config));
+    									(required ? reqChoices : selChoices).add(new Choice(config));
     								else if (config.getInstructionalMethodId() != null && config.getInstructionalMethodId().equals(e.getUniqueId()))
-    									selChoices.add(new Choice(config));
+    									(required ? reqChoices : selChoices).add(new Choice(config));
     						}
     					}
     					if (pref.getSectionCount() > 0) {
     						for (OnlineSectioningLog.Section x: pref.getSectionList()) {
+    							boolean required = (x.hasPreference() && x.getPreference() == OnlineSectioningLog.Section.Preference.REQUIRED);
     							Section section = course.getOffering().getSection(x.getClazz().getUniqueId());
     							if (section != null)
-    								selChoices.add(section.getChoice());
+    								(required ? reqChoices : selChoices).add(section.getChoice());
     							else {
     								for (Config config: course.getOffering().getConfigs())
     									for (Subpart subpart: config.getSubparts())
     										for (Section sect: subpart.getSections())
-    											if (x.getClazz().getExternalId().equals(sect.getName(course.getId())))
-    												selChoices.add(sect.getChoice());
+    											if (x.getClazz().getExternalId().equals(sect.getName(course.getId()))) {
+    												if (required) {
+    													Section z = sect;
+    													while (z != null) {
+    														reqChoices.add(new Choice(z)); z = z.getParent();
+    													}
+    													reqChoices.add(new Choice(sect.getSubpart().getConfig()));
+    												} else {
+    													selChoices.add(sect.getChoice());
+    												}
+    											}
     							}
     						}
     					}
@@ -959,8 +975,13 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         	StudentClassEnrollment enrl = i.next();
                         	Section section = course.getOffering().getSection(enrl.getClazz().getUniqueId());
                             if (section!=null) {
-                            	if (getModel().isMPP())
+                            	if (getModel().isMPP()) {
                             		selChoices.add(section.getChoice());
+                            		if (iAllowToKeepCurrentEnrollment && !reqChoices.isEmpty()) {
+                            			reqChoices.add(new Choice(section));
+                            			reqChoices.add(new Choice(section.getSubpart().getConfig()));
+                            		}
+                            	}
                                 assignedSections.add(section);
                                 if (assignedConfig != null && assignedConfig.getId() != section.getSubpart().getConfig().getId()) {
                                 	iProgress.error("There is a problem assigning " + course.getName() + " to " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + "): classes from different configurations.");
@@ -998,8 +1019,13 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                                 for (StudentClassEnrollment enrl: alt.getClassEnrollments(s)) {
                                 	Section section = course.getOffering().getSection(enrl.getClazz().getUniqueId());
                                     if (section != null) {
-                                    	if (getModel().isMPP())
+                                    	if (getModel().isMPP()) {
                                     		selChoices.add(section.getChoice());
+                                    		if (iAllowToKeepCurrentEnrollment && !reqChoices.isEmpty()) {
+                                    			reqChoices.add(new Choice(section));
+                                    			reqChoices.add(new Choice(section.getSubpart().getConfig()));
+                                    		}
+                                    	}
                                         assignedSections.add(section);
                                         if (assignedConfig != null && assignedConfig.getId() != section.getSubpart().getConfig().getId()) {
                                         	iProgress.error("There is a problem assigning " + course.getName() + " to " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + "): classes from different configurations.");
@@ -1028,6 +1054,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         cd.isWaitlist(), 
                         cd.getTimestamp().getTime());
                 request.getSelectedChoices().addAll(selChoices);
+                request.getRequiredChoices().addAll(reqChoices);
                 request.getWaitlistedChoices().addAll(wlChoices);
                 if (assignedConfig!=null && assignedSections.size() == assignedConfig.getSubparts().size()) {
                     Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections, getAssignment());

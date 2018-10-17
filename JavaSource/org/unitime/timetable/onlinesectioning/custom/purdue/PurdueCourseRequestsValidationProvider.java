@@ -42,6 +42,7 @@ import org.cpsolver.ifs.assignment.AssignmentMap;
 import org.cpsolver.studentsct.extension.DistanceConflict;
 import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import org.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
+import org.cpsolver.studentsct.model.Choice;
 import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
@@ -1760,6 +1761,15 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					}
 				}
 				cr.fillChoicesIn(clonnedRequest);
+				if (!clonnedRequest.getRequiredChoices().isEmpty()) {
+					boolean config = false;
+					for (Section section: sections) {
+						clonnedRequest.getRequiredChoices().add(new Choice(section));
+						if (!config) {
+							clonnedRequest.getRequiredChoices().add(new Choice(section.getSubpart().getConfig())); config = true;
+						}
+					}
+				}
 			}
 		}
 		model.addStudent(s);
