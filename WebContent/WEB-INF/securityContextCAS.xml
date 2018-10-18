@@ -104,7 +104,7 @@
 	
 	<!-- CAS Authentication -->
 	<beans:bean id="casServiceProperties" class="org.springframework.security.cas.ServiceProperties">
-		<beans:property name="service" value="${unitime.url}/login"/>
+		<beans:property name="service" value="${unitime.url}/login/cas"/>
 		<beans:property name="sendRenew" value="false"/>
 	</beans:bean>
 	
@@ -136,7 +136,7 @@
     	<beans:constructor-arg>
     		<beans:bean class="org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler"/>
     	</beans:constructor-arg>
-    	<beans:property name="filterProcessesUrl" value="/j_spring_cas_security_logout"/>
+    	<beans:property name="filterProcessesUrl" value="/logout"/>
     </beans:bean>
  	
 	<authentication-manager alias="authenticationManager">
