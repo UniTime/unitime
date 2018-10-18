@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
@@ -277,13 +278,28 @@ public class SuggestionsBox extends UniTimeDialogBox {
 			}
 
 			public void onSuccess(Collection<ClassAssignmentInterface> result) {
-				boolean hasSuggestions = false;
-				for (ClassAssignmentInterface suggestion: result) {
-					if (!suggestion.getCourseAssignments().isEmpty()) { hasSuggestions = true; break; }
-				}	
+				boolean hasNoDropChange = false;
+				for (ClassAssignmentInterface a: result) {
+					boolean hasDropCourse = false;
+					for (CourseAssignment c: a.getCourseAssignments()) {
+						if (c.isTeachingAssignment() || c.isFreeTime()) continue;
+						if (!c.isAssigned()) {
+							for (ClassAssignmentInterface.ClassAssignment x: iCurrent) {
+								if (x == null) continue;
+								if (c.getCourseId().equals(x.getCourseId()) && x.isCourseAssigned())
+									hasDropCourse = true;
+							}
+						}
+					}
+					if (!a.getCourseAssignments().isEmpty() && !hasDropCourse) {
+						hasNoDropChange = true;
+						break;
+					}
+				}
+				boolean showing = isShowing();
 				showResults(result);
 				if (iAllChoices != null && !iAllChoices.getValue() && iSpecReg.isEnabled() && (iSpecReg.areTimeConflictsAllowed() || iSpecReg.areSpaceConflictsAllowed()) && // !iSpecReg.isDisclaimerAccepted() &&
-					!hasSuggestions && iFilter.getText().isEmpty() && !iCurrent.get(iIndex).isAssigned() && !iCurrent.get(iIndex).isFreeTime()) {
+					!hasNoDropChange && iFilter.getText().isEmpty() && iIndex >= 0 && !iCurrent.get(iIndex).isCourseAssigned() && !iCurrent.get(iIndex).isFreeTime() && !showing) {
 					UniTimeConfirmationDialog.confirm((iSpecReg.isDisclaimerAccepted() ? "" : MESSAGES.disclaimerNoSuggestionsWarning() + "\n") + (iSpecReg.areSpaceConflictsAllowed() ? (iSpecReg.areTimeConflictsAllowed() ?
 							MESSAGES.disclaimerSpecRegAllowForTimeSpaceConflicts() : MESSAGES.disclaimerSpecRegAllowForSpaceConflicts())
 							: MESSAGES.disclaimerSpecRegAllowForTimeConflicts()),
@@ -806,74 +822,92 @@ public class SuggestionsBox extends UniTimeDialogBox {
 				if (result == null || result.isEmpty()) {
 					LoadingWidget.getInstance().hide();
 					iCustomCallback.onFailure(new SectioningException(MESSAGES.suggestionsNoChoices(iSource)));
-				} else if (result.size() == 1) {
-					ClassAssignmentInterface a = result.iterator().next();
-					if (a.getCourseAssignments().isEmpty()) {
-						if (iAllChoices == null || !iAllChoices.isVisible()) {
-							LoadingWidget.getInstance().hide();	
-							if (a.hasMessages())
-								iCustomCallback.onFailure(new SectioningException(a.getMessages(", ")));
-							else
-								iCustomCallback.onFailure(new SectioningException(MESSAGES.suggestionsNoChoices(iSource)));
-						} else {
-							final Command command = new Command() {
-								@Override
-								public void execute() {
-									iAllChoices.setValue(true);
-									request.setTimeConflictsAllowed(iSpecReg.areTimeConflictsAllowed());
-									request.setSpaceConflictsAllowed(iSpecReg.areSpaceConflictsAllowed());
-									iSectioningService.computeSuggestions(iOnline, request, rows, -1, iFilter.getText(), new AsyncCallback<Collection<ClassAssignmentInterface>>() {
-										@Override
-										public void onSuccess(Collection<ClassAssignmentInterface> result) {
-											if (result == null || result.isEmpty()) {
-												LoadingWidget.getInstance().hide();
-												iCustomCallback.onFailure(new SectioningException(MESSAGES.suggestionsNoChoices(iSource)));
-											} else if (result.size() == 1) {
-												ClassAssignmentInterface a = result.iterator().next();
-												if (a.getCourseAssignments().isEmpty()) {
-													LoadingWidget.getInstance().hide();	
-													if (a.hasMessages())
-														iCustomCallback.onFailure(new SectioningException(a.getMessages(", ")));
-													else
-														iCustomCallback.onFailure(new SectioningException(MESSAGES.suggestionsNoChoices(iSource)));
-												} else {
-													iCallback.onSuccess(result);
-												}
-											} else {
-												iCallback.onSuccess(result);
-											}
-										}
-										@Override
-										public void onFailure(Throwable caught) {
-											LoadingWidget.getInstance().hide();
-											iCustomCallback.onFailure(caught);
-										}
-									});
-								}
-							};
-							if (iSpecReg.isDisclaimerAccepted())
-								command.execute();
-							else {
-								LoadingWidget.getInstance().hide();
-								UniTimeConfirmationDialog.confirm(MESSAGES.disclaimerNoSuggestionsWarning() + "\n" + (iSpecReg.areSpaceConflictsAllowed() ? (iSpecReg.areTimeConflictsAllowed() ?
-										MESSAGES.disclaimerSpecRegAllowForTimeSpaceConflicts() : MESSAGES.disclaimerSpecRegAllowForSpaceConflicts())
-										: MESSAGES.disclaimerSpecRegAllowForTimeConflicts()),
-										new Command() {
-											@Override
-											public void execute() {
-												iSpecReg.setDisclaimerAccepted(true);
-												SectioningCookie.getInstance().setAllChoices(true);
-												LoadingWidget.getInstance().show(MESSAGES.suggestionsLoadingChoices());
-												command.execute();
-											}
-										});
+					return;
+				}
+				boolean hasNoDropChange = false;
+				boolean hasAnyChange = false;
+				String message = null;
+				for (ClassAssignmentInterface a: result) {
+					boolean hasDropCourse = false;
+					for (CourseAssignment c: a.getCourseAssignments()) {
+						if (c.isTeachingAssignment() || c.isFreeTime()) continue;
+						hasAnyChange = true;
+						if (!c.isAssigned()) {
+							for (ClassAssignmentInterface.ClassAssignment x: iCurrent) {
+								if (x == null) continue;
+								if (c.getCourseId().equals(x.getCourseId()) && x.isCourseAssigned())
+									hasDropCourse = true;
 							}
 						}
-					} else {
+					}
+					if (a.getCourseAssignments().isEmpty() && a.hasMessages())
+						message = a.getMessages(", ");
+					if (!a.getCourseAssignments().isEmpty() && !hasDropCourse) {
+						hasNoDropChange = true;
+						break;
+					}
+				}
+				if (hasNoDropChange) {
+					iCallback.onSuccess(result);
+				} else if (iAllChoices == null || !iAllChoices.isVisible()) {
+					if (hasAnyChange) {
 						iCallback.onSuccess(result);
+					} else {
+						LoadingWidget.getInstance().hide();
+						iCustomCallback.onFailure(new SectioningException(message != null ? message : MESSAGES.suggestionsNoChoices(iSource)));
 					}
 				} else {
-					iCallback.onSuccess(result);
+					final Command command = new Command() {
+						@Override
+						public void execute() {
+							iAllChoices.setValue(true);
+							request.setTimeConflictsAllowed(iSpecReg.areTimeConflictsAllowed());
+							request.setSpaceConflictsAllowed(iSpecReg.areSpaceConflictsAllowed());
+							iSectioningService.computeSuggestions(iOnline, request, rows, -1, iFilter.getText(), new AsyncCallback<Collection<ClassAssignmentInterface>>() {
+								@Override
+								public void onSuccess(Collection<ClassAssignmentInterface> result) {
+									if (result == null || result.isEmpty()) {
+										LoadingWidget.getInstance().hide();
+										iCustomCallback.onFailure(new SectioningException(MESSAGES.suggestionsNoChoices(iSource)));
+									} else if (result.size() == 1) {
+										ClassAssignmentInterface a = result.iterator().next();
+										if (a.getCourseAssignments().isEmpty()) {
+											LoadingWidget.getInstance().hide();	
+											if (a.hasMessages())
+												iCustomCallback.onFailure(new SectioningException(a.getMessages(", ")));
+											else
+												iCustomCallback.onFailure(new SectioningException(MESSAGES.suggestionsNoChoices(iSource)));
+										} else {
+											iCallback.onSuccess(result);
+										}
+									} else {
+										iCallback.onSuccess(result);
+									}
+								}
+								@Override
+								public void onFailure(Throwable caught) {
+									LoadingWidget.getInstance().hide();
+									iCustomCallback.onFailure(caught);
+								}
+							});
+						}
+					};
+					// if (iSpecReg.isDisclaimerAccepted()) command.execute();
+					if (hasAnyChange)
+						iCallback.onSuccess(result);
+					LoadingWidget.getInstance().hide();
+					UniTimeConfirmationDialog.confirm(MESSAGES.disclaimerNoSuggestionsWarning() + "\n" + (iSpecReg.areSpaceConflictsAllowed() ? (iSpecReg.areTimeConflictsAllowed() ?
+							MESSAGES.disclaimerSpecRegAllowForTimeSpaceConflicts() : MESSAGES.disclaimerSpecRegAllowForSpaceConflicts())
+							: MESSAGES.disclaimerSpecRegAllowForTimeConflicts()),
+							new Command() {
+								@Override
+								public void execute() {
+									iSpecReg.setDisclaimerAccepted(true);
+									SectioningCookie.getInstance().setAllChoices(true);
+									LoadingWidget.getInstance().show(MESSAGES.suggestionsLoadingChoices());
+									command.execute();
+								}
+							});
 				}
 			}
 			@Override
