@@ -23,9 +23,9 @@
 	xmlns:beans="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans
-		http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
 		http://www.springframework.org/schema/security
-		http://www.springframework.org/schema/security/spring-security-3.2.xsd">
+		http://www.springframework.org/schema/security/spring-security-4.2.xsd">
 	
 	<http use-expressions="true" entry-point-ref="casEntryPoint">
 		<intercept-url pattern="/temp/*" access="isAuthenticated()"/>
@@ -48,6 +48,7 @@
     	<custom-filter ref="casRequestSingleLogoutFilter" before="LOGOUT_FILTER"/>
     	<custom-filter ref="casSingleLogoutFilter" before="CAS_FILTER"/>
     	<http-basic/>
+    	<csrf disabled="true"/>
 	</http>
 	
 	<global-method-security pre-post-annotations="enabled">
@@ -103,7 +104,7 @@
 	
 	<!-- CAS Authentication -->
 	<beans:bean id="casServiceProperties" class="org.springframework.security.cas.ServiceProperties">
-		<beans:property name="service" value="${unitime.url}/j_spring_cas_security_check"/>
+		<beans:property name="service" value="${unitime.url}/login"/>
 		<beans:property name="sendRenew" value="false"/>
 	</beans:bean>
 	

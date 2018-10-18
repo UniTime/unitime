@@ -25,15 +25,15 @@
 	xmlns:mail="http://www.springframework.org/schema/integration/mail"
 	xmlns:util="http://www.springframework.org/schema/util"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans
-		http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
 		http://www.springframework.org/schema/integration
-		http://www.springframework.org/schema/integration/spring-integration-3.0.xsd
+		http://www.springframework.org/schema/integration/spring-integration-4.3.xsd
 		http://www.springframework.org/schema/integration/file
-		http://www.springframework.org/schema/integration/file/spring-integration-file-3.0.xsd
+		http://www.springframework.org/schema/integration/file/spring-integration-file-4.3.xsd
 		http://www.springframework.org/schema/integration/mail
-        http://www.springframework.org/schema/integration/mail/spring-integration-mail-3.0.xsd
+        http://www.springframework.org/schema/integration/mail/spring-integration-mail-4.3.xsd
         http://www.springframework.org/schema/util
-        http://www.springframework.org/schema/util/spring-util-3.2.xsd">
+        http://www.springframework.org/schema/util/spring-util-4.3.xsd">
 		
 		<beans:bean id="delayedTrigger" class="org.springframework.scheduling.support.PeriodicTrigger">
 			<beans:constructor-arg value="60"/>
@@ -59,7 +59,7 @@
         
         <channel id="data-import-file-enriched" datatype="java.io.File"/>
         
-        <channel id="data-import-failure" datatype="org.springframework.integration.MessagingException"/>
+        <channel id="data-import-failure" datatype="org.springframework.messaging.MessagingException"/>
         
         <transformer ref="dataExchangeHelper" method="file2document" input-channel="data-import-file-enriched" output-channel="data-import-xml"/>
         
@@ -82,7 +82,7 @@
         	<header name="file_originalFile" expression="payload.failedMessage.headers.file_originalFile"/>
         </header-enricher>
         
-        <channel id="data-import-failure-enriched" datatype="org.springframework.integration.MessagingException"/>
+        <channel id="data-import-failure-enriched" datatype="org.springframework.messaging.MessagingException"/>
         
         <transformer ref="dataExchangeHelper" method="exception2message" input-channel="data-import-failure-enriched" output-channel="data-import-failure-log"/>
         

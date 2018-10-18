@@ -38,7 +38,7 @@
 	    <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
 		<TITLE>UniTime <%=Constants.VERSION%></TITLE>
 	</HEAD>
-	<BODY class="bodyMain" onload="document.forms[0].j_username.focus();">
+	<BODY class="bodyMain" onload="document.forms[0].username.focus();">
 	
 	<% if (ApplicationProperties.getProperty("tmtbl.header.external", "").trim().length()>0) { %>
 	<jsp:include flush="true" page='<%=ApplicationProperties.getProperty("tmtbl.header.external")%>' />
@@ -65,7 +65,7 @@
 	}
  %>		
 
-<FORM name="f" action="<c:url value='j_spring_security_check'/>" method="POST">
+<FORM name="f" action="<c:url value='login'/>" method="POST">
 	<INPUT type="hidden" name="cs" value="login">
 	<INPUT type="hidden" name="menu" value="<%=request.getParameter("menu") == null ? "" : request.getParameter("menu") %>">
 	<INPUT type="hidden" name="target" value="<%=request.getParameter("target") == null ? "" : request.getParameter("target") %>">
@@ -87,10 +87,10 @@
 				<div class="BrownBG">
 					<div class="H40px"></div>
 					<div><label>Username:</label></div>
-					<div class="txtField"><input type='text' name='j_username' value='<c:if test="${not empty SPRING_SECURITY_LAST_USERNAME}"><c:out value="${SPRING_SECURITY_LAST_USERNAME}"/></c:if>' aria-label='Enter user name'/></div>
+					<div class="txtField"><input type='text' name='username' value='<c:if test="${not empty SPRING_SECURITY_LAST_USERNAME}"><c:out value="${SPRING_SECURITY_LAST_USERNAME}"/></c:if>' aria-label='Enter user name'/></div>
 					<div class="H20px"></div>
 					<div><label>Password:</label></div>
-					<div class="txtField"><input type='password' name='j_password' aria-label='Enter password'></div>
+					<div class="txtField"><input type='password' name='password' aria-label='Enter password'></div>
 				</div>
 				<div class="bottom"><img src="images/login_bg_2.jpg"/><input id="submit" name="submit" type="image" src="images/login_bg_3.jpg" border="0" align="top" value="log in" alt="Submit login information."><img src="images/login_bg_4.jpg"/></div>
 			</div>
