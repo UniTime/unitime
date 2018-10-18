@@ -241,7 +241,7 @@ public class PublishedSectioningSolutionsTable extends UniTimeTable<PublishedSec
 	public class OperationsCell extends P {
 		public OperationsCell(final PublishedSectioningSolutionInterface solution) {
 			super("operations");
-			AsyncCallback<GwtRpcResponseList<PublishedSectioningSolutionInterface>> callback = new AsyncCallback<GwtRpcResponseList<PublishedSectioningSolutionInterface>>() {
+			final AsyncCallback<GwtRpcResponseList<PublishedSectioningSolutionInterface>> callback = new AsyncCallback<GwtRpcResponseList<PublishedSectioningSolutionInterface>>() {
 				@Override
 				public void onSuccess(GwtRpcResponseList<PublishedSectioningSolutionInterface> result) {
 					LoadingWidget.getInstance().hide();
@@ -253,7 +253,7 @@ public class PublishedSectioningSolutionsTable extends UniTimeTable<PublishedSec
 					UniTimeNotifications.error(caught);
 				}
 			};
-			AsyncCallback<GwtRpcResponseList<PublishedSectioningSolutionInterface>> callbackOpenSolver = new AsyncCallback<GwtRpcResponseList<PublishedSectioningSolutionInterface>>() {
+			final AsyncCallback<GwtRpcResponseList<PublishedSectioningSolutionInterface>> callbackOpenSolver = new AsyncCallback<GwtRpcResponseList<PublishedSectioningSolutionInterface>>() {
 				@Override
 				public void onSuccess(GwtRpcResponseList<PublishedSectioningSolutionInterface> result) {
 					LoadingWidget.getInstance().hide();
@@ -330,9 +330,9 @@ public class PublishedSectioningSolutionsTable extends UniTimeTable<PublishedSec
 							public void execute() {
 								LoadingWidget.getInstance().show(MESSAGES.waitPlease());
 								RPC.execute(new PublishedSectioningSolutionsRequest(PublishedSectioningSolutionInterface.Operation.REMOVE, solution.getUniqueId()), callback);
-								event.preventDefault(); event.stopPropagation();
 							}
 						});
+						event.preventDefault(); event.stopPropagation();
 					}
 				});
 			}
