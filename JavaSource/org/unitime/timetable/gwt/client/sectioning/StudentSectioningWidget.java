@@ -956,7 +956,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 													}
 												}
 											};
-											iPinDialog.checkEligibility(iOnline, iMode.isSectioning(), iSessionSelector.getAcademicSessionId(), null, callback);
+											iPinDialog.checkEligibility(iOnline, iMode.isSectioning(), iSessionSelector.getAcademicSessionId(), null, callback, iSessionSelector.getAcademicSessionInfo());
 										}
 									}
 									if (se.hasErrors()) iLastAssignment.setErrors(se.getErrors());
@@ -1840,7 +1840,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								}
 							}
 						};
-						iPinDialog.checkEligibility(iOnline, iMode.isSectioning(), sessionId, null, callback);
+						iPinDialog.checkEligibility(iOnline, iMode.isSectioning(), sessionId, null, callback, iSessionSelector.getAcademicSessionInfo());
 					} else {
 						iSchedule.setVisible(iMode.isSectioning()); iSchedule.setEnabled(iMode.isSectioning());
 						iSave.setVisible(!iMode.isSectioning()); iSave.setEnabled(!iMode.isSectioning() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_REGISTER));

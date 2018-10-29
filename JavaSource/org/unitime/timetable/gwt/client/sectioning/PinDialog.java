@@ -27,6 +27,7 @@ import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
+import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -42,6 +43,7 @@ import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -55,6 +57,7 @@ public class PinDialog extends AriaDialogBox {
 	private AriaTextBox iPin = null;
 	private AriaButton iButton = null, iCancel = null;
 	private PinCallback iCallback = null;
+	private Label iPinLabel = null;
 	
 	private boolean iOnline, iSectioning;
 	private Long iSessionId, iStudentId;
@@ -75,8 +78,10 @@ public class PinDialog extends AriaDialogBox {
 		
 		HorizontalPanel panel = new HorizontalPanel();
 		panel.setSpacing(5);
+		panel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 
-		panel.add(new Label(MESSAGES.pin()));
+		iPinLabel = new Label(MESSAGES.pin());
+		panel.add(iPinLabel);
 		iPin = new AriaTextBox();
 		iPin.setStyleName("gwt-SuggestBox");
 		iPin.setAriaLabel(ARIA.propPinNumber());
@@ -150,12 +155,19 @@ public class PinDialog extends AriaDialogBox {
 		});
 	}
 	
-	public void checkEligibility(boolean online, boolean sectioning, Long sessionId, Long studentId, PinCallback callback) {
+	public void checkEligibility(boolean online, boolean sectioning, Long sessionId, Long studentId, PinCallback callback, AcademicSessionInfo session) {
 		iOnline = online;
 		iSectioning = sectioning;
 		iSessionId = sessionId;
 		iStudentId = studentId;
 		iCallback = callback;
+		if (session != null) {
+			setText(MESSAGES.dialogPinForSession(session.getTerm(), session.getYear()));
+			iPinLabel.setText(MESSAGES.pinForSession(session.getTerm(), session.getYear()));
+		} else {
+			setText(MESSAGES.dialogPin());
+			iPinLabel.setText(MESSAGES.pin());
+		}
 		iPin.setText("");
 		center();
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {

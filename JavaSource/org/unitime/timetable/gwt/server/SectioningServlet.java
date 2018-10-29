@@ -963,7 +963,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	
 	public AcademicSessionProvider.AcademicSessionInfo lastAcademicSession(boolean sectioning) throws SectioningException, PageAccessException {
 		if (getSessionContext().isHttpSessionNew()) throw new PageAccessException(MSG.exceptionUserNotLoggedIn());
-		Long sessionId = getLastSessionId();
+		Long sessionId = (Long)getSessionContext().getAttribute(SessionAttribute.OnlineSchedulingLastSession);
+		// Long sessionId = getLastSessionId();
 		if (sessionId == null) throw new SectioningException(MSG.exceptionNoAcademicSession());
 		ExternalTermProvider extTerm = getExternalTermProvider();
 		if (sectioning) {

@@ -558,6 +558,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Please enter your PIN ...")
 	String dialogPin();
 	
+	@DefaultMessage("Please enter your {0} {1} PIN ...")
+	String dialogPinForSession(String term, String year);
+	
 	@DefaultMessage("Username:")
 	String username();
 	
@@ -566,6 +569,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("PIN:")
 	String pin();
+	
+	@DefaultMessage("{0} {1} PIN:")
+	String pinForSession(String term, String year);
 	
 	@DefaultMessage("Log&nbsp;In")
 	String buttonUserLogin();
