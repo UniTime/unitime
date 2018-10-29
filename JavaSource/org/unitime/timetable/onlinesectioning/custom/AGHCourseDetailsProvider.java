@@ -77,6 +77,8 @@ public class AGHCourseDetailsProvider implements CourseDetailsProvider, CourseUr
 			String years = findYears(session, subject, courseNbr);
 			String url = ApplicationProperty.CustomizationDefaultCourseUrl.value();
 			String externalId=course.getExternalUniqueId();
+			if (years == null || years.isEmpty())
+				return null;
 			if (externalId == null || externalId.isEmpty())
 				return null;
 			
@@ -169,6 +171,8 @@ public class AGHCourseDetailsProvider implements CourseDetailsProvider, CourseUr
 				return null;
 			
 			String years = findYears(session, subject, courseNbr);
+			if (years == null || years.isEmpty())
+				return null;
 			return new URL(url.replace(":years", URLEncoder.encode(years, "utf-8"))
 					.replace(":term", URLEncoder.encode(session.getTerm(), "utf-8"))
 					.replace(":courseNbr", URLEncoder.encode(externalId, "utf-8")));
@@ -179,9 +183,13 @@ public class AGHCourseDetailsProvider implements CourseDetailsProvider, CourseUr
 	}
 
 	private String findYears(AcademicSessionInfo session, String subject, String courseNbr) {
-		String classificationSt=findClassificationBySessionSubjAreaAbbvCourseNbr(session.getUniqueId(), subject, courseNbr);
-		Integer classification=new Integer( classificationSt.substring(classificationSt.length()-1));
-		String years=syllabusLink(new Integer(session.getYear()), session.getTerm(), classification);
+		String years = null;
+		try {
+			String classificationSt=findClassificationBySessionSubjAreaAbbvCourseNbr(session.getUniqueId(), subject, courseNbr);
+			Integer classification=new Integer( classificationSt.substring(classificationSt.length()-1));
+			years=syllabusLink(new Integer(session.getYear()), session.getTerm(), classification);
+		} catch (Exception e) {
+		}
 		return years;
 	}
 
