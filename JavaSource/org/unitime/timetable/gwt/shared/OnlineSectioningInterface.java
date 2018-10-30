@@ -40,6 +40,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private String iCheckboxMessage = null;
 		private Long iSessionId = null, iStudentId = null;
 		private Set<String> iOverrides = null;
+		private String iOverrideRequestDisclaimer = null;
 		
 		public static enum EligibilityFlag implements IsSerializable {
 			IS_ADMIN, IS_ADVISOR, IS_GUEST,
@@ -101,6 +102,10 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public void setCheckboxMessage(String message) { iCheckboxMessage = message; }
 		public boolean hasCheckboxMessage() { return iCheckboxMessage != null && !iCheckboxMessage.isEmpty(); }
 		public String getCheckboxMessage() { return iCheckboxMessage; }
+		
+		public void setOverrideRequestDisclaimer(String message) { iOverrideRequestDisclaimer = message; }
+		public String getOverrideRequestDisclaimer() { return iOverrideRequestDisclaimer; }
+		public boolean hasOverrideRequestDisclaimer() { return iOverrideRequestDisclaimer != null && !iOverrideRequestDisclaimer.isEmpty(); }
 
 		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 		public Long getSessionId() { return iSessionId; }

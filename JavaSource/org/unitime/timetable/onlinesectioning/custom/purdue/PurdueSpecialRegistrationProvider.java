@@ -2001,6 +2001,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				helper.debug("Response: " + gson.toJson(response));
 			helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(response));
 			
+			check.setOverrideRequestDisclaimer(ApplicationProperties.getProperty("purdue.specreg.disclaimer"));
+			
 			if (response != null && ResponseStatus.success.name().equals(response.status)) {
 				boolean eligible = true;
 				if (response.data == null || response.data.eligible == null || !response.data.eligible.booleanValue()) {
