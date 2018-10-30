@@ -65,5 +65,8 @@ public class DefaultExternalClassNameHelper implements
 		return(clazz.getExternalUniqueId());
 	}
 
-
+	@Override
+	public Float getClassCredit(Class_ clazz, CourseOffering courseOffering) {
+		return null;
+	}
 }

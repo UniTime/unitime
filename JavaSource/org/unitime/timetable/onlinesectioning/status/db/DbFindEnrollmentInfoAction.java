@@ -50,6 +50,7 @@ import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
+import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -523,6 +524,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				} else if (section.getParentClass() != null && course.getCredit() != null) {
 					a.setCredit(course.getCredit().creditAbbv() + "|" + course.getCredit().creditText());
 				}
+				Float creditOverride = section.getCredit(course);
+				if (creditOverride != null) a.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
 				if (a.getParentSection() == null) {
 					String consent = (course.getConsentType() == null ? null : course.getConsentType().getLabel());
 					if (consent != null)

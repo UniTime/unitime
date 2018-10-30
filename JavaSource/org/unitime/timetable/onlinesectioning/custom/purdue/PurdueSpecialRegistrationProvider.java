@@ -52,6 +52,7 @@ import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
+import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Student;
@@ -355,7 +356,16 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			XCourse course = e.getKey();
 			List<XSection> sections = e.getValue();
 			
-			if (course.hasCredit())
+			Float sectionCredit = null;
+			for (XSection s: sections) {
+				Float credit = s.getCreditOverride(course.getCourseId());
+				if (credit != null) {
+					sectionCredit = (sectionCredit == null ? 0f : sectionCredit.floatValue()) + credit;
+				}
+			}
+			if (sectionCredit != null)
+				maxCredit += sectionCredit;
+			else if (course.hasCredit())
 				maxCredit += course.getMinCredit();
 			
 			for (XRequest r: student.getRequests()) {
@@ -1438,6 +1448,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					} else if (credit != null) {
 						ca.setCredit(credit.creditAbbv() + "|" + credit.creditText());
 					}
+					Float creditOverride = clazz.getCredit(course);
+					if (creditOverride != null) ca.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
 					credit = null;
 					if (ca.getParentSection() == null)
 						ca.setParentSection(course.getConsentType() == null ? null : course.getConsentType().getLabel());
@@ -1573,6 +1585,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					} else if (credit != null) {
 						ca.setCredit(credit.creditAbbv() + "|" + credit.creditText());
 					}
+					Float creditOverride = clazz.getCredit(course);
+					if (creditOverride != null) ca.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
 					credit = null;
 					if (ca.getParentSection() == null)
 						ca.setParentSection(course.getConsentType() == null ? null : course.getConsentType().getLabel());

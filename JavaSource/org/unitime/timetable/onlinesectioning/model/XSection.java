@@ -79,6 +79,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     private Map<Long, String> iExternalIdByCourse = new HashMap<Long, String>();
     private boolean iEnabledForScheduling = true;
     private boolean iCancelled = false;
+    private Map<Long, Float> iCreditByCourse = null;
 
     public XSection() {
     }
@@ -121,6 +122,11 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
         	if (extId == null)
         		extId = clazz.getClassLabel(course);
         	iExternalIdByCourse.put(course.getUniqueId(), extId);
+            Float credit = clazz.getCredit(course);
+            if (credit != null) {
+            	if (iCreditByCourse == null) iCreditByCourse = new HashMap<Long, Float>();
+            	iCreditByCourse.put(course.getUniqueId(), credit);
+            }
         }
         iNameByCourse.put(-1l, clazz.getSectionNumberString(helper.getHibSession()));
         if (assignment != null) {
@@ -276,6 +282,11 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
         if (iExternalIdByCourse == null) return iExternalId;
         String externalId = iExternalIdByCourse.get(courseId);
         return (externalId == null ? iExternalId : externalId);
+    }
+    
+    public Float getCreditOverride(long courseId) {
+    	if (iCreditByCourse == null) return null;
+    	return iCreditByCourse.get(courseId);
     }
 
     /**
@@ -522,6 +533,15 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
 			iExternalIdByCourse.put(in.readLong(), (String)in.readObject());
 		iEnabledForScheduling = in.readBoolean();
 		iCancelled = in.readBoolean();
+		
+		int nrCreditsByCourse = in.readInt();
+		if (nrCreditsByCourse > 0) {
+			iCreditByCourse = new HashMap<Long, Float>();
+			for (int i = 0; i < nrExtIds; i++)
+				iCreditByCourse.put(in.readLong(), in.readFloat());
+		} else {
+			iCreditByCourse = null;
+		}
 	}
 
 	@Override
@@ -564,6 +584,16 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
 		}
 		out.writeBoolean(iEnabledForScheduling);
 		out.writeBoolean(iCancelled);
+		
+		if (iCreditByCourse != null) {
+			out.writeInt(iCreditByCourse.size());
+			for (Map.Entry<Long, Float> entry: iCreditByCourse.entrySet()) {
+				out.writeLong(entry.getKey());
+				out.writeFloat(entry.getValue());
+			}
+		} else {
+			out.writeInt(0);
+		}
 	}
 	
 	public static class XSectionSerializer implements Externalizer<XSection> {

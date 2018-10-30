@@ -32,5 +32,5 @@ public interface ExternalClassNameHelperInterface {
 	public String getClassLabel(Class_ clazz, CourseOffering courseOffering);
 	public String getClassLabelWithTitle(Class_ clazz, CourseOffering courseOffering);
 	public String getExternalId(Class_ clazz, CourseOffering courseOffering);
-	
+	public Float getClassCredit(Class_ clazz, CourseOffering courseOffering);
 }

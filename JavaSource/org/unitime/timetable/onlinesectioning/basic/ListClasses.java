@@ -29,6 +29,7 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
+import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -130,6 +131,8 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 						}
 						a.addNote(section.getNote());
 						a.setCredit(subpart.getCredit(c.getCourseId()));
+						Float creditOverride = section.getCreditOverride(c.getCourseId());
+						if (creditOverride != null) a.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
 						if (section.getTime() != null) {
 							for (DayCode d: DayCode.toDayCodes(section.getTime().getDays()))
 								a.addDay(d.getIndex());

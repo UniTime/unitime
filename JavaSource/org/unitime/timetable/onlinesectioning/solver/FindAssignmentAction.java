@@ -80,6 +80,7 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -965,6 +966,11 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					a.addNote(course.getNote());
 					a.addNote(section.getNote());
 					a.setCredit(section.getSubpart().getCredit());
+					XSection xSection = offering.getSection(section.getId());
+					if (xSection != null) {
+						Float credit = xSection.getCreditOverride(course.getId());
+						if (credit != null) a.setCredit(FixedCreditUnitConfig.formatCredit(credit));
+					}
 					int dist = 0;
 					String from = null;
 					TreeSet<String> overlap = new TreeSet<String>();

@@ -53,4 +53,9 @@ public class ClassNamesNoSubpartSuffix implements ExternalClassNameHelperInterfa
 	public String getExternalId(Class_ clazz, CourseOffering courseOffering) {
 		return clazz.getExternalUniqueId();
 	}
+
+	@Override
+	public Float getClassCredit(Class_ clazz, CourseOffering courseOffering) {
+		return null;
+	}
 }

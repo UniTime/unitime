@@ -35,6 +35,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.CourseReservation;
 import org.unitime.timetable.model.CurriculumReservation;
+import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
@@ -249,6 +250,8 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 					} else if (section.getParentClass() != null && course.getCredit() != null) {
 						a.setCredit(course.getCredit().creditAbbv() + "|" + course.getCredit().creditText());
 					}
+					Float creditOverride = section.getCredit(course);
+					if (creditOverride != null) a.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
 					if (a.getParentSection() == null) {
 						String consent = (course.getConsentType() == null ? null : course.getConsentType().getLabel());
 						if (consent != null)

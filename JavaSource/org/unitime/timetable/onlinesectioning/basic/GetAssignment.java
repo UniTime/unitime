@@ -52,6 +52,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
+import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -210,6 +211,8 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 										a.addNote(course.getNote());
 										a.addNote(section.getNote());
 										a.setCredit(subpart.getCredit(course.getCourseId()));
+										Float creditOverride = section.getCreditOverride(course.getCourseId());
+										if (creditOverride != null) a.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
 										a.setTeachingAssignment(true);
 										a.setInstructing(instructor.isInstructing());
 										sections.add(new CourseSection(course, section));
@@ -389,6 +392,8 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 						a.addNote(course.getNote());
 						a.addNote(section.getNote());
 						a.setCredit(subpart.getCredit(course.getCourseId()));
+						Float creditOverride = section.getCreditOverride(course.getCourseId());
+						if (creditOverride != null) a.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
 						a.setEnrolledDate(enrollment.getTimeStamp());
 						int dist = 0;
 						String from = null;
@@ -496,6 +501,8 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 						a.addNote(course.getNote());
 						a.addNote(section.getNote());
 						a.setCredit(subpart.getCredit(course.getCourseId()));
+						Float creditOverride = section.getCreditOverride(course.getCourseId());
+						if (creditOverride != null) a.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
 						int dist = 0;
 						String from = null;
 						a.setBackToBackDistance(dist);

@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -229,6 +230,8 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 							a.addNote(course.getNote());
 							a.addNote(section.getNote());
 							a.setCredit(subpart.getCredit(course.getCourseId()));
+							Float creditOverride = section.getCreditOverride(c.getCourseId());
+							if (creditOverride != null) a.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
 							int dist = 0;
 							String from = null;
 							TreeSet<String> overlap = new TreeSet<String>();

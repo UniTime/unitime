@@ -89,6 +89,7 @@ import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.CourseType;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
@@ -1483,6 +1484,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							} else if (credit != null) {
 								clazz.setCredit(credit.creditAbbv() + "|" + credit.creditText());
 							}
+							Float creditOverride = enrollment.getClazz().getCredit(enrollment.getCourseOffering());
+							if (creditOverride != null) clazz.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
 							credit = null;
 							if (clazz.getParentSection() == null)
 								clazz.setParentSection(enrollment.getCourseOffering().getConsentType() == null ? null : enrollment.getCourseOffering().getConsentType().getLabel());

@@ -74,4 +74,8 @@ public class FixedCreditUnitConfig extends BaseFixedCreditUnitConfig {
 	public float getMaxCredit() {
 		return (getFixedUnits() == null ? 0f : getFixedUnits());
 	}
+	
+	public static String formatCredit(float credit) {
+		return credit == 0f ? "" : sCreditFormat.format(credit);
+	}
 }

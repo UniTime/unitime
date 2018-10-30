@@ -133,6 +133,19 @@ public interface StudentEnrollmentProvider {
 		public XCourse getCourse() { return iCourse; }
 		public List<XSection> getSections() { return iSections; }
 		
+		public float getCredit() {
+			Float sectionCredit = null;
+			for (XSection s: getSections()) {
+				Float credit = s.getCreditOverride(getCourse().getCourseId());
+				if (credit != null) {
+					sectionCredit = (sectionCredit == null ? 0f : sectionCredit.floatValue()) + credit;
+				}
+			}
+			if (sectionCredit != null) return sectionCredit;
+			if (getCourse().hasCredit()) return getCourse().getMinCredit();
+			return 0f;
+		}
+		
 		public String toString() {
 			return getCourse().getCourseName() + ": " + ToolBox.col2string(getSections(), 2);
 		}

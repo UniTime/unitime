@@ -1686,6 +1686,10 @@ public class Class_ extends BaseClass_ {
 		return(getExternalClassNameHelper().getExternalId(this, courseOffering));
 	}
 	
+	public Float getCredit(CourseOffering courseOffering) {
+		return getExternalClassNameHelper().getClassCredit(this, courseOffering);
+	}
+	
 	public SectioningInfo getSectioningInfo() {
 		return (SectioningInfo) SectioningInfoDAO.getInstance().getSession().createQuery(
 				"select i from SectioningInfo i where i.clazz.uniqueId = :classId")

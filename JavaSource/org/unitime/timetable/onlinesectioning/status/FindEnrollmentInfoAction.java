@@ -44,6 +44,7 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
+import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -577,6 +578,8 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				a.addNote(course.getNote());
 				a.addNote(section.getNote());
 				a.setCredit(subpart.getCredit(course.getCourseId()));
+				Float creditOverride = section.getCreditOverride(course.getCourseId());
+				if (creditOverride != null) a.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
 				if (a.getParentSection() == null) {
 					String consent = server.getCourse(courseId()).getConsentLabel();
 					if (consent != null)

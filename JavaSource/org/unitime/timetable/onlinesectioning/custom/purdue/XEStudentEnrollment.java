@@ -424,15 +424,13 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				for (XRequest r: student.getRequests())
 					if (r instanceof XCourseRequest) {
 						XCourseRequest cr = (XCourseRequest)r;
-						XCourse course = (cr.getEnrollment() == null ? null : server.getCourse(cr.getEnrollment().getCourseId()));
-						if (course != null && course.hasCredit())
-							enrolled += course.getCreditInfo().getMinCredit();
+						if (cr.getEnrollment() != null)
+							enrolled += cr.getEnrollment().getCredit(server);
 					}
 				// Check credits
 				float credit = 0f;
 				for (EnrollmentRequest req: enrollments) {
-					if (req.getCourse().hasCredit())
-						credit += req.getCourse().getCreditInfo().getMinCredit();
+					credit += req.getCredit();
 				}
 				if (credit > maxCredit && credit > enrolled) {
 					throw new SectioningException(ApplicationProperties.getProperty("banner.xe.messages.maxCredit", "Maximum of {max} hours exceeded.")
@@ -531,8 +529,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					maxHours = getMaxHoursDefault();
 				float credit = 0f;
 				for (EnrollmentRequest req: enrollments) {
-					if (req.getCourse().hasCredit())
-						credit += req.getCourse().getCreditInfo().getMinCredit();
+					credit += req.getCredit();
 				}
 				if (credit > maxHours) {
 					throw new SectioningException(ApplicationProperties.getProperty("banner.xe.messages.maxHours", "Maximum of {max} hours exceeded.")

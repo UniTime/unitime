@@ -37,6 +37,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 
 /**
  * @author Tomas Muller
@@ -129,6 +130,24 @@ public class XEnrollment extends XCourseId implements Serializable {
 	}
 	
 	public void setTimeStamp(Date ts) { iTimeStamp = ts; }
+	
+	public float getCredit(OnlineSectioningServer server) {
+		XOffering offering = server.getOffering(getOfferingId());
+		if (offering == null) return 0f;
+		Float sectionCredit = null;
+		for (Long sectionId: getSectionIds()) {
+			XSection section = offering.getSection(sectionId);
+			Float credit = (section == null ? null : section.getCreditOverride(getCourseId()));
+			if (credit != null) {
+				sectionCredit = (sectionCredit == null ? 0f : sectionCredit.floatValue()) + credit;
+			}
+		}
+		if (sectionCredit != null) return sectionCredit;
+		XCourse course = offering.getCourse(getCourseId());
+		if (course != null && course.hasCredit())
+			return course.getMinCredit();
+		return 0f;
+	}
 
 	@Override
 	public int compareTo(XCourseId courseId) {
