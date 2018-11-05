@@ -1672,8 +1672,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_RESET)) { iReset.setVisible(true); iReset.setEnabled(true); }
 			if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.QUICK_ADD_DROP)) { iQuickAdd.setVisible(true); iQuickAdd.setEnabled(true); }
 			iEnroll.setVisible(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL));
-			iSubmitSpecReg.setVisible(!iEnroll.isVisible() && iSpecRegCx.isCanSubmit() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
-			iSubmitSpecReg.setEnabled(!iEnroll.isVisible() && iSpecRegCx.isCanSubmit() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
+			iSubmitSpecReg.setVisible(result.isCanEnroll() && !iEnroll.isVisible() && iSpecRegCx.isCanSubmit() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
+			iSubmitSpecReg.setEnabled(result.isCanEnroll() && !iEnroll.isVisible() && iSpecRegCx.isCanSubmit() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG));
 			if (iEligibilityCheck != null && iEligibilityCheck.hasCheckboxMessage()) {
 				if (iCustomCheckbox == null) {
 					iCustomCheckbox = new CheckBox(iEligibilityCheck.getCheckboxMessage(), true);
@@ -2001,6 +2001,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				}
 			}
 		};
+		iSpecialRegistrationsPanel.clearRegistrations();
 		if (saved)
 			iSectioningService.savedResult(iOnline, request.getAcademicSessionId(), request.getStudentId(), callback);
 		else

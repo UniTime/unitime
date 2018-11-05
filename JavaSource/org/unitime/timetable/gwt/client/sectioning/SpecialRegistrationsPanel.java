@@ -247,6 +247,13 @@ public class SpecialRegistrationsPanel extends P {
 		setVisible(iTable.getRowCount() > 1);
 	}
 	
+	public void clearRegistrations() {
+		iRegistrations = new ArrayList<RetrieveSpecialRegistrationResponse>();
+		iLastSaved = null;
+		iTable.clearTable(1);
+		setVisible(false);
+	}
+	
 	public List<RetrieveSpecialRegistrationResponse> getRegistrations() { return iRegistrations; }
 	
 	public void populate(List<RetrieveSpecialRegistrationResponse> registrations, ClassAssignmentInterface saved) {
