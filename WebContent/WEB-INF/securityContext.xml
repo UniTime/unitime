@@ -45,6 +45,9 @@
 		<custom-filter ref="unitimeAnonymousFilter" position="ANONYMOUS_FILTER"/>
 		<http-basic/>
 		<csrf disabled="true"/>
+		<headers>
+		    <frame-options policy="SAMEORIGIN"/>
+		</headers>
 	</http>
 	
 	<!-- CAS Authentication (replace the above http element with the one bellow)
