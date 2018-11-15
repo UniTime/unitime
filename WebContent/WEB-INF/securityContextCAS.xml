@@ -49,6 +49,9 @@
     	<custom-filter ref="casSingleLogoutFilter" before="CAS_FILTER"/>
     	<http-basic/>
     	<csrf disabled="true"/>
+    	<headers>
+		    <frame-options policy="SAMEORIGIN"/>
+		</headers>
 	</http>
 	
 	<global-method-security pre-post-annotations="enabled">
