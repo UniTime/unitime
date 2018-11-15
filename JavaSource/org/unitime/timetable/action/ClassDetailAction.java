@@ -259,7 +259,7 @@ public class ClassDetailAction extends PreferencesAction {
 	            ClassAssignmentProxy proxy = classAssignmentService.getAssignment();
 	            if (proxy != null ) {
 	            	    Assignment a = proxy.getAssignment(c);
-	            	    if (a != null && a.getDatePattern() != null) {
+	            	    if (a != null && a.isCommitted() && a.getDatePattern() != null) {
 	            	    	  if (!a.getDatePattern().equals(c.effectiveDatePattern()) ) {    		  
 	            	    		if (a.getDatePattern().getParents() == null || !a.getDatePattern().getParents().contains(c.effectiveDatePattern())) {
 	            	    		  errors.add("datePatternChanged", 

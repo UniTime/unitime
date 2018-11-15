@@ -1539,7 +1539,7 @@ public class WebInstructionalOfferingTableBuilder {
         		DatePattern newDp = null;
 			try {
 				a = classAssignment.getAssignment(aClass);
-				if(a != null && a.getDatePattern() != null && !a.getDatePattern().equals(aClass.effectiveDatePattern())) {
+				if(a != null && a.isCommitted() && a.getDatePattern() != null && !a.getDatePattern().equals(aClass.effectiveDatePattern())) {
 					if (aClass.effectiveDatePattern().getType() == DatePattern.sTypePatternSet 
 							&& a.getDatePattern().getParents() != null 
 							&& a.getDatePattern().getParents().contains(aClass.effectiveDatePattern())) {
