@@ -30,6 +30,19 @@
 	<category>
 		<title>Course Timetabling</title>
 		<item>
+			<name>Course Timetabling: Date Pattern Check</name>
+			<description>
+				<line>Only show the committed solution does not match current date pattern error when showing a committed solution.</line>
+			</description>
+		</item>
+	</category>
+</release>
+<release>
+	<version>4.3.142</version>
+	<release-date>October 17, 2018</release-date>
+	<category>
+		<title>Course Timetabling</title>
+		<item>
 			<name>Timetable Grid: Week Selection</name>
 			<description>
 				<line>Fixed a case when there are two overlapping classes assigned to a room or to an instructor

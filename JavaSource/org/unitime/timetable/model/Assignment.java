@@ -492,4 +492,8 @@ public class Assignment extends BaseAssignment {
         return shareDays(another) && shareHours(another) && shareWeeks(another);
     }    
     
+    public boolean isCommitted() {
+    	if (getSolution() == null) return false;
+    	return getSolution().getCommitDate() != null;
+    }
 }
