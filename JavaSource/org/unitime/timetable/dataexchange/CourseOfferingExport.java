@@ -37,6 +37,7 @@ import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.util.ToolBox;
 import org.dom4j.Document;
 import org.dom4j.Element;
+import org.hibernate.type.LongType;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -143,17 +144,39 @@ public class CourseOfferingExport extends BaseExport {
                 }
             } else {
                 info("Loading offerings...");
-                List offerings = getHibSession().createQuery(
-                    "select distinct io from InstructionalOffering io " +
-                    "inner join fetch io.courseOfferings as co inner join fetch co.subjectArea sa "+
-                    "left join fetch io.instrOfferingConfigs as ioc "+
-                    "left join fetch ioc.schedulingSubparts as ss "+
-                    "left join fetch ss.classes as c "+
-                    "where " +
-                    "io.session.uniqueId=:sessionId "+
-                    "order by sa.subjectAreaAbbreviation, co.courseNbr").
-                    setLong("sessionId",session.getUniqueId().longValue()).
-                    setFetchSize(1000).list();
+                String subjects = parameters.getProperty("tmtbl.export.subjects");
+                
+                List offerings = null;
+                if (subjects == null || subjects.isEmpty()) {
+                	offerings = getHibSession().createQuery(
+                            "select distinct io from InstructionalOffering io " +
+                            "inner join fetch io.courseOfferings as co inner join fetch co.subjectArea sa "+
+                            "left join fetch io.instrOfferingConfigs as ioc "+
+                            "left join fetch ioc.schedulingSubparts as ss "+
+                            "left join fetch ss.classes as c "+
+                            "where " +
+                            "io.session.uniqueId=:sessionId "+
+                            "order by sa.subjectAreaAbbreviation, co.courseNbr").
+                            setLong("sessionId",session.getUniqueId().longValue()).
+                            setFetchSize(1000).list();
+                } else {
+                	List<Long> subjectIds = new ArrayList<Long>();
+                	for (String id: subjects.split(","))
+                		subjectIds.add(Long.valueOf(id));
+                	offerings = getHibSession().createQuery(
+                            "select distinct io from InstructionalOffering io " +
+                            "inner join fetch io.courseOfferings as co inner join fetch co.subjectArea sa "+
+                            "left join fetch io.instrOfferingConfigs as ioc "+
+                            "left join fetch ioc.schedulingSubparts as ss "+
+                            "left join fetch ss.classes as c "+
+                            "where " +
+                            "io.session.uniqueId=:sessionId "+
+                            "and io.uniqueId in (select x.instructionalOffering.uniqueId from CourseOffering x where x.isControl = true and x.subjectArea.uniqueId in (:subjects)) " +
+                            "order by sa.subjectAreaAbbreviation, co.courseNbr").
+                            setLong("sessionId",session.getUniqueId().longValue()).
+                            setParameterList("subjects", subjectIds, LongType.INSTANCE).
+                            setFetchSize(1000).list();
+                }
                 
                 if (!"none".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))) {
                     info("Loading exams...");

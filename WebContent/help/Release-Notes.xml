@@ -36,6 +36,16 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Data Exchange: Course Offerings Export</name>
+			<description>
+				<line>Added ability to restrict subject areas in the course offering export (using tmtbl.export.subjects parameter that contains a comma separated list of subject area ids).</line>
+				<line>Added a script named Export Course Offerings that allows to export course offerings for the select subject area(s).</line>
+			</description>
+		</item>
+	</category>
 </release>
 <release>
 	<version>4.3.142</version>
