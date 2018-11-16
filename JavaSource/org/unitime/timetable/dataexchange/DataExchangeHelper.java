@@ -158,6 +158,8 @@ public class DataExchangeHelper {
     public boolean beginTransaction() {
         try {
             iHibSession = new _RootDAO().getSession();
+            if (iHibSession.getTransaction() != null && iHibSession.getTransaction().isActive())
+            	return false;
             iTx = iHibSession.beginTransaction();
             debug("Transaction started.");
             return true;
@@ -169,6 +171,7 @@ public class DataExchangeHelper {
     
     public boolean commitTransaction() {
         try {
+        	if (iTx == null) { iHibSession = null; return false; }
             iTx.commit();
             debug("Transaction committed.");
             return true;
@@ -183,6 +186,7 @@ public class DataExchangeHelper {
 
     public boolean rollbackTransaction() {
         try {
+        	if (iTx == null) { iHibSession = null; return false; }
             iTx.rollback();
             info("Transaction rollbacked.");
             return true;
