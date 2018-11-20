@@ -174,12 +174,12 @@ import org.unitime.timetable.server.script.SaveTaskBackend;
 public class SessionRollForward {
 	protected Log iLog;
 	
-	private static HashMap roomList;
-	private static HashMap sessionHasCourseCatalogList;
-	private static HashMap sessionHasExternalBuildingList;
-	private static HashMap sessionHasExternalRoomList;
-	private static HashMap sessionHasExternalRoomDeptList;
-	private static HashMap sessionHasExternalRoomFeatureList;
+	private HashMap roomList;
+	private HashMap sessionHasCourseCatalogList;
+	private HashMap sessionHasExternalBuildingList;
+	private HashMap sessionHasExternalRoomList;
+	private HashMap sessionHasExternalRoomDeptList;
+	private HashMap sessionHasExternalRoomFeatureList;
 	
 	private boolean subpartTimeRollForward;
 	private boolean subpartLocationRollForward;
@@ -2177,7 +2177,7 @@ public class SessionRollForward {
 		return(ts);
 	}
 
-	public static HashMap getRoomList() {
+	public HashMap getRoomList() {
 		if (roomList == null){
 			roomList = new HashMap();
 		}
@@ -2200,7 +2200,7 @@ public class SessionRollForward {
 		return(((Boolean)getSessionHasCourseCatalogList().get(session)).booleanValue());
 	}
 	
-	public static HashMap getSessionHasCourseCatalogList() {
+	public HashMap getSessionHasCourseCatalogList() {
 		if (sessionHasCourseCatalogList == null){
 			sessionHasCourseCatalogList = new HashMap();
 		}
@@ -2220,7 +2220,7 @@ public class SessionRollForward {
 		return(((Boolean) getSessionHasExternalBuildingList().get(session)).booleanValue());
 	}
 	
-	public static HashMap getSessionHasExternalBuildingList(){
+	public HashMap getSessionHasExternalBuildingList(){
 		if (sessionHasExternalBuildingList == null){
 			sessionHasExternalBuildingList = new HashMap();
 		}
@@ -2240,7 +2240,7 @@ public class SessionRollForward {
 		return(((Boolean) getSessionHasExternalRoomList().get(session)).booleanValue());
 	}
 	
-	public static HashMap getSessionHasExternalRoomList(){
+	public HashMap getSessionHasExternalRoomList(){
 		if (sessionHasExternalRoomList == null){
 			sessionHasExternalRoomList = new HashMap();
 		}
@@ -2260,7 +2260,7 @@ public class SessionRollForward {
 		return(((Boolean) getSessionHasExternalRoomDeptList().get(session)).booleanValue());
 	}
 	
-	public static HashMap getSessionHasExternalRoomDeptList(){
+	public HashMap getSessionHasExternalRoomDeptList(){
 		if (sessionHasExternalRoomDeptList == null){
 			sessionHasExternalRoomDeptList = new HashMap();
 		}
@@ -2280,7 +2280,7 @@ public class SessionRollForward {
 		return(((Boolean) getSessionHasExternalRoomFeatureList().get(session)).booleanValue());
 	}
 	
-	public static HashMap getSessionHasExternalRoomFeatureList(){
+	public HashMap getSessionHasExternalRoomFeatureList(){
 		if (sessionHasExternalRoomFeatureList == null){
 			sessionHasExternalRoomFeatureList = new HashMap();
 		}
