@@ -30,8 +30,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.cpsolver.ifs.util.DataProperties;
-import org.cpsolver.studentsct.extension.DistanceConflict;
-import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
+import org.cpsolver.studentsct.extension.StudentQuality;
 import org.cpsolver.studentsct.online.selection.ResectioningWeights;
 import org.hibernate.CacheMode;
 import org.unitime.localization.impl.Localization;
@@ -173,13 +172,14 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 			
 			DataProperties properties = new DataProperties();
 			ResectioningWeights w = new ResectioningWeights(properties);
-			DistanceConflict dc = new DistanceConflict(server.getDistanceMetric(), properties);
-			TimeOverlapsCounter toc = new TimeOverlapsCounter(null, properties);
+			StudentQuality sq = new StudentQuality(server.getDistanceMetric(), properties);
+			// DistanceConflict dc = new DistanceConflict(server.getDistanceMetric(), properties);
+			// TimeOverlapsCounter toc = new TimeOverlapsCounter(null, properties);
 			Date ts = new Date();
 			for (SectioningRequest r: queue) {
 				// helper.info("Resectioning " + r.getRequest() + " (was " + (r.getLastEnrollment() == null ? "not assigned" : r.getLastEnrollment().getAssignments()) + ")");
 				long c0 = OnlineSectioningHelper.getCpuTime();
-				XEnrollment enrollment = r.resection(server, w, dc, toc);
+				XEnrollment enrollment = r.resection(server, w, sq);
 				
 				if (enrollment != null) {
 					enrollment.setTimeStamp(ts);

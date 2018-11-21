@@ -35,8 +35,7 @@ import java.util.TreeSet;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentComparator;
 import org.cpsolver.ifs.assignment.AssignmentMap;
-import org.cpsolver.studentsct.extension.DistanceConflict;
-import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
+import org.cpsolver.studentsct.extension.StudentQuality;
 import org.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
@@ -219,8 +218,9 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 					}
 			}
 			model.addStudent(student);
-			model.setDistanceConflict(new DistanceConflict(server.getDistanceMetric(), model.getProperties()));
-			model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
+			model.setStudentQuality(new StudentQuality(server.getDistanceMetric(), model.getProperties()));
+			// model.setDistanceConflict(new DistanceConflict(server.getDistanceMetric(), model.getProperties()));
+			// model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
 			for (XDistribution link: distributions) {
 				if (link.getDistributionType() == XDistributionType.LinkedSections) {
 					List<Section> sections = new ArrayList<Section>();
@@ -411,7 +411,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		helper.debug("  -- suggestion B&B took "+suggestionBaB.getTime()+"ms"+(suggestionBaB.isTimeoutReached()?", timeout reached":""));
 
 		for (SuggestionsBranchAndBound.Suggestion suggestion : suggestions) {
-			ClassAssignmentInterface ca = convert(server, assignment, suggestion.getEnrollments(), requiredSectionsForCourse, requiredFreeTimes, true, model.getDistanceConflict(), enrolled); 
+			ClassAssignmentInterface ca = convert(server, assignment, suggestion.getEnrollments(), requiredSectionsForCourse, requiredFreeTimes, true, model.getStudentQuality(), enrolled); 
 			if (unavailabilities != null)
 				for (ClassAssignmentInterface.CourseAssignment u: unavailabilities.getCourseAssignments())
 					ca.getCourseAssignments().add(0, u);

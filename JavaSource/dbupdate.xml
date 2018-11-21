@@ -13281,4 +13281,220 @@
 		<sql>alter table %SCHEMA%.sct_solution_log add constraint fk_sct_sol_log_session foreign key (session_id) references %SCHEMA%.sessions (uniqueid) on delete cascade</sql>
 		<sql>alter table %SCHEMA%.sct_solution_log add constraint fk_sct_sol_log_owner foreign key (owner_id) references %SCHEMA%.timetable_manager (uniqueid) on delete cascade</sql>
 	</update>
+	<update version="213" date="21-Nov-2018" comment="Student Schedule Quality">
+		<mysql into="GGEN">select uniqueid from %SCHEMA%.solver_parameter_group where name='StudentSct'</mysql>
+		<mysql into="OGEN">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GGEN%</mysql>
+		<mysql into="GSW">select uniqueid from %SCHEMA%.solver_parameter_group where name='StudentSctWeights'</mysql>
+		<mysql into="OSW">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GSW%</mysql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_def
+			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+			(%ID% +  0, 'Distances.ShortDistanceAccommodationReference', 'SD', 'Need short distances accommodation reference', 'text', %OGEN% + 1, 1, %GGEN%),
+			(%ID% +  1, 'StudentLunch.StartSlot', '132', 'Student Lunch Breeak: first time slot', 'integer',  %OGEN% + 2, 1, %GGEN%),
+			(%ID% +  2, 'StudentLunch.EndStart', '156', 'Student Lunch Breeak: last time slot', 'integer',  %OGEN% + 3, 1, %GGEN%),
+			(%ID% +  3, 'StudentLunch.Length', '6', 'Student Lunch Breeak: time for lunch (number of slots)', 'integer',  %OGEN% + 4, 1, %GGEN%),
+			(%ID% +  4, 'TravelTime.MaxTravelGap', '12', 'Travel Time: max travel gap (number of slots)', 'integer',  %OGEN% + 5, 1, %GGEN%),
+			(%ID% +  5, 'WorkDay.WorkDayLimit', '72', 'Work Day: initial allowance (number of slots)', 'integer',  %OGEN% + 6, 1, %GGEN%),
+			(%ID% +  6, 'WorkDay.EarlySlot', '102', 'Work Day: early morning time slot', 'integer',  %OGEN% + 7, 1, %GGEN%),
+			(%ID% +  7, 'WorkDay.LateSlot', '210', 'Work Day: late evening time slot', 'integer',  %OGEN% + 8, 1, %GGEN%),
+			(%ID% +  8, 'StudentWeights.BackToBackDistance', '6', 'Work Day: max back-to-back distance (number of slots)', 'integer',  %OGEN% + 9, 1, %GGEN%),
+			(%ID% +  9, 'StudentWeights.ShortDistanceConflict', '0.2000', 'Distance conflict (students needed short distances)', 'double', %OSW% + 1, 1, %GSW%),
+			(%ID% + 10, 'StudentWeights.LunchBreakFactor', '0.0050', 'Lunch break conflict', 'double', %OSW% + 2, 1, %GSW%),
+			(%ID% + 11, 'StudentWeights.TravelTimeFactor', '0.0010', 'Travel time conflict (multiplied by distance in minutes)', 'double', %OSW% + 3, 1, %GSW%),
+			(%ID% + 12, 'StudentWeights.BackToBackFactor', '-0.0010', 'Back-to-back conflict (negative value: prefer no gaps)', 'double', %OSW% + 4, 1, %GSW%),
+			(%ID% + 13, 'StudentWeights.WorkDayFactor', '0.0100', 'Work-day conflict (multiplied by the number of hours over the allowance)', 'double', %OSW% + 5, 1, %GSW%),
+			(%ID% + 14, 'StudentWeights.TooEarlyFactor', '0.0500', 'Too early conflict', 'double', %OSW% + 6, 1, %GSW%),
+			(%ID% + 15, 'StudentWeights.TooLateFactor', '0.0250', 'Too late conflict', 'double', %OSW% + 7, 1, %GSW%)
+		</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Distances.ShortDistanceAccommodationReference' as name,
+				'SD' as default_value,
+				'Need short distances accommodation reference' as description,
+				'text' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSct') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentLunch.StartSlot' as name,
+				'132' as default_value,
+				'Student Lunch Breeak: first time slot' as description,
+				'integer' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSct') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentLunch.EndStart' as name,
+				'156' as default_value,
+				'Student Lunch Breeak: last time slot' as description,
+				'integer' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSct') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentLunch.Length' as name,
+				'6' as default_value,
+				'Student Lunch Breeak: time for lunch (number of slots)' as description,
+				'integer' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSct') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'TravelTime.MaxTravelGap' as name,
+				'12' as default_value,
+				'Travel Time: max travel gap (number of slots)' as description,
+				'integer' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSct') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'WorkDay.WorkDayLimit' as name,
+				'72' as default_value,
+				'Work Day: initial allowance (number of slots)' as description,
+				'integer' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSct') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'WorkDay.EarlySlot' as name,
+				'102' as default_value,
+				'Work Day: early morning time slot' as description,
+				'integer' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSct') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'WorkDay.LateSlot' as name,
+				'210' as default_value,
+				'Work Day: late evening time slot' as description,
+				'integer' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSct') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.BackToBackDistance' as name,
+				'6' as default_value,
+				'Work Day: max back-to-back distance (number of slots)' as description,
+				'integer' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSct') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.ShortDistanceConflict' as name,
+				'0.2000' as default_value,
+				'Distance conflict (students needed short distances)' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSctWeights') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.LunchBreakFactor' as name,
+				'0.0050' as default_value,
+				'Lunch break conflict' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSctWeights') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.TravelTimeFactor' as name,
+				'0.0010' as default_value,
+				'Travel time conflict (multiplied by distance in minutes)' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSctWeights') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.BackToBackFactor' as name,
+				'-0.0010' as default_value,
+				'Back-to-back conflict (negative value: prefer no gaps)' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSctWeights') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.WorkDayFactor' as name,
+				'0.0100' as default_value,
+				'Work-day conflict (multiplied by the number of hours over the allowance)' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSctWeights') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.TooEarlyFactor' as name,
+				'0.0500' as default_value,
+				'Too early conflict' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSctWeights') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.TooLateFactor' as name,
+				'0.0250' as default_value,
+				'Too late conflict' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSctWeights') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctWeights')
+		</plsql>
+		<sql>update %SCHEMA%.solver_parameter_def set
+			default_value = '0.0500'
+			where name = 'StudentWeights.DistanceConflict' and default_value = '0.0100'
+		</sql>
+		<sql>update %SCHEMA%.solver_parameter_def set
+			default_value = '1.0000'
+			where name = 'StudentWeights.TimeOverlapFactor' and default_value = '0.5000'
+		</sql>
+		<sql>update %SCHEMA%.solver_parameter_def set
+			default_value = '0.3750'
+			where name = 'StudentWeights.SelectionFactor' and default_value='0.125'
+		</sql>
+	</update>	
 </dbupdate>

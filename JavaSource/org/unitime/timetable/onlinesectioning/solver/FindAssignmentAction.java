@@ -42,9 +42,9 @@ import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentComparator;
 import org.cpsolver.ifs.assignment.AssignmentMap;
 import org.cpsolver.ifs.util.DistanceMetric;
+import org.cpsolver.ifs.util.ToolBox;
 import org.cpsolver.studentsct.StudentSectioningModel;
-import org.cpsolver.studentsct.extension.DistanceConflict;
-import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
+import org.cpsolver.studentsct.extension.StudentQuality;
 import org.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
 import org.cpsolver.studentsct.model.Choice;
 import org.cpsolver.studentsct.model.Config;
@@ -267,8 +267,9 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				}
 			}
 			model.addStudent(student);
-			model.setDistanceConflict(new DistanceConflict(server.getDistanceMetric(), model.getProperties()));
-			model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
+			model.setStudentQuality(new StudentQuality(server.getDistanceMetric(), model.getProperties()));
+			// model.setDistanceConflict(new DistanceConflict(server.getDistanceMetric(), model.getProperties()));
+			// model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
 			for (XDistribution link: distributions) {
 				if (link.getDistributionType() == XDistributionType.LinkedSections) {
 					List<Section> sections = new ArrayList<Section>();
@@ -509,7 +510,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				" with " + server.getConfig().getPropertyInt("Neighbour.BranchAndBoundTimeout", 1000) +" ms time limit.");
 
         neighbour.assign(assignment, 0);
-        helper.debug("Solution: " + neighbour);
+        helper.debug("Solution: " + ToolBox.dict2string(model.getInfo(assignment), 2));
 		
     	OnlineSectioningLog.Enrollment.Builder solution = OnlineSectioningLog.Enrollment.newBuilder();
     	solution.setType(OnlineSectioningLog.Enrollment.EnrollmentType.COMPUTED);
@@ -782,7 +783,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	protected ClassAssignmentInterface convert(OnlineSectioningServer server, Assignment<Request, Enrollment> assignment, Enrollment[] enrollments,
 			Hashtable<CourseRequest, Set<Section>> requiredSectionsForCourse, HashSet<FreeTimeRequest> requiredFreeTimes,
 			boolean computeOverlaps,
-			DistanceConflict dc, Set<IdPair> savedClasses) throws SectioningException {
+			StudentQuality sq, Set<IdPair> savedClasses) throws SectioningException {
 		DistanceMetric m = server.getDistanceMetric();
 		OverExpectedCriterion overExp = server.getOverExpectedCriterion();
         ClassAssignmentInterface ret = new ClassAssignmentInterface();
@@ -1010,7 +1011,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								for (Iterator<RoomLocation> k = s.getRooms().iterator(); k.hasNext();)
 									from += k.next().getName() + (k.hasNext() ? ", " : "");
 							}
-							if (dc.inConflict(enrollment.getStudent(), s, section) && s.getTime().getStartSlot() < section.getTime().getStartSlot())
+							
+							if (sq.hasDistanceConflict(enrollment.getStudent(), s, section) && s.getTime().getStartSlot() < section.getTime().getStartSlot())
 								a.setDistanceConflict(true);
 							if (section.getTime() != null && section.getTime().hasIntersection(s.getTime()) && !section.isToIgnoreStudentConflictsWith(s.getId())) {
 								overlap.add(MSG.clazz(x.getCourse().getSubjectArea(), x.getCourse().getCourseNumber(), s.getSubpart().getName(), s.getName(x.getCourse().getId())));
@@ -1088,7 +1090,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
         	}
         }
         
-        ClassAssignmentInterface ret = convert(server, assignment, enrollments, requiredSectionsForCourse, requiredFreeTimes, true, model.getDistanceConflict(), savedClasses);
+        ClassAssignmentInterface ret = convert(server, assignment, enrollments, requiredSectionsForCourse, requiredFreeTimes, true, model.getStudentQuality(), savedClasses);
         ret.setValue(-neighbour.value(assignment));
         return ret;
 	}

@@ -31,8 +31,7 @@ import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentMap;
 import org.cpsolver.ifs.assignment.DefaultSingleAssignment;
 import org.cpsolver.ifs.util.ToolBox;
-import org.cpsolver.studentsct.extension.DistanceConflict;
-import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
+import org.cpsolver.studentsct.extension.StudentQuality;
 import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
@@ -174,7 +173,7 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
         return false;
 	}
 
-	public XEnrollment resection(OnlineSectioningServer server, ResectioningWeights w, DistanceConflict dc, TimeOverlapsCounter toc) {
+	public XEnrollment resection(OnlineSectioningServer server, ResectioningWeights w, StudentQuality sq) {
 		w.setLastSectionProvider(this);
 		
 		List<Enrollment> enrollments = new ArrayList<Enrollment>();
@@ -214,7 +213,7 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 				}
 			}
 			
-			double value = w.getWeight(assignment, e, dc.allConflicts(assignment, e), toc.allConflicts(assignment, e));
+			double value = w.getWeight(assignment, e, sq.allConflicts(assignment, e));
 			if (enrollments.isEmpty() || value > bestValue) {
 				enrollments.clear();
 				enrollments.add(e); bestValue = value;

@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.studentsct.extension.DistanceConflict;
 import org.cpsolver.studentsct.extension.StudentConflictStatistics;
+import org.cpsolver.studentsct.extension.StudentQuality;
 import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import org.cpsolver.studentsct.weights.StudentWeights;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,13 +92,18 @@ public class StudentSectioningSolverService implements SolverService<StudentSolv
 			ext += StudentConflictStatistics.class.getName();
             properties.setProperty("ConflictStatistics.Print","true");
         }
-        if (properties.getPropertyBoolean("StudentSct.StudentDist",true)) {
+        if (properties.getPropertyBoolean("StudentSct.ScheduleQuality",true)) {
         	if (!ext.isEmpty()) ext += ";";
-			ext += DistanceConflict.class.getName();
-        }
-        if (properties.getPropertyBoolean("StudentSct.TimeOverlaps",true)) {
-        	if (!ext.isEmpty()) ext += ";";
-			ext += TimeOverlapsCounter.class.getName();
+			ext += StudentQuality.class.getName();
+        } else {
+        	if (properties.getPropertyBoolean("StudentSct.StudentDist",true)) {
+            	if (!ext.isEmpty()) ext += ";";
+    			ext += DistanceConflict.class.getName();
+            }
+            if (properties.getPropertyBoolean("StudentSct.TimeOverlaps",true)) {
+            	if (!ext.isEmpty()) ext += ";";
+    			ext += TimeOverlapsCounter.class.getName();
+            }
         }
         
         if (!properties.getProperty("StudentWeights.Mode","").isEmpty()) {

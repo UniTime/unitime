@@ -39,8 +39,7 @@ import org.apache.log4j.Logger;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentMap;
-import org.cpsolver.studentsct.extension.DistanceConflict;
-import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
+import org.cpsolver.studentsct.extension.StudentQuality;
 import org.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
 import org.cpsolver.studentsct.model.Choice;
 import org.cpsolver.studentsct.model.Config;
@@ -515,8 +514,9 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			}
 		}
 		model.addStudent(student);
-		model.setDistanceConflict(new DistanceConflict(server.getDistanceMetric(), model.getProperties()));
-		model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
+		model.setStudentQuality(new StudentQuality(server.getDistanceMetric(), model.getProperties()));
+		// model.setDistanceConflict(new DistanceConflict(server.getDistanceMetric(), model.getProperties()));
+		// model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
 		for (XDistribution link: distributions) {
 			if (link.getDistributionType() == XDistributionType.LinkedSections) {
 				List<Section> sections = new ArrayList<Section>();
@@ -1773,8 +1773,9 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			}
 		}
 		model.addStudent(s);
-		model.setDistanceConflict(new DistanceConflict(server.getDistanceMetric(), model.getProperties()));
-		model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
+		model.setStudentQuality(new StudentQuality(server.getDistanceMetric(), model.getProperties()));
+		// model.setDistanceConflict(new DistanceConflict(server.getDistanceMetric(), model.getProperties()));
+		// model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
 		for (XDistribution link: distributions) {
 			if (link.getDistributionType() == XDistributionType.LinkedSections) {
 				List<Section> sections = new ArrayList<Section>();
