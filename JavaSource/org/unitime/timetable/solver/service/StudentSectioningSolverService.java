@@ -260,6 +260,16 @@ public class StudentSectioningSolverService implements SolverService<StudentSolv
 
 	@Override
 	public StudentSolverProxy getSolver() {
+		return getSolver(true);
+	}
+	
+	public StudentSolverProxy getPublishedSolver() {
+		Long sessionId = sessionContext.getUser().getCurrentAcademicSessionId();
+		if (sessionId == null) return null;
+		return getSolver("PUBLISHED_" + sessionId, sessionId);
+	}
+	
+	public StudentSolverProxy getSolver(boolean includePublishedSolver) {
 		ProxyHolder<String, StudentSolverProxy> h = (ProxyHolder<String, StudentSolverProxy>)sessionContext.getAttribute(SessionAttribute.StudentSectioningSolver);
 		StudentSolverProxy solver = (h != null && h.isValid() ? h.getProxy() : null);
 		if (solver!=null) {
@@ -286,7 +296,7 @@ public class StudentSectioningSolverService implements SolverService<StudentSolv
 		solver = getSolver(sessionContext.getUser().getExternalUserId(), sessionId);
 		if (solver!=null)
 			sessionContext.setAttribute(SessionAttribute.StudentSectioningSolver, new ProxyHolder<String, StudentSolverProxy>(sessionContext.getUser().getExternalUserId(), solver));
-		if (solver == null) {
+		if (solver == null && includePublishedSolver) {
 			solver = getSolver("PUBLISHED_" + sessionId, sessionId);
 			if (solver!=null)
 				sessionContext.setAttribute(SessionAttribute.StudentSectioningSolver, new ProxyHolder<String, StudentSolverProxy>("PUBLISHED_" + sessionId, solver));

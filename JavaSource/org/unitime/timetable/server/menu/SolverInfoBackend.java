@@ -47,7 +47,7 @@ import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
 import org.unitime.timetable.solver.service.SolverService;
-import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
+import org.unitime.timetable.solver.service.StudentSectioningSolverService;
 
 /**
  * @author Tomas Muller
@@ -60,17 +60,17 @@ public class SolverInfoBackend implements GwtRpcImplementation<SolverInfoRpcRequ
 
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
-	@Autowired SolverService<StudentSolverProxy> studentSectioningSolverService;
+	@Autowired StudentSectioningSolverService studentSectioningSolverService;
 	@Autowired SolverService<InstructorSchedulingProxy> instructorSchedulingSolverService;
 
 	@Override
 	public SolverInfoInterface execute(SolverInfoRpcRequest request, SessionContext context) {
-		CommonSolverInterface solver = null;
-		if (context.hasPermission(Right.StudentSectioningSolver) || context.hasPermission(Right.StudentSectioningSolverDashboard))
-			solver = studentSectioningSolverService.getSolver();
+		CommonSolverInterface solver = studentSectioningSolverService.getSolver(false);
 		if (solver == null) solver = examinationSolverService.getSolver();
 		if (solver == null) solver = courseTimetablingSolverService.getSolver();
 		if (solver == null) solver = instructorSchedulingSolverService.getSolver();
+		if (solver == null && context.hasPermission(Right.StudentSectioningSolverDashboard))
+			solver = studentSectioningSolverService.getPublishedSolver(); 
 		SolverInfoInterface info = getInfo(solver, request.isIncludeSolutionInfo());
 		if (solver != null && solver.getType() == SolverType.STUDENT && info != null && !context.hasPermission(Right.StudentSectioningSolver))
 			info.setUrl("gwt.jsp?page=batchsctdash");
