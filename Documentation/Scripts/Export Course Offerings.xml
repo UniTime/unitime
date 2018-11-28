@@ -19,7 +19,7 @@
  * limitations under the License.
  * 
  -->
-<script name="Export Course Offerings" permission="Scheduling Assistant" engine="ECMAScript" created="Fri Nov 16 10:24:23 CET 2018">
+<script name="Export Course Offerings" permission="Data Exchange" engine="ECMAScript" created="Fri Nov 16 10:24:23 CET 2018">
   <description><![CDATA[This script export course offerings for the selected subjects.]]></description>
   <parameter name="exportAssignments" label="Export Assignments" type="boolean" default="true"/>
   <parameter name="exportExams" label="Export Exams" type="enum(all,final,midterm,none)" default="none"/>
