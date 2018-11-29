@@ -283,7 +283,8 @@ public class DataExchangeHelper {
 	}
     
     protected String getClassLabel(Class_ clazz) {
-    	return clazz.getCourseName() + " " + clazz.getItypeDesc().trim() + " " + getClassSuffix(clazz);
+    	String label = clazz.getCourseName() + " " + clazz.getItypeDesc().trim() + " " + getClassSuffix(clazz);
+    	return (label.length() <= 40 ? label: clazz.getItypeDesc().trim() + " " + getClassSuffix(clazz)); 
     }
     
     protected String getClassSuffix(Class_ clazz) {
