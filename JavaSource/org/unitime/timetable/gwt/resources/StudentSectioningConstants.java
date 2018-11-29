@@ -227,4 +227,8 @@ public interface StudentSectioningConstants extends Constants {
 	@DefaultBooleanValue(true)
 	@DoNotTranslate
 	boolean courseRequestAutomaticallyAddFirstAlternative();
+	
+	@DefaultIntValue(500)
+	@DoNotTranslate
+	int dashboardMaxLines();
 }

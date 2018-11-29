@@ -20,8 +20,10 @@
 package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -30,6 +32,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.AriaButton;
+import org.unitime.timetable.gwt.client.aria.AriaTabBar;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.rooms.RoomHint;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable.TopCell;
@@ -38,7 +42,6 @@ import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
-import org.unitime.timetable.gwt.client.widgets.UniTimeTabPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasColSpan;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
@@ -120,6 +123,7 @@ import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.SuggestOracle.Callback;
@@ -150,6 +154,10 @@ public class SectioningStatusPage extends Composite {
 	private Button iExport = null;
 	private Button iMore = null;
 	private Image iLoadingImage = null;
+	private Button iPrevious = null;
+	private Label iRange = null;
+	private Button iNext = null;
+	private P iPaginationButtons = null;
 
 	private VerticalPanel iSectioningPanel = null;
 	
@@ -160,10 +168,15 @@ public class SectioningStatusPage extends Composite {
 	private UniTimeTable<StudentInfo> iStudentTable = null;
 	private UniTimeTable<SectioningAction> iLogTable = null;
 	
+	private VerticalPanel iCourseTableWithHint = null;
+	private VerticalPanel iStudentTableWithHint = null;
+	
 	private UniTimeDialogBox iEnrollmentDialog = null;
 	private EnrollmentTable iEnrollmentTable = null;
 	private ScrollPanel iEnrollmentScroll = null;
-	private UniTimeTabPanel iTabPanel = null;
+	private AriaTabBar iTabBar = null;
+	private SimplePanel iTabContent = null;
+	
 	private int iTabIndex = 0;
 	private FocusPanel iTabPanelWithFocus = null;
 	private SectioningProperties iProperties = null;
@@ -180,13 +193,34 @@ public class SectioningStatusPage extends Composite {
 	
 	private List<Operation> iSortOperations = new ArrayList<Operation>();
 	
+	private List<StudentInfo> iStudentInfos = null;
+	private StudentsInfoVisibleColumns iStudentInfoVisibleColumns = null;
+	private int iStudentInfosFirstLine = -1;
+	
+	private List<EnrollmentInfo> iEnrollmentInfos = null;
+	private Map<Long, List<EnrollmentInfo>> iClassInfos = new HashMap<Long, List<EnrollmentInfo>>();
+	private int iEnrollmentInfosFirstLine = -1;
+	
+	private List<SectioningAction> iSectioningActions = null;
+	private SectioningActionsVisibleColumns iSectioningActionsVisibleColumns = null;
+	private int iSectioningActionsFirstLine = -1;
+	
+	private int iMaxTableLines = CONSTANTS.dashboardMaxLines();
+	
 	public SectioningStatusPage(boolean online) {
 		iOnline = online;
+		
+		String max = Window.Location.getParameter("pagination");
+		if (max != null && !max.isEmpty()) {
+			iMaxTableLines = Integer.parseInt(max);
+		}
 
 		iPanel = new VerticalPanel();
+		iPanel.addStyleName("unitime-SectioningStatusPage");
 		iSectioningPanel = new VerticalPanel();
 		
 		iFilterPanel = new HorizontalPanel();
+		iFilterPanel.addStyleName("unitime-SectioningStatusFilter");
 		iFilterPanel.setSpacing(3);
 		
 		Label filterLabel = new Label(MESSAGES.filter());
@@ -196,26 +230,17 @@ public class SectioningStatusPage extends Composite {
 		iFilter = new SectioningStatusFilterBox(online);
 		iFilterPanel.add(iFilter);
 		
-		iSearch = new Button(MESSAGES.buttonSearch());
-		Character searchAccessKey = UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonSearch());
-		if (searchAccessKey != null)
-		iSearch.setAccessKey(searchAccessKey);
+		iSearch = new AriaButton(MESSAGES.buttonSearch());
 		iSearch.addStyleName("unitime-NoPrint");
 		iFilterPanel.add(iSearch);		
 		iFilterPanel.setCellVerticalAlignment(iSearch, HasVerticalAlignment.ALIGN_TOP);
 		
-		iExport = new Button(MESSAGES.buttonExport());
-		Character exportAccessKey = UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonExport());
-		if (exportAccessKey != null)
-			iExport.setAccessKey(exportAccessKey);
+		iExport = new AriaButton(MESSAGES.buttonExport());
 		iExport.addStyleName("unitime-NoPrint");
 		iFilterPanel.add(iExport);
 		iFilterPanel.setCellVerticalAlignment(iExport, HasVerticalAlignment.ALIGN_TOP);
 		
-		iMore = new Button(MESSAGES.buttonMoreOperations());
-		Character moreAccessKey = UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonMoreOperations());
-		if (moreAccessKey != null)
-			iMore.setAccessKey(moreAccessKey);
+		iMore = new AriaButton(MESSAGES.buttonMoreOperations());
 		iMore.addStyleName("unitime-NoPrint");
 		iFilterPanel.add(iMore);
 		iFilterPanel.setCellVerticalAlignment(iMore, HasVerticalAlignment.ALIGN_TOP);
@@ -227,7 +252,7 @@ public class SectioningStatusPage extends Composite {
 				MenuBar menu = new UniTimeTableHeader.MenuBarWithAccessKeys();
 				
 				boolean first = true;
-				if (iOnline && iTabPanel.getSelectedTab() == 1 && iStudentTable.getHeader(0) != null) {
+				if (iOnline && iTabBar.getSelectedTab() == 1 && iStudentTable.getHeader(0) != null) {
 					for (final Operation op: iStudentTable.getHeader(0).getOperations()) {
 						if (!op.isApplicable()) continue;
 						if (op.hasSeparator() && !first)
@@ -321,27 +346,76 @@ public class SectioningStatusPage extends Composite {
 		iStudentTable = new UniTimeTable<StudentInfo>(); iStudentTable.addStyleName("unitime-StudentsTable");
 		iLogTable = new UniTimeTable<SectioningAction>(); iLogTable.addStyleName("unitime-LogsTable");
 
-		VerticalPanel courseTableWithHint = new VerticalPanel();
-		courseTableWithHint.add(iCourseTable);
+		iCourseTableWithHint = new VerticalPanel();
+		iCourseTableWithHint.add(iCourseTable);
 		iCourseTableHint = new HTML(MESSAGES.sectioningStatusReservationHint());
 		iCourseTableHint.setStyleName("unitime-Hint");
-		courseTableWithHint.add(iCourseTableHint);
-		courseTableWithHint.setCellHorizontalAlignment(iCourseTableHint, HasHorizontalAlignment.ALIGN_RIGHT);
+		iCourseTableWithHint.add(iCourseTableHint);
+		iCourseTableWithHint.setCellHorizontalAlignment(iCourseTableHint, HasHorizontalAlignment.ALIGN_RIGHT);
 		
-		VerticalPanel studentTableWithHint = new VerticalPanel();
-		studentTableWithHint.add(iStudentTable);
+		iStudentTableWithHint = new VerticalPanel();
+		iStudentTableWithHint.add(iStudentTable);
 		iStudentTableHint = new HTML(MESSAGES.sectioningStatusPriorityHint());
 		iStudentTableHint.setStyleName("unitime-Hint");
-		studentTableWithHint.add(iStudentTableHint);
-		studentTableWithHint.setCellHorizontalAlignment(iStudentTableHint, HasHorizontalAlignment.ALIGN_RIGHT);
-
-		iTabPanel = new UniTimeTabPanel();
-		iTabPanel.add(courseTableWithHint, MESSAGES.tabEnrollments(), true);
-		iTabPanel.selectTab(0);
-		iTabPanel.add(studentTableWithHint, MESSAGES.tabStudents(), true);
-		iTabPanel.setVisible(false);
+		iStudentTableWithHint.add(iStudentTableHint);
+		iStudentTableWithHint.setCellHorizontalAlignment(iStudentTableHint, HasHorizontalAlignment.ALIGN_RIGHT);
 		
-		iTabPanel.addSelectionHandler(new SelectionHandler<Integer>() {
+		iTabBar = new AriaTabBar();
+		iTabBar.addTab(MESSAGES.tabEnrollments(), true);
+		iTabBar.addTab(MESSAGES.tabStudents(), true);
+		iTabBar.selectTab(0);
+		iTabBar.setVisible(false);
+		
+		iPrevious = new AriaButton(GWT_MESSAGES.buttonPrevious());
+		iPrevious.addStyleName("unitime-NoPrint");
+		iRange = new Label();
+		iRange.addStyleName("range-label");
+		iNext = new AriaButton(GWT_MESSAGES.buttonNext());
+		iNext.addStyleName("unitime-NoPrint");
+		iPrevious.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				if (iTabBar.getSelectedTab() == 0) {
+					if (iEnrollmentInfosFirstLine >= iMaxTableLines && iMaxTableLines > 0)
+						fillCourseTable(iEnrollmentInfosFirstLine - iMaxTableLines);
+				} else if (iTabBar.getSelectedTab() == 1) {
+					if (iStudentInfosFirstLine >= iMaxTableLines && iMaxTableLines > 0)
+						fillStudentTable(iStudentInfosFirstLine - iMaxTableLines);
+				} else {
+					if (iSectioningActionsFirstLine >= iMaxTableLines && iMaxTableLines > 0)
+						fillLogTable(iSectioningActionsFirstLine - iMaxTableLines);
+				}
+			}
+		});
+		iNext.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				if (iTabBar.getSelectedTab() == 0) {
+					if (iEnrollmentInfos != null && iMaxTableLines > 0 && iEnrollmentInfosFirstLine + iMaxTableLines < iEnrollmentInfos.size() - 1)
+						fillCourseTable(iEnrollmentInfosFirstLine + iMaxTableLines);
+				} else if (iTabBar.getSelectedTab() == 1) {
+					if (iStudentInfos != null && iMaxTableLines > 0 && iStudentInfosFirstLine + iMaxTableLines < iStudentInfos.size() - 1)
+						fillStudentTable(iStudentInfosFirstLine + iMaxTableLines);
+				} else {
+					if (iSectioningActions != null && iMaxTableLines > 0 && iSectioningActionsFirstLine + iMaxTableLines < iSectioningActions.size() - 1)
+						fillLogTable(iSectioningActionsFirstLine + iMaxTableLines);
+				}
+			}
+		});
+		
+		iPaginationButtons = new P("pagination-buttons");
+		iPaginationButtons.add(iPrevious);
+		iPaginationButtons.add(iRange);
+		iPaginationButtons.add(iNext);
+		iTabBar.setRestWidget(iPaginationButtons);
+		
+		iTabContent = new SimplePanel();
+		iTabContent.addStyleName("unitime-TabPanel");
+		
+		iTabContent.setWidget(iCourseTableWithHint);
+		iTabContent.setVisible(false);
+		
+		iTabBar.addSelectionHandler(new SelectionHandler<Integer>() {
 			@Override
 			public void onSelection(SelectionEvent<Integer> event) {
 				iTabIndex = event.getSelectedItem();
@@ -350,32 +424,52 @@ public class SectioningStatusPage extends Composite {
 						(iTabIndex == 1 && iStudentTable.getRowCount() > 2) ||
 						(iTabIndex == 2 && iLogTable.getRowCount() > 1));
 				loadDataIfNeeded();
+				iPaginationButtons.setVisible(false);
+				if (iTabIndex == 0) {
+					iTabContent.setWidget(iCourseTableWithHint);
+					iPaginationButtons.setVisible(iEnrollmentInfos != null && iMaxTableLines > 0 && iEnrollmentInfos.size() - 1 > iMaxTableLines);
+					iPrevious.setEnabled(iEnrollmentInfos != null && iMaxTableLines > 0 && iEnrollmentInfosFirstLine >= iMaxTableLines);
+					iNext.setEnabled(iEnrollmentInfos != null && iMaxTableLines > 0 && iEnrollmentInfosFirstLine + iMaxTableLines < iEnrollmentInfos.size() - 1);
+					iRange.setText(iEnrollmentInfos == null ? "" : MESSAGES.pageRange(iEnrollmentInfosFirstLine + 1, Math.min(iEnrollmentInfos.size() - 1, iEnrollmentInfosFirstLine + iMaxTableLines)));
+				} else if (iTabIndex == 1) {
+					iTabContent.setWidget(iStudentTableWithHint);
+					iPaginationButtons.setVisible(iStudentInfos != null && iMaxTableLines > 0 && iStudentInfos.size() - 1 > iMaxTableLines);
+					iPrevious.setEnabled(iStudentInfos != null && iMaxTableLines > 0 && iStudentInfosFirstLine >= iMaxTableLines);
+					iNext.setEnabled(iStudentInfos != null && iMaxTableLines > 0 && iStudentInfosFirstLine + iMaxTableLines < iStudentInfos.size() - 1);
+					iRange.setText(iStudentInfos == null ? "" : MESSAGES.pageRange(iStudentInfosFirstLine + 1, Math.min(iStudentInfos.size() - 1, iStudentInfosFirstLine + iMaxTableLines)));
+				} else if (iLogTable != null) {
+					iTabContent.setWidget(iLogTable);
+					iPaginationButtons.setVisible(iSectioningActions != null && iMaxTableLines > 0 && iSectioningActions.size() > iMaxTableLines);
+					iPrevious.setEnabled(iSectioningActions != null && iMaxTableLines > 0 && iSectioningActionsFirstLine >= iMaxTableLines);
+					iNext.setEnabled(iSectioningActions != null && iMaxTableLines > 0 && iSectioningActionsFirstLine + iMaxTableLines < iSectioningActions.size() );
+					iRange.setText(iSectioningActions == null ? "" : MESSAGES.pageRange(iSectioningActionsFirstLine + 1, Math.min(iSectioningActions.size(), iSectioningActionsFirstLine + iMaxTableLines)));
+				}
 			}
 		});
 
-		iTabPanelWithFocus = new FocusPanel(iTabPanel);
+		iTabPanelWithFocus = new FocusPanel(iTabBar);
 		iTabPanelWithFocus.setStyleName("unitime-FocusPanel");
 		iSectioningPanel.add(iTabPanelWithFocus);
-		
+		iSectioningPanel.add(iTabContent);
+	
 		iTabPanelWithFocus.addKeyUpHandler(new KeyUpHandler() {
 			public void onKeyUp(KeyUpEvent event) {
 				if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='e' || event.getNativeKeyCode()=='E')) {
-					iTabPanel.selectTab(0);
+					iTabBar.selectTab(0);
 					event.preventDefault();
 				}
 				if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='s' || event.getNativeKeyCode()=='S')) {
-					iTabPanel.selectTab(1);
+					iTabBar.selectTab(1);
 					event.preventDefault();
 				}
 				if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='l' || event.getNativeKeyCode()=='L')) {
-					if (iTabPanel.getTabCount() >= 3) {
-						iTabPanel.selectTab(2);
+					if (iTabBar.getTabCount() >= 3) {
+						iTabBar.selectTab(2);
 						event.preventDefault();
 					}
 				}
 			}
 		});
-		
 		iSectioningPanel.setWidth("100%");
 		
 		iPanel.add(iSectioningPanel);
@@ -553,19 +647,17 @@ public class SectioningStatusPage extends Composite {
 		History.addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<String> event) {
-				iCourseTable.clearTable();
-				iStudentTable.clearTable();
-				iLogTable.clearTable();
+				clearData();
 				if (event.getValue().endsWith("@")) {
 					iFilter.setValue(event.getValue().substring(0, event.getValue().length() - 1), true);
-					iTabPanel.selectTab(1);
+					iTabBar.selectTab(1);
 				} else if (event.getValue().endsWith("$")) {
 					iFilter.setValue(event.getValue().substring(0, event.getValue().length() - 1), true);
-					iTabPanel.selectTab(2);
+					iTabBar.selectTab(2);
 				} else {
 					iFilter.setValue(event.getValue(), true);
 					if (iTabIndex != 0)
-						iTabPanel.selectTab(0);
+						iTabBar.selectTab(0);
 					else
 						loadData();
 				}
@@ -608,7 +700,7 @@ public class SectioningStatusPage extends Composite {
 			public void onSuccess(SectioningProperties result) {
 				iProperties = result;
 				if (iProperties.isChangeLog() && iOnline)
-					iTabPanel.add(iLogTable, MESSAGES.tabChangeLog(), true);
+					iTabBar.addTab(MESSAGES.tabChangeLog(), true);
 				checkLastQuery();
 			}
 
@@ -671,9 +763,9 @@ public class SectioningStatusPage extends Composite {
 			iFilter.setValue(Window.Location.getParameter("q"), true);
 			if (Window.Location.getParameter("t") != null) {
 				if ("2".equals(Window.Location.getParameter("t"))) {
-					iTabPanel.selectTab(1);
+					iTabBar.selectTab(1);
 				} else {
-					iTabPanel.selectTab(0);
+					iTabBar.selectTab(0);
 				}
 			} else {
 				loadData();
@@ -683,10 +775,10 @@ public class SectioningStatusPage extends Composite {
 			if (!hash.matches("^[0-9]+\\:?[0-9]*@?$")) {
 				if (hash.endsWith("@")) {
 					iFilter.setValue(hash.substring(0, hash.length() - 1), true);
-					iTabPanel.selectTab(1);
+					iTabBar.selectTab(1);
 				} else if (hash.endsWith("$")) {
 					iFilter.setValue(hash.substring(0, hash.length() - 1), true);
-					iTabPanel.selectTab(2);
+					iTabBar.selectTab(2);
 				} else {
 					iFilter.setValue(hash, true);
 					loadData();
@@ -696,8 +788,8 @@ public class SectioningStatusPage extends Composite {
 			String q = SectioningStatusCookie.getInstance().getQuery(iOnline);
 			if (q != null) iFilter.setValue(q, true);
 			int t = SectioningStatusCookie.getInstance().getTab(iOnline);
-			if (t >= 0 && t < iTabPanel.getTabCount()) {
-				iTabPanel.selectTab(t, false);
+			if (t >= 0 && t < iTabBar.getTabCount()) {
+				iTabBar.selectTab(t, false);
 				iTabIndex = -1;
 			}
 			if (GWT_CONSTANTS.searchWhenPageIsLoaded() && q != null && !q.isEmpty())
@@ -711,24 +803,44 @@ public class SectioningStatusPage extends Composite {
 		iExport.setVisible(!loading);
 		if (loading) {
 			iMore.setVisible(false);
+			iNext.setEnabled(false);
+			iPrevious.setEnabled(false);
 		} else {
 			iMore.setVisible(
 					(iTabIndex == 0 && iCourseTable.getRowCount() > 2) ||
 					(iTabIndex == 1 && iStudentTable.getRowCount() > 2) ||
 					(iTabIndex == 2 && iLogTable.getRowCount() > 1));
+			if (iTabIndex == 0) {
+				iPrevious.setEnabled(iEnrollmentInfos != null && iMaxTableLines > 0 && iEnrollmentInfosFirstLine >= iMaxTableLines);
+				iNext.setEnabled(iEnrollmentInfos != null && iMaxTableLines > 0 && iEnrollmentInfosFirstLine + iMaxTableLines < iEnrollmentInfos.size() - 1);
+			} else if (iTabIndex == 1) {
+				iPrevious.setEnabled(iStudentInfos != null && iMaxTableLines > 0 && iStudentInfosFirstLine >= iMaxTableLines);
+				iNext.setEnabled(iStudentInfos != null && iMaxTableLines > 0 && iStudentInfosFirstLine + iMaxTableLines < iStudentInfos.size() - 1);
+			} else if (iLogTable != null) {
+				iPrevious.setEnabled(iSectioningActions != null && iMaxTableLines > 0 && iSectioningActionsFirstLine >= iMaxTableLines);
+				iNext.setEnabled(iSectioningActions != null && iMaxTableLines > 0 && iSectioningActionsFirstLine + iMaxTableLines < iSectioningActions.size() );
+			}
 		}
 	}
 	
-	private void loadData() {
+	protected void clearData() {
 		iCourseTable.clearTable();
 		iStudentTable.clearTable();
 		iLogTable.clearTable();
+		iPaginationButtons.setVisible(false);
+		iStudentInfos = null; iStudentInfosFirstLine = -1;
+		iEnrollmentInfos = null; iEnrollmentInfosFirstLine = -1; iClassInfos.clear();
+		iSectioningActions = null; iSectioningActionsFirstLine = -1;
+	}
+	
+	private void loadData() {
+		clearData();
 		loadDataIfNeeded();
 	}
 	
 	private void loadDataIfNeeded() {
 		if (iTabIndex < 0) {
-			iTabPanel.selectTab(SectioningStatusCookie.getInstance().getTab(iOnline));
+			iTabBar.selectTab(SectioningStatusCookie.getInstance().getTab(iOnline));
 			return;
 		}
 		
@@ -754,7 +866,7 @@ public class SectioningStatusPage extends Composite {
 					setLoading(false);
 					iError.setHTML(caught.getMessage());
 					iError.setVisible(true);
-					iTabPanel.setVisible(false);
+					iTabBar.setVisible(false); iTabContent.setVisible(false);
 					ToolBox.checkAccess(caught);
 				}
 
@@ -763,10 +875,10 @@ public class SectioningStatusPage extends Composite {
 					if (result.isEmpty()) {
 						iError.setHTML(MESSAGES.exceptionNoMatchingResultsFound(iCourseFilter));
 						iError.setVisible(true);
-						iTabPanel.setVisible(false);
+						iTabBar.setVisible(false); iTabContent.setVisible(false);
 					} else {
 						populateCourseTable(result);
-						iTabPanel.setVisible(true);
+						iTabBar.setVisible(true); iTabContent.setVisible(true);
 					}
 					setLoading(false);
 					LoadingWidget.getInstance().hide();
@@ -781,7 +893,7 @@ public class SectioningStatusPage extends Composite {
 						setLoading(false);
 						iError.setHTML(caught.getMessage());
 						iError.setVisible(true);
-						iTabPanel.setVisible(false);
+						iTabBar.setVisible(false); iTabContent.setVisible(false);
 						ToolBox.checkAccess(caught);
 					}
 
@@ -790,10 +902,10 @@ public class SectioningStatusPage extends Composite {
 						if (result.isEmpty()) {
 							iError.setHTML(MESSAGES.exceptionNoMatchingResultsFound(iCourseFilter));
 							iError.setVisible(true);
-							iTabPanel.setVisible(false);
+							iTabBar.setVisible(false); iTabContent.setVisible(false);
 						} else {
 							populateStudentTable(result);
-							iTabPanel.setVisible(true);
+							iTabBar.setVisible(true); iTabContent.setVisible(true);
 						}
 						setLoading(false);
 						LoadingWidget.getInstance().hide();
@@ -807,7 +919,7 @@ public class SectioningStatusPage extends Composite {
 						setLoading(false);
 						iError.setHTML(caught.getMessage());
 						iError.setVisible(true);
-						iTabPanel.setVisible(false);
+						iTabBar.setVisible(false); iTabContent.setVisible(false);
 						ToolBox.checkAccess(caught);
 					}
 
@@ -816,10 +928,10 @@ public class SectioningStatusPage extends Composite {
 						if (result.isEmpty()) {
 							iError.setHTML(MESSAGES.exceptionNoMatchingResultsFound(iCourseFilter));
 							iError.setVisible(true);
-							iTabPanel.setVisible(false);
+							iTabBar.setVisible(false); iTabContent.setVisible(false);
 						} else {
 							populateStudentTable(result);
-							iTabPanel.setVisible(true);
+							iTabBar.setVisible(true); iTabContent.setVisible(true);
 						}
 						setLoading(false);
 						LoadingWidget.getInstance().hide();
@@ -834,14 +946,14 @@ public class SectioningStatusPage extends Composite {
 					setLoading(false);
 					iError.setHTML(caught.getMessage());
 					iError.setVisible(true);
-					iTabPanel.setVisible(false);
+					iTabBar.setVisible(false); iTabContent.setVisible(false);
 					ToolBox.checkAccess(caught);
 				}
 
 				@Override
 				public void onSuccess(final List<SectioningAction> result) {
 					populateChangeLog(result);
-					iTabPanel.setVisible(true);
+					iTabBar.setVisible(true); iTabContent.setVisible(true);
 					setLoading(false);
 					LoadingWidget.getInstance().hide();
 				}
@@ -886,36 +998,49 @@ public class SectioningStatusPage extends Composite {
 		List<Widget> line = new ArrayList<Widget>();
 		if (e.getConfigId() == null) {
 			if (e.getCourseId() != null) {
-				final Image showDetails = new Image(RESOURCES.treeClosed());
+				final Image showDetails = new Image(iClassInfos.containsKey(e.getCourseId()) && iSelectedCourseIds.contains(e.getCourseId()) ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
 				showDetails.addClickHandler(new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
 						final int row = iCourseTable.getCellForEvent(event).getRowIndex();
 						if (row + 1 == iCourseTable.getRowCount() || iCourseTable.getData(row + 1).getConfigId() == null) { // open
-							setLoading(true);
-							iError.setVisible(false);
-							showDetails.setResource(RESOURCES.treeOpen());
-							iSectioningService.findEnrollmentInfos(iOnline, iCourseFilter, iCourseFilterRequest, e.getCourseId(), new AsyncCallback<List<EnrollmentInfo>>() {
-								@Override
-								public void onFailure(Throwable caught) {
-									setLoading(false);
-									iError.setHTML(caught.getMessage());
-									iError.setVisible(true);
-									ToolBox.checkAccess(caught);
+							List<EnrollmentInfo> classes = iClassInfos.get(e.getCourseId());
+							if (classes != null) {
+								iSelectedCourseIds.add(e.getCourseId());
+								setLoading(false);
+								int r = row + 1;
+								for (EnrollmentInfo e: classes) {
+									iCourseTable.insertRow(r);
+									iCourseTable.setRow(r, e, line(e));
+									r++;
 								}
-
-								@Override
-								public void onSuccess(List<EnrollmentInfo> result) {
-									iSelectedCourseIds.add(e.getCourseId());
-									setLoading(false);
-									int r = row + 1;
-									for (EnrollmentInfo e: result) {
-										iCourseTable.insertRow(r);
-										iCourseTable.setRow(r, e, line(e));
-										r++;
+							} else {
+								setLoading(true);
+								iError.setVisible(false);
+								showDetails.setResource(RESOURCES.treeOpen());
+								iSectioningService.findEnrollmentInfos(iOnline, iCourseFilter, iCourseFilterRequest, e.getCourseId(), new AsyncCallback<List<EnrollmentInfo>>() {
+									@Override
+									public void onFailure(Throwable caught) {
+										setLoading(false);
+										iError.setHTML(caught.getMessage());
+										iError.setVisible(true);
+										ToolBox.checkAccess(caught);
 									}
-								}
-							});
+
+									@Override
+									public void onSuccess(List<EnrollmentInfo> result) {
+										iClassInfos.put(e.getCourseId(), result);
+										iSelectedCourseIds.add(e.getCourseId());
+										setLoading(false);
+										int r = row + 1;
+										for (EnrollmentInfo e: result) {
+											iCourseTable.insertRow(r);
+											iCourseTable.setRow(r, e, line(e));
+											r++;
+										}
+									}
+								});
+							}
 						} else {
 							for (int r = row + 1; r < iCourseTable.getRowCount(); r++) {
 								if (iCourseTable.getData(r).getConfigId() == null) break;
@@ -932,7 +1057,7 @@ public class SectioningStatusPage extends Composite {
 						event.getNativeEvent().preventDefault();
 					}
 				});
-				line.add(showDetails);				
+				line.add(showDetails);
 			} else {
 				line.add(new Label());
 			}
@@ -963,6 +1088,8 @@ public class SectioningStatusPage extends Composite {
 	}
 	
 	public void populateCourseTable(List<EnrollmentInfo> result) {
+		iEnrollmentInfos = result; iEnrollmentInfosFirstLine = 0;
+		iClassInfos.clear();
 		iSelectedCourseIds.clear();
 		iSortOperations.clear();
 		List<Widget> header = new ArrayList<Widget>();
@@ -1033,53 +1160,74 @@ public class SectioningStatusPage extends Composite {
 		
 		boolean hasReservation = false;
 		for (EnrollmentInfo e: result) {
-			iCourseTable.addRow(e, line(e));
-			if (!hasReservation && AvailableCell.hasReservedSpace(e)) hasReservation = true;
-			iCourseTable.getRowFormatter().getElement(iCourseTable.getRowCount() - 1).addClassName("course-line");
+			if (AvailableCell.hasReservedSpace(e)) { hasReservation = true; break; }
 		}
 		
-		// Total line
+		if (SectioningStatusCookie.getInstance().getSortBy(iOnline, 0) != 0) {
+			boolean asc = (SectioningStatusCookie.getInstance().getSortBy(iOnline, 0) > 0);
+			EnrollmentComparator.SortBy sort = EnrollmentComparator.SortBy.values()[Math.abs(SectioningStatusCookie.getInstance().getSortBy(iOnline, 0)) - 1];
+			UniTimeTableHeader h = null;
+			switch (sort) {
+			case COURSE: h = hCourse; break;
+			case SUBJECT: h = hSubject; break;
+			case TITLE: h = hTitleSubpart; break;
+			case CONSENT: h = hRoom; break;
+			case LIMIT: h = hLimit; break;
+			case PROJECTION: h = hProjection; break;
+			case ENROLLMENT: h = hEnrollment; break;
+			case NEED_CONSENT: h = hConsent; break;
+			case RESERVATION: h = hReserved; break;
+			case WAITLIST: h = hWaitListed; break;
+			case ALTERNATIVES: h = hAlternative; break;
+			case NEED_OVERRIDE: h = hOverride; break;
+			}
+			if (h != null) {
+				Collections.sort(result, new EnrollmentComparator(sort, asc));
+				if (!asc) Collections.reverse(result);
+				h.setOrder(asc);
+			}
+		}
+		
+		iCourseTableHint.setVisible(hasReservation);
+		
+		fillCourseTable(0);
+	}
+	
+	private void fillCourseTable(int firstLine) {
+		iEnrollmentInfosFirstLine = firstLine;
+		if (iCourseTable.getRowCount() > 0) iCourseTable.clearTable(1);
+		for (int line = iEnrollmentInfosFirstLine; line < iEnrollmentInfos.size() - 1 && (iMaxTableLines <= 0 || line < iEnrollmentInfosFirstLine + iMaxTableLines); line++) {
+			EnrollmentInfo e = iEnrollmentInfos.get(line);
+			iCourseTable.addRow(e, line(e));
+			iCourseTable.getRowFormatter().getElement(iCourseTable.getRowCount() - 1).addClassName("course-line");
+			if (e.getCourseId() != null && iSelectedCourseIds.contains(e.getCourseId())) {
+				List<EnrollmentInfo> classes = iClassInfos.get(e.getCourseId());
+				if (classes != null) {
+					for (EnrollmentInfo c: classes)
+						iCourseTable.addRow(c, line(c));
+				}
+			}
+		}
+		if (!iEnrollmentInfos.isEmpty()) {
+			EnrollmentInfo e = iEnrollmentInfos.get(iEnrollmentInfos.size() - 1);
+			iCourseTable.addRow(e, line(e));
+			iCourseTable.getRowFormatter().getElement(iCourseTable.getRowCount() - 1).addClassName("course-line");
+		}
 		if (iCourseTable.getRowCount() >= 2) {
 			for (int c = 0; c < iCourseTable.getCellCount(iCourseTable.getRowCount() - 1); c++)
 				iCourseTable.getCellFormatter().setStyleName(iCourseTable.getRowCount() - 1, c, "unitime-TotalRow");
 			iCourseTable.getRowFormatter().getElement(iCourseTable.getRowCount() - 1).getStyle().clearBackgroundColor();
 		}
 		
-		iCourseTableHint.setVisible(hasReservation);
+		iRange.setText(MESSAGES.pageRange(iEnrollmentInfosFirstLine + 1, Math.min(iEnrollmentInfos.size() - 1, iEnrollmentInfosFirstLine + iMaxTableLines)));
 		
-		if (SectioningStatusCookie.getInstance().getSortBy(iOnline, 0) != 0) {
-			boolean asc = (SectioningStatusCookie.getInstance().getSortBy(iOnline, 0) > 0);
-			EnrollmentComparator.SortBy sort = EnrollmentComparator.SortBy.values()[Math.abs(SectioningStatusCookie.getInstance().getSortBy(iOnline, 0)) - 1];
-			switch (sort) {
-			case COURSE:
-				iCourseTable.sort(hCourse, new EnrollmentComparator(sort, asc), asc); break;
-			case SUBJECT:
-				iCourseTable.sort(hSubject, new EnrollmentComparator(sort, asc), asc); break;
-			case TITLE:
-				iCourseTable.sort(hTitleSubpart, new EnrollmentComparator(sort, asc), asc); break;
-			case CONSENT:
-				iCourseTable.sort(hRoom, new EnrollmentComparator(sort, asc), asc); break;
-			case LIMIT:
-				iCourseTable.sort(hLimit, new EnrollmentComparator(sort, asc), asc); break;
-			case PROJECTION:
-				iCourseTable.sort(hProjection, new EnrollmentComparator(sort, asc), asc); break;
-			case ENROLLMENT:
-				iCourseTable.sort(hEnrollment, new EnrollmentComparator(sort, asc), asc); break;
-			case NEED_CONSENT:
-				iCourseTable.sort(hConsent, new EnrollmentComparator(sort, asc), asc); break;
-			case RESERVATION:
-				iCourseTable.sort(hReserved, new EnrollmentComparator(sort, asc), asc); break;
-			case WAITLIST:
-				iCourseTable.sort(hWaitListed, new EnrollmentComparator(sort, asc), asc); break;
-			case ALTERNATIVES:
-				iCourseTable.sort(hAlternative, new EnrollmentComparator(sort, asc), asc); break;
-			case NEED_OVERRIDE:
-				iCourseTable.sort(hOverride, new EnrollmentComparator(sort, asc), asc); break;
-			}
-		}
+		iPaginationButtons.setVisible(iEnrollmentInfos.size() - 1 > iMaxTableLines && iMaxTableLines > 0);
+		iPrevious.setEnabled(iMaxTableLines > 0 && iEnrollmentInfosFirstLine >= iMaxTableLines);
+		iNext.setEnabled(iMaxTableLines > 0 && iEnrollmentInfosFirstLine + iMaxTableLines < iEnrollmentInfos.size() - 1);
 	}
 	
 	public void populateStudentTable(List<StudentInfo> result) {
+		iStudentInfos = result; iStudentInfosFirstLine = 0;
 		iSortOperations.clear();
 		List<Widget> header = new ArrayList<Widget>();
 		
@@ -1099,19 +1247,18 @@ public class SectioningStatusPage extends Composite {
 				}
 				@Override
 				public boolean isApplicable() {
-					return iSelectedStudentIds.size() != iStudentTable.getRowCount() + 2;
+					return iSelectedStudentIds.size() != iStudentInfoVisibleColumns.selectableStudents;
 				}
 				@Override
 				public void execute() {
 					iSelectedStudentIds.clear();
+					for (StudentInfo info: iStudentInfos)
+						if (info.getStudent() != null && info.getStudent().isCanSelect())
+							iSelectedStudentIds.add(info.getStudent().getId());
 					for (int row = 0; row < iStudentTable.getRowCount(); row++) {
-						StudentInfo i = iStudentTable.getData(row);
-						if (i != null && i.getStudent() != null) {
-							Widget w = iStudentTable.getWidget(row, 0);
-							if (w instanceof CheckBox) {
-								((CheckBox)w).setValue(true);
-								iSelectedStudentIds.add(i.getStudent().getId());
-							}
+						Widget w = iStudentTable.getWidget(row, 0);
+						if (w instanceof CheckBox) {
+							((CheckBox)w).setValue(true);
 						}
 					}
 				}
@@ -1133,12 +1280,9 @@ public class SectioningStatusPage extends Composite {
 				public void execute() {
 					iSelectedStudentIds.clear();
 					for (int row = 0; row < iStudentTable.getRowCount(); row++) {
-						StudentInfo i = iStudentTable.getData(row);
-						if (i != null && i.getStudent() != null) {
-							Widget w = iStudentTable.getWidget(row, 0);
-							if (w instanceof CheckBox) {
-								((CheckBox)w).setValue(false);
-							}
+						Widget w = iStudentTable.getWidget(row, 0);
+						if (w instanceof CheckBox) {
+							((CheckBox)w).setValue(false);
 						}
 					}
 				}
@@ -1639,13 +1783,10 @@ public class SectioningStatusPage extends Composite {
 			});
 		}
 		
-		boolean hasExtId = false;
-		for (ClassAssignmentInterface.StudentInfo e: result) {
-			if (e.getStudent() != null && e.getStudent().isCanShowExternalId()) { hasExtId = true; break; }
-		}
+		iStudentInfoVisibleColumns = new StudentsInfoVisibleColumns(result);
 		
 		UniTimeTableHeader hExtId = null;
-		if (hasExtId) {
+		if (iStudentInfoVisibleColumns.hasExtId) {
 			hExtId = new UniTimeTableHeader(MESSAGES.colStudentExternalId());
 			header.add(hExtId);
 			addSortOperation(hExtId, StudentComparator.SortBy.EXTERNAL_ID, MESSAGES.colStudentExternalId());
@@ -1658,40 +1799,11 @@ public class SectioningStatusPage extends Composite {
 		UniTimeTableHeader hTotal = new UniTimeTableHeader("&nbsp;");
 		header.add(hTotal);
 		
-		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
-				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false, hasReqCred = false, hasDistances = false, hasOverlaps = false,
-				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false, hasOverride = false;
-		for (ClassAssignmentInterface.StudentInfo e: result) {
-			if (e.getStudent() == null) continue;
-			// if (e.getStatus() != null) hasStatus = true;
-			if (e.getTotalEnrollment() != null && e.getTotalEnrollment() > 0) hasEnrollment = true;
-			if (e.getTotalUnassigned() != null && e.getTotalUnassigned() > 0) hasWaitList = true;
-			if (e.getStudent().hasArea()) hasArea = true;
-			if (e.getStudent().hasMajor()) hasMajor = true;
-			if (e.getStudent().hasGroup()) hasGroup = true;
-			if (e.getStudent().hasAccommodation()) hasAcmd = true;
-			if (e.getTotalReservation() != null && e.getTotalReservation() > 0) hasReservation = true;
-			if (e.getRequestedDate() != null) hasRequestedDate = true;
-			if (e.getEnrolledDate() != null) hasEnrolledDate = true;
-			// if (e.getEmailDate() != null) hasEmailDate = true;
-			if (e.getTotalConsentNeeded() != null && e.getTotalConsentNeeded() > 0) hasConsent = true;
-			if (e.getTotalOverrideNeeded() != null && e.getTotalOverrideNeeded() > 0) hasOverride = true;
-			if (e.hasTotalCredit()) hasCredit = true;
-			if (e.hasTotalRequestCredit()) hasReqCred = true;
-			if (e.hasTotalDistanceConflicts()) hasDistances = true;
-			if (e.hasOverlappingMinutes()) hasOverlaps = true;
-			if (e.hasFreeTimeOverlappingMins()) hasFreeTimeOverlaps = true;
-			if (e.hasTotalPrefInstrMethConflict()) hasPrefIMConfs = true;
-			if (e.hasTotalPrefSectionConflict()) hasPrefSecConfs = true;
-			if (e.hasNote()) hasNote = true;
-			if (e.getEmailDate() != null) hasEmailed = true;
-		}
-		
-		if (iProperties != null && iProperties.isChangeStatus()) hasNote = true;
-		if (iProperties != null && iProperties.hasEditableGroups()) hasGroup = true;
+		if (iProperties != null && iProperties.isChangeStatus()) iStudentInfoVisibleColumns.hasNote = true;
+		if (iProperties != null && iProperties.hasEditableGroups()) iStudentInfoVisibleColumns.hasGroup = true;
 		
 		UniTimeTableHeader hArea = null, hClasf = null;
-		if (hasArea) {
+		if (iStudentInfoVisibleColumns.hasArea) {
 			hArea = new UniTimeTableHeader(MESSAGES.colArea());
 			//hArea.setWidth("100px");
 			header.add(hArea);
@@ -1704,7 +1816,7 @@ public class SectioningStatusPage extends Composite {
 		}
 
 		UniTimeTableHeader hMajor = null;
-		if (hasMajor) {
+		if (iStudentInfoVisibleColumns.hasMajor) {
 			hMajor = new UniTimeTableHeader(MESSAGES.colMajor());
 			//hMajor.setWidth("100px");
 			header.add(hMajor);
@@ -1712,7 +1824,7 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		UniTimeTableHeader hGroup = null;
-		if (hasGroup) {
+		if (iStudentInfoVisibleColumns.hasGroup) {
 			iGroupColumn = header.size() - 1;
 			hGroup = new UniTimeTableHeader(MESSAGES.colGroup());
 			//hGroup.setWidth("100px");
@@ -1723,7 +1835,7 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		UniTimeTableHeader hAcmd = null;
-		if (hasAcmd) {
+		if (iStudentInfoVisibleColumns.hasAcmd) {
 			hAcmd = new UniTimeTableHeader(MESSAGES.colAccommodation());
 			//hGroup.setWidth("100px");
 			header.add(hAcmd);
@@ -1737,7 +1849,7 @@ public class SectioningStatusPage extends Composite {
 		addSortOperation(hStatus, StudentComparator.SortBy.STATUS, MESSAGES.colStatus());
 		
 		UniTimeTableHeader hEnrollment = null;
-		if (hasEnrollment) {
+		if (iStudentInfoVisibleColumns.hasEnrollment) {
 			hEnrollment = new UniTimeTableHeader(MESSAGES.colEnrollment());
 			hEnrollment.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			header.add(hEnrollment);
@@ -1745,7 +1857,7 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		UniTimeTableHeader hWaitlist = null;
-		if (hasWaitList) {
+		if (iStudentInfoVisibleColumns.hasWaitList) {
 			hWaitlist = new UniTimeTableHeader(MESSAGES.colWaitListed());
 			hWaitlist.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			header.add(hWaitlist);
@@ -1753,7 +1865,7 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		UniTimeTableHeader hReservation = null;
-		if (hasReservation) {
+		if (iStudentInfoVisibleColumns.hasReservation) {
 			hReservation = new UniTimeTableHeader(MESSAGES.colReservation());
 			hReservation.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			header.add(hReservation);
@@ -1761,7 +1873,7 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		UniTimeTableHeader hConsent = null;
-		if (hasConsent) {
+		if (iStudentInfoVisibleColumns.hasConsent) {
 			hConsent = new UniTimeTableHeader(MESSAGES.colConsent());
 			hConsent.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			header.add(hConsent);
@@ -1769,7 +1881,7 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		UniTimeTableHeader hOverride = null;
-		if (hasOverride) {
+		if (iStudentInfoVisibleColumns.hasOverride) {
 			hOverride = new UniTimeTableHeader(MESSAGES.colPendingOverrides());
 			hOverride.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			header.add(hOverride);
@@ -1777,7 +1889,7 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		UniTimeTableHeader hCredit = null;
-		if (hasCredit) {
+		if (iStudentInfoVisibleColumns.hasCredit) {
 			hCredit = new UniTimeTableHeader(MESSAGES.colEnrollCredit());
 			hCredit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			header.add(hCredit);
@@ -1785,7 +1897,7 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		UniTimeTableHeader hReqCred = null;
-		if (hasReqCred) {
+		if (iStudentInfoVisibleColumns.hasReqCred) {
 			hReqCred = new UniTimeTableHeader(MESSAGES.colRequestCredit());
 			hReqCred.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			header.add(hReqCred);
@@ -1793,7 +1905,7 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		UniTimeTableHeader hDistConf = null;
-		if (hasDistances) {
+		if (iStudentInfoVisibleColumns.hasDistances) {
 			hDistConf = new UniTimeTableHeader(MESSAGES.colDistanceConflicts());
 			hDistConf.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 			header.add(hDistConf);
@@ -1801,7 +1913,7 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		UniTimeTableHeader hShare = null;
-		if (hasOverlaps) {
+		if (iStudentInfoVisibleColumns.hasOverlaps) {
 			hShare = new UniTimeTableHeader(MESSAGES.colOverlapMins());
 			hShare.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			header.add(hShare);
@@ -1809,7 +1921,7 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		UniTimeTableHeader hFTShare = null;
-		if (hasFreeTimeOverlaps) {
+		if (iStudentInfoVisibleColumns.hasFreeTimeOverlaps) {
 			hFTShare = new UniTimeTableHeader(MESSAGES.colFreeTimeOverlapMins());
 			hFTShare.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			header.add(hFTShare);
@@ -1817,7 +1929,7 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		UniTimeTableHeader hPrefIMConfs = null;
-		if (hasPrefIMConfs) {
+		if (iStudentInfoVisibleColumns.hasPrefIMConfs) {
 			hPrefIMConfs = new UniTimeTableHeader(MESSAGES.colPrefInstrMethConfs());
 			hPrefIMConfs.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			header.add(hPrefIMConfs);
@@ -1825,7 +1937,7 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		UniTimeTableHeader hPrefSecConfs = null;
-		if (hasPrefSecConfs) {
+		if (iStudentInfoVisibleColumns.hasPrefSecConfs) {
 			hPrefSecConfs = new UniTimeTableHeader(MESSAGES.colPrefSectionConfs());
 			hPrefSecConfs.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			header.add(hPrefSecConfs);
@@ -1833,21 +1945,21 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		UniTimeTableHeader hRequestTS = null;
-		if (hasRequestedDate) {
+		if (iStudentInfoVisibleColumns.hasRequestedDate) {
 			hRequestTS = new UniTimeTableHeader(MESSAGES.colRequestTimeStamp());
 			header.add(hRequestTS);
 			addSortOperation(hRequestTS, StudentComparator.SortBy.REQUEST_TS, MESSAGES.colRequestTimeStamp());
 		}
 		
 		UniTimeTableHeader hEnrolledTS = null;
-		if (hasEnrolledDate) {
+		if (iStudentInfoVisibleColumns.hasEnrolledDate) {
 			hEnrolledTS = new UniTimeTableHeader(MESSAGES.colEnrollmentTimeStamp());
 			header.add(hEnrolledTS);
 			addSortOperation(hEnrolledTS, StudentComparator.SortBy.ENROLLMENT_TS, MESSAGES.colEnrollmentTimeStamp());
 		}
 		
 		UniTimeTableHeader hNote = null;
-		if (iOnline && hasNote) {
+		if (iOnline && iStudentInfoVisibleColumns.hasNote) {
 			iNoteColumn = header.size() - 1;
 			hNote = new UniTimeTableHeader(MESSAGES.colStudentNote());
 			header.add(hNote);
@@ -1857,145 +1969,13 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		UniTimeTableHeader hEmailTS = null;
-		if (iOnline && hasEmailed) {
+		if (iOnline && iStudentInfoVisibleColumns.hasEmailed) {
 			hEmailTS = new UniTimeTableHeader(MESSAGES.colEmailTimeStamp());
 			header.add(hEmailTS);
 			addSortOperation(hEmailTS, StudentComparator.SortBy.EMAIL_TS, MESSAGES.colEmailTimeStamp());
 		}
 		
 		iStudentTable.addRow(null, header);
-		
-		Set<Long> newlySelected = new HashSet<Long>();
-		for (StudentInfo info: result) {
-			List<Widget> line = new ArrayList<Widget>();
-			if (info.getStudent() != null) {
-				if (iOnline && iProperties != null && iProperties.isCanSelectStudent()) {
-					if (info.getStudent().isCanSelect()) {
-						CheckBox ch = new CheckBox();
-						ch.addClickHandler(new ClickHandler() {
-							@Override
-							public void onClick(ClickEvent event) {
-								event.stopPropagation();
-							}
-						});
-						final Long sid = info.getStudent().getId();
-						if (iSelectedStudentIds.contains(sid)) {
-							ch.setValue(true);
-							newlySelected.add(sid);
-						}
-						ch.addClickHandler(new ClickHandler() {
-							@Override
-							public void onClick(ClickEvent event) {
-								event.stopPropagation();
-							}
-						});
-						ch.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
-							@Override
-							public void onValueChange(ValueChangeEvent<Boolean> event) {
-								if (event.getValue())
-									iSelectedStudentIds.add(sid);
-								else
-									iSelectedStudentIds.remove(sid);
-							}
-						});
-						line.add(ch);
-					} else {
-						line.add(new Label(""));
-					}
-				}
-				if (hasExtId) {
-					line.add(new Label(info.getStudent().isCanShowExternalId() ? info.getStudent().getExternalId() : "", false));
-				}
-				line.add(new TitleCell(info.getStudent().getName()));
-				if (hasArea) {
-					line.add(new HTML(info.getStudent().getArea("<br>"), false));
-					line.add(new HTML(info.getStudent().getClassification("<br>"), false));
-				}
-				if (hasMajor)
-					line.add(new HTML(info.getStudent().getMajor("<br>"), false));
-				if (hasGroup)
-					line.add(new HTML(info.getStudent().getGroup("<br>"), false));
-				if (hasAcmd)
-					line.add(new HTML(info.getStudent().getAccommodation("<br>"), false));
-				line.add(new HTML(info.getStatus(), false));
-			} else {
-				if (iOnline && iProperties != null && iProperties.isCanSelectStudent()) line.add(new HTML("&nbsp;", false));
-				if (hasExtId)
-					line.add(new TitleCell(MESSAGES.total()));
-				else
-					line.add(new Label(MESSAGES.total()));
-				line.add(new NumberCell(null, result.size() - 1));
-				if (hasArea) {
-					line.add(new HTML("&nbsp;", false));
-					line.add(new HTML("&nbsp;", false));
-				}
-				if (hasMajor)
-					line.add(new HTML("&nbsp;", false));
-				if (hasGroup)
-					line.add(new HTML("&nbsp;", false));
-				if (hasAcmd)
-					line.add(new HTML("&nbsp;", false));
-				line.add(new HTML("&nbsp;", false));
-			}
-			if (hasEnrollment)
-				line.add(new NumberCell(info.getEnrollment(), info.getTotalEnrollment()));
-			if (hasWaitList)
-				line.add(new WaitListCell(info));
-			if (hasReservation)
-				line.add(new NumberCell(info.getReservation(), info.getTotalReservation()));
-			if (hasConsent)
-				line.add(new NumberCell(info.getConsentNeeded(), info.getTotalConsentNeeded()));
-			if (hasOverride)
-				line.add(new NumberCell(info.getOverrideNeeded(), info.getTotalOverrideNeeded()));
-			if (hasCredit)
-				line.add(new CreditCell(info));
-			if (hasReqCred)
-				line.add(new RequestCreditCell(info.getRequestCreditMin(), info.getRequestCreditMax(), info.getTotalRequestCreditMin(), info.getTotalRequestCreditMax()));
-			if (hasDistances) {
-				line.add(new DistanceCell(info.getNrDistanceConflicts(), info.getTotalNrDistanceConflicts(), info.getLongestDistanceMinutes(), info.getTotalLongestDistanceMinutes()));
-			}
-			if (hasOverlaps)
-				line.add(new NumberCell(info.getOverlappingMinutes(), info.getTotalOverlappingMinutes()));
-			if (hasFreeTimeOverlaps)
-				line.add(new NumberCell(info.getFreeTimeOverlappingMins(), info.getTotalFreeTimeOverlappingMins()));
-			if (hasPrefIMConfs)
-				line.add(new NumberCell(info.getPrefInstrMethConflict(), info.getTotalPrefInstrMethConflict()));
-			if (hasPrefSecConfs)
-				line.add(new NumberCell(info.getPrefSectionConflict(), info.getTotalPrefSectionConflict()));
-			if (info.getStudent() != null) {
-				if (hasRequestedDate)
-					line.add(new HTML(info.getRequestedDate() == null ? "&nbsp;" : sDF.format(info.getRequestedDate()), false));
-				if (hasEnrolledDate)
-					line.add(new HTML(info.getEnrolledDate() == null ? "&nbsp;" : sDF.format(info.getEnrolledDate()), false));
-				if (iOnline && hasNote) {
-					HTML note = new HTML(info.hasNote() ? info.getNote() : ""); note.addStyleName("student-note");
-					if (info.hasNote())
-						note.setTitle(note.getText());
-					line.add(note);
-				}
-				if (iOnline && hasEmailed)
-					line.add(new HTML(info.getEmailDate() == null ? "&nbsp;" : sDF.format(info.getEmailDate()), false));
-			} else {
-				if (hasRequestedDate)
-					line.add(new HTML("&nbsp;", false));
-				if (hasEnrolledDate)
-					line.add(new HTML("&nbsp;", false));
-				if (iOnline && hasNote)
-					line.add(new HTML("&nbsp;", false));
-				if (iOnline && hasEmailed)
-					line.add(new HTML("&nbsp;", false));
-			}
-			iStudentTable.addRow(info, line);
-		}
-		iSelectedStudentIds.clear();
-		iSelectedStudentIds.addAll(newlySelected);
-		
-		if (iStudentTable.getRowCount() >= 2) {
-			for (int c = 0; c < iStudentTable.getCellCount(iStudentTable.getRowCount() - 1); c++)
-				iStudentTable.getCellFormatter().setStyleName(iStudentTable.getRowCount() - 1, c, "unitime-TotalRow");
-		}
-		
-		iStudentTableHint.setVisible(hasWaitList);
 		
 		if (SectioningStatusCookie.getInstance().getSortBy(iOnline, 1) != 0) {
 			boolean asc = (SectioningStatusCookie.getInstance().getSortBy(iOnline, 1) > 0);
@@ -2027,22 +2007,175 @@ public class SectioningStatusPage extends Composite {
 			case OVERRIDE: h = hOverride; break;
 			case REQ_CREDIT: h = hReqCred; break;
 			}
-			if (h != null)
-				iStudentTable.sort(h, new StudentComparator(sort, asc), asc);
+			if (h != null) {
+				Collections.sort(result, new StudentComparator(sort, asc));
+				if (!asc) Collections.reverse(result);
+				h.setOrder(asc);
+			}
 		}
+		
+		Set<Long> newlySelected = new HashSet<Long>();
+		for (StudentInfo info: result) {
+			if (info.getStudent() != null && info.getStudent().isCanSelect() && iSelectedStudentIds.contains(info.getStudent().getId()))
+				newlySelected.add(info.getStudent().getId());
+		}
+		iSelectedStudentIds.clear();
+		iSelectedStudentIds.addAll(newlySelected);
+		
+		iStudentTableHint.setVisible(iStudentInfoVisibleColumns.hasWaitList);
+		
+		fillStudentTable(0);
+	}
+	
+	private void fillStudentTable(int firstLine) {
+		iStudentInfosFirstLine = firstLine;
+		if (iStudentTable.getRowCount() > 0) iStudentTable.clearTable(1);
+		for (int line = iStudentInfosFirstLine; line < iStudentInfos.size() - 1 && (iMaxTableLines <= 0 || line < iStudentInfosFirstLine + iMaxTableLines); line++) {
+			addStudentTableLine(iStudentInfos.get(line));
+		}
+		if (!iStudentInfos.isEmpty())
+			addStudentTableLine(iStudentInfos.get(iStudentInfos.size() - 1));
+		if (iStudentTable.getRowCount() >= 2) {
+			for (int c = 0; c < iStudentTable.getCellCount(iStudentTable.getRowCount() - 1); c++)
+				iStudentTable.getCellFormatter().setStyleName(iStudentTable.getRowCount() - 1, c, "unitime-TotalRow");
+		}
+		iRange.setText(MESSAGES.pageRange(iStudentInfosFirstLine + 1, Math.min(iStudentInfos.size() - 1, iStudentInfosFirstLine + iMaxTableLines)));
+		
+		iPaginationButtons.setVisible(iStudentInfos.size() - 1 > iMaxTableLines && iMaxTableLines > 0);
+		iPrevious.setEnabled(iMaxTableLines > 0 && iStudentInfosFirstLine >= iMaxTableLines);
+		iNext.setEnabled(iMaxTableLines > 0 && iStudentInfosFirstLine + iMaxTableLines < iStudentInfos.size() - 1);
+	}
+	
+	private void addStudentTableLine(StudentInfo info) {
+		List<Widget> line = new ArrayList<Widget>();
+		if (info.getStudent() != null) {
+			if (iOnline && iProperties != null && iProperties.isCanSelectStudent()) {
+				if (info.getStudent().isCanSelect()) {
+					CheckBox ch = new CheckBox();
+					ch.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							event.stopPropagation();
+						}
+					});
+					final Long sid = info.getStudent().getId();
+					if (iSelectedStudentIds.contains(sid)) {
+						ch.setValue(true);
+					}
+					ch.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							event.stopPropagation();
+						}
+					});
+					ch.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+						@Override
+						public void onValueChange(ValueChangeEvent<Boolean> event) {
+							if (event.getValue())
+								iSelectedStudentIds.add(sid);
+							else
+								iSelectedStudentIds.remove(sid);
+						}
+					});
+					line.add(ch);
+				} else {
+					line.add(new Label(""));
+				}
+			}
+			if (iStudentInfoVisibleColumns.hasExtId) {
+				line.add(new Label(info.getStudent().isCanShowExternalId() ? info.getStudent().getExternalId() : "", false));
+			}
+			line.add(new TitleCell(info.getStudent().getName()));
+			if (iStudentInfoVisibleColumns.hasArea) {
+				line.add(new HTML(info.getStudent().getArea("<br>"), false));
+				line.add(new HTML(info.getStudent().getClassification("<br>"), false));
+			}
+			if (iStudentInfoVisibleColumns.hasMajor)
+				line.add(new HTML(info.getStudent().getMajor("<br>"), false));
+			if (iStudentInfoVisibleColumns.hasGroup)
+				line.add(new HTML(info.getStudent().getGroup("<br>"), false));
+			if (iStudentInfoVisibleColumns.hasAcmd)
+				line.add(new HTML(info.getStudent().getAccommodation("<br>"), false));
+			line.add(new HTML(info.getStatus(), false));
+		} else {
+			if (iOnline && iProperties != null && iProperties.isCanSelectStudent()) line.add(new HTML("&nbsp;", false));
+			if (iStudentInfoVisibleColumns.hasExtId)
+				line.add(new TitleCell(MESSAGES.total()));
+			else
+				line.add(new Label(MESSAGES.total()));
+			line.add(new NumberCell(null, iStudentInfos.size() - 1));
+			if (iStudentInfoVisibleColumns.hasArea) {
+				line.add(new HTML("&nbsp;", false));
+				line.add(new HTML("&nbsp;", false));
+			}
+			if (iStudentInfoVisibleColumns.hasMajor)
+				line.add(new HTML("&nbsp;", false));
+			if (iStudentInfoVisibleColumns.hasGroup)
+				line.add(new HTML("&nbsp;", false));
+			if (iStudentInfoVisibleColumns.hasAcmd)
+				line.add(new HTML("&nbsp;", false));
+			line.add(new HTML("&nbsp;", false));
+		}
+		if (iStudentInfoVisibleColumns.hasEnrollment)
+			line.add(new NumberCell(info.getEnrollment(), info.getTotalEnrollment()));
+		if (iStudentInfoVisibleColumns.hasWaitList)
+			line.add(new WaitListCell(info));
+		if (iStudentInfoVisibleColumns.hasReservation)
+			line.add(new NumberCell(info.getReservation(), info.getTotalReservation()));
+		if (iStudentInfoVisibleColumns.hasConsent)
+			line.add(new NumberCell(info.getConsentNeeded(), info.getTotalConsentNeeded()));
+		if (iStudentInfoVisibleColumns.hasOverride)
+			line.add(new NumberCell(info.getOverrideNeeded(), info.getTotalOverrideNeeded()));
+		if (iStudentInfoVisibleColumns.hasCredit)
+			line.add(new CreditCell(info));
+		if (iStudentInfoVisibleColumns.hasReqCred)
+			line.add(new RequestCreditCell(info.getRequestCreditMin(), info.getRequestCreditMax(), info.getTotalRequestCreditMin(), info.getTotalRequestCreditMax()));
+		if (iStudentInfoVisibleColumns.hasDistances) {
+			line.add(new DistanceCell(info.getNrDistanceConflicts(), info.getTotalNrDistanceConflicts(), info.getLongestDistanceMinutes(), info.getTotalLongestDistanceMinutes()));
+		}
+		if (iStudentInfoVisibleColumns.hasOverlaps)
+			line.add(new NumberCell(info.getOverlappingMinutes(), info.getTotalOverlappingMinutes()));
+		if (iStudentInfoVisibleColumns.hasFreeTimeOverlaps)
+			line.add(new NumberCell(info.getFreeTimeOverlappingMins(), info.getTotalFreeTimeOverlappingMins()));
+		if (iStudentInfoVisibleColumns.hasPrefIMConfs)
+			line.add(new NumberCell(info.getPrefInstrMethConflict(), info.getTotalPrefInstrMethConflict()));
+		if (iStudentInfoVisibleColumns.hasPrefSecConfs)
+			line.add(new NumberCell(info.getPrefSectionConflict(), info.getTotalPrefSectionConflict()));
+		if (info.getStudent() != null) {
+			if (iStudentInfoVisibleColumns.hasRequestedDate)
+				line.add(new HTML(info.getRequestedDate() == null ? "&nbsp;" : sDF.format(info.getRequestedDate()), false));
+			if (iStudentInfoVisibleColumns.hasEnrolledDate)
+				line.add(new HTML(info.getEnrolledDate() == null ? "&nbsp;" : sDF.format(info.getEnrolledDate()), false));
+			if (iOnline && iStudentInfoVisibleColumns.hasNote) {
+				HTML note = new HTML(info.hasNote() ? info.getNote() : ""); note.addStyleName("student-note");
+				if (info.hasNote())
+					note.setTitle(note.getText());
+				line.add(note);
+			}
+			if (iOnline && iStudentInfoVisibleColumns.hasEmailed)
+				line.add(new HTML(info.getEmailDate() == null ? "&nbsp;" : sDF.format(info.getEmailDate()), false));
+		} else {
+			if (iStudentInfoVisibleColumns.hasRequestedDate)
+				line.add(new HTML("&nbsp;", false));
+			if (iStudentInfoVisibleColumns.hasEnrolledDate)
+				line.add(new HTML("&nbsp;", false));
+			if (iOnline && iStudentInfoVisibleColumns.hasNote)
+				line.add(new HTML("&nbsp;", false));
+			if (iOnline && iStudentInfoVisibleColumns.hasEmailed)
+				line.add(new HTML("&nbsp;", false));
+		}
+		iStudentTable.addRow(info, line);
 	}
 	
 	public void populateChangeLog(List<SectioningAction> result) {
+		iSectioningActions = result; iSectioningActionsFirstLine = 0;
 		iSortOperations.clear();
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		
-		boolean hasExtId = false;
-		for (SectioningAction e: result) {
-			if (e.getStudent() != null && e.getStudent().isCanShowExternalId()) { hasExtId = true; break; }
-		}
+		iSectioningActionsVisibleColumns = new SectioningActionsVisibleColumns(result);
 		
 		UniTimeTableHeader hExtId = null;
-		if (hasExtId) {
+		if (iSectioningActionsVisibleColumns.hasExtId) {
 			hExtId = new UniTimeTableHeader(MESSAGES.colStudentExternalId());
 			header.add(hExtId);
 			addSortOperation(hExtId, ChangeLogComparator.SortBy.EXTERNAL_ID, MESSAGES.colStudentExternalId());
@@ -2078,31 +2211,6 @@ public class SectioningStatusPage extends Composite {
 		
 		iLogTable.addRow(null, header);
 		
-		for (ClassAssignmentInterface.SectioningAction log: result) {
-			if (hasExtId) {
-				iLogTable.addRow(log,
-						new TopCell(log.getStudent().isCanShowExternalId() ? log.getStudent().getExternalId() : ""),
-						new TopCell(log.getStudent().getName()),
-						new TopCell(log.getOperation()),
-						new TopCell(sTSF.format(log.getTimeStamp())),
-						new TopCell(log.getWallTime() == null ? "" : sNF.format(0.001 * log.getWallTime())),
-						new TopCell(log.getResult()),
-						new TopCell(log.getUser() == null ? "" : log.getUser()),
-						new HTML(log.getMessage() == null ? "" : log.getMessage())
-				);
-			} else {
-				iLogTable.addRow(log,
-						new TopCell(log.getStudent().getName()),
-						new TopCell(log.getOperation()),
-						new TopCell(sTSF.format(log.getTimeStamp())),
-						new TopCell(log.getWallTime() == null ? "" : sNF.format(0.001 * log.getWallTime())),
-						new TopCell(log.getResult()),
-						new TopCell(log.getUser() == null ? "" : log.getUser()),
-						new HTML(log.getMessage() == null ? "" : log.getMessage())
-				);
-			}
-		}
-		
 		if (SectioningStatusCookie.getInstance().getSortBy(iOnline, 2) != 0) {
 			boolean asc = (SectioningStatusCookie.getInstance().getSortBy(iOnline, 2) > 0);
 			ChangeLogComparator.SortBy sort = ChangeLogComparator.SortBy.values()[Math.abs(SectioningStatusCookie.getInstance().getSortBy(iOnline, 2)) - 1];
@@ -2116,8 +2224,51 @@ public class SectioningStatusPage extends Composite {
 			case TIME_STAMP: h = hTimeStamp; break;
 			case USER: h = hUser; break;
 			}
-			if (h != null)
-				iLogTable.sort(h, new ChangeLogComparator(sort), asc);
+			if (h != null) {
+				Collections.sort(result, new ChangeLogComparator(sort));
+				if (!asc) Collections.reverse(result);
+				h.setOrder(asc);
+			}
+		}
+		
+		fillLogTable(0);
+	}
+	
+	private void fillLogTable(int firstLine) {
+		iSectioningActionsFirstLine = firstLine;
+		if (iLogTable.getRowCount() > 0) iLogTable.clearTable(1);
+		for (int line = iSectioningActionsFirstLine; line < iSectioningActions.size() && (iMaxTableLines <= 0 || line < iSectioningActionsFirstLine + iMaxTableLines); line++) {
+			addLogTableLine(iSectioningActions.get(line));
+		}
+		iRange.setText(MESSAGES.pageRange(iSectioningActionsFirstLine + 1, Math.min(iSectioningActions.size(), iSectioningActionsFirstLine + iMaxTableLines)));
+		
+		iPaginationButtons.setVisible(iSectioningActions.size() > iMaxTableLines && iMaxTableLines > 0);
+		iPrevious.setEnabled(iMaxTableLines > 0 && iSectioningActionsFirstLine >= iMaxTableLines);
+		iNext.setEnabled(iMaxTableLines > 0 && iSectioningActionsFirstLine + iMaxTableLines < iSectioningActions.size());
+	}
+	
+	private void addLogTableLine(SectioningAction log) {
+		if (iSectioningActionsVisibleColumns.hasExtId) {
+			iLogTable.addRow(log,
+					new TopCell(log.getStudent().isCanShowExternalId() ? log.getStudent().getExternalId() : ""),
+					new TopCell(log.getStudent().getName()),
+					new TopCell(log.getOperation()),
+					new TopCell(sTSF.format(log.getTimeStamp())),
+					new TopCell(log.getWallTime() == null ? "" : sNF.format(0.001 * log.getWallTime())),
+					new TopCell(log.getResult()),
+					new TopCell(log.getUser() == null ? "" : log.getUser()),
+					new HTML(log.getMessage() == null ? "" : log.getMessage())
+			);
+		} else {
+			iLogTable.addRow(log,
+					new TopCell(log.getStudent().getName()),
+					new TopCell(log.getOperation()),
+					new TopCell(sTSF.format(log.getTimeStamp())),
+					new TopCell(log.getWallTime() == null ? "" : sNF.format(0.001 * log.getWallTime())),
+					new TopCell(log.getResult()),
+					new TopCell(log.getUser() == null ? "" : log.getUser()),
+					new HTML(log.getMessage() == null ? "" : log.getMessage())
+			);
 		}
 	}
 	
@@ -2126,7 +2277,21 @@ public class SectioningStatusPage extends Composite {
 			@Override
 			public void execute() {
 				boolean asc = (header.getOrder() == null ? true : !header.getOrder());
-				iCourseTable.sort(header, new EnrollmentComparator(sort, asc));
+				if (iMaxTableLines > 0 && iEnrollmentInfos.size() > iMaxTableLines) {
+					Collections.sort(iEnrollmentInfos, new EnrollmentComparator(sort, asc));
+					if (!asc) Collections.reverse(iEnrollmentInfos);
+					fillCourseTable(iEnrollmentInfosFirstLine);
+					for (int i = 0; i < iCourseTable.getCellCount(0); i++) {
+						Widget w = iCourseTable.getWidget(0, i);
+						if (w != null && w instanceof UniTimeTableHeader) {
+							UniTimeTableHeader h = (UniTimeTableHeader)w;
+							h.setOrder(null);
+						}
+					}
+					header.setOrder(asc);
+				} else {
+					iCourseTable.sort(header, new EnrollmentComparator(sort, asc));
+				}
 				SectioningStatusCookie.getInstance().setSortBy(iOnline, 0, header.getOrder() ? 1 + sort.ordinal() : -1 - sort.ordinal());
 			}
 			@Override
@@ -2155,7 +2320,21 @@ public class SectioningStatusPage extends Composite {
 			@Override
 			public void execute() {
 				boolean asc = (header.getOrder() == null ? true : !header.getOrder());
-				iStudentTable.sort(header, new StudentComparator(sort, asc));
+				if (iMaxTableLines > 0 && iStudentInfos.size() - 1 > iMaxTableLines) {
+					Collections.sort(iStudentInfos, new StudentComparator(sort, asc));
+					if (!asc) Collections.reverse(iStudentInfos);
+					fillStudentTable(iStudentInfosFirstLine);
+					for (int i = 0; i < iStudentTable.getCellCount(0); i++) {
+						Widget w = iStudentTable.getWidget(0, i);
+						if (w != null && w instanceof UniTimeTableHeader) {
+							UniTimeTableHeader h = (UniTimeTableHeader)w;
+							h.setOrder(null);
+						}
+					}
+					header.setOrder(asc);
+				} else {
+					iStudentTable.sort(header, new StudentComparator(sort, asc));
+				}
 				SectioningStatusCookie.getInstance().setSortBy(iOnline, 1, header.getOrder() ? 1 + sort.ordinal() : -1 - sort.ordinal());
 			}
 			@Override
@@ -2204,7 +2383,22 @@ public class SectioningStatusPage extends Composite {
 		Operation op = new SortOperation() {
 			@Override
 			public void execute() {
-				iLogTable.sort(header, new ChangeLogComparator(sort));
+				boolean asc = (header.getOrder() == null ? true : !header.getOrder());
+				if (iMaxTableLines > 0 && iSectioningActions.size() > iMaxTableLines) {
+					Collections.sort(iSectioningActions, new ChangeLogComparator(sort));
+					if (!asc) Collections.reverse(iSectioningActions);
+					fillLogTable(iSectioningActionsFirstLine);
+					for (int i = 0; i < iLogTable.getCellCount(0); i++) {
+						Widget w = iLogTable.getWidget(0, i);
+						if (w != null && w instanceof UniTimeTableHeader) {
+							UniTimeTableHeader h = (UniTimeTableHeader)w;
+							h.setOrder(null);
+						}
+					}
+					header.setOrder(asc);
+				} else {
+					iLogTable.sort(header, new ChangeLogComparator(sort));
+				}
 				SectioningStatusCookie.getInstance().setSortBy(iOnline, 2, header.getOrder() ? 1 + sort.ordinal() : -1 - sort.ordinal());
 			}
 			@Override
@@ -2875,6 +3069,53 @@ public class SectioningStatusPage extends Composite {
 		@Override
 		public HorizontalAlignmentConstant getCellAlignment() {
 			return HasHorizontalAlignment.ALIGN_CENTER;
+		}
+	}
+	
+	static class StudentsInfoVisibleColumns {
+		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
+				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false, hasReqCred = false, hasDistances = false, hasOverlaps = false,
+				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false, hasOverride = false, hasExtId = false;
+		int selectableStudents = 0;
+		
+		public StudentsInfoVisibleColumns(List<StudentInfo> result) {
+			for (StudentInfo e: result) {
+				if (e.getStudent() == null) continue;
+				if (e.getStudent().isCanSelect()) selectableStudents++;
+				// if (e.getStatus() != null) hasStatus = true;
+				if (e.getTotalEnrollment() != null && e.getTotalEnrollment() > 0) hasEnrollment = true;
+				if (e.getTotalUnassigned() != null && e.getTotalUnassigned() > 0) hasWaitList = true;
+				if (e.getStudent().hasArea()) hasArea = true;
+				if (e.getStudent().hasMajor()) hasMajor = true;
+				if (e.getStudent().hasGroup()) hasGroup = true;
+				if (e.getStudent().hasAccommodation()) hasAcmd = true;
+				if (e.getTotalReservation() != null && e.getTotalReservation() > 0) hasReservation = true;
+				if (e.getRequestedDate() != null) hasRequestedDate = true;
+				if (e.getEnrolledDate() != null) hasEnrolledDate = true;
+				// if (e.getEmailDate() != null) hasEmailDate = true;
+				if (e.getTotalConsentNeeded() != null && e.getTotalConsentNeeded() > 0) hasConsent = true;
+				if (e.getTotalOverrideNeeded() != null && e.getTotalOverrideNeeded() > 0) hasOverride = true;
+				if (e.hasTotalCredit()) hasCredit = true;
+				if (e.hasTotalRequestCredit()) hasReqCred = true;
+				if (e.hasTotalDistanceConflicts()) hasDistances = true;
+				if (e.hasOverlappingMinutes()) hasOverlaps = true;
+				if (e.hasFreeTimeOverlappingMins()) hasFreeTimeOverlaps = true;
+				if (e.hasTotalPrefInstrMethConflict()) hasPrefIMConfs = true;
+				if (e.hasTotalPrefSectionConflict()) hasPrefSecConfs = true;
+				if (e.hasNote()) hasNote = true;
+				if (e.getEmailDate() != null) hasEmailed = true;
+				if (e.getStudent() != null && e.getStudent().isCanShowExternalId()) { hasExtId = true; break; }
+			}
+		}
+	}
+	
+	static class SectioningActionsVisibleColumns {
+		boolean hasExtId = false;
+		
+		public SectioningActionsVisibleColumns(List<SectioningAction> result) {
+			for (SectioningAction e: result) {
+				if (e.getStudent() != null && e.getStudent().isCanShowExternalId()) { hasExtId = true; break; }
+			}
 		}
 	}
 }

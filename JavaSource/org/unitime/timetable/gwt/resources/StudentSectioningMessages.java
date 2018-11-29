@@ -2103,4 +2103,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Selection Required")
 	String checkPreferencesAreRequired();
+	
+	@DefaultMessage("{0} ... {1}")
+	String pageRange(int first, int last);
 }

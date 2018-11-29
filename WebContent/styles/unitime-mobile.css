@@ -638,6 +638,28 @@
 		border: none;
 		margin-top: 0px;
 	}
+	
+	.unitime-SectioningStatusPage .unitime-TabPanel {
+		border-left: none;
+		border-right: none;
+		border-bottom: none;
+		overflow-y: auto;
+		width: 99vw;
+	}
+	
+	.unitime-SectioningStatusFilter {
+		width: 99vw;
+	}
+	
+	.gwt-DialogBox .unitime-TabPanel {
+		width: 90vw;
+		overflow-y: auto;
+	}
+	
+	.gwt-DialogBox .unitime-ScrollPanel {
+		width: 90vw;
+		overflow-y: auto;
+	}
 }
 
 @media all and (max-width: 400px) {

@@ -124,6 +124,7 @@ public class EnrollmentTable extends Composite {
 	public EnrollmentTable(final boolean showHeader, boolean online, boolean showFilter) {
 		iOnline = online;
 		iEnrollmentPanel = new SimpleForm();
+		iEnrollmentPanel.addStyleName("unitime-StudentEnrollmentsTable");
 		iStudentSchedule = new StudentSchedule(online);
 		iShowFilter = showFilter;
 		
