@@ -26,7 +26,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.assignment.AssignmentMap;
 import org.cpsolver.ifs.util.DistanceMetric;
+import org.cpsolver.studentsct.model.CourseRequest;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
@@ -58,6 +64,7 @@ import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
+import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 import org.unitime.timetable.solver.studentsct.StudentSolver;
 
 /**
@@ -150,6 +157,23 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 			if (student == null) continue;
 			if (request.getEnrollment() == null && !student.canAssign(request)) continue;
 			if (!query().match(new StatusPageSuggestionsAction.CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse(), isMyStudent(student), server))) continue;
+			if (classId() != null && request.getEnrollment() == null) {
+				boolean hasEnrollment = false;
+				Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
+				CourseRequest r = SectioningRequest.convert(assignment, request, server);
+				Section s = r.getSection(classId());
+				values: for (Enrollment en: r.values(assignment)) {
+					if (!en.getSections().contains(s)) continue;
+					for (Request x: r.getStudent().getRequests()) {
+						Enrollment xe = assignment.getValue(x);
+						if (!x.equals(r) && xe != null && xe.isOverlapping(en)) {
+							continue values;
+						}
+					}
+					hasEnrollment = true; break;
+				}
+				if (!hasEnrollment) continue;
+			}
 			
 			ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
 			st.setId(student.getStudentId());
