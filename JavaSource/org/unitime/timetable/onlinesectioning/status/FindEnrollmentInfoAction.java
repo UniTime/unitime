@@ -23,8 +23,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -433,6 +435,36 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				}
 			});
 			boolean checkOverrides = !query().hasAttribute("override");
+			
+			Map<Long, Set<Long>> section2students = new HashMap<Long, Set<Long>>();
+			for (XCourseRequest request: enrollments.getRequests()) {
+				if (request.getEnrollment() != null || !request.hasCourse(courseId())) continue;
+				XStudent student = server.getStudent(request.getStudentId());
+				if (student == null || !student.canAssign(request)) continue;
+				if (checkOverrides && request.getEnrollment() == null) {
+					XOverride override = request.getOverride(info);
+					if (override != null && !override.isApproved()) continue;
+				}
+				Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
+				CourseRequest r = SectioningRequest.convert(assignment, request, server);
+				values: for (Enrollment en: r.values(assignment)) {
+					for (Request x: r.getStudent().getRequests()) {
+						Enrollment xe = assignment.getValue(x);
+						if (!x.equals(r) && xe != null && xe.isOverlapping(en)) {
+							continue values;
+						}
+					}
+					for (Section s: en.getSections()) {
+						Set<Long> students = (Set<Long>)section2students.get(s.getId());
+						if (students == null) {
+							students = new HashSet<Long>();
+							section2students.put(s.getId(), students);
+						}
+						students.add(student.getStudentId());
+					}
+				}
+			}
+			
 			for (XSection section: sections) {
 				EnrollmentInfo e = new EnrollmentInfo();
 				e.setCourseId(info.getCourseId());
@@ -482,45 +514,31 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					if (info.getConsentLabel() != null && m.enrollment().getApproval() == null) tConNeed ++;
 				}
 
-				for (XCourseRequest request: enrollments.getRequests()) {
-					if (request.getEnrollment() != null || !request.hasCourse(courseId())) continue;
-					XStudent student = server.getStudent(request.getStudentId());
-					if (student == null || !student.canAssign(request)) continue;
-					if (checkOverrides && request.getEnrollment() == null) {
-						XOverride override = request.getOverride(info);
-						if (override != null && !override.isApproved()) continue;
-					}
-					CourseRequestMatcher m = new CourseRequestMatcher(session, info, student, offering, request, isConsentToDoCourse, isMyStudent(student), server);
-					
-					//TODO: Do we need this?
-					boolean hasEnrollment = false;
-					Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
-					CourseRequest r = SectioningRequest.convert(assignment, request, server);
-					Section s = r.getSection(section.getSectionId());
-					values: for (Enrollment en: r.values(assignment)) {
-						if (!en.getSections().contains(s)) continue;
-						for (Request x: r.getStudent().getRequests()) {
-							Enrollment xe = assignment.getValue(x);
-							if (!x.equals(r) && xe != null && xe.isOverlapping(en)) {
-								continue values;
-							}
+				Set<Long> students = (Set<Long>)section2students.get(section.getSectionId());
+				if (students != null)
+					for (XCourseRequest request: enrollments.getRequests()) {
+						if (!students.contains(request.getStudentId())) continue;
+						if (request.getEnrollment() != null || !request.hasCourse(courseId())) continue;
+						XStudent student = server.getStudent(request.getStudentId());
+						if (student == null || !student.canAssign(request)) continue;
+						if (checkOverrides && request.getEnrollment() == null) {
+							XOverride override = request.getOverride(info);
+							if (override != null && !override.isApproved()) continue;
 						}
-						hasEnrollment = true; break;
-					}
-					if (!hasEnrollment) continue;
-					
-					if (query().match(m)) {
-						match++;
-						unasg++;
-						if (!request.isAlternative() && request.isPrimary(info)) unasgPrim ++;
+						CourseRequestMatcher m = new CourseRequestMatcher(session, info, student, offering, request, isConsentToDoCourse, isMyStudent(student), server);
+						
+						if (query().match(m)) {
+							match++;
+							unasg++;
+							if (!request.isAlternative() && request.isPrimary(info)) unasgPrim ++;
+							if (request.isWaitlist())
+								wait++;
+						}
+						tUnasg ++;
+						if (!request.isAlternative() && request.isPrimary(info)) tUnasgPrim ++;
 						if (request.isWaitlist())
-							wait++;
+							tWait ++;
 					}
-					tUnasg ++;
-					if (!request.isAlternative() && request.isPrimary(info)) tUnasgPrim ++;
-					if (request.isWaitlist())
-						tWait ++;
-				}
 				
 				if (match == 0) continue;
 				
