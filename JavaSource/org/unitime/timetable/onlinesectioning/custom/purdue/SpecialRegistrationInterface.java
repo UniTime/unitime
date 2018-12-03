@@ -104,12 +104,12 @@ public class SpecialRegistrationInterface {
 	}
 	
 	public static class SpecialRegistrationMultipleStatus {
-		public Set<String> overrides;
+		// public Set<String> overrides;
 		public List<SpecialRegistrationStatus> students;
 	}
 	
 	public static class SpecialRegistrationStatus {
-		public Set<String> overrides;
+		// public Set<String> overrides;
 		public List<SpecialRegistrationRequest> requests;
 		public Float maxCredit;
 		public String studentId;
