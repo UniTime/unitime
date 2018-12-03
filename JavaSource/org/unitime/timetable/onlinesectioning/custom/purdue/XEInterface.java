@@ -349,6 +349,7 @@ public class XEInterface {
 		public List<PlaceHolder> plannedPlaceholders;
 		public String summaryDescription;
 		public boolean isGroupSelection;
+		public Boolean isCritical; 
 	}
 	
 	public static class Course {
@@ -357,6 +358,7 @@ public class XEInterface {
 		public String courseNumber;
 		public String courseDiscipline;
 		public boolean isGroupSelection;
+		public Boolean isCritical;
 	}
 	
 	public static class PlaceHolder {
