@@ -144,31 +144,40 @@ public class SectioningReportsExporter implements Exporter {
 				});
 			}
 			
-			prev = null;
-			for (Row row: rows) {
-				boolean prevHide = true;
-				String[] line = new String[csv.getHeader().size()];
-				for (int x = 0; x < csv.getHeader().size(); x++) {
-					boolean hide = true;
-					if (prev == null || !prevHide || !prev.getCell(x).equals(row.getCell(x))) hide = false;
-					String text = row.getCell(x);
-					boolean number = false;
-					if (csv.getHeader().getField(x).toString().contains("%")) {
-						if (x > 0)
-							try {
-								Double.parseDouble(text);
-								number = true;
-							} catch (Exception e) {}
-						if (number)
-							text = pf.format(Double.parseDouble(text));
-					}
-					line[x] = (hide ? "" : text);
-					prevHide = hide;
+			if ("false".equalsIgnoreCase(helper.getParameter("pritify"))) {
+				for (Row row: rows) {
+					String[] line = new String[csv.getHeader().size()];
+					for (int x = 0; x < csv.getHeader().size(); x++)
+						line[x] = row.getCell(x);
+					out.printLine(line);
 				}
-				if (prev != null && !prev.getCell(0).equals(row.getCell(0)))
-					out.printLine();
-				out.printLine(line);
-				prev = row;
+			} else {
+				prev = null;
+				for (Row row: rows) {
+					boolean prevHide = true;
+					String[] line = new String[csv.getHeader().size()];
+					for (int x = 0; x < csv.getHeader().size(); x++) {
+						boolean hide = true;
+						if (prev == null || !prevHide || !prev.getCell(x).equals(row.getCell(x))) hide = false;
+						String text = row.getCell(x);
+						boolean number = false;
+						if (csv.getHeader().getField(x).toString().contains("%")) {
+							if (x > 0)
+								try {
+									Double.parseDouble(text);
+									number = true;
+								} catch (Exception e) {}
+							if (number)
+								text = pf.format(Double.parseDouble(text));
+						}
+						line[x] = (hide ? "" : text);
+						prevHide = hide;
+					}
+					if (prev != null && !prev.getCell(0).equals(row.getCell(0)))
+						out.printLine();
+					out.printLine(line);
+					prev = row;
+				}
 			}
 		}
 

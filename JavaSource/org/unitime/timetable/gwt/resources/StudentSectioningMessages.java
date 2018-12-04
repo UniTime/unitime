@@ -1776,6 +1776,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Not-Used Override Reservations")
 	String reportUnusedOverrideReservations();
 	
+	@DefaultMessage("Course Requests")
+	String reportCourseRequestsWithPriorities();
+	
 	@DefaultMessage("Requested")
 	String reportRequestedPriority();
 	
