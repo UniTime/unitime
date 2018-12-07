@@ -1779,6 +1779,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course Requests")
 	String reportCourseRequestsWithPriorities();
 	
+	@DefaultMessage("Tableau Report")
+	String reportTableauReport();
+	
 	@DefaultMessage("Requested")
 	String reportRequestedPriority();
 	

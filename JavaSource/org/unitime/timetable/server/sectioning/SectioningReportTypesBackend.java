@@ -25,6 +25,7 @@ import org.cpsolver.studentsct.report.DistanceConflictTable;
 import org.cpsolver.studentsct.report.RequestGroupTable;
 import org.cpsolver.studentsct.report.RequestPriorityTable;
 import org.cpsolver.studentsct.report.SectionConflictTable;
+import org.cpsolver.studentsct.report.TableauReport;
 import org.cpsolver.studentsct.report.TimeOverlapConflictTable;
 import org.cpsolver.studentsct.report.UnbalancedSectionsTable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +73,7 @@ public class SectioningReportTypesBackend implements GwtRpcImplementation<Sectio
 		UNUSED_INDIVIDUAL_RES(SCT_MSG.reportUnusedIndividualReservations(), UnusedReservations.class.getName(), "type", "individual"),
 		UNUSED_OVERRIDE_RES(SCT_MSG.reportUnusedOverrideReservations(), UnusedReservations.class.getName(), "type", "override"),
 		COURSE_REQUESTS(SCT_MSG.reportCourseRequestsWithPriorities(), RequestPriorityTable.class.getName(), "pritify", "false"),
+		TABLEAU_REPORT(SCT_MSG.reportTableauReport(), TableauReport.class.getName(), "pritify", "false"),
 		;
 		
 		String iName, iImplementation;
