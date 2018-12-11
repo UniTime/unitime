@@ -876,7 +876,8 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			String startTime = getRequiredStringAttribute(timeElement, "startTime", elementName);
 			String endTime = getRequiredStringAttribute(timeElement, "endTime", elementName);
 			String days = getRequiredStringAttribute(timeElement, "days", elementName);
-			meetingTime = new TimeObject(startTime, endTime, days);
+			String name = getOptionalStringAttribute(timeElement, "timePattern");
+			meetingTime = new TimeObject(startTime, endTime, days, name);
 			if(meetingTime.getDays() == null || meetingTime.getDays().isEmpty()){
 				meetingTime = null;
 			}
@@ -1025,7 +1026,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					meetings.addAll(m);
 				}
         	}
-        	changed = addUpdateClassEvent(c, meetings);
+        	changed = addUpdateClassEvent(c, meetings, null, null);
         	if (changed)
         		c.setDatePattern(assignmentHelper.getDatePattern(c.getEvent()));
         }
@@ -1854,6 +1855,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' date pattern changed");
 						changed = true;
 					}
+					if (dp == null) dp = clazz.effectiveDatePattern();
 				}
 				if (changed){
 					this.getHibSession().saveOrUpdate(clazz);
@@ -1896,15 +1898,17 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " number of rooms changed");
 						changed = true;
 					}
-					if (addUpdateClassEvent(clazz, meetingTime, rooms, locations)){
+					TimePattern tp = findTimePatternForMeetingInfo(clazz, meetingTime);
+					if (addUpdateClassEvent(clazz, meetingTime, rooms, locations, tp, dp)){
 						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' events for class changed");
 						changed = true;
 					}	
-					TimePattern tp = findTimePatternForMeetingInfo(clazz, meetingTime);
-					if (tp != null && clazz.getTimePatterns() != null && !clazz.getTimePatterns().contains(tp)){
-						for (Iterator it = clazz.getTimePreferences().iterator(); it.hasNext();){
-							TimePref pref = (TimePref) it.next();
-							clazz.getPreferences().remove(pref);
+					if (tp != null && clazz.effectiveTimePatterns() != null && !clazz.effectiveTimePatterns().contains(tp)){
+						if (clazz.getTimePreferences() != null) {
+							for (Iterator it = clazz.getTimePreferences().iterator(); it.hasNext();){
+								TimePref pref = (TimePref) it.next();
+								clazz.getPreferences().remove(pref);
+							}
 						}
 						TimePref tpref = new TimePref();
 						tpref.setTimePattern(tp);
@@ -1978,6 +1982,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	}
 	
 	private TimePattern findTimePatternForMeetingInfo(Class_ clazz, TimeObject timeObject){
+		if (timeObject.getPatternName() != null) {
+			TimePattern tp = TimePattern.findByName(session, timeObject.getPatternName());
+			if (tp != null) return tp;
+		}
 		int days = 0;
 		for(Integer dayOfWeek : timeObject.getDays()){
 			if (dayOfWeek == Calendar.MONDAY){
@@ -2123,11 +2131,11 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		
 	}
 	
-	private boolean addUpdateClassEvent(Class_ c, TimeObject meetingTime, Vector<Room> rooms, Vector<NonUniversityLocation> locations) {
-		return(addUpdateClassEvent(c, getMeetings(c.effectiveDatePattern(), meetingTime, rooms, locations)));
+	private boolean addUpdateClassEvent(Class_ c, TimeObject meetingTime, Vector<Room> rooms, Vector<NonUniversityLocation> locations, TimePattern tp, DatePattern dp) {
+		return(addUpdateClassEvent(c, getMeetings(c.effectiveDatePattern(), meetingTime, rooms, locations), tp, dp));
 	}
 	
-	private boolean addUpdateClassEvent(Class_ c, Vector<Meeting> meetings) {
+	private boolean addUpdateClassEvent(Class_ c, Vector<Meeting> meetings, TimePattern tp, DatePattern dp) {
 		boolean changed = false;
 		Date approvedTime = new Date();
 		ClassEvent origEvent = c.getEvent();
@@ -2146,7 +2154,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				newEvent.addTomeetings(meeting);
 			}
 			getHibSession().save(newEvent);
-			assignmentHelper.createAssignment(newEvent);
+			assignmentHelper.createAssignment(newEvent, tp, dp);
 			changed = true; 
 			addNote("\tdid not find matching event, added new event: " + c.getSchedulingSubpart().getInstrOfferingConfig().getCourseName() + " " + c.getSchedulingSubpart().getItype().getAbbv().trim() + " " + c.getClassSuffix());
 			ChangeLog.addChange(getHibSession(), getManager(), session, newEvent, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.CREATE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
@@ -2210,7 +2218,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
                 }
             }
             if (changed){
-                assignmentHelper.createAssignment(origEvent);
+                assignmentHelper.createAssignment(origEvent, tp, dp);
                 ChangeLog.addChange(getHibSession(), getManager(), session, origEvent, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.UPDATE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());   
                 getHibSession().update(origEvent);
             }

@@ -46,6 +46,17 @@
 				<line>Class id: When a class has no external id and the class label is too long (over 40 chars), export just the itype and section number (e.g., Lec 1a).</line>
 			</description>
 		</item>
+		<item>
+			<name>Data Exchange: Course Offerings Import</name>
+			<description>
+				<line>Improved handling of time and date patterns.
+					<line>Follow the timePattern attribute when it is used and a matching time pattern exists.</line>
+					<line>Set the time and date pattern on the committed assignment based on the selected time and date patterns on the class
+						(avoid re-computation from class meetings when possible).
+					</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>
