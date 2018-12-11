@@ -168,11 +168,17 @@ public abstract class EventRelatedImports extends BaseImport {
 		private Integer startPeriod;
 		private Integer endPeriod;
 		private Set<Integer> days;
+		private String patternName = null;
 		
 		TimeObject(String startTime, String endTime, String daysOfWeek) throws Exception{
+			this(startTime, endTime, daysOfWeek, null);
+		}
+		
+		TimeObject(String startTime, String endTime, String daysOfWeek, String name) throws Exception{
 		
 			startPeriod = str2Slot(startTime);
 			endPeriod = str2Slot(endTime);
+			patternName = name;
 			if (endPeriod == 0){
 				// if the end period is midnight then the meeting ends at the end of the day i.e. last slot
 				endPeriod = Constants.SLOTS_PER_DAY;
@@ -284,5 +290,8 @@ public abstract class EventRelatedImports extends BaseImport {
 				throw new Exception("Invalid time '"+timeString+"', did not meet format: " + timeFormat);
 			return(slot);
 		}
+		
+		public String getPatternName() { return patternName; }
+		public void setPatternName(String patternName) { this.patternName = patternName; }
 	}
 }

@@ -244,7 +244,7 @@ public class MakeAssignmentsForClassEvents {
         return iExactTimePattern;
     }
     
-    public Assignment createAssignment(ClassEvent event) {
+    public Assignment createAssignment(ClassEvent event, TimePattern tp, DatePattern dp) {
         if (event==null || event.getClazz()==null || event.getMeetings().isEmpty()) return null;
         Class_ clazz = event.getClazz();
         Assignment assignment = clazz.getCommittedAssignment();
@@ -261,7 +261,8 @@ public class MakeAssignmentsForClassEvents {
         assignment.setDays(getDaysCode(event));
         assignment.setStartSlot(getStartSlot(event));
         assignment.setRooms(getRooms(event));
-        assignment.setTimePattern(getTimePattern(event));
+        assignment.setTimePattern(tp != null ? tp : getTimePattern(event));
+        assignment.setDatePattern(dp != null ? dp : getDatePattern(event));
         iHibSession.saveOrUpdate(clazz);
         iHibSession.saveOrUpdate(assignment);
         return assignment;
@@ -300,7 +301,7 @@ public class MakeAssignmentsForClassEvents {
                             .setLong("subjectId", sa.getUniqueId())
                             .iterate();j.hasNext();) {
                         ClassEvent e = (ClassEvent)j.next();
-                        Assignment a = m.createAssignment(e);
+                        Assignment a = m.createAssignment(e, null, null);
                         e.getClazz().setDatePattern(m.getDatePattern(e));
                         System.out.println("  "+e.getEventName()+" -- "+(a==null?"Not Assigned":a.getPlacement().getLongName(CONSTANTS.useAmPm())));
                     }
