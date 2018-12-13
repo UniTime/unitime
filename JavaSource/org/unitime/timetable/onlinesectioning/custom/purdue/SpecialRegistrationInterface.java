@@ -32,6 +32,7 @@ import org.joda.time.DateTime;
  */
 public class SpecialRegistrationInterface {
 	
+	// submitRegistration request (PREREG, REG)
 	public static class SpecialRegistrationRequest {
 		public String requestId;
 		public String studentId;
@@ -52,6 +53,49 @@ public class SpecialRegistrationInterface {
 		public List<CancelledRequest> cancelledRequests;
 	}
 	
+	// possible status values
+	public static enum RequestStatus {
+		 mayEdit, mayNotEdit, maySubmit, newRequest,
+		 draft, inProgress, approved, denied, cancelled,
+		 completed, deferred, escalated,
+		 ;
+	}
+	
+	// retrieveRegistration response (REG)
+	public static class SpecialRegistrationResponse {
+		public SpecialRegistrationRequest data;
+		public String status;
+		public String message;
+	}
+	
+	// submitRegistration response (PREREF, REG)
+	public static class SpecialRegistrationResponseList {
+		public List<SpecialRegistrationRequest> data;
+		public String status;
+		public String message;
+	}
+	
+	// checkSpecialRegistrationStatus response (PREREG, REG)
+	public static class SpecialRegistrationStatusResponse {
+		public SpecialRegistrationStatus data;
+		public String status;
+		public String message;
+	}
+	
+	// checkEligibility response (PREREG)
+	public static class SpecialRegistrationEligibilityResponse {
+		public SpecialRegistrationEligibility data;
+		public String status;
+		public String message;
+	}
+	
+	// checkEligibility response (REG)
+	public static class CheckEligibilityResponse extends SpecialRegistrationEligibilityResponse {
+		public Set<String> overrides;
+		public Float maxCredit;
+		public Boolean hasNonCanceledRequest;
+	}
+
 	public static class SpecialRegistrationEligibility {
 		public String studentId;
 		public String term;
@@ -60,43 +104,7 @@ public class SpecialRegistrationInterface {
 		public List<EligibilityProblem> eligibilityProblems;
 	}
 	
-	public static enum RequestStatus {
-		 mayEdit, mayNotEdit, maySubmit, newRequest,
-		 draft, inProgress, approved, denied, cancelled,
-		 completed, deferred, escalated,
-		 ;
-	}
-	
-	public static class SpecialRegistrationResponse {
-		public SpecialRegistrationRequest data;
-		public String status;
-		public String message;
-	}
-	
-	public static class SpecialRegistrationResponseList {
-		public List<SpecialRegistrationRequest> data;
-		public String status;
-		public String message;
-	}
-	
-	public static class SpecialRegistrationStatusResponse {
-		public SpecialRegistrationStatus data;
-		public String status;
-		public String message;
-	}
-	
-	public static class SpecialRegistrationEligibilityResponse {
-		public SpecialRegistrationEligibility data;
-		public String status;
-		public String message;
-	}
-	
-	public static class CheckEligibilityResponse extends SpecialRegistrationEligibilityResponse {
-		public Set<String> overrides;
-		public Float maxCredit;
-		public Boolean hasNonCanceledRequest;
-	}
-
+	// checkAllSpecialRegistrationStatus response (PREREG)
 	public static class SpecialRegistrationMultipleStatusResponse {
 		public SpecialRegistrationMultipleStatus data;
 		public String status;
@@ -115,10 +123,12 @@ public class SpecialRegistrationInterface {
 		public String studentId;
 	}
 
+	// response status possible values
 	public static enum ResponseStatus {
 		success, failure;
 	}
 	
+	// Change.operation possible values
 	public static enum ChangeOperation {
 		ADD, DROP, KEEP,
 	}
@@ -175,6 +185,7 @@ public class SpecialRegistrationInterface {
 		String overrideApplied;
 	}
 
+	// checkRestrictionsForSTAR request (PREREG)
 	public static class ValidationCheckRequest {
 		public String studentId;
 		public String term;
@@ -191,6 +202,7 @@ public class SpecialRegistrationInterface {
 		public Set<String> crns;
 	}
 	
+	// checkRestrictionsForSTAR response (PREREG)
 	public static class ValidationCheckResponse {
 		public ScheduleRestrictions scheduleRestrictions;
 		public ScheduleRestrictions alternativesRestrictions;
@@ -217,6 +229,7 @@ public class SpecialRegistrationInterface {
 		public List<CourseCredit> alternatives;
 	}
 	
+	// checkRestrictionsForOPEN request (REG)
 	public static class RestrictionsCheckRequest {
 		public String sisId;
 		public String term;
@@ -242,15 +255,18 @@ public class SpecialRegistrationInterface {
 		String crn;
 	}
 	
+	// checkRestrictionsForOPEN response (REG)
 	public static class RestrictionsCheckResponse extends ScheduleRestrictions {
 	}
 	
+	// cancelRegistrationRequestFromUniTime response (REG)
 	public static class SpecialRegistrationCancelResponse {
 		public String data;
 		public String status;
 		public String message;
 	}
 	
+	// checkRestrictions request (REG)
 	public static class CheckRestrictionsRequest {
 		public String studentId;
 		public String term;
@@ -259,6 +275,7 @@ public class SpecialRegistrationInterface {
 		public RestrictionsCheckRequest changes;
 	}
 	
+	// checkRestrictions response (REG)
 	public static class CheckRestrictionsResponse {
 		public List<SpecialRegistrationRequest> cancelRegistrationRequests;
 		public List<DeniedRequest> deniedRequests;
@@ -281,11 +298,5 @@ public class SpecialRegistrationInterface {
 		public String courseNbr;
 		public String crn;
 		public String requestId;
-	}
-	
-	public static class ErrorResponse {
-		public String data;
-		public String status;
-		public String message;
 	}
 }
