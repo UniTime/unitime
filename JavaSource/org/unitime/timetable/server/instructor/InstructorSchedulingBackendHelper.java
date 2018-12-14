@@ -555,7 +555,7 @@ public class InstructorSchedulingBackendHelper {
 			for (InstructorAssignment ia: assignments)
 				if (!ia.sameCourse(tr)) return PreferenceLevel.sProhibited;
 			return PreferenceLevel.sNeutral;
-		} else if (PreferenceLevel.sStronglyPreferred.equals(tr.getSameCommonPart().getPrefProlog()) || PreferenceLevel.sPreferred.equals(tr.getSameCommonPart().getPrefProlog())) {
+		} else if (PreferenceLevel.sStronglyPreferred.equals(tr.getSameCoursePreference().getPrefProlog()) || PreferenceLevel.sPreferred.equals(tr.getSameCoursePreference().getPrefProlog())) {
 			for (InstructorAssignment ia: assignments)
 				if (!ia.sameCourse(tr)) return PreferenceLevel.sNeutral;
 			return tr.getSameCoursePreference().getPrefProlog();

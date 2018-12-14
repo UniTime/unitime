@@ -37,6 +37,15 @@
 		</item>
 	</category>
 	<category>
+		<title>Instructor Scheduling</title>
+		<item>
+			<name>Instructor Scheduling: Instructor Preferences</name>
+			<description>
+				<line>Corrected the same course preference satisfaction when being computed on an instructor.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Data Exchange: Course Offerings Export</name>
