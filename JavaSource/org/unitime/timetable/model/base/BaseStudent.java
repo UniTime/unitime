@@ -54,6 +54,7 @@ public abstract class BaseStudent implements Serializable {
 	private Integer iFreeTimeCategory;
 	private Integer iSchedulePreference;
 	private Float iMaxCredit;
+	private Float iMinCredit;
 	private Float iOverrideMaxCredit;
 	private Integer iOverrideStatus;
 	private String iOverrideExternalId;
@@ -82,6 +83,7 @@ public abstract class BaseStudent implements Serializable {
 	public static String PROP_FREE_TIME_CAT = "freeTimeCategory";
 	public static String PROP_SCHEDULE_PREFERENCE = "schedulePreference";
 	public static String PROP_MAX_CREDIT = "maxCredit";
+	public static String PROP_MIN_CREDIT = "minCredit";
 	public static String PROP_REQ_CREDIT = "overrideMaxCredit";
 	public static String PROP_REQ_STATUS = "overrideStatus";
 	public static String PROP_REQ_EXTID = "overrideExternalId";
@@ -125,6 +127,9 @@ public abstract class BaseStudent implements Serializable {
 
 	public Float getMaxCredit() { return iMaxCredit; }
 	public void setMaxCredit(Float maxCredit) { iMaxCredit = maxCredit; }
+
+	public Float getMinCredit() { return iMinCredit; }
+	public void setMinCredit(Float minCredit) { iMinCredit = minCredit; }
 
 	public Float getOverrideMaxCredit() { return iOverrideMaxCredit; }
 	public void setOverrideMaxCredit(Float overrideMaxCredit) { iOverrideMaxCredit = overrideMaxCredit; }
@@ -241,6 +246,7 @@ public abstract class BaseStudent implements Serializable {
 			"\n	LastName: " + getLastName() +
 			"\n	MaxCredit: " + getMaxCredit() +
 			"\n	MiddleName: " + getMiddleName() +
+			"\n	MinCredit: " + getMinCredit() +
 			"\n	OverrideExternalId: " + getOverrideExternalId() +
 			"\n	OverrideMaxCredit: " + getOverrideMaxCredit() +
 			"\n	OverrideStatus: " + getOverrideStatus() +

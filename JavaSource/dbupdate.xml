@@ -13496,5 +13496,10 @@
 			default_value = '0.3750'
 			where name = 'StudentWeights.SelectionFactor' and default_value='0.125'
 		</sql>
-	</update>	
+	</update>
+	<update version="214" date="17-Dec-2018" comment="Student Min Credit Critical Requests">
+	    <sql>alter table %SCHEMA%.student add min_credit float</sql>
+	    <plsql>alter table %SCHEMA%.course_demand add critical number(1) default 0</plsql>
+		<mysql>alter table %SCHEMA%.course_demand add critical int(1) default 0</mysql>
+	</update>
 </dbupdate>

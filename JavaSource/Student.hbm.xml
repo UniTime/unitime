@@ -88,6 +88,12 @@
             not-null="false"/>
         
         <property
+            name="minCredit"
+            column="min_credit"
+            type="java.lang.Float"
+            not-null="false"/>
+
+        <property
             name="overrideMaxCredit"
             column="req_credit"
             type="java.lang.Float"

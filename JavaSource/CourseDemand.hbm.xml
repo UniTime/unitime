@@ -64,6 +64,12 @@
             type="java.util.Date"
             not-null="true"/>
 
+        <property
+            name="critical"
+            column="critical"
+            type="java.lang.Boolean"
+            not-null="false"/>
+
         <many-to-one
             name="freeTime"
             class="FreeTime"
