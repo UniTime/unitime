@@ -146,9 +146,11 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 							if (request.getCourseOffering().getConsentType() != null && crm.approval() == null) tConNeed ++;
 						} else if (crm.canAssign()) {
 							tUnasg ++;
-							if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) tUnasgPrim ++;
-							if (request.getCourseDemand().isWaitlist())
-								tWait ++;
+							if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) {
+								tUnasgPrim ++;
+								if (request.getCourseDemand().isWaitlist())
+									tWait ++;
+							}
 						}
 					}
 				}
@@ -172,9 +174,11 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 							if (request.getCourseOffering().getConsentType() != null && crm.approval() == null) conNeed ++;
 						} else if (crm.canAssign()) {
 							unasg ++;
-							if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) unasgPrim ++;
-							if (request.getCourseDemand().isWaitlist())
-								wait ++;
+							if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) {
+								unasgPrim ++;
+								if (request.getCourseDemand().isWaitlist())
+									wait ++;
+							}
 						}
 						if (request.isRequestPending()) ovrNeed ++;
 					}
@@ -185,9 +189,11 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 						if (request.getCourseOffering().getConsentType() != null && crm.approval() == null) tConNeed ++;
 					} else if (crm.canAssign()) {
 						tUnasg ++;
-						if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) tUnasgPrim ++;
-						if (request.getCourseDemand().isWaitlist())
-							tWait ++;
+						if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) {
+							tUnasgPrim ++;
+							if (request.getCourseDemand().isWaitlist())
+								tWait ++;
+						}
 					}
 					if (request.isRequestPending()) tOvrNeed ++;
 				}
@@ -451,14 +457,18 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					if (query().match(m)) {
 						match++;
 						unasg++;
-						if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) unasgPrim ++;
-						if (request.getCourseDemand().isWaitlist())
-							wait++;
+						if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) {
+							unasgPrim ++;
+							if (request.getCourseDemand().isWaitlist())
+								wait++;
+						}
 					}
 					tUnasg ++;
-					if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) tUnasgPrim ++;
-					if (request.getCourseDemand().isWaitlist())
-						tWait ++;
+					if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) {
+						tUnasgPrim ++;
+						if (request.getCourseDemand().isWaitlist())
+							tWait ++;
+					}
 				}
 				
 				if (match == 0) continue;

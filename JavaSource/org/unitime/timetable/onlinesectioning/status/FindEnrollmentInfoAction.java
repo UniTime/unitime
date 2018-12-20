@@ -184,9 +184,11 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 							XStudent student = server.getStudent(request.getStudentId());
 							if (student != null && student.canAssign(request)) {
 								tUnasg ++;
-								if (!request.isAlternative() && request.isPrimary(info)) tUnasgPrim ++;
-								if (request.isWaitlist())
-									tWait ++;
+								if (!request.isAlternative() && request.isPrimary(info)) {
+									tUnasgPrim ++;
+									if (request.isWaitlist())
+										tWait ++;
+								}
 							}
 						}
 						continue;
@@ -204,9 +206,11 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 							if (course.getConsentLabel() != null && m.enrollment().getApproval() == null) conNeed ++;
 						} else if (m.student().canAssign(m.request())) {
 							unasg ++;
-							if (!m.request().isAlternative() && m.request().isPrimary(info)) unasgPrim ++;
-							if (m.request().isWaitlist())
-								wait ++;
+							if (!m.request().isAlternative() && m.request().isPrimary(info)) {
+								unasgPrim ++;
+								if (m.request().isWaitlist())
+									wait ++;
+							}
 						}
 						if (m.request().isOverridePending(course)) ovrNeed ++;
 					} else if (solver) {
@@ -217,9 +221,11 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 						} else {
 							if (student != null && student.canAssign(request)) {
 								tUnasg ++;
-								if (!request.isAlternative() && request.isPrimary(info)) tUnasgPrim ++;
-								if (request.isWaitlist())
-									tWait ++;
+								if (!request.isAlternative() && request.isPrimary(info)) {
+									tUnasgPrim ++;
+									if (request.isWaitlist())
+										tWait ++;
+								}
 							}
 						}
 						continue;
@@ -231,9 +237,11 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 						if (course.getConsentLabel() != null && m.enrollment().getApproval() == null) tConNeed ++;
 					} else if (m.student().canAssign(m.request())) {
 						tUnasg ++;
-						if (!m.request().isAlternative() && m.request().isPrimary(info)) tUnasgPrim ++;
-						if (m.request().isWaitlist())
-							tWait ++;
+						if (!m.request().isAlternative() && m.request().isPrimary(info)) {
+							tUnasgPrim ++;
+							if (m.request().isWaitlist())
+								tWait ++;
+						}
 					}
 					if (m.request().isOverridePending(course)) tOvrNeed ++;
 				}
@@ -530,14 +538,18 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 						if (query().match(m)) {
 							match++;
 							unasg++;
-							if (!request.isAlternative() && request.isPrimary(info)) unasgPrim ++;
-							if (request.isWaitlist())
-								wait++;
+							if (!request.isAlternative() && request.isPrimary(info)) {
+								unasgPrim ++;
+								if (request.isWaitlist())
+									wait++;
+							}
 						}
 						tUnasg ++;
-						if (!request.isAlternative() && request.isPrimary(info)) tUnasgPrim ++;
-						if (request.isWaitlist())
-							tWait ++;
+						if (!request.isAlternative() && request.isPrimary(info)) {
+							tUnasgPrim ++;
+							if (request.isWaitlist())
+								tWait ++;
+						}
 					}
 				
 				if (match == 0) continue;
