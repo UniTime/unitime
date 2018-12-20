@@ -179,6 +179,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         		if (cd != null) {
         			cd.setPriority(request.getPriority());
         			cd.setWaitlist(request instanceof CourseRequest && ((CourseRequest)request).isWaitlist());
+        			cd.setCritical(request.isCritical());
         			hibSession.update(cd);
         		} else {
     				cd = new CourseDemand();
@@ -187,6 +188,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
 					s.getCourseDemands().add(cd);
 					cd.setStudent(s);
 					cd.setAlternative(request.isAlternative());
+					cd.setCritical(request.isCritical());
 					cd.setPriority(request.getPriority());
         			if (request instanceof FreeTimeRequest) {
         				FreeTimeRequest ft = (FreeTimeRequest)request;

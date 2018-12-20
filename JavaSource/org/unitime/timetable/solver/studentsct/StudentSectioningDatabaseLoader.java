@@ -857,8 +857,11 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         }
         if (maxCredit > 0f)
         	student.setMaxCredit(maxCredit);
-        if (iMinDefaultCredit >= 0 && iMinDefaultCredit <= maxCredit)
-        	student.setMinCredit(iMinDefaultCredit);
+        float minCredit = iMinDefaultCredit;
+        if (s.getMinCredit() != null)
+        	minCredit = s.getMinCredit();
+        if (minCredit >= 0 && minCredit <= maxCredit)
+        	student.setMinCredit(minCredit);
 
 		TreeSet<CourseDemand> demands = new TreeSet<CourseDemand>(new Comparator<CourseDemand>() {
 			public int compare(CourseDemand d1, CourseDemand d2) {
@@ -1052,6 +1055,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         student,
                         courses,
                         cd.isWaitlist(), 
+                        cd.isCritical() != null && cd.isCritical().booleanValue(),
                         cd.getTimestamp().getTime());
                 request.getSelectedChoices().addAll(selChoices);
                 request.getRequiredChoices().addAll(reqChoices);
