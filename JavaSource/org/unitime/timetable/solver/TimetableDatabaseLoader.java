@@ -3472,7 +3472,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	           					getClassLabel(lecture), p1.getLongName(iUseAmPm), getClassLabel(other), p2.getLongName(iUseAmPm)));
         	           		} else if (ic.getDistancePreference(p1,p2)==PreferenceLevel.sIntLevelProhibited && lecture.roomLocations().size()==1 && other.roomLocations().size()==1) {
         	           			iProgress.message(msglevel("reqInstructorBackToBack", Progress.MSGLEVEL_WARN), MSG.warnSameInstructorBackToBack(
-        	           					Math.round(10.0*Placement.getDistanceInMeters(getModel().getDistanceMetric(),p1,p2)), getClassLabel(lecture), p1.getLongName(iUseAmPm), getClassLabel(other), p2.getLongName(iUseAmPm)));
+        	           					Math.round(Placement.getDistanceInMeters(getModel().getDistanceMetric(),p1,p2)), getClassLabel(lecture), p1.getLongName(iUseAmPm), getClassLabel(other), p2.getLongName(iUseAmPm)));
         	           		}
         				}
         			}

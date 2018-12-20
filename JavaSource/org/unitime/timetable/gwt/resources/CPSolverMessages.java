@@ -221,7 +221,7 @@ public interface CPSolverMessages extends Messages, Constants {
 	@DefaultMessage("Same instructor and overlapping time required:<br>&nbsp;&nbsp;&nbsp;&nbsp;{0} &larr; {1}<br>&nbsp;&nbsp;&nbsp;&nbsp;{2} &larr; {3}")
 	String warnSameInstructorTimeConflict(String class1, String plac1, String class2, String plac2);
 	
-	@DefaultMessage("Same instructor, back-to-back time and rooms too far (distance={0}m) required:<br>&nbsp;&nbsp;&nbsp;&nbsp;{0} &larr; {1}<br>&nbsp;&nbsp;&nbsp;&nbsp;{2} &larr; {3}")
+	@DefaultMessage("Same instructor, back-to-back time and rooms too far (distance={0}m) required:<br>&nbsp;&nbsp;&nbsp;&nbsp;{1} &larr; {2}<br>&nbsp;&nbsp;&nbsp;&nbsp;{3} &larr; {4}")
 	String warnSameInstructorBackToBack(long distance, String class1, String plac1, String class2, String plac2);
 	
 	@DefaultMessage("Same room and overlapping time required:<br>&nbsp;&nbsp;&nbsp;&nbsp;{0} &larr; {1}<br>&nbsp;&nbsp;&nbsp;&nbsp;{2} &larr; {3}")
