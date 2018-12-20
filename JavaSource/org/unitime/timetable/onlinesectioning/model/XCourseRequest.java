@@ -71,6 +71,7 @@ public class XCourseRequest extends XRequest {
     private Map<XCourseId, byte[]> iPreferences = null;
     private String iMessage = null;
     private Map<XCourseId, XOverride> iOverrides = null;
+    private boolean iCritical = false;
 
     public XCourseRequest() {}
     
@@ -80,7 +81,7 @@ public class XCourseRequest extends XRequest {
     
     public XCourseRequest(CourseDemand demand, OnlineSectioningHelper helper) {
     	super(demand);
-        TreeSet<CourseRequest> crs = new TreeSet<CourseRequest>(new Comparator<CourseRequest>() {
+    	TreeSet<CourseRequest> crs = new TreeSet<CourseRequest>(new Comparator<CourseRequest>() {
         	public int compare(CourseRequest r1, CourseRequest r2) {
         		return r1.getOrder().compareTo(r2.getOrder());
         	}
@@ -136,6 +137,7 @@ public class XCourseRequest extends XRequest {
     		}
         }
         iWaitlist = (demand.isWaitlist() != null && demand.isWaitlist());
+        iCritical = (demand.isCritical() != null && demand.isCritical());
         iTimeStamp = (demand.getTimestamp() == null ? new Date() : demand.getTimestamp());
         for (CourseRequest cr: crs) {
     		List<StudentClassEnrollment> enrl = cr.getClassEnrollments();
@@ -164,6 +166,7 @@ public class XCourseRequest extends XRequest {
     	iPriority = priority;
     	iCourseIds.add(new XCourseId(course));
         iWaitlist = false;
+        iCritical = false;
         if (classes != null && !classes.isEmpty())
         	iEnrollment = new XEnrollment(student, course, helper, classes);
         if (iEnrollment != null)
@@ -180,6 +183,7 @@ public class XCourseRequest extends XRequest {
     	iPriority = priority;
     	iCourseIds.add(course);
         iWaitlist = false;
+        iCritical = false;
         iEnrollment = enrollment;
         if (iEnrollment != null)
         	iTimeStamp = iEnrollment.getTimeStamp();
@@ -191,6 +195,7 @@ public class XCourseRequest extends XRequest {
     	super(request);
     	iCourseIds.addAll(request.getCourseIds());
     	iWaitlist = request.isWaitlist();
+    	iCritical = request.isCritical();
     	iTimeStamp = request.getTimeStamp();
     	iEnrollment = enrollment;
     	if (request.iSectionWaitlist != null)
@@ -209,6 +214,7 @@ public class XCourseRequest extends XRequest {
     	for (Course course: request.getCourses())
     		iCourseIds.add(new XCourseId(course));
     	iWaitlist = request.isWaitlist();
+    	iCritical = request.isCritical();
     	iTimeStamp = request.getTimeStamp() == null ? null : new Date(request.getTimeStamp());
     	iEnrollment = enrollment == null ? null : new XEnrollment(enrollment);
 
@@ -313,6 +319,10 @@ public class XCourseRequest extends XRequest {
     public boolean isWaitlist() {
         return iWaitlist;
     }
+    
+    public boolean isCritical() {
+    	return iCritical;
+    }
         
     /**
      * Time stamp of the request
@@ -327,6 +337,8 @@ public class XCourseRequest extends XRequest {
     public void setEnrollment(XEnrollment enrollment) { iEnrollment = enrollment; }
     
     public void setWaitlist(boolean waitlist) { iWaitlist = waitlist; }
+    
+    public void setCritical(boolean critical) { iCritical = critical; }
     
     public boolean hasSectionWaitlist(XCourseId courseId) {
     	List<XWaitListedSection> sections = getSectionWaitlist(courseId);
@@ -550,6 +562,8 @@ public class XCourseRequest extends XRequest {
     				}
         	}
         }
+        
+        iCritical = in.readBoolean();
 	}
 
 	@Override
@@ -606,6 +620,8 @@ public class XCourseRequest extends XRequest {
 				out.writeLong(entry.getKey().getCourseId());
 				entry.getValue().writeExternal(out);
 			}
+		
+		out.writeBoolean(iCritical);
 	}
 	
 	public static class XCourseRequestSerializer implements Externalizer<XCourseRequest> {

@@ -2108,6 +2108,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							request.getCourses().add(r);
 					}
 					r.setWaitList(cd.getWaitlist());
+					r.setCritical(cd.isCritical());
 					r.setTimeStamp(cd.getTimestamp());
 					lastRequest = r;
 					lastRequestPriority = cd.getPriority();

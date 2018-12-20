@@ -692,6 +692,8 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					return enrollment() == null;
 				} else if (eq("Wait-Listed", term)) {
 					return enrollment() == null && request().isWaitlist();
+				} else if (eq("Critical", term)) {
+					return request().isCritical();
 				}
 			}
 			

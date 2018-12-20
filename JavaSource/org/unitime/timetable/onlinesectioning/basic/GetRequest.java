@@ -181,6 +181,7 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 						r.addRequestedCourse(rc);
 					}
 					r.setWaitList(((XCourseRequest)cd).isWaitlist());
+					r.setCritical(((XCourseRequest)cd).isCritical());
 					r.setTimeStamp(((XCourseRequest)cd).getTimeStamp());
 					if (r.hasRequestedCourse()) {
 						if (cd.isAlternative())

@@ -87,6 +87,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				new WebTable.Cell(MESSAGES.colPreferences(), 1, "100px"),
 				new WebTable.Cell(MESSAGES.colWarnings(), 1, "200px"),
 				new WebTable.Cell(MESSAGES.colStatus(), 1, "20px"),
+				new WebTable.Cell(MESSAGES.colCritical(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colWaitList(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colRequestTimeStamp(), 1, "50px")));
 		iTabs.add(iRequests, MESSAGES.tabRequests(), true);
@@ -152,7 +153,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 	
 	protected void fillInRequests() {
 		ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
-		boolean hasPref = false, hasWarn = false, hasWait = false, hasStat = false;
+		boolean hasPref = false, hasWarn = false, hasWait = false, hasStat = false, hasCrit = false;
 		NumberFormat df = NumberFormat.getFormat("0.#");
 		if (iAssignment.hasRequest()) {
 			CheckCoursesResponse check = new CheckCoursesResponse(iAssignment.getRequest().getConfirmations());
@@ -162,6 +163,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				if (!request.hasRequestedCourse()) continue;
 				boolean first = true;
 				if (request.isWaitList()) hasWait = true;
+				if (request.isCritical()) hasCrit = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					if (rc.isCourse()) {
 						ImageResource icon = null; String iconText = null;
@@ -234,6 +236,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								new WebTable.Cell(ToolBox.toString(prefs)),
 								new WebTable.NoteCell(note, noteTitle),
 								(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
+								(first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") : new WebTable.Cell("")),
 								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell("")),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
 								);
@@ -253,6 +256,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								new WebTable.Cell(""),
 								new WebTable.IconCell(RESOURCES.requestSaved(), MESSAGES.requested(free), MESSAGES.reqStatusRegistered()),
 								new WebTable.Cell(""),
+								new WebTable.Cell(""),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : ""));
 						if (priority > 1 && first)
 							for (WebTable.Cell cell: row.getCells()) cell.setStyleName("top-border-dashed");
@@ -267,6 +271,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				if (!request.hasRequestedCourse()) continue;
 				boolean first = true;
 				if (request.isWaitList()) hasWait = true;
+				if (request.isCritical()) hasCrit = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					if (rc.isCourse()) {
 						ImageResource icon = null; String iconText = null;
@@ -339,6 +344,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								new WebTable.Cell(ToolBox.toString(prefs)),
 								new WebTable.NoteCell(note, noteTitle),
 								(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
+								(first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") : new WebTable.Cell("")),
 								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell("")),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
 								);
@@ -357,6 +363,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								new WebTable.Cell(""),
 								new WebTable.Cell(""),
 								new WebTable.IconCell(RESOURCES.requestSaved(), MESSAGES.requested(free), MESSAGES.reqStatusRegistered()),
+								new WebTable.Cell(""),
 								new WebTable.Cell(""),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : ""));
 						if (first)
@@ -456,7 +463,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		iRequests.setColumnVisible(4, hasPref);
 		iRequests.setColumnVisible(5, hasWarn);
 		iRequests.setColumnVisible(6, hasStat);
-		iRequests.setColumnVisible(7, hasWait);
+		iRequests.setColumnVisible(7, hasCrit);
+		iRequests.setColumnVisible(8, hasWait);
 	}
 	
 	protected void fillInAssignments() {

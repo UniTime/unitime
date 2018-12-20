@@ -693,6 +693,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private List<RequestedCourse> iRequestedCourse = null;
 		private Boolean iWaitList = false;
+		private Boolean iCritical = false;
 		private Date iTimeStamp = null;
 		
 		public Request() {}
@@ -751,6 +752,10 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public boolean isWaitList() { return iWaitList != null && iWaitList.booleanValue(); }
 		public void setWaitList(Boolean waitList) { iWaitList = waitList; }
 		
+		public boolean hasCritical() { return iCritical != null; }
+		public boolean isCritical() { return iCritical != null && iCritical.booleanValue(); }
+		public void setCritical(Boolean critical) { iCritical = critical; }
+
 		public boolean hasTimeStamp() { return iTimeStamp != null; }
 		public Date getTimeStamp() { return iTimeStamp; }
 		public void setTimeStamp(Date ts) { iTimeStamp = ts; }

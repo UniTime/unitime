@@ -173,6 +173,7 @@ public interface StudentSectioningConstants extends Constants {
 		"Reserved",
 		"Not Assigned",
 		"Wait-Listed",
+		"Critical",
 	})
 	String[] assignmentType();
 	

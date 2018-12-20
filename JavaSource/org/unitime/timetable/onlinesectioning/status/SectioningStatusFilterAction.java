@@ -196,6 +196,10 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		assignment.add(new Entity(1l, "Reserved", CONSTANTS.assignmentType()[1], "translated-value", CONSTANTS.assignmentType()[1]));
 		assignment.add(new Entity(2l, "Not Assigned", CONSTANTS.assignmentType()[2], "translated-value", CONSTANTS.assignmentType()[2]));
 		assignment.add(new Entity(3l, "Wait-Listed", CONSTANTS.assignmentType()[3], "translated-value", CONSTANTS.assignmentType()[3]));
+		if (CONSTANTS.assignmentType().length > 4)
+			assignment.add(new Entity(4l, "Critical", CONSTANTS.assignmentType()[4], "translated-value", CONSTANTS.assignmentType()[4]));
+		else
+			assignment.add(new Entity(4l, "Critical", "Critical"));
 		response.add("assignment", assignment);
 		
 		List<Entity> consent = new ArrayList<Entity>();

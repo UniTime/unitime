@@ -151,6 +151,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Wait-List")
 	String colWaitList();
 	
+	@DefaultMessage("Critical")
+	String colCritical();
+	
 	@DefaultMessage("Preferences")
 	String colPreferences();
 	
@@ -1813,6 +1816,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Request is wait-listed.")
 	String descriptionRequestWaitListed();
+	
+	@DefaultMessage("Course request is critical.")
+	String descriptionRequestCritical();
 	
 	@DefaultMessage("Do you want to request overrides for these errors?")
 	String questionRequestOverrides();
