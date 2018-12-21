@@ -81,7 +81,7 @@ public class ScriptConnector extends ApiConnector {
 			solverServerService.getQueueProcessor().get(helper.getParameter("log"));
 			QueueItem item = solverServerService.getQueueProcessor().get(helper.getParameter("log"));
 			if (item == null)
-				helper.sendError(HttpServletResponse.SC_NO_CONTENT, "No task found for " + helper.getParameter("output"));
+				helper.sendError(HttpServletResponse.SC_NO_CONTENT, "No task found for " + helper.getParameter("log"));
 			else {
 				String log = "";
 				for (QueueMessage m: item.getLog()) {
@@ -93,13 +93,13 @@ public class ScriptConnector extends ApiConnector {
 			solverServerService.getQueueProcessor().get(helper.getParameter("id"));
 			QueueItem item = solverServerService.getQueueProcessor().get(helper.getParameter("id"));
 			if (item == null)
-				helper.sendError(HttpServletResponse.SC_NO_CONTENT, "No task found for " + helper.getParameter("output"));
+				helper.sendError(HttpServletResponse.SC_NO_CONTENT, "No task found for " + helper.getParameter("id"));
 			helper.setResponse(GetQueueTableBackend.convert(item, helper.getSessionContext()));
 		} else if (helper.getParameter("finished") != null) {
 			solverServerService.getQueueProcessor().get(helper.getParameter("finished"));
 			QueueItem item = solverServerService.getQueueProcessor().get(helper.getParameter("finished"));
 			if (item == null)
-				helper.sendError(HttpServletResponse.SC_NO_CONTENT, "No task found for " + helper.getParameter("output"));
+				helper.sendError(HttpServletResponse.SC_NO_CONTENT, "No task found for " + helper.getParameter("finished"));
 			else
 				helper.setResponse(new Boolean(item.finished() != null));
 		} else if (helper.getParameter("delete") != null) {
