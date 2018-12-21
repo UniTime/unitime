@@ -2623,14 +2623,14 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						check.setFlag(EligibilityFlag.CAN_WAITLIST, status.hasOption(StudentSectioningStatus.Option.waitlist));
 						check.setMessage(status.getMessage());
 					}
-					check.setFlag(EligibilityFlag.CAN_REGISTER, getSessionContext().hasPermissionAnySession(student, Right.StudentSchedulingCanRegister));
+					check.setFlag(EligibilityFlag.CAN_REGISTER, getSessionContext().hasPermissionAnyAuthority(student, Right.StudentSchedulingCanRegister));
 					
 					if (!check.hasMessage() && !check.hasFlag(EligibilityFlag.CAN_REGISTER))
 						check.setMessage(MSG.exceptionAccessDisabled());
 					return check;
 				} else {
 					return server.execute(server.createAction(CourseRequestEligibility.class).forStudent(studentId).withCheck(check).includeCustomCheck(includeCustomCheck)
-							.withPermission(getSessionContext().hasPermissionAnySession(studentId, "Student", Right.StudentSchedulingCanRegister)), currentUser());
+							.withPermission(getSessionContext().hasPermissionAnyAuthority(studentId, "Student", Right.StudentSchedulingCanRegister)), currentUser());
 				}
 			}
 			
@@ -2639,7 +2639,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				return new EligibilityCheck(MSG.exceptionNoServerForSession());
 			
 			EligibilityCheck ret = server.execute(server.createAction(CheckEligibility.class).forStudent(studentId).withCheck(check).includeCustomCheck(includeCustomCheck)
-					.withPermission(getSessionContext().hasPermissionAnySession(studentId, "Student", Right.StudentSchedulingCanEnroll)), currentUser());
+					.withPermission(getSessionContext().hasPermissionAnyAuthority(studentId, "Student", Right.StudentSchedulingCanEnroll)), currentUser());
 			if (includeCustomCheck) getSessionContext().setAttribute(SessionAttribute.OnlineSchedulingEligibility, ret);
 			
 			return ret;
