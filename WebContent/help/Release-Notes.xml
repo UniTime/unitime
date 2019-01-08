@@ -35,6 +35,12 @@
 				<line>Only show the committed solution does not match current date pattern error when showing a committed solution.</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetabling: Exact Time Over Midnight</name>
+			<description>
+				<line>During the solver load, report an error when there is an exact time that goes over midnight.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Instructor Scheduling</title>
