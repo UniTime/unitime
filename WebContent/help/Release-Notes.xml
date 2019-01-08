@@ -66,6 +66,13 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Data Exchange: Curricula Export</name>
+			<description>
+				<line>Use US number format when exporting course shares.</line>
+				<line>Export multiple majors flag.</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>

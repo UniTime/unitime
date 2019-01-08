@@ -20,10 +20,12 @@
 package org.unitime.timetable.dataexchange;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.TreeSet;
 
@@ -44,7 +46,7 @@ import org.unitime.timetable.model.Session;
  * @author Tomas Muller
  */
 public class CurriculaExport extends BaseExport{
-    protected DecimalFormat iShareDF = new DecimalFormat("0.0000");
+    protected DecimalFormat iShareDF = new DecimalFormat("0.0000", new DecimalFormatSymbols(Locale.US));
 
 
     public void saveXml(Document document, Session session, Properties parameters) throws Exception {
@@ -72,6 +74,9 @@ public class CurriculaExport extends BaseExport{
     			Element curriculumElement = root.addElement("curriculum");
     			
     			Hashtable<Long, Integer> groupId = new Hashtable<Long, Integer>();
+    			
+    			if (curriculum.isMultipleMajors() != null)
+    				curriculumElement.addAttribute("multipleMajors", curriculum.isMultipleMajors() ? "true" : "false");
     			
     			if (!minimalistic && curriculum.getAbbv() != null)
         			curriculumElement.addAttribute("abbreviation", curriculum.getAbbv());
