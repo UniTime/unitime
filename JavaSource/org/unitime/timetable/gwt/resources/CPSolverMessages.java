@@ -101,6 +101,9 @@ public interface CPSolverMessages extends Messages, Constants {
 	@DefaultMessage("Time pattern {0} that is used by {1} has a time that goes over midnight. This is not allowed and the time {2} will be ignored.")
 	String warnTimeOverMidnight(String timePattern, String classLabel, String startTime);
 	
+	@DefaultMessage("Class {0} has an exact time {1} that goes over midnight. This is not allowed and the time will be ignored.")
+	String warnExactTimeOverMidnight(String classLabel, String startTime);
+	
 	@DefaultMessage("Class {0} has no available time (class not loaded).")
 	String warnNoTime(String className);
 	

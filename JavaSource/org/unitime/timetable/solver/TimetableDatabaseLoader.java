@@ -928,6 +928,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                         if (!PreferenceLevel.sNeutral.equals(pr) && !PreferenceLevel.sRequired.equals(pr)) {
                         	loc.setNormalizedPreference(iAlterDatePatternWeight * prVal);
                         }
+                        if (loc.getStartSlot() + loc.getLength() > Constants.SLOTS_PER_DAY) {
+                        	iProgress.message(msglevel("timeOverMidnight", Progress.MSGLEVEL_ERROR), MSG.warnExactTimeOverMidnight(getClassLabel(clazz), loc.getName(iUseAmPm)));
+                        	continue;
+                        }
                         timeLocations.add(loc);
                 	}
                 } else {
@@ -936,6 +940,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             		int breakTime = ExactTimeMins.getBreakTime(minsPerMeeting);
                     TimeLocation  loc = new TimeLocation(pattern.getExactDays(),pattern.getExactStartSlot(),length,PreferenceLevel.sIntLevelNeutral,0,datePattern.getUniqueId(),datePattern.getName(),datePattern.getPatternBitSet(),breakTime);
                     loc.setTimePatternId(pattern.getTimePattern().getUniqueId());
+                    if (loc.getStartSlot() + loc.getLength() > Constants.SLOTS_PER_DAY) {
+                    	iProgress.message(msglevel("timeOverMidnight", Progress.MSGLEVEL_ERROR), MSG.warnExactTimeOverMidnight(getClassLabel(clazz), loc.getName(iUseAmPm)));
+                    	continue;
+                    }
                     timeLocations.add(loc);
                 }
         		
