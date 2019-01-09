@@ -109,6 +109,8 @@ import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RefTableEntry;
 import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.Script;
+import org.unitime.timetable.model.ScriptParameter;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.SolverInfo;
@@ -203,6 +205,11 @@ public class SessionRestore implements SessionRestoreInterface {
 		if (entity.getObject() instanceof Settings && lookup(entity, "key", ((Settings)entity.getObject()).getKey())) save = false;
 		if (entity.getObject() instanceof EventContact && lookup(entity, "externalUniqueId", ((EventContact)entity.getObject()).getExternalUniqueId())) save = false;
 		if (entity.getObject() instanceof EventServiceProvider && entity.getElement("session") == null && lookup(entity, "reference", ((EventServiceProvider)entity.getObject()).getReference())) save = false;
+		if (entity.getObject() instanceof Script && lookup(entity, "name", ((Script)entity.getObject()).getName())) save = false;
+		if (entity.getObject() instanceof ScriptParameter) {
+			Script x = (Script)get(Script.class, entity.getElement("script").getValue(0));
+			if (x != null && x.getUniqueId() != null) { save = false; lookup = false; }
+		}
 		if (save)
 			iAllEntitites.add(entity);
 		if (lookup) {
@@ -238,6 +245,7 @@ public class SessionRestore implements SessionRestoreInterface {
 		Map<String, Integer> lengths = new HashMap<String, Integer>();
 		for (String property: metadata.getPropertyNames()) {
 			if ("org.unitime.timetable.model.CurriculumClassification.students".equals(metadata.getEntityName() + "." + property)) continue;
+			if ("org.unitime.timetable.model.Script.script".equals(metadata.getEntityName() + "." + property)) continue;
 			Type type = metadata.getPropertyType(property);
 			if (type instanceof StringType)
 				for (Iterator<?> i = mapping.getProperty(property).getColumnIterator(); i.hasNext(); ) {
