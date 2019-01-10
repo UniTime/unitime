@@ -84,6 +84,7 @@ message Request {
 	optional int64 time_stamp = 8;
 	
 	optional bool wait_list = 9 [default = false];
+	optional bool critical = 10 [default = false];
 }
 
 message Enrollment {

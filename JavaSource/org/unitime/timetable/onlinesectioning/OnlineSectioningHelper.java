@@ -634,6 +634,7 @@ public class OnlineSectioningHelper {
     		if (cr.getTimeStamp() != null)
     			request.setTimeStamp(cr.getTimeStamp());
         	request.setWaitList(cr.isWaitlist());
+        	request.setCritical(cr.isCritical());
     	}
     	return request;
     }
@@ -672,6 +673,7 @@ public class OnlineSectioningHelper {
     		if (cr.getTimeStamp() != null)
     			request.setTimeStamp(cr.getTimeStamp().getTime());
         	request.setWaitList(cr.isWaitlist());
+        	request.setCritical(cr.isCritical());
     	}
     	return request;
     }
@@ -685,6 +687,7 @@ public class OnlineSectioningHelper {
     		rq.setPriority(priority++);
     		rq.setWaitList(r.hasRequestedCourse() && r.isWaitList());
     		rq.setAlternative(false);
+    		rq.setCritical(r.isCritical());
 			for (RequestedCourse rc: r.getRequestedCourse()) {
 				if (rc.isFreeTime()) {
 	        		for (CourseRequestInterface.FreeTime ft: rc.getFreeTime()) {
@@ -715,6 +718,7 @@ public class OnlineSectioningHelper {
     		rq.setPriority(priority++);
     		rq.setAlternative(true);
     		rq.setWaitList(r.hasRequestedCourse() && r.isWaitList());
+    		rq.setCritical(r.isCritical());
     		for (RequestedCourse rc: r.getRequestedCourse()) {
 				if (rc.isFreeTime()) {
 	        		for (CourseRequestInterface.FreeTime ft: rc.getFreeTime()) {
