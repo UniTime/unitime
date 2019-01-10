@@ -113,6 +113,8 @@ public class ReplayLogTest extends OnlineSectioningTestFwk {
 		}
 		if (request.hasWaitList())
 			ret.setWaitList(request.getWaitList());
+		if (request.hasCritical())
+			ret.setCritical(request.getCritical());
 		return ret;
 	}
 	

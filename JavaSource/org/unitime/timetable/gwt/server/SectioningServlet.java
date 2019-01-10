@@ -1075,7 +1075,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			try {
 				Student student = StudentDAO.getInstance().get(studentId, hibSession);
 				if (student == null) throw new SectioningException(MSG.exceptionBadStudentId());
-				SaveStudentRequests.saveRequest(null, new OnlineSectioningHelper(hibSession, currentUser()), student, request, true);
+				OnlineSectioningHelper helper = new OnlineSectioningHelper(hibSession, currentUser());
+				SaveStudentRequests.saveRequest(null, helper, student, request, true,
+						CustomCriticalCoursesHolder.hasProvider() ? CustomCriticalCoursesHolder.getProvider().getCriticalCourses(server, helper, new XStudentId(student, helper)) : null
+						);
 				hibSession.save(student);
 				hibSession.flush();
 				return request;

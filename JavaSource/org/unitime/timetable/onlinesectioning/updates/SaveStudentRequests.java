@@ -53,9 +53,12 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsValidationHolder;
+import org.unitime.timetable.onlinesectioning.custom.CustomCriticalCoursesHolder;
+import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.CriticalCourses;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 
@@ -103,6 +106,10 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 				Student student = StudentDAO.getInstance().get(getStudentId(), helper.getHibSession());
 				if (student == null) throw new SectioningException(MSG.exceptionBadStudentId());
 				
+				CriticalCourses critical = null;
+				if (CustomCriticalCoursesHolder.hasProvider())
+					critical = CustomCriticalCoursesHolder.getProvider().getCriticalCourses(server, helper, new XStudentId(student, helper));
+				
 				OnlineSectioningLog.Action.Builder action = helper.getAction();
 				
 				if (getRequest().getStudentId() != null)
@@ -116,7 +123,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 				}
 				
 				// Save requests
-				saveRequest(server, helper, student, getRequest(), getKeepEnrollments());
+				saveRequest(server, helper, student, getRequest(), getKeepEnrollments(), critical);
 				
 				// Reload student
 				XStudent oldStudent = server.getStudent(getStudentId());
@@ -170,7 +177,15 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 		return CourseOfferingDAO.getInstance().get(courseId, hibSession);
 	}
 	
-	public static Map<Long, CourseRequest>  saveRequest(OnlineSectioningServer server, OnlineSectioningHelper helper, Student student, CourseRequestInterface request, boolean keepEnrollments) throws SectioningException {
+	protected static boolean isCritical(boolean alternative, List<CourseOffering> courses, CriticalCourses critical) {
+		if (critical == null) return false;
+		for (CourseOffering co: courses) {
+			if (critical.isCritical(co)) return true;
+		}
+		return false;
+	}
+	
+	public static Map<Long, CourseRequest>  saveRequest(OnlineSectioningServer server, OnlineSectioningHelper helper, Student student, CourseRequestInterface request, boolean keepEnrollments, CriticalCourses critical) throws SectioningException {
 		Set<CourseDemand> remaining = new TreeSet<CourseDemand>(student.getCourseDemands());
 		int priority = 0;
 		Date ts = new Date();
@@ -199,6 +214,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 							cd.setAlternative(false);
 							cd.setPriority(priority);
 							cd.setWaitlist(false);
+							cd.setCritical(false);
 							FreeTime free = cd.getFreeTime();
 							if (free == null) {
 								free = new FreeTime();
@@ -259,6 +275,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 				cd.setAlternative(false);
 				cd.setPriority(priority);
 				cd.setWaitlist(r.isWaitList());
+				cd.setCritical(isCritical(false, courses, critical));
 				Iterator<CourseRequest> requests = new TreeSet<CourseRequest>(cd.getCourseRequests()).iterator();
 				int order = 0;
 				for (CourseOffering co: courses) {
@@ -322,6 +339,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 							cd.setAlternative(true);
 							cd.setPriority(priority);
 							cd.setWaitlist(false);
+							cd.setCritical(false);
 							FreeTime free = cd.getFreeTime();
 							if (free == null) {
 								free = new FreeTime();
@@ -382,6 +400,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 				cd.setAlternative(true);
 				cd.setPriority(priority);
 				cd.setWaitlist(r.isWaitList());
+				cd.setCritical(isCritical(true, courses, critical));
 				Iterator<CourseRequest> requests = new TreeSet<CourseRequest>(cd.getCourseRequests()).iterator();
 				int order = 0;
 				for (CourseOffering co: courses) {
