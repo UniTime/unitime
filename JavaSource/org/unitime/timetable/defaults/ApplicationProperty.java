@@ -60,6 +60,7 @@ import org.unitime.timetable.onlinesectioning.custom.CourseMatcherProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseRequestsProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseRequestsValidationProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseUrlProvider;
+import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider;
 import org.unitime.timetable.onlinesectioning.custom.DegreePlansProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.SectionUrlProvider;
@@ -1127,6 +1128,11 @@ public enum ApplicationProperty {
 	@Implements(CourseRequestsProvider.class)
 	@Description("Customization: student course requests provider (interface CourseRequestsProvider, used by Student Scheduling Assistant when there are no course requests stored within UniTime)")
 	CustomizationCourseRequests("unitime.custom.CourseRequestsProvider"),
+	
+	@Type(Class.class)
+	@Implements(CriticalCoursesProvider.class)
+	@Description("Customization: student critical courses provider (interface CriticalCoursesProvider, used by Course Requests and/or batch scheduling solver to identify critical courses)")
+	CustomizationCriticalCourses("unitime.custom.CriticalCoursesProvider"),
 	
 	@Type(Class.class)
 	@Implements(CourseRequestsValidationProvider.class)

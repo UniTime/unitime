@@ -39,6 +39,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
@@ -46,6 +47,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.CourseRequestsProvider;
+import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider;
 import org.unitime.timetable.onlinesectioning.custom.DegreePlansProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.purdue.XEInterface.PlaceHolder;
@@ -53,6 +55,7 @@ import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XStudentId;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -60,7 +63,7 @@ import com.google.gson.GsonBuilder;
 /**
  * @author Tomas Muller
  */
-public class DegreeWorksCourseRequests implements CourseRequestsProvider, DegreePlansProvider {
+public class DegreeWorksCourseRequests implements CourseRequestsProvider, DegreePlansProvider, CriticalCoursesProvider {
 	private static Logger sLog = Logger.getLogger(DegreeWorksCourseRequests.class);
 
 	private Client iClient;
@@ -115,7 +118,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		return Integer.parseInt(ApplicationProperties.getProperty("banner.dgw.nrAttempts", "3"));
 	}
 
-	protected String getBannerId(XStudent student) {
+	protected String getBannerId(XStudentId student) {
 		String id = student.getExternalId();
 		while (id.length() < 9) id = "0" + id;
 		return id;
@@ -543,7 +546,106 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		} catch (SectioningException e) {
 			throw e;
 		} catch (Exception e) {
-			throw new SectioningException(e.getMessage());
+			throw new SectioningException(e.getMessage(), e);
+		}
+	}
+	
+	public String getCriticalTerms(String bannerTerm) {
+		if (bannerTerm.endsWith("10")) {
+			return bannerTerm + "," + (Integer.parseInt(bannerTerm) + 10) + "," + (Integer.parseInt(bannerTerm) + 20);
+		} else if (bannerTerm.endsWith("20")) {
+			return bannerTerm + "," + (Integer.parseInt(bannerTerm) + 10) + "," + (Integer.parseInt(bannerTerm) + 90);
+		} else if (bannerTerm.endsWith("30")) {
+			return bannerTerm + "," + (Integer.parseInt(bannerTerm) + 80) + "," + (Integer.parseInt(bannerTerm) + 90);
+		}
+		return bannerTerm;
+	}
+
+	@Override
+	public CriticalCourses getCriticalCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudentId student) {
+		try {
+			String term = getBannerTerm(server.getAcademicSession());
+			String studentId = getBannerId(student);
+			String effectiveOnly = getDegreeWorksApiEffectiveOnly();
+			String criticalTerms = getCriticalTerms(term);
+			
+			if (effectiveOnly != null)
+				helper.getAction().addOptionBuilder().setKey("effectiveOnly").setValue(effectiveOnly);
+			helper.getAction().addOptionBuilder().setKey("criticalTerms").setValue(criticalTerms);
+			
+			List<XEInterface.DegreePlan> current = null;
+			try {
+				current = getDegreePlans(getCriticalTerms(term), studentId, effectiveOnly, getDegreeWorksNrAttempts());
+			} catch (SectioningException e) {
+				throw e;
+			}
+			long t0 = System.currentTimeMillis();
+			try {
+				current = getDegreePlans(criticalTerms, studentId, effectiveOnly, getDegreeWorksNrAttempts());
+			} catch (SectioningException e) {
+				if (!helper.getAction().hasApiException())
+					helper.getAction().setApiException(e.getMessage());
+				throw e;
+			} finally {
+				if (!helper.getAction().hasApiGetTime())
+					helper.getAction().setApiGetTime(System.currentTimeMillis() - t0);
+			}
+			if (current == null || current.isEmpty())
+				return null;
+
+			helper.getAction().addOptionBuilder().setKey("plans").setValue(getGson(helper).toJson(current));
+			
+			CriticalCoursesImpl courses = new CriticalCoursesImpl();
+			for (XEInterface.DegreePlan p: current) {
+				if (getDegreeWorksActiveOnly() && (p.isActive == null || !p.isActive.value)) continue;
+				if (p.years != null)
+					for (XEInterface.Year y: p.years) {
+						if (y.terms != null)
+							for (XEInterface.Term t: y.terms) {
+								if (t.group != null && t.group.plannedClasses != null)
+									for (XEInterface.Course c: t.group.plannedClasses)
+										if (c.isCritical != null && c.isCritical)
+											courses.add(c);
+								if (t.group != null && t.group.groups != null)
+									for (XEInterface.Group g: t.group.groups)
+										if (g.isCritical != null && g.isCritical) {
+											if (g.plannedClasses != null)
+												for (XEInterface.Course c: g.plannedClasses)
+													courses.add(c);
+											if (g.groups != null)
+												for (XEInterface.Group h: g.groups)
+													if (h.plannedClasses != null)
+														for (XEInterface.Course c: h.plannedClasses)
+															courses.add(c);
+										}
+							}
+					}
+			}
+			helper.getAction().addOptionBuilder().setKey("critical").setValue(courses.toString());
+			
+			return courses;
+		} catch (SectioningException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new SectioningException(e.getMessage(), e);
+		}
+	}
+	
+	protected static class CriticalCoursesImpl implements CriticalCourses {
+		private List<String> iCriticalCourses = new ArrayList<String>();
+		
+		public void add(XEInterface.Course c) { iCriticalCourses.add(c.courseDiscipline + " " + c.courseNumber); }
+
+		@Override
+		public boolean isCritical(CourseOffering course) {
+			for (String c: iCriticalCourses)
+				if (course.getCourseName().startsWith(c)) return true;
+			return false;
+		}
+		
+		@Override
+		public String toString() {
+			return iCriticalCourses.toString();
 		}
 	}
 }

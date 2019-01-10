@@ -974,6 +974,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Failed to create course request provider: {0}")
 	String exceptionCourseRequestProvider(String message);
 	
+	@DefaultMessage("Failed to create critical courses provider: {0}")
+	String exceptionCriticalCoursesProvider(String message);
+	
 	@DefaultMessage("Failed to create course request validation provider: {0}")
 	String exceptionCourseRequestValidationProvider(String message);
 	
