@@ -134,6 +134,9 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity;
 import org.unitime.timetable.onlinesectioning.custom.CourseRequestsValidationProvider;
+import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider;
+import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.CriticalCourses;
+import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbStudentMatcher;
 import org.unitime.timetable.solver.TimetableDatabaseLoader;
 import org.unitime.timetable.solver.curricula.LastLikeStudentCourseDemands;
@@ -190,6 +193,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private boolean iCheckRequestStatusSkipCancelled = false, iCheckRequestStatusSkipPending = false;
 	private int iNrValidationThreads = 1;
 	private boolean iCanContinue = true;
+	private boolean iCheckCriticalCourses = false;
+	private CriticalCoursesProvider iCriticalCoursesProvider = null;
+	private int iNrCheckCriticalThreads = 1;
     
     private Progress iProgress = null;
     
@@ -236,6 +242,15 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		iProgress.error("Failed to create course request validation provider: " + e.getMessage());
         	}
         	iNrValidationThreads = model.getProperties().getPropertyInt("CourseRequestsValidation.NrThreads", 10);
+        }
+        iCheckCriticalCourses = model.getProperties().getPropertyBoolean("Load.CheckCriticalCourses", iCheckCriticalCourses);
+        if (iCheckCriticalCourses && ApplicationProperty.CustomizationCriticalCourses.value() != null) {
+        	try {
+        		iCriticalCoursesProvider = ((CriticalCoursesProvider)Class.forName(ApplicationProperty.CustomizationCriticalCourses.value()).newInstance());
+        	} catch (Exception e) {
+        		iProgress.error("Failed to create critical courses provider: " + e.getMessage());
+        	}
+        	iNrCheckCriticalThreads = model.getProperties().getPropertyInt("CheckCriticalCourses.NrThreads", 10);
         }
         try {
         	String studentCourseDemandsClassName = getModel().getProperties().getProperty("StudentSct.ProjectedCourseDemadsClass", LastLikeStudentCourseDemands.class.getName());
@@ -329,6 +344,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             // here we need to close the session since this code may run in a separate thread
             if (hibSession!=null && hibSession.isOpen()) hibSession.close();
             if (iValidationProvider != null) iValidationProvider.dispose();
+            if (iCriticalCoursesProvider != null) iCriticalCoursesProvider.dispose();
         }
     }
     
@@ -1834,6 +1850,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             } else if (iCheckOverrideStatus && iValidationProvider != null) {
             	checkOverrideStatuses(hibSession, students);
             }
+            if (iCheckCriticalCourses)
+            	checkCriticalCourses(hibSession, students);
             
             setPhase("Loading student requests...", students.size());
             for (Iterator i=students.iterator();i.hasNext();) {
@@ -2170,6 +2188,145 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 					}
 					org.unitime.timetable.model.Student newStudent = StudentDAO.getInstance().get(student.getUniqueId(), hibSession);
 		    		validateOverrides(hibSession, newStudent);
+		    		synchronized (iStudents) {
+		    			iHibSession.merge(newStudent);
+					}
+				}
+			} finally {
+				hibSession.close();
+			}
+			iProgress.debug(getName() + " has finished.");
+		}
+	}
+    
+    protected void checkCriticalCourses(org.hibernate.Session hibSession, List<org.unitime.timetable.model.Student> students) {
+    	if (iNrCheckCriticalThreads <= 1) {
+    		setPhase("Checking critical courses...", students.size());
+    		for (org.unitime.timetable.model.Student s: students) {
+        		incProgress();
+        		if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty() && s.getWaitlists().isEmpty()) continue;
+        		if (iCheckForNoBatchStatus && s.hasSectioningStatusOption(StudentSectioningStatus.Option.nobatch)) continue;
+                if (iStudentQuery != null && !iStudentQuery.match(new DbStudentMatcher(s))) continue;
+                checkCriticalCourses(hibSession, s);
+        	}
+		} else {
+			List<org.unitime.timetable.model.Student> filteredStudents = new ArrayList<org.unitime.timetable.model.Student>();
+			for (org.unitime.timetable.model.Student s: students) {
+				if (s.getCourseDemands().isEmpty() && s.getClassEnrollments().isEmpty() && s.getWaitlists().isEmpty()) continue;
+        		if (iCheckForNoBatchStatus && s.hasSectioningStatusOption(StudentSectioningStatus.Option.nobatch)) continue;
+                if (iStudentQuery != null && !iStudentQuery.match(new DbStudentMatcher(s))) continue;
+                filteredStudents.add(s);
+			}
+			setPhase("Checking critical courses...", filteredStudents.size());
+			List<CriticalCoursesWorker> workers = new ArrayList<CriticalCoursesWorker>();
+			Iterator<org.unitime.timetable.model.Student> iterator = filteredStudents.iterator();
+			for (int i = 0; i < iNrCheckCriticalThreads; i++)
+				workers.add(new CriticalCoursesWorker(hibSession, i, iterator));
+			for (CriticalCoursesWorker worker: workers) worker.start();
+			for (CriticalCoursesWorker worker: workers) {
+				try {
+					worker.join();
+				} catch (InterruptedException e) {
+					iCanContinue = false;
+					try { worker.join(); } catch (InterruptedException x) {}
+				}
+			}
+			if (!iCanContinue)
+				throw new RuntimeException("The critical course check was interrupted.");
+		}
+    }
+    
+    protected boolean isCritical(CourseDemand cd, CriticalCourses critical) {
+		if (critical == null) return false;
+		for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests()) {
+			if (critical.isCritical(cr.getCourseOffering())) return true;
+		}
+		return false;
+	}
+    
+    protected void checkCriticalCourses(org.hibernate.Session hibSession, org.unitime.timetable.model.Student s) {
+    	if (iValidator == null) {
+    		iValidator = new StudentSolver(getModel().getProperties(), null);
+    		iValidator.setInitalSolution(new Solution(getModel(), getAssignment()));
+    	}
+    	OnlineSectioningLog.Entity user = Entity.newBuilder().setExternalId(iOwnerId).setType(Entity.EntityType.MANAGER).build(); 
+    	OnlineSectioningHelper helper = new OnlineSectioningHelper(hibSession, user);
+    	OnlineSectioningLog.Action.Builder action = helper.getAction();
+    	action.setOperation("critical-courses");
+		action.setSession(OnlineSectioningLog.Entity.newBuilder()
+    			.setUniqueId(iSessionId)
+    			.setName(iTerm + iYear + iInitiative)
+    			);
+    	action.setStartTime(System.currentTimeMillis());
+    	action.setUser(user);
+    	action.setStudent(OnlineSectioningLog.Entity.newBuilder()
+				.setUniqueId(s.getUniqueId())
+				.setExternalId(s.getExternalUniqueId())
+				.setName(iStudentNameFormat.format(s))
+				.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
+		long c0 = OnlineSectioningHelper.getCpuTime();
+		try {
+			CriticalCourses critical = iCriticalCoursesProvider.getCriticalCourses(iValidator, helper, new XStudentId(s, helper));
+			boolean changed = false;
+			for (CourseDemand cd: s.getCourseDemands()) {
+				boolean crit = isCritical(cd, critical);
+				if (cd.isCritical() == null || cd.isCritical().booleanValue() != crit) {
+					cd.setCritical(crit); hibSession.update(cd); changed = true;
+				}
+			}
+			if (changed) {
+        		iUpdatedStudents.add(s.getUniqueId());
+        		action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
+        	} else {
+        		action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
+        	}
+		} catch (SectioningException e) {
+			action.setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
+			if (e.getCause() != null) {
+				action.addMessage(OnlineSectioningLog.Message.newBuilder()
+						.setLevel(OnlineSectioningLog.Message.Level.FATAL)
+						.setText(e.getCause().getClass().getName() + ": " + e.getCause().getMessage()));
+			} else {
+				action.addMessage(OnlineSectioningLog.Message.newBuilder()
+						.setLevel(OnlineSectioningLog.Message.Level.FATAL)
+						.setText(e.getMessage() == null ? "null" : e.getMessage()));
+			}
+		} finally {
+			action.setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
+			action.setEndTime(System.currentTimeMillis());
+			OnlineSectioningLogger.getInstance().record(OnlineSectioningLog.Log.newBuilder().addAction(action).build());
+		}
+    }
+    
+    protected class CriticalCoursesWorker extends Thread {
+    	private org.hibernate.Session iHibSession;
+		private Iterator<org.unitime.timetable.model.Student> iStudents;
+		
+		public CriticalCoursesWorker(org.hibernate.Session hibSession, int index, Iterator<org.unitime.timetable.model.Student> students) {
+			setName("CriticalCourses-" + (1 + index));
+			iStudents = students;
+			iHibSession = hibSession;
+		}
+		
+		@Override
+	    public void run() {
+			iProgress.debug(getName() + " has started.");
+			org.hibernate.Session hibSession = null;
+			try {
+				hibSession = StudentDAO.getInstance().createNewSession();
+				while (true) {
+					org.unitime.timetable.model.Student student = null;
+					synchronized (iStudents) {
+						if (!iCanContinue) {
+							iProgress.debug(getName() + " has stopped.");
+							return;
+						}
+						if (!iStudents.hasNext()) break;
+						student = iStudents.next();
+						iProgress.incProgress();
+					}
+					org.unitime.timetable.model.Student newStudent = StudentDAO.getInstance().get(student.getUniqueId(), hibSession);
+		    		checkCriticalCourses(hibSession, newStudent);
 		    		synchronized (iStudents) {
 		    			iHibSession.merge(newStudent);
 					}

@@ -429,7 +429,8 @@ public class OnlineSectioningHelper {
     }
     
     public OnlineSectioningLog.Action.Builder getAction() {
-    	if (iLog.getActionCount() == 0) return null;
+    	if (iLog.getActionCount() == 0)
+    		return iLog.addActionBuilder();
     	return iLog.getActionBuilder(0);
     }
     
