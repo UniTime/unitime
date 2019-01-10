@@ -400,7 +400,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 					index ++;
 				}
 			if (index == 0) { iCourses.get(0).setValue(null, true); index++; }
-			else if (CONSTANTS.courseRequestAutomaticallyAddFirstAlternative() && !iAlternate && index == 1 && iCourses.get(0).getValue().isCourse() && iCourses.get(0).getValue().isCanDelete()) {
+			else if (CONSTANTS.courseRequestAutomaticallyAddFirstAlternative() && !iAlternate && index == 1 && iCourses.get(0).getValue().hasCourseId() && iCourses.get(0).getValue().isCanDelete()) {
 				iCourses.get(index).setValue(null, true);
 				index ++;
 			}
