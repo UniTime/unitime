@@ -23,14 +23,14 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XStudentId;
 
 /**
  * @author Tomas Muller
  */
 public interface CourseRequestsProvider {
 	
-	public CourseRequestInterface getCourseRequests(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) throws SectioningException;
+	public CourseRequestInterface getCourseRequests(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudentId student) throws SectioningException;
 	
 	public void dispose();
 

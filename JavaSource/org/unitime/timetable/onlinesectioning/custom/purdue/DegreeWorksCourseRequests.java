@@ -272,7 +272,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 	}
 	
 	@Override
-	public CourseRequestInterface getCourseRequests(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) throws SectioningException {
+	public CourseRequestInterface getCourseRequests(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudentId student) throws SectioningException {
 		try {
 			AcademicSessionInfo session = server.getAcademicSession();
 			String term = getBannerTerm(session);
@@ -338,7 +338,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		} catch (SectioningException e) {
 			throw e;
 		} catch (Exception e) {
-			throw new SectioningException(e.getMessage());
+			throw new SectioningException(e.getMessage(), e);
 		}
 	}
 	
@@ -450,7 +450,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		} catch (SectioningException e) {
 			throw e;
 		} catch (Exception e) {
-			throw new SectioningException(e.getMessage());
+			throw new SectioningException(e.getMessage(), e);
 		} finally {
 			if (resource != null) {
 				if (resource.getResponse() != null) resource.getResponse().release();

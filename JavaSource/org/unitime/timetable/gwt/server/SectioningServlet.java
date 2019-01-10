@@ -2151,7 +2151,6 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				}
 			}
 		}
-		
 		return request;
 	}
 
@@ -2180,7 +2179,15 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			try {
 				Student student = StudentDAO.getInstance().get(studentId, hibSession);
 				if (student == null) throw new SectioningException(MSG.exceptionBadStudentId());
-				return getRequest(student);
+				CourseRequestInterface request = getRequest(student);
+				
+				if (request.isEmpty() && CustomCourseRequestsHolder.hasProvider()) {
+					OnlineSectioningHelper helper = new OnlineSectioningHelper(hibSession, currentUser());
+					CourseRequestInterface r = CustomCourseRequestsHolder.getProvider().getCourseRequests(getServerInstance(sessionId, true), helper, new XStudentId(student, helper));
+					if (r != null) return r;
+				}
+				
+				return request;
 			} catch (PageAccessException e) {
 				throw e;
 			} catch (SectioningException e) {
