@@ -139,8 +139,13 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		for (XCourseId c: courses)
 			if (c.matchTitle(course.title)) return c;
 		for (XCourseId c: courses)
-			return c;
-		return new XCourseId(null, null, course.courseDiscipline + " " + course.courseNumber);
+			if (c.getCourseName().equalsIgnoreCase(course.courseDiscipline + " " + course.courseNumber)) return c;
+		if (courses.size() == 1 || "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.firstSuffixedCourse", "true")))
+			for (XCourseId c: courses)
+				return c;
+		if (!courses.isEmpty() || "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.includeNotOfferedCourses", "true")))
+			return new XCourseId(null, null, course.courseDiscipline + " " + course.courseNumber);
+		return null;
 	}
 	
 	protected OnlineSectioningLog.Entity toEntity(XEInterface.Course course, XCourseId courseId) {
@@ -176,7 +181,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					XCourseId cid = getCourse(server, course);
 					if (cid == null) continue;
 					
-					helper.getAction().addRequestBuilder()
+					OnlineSectioningLog.Request.Builder b = helper.getAction().addRequestBuilder()
 						.setPriority(request.getCourses().size())
 						.setAlternative(false)
 						.addCourse(toEntity(course, cid));
@@ -195,12 +200,62 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					r.addRequestedCourse(rc);
 					request.getCourses().add(r);
 					hasSelection = true;
+					
+					// add other courses as alternatives
+					for (XEInterface.Course other: group.plannedClasses) {
+						if (!other.isGroupSelection) {
+							XCourseId ocid = getCourse(server, other);
+							if (ocid == null) continue;
+							RequestedCourse orc = new RequestedCourse();
+							orc.setCourseId(ocid.getCourseId());
+							orc.setCourseName(ocid.getCourseName());
+							orc.setCourseTitle(ocid.getTitle());
+							if (ocid instanceof XCourse) {
+								orc.setCredit(((XCourse)ocid).getMinCredit(), ((XCourse)ocid).getMaxCredit());
+							} else if (ocid.getCourseId() != null) {
+								XCourse c = server.getCourse(ocid.getCourseId());
+								if (c != null) orc.setCredit(c.getMinCredit(), c.getMaxCredit());
+							}
+							r.addRequestedCourse(orc);
+							b.addCourse(toEntity(other, ocid));
+						}
+					}
 				}
 			}
 			for (XEInterface.Group g: group.groups) {
 				if (hasSelection(g)) {
 					fillInRequests(server, helper, request, g);
 					hasSelection = true;
+					
+					// add other courses as alternatives
+					for (XEInterface.Course other: group.plannedClasses) {
+						if (!other.isGroupSelection) {
+							XCourseId ocid = getCourse(server, other);
+							if (ocid == null) continue;
+							RequestedCourse orc = new RequestedCourse();
+							orc.setCourseId(ocid.getCourseId());
+							orc.setCourseName(ocid.getCourseName());
+							orc.setCourseTitle(ocid.getTitle());
+							if (ocid instanceof XCourse) {
+								orc.setCredit(((XCourse)ocid).getMinCredit(), ((XCourse)ocid).getMaxCredit());
+							} else if (ocid.getCourseId() != null) {
+								XCourse c = server.getCourse(ocid.getCourseId());
+								if (c != null) orc.setCredit(c.getMinCredit(), c.getMaxCredit());
+							}
+							CourseRequestInterface.Request r = null;
+							OnlineSectioningLog.Request.Builder b = null;
+							if (request.getCourses().isEmpty()) {
+								r = new CourseRequestInterface.Request();
+								b = helper.getAction().addRequestBuilder().setPriority(request.getCourses().size()).setAlternative(false);
+								request.getCourses().add(r);
+							} else {
+								r = request.getCourses().get(request.getCourses().size() - 1);
+								b = helper.getAction().getRequestBuilder(helper.getAction().getRequestCount() - 1);
+							}
+							r.addRequestedCourse(orc);
+							b.addCourse(toEntity(other, ocid));
+						}
+					}
 				}
 			}
 			
