@@ -46,6 +46,8 @@ public abstract class BaseSolution implements Serializable {
 	private Date iCommitDate;
 	private String iNote;
 	private String iCreator;
+	private String iSolverMode;
+	private String iSolverConfiguration;
 
 	private SolverGroup iOwner;
 	private SolutionInfo iGlobalInfo;
@@ -96,6 +98,12 @@ public abstract class BaseSolution implements Serializable {
 
 	public String getCreator() { return iCreator; }
 	public void setCreator(String creator) { iCreator = creator; }
+
+	public String getSolverMode() { return iSolverMode; }
+	public void setSolverMode(String solverMode) { iSolverMode = solverMode; }
+
+	public String getSolverConfiguration() { return iSolverConfiguration; }
+	public void setSolverConfiguration(String solverConfiguration) { iSolverConfiguration = solverConfiguration; }
 
 	public SolverGroup getOwner() { return iOwner; }
 	public void setOwner(SolverGroup owner) { iOwner = owner; }

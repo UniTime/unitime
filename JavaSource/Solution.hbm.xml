@@ -140,6 +140,18 @@
             not-null="false"
             lazy="proxy"
             formula=" ( select si.uniqueid from %SCHEMA%.solver_info si, %SCHEMA%.solver_info_def d where si.type=1 and si.solver_info_def_id=d.uniqueid and d.name='GlobalInfo' and si.solution_id=uniqueid ) "/>
+        
+       	<property
+            name="solverMode"
+            type="java.lang.String"
+            lazy="true"
+            formula="(select p.value from %SCHEMA%.solver_parameter p, %SCHEMA%.solver_parameter_def d where p.solution_id = uniqueid and d.uniqueid = p.solver_param_def_id and d.name='Basic.Mode')"/>
+       	
+       	<property
+            name="solverConfiguration"
+            type="java.lang.String"
+            lazy="true"
+            formula="(select s.description from %SCHEMA%.solver_parameter p, %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_predef_setting s where p.solution_id = uniqueId and d.uniqueid = p.solver_param_def_id and d.name='General.SettingsId' and concat(s.uniqueid,'') = p.value)"/>
 
     </class>
 </hibernate-mapping>

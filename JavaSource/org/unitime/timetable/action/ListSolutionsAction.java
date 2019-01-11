@@ -56,10 +56,7 @@ import org.unitime.timetable.form.SolverForm.LongIdValue;
 import org.unitime.timetable.interfaces.ExternalSolutionCommitAction;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
-import org.unitime.timetable.model.SolverParameter;
-import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.dao.SolutionDAO;
-import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -417,9 +414,6 @@ public class ListSolutionsAction extends Action {
 					null );
 			webTable.setRowStyle("white-space:nowrap");
 			
-			SolutionDAO dao = new SolutionDAO();
-			org.hibernate.Session hibSession = dao.getSession();
-			
 			Collection solutions = null;
 			if (listAll)
 				solutions = Solution.findBySessionId(sessionContext.getUser().getCurrentAcademicSessionId());
@@ -466,19 +460,7 @@ public class ListSolutionsAction extends Action {
 					if (!"N/A".equals(tooBig) && tooBig.indexOf(' ')>=0) tooBig=tooBig.substring(0,tooBig.indexOf(' ')).trim();
 					if (!"N/A".equals(useless) && useless.indexOf(' ')>=0) useless=useless.substring(0,useless.indexOf(' ')).trim();
 					studConf = studConf.replaceAll(" \\[","(").replaceAll("\\]",")").replaceAll(", ",",").replaceAll("hard:","h").replaceAll("distance:","d").replaceAll("commited:","c").replaceAll("committed:","c");
-					String settings = null;
-					String type = null;
-					for (Iterator j=solution.getParameters().iterator();j.hasNext();) {
-						SolverParameter p = (SolverParameter)j.next();
-						if ("General.SettingsId".equals(p.getDefinition().getName())) {
-							SolverPredefinedSetting set = (new SolverPredefinedSettingDAO()).get(Long.valueOf(p.getValue()),hibSession);
-							if (set!=null) settings = set.getDescription();
-						}
-						if ("Basic.Mode".equals(p.getDefinition().getName())) {
-							type = p.getValue();
-						}
-					}
-					type = (settings==null?type==null?"?":type:settings);
+					String type = solution.getSolverConfiguration() != null ? solution.getSolverConfiguration() : solution.getSolverMode() != null ? solution.getSolverMode() : "?";
                     
                     String bgColor = null;
                     if (myForm.getSolutionBean(solution.getUniqueId())!=null)
