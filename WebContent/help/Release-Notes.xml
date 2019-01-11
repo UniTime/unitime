@@ -79,6 +79,12 @@
 				<line>Export multiple majors flag.</line>
 			</description>
 		</item>
+		<item>
+			<name>Data Exchange: Academic Session Import</name>
+			<description>
+				<line>Corrected import of automated tasks: do not create a script if it already exists, do not limit script length to 255 chars.</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>
