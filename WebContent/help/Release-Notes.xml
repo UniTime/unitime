@@ -41,6 +41,12 @@
 				<line>During the solver load, report an error when there is an exact time that goes over midnight.</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetabling: Saved Timetables</name>
+			<description>
+				<line>Speed up the Saved Timetables page by pre-fetching solver mode and configuration.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Instructor Scheduling</title>

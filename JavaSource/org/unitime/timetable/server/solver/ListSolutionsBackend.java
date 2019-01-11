@@ -33,7 +33,6 @@ import org.unitime.timetable.gwt.shared.TableInterface.TableRowInterface;
 import org.unitime.timetable.interfaces.ExternalSolutionCommitAction;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
-import org.unitime.timetable.model.SolverParameter;
 import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
@@ -364,6 +363,7 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
 		for (Solution solution: solutions) {
 			if (committedOnly && !solution.isCommited().booleanValue()) continue;
 			
+			/*
 			String settings = null;
 			String type = null;
 			for (Iterator j=solution.getParameters().iterator();j.hasNext();) {
@@ -377,6 +377,8 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
 				}
 			}
 			type = (settings == null ? type== null ? MESSAGES.listSolutionsUnknown() : type : settings);
+			*/
+			String type = solution.getSolverConfiguration() != null ? solution.getSolverConfiguration() : solution.getSolverMode() != null ? solution.getSolverMode() : MESSAGES.listSolutionsUnknown();
 			
 			PropertiesInfo globalInfo = (PropertiesInfo)solution.getInfo("GlobalInfo");
 			
