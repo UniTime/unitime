@@ -35,6 +35,8 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseReservation;
 import org.unitime.timetable.model.CurriculumReservation;
+import org.unitime.timetable.model.GroupOverrideReservation;
+import org.unitime.timetable.model.IndividualOverrideReservation;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.OverrideReservation;
@@ -143,8 +145,22 @@ public class ReservationImport  extends BaseImport {
                 String type = reservationElement.attributeValue("type", "course");
                 if ("individual".equals(type)) {
                 	reservation = new IndividualReservation();
+                	if ("true".equalsIgnoreCase(reservationElement.attributeValue("override"))) {
+                		reservation = new IndividualOverrideReservation();
+                		((IndividualOverrideReservation)reservation).setAlwaysExpired("true".equalsIgnoreCase(reservationElement.attributeValue("expired")));
+                		((IndividualOverrideReservation)reservation).setAllowOverlap("true".equalsIgnoreCase(reservationElement.attributeValue("allowOverlap")));
+                		((IndividualOverrideReservation)reservation).setCanAssignOverLimit("true".equalsIgnoreCase(reservationElement.attributeValue("overLimit")));
+                		((IndividualOverrideReservation)reservation).setMustBeUsed("true".equalsIgnoreCase(reservationElement.attributeValue("mustBeUsed")));
+                	}
                 } else if ("group".equals(type)) {
                 	reservation = new StudentGroupReservation();
+                	if ("true".equalsIgnoreCase(reservationElement.attributeValue("override"))) {
+                		reservation = new GroupOverrideReservation();
+                		((GroupOverrideReservation)reservation).setAlwaysExpired("true".equalsIgnoreCase(reservationElement.attributeValue("expired")));
+                		((GroupOverrideReservation)reservation).setAllowOverlap("true".equalsIgnoreCase(reservationElement.attributeValue("allowOverlap")));
+                		((GroupOverrideReservation)reservation).setCanAssignOverLimit("true".equalsIgnoreCase(reservationElement.attributeValue("overLimit")));
+                		((GroupOverrideReservation)reservation).setMustBeUsed("true".equalsIgnoreCase(reservationElement.attributeValue("mustBeUsed")));
+                	}
                 } else if ("curriculum".equals(type)) {
                 	reservation = new CurriculumReservation();
                 } else if ("course".equals(type)) {

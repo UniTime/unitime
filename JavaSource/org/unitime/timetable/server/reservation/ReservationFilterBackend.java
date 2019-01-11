@@ -103,11 +103,17 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 		Integer individualCnt = type2count.get(0);
 		if (individualCnt != null)
 			individualType.setCount(individualCnt);
+		Integer individualOverrideCnt = type2count.get(5);
+		if (individualOverrideCnt != null)
+			individualType.setCount(individualType.getCount() + individualOverrideCnt);
 		response.add("type", individualType);
 		Entity groupType = new Entity(new Long(0), "Group", MESSAGES.reservationStudentGroupAbbv(), "translated-value", MESSAGES.reservationStudentGroupAbbv());
 		Integer groupCnt = type2count.get(1);
 		if (groupCnt != null)
 			groupType.setCount(groupCnt);
+		Integer groupOverrideCnt = type2count.get(6);
+		if (groupOverrideCnt != null)
+			groupType.setCount(groupType.getCount() + groupOverrideCnt);
 		response.add("type", groupType);
 		Entity curriculumType = new Entity(new Long(0), "Curriculum", MESSAGES.reservationCurriculumAbbv(), "translated-value", MESSAGES.reservationCurriculumAbbv());
 		Integer curriculumCnt = type2count.get(2);
@@ -295,9 +301,9 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 			for (String t: request.getOptions("type")) {
 				if (!type.isEmpty()) type += ",";
 				if ("individual".equalsIgnoreCase(t))
-					type += "IndividualReservation";
+					type += "IndividualReservation,IndividualOverrideReservation";
 				if ("group".equalsIgnoreCase(t))
-					type += "StudentGroupReservation";
+					type += "StudentGroupReservation,GroupOverrideReservation";
 				if ("course".equalsIgnoreCase(t))
 					type += "CourseReservation";
 				if ("curriculum".equalsIgnoreCase(t))

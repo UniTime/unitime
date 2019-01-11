@@ -43,7 +43,7 @@ import org.infinispan.commons.marshall.SerializeWith;
 public class XReservationId implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
 
-	private XReservationType iType;
+	protected XReservationType iType;
 	private Long iOfferingId;
 	private Long iReservationId;
 	

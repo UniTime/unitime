@@ -5206,8 +5206,14 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Individual Reservation")
 	String reservationIndividual();
 	
+	@DefaultMessage("Individual Override")
+	String reservationIndividualOverride();
+	
 	@DefaultMessage("Student Group Reservation")
 	String reservationStudentGroup();
+	
+	@DefaultMessage("Student Group Override")
+	String reservationStudentGroupOverride();
 	
 	@DefaultMessage("Curriculum Reservation")
 	String reservationCurriculum();
@@ -5220,6 +5226,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Student Group")
 	String reservationStudentGroupAbbv();
+	
+	@DefaultMessage("Individual Override")
+	String reservationIndividualOverrideAbbv();
+	
+	@DefaultMessage("Student Group Override")
+	String reservationStudentGroupOverrideAbbv();
 	
 	@DefaultMessage("Curriculum")
 	String reservationCurriculumAbbv();
@@ -6342,4 +6354,19 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Unpublish")
 	String opSolverUnpublish();
+	
+	@DefaultMessage("Override Properties:")
+	String propOverrideProperties();
+	
+	@DefaultMessage("Allow Time Conflict")
+	String checkCanOverlap();
+	
+	@DefaultMessage("Can Assign Over Limit")
+	String checkCanOverLimit();
+	
+	@DefaultMessage("Student Must Follow")
+	String checkMustBeUsed();
+	
+	@DefaultMessage("Do Not Reserve Space")
+	String checkAllwaysExpired();
 }

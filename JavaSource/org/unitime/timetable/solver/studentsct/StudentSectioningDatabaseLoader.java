@@ -100,6 +100,8 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.ExactTimeMins;
+import org.unitime.timetable.model.GroupOverrideReservation;
+import org.unitime.timetable.model.IndividualOverrideReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
@@ -547,9 +549,19 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         			studentIds.add(s.getUniqueId());
         		r = new ReservationOverride(reservation.getUniqueId(), offering, studentIds);
         		OverrideType type = ((OverrideReservation)reservation).getOverrideType();
-        		((ReservationOverride)r).setMustBeUsed(type.isMustBeUsed());
-        		((ReservationOverride)r).setAllowOverlap(type.isAllowTimeConflict());
-        		((ReservationOverride)r).setCanAssignOverLimit(type.isAllowOverLimit());
+        		r.setPriority(ApplicationProperty.ReservationPriorityOverride.intValue());
+        		r.setMustBeUsed(type.isMustBeUsed());
+        		r.setAllowOverlap(type.isAllowTimeConflict());
+        		r.setCanAssignOverLimit(type.isAllowOverLimit());
+        	} else if (reservation instanceof IndividualOverrideReservation) {
+        		List<Long> studentIds = new ArrayList<Long>();
+        		for (org.unitime.timetable.model.Student s: ((org.unitime.timetable.model.IndividualReservation)reservation).getStudents())
+        			studentIds.add(s.getUniqueId());
+        		r = new IndividualReservation(reservation.getUniqueId(), offering, studentIds);
+        		r.setPriority(reservation.getPriority());
+        		r.setMustBeUsed(reservation.isMustBeUsed());
+        		r.setAllowOverlap(reservation.isAllowOverlap());
+        		r.setCanAssignOverLimit(reservation.isCanAssignOverLimit());
         	} else if (reservation instanceof org.unitime.timetable.model.IndividualReservation) {
         		List<Long> studentIds = new ArrayList<Long>();
         		for (org.unitime.timetable.model.Student s: ((org.unitime.timetable.model.IndividualReservation)reservation).getStudents())
@@ -559,6 +571,19 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		r.setAllowOverlap(ApplicationProperty.ReservationAllowOverlapIndividual.isTrue());
         		r.setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitIndividual.isTrue());
         		r.setMustBeUsed(ApplicationProperty.ReservationMustBeUsedIndividual.isTrue());
+        	} else if (reservation instanceof GroupOverrideReservation) {
+        		List<Long> studentIds = new ArrayList<Long>();
+        		for (org.unitime.timetable.model.Student s: ((StudentGroupReservation)reservation).getGroup().getStudents())
+        			studentIds.add(s.getUniqueId());
+        		r = new GroupReservation(reservation.getUniqueId(),
+        				(reservation.getLimit() == null ? iNoUnlimitedGroupReservations ? studentIds.size() : -1.0 : reservation.getLimit()),
+        				offering, studentIds);
+        		r.setPriority(reservation.getPriority());
+        		r.setMustBeUsed(reservation.isMustBeUsed());
+        		r.setAllowOverlap(reservation.isAllowOverlap());
+        		r.setCanAssignOverLimit(reservation.isCanAssignOverLimit());
+        		StudentGroupType type = ((StudentGroupReservation)reservation).getGroup().getType();
+        		if (type != null && type.getAllowDisabledSection() == StudentGroupType.AllowDisabledSection.WithGroupReservation) r.setAllowDisabled(true);
         	} else if (reservation instanceof StudentGroupReservation) {
         		List<Long> studentIds = new ArrayList<Long>();
         		for (org.unitime.timetable.model.Student s: ((StudentGroupReservation)reservation).getGroup().getStudents())

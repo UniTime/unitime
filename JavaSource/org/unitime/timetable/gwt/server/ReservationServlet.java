@@ -55,6 +55,8 @@ import org.unitime.timetable.model.CurriculumClassification;
 import org.unitime.timetable.model.CurriculumCourse;
 import org.unitime.timetable.model.CurriculumProjectionRule;
 import org.unitime.timetable.model.CurriculumReservation;
+import org.unitime.timetable.model.GroupOverrideReservation;
+import org.unitime.timetable.model.IndividualOverrideReservation;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -559,6 +561,11 @@ public class ReservationServlet implements ReservationService {
 		r.setExpired(reservation.isExpired());
 		r.setLimit(reservation.getLimit());
 		r.setId(reservation.getUniqueId());
+		r.setOverride(reservation instanceof IndividualOverrideReservation || reservation instanceof GroupOverrideReservation);
+		r.setAllowOverlaps(reservation.isAllowOverlap());
+		r.setMustBeUsed(reservation.isMustBeUsed());
+		r.setAlwaysExpired(reservation.isAlwaysExpired());
+		r.setOverLimit(reservation.isCanAssignOverLimit());
 		return r;
 	}
 
@@ -667,11 +674,15 @@ public class ReservationServlet implements ReservationService {
 					if (reservation instanceof ReservationInterface.OverrideReservation) {
 						r = new OverrideReservation();
 						((OverrideReservation)r).setOverrideType(((ReservationInterface.OverrideReservation)reservation).getType());
-					} else if (reservation instanceof ReservationInterface.IndividualReservation)
+					} else if (reservation instanceof ReservationInterface.IndividualReservation) {
 						r = new IndividualReservation();
-					else if (reservation instanceof ReservationInterface.GroupReservation)
+						if (reservation.isOverride())
+							r = new IndividualOverrideReservation();
+					} else if (reservation instanceof ReservationInterface.GroupReservation) {
 						r = new StudentGroupReservation();
-					else if (reservation instanceof ReservationInterface.CurriculumReservation)
+						if (reservation.isOverride())
+							r = new GroupOverrideReservation();
+					} else if (reservation instanceof ReservationInterface.CurriculumReservation)
 						r = new CurriculumReservation();
 					else if (reservation instanceof ReservationInterface.CourseReservation)
 						r = new CourseReservation();
@@ -681,6 +692,17 @@ public class ReservationServlet implements ReservationService {
 				r.setLimit(r instanceof IndividualReservation ? null : reservation.getLimit());
 				r.setExpirationDate(reservation.getExpirationDate());
 				r.setInstructionalOffering(offering);
+				if (r instanceof IndividualOverrideReservation) {
+					((IndividualOverrideReservation)r).setAllowOverlap(reservation.isAllowOverlaps());
+					((IndividualOverrideReservation)r).setAlwaysExpired(reservation.isAlwaysExpired());
+					((IndividualOverrideReservation)r).setCanAssignOverLimit(reservation.isOverLimit());
+					((IndividualOverrideReservation)r).setMustBeUsed(reservation.isMustBeUsed());
+				} else if (r instanceof GroupOverrideReservation) {
+					((GroupOverrideReservation)r).setAllowOverlap(reservation.isAllowOverlaps());
+					((GroupOverrideReservation)r).setAlwaysExpired(reservation.isAlwaysExpired());
+					((GroupOverrideReservation)r).setCanAssignOverLimit(reservation.isOverLimit());
+					((GroupOverrideReservation)r).setMustBeUsed(reservation.isMustBeUsed());
+				}
 				offering.getReservations().add(r);
 				if (r.getClasses() == null)
 					r.setClasses(new HashSet<Class_>());

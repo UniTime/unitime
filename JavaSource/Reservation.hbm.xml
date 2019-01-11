@@ -102,7 +102,19 @@
 	        		not-null="true"/>
 	        	
 	        </subclass>
-        </subclass>
+
+	        <subclass
+	        	name="IndividualOverrideReservation"
+	        	abstract="false"
+	        	discriminator-value="5">
+	        	
+	        	<property
+	        		name="flags"
+	        		column="override_type"
+	        		type="java.lang.Integer"
+	        		not-null="true"/>
+	        </subclass>
+	    </subclass>
 
         <subclass
             name="StudentGroupReservation"
@@ -115,7 +127,19 @@
         	    column="group_id"
     	        not-null="true"
 	            foreign-key="fk_reservation_student_group"/>
-        </subclass>
+
+	        <subclass
+	        	name="GroupOverrideReservation"
+	        	abstract="false"
+	        	discriminator-value="6">
+	        	
+	        	<property
+	        		name="flags"
+	        		column="override_type"
+	        		type="java.lang.Integer"
+	        		not-null="true"/>
+	        </subclass>
+       	</subclass>
 
         <subclass
             name="CurriculumReservation"

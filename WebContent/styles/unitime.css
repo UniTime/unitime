@@ -6482,3 +6482,8 @@ unitime-RoomSharingWidget .legend .blank {
 	min-width: 75px;
 	text-align: center;
 }
+
+.unitime-OverrideProperties span {
+	display: inline-block;
+	min-width: 180px;
+}

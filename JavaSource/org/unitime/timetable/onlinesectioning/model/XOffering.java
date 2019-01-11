@@ -58,6 +58,8 @@ import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseReservation;
 import org.unitime.timetable.model.CurriculumReservation;
+import org.unitime.timetable.model.GroupOverrideReservation;
+import org.unitime.timetable.model.IndividualOverrideReservation;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -97,8 +99,12 @@ public class XOffering implements Serializable, Externalizable {
         for (Reservation reservation: offering.getReservations()) {
         	if (reservation instanceof OverrideReservation) {
         		iReservations.add(new XIndividualReservation(this, (OverrideReservation)reservation));
+        	} else if (reservation instanceof IndividualOverrideReservation) {
+        		iReservations.add(new XIndividualReservation(this, (IndividualOverrideReservation)reservation));
         	} else if (reservation instanceof IndividualReservation) {
         		iReservations.add(new XIndividualReservation(this, (IndividualReservation)reservation));
+        	} else if (reservation instanceof GroupOverrideReservation) {
+        		iReservations.add(new XGroupReservation(this, (GroupOverrideReservation)reservation));
         	} else if (reservation instanceof StudentGroupReservation) {
         		iReservations.add(new XGroupReservation(this, (StudentGroupReservation)reservation));
         	} else if (reservation instanceof CurriculumReservation) {

@@ -55,6 +55,7 @@ import org.unitime.timetable.gwt.shared.ReservationInterface.ReservationFilterRp
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.dom.client.Style.WhiteSpace;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -256,6 +257,17 @@ public class ReservationTable extends Composite {
 
 			}
 			
+			String flags = "";
+			if (reservation.isOverride()) {
+				if (reservation.isAllowOverlaps())
+					flags += "\n  " + MESSAGES.checkCanOverlap();
+				if (reservation.isOverLimit())
+					flags += "\n  " + MESSAGES.checkCanOverLimit();
+				if (reservation.isMustBeUsed())
+					flags += "\n  " + MESSAGES.checkMustBeUsed();
+				if (reservation.isAlwaysExpired())
+					flags += "\n  " + MESSAGES.checkAllwaysExpired();
+			}
 			Integer limit = reservation.getLimit();
 			if (reservation instanceof CourseReservation) {
 				line.add(new Label(MESSAGES.reservationCourseAbbv()));
@@ -263,7 +275,11 @@ public class ReservationTable extends Composite {
 				limit = course.getLimit();
 				line.add(new Label(course.getAbbv(), false));
 			} else if (reservation instanceof IndividualReservation) {
-				if (reservation instanceof OverrideReservation) {
+				if (reservation.isOverride()) {
+					Label label = new Label(MESSAGES.reservationIndividualOverrideAbbv() + flags);
+					label.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE);
+					line.add(label);
+				} else if (reservation instanceof OverrideReservation) {
 					line.add(new Label(CONSTANTS.reservationOverrideTypeAbbv()[((OverrideReservation)reservation).getType().ordinal()]));
 				} else {
 					line.add(new Label(MESSAGES.reservationIndividualAbbv()));
@@ -279,7 +295,13 @@ public class ReservationTable extends Composite {
 					students.addStyleName("unitime-Editable");
 				line.add(students);
 			} else if (reservation instanceof GroupReservation) {
-				line.add(new Label(MESSAGES.reservationStudentGroupAbbv()));
+				if (reservation.isOverride()) {
+					Label label = new Label(MESSAGES.reservationStudentGroupOverrideAbbv() + flags);
+					label.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE);
+					line.add(label);
+				} else {
+					line.add(new Label(MESSAGES.reservationStudentGroupAbbv()));
+				}
 				IdName group = ((GroupReservation) reservation).getGroup();
 				line.add(new Label(group.getAbbv() + " - " + group.getName() + " (" + group.getLimit() + ")", false));				
 			} else if (reservation instanceof CurriculumReservation) {
@@ -347,6 +369,8 @@ public class ReservationTable extends Composite {
 			}
 
 			if (reservation instanceof OverrideReservation && !((OverrideReservation)reservation).getType().isCanHaveExpirationDate())
+				line.add(new Label(MESSAGES.reservationOverrideAbbv()));
+			else if (reservation.isOverride() && reservation.isAlwaysExpired())
 				line.add(new Label(MESSAGES.reservationOverrideAbbv()));
 			else
 				line.add(new Label(reservation.getExpirationDate() == null ? "" : sDF.format(reservation.getExpirationDate())));

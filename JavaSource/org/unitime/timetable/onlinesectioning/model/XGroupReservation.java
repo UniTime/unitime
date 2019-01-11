@@ -25,6 +25,7 @@ import java.io.ObjectOutput;
 
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
+import org.unitime.timetable.model.GroupOverrideReservation;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.StudentGroupType;
 
@@ -36,6 +37,7 @@ public class XGroupReservation extends XReservation {
 	private static final long serialVersionUID = 1L;
 	private int iLimit;
     private String iGroup;
+    private Boolean iExpired;
 
     public XGroupReservation() {
     	super();
@@ -54,6 +56,18 @@ public class XGroupReservation extends XReservation {
         	setAllowDisabled(true);
     }
     
+    public XGroupReservation(XOffering offering, GroupOverrideReservation reservation) {
+    	super(XReservationType.Override, offering, reservation);
+        iLimit = (reservation.getLimit() == null ? -1 : reservation.getLimit());
+        iGroup = reservation.getGroup().getGroupAbbreviation();
+        if (reservation.getGroup().getType() != null && reservation.getGroup().getType().getAllowDisabledSection() == StudentGroupType.AllowDisabledSection.WithGroupReservation)
+        	setAllowDisabled(true);
+        setMustBeUsed(reservation.isMustBeUsed());
+        setAllowOverlap(reservation.isAllowOverlap());
+        setCanAssignOverLimit(reservation.isCanAssignOverLimit());
+        if (reservation.isAlwaysExpired()) iExpired = true; else iType = XReservationType.Group;
+    }
+    
     public String getGroup() {
     	return iGroup;
     }
@@ -66,6 +80,11 @@ public class XGroupReservation extends XReservation {
         return iLimit;
     }
     
+    @Override
+    public boolean isExpired() {
+    	return (getType() == XReservationType.Override && iExpired != null ? iExpired.booleanValue() : super.isExpired());
+    }
+    
 	@Override
 	public boolean isApplicable(XStudent student, XCourseId course) {
 		return student.getGroups().contains(iGroup);
@@ -76,6 +95,16 @@ public class XGroupReservation extends XReservation {
     	super.readExternal(in);
     	iGroup = (String)in.readObject();
     	iLimit = in.readInt();
+    	if (getType() == XReservationType.Override) {
+    		switch (in.readByte()) {
+    		case 0:
+    			iExpired = false; break;
+    		case 1:
+    			iExpired = true; break;
+    		default:
+    			iExpired = null; break;
+    		}
+    	}
 	}
 
 	@Override
@@ -83,6 +112,9 @@ public class XGroupReservation extends XReservation {
 		super.writeExternal(out);
 		out.writeObject(iGroup);
 		out.writeInt(iLimit);
+		if (getType() == XReservationType.Override) {
+			out.writeByte(iExpired == null ? 2 : iExpired.booleanValue() ? 1 : 0);
+		}
 	}
 	
 	public static class XCourseReservationSerializer implements Externalizer<XGroupReservation> {

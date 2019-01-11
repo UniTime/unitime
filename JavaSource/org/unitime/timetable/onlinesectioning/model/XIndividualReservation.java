@@ -29,6 +29,7 @@ import org.cpsolver.studentsct.reservation.GroupReservation;
 import org.cpsolver.studentsct.reservation.ReservationOverride;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
+import org.unitime.timetable.model.IndividualOverrideReservation;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.OverrideReservation;
 import org.unitime.timetable.model.Student;
@@ -66,6 +67,16 @@ public class XIndividualReservation extends XReservation {
         setAllowOverlap(reservation.getOverrideType().isAllowTimeConflict());
         setCanAssignOverLimit(reservation.getOverrideType().isAllowOverLimit());
         iExpired = reservation.getOverrideType().isExpired();
+    }
+    
+    public XIndividualReservation(XOffering offering, IndividualOverrideReservation reservation) {
+        super(XReservationType.Override, offering, reservation);
+        for (Student student: reservation.getStudents())
+        	iStudentIds.add(student.getUniqueId());
+        setMustBeUsed(reservation.isMustBeUsed());
+        setAllowOverlap(reservation.isAllowOverlap());
+        setCanAssignOverLimit(reservation.isCanAssignOverLimit());
+        if (reservation.isAlwaysExpired()) iExpired = true; else iType = XReservationType.Individual;
     }
 
     public XIndividualReservation(org.cpsolver.studentsct.reservation.IndividualReservation reservation) {

@@ -21,6 +21,7 @@ package org.unitime.timetable.model;
 
 import java.util.Date;
 
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.ReservationInterface.OverrideType;
 import org.unitime.timetable.model.base.BaseOverrideReservation;
 
@@ -49,5 +50,34 @@ public class OverrideReservation extends BaseOverrideReservation {
 	public Date getExpirationDate() {
 		OverrideType type = getOverrideType();
 		return (type == null || type.isCanHaveExpirationDate() ? super.getExpirationDate() : null);		
+	}
+	
+	@Override
+	public int getPriority() {
+		return ApplicationProperty.ReservationPriorityOverride.intValue();
+	}
+
+	@Override
+	public boolean isCanAssignOverLimit() {
+		OverrideType type = getOverrideType();
+		return type != null && type.isAllowOverLimit();
+	}
+
+	@Override
+	public boolean isMustBeUsed() {
+		OverrideType type = getOverrideType();
+		return type != null && type.isMustBeUsed();
+	}
+
+	@Override
+	public boolean isAllowOverlap() {
+		OverrideType type = getOverrideType();
+		return type != null && type.isAllowTimeConflict();
+	}
+	
+	@Override
+	public boolean isAlwaysExpired() {
+		OverrideType type = getOverrideType();
+		return type != null && !type.isCanHaveExpirationDate();
 	}
 }

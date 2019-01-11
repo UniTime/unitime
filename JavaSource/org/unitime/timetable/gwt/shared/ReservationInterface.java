@@ -42,6 +42,7 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 	private Integer iLimit = null, iEnrollment = null, iLastLike = null, iProjection = null;
 	private Date iExpirationDate;
 	private boolean iEditable = false, iExpired = false;
+	private boolean iOverride = false, iAlwaysExpired = false, iAllowOverlaps = false, iOverLimit = false, iMustBeUsed = false;
 	
 	public Long getId() { return iId; }
 	public void setId(Long id) { iId = id; }
@@ -61,6 +62,17 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 	public boolean isEditable() { return iEditable; }
 	public void setExpired(boolean expired) { iExpired = expired; }
 	public boolean isExpired() { return iExpired; }
+	
+	public boolean isOverride() { return iOverride; }
+	public void setOverride(boolean override) { iOverride = override; }
+	public boolean isAlwaysExpired() { return iAlwaysExpired; }
+	public void setAlwaysExpired(boolean alwaysExpired) { iAlwaysExpired = alwaysExpired; }
+	public boolean isAllowOverlaps() { return iAllowOverlaps; }
+	public void setAllowOverlaps(boolean allowOverlaps) { iAllowOverlaps = allowOverlaps; }
+	public boolean isOverLimit() { return iOverLimit; }
+	public void setOverLimit(boolean overLimit) { iOverLimit = overLimit; }
+	public boolean isMustBeUsed() { return iMustBeUsed; }
+	public void setMustBeUsed(boolean mustBeUsed) { iMustBeUsed = mustBeUsed; }
 	
 	public List<Config> getConfigs() { return iConfigs; }
 	public List<Clazz> getClasses() { return iClasses; }

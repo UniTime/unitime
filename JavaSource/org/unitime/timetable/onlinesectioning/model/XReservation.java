@@ -59,6 +59,7 @@ public abstract class XReservation extends XReservationId implements Comparable<
     	CanAssignOverLimit,
     	AllowOverlap,
     	AllowDiabled,
+    	AlwaysExpired,
     	;
     	public int flag() { return 1 << ordinal(); }
 		public boolean in(int flags) {
@@ -217,7 +218,10 @@ public abstract class XReservation extends XReservationId implements Comparable<
       */
     public boolean canAssignOverLimit() { return Flags.CanAssignOverLimit.in(iFlags); }
     
-    public void setCanAssignOverLimit(boolean canAssignOverLimit) { iFlags = Flags.CanAssignOverLimit.set(iFlags, canAssignOverLimit); }
+    public void setCanAssignOverLimit(boolean canAssignOverLimit) {
+    	iFlags = Flags.CanAssignOverLimit.set(iFlags, canAssignOverLimit);
+    	if (canAssignOverLimit) iLimitCap = -1;
+    }
     
     /**
      * If true, student must use the reservation (if applicable)

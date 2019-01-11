@@ -28,7 +28,6 @@ import java.io.Serializable;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.InstructionalMethod;
-import org.unitime.timetable.model.dao.InstructionalMethodDAO;
 
 /**
  * @author Tomas Muller

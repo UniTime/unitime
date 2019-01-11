@@ -100,6 +100,7 @@ public abstract class Reservation extends BaseReservation implements Comparable<
 	public abstract boolean isCanAssignOverLimit();
 	public abstract boolean isMustBeUsed();
 	public abstract boolean isAllowOverlap();
+	public boolean isAlwaysExpired() { return false; }
 	
 	@Override
     public int compareTo(Reservation r) {
