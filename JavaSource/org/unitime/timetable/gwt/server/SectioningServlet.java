@@ -333,8 +333,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				course.setLastLike(c.getDemand());
 				results.add(course);
 				for (InstrOfferingConfig config: c.getInstructionalOffering().getInstrOfferingConfigs()) {
-					if (config.getInstructionalMethod() != null)
-						course.addInstructionalMethod(config.getInstructionalMethod().getUniqueId(), config.getInstructionalMethod().getLabel());
+					if (config.getEffectiveInstructionalMethod() != null)
+						course.addInstructionalMethod(config.getEffectiveInstructionalMethod().getUniqueId(), config.getEffectiveInstructionalMethod().getLabel());
 					else
 						course.setHasNoInstructionalMethod(true);
 				}

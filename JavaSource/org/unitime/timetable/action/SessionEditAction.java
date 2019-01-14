@@ -51,6 +51,7 @@ import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.ClassDurationTypeDAO;
 import org.unitime.timetable.model.dao.DatePatternDAO;
+import org.unitime.timetable.model.dao.InstructionalMethodDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -151,6 +152,7 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
 		sessionEditForm.setWkDrop(acadSession.getLastWeekToDrop());
 		sessionEditForm.setSectStatus(acadSession.getDefaultSectioningStatus() == null ? -1 : acadSession.getDefaultSectioningStatus().getUniqueId());
 		sessionEditForm.setDurationType(acadSession.getDefaultClassDurationType() == null ? -1 : acadSession.getDefaultClassDurationType().getUniqueId());
+		sessionEditForm.setInstructionalMethod(acadSession.getDefaultInstructionalMethod() == null ? -1 : acadSession.getDefaultInstructionalMethod().getUniqueId());
 		
 		return mapping.findForward("showEdit");
 	}
@@ -391,6 +393,7 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
 		sessn.setLastWeekToDrop(sessionEditForm.getWkDrop());
 		sessn.setDefaultSectioningStatus(sessionEditForm.getSectStatus() == null || sessionEditForm.getSectStatus() < 0 ? null : StudentSectioningStatusDAO.getInstance().get(sessionEditForm.getSectStatus()));
 		sessn.setDefaultClassDurationType(sessionEditForm.getDurationType() == null || sessionEditForm.getDurationType() < 0 ? null : ClassDurationTypeDAO.getInstance().get(sessionEditForm.getDurationType()));
+		sessn.setDefaultInstructionalMethod(sessionEditForm.getInstructionalMethod() == null || sessionEditForm.getInstructionalMethod() < 0 ? null : InstructionalMethodDAO.getInstance().get(sessionEditForm.getInstructionalMethod())); 
 	}
 
 

@@ -13502,4 +13502,12 @@
 	    <plsql>alter table %SCHEMA%.course_demand add critical number(1) default 0</plsql>
 		<mysql>alter table %SCHEMA%.course_demand add critical int(1) default 0</mysql>
 	</update>
+	<update version="215" date="14-Jan-2019" comment="Default Instructional Method">
+		<plsql>alter table %SCHEMA%.sessions add instr_method_id number(20,0)</plsql>
+		<mysql>alter table %SCHEMA%.sessions add instr_method_id decimal(20,0)</mysql>
+		<sql>
+			alter table %SCHEMA%.sessions add constraint fk_session_insmtd foreign key (instr_method_id)
+			references %SCHEMA%.instructional_method (uniqueid) on delete set null
+		</sql>
+	</update>
 </dbupdate>

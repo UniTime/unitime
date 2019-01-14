@@ -78,8 +78,8 @@ public class XConfig implements Serializable, Comparable<XConfig>, Externalizabl
     		credit = false;
         }
     	Collections.sort(iSubparts, new XSubpartComparator());
-    	if (config.getInstructionalMethod() != null)
-    		iInstructionalMethod = new XInstructionalMethod(config.getInstructionalMethod());
+    	if (config.getEffectiveInstructionalMethod() != null)
+    		iInstructionalMethod = new XInstructionalMethod(config.getEffectiveInstructionalMethod());
     }
     
     public XConfig(Config config) {

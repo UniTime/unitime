@@ -544,6 +544,9 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			String creditTerm = "(select coalesce(sum(fixedUnits),0) + coalesce(sum(minUnits),0) from CourseCreditUnitConfig where courseOwner in (select courseOffering.uniqueId from StudentClassEnrollment where student = s))";
 			if ("!".equals(im)) {
 				creditTerm = "(select coalesce(sum(fixedUnits),0) + coalesce(sum(minUnits),0) from CourseCreditUnitConfig where courseOwner in (select courseOffering.uniqueId from StudentClassEnrollment where student = s and clazz.schedulingSubpart.instrOfferingConfig.instructionalMethod is null))";
+			} else if (im != null && im.equals(server.getAcademicSession().getDefaultInstructionalMethod())) {
+				query.addParameter("credit", "Xim", im.toLowerCase());
+				creditTerm = "(select coalesce(sum(fixedUnits),0) + coalesce(sum(minUnits),0) from CourseCreditUnitConfig where courseOwner in (select sce.courseOffering.uniqueId from StudentClassEnrollment sce left outer join sce.clazz.schedulingSubpart.instrOfferingConfig.instructionalMethod im where sce.student = s and (im is null or lower(im.reference) = :Xim)))";
 			} else if (im != null) {
 				creditTerm = "(select coalesce(sum(fixedUnits),0) + coalesce(sum(minUnits),0) from CourseCreditUnitConfig where courseOwner in (select courseOffering.uniqueId from StudentClassEnrollment where student = s and lower(clazz.schedulingSubpart.instrOfferingConfig.instructionalMethod.reference) = :Xim))";
 				query.addParameter("credit", "Xim", im.toLowerCase());

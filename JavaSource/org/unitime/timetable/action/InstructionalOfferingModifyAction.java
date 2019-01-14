@@ -289,7 +289,7 @@ public class InstructionalOfferingModifyAction extends Action {
         frm.setDisplayExternalId(ApplicationProperty.ClassSetupShowExternalIds.isTrue() && !ApplicationProperty.ClassSetupEditExternalIds.isTrue());
         frm.setEditExternalId(ApplicationProperty.ClassSetupEditExternalIds.isTrue());
         frm.setInstructionalMethod(ioc.getInstructionalMethod() == null ? -1l : ioc.getInstructionalMethod().getUniqueId());
-       
+        frm.setInstructionalMethodDefault(io.getSession().getDefaultInstructionalMethod() == null ? null : io.getSession().getDefaultInstructionalMethod().getLabel());
 
         String name = io.getCourseNameWithTitle();
         if (io.hasMultipleConfigurations()) {

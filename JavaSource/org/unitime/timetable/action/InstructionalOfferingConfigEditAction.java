@@ -453,6 +453,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
         frm.setDurationTypeDefault(io.getSession().getDefaultClassDurationType() == null ? MSG.systemDefaultDurationType() : MSG.sessionDefault(io.getSession().getDefaultClassDurationType().getLabel()));
         frm.setDurationTypeEditable(true);
         frm.setInstructionalMethod(null);
+        frm.setInstructionalMethodDefault(io.getSession().getDefaultInstructionalMethod() == null ? null : io.getSession().getDefaultInstructionalMethod().getLabel());
 
 	    Set configs = io.getInstrOfferingConfigs();
 	    frm.setConfigCount(new Integer (configs.size()));

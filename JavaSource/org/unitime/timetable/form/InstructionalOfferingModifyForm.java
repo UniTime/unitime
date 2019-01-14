@@ -82,6 +82,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private Boolean displayDisplayInstructors;
 	private Boolean displayEnabledForStudentScheduling;
 	private Long instructionalMethod;
+	private String instructionalMethodDefault;
 	
 	private List classIds;
 	private List subpartIds;
@@ -488,6 +489,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	enableAllClassesForStudentScheduling = "";
     	displayAllClassesInstructors = "";
     	instructionalMethod = null;
+    	instructionalMethodDefault = null;
     	resetLists();
     }
     
@@ -1684,6 +1686,8 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	
     public Long getInstructionalMethod() { return instructionalMethod; }
     public void setInstructionalMethod(Long instructionalMethod) { this.instructionalMethod = instructionalMethod; }
+    public String getInstructionalMethodDefault() { return instructionalMethodDefault; }
+    public void setInstructionalMethodDefault(String instructionalMethodDefault) { this.instructionalMethodDefault = instructionalMethodDefault; }
     public List<IdValue> getInstructionalMethods() {
     	List<IdValue> ret = new ArrayList<IdValue>();
     	for (InstructionalMethod type: InstructionalMethod.findAll())

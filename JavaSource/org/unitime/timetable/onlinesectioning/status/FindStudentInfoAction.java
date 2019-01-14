@@ -260,7 +260,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 									if (g != null) {
 										for (XSubpart xs: g.getSubparts()) {
 											tCred += xs.getCreditValue(cr.getEnrollment().getCourseId());
-											if (g.getInstructionalMethod() != null)
+											if (g.getInstructionalMethod() != null && !g.getInstructionalMethod().getReference().equals(session.getDefaultInstructionalMethod()))
 												s.addIMTotalCredit(g.getInstructionalMethod().getReference(), xs.getCreditValue(cr.getEnrollment().getCourseId()));
 										}
 									}
@@ -374,7 +374,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 							if (g != null) {
 								for (XSubpart xs: g.getSubparts()) {
 									s.setCredit(s.getCredit() + xs.getCreditValue(m.enrollment().getCourseId()));
-									if (g.getInstructionalMethod() != null)
+									if (g.getInstructionalMethod() != null && !g.getInstructionalMethod().getReference().equals(session.getDefaultInstructionalMethod()))
 										s.addIMCredit(g.getInstructionalMethod().getReference(), xs.getCreditValue(m.enrollment().getCourseId()));
 								}
 								

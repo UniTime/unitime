@@ -42,6 +42,7 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Ser
 	private boolean iSectioningEnabled = false;
 	private int iWkEnroll = 1, iWkChange = 1, iWkDrop = 4;
 	private String iDefaultStatus = null;
+	private String iDefaultInstructionalMethod = null;
 	
 	public AcademicSessionInfo(Session session) {
 		update(session);
@@ -64,6 +65,7 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Ser
 		iWkChange = session.getLastWeekToChange();
 		iWkDrop = session.getLastWeekToDrop();
 		iDefaultStatus = session.getDefaultSectioningStatus() == null ? null : session.getDefaultSectioningStatus().getReference();
+		iDefaultInstructionalMethod = session.getDefaultInstructionalMethod() == null ? null : session.getDefaultInstructionalMethod().getReference();
 	}
 	
 	public AcademicSessionInfo(Long uniqueId, String year, String term, String campus) {
@@ -127,6 +129,8 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Ser
 	public int getLastWeekToDrop() { return iWkDrop; }
 	
 	public String getDefaultSectioningStatus() { return iDefaultStatus; }
+	
+	public String getDefaultInstructionalMethod() { return iDefaultInstructionalMethod; }
 
 	@Override
 	public Serializable getQualifierId() {

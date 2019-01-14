@@ -29,6 +29,7 @@ import org.unitime.timetable.model.ClassDurationType;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
+import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceGroup;
@@ -61,6 +62,7 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 	private DatePattern iDefaultDatePattern;
 	private StudentSectioningStatus iDefaultSectioningStatus;
 	private ClassDurationType iDefaultClassDurationType;
+	private InstructionalMethod iDefaultInstructionalMethod;
 	private Set<SubjectArea> iSubjectAreas;
 	private Set<Building> iBuildings;
 	private Set<Department> iDepartments;
@@ -143,6 +145,9 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 	public ClassDurationType getDefaultClassDurationType() { return iDefaultClassDurationType; }
 	public void setDefaultClassDurationType(ClassDurationType defaultClassDurationType) { iDefaultClassDurationType = defaultClassDurationType; }
 
+	public InstructionalMethod getDefaultInstructionalMethod() { return iDefaultInstructionalMethod; }
+	public void setDefaultInstructionalMethod(InstructionalMethod defaultInstructionalMethod) { iDefaultInstructionalMethod = defaultInstructionalMethod; }
+
 	public Set<SubjectArea> getSubjectAreas() { return iSubjectAreas; }
 	public void setSubjectAreas(Set<SubjectArea> subjectAreas) { iSubjectAreas = subjectAreas; }
 	public void addTosubjectAreas(SubjectArea subjectArea) {
@@ -201,6 +206,7 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 			"\n	ClassesEndDateTime: " + getClassesEndDateTime() +
 			"\n	DefaultClassDurationType: " + getDefaultClassDurationType() +
 			"\n	DefaultDatePattern: " + getDefaultDatePattern() +
+			"\n	DefaultInstructionalMethod: " + getDefaultInstructionalMethod() +
 			"\n	DefaultSectioningStatus: " + getDefaultSectioningStatus() +
 			"\n	EventBeginDate: " + getEventBeginDate() +
 			"\n	EventEndDate: " + getEventEndDate() +

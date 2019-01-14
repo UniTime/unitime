@@ -217,8 +217,23 @@
 					<html:optionsCollection property="durationTypes" value="id" label="value" />
 				</html:select>
 			</TD>
-		</TR>		
-		
+		</TR>
+
+		<logic:notEmpty name="sessionEditForm" property="instructionalMethods">
+			<TR>
+				<TD>Default Instructional Method:</TD>
+				<TD colspan="2">
+					<html:select property="instructionalMethod">
+						<html:option value="-1">No Default</html:option>
+						<html:optionsCollection property="instructionalMethods" value="id" label="value" />
+					</html:select>
+				</TD>
+			</TR>
+		</logic:notEmpty>
+		<logic:empty name="sessionEditForm" property="instructionalMethods">
+			<html:hidden property="instructionalMethod"/>
+		</logic:empty>
+
 		<% if (request.getAttribute("Sessions.holidays")!=null) { %>
 			<TR>
 				<TD>Holidays:</TD><TD colspan='2'></TD>

@@ -840,7 +840,13 @@
                 not-null="false"
                 foreign-key="fk_session_durtype"/>
 
-        </union-subclass>
+            <many-to-one
+                name="defaultInstructionalMethod"
+                class="InstructionalMethod"
+                column="instr_method_id"
+                not-null="false"
+                foreign-key="fk_session_insmtd"/>
+		</union-subclass>
 
         <union-subclass name="DepartmentalInstructor" table="departmental_instructor">
             <property

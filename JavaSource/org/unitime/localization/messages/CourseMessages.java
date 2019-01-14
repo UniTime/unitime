@@ -2585,6 +2585,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Not Selected")
 	String selectNoInstructionalMethod();
 	
+	@DefaultMessage("Default ({0})")
+	String defaultInstructionalMethod(String defaultInstructionalMethod);
+	
 	@DefaultMessage("No matching date pattern!")
 	String warnNoMatchingDatePattern();
 	

@@ -806,7 +806,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 						XOffering o = server().getOffering(cr.getEnrollment().getOfferingId());
 						XConfig g = (o == null ? null : o.getConfig(cr.getEnrollment().getConfigId()));
 						if (g != null) {
-							if ("!".equals(im) && g.getInstructionalMethod() != null) continue;
+							if ("!".equals(im) && g.getInstructionalMethod() != null && !g.getInstructionalMethod().getReference().equals(iServer.getAcademicSession().getDefaultInstructionalMethod())) continue;
 							if (im != null && !"!".equals(im) && (g.getInstructionalMethod() == null || !im.equalsIgnoreCase(g.getInstructionalMethod().getReference()))) continue;
 							for (XSubpart xs: g.getSubparts()) {
 								credit += xs.getCreditValue(cr.getEnrollment().getCourseId());
@@ -1178,7 +1178,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 						XOffering o = server().getOffering(cr.getEnrollment().getOfferingId());
 						XConfig g = (o == null ? null : o.getConfig(cr.getEnrollment().getConfigId()));
 						if (g != null) {
-							if ("!".equals(im) && g.getInstructionalMethod() != null) continue;
+							if ("!".equals(im) && g.getInstructionalMethod() != null && !g.getInstructionalMethod().getReference().equals(iServer.getAcademicSession().getDefaultInstructionalMethod())) continue;
 							if (im != null && !"!".equals(im) && (g.getInstructionalMethod() == null || !im.equalsIgnoreCase(g.getInstructionalMethod().getReference()))) continue;
 							for (XSubpart xs: g.getSubparts())
 								credit += xs.getCreditValue(cr.getEnrollment().getCourseId());

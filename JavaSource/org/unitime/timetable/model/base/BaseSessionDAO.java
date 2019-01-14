@@ -61,4 +61,9 @@ public abstract class BaseSessionDAO extends _RootDAO<Session,Long> {
 	public List<Session> findByDefaultClassDurationType(org.hibernate.Session hibSession, Long defaultClassDurationTypeId) {
 		return hibSession.createQuery("from Session x where x.defaultClassDurationType.uniqueId = :defaultClassDurationTypeId").setLong("defaultClassDurationTypeId", defaultClassDurationTypeId).list();
 	}
+
+	@SuppressWarnings("unchecked")
+	public List<Session> findByDefaultInstructionalMethod(org.hibernate.Session hibSession, Long defaultInstructionalMethodId) {
+		return hibSession.createQuery("from Session x where x.defaultInstructionalMethod.uniqueId = :defaultInstructionalMethodId").setLong("defaultInstructionalMethodId", defaultInstructionalMethodId).list();
+	}
 }

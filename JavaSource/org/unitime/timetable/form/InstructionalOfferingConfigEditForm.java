@@ -83,6 +83,7 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
     private Long durationType;
     private boolean durationTypeEditable;
     private Long instructionalMethod;
+    private String instructionalMethodDefault;
     
     // Error Codes
     private final short NO_ERR = 0;
@@ -345,6 +346,7 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
         durationTypeDefault = null;
         durationTypeEditable = false;
         instructionalMethod = null;
+        instructionalMethodDefault = null;
     }
 
     /**
@@ -538,6 +540,8 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
     
     public Long getInstructionalMethod() { return instructionalMethod; }
     public void setInstructionalMethod(Long instructionalMethod) { this.instructionalMethod = instructionalMethod; }
+    public String getInstructionalMethodDefault() { return instructionalMethodDefault; }
+    public void setInstructionalMethodDefault(String instructionalMethodDefault) { this.instructionalMethodDefault = instructionalMethodDefault; }
     public List<IdValue> getInstructionalMethods() {
     	List<IdValue> ret = new ArrayList<IdValue>();
     	for (InstructionalMethod type: InstructionalMethod.findAll())

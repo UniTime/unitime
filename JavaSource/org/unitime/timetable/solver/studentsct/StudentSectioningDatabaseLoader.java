@@ -103,6 +103,7 @@ import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.GroupOverrideReservation;
 import org.unitime.timetable.model.IndividualOverrideReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.OverrideReservation;
@@ -477,10 +478,11 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	int configLimit = (ioc.isUnlimitedEnrollment() ? -1 : ioc.getLimit());
         	if (configLimit >= 9999) configLimit = -1;
             Config config = new Config(ioc.getUniqueId(), configLimit, courseName + " [" + ioc.getName() + "]", offering);
-            if (ioc.getInstructionalMethod() != null) {
-            	config.setInstructionalMethodId(ioc.getInstructionalMethod().getUniqueId());
-            	config.setInstructionalMethodName(ioc.getInstructionalMethod().getLabel());
-            	config.setInstructionalMethodReference(ioc.getInstructionalMethod().getReference());
+            InstructionalMethod im = ioc.getEffectiveInstructionalMethod();
+            if (im != null) {
+            	config.setInstructionalMethodId(im.getUniqueId());
+            	config.setInstructionalMethodName(im.getLabel());
+            	config.setInstructionalMethodReference(im.getReference());
             }
             TreeSet<SchedulingSubpart> subparts = new TreeSet<SchedulingSubpart>(new SchedulingSubpartComparator());
             subparts.addAll(ioc.getSchedulingSubparts());

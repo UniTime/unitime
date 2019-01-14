@@ -366,7 +366,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 								OnlineSectioningLog.CourseRequestOption pref = OnlineSectioningLog.CourseRequestOption.parseFrom(option.getValue());
 								if (pref.getInstructionalMethodCount() > 0) {
 									boolean im = false;
-									InstructionalMethod method = crm.enrollment().get(0).getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod();
+									InstructionalMethod method = crm.enrollment().get(0).getClazz().getSchedulingSubpart().getInstrOfferingConfig().getEffectiveInstructionalMethod();
 									if (method != null)
 										for (OnlineSectioningLog.Entity e: pref.getInstructionalMethodList())
 											if (method.getReference().equals(e.getExternalId()) || method.getUniqueId().equals(e.getUniqueId())) { im = true; break; }

@@ -81,14 +81,14 @@ public class SessionListAction extends Action {
 		sessionContext.checkPermission(Right.AcademicSessions);
 
 		WebTable webTable = new WebTable(
-				11, "", "sessionList.do?order=%%",					
+				12, "", "sessionList.do?order=%%",
 				new String[] {
 					"Default", "Academic<br>Session", "Academic<br>Initiative", "Session<br>Begins",
 					"Classes<br>End", "Session<br>Ends", "Exams<br>Begins", "Date<br>Pattern", "Status", "Class<br>Duration", 
-					"Events<br>Begins", "Events<br>Ends", "<br>Enrollment", "Deadline<br>Change", "<br>Drop", "Sectioning<br>Status" },
+					"Events<br>Begins", "Events<br>Ends", "<br>Enrollment", "Deadline<br>Change", "<br>Drop", "Sectioning<br>Status", "Default<br>IM" },
 				new String[] { "center", "left", "left", "left", "left",
-					"left", "left", "left", "left", "right", "left", "left", "left", "left", "left", "left" }, 
-				new boolean[] { true, true, true, false, false, false, true, false, true, true, true, true, true, true, true });
+					"left", "left", "left", "left", "right", "left", "left", "left", "left", "left", "left", "left" }, 
+				new boolean[] { true, true, true, false, false, false, true, false, true, true, true, true, true, true, true, true });
 		
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.SESSION_DATE);
 		
@@ -124,6 +124,7 @@ public class SessionListAction extends Action {
 						df.format(cc.getTime()).replace(" ", "&nbsp;"),
 						df.format(cd.getTime()).replace(" ", "&nbsp;"),
 						(s.getDefaultSectioningStatus() == null ? "&nbsp;" : s.getDefaultSectioningStatus().getReference()),
+						(s.getDefaultInstructionalMethod() ==  null ? "&nbsp;" : s.getDefaultInstructionalMethod().getReference()),
 						 },
 					new Comparable[] {
 						s.equals(defaultSession) ? "<img src='images/accept.png'>" : "",
@@ -139,7 +140,8 @@ public class SessionListAction extends Action {
 						s.getEventBeginDate(),
 						s.getEventEndDate(),
 						ce.getTime(), cc.getTime(), cd.getTime(),
-						(s.getDefaultSectioningStatus() == null ? " " : s.getDefaultSectioningStatus().getReference()) } );
+						(s.getDefaultSectioningStatus() == null ? " " : s.getDefaultSectioningStatus().getReference()),
+						(s.getDefaultInstructionalMethod() ==  null ? "" : s.getDefaultInstructionalMethod().getReference())} );
 		}
 				
 		webTable.enableHR("#9CB0CE");

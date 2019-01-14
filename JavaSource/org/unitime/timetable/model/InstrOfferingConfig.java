@@ -301,4 +301,9 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
     	}
     	return enrollment;
 	}
+	
+	public InstructionalMethod getEffectiveInstructionalMethod() {
+		if (getInstructionalMethod() != null) return getInstructionalMethod();
+		return getSession().getDefaultInstructionalMethod();
+	}
 }

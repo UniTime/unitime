@@ -34,6 +34,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.timetable.model.ClassDurationType;
 import org.unitime.timetable.model.DepartmentStatusType;
+import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningStatus;
@@ -75,6 +76,7 @@ public class SessionEditForm extends ActionForm {
 	Long sectStatus;
 	boolean includeTestSession;
 	Long durationType;
+	Long instructionalMethod;
 	
 	// --------------------------------------------------------- Methods
 	
@@ -403,6 +405,16 @@ public class SessionEditForm extends ActionForm {
     	for (ClassDurationType type: ClassDurationType.findAll())
     		if (type.isVisible() || type.getUniqueId().equals(durationType))
     			ret.add(new IdValue(type.getUniqueId(), type.getLabel()));
+    	return ret;
+    }
+    
+    public Long getInstructionalMethod() { return instructionalMethod; }
+    public void setInstructionalMethod(Long instructionalMethod) { this.instructionalMethod = instructionalMethod; }
+    public List<IdValue> getInstructionalMethods() {
+    	List<IdValue> ret = new ArrayList<IdValue>();
+    	for (InstructionalMethod im: InstructionalMethod.findAll())
+    		// if (im.isVisible() || im.getUniqueId().equals(instructionalMethod))
+    		ret.add(new IdValue(im.getUniqueId(), im.getLabel()));
     	return ret;
     }
     

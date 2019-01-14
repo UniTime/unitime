@@ -983,13 +983,13 @@ public class OnlineSectioningHelper {
 		preference.setType(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE);
 		if (rc.hasSelectedIntructionalMethods()) {
 			for (InstrOfferingConfig config: co.getInstructionalOffering().getInstrOfferingConfigs()) {
-				if (config.getInstructionalMethod() != null) {
-					Preference p = rc.getIntructionalMethodSelection(config.getInstructionalMethod().getUniqueId());
+				if (config.getEffectiveInstructionalMethod() != null) {
+					Preference p = rc.getIntructionalMethodSelection(config.getEffectiveInstructionalMethod().getUniqueId());
 					if (p != null) {
 						OnlineSectioningLog.Entity.Builder e = OnlineSectioningLog.Entity.newBuilder()
-								.setUniqueId(config.getInstructionalMethod().getUniqueId())
-								.setExternalId(config.getInstructionalMethod().getReference())
-								.setName(config.getInstructionalMethod().getLabel());
+								.setUniqueId(config.getEffectiveInstructionalMethod().getUniqueId())
+								.setExternalId(config.getEffectiveInstructionalMethod().getReference())
+								.setName(config.getEffectiveInstructionalMethod().getLabel());
 						if (p.isRequired()) e.addParameterBuilder().setKey("required").setValue("true");
 						preference.addInstructionalMethod(e);
 					}

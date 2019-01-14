@@ -199,7 +199,12 @@
 				<TD><loc:message name="propertyInstructionalMethod"/></TD>
 				<TD colspan="2">
 					<html:select property="instructionalMethod">
-						<html:option value="-1"><loc:message name="selectNoInstructionalMethod"/></html:option>
+						<logic:empty name="instructionalOfferingConfigEditForm" property="instructionalMethodDefault">
+							<html:option value="-1"><loc:message name="selectNoInstructionalMethod"/></html:option>
+						</logic:empty>
+						<logic:notEmpty name="instructionalOfferingConfigEditForm" property="instructionalMethodDefault">
+							<html:option value="-1"><loc:message name="defaultInstructionalMethod"><bean:write name="instructionalOfferingConfigEditForm" property="instructionalMethodDefault"/></loc:message></html:option>
+						</logic:notEmpty>
 						<html:optionsCollection property="instructionalMethods" value="id" label="value" />
 					</html:select>
 				</TD>
