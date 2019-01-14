@@ -175,11 +175,25 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
         				clonedReservation = new IndividualReservation(reservation.getReservationId(), clonedOffering, indR.getStudentIds());
         				break;
         			case Override:
-        				XIndividualReservation ovrR = (XIndividualReservation) reservation;
-        				clonedReservation = new ReservationOverride(reservation.getReservationId(), clonedOffering, ovrR.getStudentIds());
-        				((ReservationOverride)clonedReservation).setMustBeUsed(ovrR.mustBeUsed());
-        				((ReservationOverride)clonedReservation).setAllowOverlap(ovrR.isAllowOverlap());
-        				((ReservationOverride)clonedReservation).setCanAssignOverLimit(ovrR.canAssignOverLimit());
+        				if (reservation instanceof XGroupReservation) {
+        					XGroupReservation groupR = (XGroupReservation) reservation;
+            				clonedReservation = new GroupReservation(reservation.getReservationId(), reservation.getLimit(), clonedOffering);
+            				List<GroupReservation> list = groups.get(groupR.getGroup());
+            				if (list == null) {
+            					list = new ArrayList<GroupReservation>();
+            					groups.put(groupR.getGroup(), list);
+            				}
+            				list.add((GroupReservation)clonedReservation);
+            				((GroupReservation)clonedReservation).setMustBeUsed(groupR.mustBeUsed());
+            				((GroupReservation)clonedReservation).setAllowOverlap(groupR.isAllowOverlap());
+            				((GroupReservation)clonedReservation).setCanAssignOverLimit(groupR.canAssignOverLimit());
+        				} else {
+            				XIndividualReservation ovrR = (XIndividualReservation) reservation;
+            				clonedReservation = new ReservationOverride(reservation.getReservationId(), clonedOffering, ovrR.getStudentIds());
+            				((ReservationOverride)clonedReservation).setMustBeUsed(ovrR.mustBeUsed());
+            				((ReservationOverride)clonedReservation).setAllowOverlap(ovrR.isAllowOverlap());
+            				((ReservationOverride)clonedReservation).setCanAssignOverLimit(ovrR.canAssignOverLimit());
+        				}
         				break;
         			default:
         				clonedReservation = new DummyReservation(clonedOffering);
