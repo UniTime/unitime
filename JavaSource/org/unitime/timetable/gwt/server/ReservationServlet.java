@@ -105,6 +105,8 @@ public class ReservationServlet implements ReservationService {
 	
 	@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
 	
+	@Autowired Permission<InstructionalOffering> permissionOfferingLockNeededOnlyWhenWaitListing;
+	
 	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
 
 	@Override
@@ -157,11 +159,11 @@ public class ReservationServlet implements ReservationService {
 	}
 	
 	private ReservationInterface.Offering convert(InstructionalOffering io, org.hibernate.Session hibSession) throws ReservationException, PageAccessException {
-		return convert(io, hibSession, permissionOfferingLockNeeded, sessionContext, classAssignmentService.getAssignment());
+		return convert(io, hibSession, permissionOfferingLockNeededOnlyWhenWaitListing, sessionContext, classAssignmentService.getAssignment());
 	}
 	
 	public static ReservationInterface.Offering convert(InstructionalOffering io, org.hibernate.Session hibSession,
-			Permission<InstructionalOffering> permissionOfferingLockNeeded, SessionContext sessionContext,
+			Permission<InstructionalOffering> permissionOfferingLockNeededOnlyWhenWaitListing, SessionContext sessionContext,
 			ClassAssignmentProxy assignments
 			) {
 		ReservationInterface.Offering offering = new ReservationInterface.Offering();
@@ -169,7 +171,7 @@ public class ReservationServlet implements ReservationService {
 		offering.setName(io.getControllingCourseOffering().getTitle());
 		offering.setId(io.getUniqueId());
 		offering.setOffered(!io.isNotOffered());
-		offering.setUnlockNeeded(permissionOfferingLockNeeded != null && permissionOfferingLockNeeded.check(sessionContext.getUser(), io));
+		offering.setUnlockNeeded(permissionOfferingLockNeededOnlyWhenWaitListing != null && permissionOfferingLockNeededOnlyWhenWaitListing.check(sessionContext.getUser(), io));
 		for (CourseOffering co: io.getCourseOfferings()) {
 			ReservationInterface.Course course = new ReservationInterface.Course();
 			course.setId(co.getUniqueId());
@@ -525,7 +527,7 @@ public class ReservationServlet implements ReservationService {
 		offering.setName(reservation.getInstructionalOffering().getControllingCourseOffering().getTitle());
 		offering.setId(reservation.getInstructionalOffering().getUniqueId());
 		offering.setOffered(!reservation.getInstructionalOffering().isNotOffered());
-		offering.setUnlockNeeded(permissionOfferingLockNeeded != null && permissionOfferingLockNeeded.check(sessionContext.getUser(), reservation.getInstructionalOffering()));
+		offering.setUnlockNeeded(permissionOfferingLockNeededOnlyWhenWaitListing != null && permissionOfferingLockNeededOnlyWhenWaitListing.check(sessionContext.getUser(), reservation.getInstructionalOffering()));
 		r.setOffering(offering);
 		boolean showClassSuffixes = ApplicationProperty.ReservationsShowClassSufix.isTrue();
 		for (CourseOffering co: reservation.getInstructionalOffering().getCourseOfferings()) {

@@ -19,11 +19,13 @@
 */
 package org.unitime.timetable.security.permissions;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Department;
@@ -38,6 +40,8 @@ import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.service.SolverServerService;
@@ -108,6 +112,26 @@ public class CoursePermissions {
 		public Class<InstructionalOffering> type() { return InstructionalOffering.class; }
 	}
 	
+	@Service("permissionOfferingLockNeededOnlyWhenWaitListing")
+	public static class OfferingLockNeededOnlyWhenWaitListing extends OfferingLockNeededLimitedEdit {
+		@Override
+		public boolean check(UserContext user, InstructionalOffering source) {
+			if (!CustomStudentEnrollmentHolder.isAllowWaitListing()) return false;
+			if (!super.check(user, source)) return false;
+			if (ApplicationProperty.ReservationLockCheckWaitList.isTrue()) {
+				OnlineSectioningServer server = getInstance(user.getCurrentAcademicSessionId());
+				Collection<XCourseRequest> requests = (server != null ? server.getRequests(source.getUniqueId()) : null);
+				if (requests != null)
+					for (XCourseRequest request: requests)
+						if (request.getEnrollment() == null && request.isWaitlist())
+							return true;
+				return false;
+			} else {
+				return true;
+			}
+		}
+	}
+
 	@Service("permissionOfferingEdit")
 	public static class OfferingEdit implements Permission<InstructionalOffering> {
 		@Autowired PermissionDepartment permissionDepartment;

@@ -2466,6 +2466,11 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Task Scheduler: is task scheduler enabled (set to false to disable automatic task execution)")
 	TaskSchedulerEnabled("unitime.taskScheduler.enabled"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Reservations: only require locking when there is a wait-listed request")
+	ReservationLockCheckWaitList("unitime.reservation.lockingCheckWaitList"),
 	;
 
 	String iKey;

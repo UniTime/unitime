@@ -104,11 +104,12 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 		return status == null || status.hasOption(option);
 	}
 	
-	public static Set<String> getMatchingStatuses(Option option) {
+	public static Set<String> getMatchingStatuses(Option option, Long sessionId) {
 		org.hibernate.Session hibSession = StudentSectioningStatusDAO.getInstance().createNewSession();
 		try {
 			Set<String> statuses = new HashSet<String>();
 			for (StudentSectioningStatus status: StudentSectioningStatusDAO.getInstance().findAll(hibSession)) {
+				if (status.getSession() != null && !sessionId.equals(status.getSession().getUniqueId())) continue;
 				if (status.hasOption(option) && status.isEffectiveNow())
 					statuses.add(status.getReference());
 			}

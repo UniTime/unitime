@@ -64,11 +64,11 @@ public class ReservationPermissions {
 	@PermissionForRight(Right.ReservationOffering)
 	public static class ReservationOffering implements Permission<InstructionalOffering> {
 		@Autowired PermissionDepartment permissionDepartment;
-		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
+		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeededOnlyWhenWaitListing;
 
 		@Override
 		public boolean check(UserContext user, InstructionalOffering source) {
-			return !permissionOfferingLockNeeded.check(user, source) &&
+			return !permissionOfferingLockNeededOnlyWhenWaitListing.check(user, source) &&
 					!source.isNotOffered() &&
 					permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerLimitedEdit, DepartmentStatusType.Status.ManagerLimitedEdit);
 		}
