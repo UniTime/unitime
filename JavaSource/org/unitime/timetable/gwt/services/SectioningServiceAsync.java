@@ -39,7 +39,6 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegi
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAllSpecialRegistrationsRequest;
-import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationResponse;
@@ -95,7 +94,6 @@ public interface SectioningServiceAsync {
 	void checkStudentOverrides(List<Long> studentIds, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	void validateStudentOverrides(List<Long> studentIds, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	
-	void retrieveSpecialRequest(RetrieveSpecialRegistrationRequest request, AsyncCallback<RetrieveSpecialRegistrationResponse> callback) throws SectioningException, PageAccessException;
 	void submitSpecialRequest(SubmitSpecialRegistrationRequest request, AsyncCallback<SubmitSpecialRegistrationResponse> callback) throws SectioningException, PageAccessException;
 	void checkSpecialRequestEligibility(SpecialRegistrationEligibilityRequest request, AsyncCallback<SpecialRegistrationEligibilityResponse> callback) throws SectioningException, PageAccessException;
 	void retrieveAllSpecialRequests(RetrieveAllSpecialRegistrationsRequest request, AsyncCallback<List<RetrieveSpecialRegistrationResponse>> callback) throws SectioningException, PageAccessException;

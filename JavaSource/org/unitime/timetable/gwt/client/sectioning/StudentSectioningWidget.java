@@ -60,7 +60,6 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveAllSpecialRegistrationsRequest;
-import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityRequest;
@@ -113,7 +112,6 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
@@ -189,7 +187,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	public StudentSectioningWidget(boolean online, AcademicSessionProvider sessionSelector, UserAuthenticationProvider userAuthentication, StudentSectioningPage.Mode mode, boolean history) {
 		iMode = mode;
 		iOnline = online;
-		iSpecRegCx.setRequestKey(Location.getParameter("reqKey"));
 		iSessionSelector = sessionSelector;
 		iUserAuthentication = userAuthentication;
 		iTrackHistory = history;
@@ -1889,50 +1886,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				iSavedAssignment = saved;
 				iSpecialRegAssignment = null;
 				iShowUnassignments.setVisible(true);
-				if (iSpecRegCx.hasRequestKey() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_SPECREG)) {
-					iSectioningService.retrieveSpecialRequest(new RetrieveSpecialRegistrationRequest(sessionId, studentId, iSpecRegCx.getRequestKey()), new AsyncCallback<RetrieveSpecialRegistrationResponse>() {
-						@Override
-						public void onFailure(Throwable caught) {
-							iSpecRegCx.update(iEligibilityCheck);
-							iSpecRegCx.setSpecRegRequestKeyValid(false);
-							iSpecRegCx.setStatus(null);
-							iSpecRegCx.setNote(null);
-							fillIn(saved);
-							updateHistory();
-							iStatus.error(MESSAGES.requestSpecialRegistrationFail(caught.getMessage()), caught);
-						}
-						@Override
-						public void onSuccess(RetrieveSpecialRegistrationResponse specReg) {
-							iSpecRegCx.setSpecRegRequestKeyValid(true);
-							iSpecRegCx.setRequestId(specReg.getRequestId());
-							iSpecRegCx.setNote(specReg.getNote());
-							iSpecRegCx.setStatus(specReg.getStatus());
-							if (specReg.hasChanges()) {
-								final CourseRequestInterface courseRequests = iCourseRequests.getRequest();
-								courseRequests.setTimeConflictsAllowed(specReg.hasTimeConflict()); courseRequests.setSpaceConflictsAllowed(specReg.hasSpaceConflict());
-								for (ClassAssignmentInterface.ClassAssignment ch: specReg.getChanges()) {
-									if (ch.isCourseAssigned()) courseRequests.addCourse(new RequestedCourse(ch.getCourseId(), CONSTANTS.showCourseTitle() ? ch.getCourseNameWithTitle() : ch.getCourseName()));
-								}
-								LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
-								iSectioningService.section(iOnline, courseRequests, iLastResult, specReg.getChanges(), new AsyncCallback<ClassAssignmentInterface>() {
-									public void onSuccess(ClassAssignmentInterface result) {
-										fillIn(result);
-										iSpecialRegAssignment = iLastAssignment;
-										iCourseRequests.setRequest(courseRequests);
-										addHistory();
-									}
-									public void onFailure(Throwable caught) {
-										iStatus.error(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
-										LoadingWidget.getInstance().hide();
-									}
-								});
-							} else {
-								fillIn(saved);
-								updateHistory();
-							}
-						}
-					});
-				} else if (request.isSaved() || !CONSTANTS.checkLastResult()) {
+				if (request.isSaved() || !CONSTANTS.checkLastResult()) {
 					if ((saved.isEnrolled() && (changeViewIfNeeded || CONSTANTS.startOverCanChangeView())) || iRequests.isVisible()) {
 						fillIn(saved);
 						updateHistory();
@@ -2590,7 +2544,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					clearMessage();
 					LoadingWidget.getInstance().show(MESSAGES.waitSpecialRegistration());
 					iSectioningService.submitSpecialRequest(
-							new SubmitSpecialRegistrationRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iSpecRegCx.getRequestKey(), iSpecRegCx.getRequestId(), iCourseRequests.getRequest(),
+							new SubmitSpecialRegistrationRequest(iSessionSelector.getAcademicSessionId(), iEligibilityCheck.getStudentId(), iSpecRegCx.getRequestId(), iCourseRequests.getRequest(),
 									iLastEnrollment != null ? iLastEnrollment : iLastResult, errors, note.getMessage()),
 							new AsyncCallback<SubmitSpecialRegistrationResponse>() {
 								@Override

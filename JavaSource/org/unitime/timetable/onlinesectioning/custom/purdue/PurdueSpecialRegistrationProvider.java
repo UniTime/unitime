@@ -77,7 +77,6 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegi
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationStatus;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationResponse;
-import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.RetrieveSpecialRegistrationResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SubmitSpecialRegistrationResponse;
@@ -105,7 +104,6 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.RestrictionsCheckResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationCancelResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationRequest;
-import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationResponseList;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationStatusResponse;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
@@ -176,20 +174,12 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		return ApplicationProperties.getProperty("purdue.specreg.site");
 	}
 	
-	protected String getSpecialRegistrationApiSiteRetrieveRegistration() {
-		return ApplicationProperties.getProperty("purdue.specreg.site.retrieveRegistration", getSpecialRegistrationApiSite() + "/retrieveRegistration");
-	}
-	
 	protected String getSpecialRegistrationApiSiteSubmitRegistration() {
 		return ApplicationProperties.getProperty("purdue.specreg.site.submitRegistration", getSpecialRegistrationApiSite() + "/submitRegistration");
 	}
 
 	protected String getSpecialRegistrationApiSiteCheckEligibility() {
 		return ApplicationProperties.getProperty("purdue.specreg.site.checkEligibility", getSpecialRegistrationApiSite() + "/checkEligibility");
-	}
-	
-	protected String getSpecialRegistrationApiSiteGetAllRegistrations() {
-		return ApplicationProperties.getProperty("purdue.specreg.site.retrieveAllRegistrations", null); //getSpecialRegistrationApiSite() + "/retrieveAllRegistrations");
 	}
 	
 	protected String getSpecialRegistrationApiSiteCheckSpecialRegistrationStatus() {
@@ -848,8 +838,6 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			resource = new ClientResource(getSpecialRegistrationApiSiteSubmitRegistration());
 			resource.setNext(iClient);
 			resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
-			if (input.getRequestKey() != null && !input.getRequestKey().isEmpty())
-				resource.addQueryParameter("reqKey", input.getRequestKey());
 			
 			Gson gson = getGson(helper);
 			if (helper.isDebugEnabled())
@@ -1663,66 +1651,6 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		return ret;
 	}
 	
-	@Override
-	public RetrieveSpecialRegistrationResponse retrieveRegistration(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, RetrieveSpecialRegistrationRequest input) throws SectioningException {
-		if (student == null) return null;
-		ClientResource resource = null;
-		try {
-			resource = new ClientResource(getSpecialRegistrationApiSiteRetrieveRegistration());
-			resource.setNext(iClient);
-			resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
-			resource.addQueryParameter("reqKey", input.getRequestKey());
-			helper.getAction().addOptionBuilder().setKey("reqKey").setValue(input.getRequestKey());
-
-			long t1 = System.currentTimeMillis();
-			
-			resource.get(MediaType.APPLICATION_JSON);
-			
-			helper.getAction().setApiGetTime(System.currentTimeMillis() - t1);
-			
-			SpecialRegistrationResponse response = (SpecialRegistrationResponse)new GsonRepresentation<SpecialRegistrationResponse>(resource.getResponseEntity(), SpecialRegistrationResponse.class).getObject();
-			Gson gson = getGson(helper);
-			if (helper.isDebugEnabled())
-				helper.debug("Response: " + gson.toJson(response));
-			helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(response));
-			
-			if (response.data != null) {
-				AcademicSessionInfo session = server.getAcademicSession();
-				String term = getBannerTerm(session);
-				String campus = getBannerCampus(session);
-				if (response.data.campus != null && !campus.equals(response.data.campus))
-					throw new SectioningException("Special registration request is for a different campus (" + response.data.campus + ").");
-				if (response.data.term != null && !term.equals(response.data.term))
-					throw new SectioningException("Special registration request is for a different term (" + response.data.term + ").");
-				if (response.data.studentId != null && !getBannerId(student).equals(response.data.studentId))
-					throw new SectioningException("Special registration request is for a different student.");
-				return convert(server, helper, student, response.data, false);
-			} else if (!ResponseStatus.success.name().equals(response.status)) {
-				if (response.message != null && !response.message.isEmpty())
-					throw new SectioningException(response.message);
-			}
-			
-			RetrieveSpecialRegistrationResponse ret = new RetrieveSpecialRegistrationResponse();
-			ret.setStatus(getStatus(response.status));
-			ret.setDescription(response.message != null && !response.message.isEmpty() ? response.message : "New Special Registration");
-			// ret.setRequestId(input.getRequestKey());
-			
-			return ret;
-		} catch (SectioningException e) {
-			helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
-			throw (SectioningException)e;
-		} catch (Exception e) {
-			helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());
-			sLog.error(e.getMessage(), e);
-			throw new SectioningException(e.getMessage());
-		} finally {
-			if (resource != null) {
-				if (resource.getResponse() != null) resource.getResponse().release();
-				resource.release();
-			}
-		}
-	}
-	
 	protected Gson getGson(OnlineSectioningHelper helper) {
 		GsonBuilder builder = new GsonBuilder()
 		.registerTypeAdapter(DateTime.class, new JsonSerializer<DateTime>() {
@@ -1763,185 +1691,145 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		if (!isSpecialRegistrationEnabled(server, helper, student)) return null;
 		ClientResource resource = null;
 		try {
-			if (getSpecialRegistrationApiSiteGetAllRegistrations() != null) {
-				resource = new ClientResource(getSpecialRegistrationApiSiteGetAllRegistrations());
-				resource.setNext(iClient);
-				AcademicSessionInfo session = server.getAcademicSession();
-				String term = getBannerTerm(session);
-				String campus = getBannerCampus(session);
-				resource.addQueryParameter("term", term);
-				resource.addQueryParameter("campus", campus);
-				resource.addQueryParameter("studentId", getBannerId(student));
-				resource.addQueryParameter("mode", getSpecialRegistrationMode());
-				helper.getAction().addOptionBuilder().setKey("term").setValue(term);
-				helper.getAction().addOptionBuilder().setKey("campus").setValue(campus);
-				helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
-				resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
-				
-				long t1 = System.currentTimeMillis();
-				
-				resource.get(MediaType.APPLICATION_JSON);
-				
-				helper.getAction().setApiGetTime(System.currentTimeMillis() - t1);
-				
-				SpecialRegistrationResponseList specialRequests = (SpecialRegistrationResponseList)new GsonRepresentation<SpecialRegistrationResponseList>(resource.getResponseEntity(), SpecialRegistrationResponseList.class).getObject();
-				Gson gson = getGson(helper);
-				if (helper.isDebugEnabled())
-					helper.debug("Response: " + gson.toJson(specialRequests));
-				helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(specialRequests));
-				
-				if ((specialRequests.data == null || specialRequests.data.isEmpty()) && !ResponseStatus.success.name().equals(specialRequests.status)) {
-					throw new SectioningException(specialRequests.message == null || specialRequests.message.isEmpty() ? "Call failed but no message was given." : specialRequests.message);
-				}
-				
-				if (specialRequests.data != null) {
-					List<RetrieveSpecialRegistrationResponse> ret = new ArrayList<RetrieveSpecialRegistrationResponse>(specialRequests.data.size());
-					for (SpecialRegistrationRequest specialRequest: specialRequests.data)
-						if (specialRequest.requestId != null && !isCancelled(specialRequest))
-							ret.add(convert(server, helper, student, specialRequest, false));
-					return ret;
-				}				
-			} else {
-				resource = new ClientResource(getSpecialRegistrationApiSiteCheckSpecialRegistrationStatus());
-				resource.setNext(iClient);
-				
-				AcademicSessionInfo session = server.getAcademicSession();
-				String term = getBannerTerm(session);
-				String campus = getBannerCampus(session);
-				resource.addQueryParameter("term", term);
-				resource.addQueryParameter("campus", campus);
-				resource.addQueryParameter("studentId", getBannerId(student));
-				resource.addQueryParameter("mode", getSpecialRegistrationMode());
-				helper.getAction().addOptionBuilder().setKey("term").setValue(term);
-				helper.getAction().addOptionBuilder().setKey("campus").setValue(campus);
-				helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
-				resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
-				
-				long t1 = System.currentTimeMillis();
-				
-				resource.get(MediaType.APPLICATION_JSON);
-				
-				helper.getAction().setApiGetTime(System.currentTimeMillis() - t1);
-				
-				SpecialRegistrationStatusResponse response = (SpecialRegistrationStatusResponse)new GsonRepresentation<SpecialRegistrationStatusResponse>(resource.getResponseEntity(), SpecialRegistrationStatusResponse.class).getObject();
-				Gson gson = getGson(helper);
-				
-				if (helper.isDebugEnabled())
-					helper.debug("Response: " + gson.toJson(response));
-				helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(response));
-				
-				if (isUpdateUniTimeStatuses() && response.data != null && response.data.requests != null && !response.data.requests.isEmpty()) {
-					boolean studentChanged = false;
-					Set<String> requestIds = new HashSet<String>();
-					for (SpecialRegistrationRequest r: response.data.requests) {
-						requestIds.add(r.requestId);
-						if (r.maxCredit != null) {
-							// max credit request -> get status
-							String maxiStatus = null;
-							if (r.changes != null)
-								for (Change ch: r.changes) {
-									if (ch.crn == null && ch.errors != null) {
-										for (ChangeError e: ch.errors) {
-											if ("MAXI".equals(e.code))
-												maxiStatus = ch.status;
-										}
+			resource = new ClientResource(getSpecialRegistrationApiSiteCheckSpecialRegistrationStatus());
+			resource.setNext(iClient);
+			
+			AcademicSessionInfo session = server.getAcademicSession();
+			String term = getBannerTerm(session);
+			String campus = getBannerCampus(session);
+			resource.addQueryParameter("term", term);
+			resource.addQueryParameter("campus", campus);
+			resource.addQueryParameter("studentId", getBannerId(student));
+			resource.addQueryParameter("mode", getSpecialRegistrationMode());
+			helper.getAction().addOptionBuilder().setKey("term").setValue(term);
+			helper.getAction().addOptionBuilder().setKey("campus").setValue(campus);
+			helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
+			resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
+			
+			long t1 = System.currentTimeMillis();
+			
+			resource.get(MediaType.APPLICATION_JSON);
+			
+			helper.getAction().setApiGetTime(System.currentTimeMillis() - t1);
+			
+			SpecialRegistrationStatusResponse response = (SpecialRegistrationStatusResponse)new GsonRepresentation<SpecialRegistrationStatusResponse>(resource.getResponseEntity(), SpecialRegistrationStatusResponse.class).getObject();
+			Gson gson = getGson(helper);
+			
+			if (helper.isDebugEnabled())
+				helper.debug("Response: " + gson.toJson(response));
+			helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(response));
+			
+			if (isUpdateUniTimeStatuses() && response.data != null && response.data.requests != null && !response.data.requests.isEmpty()) {
+				boolean studentChanged = false;
+				Set<String> requestIds = new HashSet<String>();
+				for (SpecialRegistrationRequest r: response.data.requests) {
+					requestIds.add(r.requestId);
+					if (r.maxCredit != null) {
+						// max credit request -> get status
+						String maxiStatus = null;
+						if (r.changes != null)
+							for (Change ch: r.changes) {
+								if (ch.crn == null && ch.errors != null) {
+									for (ChangeError e: ch.errors) {
+										if ("MAXI".equals(e.code))
+											maxiStatus = ch.status;
 									}
 								}
-							// check student status
-							if (student.getMaxCreditOverride() != null && r.requestId.equals(student.getMaxCreditOverride().getExternalId()) && student.getMaxCreditOverride().getStatus() != toStatus(maxiStatus != null ? maxiStatus : r.status)) {
-								student.getMaxCreditOverride().setStatus(toStatus(maxiStatus != null ? maxiStatus : r.status));
-								Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
-								if (dbStudent != null) {
-									dbStudent.setOverrideStatus(toStatus(maxiStatus != null ? maxiStatus : r.status));
-									helper.getHibSession().update(dbStudent);
+							}
+						// check student status
+						if (student.getMaxCreditOverride() != null && r.requestId.equals(student.getMaxCreditOverride().getExternalId()) && student.getMaxCreditOverride().getStatus() != toStatus(maxiStatus != null ? maxiStatus : r.status)) {
+							student.getMaxCreditOverride().setStatus(toStatus(maxiStatus != null ? maxiStatus : r.status));
+							Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
+							if (dbStudent != null) {
+								dbStudent.setOverrideStatus(toStatus(maxiStatus != null ? maxiStatus : r.status));
+								helper.getHibSession().update(dbStudent);
+							}
+							studentChanged = true;
+						}
+					}
+					// check other statuses
+					if (r.changes != null) {
+						Map<String, SpecialRegistrationStatus> course2status = new HashMap<String, SpecialRegistrationStatus>();
+						for (Change ch: r.changes) {
+							if (ch.subject != null && ch.courseNbr != null && ch.errors != null && !ch.errors.isEmpty()) {
+								String course = ch.subject + " " + ch.courseNbr;
+								if (ch.status != null) {
+									SpecialRegistrationStatus s = course2status.get(course);
+									course2status.put(course, s == null ? getStatus(ch.status) : combine(s, getStatus(ch.status)));
 								}
-								studentChanged = true;
 							}
 						}
-						// check other statuses
-						if (r.changes != null) {
-							Map<String, SpecialRegistrationStatus> course2status = new HashMap<String, SpecialRegistrationStatus>();
-							for (Change ch: r.changes) {
-								if (ch.subject != null && ch.courseNbr != null && ch.errors != null && !ch.errors.isEmpty()) {
-									String course = ch.subject + " " + ch.courseNbr;
-									if (ch.status != null) {
-										SpecialRegistrationStatus s = course2status.get(course);
-										course2status.put(course, s == null ? getStatus(ch.status) : combine(s, getStatus(ch.status)));
-									}
-								}
-							}
-							for (Map.Entry<String, SpecialRegistrationStatus> e: course2status.entrySet()) {
-								XCourseRequest cr = student.getRequestForCourseName(e.getKey());
-								if (cr != null) {
-									XCourseId id = cr.getCourseName(e.getKey());
-									XOverride override = cr.getOverride(id);
-									if (override != null && r.requestId.equals(override.getExternalId()) && toStatus(e.getValue()) != override.getStatus()) {
-										override.setStatus(toStatus(e.getValue()));
-										CourseDemand dbCourseDemand = CourseDemandDAO.getInstance().get(cr.getRequestId(), helper.getHibSession());
-										if (dbCourseDemand != null) {
-											for (CourseRequest dbCourseRequest: dbCourseDemand.getCourseRequests()) {
-												if (dbCourseRequest.getCourseOffering().getUniqueId().equals(id.getCourseId())) {
-													dbCourseRequest.setOverrideStatus(toStatus(e.getValue()));
-													helper.getHibSession().update(dbCourseRequest);
-												}
+						for (Map.Entry<String, SpecialRegistrationStatus> e: course2status.entrySet()) {
+							XCourseRequest cr = student.getRequestForCourseName(e.getKey());
+							if (cr != null) {
+								XCourseId id = cr.getCourseName(e.getKey());
+								XOverride override = cr.getOverride(id);
+								if (override != null && r.requestId.equals(override.getExternalId()) && toStatus(e.getValue()) != override.getStatus()) {
+									override.setStatus(toStatus(e.getValue()));
+									CourseDemand dbCourseDemand = CourseDemandDAO.getInstance().get(cr.getRequestId(), helper.getHibSession());
+									if (dbCourseDemand != null) {
+										for (CourseRequest dbCourseRequest: dbCourseDemand.getCourseRequests()) {
+											if (dbCourseRequest.getCourseOffering().getUniqueId().equals(id.getCourseId())) {
+												dbCourseRequest.setOverrideStatus(toStatus(e.getValue()));
+												helper.getHibSession().update(dbCourseRequest);
 											}
 										}
+									}
+									studentChanged = true;
+								}
+							}
+						}
+					}
+				}
+				if (student.getMaxCreditOverride() != null && !requestIds.contains(student.getMaxCreditOverride().getExternalId())) {
+					student.setMaxCreditOverride(null);
+					Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
+					if (dbStudent != null) {
+						dbStudent.setOverrideStatus(null);
+						dbStudent.setOverrideMaxCredit(null);
+						dbStudent.setOverrideExternalId(null);
+						dbStudent.setOverrideTimeStamp(null);
+						helper.getHibSession().update(dbStudent);
+					}
+					studentChanged = true;
+				}
+				for (XRequest request: student.getRequests()) {
+					if (request instanceof XCourseRequest) {
+						XCourseRequest cr = (XCourseRequest)request;
+						if (cr.hasOverrides())
+								for (Iterator<Map.Entry<XCourseId, XOverride>> i = cr.getOverrides().entrySet().iterator(); i.hasNext(); ) {
+									Map.Entry<XCourseId, XOverride> e = i.next();
+									if (!requestIds.contains(e.getValue().getExternalId())) {
+										i.remove();
+										CourseDemand dbCourseDemand = CourseDemandDAO.getInstance().get(cr.getRequestId(), helper.getHibSession());
+									if (dbCourseDemand != null) {
+										for (CourseRequest dbCourseRequest: dbCourseDemand.getCourseRequests()) {
+											if (dbCourseRequest.getCourseOffering().getUniqueId().equals(e.getKey().getCourseId())) {
+												dbCourseRequest.setOverrideStatus(null);
+												dbCourseRequest.setOverrideExternalId(null);
+												dbCourseRequest.setOverrideTimeStamp(null);
+												helper.getHibSession().update(dbCourseRequest);
+											}
+										}
+									}
 										studentChanged = true;
 									}
+									
 								}
-							}
-						}
-					}
-					if (student.getMaxCreditOverride() != null && !requestIds.contains(student.getMaxCreditOverride().getExternalId())) {
-						student.setMaxCreditOverride(null);
-						Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
-						if (dbStudent != null) {
-							dbStudent.setOverrideStatus(null);
-							dbStudent.setOverrideMaxCredit(null);
-							dbStudent.setOverrideExternalId(null);
-							dbStudent.setOverrideTimeStamp(null);
-							helper.getHibSession().update(dbStudent);
-						}
-						studentChanged = true;
-					}
-					for (XRequest request: student.getRequests()) {
-						if (request instanceof XCourseRequest) {
-							XCourseRequest cr = (XCourseRequest)request;
-							if (cr.hasOverrides())
- 								for (Iterator<Map.Entry<XCourseId, XOverride>> i = cr.getOverrides().entrySet().iterator(); i.hasNext(); ) {
- 									Map.Entry<XCourseId, XOverride> e = i.next();
- 									if (!requestIds.contains(e.getValue().getExternalId())) {
- 										i.remove();
- 										CourseDemand dbCourseDemand = CourseDemandDAO.getInstance().get(cr.getRequestId(), helper.getHibSession());
-										if (dbCourseDemand != null) {
-											for (CourseRequest dbCourseRequest: dbCourseDemand.getCourseRequests()) {
-												if (dbCourseRequest.getCourseOffering().getUniqueId().equals(e.getKey().getCourseId())) {
-													dbCourseRequest.setOverrideStatus(null);
-													dbCourseRequest.setOverrideExternalId(null);
-													dbCourseRequest.setOverrideTimeStamp(null);
-													helper.getHibSession().update(dbCourseRequest);
-												}
-											}
-										}
- 										studentChanged = true;
- 									}
- 									
- 								}
-						}
-					}
-					if (studentChanged) {
-						server.update(student, false);
-						helper.getHibSession().flush();
 					}
 				}
-				
-				if (response != null && ResponseStatus.success.name().equals(response.status) && response.data != null && response.data.requests != null) {
-					List<RetrieveSpecialRegistrationResponse> ret = new ArrayList<RetrieveSpecialRegistrationResponse>(response.data.requests.size());
-					for (SpecialRegistrationRequest specialRequest: response.data.requests)
-						if (specialRequest.requestId != null && !isCancelled(specialRequest))
-							ret.add(convert(server, helper, student, specialRequest, false));
-					return ret;
+				if (studentChanged) {
+					server.update(student, false);
+					helper.getHibSession().flush();
 				}
+			}
+			
+			if (response != null && ResponseStatus.success.name().equals(response.status) && response.data != null && response.data.requests != null) {
+				List<RetrieveSpecialRegistrationResponse> ret = new ArrayList<RetrieveSpecialRegistrationResponse>(response.data.requests.size());
+				for (SpecialRegistrationRequest specialRequest: response.data.requests)
+					if (specialRequest.requestId != null && !isCancelled(specialRequest))
+						ret.add(convert(server, helper, student, specialRequest, false));
+				return ret;
 			}
 			
 			return new ArrayList<RetrieveSpecialRegistrationResponse>();
