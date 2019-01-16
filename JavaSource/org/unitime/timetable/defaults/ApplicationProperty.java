@@ -2225,6 +2225,18 @@ public enum ApplicationProperty {
 	@Description("Online Student Scheduling: make saved and assigned course requests not editable (when administrator or advisor)")
 	@Since(4.1)
 	OnlineSchedulingMakeAssignedRequestReadOnlyIfAdmin("unitime.enrollment.disableAssignedRequests.manager"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Course Requests: make requested courses for which there is an individual or a student group reservation not editable")
+	@Since(4.4)
+	OnlineSchedulingMakeReservedRequestReadOnly("unitime.enrollment.disableReservedRequests"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Course Requests: make requested courses for which there is an individual or a student group reservation not editable (when administrator or advisor)")
+	@Since(4.4)
+	OnlineSchedulingMakeReservedRequestReadOnlyIfAdmin("unitime.enrollment.disableReservedRequests.manager"),
 
 	@Type(Boolean.class)
 	@DefaultValue("true")

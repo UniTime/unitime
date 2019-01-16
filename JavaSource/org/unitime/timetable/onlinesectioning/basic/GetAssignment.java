@@ -237,7 +237,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 		OnlineSectioningLog.Enrollment.Builder stored = OnlineSectioningLog.Enrollment.newBuilder();
 		stored.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
 		boolean setReadOnly = ApplicationProperty.OnlineSchedulingMakeAssignedRequestReadOnly.isTrue();
-		if (!setReadOnly && helper.getUser() != null && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER)
+		if (helper.getUser() != null && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER)
 			setReadOnly = ApplicationProperty.OnlineSchedulingMakeAssignedRequestReadOnlyIfAdmin.isTrue();
 		
 		List<CourseSection> unavailabilities = fillUnavailabilitiesIn(ret, student, server, helper, stored);

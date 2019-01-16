@@ -412,7 +412,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		}
 		RequestedCourseStatus status = messages.getStatus(box.getText());
 		if (status == null) status = box.getValue().getStatus();
-		if (!box.isCanDelete()) status = RequestedCourseStatus.ENROLLED;
+		if (status == null && !box.isCanDelete()) status = RequestedCourseStatus.ENROLLED;
 		String note = "";
 		if (box.getValue().hasStatusNote()) note = "\n" + MESSAGES.overrideNote(box.getValue().getStatusNote());
 		if (messages.isError(box.getText()) && (status == null || status != RequestedCourseStatus.OVERRIDE_REJECTED)) {

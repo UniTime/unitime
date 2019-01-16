@@ -503,7 +503,6 @@ public class XOffering implements Serializable, Externalizable {
     public int hashCode() {
         return (int) (getOfferingId() ^ (getOfferingId() >>> 32));
     }
-    
 
     public XReservationId guessReservation(Collection<XCourseRequest> other, XStudent student, XEnrollment enrollment) {
     	if (!enrollment.getOfferingId().equals(getOfferingId())) return null;
@@ -533,6 +532,22 @@ public class XOffering implements Serializable, Externalizable {
     		}
     	}
     	return null;
+    }
+    
+    public boolean hasIndividualReservation(XStudent student, XCourse course) {
+    	for (XReservation reservation: getReservations()) {
+    		if (reservation instanceof XIndividualReservation && reservation.isApplicable(student, course) && reservation.mustBeUsed() && !reservation.isExpired())
+    			return true;
+    	}
+    	return false;
+    }
+    
+    public boolean hasGroupReservation(XStudent student, XCourse course) {
+    	for (XReservation reservation: getReservations()) {
+    		if (reservation instanceof XGroupReservation && reservation.isApplicable(student, course) && reservation.mustBeUsed() && !reservation.isExpired())
+    			return true;
+    	}
+    	return false;
     }
     
 	public int distance(DistanceMetric m, Section s1, Section s2) {

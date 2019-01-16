@@ -40,6 +40,7 @@ import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XFreeTimeRequest;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 
@@ -117,8 +118,11 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 			CourseRequestInterface.Request lastRequest = null;
 			int lastRequestPriority = -1;
 			boolean setReadOnly = ApplicationProperty.OnlineSchedulingMakeAssignedRequestReadOnly.isTrue();
-			if (!setReadOnly && helper.getUser() != null && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER)
+			boolean setReadOnlyWhenReserved = ApplicationProperty.OnlineSchedulingMakeReservedRequestReadOnly.isTrue();
+			if (helper.getUser() != null && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER) {
 				setReadOnly = ApplicationProperty.OnlineSchedulingMakeAssignedRequestReadOnlyIfAdmin.isTrue();
+				setReadOnlyWhenReserved = ApplicationProperty.OnlineSchedulingMakeReservedRequestReadOnlyIfAdmin.isTrue();
+			}
 			for (XRequest cd: student.getRequests()) {
 				CourseRequestInterface.Request r = null;
 				if (cd instanceof XFreeTimeRequest) {
@@ -159,6 +163,13 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 						if (!iSectioning && isEnrolled) {
 							rc.setReadOnly(true);
 							rc.setCanDelete(false);
+						}
+						if (!iSectioning && setReadOnlyWhenReserved) {
+							XOffering offering = server.getOffering(c.getOfferingId());
+							if (offering != null && (offering.hasIndividualReservation(student, c) || offering.hasGroupReservation(student, c))) {
+								rc.setReadOnly(true);
+								rc.setCanDelete(false);
+							}
 						}
 						if (isEnrolled)
 							rc.setStatus(RequestedCourseStatus.ENROLLED);
