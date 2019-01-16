@@ -58,6 +58,18 @@
 		</item>
 	</category>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Scheduling Assistant: Wait-Lists</name>
+			<description>
+				<line>
+					Added back the Wait-List toggles on the List of Classes table.
+					These toggles disappeared with the ability to put preferences on classes and instructional methods.
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Data Exchange: Course Offerings Export</name>
