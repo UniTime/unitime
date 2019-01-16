@@ -1351,7 +1351,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						icons.add(RESOURCES.courseLocked(), course.getNote() != null ? course.getNote() : MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()));
 					
 					WebTable.CheckboxCell waitList = null;
-					Boolean w = iCourseRequests.getWaitList(course.getCourseName());
+					Boolean w = iCourseRequests.getWaitList(course.getCourseId());
 					if (w != null) {
 						waitList = new WebTable.CheckboxCell(w, MESSAGES.toggleWaitList(), ARIA.titleRequestedWaitListForCourse(MESSAGES.course(course.getSubject(), course.getCourseNbr())));
 						waitList.getWidget().setStyleName("toggle");
@@ -1359,7 +1359,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							@Override
 							public void onValueChange(ValueChangeEvent<Boolean> event) {
 								clearMessage();
-								iCourseRequests.setWaitList(course.getCourseName(), event.getValue());
+								iCourseRequests.setWaitList(course.getCourseId(), event.getValue());
 								LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
 								CourseRequestInterface r = iCourseRequests.getRequest(); r.setNoChange(true);
 								iSectioningService.section(iOnline, r, iLastResult, new AsyncCallback<ClassAssignmentInterface>() {

@@ -503,20 +503,24 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		}
 	}
 	
-	public Boolean getWaitList(String course) {
-		if (iCanWaitList)
+	public Boolean getWaitList(Long course) {
+		if (iCanWaitList && course != null)
 			for (CourseRequestLine line: iCourses)
-				for (CourseSelectionBox box: line.getCourses())
-					if (course.equals(box.getValue()))
+				for (CourseSelectionBox box: line.getCourses()) {
+					RequestedCourse rc = box.getValue();
+					if (rc != null && course.equals(rc.getCourseId()))
 						return line.getWaitList();
+				}
 		return null;
 	}
 	
-	public void setWaitList(String course, boolean waitList) {
+	public void setWaitList(Long course, boolean waitList) {
 		for (CourseRequestLine line: iCourses)
-			for (CourseSelectionBox box: line.getCourses())
-				if (course.equals(box.getValue()))
+			for (CourseSelectionBox box: line.getCourses()) {
+				RequestedCourse rc = box.getValue();
+				if (rc != null && course.equals(rc.getCourseId()))
 					line.setWaitList(waitList);
+			}
 	}
 	
 	public void clear() {
