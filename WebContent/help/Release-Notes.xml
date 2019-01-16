@@ -65,6 +65,7 @@
 				<line>Added ability to restrict subject areas in the course offering export (using tmtbl.export.subjects parameter that contains a comma separated list of subject area ids).</line>
 				<line>Added a script named Export Course Offerings that allows to export course offerings for the select subject area(s).</line>
 				<line>Class id: When a class has no external id and the class label is too long (over 40 chars), export just the itype and section number (e.g., Lec 1a).</line>
+				<line>Added class.managingDept when a class is externally managed.</line>
 			</description>
 		</item>
 		<item>

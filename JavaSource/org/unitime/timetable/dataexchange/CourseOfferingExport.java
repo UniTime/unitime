@@ -338,6 +338,8 @@ public class CourseOfferingExport extends BaseExport {
             Class_ childClazz = (Class_)i.next();
             exportClass(classElement.addElement("class"), childClazz, session);
         }
+        if (clazz.getManagingDept() != null && !clazz.getManagingDept().equals(clazz.getControllingDept()))
+        	classElement.addAttribute("managingDept", clazz.getManagingDept().getDeptCode());
         if (iExportAssignments) {
             if (clazz.getCommittedAssignment()!=null)
                 exportAssignment(classElement, clazz.getCommittedAssignment(), session);
