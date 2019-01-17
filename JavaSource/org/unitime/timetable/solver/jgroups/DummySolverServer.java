@@ -50,6 +50,7 @@ import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.model.SolverParameterGroup.SolverType;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
@@ -451,5 +452,23 @@ public class DummySolverServer extends AbstractSolverServer implements MessageLi
 	@Override
 	public void shutdown() {
 		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	public void unloadSolver(SolverType type, String id) {
+		switch (type) {
+		case COURSE:
+			getCourseSolverContainer().unloadSolver(id);
+			break;
+		case EXAM:
+			getExamSolverContainer().unloadSolver(id);
+			break;
+		case INSTRUCTOR:
+			getInstructorSchedulingContainer().unloadSolver(id);
+			break;
+		case STUDENT:
+			getStudentSolverContainer().unloadSolver(id);
+			break;
+		}
 	}
 }

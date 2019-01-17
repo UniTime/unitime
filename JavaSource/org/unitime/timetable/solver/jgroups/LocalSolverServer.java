@@ -31,6 +31,7 @@ import org.jgroups.Address;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SolverParameterGroup.SolverType;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.server.InMemoryServer;
@@ -229,6 +230,24 @@ public class LocalSolverServer extends AbstractSolverServer {
 			} finally {
 				hibSession.close();
 			}
+		}
+	}
+
+	@Override
+	public void unloadSolver(SolverType type, String id) {
+		switch (type) {
+		case COURSE:
+			getCourseSolverContainer().unloadSolver(id);
+			break;
+		case EXAM:
+			getExamSolverContainer().unloadSolver(id);
+			break;
+		case INSTRUCTOR:
+			getInstructorSchedulingContainer().unloadSolver(id);
+			break;
+		case STUDENT:
+			getStudentSolverContainer().unloadSolver(id);
+			break;
 		}
 	}
 }

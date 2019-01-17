@@ -137,6 +137,12 @@ public class StudentSectioningSolverService implements SolverService<StudentSolv
             properties.setProperty("General.Save","true");
             properties.setProperty("General.CreateNewSolution","false");
             properties.setProperty("General.Unload","true");
+        } else if ("Publish".equals(properties.getProperty("StudentSctBasic.WhenFinished"))) {
+            properties.setProperty("General.Publish","true");
+            properties.setProperty("General.Unload","false");
+        } else if ("Publish and Unload".equals(properties.getProperty("StudentSctBasic.WhenFinished"))) {
+            properties.setProperty("General.Publish","true");
+            properties.setProperty("General.Unload","true");
         }
         
         // XML save/load properties

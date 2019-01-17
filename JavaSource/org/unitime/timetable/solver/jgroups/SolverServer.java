@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.jgroups.Address;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.model.SolverParameterGroup.SolverType;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
@@ -95,6 +96,8 @@ public interface SolverServer {
 	public void setApplicationProperty(Long sessionId, String key, String value);
 	
 	public void setLoggingLevel(String name, Integer level);
+	
+	public void unloadSolver(SolverType type, String id);
 	
 	public void reset();
 	

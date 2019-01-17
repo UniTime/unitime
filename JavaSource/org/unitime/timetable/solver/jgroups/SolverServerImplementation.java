@@ -60,6 +60,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.ApplicationConfig;
+import org.unitime.timetable.model.SolverParameterGroup.SolverType;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
@@ -354,6 +355,33 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 			sLog.error("Failed to refresh solution: " + e.getMessage(), e);
 		}
 	}
+	
+	public void unloadSolverLocal(Integer type, String id) {
+		switch (SolverType.values()[type]) {
+		case COURSE:
+			getCourseSolverContainer().unloadSolver(id);
+			break;
+		case EXAM:
+			getExamSolverContainer().unloadSolver(id);
+			break;
+		case INSTRUCTOR:
+			getInstructorSchedulingContainer().unloadSolver(id);
+			break;
+		case STUDENT:
+			getStudentSolverContainer().unloadSolver(id);
+			break;
+		}
+	}
+	
+	@Override
+	public void unloadSolver(SolverType type, String id) {
+		try {
+			iDispatcher.callRemoteMethods(null, "unloadSolverLocal", new Object[] { type.ordinal(), id }, new Class[] { Integer.class, String.class }, sAllResponses);
+		} catch (Exception e) {
+			sLog.error("Failed to unload solver: " + e.getMessage(), e);
+		}
+	}
+
 	
 	public static class RoomAvailabilityInvocationHandler implements InvocationHandler {
 		private Address iAddress;

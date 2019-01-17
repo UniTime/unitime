@@ -636,6 +636,10 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 				for (SolverParameter p :response.getParameters())
 					p.setValue(config.getProperty(p.getKey()));
 			}
+			if (solver != null && request.getType() == SolverType.STUDENT && ((StudentSolverProxy)solver).isPublished()) {
+				response.setSolverStatus(MESSAGES.solverStatusNotStarted());
+				response.setLoadDate(null);
+			}
 		} else {
 			response.setSolverStatus(MESSAGES.solverStatusNotStarted());
 		}

@@ -22,6 +22,9 @@ package org.unitime.timetable.solver.studentsct;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.lang.reflect.Type;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -73,13 +76,18 @@ import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.client.sectioning.SectioningReports.ReportTypeInterface;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.model.SectioningSolutionLog;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.SolverParameterGroup.SolverType;
+import org.unitime.timetable.model.dao.SectioningSolutionLogDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -101,8 +109,19 @@ import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.solver.AbstractSolver;
 import org.unitime.timetable.solver.SolverDisposeListener;
+import org.unitime.timetable.solver.jgroups.SolverServerImplementation;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.MemoryCounter;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 
 
 /**
@@ -938,4 +957,63 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 		}
 		return false;
 	}
+	
+	protected Gson getGson() {
+		GsonBuilder builder = new GsonBuilder()
+		.registerTypeAdapter(DateTime.class, new JsonSerializer<DateTime>() {
+			@Override
+			public JsonElement serialize(DateTime src, Type typeOfSrc, JsonSerializationContext context) {
+				return new JsonPrimitive(src.toString("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+			}
+		})
+		.registerTypeAdapter(DateTime.class, new JsonDeserializer<DateTime>() {
+			@Override
+			public DateTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+				return new DateTime(json.getAsJsonPrimitive().getAsString(), DateTimeZone.UTC);
+			}
+		})
+		.registerTypeAdapter(Date.class, new JsonSerializer<Date>() {
+			@Override
+			public JsonElement serialize(Date src, Type typeOfSrc, JsonSerializationContext context) {
+				return new JsonPrimitive(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(src));
+			}
+		})
+		.registerTypeAdapter(Date.class, new JsonDeserializer<Date>() {
+			@Override
+			public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+				try {
+					return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(json.getAsJsonPrimitive().getAsString());
+				} catch (ParseException e) {
+					throw new JsonParseException(e.getMessage(), e);
+				}
+			}
+		});
+		builder.setPrettyPrinting();
+		return builder.create();
+	}
+	
+	@Override
+    protected void finishBeforeSave() {
+		if (getProperties().getPropertyBoolean("General.Publish",false)) {
+			byte[] data = backupXml();
+        	SectioningSolutionLog log = new SectioningSolutionLog();
+        	log.setData(data);
+        	log.setInfo(getGson().toJson(currentSolutionInfo()));
+        	log.setTimeStamp(new Date());
+        	log.setSession(SessionDAO.getInstance().get(getSessionId()));
+        	String mgrId = getProperties().getProperty("General.OwnerPuid");
+        	log.setOwner(TimetableManager.findByExternalId(mgrId));
+        	Long publishId = SectioningSolutionLogDAO.getInstance().save(log);
+        	if (SolverServerImplementation.getInstance() != null) {
+    			SolverServerImplementation.getInstance().unloadSolver(getType(), "PUBLISHED_" + getSessionId());
+    			DataProperties config = new DataProperties(getProperties().toMap());
+    			config.setProperty("StudentSct.Published", String.valueOf((new Date()).getTime()));
+    			config.setProperty("StudentSct.PublishId", publishId.toString());
+    			config.setProperty("General.OwnerPuid", "PUBLISHED_" + config.getProperty("General.SessionId"));
+    			StudentSolverProxy solver = SolverServerImplementation.getInstance().getStudentSolverContainer().createSolver("PUBLISHED_" + config.getProperty("General.SessionId"), config);
+    			if (!solver.restoreXml(data))
+    				solver.dispose();
+        	}
+		}
+    }
 }
