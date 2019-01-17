@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE scripts PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/Script.dtd">
+<!--
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ -->
+<script name="Student Scheduling: Start Test Run" permission="Student Sectioning Solver" engine="ECMAScript" created="Thu Jan 17 17:37:28 CET 2019">
+  <description><![CDATA[This script starts a student scheduling test run. When finished, the solution is published and the solver is unloaded.]]></description>
+  <parameter name="configName" label="Configuration" type="text" default="Default"/>
+  <body><![CDATA[var studentSectioningSolverService = org.unitime.timetable.spring.SpringApplicationContextHolder.getBean("studentSectioningSolverService");
+var solverServerService = org.unitime.timetable.spring.SpringApplicationContextHolder.getBean("solverServerService");
+
+var config = hibSession.createQuery("from SolverPredefinedSetting where appearance = 3 and description = :config")
+  .setString("config", configName).uniqueResult();
+
+var puid = "System";
+
+if (config == null) {
+  log.error("Configuration " + configName + " does not exist.");
+} else {
+  var old = solverServerService.getStudentSolverContainer().getSolver(puid);
+  if (old != null) old.dispose();
+
+  var properties = studentSectioningSolverService.createConfig(config.getUniqueId(), new java.util.HashMap());
+  properties.setProperty("General.StartSolver", "true");
+  properties.setProperty("General.Save", "false");
+  properties.setProperty("General.CreateNewSolution", "false");
+  properties.setProperty("General.Publish", "true");
+  properties.setProperty("General.Unload", "true");
+  properties.setProperty("General.SessionId", session.getUniqueId().toString());
+  properties.setProperty("General.OwnerPuid", log.getOwnerId());
+  properties.setProperty("General.StartTime", String.valueOf((new java.util.Date()).getTime()));
+  properties.setProperty("General.InstructorFormat", "last-first-middle-title");
+  properties.setProperty("StudentSctBasic.WhenFinished", "Publish and Unload");
+  
+  var solver = solverServerService.createStudentSolver(null, puid, properties);
+  solver.load(properties);
+}]]></body>
+</script>
