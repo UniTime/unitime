@@ -76,6 +76,7 @@ import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.ExternalRoomDepartment;
 import org.unitime.timetable.model.ExternalRoomFeature;
 import org.unitime.timetable.model.GlobalRoomFeature;
+import org.unitime.timetable.model.GroupOverrideReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.InstructorAttribute;
@@ -3158,6 +3159,10 @@ public class SessionRollForward {
 	
 	protected StudentGroupReservation rollGroupReservationForward(StudentGroupReservation fromReservation, Session toSession, Date expiration, Map<String, StudentGroup> groups, boolean createStudentGroupIfNeeded) {
 		StudentGroupReservation toReservation = new StudentGroupReservation();
+		if (fromReservation instanceof GroupOverrideReservation) {
+			toReservation = new GroupOverrideReservation();
+			((GroupOverrideReservation)toReservation).setFlags(((GroupOverrideReservation)fromReservation).getFlags());
+		}
 		
 		if (!rollReservationForward(fromReservation, toReservation, toSession, expiration)) return null;
 		
