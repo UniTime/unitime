@@ -70,7 +70,6 @@ import org.cpsolver.studentsct.model.Subpart;
 import org.cpsolver.studentsct.model.Unavailability;
 import org.cpsolver.studentsct.online.expectations.NeverOverExpected;
 import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
-import org.cpsolver.studentsct.report.SectionConflictTable;
 import org.cpsolver.studentsct.report.StudentSectioningReport;
 import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
@@ -107,6 +106,7 @@ import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XTime;
+import org.unitime.timetable.server.sectioning.SectioningReportTypesBackend.ReportType;
 import org.unitime.timetable.solver.AbstractSolver;
 import org.unitime.timetable.solver.SolverDisposeListener;
 import org.unitime.timetable.solver.jgroups.SolverServerImplementation;
@@ -766,7 +766,17 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	@Override
 	public CSVFile getReport(DataProperties parameters) {
 		try {
-			String name = parameters.getProperty("report", SectionConflictTable.class.getName());
+			String name = parameters.getProperty("report", null);
+			if (name == null) {
+				String reference = parameters.getProperty("name");
+				if (reference == null)
+					return null;
+				else if (iReports.containsKey(reference))
+					return iReports.get(reference);
+				else 
+					name = ReportType.valueOf(reference).getImplementation();
+			}
+			if (name == null || name.isEmpty()) return null;
 			if (StudentSolver.class.getName().equals(name)) {
 				String reference = parameters.getProperty("reference");
 				return (reference == null ? null : iReports.get(reference));

@@ -44,7 +44,7 @@ import org.unitime.timetable.onlinesectioning.basic.GenerateSectioningReport;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.service.SolverServerService;
-import org.unitime.timetable.solver.service.SolverService;
+import org.unitime.timetable.solver.service.StudentSectioningSolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 
 /**
@@ -54,7 +54,7 @@ import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 public class SectioningReportsExporter implements Exporter {
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	
-	@Autowired SolverService<StudentSolverProxy> studentSectioningSolverService;
+	@Autowired StudentSectioningSolverService studentSectioningSolverService;
 	@Autowired SolverServerService solverServerService;
 	
 	@Override
@@ -78,9 +78,17 @@ public class SectioningReportsExporter implements Exporter {
 			throw new GwtRpcException("No academic session provided.");
 		
 		CSVFile csv = null;
-		boolean online = parameters.getPropertyBoolean("online", true);
+		String online = helper.getParameter("online");
 		SessionContext context = helper.getSessionContext();
-		if (online) {
+		if (online == null) {
+			context.checkPermissionAnyAuthority(sessionId, "Session", Right.StudentScheduling);
+			
+			StudentSolverProxy solver = studentSectioningSolverService.getSolver("PUBLISHED_" + sessionId, sessionId);
+			if (solver == null)
+				throw new GwtRpcException("No student solver is published.");
+			
+			csv = solver.getReport(parameters);
+		} else if ("1".equals(online) || "true".equalsIgnoreCase(online) || "on".equalsIgnoreCase(online)) {
 			context.checkPermissionAnyAuthority(sessionId, "Session", Right.SchedulingReports);
 			
 			OnlineSectioningServer server = solverServerService.getOnlineStudentSchedulingContainer().getSolver(sessionId.toString());
@@ -93,8 +101,16 @@ public class SectioningReportsExporter implements Exporter {
 					.setType(context.hasPermission(Right.StudentSchedulingAdvisor) ? OnlineSectioningLog.Entity.EntityType.MANAGER : OnlineSectioningLog.Entity.EntityType.STUDENT).build();
 			
 			csv = server.execute(server.createAction(GenerateSectioningReport.class).withParameters(parameters), user);
+		} else if (!sessionId.equals(context.getUser().getCurrentAcademicSessionId())) {
+			context.checkPermissionAnyAuthority(sessionId, "Session", Right.StudentSectioningSolver);
+			
+			StudentSolverProxy solver = studentSectioningSolverService.getSolver(context.getUser().getExternalUserId(), sessionId);
+			if (solver == null)
+				throw new GwtRpcException("No student solver is running.");
+			
+			csv = solver.getReport(parameters);
 		} else {
-			context.checkPermission(Right.StudentSectioningSolver);
+			context.checkPermissionAnyAuthority(sessionId, "Session", Right.StudentSectioningSolver);
 			
 			StudentSolverProxy solver = studentSectioningSolverService.getSolver();
 			if (solver == null)
