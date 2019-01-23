@@ -47,6 +47,9 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.StudentInfo;
+import org.unitime.timetable.security.UserAuthority;
+import org.unitime.timetable.security.qualifiers.SimpleQualifier;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Formats;
 
 /**
@@ -68,9 +71,27 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 	@Override
 	public void export(ExportHelper helper) throws IOException {
 		boolean online = "1".equals(helper.getParameter("online"));
+		
+		Long sessionId = helper.getAcademicSessionId();
+		if (sessionId != null && helper.getSessionContext().isAuthenticated() && !sessionId.equals(helper.getSessionContext().getUser().getCurrentAcademicSessionId())) {
+			UserAuthority preferredAuthority = null;
+			for (UserAuthority auth: helper.getSessionContext().getUser().getAuthorities(null, new SimpleQualifier("Session", sessionId))) {
+				if (preferredAuthority == null && auth.hasRight(Right.StudentSectioningSolverDashboard)) {
+					preferredAuthority = auth;
+				} else if ((preferredAuthority == null || !preferredAuthority.hasRight(Right.StudentSchedulingAdmin)) && auth.hasRight(Right.StudentSchedulingAdvisor)) {
+					preferredAuthority = auth;
+				} else if (auth.hasRight(Right.StudentSchedulingAdmin)) {
+					preferredAuthority = auth;
+				}
+			}
+			if (preferredAuthority != null)
+				helper.getSessionContext().getUser().setCurrentAuthority(preferredAuthority);
+		}
+		
 		int tab = 0;
 		try { tab = Integer.parseInt(helper.getParameter("tab")); } catch (Exception e) {}
 		String query = helper.getParameter("query");
+		if (query == null) query = "";
 		int sort = 0;
 		try { sort = Integer.parseInt(helper.getParameter("sort")); } catch (Exception e) {}
 		
