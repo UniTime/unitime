@@ -666,8 +666,11 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			}
 			
 			if ("group".equals(attr)) {
-				for (String group: student().getGroups())
-					if (eq(group, term)) return true;
+				for (XStudent.XGroup group: student().getGroups())
+					if (eq(group.getAbbreviation(), term)) return true;
+			} else {
+				for (XStudent.XGroup group: student().getGroups())
+					if (attr != null && eq(group.getType(), attr.replace('_', ' ')) && eq(group.getAbbreviation(), term)) return true;
 			}
 			
 			if ("accommodation".equals(attr)) {
@@ -1107,8 +1110,8 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				for (XAreaClassificationMajor acm: student().getMajors())
 					if (eq(acm.getMajor(), term)) return true;
 			} else if ("group".equals(attr)) {
-				for (String group: student().getGroups())
-					if (eq(group, term)) return true;
+				for (XStudent.XGroup group: student().getGroups())
+					if (eq(group.getAbbreviation(), term)) return true;
 			} else if ("accommodation".equals(attr)) {
 				for (String acc: student().getAccomodations())
 					if (eq(acc, term)) return true;
@@ -1273,6 +1276,9 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					return iMyStudent;
 				}
 				return true;
+			} else if (attr != null) {
+				for (XStudent.XGroup group: student().getGroups())
+					if (eq(group.getType(), attr.replace('_', ' ')) && eq(group.getAbbreviation(), term)) return true;
 			}
 			return false;
 		}

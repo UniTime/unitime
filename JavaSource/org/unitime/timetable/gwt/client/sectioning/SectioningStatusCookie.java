@@ -32,6 +32,7 @@ public class SectioningStatusCookie {
 	private String iOnlineQuery = "", iBashQuery = "";
 	private int[] iSortBy = new int[] {0, 0, 0, 0, 0, 0};
 	private int iStudentTab = 1;
+	private String[] iSortByGroup = new String[] {"", ""};
 	
 	private SectioningStatusCookie() {
 		try {
@@ -46,6 +47,8 @@ public class SectioningStatusCookie {
 				for (int i = 0; i < iSortBy.length; i++)
 					iSortBy[i] = Integer.parseInt(params[idx++]);
 				iStudentTab = Integer.parseInt(params[idx++]);
+				iSortByGroup[0] = params[idx++];
+				iSortByGroup[1] = params[idx++];
 			}
 		} catch (Exception e) {
 		}
@@ -62,6 +65,7 @@ public class SectioningStatusCookie {
 		for (int i = 0; i < iSortBy.length; i++)
 			cookie += "|" + iSortBy[i];
 		cookie += "|" + iStudentTab;
+		cookie += "|" + iSortByGroup[0] + "|" + iSortByGroup[1];
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:StudentStatus", cookie, expires);
 	}
@@ -92,6 +96,16 @@ public class SectioningStatusCookie {
 	public void setSortBy(boolean online, int tab, int ord) {
 		iSortBy[online ? tab : 3 + tab] = ord;
 		save();
+	}
+	
+	public void setSortBy(boolean online, int tab, int ord, String group) {
+		iSortBy[online ? tab : 3 + tab] = ord;
+		iSortByGroup[online ? 0 : 1] = group;
+		save();
+	}
+	
+	public String getSortByGroup(boolean online) {
+		return iSortByGroup[online ? 0 : 1];
 	}
 	
 	public int getStudentTab() { return iStudentTab; }

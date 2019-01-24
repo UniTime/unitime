@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.springframework.stereotype.Service;
@@ -122,7 +123,7 @@ public class EventEnrollmentExport implements Exporter {
 		if (sort != 0) {
 			boolean asc = (sort > 0);
 			EnrollmentComparator.SortBy sortBy = EnrollmentComparator.SortBy.values()[Math.abs(sort) - 1];
-			Collections.sort(enrollments, new EnrollmentComparator(sortBy));
+			Collections.sort(enrollments, new EnrollmentComparator(sortBy, helper.getParameter("group")));
 			if (!asc) Collections.reverse(enrollments);
 		} else if (sortBySubpart != null && !sortBySubpart.isEmpty()) {
 			boolean asc = !sortBySubpart.startsWith("-");
@@ -162,6 +163,7 @@ public class EventEnrollmentExport implements Exporter {
 			header.add(MESSAGES.colCourse());
 		
 		boolean hasPriority = false, hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasAlternative = false, hasReservation = false, hasRequestedDate = false, hasEnrolledDate = false, hasConflict = false, hasMessage = false;
+		Set<String> groupTypes = new TreeSet<String>();
 		for (ClassAssignmentInterface.Enrollment e: enrollments) {
 			if (e.getPriority() > 0) hasPriority = true;
 			if (e.isAlternative()) hasAlternative = true;
@@ -174,6 +176,7 @@ public class EventEnrollmentExport implements Exporter {
 			if (e.getEnrolledDate() != null) hasEnrolledDate = true;
 			if (e.hasConflict()) hasConflict = true;
 			if (e.hasEnrollmentMessage()) hasMessage = true;
+			if (e.getStudent().hasGroups()) groupTypes.addAll(e.getStudent().getGroupTypes());
 		}
 		
 		if (hasPriority)
@@ -192,6 +195,9 @@ public class EventEnrollmentExport implements Exporter {
 		
 		if (hasGroup)
 			header.add(MESSAGES.colGroup());
+		
+		for (String g: groupTypes)
+			header.add(g);
 		
 		if (hasAcmd)
 			header.add(MESSAGES.colAccommodation());
@@ -252,6 +258,8 @@ public class EventEnrollmentExport implements Exporter {
 				line.add(enrollment.getStudent().getMajor("\n"));
 			if (hasGroup)
 				line.add(enrollment.getStudent().getGroup("\n"));
+			for (String g: groupTypes)
+				line.add(enrollment.getStudent().getGroup(g, "\n"));
 			if (hasAcmd)
 				line.add(enrollment.getStudent().getAccommodation("\n"));
 			if (hasReservation)

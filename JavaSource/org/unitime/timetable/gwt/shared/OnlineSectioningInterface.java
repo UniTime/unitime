@@ -183,10 +183,11 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private Long iUniqueId;
 		private String iReference, iLabel;
+		private String iType;
 		
 		public StudentGroupInfo() {}
-		public StudentGroupInfo(Long id, String reference, String label) {
-			iUniqueId = id; iReference = reference; iLabel = label;
+		public StudentGroupInfo(Long id, String reference, String label, String type) {
+			iUniqueId = id; iReference = reference; iLabel = label; iType = type;
 		}
 		
 		public void setUniqueId(Long id) { iUniqueId = id; }
@@ -196,6 +197,10 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public String getReference() { return iReference; }
 		public void setLabel(String label) { iLabel = label; }
 		public String getLabel() { return iLabel; }
+		
+		public void setType(String type) { iType = type; }
+		public boolean hasType() { return iType != null && !iType.isEmpty(); }
+		public String getType() { return iType; }
 
 		@Override
 		public String toString() { return getReference(); }
@@ -205,6 +210,8 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		
 		@Override
 		public int compareTo(StudentGroupInfo status) {
+			int cmp = (hasType() ? getType() : "").compareTo(status.hasType() ? status.getType() : "");
+			if (cmp != 0) return cmp;
 			return getReference().compareTo(status.getReference());
 		}
 		

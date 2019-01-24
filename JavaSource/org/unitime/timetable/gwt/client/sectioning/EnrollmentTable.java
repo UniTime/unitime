@@ -24,9 +24,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
@@ -730,6 +732,7 @@ public class EnrollmentTable extends Composite {
 		}
 		
 		boolean hasPriority = false, hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasAlternative = false, hasReservation = false, hasRequestedDate = false, hasEnrolledDate = false, hasConflict = false, hasMessage = false;
+		Set<String> groupTypes = new HashSet<String>();
 		for (ClassAssignmentInterface.Enrollment e: enrollments) {
 			if (filter(f, e)) continue;
 			if (e.getPriority() > 0) hasPriority = true;
@@ -743,6 +746,7 @@ public class EnrollmentTable extends Composite {
 			if (e.getEnrolledDate() != null) hasEnrolledDate = true;
 			if (e.hasConflict()) hasConflict = true;
 			if (e.hasEnrollmentMessage()) hasMessage = true;
+			if (e.getStudent().hasGroups()) groupTypes.addAll(e.getStudent().getGroupTypes());
 		}
 
 		UniTimeTableHeader hPriority = null;
@@ -782,6 +786,14 @@ public class EnrollmentTable extends Composite {
 			hGroup = new UniTimeTableHeader(MESSAGES.colGroup());
 			header.add(hGroup);
 			addSortOperation(hGroup, EnrollmentComparator.SortBy.GROUP, MESSAGES.colGroup());
+		}
+		
+		Map<String, UniTimeTableHeader> hGroups = new HashMap<String, UniTimeTableHeader>();
+		for (String type: groupTypes) {
+			UniTimeTableHeader h = new UniTimeTableHeader(type); 
+			header.add(h);
+			addSortOperation(h, EnrollmentComparator.SortBy.GROUP, MESSAGES.colGroup(), type);
+			hGroups.put(type, h);
 		}
 		
 		UniTimeTableHeader hAccmd = null;
@@ -1105,6 +1117,8 @@ public class EnrollmentTable extends Composite {
 				line.add(new HTML(enrollment.getStudent().getMajor("<br>"), false));
 			if (hasGroup)
 				line.add(new HTML(enrollment.getStudent().getGroup("<br>"), false));
+			for (String type: groupTypes)
+				line.add(new HTML(enrollment.getStudent().getGroup(type, "<br>"), false));
 			if (hasAcmd)
 				line.add(new HTML(enrollment.getStudent().getAccommodation("<br>"), false));
 			if (hasReservation)
@@ -1269,6 +1283,7 @@ public class EnrollmentTable extends Composite {
 		if (SectioningCookie.getInstance().getEnrollmentSortBy() != 0) {
 			boolean asc = SectioningCookie.getInstance().getEnrollmentSortBy() > 0;
 			EnrollmentComparator.SortBy sort = EnrollmentComparator.SortBy.values()[Math.abs(SectioningCookie.getInstance().getEnrollmentSortBy()) - 1];
+			String group = SectioningCookie.getInstance().getEnrollmentSortByGroup();
 			UniTimeTableHeader h = null;
 			switch (sort) {
 			case ACCOMODATION: h = hAccmd; break;
@@ -1284,7 +1299,12 @@ public class EnrollmentTable extends Composite {
 			case COURSE: h = hCourse; break;
 			case ENROLLMENT_TS: h = hEnrollmentTS; break;
 			case EXTERNAL_ID: h = hExtId; break;
-			case GROUP: h = hGroup; break;
+			case GROUP:
+				if (group == null || group.isEmpty())
+					h = hGroup;
+				else
+					h = hGroups.get(group);
+				break;
 			case MAJOR: h = hMajor; break;
 			case MESSAGE: h = hMessage; break;
 			case PRIORITY: h = hPriority; break;
@@ -1293,7 +1313,7 @@ public class EnrollmentTable extends Composite {
 			case STUDENT: h = hStudent; break;
 			}
 			if (h != null)
-				iEnrollments.sort(h, new EnrollmentComparator(sort), asc);
+				iEnrollments.sort(h, new EnrollmentComparator(sort, group), asc);
 		} else {
 			String subpart = SectioningCookie.getInstance().getEnrollmentSortBySubpart();
 			if (subpart != null && !subpart.isEmpty()) {
@@ -1480,11 +1500,15 @@ public class EnrollmentTable extends Composite {
 	}
 	
 	protected void addSortOperation(final UniTimeTableHeader header, final EnrollmentComparator.SortBy sort, final String column) {
+		addSortOperation(header, sort, column, "");
+	}
+	
+	protected void addSortOperation(final UniTimeTableHeader header, final EnrollmentComparator.SortBy sort, final String column, final String type) {
 		header.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iEnrollments.sort(header, new EnrollmentComparator(sort));
-				SectioningCookie.getInstance().setEnrollmentSortBy(header.getOrder() ? 1 + sort.ordinal() : -1 - sort.ordinal());
+				iEnrollments.sort(header, new EnrollmentComparator(sort, type));
+				SectioningCookie.getInstance().setEnrollmentSortBy(header.getOrder() ? 1 + sort.ordinal() : -1 - sort.ordinal(), type);
 			}
 			@Override
 			public boolean isApplicable() {
@@ -1496,6 +1520,8 @@ public class EnrollmentTable extends Composite {
 			}
 			@Override
 			public String getName() {
+				if (sort == EnrollmentComparator.SortBy.GROUP && type != null && !type.isEmpty())
+					return MESSAGES.sortBy(type);
 				return MESSAGES.sortBy(column);
 			}
 		});
@@ -1551,14 +1577,17 @@ public class EnrollmentTable extends Composite {
 		private SortBy iSortBy = null;
 		private String iSubpart = null;
 		private boolean iShowClassNumbers = true;
+		private String iGroupType = null;
 		
-		public EnrollmentComparator(SortBy sortBy) {
+		public EnrollmentComparator(SortBy sortBy, String type) {
 			iSortBy = sortBy;
+			iGroupType = type;
 		}
 		
 		public EnrollmentComparator(String subpart, boolean showClassNumbers) {
 			iSubpart = subpart;
 			iShowClassNumbers = showClassNumbers;
+			iGroupType = null;
 		}
 		
 		protected int doCompare(Conflict c1, Conflict c2) {
@@ -1615,7 +1644,7 @@ public class EnrollmentTable extends Composite {
 					if (cmp != 0) return cmp;
 					return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
 				case GROUP:
-					cmp = e1.getStudent().getGroup("|").compareTo(e2.getStudent().getGroup("|"));
+					cmp = e1.getStudent().getGroup(iGroupType, "|").compareTo(e2.getStudent().getGroup(iGroupType, "|"));
 					if (cmp != 0) return cmp;
 					return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
 				case ACCOMODATION:

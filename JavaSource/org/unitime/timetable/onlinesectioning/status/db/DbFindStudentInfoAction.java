@@ -97,7 +97,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		DbFindStudentInfoMatcher sm = new DbFindStudentInfoMatcher(session, iQuery, helper.getStudentNameFormat(), iMyStudents); sm.setServer(server);
 		
 		Map<CourseOffering, List<CourseRequest>> requests = new HashMap<CourseOffering, List<CourseRequest>>();
-		for (CourseRequest cr: (List<CourseRequest>)SectioningStatusFilterAction.getCourseQuery(iFilter, server).select("distinct cr").query(helper.getHibSession()).list()) {
+		for (CourseRequest cr: (List<CourseRequest>)SectioningStatusFilterAction.getCourseQuery(iFilter, server, helper).select("distinct cr").query(helper.getHibSession()).list()) {
 			if (!hasMatchingSubjectArea(cr.getCourseOffering().getSubjectAreaAbbv())) continue;
 			if (!isCourseVisible(cr.getCourseOffering().getUniqueId())) continue;			
 			if (!query().match(new DbCourseRequestMatcher(session, cr, isConsentToDoCourse(cr.getCourseOffering()), isMyStudent(cr.getCourseDemand().getStudent()), helper.getStudentNameFormat()))) continue;
@@ -138,7 +138,10 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 						st.addAccommodation(acc.getAbbreviation());
 					}
 					for (StudentGroup gr: student.getGroups()) {
-						st.addGroup(gr.getGroupAbbreviation());
+						if (gr.getType() == null)
+							st.addGroup(gr.getGroupAbbreviation());
+						else
+							st.addGroup(gr.getType().getReference(), gr.getGroupAbbreviation());
 					}
 					int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0, tUnasg = 0, tOvrNeed = 0, ovrNeed = 0;
 					float tCred = 0f;
@@ -455,7 +458,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		List<StudentInfo> ret = new ArrayList<StudentInfo>(students.values());
 		
 		if (iSubjectAreas == null && iCoursesIcoordinate == null) {
-			for (Student student: (List<Student>)SectioningStatusFilterAction.getQuery(iFilter, server).select("distinct s").query(helper.getHibSession()).list()) {
+			for (Student student: (List<Student>)SectioningStatusFilterAction.getQuery(iFilter, server, helper).select("distinct s").query(helper.getHibSession()).list()) {
 				if (students.containsKey(student.getUniqueId())) continue;
 				if (!sm.match(student)) continue;
 				StudentInfo s = new StudentInfo();
@@ -478,7 +481,10 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					st.addAccommodation(acc.getAbbreviation());
 				}
 				for (StudentGroup gr: student.getGroups()) {
-					st.addGroup(gr.getGroupAbbreviation());
+					if (gr.getType() == null)
+						st.addGroup(gr.getGroupAbbreviation());
+					else
+						st.addGroup(gr.getType().getReference(), gr.getGroupAbbreviation());
 				}
 				s.setStatus(student.getSectioningStatus() == null ? session.getDefaultSectioningStatus() : student.getSectioningStatus().getReference());
 				s.setEmailDate(student.getScheduleEmailedDate() == null ? null : student.getScheduleEmailedDate());

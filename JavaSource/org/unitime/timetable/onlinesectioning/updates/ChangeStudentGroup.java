@@ -90,11 +90,11 @@ public class ChangeStudentGroup implements OnlineSectioningAction<Boolean> {
 						if (iRemove) {
 							changed = group.getStudents().remove(dbStudent);
 							dbStudent.getGroups().remove(group);
-							student.getGroups().remove(group.getGroupAbbreviation());
+							student.getGroups().remove(new XStudent.XGroup(group));
 						} else {
 							changed = group.getStudents().add(dbStudent);
 							dbStudent.getGroups().add(group);
-							student.getGroups().add(group.getGroupAbbreviation());
+							if (changed) student.getGroups().add(new XStudent.XGroup(group));
 						}
 						helper.getHibSession().saveOrUpdate(group);
 						server.update(student, false);

@@ -26,8 +26,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -140,7 +142,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
     		if (students != null && sort != 0) {
     			boolean asc = (sort > 0);
     			StudentComparator.SortBy sortBy = StudentComparator.SortBy.values()[Math.abs(sort) - 1];
-    			Collections.sort(students, new StudentComparator(sortBy, asc));
+    			Collections.sort(students, new StudentComparator(sortBy, asc, helper.getParameter("g")));
     			if (!asc) Collections.reverse(students);
     		}
     		populateStudentTable(helper, online, students);
@@ -222,15 +224,10 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		helper.setup(out.getContentType(), reference(), false);
 		
 		boolean hasExtId = false;
-		if (students != null)
-			for (ClassAssignmentInterface.StudentInfo e: students) {
-				if (e.getStudent() != null && e.getStudent().isCanShowExternalId()) { hasExtId = true; break; }
-			}
-		if (!hasExtId) out.hideColumn(0);
-		
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
 				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasReqCredit = false, hasCredit = false, hasDistances = false, hasOverlaps = false,
 				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false, hasOverride = false;
+		Set<String> groupTypes = new TreeSet<String>();
 		if (students != null)
 			for (ClassAssignmentInterface.StudentInfo e: students) {
 				if (e.getStudent() == null) continue;
@@ -254,121 +251,194 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 				if (e.hasTotalPrefSectionConflict()) hasPrefSecConfs = true;
 				if (e.hasNote()) hasNote = true;
 				if (e.getEmailDate() != null) hasEmailed = true;
+				if (e.getStudent() != null && e.getStudent().isCanShowExternalId()) hasExtId = true;
+				if (e.getStudent().hasGroups()) groupTypes.addAll(e.getStudent().getGroupTypes());
 			}
-		if (!hasArea) { out.hideColumn(2); out.hideColumn(3); }
-		if (!hasMajor) out.hideColumn(4);
-		if (!hasGroup) out.hideColumn(5);
-		if (!hasAcmd) out.hideColumn(6);
-		if (!hasEnrollment) out.hideColumn(8);
-		if (!hasWaitList) out.hideColumn(9);
-		if (!hasReservation) out.hideColumn(10);
-		if (!hasConsent) out.hideColumn(11);
-		if (!hasOverride) out.hideColumn(12);
-		if (!hasReqCredit) out.hideColumn(13);
-		if (!hasCredit) out.hideColumn(14);
-		if (!hasDistances) { out.hideColumn(15); out.hideColumn(16); }
-		if (!hasOverlaps) { out.hideColumn(17); }
-		if (!hasFreeTimeOverlaps) { out.hideColumn(18); }
-		if (!hasPrefIMConfs) { out.hideColumn(19); }
-		if (!hasPrefSecConfs) { out.hideColumn(20); }
-		if (!hasRequestedDate) out.hideColumn(21);
-		if (!hasEnrolledDate) out.hideColumn(22);
-		if (!hasNote) out.hideColumn(23);
-		if (!hasEmailed) out.hideColumn(24);
 		
-		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_REQUEST);
+		List<String> header = new ArrayList<String>();
+		if (hasExtId)
+			header.add(MESSAGES.colStudentExternalId());
 		
-		out.printHeader(
-				MESSAGES.colStudentExternalId(), // 0
-				MESSAGES.colStudent(), // 1
-				MESSAGES.colArea(), // 2
-				MESSAGES.colClassification(), // 3
-				MESSAGES.colMajor(), // 4
-				MESSAGES.colGroup(), // 5
-				MESSAGES.colAccommodation(), // 6
-				MESSAGES.colStatus(), // 7
-				MESSAGES.colEnrollment(), // 8
-				MESSAGES.colWaitListed(), // 9
-				MESSAGES.colReservation(), // 10
-				MESSAGES.colConsent(), // 11
-				MESSAGES.colPendingOverrides().replace("<br>", "\n"), // 12
-				MESSAGES.colRequestCredit().replace("<br>", "\n"), // 13
-				MESSAGES.colEnrollCredit().replace("<br>", "\n"), // 14
-				MESSAGES.colDistanceConflicts().replace("<br>", "\n"), // 15
-				MESSAGES.colLongestDistance().replace("<br>", "\n"), // 16
-				MESSAGES.colOverlapMins(), // 17
-				MESSAGES.colFreeTimeOverlapMins(), // 18
-				MESSAGES.colPrefInstrMethConfs().replace("<br>", "\n"), // 19
-				MESSAGES.colPrefSectionConfs().replace("<br>", "\n"), // 20
-				MESSAGES.colRequestTimeStamp(), // 21
-				MESSAGES.colEnrollmentTimeStamp(), // 22
-				MESSAGES.colStudentNote(), // 23
-				MESSAGES.colEmailTimeStamp() // 24
-				);
-				
-				
+		header.add(MESSAGES.colStudent());
+		if (hasArea) {
+			header.add(MESSAGES.colArea());
+			header.add(MESSAGES.colClassification());
+		}
+		
+		if (hasMajor)
+			header.add(MESSAGES.colMajor());
+		
+		if (hasGroup)
+			header.add(MESSAGES.colGroup());
+		
+		header.addAll(groupTypes);
+		
+		if (hasAcmd)
+			header.add(MESSAGES.colAccommodation());
+		
+		header.add(MESSAGES.colStatus());
+		
+		if (hasEnrollment)
+			header.add(MESSAGES.colEnrollment());
+		
+		if (hasWaitList)
+			header.add(MESSAGES.colWaitListed());
+		
+		if (hasReservation)
+			header.add(MESSAGES.colReservation());
+		
+		if (hasConsent)
+			header.add(MESSAGES.colConsent());
+		
+		if (hasOverride)
+			header.add(MESSAGES.colPendingOverrides().replace("<br>", "\n"));
+		
+		if (hasReqCredit)
+			header.add(MESSAGES.colRequestCredit().replace("<br>", "\n"));
+		
+		if (hasCredit)
+			header.add(MESSAGES.colEnrollCredit().replace("<br>", "\n"));
+		
+		if (hasDistances) {
+			header.add(MESSAGES.colDistanceConflicts().replace("<br>", "\n"));
+			header.add(MESSAGES.colLongestDistance().replace("<br>", "\n"));
+		}
+		
+		if (hasOverlaps)
+			header.add(MESSAGES.colOverlapMins());
+		
+		if (hasFreeTimeOverlaps)
+			header.add(MESSAGES.colFreeTimeOverlapMins());
+		
+		if (hasPrefIMConfs)
+			header.add(MESSAGES.colPrefInstrMethConfs().replace("<br>", "\n"));
+		
+		if (hasPrefSecConfs)
+			header.add(MESSAGES.colPrefSectionConfs().replace("<br>", "\n"));
+		
+		if (hasRequestedDate)
+			header.add(MESSAGES.colRequestTimeStamp());
+		
+		if (hasEnrolledDate)
+			header.add(MESSAGES.colEnrollmentTimeStamp());
+		
+		if (hasNote)
+			header.add(MESSAGES.colStudentNote());
+		
+		if (hasEmailed)
+			header.add(MESSAGES.colEmailTimeStamp());
+		
+		out.printHeader(header.toArray(new String[header.size()]));
 		out.flush();
 		
+		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_REQUEST);
 		if (students != null)
 			for (StudentInfo info: students) {
+				List<String> line = new ArrayList<String>();
 				if (info.getStudent() != null) {
-					out.printLine(
-							(info.getStudent().isCanShowExternalId() ? info.getStudent().getExternalId() : ""),
-							info.getStudent().getName(),
-							info.getStudent().getArea("<br>"),
-							info.getStudent().getClassification("<br>"),
-							info.getStudent().getMajor("<br>"),
-							info.getStudent().getGroup("<br>"),
-							info.getStudent().getAccommodation("<br>"),
-							info.getStatus(),
-							number(info.getEnrollment(), info.getTotalEnrollment()),
-							waitlist(info),
-							number(info.getReservation(), info.getTotalReservation()),
-							number(info.getConsentNeeded(), info.getTotalConsentNeeded()),
-							number(info.getOverrideNeeded(), info.getTotalOverrideNeeded()),
-							reqCredit(info.getRequestCreditMin(), info.getRequestCreditMax(), info.getTotalRequestCreditMin(), info.getTotalRequestCreditMax()),
-							credit(info.getCredit(), info.getTotalCredit()),
-							number(info.getNrDistanceConflicts(), info.getTotalNrDistanceConflicts()),
-							number(info.getLongestDistanceMinutes(), info.getTotalLongestDistanceMinutes()),
-							number(info.getOverlappingMinutes(), info.getTotalOverlappingMinutes()),
-							number(info.getFreeTimeOverlappingMins(), info.getTotalFreeTimeOverlappingMins()),
-							number(info.getPrefInstrMethConflict(), info.getTotalPrefInstrMethConflict()),
-							number(info.getPrefSectionConflict(), info.getTotalPrefSectionConflict()),
-							(info.getRequestedDate() == null ? null : df.format(info.getRequestedDate())),
-							(info.getEnrolledDate() == null ? null : df.format(info.getEnrolledDate())),
-							(info.hasNote() ? info.getNote() : ""),
-							(info.getEmailDate() == null ? null : df.format(info.getEmailDate()))
-							);
-					
+					if (hasExtId)
+						line.add(info.getStudent().isCanShowExternalId() ? info.getStudent().getExternalId() : "");
+					line.add(info.getStudent().getName());
+					if (hasArea) {
+						line.add(info.getStudent().getArea("\n"));
+						line.add(info.getStudent().getClassification("\n"));
+					}
+					if (hasMajor)
+						line.add(info.getStudent().getMajor("\n"));
+					if (hasGroup)
+						line.add(info.getStudent().getGroup("\n"));
+					for (String g: groupTypes)
+						line.add(info.getStudent().getGroup(g, "\n"));
+					if (hasAcmd)
+						line.add(info.getStudent().getAccommodation("\n"));
+					line.add(info.getStatus());
+					if (hasEnrollment)
+						line.add(number(info.getEnrollment(), info.getTotalEnrollment()));
+					if (hasWaitList)
+						line.add(waitlist(info));
+					if (hasReservation)
+						line.add(number(info.getReservation(), info.getTotalReservation()));
+					if (hasConsent)
+						line.add(number(info.getConsentNeeded(), info.getTotalConsentNeeded()));
+					if (hasOverride)
+						line.add(number(info.getOverrideNeeded(), info.getTotalOverrideNeeded()));
+					if (hasReqCredit)
+						line.add(reqCredit(info.getRequestCreditMin(), info.getRequestCreditMax(), info.getTotalRequestCreditMin(), info.getTotalRequestCreditMax()));
+					if (hasCredit)
+						line.add(credit(info));
+					if (hasDistances) {
+						line.add(number(info.getNrDistanceConflicts(), info.getTotalNrDistanceConflicts()));
+						line.add(number(info.getLongestDistanceMinutes(), info.getTotalLongestDistanceMinutes()));
+					}
+					if (hasOverlaps)
+						line.add(number(info.getOverlappingMinutes(), info.getTotalOverlappingMinutes()));
+					if (hasFreeTimeOverlaps)
+						line.add(number(info.getFreeTimeOverlappingMins(), info.getTotalFreeTimeOverlappingMins()));
+					if (hasPrefIMConfs)
+						line.add(number(info.getPrefInstrMethConflict(), info.getTotalPrefInstrMethConflict()));
+					if (hasPrefSecConfs)
+						line.add(number(info.getPrefSectionConflict(), info.getTotalPrefSectionConflict()));
+					if (hasRequestedDate)
+						line.add((info.getRequestedDate() == null ? null : df.format(info.getRequestedDate())));
+					if (hasEnrolledDate)
+						line.add((info.getEnrolledDate() == null ? null : df.format(info.getEnrolledDate())));
+					if (hasNote)
+						line.add((info.hasNote() ? info.getNote() : ""));
+					if (hasEmailed)
+						line.add((info.getEmailDate() == null ? null : df.format(info.getEmailDate())));
 				} else {
-					out.printLine(
-							MESSAGES.total(),
-							(hasExtId ? null : MESSAGES.total()),
-							number(null, students.size() - 1),
-							null,
-							null,
-							null,
-							null,
-							null,
-							number(info.getEnrollment(), info.getTotalEnrollment()),
-							waitlist(info),
-							number(info.getReservation(), info.getTotalReservation()),
-							number(info.getConsentNeeded(), info.getTotalConsentNeeded()),
-							number(info.getOverrideNeeded(), info.getTotalOverrideNeeded()),
-							reqCredit(info.getRequestCreditMin(), info.getRequestCreditMax(), info.getTotalRequestCreditMin(), info.getTotalRequestCreditMax()),
-							credit(info.getCredit(), info.getTotalCredit()),
-							number(info.getNrDistanceConflicts(), info.getTotalNrDistanceConflicts()),
-							number(info.getLongestDistanceMinutes(), info.getTotalLongestDistanceMinutes()),
-							number(info.getOverlappingMinutes(), info.getTotalOverlappingMinutes()),
-							number(info.getFreeTimeOverlappingMins(), info.getTotalFreeTimeOverlappingMins()),
-							number(info.getPrefInstrMethConflict(), info.getTotalPrefInstrMethConflict()),
-							number(info.getPrefSectionConflict(), info.getTotalPrefSectionConflict()),
-							null,
-							null,
-							null,
-							null
-							);
+					line.add(MESSAGES.total());
+					if (hasExtId)
+						line.add("");
+					line.add(number(null, students.size() - 1));
+					if (hasArea) {
+						line.add("");
+						line.add("");
+					}
+					if (hasMajor)
+						line.add("");
+					if (hasGroup)
+						line.add("");
+					for (@SuppressWarnings("unused") String g: groupTypes)
+						line.add("");
+					if (hasAcmd)
+						line.add("");
+					if (hasEnrollment)
+						line.add(number(info.getEnrollment(), info.getTotalEnrollment()));
+					if (hasWaitList)
+						line.add(waitlist(info));
+					if (hasReservation)
+						line.add(number(info.getReservation(), info.getTotalReservation()));
+					if (hasConsent)
+						line.add(number(info.getConsentNeeded(), info.getTotalConsentNeeded()));
+					if (hasOverride)
+						line.add(number(info.getOverrideNeeded(), info.getTotalOverrideNeeded()));
+					if (hasReqCredit)
+						line.add(reqCredit(info.getRequestCreditMin(), info.getRequestCreditMax(), info.getTotalRequestCreditMin(), info.getTotalRequestCreditMax()));
+					if (hasCredit)
+						line.add(credit(info));
+					if (hasDistances) {
+						line.add(number(info.getNrDistanceConflicts(), info.getTotalNrDistanceConflicts()));
+						line.add(number(info.getLongestDistanceMinutes(), info.getTotalLongestDistanceMinutes()));
+					}
+					if (hasOverlaps)
+						line.add(number(info.getOverlappingMinutes(), info.getTotalOverlappingMinutes()));
+					if (hasFreeTimeOverlaps)
+						line.add(number(info.getFreeTimeOverlappingMins(), info.getTotalFreeTimeOverlappingMins()));
+					if (hasPrefIMConfs)
+						line.add(number(info.getPrefInstrMethConflict(), info.getTotalPrefInstrMethConflict()));
+					if (hasPrefSecConfs)
+						line.add(number(info.getPrefSectionConflict(), info.getTotalPrefSectionConflict()));
+					if (hasRequestedDate)
+						line.add("");
+					if (hasEnrolledDate)
+						line.add("");
+					if (hasNote)
+						line.add("");
+					if (hasEmailed)
+						line.add("");
 				}
+				out.printLine(line.toArray(new String[line.size()]));				
 			}
 		
 		out.flush(); out.close();
@@ -463,11 +533,11 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 			}
 		} else {
 			if (wait == tWait && unasg == tUnasg) {
-				return (wait == 0 ? String.valueOf(unasg) : wait == unasg ? wait + MESSAGES.csvWaitListSign() : (unasg - wait) + " + " + wait + MESSAGES.htmlWaitListSign()) +
+				return (wait == 0 ? String.valueOf(unasg) : wait == unasg ? wait + MESSAGES.csvWaitListSign() : (unasg - wait) + " + " + wait + MESSAGES.csvWaitListSign()) +
 						(topWaitingPriority != null ? MESSAGES.csvFirstWaitListedPrioritySign(topWaitingPriority) : "");
 						
 			} else {
-				return ((wait == 0 ? String.valueOf(unasg) : wait == unasg ? wait + MESSAGES.csvWaitListSign() : (unasg - wait) + " + " + wait + MESSAGES.htmlWaitListSign()) + " / " + tUnasg) +
+				return ((wait == 0 ? String.valueOf(unasg) : wait == unasg ? wait + MESSAGES.csvWaitListSign() : (unasg - wait) + " + " + wait + MESSAGES.csvWaitListSign()) + " / " + tUnasg) +
 						(topWaitingPriority != null ? MESSAGES.csvFirstWaitListedPrioritySign(topWaitingPriority) : "");
 			}
 		}
@@ -501,14 +571,37 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		}
 	}
 	
-	public String credit(Float value, Float total) {
+	public String credit(StudentInfo info) {
+		Float value = info.getCredit();
+		Float total = info.getTotalCredit();
 		if (total != null && total > 0f) {
-			if (total.equals(value))
-				return (sCreditFormat.format(total));
-			else
-				return (sCreditFormat.format(value) + " / " + sCreditFormat.format(total));
+			if (total.equals(value)) {
+				String html = sCreditFormat.format(total);
+				if (info.hasIMTotalCredit()) {
+					html += " (";
+					for (Iterator<String> i = info.getTotalCreditIMs().iterator(); i.hasNext();) {
+						String im = i.next();
+						html += im + ": " + sCreditFormat.format(info.getIMTotalCredit(im));
+						if (i.hasNext()) html += ", ";
+					}
+					html += ")";
+				}
+				return html;
+			} else {
+				String html = sCreditFormat.format(value) + " / " + sCreditFormat.format(total);
+				if (info.hasIMCredit()) {
+					html += " (";
+					for (Iterator<String> i = info.getCreditIMs().iterator(); i.hasNext();) {
+						String im = i.next();
+						html += im + ": " + sCreditFormat.format(info.getIMCredit(im));
+						if (i.hasNext()) html += ", ";
+					}
+					html += ")";
+				}
+				return html;
+			}
 		} else {
-			return null;
+			return "";
 		}
 	}
 

@@ -692,6 +692,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Long iSessionId = null;
 		private String iExternalId, iName, iEmail;
 		private List<String> iArea, iClassification, iMajor, iGroup, iAccommodation;
+		private Map<String, List<String>> iGroups;
 		private boolean iCanShowExternalId = false, iCanSelect = false;
 		private boolean iCanUseAssitant = false, iCanRegister = false;
 		
@@ -784,16 +785,72 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		}
 		public void addGroup(String group) {
 			if (iGroup == null) iGroup = new ArrayList<String>();
-			iGroup.add(group);
+			if (!iGroup.contains(group)) iGroup.add(group);
 		}
 		public void removeGroup(String group) {
-			if (iGroup == null) return;
-			iGroup.remove(group);
+			if (iGroup != null) iGroup.remove(group);
 		}
 		public List<String> getGroups() { return iGroup; }
 		public boolean hasGroup(String group) {
-			if (iGroup == null) return false;
-			return iGroup.contains(group);
+			if (iGroup != null) {
+				if (iGroup.contains(group)) return true;
+			}
+			if (iGroups != null) {
+				for (List<String> groups: iGroups.values())
+					if (groups.contains(group)) return true;
+			}
+			return false;
+		}
+		
+		public boolean hasGroups() { return iGroups != null && !iGroups.isEmpty(); }
+		public void addGroup(String type, String group) {
+			if (type == null || type.isEmpty()) {
+				addGroup(group);
+			} else {
+				if (iGroups == null) iGroups = new HashMap<String, List<String>>();
+				List<String> groups = iGroups.get(type);
+				if (groups == null) {
+					groups = new ArrayList<String>();
+					iGroups.put(type, groups);
+				}
+				if (!groups.contains(group))
+					groups.add(group);
+			}
+		}
+		public void removeGroup(String type, String group) {
+			if (type == null || type.isEmpty()) {
+				removeGroup(group);
+			} else {
+				if (iGroups == null) return;
+				List<String> groups = iGroups.get(type);
+				if (groups != null)
+					groups.remove(group);
+			}
+		}
+		public List<String> getGroups(String type) {
+			if (type == null || type.isEmpty())
+				return getGroups();
+			if (iGroups == null) return null;
+			return iGroups.get(type);
+		}
+		public Set<String> getGroupTypes() {
+			if (iGroups == null) return null;
+			return iGroups.keySet();
+		}
+		public boolean hasGroups(String type) {
+			return getGroups(type) != null;
+		}
+		public String getGroup(String type, String delim) {
+			if (type == null || type.isEmpty())
+				return getGroup(delim);
+			List<String> groups = getGroups(type);
+			if (groups == null) return "";
+			String ret = "";
+			for (String group: groups) {
+				if (!ret.isEmpty()) ret += delim;
+				ret += group;
+			}
+			return ret;
 		}
 		
 		public boolean hasAccommodation() { return iAccommodation != null && !iAccommodation.isEmpty(); }

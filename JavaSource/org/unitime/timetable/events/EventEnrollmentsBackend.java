@@ -517,7 +517,10 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
     				st.addMajor(acm.getMajor().getCode());
     			}
     			for (StudentGroup g: enrollment.getStudent().getGroups()) {
-    				st.addGroup(g.getGroupAbbreviation());
+    				if (g.getType() == null)
+    					st.addGroup(g.getGroupAbbreviation());
+    				else
+    					st.addGroup(g.getType().getReference(), g.getGroupAbbreviation());
     			}
     			for (StudentAccomodation a: enrollment.getStudent().getAccomodations()) {
     				st.addAccommodation(a.getAbbreviation());

@@ -122,7 +122,10 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 				st.addAccommodation(acc.getAbbreviation());
 			}
 			for (StudentGroup gr: student.getGroups()) {
-				st.addGroup(gr.getGroupAbbreviation());
+				if (gr.getType() == null)
+					st.addGroup(gr.getGroupAbbreviation());
+				else
+					st.addGroup(gr.getType().getReference(), gr.getGroupAbbreviation());
 			}
 			
 			ClassAssignmentInterface.Enrollment e = new ClassAssignmentInterface.Enrollment();

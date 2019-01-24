@@ -247,9 +247,9 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 				clonnedStudent.setName(student.getName());
 				clonnedStudent.setNeedShortDistances(student.hasAccomodation(dm.getShortDistanceAccommodationReference()));
 				clonnedStudent.setAllowDisabled(student.isAllowDisabled());
-				for (String g: student.getGroups()) {
-					clonnedStudent.getMinors().add(new AcademicAreaCode("", g));
-					List<GroupReservation> list = groups.get(g);
+				for (XStudent.XGroup g: student.getGroups()) {
+					clonnedStudent.getMinors().add(new AcademicAreaCode(g.getType() == null ? "" : g.getType(), g.getAbbreviation()));
+					List<GroupReservation> list = groups.get(g.getAbbreviation());
 					if (list != null)
 						for (GroupReservation gr: list)
 							gr.getStudentIds().add(student.getStudentId());

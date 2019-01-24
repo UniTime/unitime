@@ -187,6 +187,7 @@ public class SectioningStatusPage extends Composite {
 	private Set<StudentStatusInfo> iStates = null;
 	private StudentStatusDialog iStudentStatusDialog = null;
 	private int iStatusColumn = 0, iNoteColumn = 0, iGroupColumn = 0;
+	private Map<String, Integer> iGroupsColumn = new HashMap<String, Integer>();
 	private Set<Long> iSelectedStudentIds = new HashSet<Long>();
 	private Set<Long> iSelectedCourseIds = new HashSet<Long>();
 	private boolean iOnline; 
@@ -970,6 +971,8 @@ public class SectioningStatusPage extends Composite {
 		if (tab == 0)
 			for (Long courseId: iSelectedCourseIds)
 				query += "&c=" + courseId;
+		if (tab == 1)
+			query += "&g=" + SectioningStatusCookie.getInstance().getSortByGroup(iOnline);
 		query += "&query=" + URL.encodeQueryString(iFilter.getValue());
 		FilterRpcRequest req = iFilter.getElementsRequest();
 		if (req.hasOptions()) {
@@ -1665,7 +1668,7 @@ public class SectioningStatusPage extends Composite {
 							}
 						}
 						if (!canAdd) continue;
-						MenuItem item = new MenuItem(g.getReference() + " - " + g.getLabel(), true, new Command() {
+						MenuItem item = new MenuItem(g.getReference() + " - " + g.getLabel() + (g.hasType() ? " (" + g.getType() + ")" : ""), true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
@@ -1685,8 +1688,12 @@ public class SectioningStatusPage extends Composite {
 											if (i != null && i.getStudent() != null) {
 												Widget w = iStudentTable.getWidget(row, 0);
 												if (w instanceof CheckBox && ((CheckBox)w).getValue()) {
-													i.getStudent().addGroup(g.getReference());
-													if (iGroupColumn >= 0)
+													i.getStudent().addGroup(g.getType(), g.getReference());
+													if (g.hasType()) {
+														Integer col = iGroupsColumn.get(g.getType());
+														if (col != null)
+															((HTML)iStudentTable.getWidget(row, col)).setHTML(i.getStudent().getGroup(g.getType(), "<br>"));
+													} else if (iGroupColumn >= 0)
 														((HTML)iStudentTable.getWidget(row, iGroupColumn)).setHTML(i.getStudent().getGroup("<br>"));
 												}
 											}
@@ -1746,7 +1753,7 @@ public class SectioningStatusPage extends Composite {
 							}
 						}
 						if (!canDrop) continue;
-						MenuItem item = new MenuItem(g.getReference() + " - " + g.getLabel(), true, new Command() {
+						MenuItem item = new MenuItem(g.getReference() + " - " + g.getLabel() + (g.hasType() ? " (" + g.getType() + ")" : ""), true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
@@ -1766,8 +1773,12 @@ public class SectioningStatusPage extends Composite {
 											if (i != null && i.getStudent() != null) {
 												Widget w = iStudentTable.getWidget(row, 0);
 												if (w instanceof CheckBox && ((CheckBox)w).getValue()) {
-													i.getStudent().removeGroup(g.getReference());
-													if (iGroupColumn >= 0)
+													i.getStudent().removeGroup(g.getType(), g.getReference());
+													if (g.hasType()) {
+														Integer col = iGroupsColumn.get(g.getType());
+														if (col != null)
+															((HTML)iStudentTable.getWidget(row, col)).setHTML(i.getStudent().getGroup(g.getType(), "<br>"));
+													} else if (iGroupColumn >= 0)
 														((HTML)iStudentTable.getWidget(row, iGroupColumn)).setHTML(i.getStudent().getGroup("<br>"));
 												}
 											}
@@ -1800,7 +1811,12 @@ public class SectioningStatusPage extends Composite {
 		header.add(hTotal);
 		
 		if (iProperties != null && iProperties.isChangeStatus()) iStudentInfoVisibleColumns.hasNote = true;
-		if (iProperties != null && iProperties.hasEditableGroups()) iStudentInfoVisibleColumns.hasGroup = true;
+		if (iProperties != null && iProperties.hasEditableGroups()) {
+			iStudentInfoVisibleColumns.hasGroup = true;
+			for (StudentGroupInfo g: iProperties.getEditableGroups())
+				if (g.hasType())
+					iStudentInfoVisibleColumns.groupTypes.add(g.getType());
+		}
 		
 		UniTimeTableHeader hArea = null, hClasf = null;
 		if (iStudentInfoVisibleColumns.hasArea) {
@@ -1832,6 +1848,16 @@ public class SectioningStatusPage extends Composite {
 			addSortOperation(hGroup, StudentComparator.SortBy.GROUP, MESSAGES.colGroup());
 		} else {
 			iGroupColumn = -1;
+		}
+		
+		iGroupsColumn.clear();
+		Map<String, UniTimeTableHeader> hGroups = new HashMap<String, UniTimeTableHeader>();
+		for (String type: iStudentInfoVisibleColumns.groupTypes) {
+			iGroupsColumn.put(type, header.size() - 1);
+			UniTimeTableHeader h = new UniTimeTableHeader(type);
+			header.add(h);
+			addSortOperation(h, StudentComparator.SortBy.GROUP, MESSAGES.colGroup(), type);
+			hGroups.put(type, h);
 		}
 		
 		UniTimeTableHeader hAcmd = null;
@@ -1979,6 +2005,7 @@ public class SectioningStatusPage extends Composite {
 		
 		if (SectioningStatusCookie.getInstance().getSortBy(iOnline, 1) != 0) {
 			boolean asc = (SectioningStatusCookie.getInstance().getSortBy(iOnline, 1) > 0);
+			String g = SectioningStatusCookie.getInstance().getSortByGroup(iOnline);
 			StudentComparator.SortBy sort = StudentComparator.SortBy.values()[Math.abs(SectioningStatusCookie.getInstance().getSortBy(iOnline, 1)) - 1];
 			UniTimeTableHeader h = null;
 			switch (sort) {
@@ -1991,7 +2018,12 @@ public class SectioningStatusPage extends Composite {
 			case ENROLLMENT: h = hEnrollment; break;
 			case ENROLLMENT_TS: h = hEnrolledTS; break;
 			case EXTERNAL_ID: h = hExtId; break;
-			case GROUP: h = hGroup; break;
+			case GROUP:
+				if (g == null || g.isEmpty())
+					h = hGroup;
+				else
+					h = hGroups.get(g);
+				break;
 			case MAJOR: h = hMajor; break;
 			case REQUEST_TS: h = hRequestTS; break;
 			case RESERVATION: h = hReservation; break;
@@ -2008,7 +2040,7 @@ public class SectioningStatusPage extends Composite {
 			case REQ_CREDIT: h = hReqCred; break;
 			}
 			if (h != null) {
-				Collections.sort(result, new StudentComparator(sort, asc));
+				Collections.sort(result, new StudentComparator(sort, asc, g));
 				if (!asc) Collections.reverse(result);
 				h.setOrder(asc);
 			}
@@ -2094,6 +2126,8 @@ public class SectioningStatusPage extends Composite {
 				line.add(new HTML(info.getStudent().getMajor("<br>"), false));
 			if (iStudentInfoVisibleColumns.hasGroup)
 				line.add(new HTML(info.getStudent().getGroup("<br>"), false));
+			for (String type: iStudentInfoVisibleColumns.groupTypes)
+				line.add(new HTML(info.getStudent().getGroup(type, "<br>"), false));
 			if (iStudentInfoVisibleColumns.hasAcmd)
 				line.add(new HTML(info.getStudent().getAccommodation("<br>"), false));
 			line.add(new HTML(info.getStatus(), false));
@@ -2111,6 +2145,8 @@ public class SectioningStatusPage extends Composite {
 			if (iStudentInfoVisibleColumns.hasMajor)
 				line.add(new HTML("&nbsp;", false));
 			if (iStudentInfoVisibleColumns.hasGroup)
+				line.add(new HTML("&nbsp;", false));
+			for (@SuppressWarnings("unused") String type: iStudentInfoVisibleColumns.groupTypes)
 				line.add(new HTML("&nbsp;", false));
 			if (iStudentInfoVisibleColumns.hasAcmd)
 				line.add(new HTML("&nbsp;", false));
@@ -2316,12 +2352,16 @@ public class SectioningStatusPage extends Composite {
 	}
 	
 	protected void addSortOperation(final UniTimeTableHeader header, final StudentComparator.SortBy sort, final String column) {
+		addSortOperation(header, sort, column, "");
+	}
+	
+	protected void addSortOperation(final UniTimeTableHeader header, final StudentComparator.SortBy sort, final String column, final String group) {
 		Operation op = new SortOperation() {
 			@Override
 			public void execute() {
 				boolean asc = (header.getOrder() == null ? true : !header.getOrder());
 				if (iMaxTableLines > 0 && iStudentInfos.size() - 1 > iMaxTableLines) {
-					Collections.sort(iStudentInfos, new StudentComparator(sort, asc));
+					Collections.sort(iStudentInfos, new StudentComparator(sort, asc, group));
 					if (!asc) Collections.reverse(iStudentInfos);
 					fillStudentTable(iStudentInfosFirstLine);
 					for (int i = 0; i < iStudentTable.getCellCount(0); i++) {
@@ -2333,9 +2373,9 @@ public class SectioningStatusPage extends Composite {
 					}
 					header.setOrder(asc);
 				} else {
-					iStudentTable.sort(header, new StudentComparator(sort, asc));
+					iStudentTable.sort(header, new StudentComparator(sort, asc, group));
 				}
-				SectioningStatusCookie.getInstance().setSortBy(iOnline, 1, header.getOrder() ? 1 + sort.ordinal() : -1 - sort.ordinal());
+				SectioningStatusCookie.getInstance().setSortBy(iOnline, 1, header.getOrder() ? 1 + sort.ordinal() : -1 - sort.ordinal(), group);
 			}
 			@Override
 			public boolean isApplicable() {
@@ -2347,6 +2387,8 @@ public class SectioningStatusPage extends Composite {
 			}
 			@Override
 			public String getName() {
+				if (sort == StudentComparator.SortBy.GROUP && group != null && !group.isEmpty())
+					return MESSAGES.sortBy(group);	
 				return MESSAGES.sortBy(column);
 			}
 			@Override
@@ -2731,10 +2773,12 @@ public class SectioningStatusPage extends Composite {
 		
 		private SortBy iSortBy;
 		private boolean iAsc;
+		private String iGroup;
 		
-		public StudentComparator(SortBy sortBy, boolean asc) {
+		public StudentComparator(SortBy sortBy, boolean asc, String group) {
 			iSortBy = sortBy;
 			iAsc = asc;
+			iGroup = group;
 		}
 		
 		protected int doCompare(StudentInfo e1, StudentInfo e2) {
@@ -2759,7 +2803,7 @@ public class SectioningStatusPage extends Composite {
 				if (cmp != 0) return cmp;
 				return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
 			case GROUP:
-				cmp = e1.getStudent().getGroup("|").compareTo(e2.getStudent().getGroup("|"));
+				cmp = e1.getStudent().getGroup(iGroup, "|").compareTo(e2.getStudent().getGroup(iGroup, "|"));
 				if (cmp != 0) return cmp;
 				return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
 			case ACCOMODATION:
@@ -3077,6 +3121,7 @@ public class SectioningStatusPage extends Composite {
 				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false, hasReqCred = false, hasDistances = false, hasOverlaps = false,
 				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false, hasOverride = false, hasExtId = false;
 		int selectableStudents = 0;
+		Set<String> groupTypes = new TreeSet<String>();
 		
 		public StudentsInfoVisibleColumns(List<StudentInfo> result) {
 			for (StudentInfo e: result) {
@@ -3104,7 +3149,8 @@ public class SectioningStatusPage extends Composite {
 				if (e.hasTotalPrefSectionConflict()) hasPrefSecConfs = true;
 				if (e.hasNote()) hasNote = true;
 				if (e.getEmailDate() != null) hasEmailed = true;
-				if (e.getStudent() != null && e.getStudent().isCanShowExternalId()) { hasExtId = true; break; }
+				if (e.getStudent() != null && e.getStudent().isCanShowExternalId()) hasExtId = true;
+				if (e.getStudent().hasGroups()) groupTypes.addAll(e.getStudent().getGroupTypes());
 			}
 		}
 	}

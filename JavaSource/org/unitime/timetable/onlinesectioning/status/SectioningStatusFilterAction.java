@@ -48,9 +48,11 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentGroupType;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.model.dao.StudentGroupTypeDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -93,7 +95,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 	public FilterRpcResponse load(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		FilterRpcResponse response = new FilterRpcResponse();
 		
-		StudentQuery query = getQuery(iRequest, server);
+		StudentQuery query = getQuery(iRequest, server, helper);
 		
 		List<Entity> areas = new ArrayList<Entity>();
 		for (Object[] o: (List<Object[]>)query.select("aac.academicArea.uniqueId, aac.academicArea.academicAreaAbbreviation, aac.academicArea.title, count(distinct s.uniqueId)")
@@ -138,7 +140,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		
 		List<Entity> groups = new ArrayList<Entity>();
 		for (Object[] o: (List<Object[]>)query.select("g.uniqueId, g.groupAbbreviation, g.groupName, count(distinct s)")
-				.from("StudentGroup g").where("g in elements(s.groups)")
+				.from("StudentGroup g").where("g in elements(s.groups) and g.type is null")
 				.order("g.groupAbbreviation, g.groupName").group("g.uniqueId, g.groupAbbreviation, g.groupName")
 				.exclude("group").exclude("course").query(helper.getHibSession()).list()) {
 			Entity c = new Entity(
@@ -149,6 +151,23 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			groups.add(c);
 		}
 		response.add("group", groups);
+		
+		for (StudentGroupType type: StudentGroupTypeDAO.getInstance().findAll(helper.getHibSession())) {
+			List<Entity> groupsOfThisType = new ArrayList<Entity>();
+			for (Object[] o: (List<Object[]>)query.select("g.uniqueId, g.groupAbbreviation, g.groupName, count(distinct s)")
+					.from("StudentGroup g").where("g in elements(s.groups) and g.type = :groupTypeId")
+					.set("groupTypeId", type.getUniqueId())
+					.order("g.groupAbbreviation, g.groupName").group("g.uniqueId, g.groupAbbreviation, g.groupName")
+					.exclude(type.getReference().replace(' ', '_')).exclude("course").query(helper.getHibSession()).list()) {
+				Entity c = new Entity(
+						(Long)o[0],
+						(String)o[1],
+						(String)o[2]);
+				c.setCount(((Number)o[3]).intValue());
+				groupsOfThisType.add(c);
+			}
+			response.add(type.getReference().replace(' ', '_'), groupsOfThisType);
+		}
 		
 		List<Entity> acc = new ArrayList<Entity>();
 		for (Object[] o: (List<Object[]>)query.select("a.uniqueId, a.abbreviation, a.name, count(distinct s)")
@@ -281,7 +300,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			}
 		}
 		
-		StudentQuery query = getQuery(iRequest, server);
+		StudentQuery query = getQuery(iRequest, server, helper);
 		if (!iRequest.getText().isEmpty() && (response.getSuggestions() == null || response.getSuggestions().size() < 20)) {
 			if (studentIdMatch) {
 				StudentQuery.QueryInstance instance = query.select("distinct s").exclude("student").order("s.lastName, s.firstName, s.middleName");
@@ -381,7 +400,11 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		return "filter-" + iRequest.getCommand().name().toLowerCase();
 	}
 	
-	public static StudentQuery getQuery(FilterRpcRequest request, OnlineSectioningServer server) {
+	public static StudentQuery getQuery(FilterRpcRequest request, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		Set<String> groupTypes = new HashSet<String>();
+		for (StudentGroupType type: StudentGroupTypeDAO.getInstance().findAll(helper.getHibSession()))
+			groupTypes.add(type.getReference().replace(' ', '_'));
+		
 		StudentQuery query = new StudentQuery(server.getAcademicSession().getUniqueId());
 		
 		if (request.getText() != null && !request.getText().isEmpty()) {
@@ -421,16 +444,29 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			query.addWhere("major", "aac.major.code in (" + major + ")");
 		}
 		
+		int gid = 0;
 		if (request.hasOptions("group")) {
 			query.addFrom("group", "StudentGroup g");
 			String group = "";
-			int id = 0;
 			for (String g: request.getOptions("group")) {
-				group += (group.isEmpty() ? "" : ",") + ":Xgr" + id;
-				query.addParameter("group", "Xgr" + id, g);
-				id++;
+				group += (group.isEmpty() ? "" : ",") + ":Xgr" + gid;
+				query.addParameter("group", "Xgr" + gid, g);
+				gid++;
 			}
 			query.addWhere("group", "g in elements(s.groups) and g.groupAbbreviation in (" + group + ")");
+		}
+		
+		for (String type: groupTypes) {
+			if (request.hasOptions(type)) {
+				query.addFrom(type, "StudentGroup g_" + type);
+				String group = "";
+				for (String g: request.getOptions(type)) {
+					group += (group.isEmpty() ? "" : ",") + ":Xgr" + gid;
+					query.addParameter(type, "Xgr" + gid, g);
+					gid++;
+				}
+				query.addWhere(type, "g_" + type + " in elements(s.groups) and g_" + type + ".groupAbbreviation in (" + group + ")");
+			}
 		}
 		
 		if (request.hasOptions("accommodation")) {
@@ -734,19 +770,19 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 	}
 	
 	public Set<Long> getStudentIds(OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		return new HashSet<Long>((List<Long>)getQuery(iRequest, server).select("distinct s.uniqueId").query(helper.getHibSession()).list());
+		return new HashSet<Long>((List<Long>)getQuery(iRequest, server, helper).select("distinct s.uniqueId").query(helper.getHibSession()).list());
 	}
 	
 	public List<XStudent> getStudens(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		List<XStudent> students = new ArrayList<XStudent>();
-		for (XStudent student: (List<XStudent>)getQuery(iRequest, server).select("distinct s").query(helper.getHibSession()).list()) {
+		for (XStudent student: (List<XStudent>)getQuery(iRequest, server, helper).select("distinct s").query(helper.getHibSession()).list()) {
 			students.add(new XStudent(student));
 		}
 		return students;
 	}
 	
-	public static CourseQuery getCourseQuery(FilterRpcRequest request, OnlineSectioningServer server) {
-		CourseQuery query = new CourseQuery(getQuery(request, server));
+	public static CourseQuery getCourseQuery(FilterRpcRequest request, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		CourseQuery query = new CourseQuery(getQuery(request, server, helper));
 		
 		if (request.hasOption("course")) {
 			query.addParameter("course", "Xco", request.getOption("course"));
@@ -759,7 +795,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 	
 	public List<XCourseId> getCourseIds(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		List<XCourseId> ids = new ArrayList<XCourseId>(); 
-		for (Object[] line: (List<Object[]>)getCourseQuery(iRequest, server).select("distinct co.instructionalOffering.uniqueId, co.uniqueId, co.subjectAreaAbbv, co.courseNbr").query(helper.getHibSession()).list()) {
+		for (Object[] line: (List<Object[]>)getCourseQuery(iRequest, server, helper).select("distinct co.instructionalOffering.uniqueId, co.uniqueId, co.subjectAreaAbbv, co.courseNbr").query(helper.getHibSession()).list()) {
 			ids.add(new XCourseId(((Number)line[0]).longValue(), ((Number)line[1]).longValue(), line[2] + " " + line[3]));
 		}
 		return ids;
@@ -767,7 +803,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 	
 	public List<XCourse> getCourses(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		List<XCourse> courses = new ArrayList<XCourse>(); 
-		for (CourseOffering co: (List<CourseOffering>)getCourseQuery(iRequest, server).select("distinct co").query(helper.getHibSession()).list()) {
+		for (CourseOffering co: (List<CourseOffering>)getCourseQuery(iRequest, server, helper).select("distinct co").query(helper.getHibSession()).list()) {
 			courses.add(new XCourse(co));
 		}
 		return courses;

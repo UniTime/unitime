@@ -196,8 +196,8 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						for (String acc: student.getAccomodations()) {
 							st.addAccommodation(acc);
 						}
-						for (String gr: student.getGroups()) {
-							st.addGroup(gr);
+						for (XStudent.XGroup gr: student.getGroups()) {
+							st.addGroup(gr.getType(), gr.getAbbreviation());
 						}
 						int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0, tUnasg = 0, tOvrNeed = 0, ovrNeed = 0;
 						float tCred = 0f;
@@ -495,8 +495,8 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 					for (String acc: student.getAccomodations()) {
 						st.addAccommodation(acc);
 					}
-					for (String gr: student.getGroups()) {
-						st.addGroup(gr);
+					for (XStudent.XGroup gr: student.getGroups()) {
+						st.addGroup(gr.getType(), gr.getAbbreviation());
 					}
 					s.setStatus(student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
 					s.setEmailDate(student.getEmailTimeStamp() == null ? null : student.getEmailTimeStamp());
@@ -525,8 +525,8 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 					for (String acc: student.getAccomodations()) {
 						st.addAccommodation(acc);
 					}
-					for (String gr: student.getGroups()) {
-						st.addGroup(gr);
+					for (XStudent.XGroup gr: student.getGroups()) {
+						st.addGroup(gr.getType(), gr.getAbbreviation());
 					}
 					s.setStatus(student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
 					s.setEmailDate(student.getEmailTimeStamp() == null ? null : student.getEmailTimeStamp());

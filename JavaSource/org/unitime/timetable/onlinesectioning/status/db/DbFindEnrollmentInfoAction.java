@@ -103,7 +103,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			DbFindEnrollmentInfoCourseMatcher m = new DbFindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iSubjectAreas, iQuery);
 			
 			Map<CourseOffering, List<CourseRequest>> requests = new HashMap<CourseOffering, List<CourseRequest>>();
-			for (CourseRequest cr: (List<CourseRequest>)SectioningStatusFilterAction.getCourseQuery(iFilter, server).select("distinct cr").query(helper.getHibSession()).list()) {
+			for (CourseRequest cr: (List<CourseRequest>)SectioningStatusFilterAction.getCourseQuery(iFilter, server, helper).select("distinct cr").query(helper.getHibSession()).list()) {
 				if (!m.match(cr.getCourseOffering())) continue;
 				List<CourseRequest> list = requests.get(cr.getCourseOffering());
 				if (list == null) {
@@ -744,6 +744,9 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			if ("group".equals(attr)) {
 				for (StudentGroup group: student().getGroups())
 					if (eq(group.getGroupAbbreviation(), term)) return true;
+			} else {
+				for (StudentGroup group: student().getGroups())
+					if (group.getType() != null && attr != null && eq(group.getType().getReference(), attr.replace('_', ' ')) && eq(group.getGroupAbbreviation(), term)) return true;
 			}
 			
 			if ("accommodation".equals(attr)) {
@@ -1295,6 +1298,9 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					return iMyStudent;
 				}
 				return true;
+			} else if (attr != null) {
+				for (StudentGroup group: student().getGroups())
+					if (group.getType() != null && eq(group.getType().getReference(), attr.replace('_', ' ')) && eq(group.getGroupAbbreviation(), term)) return true;
 			}
 			return false;
 		}

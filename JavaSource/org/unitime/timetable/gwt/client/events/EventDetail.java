@@ -260,6 +260,7 @@ public class EventDetail extends Composite {
 				RPC.execute(EncodeQueryRpcRequest.encode("output=event-enrollments.csv&sid=" + iProperties.getSessionId() + "&event=" + iEvent.getId() +
 						"&suffix=" + (SectioningCookie.getInstance().getShowClassNumbers() ? "1" : "0") +
 						"&sort=" + SectioningCookie.getInstance().getEnrollmentSortBy() +
+						"&group=" + SectioningCookie.getInstance().getEnrollmentSortByGroup() +
 						"&subpart=" + SectioningCookie.getInstance().getEnrollmentSortBySubpart()), new AsyncCallback<EncodeQueryRpcResponse>() {
 					@Override
 					public void onFailure(Throwable caught) {}

@@ -220,8 +220,8 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 				Student clonnedStudent = new Student(student.getStudentId());
 				clonnedStudent.setExternalId(student.getExternalId());
 				clonnedStudent.setName(student.getName());
-				for (String g: student.getGroups()) {
-					List<GroupReservation> list = groups.get(g);
+				for (XStudent.XGroup g: student.getGroups()) {
+					List<GroupReservation> list = groups.get(g.getAbbreviation());
 					if (list != null)
 						for (GroupReservation gr: list)
 							gr.getStudentIds().add(student.getStudentId());

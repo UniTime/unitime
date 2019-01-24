@@ -64,7 +64,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 public class XStudent extends XStudentId implements Externalizable {
 	private static final long serialVersionUID = 1L;
     private Set<XAreaClassificationMajor> iMajors = new TreeSet<XAreaClassificationMajor>();
-    private List<String> iGroups = new ArrayList<String>();
+    private List<XGroup> iGroups = new ArrayList<XGroup>();
     private List<String> iAccomodations = new ArrayList<String>();
     private List<XRequest> iRequests = new ArrayList<XRequest>();
     private String iStatus = null;
@@ -98,7 +98,7 @@ public class XStudent extends XStudentId implements Externalizable {
         	iMajors.add(new XAreaClassificationMajor(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode()));
         }
         for (StudentGroup group: student.getGroups()) {
-        	iGroups.add(group.getGroupAbbreviation());
+        	iGroups.add(new XGroup(group));
         	StudentGroupType type = group.getType();
         	if (type != null && type.getAllowDisabledSection() == StudentGroupType.AllowDisabledSection.AlwaysAllowed)
         		iAllowDisabled = true;
@@ -235,7 +235,7 @@ public class XStudent extends XStudentId implements Externalizable {
     		if ("A".equals(aac.getArea()))
 				iAccomodations.add(aac.getCode());
 			else
-				iGroups.add(aac.getCode());
+				iGroups.add(new XGroup(aac));
     	}
     	for (Request request: student.getRequests()) {
     		if (request instanceof FreeTimeRequest) {
@@ -290,7 +290,7 @@ public class XStudent extends XStudentId implements Externalizable {
     /**
      * List of group codes for the given student
      */
-    public List<String> getGroups() {
+    public List<XGroup> getGroups() {
         return iGroups;
     }
 
@@ -380,7 +380,7 @@ public class XStudent extends XStudentId implements Externalizable {
 		int nrGroups = in.readInt();
 		iGroups.clear();
 		for (int i = 0; i < nrGroups; i++)
-			iGroups.add((String)in.readObject());
+			iGroups.add(new XGroup(in));
 		
 		int nrAccomodations = in.readInt();
 		iAccomodations.clear();
@@ -410,8 +410,8 @@ public class XStudent extends XStudentId implements Externalizable {
 			major.writeExternal(out);
 		
 		out.writeInt(iGroups.size());
-		for (String group: iGroups)
-			out.writeObject(group);
+		for (XGroup group: iGroups)
+			group.writeExternal(out);
 		
 		out.writeInt(iAccomodations.size());
 		for (String accomodation: iAccomodations)
@@ -451,6 +451,75 @@ public class XStudent extends XStudentId implements Externalizable {
 		@Override
 		public XStudent readObject(ObjectInput input) throws IOException, ClassNotFoundException {
 			return new XStudent(input);
+		}
+	}
+	
+	@SerializeWith(XStudent.XGroupSerializer.class)
+	public static class XGroup implements Externalizable {
+		public String iType, iAbbreaviation;
+		
+		public XGroup(StudentGroup g) {
+			iType = (g.getType() == null ? null: g.getType().getReference());
+			iAbbreaviation = g.getGroupAbbreviation();
+		}
+		
+		public XGroup(AcademicAreaCode g) {
+			iType = (g.getArea() == null || g.getArea().isEmpty() ? null : g.getArea());
+			iAbbreaviation = g.getCode();
+		}
+		
+		public XGroup(ObjectInput in) throws IOException, ClassNotFoundException {
+	    	super();
+	    	readExternal(in);
+	    }
+		
+		public String getType() { return iType; }
+		public String getAbbreviation() { return iAbbreaviation; }
+		
+		@Override
+		public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+			if (in.readBoolean())
+				iType = (String)in.readObject();
+			else
+				iType = null;
+			iAbbreaviation = (String)in.readObject();
+		}
+
+		@Override
+		public void writeExternal(ObjectOutput out) throws IOException {
+			if (iType != null) {
+				out.writeBoolean(true);
+				out.writeObject(iType);			
+			} else {
+				out.writeBoolean(false);
+			}
+			out.writeObject(iAbbreaviation);
+		}
+		
+		@Override
+		public String toString() { return getAbbreviation(); }
+		
+		@Override
+		public int hashCode() { return toString().hashCode(); }
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof XGroup)) return false;
+			return getAbbreviation().equals(((XGroup)o).getAbbreviation());
+		}
+	}
+	
+	public static class XGroupSerializer implements Externalizer<XGroup> {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void writeObject(ObjectOutput output, XGroup object) throws IOException {
+			object.writeExternal(output);
+		}
+
+		@Override
+		public XGroup readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+			return new XGroup(input);
 		}
 	}
 }

@@ -60,6 +60,12 @@ public class Query implements Serializable {
 		return false;
 	}
 	
+	public boolean hasAttribute(Collection<String> attr) {
+		for (String a: attr)
+			if (iQuery.hasAttribute(a)) return true;
+		return false;
+	}
+	
 	private static List<String> split(String query, String... splits) {
 		List<String> ret = new ArrayList<String>();
 		int bracket = 0;

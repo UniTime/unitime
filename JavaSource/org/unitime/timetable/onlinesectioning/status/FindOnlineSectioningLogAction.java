@@ -22,9 +22,12 @@ package org.unitime.timetable.onlinesectioning.status;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,6 +43,8 @@ import org.unitime.timetable.gwt.server.Query.QueryFormatter;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
+import org.unitime.timetable.model.StudentGroupType;
+import org.unitime.timetable.model.dao.StudentGroupTypeDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -86,15 +91,20 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 			NumberFormat nf = Localization.getNumberFormat(CONST.executionTimeFormat());
 			AcademicSessionInfo session = server.getAcademicSession();
 			
+			SectioningLogQueryFormatter formatter = new SectioningLogQueryFormatter(helper);
+			String join = "";
+			for (String t: formatter.getGroupTypes())
+				join += "left outer join s.groups G_" + t + " ";
+			
 			org.hibernate.Query q = helper.getHibSession().createQuery(
-					"select l, s.uniqueId from OnlineSectioningLog l, Student s " +
+					"select distinct l, s.uniqueId from OnlineSectioningLog l, Student s " +
 					(getQuery().hasAttribute("area", "clasf", "classification", "major") ? "left outer join s.areaClasfMajors m " : "") +
 					(getQuery().hasAttribute("minor") ? "left outer join s.areaClasfMinors n " : "") + 
 					(getQuery().hasAttribute("group") ? "left outer join s.groups g " : "") + 
 					(getQuery().hasAttribute("accommodation") ? "left outer join s.accomodations a " : "") +
-					(getQuery().hasAttribute("course") ? "left outer join s.courseDemands cd left outer join cd.courseRequests cr " : "") +
+					(getQuery().hasAttribute("course") ? "left outer join s.courseDemands cd left outer join cd.courseRequests cr " : "") + join +
 					"where l.session.uniqueId = :sessionId and l.session = s.session and l.student = s.externalUniqueId " +
-					"and (" + getQuery().toString(new SectioningLogQueryFormatter()) + ") " +
+					"and (" + getQuery().toString(formatter) + ") " +
 					"and (l.result is not null or l.operation not in ('reload-offering', 'check-offering')) order by l.timeStamp desc, l.uniqueId desc");
 
 			q.setLong("sessionId", session.getUniqueId());
@@ -121,8 +131,8 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					for (String acc: student.getAccomodations()) {
 						st.addAccommodation(acc);
 					}
-					for (String gr: student.getGroups()) {
-						st.addGroup(gr);
+					for (XStudent.XGroup gr: student.getGroups()) {
+						st.addGroup(gr.getType(), gr.getAbbreviation());
 					}
 
 					SectioningAction a = new SectioningAction();
@@ -341,6 +351,12 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 	}
 
 	public static class SectioningLogQueryFormatter implements QueryFormatter {
+		Set<String> iGroupTypes = new HashSet<String>();
+		
+		public SectioningLogQueryFormatter(OnlineSectioningHelper helper) {
+			for (StudentGroupType type: StudentGroupTypeDAO.getInstance().findAll(helper.getHibSession()))
+				iGroupTypes.add(type.getReference().replace(' ', '_').toLowerCase());
+		}
 
 		@Override
 		public String format(String attr, String body) {
@@ -368,6 +384,8 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 				return "lower(n.minor.code) = '" + body.toLowerCase() + "'";
 			} else if ("group".equalsIgnoreCase(attr)) {
 				return "lower(g.groupAbbreviation) = '" + body.toLowerCase() + "'";
+			} else if (attr != null && iGroupTypes.contains(attr.toLowerCase())) {
+				return "lower(G_" + attr + ".groupAbbreviation) = '" + body.toLowerCase() + "'";
 			} else if ("accommodation".equalsIgnoreCase(attr)) {
 				return "lower(a.abbreviation) = '" + body.toLowerCase() + "'";
 			} else if ("user".equalsIgnoreCase(attr)) {
@@ -425,6 +443,8 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 				return "1 = 1";
 			}
 		}
+		
+		public Collection<String> getGroupTypes() { return iGroupTypes; }
 		
 	}
 

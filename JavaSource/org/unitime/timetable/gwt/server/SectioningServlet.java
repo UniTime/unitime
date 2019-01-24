@@ -1208,7 +1208,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								st.addMajor(acm.getMajor().getCode());
 							}
 							for (StudentGroup g: enrollment.getStudent().getGroups()) {
-								st.addGroup(g.getGroupAbbreviation());
+								if (g.getType() == null)
+									st.addGroup(g.getGroupAbbreviation());
+								else
+									st.addGroup(g.getType().getReference(), g.getGroupAbbreviation());
 							}
 			    			for (StudentAccomodation a: enrollment.getStudent().getAccomodations()) {
 			    				st.addAccommodation(a.getAbbreviation());
@@ -1307,7 +1310,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								st.addMajor(acm.getMajor().getCode());
 							}
 							for (StudentGroup g: request.getCourseDemand().getStudent().getGroups()) {
-								st.addGroup(g.getGroupAbbreviation());
+								if (g.getType() == null)
+									st.addGroup(g.getGroupAbbreviation());
+								else
+									st.addGroup(g.getType().getReference(), g.getGroupAbbreviation());
 							}
 			    			for (StudentAccomodation a: request.getCourseDemand().getStudent().getAccomodations()) {
 			    				st.addAccommodation(a.getAbbreviation());
@@ -2688,7 +2694,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				for (StudentGroup g: (List<StudentGroup>)StudentGroupDAO.getInstance().getSession().createQuery(
 						"from StudentGroup g where g.type.advisorsCanSet = true and g.session = :sessionId order by g.groupAbbreviation"
 						).setLong("sessionId", sessionId).setCacheable(true).list()) {
-					properties.addEditableGroup(new StudentGroupInfo(g.getUniqueId(), g.getGroupAbbreviation(), g.getGroupName()));
+					properties.addEditableGroup(new StudentGroupInfo(g.getUniqueId(), g.getGroupAbbreviation(), g.getGroupName(), g.getType() == null ? null: g.getType().getReference()));
 				}
 		}
 		return properties;
@@ -2770,7 +2776,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			st.addMajor(acm.getMajor().getCode());
 		}
 		for (StudentGroup g: student.getGroups()) {
-			st.addGroup(g.getGroupAbbreviation());
+			if (g.getType() == null)
+				st.addGroup(g.getGroupAbbreviation());
+			else
+				st.addGroup(g.getType().getReference(), g.getGroupAbbreviation());
 		}
 		for (StudentAccomodation a: student.getAccomodations()) {
 			st.addAccommodation(a.getAbbreviation());
@@ -2873,7 +2882,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			st.addMajor(acm.getMajor().getCode());
 		}
 		for (StudentGroup g: student.getGroups()) {
-			st.addGroup(g.getGroupAbbreviation());
+			if (g.getType() == null)
+				st.addGroup(g.getGroupAbbreviation());
+			else
+				st.addGroup(g.getType().getReference(), g.getGroupAbbreviation());
 		}
 		for (StudentAccomodation a: student.getAccomodations()) {
 			st.addAccommodation(a.getAbbreviation());
