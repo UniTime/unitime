@@ -2240,6 +2240,30 @@ public enum ApplicationProperty {
 
 	@Type(Boolean.class)
 	@DefaultValue("true")
+	@Description("Course Requests: disabled course requests (due to a reservation) cannot change alternatives")
+	@Since(4.4)
+	OnlineSchedulingReservedRequestNoAlternativeChanges("unitime.enrollment.disableReservedRequests.noAlternativeChanges"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Course Requests: disabled course requests (due to an enrollment) cannot change alternatives")
+	@Since(4.4)
+	OnlineSchedulingAssignedRequestNoAlternativeChanges("unitime.enrollment.disableAssignedRequests.noAlternativeChanges"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Course Requests: disabled course requests (due to a reservation) cannot be moved in priority")
+	@Since(4.4)
+	OnlineSchedulingReservedRequestNoPriorityChanges("unitime.enrollment.disableReservedRequests.noPriorityChanges"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Course Requests: disabled course requests (due to an enrollment) cannot be moved in priority")
+	@Since(4.4)
+	OnlineSchedulingAssignedRequestNoPriorityChanges("unitime.enrollment.disableAssignedRequests.noPriorityChanges"),
+
+	@Type(Boolean.class)
+	@DefaultValue("true")
 	@Description("Online Student Scheduling: enable Quick Add/Drop button")
 	@Since(4.1)
 	OnlineSchedulingQuickAddDrop("unitime.enrollment.quickAddDrop"),

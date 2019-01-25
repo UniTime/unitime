@@ -495,6 +495,26 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 		}
 	}
 	
+	public void disableArrowsWhereNeeded() {
+		CourseRequestLine prev = null;
+		for (Iterator<CourseRequestLine> i = iCourses.iterator(); i.hasNext(); ) {
+			CourseRequestLine line = i.next();
+			if (prev != null) {
+				prev.setDownArrowEnabled(prev.getValue().isCanChangePriority() && line.getValue().isCanChangePriority());
+				line.setUpArrowEnabled(prev.getValue().isCanChangePriority() && line.getValue().isCanChangePriority());
+			}
+			prev = line;
+		}
+		for (Iterator<CourseRequestLine> i = iAlternatives.iterator(); i.hasNext(); ) {
+			CourseRequestLine line = i.next();
+			if (prev != null) {
+				prev.setDownArrowEnabled(prev.getValue().isCanChangePriority() && line.getValue().isCanChangePriority());
+				line.setUpArrowEnabled(prev.getValue().isCanChangePriority() && line.getValue().isCanChangePriority());
+			}
+			prev = line;
+		}
+	}
+	
 	public void notifySaveSucceeded() {
 		if (iLastCheck != null && iLastCheck.hasMessages()) {
 			for (CourseMessage m: iLastCheck.getMessages())

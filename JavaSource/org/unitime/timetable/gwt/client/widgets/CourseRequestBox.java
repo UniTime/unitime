@@ -98,6 +98,8 @@ public class CourseRequestBox extends P implements CourseSelection {
 	private RequestedCourse iLastCourse = null;
 	private SpecialRegistrationContext iSpecReg;
 	private boolean iCanDelete = true;
+	private boolean iCanChangePriority = true;
+	private boolean iCanChangeAlternatives = true;
 	
 	public CourseRequestBox() {
 		this(false, null);
@@ -327,6 +329,8 @@ public class CourseRequestBox extends P implements CourseSelection {
 		}
 		if (!iFilter.isEnabled() && ret.isCourse()) ret.setReadOnly(true);
 		ret.setCanDelete(iCanDelete);
+		ret.setCanChangePriority(iCanChangePriority);
+		ret.setCanChangeAlternatives(iCanChangeAlternatives);
 		return ret;
 		
 	}
@@ -340,6 +344,8 @@ public class CourseRequestBox extends P implements CourseSelection {
 			setError(null);
 			setEnabled(true);
 			iCanDelete = true;
+			iCanChangePriority = true;
+			iCanChangeAlternatives = true;
 		} else {
 			if (value.isCourse()) {
 				iFilter.setText(value.getCourseName());
@@ -356,6 +362,8 @@ public class CourseRequestBox extends P implements CourseSelection {
 			}
 			setEnabled(!value.isReadOnly());
 			iCanDelete = value.isCanDelete();
+			iCanChangePriority = value.isCanChangePriority();
+			iCanChangeAlternatives = value.isCanChangeAlternatives();
 		}
 		iFilter.resizeFilterIfNeeded();
 	}
@@ -367,6 +375,15 @@ public class CourseRequestBox extends P implements CourseSelection {
 	
 	public boolean isCanDelete() {
 		return iCanDelete;
+	}
+	
+	public boolean isCanChangePriority() {
+		return iCanChangePriority;
+	}
+	
+	
+	public boolean isCanChangeAlternatives() {
+		return iCanChangeAlternatives;
 	}
 
 	@Override

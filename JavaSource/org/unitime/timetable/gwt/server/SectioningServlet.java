@@ -89,6 +89,7 @@ import org.unitime.timetable.model.CourseType;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
+import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
@@ -131,6 +132,7 @@ import org.unitime.timetable.onlinesectioning.basic.ListCourseOfferings;
 import org.unitime.timetable.onlinesectioning.basic.ListEnrollments;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseMatcherProvider;
+import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.CriticalCourses;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsValidationHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomCriticalCoursesHolder;
@@ -1074,9 +1076,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				Student student = StudentDAO.getInstance().get(studentId, hibSession);
 				if (student == null) throw new SectioningException(MSG.exceptionBadStudentId());
 				OnlineSectioningHelper helper = new OnlineSectioningHelper(hibSession, currentUser());
-				SaveStudentRequests.saveRequest(null, helper, student, request, true,
-						CustomCriticalCoursesHolder.hasProvider() ? CustomCriticalCoursesHolder.getProvider().getCriticalCourses(server, helper, new XStudentId(student, helper)) : null
-						);
+				CriticalCourses critical = null;
+				if (CustomCriticalCoursesHolder.hasProvider())
+					critical = CustomCriticalCoursesHolder.getProvider().getCriticalCourses(getServerInstance(request.getAcademicSessionId(), true), helper, new XStudentId(student, helper));
+				SaveStudentRequests.saveRequest(null, helper, student, request, true, critical);
 				hibSession.save(student);
 				hibSession.flush();
 				return request;
@@ -2044,6 +2047,14 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			else
 				request.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_PENDING);
 		}
+		boolean setReadOnlyWhenReserved = ApplicationProperty.OnlineSchedulingMakeReservedRequestReadOnly.isTrue();
+		if (getSessionContext().hasPermissionAnySession(student.getSession().getUniqueId(), Right.StudentSchedulingAdmin) || getSessionContext().hasPermissionAnySession(student.getSession().getUniqueId(), Right.StudentSchedulingAdvisor)) {
+			setReadOnlyWhenReserved = ApplicationProperty.OnlineSchedulingMakeReservedRequestReadOnlyIfAdmin.isTrue();
+		}
+		boolean reservedNoPriority = ApplicationProperty.OnlineSchedulingReservedRequestNoPriorityChanges.isTrue();
+		boolean reservedNoAlternatives = ApplicationProperty.OnlineSchedulingReservedRequestNoAlternativeChanges.isTrue();
+		boolean enrolledNoPriority = ApplicationProperty.OnlineSchedulingAssignedRequestNoPriorityChanges.isTrue();
+		boolean enrolledNoAlternatives = ApplicationProperty.OnlineSchedulingAssignedRequestNoAlternativeChanges.isTrue();
 		Set<Long> courseIds = new HashSet<Long>();
 		if (!student.getCourseDemands().isEmpty()) {
 			TreeSet<CourseDemand> demands = new TreeSet<CourseDemand>(new Comparator<CourseDemand>() {
@@ -2100,6 +2111,23 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							rc.setStatus(course.isRequestApproved() ? RequestedCourseStatus.OVERRIDE_APPROVED : course.isRequestRejected() ? RequestedCourseStatus.OVERRIDE_REJECTED : course.isRequestCancelled() ? RequestedCourseStatus.OVERRIDE_CANCELLED : RequestedCourseStatus.OVERRIDE_PENDING);
 						else
 							rc.setStatus(RequestedCourseStatus.SAVED);
+						if (!hasEnrollments) {
+							if (enrolledNoAlternatives) rc.setCanChangeAlternatives(false);
+							if (enrolledNoPriority) rc.setCanChangePriority(false);
+						}
+						if (setReadOnlyWhenReserved) {
+							for (Reservation reservation: course.getCourseOffering().getInstructionalOffering().getReservations()) {
+								if (reservation instanceof IndividualReservation || reservation instanceof StudentGroupReservation) {
+									if (reservation.isMustBeUsed() && !reservation.isExpired() && reservation.isApplicable(student, course)) {
+										rc.setReadOnly(true);
+										rc.setCanDelete(false);
+										if (reservedNoAlternatives) rc.setCanChangeAlternatives(false);
+										if (reservedNoPriority) rc.setCanChangePriority(false);
+										break;
+									}
+								}
+							}
+						}
 						rc.setOverrideExternalId(course.getOverrideExternalId());
 						rc.setOverrideTimeStamp(course.getOverrideTimeStamp());
 						CourseRequestOption pref = course.getCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE);

@@ -123,6 +123,10 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 				setReadOnly = ApplicationProperty.OnlineSchedulingMakeAssignedRequestReadOnlyIfAdmin.isTrue();
 				setReadOnlyWhenReserved = ApplicationProperty.OnlineSchedulingMakeReservedRequestReadOnlyIfAdmin.isTrue();
 			}
+			boolean reservedNoPriority = ApplicationProperty.OnlineSchedulingReservedRequestNoPriorityChanges.isTrue();
+			boolean reservedNoAlternatives = ApplicationProperty.OnlineSchedulingReservedRequestNoAlternativeChanges.isTrue();
+			boolean enrolledNoPriority = ApplicationProperty.OnlineSchedulingAssignedRequestNoPriorityChanges.isTrue();
+			boolean enrolledNoAlternatives = ApplicationProperty.OnlineSchedulingAssignedRequestNoAlternativeChanges.isTrue();
 			for (XRequest cd: student.getRequests()) {
 				CourseRequestInterface.Request r = null;
 				if (cd instanceof XFreeTimeRequest) {
@@ -163,12 +167,16 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 						if (!iSectioning && isEnrolled) {
 							rc.setReadOnly(true);
 							rc.setCanDelete(false);
+							if (enrolledNoAlternatives) rc.setCanChangeAlternatives(false);
+							if (enrolledNoPriority) rc.setCanChangePriority(false);
 						}
 						if (!iSectioning && setReadOnlyWhenReserved) {
 							XOffering offering = server.getOffering(c.getOfferingId());
 							if (offering != null && (offering.hasIndividualReservation(student, c) || offering.hasGroupReservation(student, c))) {
 								rc.setReadOnly(true);
 								rc.setCanDelete(false);
+								if (reservedNoAlternatives) rc.setCanChangeAlternatives(false);
+								if (reservedNoPriority) rc.setCanChangePriority(false);
 							}
 						}
 						if (isEnrolled)

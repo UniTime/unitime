@@ -432,6 +432,8 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		private String iCourseTitle;
 		private Boolean iReadOnly = null;
 		private Boolean iCanDelete = null;
+		private Boolean iCanChangeAlternatives = null;
+		private Boolean iCanChangePriority = null;
 		private List<FreeTime> iFreeTime;
 		private Set<Preference> iSelectedIntructionalMethods;
 		private Set<Preference> iSelectedClasses;
@@ -498,6 +500,12 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		
 		public boolean isCanDelete() { return iCanDelete == null || iCanDelete.booleanValue(); }
 		public void setCanDelete(Boolean canDelete) { iCanDelete = canDelete; }
+		
+		public boolean isCanChangePriority() { return iCanChangePriority == null || iCanChangePriority.booleanValue(); }
+		public void setCanChangePriority(Boolean canChangePriority) { iCanChangePriority = canChangePriority; }
+		
+		public boolean isCanChangeAlternatives() { return iCanChangeAlternatives == null || iCanChangeAlternatives.booleanValue(); }
+		public void setCanChangeAlternatives(Boolean canChangeAlternatives) { iCanChangeAlternatives = canChangeAlternatives; }
 		
 		public boolean isEmpty() { return !isCourse() && !isFreeTime(); }
 		
@@ -745,6 +753,20 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			if (iRequestedCourse == null) return true;
 			for (RequestedCourse rc: iRequestedCourse)
 				if (!rc.isCanDelete()) return false;
+			return true;
+		}
+		
+		public boolean isCanChangePriority() {
+			if (iRequestedCourse == null) return true;
+			for (RequestedCourse rc: iRequestedCourse)
+				if (!rc.isCanChangePriority()) return false;
+			return true;
+		}
+		
+		public boolean isCanChangeAlternatives() {
+			if (iRequestedCourse == null) return true;
+			for (RequestedCourse rc: iRequestedCourse)
+				if (!rc.isCanChangeAlternatives()) return false;
 			return true;
 		}
 		

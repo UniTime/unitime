@@ -381,6 +381,32 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 	public void setValue(Request value) {
 		setValue(value, false);
 	}
+	
+	public boolean isCanChangeAlternatives() {
+		for (CourseSelectionBox box: iCourses)
+			if (!box.isCanChangePriority()) return false;
+		return true;
+	}
+	
+	public void setUpArrowEnabled(boolean enabled) {
+		P line = (P)getWidget(0);
+		P buttons = (P)line.getWidget(2);
+		int upIdx = (iWaitList == null ? 0 : 1);
+		if (buttons.getWidget(upIdx) instanceof ImageButton) {
+			((ImageButton)buttons.getWidget(upIdx)).setEnabled(enabled);
+			((ImageButton)buttons.getWidget(upIdx)).setVisible(areArrowsVisible() && enabled);
+		}
+	}
+
+	public void setDownArrowEnabled(boolean enabled) {
+		P line = (P)getWidget(0);
+		P buttons = (P)line.getWidget(2);
+		int downIdx = (iWaitList == null ? 1 : 2);
+		if (buttons.getWidget(downIdx) instanceof ImageButton) {
+			((ImageButton)buttons.getWidget(downIdx)).setEnabled(enabled);
+			((ImageButton)buttons.getWidget(downIdx)).setVisible(areArrowsVisible() && enabled);
+		}
+	}
 
 	@Override
 	public void setValue(Request value, boolean fireEvents) {
@@ -412,6 +438,14 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 		}
 		if (iDelete != null) {
 			iDelete.setVisible(value == null || value.isCanDelete());
+		}
+		if (iPrevious != null) {
+			boolean enabled = iPrevious.isCanChangeAlternatives() && isCanChangeAlternatives(); 
+			setUpArrowEnabled(enabled); iPrevious.setDownArrowEnabled(enabled);
+		}
+		if (iNext != null) {
+			boolean enabled = iNext.isCanChangeAlternatives() && isCanChangeAlternatives();
+			setDownArrowEnabled(enabled); iNext.setUpArrowEnabled(enabled);
 		}
 		if (fireEvents)
 			ValueChangeEvent.fire(this, value);
@@ -548,7 +582,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 				FilterOperation moveUp = new FilterOperation(RESOURCES.filterSwap(), 'S') {
 					@Override
 					public void onBeforeResize(CourseRequestFilterBox filter) {
-						setVisible((!iSectioning || isEnabled()) && !filter.getText().isEmpty() && iCourses.size() != getIndex() + 1);
+						setVisible(isCanChangeAlternatives() && (!iSectioning || isEnabled()) && !filter.getText().isEmpty() && iCourses.size() != getIndex() + 1);
 					}
 				};
 				moveUp.setTitle(MESSAGES.altFilterSwapWithAlternative());
@@ -588,7 +622,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 				FilterOperation remove = new FilterOperation(RESOURCES.filterRemoveAlternative(), 'X') {
 					@Override
 					public void onBeforeResize(CourseRequestFilterBox filter) {
-						setVisible(isEnabled());
+						setVisible(isCanChangeAlternatives() && isEnabled());
 					}
 				};
 				remove.setTitle(MESSAGES.altFilterRemoveAlternative());
@@ -611,7 +645,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 				FilterOperation addAlternative = new FilterOperation(RESOURCES.filterAddAlternative(), 'A') {
 					@Override
 					public void onBeforeResize(CourseRequestFilterBox filter) {
-						setVisible((!iSectioning || isEnabled()) && getValue().isCourse() && iCourses.size() == getIndex() + 1);
+						setVisible(isCanChangeAlternatives() && (!iSectioning || isEnabled()) && getValue().isCourse() && iCourses.size() == getIndex() + 1);
 					}
 				};
 				addAlternative.setTitle(MESSAGES.altFilterAddAlternative());
@@ -635,7 +669,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 					@Override
 					public void onBeforeResize(CourseRequestFilterBox filter) {
 						CourseSelectionBox next = getNext();
-						setVisible((!iSectioning || isEnabled()) && !filter.getText().isEmpty() && next != null && next.getValue().isCourse());
+						setVisible(isCanChangeAlternatives() && (!iSectioning || isEnabled()) && !filter.getText().isEmpty() && next != null && next.getValue().isCourse());
 					}
 				};
 				moveDown.setTitle(MESSAGES.altFilterSwapWithAlternative());
@@ -662,7 +696,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 				FilterOperation remove = new FilterOperation(RESOURCES.filterRemoveAlternative(), 'X') {
 					@Override
 					public void onBeforeResize(CourseRequestFilterBox filter) {
-						setVisible(isEnabled());
+						setVisible(isCanChangeAlternatives() && isEnabled());
 					}
 				};
 				remove.setTitle(MESSAGES.altFilterClearCourseRequest());
@@ -685,7 +719,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 				FilterOperation addAlternative = new FilterOperation(RESOURCES.filterAddAlternative(), 'A') {
 					@Override
 					public void onBeforeResize(CourseRequestFilterBox filter) {
-						setVisible((!iSectioning || isEnabled()) && getValue().isCourse() && iCourses.size() == 1);
+						setVisible(isCanChangeAlternatives() && (!iSectioning || isEnabled()) && getValue().isCourse() && iCourses.size() == 1);
 					}
 				};
 				addAlternative.setTitle(MESSAGES.altFilterAddAlternative());
