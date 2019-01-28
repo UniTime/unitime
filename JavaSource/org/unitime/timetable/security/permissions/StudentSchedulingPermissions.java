@@ -35,8 +35,10 @@ import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.DepartmentStatusType.Status;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
+import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.UserQualifier;
+import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.service.SolverService;
@@ -149,6 +151,19 @@ public class StudentSchedulingPermissions {
 				if (student == null) return false;
 				StudentSectioningStatus status = student.getEffectiveStatus();
 				return (status == null || status.hasOption(StudentSectioningStatus.Option.regenabled));
+			}
+			
+			if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
+				for (UserAuthority authority: user.getAuthorities(Roles.ROLE_STUDENT, new SimpleQualifier("Session", source.getUniqueId()))) {
+					List<? extends UserQualifier> q = authority.getQualifiers("Student");
+					if (q == null || q.isEmpty()) continue;
+					Student student = StudentDAO.getInstance().get((Long)q.get(0).getQualifierId());
+					if (student == null) continue;
+					StudentSectioningStatus status = student.getEffectiveStatus();
+					if (status == null || status.hasOption(StudentSectioningStatus.Option.regenabled))
+						return true;
+				}
+				return false;
 			}
 			
 			return true;
