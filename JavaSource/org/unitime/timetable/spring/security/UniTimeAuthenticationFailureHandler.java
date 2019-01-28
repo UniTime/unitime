@@ -55,9 +55,9 @@ public class UniTimeAuthenticationFailureHandler extends SimpleUrlAuthentication
 			return;
 		}
 		
-		LoginManager.addFailedLoginAttempt(request.getParameter("j_username"), new Date());
+		LoginManager.addFailedLoginAttempt(request.getParameter("username"), new Date());
 		
-		if (ApplicationProperty.PasswordReset.isTrue() && User.findByUserName(request.getParameter("j_username")) != null)
+		if (ApplicationProperty.PasswordReset.isTrue() && User.findByUserName(request.getParameter("username")) != null)
 			request.getSession().setAttribute("SUGGEST_PASSWORD_RESET", true);
 		
 		super.onAuthenticationFailure(request, response, exception);
