@@ -171,11 +171,13 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 			iForm.addRow(MESSAGES.propWaitLists(), new WebTable.IconCell(status.isWaitList() ? RESOURCES.on() : RESOURCES.off(),
 					status.isWaitList() ? MESSAGES.messageStatusCanWaitList() : MESSAGES.messageStatusCanNotWaitList(), null).getWidget());
 			iForm.addRow(MESSAGES.propEmailNotification(), new WebTable.IconCell(status.isEmail() ? RESOURCES.on() : RESOURCES.off(),
-					status.isWaitList() ? MESSAGES.messageStatusCanEmail() : MESSAGES.messageStatusCanNotEmail(), null).getWidget());
+					status.isEmail() ? MESSAGES.messageStatusCanEmail() : MESSAGES.messageStatusCanNotEmail(), null).getWidget());
 			iForm.addRow(MESSAGES.propCourseRequestValidation(), new WebTable.IconCell(status.isRequestValiadtion() ? RESOURCES.on() : RESOURCES.off(),
 					status.isRequestValiadtion() ? MESSAGES.messageStatusCanRequestValidation() : MESSAGES.messageStatusCanNotRequestValidation(), null).getWidget());
 			iForm.addRow(MESSAGES.propSpecialRegistration(), new WebTable.IconCell(status.isSpecialRegistration() ? RESOURCES.on() : RESOURCES.off(),
 					status.isSpecialRegistration() ? MESSAGES.messageStatusCanSpecialRegistration() : MESSAGES.messageStatusCanNotSpecialRegistration(), null).getWidget());
+			iForm.addRow(MESSAGES.propCanRequire(), new WebTable.IconCell(status.isCanRequire() ? RESOURCES.on() : RESOURCES.off(),
+					status.isCanRequire() ? MESSAGES.messageStatusCanRequire() : MESSAGES.messageStatusCanNotRequire(), null).getWidget());
 			
 			if (status.hasMessage()) {
 				P m = new P("status-message"); m.setText(status.getMessage());

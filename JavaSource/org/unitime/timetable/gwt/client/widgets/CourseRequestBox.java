@@ -156,8 +156,9 @@ public class CourseRequestBox extends P implements CourseSelection {
 								for (IdValue im: course.getInstructionalMethods()) {
 									if (im.getValue().toLowerCase().startsWith(query.toLowerCase())) {
 										suggestions.add(new CourseSuggestion(course, im, false));
-										suggestions.add(new CourseSuggestion(course, im, true));
-									} else if ((im.getValue() + "!").equalsIgnoreCase(query)) {
+										if (iSpecReg == null || iSpecReg.isCanRequire())
+											suggestions.add(new CourseSuggestion(course, im, true));
+									} else if ((im.getValue() + "!").equalsIgnoreCase(query) && (iSpecReg == null || iSpecReg.isCanRequire())) {
 										suggestions.add(new CourseSuggestion(course, im, true));
 									}
 								}
@@ -166,8 +167,9 @@ public class CourseRequestBox extends P implements CourseSelection {
 								if (clazz.isCancelled() || (!clazz.isSaved() && !clazz.isAvailable() && !isSpecialRegistration())) continue;
 								if (clazz.getSection().equalsIgnoreCase(query) || clazz.getSelection().getText().equalsIgnoreCase(query)) {
 									suggestions.add(new CourseSuggestion(course, clazz, false));
-									suggestions.add(new CourseSuggestion(course, clazz, true));
-								} else if ((clazz.getSection() + "!").equalsIgnoreCase(query) || (clazz.getSelection().getText() + "!").equalsIgnoreCase(query)) {
+									if (iSpecReg == null || iSpecReg.isCanRequire())
+										suggestions.add(new CourseSuggestion(course, clazz, true));
+								} else if (((clazz.getSection() + "!").equalsIgnoreCase(query) || (clazz.getSelection().getText() + "!").equalsIgnoreCase(query)) && (iSpecReg == null || iSpecReg.isCanRequire())) {
 									suggestions.add(new CourseSuggestion(course, clazz, true));
 								} else if (clazz.getSection().toLowerCase().startsWith(query.toLowerCase()) || clazz.getSelection().getText().toLowerCase().startsWith(query.toLowerCase())) {
 									suggestions.add(new CourseSuggestion(course, clazz, false));

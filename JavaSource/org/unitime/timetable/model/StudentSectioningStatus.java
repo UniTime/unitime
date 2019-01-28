@@ -55,6 +55,7 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 		/* 4196 */ advcanset("Advisor Can Set Status"),
 		/* 8192 */ reqval("Course Request Validation"),
 		/*16384 */ specreg("Special Registration"),
+		/*32768 */ canreq("Can Require Sections / IMs"),
 		;
 		
 		private String iName;

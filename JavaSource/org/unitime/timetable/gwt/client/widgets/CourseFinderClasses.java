@@ -340,7 +340,7 @@ public class CourseFinderClasses extends UniTimeTable<ClassAssignment> implement
 		if (id == null) return false;
 		for (Preference p: iSelectedClasses)
 			if (p.getId().equals(id)) return p.isRequired();
-		return iRequired != null && iRequired.getValue();
+		return iRequired != null && iRequired.isEnabled() && iRequired.getValue();
 	}
 	
 	protected Preference getSelection(ClassAssignment a) {

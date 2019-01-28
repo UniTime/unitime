@@ -1437,6 +1437,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course Request Validation:")
 	String propCourseRequestValidation();
 	
+	@DefaultMessage("Require Sections / Instr. Methods:")
+	String propCanRequire();
+	
 	@DefaultMessage("You are not registered for any classes yet. Please click the Build Schedule button in order to complete your registration.")
 	String warnScheduleEmptyOnCourseRequest();
 	
@@ -1945,6 +1948,12 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Courses can NOT be wait-listed in UniTime.")
 	String messageStatusCanNotWaitList();
+	
+	@DefaultMessage("Sections or Instructional Methods can be required by the student.")
+	String messageStatusCanRequire();
+	
+	@DefaultMessage("Sections or Instructional Methods can NOT be required by the student.")
+	String messageStatusCanNotRequire();
 	
 	@DefaultMessage("Email notifications are enabled.")
 	String messageStatusCanEmail();

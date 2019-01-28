@@ -59,6 +59,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			CAN_REGISTER,
 			NO_REQUEST_ARROWS,
 			CAN_SPECREG, HAS_SPECREG, SR_TIME_CONF, SR_LIMIT_CONF,
+			CAN_REQUIRE,
 			;
 			
 			public int flag() { return 1 << ordinal(); }
@@ -229,7 +230,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private boolean iAssistantPage = false, iRequestsPage = false;
 		private boolean iRegStudent = false, iRegAdvisor = false, iRegAdmin = false;
 		private boolean iEnrlStudent = false, iEnrlAdvisor = false, iEnrlAdmin = false;
-		private boolean iWaitList = false, iEmail = false;
+		private boolean iWaitList = false, iEmail = false, iCanRequire = false;
 		private boolean iSpecReg = false, iReqValidation = false;
 		private String iCourseTypes;
 		private String iEffectiveStart, iEffectiveStop;
@@ -268,6 +269,8 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public boolean isWaitList() { return iWaitList; }
 		public void setEmail(boolean email) { iEmail = email; }
 		public boolean isEmail() { return iEmail; }
+		public void setCanRequire(boolean canRequire) { iCanRequire = canRequire; }
+		public boolean isCanRequire() { return iCanRequire; }
 		
 		public void setSpecialRegistration(boolean specReg) { iSpecReg = specReg; }
 		public boolean isSpecialRegistration() { return iSpecReg; }

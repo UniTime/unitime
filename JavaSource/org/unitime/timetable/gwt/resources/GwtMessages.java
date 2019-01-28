@@ -4717,6 +4717,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Special Requests")
 	String toggleSpecialRequests();
 	
+	@DefaultMessage("Can Require")
+	String toggleCanRequire();
+	
 	@DefaultMessage("Final Examinations")
 	String finalExaminations();
 	

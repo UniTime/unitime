@@ -41,6 +41,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignmen
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
@@ -82,18 +83,20 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 	private Map<Preference, CheckBox> iInstructionalMethods = new HashMap<Preference, CheckBox>();
 	private Set<Preference> iSelectedMethods = new HashSet<Preference>();
 	private CheckBox iRequired = null;
+	private SpecialRegistrationContext iSpecReg;
 	
 	private boolean iShowCourseTitles = false, iShowDefaultSuggestions = false;
 	
 	public CourseFinderCourses() {
-		this(false, false, false);
+		this(false, false, false, null);
 	}
 	
-	public CourseFinderCourses(boolean showCourseTitles, boolean showDefaultSuggestions, boolean showRequired) {
+	public CourseFinderCourses(boolean showCourseTitles, boolean showDefaultSuggestions, boolean showRequired, SpecialRegistrationContext specReg) {
 		super("courses");
 		
 		iShowCourseTitles = showCourseTitles;
 		iShowDefaultSuggestions = showDefaultSuggestions;
+		iSpecReg = specReg;
 		
 		iCourses = new UniTimeTable<CourseAssignment>();
 		iCourses.setAllowMultiSelect(false);
@@ -217,7 +220,7 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 	protected boolean isSelectedMethodRequired(Long id) {
 		for (Preference p: iSelectedMethods)
 			if (p.getId().equals(id)) return p.isRequired();
-		return iRequired != null && iRequired.getValue();
+		return iRequired != null && iRequired.isEnabled() && iRequired.getValue();
 	}
 	
 	protected boolean isSelectedMethod(Long id) {
@@ -308,6 +311,10 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 					ResponseEvent.fire(CourseFinderCourses.this, !result.isEmpty());
 				}
 	        });
+		}
+		if (iRequired != null) {
+			iRequired.setEnabled(isEnabled() && (iSpecReg == null || iSpecReg.isCanRequire()));
+			iRequired.setVisible(iSpecReg == null || iSpecReg.isCanRequire());
 		}
 	}
 
@@ -486,8 +493,10 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 		if (iDetails != null)
 			for (CourseFinderCourseDetails details: iDetails)
 				details.setEnabled(enabled);
-		if (iRequired != null)
-			iRequired.setEnabled(enabled);
+		if (iRequired != null) {
+			iRequired.setEnabled(enabled && (iSpecReg == null || iSpecReg.isCanRequire()));
+			iRequired.setVisible(iSpecReg == null || iSpecReg.isCanRequire());
+		}
 	}
 	
 	public CheckBox getRequiredCheckbox() {

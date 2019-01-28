@@ -49,6 +49,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private SpecialRegistrationStatus iSpecRegStatus = null;
 		private String iNote;
 		private String iDisclaimer;
+		private boolean iCanRequire = true;
 
 		public SpecialRegistrationContext() {}
 		public SpecialRegistrationContext(SpecialRegistrationContext cx) {
@@ -62,6 +63,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			iSpecRegSpaceConfs = cx.iSpecRegSpaceConfs;
 			iSpecRegStatus = cx.iSpecRegStatus;
 			iNote = cx.iNote;
+			iCanRequire = cx.iCanRequire;
 		}
 		
 		public boolean isEnabled() { return iSpecReg; }
@@ -83,11 +85,13 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public String getDisclaimer() { return iDisclaimer; }
 		public void setDisclaimer(String disclaimer) { iDisclaimer = disclaimer; }
 		public boolean hasDisclaimer() { return iDisclaimer != null && !iDisclaimer.isEmpty(); }
+		public boolean isCanRequire() { return iCanRequire; }
 		public void update(EligibilityCheck check) {
 			iSpecRegTimeConfs = check != null && check.hasFlag(EligibilityFlag.SR_TIME_CONF);
 			iSpecRegSpaceConfs = check != null && check.hasFlag(EligibilityFlag.SR_LIMIT_CONF);
 			iSpecReg = check != null && check.hasFlag(EligibilityFlag.CAN_SPECREG);
 			iDisclaimer = (check != null ? check.getOverrideRequestDisclaimer() : null);
+			iCanRequire = check == null || check.hasFlag(EligibilityFlag.CAN_REQUIRE);
 		}
 		public void reset() {
 			iNote = null;
@@ -98,6 +102,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			iSpecRegSpaceConfs = false;
 			iSpecRegStatus = null;
 			iDisclaimer = null;
+			iCanRequire = true;
 		}
 		public void reset(EligibilityCheck check) {
 			reset();

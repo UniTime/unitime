@@ -140,6 +140,8 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 				if (status != null && !status.hasOption(StudentSectioningStatus.Option.waitlist))
 					iCheck.setFlag(EligibilityFlag.CAN_WAITLIST, false);
 				
+				iCheck.setFlag(EligibilityFlag.CAN_REQUIRE, iCheck.hasFlag(EligibilityFlag.IS_ADMIN) || iCheck.hasFlag(EligibilityFlag.IS_ADVISOR) || status == null || status.hasOption(StudentSectioningStatus.Option.canreq));
+				
 				if (disabled)
 					iCheck.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, false);
 				

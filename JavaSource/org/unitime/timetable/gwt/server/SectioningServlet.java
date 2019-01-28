@@ -2276,6 +2276,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		info.setCanAdminEnroll(status.hasOption(StudentSectioningStatus.Option.admin));
 		info.setCanAdminRegister(status.hasOption(StudentSectioningStatus.Option.regadmin));
 		info.setWaitList(status.hasOption(StudentSectioningStatus.Option.waitlist));
+		info.setCanRequire(status.hasOption(StudentSectioningStatus.Option.canreq));
 		info.setEmail(status.hasOption(StudentSectioningStatus.Option.email));
 		info.setMessage(status.getMessage());
 		if (!status.hasOption(Option.notype)) { // all but
@@ -2362,6 +2363,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			info.setWaitList(waitlist && s.hasOption(StudentSectioningStatus.Option.waitlist));
 			info.setSpecialRegistration(specreg && s.hasOption(StudentSectioningStatus.Option.specreg));
 			info.setRequestValiadtion(reqval && s.hasOption(StudentSectioningStatus.Option.reqval));
+			info.setCanRequire(s.hasOption(StudentSectioningStatus.Option.canreq));
 			ret.add(info);
 		}
 		return ret;
@@ -2608,6 +2610,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				check.setFlag(EligibilityFlag.GWT_CONFIRMATIONS, ApplicationProperty.OnlineSchedulingGWTConfirmations.isTrue());
 				check.setFlag(EligibilityFlag.DEGREE_PLANS, CustomDegreePlansHolder.hasProvider());
 				check.setFlag(EligibilityFlag.NO_REQUEST_ARROWS, ApplicationProperty.OnlineSchedulingNoRequestArrows.isTrue());
+				check.setFlag(EligibilityFlag.CAN_REQUIRE, true);
 				return check;
 			}
 			
@@ -2662,9 +2665,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					if (status == null) {
 						check.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, true);
 						check.setFlag(EligibilityFlag.CAN_WAITLIST, true);
+						check.setFlag(EligibilityFlag.CAN_REQUIRE, true);
 					} else {
 						check.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, status.hasOption(StudentSectioningStatus.Option.regenabled));
 						check.setFlag(EligibilityFlag.CAN_WAITLIST, status.hasOption(StudentSectioningStatus.Option.waitlist));
+						check.setFlag(EligibilityFlag.CAN_REQUIRE, check.hasFlag(EligibilityFlag.IS_ADMIN) || check.hasFlag(EligibilityFlag.IS_ADVISOR) || status.hasOption(StudentSectioningStatus.Option.canreq));
 						check.setMessage(status.getMessage());
 					}
 					check.setFlag(EligibilityFlag.CAN_REGISTER, getSessionContext().hasPermissionAnyAuthority(student, Right.StudentSchedulingCanRegister));

@@ -82,6 +82,7 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		AdvisorCanSet(MESSAGES.toggleAdvisorCanSetStatus(), StudentSectioningStatus.Option.advcanset),
 		CReqValidation(MESSAGES.toggleCourseRequestValidation(), StudentSectioningStatus.Option.reqval),
 		SpecReg(MESSAGES.toggleSpecialRequests(), StudentSectioningStatus.Option.specreg),
+		CanReq(MESSAGES.toggleCanRequire(), StudentSectioningStatus.Option.canreq),
 		;
 		
 		private StudentSectioningStatus.Option iOption;
