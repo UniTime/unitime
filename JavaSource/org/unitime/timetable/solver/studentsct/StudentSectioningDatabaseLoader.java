@@ -20,6 +20,7 @@
 package org.unitime.timetable.solver.studentsct;
 
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Calendar;
@@ -80,6 +81,8 @@ import org.cpsolver.studentsct.reservation.ReservationOverride;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
+import org.joda.time.Days;
+import org.joda.time.LocalDate;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.DayCode;
@@ -147,6 +150,7 @@ import org.unitime.timetable.solver.curricula.ProjectedStudentCourseDemands;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.AreaClasfMajor;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedStudentId;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.NameFormat;
@@ -209,6 +213,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private boolean iMaxCreditChecking = false;
     private float iMaxDefaultCredit = -1f;
     private float iMinDefaultCredit = -1f;
+    private Date iClassesFixedDate = null;
+    private int iClassesFixedDateIndex = 0;
+    private int iDayOfWeekOffset = 0;
     
     public StudentSectioningDatabaseLoader(StudentSectioningModel model, org.cpsolver.ifs.assignment.Assignment<Request, Enrollment> assignment) {
         super(model, assignment);
@@ -291,6 +298,15 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iMaxCreditChecking = model.getProperties().getPropertyBoolean("Load.MaxCreditChecking", iMaxCreditChecking);
         iMaxDefaultCredit = model.getProperties().getPropertyFloat("Load.DefaultMaxCredit", iMaxDefaultCredit);
         iMinDefaultCredit = model.getProperties().getPropertyFloat("Load.DefaultMinCredit", iMinDefaultCredit);
+        
+        String classesFixedDate = getModel().getProperties().getProperty("General.ClassesFixedDate", "");
+        if (!classesFixedDate.isEmpty()) {
+        	try {
+        		iClassesFixedDate = new SimpleDateFormat("yyyy-MM-dd").parse(classesFixedDate);
+        	} catch (Exception e) {
+        		iProgress.warn("Failed to parse classes fixed date " + classesFixedDate + ". The date must be in the yyyy-mm-dd format.");
+        	}
+        }
     }
     
     public void load() {
@@ -325,8 +341,15 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             
             if (session==null) throw new Exception("Session "+iInitiative+" "+iTerm+iYear+" not found!");
         	ApplicationProperties.setSessionId(session.getUniqueId());
-            
-            iProgress.info("Loading data for "+iInitiative+" "+iTerm+iYear+"...");
+        	
+        	if (iClassesFixedDate != null) {
+        		Date firstDay = DateUtils.getDate(1, session.getPatternStartMonth(), session.getSessionStartYear());
+        		iClassesFixedDateIndex = Days.daysBetween(new LocalDate(firstDay), new LocalDate(iClassesFixedDate)).getDays();
+        		iDayOfWeekOffset = Constants.getDayOfWeek(firstDay);
+        		iProgress.info("Classes Fixed Date: " + iClassesFixedDate + " (date pattern index: " + iClassesFixedDateIndex + ")");
+        	}
+
+        	iProgress.info("Loading data for "+iInitiative+" "+iTerm+iYear+"...");
             
             if (getModel().getDistanceConflict() != null)
             	TravelTime.populateTravelTimes(getModel().getDistanceConflict().getDistanceMetric(), iSessionId, hibSession);
@@ -532,6 +555,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     		getInstructors(c), parentSection);
                     if (iCheckEnabledForScheduling && !c.isEnabledForStudentScheduling())
                     	section.setEnabled(false);
+                    if (iClassesFixedDateIndex > 0 && p != null && p.getTimeLocation() != null && p.getTimeLocation().getFirstMeeting(iDayOfWeekOffset) < iClassesFixedDateIndex) {
+                    	iProgress.info("Class " + c.getClassLabel(iShowClassSuffix, iShowConfigName) + " " + p.getLongName(iUseAmPm) + " starts before the fixed date, it is marked as disabled for student scheduling.");
+                    	section.setEnabled(false);
+                    }
                     for (CourseOffering course: io.getCourseOfferings()) {
                     	String suffix = c.getClassSuffix(course);
                     	if (suffix != null)
