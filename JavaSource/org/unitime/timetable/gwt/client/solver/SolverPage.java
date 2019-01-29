@@ -20,11 +20,13 @@
 package org.unitime.timetable.gwt.client.solver;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
@@ -304,6 +306,8 @@ public class SolverPage extends SimpleForm {
 						p = new DoubleParameter(parameter);
 					} else if ("integer".equalsIgnoreCase(parameter.getType())) {
 						p = new IntegerParameter(parameter);
+					} else if ("date".equalsIgnoreCase(parameter.getType())) {
+						p = new DateParameter(parameter);
 					} else if (parameter.getType() != null && parameter.getType().toLowerCase().startsWith("enum(") && parameter.getType().endsWith(")")) {
 						p = new EnumParameter(parameter);
 					} else {
@@ -689,6 +693,47 @@ public class SolverPage extends SimpleForm {
 			for (int i = 0; i < getItemCount(); i++) {
 				if (getValue(i).equals(value)) {
 					setSelectedIndex(i); break;
+				}
+			}
+		}
+
+		@Override
+		public String getParameterDefaultValue() {
+			return iParameter.getDefaultValue();
+		}
+	}
+	
+	public static class DateParameter extends SingleDateSelector implements Parameter {
+		private SolverParameter iParameter;
+		private DateTimeFormat iFormat = DateTimeFormat.getFormat("yyyy-MM-dd");
+		
+		public DateParameter(SolverParameter parameter) {
+			iParameter = parameter;
+			addStyleName("parameter-date");
+			setParameterValue(parameter.getValue() != null ? parameter.getValue() : parameter.getDefaultValue());
+		}
+
+		@Override
+		public Long getParameterId() {
+			return iParameter.getId();
+		}
+
+		@Override
+		public String getParameterValue() {
+			Date date = super.getValue();
+			if (date == null) return "";
+			return iFormat.format(date); 
+		}
+
+		@Override
+		public void setParameterValue(String value) {
+			if (value == null || value.isEmpty()) {
+				setValue(null);
+			} else {
+				try {
+					setValue(iFormat.parse(value));
+				} catch (Exception e) {
+					setValue(null);
 				}
 			}
 		}

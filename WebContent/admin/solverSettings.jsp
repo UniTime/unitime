@@ -231,6 +231,16 @@
 				</logic:equal>
   				&nbsp;<html:errors property='<%="parameter["+def.getUniqueId()+"]"%>'/>
 <%
+ 				} else if ("date".equals(def.getType())) { 
+%>
+				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="false">
+					<tt:calendar property='<%="parameter["+def.getUniqueId()+"]"%>' format="yyyy-MM-dd" disabled="false"/>
+				</logic:equal>
+				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="true">
+					<tt:calendar property='<%="parameter["+def.getUniqueId()+"]"%>' format="yyyy-MM-dd" disabled="true"/>
+				</logic:equal>
+  				&nbsp;<html:errors property='<%="parameter["+def.getUniqueId()+"]"%>'/>
+<%
  				} else if ("integer".equals(def.getType())) { 
 %>
 				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="false">

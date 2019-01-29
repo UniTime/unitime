@@ -80,6 +80,7 @@ public class Calendar extends TextTag {
 				(hint == null ? "" : " error=\"" + hint + "\"") +
 				(onchange == null ? "" : " onchange=\"" + onchange + "\"") +
 				(getOuterStyle() == null ? "" : " style=\"" + getOuterStyle() + "\"" ) +
+				" disabled=\"" + getDisabled() + "\"" +
 				">");
 		super.doStartTag();
 		TagUtils.getInstance().write(pageContext, "</span>");

@@ -65,6 +65,7 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbsolutePanel;
+import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -74,7 +75,7 @@ import com.google.gwt.user.datepicker.client.CalendarUtil;
 /**
  * @author Tomas Muller
  */
-public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements HasValue<Date>, HasText {
+public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements HasValue<Date>, HasText, HasEnabled {
 	private static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
@@ -868,6 +869,7 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 		String format = panel.getElement().getAttribute("format");
 		final String onchange = panel.getElement().getAttribute("onchange");
 		String error = panel.getElement().getAttribute("error");
+		String disabled = panel.getElement().getAttribute("disabled");
 		AriaTextBox text = new AriaTextBox(panel.getElement().getFirstChildElement());
 		SingleDateSelector selector = new SingleDateSelector(text, null, false);
 		if (format != null)
@@ -889,6 +891,8 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 		}
 		if (error != null && !error.isEmpty())
 			selector.setErrorHint(error);
+		if (disabled != null && "true".equalsIgnoreCase(disabled))
+			selector.setEnabled(false);
 		panel.add(selector);
 		return selector;
 	}
@@ -896,5 +900,15 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 	public void setFormat(DateTimeFormat format) {
 		iFormat = format; 
 		if (iHint) setHint(iFormat.getPattern().toUpperCase());
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return iPicker.isEnabled();
+	}
+
+	@Override
+	public void setEnabled(boolean enabled) {
+		iPicker.setEnabled(enabled);
 	}
 }
