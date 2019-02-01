@@ -355,6 +355,7 @@ public enum Right {
     StudentSchedulingAdvisorCanModifyAllStudents,
     StudentSchedulingCanEnroll(Student.class),
     StudentSchedulingCanRegister(Student.class),
+    StudentSchedulingCanRequirePreferences(Student.class),
     
     OfferingEnrollments(InstructionalOffering.class),
     StudentEnrollments(Student.class),

@@ -282,7 +282,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			iRequestsPage = true;
 			iRegStudent = true; iRegAdvisor = true; iRegAdmin = true;
 			iEnrlStudent = true; iEnrlAdvisor = true; iEnrlAdmin = true;
-			iWaitList = true; iEmail = true;
+			iWaitList = true; iEmail = true; iCanRequire = true;
 		}
 		
 		public void setCourseTypes(String courseTypes) { iCourseTypes = courseTypes; }

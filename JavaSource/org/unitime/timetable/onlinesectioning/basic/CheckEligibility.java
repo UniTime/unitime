@@ -52,6 +52,7 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 	protected EligibilityCheck iCheck;
 	protected boolean iCustomCheck = true;
 	protected Boolean iPermissionCanEnroll;
+	protected Boolean iPermissionCanRequirePreferences;
 	
 	public CheckEligibility forStudent(Long studentId) {
 		iStudentId = studentId;
@@ -68,8 +69,9 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 		return this;
 	}
 	
-	public CheckEligibility withPermission(boolean canEnroll) {
+	public CheckEligibility withPermission(boolean canEnroll, boolean canRequire) {
 		iPermissionCanEnroll = canEnroll;
+		iPermissionCanRequirePreferences = canRequire;
 		return this;
 	}
 	
@@ -140,7 +142,10 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 				if (status != null && !status.hasOption(StudentSectioningStatus.Option.waitlist))
 					iCheck.setFlag(EligibilityFlag.CAN_WAITLIST, false);
 				
-				iCheck.setFlag(EligibilityFlag.CAN_REQUIRE, iCheck.hasFlag(EligibilityFlag.IS_ADMIN) || iCheck.hasFlag(EligibilityFlag.IS_ADVISOR) || status == null || status.hasOption(StudentSectioningStatus.Option.canreq));
+				if (iPermissionCanRequirePreferences != null)
+					iCheck.setFlag(EligibilityFlag.CAN_REQUIRE, iPermissionCanRequirePreferences);
+				else
+					iCheck.setFlag(EligibilityFlag.CAN_REQUIRE, iCheck.hasFlag(EligibilityFlag.IS_ADMIN) || iCheck.hasFlag(EligibilityFlag.IS_ADVISOR) || status == null || status.hasOption(StudentSectioningStatus.Option.canreq));
 				
 				if (disabled)
 					iCheck.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, false);

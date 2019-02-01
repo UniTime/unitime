@@ -2665,21 +2665,22 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					if (status == null) {
 						check.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, true);
 						check.setFlag(EligibilityFlag.CAN_WAITLIST, true);
-						check.setFlag(EligibilityFlag.CAN_REQUIRE, true);
 					} else {
 						check.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, status.hasOption(StudentSectioningStatus.Option.regenabled));
 						check.setFlag(EligibilityFlag.CAN_WAITLIST, status.hasOption(StudentSectioningStatus.Option.waitlist));
-						check.setFlag(EligibilityFlag.CAN_REQUIRE, check.hasFlag(EligibilityFlag.IS_ADMIN) || check.hasFlag(EligibilityFlag.IS_ADVISOR) || status.hasOption(StudentSectioningStatus.Option.canreq));
 						check.setMessage(status.getMessage());
 					}
 					check.setFlag(EligibilityFlag.CAN_REGISTER, getSessionContext().hasPermissionAnyAuthority(student, Right.StudentSchedulingCanRegister));
+					check.setFlag(EligibilityFlag.CAN_REQUIRE, getSessionContext().hasPermissionAnyAuthority(student, Right.StudentSchedulingCanRequirePreferences));
 					
 					if (!check.hasMessage() && !check.hasFlag(EligibilityFlag.CAN_REGISTER))
 						check.setMessage(MSG.exceptionAccessDisabled());
 					return check;
 				} else {
 					return server.execute(server.createAction(CourseRequestEligibility.class).forStudent(studentId).withCheck(check).includeCustomCheck(includeCustomCheck)
-							.withPermission(getSessionContext().hasPermissionAnyAuthority(studentId, "Student", Right.StudentSchedulingCanRegister)), currentUser());
+							.withPermission(
+									getSessionContext().hasPermissionAnyAuthority(studentId, "Student", Right.StudentSchedulingCanRegister),
+									getSessionContext().hasPermissionAnyAuthority(studentId, "Student", Right.StudentSchedulingCanRequirePreferences)), currentUser());
 				}
 			}
 			
@@ -2688,7 +2689,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				return new EligibilityCheck(MSG.exceptionNoServerForSession());
 			
 			EligibilityCheck ret = server.execute(server.createAction(CheckEligibility.class).forStudent(studentId).withCheck(check).includeCustomCheck(includeCustomCheck)
-					.withPermission(getSessionContext().hasPermissionAnyAuthority(studentId, "Student", Right.StudentSchedulingCanEnroll)), currentUser());
+					.withPermission(getSessionContext().hasPermissionAnyAuthority(studentId, "Student", Right.StudentSchedulingCanEnroll),
+							getSessionContext().hasPermissionAnyAuthority(studentId, "Student", Right.StudentSchedulingCanRequirePreferences)), currentUser());
 			if (includeCustomCheck) getSessionContext().setAttribute(SessionAttribute.OnlineSchedulingEligibility, ret);
 			
 			return ret;

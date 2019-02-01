@@ -386,4 +386,27 @@ public class StudentSchedulingPermissions {
 		@Override
 		public Class<Student> type() { return Student.class; }
 	}
+	
+	@PermissionForRight(Right.StudentSchedulingCanRequirePreferences)
+	public static class StudentSchedulingCanRequirePreferences implements Permission<Student> {
+		@Autowired PermissionSession permissionSession;
+
+		@Override
+		public boolean check(UserContext user, Student source) {
+			if (!permissionSession.check(user, source.getSession())) return false; 
+			
+			StudentSectioningStatus status = source.getEffectiveStatus();
+			
+			// Student check
+			if (Roles.ROLE_STUDENT.equals(user.getCurrentAuthority().getRole())) {
+				if (status != null && !status.hasOption(StudentSectioningStatus.Option.canreq)) return false;
+				return source.getExternalUniqueId().equals(user.getExternalUserId());
+			}
+			
+			return user.getCurrentAuthority().hasRight(Right.StudentSchedulingAdmin) || user.getCurrentAuthority().hasRight(Right.StudentSchedulingAdvisor);
+		}
+
+		@Override
+		public Class<Student> type() { return Student.class; }
+	}
 }
