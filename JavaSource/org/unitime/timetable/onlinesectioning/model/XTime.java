@@ -159,7 +159,7 @@ public class XTime implements Serializable, Externalizable {
     }
     
     public boolean hasIntersection(XTime other) {
-        return shareDays(other) && shareHours(other) && shareWeeks(other);
+        return other != null && shareDays(other) && shareHours(other) && shareWeeks(other);
     }
     
     public int nrSharedDays(XTime anotherLocation) {
