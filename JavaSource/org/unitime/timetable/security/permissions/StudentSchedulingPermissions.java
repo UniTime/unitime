@@ -117,6 +117,18 @@ public class StudentSchedulingPermissions {
 				return (status == null || status.hasOption(StudentSectioningStatus.Option.enabled));
 			}
 			
+			if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
+				for (UserAuthority authority: user.getAuthorities(Roles.ROLE_STUDENT, new SimpleQualifier("Session", source.getUniqueId()))) {
+					List<? extends UserQualifier> q = authority.getQualifiers("Student");
+					if (q == null || q.isEmpty()) continue;
+					Student student = StudentDAO.getInstance().get((Long)q.get(0).getQualifierId());
+					if (student == null) continue;
+					StudentSectioningStatus status = student.getEffectiveStatus();
+					if (status != null && !status.hasOption(StudentSectioningStatus.Option.enabled))
+						return false;
+				}
+			}
+			
 			return true;
 		}
 
