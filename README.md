@@ -20,7 +20,7 @@
 # UniTime
 
 Comprehensive University Timetabling System
-<http://www.unitime.org>
+<https://www.unitime.org>
 
 UniTime is a comprehensive educational scheduling system that supports developing
 course and exam timetables, managing changes to these timetables, sharing rooms
@@ -32,10 +32,11 @@ create and maintain a school's schedule of classes and/or exams, or interfaced w
 an existing student information system. 
 
 The system was originally developed as a collaborative effort by faculty,
-students, and staff at universities in North America and Europe. The softwar
-e is distributed free under an open source license in hopes that other colleges
+students, and staff at universities in North America and Europe. The software
+is distributed free under an open source license in hopes that other colleges
 and universities can benefit their students through better scheduling or wish to
-contribute to ongoing research in this area.
+contribute to ongoing research in this area. The UniTime project has become
+a sponsored project of the [Apereo Foundation][apereo] in March 2015.
 
 ### Components
 - [Course Timetabling & Management][courses]
@@ -43,23 +44,36 @@ contribute to ongoing research in this area.
 - [Event Management][events]
 - [Student Scheduling][students]
 
+### Tutorials
+- [Installation Instructions][install]
+- [Building UniTime][build]
+- [Setting up UniTime in Eclipse][eclipse]
+- [Customization][customization]
+- [Localization][localization]
+
 ### Links
+- [UniTime 4.3 documentation][docs]
 - [Online Documentation][help]
-- [Installation Notes][install]
 - [Online Demo][demo]
 - [Downloads][downloads]
 - [Nightly Builds][builds]
 - [XML Interfaces][xml]
-- [Research][research]
+- [Publications][publications]
 
-[courses]: http://www.unitime.org/uct_courses.php
-[exams]: http://www.unitime.org/uct_exams.php
-[events]: http://www.unitime.org/uct_events.php
-[students]: http://www.unitime.org/uct_students.php
+[courses]: https://www.unitime.org/uct_courses.php
+[exams]: https://www.unitime.org/uct_exams.php
+[events]: https://www.unitime.org/uct_events.php
+[students]: https://www.unitime.org/uct_students.php
 [help]: http://help.unitime.org
 [install]: http://help.unitime.org/Timetabling_Installation
-[demo]: http://demo.unitime.org
-[builds]: http://builds.unitime.org
-[xml]: http://www.unitime.org/uct_interfaces.php
-[research]: http://www.unitime.org/index.php?tab=2
-[downloads]: http://sourceforge.net/projects/unitime/files
+[demo]: https://demo.unitime.org
+[builds]: https://builds.unitime.org
+[xml]: https://www.unitime.org/uct_interfaces.php
+[publications]: https://www.unitime.org/publications.php
+[downloads]: https://sourceforge.net/projects/unitime/files
+[build]: http://help.unitime.org/build
+[eclipse]: http://help.unitime.org/eclipse
+[docs]: http://bit.ly/unitime43docs
+[apereo]: https://www.apereo.org
+[customization]: http://help.unitime.org/Customizations
+[localization]: http://help.unitime.org/Localization
