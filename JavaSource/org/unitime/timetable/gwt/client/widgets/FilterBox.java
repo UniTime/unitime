@@ -109,6 +109,10 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		"blue", "green", "orange", "yellow", "pink",
 		"purple", "teal", "darkpurple", "steelblue", "lightblue",
 		"lightgreen", "yellowgreen", "redorange", "lightbrown", "lightpurple",
+		"grey", "bluegrey", "lightteal", "yellowgrey", "brown",
+		"blue", "green", "orange", "yellow", "pink",
+		"purple", "teal", "darkpurple", "steelblue", "lightblue",
+		"lightgreen", "yellowgreen", "redorange", "lightbrown", "lightpurple",
 		"grey", "bluegrey", "lightteal", "yellowgrey", "brown"
 	};
 	

@@ -2111,7 +2111,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							rc.setStatus(course.isRequestApproved() ? RequestedCourseStatus.OVERRIDE_APPROVED : course.isRequestRejected() ? RequestedCourseStatus.OVERRIDE_REJECTED : course.isRequestCancelled() ? RequestedCourseStatus.OVERRIDE_CANCELLED : RequestedCourseStatus.OVERRIDE_PENDING);
 						else
 							rc.setStatus(RequestedCourseStatus.SAVED);
-						if (!hasEnrollments) {
+						if (hasEnrollments) {
 							if (enrolledNoAlternatives) rc.setCanChangeAlternatives(false);
 							if (enrolledNoPriority) rc.setCanChangePriority(false);
 						}

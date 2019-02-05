@@ -203,6 +203,9 @@ public interface StudentSectioningConstants extends Constants {
 	})
 	String[] overrideType();
 	
+	@DefaultStringValue("None")
+	String noOverride();
+	
 	@DefaultStringArrayValue({
 		"[0-9]+",
 	})
