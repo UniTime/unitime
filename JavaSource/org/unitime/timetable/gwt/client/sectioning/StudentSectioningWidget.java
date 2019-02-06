@@ -619,6 +619,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
 						iSectioningService.section(iOnline, courseRequests, iLastResult, specReg.getChanges(), new AsyncCallback<ClassAssignmentInterface>() {
 							public void onSuccess(ClassAssignmentInterface result) {
+								if (specReg.hasSpaceConflict() || specReg.hasTimeConflict()) iSpecRegCx.setDisclaimerAccepted(true);
 								fillIn(result);
 								iCourseRequests.setRequest(courseRequests);
 								addHistory();
