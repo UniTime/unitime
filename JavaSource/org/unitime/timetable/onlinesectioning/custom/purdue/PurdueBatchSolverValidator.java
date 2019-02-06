@@ -1,4 +1,5 @@
 /*
+
  * Licensed to The Apereo Foundation under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
  * additional information regarding copyright ownership.
@@ -25,7 +26,6 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,6 +48,7 @@ import org.restlet.data.Protocol;
 import org.restlet.resource.ClientResource;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.OfferingConsentType;
@@ -59,10 +60,10 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CheckRestrictionsRequest;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CheckRestrictionsResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Problem;
-import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Schedule;
-import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ValidationCheckRequest;
-import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ValidationCheckResponse;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ResponseStatus;
 import org.unitime.timetable.solver.studentsct.InMemoryReport;
 import org.unitime.timetable.solver.studentsct.StudentSolver;
 import org.unitime.timetable.util.Formats;
@@ -290,7 +291,7 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 	}
 	
 	protected String getSpecialRegistrationApiMode() {
-		return ApplicationProperties.getProperty("purdue.specreg.mode.batch", "REG");
+		return ApplicationProperties.getProperty("purdue.specreg.mode.batch", "PREREG");
 	}
 	
 	protected void validate(Student student, OnlineSectioningLog.Action.Builder action, List<CSVField[]> csv) {
@@ -300,36 +301,27 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 		String campus = iExternalTermProvider.getExternalCampus(iSession);
 		String puid = getBannerId(student);
 
-		ValidationCheckRequest req = new ValidationCheckRequest();
+		CheckRestrictionsRequest req = new CheckRestrictionsRequest();
 		req.studentId = puid;
 		req.term = term;
 		req.campus = campus;
-		req.schedule = new ArrayList<Schedule>();
-		req.alternatives = new ArrayList<Schedule>();
 		req.mode = getSpecialRegistrationApiMode();
-		req.includeReg = "N";
 		
 		for (Request request: student.getRequests()) {
 			Enrollment enrollment = getAssignment().getValue(request);
 			if (enrollment != null && enrollment.isCourseRequest()) {
 				CourseOffering course = iCourses.get(enrollment.getCourse().getId());
 				if (course != null) {
-					Schedule s = new Schedule();
-					s.subject = course.getSubjectAreaAbbv();
-					s.courseNbr = course.getCourseNbr();
-					s.crns = new TreeSet<String>();
 					for (Section section: enrollment.getSections()) {
 						Class_ clazz = iClasses.get(section.getId());
 						if (clazz != null)
-							s.crns.add(clazz.getExternalId(course));
+							req.add(clazz.getExternalId(course));
 					}
-					if (!s.crns.isEmpty())
-						req.schedule.add(s);
 				}
 			}
 		}
 		
-		ValidationCheckResponse resp = null;
+		CheckRestrictionsResponse resp = null;
 		ClientResource resource = null;
 		try {
 			resource = new ClientResource(getSpecialRegistrationApiValidationSite());
@@ -340,12 +332,15 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 			action.addOptionBuilder().setKey("validation_request").setValue(gson.toJson(req));
 			long t1 = System.currentTimeMillis();
 			
-			resource.post(new GsonRepresentation<ValidationCheckRequest>(req));
+			resource.post(new GsonRepresentation<CheckRestrictionsRequest>(req));
 			
 			action.setApiPostTime(System.currentTimeMillis() - t1);
 			
-			resp = (ValidationCheckResponse)new GsonRepresentation<ValidationCheckResponse>(resource.getResponseEntity(), ValidationCheckResponse.class).getObject();
+			resp = (CheckRestrictionsResponse)new GsonRepresentation<CheckRestrictionsResponse>(resource.getResponseEntity(), CheckRestrictionsResponse.class).getObject();
 			action.addOptionBuilder().setKey("validation_response").setValue(gson.toJson(resp));
+			
+			if (!ResponseStatus.success.name().equals(resp.status))
+				throw new SectioningException(resp.message == null || resp.message.isEmpty() ? "Failed to check student eligibility (" + resp.status + ")." : resp.message);
 		} catch (Exception e) {
 			action.setApiException(e.getMessage());
 			action.setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
@@ -370,8 +365,8 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 		}
 		
 		action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
-		if (resp != null && resp.scheduleRestrictions != null && resp.scheduleRestrictions.problems != null) {
-			for (Problem p: resp.scheduleRestrictions.problems) {
+		if (resp != null && resp.outJson != null && resp.outJson.problems != null) {
+			for (Problem p: resp.outJson.problems) {
 				if (p.crn == null) {
 					iProgress.warn("[" + student.getExternalId() + "] " + p.message);
 					csv.add(new CSVField[] {

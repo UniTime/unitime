@@ -92,20 +92,19 @@ import org.unitime.timetable.onlinesectioning.custom.CourseRequestsValidationPro
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Change;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ChangeError;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CheckRestrictionsRequest;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CheckRestrictionsResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CourseCredit;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.EligibilityProblem;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Problem;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.RequestStatus;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ResponseStatus;
-import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Schedule;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationMultipleStatusResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationResponseList;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationStatus;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationStatusResponse;
-import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ValidationCheckRequest;
-import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ValidationCheckResponse;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -168,7 +167,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 	}
 	
 	protected String getSpecialRegistrationApiValidationSite() {
-		return ApplicationProperties.getProperty("purdue.specreg.site.validation", getSpecialRegistrationApiSite() + "/checkRestrictionsForSTAR");
+		return ApplicationProperties.getProperty("purdue.specreg.site.validation", getSpecialRegistrationApiSite() + "/checkRestrictions");
 	}
 	
 	protected String getSpecialRegistrationApiSiteCheckSpecialRegistrationStatus() {
@@ -196,7 +195,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 	}
 	
 	protected String getSpecialRegistrationApiMode() {
-		return ApplicationProperties.getProperty("purdue.specreg.mode.validation", "STAR");
+		return ApplicationProperties.getProperty("purdue.specreg.mode.validation", "PREREG");
 	}
 	
 	protected String getBannerId(XStudent student) {
@@ -350,8 +349,13 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			Float maxCreditDenied = null;
 			if (status != null && status.data != null && status.data.requests != null) {
 				for (SpecialRegistrationRequest r: status.data.requests) {
-					if (RequestStatus.denied.name().equals(r.status)) {
-						for (Change ch: r.changes) {
+					if (r.changes == null || r.changes.isEmpty()) {
+						if (RequestStatus.denied.name().equals(r.completionStatus) && r.maxCredit != null && r.maxCredit > maxCredit && (maxCreditDenied == null || maxCreditDenied > r.maxCredit))
+							maxCreditDenied = r.maxCredit;
+						continue;
+					}
+					for (Change ch: r.changes) {
+						if (RequestStatus.denied.name().equals(ch.status)) {
 							String course = ch.subject + " " + ch.courseNbr;
 							Set<String> problems = deniedOverrides.get(course);
 							if (problems == null) {
@@ -363,14 +367,12 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 									if (err.code != null)
 										problems.add(err.code);
 								}
+							if (r.maxCredit != null && r.maxCredit > maxCredit && ch.subject == null && ch.courseNbr == null && (maxCreditDenied == null || maxCreditDenied > r.maxCredit))
+								maxCreditDenied = r.maxCredit;
+							continue;
 						}
-						if (r.maxCredit != null && r.maxCredit > maxCredit && (maxCreditDenied == null || maxCreditDenied > r.maxCredit))
-							maxCreditDenied = r.maxCredit;
-						continue;
-					}
-					if (RequestStatus.cancelled.name().equals(r.status)) continue;
-					if (r.changes != null)
-						for (Change ch: r.changes) {
+						if (RequestStatus.cancelled.name().equals(ch.status)) continue;
+						if (ch.subject != null && ch.courseNbr != null) {
 							String course = ch.subject + " " + ch.courseNbr;
 							Map<String, RequestedCourseStatus> problems = overrides.get(course);
 							if (problems == null) {
@@ -381,14 +383,15 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							if (ch.errors != null)
 								for (ChangeError err: ch.errors) {
 									if (err.code != null) {
-										problems.put(err.code, status(r.status));
+										problems.put(err.code, status(ch.status));
 										// if (dp != null) dp.remove(err.code);
 									}
 								}
 						}
-					if (r.maxCredit != null && (maxCreditOverride == null || maxCreditOverride < r.maxCredit)) {
-						maxCreditOverride = r.maxCredit;
-						maxCreditOverrideStatus = status(r.status);
+						if (r.maxCredit != null && (maxCreditOverride == null || maxCreditOverride < r.maxCredit)) {
+							maxCreditOverride = r.maxCredit;
+							maxCreditOverrideStatus = status(ch.status);
+						}
 					}
 				}
 			}
@@ -600,14 +603,11 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		
 		neighbour.assign(assignment, 0);
 		
-		ValidationCheckRequest req = new ValidationCheckRequest();
+		CheckRestrictionsRequest req = new CheckRestrictionsRequest();
 		req.studentId = getBannerId(original);
 		req.term = getBannerTerm(server.getAcademicSession());
 		req.campus = getBannerCampus(server.getAcademicSession());
-		req.schedule = new ArrayList<Schedule>();
-		req.alternatives = new ArrayList<Schedule>();
 		req.mode = getSpecialRegistrationApiMode();
-		req.includeReg = "N";
 		
 		Map<String, XCourseId> crn2course = new HashMap<String, XCourseId>();
 		Map<XCourseId, String> course2banner = new HashMap<XCourseId, String>();
@@ -616,21 +616,16 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				CourseRequest cr = (CourseRequest)r;
 				Enrollment e = assignment.getValue(cr);
 				courses: for (Course course: cr.getCourses()) {
-					Schedule s = new Schedule();
-					s.subject = course.getSubjectArea();
-					s.courseNbr = course.getCourseNumber();
-					s.crns = new TreeSet<String>();
 					XCourseId cid = new XCourseId(course);
-					course2banner.put(cid, s.subject + " " + s.courseNbr);
+					course2banner.put(cid, course.getSubjectArea() + " " + course.getCourseNumber());
 					
 					// 1. is enrolled 
 					if (e != null && course.equals(e.getCourse())) {
 						for (Section section: e.getSections()) {
 							String crn = getCRN(section, course);
 							crn2course.put(crn, cid);
-							s.crns.add(crn);
+							req.add(crn);
 						}
-						req.schedule.add(s);
 						continue courses;
 					}
 					
@@ -640,9 +635,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							for (Section section: x.getSections()) {
 								String crn = getCRN(section, course);
 								crn2course.put(crn, cid);
-								s.crns.add(crn);
+								req.addAlt(crn);
 							}
-							req.alternatives.add(s);
 							continue courses;
 						}
 					}
@@ -654,9 +648,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							for (Section section: x.getSections()) {
 								String crn = getCRN(section, course);
 								crn2course.put(crn, cid);
-								s.crns.add(crn);
+								req.addAlt(crn);
 							}
-							req.alternatives.add(s);
 							continue courses;
 						}
 					}
@@ -664,8 +657,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			}
 		}
 		
-		if (!req.schedule.isEmpty() || !req.alternatives.isEmpty()) {
-			ValidationCheckResponse resp = null;
+		if (!req.isEmpty()) {
+			CheckRestrictionsResponse resp = null;
 			resource = null;
 			try {
 				resource = new ClientResource(getSpecialRegistrationApiValidationSite());
@@ -678,14 +671,17 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				helper.getAction().addOptionBuilder().setKey("validation_request").setValue(gson.toJson(req));
 				long t1 = System.currentTimeMillis();
 				
-				resource.post(new GsonRepresentation<ValidationCheckRequest>(req));
+				resource.post(new GsonRepresentation<CheckRestrictionsRequest>(req));
 				
 				helper.getAction().setApiPostTime(System.currentTimeMillis() - t1);
 				
-				resp = (ValidationCheckResponse)new GsonRepresentation<ValidationCheckResponse>(resource.getResponseEntity(), ValidationCheckResponse.class).getObject();
+				resp = (CheckRestrictionsResponse)new GsonRepresentation<CheckRestrictionsResponse>(resource.getResponseEntity(), CheckRestrictionsResponse.class).getObject();
 				if (helper.isDebugEnabled())
 					helper.debug("Response: " + gson.toJson(resp));
 				helper.getAction().addOptionBuilder().setKey("validation_response").setValue(gson.toJson(resp));
+				
+				//if (!ResponseStatus.success.name().equals(resp.status))
+					//throw new SectioningException(resp.message == null || resp.message.isEmpty() ? "Failed to check student eligibility (" + resp.status + ")." : resp.message);
 			} catch (SectioningException e) {
 				helper.getAction().setApiException(e.getMessage());
 				throw (SectioningException)e;
@@ -702,8 +698,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			
 			if (resp == null) return;
 			
-			if (resp.scheduleRestrictions != null && resp.scheduleRestrictions.problems != null)
-				for (Problem problem: resp.scheduleRestrictions.problems) {
+			if (resp.outJson != null && resp.outJson.problems != null)
+				for (Problem problem: resp.outJson.problems) {
 					if ("HOLD".equals(problem.code)) {
 						response.addError(null, null, problem.code, problem.message);
 						response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.holdError", problem.message));
@@ -731,8 +727,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							.setStatus(status == null ? RequestedCourseStatus.OVERRIDE_NEEDED : status);
 					}
 				}
-			if (resp.alternativesRestrictions != null && resp.alternativesRestrictions.problems != null)
-				for (Problem problem: resp.alternativesRestrictions.problems) {
+			if (resp.outJsonAlternatives != null && resp.outJsonAlternatives.problems != null)
+				for (Problem problem: resp.outJsonAlternatives.problems) {
 					if ("HOLD".equals(problem.code)) {
 						response.addError(null, null, problem.code, problem.message);
 						response.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.holdError", problem.message));
@@ -781,7 +777,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					}
 			}
 		}
-		if (minCreditLimit != null && minCredit < Float.parseFloat(minCreditLimit)) {
+		if (minCreditLimit != null && minCredit < Float.parseFloat(minCreditLimit) && (maxCredit == null || maxCredit > Float.parseFloat(minCreditLimit))) {
 			questionMinCred = true;
 		}
 		
@@ -886,7 +882,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					}
 			}
 		}
-		if (minCreditLimit != null && minCredit < Float.parseFloat(minCreditLimit)) {
+		if (minCreditLimit != null && minCredit < Float.parseFloat(minCreditLimit) && (original.getMaxCredit() == null || original.getMaxCredit() > Float.parseFloat(minCreditLimit))) {
 			request.setCreditWarning(
 					ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
 					"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit))
@@ -934,19 +930,21 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			
 			if (status != null && status.data != null && status.data.requests != null) {
 				for (SpecialRegistrationRequest r: status.data.requests) {
-					if (status(r.status) == RequestedCourseStatus.OVERRIDE_PENDING && r.changes != null)
+					if (r.changes != null)
 						for (Change ch: r.changes) {
-							String course = ch.subject + " " + ch.courseNbr;
-							Set<String> problems = overrides.get(course);
-							if (problems == null) {
-								problems = new TreeSet<String>();
-								overrides.put(course, problems);
-							}
-							if (ch.errors != null)
-								for (ChangeError err: ch.errors) {
-									if (err.code != null)
-										problems.add(err.code);
+							if (status(ch.status) == RequestedCourseStatus.OVERRIDE_PENDING && ch.subject != null && ch.courseNbr != null) { 
+								String course = ch.subject + " " + ch.courseNbr;
+								Set<String> problems = overrides.get(course);
+								if (problems == null) {
+									problems = new TreeSet<String>();
+									overrides.put(course, problems);
 								}
+								if (ch.errors != null)
+									for (ChangeError err: ch.errors) {
+										if (err.code != null)
+											problems.add(err.code);
+									}
+							}
 						}
 				}
 			}
@@ -1143,16 +1141,18 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 								if (course == null) continue;
 								String subject = course.getSubjectArea();
 								String courseNbr = course.getCourseNumber();
-								for (SpecialRegistrationRequest r: response.data)
+								for (SpecialRegistrationRequest r: response.data) {
 									if (r.changes != null)
 										for (Change ch: r.changes) {
 											if (subject.equals(ch.subject) && courseNbr.equals(ch.courseNbr)) {
 												rc.setOverrideTimeStamp(r.dateCreated == null ? null : r.dateCreated.toDate());
-												rc.setOverrideExternalId(r.requestId);
-												rc.setStatus(status(r.status));
-												rc.setStatusNote(r.notes);
+												rc.setOverrideExternalId(r.regRequestId);
+												rc.setStatus(status(r, false));
+												rc.setStatusNote(note(r, false));
+												break;
 											}
 										}
+								}
 							}
 						}
 					for (CourseRequestInterface.Request c: request.getAlternatives())
@@ -1174,9 +1174,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 									for (Change ch: r.changes) {
 										if (subject.equals(ch.subject) && courseNbr.equals(ch.courseNbr)) {
 											rc.setOverrideTimeStamp(r.dateCreated == null ? null : r.dateCreated.toDate());
-											rc.setOverrideExternalId(r.requestId);
-											rc.setStatus(status(r.status));
-											rc.setStatusNote(r.notes);
+											rc.setOverrideExternalId(r.regRequestId);
+											rc.setStatus(status(r, false));
+											rc.setStatusNote(note(r, false));
+											break;
 										}
 									}
 							}
@@ -1185,14 +1186,14 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						for (SpecialRegistrationRequest r: response.data) {
 							if (r.maxCredit != null) {
 								request.setMaxCreditOverride(r.maxCredit);
-								request.setMaxCreditOverrideExternalId(r.requestId);
+								request.setMaxCreditOverrideExternalId(r.regRequestId);
 								request.setMaxCreditOverrideTimeStamp(r.dateCreated == null ? null : r.dateCreated.toDate());
-								request.setMaxCreditOverrideStatus(status(r.status));
+								request.setMaxCreditOverrideStatus(status(r, true));
 								request.setCreditWarning(
 										ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.")
 										.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(req.maxCredit))
 										);
-								request.setCreditNote(r.notes);
+								request.setCreditNote(note(r, true));
 								break;
 							}
 						}
@@ -1232,6 +1233,47 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			return RequestedCourseStatus.OVERRIDE_CANCELLED;
 		else
 			return RequestedCourseStatus.OVERRIDE_PENDING;
+	}
+	
+	protected RequestedCourseStatus combine(RequestedCourseStatus s1, RequestedCourseStatus s2) {
+		if (s1 == null) return s2;
+		if (s2 == null) return s1;
+		if (s1 == s2) return s1;
+		if (s1 == RequestedCourseStatus.OVERRIDE_PENDING || s2 == RequestedCourseStatus.OVERRIDE_PENDING) return RequestedCourseStatus.OVERRIDE_PENDING;
+		if (s1 == RequestedCourseStatus.OVERRIDE_CANCELLED || s2 == RequestedCourseStatus.OVERRIDE_CANCELLED) return RequestedCourseStatus.OVERRIDE_CANCELLED;
+		if (s1 == RequestedCourseStatus.OVERRIDE_REJECTED || s2 == RequestedCourseStatus.OVERRIDE_REJECTED) return RequestedCourseStatus.OVERRIDE_REJECTED;
+		if (s1 == RequestedCourseStatus.OVERRIDE_APPROVED || s2 == RequestedCourseStatus.OVERRIDE_APPROVED) return RequestedCourseStatus.OVERRIDE_APPROVED;
+		return s1;
+	}
+	
+	protected RequestedCourseStatus status(SpecialRegistrationRequest request, boolean credit) {
+		RequestedCourseStatus ret = null;
+		if (request.changes != null)
+			for (Change ch: request.changes) {
+				if (credit && ch.subject == null && ch.courseNbr == null)
+					ret = combine(ret, status(ch.status));
+				if (!credit && ch.subject != null && ch.courseNbr != null)
+					ret = combine(ret, status(ch.status));
+			}
+		if (ret != null) return ret;
+		if (RequestStatus.inProgress.name().equals(request.completionStatus)) return RequestedCourseStatus.OVERRIDE_PENDING;
+		if (RequestStatus.cancelled.name().equals(request.completionStatus)) return RequestedCourseStatus.OVERRIDE_CANCELLED;
+		if (RequestStatus.denied.name().equals(request.completionStatus)) return RequestedCourseStatus.OVERRIDE_REJECTED;
+		if (RequestStatus.approved.name().equals(request.completionStatus)) return RequestedCourseStatus.OVERRIDE_APPROVED;
+		if (RequestStatus.completed.name().equals(request.completionStatus)) return RequestedCourseStatus.OVERRIDE_APPROVED;
+		return RequestedCourseStatus.OVERRIDE_PENDING;
+	}
+	
+	protected String note(SpecialRegistrationRequest request, boolean credit) {
+		String note = null;
+		if (request.changes != null)
+			for (Change ch: request.changes) {
+				if (credit && ch.subject == null && ch.courseNbr == null && ch.hasLastNote())
+					note = (note == null ? "" : note + "\n") + ch.getLastNote();
+				if (!credit && ch.subject != null && ch.courseNbr != null && ch.hasLastNote() && !RequestStatus.approved.name().equals(ch.status))
+					note = (note == null ? "" : note + "\n") + ch.getLastNote();
+			}
+		return note;
 	}
 	
 	protected List<RequestedCourse> getOverCreditRequests(CourseRequestInterface request, float maxCredit) {
@@ -1407,7 +1449,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					}
 			}
 		}
-		if (minCreditLimit != null && minCredit > 0 && minCredit < Float.parseFloat(minCreditLimit)) {
+		if (minCreditLimit != null && minCredit > 0 && minCredit < Float.parseFloat(minCreditLimit) && (original.getMaxCredit() == null || original.getMaxCredit() > Float.parseFloat(minCreditLimit))) {
 			request.setCreditWarning(
 					ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
 					"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit))
@@ -1460,30 +1502,31 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			String creditNote = null;
 			if (status != null && status.data != null && status.data.requests != null) {
 				for (SpecialRegistrationRequest r: status.data.requests) {
-					if (r.requestId == null) continue;
-					if (r.requestId.equals(request.getMaxCreditOverrideExternalId())) {
-						request.setMaxCreditOverrideStatus(status(r.status));
+					if (r.regRequestId == null) continue;
+					if (r.regRequestId.equals(request.getMaxCreditOverrideExternalId())) {
+						request.setMaxCreditOverrideStatus(status(r, true));
 						if (r.maxCredit != null)
 							request.setMaxCreditOverride(r.maxCredit);
-						creditNote = r.notes;
+						creditNote = note(r, true);
 					}
-					RequestedCourse rc = rcs.get(r.requestId);
+					RequestedCourse rc = rcs.get(r.regRequestId);
 					if (rc == null) continue;
 					if (rc.getStatus() != RequestedCourseStatus.ENROLLED) {
-						rc.setStatus(status(r.status));
+						rc.setStatus(status(r, false));
 					}
-					if (r.changes != null && !RequestStatus.approved.name().equals(r.status))
+					if (r.changes != null)
 						for (Change ch: r.changes)
-							if (ch.errors != null)
+							if (ch.errors != null && ch.courseNbr != null && ch.subject != null)
 								for (ChangeError er: ch.errors) {
-									if (RequestStatus.denied.name().equals(r.status)) {
-										request.addConfirmationError(rc.getCourseId(), rc.getCourseName(), er.code, "Denied " + er.message, status(r.status), ORD_BANNER);
+									if (RequestStatus.denied.name().equals(ch.status)) {
+										request.addConfirmationError(rc.getCourseId(), rc.getCourseName(), er.code, "Denied " + er.message, status(ch.status), ORD_BANNER);
 										request.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.deniedOverrideError",
 												"One or more courses require registration overrides which have been denied.\nYou must remove or replace these courses in order to submit your registration request."));
-									} else
-										request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), er.code, er.message, status(r.status), ORD_BANNER);
+									} else if (!RequestStatus.approved.name().equals(ch.status)) {
+										request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), er.code, er.message, status(ch.status), ORD_BANNER);
+									}
 								}
-					rc.setStatusNote(r.notes);
+					rc.setStatusNote(note(r, false));
 				}
 			}
 			
@@ -1596,7 +1639,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					if (cr.getOverrideExternalId() != null) {
 						SpecialRegistrationRequest req = null;
 						for (SpecialRegistrationRequest r: status.data.requests) {
-							if (cr.getOverrideExternalId().equals(r.requestId)) { req = r; break; }
+							if (cr.getOverrideExternalId().equals(r.regRequestId)) { req = r; break; }
 						}
 						if (req == null) {
 							if (cr.getCourseRequestOverrideStatus() != CourseRequestOverrideStatus.CANCELLED) {
@@ -1606,14 +1649,20 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							}
 						} else {
 							Integer oldStatus = cr.getOverrideStatus();
-							if (RequestStatus.denied.name().equals(req.status))
+							switch (status(req, false)) {
+							case OVERRIDE_REJECTED: 
 								cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.REJECTED);
-							else if (RequestStatus.approved.name().equals(req.status))
+								break;
+							case OVERRIDE_APPROVED:
 								cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.APPROVED);
-							else if (RequestStatus.cancelled.name().equals(req.status))
+								break;
+							case OVERRIDE_CANCELLED:
 								cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.CANCELLED);
-							else
+								break;
+							case OVERRIDE_PENDING:
 								cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.PENDING);
+								break;
+							}
 							if (oldStatus == null || !oldStatus.equals(cr.getOverrideStatus())) {
 								helper.getHibSession().update(cr);
 								changed = true;
@@ -1631,7 +1680,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			if (student.getOverrideExternalId() != null) {
 				SpecialRegistrationRequest req = null;
 				for (SpecialRegistrationRequest r: status.data.requests) {
-					if (student.getOverrideExternalId().equals(r.requestId)) { req = r; break; }
+					if (student.getOverrideExternalId().equals(r.regRequestId)) { req = r; break; }
 				}
 				if (req == null) {
 					student.setOverrideExternalId(null);
@@ -1641,14 +1690,20 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					studentChanged = true;
 				} else {
 					Integer oldStatus = student.getOverrideStatus();
-					if (RequestStatus.denied.name().equals(req.status))
+					switch (status(req, true)) {
+					case OVERRIDE_REJECTED: 
 						student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.REJECTED);
-					else if (RequestStatus.approved.name().equals(req.status))
+						break;
+					case OVERRIDE_APPROVED:
 						student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.APPROVED);
-					else if (RequestStatus.cancelled.name().equals(req.status))
+						break;
+					case OVERRIDE_CANCELLED:
 						student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.CANCELLED);
-					else
+						break;
+					case OVERRIDE_PENDING:
 						student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.PENDING);
+						break;
+					}
 					if (oldStatus == null || !oldStatus.equals(student.getOverrideStatus()))
 						studentChanged = true;
 				}
@@ -1831,35 +1886,26 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		
 		neighbour.assign(assignment, 0);
 		
-		ValidationCheckResponse validation = null;
-		Map<String, Course> crn2course = new HashMap<String, Course>();
-		ValidationCheckRequest validationRequest = new ValidationCheckRequest();
+		CheckRestrictionsRequest validationRequest = new CheckRestrictionsRequest();
 		validationRequest.studentId = getBannerId(original);
 		validationRequest.term = getBannerTerm(server.getAcademicSession());
 		validationRequest.campus = getBannerCampus(server.getAcademicSession());
-		validationRequest.schedule = new ArrayList<Schedule>();
-		validationRequest.alternatives = new ArrayList<Schedule>();
 		validationRequest.mode = getSpecialRegistrationApiMode();
-		validationRequest.includeReg = "N";
+		Map<String, Course> crn2course = new HashMap<String, Course>();
+		CheckRestrictionsResponse validation = null;
 		
 		for (Request r: model.variables()) {
 			if (r instanceof CourseRequest) {
 				CourseRequest cr = (CourseRequest)r;
 				Enrollment e = assignment.getValue(cr);
 				courses: for (Course course: cr.getCourses()) {
-					Schedule sch = new Schedule();
-					sch.subject = course.getSubjectArea();
-					sch.courseNbr = course.getCourseNumber();
-					sch.crns = new TreeSet<String>();
-					
 					// 1. is enrolled 
 					if (e != null && course.equals(e.getCourse())) {
 						for (Section section: e.getSections()) {
 							String crn = getCRN(section, course);
 							crn2course.put(crn, course);
-							sch.crns.add(crn);
+							validationRequest.add(crn);
 						}
-						validationRequest.schedule.add(sch);
 						continue courses;
 					}
 					
@@ -1869,9 +1915,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							for (Section section: x.getSections()) {
 								String crn = getCRN(section, course);
 								crn2course.put(crn, course);
-								sch.crns.add(crn);
+								validationRequest.add(crn);
 							}
-							validationRequest.alternatives.add(sch);
 							continue courses;
 						}
 					}
@@ -1883,9 +1928,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							for (Section section: x.getSections()) {
 								String crn = getCRN(section, course);
 								crn2course.put(crn, course);
-								sch.crns.add(crn);
+								validationRequest.add(crn);
 							}
-							validationRequest.alternatives.add(sch);
 							continue courses;
 						}
 					}
@@ -1904,14 +1948,17 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			action.addOptionBuilder().setKey("validation_request").setValue(gson.toJson(validationRequest));
 			long t1 = System.currentTimeMillis();
 			
-			resource.post(new GsonRepresentation<ValidationCheckRequest>(validationRequest));
+			resource.post(new GsonRepresentation<CheckRestrictionsRequest>(validationRequest));
 			
 			action.setApiPostTime(System.currentTimeMillis() - t1);
 			
-			validation = (ValidationCheckResponse)new GsonRepresentation<ValidationCheckResponse>(resource.getResponseEntity(), ValidationCheckResponse.class).getObject();
+			validation = (CheckRestrictionsResponse)new GsonRepresentation<CheckRestrictionsResponse>(resource.getResponseEntity(), CheckRestrictionsResponse.class).getObject();
 			if (helper.isDebugEnabled())
 				helper.debug("Validation Response: " + gson.toJson(validation));
 			action.addOptionBuilder().setKey("validation_response").setValue(gson.toJson(validation));
+			
+			if (!ResponseStatus.success.name().equals(validation.status))
+				throw new SectioningException(validation.message == null || validation.message.isEmpty() ? "Failed to check student eligibility (" + validation.status + ")." : validation.message);
 		} catch (SectioningException e) {
 			action.setApiException(e.getMessage());
 			throw (SectioningException)e;
@@ -1942,8 +1989,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		}
 		
 		
-		if (validation.scheduleRestrictions != null && validation.scheduleRestrictions.problems != null)
-			problems: for (Problem problem: validation.scheduleRestrictions.problems) {
+		if (validation.outJson != null && validation.outJson.problems != null)
+			problems: for (Problem problem: validation.outJson.problems) {
 				if ("HOLD".equals(problem.code)) continue;
 				if ("DUPL".equals(problem.code)) continue;
 				if ("MAXI".equals(problem.code)) continue;
@@ -1976,8 +2023,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					err.message = err.message.replaceFirst(" \\(CRN [0-9][0-9][0-9][0-9][0-9]\\) ", " ");
 				change.errors.add(err);
 			}
-		if (validation.alternativesRestrictions != null && validation.alternativesRestrictions.problems != null)
-			problems: for (Problem problem: validation.alternativesRestrictions.problems) {
+		if (validation.outJsonAlternatives != null && validation.outJsonAlternatives.problems != null)
+			problems: for (Problem problem: validation.outJsonAlternatives.problems) {
 				if ("HOLD".equals(problem.code)) continue;
 				if ("DUPL".equals(problem.code)) continue;
 				if ("MAXI".equals(problem.code)) continue;
@@ -2112,19 +2159,25 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							for (Change ch: r.changes) {
 								if (cr.getCourseOffering().getSubjectAreaAbbv().equals(ch.subject) && cr.getCourseOffering().getCourseNbr().equals(ch.courseNbr)) {
 									Integer oldStatus = cr.getOverrideStatus();
-									if (RequestStatus.denied.name().equals(r.status))
+									switch (status(r, false)) {
+									case OVERRIDE_REJECTED: 
 										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.REJECTED);
-									else if (RequestStatus.approved.name().equals(r.status))
+										break;
+									case OVERRIDE_APPROVED:
 										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.APPROVED);
-									else if (RequestStatus.cancelled.name().equals(r.status))
+										break;
+									case OVERRIDE_CANCELLED:
 										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.CANCELLED);
-									else
+										break;
+									case OVERRIDE_PENDING:
 										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.PENDING);
+										break;
+									}
 									if (oldStatus == null || !oldStatus.equals(cr.getOverrideStatus()))
 										changed = true;
-									if (cr.getOverrideExternalId() == null || !cr.getOverrideExternalId().equals(r.requestId))
+									if (cr.getOverrideExternalId() == null || !cr.getOverrideExternalId().equals(r.regRequestId))
 										changed = true;
-									cr.setOverrideExternalId(r.requestId);
+									cr.setOverrideExternalId(r.regRequestId);
 									cr.setOverrideTimeStamp(r.dateCreated == null ? null : r.dateCreated.toDate());
 									helper.getHibSession().update(cr);
 									continue cr;
@@ -2145,22 +2198,28 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			for (SpecialRegistrationRequest r: response.data) {
 				if (r.maxCredit != null) {
 					Integer oldStatus = student.getOverrideStatus();
-					if (RequestStatus.denied.name().equals(r.status))
+					switch (status(r, true)) {
+					case OVERRIDE_REJECTED: 
 						student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.REJECTED);
-					else if (RequestStatus.approved.name().equals(r.status))
+						break;
+					case OVERRIDE_APPROVED:
 						student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.APPROVED);
-					else if (RequestStatus.cancelled.name().equals(r.status))
+						break;
+					case OVERRIDE_CANCELLED:
 						student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.CANCELLED);
-					else
+						break;
+					case OVERRIDE_PENDING:
 						student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.PENDING);
+						break;
+					}
 					if (oldStatus == null || !oldStatus.equals(student.getOverrideStatus()))
 						studentChanged = true;
 					if (student.getOverrideMaxCredit() == null || !student.getOverrideMaxCredit().equals(r.maxCredit))
 						studentChanged = true;
 					student.setOverrideMaxCredit(r.maxCredit);
-					if (student.getOverrideExternalId() == null || !student.getOverrideExternalId().equals(r.requestId))
+					if (student.getOverrideExternalId() == null || !student.getOverrideExternalId().equals(r.regRequestId))
 						studentChanged = true;
-					student.setOverrideExternalId(r.requestId);
+					student.setOverrideExternalId(r.regRequestId);
 					student.setOverrideTimeStamp(r.dateCreated == null ? null : r.dateCreated.toDate());
 					break;
 				}
@@ -2310,7 +2369,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							if (cr.getOverrideExternalId() != null) {
 								SpecialRegistrationRequest req = null;
 								for (SpecialRegistrationRequest r: status.requests) {
-									if (cr.getOverrideExternalId().equals(r.requestId)) { req = r; break; }
+									if (cr.getOverrideExternalId().equals(r.regRequestId)) { req = r; break; }
 								}
 								if (req == null) {
 									if (cr.getCourseRequestOverrideStatus() != CourseRequestOverrideStatus.CANCELLED) {
@@ -2320,14 +2379,20 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 									}
 								} else {
 									Integer oldStatus = cr.getOverrideStatus();
-									if (RequestStatus.denied.name().equals(req.status))
+									switch (status(req, false)) {
+									case OVERRIDE_REJECTED: 
 										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.REJECTED);
-									else if (RequestStatus.approved.name().equals(req.status))
+										break;
+									case OVERRIDE_APPROVED:
 										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.APPROVED);
-									else if (RequestStatus.cancelled.name().equals(req.status))
+										break;
+									case OVERRIDE_CANCELLED:
 										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.CANCELLED);
-									else
+										break;
+									case OVERRIDE_PENDING:
 										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.PENDING);
+										break;
+									}
 									if (oldStatus == null || !oldStatus.equals(cr.getOverrideStatus())) {
 										helper.getHibSession().update(cr);
 										changed = true;
@@ -2345,7 +2410,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					if (student.getOverrideExternalId() != null) {
 						SpecialRegistrationRequest req = null;
 						for (SpecialRegistrationRequest r: status.requests) {
-							if (student.getOverrideExternalId().equals(r.requestId)) { req = r; break; }
+							if (student.getOverrideExternalId().equals(r.regRequestId)) { req = r; break; }
 						}
 						if (req == null) {
 							student.setOverrideExternalId(null);
@@ -2355,14 +2420,20 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							studentChanged = true;
 						} else {
 							Integer oldStatus = student.getOverrideStatus();
-							if (RequestStatus.denied.name().equals(req.status))
+							switch (status(req, true)) {
+							case OVERRIDE_REJECTED: 
 								student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.REJECTED);
-							else if (RequestStatus.approved.name().equals(req.status))
+								break;
+							case OVERRIDE_APPROVED:
 								student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.APPROVED);
-							else if (RequestStatus.cancelled.name().equals(req.status))
+								break;
+							case OVERRIDE_CANCELLED:
 								student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.CANCELLED);
-							else
+								break;
+							case OVERRIDE_PENDING:
 								student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.PENDING);
+								break;
+							}
 							if (oldStatus == null || !oldStatus.equals(student.getOverrideStatus()))
 								studentChanged = true;
 						}

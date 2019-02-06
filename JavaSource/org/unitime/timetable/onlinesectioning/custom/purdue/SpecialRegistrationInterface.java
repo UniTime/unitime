@@ -34,11 +34,11 @@ public class SpecialRegistrationInterface {
 	
 	// submitRegistration request (PREREG, REG)
 	public static class SpecialRegistrationRequest {
-		public String requestId;
+		public String regRequestId;
 		public String studentId;
 		public String term;
 		public String campus;
-		public String status;
+		// public String status;
 		public String mode;
 		public List<Change> changes;
 		public DateTime dateCreated;
@@ -47,7 +47,7 @@ public class SpecialRegistrationInterface {
 		public String requestorRole;
 		public List<CourseCredit> courseCreditHrs;
 		public List<CourseCredit> alternateCourseCreditHrs;
-		public String notes;
+		// public String notes;
 		public String requestorNotes;
 		public String completionStatus;
 		public List<CancelledRequest> cancelledRequests;
@@ -185,29 +185,6 @@ public class SpecialRegistrationInterface {
 		String overrideApplied;
 	}
 
-	// checkRestrictionsForSTAR request (PREREG)
-	public static class ValidationCheckRequest {
-		public String studentId;
-		public String term;
-		public String campus;
-		public String includeReg;
-		public String mode;
-		public List<Schedule> schedule;
-		public List<Schedule> alternatives;
-	}
-	
-	public static class Schedule {
-		public String subject;
-		public String courseNbr;
-		public Set<String> crns;
-	}
-	
-	// checkRestrictionsForSTAR response (PREREG)
-	public static class ValidationCheckResponse {
-		public ScheduleRestrictions scheduleRestrictions;
-		public ScheduleRestrictions alternativesRestrictions;
-	}
-	
 	public static class ScheduleRestrictions {
 		public List<Problem> problems;
 		public String sisId;
@@ -236,6 +213,20 @@ public class SpecialRegistrationInterface {
 		public String campus;
 		public String includeReg;
 		public String mode;
+		
+		public RestrictionsCheckRequest() {}
+		public RestrictionsCheckRequest(CheckRestrictionsRequest req, String reqMode, boolean includeRegistration) {
+			sisId = req.studentId;
+			term = req.term;
+			campus = req.campus;
+			mode = reqMode;
+			includeReg = (includeRegistration ? "Y" : "N");
+			actions = new HashMap<String, List<Crn>>();
+			actions.put("ADD", new ArrayList<Crn>());
+			if (includeRegistration)
+				actions.put("DROP", new ArrayList<Crn>());
+		}
+		
 		public Map<String, List<Crn>> actions;
 		public void addOperation(String op, String crn) {
 			if (actions == null) actions = new HashMap<String, List<Crn>>();
@@ -243,20 +234,21 @@ public class SpecialRegistrationInterface {
 			if (crns == null) {
 				crns = new ArrayList<Crn>();
 				actions.put(op, crns);
+			} else {
+				for (Crn c: crns) {
+					if (crn.equals(c.crn)) return;
+				}
 			}
 			Crn c = new Crn(); c.crn = crn;
 			crns.add(c);
 		}
 		public void add(String crn) { addOperation("ADD", crn); }
 		public void drop(String crn) { addOperation("DROP", crn); }
+		public boolean isEmpty() { return actions == null || actions.isEmpty(); }
 	}
 	
 	public static class Crn {
 		String crn;
-	}
-	
-	// checkRestrictionsForOPEN response (REG)
-	public static class RestrictionsCheckResponse extends ScheduleRestrictions {
 	}
 	
 	// cancelRegistrationRequestFromUniTime response (REG)
@@ -266,23 +258,40 @@ public class SpecialRegistrationInterface {
 		public String message;
 	}
 	
-	// checkRestrictions request (REG)
+	// checkRestrictions request
 	public static class CheckRestrictionsRequest {
 		public String studentId;
 		public String term;
 		public String campus;
 		public String mode;
 		public RestrictionsCheckRequest changes;
+		public RestrictionsCheckRequest alternatives;
+		public void add(String crn) {
+			if (changes == null)
+				changes = new RestrictionsCheckRequest(this, "REG", false);
+			changes.add(crn);
+		}
+		public void addAlt(String crn) {
+			if (alternatives == null)
+				alternatives = new RestrictionsCheckRequest(this, "ALT", false);
+			alternatives.add(crn);
+		}
+		public boolean isEmpty() { 
+			return (changes == null || changes.isEmpty()) && (alternatives == null || alternatives.isEmpty()); 
+		}
 	}
 	
 	// checkRestrictions response (REG)
 	public static class CheckRestrictionsResponse {
 		public List<SpecialRegistrationRequest> cancelRegistrationRequests;
 		public List<DeniedRequest> deniedRequests;
-		public SpecialRegistrationEligibilityResponse eligible;
+		public SpecialRegistrationEligibility eligible;
 		public Float maxCredit;
-		public RestrictionsCheckResponse outJson;
+		public ScheduleRestrictions outJson;
+		public ScheduleRestrictions outJsonAlternatives;
 		public Set<String> overrides;
+		public String status;
+		public String message;
 	}
 	
 	public static class DeniedRequest {
@@ -297,6 +306,6 @@ public class SpecialRegistrationInterface {
 		public String subject;
 		public String courseNbr;
 		public String crn;
-		public String requestId;
+		public String regRequestId;
 	}
 }
