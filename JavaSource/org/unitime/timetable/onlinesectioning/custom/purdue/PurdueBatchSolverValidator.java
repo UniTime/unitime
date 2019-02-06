@@ -60,6 +60,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ApiMode;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CheckRestrictionsRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CheckRestrictionsResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Problem;
@@ -290,8 +291,8 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 		return ApplicationProperties.getProperty("purdue.specreg.apiKey");
 	}
 	
-	protected String getSpecialRegistrationApiMode() {
-		return ApplicationProperties.getProperty("purdue.specreg.mode.batch", "PREREG");
+	protected ApiMode getSpecialRegistrationApiMode() {
+		return ApiMode.valueOf(ApplicationProperties.getProperty("purdue.specreg.mode.batch", "PREREG"));
 	}
 	
 	protected void validate(Student student, OnlineSectioningLog.Action.Builder action, List<CSVField[]> csv) {
@@ -315,7 +316,7 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 					for (Section section: enrollment.getSections()) {
 						Class_ clazz = iClasses.get(section.getId());
 						if (clazz != null)
-							req.add(clazz.getExternalId(course));
+							SpecialRegistrationHelper.addCrn(req, clazz.getExternalId(course));
 					}
 				}
 			}
@@ -339,7 +340,7 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 			resp = (CheckRestrictionsResponse)new GsonRepresentation<CheckRestrictionsResponse>(resource.getResponseEntity(), CheckRestrictionsResponse.class).getObject();
 			action.addOptionBuilder().setKey("validation_response").setValue(gson.toJson(resp));
 			
-			if (!ResponseStatus.success.name().equals(resp.status))
+			if (ResponseStatus.success != resp.status)
 				throw new SectioningException(resp.message == null || resp.message.isEmpty() ? "Failed to check student eligibility (" + resp.status + ")." : resp.message);
 		} catch (Exception e) {
 			action.setApiException(e.getMessage());
