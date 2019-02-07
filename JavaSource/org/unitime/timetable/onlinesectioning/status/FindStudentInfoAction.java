@@ -446,15 +446,49 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 									}											
 								}
 						}
-					} else if (m.student().canAssign(m.request()) && unassigned.add(m.request().getRequestId())) {
-						if (m.request().isWaitlist()) {
-							s.setWaitlist(s.getWaitlist() + 1); gWait ++;
-							if (s.getTopWaitingPriority() == null)
-								s.setTopWaitingPriority(1 + m.request().getPriority());
-							else
-								s.setTopWaitingPriority(Math.min(1 + m.request().getPriority(), s.getTopWaitingPriority()));
+					} else if (unassigned.add(m.request().getRequestId())) {
+						if (m.student().canAssign(m.request())) {
+							if (m.request().isWaitlist()) {
+								s.setWaitlist(s.getWaitlist() + 1); gWait ++;
+								if (s.getTopWaitingPriority() == null)
+									s.setTopWaitingPriority(1 + m.request().getPriority());
+								else
+									s.setTopWaitingPriority(Math.min(1 + m.request().getPriority(), s.getTopWaitingPriority()));
+							}
+							s.setUnassigned(s.getUnassigned() + 1); gUnasg ++;
 						}
-						s.setUnassigned(s.getUnassigned() + 1); gUnasg ++;
+						for (XCourseId c: m.request().getCourseIds()) {
+							OnlineSectioningLog.CourseRequestOption pref = m.request().getPreferences(c);
+							if (pref != null) {
+								if (pref.getInstructionalMethodCount() > 0) {
+									boolean reqIm = false;
+									for (OnlineSectioningLog.Entity e: pref.getInstructionalMethodList()) {
+										boolean required = false;
+		    							if (e.getParameterCount() > 0)
+		    								for (OnlineSectioningLog.Property p: e.getParameterList())
+		    									if ("required".equals(p.getKey()))
+		    										required = "true".equals(p.getValue());
+		    							if (required) { reqIm = true; break; }
+									}
+									if (reqIm) {
+										s.setTotalPrefInstrMethConflict(s.getTotalPrefInstrMethConflict() + 1);
+										gtPIM++;
+									}
+								}
+								if (pref.getSectionCount() > 0) {
+									Set<String> allSubpartIds = new HashSet<String>();
+									for (OnlineSectioningLog.Section sc: pref.getSectionList()) {
+										boolean required = (sc.hasPreference() && sc.getPreference() == OnlineSectioningLog.Section.Preference.REQUIRED);
+		    							if (required)
+		    								allSubpartIds.add(sc.getSubpart().getName());
+									}
+									if (!allSubpartIds.isEmpty()) {
+										s.setTotalPrefSectionConflict(s.getTotalPrefSectionConflict() + allSubpartIds.size());
+										gtPSec += allSubpartIds.size();
+									}
+								}
+							}	
+						}
 					}
 					if (m.request().getTimeStamp() != null) {
 						if (s.getRequestedDate() == null)

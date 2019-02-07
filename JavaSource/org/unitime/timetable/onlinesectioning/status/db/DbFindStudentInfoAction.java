@@ -436,15 +436,52 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 							}
 						}
 					}
-				} else if (crm.canAssign() && unassigned.add(crm.request().getCourseDemand().getUniqueId())) {
-					if (crm.request().getCourseDemand().isWaitlist()) {
-						s.setWaitlist(s.getWaitlist() + 1); gWait ++;
-						if (s.getTopWaitingPriority() == null)
-							s.setTopWaitingPriority(1 + crm.request().getCourseDemand().getPriority());
-						else
-							s.setTopWaitingPriority(Math.min(1 + crm.request().getCourseDemand().getPriority(), s.getTopWaitingPriority()));
+				} else if (unassigned.add(crm.request().getCourseDemand().getUniqueId())) {
+					if (crm.canAssign()) {
+						if (crm.request().getCourseDemand().isWaitlist()) {
+							s.setWaitlist(s.getWaitlist() + 1); gWait ++;
+							if (s.getTopWaitingPriority() == null)
+								s.setTopWaitingPriority(1 + crm.request().getCourseDemand().getPriority());
+							else
+								s.setTopWaitingPriority(Math.min(1 + crm.request().getCourseDemand().getPriority(), s.getTopWaitingPriority()));
+						}
+						s.setUnassigned(s.getUnassigned() + 1); gUnasg ++;	
 					}
-					s.setUnassigned(s.getUnassigned() + 1); gUnasg ++;
+					for (CourseRequest c: crm.request().getCourseDemand().getCourseRequests()) {
+						CourseRequestOption option = c.getCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE);
+						if (option != null && option.getValue() != null) {
+							try {
+								OnlineSectioningLog.CourseRequestOption pref = OnlineSectioningLog.CourseRequestOption.parseFrom(option.getValue());
+								if (pref.getInstructionalMethodCount() > 0) {
+									boolean reqIm = false;
+									for (OnlineSectioningLog.Entity e: pref.getInstructionalMethodList()) {
+										boolean required = false;
+		    							if (e.getParameterCount() > 0)
+		    								for (OnlineSectioningLog.Property p: e.getParameterList())
+		    									if ("required".equals(p.getKey()))
+		    										required = "true".equals(p.getValue());
+		    							if (required) { reqIm = true; break; }
+									}
+									if (reqIm) {
+										s.setTotalPrefInstrMethConflict(s.getTotalPrefInstrMethConflict() + 1);
+										gtPIM++;
+									}
+								}
+								if (pref.getSectionCount() > 0) {
+									Set<String> allSubpartIds = new HashSet<String>();
+									for (OnlineSectioningLog.Section sc: pref.getSectionList()) {
+										boolean required = (sc.hasPreference() && sc.getPreference() == OnlineSectioningLog.Section.Preference.REQUIRED);
+		    							if (required)
+		    								allSubpartIds.add(sc.getSubpart().getName());
+									}
+									if (!allSubpartIds.isEmpty()) {
+										s.setTotalPrefSectionConflict(s.getTotalPrefSectionConflict() + allSubpartIds.size());
+										gtPSec += allSubpartIds.size();
+									}
+								}
+							} catch (InvalidProtocolBufferException e) {}
+						}	
+					}
 				}
 				if (crm.request().getCourseDemand().getTimestamp() != null) {
 					if (s.getRequestedDate() == null)
