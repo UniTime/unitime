@@ -1539,7 +1539,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							ORD_CREDIT);
 				}
 				request.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit())));
-				if (request.getMaxCreditOverrideStatus() == RequestedCourseStatus.OVERRIDE_REJECTED) {
+				if (request.getMaxCreditOverrideStatus() == RequestedCourseStatus.OVERRIDE_REJECTED && request.getMaxCreditOverride() != null) {
 					if (!request.hasErrorMessage())
 						request.setErrorMessage(ApplicationProperties.getProperty("purdue.specreg.messages.maxCreditDeniedError",
 								"Maximum of {max} credit hours exceeded.\nThe request to increase the maximum credit hours to {maxCreditDenied} has been denied.\nYou must remove some course requests in order to submit your registration request.")
