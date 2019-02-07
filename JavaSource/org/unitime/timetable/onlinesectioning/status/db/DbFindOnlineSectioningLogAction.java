@@ -23,8 +23,10 @@ import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
@@ -66,7 +68,7 @@ public class DbFindOnlineSectioningLogAction extends FindOnlineSectioningLogActi
 				join += "left outer join s.groups G_" + t + " ";
 			
 			org.hibernate.Query q = helper.getHibSession().createQuery(
-					"select distinct l, s from OnlineSectioningLog l, Student s " +
+					"select l, s from OnlineSectioningLog l, Student s " +
 					(getQuery().hasAttribute("area", "clasf", "classification", "major") ? "left outer join s.areaClasfMajors m " : "") +
 					(getQuery().hasAttribute("minor") ? "left outer join s.areaClasfMinors n " : "") + 
 					(getQuery().hasAttribute("group") ? "left outer join s.groups g " : "") + 
@@ -80,12 +82,14 @@ public class DbFindOnlineSectioningLogAction extends FindOnlineSectioningLogActi
 			if (getLimit() != null)
 				q.setMaxResults(getLimit());
 			
+			Set<Long> processedLogIds = new HashSet<Long>();
 			for (Object[] o: (List<Object[]>)q.list()) {
 				try {
 					org.unitime.timetable.model.OnlineSectioningLog log = (org.unitime.timetable.model.OnlineSectioningLog)o[0];
 					
 					Student student = (Student)o[1];
 					if (student == null) continue;
+					if (!processedLogIds.add(log.getUniqueId())) continue;
 					ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
 					st.setId(student.getUniqueId());
 					st.setSessionId(session.getUniqueId());
