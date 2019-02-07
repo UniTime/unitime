@@ -162,7 +162,9 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 		iCourse = new AriaSuggestBox(new CourseOracle());
 		iCourse.setStyleName("unitime-TextArea");
 		iCourse.setWidth("200px");
-		addFilter(new FilterBox.StaticSimpleFilter("course", GWT_MESSAGES.tagCourse()));
+		FilterBox.StaticSimpleFilter courseFilter = new FilterBox.StaticSimpleFilter("course", GWT_MESSAGES.tagCourse());
+		courseFilter.setMultipleSelection(true);
+		addFilter(courseFilter);
 		iCourse.getValueBox().addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
@@ -348,7 +350,8 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 		addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<String> event) {
-				iLastCourse = getChip("course");
+				List<Chip> courses = getChips("course");
+				iLastCourse = (courses.isEmpty() ? null : courses.get(courses.size() - 1));
 				iLastStudent = getChip("student");
 
 				if (!isFilterPopupShowing()) {
@@ -358,11 +361,10 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 					else
 						curriculum.setText(chip.getValue());
 
-					Chip course = getChip("course");
-					if (course == null)
+					if (iLastCourse == null)
 						iCourse.setText("");
 					else
-						iCourse.setText(course.getValue());
+						iCourse.setText(iLastCourse.getValue());
 
 					Chip student = getChip("student");
 					if (student == null)
@@ -383,7 +385,8 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 	}
 	
 	private void courseChanged(boolean fireChange) {
-		Chip oldChip = getChip("course");
+		List<Chip> oldChips = getChips("course");
+		Chip oldChip = (oldChips.isEmpty() ? null : oldChips.get(oldChips.size() - 1));
 		if (iCourse.getText().isEmpty()) {
 			if (oldChip != null)
 				removeChip(oldChip, fireChange);

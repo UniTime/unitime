@@ -286,7 +286,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 					.setString("name", iRequest.getText().toLowerCase() + "%").setString("title", "% " + iRequest.getText().toLowerCase() + "%")
 					.setLong("sessionId", server.getAcademicSession().getUniqueId()).setMaxResults(20).list();
 			for (SubjectArea subject: subjects)
-				response.addSuggestion(subject.getSubjectAreaAbbreviation() + " - " + subject.getTitle(), subject.getSubjectAreaAbbreviation(), "Subject Area", "course");
+				response.addSuggestion(subject.getSubjectAreaAbbreviation() + " - " + subject.getTitle(), subject.getSubjectAreaAbbreviation(), "Subject Area", "course", true);
 			if (subjects.size() == 1) {
 				for (CourseOffering course: new TreeSet<CourseOffering>(subjects.get(0).getCourseOfferings())) {
 					if (course.getInstructionalOffering().isNotOffered()) continue;
@@ -299,7 +299,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 						.setString("name", iRequest.getText().toLowerCase() + "%").setString("title", "% " + iRequest.getText().toLowerCase() + "%")
 						.setLong("sessionId", server.getAcademicSession().getUniqueId()).setMaxResults(20).list();
 				for (CourseOffering course: courses) {
-					response.addSuggestion(course.getCourseName() + (course.getTitle() == null ? "" : " - " + course.getTitle()), course.getCourseName(), "Course Offering", "course");
+					response.addSuggestion(course.getCourseName() + (course.getTitle() == null ? "" : " - " + course.getTitle()), course.getCourseName(), "Course Offering", "course", true);
 				}
 			}
 		}
@@ -530,6 +530,16 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		if (request.hasOption("course")) {
 			query.addParameter("course", "Xco", request.getOption("course"));
 			query.addWhere("course", "co.subjectAreaAbbv = :Xco or co.subjectAreaAbbv || ' ' || co.courseNbr = :Xco");
+			query.addFrom("course", "inner join s.courseDemands cd inner join cd.courseRequests cr inner join cr.courseOffering co");
+		} else if (request.hasOptions("course")) {
+			String course = "";
+			int id = 0;
+			for (String c: request.getOptions("course")) {
+				course += (course.isEmpty() ? "" : ",") + ":Xco" + id;
+				query.addParameter("course", "Xco" + id, c);
+				id++;
+			}
+			query.addWhere("course", "co.subjectAreaAbbv in (" + course + ") or co.subjectAreaAbbv || ' ' || co.courseNbr in (" + course + ")");
 			query.addFrom("course", "inner join s.courseDemands cd inner join cd.courseRequests cr inner join cr.courseOffering co");
 		}
 		
@@ -791,6 +801,16 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		if (request.hasOption("course")) {
 			query.addParameter("course", "Xco", request.getOption("course"));
 			query.addWhere("course", "co.subjectAreaAbbv = :Xco or co.subjectAreaAbbv || ' ' || co.courseNbr = :Xco");
+			query.addFrom("course", null);
+		} else if (request.hasOptions("course")) {
+			String course = "";
+			int id = 0;
+			for (String c: request.getOptions("course")) {
+				course += (course.isEmpty() ? "" : ",") + ":Xco" + id;
+				query.addParameter("course", "Xco" + id, c);
+				id++;
+			}
+			query.addWhere("course", "co.subjectAreaAbbv in (" + course + ") or co.subjectAreaAbbv || ' ' || co.courseNbr in (" + course + ")");
 			query.addFrom("course", null);
 		}
 
