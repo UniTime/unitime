@@ -154,10 +154,10 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		
 		for (StudentGroupType type: StudentGroupTypeDAO.getInstance().findAll(helper.getHibSession())) {
 			List<Entity> groupsOfThisType = new ArrayList<Entity>();
-			for (Object[] o: (List<Object[]>)query.select("g.uniqueId, g.groupAbbreviation, g.groupName, count(distinct s)")
-					.from("StudentGroup g").where("g in elements(s.groups) and g.type = :groupTypeId")
+			for (Object[] o: (List<Object[]>)query.select("gt.uniqueId, gt.groupAbbreviation, gt.groupName, count(distinct s)")
+					.from("StudentGroup gt").where("gt in elements(s.groups) and gt.type = :groupTypeId")
 					.set("groupTypeId", type.getUniqueId())
-					.order("g.groupAbbreviation, g.groupName").group("g.uniqueId, g.groupAbbreviation, g.groupName")
+					.order("gt.groupAbbreviation, gt.groupName").group("gt.uniqueId, gt.groupAbbreviation, gt.groupName")
 					.exclude(type.getReference().replace(' ', '_')).exclude("course").query(helper.getHibSession()).list()) {
 				Entity c = new Entity(
 						(Long)o[0],
