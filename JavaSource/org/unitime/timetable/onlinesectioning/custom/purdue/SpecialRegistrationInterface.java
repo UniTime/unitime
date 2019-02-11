@@ -399,6 +399,20 @@ public class SpecialRegistrationInterface {
 		public String code;
 		/** Registration error message */
 		public String errorMessage;
+		/** Special Registration API mode (REG or PREREG) */
+		public ApiMode mode;
+	}
+	
+	/** Max credit override that have been denied for the student */
+	public static class DeniedMaxCredit {
+		/** Registration error code */
+		public String code;
+		/** Registration error message */
+		public String errorMessage;
+		/** Max credit denied */
+		public Float maxCredit;
+		/** Special Registration API mode (REG or PREREG) */
+		public ApiMode mode;
 	}
 	
 	/** Request message for the /checkRestrictions call */
@@ -423,6 +437,8 @@ public class SpecialRegistrationInterface {
 		public List<SpecialRegistration> cancelRegistrationRequests;
 		/** Matching special registrations that has been denied already (used only during registration) */
 		public List<DeniedRequest> deniedRequests;
+		/** Max credit requests that have been denied (student should request that much credit) */
+		public List<DeniedMaxCredit> deniedMaxCreditRequests;
 		/** Student eligibility check (used only during registration) */
 		public SpecialRegistrationEligibility eligible;
 		/** Student's current max credit (used only during registration) */
