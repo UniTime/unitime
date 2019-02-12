@@ -140,21 +140,29 @@ public class StudentSectioningExport extends BaseExport {
 	        	        				if (pref.getInstructionalMethodCount() > 0)
 	        	        					for (OnlineSectioningLog.Entity im: pref.getInstructionalMethodList()) {
 	        	        						InstructionalMethod meth = InstructionalMethodDAO.getInstance().get(im.getUniqueId(), getHibSession());
+	        	        						boolean required = false;
+	    		    							if (im.getParameterCount() > 0)
+	    		    								for (OnlineSectioningLog.Property p: im.getParameterList())
+	    		    									if ("required".equals(p.getKey()))
+	    		    										required = "true".equals(p.getValue());
 	        	        						if (meth != null) {
 	        	        							Element imEl = prefEl.addElement("instructional-method");
 	        	        							imEl.addAttribute("externalId", meth.getReference());
 	        	        							imEl.addAttribute("name", meth.getLabel());
+	        	        							if (required) imEl.addAttribute("required", "true");
 	        	        						} else {
 		        	        						Element imEl = prefEl.addElement("instructional-method");
 		        	        						if (im.hasExternalId())
 		        	        							imEl.addAttribute("externalId", im.getExternalId());
 		        	        						if (im.hasName())
 		        	        							imEl.addAttribute("name", im.getName());
+		        	        						if (required) imEl.addAttribute("required", "true");
 	        	        						}
 	        	        					}
 	        	        				if (pref.getSectionCount() > 0)
 	        	        					for (OnlineSectioningLog.Section s: pref.getSectionList()) {
 	        	        						Class_ clazz = Class_DAO.getInstance().get(s.getClazz().getUniqueId(), getHibSession());
+	        	        						boolean required = (s.hasPreference() && s.getPreference() == OnlineSectioningLog.Section.Preference.REQUIRED);
 	        	        						if (clazz != null) {
 	        	        							Element classEl = prefEl.addElement("class");
 	        	        							String extId = clazz.getExternalId(cr.getCourseOffering());
@@ -162,6 +170,7 @@ public class StudentSectioningExport extends BaseExport {
 	        	    	        	        			classEl.addAttribute("externalId", extId);
 	        	    	        	        		classEl.addAttribute("type", clazz.getSchedulingSubpart().getItypeDesc().trim());
 	        	    	        	        		classEl.addAttribute("suffix", getClassSuffix(clazz));
+	        	    	        	        		if (required) classEl.addAttribute("required", "true");
 	        	        						} else {
 		        	        						Element classEl = prefEl.addElement("class");
 		        	        						classEl.addAttribute("suffix", s.getClazz().getExternalId());
@@ -169,6 +178,7 @@ public class StudentSectioningExport extends BaseExport {
 		        	        							classEl.addAttribute("type", s.getSubpart().getName());
 		        	        						else if (s.getSubpart().hasExternalId())
 		        	        							classEl.addAttribute("type", s.getSubpart().getExternalId().trim());
+		        	        						if (required) classEl.addAttribute("required", "true");
 	        	        						}
 	        	        					}
 	        	            		} catch (InvalidProtocolBufferException e) {}

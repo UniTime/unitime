@@ -977,6 +977,7 @@ public class StudentSectioningImport extends BaseImport {
 		OnlineSectioningLog.CourseRequestOption.Builder preferences = OnlineSectioningLog.CourseRequestOption.newBuilder();
 		preferences.setType(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE);
 		Set<Class_> preferredClasses = new HashSet<Class_>();
+		Set<Class_> requiredClasses = new HashSet<Class_>();
 		for (Iterator i = prefEl.elementIterator("class"); i.hasNext(); ) {
 			Element classElement = (Element)i.next();
 			Set<Class_> classes = null;
@@ -1000,12 +1001,17 @@ public class StudentSectioningImport extends BaseImport {
     			continue;
     		}
     		
-    		preferredClasses.addAll(classes);
+    		if ("true".equalsIgnoreCase(classElement.attributeValue("required", "false")))
+    			requiredClasses.addAll(classes);
+    		else
+    			preferredClasses.addAll(classes);
 		}
-		for (Class_ clazz: preferredClasses) {
+		for (Class_ clazz: preferredClasses)
 			preferences.addSection(OnlineSectioningHelper.toProto(clazz, course));
-		}
+		for (Class_ clazz: requiredClasses)
+			preferences.addSection(OnlineSectioningHelper.toProto(clazz, course).setPreference(OnlineSectioningLog.Section.Preference.REQUIRED));
 		Set<InstructionalMethod> preferredIMs = new HashSet<InstructionalMethod>();
+		Set<InstructionalMethod> requiredIMs = new HashSet<InstructionalMethod>();
 		for (Iterator i = prefEl.elementIterator("instructional-method"); i.hasNext(); ) {
 			Element imElement = (Element)i.next();
 			
@@ -1025,13 +1031,24 @@ public class StudentSectioningImport extends BaseImport {
     			warn(course.getCourseName() + ": Instructional Method " + (imExternalId != null ? imExternalId : imElement.attributeValue("name")) + " not found.");
     			continue;
     		}
-    		preferredIMs.add(meth);
+    		if ("true".equalsIgnoreCase(imElement.attributeValue("required", "false")))
+    			requiredIMs.add(meth);
+    		else
+    			preferredIMs.add(meth);
 		}
 		for (InstructionalMethod meth: preferredIMs) {
 			preferences.addInstructionalMethod(OnlineSectioningLog.Entity.newBuilder()
 					.setUniqueId(meth.getUniqueId())
 					.setExternalId(meth.getReference())
 					.setName(meth.getLabel()));
+		}
+		for (InstructionalMethod meth: requiredIMs) {
+			OnlineSectioningLog.Entity.Builder e = OnlineSectioningLog.Entity.newBuilder()
+					.setUniqueId(meth.getUniqueId())
+					.setExternalId(meth.getReference())
+					.setName(meth.getLabel());
+			e.addParameterBuilder().setKey("required").setValue("true");
+			preferences.addInstructionalMethod(e);
 		}
 		return preferences.build();
 	}
