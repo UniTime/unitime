@@ -154,6 +154,31 @@ public class SessionRestore implements SessionRestoreInterface {
 		iDebug = pw;
 	}
 	
+	private boolean lookup(Entity entity, String property, Object value, String session) {
+		boolean hasSession = false;
+		for (String p: entity.getMetaData().getPropertyNames())
+			if (session.equals(p)) { hasSession = true; break; }
+		if (!hasSession) return lookup(entity, property, value);
+		if (entity.getElement(session) != null) return false;
+		try {
+			Object object = iHibSession.createCriteria(entity.getMetaData().getMappedClass()).add(Restrictions.eq(property, value)).add(Restrictions.isNull(session)).uniqueResult();
+			if (object != null)
+				entity.setObject(object);
+			else
+				message("Lookup " + entity.getAbbv() + "." + property + " failed", (value == null ? "null" : value.toString()));
+			return object != null;
+		} catch (NonUniqueResultException e) {
+			message("Lookup " + entity.getAbbv() + "." + property + "=" + value +" is not unique", entity.getId());
+			List<Object> list = iHibSession.createCriteria(entity.getMetaData().getMappedClass()).add(Restrictions.eq(property, value)).add(Restrictions.isNull(session)).list();
+			if (!list.isEmpty()) {
+				Object object = list.get(0);
+				entity.setObject(object);
+				return true;
+			}
+			return false;
+		}
+	}
+	
 	private boolean lookup(Entity entity, String property, Object value) {
 		try {
 			Object object = iHibSession.createCriteria(entity.getMetaData().getMappedClass()).add(Restrictions.eq(property, value)).uniqueResult();
@@ -192,7 +217,7 @@ public class SessionRestore implements SessionRestoreInterface {
 				session.setAcademicInitiative(session.getAcademicInitiative() + " [" + attempt + "]");
 		}
 		if (entity.getObject() instanceof PreferenceLevel && lookup(entity, "prefProlog", ((PreferenceLevel)entity.getObject()).getPrefProlog())) save = false;
-		if (entity.getObject() instanceof RefTableEntry && lookup(entity, "reference", ((RefTableEntry)entity.getObject()).getReference())) save = false;
+		if (entity.getObject() instanceof RefTableEntry && lookup(entity, "reference", ((RefTableEntry)entity.getObject()).getReference(), "session")) save = false;
 		if (entity.getObject() instanceof TimetableManager && lookup(entity, "externalUniqueId", ((TimetableManager)entity.getObject()).getExternalUniqueId())) save = false;
 		if (entity.getObject() instanceof ItypeDesc && lookup(entity, "itype", Integer.valueOf(entity.getId()))) save = false;
 		if (entity.getObject() instanceof SolverInfoDef && lookup(entity, "name", ((SolverInfoDef)entity.getObject()).getName())) save = false;
@@ -204,7 +229,7 @@ public class SessionRestore implements SessionRestoreInterface {
 		if (entity.getObject() instanceof OnlineSectioningLog) { save = false; lookup = false; }
 		if (entity.getObject() instanceof Settings && lookup(entity, "key", ((Settings)entity.getObject()).getKey())) save = false;
 		if (entity.getObject() instanceof EventContact && lookup(entity, "externalUniqueId", ((EventContact)entity.getObject()).getExternalUniqueId())) save = false;
-		if (entity.getObject() instanceof EventServiceProvider && entity.getElement("session") == null && lookup(entity, "reference", ((EventServiceProvider)entity.getObject()).getReference())) save = false;
+		if (entity.getObject() instanceof EventServiceProvider && lookup(entity, "reference", ((EventServiceProvider)entity.getObject()).getReference(), "session")) save = false;
 		if (entity.getObject() instanceof Script && lookup(entity, "name", ((Script)entity.getObject()).getName())) save = false;
 		if (entity.getObject() instanceof ScriptParameter) {
 			Script x = (Script)get(Script.class, entity.getElement("script").getValue(0));
@@ -246,6 +271,7 @@ public class SessionRestore implements SessionRestoreInterface {
 		for (String property: metadata.getPropertyNames()) {
 			if ("org.unitime.timetable.model.CurriculumClassification.students".equals(metadata.getEntityName() + "." + property)) continue;
 			if ("org.unitime.timetable.model.Script.script".equals(metadata.getEntityName() + "." + property)) continue;
+			if ("org.unitime.timetable.model.TaskExecution.logFile".equals(metadata.getEntityName() + "." + property)) continue;
 			Type type = metadata.getPropertyType(property);
 			if (type instanceof StringType)
 				for (Iterator<?> i = mapping.getProperty(property).getColumnIterator(); i.hasNext(); ) {
