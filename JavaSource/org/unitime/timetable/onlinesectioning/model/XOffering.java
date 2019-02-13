@@ -63,6 +63,7 @@ import org.unitime.timetable.model.IndividualOverrideReservation;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.LearningCommunityReservation;
 import org.unitime.timetable.model.OverrideReservation;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.StudentGroupReservation;
@@ -105,6 +106,8 @@ public class XOffering implements Serializable, Externalizable {
         		iReservations.add(new XIndividualReservation(this, (IndividualReservation)reservation));
         	} else if (reservation instanceof GroupOverrideReservation) {
         		iReservations.add(new XGroupReservation(this, (GroupOverrideReservation)reservation));
+        	} else if (reservation instanceof LearningCommunityReservation) {
+        		iReservations.add(new XLearningCommunityReservation(this, (LearningCommunityReservation)reservation));
         	} else if (reservation instanceof StudentGroupReservation) {
         		iReservations.add(new XGroupReservation(this, (StudentGroupReservation)reservation));
         	} else if (reservation instanceof CurriculumReservation) {
@@ -131,6 +134,8 @@ public class XOffering implements Serializable, Externalizable {
     	for (org.cpsolver.studentsct.reservation.Reservation reservation: offering.getReservations()) {
     		if (reservation instanceof ReservationOverride) {
         		iReservations.add(new XIndividualReservation((ReservationOverride)reservation));
+    		} else if (reservation instanceof org.cpsolver.studentsct.reservation.LearningCommunityReservation) {
+    			iReservations.add(new XLearningCommunityReservation((org.cpsolver.studentsct.reservation.LearningCommunityReservation)reservation));
         	} else if (reservation instanceof GroupReservation) {
         		iReservations.add(new XIndividualReservation((GroupReservation)reservation));
     		} else if (reservation instanceof org.cpsolver.studentsct.reservation.IndividualReservation) {
@@ -546,6 +551,8 @@ public class XOffering implements Serializable, Externalizable {
     	for (XReservation reservation: getReservations()) {
     		if (reservation instanceof XGroupReservation && reservation.isApplicable(student, course) && reservation.mustBeUsed() && !reservation.isExpired())
     			return true;
+    		if (reservation instanceof XLearningCommunityReservation && reservation.isApplicable(student, course) && reservation.mustBeUsed() && !reservation.isExpired())
+    			return true;
     	}
     	return false;
     }
@@ -778,11 +785,15 @@ public class XOffering implements Serializable, Externalizable {
 				iReservations.add(new XDummyReservation(in));
 				break;
 			case Group:
+			case GroupOverride:
 				iReservations.add(new XGroupReservation(in));
 				break;
 			case Individual:
-			case Override:
+			case IndividualOverride:
 				iReservations.add(new XIndividualReservation(in));
+				break;
+			case LearningCommunity:
+				iReservations.add(new XLearningCommunityReservation(in));
 				break;
 			}
 		}

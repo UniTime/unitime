@@ -60,6 +60,7 @@ import org.unitime.timetable.model.IndividualOverrideReservation;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.LearningCommunityReservation;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.OverrideReservation;
 import org.unitime.timetable.model.PosMajor;
@@ -158,14 +159,19 @@ public class ReservationServlet implements ReservationService {
 		}
 	}
 	
-	private ReservationInterface.Offering convert(InstructionalOffering io, org.hibernate.Session hibSession) throws ReservationException, PageAccessException {
-		return convert(io, hibSession, permissionOfferingLockNeededOnlyWhenWaitListing, sessionContext, classAssignmentService.getAssignment());
+	private ReservationInterface.Offering convert(InstructionalOffering io, Long courseId, org.hibernate.Session hibSession) throws ReservationException, PageAccessException {
+		return convert(io, courseId, hibSession, permissionOfferingLockNeededOnlyWhenWaitListing, sessionContext, classAssignmentService.getAssignment());
 	}
 	
-	public static ReservationInterface.Offering convert(InstructionalOffering io, org.hibernate.Session hibSession,
+	public static ReservationInterface.Offering convert(InstructionalOffering io, Long courseId, org.hibernate.Session hibSession,
 			Permission<InstructionalOffering> permissionOfferingLockNeededOnlyWhenWaitListing, SessionContext sessionContext,
 			ClassAssignmentProxy assignments
 			) {
+		CourseOffering cc = io.getControllingCourseOffering();
+		if (courseId != null) {
+			for (CourseOffering co: io.getCourseOfferings())
+				if (courseId.equals(co.getUniqueId()))  { cc = co; break; }
+		}
 		ReservationInterface.Offering offering = new ReservationInterface.Offering();
 		offering.setAbbv(io.getCourseName());
 		offering.setName(io.getControllingCourseOffering().getTitle());
@@ -211,7 +217,7 @@ public class ReservationServlet implements ReservationService {
 					clazz.setId(c.getUniqueId());
 					clazz.setAbbv(ss.getItypeDesc() + " " + c.getSectionNumberString(hibSession));
 					clazz.setName(c.getClassLabel(hibSession));
-					clazz.setExternalId(c.getClassSuffix(io.getControllingCourseOffering()));
+					clazz.setExternalId(c.getClassSuffix(cc));
 					if (assignments != null) {
 						try {
 							Assignment a = assignments.getAssignment(c);
@@ -256,13 +262,13 @@ public class ReservationServlet implements ReservationService {
 
 	@Override
 	@PreAuthorize("checkPermission('Reservations')")
-	public ReservationInterface.Offering getOffering(Long offeringId) throws ReservationException, PageAccessException {
+	public ReservationInterface.Offering getOffering(Long offeringId, Long courseId) throws ReservationException, PageAccessException {
 		try {
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
 			try {
 				InstructionalOffering io = InstructionalOfferingDAO.getInstance().get(offeringId, hibSession);
 				if (io == null) { throw new ReservationException(MESSAGES.errorOfferingDoesNotExist(offeringId == null ? "null" : offeringId.toString())); }
-				return convert(io, hibSession);
+				return convert(io, courseId, hibSession);
 			} finally {
 				hibSession.close();
 			}
@@ -296,7 +302,7 @@ public class ReservationServlet implements ReservationService {
 			try {
 				CourseOffering co = getCourse(hibSession, courseName);
 				if (co == null) { throw new ReservationException(MESSAGES.errorCourseDoesNotExist(courseName)); }
-				return convert(co.getInstructionalOffering(), hibSession);
+				return convert(co.getInstructionalOffering(), co.getUniqueId(), hibSession);
 			} finally {
 				hibSession.close();
 			}
@@ -340,8 +346,9 @@ public class ReservationServlet implements ReservationService {
 	
 	private ReservationInterface convert(Reservation reservation, String nameFormat, org.hibernate.Session hibSession) {
 		ReservationInterface r = null;
+		CourseOffering co = reservation.getInstructionalOffering().getControllingCourseOffering();
 		if (reservation instanceof CourseReservation) {
-			CourseOffering co = ((CourseReservation) reservation).getCourse();
+			co = ((CourseReservation) reservation).getCourse();
 			ReservationInterface.Course course = new ReservationInterface.Course();
 			course.setId(co.getUniqueId());
 			course.setAbbv(co.getCourseName());
@@ -488,6 +495,49 @@ public class ReservationServlet implements ReservationService {
 				r.setProjection(Math.round(projection));
 			}
 			
+		} else if (reservation instanceof LearningCommunityReservation) {
+			r = new ReservationInterface.LCReservation();
+			
+			StudentGroup sg = ((LearningCommunityReservation) reservation).getGroup();
+			ReservationInterface.IdName group = new ReservationInterface.IdName();
+			group.setId(sg.getUniqueId());
+			group.setName(sg.getGroupName());
+			group.setAbbv(sg.getGroupAbbreviation());
+			group.setLimit(sg.getStudents().size());
+			((ReservationInterface.LCReservation) r).setGroup(group);
+			
+			co = ((LearningCommunityReservation) reservation).getCourse();
+			ReservationInterface.Course course = new ReservationInterface.Course();
+			course.setId(co.getUniqueId());
+			course.setAbbv(co.getCourseName());
+			course.setControl(co.isIsControl());
+			course.setName(co.getTitle());
+			course.setLimit(co.getReservation());
+			((ReservationInterface.LCReservation) r).setCourse(course);
+			
+			Number enrollment = (Number)hibSession.createQuery(
+					"select count(distinct e.student) " +
+					"from StudentClassEnrollment e inner join e.student.groups g where " +
+					"e.courseOffering.uniqueId = :courseId " +
+					"and g.uniqueId = :groupId")
+					.setLong("courseId", course.getId())
+					.setLong("groupId", sg.getUniqueId()).setCacheable(true).uniqueResult();
+			if (enrollment.intValue() > 0)
+				r.setEnrollment(enrollment.intValue());
+
+			Number lastLike = (Number)hibSession.createQuery(
+					"select count(distinct s) from " +
+					"LastLikeCourseDemand x inner join x.student s inner join s.groups g, CourseOffering co left outer join co.demandOffering do where " +
+					"x.subjectArea.session.uniqueId = :sessionId and co.uniqueId = :courseId and "+
+					"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
+					"(do is not null and do.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and do.permId=x.coursePermId) or (x.coursePermId is null and do.courseNbr=x.courseNbr))))"+
+					"and g.groupAbbreviation = :groupAbbv")
+					.setLong("sessionId", getAcademicSessionId())
+					.setLong("courseId", course.getId())
+					.setString("groupAbbv", sg.getGroupAbbreviation())
+					.setCacheable(true).uniqueResult();
+			if (lastLike.intValue() > 0)
+				r.setLastLike(lastLike.intValue());
 		} else if (reservation instanceof StudentGroupReservation) {
 			r = new ReservationInterface.GroupReservation();
 			StudentGroup sg = ((StudentGroupReservation) reservation).getGroup();
@@ -523,20 +573,20 @@ public class ReservationServlet implements ReservationService {
 			throw new ReservationException(MESSAGES.errorUnknownReservationType(reservation.getClass().getName()));
 		}
 		ReservationInterface.Offering offering = new ReservationInterface.Offering();
-		offering.setAbbv(reservation.getInstructionalOffering().getCourseName());
-		offering.setName(reservation.getInstructionalOffering().getControllingCourseOffering().getTitle());
+		offering.setAbbv(co.getCourseName());
+		offering.setName(co.getTitle());
 		offering.setId(reservation.getInstructionalOffering().getUniqueId());
 		offering.setOffered(!reservation.getInstructionalOffering().isNotOffered());
 		offering.setUnlockNeeded(permissionOfferingLockNeededOnlyWhenWaitListing != null && permissionOfferingLockNeededOnlyWhenWaitListing.check(sessionContext.getUser(), reservation.getInstructionalOffering()));
 		r.setOffering(offering);
 		boolean showClassSuffixes = ApplicationProperty.ReservationsShowClassSufix.isTrue();
-		for (CourseOffering co: reservation.getInstructionalOffering().getCourseOfferings()) {
+		for (CourseOffering cx: reservation.getInstructionalOffering().getCourseOfferings()) {
 			ReservationInterface.Course course = new ReservationInterface.Course();
-			course.setId(co.getUniqueId());
-			course.setAbbv(co.getCourseName());
-			course.setName(co.getTitle());
-			course.setControl(co.isIsControl());
-			course.setLimit(co.getReservation());
+			course.setId(cx.getUniqueId());
+			course.setAbbv(cx.getCourseName());
+			course.setName(cx.getTitle());
+			course.setControl(cx.isIsControl());
+			course.setLimit(cx.getReservation());
 			offering.getCourses().add(course);
 		}
 		List<InstrOfferingConfig> configs = new ArrayList<InstrOfferingConfig>(reservation.getConfigurations());
@@ -555,7 +605,7 @@ public class ReservationServlet implements ReservationService {
 			ReservationInterface.Clazz clazz = new ReservationInterface.Clazz();
 			clazz.setId(c.getUniqueId());
 			clazz.setAbbv(c.getSchedulingSubpart().getItypeDesc() + " " + c.getSectionNumberString(hibSession));
-			clazz.setName(c.getClassLabel(showClassSuffixes));
+			clazz.setName(c.getClassLabel(co, showClassSuffixes));
 			clazz.setLimit(c.getClassLimit());
 			r.getClasses().add(clazz);
 		}
@@ -688,6 +738,8 @@ public class ReservationServlet implements ReservationService {
 						r = new CurriculumReservation();
 					else if (reservation instanceof ReservationInterface.CourseReservation)
 						r = new CourseReservation();
+					else if (reservation instanceof ReservationInterface.LCReservation)
+						r = new LearningCommunityReservation();
 					else
 						throw new ReservationException(MESSAGES.errorUnknownReservationType(reservation.getClass().getName()));
 				}
@@ -731,6 +783,10 @@ public class ReservationServlet implements ReservationService {
 					}
 				} else if (r instanceof CourseReservation) {
 					((CourseReservation)r).setCourse(CourseOfferingDAO.getInstance().get(((ReservationInterface.CourseReservation) reservation).getCourse().getId(), hibSession));
+				} else if (r instanceof LearningCommunityReservation) {
+					LearningCommunityReservation lcr = (LearningCommunityReservation)r;
+					lcr.setGroup(StudentGroupDAO.getInstance().get(((ReservationInterface.LCReservation) reservation).getGroup().getId(), hibSession));
+					lcr.setCourse(CourseOfferingDAO.getInstance().get(((ReservationInterface.LCReservation) reservation).getCourse().getId(), hibSession));
 				} else if (r instanceof StudentGroupReservation) {
 					((StudentGroupReservation)r).setGroup(StudentGroupDAO.getInstance().get(((ReservationInterface.GroupReservation) reservation).getGroup().getId(), hibSession));
 				} else if (r instanceof CurriculumReservation) {

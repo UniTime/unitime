@@ -52,6 +52,7 @@ import org.cpsolver.studentsct.reservation.CurriculumReservation;
 import org.cpsolver.studentsct.reservation.DummyReservation;
 import org.cpsolver.studentsct.reservation.GroupReservation;
 import org.cpsolver.studentsct.reservation.IndividualReservation;
+import org.cpsolver.studentsct.reservation.LearningCommunityReservation;
 import org.cpsolver.studentsct.reservation.Reservation;
 import org.cpsolver.studentsct.reservation.ReservationOverride;
 import org.unitime.localization.impl.Localization;
@@ -75,7 +76,9 @@ public class UnusedReservations implements StudentSectioningReport {
     }
     
     protected String type(Reservation reservation) {
-    	if (reservation instanceof GroupReservation) {
+    	if (reservation instanceof LearningCommunityReservation) {
+    		return "lc";
+    	} else if (reservation instanceof GroupReservation) {
     		return "group";
         } else if (reservation instanceof ReservationOverride) {
         	return "override";
@@ -93,7 +96,9 @@ public class UnusedReservations implements StudentSectioningReport {
     }
     
     protected String name(Reservation reservation) {
-    	if (reservation instanceof GroupReservation) {
+    	if (reservation instanceof LearningCommunityReservation) {
+    		return "lc";
+    	} else if (reservation instanceof GroupReservation) {
     		return "group";
         } else if (reservation instanceof ReservationOverride) {
         	return "override";

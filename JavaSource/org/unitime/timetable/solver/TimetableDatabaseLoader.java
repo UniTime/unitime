@@ -99,6 +99,7 @@ import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.LearningCommunityReservation;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Reservation;
@@ -2336,6 +2337,14 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     					}
     				}
     				if (!match) continue;
+    			} else if (reservation instanceof LearningCommunityReservation) {
+    				LearningCommunityReservation lcr = (LearningCommunityReservation)reservation;
+    				if (!course.equals(lcr.getCourse())) continue;
+    				WeightedStudentId studentId = iWeightedStudents.get(student.getId());
+    				if (studentId == null) continue;
+    				if (lcr.getGroup() == null) continue;
+    				Group g = studentId.getGroup(lcr.getGroup().getGroupAbbreviation());
+    				if (g == null || g.getId() < 0) continue;
     			} else if (reservation instanceof StudentGroupReservation) {
     				WeightedStudentId studentId = iWeightedStudents.get(student.getId());
     				if (studentId == null) continue;

@@ -38,6 +38,7 @@ import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.LearningCommunityReservation;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Student;
@@ -179,6 +180,8 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 				if (crm.reservation() != null) {
 					if (crm.reservation() instanceof IndividualReservation)
 						e.setReservation(MSG.reservationIndividual());
+					else if (crm.reservation() instanceof LearningCommunityReservation)
+						e.setReservation(MSG.reservationLearningCommunity());
 					else if (crm.reservation() instanceof StudentGroupReservation)
 						e.setReservation(MSG.reservationGroup());
 					else if (crm.reservation() instanceof CourseReservation)

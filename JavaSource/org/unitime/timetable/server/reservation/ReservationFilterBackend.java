@@ -51,6 +51,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.LearningCommunityReservation;
 import org.unitime.timetable.model.OverrideReservation;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.Student;
@@ -115,6 +116,11 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 		if (groupOverrideCnt != null)
 			groupType.setCount(groupType.getCount() + groupOverrideCnt);
 		response.add("type", groupType);
+		Entity lcType = new Entity(new Long(0), "LC", MESSAGES.reservationLearningCommunityAbbv(), "translated-value", MESSAGES.reservationLearningCommunityAbbv());
+		Integer lcCnt = type2count.get(7);
+		if (lcCnt != null)
+			lcType.setCount(lcCnt);
+		response.add("type", lcType);
 		Entity curriculumType = new Entity(new Long(0), "Curriculum", MESSAGES.reservationCurriculumAbbv(), "translated-value", MESSAGES.reservationCurriculumAbbv());
 		Integer curriculumCnt = type2count.get(2);
 		if (curriculumCnt != null)
@@ -129,6 +135,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 		if (overrideCnt != null)
 			overrideType.setCount(overrideCnt);
 		response.add("type", overrideType);
+
 
 		Map<Long, Integer> dept2count = new HashMap<Long, Integer>();
 		for (Object[] o: (List<Object[]>)query.select("co.subjectArea.department.uniqueId, count(distinct r)").group("co.subjectArea.department.uniqueId").exclude("department").exclude("subject").query(hibSession).list()) {
@@ -187,9 +194,11 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 			response.add("area", new TreeSet<Entity>(areas.values()));
 		}
 		
-		if (request.hasOptions("type") && request.getOptions("type").contains("Group")) {
+		if (request.hasOptions("type") && (request.getOptions("type").contains("Group") || request.getOptions("type").contains("LC"))) {
+			boolean gr = request.getOptions("type").contains("Group");
+			boolean lc = request.getOptions("type").contains("LC");
 			Map<Long, Entity> groups = new HashMap<Long, Entity>();
-			for (Reservation reservation: (List<Reservation>)query.select("distinct r").where("r.class = StudentGroupReservation").exclude("group").query(hibSession).list()) {
+			for (Reservation reservation: (List<Reservation>)query.select("distinct r").where(lc ? (gr ? "r.class in (StudentGroupReservation, LearningCommunityReservation)" : "r.class = LearningCommunityReservation") : "r.class = StudentGroupReservation").exclude("group").query(hibSession).list()) {
 				StudentGroup studentGroup = ((StudentGroupReservation)reservation).getGroup();
 				Entity group = groups.get(studentGroup.getUniqueId());
 				if (group == null) {
@@ -310,6 +319,8 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 					type += "CurriculumReservation";
 				if ("override".equalsIgnoreCase(t))
 					type += "OverrideReservation";
+				if ("lc".equalsIgnoreCase(t))
+					type += "LearningCommunityReservation";
 			}
 			query.addWhere("type", "r.class " + (type.indexOf(',') < 0 ? "= " + type : "in (" + type + ")"));
 		}
@@ -634,7 +645,8 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 			if ("type".equals(attr)) {
 				if (iReservation instanceof OverrideReservation && "override".equalsIgnoreCase(term)) return true;
 				if (iReservation instanceof IndividualReservation && !(iReservation instanceof OverrideReservation) && "individual".equalsIgnoreCase(term)) return true;
-				if (iReservation instanceof StudentGroupReservation && "group".equalsIgnoreCase(term)) return true;
+				if (iReservation instanceof StudentGroupReservation && !(iReservation instanceof LearningCommunityReservation) && "group".equalsIgnoreCase(term)) return true;
+				if (iReservation instanceof LearningCommunityReservation && "lc".equalsIgnoreCase(term)) return true;
 				if (iReservation instanceof CourseReservation && "course".equalsIgnoreCase(term)) return true;
 				if (iReservation instanceof CurriculumReservation && "curriculum".equalsIgnoreCase(term)) return true;
 			}

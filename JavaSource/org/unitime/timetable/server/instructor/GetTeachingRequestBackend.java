@@ -88,7 +88,7 @@ public class GetTeachingRequestBackend implements GwtRpcImplementation<GetReques
 			throw new GwtRpcException(MESSAGES.errorOfferingDoesNotExist(request.getOfferingId().toString()));
 		context.checkPermission(offering.getDepartment(), Right.InstructorAssignmentPreferences);
 		GetRequestsRpcResponse response = new GetRequestsRpcResponse();
-		response.setOffering(ReservationServlet.convert(offering, InstructionalOfferingDAO.getInstance().getSession(), null, context, classAssignmentService.getAssignment()));
+		response.setOffering(ReservationServlet.convert(offering, null, InstructionalOfferingDAO.getInstance().getSession(), null, context, classAssignmentService.getAssignment()));
 		
 		for (InstructorAttribute attribute: (List<InstructorAttribute>)InstructorAttributeDAO.getInstance().getSession().createQuery(
 				"from InstructorAttribute a where a.session.uniqueId = :sessionId and (a.department is null or a.department.uniqueId = :departmentId) order by a.name"

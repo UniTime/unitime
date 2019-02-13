@@ -60,7 +60,7 @@ public class XIndividualReservation extends XReservation {
     }
     
     public XIndividualReservation(XOffering offering, OverrideReservation reservation) {
-        super(XReservationType.Override, offering, reservation);
+        super(XReservationType.IndividualOverride, offering, reservation);
         for (Student student: reservation.getStudents())
         	iStudentIds.add(student.getUniqueId());
         setMustBeUsed(reservation.getOverrideType().isMustBeUsed());
@@ -70,7 +70,7 @@ public class XIndividualReservation extends XReservation {
     }
     
     public XIndividualReservation(XOffering offering, IndividualOverrideReservation reservation) {
-        super(XReservationType.Override, offering, reservation);
+        super(XReservationType.IndividualOverride, offering, reservation);
         for (Student student: reservation.getStudents())
         	iStudentIds.add(student.getUniqueId());
         setMustBeUsed(reservation.isMustBeUsed());
@@ -85,7 +85,7 @@ public class XIndividualReservation extends XReservation {
     }
     
     public XIndividualReservation(ReservationOverride reservation) {
-        super(XReservationType.Override, reservation);
+        super(XReservationType.IndividualOverride, reservation);
         iStudentIds.addAll(reservation.getStudentIds());
     }
 
@@ -122,7 +122,7 @@ public class XIndividualReservation extends XReservation {
     
     @Override
     public boolean isExpired() {
-    	return (getType() == XReservationType.Override && iExpired != null ? iExpired.booleanValue() : super.isExpired());
+    	return (getType() == XReservationType.IndividualOverride && iExpired != null ? iExpired.booleanValue() : super.isExpired());
     }
     
 	@Override
@@ -137,7 +137,7 @@ public class XIndividualReservation extends XReservation {
     	iLimit = in.readInt();
     	if (iLimit == -2) iLimit = null;
     	
-    	if (getType() == XReservationType.Override) {
+    	if (getType() == XReservationType.IndividualOverride) {
     		switch (in.readByte()) {
     		case 0:
     			iExpired = false; break;
@@ -159,7 +159,7 @@ public class XIndividualReservation extends XReservation {
 		
 		out.writeInt(iLimit == null ? -2 : iLimit);
 		
-		if (getType() == XReservationType.Override) {
+		if (getType() == XReservationType.IndividualOverride) {
 			out.writeByte(iExpired == null ? 2 : iExpired.booleanValue() ? 1 : 0);
 		}
 	}

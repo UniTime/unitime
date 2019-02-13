@@ -38,6 +38,7 @@ import org.unitime.timetable.model.GroupOverrideReservation;
 import org.unitime.timetable.model.IndividualOverrideReservation;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.LearningCommunityReservation;
 import org.unitime.timetable.model.OverrideReservation;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Reservation;
@@ -87,6 +88,8 @@ public class ReservationExport extends BaseExport {
 	        	CourseOffering course = reservation.getInstructionalOffering().getControllingCourseOffering();
 	        	if (reservation instanceof CourseReservation)
 	        		course = ((CourseReservation)reservation).getCourse();
+	        	if (reservation instanceof LearningCommunityReservation)
+	        		course = ((LearningCommunityReservation)reservation).getCourse();
 	        	reservationEl.addAttribute("subject", course.getSubjectAreaAbbv());
 	        	reservationEl.addAttribute("courseNbr", course.getCourseNbr());
 	        	if (reservation.getLimit() != null && !(reservation instanceof IndividualReservation))
@@ -123,6 +126,13 @@ public class ReservationExport extends BaseExport {
 	        			reservationEl.addElement("overLimit", override.isCanAssignOverLimit() ? "true" : "false");
 	        			reservationEl.addElement("mustBeUsed", override.isMustBeUsed() ? "true" : "false");
 	        		}
+	        	} else if (reservation instanceof LearningCommunityReservation) {
+	        		reservationEl.addAttribute("type", "lc");
+	        		StudentGroup group = ((LearningCommunityReservation)reservation).getGroup();
+	        		Element groupEl = reservationEl.addElement("studentGroup");
+	        		if (group.getExternalUniqueId() != null)
+	        			groupEl.addAttribute("externalId", group.getExternalUniqueId());
+	        		groupEl.addAttribute("code", group.getGroupAbbreviation());
 	        	} else if (reservation instanceof StudentGroupReservation) {
 	        		reservationEl.addAttribute("type", "group");
 	        		StudentGroup group = ((StudentGroupReservation)reservation).getGroup();

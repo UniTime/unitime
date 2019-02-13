@@ -30,6 +30,7 @@ import org.cpsolver.studentsct.reservation.CourseReservation;
 import org.cpsolver.studentsct.reservation.CurriculumReservation;
 import org.cpsolver.studentsct.reservation.GroupReservation;
 import org.cpsolver.studentsct.reservation.IndividualReservation;
+import org.cpsolver.studentsct.reservation.LearningCommunityReservation;
 import org.cpsolver.studentsct.reservation.Reservation;
 import org.cpsolver.studentsct.reservation.ReservationOverride;
 import org.infinispan.commons.marshall.Externalizer;
@@ -69,7 +70,9 @@ public class XReservationId implements Serializable, Externalizable {
 		if (reservation instanceof OnlineReservation)
 			iType = XReservationType.values()[((OnlineReservation)reservation).getType()];
 		else if (reservation instanceof ReservationOverride)
-			iType = XReservationType.Override;
+			iType = XReservationType.IndividualOverride;
+		else if (reservation instanceof LearningCommunityReservation)
+			iType = XReservationType.LearningCommunity;
 		else if (reservation instanceof GroupReservation)
 			iType = XReservationType.Group;
 		else if (reservation instanceof IndividualReservation)

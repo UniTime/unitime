@@ -31,7 +31,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * @author Tomas Muller
  */
 public interface ReservationServiceAsync {
-	public void getOffering(Long offeringId, AsyncCallback<ReservationInterface.Offering> callback) throws ReservationException, PageAccessException;
+	public void getOffering(Long offeringId, Long courseId, AsyncCallback<ReservationInterface.Offering> callback) throws ReservationException, PageAccessException;
 	public void getOfferingByCourseName(String course, AsyncCallback<ReservationInterface.Offering> callback) throws ReservationException, PageAccessException;
 	public void getAreas(AsyncCallback<List<ReservationInterface.Area>> callback) throws ReservationException, PageAccessException;
 	public void getStudentGroups(AsyncCallback<List<ReservationInterface.IdName>> callback) throws ReservationException, PageAccessException;

@@ -797,6 +797,9 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Curriculum")
 	String reservationCurriculum();
+	
+	@DefaultMessage("LC")
+	String reservationLearningCommunity();
 
 	/* Enrollment dialog messages (opened from Enrollments table)
 	 */
@@ -1784,6 +1787,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Not-Used Override Reservations")
 	String reportUnusedOverrideReservations();
+	
+	@DefaultMessage("Not-Used Learning Community Reservations")
+	String reportUnusedLearningCommunityReservations();
 	
 	@DefaultMessage("Course Requests")
 	String reportCourseRequestsWithPriorities();

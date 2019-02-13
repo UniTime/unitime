@@ -139,6 +139,19 @@
 	        		type="java.lang.Integer"
 	        		not-null="true"/>
 	        </subclass>
+	        
+	        <subclass
+	        	name="LearningCommunityReservation"
+	        	abstract="false"
+	        	discriminator-value="7">
+	        	
+	        	<many-to-one
+            		name="course"
+            		class="CourseOffering"
+        	    	column="course_id"
+    	        	not-null="true"
+	            	foreign-key="fk_reservation_course"/>
+	        </subclass>
        	</subclass>
 
         <subclass

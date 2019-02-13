@@ -190,6 +190,9 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 							case Individual:
 								e.setReservation(MSG.reservationIndividual());
 								break;
+							case LearningCommunity:
+								e.setReservation(MSG.reservationLearningCommunity());
+								break;
 							}
 						}
 						e.setEnrolledDate(request.getEnrollment().getTimeStamp());

@@ -92,6 +92,7 @@ import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.LearningCommunityReservation;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.Roles;
@@ -2117,7 +2118,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						}
 						if (setReadOnlyWhenReserved) {
 							for (Reservation reservation: course.getCourseOffering().getInstructionalOffering().getReservations()) {
-								if (reservation instanceof IndividualReservation || reservation instanceof StudentGroupReservation) {
+								if (reservation instanceof IndividualReservation || reservation instanceof StudentGroupReservation || reservation instanceof LearningCommunityReservation) {
 									if (reservation.isMustBeUsed() && !reservation.isExpired() && reservation.isApplicable(student, course)) {
 										rc.setReadOnly(true);
 										rc.setCanDelete(false);

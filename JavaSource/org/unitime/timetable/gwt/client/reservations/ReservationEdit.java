@@ -49,10 +49,12 @@ import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.ReservationException;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Course;
+import org.unitime.timetable.gwt.shared.ReservationInterface.CourseReservation;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Area;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Curriculum;
 import org.unitime.timetable.gwt.shared.ReservationInterface.DefaultExpirationDates;
 import org.unitime.timetable.gwt.shared.ReservationInterface.IdName;
+import org.unitime.timetable.gwt.shared.ReservationInterface.LCReservation;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Offering;
 import org.unitime.timetable.gwt.shared.ReservationInterface.ReservationDefaultExpirationDatesRpcRequest;
 
@@ -334,6 +336,7 @@ public class ReservationEdit extends Composite {
 		iType.getWidget().addItem(MESSAGES.reservationStudentGroup(), "group");
 		iType.getWidget().addItem(MESSAGES.reservationCurriculum(), "curriculum");
 		iType.getWidget().addItem(MESSAGES.reservationCourse(), "course");
+		iType.getWidget().addItem(MESSAGES.reservationLearningCommunity(), "lc");
 		for (ReservationInterface.OverrideType t: ReservationInterface.OverrideType.values()) {
 			iType.getWidget().addItem(CONSTANTS.reservationOverrideTypeName()[t.ordinal()], t.getReference());
 		}
@@ -449,10 +452,12 @@ public class ReservationEdit extends Composite {
 			public void onChange(ChangeEvent event) {
 				iCourse.clearHint();
 				String cid = iCourse.getWidget().getValue(iCourse.getWidget().getSelectedIndex());
-				for (Course course: iOffering.getCourses()) {
-					if (course.getId().toString().equals(cid))
-						iLimit.getWidget().setValue(course.getLimit() == null ? "" : course.getLimit().toString(), true);
-				}
+				String val = iType.getWidget().getValue(iType.getWidget().getSelectedIndex());
+				if ("course".equals(val))
+					for (Course course: iOffering.getCourses()) {
+						if (course.getId().toString().equals(cid))
+							iLimit.getWidget().setValue(course.getLimit() == null ? "" : course.getLimit().toString(), true);
+					}
 			}
 		});
 		iPanel.addRow(MESSAGES.propCourse(), iCourse);
@@ -613,6 +618,19 @@ public class ReservationEdit extends Composite {
 								LoadingWidget.getInstance().hide();
 							}
 						});
+					} else if (reservation instanceof ReservationInterface.LCReservation) {
+						new InitializationChain(new InitStudentGroups(), new InitExpirationDates()).execute(new AsyncCallback<Boolean>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								loadingFailed(caught);
+							}
+
+							@Override
+							public void onSuccess(Boolean result) {
+								setReservation(reservation);
+								LoadingWidget.getInstance().hide();
+							}
+						});
 					} else {
 						setReservation(reservation);
 						LoadingWidget.getInstance().hide();
@@ -640,6 +658,15 @@ public class ReservationEdit extends Composite {
 		iAlwaysExpired.setValue(true);
 		
 		Long offeringId = (iReservation == null ? null : iReservation.getOffering().getId());
+		Long courseId =  null;
+		if (iReservation != null && iReservation instanceof CourseReservation) {
+			CourseReservation cr = (CourseReservation)iReservation;
+			courseId = (cr.getCourse() == null ? null : cr.getCourse().getId());
+		}
+		if (iReservation != null && iReservation instanceof LCReservation) {
+			LCReservation lc = (LCReservation)iReservation;
+			courseId = (lc.getCourse() == null ? null : lc.getCourse().getId());
+		}
 		if (offeringId == null) {
 			if (Window.Location.getParameter("offering") != null)
 				offeringId =  Long.valueOf(Window.Location.getParameter("offering"));
@@ -670,7 +697,7 @@ public class ReservationEdit extends Composite {
 		} else {
 			iCourseBox.setEnabled(false);
 			LoadingWidget.getInstance().show(MESSAGES.waitLoadingReservation());
-			iReservationService.getOffering(offeringId, new AsyncCallback<Offering>() {
+			iReservationService.getOffering(offeringId, courseId, new AsyncCallback<Offering>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					loadingFailed(caught);
@@ -708,9 +735,20 @@ public class ReservationEdit extends Composite {
 		if (!iCourseBox.isEnabled()) {
 			RequestedCourse rc = new RequestedCourse();
 			Course course = iOffering.getControllingCourse();
-			if (course != null)
+			if (iReservation != null && iReservation instanceof CourseReservation) {
+				CourseReservation cr = (CourseReservation)iReservation;
+				if (cr.getCourse() != null) course = cr.getCourse();
+			}
+			if (iReservation != null && iReservation instanceof LCReservation) {
+				LCReservation lc = (LCReservation)iReservation;
+				if (lc.getCourse() != null) course = lc.getCourse();
+			}
+			if (course != null) {
 				rc.setCourseId(course.getId());
-			rc.setCourseName(iOffering.getAbbv());
+				rc.setCourseName(course.getAbbv());
+			} else {
+				rc.setCourseName(iOffering.getAbbv());
+			}
 			iCourseBox.setValue(rc, false);
 		}
 
@@ -771,8 +809,8 @@ public class ReservationEdit extends Composite {
 	private void typeChanged(boolean setExpiration) {
 		String val = iType.getWidget().getValue(iType.getWidget().getSelectedIndex());
 		iPanel.getRowFormatter().setVisible(iStudentsLine, "individual".equals(val) || "individual-override".equals(val) || getOverrideType(val) != null);
-		iPanel.getRowFormatter().setVisible(iCourseLine, "course".equals(val));
-		iPanel.getRowFormatter().setVisible(iGroupLine, "group".equals(val) || "group-override".equals(val));
+		iPanel.getRowFormatter().setVisible(iCourseLine, "course".equals(val) || "lc".equals(val));
+		iPanel.getRowFormatter().setVisible(iGroupLine, "group".equals(val) || "group-override".equals(val) || "lc".equals(val));
 		iPanel.getRowFormatter().setVisible(iCurriculumLine, "curriculum".equals(val) && iCurriculum.getWidget().getItemCount() > 1);
 		iPanel.getRowFormatter().setVisible(iAreaLine, "curriculum".equals(val));
 		iPanel.getRowFormatter().setVisible(1 + iAreaLine, "curriculum".equals(val));
@@ -881,6 +919,10 @@ public class ReservationEdit extends Composite {
 		} else if (iReservation instanceof ReservationInterface.CourseReservation) {
 			select(iType.getWidget(), "course");
 			select(iCourse.getWidget(), ((ReservationInterface.CourseReservation) iReservation).getCourse().getId().toString());
+		} else if (iReservation instanceof ReservationInterface.LCReservation) {
+			select(iType.getWidget(), "lc");
+			select(iGroup.getWidget(), ((ReservationInterface.LCReservation) iReservation).getGroup().getId().toString());
+			select(iCourse.getWidget(), ((ReservationInterface.LCReservation) iReservation).getCourse().getId().toString());
 		} else if (iReservation instanceof ReservationInterface.CurriculumReservation) {
 			select(iType.getWidget(), "curriculum");
 			Area curriculum = ((ReservationInterface.CurriculumReservation) iReservation).getCurriculum();
@@ -972,6 +1014,28 @@ public class ReservationEdit extends Composite {
 				group.setId(Long.valueOf(gid));
 				group.setName(iGroup.getWidget().getItemText(iGroup.getWidget().getSelectedIndex()));
 				((ReservationInterface.GroupReservation) r).setGroup(group);
+			}
+		} else if ("lc".equals(type)) {
+			r = new ReservationInterface.LCReservation();
+			String gid = iGroup.getWidget().getValue(iGroup.getWidget().getSelectedIndex());
+			if (gid.isEmpty()) {
+				iGroup.setErrorHint(MESSAGES.hintStudentGroupNotProvided());
+				ok = false;
+			} else {
+				IdName group = new IdName();
+				group.setId(Long.valueOf(gid));
+				group.setName(iGroup.getWidget().getItemText(iGroup.getWidget().getSelectedIndex()));
+				((ReservationInterface.LCReservation) r).setGroup(group);
+			}
+			String cid = iCourse.getWidget().getValue(iCourse.getWidget().getSelectedIndex());
+			if (cid.isEmpty()) {
+				iCourse.setErrorHint(MESSAGES.hintCourseNotProvided());
+				ok = false;
+			} else {
+				Course course = new Course();
+				course.setId(Long.valueOf(cid));
+				course.setName(iCourse.getWidget().getItemText(iCourse.getWidget().getSelectedIndex()));
+				((ReservationInterface.LCReservation) r).setCourse(course);
 			}
 		} else if ("course".equals(type)) {
 			r = new ReservationInterface.CourseReservation();

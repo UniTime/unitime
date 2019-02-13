@@ -5224,6 +5224,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Course Reservation")
 	String reservationCourse();
 	
+	@DefaultMessage("Learning Community Reservation")
+	String reservationLearningCommunity();
+	
 	@DefaultMessage("Individual")
 	String reservationIndividualAbbv();
 	
@@ -5247,6 +5250,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Unknown")
 	String reservationUnknownAbbv();
+	
+	@DefaultMessage("Learning Community")
+	String reservationLearningCommunityAbbv();
 	
 	@DefaultMessage("Total Reserved Space")
 	String totalReservedSpace();

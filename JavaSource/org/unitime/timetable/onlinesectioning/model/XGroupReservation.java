@@ -28,15 +28,16 @@ import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.GroupOverrideReservation;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.StudentGroupType;
+import org.unitime.timetable.onlinesectioning.model.XStudent.XGroup;
 
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XGroupReservation.XCourseReservationSerializer.class)
+@SerializeWith(XGroupReservation.XGroupReservationSerializer.class)
 public class XGroupReservation extends XReservation {
 	private static final long serialVersionUID = 1L;
 	private int iLimit;
-    private String iGroup;
+    private XGroup iGroup;
     private Boolean iExpired;
 
     public XGroupReservation() {
@@ -51,15 +52,15 @@ public class XGroupReservation extends XReservation {
     public XGroupReservation(XOffering offering, StudentGroupReservation reservation) {
     	super(XReservationType.Group, offering, reservation);
         iLimit = (reservation.getLimit() == null ? -1 : reservation.getLimit());
-        iGroup = reservation.getGroup().getGroupAbbreviation();
+        iGroup = new XGroup(reservation.getGroup());
         if (reservation.getGroup().getType() != null && reservation.getGroup().getType().getAllowDisabledSection() == StudentGroupType.AllowDisabledSection.WithGroupReservation)
         	setAllowDisabled(true);
     }
     
     public XGroupReservation(XOffering offering, GroupOverrideReservation reservation) {
-    	super(XReservationType.Override, offering, reservation);
+    	super(XReservationType.GroupOverride, offering, reservation);
         iLimit = (reservation.getLimit() == null ? -1 : reservation.getLimit());
-        iGroup = reservation.getGroup().getGroupAbbreviation();
+        iGroup = new XGroup(reservation.getGroup());
         if (reservation.getGroup().getType() != null && reservation.getGroup().getType().getAllowDisabledSection() == StudentGroupType.AllowDisabledSection.WithGroupReservation)
         	setAllowDisabled(true);
         setMustBeUsed(reservation.isMustBeUsed());
@@ -68,7 +69,7 @@ public class XGroupReservation extends XReservation {
         if (reservation.isAlwaysExpired()) iExpired = true; else iType = XReservationType.Group;
     }
     
-    public String getGroup() {
+    public XGroup getGroup() {
     	return iGroup;
     }
     
@@ -82,7 +83,7 @@ public class XGroupReservation extends XReservation {
     
     @Override
     public boolean isExpired() {
-    	return (getType() == XReservationType.Override && iExpired != null ? iExpired.booleanValue() : super.isExpired());
+    	return (getType() == XReservationType.GroupOverride && iExpired != null ? iExpired.booleanValue() : super.isExpired());
     }
     
 	@Override
@@ -93,9 +94,9 @@ public class XGroupReservation extends XReservation {
 	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
     	super.readExternal(in);
-    	iGroup = (String)in.readObject();
+    	iGroup = new XGroup(in);
     	iLimit = in.readInt();
-    	if (getType() == XReservationType.Override) {
+    	if (getType() == XReservationType.GroupOverride) {
     		switch (in.readByte()) {
     		case 0:
     			iExpired = false; break;
@@ -110,14 +111,14 @@ public class XGroupReservation extends XReservation {
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		super.writeExternal(out);
-		out.writeObject(iGroup);
+		iGroup.writeExternal(out);
 		out.writeInt(iLimit);
-		if (getType() == XReservationType.Override) {
+		if (getType() == XReservationType.GroupOverride) {
 			out.writeByte(iExpired == null ? 2 : iExpired.booleanValue() ? 1 : 0);
 		}
 	}
 	
-	public static class XCourseReservationSerializer implements Externalizer<XGroupReservation> {
+	public static class XGroupReservationSerializer implements Externalizer<XGroupReservation> {
 		private static final long serialVersionUID = 1L;
 
 		@Override

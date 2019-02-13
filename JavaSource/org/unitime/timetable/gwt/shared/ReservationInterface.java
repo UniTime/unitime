@@ -88,9 +88,11 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 	public int getPriority() {
 		if (this instanceof ReservationInterface.IndividualReservation) return 0;
 		if (this instanceof ReservationInterface.GroupReservation) return 1;
-		if (this instanceof ReservationInterface.CourseReservation) return 2;
-		if (this instanceof ReservationInterface.CurriculumReservation) return 3;
-		return 4;
+		if (this instanceof ReservationInterface.LCReservation) return 2;
+		if (this instanceof ReservationInterface.CourseReservation) return 3;
+		if (this instanceof ReservationInterface.CurriculumReservation) return 4;
+		if (this instanceof ReservationInterface.OverrideReservation) return 5;
+		return 6;
 	}
 	
 	public int compareTo(ReservationInterface r2) {
@@ -191,6 +193,23 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		
 		public String toString() { return getCurriculum().toString(); }
 
+	}
+	
+	public static class LCReservation extends ReservationInterface {
+		private IdName iGroup;
+		private Course iCourse;
+		
+		public LCReservation() {
+			super();
+		}
+		
+		public IdName getGroup() { return iGroup; }
+		public void setGroup(IdName group) { iGroup = group; }
+		
+		public Course getCourse() { return iCourse; }
+		public void setCourse(Course course) { iCourse = course; }
+		
+		public String toString() { return getCourse() + " " + getGroup(); }
 	}
 
 	public static class IdName implements IsSerializable, Comparable<IdName> {

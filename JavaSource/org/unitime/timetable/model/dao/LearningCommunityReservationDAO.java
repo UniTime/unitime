@@ -17,22 +17,12 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.onlinesectioning.model;
+package org.unitime.timetable.model.dao;
 
-import java.io.Serializable;
+import org.unitime.timetable.model.base.BaseLearningCommunityReservationDAO;
 
-/**
- * @author Tomas Muller
- */
-public enum XReservationType implements Serializable {
-	Individual,
-	Group,
-	IndividualOverride,
-	GroupOverride,
-	Course,
-	Curriculum,
-	Dummy,
-	None,
-	LearningCommunity,
-	;
+public class LearningCommunityReservationDAO extends BaseLearningCommunityReservationDAO {
+
+	public LearningCommunityReservationDAO() {}
+
 }

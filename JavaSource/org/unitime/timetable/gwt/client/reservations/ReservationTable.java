@@ -50,6 +50,7 @@ import org.unitime.timetable.gwt.shared.ReservationInterface.CurriculumReservati
 import org.unitime.timetable.gwt.shared.ReservationInterface.GroupReservation;
 import org.unitime.timetable.gwt.shared.ReservationInterface.IdName;
 import org.unitime.timetable.gwt.shared.ReservationInterface.IndividualReservation;
+import org.unitime.timetable.gwt.shared.ReservationInterface.LCReservation;
 import org.unitime.timetable.gwt.shared.ReservationInterface.OverrideReservation;
 import org.unitime.timetable.gwt.shared.ReservationInterface.ReservationFilterRpcRequest;
 
@@ -241,13 +242,21 @@ public class ReservationTable extends Composite {
 			List<Widget> line = new ArrayList<Widget>();
 			if (iOfferingId == null) {
 				VerticalPanel courses = new VerticalPanel();
-				courses.add(new Label(reservation.getOffering().getAbbv(), false));
-				for (Course course: reservation.getOffering().getCourses()) {
-					if (course.getAbbv().equals(reservation.getOffering().getAbbv())) continue;
-					Label l = new Label(course.getAbbv(), false);
-					l.getElement().getStyle().setMarginLeft(10, Unit.PX);
-					l.getElement().getStyle().setColor("gray");
-					courses.add(l);
+				if (reservation instanceof CourseReservation) {
+					Course course = ((CourseReservation) reservation).getCourse();
+					courses.add(new Label(course.getAbbv(), false));
+				} else if (reservation instanceof LCReservation) {
+					Course course = ((LCReservation) reservation).getCourse();
+					courses.add(new Label(course.getAbbv(), false));
+				} else {
+					for (Course course: reservation.getOffering().getCourses()) {
+						if (course.getAbbv().equals(reservation.getOffering().getAbbv())) continue;
+						Label l = new Label(course.getAbbv(), false);
+						l.getElement().getStyle().setMarginLeft(10, Unit.PX);
+						l.getElement().getStyle().setColor("gray");
+						courses.add(l);
+					}
+					courses.add(new Label(reservation.getOffering().getAbbv(), false));
 				}
 				if (reservation.isExpired())
 					courses.addStyleName("unitime-Disabled");
@@ -303,7 +312,18 @@ public class ReservationTable extends Composite {
 					line.add(new Label(MESSAGES.reservationStudentGroupAbbv()));
 				}
 				IdName group = ((GroupReservation) reservation).getGroup();
-				line.add(new Label(group.getAbbv() + " - " + group.getName() + " (" + group.getLimit() + ")", false));				
+				line.add(new Label(group.getAbbv() + " - " + group.getName() + " (" + group.getLimit() + ")", false));
+			} else if (reservation instanceof LCReservation) {
+				if (reservation.getOffering().getCourses().size() > 1 && iOfferingId != null) {
+					Course course = ((LCReservation) reservation).getCourse();
+					Label label = new Label(MESSAGES.reservationLearningCommunityAbbv() + "\n  " + course.getAbbv());
+					label.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE);
+					line.add(label);
+				} else {
+					line.add(new Label(MESSAGES.reservationLearningCommunityAbbv()));
+				}
+				IdName group = ((LCReservation) reservation).getGroup();
+				line.add(new Label(group.getAbbv() + " - " + group.getName() + " (" + group.getLimit() + ")", false));
 			} else if (reservation instanceof CurriculumReservation) {
 				line.add(new Label(MESSAGES.reservationCurriculumAbbv()));
 				Area curriculum = ((CurriculumReservation) reservation).getCurriculum();

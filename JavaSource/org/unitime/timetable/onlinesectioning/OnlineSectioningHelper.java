@@ -44,6 +44,7 @@ import org.cpsolver.studentsct.reservation.CourseReservation;
 import org.cpsolver.studentsct.reservation.CurriculumReservation;
 import org.cpsolver.studentsct.reservation.GroupReservation;
 import org.cpsolver.studentsct.reservation.IndividualReservation;
+import org.cpsolver.studentsct.reservation.LearningCommunityReservation;
 import org.cpsolver.studentsct.reservation.Reservation;
 import org.hibernate.CacheMode;
 import org.unitime.localization.impl.Localization;
@@ -570,7 +571,7 @@ public class OnlineSectioningHelper {
     	if (r != null) {
     		OnlineSectioningLog.Entity.Builder reservation = OnlineSectioningLog.Entity.newBuilder()
     			.setUniqueId(r.getId());
-    		if (r instanceof GroupReservation)
+    		if (r instanceof GroupReservation || r instanceof LearningCommunityReservation)
     			reservation.setType(OnlineSectioningLog.Entity.EntityType.GROUP_RESERVATION);
     		else if (r instanceof IndividualReservation)
     			reservation.setType(OnlineSectioningLog.Entity.EntityType.INDIVIDUAL_RESERVATION);
@@ -812,6 +813,7 @@ public class OnlineSectioningHelper {
     			.setUniqueId(r.getReservationId());
     		switch (r.getType()) {
     		case Group:
+    		case LearningCommunity:
     			reservation.setType(OnlineSectioningLog.Entity.EntityType.GROUP_RESERVATION);
     			break;
     		case Curriculum:

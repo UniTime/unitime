@@ -58,6 +58,7 @@ import org.cpsolver.studentsct.reservation.CurriculumReservation;
 import org.cpsolver.studentsct.reservation.DummyReservation;
 import org.cpsolver.studentsct.reservation.GroupReservation;
 import org.cpsolver.studentsct.reservation.IndividualReservation;
+import org.cpsolver.studentsct.reservation.LearningCommunityReservation;
 import org.cpsolver.studentsct.reservation.Reservation;
 import org.cpsolver.studentsct.reservation.ReservationOverride;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -80,11 +81,13 @@ import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XFreeTimeRequest;
 import org.unitime.timetable.onlinesectioning.model.XGroupReservation;
 import org.unitime.timetable.onlinesectioning.model.XIndividualReservation;
+import org.unitime.timetable.onlinesectioning.model.XLearningCommunityReservation;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XReservation;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XStudent.XGroup;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 
@@ -115,7 +118,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 
 			Map<Long, Offering> offerings = new HashMap<Long, Offering>();
     		Hashtable<Long, Course> courses = new Hashtable<Long, Course>();
-    		Map<String, List<GroupReservation>> groups = new HashMap<String, List<GroupReservation>>();
+    		Map<XGroup, List<GroupReservation>> groups = new HashMap<XGroup, List<GroupReservation>>();
     		Hashtable<Long, Config> configs = new Hashtable<Long, Config>();
     		Hashtable<Long, Subpart> subparts = new Hashtable<Long, Subpart>();
     		Hashtable<Long, Section> sections = new Hashtable<Long, Section>();
@@ -198,25 +201,36 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
         				XIndividualReservation indR = (XIndividualReservation) reservation;
         				clonedReservation = new IndividualReservation(reservation.getReservationId(), clonedOffering, indR.getStudentIds());
         				break;
-        			case Override:
-        				if (reservation instanceof XGroupReservation) {
-        					XGroupReservation groupR = (XGroupReservation) reservation;
-            				clonedReservation = new GroupReservation(reservation.getReservationId(), reservation.getLimit(), clonedOffering);
-            				List<GroupReservation> list = groups.get(groupR.getGroup());
+        			case IndividualOverride:
+        				XIndividualReservation ovrR = (XIndividualReservation) reservation;
+    					clonedReservation = new ReservationOverride(reservation.getReservationId(), clonedOffering, ovrR.getStudentIds());
+    					((ReservationOverride)clonedReservation).setMustBeUsed(ovrR.mustBeUsed());
+    					((ReservationOverride)clonedReservation).setAllowOverlap(ovrR.isAllowOverlap());
+    					((ReservationOverride)clonedReservation).setCanAssignOverLimit(ovrR.canAssignOverLimit());
+    					break;
+        			case GroupOverride:
+        				XGroupReservation groupR = (XGroupReservation) reservation;
+        				clonedReservation = new GroupReservation(reservation.getReservationId(), reservation.getLimit(), clonedOffering);
+        				List<GroupReservation> list = groups.get(groupR.getGroup());
+        				if (list == null) {
+        					list = new ArrayList<GroupReservation>();
+        					groups.put(groupR.getGroup(), list);
+        				}
+        				list.add((GroupReservation)clonedReservation);
+        				((GroupReservation)clonedReservation).setMustBeUsed(groupR.mustBeUsed());
+        				((GroupReservation)clonedReservation).setAllowOverlap(groupR.isAllowOverlap());
+        				((GroupReservation)clonedReservation).setCanAssignOverLimit(groupR.canAssignOverLimit());
+        				break;
+        			case LearningCommunity:
+        				XLearningCommunityReservation lcR = (XLearningCommunityReservation) reservation;
+        				clonedReservation = new LearningCommunityReservation(reservation.getReservationId(), reservation.getLimit(), courses.get(lcR.getCourseId()), lcR.getStudentIds());
+        				if (lcR.getGroup() != null) {
+        					list = groups.get(lcR.getGroup());
             				if (list == null) {
             					list = new ArrayList<GroupReservation>();
-            					groups.put(groupR.getGroup(), list);
+            					groups.put(lcR.getGroup(), list);
             				}
             				list.add((GroupReservation)clonedReservation);
-            				((GroupReservation)clonedReservation).setMustBeUsed(groupR.mustBeUsed());
-            				((GroupReservation)clonedReservation).setAllowOverlap(groupR.isAllowOverlap());
-            				((GroupReservation)clonedReservation).setCanAssignOverLimit(groupR.canAssignOverLimit());
-        				} else {
-        					XIndividualReservation ovrR = (XIndividualReservation) reservation;
-        					clonedReservation = new ReservationOverride(reservation.getReservationId(), clonedOffering, ovrR.getStudentIds());
-        					((ReservationOverride)clonedReservation).setMustBeUsed(ovrR.mustBeUsed());
-        					((ReservationOverride)clonedReservation).setAllowOverlap(ovrR.isAllowOverlap());
-        					((ReservationOverride)clonedReservation).setCanAssignOverLimit(ovrR.canAssignOverLimit());
         				}
         				break;
         			default:
@@ -249,7 +263,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 				clonnedStudent.setAllowDisabled(student.isAllowDisabled());
 				for (XStudent.XGroup g: student.getGroups()) {
 					clonnedStudent.getMinors().add(new AcademicAreaCode(g.getType() == null ? "" : g.getType(), g.getAbbreviation()));
-					List<GroupReservation> list = groups.get(g.getAbbreviation());
+					List<GroupReservation> list = groups.get(g);
 					if (list != null)
 						for (GroupReservation gr: list)
 							gr.getStudentIds().add(student.getStudentId());

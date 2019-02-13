@@ -2062,6 +2062,12 @@ public enum ApplicationProperty {
 	ReservationPriorityGroup("unitime.reservation.priority.group"),
 	
 	@Type(Integer.class)
+	@DefaultValue("250")
+	@Description("Reservations: Learning Community reservation priority")
+	ReservationPriorityLearningCommunity("unitime.reservation.priority.learningCommunity"),
+
+	
+	@Type(Integer.class)
 	@DefaultValue("300")
 	@Description("Reservations: Reservation override priority")
 	ReservationPriorityOverride("unitime.reservation.priority.override"),
@@ -2075,7 +2081,7 @@ public enum ApplicationProperty {
 	@DefaultValue("500")
 	@Description("Reservations: Curriculum reservation priority")
 	ReservationPriorityCurriculum("unitime.reservation.priority.curriculum"),
-	
+		
 	@Type(Integer.class)
 	@DefaultValue("600")
 	@Description("Reservations: Curriculum reservation priority")
@@ -2090,6 +2096,12 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Reservations: Group reservation must be used")
 	ReservationMustBeUsedGroup("unitime.reservation.mustBeUsed.group"),
+	
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Reservations: Learning Community reservation must be used")
+	ReservationMustBeUsedLearningCommunity("unitime.reservation.mustBeUsed.learningCommunity"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
@@ -2110,6 +2122,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Reservations: Group reservation can over limit")
 	ReservationCanOverLimitGroup("unitime.reservation.canOverLimit.group"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Reservations: Learning Community reservation can over limit")
+	ReservationCanOverLimitLearningCommunity("unitime.reservation.canOverLimit.learningCommunity"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
@@ -2130,6 +2147,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Reservations: Group reservation allows time conflicts")
 	ReservationAllowOverlapGroup("unitime.reservation.allowOverlap.group"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Reservations: Learning Community reservation allows time conflicts")
+	ReservationAllowOverlapLearningCommunity("unitime.reservation.allowOverlap.learningCommunity"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")

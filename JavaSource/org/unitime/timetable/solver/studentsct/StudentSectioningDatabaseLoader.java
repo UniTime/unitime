@@ -108,6 +108,7 @@ import org.unitime.timetable.model.IndividualOverrideReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.LearningCommunityReservation;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.OverrideReservation;
 import org.unitime.timetable.model.PosMajor;
@@ -613,6 +614,23 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		r.setCanAssignOverLimit(reservation.isCanAssignOverLimit());
         		StudentGroupType type = ((StudentGroupReservation)reservation).getGroup().getType();
         		if (type != null && type.getAllowDisabledSection() == StudentGroupType.AllowDisabledSection.WithGroupReservation) r.setAllowDisabled(true);
+        	} else if (reservation instanceof LearningCommunityReservation) {
+        		List<Long> studentIds = new ArrayList<Long>();
+        		for (org.unitime.timetable.model.Student s: ((LearningCommunityReservation)reservation).getGroup().getStudents())
+        			studentIds.add(s.getUniqueId());
+        		CourseOffering co = ((LearningCommunityReservation)reservation).getCourse();
+        		for (Course course: offering.getCourses()) {
+        			if (co.getUniqueId().equals(course.getId()))
+                		r = new org.cpsolver.studentsct.reservation.LearningCommunityReservation(reservation.getUniqueId(),
+                				(reservation.getLimit() == null ? iNoUnlimitedGroupReservations ? studentIds.size() : -1.0 : reservation.getLimit()),
+                				course, studentIds);
+        		}
+        		r.setPriority(ApplicationProperty.ReservationPriorityLearningCommunity.intValue());
+        		r.setAllowOverlap(ApplicationProperty.ReservationAllowOverlapLearningCommunity.isTrue());
+        		r.setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitLearningCommunity.isTrue());
+        		r.setMustBeUsed(ApplicationProperty.ReservationMustBeUsedLearningCommunity.isTrue());
+        		StudentGroupType type = ((StudentGroupReservation)reservation).getGroup().getType();
+        		if (type != null && type.getAllowDisabledSection() == StudentGroupType.AllowDisabledSection.WithGroupReservation) r.setAllowDisabled(true);
         	} else if (reservation instanceof StudentGroupReservation) {
         		List<Long> studentIds = new ArrayList<Long>();
         		for (org.unitime.timetable.model.Student s: ((StudentGroupReservation)reservation).getGroup().getStudents())
@@ -727,7 +745,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     			
     			// Check applicability
     			boolean applicable = false;
-    			if (r instanceof GroupReservation) {
+    			if (r instanceof org.cpsolver.studentsct.reservation.LearningCommunityReservation) {
+    				applicable = ((org.cpsolver.studentsct.reservation.LearningCommunityReservation)r).getStudentIds().contains(s.getUniqueId())
+    						&& course.equals(((org.cpsolver.studentsct.reservation.LearningCommunityReservation)r).getCourse());
+    			} else if (r instanceof GroupReservation) {
     				applicable = ((GroupReservation)r).getStudentIds().contains(s.getUniqueId());
     			} else if (r instanceof IndividualReservation) {
     				applicable = ((IndividualReservation)r).getStudentIds().contains(s.getUniqueId());

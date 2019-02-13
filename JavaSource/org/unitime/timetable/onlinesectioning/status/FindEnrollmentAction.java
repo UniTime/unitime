@@ -236,6 +236,9 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 					case Curriculum:
 						e.setReservation(MSG.reservationCurriculum());
 						break;
+					case LearningCommunity:
+						e.setReservation(MSG.reservationLearningCommunity());
+						break;
 					}
 				}
 				if (request.getEnrollment().getTimeStamp() != null)

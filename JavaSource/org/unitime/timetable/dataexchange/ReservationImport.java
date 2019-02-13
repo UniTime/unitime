@@ -39,6 +39,7 @@ import org.unitime.timetable.model.GroupOverrideReservation;
 import org.unitime.timetable.model.IndividualOverrideReservation;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.LearningCommunityReservation;
 import org.unitime.timetable.model.OverrideReservation;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Reservation;
@@ -165,6 +166,8 @@ public class ReservationImport  extends BaseImport {
                 	reservation = new CurriculumReservation();
                 } else if ("course".equals(type)) {
                 	reservation = new CourseReservation();
+                } else if ("lc".equals(type)) {
+                	reservation = new LearningCommunityReservation();
                 } else {
                 	for (OverrideType t: OverrideType.values()) {
                 		if (t.getReference().equalsIgnoreCase(type)) {
@@ -273,6 +276,24 @@ public class ReservationImport  extends BaseImport {
                     	}
                     }
                     if (group.getGroup() == null) {
+                    	warn("Group reservation of course " + course.getCourseName() + " has no student group.");
+                    }
+                } else if ("lc".equals(type)) {
+                	LearningCommunityReservation lc = (LearningCommunityReservation)reservation;
+                    for (Iterator j = reservationElement.elementIterator("studentGroup"); j.hasNext(); ) {
+                    	Element groupEl = (Element)j.next();
+                    	String extId = groupEl.attributeValue("externalId");
+                    	String code = groupEl.attributeValue("code");
+                    	StudentGroup sg = (extId == null ? groupsByCode.get(code) : groupsByExtId.get(extId));
+                    	if (sg == null) {
+                    		warn("Unable to find student group " + (extId == null ? code : extId));
+                    	} else {
+                    		lc.setGroup(sg);
+                    		break;
+                    	}
+                    }
+                    lc.setCourse(course);
+                    if (lc.getGroup() == null) {
                     	warn("Group reservation of course " + course.getCourseName() + " has no student group.");
                     }
                 } else if ("curriculum".equals(type)) {

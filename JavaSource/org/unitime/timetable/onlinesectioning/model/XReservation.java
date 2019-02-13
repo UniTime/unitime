@@ -102,13 +102,18 @@ public abstract class XReservation extends XReservationId implements Comparable<
         	setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitIndividual.isTrue());
         	setMustBeUsed(ApplicationProperty.ReservationMustBeUsedIndividual.isTrue());
         	setAllowOverlap(ApplicationProperty.ReservationAllowOverlapIndividual.isTrue());
-        	
         	break;
         case Group:
         	setPriority(ApplicationProperty.ReservationPriorityGroup.intValue());
         	setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitGroup.isTrue());
         	setMustBeUsed(ApplicationProperty.ReservationMustBeUsedGroup.isTrue());
         	setAllowOverlap(ApplicationProperty.ReservationAllowOverlapGroup.isTrue());
+        	break;
+        case LearningCommunity:
+        	setPriority(ApplicationProperty.ReservationPriorityLearningCommunity.intValue());
+        	setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitLearningCommunity.isTrue());
+        	setMustBeUsed(ApplicationProperty.ReservationMustBeUsedLearningCommunity.isTrue());
+        	setAllowOverlap(ApplicationProperty.ReservationAllowOverlapLearningCommunity.isTrue());
         	break;
         case Curriculum:
         	setPriority(ApplicationProperty.ReservationPriorityCurriculum.intValue());
@@ -122,7 +127,8 @@ public abstract class XReservation extends XReservationId implements Comparable<
         	setMustBeUsed(ApplicationProperty.ReservationMustBeUsedCourse.isTrue());
         	setAllowOverlap(ApplicationProperty.ReservationAllowOverlapCourse.isTrue());
         	break;
-        case Override:
+        case IndividualOverride:
+        case GroupOverride:
         	setPriority(ApplicationProperty.ReservationPriorityOverride.intValue());
         	break;
         case Dummy:
