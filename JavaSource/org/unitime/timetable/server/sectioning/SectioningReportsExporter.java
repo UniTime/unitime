@@ -65,6 +65,7 @@ public class SectioningReportsExporter implements Exporter {
 	@Override
 	public void export(ExportHelper helper) throws IOException {
 		DataProperties parameters = new DataProperties();
+		parameters.put("dateformat", CONSTANTS.timeStampFormat());
 		for (Enumeration<String> e = helper.getParameterNames(); e.hasMoreElements(); ) {
 			String name = e.nextElement();
 			parameters.put(name, helper.getParameter(name));

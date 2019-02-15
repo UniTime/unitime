@@ -55,6 +55,7 @@ public class SectioningReportsBackend implements GwtRpcImplementation<Sectioning
 		CSVFile csv =  null;
 		boolean online = parameters.getPropertyBoolean("online", false);
 		parameters.setProperty("useAmPm", CONSTANTS.useAmPm() ? "true" : "false");
+		parameters.setProperty("dateformat", CONSTANTS.timeStampFormat());
 
 		if (online) {
 			context.checkPermission(Right.SchedulingReports);
