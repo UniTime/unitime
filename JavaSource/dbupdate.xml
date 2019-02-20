@@ -13510,4 +13510,30 @@
 			references %SCHEMA%.instructional_method (uniqueid) on delete set null
 		</sql>
 	</update>
+	<update version="216" date="18-Feb-2019" comment="Student Sectioning Preferences">
+	    <plsql>
+			create table %SCHEMA%.sect_pref (
+				uniqueid number(20,0) constraint nn_sect_pref_id not null,
+				preference_type number(10,0) constraint nn_sect_pref_type not null,
+				request_id number(20,0) constraint nn_sect_pref_request not null,
+				required number(1) constraint nn_sect_pref_requred not null,
+				class_id number(20,0),
+				instr_mthd_id number(20,0)
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.sect_pref add constraint pk_sect_pref primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.sect_pref (
+				uniqueid decimal(20,0) primary key not null,
+				preference_type decimal(10,0) not null,
+				request_id decimal(20,0) not null,
+				required int(1) not null,
+				class_id decimal(20,0),
+				instr_mthd_id decimal(20,0)
+			) engine = INNODB
+		</mysql>
+		<sql>alter table %SCHEMA%.sect_pref add constraint fk_sct_pref_request foreign key (request_id) references %SCHEMA%.course_request (uniqueid) on delete cascade</sql>
+		<sql>alter table %SCHEMA%.sect_pref add constraint fk_sct_pref_class foreign key (class_id) references %SCHEMA%.class_ (uniqueid) on delete cascade</sql>
+		<sql>alter table %SCHEMA%.sect_pref add constraint fk_sct_pref_im foreign key (instr_mthd_id) references %SCHEMA%.instructional_method (uniqueid) on delete cascade</sql>
+	</update>
 </dbupdate>

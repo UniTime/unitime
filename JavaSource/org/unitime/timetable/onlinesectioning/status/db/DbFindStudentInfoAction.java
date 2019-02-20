@@ -40,25 +40,24 @@ import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
-import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentClassPref;
 import org.unitime.timetable.model.StudentGroup;
+import org.unitime.timetable.model.StudentInstrMthPref;
 import org.unitime.timetable.model.StudentNote;
+import org.unitime.timetable.model.StudentSectioningPref;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.status.FindStudentInfoAction;
 import org.unitime.timetable.onlinesectioning.status.SectioningStatusFilterAction;
 import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbCourseRequestMatcher;
 import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbFindStudentInfoMatcher;
-
-import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
  * @author Tomas Muller
@@ -362,46 +361,41 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 								}
 							}
 						}
-						
-						CourseRequestOption option = request.getCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE);
-						if (option != null && option.getValue() != null) {
-							try {
-								OnlineSectioningLog.CourseRequestOption pref = OnlineSectioningLog.CourseRequestOption.parseFrom(option.getValue());
-								if (pref.getInstructionalMethodCount() > 0) {
-									boolean im = false;
-									InstructionalMethod method = crm.enrollment().get(0).getClazz().getSchedulingSubpart().getInstrOfferingConfig().getEffectiveInstructionalMethod();
-									if (method != null)
-										for (OnlineSectioningLog.Entity e: pref.getInstructionalMethodList())
-											if (method.getReference().equals(e.getExternalId()) || method.getUniqueId().equals(e.getUniqueId())) { im = true; break; }
-									s.setTotalPrefInstrMethConflict(s.getTotalPrefInstrMethConflict() + 1);
-									gtPIM++;
-									if (im) {
-										s.setPrefInstrMethConflict(s.getPrefInstrMethConflict() + 1);
-										gPIM++;
-									}
+						boolean hasIm = false;
+						boolean im = false;
+						Set<String> allSubpart = new HashSet<String>();
+						Set<String> selectedSubparts = new HashSet<String>();
+						for (StudentSectioningPref pref: request.getPreferences()) {
+							if (pref instanceof StudentInstrMthPref) {
+								StudentInstrMthPref imp = (StudentInstrMthPref)pref;
+								InstructionalMethod method = crm.enrollment().get(0).getClazz().getSchedulingSubpart().getInstrOfferingConfig().getEffectiveInstructionalMethod();
+								hasIm = true;
+								if (!im && method != null && method.equals(imp.getInstructionalMethod())) { im = true; }
+							}
+							if (pref instanceof StudentClassPref) {
+								StudentClassPref scp = (StudentClassPref)pref;
+								allSubpart.add(scp.getClazz().getSchedulingSubpart().getItypeDesc());
+								for (StudentClassEnrollment section: crm.enrollment()) {
+									if (scp.getClazz().equals(section.getClazz()))
+										selectedSubparts.add(scp.getClazz().getSchedulingSubpart().getItypeDesc());
 								}
-								if (pref.getSectionCount() > 0) {
-									Set<String> allSubpartIds = new HashSet<String>();
-									Set<String> selectedSubpartIds = new HashSet<String>();
-									for (OnlineSectioningLog.Section sc: pref.getSectionList()) {
-										allSubpartIds.add(sc.getSubpart().getName());
-										for (StudentClassEnrollment section: crm.enrollment()) {
-											String externalId = section.getClazz().getExternalId(section.getCourseOffering());
-											if (section.getClazz().getUniqueId().equals(sc.getClazz().getUniqueId()) || (externalId != null && externalId.equals(sc.getClazz().getExternalId())))
-												selectedSubpartIds.add(sc.getSubpart().getName());
-										}
-									}
-									s.setTotalPrefSectionConflict(s.getTotalPrefSectionConflict() + allSubpartIds.size());
-									gtPSec += allSubpartIds.size();
-									if (!allSubpartIds.isEmpty()) {
-										s.setPrefSectionConflict(s.getPrefSectionConflict() + selectedSubpartIds.size());
-										gPSec += selectedSubpartIds.size();
-									}
-								}
-							} catch (InvalidProtocolBufferException e) {}
+							}
+						}
+						if (hasIm) {
+							s.setTotalPrefSectionConflict(s.getTotalPrefSectionConflict() + 1);
+							gtPIM++;
+							if (im) {
+								s.setPrefInstrMethConflict(s.getPrefInstrMethConflict() + 1);
+								gPIM++;
+							}
+						}
+						if (!allSubpart.isEmpty()) {
+							s.setTotalPrefSectionConflict(s.getTotalPrefSectionConflict() + allSubpart.size());
+							gtPSec += allSubpart.size();
+							s.setPrefSectionConflict(s.getPrefSectionConflict() + selectedSubparts.size());
+							gPSec += selectedSubparts.size();
 						}
 					}
-					
 					for (StudentClassEnrollment section: crm.enrollment()) {
 						Assignment assignment = section.getClazz().getCommittedAssignment();
 						if (assignment == null) continue;
@@ -448,39 +442,26 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 						s.setUnassigned(s.getUnassigned() + 1); gUnasg ++;	
 					}
 					for (CourseRequest c: crm.request().getCourseDemand().getCourseRequests()) {
-						CourseRequestOption option = c.getCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE);
-						if (option != null && option.getValue() != null) {
-							try {
-								OnlineSectioningLog.CourseRequestOption pref = OnlineSectioningLog.CourseRequestOption.parseFrom(option.getValue());
-								if (pref.getInstructionalMethodCount() > 0) {
-									boolean reqIm = false;
-									for (OnlineSectioningLog.Entity e: pref.getInstructionalMethodList()) {
-										boolean required = false;
-		    							if (e.getParameterCount() > 0)
-		    								for (OnlineSectioningLog.Property p: e.getParameterList())
-		    									if ("required".equals(p.getKey()))
-		    										required = "true".equals(p.getValue());
-		    							if (required) { reqIm = true; break; }
-									}
-									if (reqIm) {
-										s.setTotalPrefInstrMethConflict(s.getTotalPrefInstrMethConflict() + 1);
-										gtPIM++;
-									}
-								}
-								if (pref.getSectionCount() > 0) {
-									Set<String> allSubpartIds = new HashSet<String>();
-									for (OnlineSectioningLog.Section sc: pref.getSectionList()) {
-										boolean required = (sc.hasPreference() && sc.getPreference() == OnlineSectioningLog.Section.Preference.REQUIRED);
-		    							if (required)
-		    								allSubpartIds.add(sc.getSubpart().getName());
-									}
-									if (!allSubpartIds.isEmpty()) {
-										s.setTotalPrefSectionConflict(s.getTotalPrefSectionConflict() + allSubpartIds.size());
-										gtPSec += allSubpartIds.size();
-									}
-								}
-							} catch (InvalidProtocolBufferException e) {}
-						}	
+						boolean reqIm = false;
+						Set<String> reqSubparts = new HashSet<String>();
+						for (StudentSectioningPref pref: c.getPreferences()) {
+							if (!pref.isRequired()) continue;
+							if (pref instanceof StudentInstrMthPref) {
+								reqIm = true;
+							}
+							if (pref instanceof StudentClassPref) {
+								StudentClassPref scp = (StudentClassPref)pref;
+								reqSubparts.add(scp.getClazz().getSchedulingSubpart().getItypeDesc());
+							}
+						}
+						if (reqIm) {
+							s.setTotalPrefInstrMethConflict(s.getTotalPrefInstrMethConflict() + 1);
+							gtPIM++;
+						}
+						if (!reqSubparts.isEmpty()) {
+							s.setTotalPrefSectionConflict(s.getTotalPrefSectionConflict() + reqSubparts.size());
+							gtPSec += reqSubparts.size();
+						}
 					}
 				}
 				if (crm.request().getCourseDemand().getTimestamp() != null) {

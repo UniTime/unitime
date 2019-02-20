@@ -237,5 +237,6 @@
 	<mapping resource="Advisor.hbm.xml"/>
 	<mapping resource="Automation.hbm.xml"/>
 	<mapping resource="SctSolutionLog.hbm.xml"/>
+	<mapping resource="SectioningPreferences.hbm.xml"/>
 </session-factory>
 </hibernate-configuration>

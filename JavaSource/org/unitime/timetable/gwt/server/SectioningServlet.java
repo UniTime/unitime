@@ -84,7 +84,6 @@ import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
-import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.CourseType;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -102,9 +101,12 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentClassPref;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.StudentGroupType;
+import org.unitime.timetable.model.StudentInstrMthPref;
+import org.unitime.timetable.model.StudentSectioningPref;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
@@ -188,8 +190,6 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LoginManager;
 import org.unitime.timetable.util.NameFormat;
-
-import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
  * @author Tomas Muller
@@ -2131,12 +2131,21 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						}
 						rc.setOverrideExternalId(course.getOverrideExternalId());
 						rc.setOverrideTimeStamp(course.getOverrideTimeStamp());
-						CourseRequestOption pref = course.getCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE);
-						if (pref != null) {
-							try {
-								OnlineSectioningHelper.fillPreferencesIn(rc, pref.getOption());
-							} catch (InvalidProtocolBufferException e) {}
-						}
+						if (course.getPreferences() != null)
+							for (StudentSectioningPref ssp: course.getPreferences()) {
+								if (ssp instanceof StudentClassPref) {
+									StudentClassPref scp = (StudentClassPref)ssp;
+									String suffix = scp.getClazz().getClassSuffix(course.getCourseOffering());
+									if (suffix == null)
+										suffix = scp.getClazz().getSchedulingSubpart().getItypeDesc().trim() + " " + scp.getClazz().getSectionNumberString();
+									else if (suffix.length() <= 4)
+										suffix = scp.getClazz().getSchedulingSubpart().getItypeDesc().trim() + " " + suffix;
+									rc.setSelectedClass(scp.getClazz().getUniqueId(), suffix, scp.isRequired(), true);
+								} else if (ssp instanceof StudentInstrMthPref) {
+									StudentInstrMthPref imp = (StudentInstrMthPref)ssp;
+									rc.setSelectedIntructionalMethod(imp.getInstructionalMethod().getUniqueId(), imp.getInstructionalMethod().getLabel(), imp.isRequired(), true);
+								}
+							}
 						r.addRequestedCourse(rc);
 					}
 					if (r.hasRequestedCourse()) {

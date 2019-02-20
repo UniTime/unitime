@@ -193,7 +193,6 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 		for (CourseRequestInterface.Request r: request.getCourses()) {
 			if (r.hasRequestedCourse()) {
 				List<CourseOffering> courses = new ArrayList<CourseOffering>();
-				Map<Long, OnlineSectioningLog.CourseRequestOption.Builder> preferences = new HashMap<Long, OnlineSectioningLog.CourseRequestOption.Builder>();
 				Map<Long, RequestedCourse> rcs = new HashMap<Long, RequestedCourse>();
 				for (RequestedCourse rc: r.getRequestedCourse()) {
 					if (rc.isFreeTime()) {
@@ -241,13 +240,6 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 						if (co != null) {
 							rcs.put(co.getUniqueId(), rc);
 							courses.add(co);
-							if (server != null) {
-								OnlineSectioningLog.CourseRequestOption.Builder pref = OnlineSectioningHelper.toPreference(server, rc, new XCourseId(co));
-								if (pref != null) preferences.put(co.getUniqueId(), pref);
-							} else {
-								OnlineSectioningLog.CourseRequestOption.Builder pref = OnlineSectioningHelper.toPreference(co, rc);
-								if (pref != null) preferences.put(co.getUniqueId(), pref);
-							}
 						}
 					}
 					if (rc.getStatus() == RequestedCourseStatus.NEW_REQUEST || rc.getStatus() == null)
@@ -287,13 +279,13 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 						cd.getCourseRequests().add(cr);
 						cr.setCourseDemand(cd);
 					}
+					RequestedCourse rc = rcs.get(co.getUniqueId());
+					cr.updatePreferences(rc, helper.getHibSession());
 					cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT, null);
-					cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE, preferences.get(co.getUniqueId()));
 					cr.setAllowOverlap(false);
 					cr.setCredit(0);
 					cr.setOrder(order++);
 					cr.setCourseOffering(co);
-					RequestedCourse rc = rcs.get(co.getUniqueId());
 					cr.setOverrideExternalId(rc == null ? null : rc.getOverrideExternalId());
 					cr.setOverrideTimeStamp(rc == null ? null : rc.getOverrideTimeStamp());
 					cr.setCourseRequestOverrideStatus(rc == null ? null :
@@ -318,7 +310,6 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 		for (CourseRequestInterface.Request r: request.getAlternatives()) {
 			if (r.hasRequestedCourse()) {
 				List<CourseOffering> courses = new ArrayList<CourseOffering>();
-				Map<Long, OnlineSectioningLog.CourseRequestOption.Builder> preferences = new HashMap<Long, OnlineSectioningLog.CourseRequestOption.Builder>();
 				Map<Long, RequestedCourse> rcs = new HashMap<Long, RequestedCourse>();
 				for (RequestedCourse rc: r.getRequestedCourse()) {
 					if (rc.isFreeTime()) {
@@ -366,13 +357,6 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 						if (co != null) {
 							rcs.put(co.getUniqueId(), rc);
 							courses.add(co);
-							if (server != null) {
-								OnlineSectioningLog.CourseRequestOption.Builder pref = OnlineSectioningHelper.toPreference(server, rc, new XCourseId(co));
-								if (pref != null) preferences.put(co.getUniqueId(), pref);
-							} else {
-								OnlineSectioningLog.CourseRequestOption.Builder pref = OnlineSectioningHelper.toPreference(co, rc);
-								if (pref != null) preferences.put(co.getUniqueId(), pref);
-							}
 						}
 					}
 					if (rc.getStatus() == RequestedCourseStatus.NEW_REQUEST || rc.getStatus() == null)
@@ -412,13 +396,13 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 						cd.getCourseRequests().add(cr);
 						cr.setCourseDemand(cd);
 					}
+					RequestedCourse rc = rcs.get(co.getUniqueId());
+					cr.updatePreferences(rc, helper.getHibSession());
 					cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT, null);
-					cr.updateCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE, preferences.get(co.getUniqueId()));
 					cr.setAllowOverlap(false);
 					cr.setCredit(0);
 					cr.setOrder(order++);
 					cr.setCourseOffering(co);
-					RequestedCourse rc = rcs.get(co.getUniqueId());
 					cr.setOverrideExternalId(rc == null ? null : rc.getOverrideExternalId());
 					cr.setOverrideTimeStamp(rc == null ? null : rc.getOverrideTimeStamp());
 					cr.setCourseRequestOverrideStatus(rc == null ? null :

@@ -712,6 +712,12 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 				return iRequestedCourse.get(index);
 			return null;
 		}
+		public RequestedCourse getRequestedCourse(Long courseId) {
+			if (iRequestedCourse == null) return null;
+			for (RequestedCourse rc: iRequestedCourse)
+				if (courseId.equals(rc.getCourseId())) return rc;
+			return null;
+		}
 		public boolean hasRequestedCourse() { return iRequestedCourse != null && !iRequestedCourse.isEmpty(); } //&& !hasRequestedFreeTime(); }
 		public void addRequestedCourse(RequestedCourse requestedCourse) {
 			if (iRequestedCourse == null)

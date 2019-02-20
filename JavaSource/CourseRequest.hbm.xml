@@ -106,6 +106,17 @@
             name="overrideTimeStamp"
             column="req_ts"
             type="java.util.Date"
-            not-null="false"/>        
+            not-null="false"/>
+		
+		<set
+            name="preferences"
+            table="sect_pref"
+            inverse="true"
+            cascade="all">
+
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="request_id" foreign-key="fk_sct_pref_request"/>
+            <one-to-many class="StudentSectioningPref"/>
+        </set>
     </class>
 </hibernate-mapping>

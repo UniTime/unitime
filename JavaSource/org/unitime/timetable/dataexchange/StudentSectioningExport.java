@@ -28,22 +28,18 @@ import org.dom4j.Element;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseRequest;
-import org.unitime.timetable.model.CourseRequestOption;
-import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.StudentAreaClassificationMinor;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentClassPref;
 import org.unitime.timetable.model.StudentGroup;
-import org.unitime.timetable.model.dao.Class_DAO;
-import org.unitime.timetable.model.dao.InstructionalMethodDAO;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
+import org.unitime.timetable.model.StudentInstrMthPref;
+import org.unitime.timetable.model.StudentSectioningPref;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
-
-import com.google.protobuf.InvalidProtocolBufferException;
 
 public class StudentSectioningExport extends BaseExport {
 	protected static Formats.Format<Number> sTwoNumbersDF = Formats.getNumberFormat("00");
@@ -132,58 +128,27 @@ public class StudentSectioningExport extends BaseExport {
 	        	        		classEl.addAttribute("type", clazz.getSchedulingSubpart().getItypeDesc().trim());
 	        	        		classEl.addAttribute("suffix", getClassSuffix(clazz));
 	        				}
-	        				for (CourseRequestOption option: cr.getCourseRequestOptions()) {
-	        	        		if (OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE.getNumber() == option.getOptionType()) {
-	        	        			try {
-	        	        				OnlineSectioningLog.CourseRequestOption pref = option.getOption();
-	        	        				Element prefEl = courseOfferingEl.addElement("preferences");
-	        	        				if (pref.getInstructionalMethodCount() > 0)
-	        	        					for (OnlineSectioningLog.Entity im: pref.getInstructionalMethodList()) {
-	        	        						InstructionalMethod meth = InstructionalMethodDAO.getInstance().get(im.getUniqueId(), getHibSession());
-	        	        						boolean required = false;
-	    		    							if (im.getParameterCount() > 0)
-	    		    								for (OnlineSectioningLog.Property p: im.getParameterList())
-	    		    									if ("required".equals(p.getKey()))
-	    		    										required = "true".equals(p.getValue());
-	        	        						if (meth != null) {
-	        	        							Element imEl = prefEl.addElement("instructional-method");
-	        	        							imEl.addAttribute("externalId", meth.getReference());
-	        	        							imEl.addAttribute("name", meth.getLabel());
-	        	        							if (required) imEl.addAttribute("required", "true");
-	        	        						} else {
-		        	        						Element imEl = prefEl.addElement("instructional-method");
-		        	        						if (im.hasExternalId())
-		        	        							imEl.addAttribute("externalId", im.getExternalId());
-		        	        						if (im.hasName())
-		        	        							imEl.addAttribute("name", im.getName());
-		        	        						if (required) imEl.addAttribute("required", "true");
-	        	        						}
-	        	        					}
-	        	        				if (pref.getSectionCount() > 0)
-	        	        					for (OnlineSectioningLog.Section s: pref.getSectionList()) {
-	        	        						Class_ clazz = Class_DAO.getInstance().get(s.getClazz().getUniqueId(), getHibSession());
-	        	        						boolean required = (s.hasPreference() && s.getPreference() == OnlineSectioningLog.Section.Preference.REQUIRED);
-	        	        						if (clazz != null) {
-	        	        							Element classEl = prefEl.addElement("class");
-	        	        							String extId = clazz.getExternalId(cr.getCourseOffering());
-	        	    	        	        		if (extId != null && !extId.isEmpty())
-	        	    	        	        			classEl.addAttribute("externalId", extId);
-	        	    	        	        		classEl.addAttribute("type", clazz.getSchedulingSubpart().getItypeDesc().trim());
-	        	    	        	        		classEl.addAttribute("suffix", getClassSuffix(clazz));
-	        	    	        	        		if (required) classEl.addAttribute("required", "true");
-	        	        						} else {
-		        	        						Element classEl = prefEl.addElement("class");
-		        	        						classEl.addAttribute("suffix", s.getClazz().getExternalId());
-		        	        						if (s.getSubpart().hasName())
-		        	        							classEl.addAttribute("type", s.getSubpart().getName());
-		        	        						else if (s.getSubpart().hasExternalId())
-		        	        							classEl.addAttribute("type", s.getSubpart().getExternalId().trim());
-		        	        						if (required) classEl.addAttribute("required", "true");
-	        	        						}
-	        	        					}
-	        	            		} catch (InvalidProtocolBufferException e) {}
-	        	        		}
-	        	        	}
+	        				if (cr.getPreferences() != null && !cr.getPreferences().isEmpty()) {
+	        					Element prefEl = courseOfferingEl.addElement("preferences");
+	        					for (StudentSectioningPref p: cr.getPreferences()) {
+	        						if (p instanceof StudentClassPref) {
+	        							StudentClassPref scp = (StudentClassPref)p;
+	        							Element classEl = prefEl.addElement("class");
+	        							String extId = scp.getClazz().getExternalId(cr.getCourseOffering());
+	    	        	        		if (extId != null && !extId.isEmpty())
+	    	        	        			classEl.addAttribute("externalId", extId);
+	    	        	        		classEl.addAttribute("type", scp.getClazz().getSchedulingSubpart().getItypeDesc().trim());
+	    	        	        		classEl.addAttribute("suffix", getClassSuffix(scp.getClazz()));
+	    	        	        		if (scp.isRequired()) classEl.addAttribute("required", "true");
+	        						} else if (p instanceof StudentInstrMthPref) {
+	        							StudentInstrMthPref imp = (StudentInstrMthPref)p;
+	        							Element imEl = prefEl.addElement("instructional-method");
+	        							imEl.addAttribute("externalId", imp.getInstructionalMethod().getReference());
+	        							imEl.addAttribute("name", imp.getInstructionalMethod().getLabel());
+	        							if (imp.isRequired()) imEl.addAttribute("required", "true");
+	        						}
+	        					}
+	        				}
 	        				first = false;
 	        			}
 	        		}

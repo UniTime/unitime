@@ -29,6 +29,7 @@ import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.CourseRequestOption;
+import org.unitime.timetable.model.StudentSectioningPref;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
@@ -49,6 +50,7 @@ public abstract class BaseCourseRequest implements Serializable {
 	private CourseOffering iCourseOffering;
 	private Set<CourseRequestOption> iCourseRequestOptions;
 	private Set<ClassWaitList> iClassWaitLists;
+	private Set<StudentSectioningPref> iPreferences;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_ORD = "order";
@@ -109,6 +111,13 @@ public abstract class BaseCourseRequest implements Serializable {
 	public void addToclassWaitLists(ClassWaitList classWaitList) {
 		if (iClassWaitLists == null) iClassWaitLists = new HashSet<ClassWaitList>();
 		iClassWaitLists.add(classWaitList);
+	}
+
+	public Set<StudentSectioningPref> getPreferences() { return iPreferences; }
+	public void setPreferences(Set<StudentSectioningPref> preferences) { iPreferences = preferences; }
+	public void addTopreferences(StudentSectioningPref studentSectioningPref) {
+		if (iPreferences == null) iPreferences = new HashSet<StudentSectioningPref>();
+		iPreferences.add(studentSectioningPref);
 	}
 
 	public boolean equals(Object o) {

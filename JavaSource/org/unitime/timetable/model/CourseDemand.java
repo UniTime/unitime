@@ -19,8 +19,15 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.cpsolver.studentsct.model.Choice;
+import org.cpsolver.studentsct.model.Config;
+import org.cpsolver.studentsct.model.Course;
+import org.cpsolver.studentsct.model.Section;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.model.base.BaseCourseDemand;
 import org.unitime.timetable.model.dao.CourseDemandDAO;
 
@@ -63,5 +70,46 @@ public class CourseDemand extends BaseCourseDemand implements Comparable {
             createQuery("select c from CourseDemand c where c.student.session.uniqueId=:sessionId").
             setLong("sessionId", sessionId.longValue()).
             list(); 
+    }
+    
+    public void updatePreferences(org.cpsolver.studentsct.model.CourseRequest request, org.hibernate.Session hibSession) {
+    	if (getCourseRequests() == null || getCourseRequests().isEmpty()) return;
+    	if (!request.getSelectedChoices().isEmpty() || !request.getRequiredChoices().isEmpty()) {
+        	for (Course course: request.getCourses()) {
+        		RequestedCourse rc = new RequestedCourse();
+            	Set<Long> im = new HashSet<Long>();
+            	for (Choice choice: request.getSelectedChoices()) {
+            		if (!course.getOffering().equals(choice.getOffering())) continue;
+            		if (choice.getSectionId() != null) {
+            			Section section = choice.getOffering().getSection(choice.getSectionId());
+            			if (section != null)
+            				rc.setSelectedClass(section.getId(), section.getName(course.getId()), false, true); 
+            		} else if (choice.getConfigId() != null) {
+            			for (Config config: choice.getOffering().getConfigs()) {
+            				if (choice.getConfigId().equals(config.getId()) && config.getInstructionalMethodId() != null && im.add(config.getInstructionalMethodId())) {
+            					rc.setSelectedIntructionalMethod(config.getInstructionalMethodId(), config.getInstructionalMethodName(), false, true);
+            				}
+            			}
+            		}
+            	}
+            	for (Choice choice: request.getRequiredChoices()) {
+            		if (!course.getOffering().equals(choice.getOffering())) continue;
+            		if (choice.getSectionId() != null) {
+            			Section section = choice.getOffering().getSection(choice.getSectionId());
+            			if (section != null)
+            				rc.setSelectedClass(section.getId(), section.getName(course.getId()), true, true);
+            		} else if (choice.getConfigId() != null) {
+            			for (Config config: choice.getOffering().getConfigs()) {
+            				if (choice.getConfigId().equals(config.getId()) && config.getInstructionalMethodId() != null && im.add(config.getInstructionalMethodId())) {
+            					rc.setSelectedIntructionalMethod(config.getInstructionalMethodId(), config.getInstructionalMethodName(), true, true);
+            				}
+            			}
+            		}
+            	}
+            	for (CourseRequest cr: getCourseRequests())
+            		if (cr.getCourseOffering().getUniqueId().equals(course.getId()))
+            			cr.updatePreferences(rc, hibSession);
+        	}
+    	}
     }
 }

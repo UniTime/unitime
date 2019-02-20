@@ -97,7 +97,6 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionObject;
@@ -121,9 +120,12 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentClassPref;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.StudentGroupType;
+import org.unitime.timetable.model.StudentInstrMthPref;
+import org.unitime.timetable.model.StudentSectioningPref;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.TeachingClassRequest;
@@ -156,8 +158,6 @@ import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.NameFormat;
 import org.unitime.timetable.util.duration.DurationModel;
-
-import com.google.protobuf.InvalidProtocolBufferException;
 
 
 /**
@@ -1018,50 +1018,21 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         if (section != null && cwl.getType().equals(ClassWaitList.Type.LOCKED.ordinal()))
                         	wlChoices.add(section.getChoice());
                     }
-                    OnlineSectioningLog.CourseRequestOption pref = null;
-                    try {
-                        CourseRequestOption opt = cr.getCourseRequestOption(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE);
-                    	if (opt != null) pref = opt.getOption();
-                    } catch (InvalidProtocolBufferException e) {}
-                    if (pref != null) {
-    					if (pref.getInstructionalMethodCount() > 0) {
-    						for (OnlineSectioningLog.Entity e: pref.getInstructionalMethodList()) {
-    							boolean required = false;
-    							if (e.getParameterCount() > 0)
-    								for (OnlineSectioningLog.Property p: e.getParameterList())
-    									if ("required".equals(p.getKey()))
-    										required = "true".equals(p.getValue());
-    							for (Config config: course.getOffering().getConfigs())
-    								if (config.getInstructionalMethodName() != null && config.getInstructionalMethodName().equals(e.getName()))
-    									(required ? reqChoices : selChoices).add(new Choice(config));
-    								else if (config.getInstructionalMethodId() != null && config.getInstructionalMethodId().equals(e.getUniqueId()))
-    									(required ? reqChoices : selChoices).add(new Choice(config));
-    						}
-    					}
-    					if (pref.getSectionCount() > 0) {
-    						for (OnlineSectioningLog.Section x: pref.getSectionList()) {
-    							boolean required = (x.hasPreference() && x.getPreference() == OnlineSectioningLog.Section.Preference.REQUIRED);
-    							Section section = course.getOffering().getSection(x.getClazz().getUniqueId());
+                    if (cr.getPreferences() != null) {
+                    	for (StudentSectioningPref p: cr.getPreferences()) {
+                    		boolean required = p.isRequired();
+                    		if (p instanceof StudentClassPref) {
+                    			StudentClassPref scp = (StudentClassPref)p;
+    							Section section = course.getOffering().getSection(scp.getClazz().getUniqueId());
     							if (section != null)
     								(required ? reqChoices : selChoices).add(section.getChoice());
-    							else {
-    								for (Config config: course.getOffering().getConfigs())
-    									for (Subpart subpart: config.getSubparts())
-    										for (Section sect: subpart.getSections())
-    											if (x.getClazz().getExternalId().equals(sect.getName(course.getId()))) {
-    												if (required) {
-    													Section z = sect;
-    													while (z != null) {
-    														reqChoices.add(new Choice(z)); z = z.getParent();
-    													}
-    													reqChoices.add(new Choice(sect.getSubpart().getConfig()));
-    												} else {
-    													selChoices.add(sect.getChoice());
-    												}
-    											}
-    							}
-    						}
-    					}
+                    		} else if (p instanceof StudentInstrMthPref) {
+                    			StudentInstrMthPref imp = (StudentInstrMthPref)p;
+                    			for (Config config: course.getOffering().getConfigs())
+                    				if (config.getInstructionalMethodId() != null && config.getInstructionalMethodId().equals(imp.getInstructionalMethod().getUniqueId()))
+                    					(required ? reqChoices : selChoices).add(new Choice(config));
+                    		}
+                    	}
                     }
                     if (assignedConfig==null) {
                         HashSet<Long> subparts = new HashSet<Long>();

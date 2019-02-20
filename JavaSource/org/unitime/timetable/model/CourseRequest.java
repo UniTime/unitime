@@ -24,7 +24,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.model.base.BaseCourseRequest;
+import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.InstructionalMethodDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 
 
@@ -145,5 +149,73 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
     
     public boolean isRequestRejected() {
     	return getOverrideStatus() != null && getOverrideStatus().intValue() == CourseRequestOverrideStatus.REJECTED.ordinal();
+    }
+    
+    public boolean updatePreferences(RequestedCourse rc, org.hibernate.Session hibSession) {
+    	List<StudentSectioningPref> remain = null;
+    	boolean changed = false;
+    	if (getPreferences() == null)
+    		setPreferences(new HashSet<StudentSectioningPref>());
+    	else
+    		remain = new ArrayList<StudentSectioningPref>(getPreferences());
+    	
+    	if (rc != null && rc.hasSelectedClasses()) {
+			p: for (Preference p: rc.getSelectedClasses()) {
+				Class_ clazz = Class_DAO.getInstance().get(p.getId(), hibSession);
+				if (clazz == null) continue;
+				if (remain != null)
+					for (Iterator<StudentSectioningPref> i = remain.iterator(); i.hasNext(); ) {
+						StudentSectioningPref r = i.next();
+						if (r instanceof StudentClassPref && ((StudentClassPref)r).getClazz().equals(clazz)) {
+							i.remove();
+							if (r.getRequired() != p.isRequired()) {
+								r.setRequired(p.isRequired());
+								hibSession.update(r);
+								changed = true;
+							}
+							continue p;
+						}
+					}
+				StudentClassPref scp = new StudentClassPref();
+				scp.setCourseRequest(this);
+				scp.setRequired(p.isRequired());
+				scp.setClazz(clazz);
+				getPreferences().add(scp);
+				changed = true;
+			}
+		}
+		if (rc != null && rc.hasSelectedIntructionalMethods()) {
+			p: for (Preference p: rc.getSelectedIntructionalMethods()) {
+				InstructionalMethod im = InstructionalMethodDAO.getInstance().get(p.getId(), hibSession);
+				if (im == null) continue;
+				if (remain != null)
+					for (Iterator<StudentSectioningPref> i = remain.iterator(); i.hasNext(); ) {
+						StudentSectioningPref r = i.next();
+						if (r instanceof StudentInstrMthPref && ((StudentInstrMthPref)r).getInstructionalMethod().equals(im)) {
+							i.remove();
+							if (r.getRequired() != p.isRequired()) {
+								r.setRequired(p.isRequired());
+								hibSession.update(r);
+								changed = true;
+							}
+							continue p;
+						}
+					}
+				StudentInstrMthPref imp = new StudentInstrMthPref();
+				imp.setCourseRequest(this);
+				imp.setRequired(p.isRequired());
+				imp.setInstructionalMethod(im);
+				getPreferences().add(imp);
+				changed = true;
+			}
+		}
+    	if (remain != null) {
+    		for (StudentSectioningPref p: remain) {
+    			hibSession.delete(p);
+    			getPreferences().remove(p);
+    			changed = true;
+    		}
+    	}
+    	return changed;
     }
 }

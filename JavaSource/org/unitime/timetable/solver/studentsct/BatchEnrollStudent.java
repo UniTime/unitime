@@ -141,11 +141,7 @@ public class BatchEnrollStudent extends EnrollStudent {
 											for (Section section: subpart.getSections())
 												if (rc.isSelectedClass(section.getId())) {
 													if (rc.isSelectedClass(section.getId(), true)) {
-														Section s = section;
-														while (s != null) {
-															reqChoices.add(new Choice(s)); s = s.getParent();
-														}
-														reqChoices.add(new Choice(section.getSubpart().getConfig()));
+														reqChoices.add(new Choice(section));
 													} else {
 														selChoices.add(new Choice(section));
 													}
@@ -193,11 +189,13 @@ public class BatchEnrollStudent extends EnrollStudent {
 				if (!courseRequest.getSelectedChoices().equals(selChoices)) {
 					courseRequest.getSelectedChoices().clear();
 					courseRequest.getSelectedChoices().addAll(selChoices);
+					changed = true;
 				}
 				
 				if (!courseRequest.getRequiredChoices().equals(reqChoices)) {
 					courseRequest.getRequiredChoices().clear();
 					courseRequest.getRequiredChoices().addAll(reqChoices);
+					changed = true;
 				}
 				
 				priority++;
@@ -253,11 +251,7 @@ public class BatchEnrollStudent extends EnrollStudent {
 											for (Section section: subpart.getSections())
 												if (rc.isSelectedClass(section.getId())) {
 													if (rc.isSelectedClass(section.getId(), true)) {
-														Section s = section;
-														while (s != null) {
-															reqChoices.add(new Choice(s)); s = s.getParent();
-														}
-														reqChoices.add(new Choice(section.getSubpart().getConfig()));
+														reqChoices.add(new Choice(section));
 													} else {
 														selChoices.add(new Choice(section));
 													}
@@ -301,11 +295,13 @@ public class BatchEnrollStudent extends EnrollStudent {
 				if (!courseRequest.getSelectedChoices().equals(selChoices)) {
 					courseRequest.getSelectedChoices().clear();
 					courseRequest.getSelectedChoices().addAll(selChoices);
+					changed = true;
 				}
 				
 				if (!courseRequest.getRequiredChoices().equals(reqChoices)) {
 					courseRequest.getRequiredChoices().clear();
 					courseRequest.getRequiredChoices().addAll(reqChoices);
+					changed = true;
 				}
 				
 				priority++;

@@ -43,7 +43,6 @@ import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.match.AbstractStudentMatcher;
 import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
@@ -51,6 +50,7 @@ import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest.XPreference;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XFreeTimeRequest;
@@ -378,13 +378,32 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 										s.addIMCredit(g.getInstructionalMethod().getReference(), xs.getCreditValue(m.enrollment().getCourseId()));
 								}
 								
-								OnlineSectioningLog.CourseRequestOption pref = m.request().getPreferences(m.enrollment());
+								List<XPreference> pref = m.request().getPreferences(m.enrollment());
 								if (pref != null) {
-									if (pref.getInstructionalMethodCount() > 0) {
-										boolean im = false;
-										if (g.getInstructionalMethod() != null)
-											for (OnlineSectioningLog.Entity e: pref.getInstructionalMethodList())
-												if (g.getInstructionalMethod().getReference().equals(e.getExternalId()) || g.getInstructionalMethod().getUniqueId().equals(e.getUniqueId())) { im = true; break; }
+									boolean hasIm = false;
+									boolean im = false;
+									Set<String> allSubparts = new HashSet<String>();
+									Set<String> selectedSubparts = new HashSet<String>();
+									for (XPreference p: pref) {
+										switch (p.getType()) {
+										case INSTR_METHOD:
+											hasIm = true;
+											if (g.getInstructionalMethod() != null && g.getInstructionalMethod().getUniqueId().equals(p.getUniqueId()))
+												im = true;
+											break;
+										case SECTION:
+											XSection ps = o.getSection(p.getUniqueId());
+											if (ps != null) {
+												allSubparts.add(ps.getSubpartName());
+												for (XSection section: o.getSections(m.enrollment())) {
+													if (section.getSectionId().equals(p.getUniqueId()))
+														selectedSubparts.add(section.getSubpartName());
+												}
+											}
+											break;
+										} 
+									}
+									if (hasIm) {
 										s.setTotalPrefInstrMethConflict(s.getTotalPrefInstrMethConflict() + 1);
 										gtPIM++;
 										if (im) {
@@ -392,26 +411,14 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 											gPIM++;
 										}
 									}
-									if (pref.getSectionCount() > 0) {
-										Set<String> allSubpartIds = new HashSet<String>();
-										Set<String> selectedSubpartIds = new HashSet<String>();
-										for (OnlineSectioningLog.Section sc: pref.getSectionList()) {
-											allSubpartIds.add(sc.getSubpart().getName());
-											for (XSection section: o.getSections(m.enrollment())) {
-												if (section.getSectionId().equals(sc.getClazz().getUniqueId()) || section.getName(m.enrollment().getCourseId()).equals(sc.getClazz().getExternalId()))
-													selectedSubpartIds.add(sc.getSubpart().getName());
-											}
-										}
-										s.setTotalPrefSectionConflict(s.getTotalPrefSectionConflict() + allSubpartIds.size());
-										gtPSec += allSubpartIds.size();
-										if (!allSubpartIds.isEmpty()) {
-											s.setPrefSectionConflict(s.getPrefSectionConflict() + selectedSubpartIds.size());
-											gPSec += selectedSubpartIds.size();
-										}
+									if (!allSubparts.isEmpty()) {
+										s.setTotalPrefSectionConflict(s.getTotalPrefSectionConflict() + allSubparts.size());
+										gtPSec += allSubparts.size();
+										s.setPrefSectionConflict(s.getPrefSectionConflict() + selectedSubparts.size());
+										gPSec += selectedSubparts.size();
 									}
 								}
 							}
-							
 							if (o != null)
 								for (XSection section: o.getSections(m.enrollment())) {
 									if (section.getTime() == null) continue;
@@ -458,34 +465,31 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 							s.setUnassigned(s.getUnassigned() + 1); gUnasg ++;
 						}
 						for (XCourseId c: m.request().getCourseIds()) {
-							OnlineSectioningLog.CourseRequestOption pref = m.request().getPreferences(c);
+							List<XPreference> pref = m.request().getPreferences(c);
 							if (pref != null) {
-								if (pref.getInstructionalMethodCount() > 0) {
-									boolean reqIm = false;
-									for (OnlineSectioningLog.Entity e: pref.getInstructionalMethodList()) {
-										boolean required = false;
-		    							if (e.getParameterCount() > 0)
-		    								for (OnlineSectioningLog.Property p: e.getParameterList())
-		    									if ("required".equals(p.getKey()))
-		    										required = "true".equals(p.getValue());
-		    							if (required) { reqIm = true; break; }
-									}
-									if (reqIm) {
-										s.setTotalPrefInstrMethConflict(s.getTotalPrefInstrMethConflict() + 1);
-										gtPIM++;
+								XOffering o = server.getOffering(c.getOfferingId());
+								boolean reqIm = false;
+								Set<String> allSubparts = new HashSet<String>();
+								for (XPreference p: pref) {
+									if (!p.isRequired()) continue;
+									switch (p.getType()) {
+									case INSTR_METHOD:
+										reqIm = true;
+										break;
+									case SECTION:
+										XSection ps = (o == null ? null : o.getSection(p.getUniqueId()));
+										if (ps != null)
+											allSubparts.add(ps.getSubpartName());
+										break;
 									}
 								}
-								if (pref.getSectionCount() > 0) {
-									Set<String> allSubpartIds = new HashSet<String>();
-									for (OnlineSectioningLog.Section sc: pref.getSectionList()) {
-										boolean required = (sc.hasPreference() && sc.getPreference() == OnlineSectioningLog.Section.Preference.REQUIRED);
-		    							if (required)
-		    								allSubpartIds.add(sc.getSubpart().getName());
-									}
-									if (!allSubpartIds.isEmpty()) {
-										s.setTotalPrefSectionConflict(s.getTotalPrefSectionConflict() + allSubpartIds.size());
-										gtPSec += allSubpartIds.size();
-									}
+								if (reqIm) {
+									s.setTotalPrefInstrMethConflict(s.getTotalPrefInstrMethConflict() + 1);
+									gtPIM++;
+								}
+								if (!allSubparts.isEmpty()) {
+									s.setTotalPrefSectionConflict(s.getTotalPrefSectionConflict() + allSubparts.size());
+									gtPSec += allSubparts.size();
 								}
 							}	
 						}

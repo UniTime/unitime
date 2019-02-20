@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -42,6 +43,7 @@ import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Section;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
@@ -50,7 +52,10 @@ import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentClassPref;
 import org.unitime.timetable.model.StudentEnrollmentMessage;
+import org.unitime.timetable.model.StudentInstrMthPref;
+import org.unitime.timetable.model.StudentSectioningPref;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 
@@ -68,7 +73,7 @@ public class XCourseRequest extends XRequest {
     private XEnrollment iEnrollment = null;
     private Map<XCourseId, List<XWaitListedSection>> iSectionWaitlist = null;
     private Map<XCourseId, byte[]> iOptions = null;
-    private Map<XCourseId, byte[]> iPreferences = null;
+    private Map<XCourseId, List<XPreference>> iPreferences = null;
     private String iMessage = null;
     private Map<XCourseId, XOverride> iOverrides = null;
     private boolean iCritical = false;
@@ -105,14 +110,18 @@ public class XCourseRequest extends XRequest {
         		if (OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT.getNumber() == option.getOptionType()) {
         			if (iOptions == null) iOptions = new HashMap<XCourseId, byte[]>();
         			iOptions.put(courseId, option.getValue());
-        		} else if (OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE.getNumber() == option.getOptionType()) {
-        			if (iPreferences == null) iPreferences = new HashMap<XCourseId, byte[]>();
-        			iPreferences.put(courseId, option.getValue());
         		}
         	}
         	if (cr.getOverrideExternalId() != null) {
         		if (iOverrides == null) iOverrides = new HashMap<XCourseId, XOverride>();
         		iOverrides.put(courseId, new XOverride(cr.getOverrideExternalId(), cr.getOverrideTimeStamp(), cr.getOverrideStatus()));
+        	}
+        	if (cr.getPreferences() != null && !cr.getPreferences().isEmpty()) {
+        		List<XPreference> prefs = new ArrayList<XPreference>();
+        		for (StudentSectioningPref p: cr.getPreferences())
+        			prefs.add(new XPreference(cr, p));
+        		if (iPreferences == null) iPreferences = new HashMap<XCourseId, List<XPreference>>();
+        		iPreferences.put(courseId, prefs);
         	}
         }
         if (helper.isAlternativeCourseEnabled() && crs.size() == 1 && !demand.isAlternative()) {
@@ -203,7 +212,7 @@ public class XCourseRequest extends XRequest {
     	if (request.iOptions != null)
     		iOptions = new HashMap<XCourseId, byte[]>(request.iOptions);
     	if (request.iPreferences != null)
-    		iPreferences = new HashMap<XCourseId, byte[]>(request.iPreferences);
+    		iPreferences = new HashMap<XCourseId, List<XPreference>>(request.iPreferences);
     	if (request.iOverrides != null)
     		iOverrides = new HashMap<XCourseId, XOverride>(request.iOverrides);
     	iMessage = request.getEnrollmentMessage();
@@ -220,19 +229,19 @@ public class XCourseRequest extends XRequest {
 
     	if (!request.getSelectedChoices().isEmpty() || !request.getRequiredChoices().isEmpty()) {
         	for (Course course: request.getCourses()) {
+        		List<XPreference> prefs = new ArrayList<XPreference>();
+        		
             	Set<Long> im = new HashSet<Long>();
-            	OnlineSectioningLog.CourseRequestOption.Builder preference = OnlineSectioningLog.CourseRequestOption.newBuilder();
-            	preference.setType(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE);
             	for (Choice choice: request.getSelectedChoices()) {
             		if (!course.getOffering().equals(choice.getOffering())) continue;
             		if (choice.getSectionId() != null) {
             			Section section = choice.getOffering().getSection(choice.getSectionId());
             			if (section != null)
-            				preference.addSection(OnlineSectioningHelper.toProto(section, course));
+            				prefs.add(new XPreference(section, course, false));
             		} else if (choice.getConfigId() != null) {
             			for (Config config: choice.getOffering().getConfigs()) {
             				if (choice.getConfigId().equals(config.getId()) && config.getInstructionalMethodId() != null && im.add(config.getInstructionalMethodId())) {
-            					preference.addInstructionalMethod(OnlineSectioningLog.Entity.newBuilder().setUniqueId(config.getInstructionalMethodId()).setName(config.getInstructionalMethodName()));
+            					prefs.add(new XPreference(XPreferenceType.INSTR_METHOD, config.getInstructionalMethodId(), config.getInstructionalMethodName(), false));
             				}
             			}
             		}
@@ -242,25 +251,19 @@ public class XCourseRequest extends XRequest {
             		if (choice.getSectionId() != null) {
             			Section section = choice.getOffering().getSection(choice.getSectionId());
             			if (section != null)
-            				preference.addSection(OnlineSectioningHelper.toProto(section, course).setPreference(OnlineSectioningLog.Section.Preference.REQUIRED));
+            				prefs.add(new XPreference(section, course, true));
             		} else if (choice.getConfigId() != null) {
             			for (Config config: choice.getOffering().getConfigs()) {
             				if (choice.getConfigId().equals(config.getId()) && config.getInstructionalMethodId() != null && im.add(config.getInstructionalMethodId())) {
-            					OnlineSectioningLog.Entity.Builder e = OnlineSectioningLog.Entity.newBuilder();
-            					e.setUniqueId(config.getInstructionalMethodId());
-            					e.setName(config.getInstructionalMethodName());
-            					if (config.getInstructionalMethodReference() != null)
-            						e.setExternalId(config.getInstructionalMethodReference());
-            					e.addParameterBuilder().setKey("required").setValue("true");
-            					preference.addInstructionalMethod(e);
+            					prefs.add(new XPreference(XPreferenceType.INSTR_METHOD, config.getInstructionalMethodId(), config.getInstructionalMethodName(), true));
             				}
             			}
             		}
             	}
-            	if (preference.getInstructionalMethodCount() > 0 || preference.getSectionCount() > 0) {
-            		if (iPreferences == null) iPreferences = new HashMap<XCourseId, byte[]>();
-        			iPreferences.put(new XCourseId(course), preference.build().toByteArray());	
-            	}    		
+            	if (!prefs.isEmpty()) {
+            		if (iPreferences == null) iPreferences = new HashMap<XCourseId, List<XPreference>>();
+            		iPreferences.put(new XCourseId(course), prefs);
+            	}
         	}
     	}
     }
@@ -395,15 +398,9 @@ public class XCourseRequest extends XRequest {
     	return null;
     }
     
-    public OnlineSectioningLog.CourseRequestOption getPreferences(XCourseId courseId) {
+    public List<XPreference> getPreferences(XCourseId courseId) {
     	if (iPreferences == null) return null;
-    	byte[] option = iPreferences.get(courseId);
-    	if (option != null) {
-    		try {
-    			return OnlineSectioningLog.CourseRequestOption.parseFrom(option);
-    		} catch (InvalidProtocolBufferException e) {}    		
-    	}
-    	return null;
+    	return iPreferences.get(courseId);
     }
     
     public void fillChoicesIn(org.cpsolver.studentsct.model.CourseRequest request) {
@@ -422,44 +419,50 @@ public class XCourseRequest extends XRequest {
     				}
     		}
     	if (iPreferences != null) {
-    		for (Map.Entry<XCourseId, byte[]> entry: iPreferences.entrySet()) {
+    		for (Map.Entry<XCourseId, List<XPreference>> entry: iPreferences.entrySet()) {
     			Course course = request.getCourse(entry.getKey().getCourseId());
     			if (course != null) {
-    				try {
-    					OnlineSectioningLog.CourseRequestOption option = OnlineSectioningLog.CourseRequestOption.parseFrom(entry.getValue());
-    					if (option.getInstructionalMethodCount() > 0) {
-    						for (OnlineSectioningLog.Entity e: option.getInstructionalMethodList()) {
-    							boolean required = false;
-    							if (e.getParameterCount() > 0)
-    								for (OnlineSectioningLog.Property p: e.getParameterList())
-    									if ("required".equals(p.getKey()))
-    										required = "true".equals(p.getValue());
-    							for (Config config: course.getOffering().getConfigs())
-    								if (config.getInstructionalMethodId() != null && config.getInstructionalMethodId().equals(e.getUniqueId()))
-    									(required ? request.getRequiredChoices() : request.getSelectedChoices()).add(new Choice(config));
-    						}
-    					}
-    					if (option.getSectionCount() > 0) {
-    						for (OnlineSectioningLog.Section s: option.getSectionList()) {
-    							boolean required = (s.hasPreference() && s.getPreference() == OnlineSectioningLog.Section.Preference.REQUIRED);
-    							Section section = course.getOffering().getSection(s.getClazz().getUniqueId());
-    							if (section != null) {
-    								if (required) {
-    									Section x = section;
-										while (x != null) {
-											request.getRequiredChoices().add(new Choice(x)); x = x.getParent();
-										}
-										request.getRequiredChoices().add(new Choice(section.getSubpart().getConfig()));
-    								} else {
-    									request.getSelectedChoices().add(new Choice(section));
-    								}
-    							}
-    						}
-    					}
-    	    		} catch (InvalidProtocolBufferException e) {}
+    				for (XPreference p: entry.getValue()) {
+    					switch (p.getType()) {
+    					case INSTR_METHOD:
+    						for (Config config: course.getOffering().getConfigs())
+    							if (config.getInstructionalMethodId() != null && config.getInstructionalMethodId().equals(p.getUniqueId()))
+    								(p.isRequired() ? request.getRequiredChoices() : request.getSelectedChoices()).add(new Choice(config));
+    						break;
+    					case SECTION:
+    						Section section = course.getOffering().getSection(p.getUniqueId());
+							if (section != null) {
+								if (p.isRequired()) {
+									Section x = section;
+									while (x != null) {
+										request.getRequiredChoices().add(new Choice(x)); x = x.getParent();
+									}
+									request.getRequiredChoices().add(new Choice(section.getSubpart().getConfig()));
+								} else {
+									request.getSelectedChoices().add(new Choice(section));
+								}
+							}
+							break;
+						}
+    				}
     			}
     		}
     	}
+    }
+    
+    public void fillPreferencesIn(RequestedCourse rc, XCourseId courseId) {
+    	List<XPreference> prefs = getPreferences(courseId);
+    	if (prefs != null)
+    		for (XPreference p: prefs) {
+    			switch (p.getType()) {
+				case INSTR_METHOD:
+					rc.setSelectedIntructionalMethod(p.getUniqueId(), p.getLabel(), p.isRequired(), true);
+					break;
+				case SECTION:
+					rc.setSelectedClass(p.getUniqueId(), p.getLabel(), p.isRequired(), true);
+					break;
+				}
+    		}
     }
     
     public String getEnrollmentMessage() { return iMessage; }
@@ -528,18 +531,20 @@ public class XCourseRequest extends XRequest {
         	}
         }
         
-        int nrPrefs = in.readInt();
-        if (nrPrefs == 0)
+        int nrCoursePrefs = in.readInt();
+        if (nrCoursePrefs == 0)
         	iPreferences = null;
         else {
-        	iPreferences = new HashMap<XCourseId, byte[]>();
-        	for (int i = 0; i < nrPrefs; i++) {
+        	iPreferences = new HashMap<XCourseId, List<XPreference>>();
+        	for (int i = 0; i < nrCoursePrefs; i++) {
         		Long courseId = in.readLong();
-        		byte[] data = new byte[in.readInt()];
-        		in.read(data);
+        		int nbrPrefs = in.readInt();
+        		List<XPreference> prefs = new ArrayList<XPreference>(nbrPrefs);
+        		for (int j = 0; j < nbrPrefs; j++)
+        			prefs.add(new XPreference(in));
 				for (XCourseId course: iCourseIds)
     				if (course.getCourseId().equals(courseId)) {
-    					iPreferences.put(course, data);
+    					iPreferences.put(course, prefs);
     					break;
     				}
         	}
@@ -605,11 +610,11 @@ public class XCourseRequest extends XRequest {
 		
 		out.writeInt(iPreferences == null ? 0 : iPreferences.size());
 		if (iPreferences != null)
-			for (Map.Entry<XCourseId, byte[]> entry: iPreferences.entrySet()) {
+			for (Map.Entry<XCourseId, List<XPreference>> entry: iPreferences.entrySet()) {
 				out.writeLong(entry.getKey().getCourseId());
-				byte[] value = entry.getValue();
-				out.writeInt(value.length);
-				out.write(value);
+				out.writeInt(entry.getValue().size());
+				for (XPreference p: entry.getValue())
+					p.writeExternal(out);
 			}
 		
 		out.writeObject(iMessage);
@@ -635,6 +640,79 @@ public class XCourseRequest extends XRequest {
 		@Override
 		public XCourseRequest readObject(ObjectInput input) throws IOException, ClassNotFoundException {
 			return new XCourseRequest(input);
+		}
+	}
+	
+	public static enum XPreferenceType {
+		SECTION,
+		INSTR_METHOD,
+		;
+	}
+	
+	public static class XPreference implements Externalizable {
+		private boolean iRequired = false;
+		private Long iId = null;
+		private String iLabel = null;
+		private XPreferenceType iType = null;
+		
+		public XPreference(CourseRequest cr, StudentSectioningPref p) {
+			iRequired = p.isRequired();
+			if (p instanceof StudentClassPref) {
+				StudentClassPref scp = (StudentClassPref)p;
+				iId = scp.getClazz().getUniqueId();
+				iLabel = scp.getClazz().getClassSuffix(cr.getCourseOffering());
+				if (iLabel == null)
+					iLabel = scp.getClazz().getSchedulingSubpart().getItypeDesc().trim() + " " + scp.getClazz().getSectionNumberString();
+				else if (iLabel.length() <= 4)
+					iLabel = scp.getClazz().getSchedulingSubpart().getItypeDesc().trim() + " " + iLabel;
+				iType = XPreferenceType.SECTION;
+			} else {
+				StudentInstrMthPref imp = (StudentInstrMthPref)p;
+				iId = imp.getInstructionalMethod().getUniqueId();
+				iLabel = imp.getInstructionalMethod().getLabel();
+				iType = XPreferenceType.INSTR_METHOD;
+			}
+		}
+		
+		public XPreference(XPreferenceType type, Long id, String label, boolean required) {
+			iType = type;
+			iId = id;
+			iLabel = label;
+			iRequired = required;
+		}
+		
+		public XPreference(Section a, Course c, boolean required) {
+			iType = XPreferenceType.SECTION;
+			iId = a.getId();
+			iLabel = a.getName(c.getId());
+			if (iLabel.length() <= 4)
+				iLabel = a.getSubpart().getName() + " " + iLabel;
+			iRequired = required;
+		}
+		
+		public XPreference(ObjectInput in) throws IOException, ClassNotFoundException {
+			readExternal(in);
+		}
+		
+		public boolean isRequired() { return iRequired; }
+		public Long getUniqueId() { return iId; }
+		public String getLabel() { return iLabel; }
+		public XPreferenceType getType() { return iType; }
+
+		@Override
+		public void writeExternal(ObjectOutput out) throws IOException {
+			out.writeInt(iType.ordinal());
+			out.writeBoolean(iRequired);
+			out.writeLong(iId);
+			out.writeObject(iLabel);
+		}
+
+		@Override
+		public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+			iType = XPreferenceType.values()[in.readInt()];
+			iRequired = in.readBoolean();
+			iId = in.readLong();
+			iLabel = (String)in.readObject();
 		}
 	}
 }

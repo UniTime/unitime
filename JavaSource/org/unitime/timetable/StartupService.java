@@ -19,8 +19,12 @@
 */
 package org.unitime.timetable;
 
+import java.util.HashSet;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
 import org.hibernate.internal.SessionFactoryImpl;
 import org.springframework.beans.factory.DisposableBean;
@@ -30,9 +34,19 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.connection.DisposableConnectionProvider;
 import org.unitime.timetable.events.EventExpirationService;
 import org.unitime.timetable.model.ApplicationConfig;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseRequest;
+import org.unitime.timetable.model.CourseRequestOption;
+import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.SolverInfo;
+import org.unitime.timetable.model.StudentClassPref;
+import org.unitime.timetable.model.StudentInstrMthPref;
+import org.unitime.timetable.model.StudentSectioningPref;
 import org.unitime.timetable.model.base._BaseRootDAO;
+import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.InstructionalMethodDAO;
 import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LogCleaner;
 import org.unitime.timetable.util.MessageLogAppender;
@@ -71,6 +85,8 @@ public class StartupService implements InitializingBean, DisposableBean {
 			    Debug.info(" - Initializing Room Availability Service ... ");
 			    RoomAvailability.getInstance().startService();
 			}
+			
+			updateStudentSectioningPreferences();
 			
 			Debug.info(" - Cleaning Logs ...");
 			LogCleaner.cleanupLogs();
@@ -147,6 +163,70 @@ public class StartupService implements InitializingBean, DisposableBean {
 				throw (RuntimeException)e;
 			else
 				throw new RuntimeException("UniTime Shutdown Failed : " + e.getMessage(), e);
+		}
+	}
+	
+	protected static void updateStudentSectioningPreferences() {
+		org.hibernate.Session hibSession = new _RootDAO().createNewSession();
+		Transaction tx = hibSession.beginTransaction();
+		try {
+			boolean first = true;
+			for (CourseRequestOption option: (List<CourseRequestOption>)hibSession.createQuery("from CourseRequestOption where optionType = :type"
+					).setInteger("type", OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE.getNumber()).list()) {
+				if (first) {
+					Debug.info(" - Updating student scheduling preferences ...");
+					first = false;
+				}
+				CourseRequest cr = option.getCourseRequest();
+				hibSession.delete(option);
+				cr.getCourseRequestOptions().remove(option);
+				if (cr.getPreferences() == null) cr.setPreferences(new HashSet<StudentSectioningPref>());
+				try {
+					OnlineSectioningLog.CourseRequestOption pref = option.getOption();
+					if (pref != null) {
+    					if (pref.getInstructionalMethodCount() > 0) {
+    						for (OnlineSectioningLog.Entity e: pref.getInstructionalMethodList()) {
+    							boolean required = false;
+    							if (e.getParameterCount() > 0)
+    								for (OnlineSectioningLog.Property p: e.getParameterList())
+    									if ("required".equals(p.getKey()))
+    										required = "true".equals(p.getValue());
+    							InstructionalMethod im = InstructionalMethodDAO.getInstance().get(e.getUniqueId());
+    							if (im == null)
+    								im = InstructionalMethod.findByReference(e.getName(), hibSession);
+    							if (im != null) {
+    								StudentInstrMthPref imp = new StudentInstrMthPref();
+    								imp.setCourseRequest(cr);
+    								imp.setRequired(required);
+    								imp.setInstructionalMethod(im);
+    								cr.getPreferences().add(imp);
+    							}
+    						}
+    					}
+    					if (pref.getSectionCount() > 0) {
+    						for (OnlineSectioningLog.Section x: pref.getSectionList()) {
+    							boolean required = (x.hasPreference() && x.getPreference() == OnlineSectioningLog.Section.Preference.REQUIRED);
+    							Class_ clazz = Class_DAO.getInstance().get(x.getClazz().getUniqueId(), hibSession);
+    							if (clazz != null) {
+    								StudentClassPref scp = new StudentClassPref();
+    								scp.setCourseRequest(cr);
+    								scp.setRequired(required);
+    								scp.setClazz(clazz);
+    								cr.getPreferences().add(scp);
+    							}
+    						}
+    					}
+                    }
+				} catch (Exception e) {}
+				hibSession.update(cr);
+			}
+			tx.commit();
+		} catch (Exception e) {
+			Debug.error("Failed to update student sectioning preferences: " + e.getMessage(), e);
+			tx.rollback();
+		} finally {
+			hibSession.getSessionFactory().getCache().evictCollectionRegion(CourseRequest.class.getName() + ".courseRequestOptions");
+			hibSession.close();
 		}
 	}
 }

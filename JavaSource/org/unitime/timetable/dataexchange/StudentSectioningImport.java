@@ -54,13 +54,14 @@ import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.StudentAreaClassificationMinor;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentClassPref;
 import org.unitime.timetable.model.StudentEnrollmentMessage;
 import org.unitime.timetable.model.StudentGroup;
+import org.unitime.timetable.model.StudentInstrMthPref;
+import org.unitime.timetable.model.StudentSectioningPref;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.InstructionalMethodDAO;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.util.Constants;
 
 /**
@@ -656,13 +657,7 @@ public class StudentSectioningImport extends BaseImport {
             					}
             					cr.setAllowOverlap(false);
             					cr.setCredit(credits.get(order));
-            					OnlineSectioningLog.CourseRequestOption prefs = getPreferences(elements.get(order), co, course2extId2class.get(co.getUniqueId()), course2name2class.get(co.getUniqueId()), ref2im, name2im);
-            					if (prefs != null) {
-            						CourseRequestOption o = new CourseRequestOption();
-            						o.setCourseRequest(cr);
-            						o.setOption(prefs);
-            						cr.getCourseRequestOptions().add(o);
-            					}
+            					importPreferences(cr, elements.get(order), co, course2extId2class.get(co.getUniqueId()), course2name2class.get(co.getUniqueId()), ref2im, name2im);
             					cr.setOrder(order++);
             					cr.setCourseOffering(co);
             					course2request.put(co.getUniqueId(), cr);
@@ -971,11 +966,17 @@ public class StudentSectioningImport extends BaseImport {
 		return (a == null ? b == null : a.equals(b));
 	}
 	
-	protected OnlineSectioningLog.CourseRequestOption getPreferences(Element requestEl, CourseOffering course, Map<String, Set<Class_>> extId2class, Map<String, Set<Class_>> name2class, Map<String, InstructionalMethod> ref2im, Map<String, InstructionalMethod> name2im) {
+	protected void importPreferences(CourseRequest cr, Element requestEl, CourseOffering course, Map<String, Set<Class_>> extId2class, Map<String, Set<Class_>> name2class, Map<String, InstructionalMethod> ref2im, Map<String, InstructionalMethod> name2im) {
 		Element prefEl = requestEl.element("preferences");
-		if (prefEl == null) return null;
-		OnlineSectioningLog.CourseRequestOption.Builder preferences = OnlineSectioningLog.CourseRequestOption.newBuilder();
-		preferences.setType(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE);
+		if (cr.getPreferences() == null) {
+			cr.setPreferences(new HashSet<StudentSectioningPref>());
+		} else {
+			for (Iterator<StudentSectioningPref> i = cr.getPreferences().iterator(); i.hasNext(); ) {
+				iHibSession.delete(i.next());
+				i.remove();
+			}
+		}
+		if (prefEl == null) return;
 		Set<Class_> preferredClasses = new HashSet<Class_>();
 		Set<Class_> requiredClasses = new HashSet<Class_>();
 		for (Iterator i = prefEl.elementIterator("class"); i.hasNext(); ) {
@@ -1006,10 +1007,20 @@ public class StudentSectioningImport extends BaseImport {
     		else
     			preferredClasses.addAll(classes);
 		}
-		for (Class_ clazz: preferredClasses)
-			preferences.addSection(OnlineSectioningHelper.toProto(clazz, course));
-		for (Class_ clazz: requiredClasses)
-			preferences.addSection(OnlineSectioningHelper.toProto(clazz, course).setPreference(OnlineSectioningLog.Section.Preference.REQUIRED));
+		for (Class_ clazz: preferredClasses) {
+			StudentClassPref scp = new StudentClassPref();
+			scp.setCourseRequest(cr);
+			scp.setClazz(clazz);
+			scp.setRequired(false);
+			cr.getPreferences().add(scp);
+		}
+		for (Class_ clazz: requiredClasses) {
+			StudentClassPref scp = new StudentClassPref();
+			scp.setCourseRequest(cr);
+			scp.setClazz(clazz);
+			scp.setRequired(true);
+			cr.getPreferences().add(scp);
+		}
 		Set<InstructionalMethod> preferredIMs = new HashSet<InstructionalMethod>();
 		Set<InstructionalMethod> requiredIMs = new HashSet<InstructionalMethod>();
 		for (Iterator i = prefEl.elementIterator("instructional-method"); i.hasNext(); ) {
@@ -1037,19 +1048,18 @@ public class StudentSectioningImport extends BaseImport {
     			preferredIMs.add(meth);
 		}
 		for (InstructionalMethod meth: preferredIMs) {
-			preferences.addInstructionalMethod(OnlineSectioningLog.Entity.newBuilder()
-					.setUniqueId(meth.getUniqueId())
-					.setExternalId(meth.getReference())
-					.setName(meth.getLabel()));
+			StudentInstrMthPref imp = new StudentInstrMthPref();
+			imp.setCourseRequest(cr);
+			imp.setRequired(false);
+			imp.setInstructionalMethod(meth);
+			cr.getPreferences().add(imp);
 		}
 		for (InstructionalMethod meth: requiredIMs) {
-			OnlineSectioningLog.Entity.Builder e = OnlineSectioningLog.Entity.newBuilder()
-					.setUniqueId(meth.getUniqueId())
-					.setExternalId(meth.getReference())
-					.setName(meth.getLabel());
-			e.addParameterBuilder().setKey("required").setValue("true");
-			preferences.addInstructionalMethod(e);
+			StudentInstrMthPref imp = new StudentInstrMthPref();
+			imp.setCourseRequest(cr);
+			imp.setRequired(true);
+			imp.setInstructionalMethod(meth);
+			cr.getPreferences().add(imp);
 		}
-		return preferences.build();
 	}
 }

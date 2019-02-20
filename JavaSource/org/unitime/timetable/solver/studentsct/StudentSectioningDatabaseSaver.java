@@ -180,6 +180,8 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         			cd.setPriority(request.getPriority());
         			cd.setWaitlist(request instanceof CourseRequest && ((CourseRequest)request).isWaitlist());
         			cd.setCritical(request.isCritical());
+        			if (request instanceof CourseRequest)
+        				cd.updatePreferences((CourseRequest)request, hibSession);
         			hibSession.update(cd);
         		} else {
     				cd = new CourseDemand();
@@ -219,6 +221,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         					crq.setOrder(order++);
         					crq.setCourseOffering(co);
 						}
+        				cd.updatePreferences((CourseRequest)request, hibSession);
         			}
 					Long demandId = (Long)hibSession.save(cd);
 					for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests()) {

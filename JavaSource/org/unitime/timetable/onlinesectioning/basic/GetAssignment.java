@@ -653,7 +653,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 						}
 						rc.setOverrideExternalId(((XCourseRequest)cd).getOverrideExternalId(courseId));
 						rc.setOverrideTimeStamp(((XCourseRequest)cd).getOverrideTimeStamp(courseId));
-						OnlineSectioningHelper.fillPreferencesIn(rc, ((XCourseRequest)cd).getPreferences(courseId));
+						((XCourseRequest)cd).fillPreferencesIn(rc, courseId);
 						r.addRequestedCourse(rc);
 					}
 					r.setWaitList(((XCourseRequest)cd).isWaitlist());

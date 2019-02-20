@@ -196,7 +196,7 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 						}
 						rc.setOverrideExternalId(((XCourseRequest)cd).getOverrideExternalId(courseId));
 						rc.setOverrideTimeStamp(((XCourseRequest)cd).getOverrideTimeStamp(courseId));
-						OnlineSectioningHelper.fillPreferencesIn(rc, ((XCourseRequest)cd).getPreferences(courseId));
+						((XCourseRequest)cd).fillPreferencesIn(rc, courseId);
 						r.addRequestedCourse(rc);
 					}
 					r.setWaitList(((XCourseRequest)cd).isWaitlist());

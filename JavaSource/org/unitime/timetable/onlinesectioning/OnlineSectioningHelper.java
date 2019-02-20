@@ -60,25 +60,21 @@ import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.Location;
-import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.model.XExactTimeConversion;
-import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XFreeTimeRequest;
 import org.unitime.timetable.onlinesectioning.model.XInstructor;
-import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XReservationId;
 import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
-import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.model.XTime;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest.XPreference;
 import org.unitime.timetable.util.NameFormat;
 
 /**
@@ -659,16 +655,18 @@ public class OnlineSectioningHelper {
     			OnlineSectioningLog.Entity.Builder entity = OnlineSectioningLog.Entity.newBuilder()
     					.setUniqueId(course.getCourseId())
     					.setName(course.getCourseName());
-    			OnlineSectioningLog.CourseRequestOption pref = cr.getPreferences(course);
+    			List<XPreference> pref = cr.getPreferences(course);
     			if (pref != null) {
-    				if (pref.getInstructionalMethodCount() > 0)
-    					for (OnlineSectioningLog.Entity im: pref.getInstructionalMethodList()) 
-        					if (im.hasName())
-        						entity.addParameterBuilder().setKey("im_pref").setValue(im.getName());
-    				if (pref.getSectionCount() > 0)
-    					for (OnlineSectioningLog.Section section: pref.getSectionList())
-    						if (section.getClazz().hasExternalId())
-        						entity.addParameterBuilder().setKey("sec_pref").setValue(section.getClazz().getExternalId());
+    				for (XPreference p: pref) {
+    					switch (p.getType()) {
+    					case INSTR_METHOD:
+    						entity.addParameterBuilder().setKey("im_pref").setValue(p.getLabel());
+    						break;
+    					case SECTION:
+    						entity.addParameterBuilder().setKey("sec_pref").setValue(p.getLabel());
+    						break;
+    					}
+    				}
     			}
     			request.addCourse(entity);
     		}
@@ -939,95 +937,5 @@ public class OnlineSectioningHelper {
 			for (OnlineSectioningLog.Property p: getUser().getParameterList())
 				if ("specreg".equals(p.getKey())) return p.getValue();
 		return null;
-	}
-	
-	public static OnlineSectioningLog.CourseRequestOption.Builder toPreference(OnlineSectioningServer server, RequestedCourse rc, XCourseId c) {
-		if (!rc.isCourse() || (!rc.hasSelectedClasses() && !rc.hasSelectedIntructionalMethods())) return null;
-		if (c == null) c = server.getCourse(rc.getCourseId(), rc.getCourseName());
-		if (c == null) return null;
-		XOffering offering = server.getOffering(c.getOfferingId());
-		if (offering == null) return null;
-		OnlineSectioningLog.CourseRequestOption.Builder preference = OnlineSectioningLog.CourseRequestOption.newBuilder();
-		preference.setType(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE);
-		if (rc.hasSelectedIntructionalMethods()) {
-			for (XConfig config: offering.getConfigs()) {
-				if (config.getInstructionalMethod() != null) {
-					Preference p = rc.getIntructionalMethodSelection(config.getInstructionalMethod().getUniqueId());
-					if (p != null) {
-						OnlineSectioningLog.Entity.Builder e = OnlineSectioningLog.Entity.newBuilder()
-								.setUniqueId(config.getInstructionalMethod().getUniqueId())
-								.setExternalId(config.getInstructionalMethod().getReference())
-								.setName(config.getInstructionalMethod().getLabel());
-						if (p.isRequired()) e.addParameterBuilder().setKey("required").setValue("true");
-						preference.addInstructionalMethod(e);
-					}
-				}
-			}
-		}
-		if (rc.hasSelectedClasses()) {
-			for (XConfig config: offering.getConfigs())
-				for (XSubpart subpart: config.getSubparts())
-					for (XSection section: subpart.getSections()) {
-						Preference p = rc.getClassSelection(section.getSectionId());
-						if (p != null) {
-							OnlineSectioningLog.Section.Builder s = OnlineSectioningHelper.toProto(section);
-							s.setPreference(p.isRequired() ? OnlineSectioningLog.Section.Preference.REQUIRED : OnlineSectioningLog.Section.Preference.PREFERRED);
-							preference.addSection(s);
-						}
-					}
-		}
-		return preference;
-	}
-	
-	public static OnlineSectioningLog.CourseRequestOption.Builder toPreference(CourseOffering co, RequestedCourse rc) {
-		if (!rc.isCourse() || (!rc.hasSelectedClasses() && !rc.hasSelectedIntructionalMethods())) return null;
-		OnlineSectioningLog.CourseRequestOption.Builder preference = OnlineSectioningLog.CourseRequestOption.newBuilder();
-		preference.setType(OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE);
-		if (rc.hasSelectedIntructionalMethods()) {
-			for (InstrOfferingConfig config: co.getInstructionalOffering().getInstrOfferingConfigs()) {
-				if (config.getEffectiveInstructionalMethod() != null) {
-					Preference p = rc.getIntructionalMethodSelection(config.getEffectiveInstructionalMethod().getUniqueId());
-					if (p != null) {
-						OnlineSectioningLog.Entity.Builder e = OnlineSectioningLog.Entity.newBuilder()
-								.setUniqueId(config.getEffectiveInstructionalMethod().getUniqueId())
-								.setExternalId(config.getEffectiveInstructionalMethod().getReference())
-								.setName(config.getEffectiveInstructionalMethod().getLabel());
-						if (p.isRequired()) e.addParameterBuilder().setKey("required").setValue("true");
-						preference.addInstructionalMethod(e);
-					}
-				}
-			}
-		}
-		if (rc.hasSelectedClasses()) {
-			for (InstrOfferingConfig config: co.getInstructionalOffering().getInstrOfferingConfigs())
-				for (SchedulingSubpart subpart: config.getSchedulingSubparts())
-					for (Class_ clazz: subpart.getClasses()) {
-						Preference p = rc.getClassSelection(clazz.getUniqueId());
-						if (p != null) {
-							OnlineSectioningLog.Section.Builder s = OnlineSectioningHelper.toProto(clazz, co);
-							s.setPreference(p.isRequired() ? OnlineSectioningLog.Section.Preference.REQUIRED : OnlineSectioningLog.Section.Preference.PREFERRED);
-							preference.addSection(s);
-						}
-					}
-		}
-		return preference;
-	}
-	
-	public static void fillPreferencesIn(RequestedCourse rc, OnlineSectioningLog.CourseRequestOption pref) {
-		if (pref != null) {
-			if (pref.getInstructionalMethodCount() > 0)
-				for (OnlineSectioningLog.Entity im: pref.getInstructionalMethodList()) {
-					boolean required = false;
-					if (im.getParameterCount() > 0)
-						for (OnlineSectioningLog.Property p: im.getParameterList())
-							if ("required".equals(p.getKey()))
-								required = "true".equals(p.getValue());
-					rc.setSelectedIntructionalMethod(im.getUniqueId(), im.getName(), required, true);
-				}
-			if (pref.getSectionCount() > 0)
-				for (OnlineSectioningLog.Section s: pref.getSectionList())
-					rc.setSelectedClass(s.getClazz().getUniqueId(), (s.getClazz().getExternalId().length() <= 4 ? s.getSubpart().getName() + " ": "") + s.getClazz().getExternalId(),
-							s.hasPreference() && s.getPreference() == OnlineSectioningLog.Section.Preference.REQUIRED, true);
-		}
 	}
 }
