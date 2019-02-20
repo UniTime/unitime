@@ -114,6 +114,10 @@ JavaMail API (compat) (mail-1.4.7.jar)
 	under Common Development and Distribution License (CDDL), Version 1.0
 	http://kenai.com/projects/javamail/mail
 
+jaxen (jaxen-1.1.6.jar)
+	under BSD or BSD-style License
+	http://jaxen.codehaus.org/
+
 Joda-Time (joda-time-2.8.2.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.joda.org/joda-time/
@@ -395,6 +399,7 @@ BSD or BSD-style Licenses
 	http://opensource.org/licenses/bsd-license.php (Protocol Buffer Java API, biweekly)
 	http://dom4j.sourceforge.net/dom4j-1.6.1/license.html (dom4j)
 	https://github.com/Leaflet/Leaflet/blob/master/LICENSE (Leaflet)
+	http://jaxen.codehaus.org/license.html (jaxen)
 
 Common Development and Distribution License (CDDL), Version 1.0
 	http://opensource.org/licenses/CDDL-1.0

@@ -100,6 +100,7 @@ BSD or BSD-style Licenses
 	http://opensource.org/licenses/bsd-license.php (Protocol Buffer Java API, biweekly)
 	http://dom4j.sourceforge.net/dom4j-1.6.1/license.html (dom4j)
 	https://github.com/Leaflet/Leaflet/blob/master/LICENSE (Leaflet)
+	http://jaxen.codehaus.org/license.html (jaxen)
 
 Common Development and Distribution License (CDDL), Version 1.0
 	http://opensource.org/licenses/CDDL-1.0
