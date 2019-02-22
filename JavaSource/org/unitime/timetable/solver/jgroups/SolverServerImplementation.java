@@ -60,6 +60,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.ApplicationConfig;
+import org.unitime.timetable.model.StudentSectioningPref;
 import org.unitime.timetable.model.SolverParameterGroup.SolverType;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.solver.SolverProxy;
@@ -610,6 +611,8 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 			HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
 			
 			ApplicationConfig.configureLogging();
+			
+			StudentSectioningPref.updateStudentSectioningPreferences();
 			
 			final JChannel channel = (JChannel) new UniTimeChannelLookup().getJGroupsChannel(null);
 			
