@@ -40,6 +40,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
@@ -56,6 +57,7 @@ import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
+import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -116,6 +118,11 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 	
 	protected int getDegreeWorksNrAttempts() {
 		return Integer.parseInt(ApplicationProperties.getProperty("banner.dgw.nrAttempts", "3"));
+	}
+	
+	protected Query getStudentFilter() {
+		String filter = ApplicationProperties.getProperty("banner.dgw.studentFilter");
+		return (filter == null || filter.isEmpty() ? null : new Query(filter)); 
 	}
 
 	protected String getBannerId(XStudentId student) {
@@ -329,6 +336,13 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 	@Override
 	public CourseRequestInterface getCourseRequests(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudentId student) throws SectioningException {
 		try {
+			Query q = getStudentFilter();
+			if (q != null) {
+				XStudent s = (student instanceof XStudent ? (XStudent)student : server.getStudent(student.getStudentId()));
+				if (s == null || !q.match(new StudentMatcher(s, server.getAcademicSession().getDefaultSectioningStatus(), server, false)))
+					return null;
+			}
+			
 			AcademicSessionInfo session = server.getAcademicSession();
 			String term = getBannerTerm(session);
 			String studentId = getBannerId(student);
