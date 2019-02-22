@@ -386,10 +386,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				if (r instanceof CourseRequest) {
 					CourseRequest cr = (CourseRequest)r;
 					for (Course course: cr.getCourses()) {
-						new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), 5000, true, 1, true, true, true, true) {
-							@Override
-							public boolean mustBeUsed() { return true; }
-						};
+						new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), 5000, true, 1, true, true, true, true, true);
 						continue;
 					}
 				}
@@ -1756,18 +1753,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					if (enrollment != null && enrollment.getCourseId().equals(clonnedCourse.getId())) {
 						boolean hasMustUse = false;
 						for (Reservation reservation: clonnedCourse.getOffering().getReservations()) {
-							if (reservation.isApplicable(s) && reservation.mustBeUsed() && !reservation.isExpired())
+							if (reservation.isApplicable(s) && reservation.mustBeUsed())
 								hasMustUse = true;
 						}
-						Reservation reservation = null;
-						if (hasMustUse) {
-							reservation = new OnlineReservation(XReservationType.Dummy.ordinal(), -original.getStudentId(), clonnedCourse.getOffering(), 1000, false, 1, true, true, false, true) {
-								@Override
-								public boolean mustBeUsed() { return true; }
-							};
-						} else {
-							reservation = new OnlineReservation(XReservationType.Dummy.ordinal(), -original.getStudentId(), clonnedCourse.getOffering(), 1000, false, 1, true, false, false, true);
-						}
+						Reservation reservation = new OnlineReservation(XReservationType.Dummy.ordinal(), -original.getStudentId(), clonnedCourse.getOffering(), 1000, false, 1, true, hasMustUse, false, true, true);
 						for (Section section: sections)
 							reservation.addSection(section);
 						break;
@@ -1811,10 +1800,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				if (r instanceof CourseRequest) {
 					CourseRequest cr = (CourseRequest)r;
 					for (Course course: cr.getCourses()) {
-						new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), -100, true, 1, true, true, true, true) {
-							@Override
-							public boolean mustBeUsed() { return true; }
-						};
+						new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), -100, true, 1, true, true, true, true, true);
 						continue;
 					}
 				}
@@ -1930,7 +1916,6 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				resource.release();
 			}
 		}
-		if (validation == null) return false;
 		
 		Float maxCredit = student.getMaxCredit();
 		if (maxCredit == null) maxCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"));

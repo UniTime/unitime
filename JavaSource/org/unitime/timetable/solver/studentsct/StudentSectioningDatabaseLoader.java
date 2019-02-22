@@ -577,7 +577,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		List<Long> studentIds = new ArrayList<Long>();
         		for (org.unitime.timetable.model.Student s: ((org.unitime.timetable.model.IndividualReservation)reservation).getStudents())
         			studentIds.add(s.getUniqueId());
-        		r = new ReservationOverride(reservation.getUniqueId(), offering, studentIds);
+        		if (reservation.isAlwaysExpired())
+        			r = new ReservationOverride(reservation.getUniqueId(), offering, studentIds);
+        		else
+        			r = new IndividualReservation(reservation.getUniqueId(), offering, studentIds);
         		OverrideType type = ((OverrideReservation)reservation).getOverrideType();
         		r.setPriority(ApplicationProperty.ReservationPriorityOverride.intValue());
         		r.setMustBeUsed(type.isMustBeUsed());
@@ -587,7 +590,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		List<Long> studentIds = new ArrayList<Long>();
         		for (org.unitime.timetable.model.Student s: ((org.unitime.timetable.model.IndividualReservation)reservation).getStudents())
         			studentIds.add(s.getUniqueId());
-        		r = new IndividualReservation(reservation.getUniqueId(), offering, studentIds);
+        		if (reservation.isAlwaysExpired())
+        			r = new ReservationOverride(reservation.getUniqueId(), offering, studentIds);
+        		else
+        			r = new IndividualReservation(reservation.getUniqueId(), offering, studentIds);
         		r.setPriority(reservation.getPriority());
         		r.setMustBeUsed(reservation.isMustBeUsed());
         		r.setAllowOverlap(reservation.isAllowOverlap());
@@ -605,9 +611,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		List<Long> studentIds = new ArrayList<Long>();
         		for (org.unitime.timetable.model.Student s: ((StudentGroupReservation)reservation).getGroup().getStudents())
         			studentIds.add(s.getUniqueId());
-        		r = new GroupReservation(reservation.getUniqueId(),
-        				(reservation.getLimit() == null ? iNoUnlimitedGroupReservations ? studentIds.size() : -1.0 : reservation.getLimit()),
-        				offering, studentIds);
+        		if (((StudentGroupReservation)reservation).isAlwaysExpired())
+        			r = new ReservationOverride(reservation.getUniqueId(), offering, studentIds);
+        		else
+        			r = new GroupReservation(reservation.getUniqueId(),
+        					(reservation.getLimit() == null ? iNoUnlimitedGroupReservations ? studentIds.size() : -1.0 : reservation.getLimit()),
+        					offering, studentIds);
         		r.setPriority(reservation.getPriority());
         		r.setMustBeUsed(reservation.isMustBeUsed());
         		r.setAllowOverlap(reservation.isAllowOverlap());

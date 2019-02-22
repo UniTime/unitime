@@ -267,12 +267,8 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 						XCourse xc = server.getCourse(course.getId());
 						boolean time = getRequest().areTimeConflictsAllowed() && xc.areTimeConflictOverridesAllowed();
 						boolean space = getRequest().areSpaceConflictsAllowed() && xc.areSpaceConflictOverridesAllowed();
-						if (time || space) {
-							new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), -100, space, 1, true, true, time, true) {
-								@Override
-								public boolean mustBeUsed() { return true; }
-							};
-						}
+						if (time || space)
+							new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), -100, space, 1, true, true, time, true, true);
 					}
 				}
 

@@ -256,12 +256,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							XCourse xc = server.getCourse(course.getId());
 							boolean time = getRequest().areTimeConflictsAllowed() && xc.areTimeConflictOverridesAllowed();
 							boolean space = getRequest().areSpaceConflictsAllowed() && xc.areSpaceConflictOverridesAllowed();
-							if (time || space) {
-								new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), -100, space, 1, true, true, time, true) {
-									@Override
-									public boolean mustBeUsed() { return true; }
-								};
-							}
+							if (time || space)
+								new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), -100, space, 1, true, true, time, true, true);
 						}
 					}
 				}
@@ -646,11 +642,11 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				for (XEnrollment enrollment: enrollments.getEnrollmentsForCourse(courseId))
 					if (enrollment.getStudentId().equals(studentId)) { applicable = true; break; }
 			}
-			if (applicable && reservation.mustBeUsed() && !reservation.isExpired()) hasMustUse = true;
+			if (applicable && reservation.mustBeUsed() && (reservation.isOverride() || !reservation.isExpired())) hasMustUse = true;
 			if (!applicable && reservation.isExpired()) continue;
 			Reservation clonedReservation = new OnlineReservation(reservation.getType().ordinal(), reservation.getReservationId(), clonedOffering,
 					reservation.getPriority(), reservation.canAssignOverLimit(), reservationLimit, 
-					applicable, reservation.mustBeUsed(), reservation.isAllowOverlap(), reservation.isExpired());
+					applicable, reservation.mustBeUsed(), reservation.isAllowOverlap(), reservation.isExpired(), reservation.isOverride());
 			clonedReservation.setAllowDisabled(reservation.isAllowDisabled());
 			for (Long configId: reservation.getConfigsIds())
 				clonedReservation.addConfig(configs.get(configId));
@@ -665,15 +661,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		if (!offering.getReservations().isEmpty() && hasAssignment)
 			for (XEnrollment enrollment: enrollments.getEnrollmentsForCourse(courseId))
 				if (enrollment.getStudentId().equals(studentId)) {
-					Reservation clonedReservation = null;
-					if (hasMustUse) {
-						clonedReservation = new OnlineReservation(XReservationType.Dummy.ordinal(), -2l, clonedOffering, 1000, false, 1, true, true, false, true) {
-							@Override
-							public boolean mustBeUsed() { return true; }
-						};
-					} else {
-						clonedReservation = new OnlineReservation(XReservationType.Dummy.ordinal(), -2l, clonedOffering, 1000, false, 1, true, false, false, true);
-					}
+					Reservation clonedReservation = new OnlineReservation(XReservationType.Dummy.ordinal(), -2l, clonedOffering, 1000, false, 1, true, false, false, hasMustUse, true);
+					clonedReservation = new OnlineReservation(XReservationType.Dummy.ordinal(), -2l, clonedOffering, 1000, false, 1, true, hasMustUse, false, true, true);
 					clonedReservation.addConfig(configs.get(enrollment.getConfigId()));
 					for (Long sectionId: enrollment.getSectionIds())
 						clonedReservation.addSection(sections.get(sectionId));

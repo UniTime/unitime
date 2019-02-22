@@ -693,7 +693,7 @@ public class XOffering implements Serializable, Externalizable {
 			org.cpsolver.studentsct.reservation.Reservation clonedReservation = new OnlineReservation(reservation.getType().ordinal(),
 					reservation.getReservationId(), clonedOffering,
 					reservation.getPriority(), reservation.canAssignOverLimit(), reservationLimit, 
-					applicable, reservation.mustBeUsed(), reservation.isAllowOverlap(), reservation.isExpired());
+					applicable, reservation.mustBeUsed(), reservation.isAllowOverlap(), reservation.isExpired(), reservation.isOverride());
 			clonedReservation.setAllowDisabled(reservation.isAllowDisabled());
 			for (Long configId: reservation.getConfigsIds())
 				clonedReservation.addConfig(configs.get(configId));

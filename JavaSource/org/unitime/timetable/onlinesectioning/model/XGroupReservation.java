@@ -39,6 +39,7 @@ public class XGroupReservation extends XReservation {
 	private int iLimit;
     private XGroup iGroup;
     private Boolean iExpired;
+    private boolean iOverride = false;
 
     public XGroupReservation() {
     	super();
@@ -53,6 +54,7 @@ public class XGroupReservation extends XReservation {
     	super(XReservationType.Group, offering, reservation);
         iLimit = (reservation.getLimit() == null ? -1 : reservation.getLimit());
         iGroup = new XGroup(reservation.getGroup());
+        iOverride = false;
         if (reservation.getGroup().getType() != null && reservation.getGroup().getType().getAllowDisabledSection() == StudentGroupType.AllowDisabledSection.WithGroupReservation)
         	setAllowDisabled(true);
     }
@@ -61,6 +63,7 @@ public class XGroupReservation extends XReservation {
     	super(XReservationType.GroupOverride, offering, reservation);
         iLimit = (reservation.getLimit() == null ? -1 : reservation.getLimit());
         iGroup = new XGroup(reservation.getGroup());
+        iOverride = reservation.isAlwaysExpired();
         if (reservation.getGroup().getType() != null && reservation.getGroup().getType().getAllowDisabledSection() == StudentGroupType.AllowDisabledSection.WithGroupReservation)
         	setAllowDisabled(true);
         setMustBeUsed(reservation.isMustBeUsed());
@@ -72,6 +75,9 @@ public class XGroupReservation extends XReservation {
     public XGroup getGroup() {
     	return iGroup;
     }
+    
+    @Override
+    public boolean isOverride() { return iOverride; }
     
     /**
      * Reservation limit

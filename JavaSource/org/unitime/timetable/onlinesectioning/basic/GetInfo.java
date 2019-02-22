@@ -179,10 +179,13 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
         				break;
         			case IndividualOverride:
         				XIndividualReservation ovrR = (XIndividualReservation) reservation;
-        				clonedReservation = new ReservationOverride(reservation.getReservationId(), clonedOffering, ovrR.getStudentIds());
-        				((ReservationOverride)clonedReservation).setMustBeUsed(ovrR.mustBeUsed());
-        				((ReservationOverride)clonedReservation).setAllowOverlap(ovrR.isAllowOverlap());
-        				((ReservationOverride)clonedReservation).setCanAssignOverLimit(ovrR.canAssignOverLimit());
+        				if (ovrR.isOverride())
+        					clonedReservation = new ReservationOverride(reservation.getReservationId(), clonedOffering, ovrR.getStudentIds());
+        				else
+        					clonedReservation = new IndividualReservation(reservation.getReservationId(), clonedOffering, ovrR.getStudentIds());
+    					clonedReservation.setMustBeUsed(ovrR.mustBeUsed());
+    					clonedReservation.setAllowOverlap(ovrR.isAllowOverlap());
+    					clonedReservation.setCanAssignOverLimit(ovrR.canAssignOverLimit());
         				break;
         			case GroupOverride:
         				XGroupReservation groupR = (XGroupReservation) reservation;

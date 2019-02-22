@@ -43,6 +43,7 @@ public class XIndividualReservation extends XReservation {
 	private Set<Long> iStudentIds = new HashSet<Long>();
 	private Integer iLimit = null;
     private Boolean iExpired = null;
+    private boolean iOverride = false;
     
     public XIndividualReservation() {
         super();
@@ -55,12 +56,14 @@ public class XIndividualReservation extends XReservation {
 
     public XIndividualReservation(XOffering offering, IndividualReservation reservation) {
         super(XReservationType.Individual, offering, reservation);
+        iOverride = false;
         for (Student student: reservation.getStudents())
         	iStudentIds.add(student.getUniqueId());
     }
     
     public XIndividualReservation(XOffering offering, OverrideReservation reservation) {
         super(XReservationType.IndividualOverride, offering, reservation);
+        iOverride = reservation.isAlwaysExpired();
         for (Student student: reservation.getStudents())
         	iStudentIds.add(student.getUniqueId());
         setMustBeUsed(reservation.getOverrideType().isMustBeUsed());
@@ -71,6 +74,7 @@ public class XIndividualReservation extends XReservation {
     
     public XIndividualReservation(XOffering offering, IndividualOverrideReservation reservation) {
         super(XReservationType.IndividualOverride, offering, reservation);
+        iOverride = reservation.isAlwaysExpired();
         for (Student student: reservation.getStudents())
         	iStudentIds.add(student.getUniqueId());
         setMustBeUsed(reservation.isMustBeUsed());
@@ -81,21 +85,27 @@ public class XIndividualReservation extends XReservation {
 
     public XIndividualReservation(org.cpsolver.studentsct.reservation.IndividualReservation reservation) {
         super(XReservationType.Individual, reservation);
+        iOverride = false;
         iStudentIds.addAll(reservation.getStudentIds());
     }
     
     public XIndividualReservation(ReservationOverride reservation) {
         super(XReservationType.IndividualOverride, reservation);
+        iOverride = true;
         iStudentIds.addAll(reservation.getStudentIds());
     }
 
     public XIndividualReservation(GroupReservation reservation) {
         super(XReservationType.Group, reservation);
+        iOverride = false;
         iStudentIds.addAll(reservation.getStudentIds());
         iLimit = (int)Math.round(reservation.getReservationLimit());
         if (reservation.isAllowDisabled())
         	setAllowDisabled(true);
     }
+    
+    @Override
+    public boolean isOverride() { return iOverride; }
 
     /**
      * Reservation is applicable for all students in the reservation
