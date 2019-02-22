@@ -448,17 +448,31 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 	}
 	
 	public static enum OverrideType implements IsSerializable {
-		AllowTimeConflict("time-cnflt", false, true, false, true),
-		AllowOverLimit("closed", false, false, true, true),
-		AllowOverLimitTimeConflict("time-limit-cnflt", false, true, true, true),
+		AllowTimeConflict("time-cnflt", false, true, false, true, true),
+		AllowOverLimit("closed", false, false, true, true, true),
+		AllowOverLimitTimeConflict("time-limit-cnflt", false, true, true, true, true),
+		ClassificationOverride("class", false, false, false, true, false),
+		CoReqOverride("co-req", false, false, false, true, false),
+		CohortOverride("cohort", false, false, false, true, false),
+		CollegeRestrictionOverride("college", false, false, false, true, false),
+		DegreeOverride("degree", false, false, false, true, false),
+		DepartmentPermission("dpt-permit", true, false, false, true, false),
+		HonorsPermission("honors", false, false, false, true, false),
+		InstructorPermission("inst-permt", true, false, false, true, false),
+		LevelOverride("level", false, false, false, true, false),
+		MajorOverride("major", false, false, false, true, false),
+		PreReqOverride("pre-req", false, false, false, true, false),
+		Program("program", false, false, false, true, false),
+		Other("other", false, false, false, true, true),
 		;
 		
 		String iReference;
-		boolean iMustBeUsed = false, iAllowTimeConflict = false, iAllowOverLimit = false;
+		boolean iMustBeUsed = false, iAllowTimeConflict = false, iAllowOverLimit = false, iEditable = false;
 		Boolean iExpired = false;
-		OverrideType(String reference, boolean mustBeUsed, boolean timeConflict, boolean overLimit, Boolean expired) {
+		OverrideType(String reference, boolean mustBeUsed, boolean timeConflict, boolean overLimit, Boolean expired, boolean editable) {
 			iReference = reference;
 			iMustBeUsed = mustBeUsed; iAllowTimeConflict = timeConflict; iAllowOverLimit = overLimit; iExpired = expired;
+			iEditable = editable;
 		}
 		
 		public String getReference() { return iReference; }
@@ -467,6 +481,7 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		public boolean isAllowOverLimit() { return iAllowOverLimit; }
 		public Boolean isExpired() { return iExpired; }
 		public boolean isCanHaveExpirationDate() { return iExpired == null; }
+		public boolean isEditable() { return iEditable; }
 	}
 	
 	public static class ReservationFilterRpcRequest extends FilterRpcRequest {

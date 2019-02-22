@@ -338,7 +338,12 @@ public class ReservationEdit extends Composite {
 		iType.getWidget().addItem(MESSAGES.reservationCourse(), "course");
 		iType.getWidget().addItem(MESSAGES.reservationLearningCommunity(), "lc");
 		for (ReservationInterface.OverrideType t: ReservationInterface.OverrideType.values()) {
-			iType.getWidget().addItem(CONSTANTS.reservationOverrideTypeName()[t.ordinal()], t.getReference());
+			if (t.isEditable())
+				if (CONSTANTS.reservationOverrideTypeName()[t.ordinal()] != null) {
+					iType.getWidget().addItem(CONSTANTS.reservationOverrideTypeName()[t.ordinal()], t.getReference());
+				} else {
+					iType.getWidget().addItem("Override: " + t.name(), t.getReference());
+				}
 		}
 		iType.getWidget().addItem(MESSAGES.reservationIndividualOverride(), "individual-override");
 		iType.getWidget().addItem(MESSAGES.reservationStudentGroupOverride(), "group-override");

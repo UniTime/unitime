@@ -249,6 +249,7 @@ public class ReservationTable extends Composite {
 					Course course = ((LCReservation) reservation).getCourse();
 					courses.add(new Label(course.getAbbv(), false));
 				} else {
+					courses.add(new Label(reservation.getOffering().getAbbv(), false));
 					for (Course course: reservation.getOffering().getCourses()) {
 						if (course.getAbbv().equals(reservation.getOffering().getAbbv())) continue;
 						Label l = new Label(course.getAbbv(), false);
@@ -256,12 +257,7 @@ public class ReservationTable extends Composite {
 						l.getElement().getStyle().setColor("gray");
 						courses.add(l);
 					}
-					courses.add(new Label(reservation.getOffering().getAbbv(), false));
 				}
-				if (reservation.isExpired())
-					courses.addStyleName("unitime-Disabled");
-				if (reservation.isEditable())
-					courses.addStyleName("unitime-Editable");
 				line.add(courses);
 
 			}
@@ -289,7 +285,8 @@ public class ReservationTable extends Composite {
 					label.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE);
 					line.add(label);
 				} else if (reservation instanceof OverrideReservation) {
-					line.add(new Label(CONSTANTS.reservationOverrideTypeAbbv()[((OverrideReservation)reservation).getType().ordinal()]));
+					String type = CONSTANTS.reservationOverrideTypeAbbv()[((OverrideReservation)reservation).getType().ordinal()];
+					line.add(new Label(type == null ? ((OverrideReservation)reservation).getType().name() : type));
 				} else {
 					line.add(new Label(MESSAGES.reservationIndividualAbbv()));
 				}
@@ -298,10 +295,6 @@ public class ReservationTable extends Composite {
 				for (IdName student: ((IndividualReservation) reservation).getStudents()) {
 					students.add(new Label(student.getName(), false));
 				}
-				if (reservation.isExpired())
-					students.addStyleName("unitime-Disabled");
-				if (reservation.isEditable())
-					students.addStyleName("unitime-Editable");
 				line.add(students);
 			} else if (reservation instanceof GroupReservation) {
 				if (reservation.isOverride()) {
@@ -339,10 +332,6 @@ public class ReservationTable extends Composite {
 					l.getElement().getStyle().setMarginLeft(10, Unit.PX);
 					owner.add(l);
 				}
-				if (reservation.isExpired())
-					owner.addStyleName("unitime-Disabled");
-				if (reservation.isEditable())
-					owner.addStyleName("unitime-Editable");
 				line.add(owner);
 			} else {
 				line.add(new Label(MESSAGES.reservationUnknownAbbv()));
@@ -356,10 +345,6 @@ public class ReservationTable extends Composite {
 				restrictions.add(new Label(clazz.getName() + " (" + clazz.getLimit() + ")", false));
 			}
 			line.add(restrictions);
-			if (reservation.isExpired())
-				restrictions.addStyleName("unitime-Disabled");
-			if (reservation.isEditable())
-				restrictions.addStyleName("unitime-Editable");
 			line.add(new Number(limit == null ? MESSAGES.infinity() : String.valueOf(limit)));
 			if (limit == null)
 				unlimited = true;
@@ -397,9 +382,14 @@ public class ReservationTable extends Composite {
 			iReservations.addRow(reservation, line);
 			iReservations.getRowFormatter().setVerticalAlign(iReservations.getRowCount() - 1, HasVerticalAlignment.ALIGN_TOP);
 			if (reservation.isExpired())
-				iReservations.getRowFormatter().addStyleName(iReservations.getRowCount() - 1, "unitime-Disabled");
+				for (Widget w: line)
+					w.addStyleName("unitime-ReservationExpired");
 			if (reservation.isEditable())
-				iReservations.getRowFormatter().addStyleName(iReservations.getRowCount() - 1, "unitime-Editable");
+				for (Widget w: line)
+					w.addStyleName("unitime-Editable");
+			else
+				for (Widget w: line)
+					w.addStyleName("unitime-ReservationDisabled");
 		}
 		
 		if (iOfferingId != null) {

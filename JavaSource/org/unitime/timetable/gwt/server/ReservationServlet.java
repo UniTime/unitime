@@ -634,6 +634,11 @@ public class ReservationServlet implements ReservationService {
 						.setLong("offeringId", offeringId).setCacheable(true).list()) {
 					ReservationInterface r = convert(reservation, nameFormat, hibSession);
 					r.setEditable(getSessionContext().hasPermission(reservation, Right.ReservationEdit));
+					if (r instanceof ReservationInterface.OverrideReservation) {
+						ReservationInterface.OverrideReservation o = (ReservationInterface.OverrideReservation)r;
+						if (o.getType() != null && !o.getType().isEditable())
+							r.setEditable(false);
+					}
 					results.add(r);
 				}				
 			} finally {
@@ -694,6 +699,11 @@ public class ReservationServlet implements ReservationService {
 					throw new ReservationException("Reservation not found.");
 				r = convert(reservation, UserProperty.NameFormat.get(getSessionContext().getUser()), hibSession);
 				r.setEditable(getSessionContext().hasPermission(reservation, Right.ReservationEdit));
+				if (r instanceof ReservationInterface.OverrideReservation) {
+					ReservationInterface.OverrideReservation o = (ReservationInterface.OverrideReservation)r;
+					if (o.getType() != null && !o.getType().isEditable())
+						r.setEditable(false);
+				}
 			} finally {
 				hibSession.close();
 			}
@@ -920,6 +930,11 @@ public class ReservationServlet implements ReservationService {
 				for (Reservation reservation: ReservationFilterBackend.reservations(filter, getSessionContext())) {
 					ReservationInterface r = convert(reservation, nameFormat, hibSession);
 					r.setEditable(getSessionContext().hasPermission(reservation, Right.ReservationEdit));
+					if (r instanceof ReservationInterface.OverrideReservation) {
+						ReservationInterface.OverrideReservation o = (ReservationInterface.OverrideReservation)r;
+						if (o.getType() != null && !o.getType().isEditable())
+							r.setEditable(false);
+					}
 					results.add(r);
 				}
 			} finally {

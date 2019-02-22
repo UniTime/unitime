@@ -217,12 +217,32 @@ public interface GwtConstants extends Constants {
 	String dateEntryFormat();
 	
 	@DefaultStringArrayValue({
-		"Override: Allow Time Conflict", "Override: Can Assign Over Limit", "Override: Time Conflict & Over Limit"
+		"Override: Allow Time Conflict",
+		"Override: Can Assign Over Limit",
+		"Override: Time Conflict & Over Limit",
+		"Override: Classification",
+		"Override: Co-requisite",
+		"Override: Cohort",
+		"Override: College Restriction",
+		"Override: Degree",
+		"Override: Department Permission",
+		"Override: Honors Permission",
+		"Override: Instructor Permission",
+		"Override: Level",
+		"Override: Major",
+		"Override: Pre-requisite",
+		"Override: Program",
+		"Override: Other",
 	})
 	String[] reservationOverrideTypeName();
 	
 	@DefaultStringArrayValue({
-		"Time Conflict", "Over Limit", "Time & Limit"
+		"Time Conflict", "Over Limit", "Time & Limit",
+		"Classification", "Co-requisite", "Cohort",
+		"College Restriction", "Degree", "Department Permission",
+		"Honors Permission", "Instructor Permission", "Level",
+		"Major", "Pre-requisite", "Program",
+		"Other",
 	})
 	String[] reservationOverrideTypeAbbv();
 
