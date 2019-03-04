@@ -120,7 +120,7 @@ public class TeachingAssignmentsExportCSV implements Exporter {
 	}
 	
 	protected void export(TeachingAssignmentsPageRequest request, List<SingleTeachingAssingment> list, ExportHelper helper, boolean hasRequests, int cookie) throws IOException {
-		Printer out = new CSVPrinter(helper.getWriter(), false);
+		Printer out = new CSVPrinter(helper, false);
 		helper.setup(out.getContentType(), reference(), false);
 		
 		List<Column> columns = new ArrayList<Column>();

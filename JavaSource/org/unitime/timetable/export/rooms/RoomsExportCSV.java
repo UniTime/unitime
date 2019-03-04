@@ -52,7 +52,7 @@ public class RoomsExportCSV extends RoomsExporter {
 			}
 		}
 				
-		Printer printer = new CSVPrinter(helper.getWriter(), false);
+		Printer printer = new CSVPrinter(helper, false);
 		helper.setup(printer.getContentType(), reference(), false);
 		
 		String[] header = new String[columns.size()];

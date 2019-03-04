@@ -103,7 +103,7 @@ public class RoomFeaturesExportCSV implements Exporter {
 	}
 	
 	protected void print(ExportHelper helper, List<FeatureInterface> features, int dm, String department) throws IOException {
-		Printer out = new CSVPrinter(helper.getWriter(), false);
+		Printer out = new CSVPrinter(helper, false);
 		helper.setup(out.getContentType(), reference(), false);
 		print(out, features, dm, department);
 		out.flush(); out.close();

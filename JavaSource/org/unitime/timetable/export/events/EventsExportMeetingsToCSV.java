@@ -49,7 +49,7 @@ public class EventsExportMeetingsToCSV extends EventsExporter {
 	
 	@Override
 	protected void print(ExportHelper helper, EventLookupRpcRequest request, List<EventInterface> events, int eventCookieFlags, EventMeetingSortBy sort, boolean asc) throws IOException {
-		Printer printer = new CSVPrinter(helper.getWriter(), false);
+		Printer printer = new CSVPrinter(helper, false);
 		helper.setup(printer.getContentType(), reference(), false);
 		hideColumns(printer, events, eventCookieFlags);
 		print(printer, meetings(events, sort, asc));

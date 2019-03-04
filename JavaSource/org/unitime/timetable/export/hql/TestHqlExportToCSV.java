@@ -98,7 +98,7 @@ public class TestHqlExportToCSV implements Exporter {
 			}
         }
 
-		BufferedPrinter out = new BufferedPrinter(new CSVPrinter(helper.getWriter(), false));
+		BufferedPrinter out = new BufferedPrinter(new CSVPrinter(helper, false));
 		helper.setup(out.getContentType(), reference(), false);
 		
 		execute(context.getUser(), out, hql, 0, ApplicationProperty.TestHQLMaxLines.intValue());

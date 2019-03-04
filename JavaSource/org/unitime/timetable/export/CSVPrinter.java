@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.export;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
@@ -33,10 +34,22 @@ public class CSVPrinter implements Printer {
 	private String[] iLastLine = null;
 	private boolean iCheckLast = false;
 	private Set<Integer> iHiddenColumns = new HashSet<Integer>();
+	private String iDelimiter = ",";
+	private String iQuotation = "\"";
 	
-	public CSVPrinter(PrintWriter writer, boolean checkLast) {
+	public CSVPrinter(PrintWriter writer, boolean checkLast, String delimiter, String quotation) {
 		iOut = writer;
 		iCheckLast = checkLast;
+		iDelimiter = (delimiter == null || delimiter.isEmpty() ? "," : delimiter);
+		iQuotation = (quotation == null ? "\"" : quotation);
+	}
+	
+	public CSVPrinter(PrintWriter writer, boolean checkLast) {
+		this(writer, checkLast, ",", "\"");
+	}
+	
+	public CSVPrinter(ExportHelper helper, boolean checkLast) throws IOException {
+		this(helper.getWriter(), checkLast, helper.getParameter("csvDelimiter"), helper.getParameter("csvQuotation"));
 	}
 	
 	@Override
@@ -62,9 +75,13 @@ public class CSVPrinter implements Printer {
 
 			if (f != null && !f.isEmpty()) {
 				if (!iCheckLast || !f.equals(iLastLine == null || idx >= iLastLine.length ? null : iLastLine[idx]))
-					iOut.print("\"" + f.replace("\"", "\"\"") + "\"");
+					if (iQuotation != null && !iQuotation.isEmpty()) {
+						iOut.print(iQuotation + f.replace(iQuotation, iQuotation + iQuotation) + iQuotation);
+					} else {
+						iOut.print(f);	
+					}
 			}
-			iOut.print(",");
+			iOut.print(iDelimiter == null || iDelimiter.isEmpty() ? "," : iDelimiter);
 		}
 		iOut.println();
 		iLastLine = fields;

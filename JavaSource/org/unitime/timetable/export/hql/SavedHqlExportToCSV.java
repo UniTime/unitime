@@ -169,7 +169,7 @@ public class SavedHqlExportToCSV implements Exporter {
 		}
 		if (!hasAppearancePermission) throw new AccessDeniedException();
 		
-		BufferedPrinter out = new BufferedPrinter(new CSVPrinter(helper.getWriter(), false));
+		BufferedPrinter out = new BufferedPrinter(new CSVPrinter(helper, false));
 		helper.setup(out.getContentType(), hql.getName().replace('/', '-').replace('\\', '-').replace(':', '-') + ".csv", false);
 		
 		execute(context.getUser(), out, hql.getQuery(), params, 0, -1, hql.getParameters());

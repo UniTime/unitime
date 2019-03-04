@@ -122,7 +122,7 @@ public class SectioningReportsExporter implements Exporter {
 		if (csv == null)
 			throw new GwtRpcException("No report was created.");
 		
-		Printer out = new CSVPrinter(helper.getWriter(), false);
+		Printer out = new CSVPrinter(helper, false);
 		helper.setup(out.getContentType(), helper.getParameter("name").toLowerCase().replace('_', '-') + ".csv", false);
 		
 		synchronized (csv) {

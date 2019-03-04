@@ -110,7 +110,7 @@ public class EventEnrollmentExport implements Exporter {
 	}
 	
 	protected Printer createPrinter(ExportHelper helper) throws IOException {
-		Printer out = new CSVPrinter(helper.getWriter(), false);
+		Printer out = new CSVPrinter(helper, false);
 		helper.setup(out.getContentType(), reference(), false);
 		return out;
 	}

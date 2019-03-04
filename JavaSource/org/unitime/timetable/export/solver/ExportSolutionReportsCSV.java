@@ -52,7 +52,7 @@ public class ExportSolutionReportsCSV extends TableExporter {
 		SolverReportsRequest request = new SolverReportsRequest();
 		SolverReportsResponse response = service.execute(request, helper.getSessionContext());
 		
-		Printer out = new CSVPrinter(helper.getWriter(), false);
+		Printer out = new CSVPrinter(helper, false);
 		helper.setup(out.getContentType(), reference(), false);
 		
 		boolean first = true;

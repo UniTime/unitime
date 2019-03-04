@@ -161,7 +161,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 	}
 	
 	protected void populateCourseTable(ExportHelper helper, List<EnrollmentInfo> enrollments) throws IOException {
-		Printer out = new CSVPrinter(helper.getWriter(), false);
+		Printer out = new CSVPrinter(helper, false);
 		helper.setup(out.getContentType(), reference(), false);
 		
 		out.printHeader(
@@ -220,7 +220,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 	}
 	
 	protected void populateStudentTable(ExportHelper helper, boolean online, List<StudentInfo> students) throws IOException {
-		Printer out = new CSVPrinter(helper.getWriter(), false);
+		Printer out = new CSVPrinter(helper, false);
 		helper.setup(out.getContentType(), reference(), false);
 		
 		boolean hasExtId = false;
@@ -445,7 +445,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 	}
 	
 	protected void populateChangeLogTable(ExportHelper helper, List<SectioningAction> changelog) throws IOException {
-		Printer out = new CSVPrinter(helper.getWriter(), false);
+		Printer out = new CSVPrinter(helper, false);
 		helper.setup(out.getContentType(), reference(), false);
 		
 		boolean hasExtId = false;

@@ -135,7 +135,7 @@ public class TeachingRequestsExportCSV implements Exporter {
 	}
 	
 	protected void export(TeachingRequestsPageRequest request, List<SingleTeachingAssingment> list, ExportHelper helper, boolean hasInstructors, int cookie) throws IOException {
-		Printer out = new CSVPrinter(helper.getWriter(), false);
+		Printer out = new CSVPrinter(helper, false);
 		helper.setup(out.getContentType(), reference(), false);
 		
 		List<Column> columns = new ArrayList<Column>();

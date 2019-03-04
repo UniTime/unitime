@@ -80,7 +80,7 @@ public abstract class TableExporter implements Exporter {
 	protected void printTableCSV(TableInterface table, ExportHelper helper) throws IOException {
 		sort(table, helper);
 		
-		Printer out = new CSVPrinter(helper.getWriter(), false);
+		Printer out = new CSVPrinter(helper, false);
 		helper.setup(out.getContentType(), reference(), false);
 		
 		if (table.hasName())

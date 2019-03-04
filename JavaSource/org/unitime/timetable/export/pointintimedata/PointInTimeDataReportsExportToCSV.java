@@ -108,7 +108,7 @@ public class PointInTimeDataReportsExportToCSV implements Exporter {
 			}
 		}
 		
-		BufferedPrinter out = new BufferedPrinter(new CSVPrinter(helper.getWriter(), false));
+		BufferedPrinter out = new BufferedPrinter(new CSVPrinter(helper, false));
 		helper.setup(out.getContentType(), r.getName().replace('/', '-').replace('\\', '-').replace(':', '-') + ".csv", false);
 		
 		execute(helper.getSessionContext().getUser(), out, r, params);
