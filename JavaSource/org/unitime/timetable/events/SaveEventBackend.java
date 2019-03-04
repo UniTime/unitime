@@ -258,6 +258,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 			TreeSet<Meeting> createdMeetings = new TreeSet<Meeting>();
 			Set<Meeting> cancelledMeetings = new TreeSet<Meeting>();
 			Set<Meeting> updatedMeetings = new TreeSet<Meeting>();
+			Set<Meeting> approvedMeetings = new TreeSet<Meeting>();
 			boolean updateMeetingContacts = context.hasPermission(Right.EventCanEditMeetingContacts);
 			for (MeetingInterface m: request.getEvent().getMeetings()) {
 				Meeting meeting = null; 
@@ -354,6 +355,10 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
                     meeting.setMeetingDate(m.getMeetingDate());
                     event.getMeetings().add(meeting);
                     createdMeetings.add(meeting);
+                    if (meeting.getStatus() == Meeting.Status.APPROVED) {
+                    	response.addApprovedMeeting(m);
+                    	approvedMeetings.add(meeting);
+                    }
 				}
 				// automatic approval
 				if (meeting.getApprovalDate() == null) {
@@ -559,6 +564,36 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 					note.setTextNote(note.getTextNote().substring(0, 2000));
 				note.setMeetings(EventInterface.toString(firstDayOfWeek,
 						response.getCancelledMeetings(),
+						CONSTANTS, "\n", df));
+				event.getNotes().add(note);
+				NoteInterface n = new NoteInterface();
+				n.setDate(now);
+				n.setMeetings(note.getMeetings());
+				n.setUser(context.getUser().getTrueName());
+				n.setType(NoteInterface.NoteType.values()[note.getNoteType()]);
+				n.setNote(note.getTextNote());
+				if (attachment != null && !attached) {
+					note.setAttachedName(attachment.getName());
+					note.setAttachedFile(attachment.get());
+					note.setAttachedContentType(attachment.getContentType());
+					attached = true;
+					n.setAttachment(attachment.getName());
+				}
+				response.addNote(n);
+			}
+			if (response.hasApprovedMeetings()) {
+				EventNote note = new EventNote();
+				note.setEvent(event);
+				note.setNoteType(EventNote.sEventNoteTypeApproval);
+				note.setTimeStamp(now);
+				note.setUser(context.getUser().getTrueName());
+				note.setUserId(context.getUser().getTrueExternalUserId());
+				note.setAffectedMeetings(approvedMeetings);
+				if (request.hasMessage()) note.setTextNote(request.getMessage());
+				if (note.getTextNote() != null && note.getTextNote().length() > 2000)
+					note.setTextNote(note.getTextNote().substring(0, 2000));
+				note.setMeetings(EventInterface.toString(firstDayOfWeek,
+						response.getApprovedMeetings(),
 						CONSTANTS, "\n", df));
 				event.getNotes().add(note);
 				NoteInterface n = new NoteInterface();

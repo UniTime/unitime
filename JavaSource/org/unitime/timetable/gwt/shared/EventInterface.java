@@ -2489,7 +2489,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private EventInterface iEvent;
 		private List<MessageInterface> iMessages = null;
 		private List<NoteInterface> iNotes = null;
-		private TreeSet<MeetingInterface> iUpdatedMeetings = null, iCreatedMeetings = null, iDeletedMeetings = null, iCancelledMeetings = null;
+		private TreeSet<MeetingInterface> iUpdatedMeetings = null, iCreatedMeetings = null, iDeletedMeetings = null, iCancelledMeetings = null, iApprovedMeetings = null;
 		private TreeSet<EventServiceProviderInterface> iAddedServices = null, iRemovedServices = null;
 		
 		public SaveOrApproveEventRpcResponse() {}
@@ -2543,6 +2543,13 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			iCancelledMeetings.add(meeting);
 		}
 		public TreeSet<MeetingInterface> getCancelledMeetings() { return iCancelledMeetings; }
+		
+		public boolean hasApprovedMeetings() { return iApprovedMeetings != null && !iApprovedMeetings.isEmpty(); }
+		public void addApprovedMeeting(MeetingInterface meeting) {
+			if (iApprovedMeetings == null) iApprovedMeetings = new TreeSet<MeetingInterface>();
+			iApprovedMeetings.add(meeting);
+		}
+		public TreeSet<MeetingInterface> getApprovedMeetings() { return iApprovedMeetings; }
 		
 		public boolean hasAddedServices() { return iAddedServices != null && !iAddedServices.isEmpty(); }
 		public void addService(EventServiceProviderInterface service) {
