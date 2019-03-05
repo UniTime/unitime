@@ -251,13 +251,13 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("{0}. Alternative")
 	String courseRequestsAlternative(int i);
 	
-	@DefaultMessage("Alternate Course Requests")
+	@DefaultMessage("Substitute Course Requests")
 	String courseRequestsAlternatives();
 	
 	@DefaultMessage("(used only if a course requested above is not available)")
 	String courseRequestsAlternativesNote();
 
-	@DefaultMessage("{0}. Alternate")
+	@DefaultMessage("{0}. Substitute")
 	String courseRequestsAlternate(int i);
 	
 	@DefaultMessage("Alternative to {0}")
@@ -281,7 +281,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course with the lowest priority.")
 	String courseRequestsHint8();
 	
-	@DefaultMessage("Alternate request if course(s) above not available.")
+	@DefaultMessage("Substitute request if course(s) above not available.")
 	String courseRequestsHintA0();
 	
 	/* Course Selection Box messages

@@ -4972,16 +4972,21 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-CourseRequests .line .title {
 	display: inline-block;
-	width: 70px;
+	width: 75px;
 	text-align: right;
 	padding: 2px 2px 2px 0px;
 	vertical-align: top;
 	margin-top: 3px;
+	padding-right: 5px;
+}
+
+.unitime-CourseRequests .alternative .title {
+	padding-right: 0px;
 }
 
 .unitime-CourseRequests .alt-line .title {
 	display: inline-block;
-	width: 120px;
+	width: 125px;
 	text-align: right;
 	padding: 2px 2px 2px 0px;
 	vertical-align: top;
@@ -5013,35 +5018,35 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-CourseRequests .line .course .unitime-FilterBox {
-	width: 625px;
+	width: 620px;
 }
 
 .unitime-CourseRequests .nowaitlist .line .course .unitime-FilterBox {
-	width: 645px;
+	width: 640px;
 }
 
 .unitime-CourseRequests .noarrows .line .course .unitime-FilterBox {
-	width: 695px;
+	width: 690px;
 }
 
 .unitime-CourseRequests .noarrowswaitlist .line .course .unitime-FilterBox {
-	width: 715px;
+	width: 710px;
 }
 
 .unitime-CourseRequests .alt-line .course .unitime-FilterBox {
-	width: 575px;
+	width: 570px;
 }
 
 .unitime-CourseRequests .nowaitlist .alt-line .course .unitime-FilterBox {
-	width: 595px;
+	width: 590px;
 }
 
 .unitime-CourseRequests .noarrows .alt-line .course .unitime-FilterBox {
-	width: 645px;
+	width: 640px;
 }
 
 .unitime-CourseRequests .noarrowswaitlist .alt-line .course .unitime-FilterBox {
-	width: 665px;
+	width: 660px;
 }
 
 .unitime-CourseRequests .line .alternative {

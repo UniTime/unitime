@@ -315,102 +315,102 @@
 
 	.unitime-CourseRequests .line .course .unitime-FilterBox {
 		width: 70vw;
-		width: calc(99vw - 169px);
+		width: calc(99vw - 174px);
 		min-width: 150px;
 	}
 
 	.unitime-CourseRequests .alt-line .course .unitime-FilterBox {
 		width: 70vw;
-		width: calc(99vw - 219px);
+		width: calc(99vw - 224px);
 		min-width: 100px;
 	}
 	
 	.unitime-CourseRequests .nowaitlist .line .course .unitime-FilterBox {
-		width: calc(99vw - 144px);
+		width: calc(99vw - 149px);
 	}
 
 	.unitime-CourseRequests .nowaitlist .alt-line .course .unitime-FilterBox {
-		width: calc(99vw - 194px);
+		width: calc(99vw - 199px);
 	}
 
 	.unitime-CourseRequests .noarrows .line .course .unitime-FilterBox {
-		width: calc(99vw - 109px);
+		width: calc(99vw - 114px);
 	}
 
 	.unitime-CourseRequests .noarrows .alt-line .course .unitime-FilterBox {
-		width: calc(99vw - 159px);
+		width: calc(99vw - 164px);
 	}
 	
 	.unitime-CourseRequests .noarrowswaitlist .line .course .unitime-FilterBox {
-		width: calc(99vw - 89px);
+		width: calc(99vw - 94px);
 	}
 
 	.unitime-CourseRequests .noarrowswaitlist .alt-line .course .unitime-FilterBox {
-		width: calc(99vw - 139px);
+		width: calc(99vw - 144px);
 	}
 	
 	.unitime-CourseRequests .line .course .unitime-WarningHint {
-		max-width: calc(99vw - 169px);
+		max-width: calc(99vw - 174px);
 	}
 
 	.unitime-CourseRequests .alt-line .course .unitime-WarningHint {
-		max-width: calc(99vw - 219px);
+		max-width: calc(99vw - 224px);
 	}
 	
 	.unitime-CourseRequests .nowaitlist .line .course .unitime-WarningHint {
-		max-width: calc(99vw - 144px);
+		max-width: calc(99vw - 149px);
 	}
 
 	.unitime-CourseRequests .nowaitlist .alt-line .course .unitime-WarningHint {
-		max-width: calc(99vw - 194px);
+		max-width: calc(99vw - 199px);
 	}
 
 	.unitime-CourseRequests .noarrows .line .course .unitime-WarningHint {
-		max-width: calc(99vw - 109px);
+		max-width: calc(99vw - 114px);
 	}
 
 	.unitime-CourseRequests .noarrows .alt-line .course .unitime-WarningHint {
-		max-width: calc(99vw - 159px);
+		max-width: calc(99vw - 164px);
 	}
 	
 	.unitime-CourseRequests .noarrowswaitlist .line .course .unitime-WarningHint {
-		max-width: calc(99vw - 89px);
+		max-width: calc(99vw - 94px);
 	}
 
 	.unitime-CourseRequests .noarrowswaitlist .alt-line .course .unitime-WarningHint {
-		max-width: calc(99vw - 139px);
+		max-width: calc(99vw - 144px);
 	}
 	
 	.unitime-CourseRequests .line .course .unitime-ErrorHint {
-		max-width: calc(99vw - 169px);
+		max-width: calc(99vw - 174px);
 	}
 
 	.unitime-CourseRequests .alt-line .course .unitime-ErrorHint {
-		max-width: calc(99vw - 219px);
+		max-width: calc(99vw - 224px);
 	}
 	
 	.unitime-CourseRequests .nowaitlist .line .course .unitime-ErrorHint {
-		max-width: calc(99vw - 144px);
+		max-width: calc(99vw - 149px);
 	}
 
 	.unitime-CourseRequests .nowaitlist .alt-line .course .unitime-ErrorHint {
-		max-width: calc(99vw - 194px);
+		max-width: calc(99vw - 199px);
 	}
 
 	.unitime-CourseRequests .noarrows .line .course .unitime-ErrorHint {
-		max-width: calc(99vw - 109px);
+		max-width: calc(99vw - 114px);
 	}
 
 	.unitime-CourseRequests .noarrows .alt-line .course .unitime-ErrorHint {
-		max-width: calc(99vw - 159px);
+		max-width: calc(99vw - 164px);
 	}
 	
 	.unitime-CourseRequests .noarrowswaitlist .line .course .unitime-ErrorHint {
-		max-width: calc(99vw - 89px);
+		max-width: calc(99vw - 94px);
 	}
 
 	.unitime-CourseRequests .noarrowswaitlist .alt-line .course .unitime-ErrorHint {
-		max-width: calc(99vw - 139px);
+		max-width: calc(99vw - 144px);
 	}
 
 	.unitime-CourseRequests .tip {
