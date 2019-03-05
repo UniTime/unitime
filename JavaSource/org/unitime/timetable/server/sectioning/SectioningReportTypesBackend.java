@@ -74,7 +74,8 @@ public class SectioningReportTypesBackend implements GwtRpcImplementation<Sectio
 		UNUSED_OVERRIDE_RES(SCT_MSG.reportUnusedOverrideReservations(), UnusedReservations.class.getName(), "type", "override"),
 		UNUSED_LC_RES(SCT_MSG.reportUnusedLearningCommunityReservations(), UnusedReservations.class.getName(), "type", "lc"),
 		COURSE_REQUESTS(SCT_MSG.reportCourseRequestsWithPriorities(), RequestPriorityTable.class.getName(), "pritify", "false"),
-		TABLEAU_REPORT(SCT_MSG.reportTableauReport(), TableauReport.class.getName(), "pritify", "false", "showdates", "false"),
+		TABLEAU_REPORT(SCT_MSG.reportTableauReport(), TableauReport.class.getName(), "pritify", "false"),
+		TABLEAU_SIMPLE(SCT_MSG.reportTableauSimpleReport(), TableauReport.class.getName(), "pritify", "false", "simple", "true"),
 		;
 		
 		String iName, iImplementation;
