@@ -21,9 +21,11 @@ package org.unitime.timetable.server.sectioning;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -38,6 +40,7 @@ import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.Exporter;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.basic.GenerateSectioningReport;
@@ -81,6 +84,7 @@ public class SectioningReportsExporter implements Exporter {
 		CSVFile csv = null;
 		String online = helper.getParameter("online");
 		SessionContext context = helper.getSessionContext();
+		DataProperties config = null;
 		if (online == null) {
 			context.checkPermissionAnyAuthority(sessionId, "Session", Right.StudentScheduling);
 			
@@ -89,6 +93,7 @@ public class SectioningReportsExporter implements Exporter {
 				throw new GwtRpcException("No student solver is published.");
 			
 			csv = solver.getReport(parameters);
+			config = solver.getConfig();
 		} else if ("1".equals(online) || "true".equalsIgnoreCase(online) || "on".equalsIgnoreCase(online)) {
 			context.checkPermissionAnyAuthority(sessionId, "Session", Right.SchedulingReports);
 			
@@ -125,6 +130,26 @@ public class SectioningReportsExporter implements Exporter {
 		Printer out = new CSVPrinter(helper, false);
 		helper.setup(out.getContentType(), helper.getParameter("name").toLowerCase().replace('_', '-') + ".csv", false);
 		
+		if (config != null) {
+            String term = config.getProperty("Data.Term");
+            String year = config.getProperty("Data.Year");
+            String initiative = config.getProperty("Data.Initiative");
+            String session = null;
+            if (term != null && year != null && initiative != null)
+                session = term + year + initiative;
+            else
+            	session = SessionDAO.getInstance().get(sessionId).getReference();
+            SimpleDateFormat df = new SimpleDateFormat(parameters.getProperty("dateformat", "MM/dd/yyyy hh:mmaa"));
+            Long startTimeStamp = config.getPropertyLong("General.StartTime", null);
+            String started = (startTimeStamp == null ? null : df.format(new Date(startTimeStamp)));
+            Long publishTimeStamp = config.getPropertyLong("StudentSct.Published", null);
+            String published = (publishTimeStamp == null ? null : df.format(new Date(publishTimeStamp)));
+            String publishId = config.getProperty("StudentSct.PublishId");
+            out.printLine("Id", "Term", "Started", "Published");
+            out.printLine(publishId, session, started, published);
+            out.printLine();
+		}
+				
 		synchronized (csv) {
 			String[] header = new String[csv.getHeader().getFields().size()];
 			for (int i = 0; i < csv.getHeader().getFields().size(); i++)

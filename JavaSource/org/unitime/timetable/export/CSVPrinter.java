@@ -81,7 +81,8 @@ public class CSVPrinter implements Printer {
 						iOut.print(f);	
 					}
 			}
-			iOut.print(iDelimiter == null || iDelimiter.isEmpty() ? "," : iDelimiter);
+			if (idx + 1 < fields.length)
+				iOut.print(iDelimiter == null || iDelimiter.isEmpty() ? "," : iDelimiter);
 		}
 		iOut.println();
 		iLastLine = fields;
