@@ -92,6 +92,7 @@ public class ClassAssignmentInfo extends ClassAssignment implements Serializable
 	}
 	
 	private void findStudentConflicts(Map<Long,ClassAssignment> assignmentTable, Map<ClassAssignment, Set<Long>> conflicts) {
+		if (!hasTime()) return;
 		for (Map.Entry<ClassAssignment, Set<Long>> e: conflicts.entrySet()) {
 			ClassAssignment a = e.getKey();
 			ClassAssignment b = (assignmentTable != null ? assignmentTable.get(a.getClassId()) : null);
