@@ -95,6 +95,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 		if (courseId() == null) {
 			Set<Long> students = new HashSet<Long>();
 			Set<Long> matchingStudents = new HashSet<Long>();
+			Set<Long> allStudents = new HashSet<Long>();
 			
 			int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0, gUnasgPrim = 0;
 			int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0, gtUnasgPrim = 0;
@@ -140,6 +141,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					
 					DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(request.getCourseDemand().getStudent()), helper.getStudentNameFormat());
 					if (!query().match(crm)) {
+						allStudents.add(crm.student().getUniqueId());
 						if (!crm.enrollment().isEmpty()) {
 							tEnrl ++;
 							if (crm.reservation() != null) tRes ++;
@@ -183,16 +185,18 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 						if (request.isRequestPending()) ovrNeed ++;
 					}
 					
-					if (!crm.enrollment().isEmpty()) {
-						tEnrl ++;
-						if (crm.reservation() != null) tRes ++;
-						if (request.getCourseOffering().getConsentType() != null && crm.approval() == null) tConNeed ++;
-					} else if (crm.canAssign()) {
-						tUnasg ++;
-						if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) {
-							tUnasgPrim ++;
-							if (request.getCourseDemand().isWaitlist())
-								tWait ++;
+					if (allStudents.add(crm.student().getUniqueId())) {
+						if (!crm.enrollment().isEmpty()) {
+							tEnrl ++;
+							if (crm.reservation() != null) tRes ++;
+							if (request.getCourseOffering().getConsentType() != null && crm.approval() == null) tConNeed ++;
+						} else if (crm.canAssign()) {
+							tUnasg ++;
+							if (!request.getCourseDemand().isAlternative() && request.getOrder() == 0) {
+								tUnasgPrim ++;
+								if (request.getCourseDemand().isWaitlist())
+									tWait ++;
+							}
 						}
 					}
 					if (request.isRequestPending()) tOvrNeed ++;

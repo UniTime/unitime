@@ -62,6 +62,9 @@ public abstract class Reservation extends BaseReservation implements Comparable<
 	public abstract boolean isApplicable(Student student, CourseRequest request);
 	
 	public int getReservationLimit() {
+		Integer cap = getLimitCap();
+		if (cap != null)
+			return min(cap, getLimit() == null ? -1 : getLimit().intValue());
 		return (getLimit() == null ? -1 : getLimit().intValue());
 	}
 	

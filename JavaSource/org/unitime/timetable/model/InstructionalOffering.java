@@ -627,7 +627,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
         // compute available space
         int available = 0;
         for (InstrOfferingConfig config: getInstrOfferingConfigs()) {
-            available += config.getLimit() - getEnrollment();
+            available += config.getLimit() - config.getEnrollment();
             // offering is unlimited -> there is unreserved space unless there is an unlimited reservation too 
             // (in which case there is no unreserved space)
             if (config.isUnlimitedEnrollment()) {
