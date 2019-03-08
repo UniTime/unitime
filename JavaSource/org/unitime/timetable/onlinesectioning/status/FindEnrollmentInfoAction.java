@@ -554,9 +554,9 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				
 				if (match == 0) continue;
 				
-				e.setLimit(section.getLimit() < 0 ? section.getLimit() : section.getLimit());
+				e.setLimit(section.getLimit());
 				e.setOther(other);
-				e.setAvailable(Math.max(0, offering.getUnreservedSectionSpace(section.getSectionId(), enrollments)));
+				e.setAvailable(section.isCancelled() || !section.isEnabledForScheduling() ? 0 : Math.max(0, offering.getUnreservedSectionSpace(section.getSectionId(), enrollments)));
 				if (e.getAvailable() == Integer.MAX_VALUE) e.setAvailable(-1);
 				e.setProjection(tEnrl + (int)Math.round(expectations.getExpectedSpace(section.getSectionId())));
 				

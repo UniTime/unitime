@@ -479,7 +479,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				
 				e.setLimit(section.getSectioningLimit());
 				e.setOther(other);
-				e.setAvailable(Math.max(0, section.getUnreservedSectionSpace()));
+				e.setAvailable(section.isCancelled() || !section.isEnabledForStudentScheduling() ? 0 : Math.max(0, section.getUnreservedSectionSpace()));
 				if (e.getAvailable() == Integer.MAX_VALUE) e.setAvailable(-1);
 				e.setProjection(tEnrl + Math.max(0, (int)Math.round(section.getSectioningInfo() == null ? 0 : section.getSectioningInfo().getNbrExpectedStudents())));
 				

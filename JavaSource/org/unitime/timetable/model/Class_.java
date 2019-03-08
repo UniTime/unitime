@@ -1799,9 +1799,7 @@ public class Class_ extends BaseClass_ {
 	}
 	
 	public int getSectioningLimit() {
-		if (!isEnabledForStudentScheduling()) {
-        	return 0;
-        } else if (getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment()) {
+		if (getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment()) {
         	return -1;
         } else {
         	int limit = getMaxExpectedCapacity();
@@ -1833,6 +1831,9 @@ public class Class_ extends BaseClass_ {
 	}
 	
 	public int getUnreservedSectionSpace() {
+		if (!isEnabledForStudentScheduling())
+			return 0;
+		
         // section is unlimited -> there is unreserved space unless there is an unlimited reservation too 
         // (in which case there is no unreserved space)
         if (getSectioningLimit() < 0) {
