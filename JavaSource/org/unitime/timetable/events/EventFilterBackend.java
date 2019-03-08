@@ -224,7 +224,9 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 		cal.set(Calendar.MILLISECOND, 0);
 		Date today = cal.getTime();
 		
-		if (!context.hasPermission(Right.HasRole)) {
+		if (context.hasPermission(request.getSessionId(), "Session", Right.EventCanSeeUnpublishedEvents)) {
+			// no restrictions
+		} else if (!context.hasPermission(Right.HasRole)) {
 			/*
 			Session session = SessionDAO.getInstance().get(request.getSessionId());
 			String prohibitedTypes = null;

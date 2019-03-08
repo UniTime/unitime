@@ -837,4 +837,7 @@ public class EventPermissions {
 		public Class<Meeting> type() { return Meeting.class; }
 	}
 	
+	@PermissionForRight(Right.EventCanSeeUnpublishedEvents)
+	public static class EventCanSeeUnpublishedClassEvents extends SimpleSessionPermission {}
+	
 }

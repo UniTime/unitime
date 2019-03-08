@@ -2649,7 +2649,8 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					}
 					
 					if (arrageHourClasses != null) {
-						boolean checkDepartment = (ApplicationProperty.EventHasRoleCheckReportStatus.isTrue() && !context.hasPermission(Right.DepartmentIndependent) && !context.hasPermission(Right.StatusIndependent) && !session.canNoRoleReportClass());
+						boolean checkDepartment = (ApplicationProperty.EventHasRoleCheckReportStatus.isTrue() && !context.hasPermission(Right.DepartmentIndependent) && !context.hasPermission(Right.StatusIndependent) && !session.canNoRoleReportClass()
+								&& !context.hasPermission(session, Right.EventCanSeeUnpublishedEvents));
 
 						 for (Class_ clazz: arrageHourClasses) {
 							 if (checkDepartment && !context.getUser().getCurrentAuthority().hasQualifier(clazz.getControllingDept())) continue;

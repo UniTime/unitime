@@ -396,6 +396,7 @@ public enum Right {
     EventCanEditAcademicTitle,
     EventCanViewMeetingContacts,
     EventCanEditMeetingContacts,
+    EventCanSeeUnpublishedEvents(Session.class),
     
     /** Administration: Academic Sessions */
     
