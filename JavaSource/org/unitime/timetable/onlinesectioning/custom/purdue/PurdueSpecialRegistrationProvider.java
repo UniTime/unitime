@@ -320,7 +320,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		return false;
 	}
 	
-	protected void buildChangeList(SpecialRegistration request, OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, Collection<ClassAssignmentInterface.ClassAssignment> assignment, Collection<ErrorMessage> errors) {
+	protected void buildChangeList(SpecialRegistration request, OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, Collection<ClassAssignmentInterface.ClassAssignment> assignment, Collection<ErrorMessage> errors, Float credit) {
 		request.changes = new ArrayList<Change>();
 		float maxCredit = 0f;
 		Map<XCourse, List<XSection>> enrollments = new HashMap<XCourse, List<XSection>>();
@@ -372,9 +372,9 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			
 			Float sectionCredit = null;
 			for (XSection s: sections) {
-				Float credit = s.getCreditOverride(course.getCourseId());
-				if (credit != null) {
-					sectionCredit = (sectionCredit == null ? 0f : sectionCredit.floatValue()) + credit;
+				Float creditOverride = s.getCreditOverride(course.getCourseId());
+				if (creditOverride != null) {
+					sectionCredit = (sectionCredit == null ? 0f : sectionCredit.floatValue()) + creditOverride;
 				}
 			}
 			if (sectionCredit != null)
@@ -484,6 +484,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			}
 		}
 		
+		if (credit != null && credit > maxCredit) maxCredit = credit;
 		if (maxi || (student.getMaxCredit() != null && student.getMaxCredit() < maxCredit))
 			request.maxCredit = maxCredit;
 	}
@@ -661,6 +662,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				}
 			}
 			ret.setErrors(errors);
+			if (resp.outJson.maxHoursCalc != null)
+				ret.setCredit(resp.outJson.maxHoursCalc);
 		}
 		
 		Set<ErrorMessage> denied = new TreeSet<ErrorMessage>();
@@ -750,7 +753,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			request.term = getBannerTerm(session);
 			request.campus = getBannerCampus(session);
 			request.studentId = getBannerId(student);
-			buildChangeList(request, server, helper, student, input.getClassAssignments(), input.getErrors());
+			buildChangeList(request, server, helper, student, input.getClassAssignments(), input.getErrors(), input.getCredit());
 			// buildChangeList(request, server, helper, student, input.getClassAssignments(), validate(server, helper, student, input.getClassAssignments()));
 			request.regRequestId = input.getRequestId();
 			request.mode = getSpecialRegistrationMode(); 

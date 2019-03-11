@@ -155,6 +155,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private List<ErrorMessage> iDeniedErrors = null;
 		private List<ErrorMessage> iCancelErrors = null;
 		private Set<String> iCancelRequestIds = null;
+		private Float iCredit = null;
 		
 		public SpecialRegistrationEligibilityResponse() {}
 		public SpecialRegistrationEligibilityResponse(boolean canSubmit, String message) {
@@ -219,6 +220,10 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			else
 				iDeniedErrors = new ArrayList<ErrorMessage>(messages);
 		}
+		
+		public void setCredit(Float credit) { iCredit = credit; }
+		public boolean hasCredit() { return iCredit != null; }
+		public Float getCredit() { return iCredit; }
 	}
 	
 	public static enum SpecialRegistrationStatus implements IsSerializable, Serializable {
@@ -454,9 +459,10 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private Collection<ClassAssignmentInterface.ClassAssignment> iClassAssignments;
 		private ArrayList<ErrorMessage> iErrors = null;
 		private String iNote;
+		private Float iCredit;
 		
 		public SubmitSpecialRegistrationRequest() {}
-		public SubmitSpecialRegistrationRequest(Long sessionId, Long studentId, String requestId, CourseRequestInterface courses, Collection<ClassAssignmentInterface.ClassAssignment> assignments, Collection<ErrorMessage> errors, String note) {
+		public SubmitSpecialRegistrationRequest(Long sessionId, Long studentId, String requestId, CourseRequestInterface courses, Collection<ClassAssignmentInterface.ClassAssignment> assignments, Collection<ErrorMessage> errors, String note, Float credit) {
 			iRequestId = requestId;
 			iStudentId = studentId;
 			iSessionId = sessionId;
@@ -465,6 +471,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			if (errors != null)
 				iErrors = new ArrayList<ErrorMessage>(errors);
 			iNote = note;
+			iCredit = credit;
 		}
 		
 		public Collection<ClassAssignmentInterface.ClassAssignment> getClassAssignments() { return iClassAssignments; }
@@ -487,6 +494,9 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public ArrayList<ErrorMessage> getErrors() { return iErrors; }
 		public String getNote() { return iNote; }
 		public void setNote(String note) { iNote = note; }
+		public void setCredit(Float credit) { iCredit = credit; }
+		public boolean hasCredit() { return iCredit != null; }
+		public Float getCredit() { return iCredit; }
 	}
 	
 	public static class SubmitSpecialRegistrationResponse implements IsSerializable, Serializable {

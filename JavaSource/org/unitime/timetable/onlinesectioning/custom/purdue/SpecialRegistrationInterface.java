@@ -342,6 +342,8 @@ public class SpecialRegistrationInterface {
 		public ResponseStatus status;
 		/** Banner term */
 		public String term;
+		/** Computed credit hours */
+		public Float maxHoursCalc;
 	}
 	
 	/** Possible values for the includeReg parameter */
