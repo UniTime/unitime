@@ -40,6 +40,7 @@ import org.cpsolver.coursett.model.Placement;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.restlet.Client;
+import org.restlet.Context;
 import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
 import org.restlet.resource.ClientResource;
@@ -152,6 +153,9 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		protocols.add(Protocol.HTTP);
 		protocols.add(Protocol.HTTPS);
 		iClient = new Client(protocols);
+		Context cx = new Context();
+		cx.getParameters().add("readTimeout", getSpecialRegistrationApiReadTimeout());
+		iClient.setContext(cx);
 		try {
 			String clazz = ApplicationProperty.CustomizationExternalTerm.value();
 			if (clazz == null || clazz.isEmpty())
@@ -176,6 +180,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 	
 	protected String getSpecialRegistrationApiSite() {
 		return ApplicationProperties.getProperty("purdue.specreg.site");
+	}
+	
+	protected String getSpecialRegistrationApiReadTimeout() {
+		return ApplicationProperties.getProperty("purdue.specreg.readTimeout", "60000");
 	}
 	
 	protected String getSpecialRegistrationApiSiteSubmitRegistration() {

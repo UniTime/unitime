@@ -62,6 +62,7 @@ import org.cpsolver.studentsct.reservation.Reservation;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.restlet.Client;
+import org.restlet.Context;
 import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
 import org.restlet.resource.ClientResource;
@@ -157,6 +158,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		protocols.add(Protocol.HTTP);
 		protocols.add(Protocol.HTTPS);
 		iClient = new Client(protocols);
+		Context cx = new Context();
+		cx.getParameters().add("readTimeout", getSpecialRegistrationApiReadTimeout());
 		try {
 			String clazz = ApplicationProperty.CustomizationExternalTerm.value();
 			if (clazz == null || clazz.isEmpty())
@@ -171,6 +174,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 	
 	protected String getSpecialRegistrationApiSite() {
 		return ApplicationProperties.getProperty("purdue.specreg.site");
+	}
+	
+	protected String getSpecialRegistrationApiReadTimeout() {
+		return ApplicationProperties.getProperty("purdue.specreg.readTimeout", "60000");
 	}
 	
 	protected String getSpecialRegistrationApiValidationSite() {
