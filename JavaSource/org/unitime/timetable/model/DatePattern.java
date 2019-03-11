@@ -115,7 +115,7 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 		iCachedPatternBitSet = new BitSet(size);
 		int offset = getPatternOffset() - getSession().getDayOfYear(1,startMonth);
 		for (int i=0;i<getPattern().length();i++) {
-			if (getPattern().charAt(i)=='1')
+			if (getPattern().charAt(i)=='1' && i+offset >= 0)
 				iCachedPatternBitSet.set(i+offset);
 		}
 		return iCachedPatternBitSet;
