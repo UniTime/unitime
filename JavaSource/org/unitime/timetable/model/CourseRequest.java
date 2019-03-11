@@ -42,6 +42,12 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
 	public static enum CourseRequestOverrideStatus {
 		PENDING, APPROVED, REJECTED, CANCELLED,
 	}
+	
+	public static enum CourseRequestOverrideIntent {
+		REGISTER, // pre-registration
+		ADD, DROP, CHANGE, // open registration
+		EX_ADD, EX_DROP, EX_CHANGE, // extended registration
+	}
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
 	public CourseRequest () {
@@ -133,6 +139,17 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
     
     public void setCourseRequestOverrideStatus(CourseRequestOverrideStatus status) {
     	setOverrideStatus(status == null ? null : new Integer(status.ordinal()));
+    }
+    
+    public void setCourseRequestOverrideIntent(CourseRequestOverrideIntent intent) {
+    	if (intent == null)
+    		setOverrideIntent(null);
+    	else
+    		setOverrideIntent(intent.ordinal());
+    }
+    
+    public CourseRequestOverrideIntent getCourseRequestOverrideIntent() {
+    	return (getOverrideIntent() == null ? null : CourseRequestOverrideIntent.values()[getOverrideIntent()]); 
     }
     
     public boolean isRequestApproved() {

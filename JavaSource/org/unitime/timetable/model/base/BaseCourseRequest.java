@@ -45,6 +45,7 @@ public abstract class BaseCourseRequest implements Serializable {
 	private Integer iOverrideStatus;
 	private String iOverrideExternalId;
 	private Date iOverrideTimeStamp;
+	private Integer iOverrideIntent;
 
 	private CourseDemand iCourseDemand;
 	private CourseOffering iCourseOffering;
@@ -59,6 +60,7 @@ public abstract class BaseCourseRequest implements Serializable {
 	public static String PROP_REQ_STATUS = "overrideStatus";
 	public static String PROP_REQ_EXTID = "overrideExternalId";
 	public static String PROP_REQ_TS = "overrideTimeStamp";
+	public static String PROP_REQ_INTENT = "overrideIntent";
 
 	public BaseCourseRequest() {
 		initialize();
@@ -92,6 +94,9 @@ public abstract class BaseCourseRequest implements Serializable {
 
 	public Date getOverrideTimeStamp() { return iOverrideTimeStamp; }
 	public void setOverrideTimeStamp(Date overrideTimeStamp) { iOverrideTimeStamp = overrideTimeStamp; }
+
+	public Integer getOverrideIntent() { return iOverrideIntent; }
+	public void setOverrideIntent(Integer overrideIntent) { iOverrideIntent = overrideIntent; }
 
 	public CourseDemand getCourseDemand() { return iCourseDemand; }
 	public void setCourseDemand(CourseDemand courseDemand) { iCourseDemand = courseDemand; }
@@ -143,6 +148,7 @@ public abstract class BaseCourseRequest implements Serializable {
 			"\n	Credit: " + getCredit() +
 			"\n	Order: " + getOrder() +
 			"\n	OverrideExternalId: " + getOverrideExternalId() +
+			"\n	OverrideIntent: " + getOverrideIntent() +
 			"\n	OverrideStatus: " + getOverrideStatus() +
 			"\n	OverrideTimeStamp: " + getOverrideTimeStamp() +
 			"\n	UniqueId: " + getUniqueId() +

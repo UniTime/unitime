@@ -108,6 +108,13 @@
             type="java.util.Date"
             not-null="false"/>
 		
+		<property
+            name="overrideIntent"
+            column="req_intent"
+            type="java.lang.Integer"
+            not-null="false"
+            length="10"/>
+		
 		<set
             name="preferences"
             table="sect_pref"

@@ -80,6 +80,7 @@ import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideIntent;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -2122,6 +2123,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 										changed = true;
 									cr.setOverrideExternalId(r.regRequestId);
 									cr.setOverrideTimeStamp(r.dateCreated == null ? null : r.dateCreated.toDate());
+									cr.setCourseRequestOverrideIntent(CourseRequestOverrideIntent.REGISTER);
 									helper.getHibSession().update(cr);
 									continue cr;
 								}
@@ -2131,6 +2133,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					cr.setOverrideExternalId(null);
 					cr.setOverrideStatus(null);
 					cr.setOverrideTimeStamp(null);
+					cr.setOverrideIntent(null);
 					helper.getHibSession().update(cr);
 					changed = true;
 				}

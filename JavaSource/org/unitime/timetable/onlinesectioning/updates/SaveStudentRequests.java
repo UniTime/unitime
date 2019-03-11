@@ -44,6 +44,7 @@ import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.FreeTime;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideIntent;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -293,6 +294,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 						RequestedCourseStatus.OVERRIDE_PENDING == rc.getStatus() ? CourseRequestOverrideStatus.PENDING :
 						RequestedCourseStatus.OVERRIDE_CANCELLED == rc.getStatus() ? CourseRequestOverrideStatus.CANCELLED :
 						RequestedCourseStatus.OVERRIDE_REJECTED == rc.getStatus() ? CourseRequestOverrideStatus.REJECTED : null);
+					cr.setCourseRequestOverrideIntent(rc == null ? null : CourseRequestOverrideIntent.REGISTER);
 					if (rc.getStatus() == null || rc.getStatus() == RequestedCourseStatus.NEW_REQUEST)
 						rc.setStatus(RequestedCourseStatus.SAVED);
 					course2request.put(co.getUniqueId(), cr);
@@ -410,6 +412,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 						RequestedCourseStatus.OVERRIDE_PENDING == rc.getStatus() ? CourseRequestOverrideStatus.PENDING :
 						RequestedCourseStatus.OVERRIDE_CANCELLED == rc.getStatus() ? CourseRequestOverrideStatus.CANCELLED :
 						RequestedCourseStatus.OVERRIDE_REJECTED == rc.getStatus() ? CourseRequestOverrideStatus.REJECTED : null);
+					cr.setCourseRequestOverrideIntent(rc == null ? null : CourseRequestOverrideIntent.REGISTER);
 					if (rc.getStatus() == null || rc.getStatus() == RequestedCourseStatus.NEW_REQUEST)
 						rc.setStatus(RequestedCourseStatus.SAVED);
 					course2request.put(co.getUniqueId(), cr);

@@ -13536,4 +13536,8 @@
 		<sql>alter table %SCHEMA%.sect_pref add constraint fk_sct_pref_class foreign key (class_id) references %SCHEMA%.class_ (uniqueid) on delete cascade</sql>
 		<sql>alter table %SCHEMA%.sect_pref add constraint fk_sct_pref_im foreign key (instr_mthd_id) references %SCHEMA%.instructional_method (uniqueid) on delete cascade</sql>
 	</update>
+	<update version="217" date="11-Mar-2019" comment="Special Registration Intent">
+	    <plsql>alter table %SCHEMA%.course_request add req_intent number(10)</plsql>
+		<mysql>alter table %SCHEMA%.course_request add req_intent bigint(10)</mysql>
+	</update>
 </dbupdate>

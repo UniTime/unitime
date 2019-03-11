@@ -487,6 +487,44 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		if (maxi || (student.getMaxCredit() != null && student.getMaxCredit() < maxCredit))
 			request.maxCredit = maxCredit;
 	}
+	
+	protected CourseRequest.CourseRequestOverrideIntent combine(Change change, CourseRequest.CourseRequestOverrideIntent oldIntent) {
+		boolean ex = false;
+		if (change.errors != null)
+			for (ChangeError e: change.errors)
+				if (e.code != null && e.code.startsWith("EX-")) ex = true;
+		if (oldIntent != null)
+			switch (oldIntent) {
+			case EX_ADD:
+			case EX_DROP:
+			case EX_CHANGE:
+				ex = true;
+				break;
+			}
+		if (change.operation == ChangeOperation.ADD) {
+			if (oldIntent != null)
+				switch (oldIntent) {
+				case ADD:
+				case EX_ADD:
+					return (ex ? CourseRequest.CourseRequestOverrideIntent.EX_ADD : CourseRequest.CourseRequestOverrideIntent.ADD);
+				default:
+					return (ex ? CourseRequest.CourseRequestOverrideIntent.EX_CHANGE : CourseRequest.CourseRequestOverrideIntent.CHANGE);
+				}
+			return (ex ? CourseRequest.CourseRequestOverrideIntent.EX_ADD : CourseRequest.CourseRequestOverrideIntent.ADD);
+		} else if (change.operation == ChangeOperation.DROP) {
+			if (oldIntent != null)
+				switch (oldIntent) {
+				case DROP:
+				case EX_DROP:
+					return (ex ? CourseRequest.CourseRequestOverrideIntent.EX_DROP : CourseRequest.CourseRequestOverrideIntent.DROP);
+				default:
+					return (ex ? CourseRequest.CourseRequestOverrideIntent.EX_CHANGE : CourseRequest.CourseRequestOverrideIntent.CHANGE);
+				}
+			return (ex ? CourseRequest.CourseRequestOverrideIntent.EX_DROP : CourseRequest.CourseRequestOverrideIntent.DROP);
+		} else {
+			return oldIntent;
+		}
+	}
 
 	@Override
 	public SpecialRegistrationEligibilityResponse checkEligibility(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, SpecialRegistrationEligibilityRequest input) throws SectioningException {
@@ -770,11 +808,13 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				for (SubmitRegistrationResponse r: response.data) {
 					ChangeStatus maxiStatus = null;
 					Map<String, Set<String>> course2errors = new HashMap<String, Set<String>>();
+					Map<String, CourseRequest.CourseRequestOverrideIntent> course2intent = new HashMap<String, CourseRequest.CourseRequestOverrideIntent>();
 					Map<String, SpecialRegistrationStatus> course2status = new HashMap<String, SpecialRegistrationStatus>();
 					if (r.changes != null)
 						for (Change ch: r.changes) {
 							if (ch.subject != null && ch.courseNbr != null && ch.errors != null && !ch.errors.isEmpty()) {
 								String course = ch.subject + " " + ch.courseNbr;
+								course2intent.put(course, combine(ch, course2intent.get(course)));
 								Set<String> errors = course2errors.get(course);
 								if (errors == null) {
 									errors = new TreeSet<String>();
@@ -835,6 +875,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 										dbCourseRequest.setOverrideExternalId(r.regRequestId);
 										dbCourseRequest.setOverrideStatus(toStatus(course2status.get(e.getKey())));
 										dbCourseRequest.setOverrideTimeStamp(r.dateCreated == null ? new Date() : r.dateCreated.toDate());
+										dbCourseRequest.setCourseRequestOverrideIntent(course2intent.get(e.getKey()));
 										helper.getHibSession().update(dbCourseRequest);
 									}
 								}
@@ -1693,6 +1734,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 												dbCourseRequest.setOverrideStatus(null);
 												dbCourseRequest.setOverrideExternalId(null);
 												dbCourseRequest.setOverrideTimeStamp(null);
+												dbCourseRequest.setOverrideIntent(null);
 												helper.getHibSession().update(dbCourseRequest);
 											}
 										}
