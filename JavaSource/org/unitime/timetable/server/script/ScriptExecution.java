@@ -62,7 +62,7 @@ import org.unitime.timetable.util.queue.QueueItem;
 public class ScriptExecution extends QueueItem {
 	private static final long serialVersionUID = 1L;
 	private ExecuteScriptRpcRequest iRequest;
-	private FileItem iFile = null;
+	private transient FileItem iFile = null;
 	
 	public ScriptExecution(ExecuteScriptRpcRequest request, SessionContext context) {
 		super(context.getUser());
