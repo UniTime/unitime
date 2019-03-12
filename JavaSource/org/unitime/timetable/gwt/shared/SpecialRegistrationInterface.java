@@ -245,7 +245,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private String iNote;
 		private List<ClassAssignmentInterface.ClassAssignment> iChanges;
 		private boolean iCanCancel = false;
-		private boolean iHasTimeConflict, iHasSpaceConflict;
+		private boolean iHasTimeConflict, iHasSpaceConflict, iExtended;
 		private ArrayList<ErrorMessage> iErrors = null;
 		private Float iMaxCredit = null;
 		
@@ -418,6 +418,9 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		
 		public boolean hasSpaceConflict() { return iHasSpaceConflict; }
 		public void setHasSpaceConflict(boolean hasSpaceConflict) { iHasSpaceConflict = hasSpaceConflict; }
+		
+		public boolean isExtended() { return iExtended; }
+		public void setExtended(boolean extended) { iExtended = extended; }
 		
 		public void addError(ErrorMessage error) {
 			if (iErrors == null) iErrors = new ArrayList<ErrorMessage>();

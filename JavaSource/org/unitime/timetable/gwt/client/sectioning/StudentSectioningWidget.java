@@ -2530,7 +2530,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			} else if (iEligibilityCheck.hasOverride(e.getCode())) {
 				confirm.addMessage(null, e.getCourse(), e.getCode(), e.getMessage(), 0);
 			} else {
-				confirm.addMessage(null, e.getCourse(), e.getCode(), e.getMessage() + " (" + e.getCode() + ")", 0);
+				confirm.addMessage(null, e.getCourse(), e.getCode(), e.getMessage(), 0);
 			}
 		}
 		if (eligibilityResponse.hasCancelErrors()) {

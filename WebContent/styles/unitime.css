@@ -6116,6 +6116,10 @@ unitime-RoomSharingWidget .legend .blank {
     font-style: italic;
 }
 
+.unitime-SpecialRegistrations .change-drop-with-errors {
+    font-style: italic;
+}
+
 .unitime-CourseRequestBox .unitime-ErrorHint .status-note {
 	color: #777777;	
 	font-style: italic;

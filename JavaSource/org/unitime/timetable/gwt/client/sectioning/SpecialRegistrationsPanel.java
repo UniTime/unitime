@@ -381,7 +381,7 @@ public class SpecialRegistrationsPanel extends P {
 					int idx = iTable.addRow(reg, row);
 					if (reg.getStatus() == SpecialRegistrationStatus.Approved) {
 						iTable.setBackGroundColor(idx, "#D7FFD7");
-						if (!reg.isFullyApplied(saved))
+						if (!reg.isFullyApplied(saved) && !reg.isExtended())
 							iHasOneOrMoreFullyApproved = true;
 					}
 					if (reg.getRequestId().equals(iSpecReg.getRequestId()))
@@ -394,7 +394,7 @@ public class SpecialRegistrationsPanel extends P {
 							iTable.getCellFormatter().addStyleName(idx, c, "top-border-dashed");
 					if (!ca.isCourseAssigned()) {
 						for (int c = 2; c < iTable.getCellCount(idx) - 1; c++)
-							iTable.getCellFormatter().addStyleName(idx, c, "change-drop");
+							iTable.getCellFormatter().addStyleName(idx, c, ca.hasError() ? "change-drop-with-errors" : "change-drop");
 					} else  {
 						for (int c = 2; c < iTable.getCellCount(idx) - 1; c++)
 							iTable.getCellFormatter().addStyleName(idx, c, "change-add");
