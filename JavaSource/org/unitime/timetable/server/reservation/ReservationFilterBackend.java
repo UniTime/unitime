@@ -41,6 +41,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
+import org.unitime.timetable.gwt.shared.ReservationInterface.OverrideType;
 import org.unitime.timetable.gwt.shared.ReservationInterface.ReservationFilterRpcRequest;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.Class_;
@@ -95,7 +96,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 		org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
 		
 		Map<Integer, Integer> type2count = new HashMap<Integer, Integer>();
-		for (Object[] o: (List<Object[]>)query.select("r.class, count(distinct r)").group("r.class").exclude("type").query(hibSession).list()) {
+		for (Object[] o: (List<Object[]>)query.select("r.class, count(distinct r)").group("r.class").exclude("type").exclude("override").query(hibSession).list()) {
 			Integer type = ((Number)o[0]).intValue();
 			int count = ((Number)o[1]).intValue();
 			type2count.put(type, count);
@@ -192,6 +193,17 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 				area.incCount();
 			}
 			response.add("area", new TreeSet<Entity>(areas.values()));
+		}
+		
+		if (request.hasOptions("type") && request.getOptions("type").contains("Override")) {
+			List<Entity> types = new ArrayList<Entity>();
+			for (Object[] typeAndCount: (List<Object[]>)query.select("r.type, count(distinct r)").where("r.class = OverrideReservation").group("r.type").order("r.type").exclude("override").query(hibSession).list()) {
+				OverrideType type = OverrideType.values()[((Number)typeAndCount[0]).intValue()];
+				Entity e = new Entity(new Long(type.ordinal()), type.getReference(), CONSTANTS.reservationOverrideTypeAbbv()[type.ordinal()]);
+				e.setCount(((Number)typeAndCount[1]).intValue());
+				types.add(e);
+			}
+			response.add("override", types);
 		}
 		
 		if (request.hasOptions("type") && (request.getOptions("type").contains("Group") || request.getOptions("type").contains("LC"))) {
@@ -323,6 +335,19 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 					type += "LearningCommunityReservation";
 			}
 			query.addWhere("type", "r.class " + (type.indexOf(',') < 0 ? "= " + type : "in (" + type + ")"));
+		}
+		
+		if (request.hasOptions("override")) {
+			String override = "";
+			for (String o: request.getOptions("override")) {
+				OverrideType type = null;
+				for (OverrideType t: OverrideType.values())
+					if (t.getReference().equals(o)) { type = t; break; }
+				if (type == null) continue;
+				if (!override.isEmpty()) override += ",";
+				override += type.ordinal();
+			}
+			query.addWhere("override", "r.type " + (override.indexOf(',') < 0 ? "= " + override : "in (" + override + ")"));
 		}
 		
 		if (request.hasOption("department")) {
@@ -649,6 +674,9 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 				if (iReservation instanceof LearningCommunityReservation && "lc".equalsIgnoreCase(term)) return true;
 				if (iReservation instanceof CourseReservation && "course".equalsIgnoreCase(term)) return true;
 				if (iReservation instanceof CurriculumReservation && "curriculum".equalsIgnoreCase(term)) return true;
+			}
+			if ("override".equals(attr)) {
+				if (iReservation instanceof OverrideReservation && OverrideType.values()[((OverrideReservation)iReservation).getType()].getReference().equalsIgnoreCase(term)) return true;
 			}
 			if ("group".equals(attr)) {
 				if (iReservation instanceof StudentGroupReservation) {

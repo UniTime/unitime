@@ -5654,6 +5654,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("type")
 	String tagReservationType();
 	
+	@DefaultMessage("override")
+	String tagReservationOverride();
+	
 	@DefaultMessage("subject")
 	String tagSubjectArea();
 	

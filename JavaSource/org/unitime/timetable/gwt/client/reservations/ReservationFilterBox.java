@@ -93,6 +93,10 @@ public class ReservationFilterBox extends UniTimeFilterBox<ReservationInterface.
 				callback.onSuccess(new Chip(getCommand(), text).withTranslatedCommand(getLabel()).withTranslatedValue(translatedValue));
 			}
 		});
+		
+		FilterBox.StaticSimpleFilter override = new FilterBox.StaticSimpleFilter("override", MESSAGES.tagReservationOverride());
+		override.setMultipleSelection(true);
+		addFilter(override);
 
 		iDepartments = new ListBox();
 		iDepartments.setMultipleSelect(false);

@@ -85,15 +85,7 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		return getId().hashCode();
 	}
 	
-	public int getPriority() {
-		if (this instanceof ReservationInterface.IndividualReservation) return 0;
-		if (this instanceof ReservationInterface.GroupReservation) return 1;
-		if (this instanceof ReservationInterface.LCReservation) return 2;
-		if (this instanceof ReservationInterface.CourseReservation) return 3;
-		if (this instanceof ReservationInterface.CurriculumReservation) return 4;
-		if (this instanceof ReservationInterface.OverrideReservation) return 5;
-		return 6;
-	}
+	public abstract int getPriority();
 	
 	public int compareTo(ReservationInterface r2) {
 		int cmp = getOffering().getAbbv().compareTo(r2.getOffering().getAbbv());
@@ -118,6 +110,9 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		public Integer getLimit() { return (iCourse == null ? null : iCourse.getLimit()); }
 		
 		public String toString() { return getCourse().toString(); }
+		
+		@Override
+		public int getPriority() { return 400; }
 	}
 	
 	public static class GroupReservation extends ReservationInterface {
@@ -131,6 +126,9 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		public void setGroup(IdName group) { iGroup = group; }
 		
 		public String toString() { return getGroup().toString(); }
+		
+		@Override
+		public int getPriority() { return isOverride() ? 250 : 200; }
 	}
 
 	public static class IndividualReservation extends ReservationInterface {
@@ -144,7 +142,17 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		
 		public Integer getLimit() { return iStudents.size(); }
 		
-		public String toString() { return getStudents().toString(); }
+		public String toString() {
+			String ret = "";
+			for (IdName s: iStudents) {
+				if (!ret.isEmpty()) ret += "\n";
+				ret += s.getName();
+			}
+			return ret;
+		}
+		
+		@Override
+		public int getPriority() { return isOverride() ? 150 : 100; }
 	}
 	
 	public static class OverrideReservation extends IndividualReservation {
@@ -168,8 +176,6 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		
 		public void setType(OverrideType type) { iType = type; }
 		
-		public String toString() { return getStudents().toString(); }
-		
 		@Override
 		public boolean isExpired() {
 			return (getType().isCanHaveExpirationDate() ? super.isExpired() : getType().isExpired());
@@ -179,6 +185,9 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		public Date getExpirationDate() {
 			return (getType().isCanHaveExpirationDate() ? super.getExpirationDate() : null);
 		}
+		
+		@Override
+		public int getPriority() { return 600 + (getType() == null ? 0 : 1 + getType().ordinal()); }
 	}
 
 	public static class CurriculumReservation extends ReservationInterface {
@@ -192,7 +201,9 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		public void setCurriculum(Area curriculum) { iCurriculum = curriculum; }
 		
 		public String toString() { return getCurriculum().toString(); }
-
+		
+		@Override
+		public int getPriority() { return 300; }
 	}
 	
 	public static class LCReservation extends ReservationInterface {
@@ -210,6 +221,9 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		public void setCourse(Course course) { iCourse = course; }
 		
 		public String toString() { return getCourse() + " " + getGroup(); }
+		
+		@Override
+		public int getPriority() { return 500; }
 	}
 
 	public static class IdName implements IsSerializable, Comparable<IdName> {
