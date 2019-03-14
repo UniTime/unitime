@@ -262,7 +262,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 			}
 		}
 		
-		if (!request.getText().isEmpty() && (response.getSuggestions() == null || response.getSuggestions().size() < 20) && request.hasOptions("type") && request.getOptions("type").contains("Individual")) {
+		if (!request.getText().isEmpty() && (response.getSuggestions() == null || response.getSuggestions().size() < 20) && request.hasOptions("type") && (request.getOptions("type").contains("Individual") || request.getOptions("type").contains("Override"))) {
 			ReservationQuery.ReservationQueryInstance instance = query.select("distinct s").from("inner join r.instructionalOffering.courseOfferings co inner join r.students s").exclude("student");
 			int id = 0;
 			for (StringTokenizer s=new StringTokenizer(request.getText().trim(),", ");s.hasMoreTokens();) {
