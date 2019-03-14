@@ -450,6 +450,7 @@ public class RestrictionsTable extends UniTimeTable<RestrictionsTable.Node> {
 	public void computeLimit() {
 		if (iOffering == null) { 
 			iLimit.clearHint();
+			return;
 		}
 		// if (iLimit.isReadOnly()) return;
 		int total = 0, limit = -1;
