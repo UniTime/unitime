@@ -1326,7 +1326,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			iReqAttendance.setValue(iEvent.hasRequiredAttendance());
 		} else {
 			if (canAddCourseEvent) iCourses.setValue(null);
-			iReqAttendance.setValue(false);
+			iReqAttendance.setValue(iProperties == null || iProperties.getProperties() == null ? false : iProperties.getProperties().getCourseEventDefaultStudentAttendance());
 		}
 		
 		if (iEvent.hasMeetings()) {

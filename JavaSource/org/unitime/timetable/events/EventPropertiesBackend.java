@@ -113,6 +113,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		response.setGridDisplayTitle(ApplicationProperty.EventGridDisplayTitle.isTrue());
 		response.setStudent(context.getUser() != null && context.getUser().hasRole(Roles.ROLE_STUDENT));
 		response.setFirstDayOfWeek(ApplicationProperty.EventGridStartDay.intValue());
+		response.setCourseEventDefaultStudentAttendance(ApplicationProperty.EventCourseEventsDefaultStudentAttendance.isTrue());
 		
 		return response;
 	}

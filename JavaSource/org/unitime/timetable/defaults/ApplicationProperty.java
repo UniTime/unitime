@@ -1274,6 +1274,11 @@ public enum ApplicationProperty {
 			" always ... always show the room note"
 			)
 	EventGridShowRoomNote("unitime.events.roomGrid.showRoomNote"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Course-related Events: default value for the student attendance required toggle")
+	EventCourseEventsDefaultStudentAttendance("unitime.events.courseEventDefaultStudentAttendance"),
 
 	@Type(Class.class)
 	@Implements(Email.class)
