@@ -2036,6 +2036,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private boolean iViewMeetingContacts = false, iEditMeetingContacts = false;
 		private Set<EventServiceProviderInterface> iEventServiceProviders = null;
 		private Integer iFirstDayOfWeek = null;
+		private boolean iCourseEventDefaultStudentAttendance = false;
 	
 		public EventPropertiesRpcResponse() {}
 		
@@ -2131,6 +2132,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		
 		public void setFirstDayOfWeek(Integer firstDay) { iFirstDayOfWeek = firstDay; }
 		public Integer getFirstDayOfWeek() { return iFirstDayOfWeek; }
+		
+		public void setCourseEventDefaultStudentAttendance(boolean courseEventDefaultStudentAttendance) { iCourseEventDefaultStudentAttendance = courseEventDefaultStudentAttendance; }
+		public boolean getCourseEventDefaultStudentAttendance() { return iCourseEventDefaultStudentAttendance; }
 	}
 	
 	public static class EventDetailRpcRequest extends EventRpcRequest<EventInterface> {

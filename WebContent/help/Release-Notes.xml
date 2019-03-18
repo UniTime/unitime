@@ -70,6 +70,16 @@
 		</item>
 	</category>
 	<category>
+		<title>Event Management</title>
+		<item>
+			<name>Add Course Related Event: Required Attendance Default</name>
+			<description>
+				<line>Added ability to define a default value for the &quot;Students are required to attend this event.&quot; toggle when creating a course-related event.</line>
+				<line>Application property unitime.events.courseEventDefaultStudentAttendance, defaults to false.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Data Exchange: Course Offerings Export</name>
