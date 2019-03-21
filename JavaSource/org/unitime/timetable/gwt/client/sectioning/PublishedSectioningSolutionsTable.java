@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.TreeSet;
 
+import org.unitime.timetable.gwt.client.GwtHint;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
@@ -52,6 +54,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
@@ -109,6 +112,32 @@ public class PublishedSectioningSolutionsTable extends UniTimeTable<PublishedSec
 			getCellFormatter().setStyleName(0, i, "unitime-ClickableTableHeader");
 		
 		setSortBy(SectioningCookie.getInstance().getSolutionsSortBy());
+		
+		addMouseOverListener(new MouseOverListener<PublishedSectioningSolutionInterface>() {
+
+			@Override
+			public void onMouseOver(UniTimeTable.TableEvent<PublishedSectioningSolutionInterface> event) {
+				PublishedSectioningSolutionInterface row = event.getData();
+				if (row != null && row.getInfo() != null) {
+					FlexTable f = new FlexTable();
+					f.setStyleName("unitime-InfoTable");
+					int r = 0;
+					TreeSet<String> keys = new TreeSet<String>(new InfoComparator()); keys.addAll(row.getInfo().keySet());
+					for (String key: keys) {
+						f.setHTML(r, 0, key);
+						f.setHTML(r, 1, row.getInfo().get(key));
+						r ++;
+					}
+					GwtHint.showHint(event.getCellElement(), f);
+				}
+			}
+		});
+		addMouseOutListener(new MouseOutListener<PublishedSectioningSolutionInterface>() {
+			@Override
+			public void onMouseOut(UniTimeTable.TableEvent<PublishedSectioningSolutionInterface> event) {
+				GwtHint.hideHint();
+			}
+		});
 	}
 	
 	protected void doSort(TableColumn column) {
@@ -448,5 +477,60 @@ public class PublishedSectioningSolutionsTable extends UniTimeTable<PublishedSec
 	@Override
 	public List<PublishedSectioningSolutionInterface> getValue() {
 		return getData();
+	}
+	
+	public static class InfoComparator implements Comparator<String> {
+		private static List<String> sInfoKeys = null;
+		static {
+			sInfoKeys = new ArrayList<String>();
+			sInfoKeys.add("Assigned variables");
+			sInfoKeys.add("Overall solution value");
+			sInfoKeys.add("Time preferences");
+			sInfoKeys.add("Student conflicts");
+			sInfoKeys.add("Room preferences");
+			sInfoKeys.add("Distribution preferences");
+			sInfoKeys.add("Back-to-back instructor preferences");
+			sInfoKeys.add("Too big rooms");
+			sInfoKeys.add("Useless half-hours");
+			sInfoKeys.add("Same subpart balancing penalty");
+			sInfoKeys.add("Department balancing penalty");
+            sInfoKeys.add("Direct Conflicts");
+            sInfoKeys.add("More Than 2 A Day Conflicts");
+            sInfoKeys.add("Back-To-Back Conflicts");
+            sInfoKeys.add("Distance Back-To-Back Conflicts");
+            sInfoKeys.add("Instructor Direct Conflicts");
+            sInfoKeys.add("Instructor More Than 2 A Day Conflicts");
+            sInfoKeys.add("Instructor Back-To-Back Conflicts");
+            sInfoKeys.add("Instructor Distance Back-To-Back Conflicts");
+            sInfoKeys.add("Period Penalty");
+            sInfoKeys.add("Period&times;Size Penalty");
+            sInfoKeys.add("Exam Rotation Penalty");
+            sInfoKeys.add("Average Period");
+            sInfoKeys.add("Room Penalty");
+            sInfoKeys.add("Room Split Penalty");
+            sInfoKeys.add("Room Split Distance Penalty");
+            sInfoKeys.add("Room Size Penalty");
+            sInfoKeys.add("Not-Original Room Penalty");
+            sInfoKeys.add("Distribution Penalty");
+            sInfoKeys.add("Large Exams Penalty");
+            sInfoKeys.add("Perturbation Penalty");
+			sInfoKeys.add("Perturbation penalty");
+            sInfoKeys.add("Room Perturbation Penalty");
+			sInfoKeys.add("Perturbation variables");
+			sInfoKeys.add("Perturbations: Total penalty");
+			sInfoKeys.add("Time");
+			sInfoKeys.add("Iteration");
+			sInfoKeys.add("Memory usage");
+			sInfoKeys.add("Speed");
+		}
+		public int compare(String key1, String key2) {
+			int i1 = sInfoKeys.indexOf(key1);
+			int i2 = sInfoKeys.indexOf(key2);
+			if (i1<0) {
+				if (i2<0) return key1.compareTo(key2);
+				else return 1;
+			} else if (i2<0) return -1;
+			return (i1<i2?-1:1);
+		}
 	}
 }
