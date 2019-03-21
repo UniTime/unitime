@@ -62,7 +62,10 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentClassPref;
 import org.unitime.timetable.model.StudentGroup;
+import org.unitime.timetable.model.StudentInstrMthPref;
+import org.unitime.timetable.model.StudentSectioningPref;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -952,6 +955,35 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				return false;
 			}
 			
+			if ("prefer".equals(attr)) {
+				for (StudentSectioningPref p: request().getPreferences()) {
+					if (p instanceof StudentInstrMthPref) {
+						StudentInstrMthPref im = (StudentInstrMthPref)p;
+						if (eq(im.getInstructionalMethod().getLabel(), term)) return true;
+					}
+					if (p instanceof StudentClassPref) {
+						StudentClassPref c = (StudentClassPref)p;
+						if (eq(c.getClazz().getClassSuffix(), term)) return true;
+					}
+				}
+				return false;
+			}
+			
+			if ("require".equals(attr)) {
+				for (StudentSectioningPref p: request().getPreferences()) {
+					if (!p.isRequired()) continue;
+					if (p instanceof StudentInstrMthPref) {
+						StudentInstrMthPref im = (StudentInstrMthPref)p;
+						if (eq(im.getInstructionalMethod().getLabel(), term)) return true;
+					}
+					if (p instanceof StudentClassPref) {
+						StudentClassPref c = (StudentClassPref)p;
+						if (eq(c.getClazz().getClassSuffix(), term)) return true;
+					}
+				}
+				return false;
+			}
+			
 			if (!enrollment().isEmpty()) {
 				for (StudentClassEnrollment e: enrollment()) {
 					if (attr == null || attr.equals("crn") || attr.equals("id") || attr.equals("externalId") || attr.equals("exid") || attr.equals("name")) {
@@ -1294,6 +1326,49 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				for (CourseDemand cd: student().getCourseDemands()) {
 					for (CourseRequest cr: cd.getCourseRequests()) {
 						if (cr.getOverrideStatus() != null && cr.getOverrideStatus() == status.ordinal()) return true;
+					}
+				}
+				return false;
+			} else if ("prefer".equals(attr)) {
+				for (CourseDemand cd: student().getCourseDemands()) {
+					for (CourseRequest cr: cd.getCourseRequests()) {
+						for (StudentSectioningPref p: cr.getPreferences()) {
+							if (p instanceof StudentInstrMthPref) {
+								StudentInstrMthPref im = (StudentInstrMthPref)p;
+								if (eq(im.getInstructionalMethod().getLabel(), term)) return true;
+							}
+							if (p instanceof StudentClassPref) {
+								StudentClassPref c = (StudentClassPref)p;
+								String l = c.getClazz().getClassSuffix(cr.getCourseOffering());
+								if (l == null)
+									l = c.getClazz().getSchedulingSubpart().getItypeDesc().trim() + " " + c.getClazz().getSectionNumberString();
+								else if (l.length() <= 4)
+									l = c.getClazz().getSchedulingSubpart().getItypeDesc().trim() + " " + l;
+								if (eq(l, term)) return true;
+							}
+						}
+					}
+				}
+				return false;
+			} else if ("require".equals(attr)) {
+				for (CourseDemand cd: student().getCourseDemands()) {
+					for (CourseRequest cr: cd.getCourseRequests()) {
+						for (StudentSectioningPref p: cr.getPreferences()) {
+							if (!p.isRequired()) continue;
+							if (p instanceof StudentInstrMthPref) {
+								StudentInstrMthPref im = (StudentInstrMthPref)p;
+								if (eq(im.getInstructionalMethod().getLabel(), term)) return true;
+							}
+							if (p instanceof StudentClassPref) {
+								StudentClassPref c = (StudentClassPref)p;
+								String l = c.getClazz().getClassSuffix(cr.getCourseOffering());
+								if (l == null)
+									l = c.getClazz().getSchedulingSubpart().getItypeDesc().trim() + " " + c.getClazz().getSectionNumberString();
+								else if (l.length() <= 4)
+									l = c.getClazz().getSchedulingSubpart().getItypeDesc().trim() + " " + l;
+								if (eq(l, term)) return true;
+							}
+						}
 					}
 				}
 				return false;

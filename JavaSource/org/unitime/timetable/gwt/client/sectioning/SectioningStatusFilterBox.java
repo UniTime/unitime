@@ -256,6 +256,9 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 			}
 		});
 		
+		addFilter(new FilterBox.StaticSimpleFilter("prefer", GWT_MESSAGES.tagPrefer()));
+		addFilter(new FilterBox.StaticSimpleFilter("require", GWT_MESSAGES.tagRequire()));
+		
 		addFilter(new FilterBox.CustomFilter("Other", GWT_MESSAGES.tagOther(), courseLab, iCourse, studentLab, iStudent) {
 			@Override
 			public void getSuggestions(final List<Chip> chips, final String text, AsyncCallback<Collection<FilterBox.Suggestion>> callback) {

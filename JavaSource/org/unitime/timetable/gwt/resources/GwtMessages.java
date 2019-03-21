@@ -5720,6 +5720,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("overlap")
 	String tagOverlap();
 	
+	@DefaultMessage("prefer")
+	String tagPrefer();
+	
+	@DefaultMessage("require")
+	String tagRequire();
+	
 	@DefaultMessage("All Sessions")
 	String attrFlagAllSessions();
 	

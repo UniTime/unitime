@@ -78,6 +78,7 @@ import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest.XPreference;
 import org.unitime.timetable.onlinesectioning.status.SectioningStatusFilterAction.Credit;
 import org.unitime.timetable.server.lookup.PeopleLookupBackend;
 import org.unitime.timetable.util.Constants;
@@ -887,6 +888,24 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				return (o != null && o.getStatus() == status.ordinal());
 			}
 			
+			if ("prefer".equals(attr)) {
+				List<XPreference> prefs = request().getPreferences(info());
+				if (prefs == null) return false;
+				for (XPreference p: prefs) {
+					if (eq(p.getLabel(), term)) return true;
+				}
+				return false;
+			}
+			
+			if ("require".equals(attr)) {
+				List<XPreference> prefs = request().getPreferences(info());
+				if (prefs == null) return false;
+				for (XPreference p: prefs) {
+					if (p.isRequired() && eq(p.getLabel(), term)) return true;
+				}
+				return false;
+			}
+			
 			if (enrollment() != null) {
 				
 				for (XSection section: offering().getSections(enrollment())) {
@@ -1276,6 +1295,34 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					return iMyStudent;
 				}
 				return true;
+			} else if ("prefer".equals(attr)) {
+				for (XRequest request: student().getRequests()) {
+					if (request instanceof XCourseRequest) {
+						XCourseRequest cr = (XCourseRequest)request;
+						for (XCourseId course: cr.getCourseIds()) {
+							List<XPreference> prefs = cr.getPreferences(course);
+							if (prefs == null) continue;
+							for (XPreference p: prefs) {
+								if (eq(p.getLabel(), term)) return true;
+							}
+						}
+					}
+				}
+				return false;
+			} else if ("require".equals(attr)) {
+				for (XRequest request: student().getRequests()) {
+					if (request instanceof XCourseRequest) {
+						XCourseRequest cr = (XCourseRequest)request;
+						for (XCourseId course: cr.getCourseIds()) {
+							List<XPreference> prefs = cr.getPreferences(course);
+							if (prefs == null) continue;
+							for (XPreference p: prefs) {
+								if (p.isRequired() && eq(p.getLabel(), term)) return true;
+							}
+						}
+					}
+				}
+				return false;
 			} else if (attr != null) {
 				for (XStudent.XGroup group: student().getGroups())
 					if (eq(group.getType(), attr.replace('_', ' ')) && eq(group.getAbbreviation(), term)) return true;
