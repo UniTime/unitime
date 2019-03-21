@@ -13540,4 +13540,8 @@
 	    <plsql>alter table %SCHEMA%.course_request add req_intent number(10)</plsql>
 		<mysql>alter table %SCHEMA%.course_request add req_intent bigint(10)</mysql>
 	</update>
+	<update version="218" date="20-Mar-2019" comments="Longer published solution info">
+	    <plsql>alter table %SCHEMA%.sct_solution_log modify info varchar2(4000 char)</plsql>
+	    <mysql>alter table %SCHEMA%.sct_solution_log modify info varchar(4000) not null</mysql>
+	</update>
 </dbupdate>
