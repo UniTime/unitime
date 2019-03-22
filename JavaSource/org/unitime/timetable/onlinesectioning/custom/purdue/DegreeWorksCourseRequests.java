@@ -116,6 +116,10 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		return ApplicationProperties.getProperty("banner.dgw.noPlansMessage", "No active degree plan is available.");
 	}
 	
+	protected String getCreditSQL() {
+		return ApplicationProperties.getProperty("banner.dgw.creditSQL", "select subject_code, course_numb, course_title, final_grade from timetable.szv_utm_apcredit where puid = :puid and final_grade != 'F'");
+	}
+	
 	protected int getDegreeWorksNrAttempts() {
 		return Integer.parseInt(ApplicationProperties.getProperty("banner.dgw.nrAttempts", "3"));
 	}
@@ -685,11 +689,25 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 												for (XEInterface.Group h: g.groups)
 													if (h.plannedClasses != null)
 														for (XEInterface.Course c: h.plannedClasses)
-															courses.add(c);
+															if (courses.add(c))
+																helper.info(student.getExternalId() + ": " + c.courseDiscipline + " " + c.courseNumber + " marked as critical");
 										}
 							}
 					}
 			}
+			
+			if (!courses.isEmpty()) {
+				String sql = getCreditSQL();
+				if (sql != null && !sql.isEmpty()) {
+					for (Object[] o: (List<Object[]>)helper.getHibSession().createSQLQuery(sql).setString("puid", studentId).list()) {
+						String subjectArea = (String)o[0];
+						String courseNbr = (String)o[1];
+						if (courses.remove(subjectArea, courseNbr))
+							helper.info(student.getExternalId() + ": " + subjectArea + " " + courseNbr + " is not critical (" + o[2] + " graded " + o[3] + ")");
+					}
+				}
+			}
+			
 			helper.getAction().addOptionBuilder().setKey("critical").setValue(courses.toString());
 			
 			return courses;
@@ -703,7 +721,11 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 	protected static class CriticalCoursesImpl implements CriticalCourses {
 		private List<String> iCriticalCourses = new ArrayList<String>();
 		
-		public void add(XEInterface.Course c) { iCriticalCourses.add(c.courseDiscipline + " " + c.courseNumber); }
+		public boolean add(XEInterface.Course c) { return iCriticalCourses.add(c.courseDiscipline + " " + c.courseNumber); }
+		
+		public boolean remove(String subjectArea, String courseNbr) { return iCriticalCourses.remove(subjectArea + " " + courseNbr); }
+		
+		public boolean isEmpty() { return iCriticalCourses.isEmpty(); }
 
 		@Override
 		public boolean isCritical(CourseOffering course) {
