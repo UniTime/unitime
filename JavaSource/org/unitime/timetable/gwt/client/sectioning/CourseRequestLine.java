@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.client.widgets.CourseFinderDetails;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderDialog;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderFactory;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderFreeTime;
+import org.unitime.timetable.gwt.client.widgets.CourseFinderMultipleCourses;
 import org.unitime.timetable.gwt.client.widgets.CourseRequestBox;
 import org.unitime.timetable.gwt.client.widgets.CourseSelection;
 import org.unitime.timetable.gwt.client.widgets.CourseSelectionEvent;
@@ -334,7 +335,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 		P title = new P("title"); title.setText(MESSAGES.courseRequestsAlternative(index));
 		line.add(title);
 
-		CourseSelectionBox box = new CourseSelectionBox(!isAlternate(), true);
+		CourseSelectionBox box = new CourseSelectionBox(false, true);
 		if (isAlternate()) {
 			if (index == 1)
 				box.setLabel(ARIA.titleRequestedAlternateFirstAlternative(1 + getPriority()), ARIA.altRequestedAlternateFirstFinder(1 + getPriority()));
@@ -463,6 +464,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 	public class CourseSelectionBox extends CourseRequestBox {
 		private HandlerRegistration iCourseSelectionHandlerRegistration;
 		private FilterStatus iStatus;
+		private CourseFinderMultipleCourses iCourseFinderMultipleCourses;
 		
 		public CourseSelectionBox(boolean allowFreeTime, boolean alternative) {
 			super(CONSTANTS.showCourseTitle(), iSpecReg);
@@ -476,7 +478,13 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 				public CourseFinder createCourseFinder() {
 					CourseFinder finder = new CourseFinderDialog();
 					
-					CourseFinderCourses courses = new CourseFinderCourses(CONSTANTS.showCourseTitle(), CONSTANTS.courseFinderSuggestWhenEmpty(), CONSTANTS.courseFinderShowRequired(), iSpecReg);
+					CourseFinder.CourseFinderTab<Collection<CourseAssignment>> courses = null;
+					if (!alternative) {
+						iCourseFinderMultipleCourses = new CourseFinderMultipleCourses(CONSTANTS.showCourseTitle(), CONSTANTS.courseFinderSuggestWhenEmpty(), CONSTANTS.courseFinderShowRequired(), iSpecReg);
+						courses = iCourseFinderMultipleCourses;
+					} else {
+						courses = new CourseFinderCourses(CONSTANTS.showCourseTitle(), CONSTANTS.courseFinderSuggestWhenEmpty(), CONSTANTS.courseFinderShowRequired(), iSpecReg);
+					}
 					courses.setDataProvider(new DataProvider<String, Collection<CourseAssignment>>() {
 						@Override
 						public void getData(String source, AsyncCallback<Collection<CourseAssignment>> callback) {
@@ -745,6 +753,27 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			}
 		}
 		
+		@Override
+		public void select(RequestedCourse rc) {
+			if (isEnabled()) {
+				if (iCourseFinderMultipleCourses != null && !iCourseFinderMultipleCourses.getCheckedCourses().isEmpty()) {
+					List<RequestedCourse> list = iCourseFinderMultipleCourses.getCheckedCourses();
+					int courses = list.size();
+					if (courses == 1) courses = 2;
+					while (iCourses.size() < courses) {
+						insertAlternative(iCourses.size());
+					}
+					while (iCourses.size() > courses) {
+						deleteAlternative(iCourses.size() - 1);
+					}
+					for (int i = 0; i < courses; i++)
+						iCourses.get(i).setValue(i < list.size() ? list.get(i) : null, true);
+				} else {
+					setValue(rc, true);
+				}
+			}
+		}
+		
 		public void setStatus(ImageResource icon, String message) {
 			if (iStatus != null) {
 				iStatus.setStatus(icon, message);
@@ -796,6 +825,11 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 						setStatus(RESOURCES.requestSaved(), MESSAGES.requested(CONSTANTS.freePrefix() + free));
 					}
 				}
+			}
+			if (rc != null && rc.isFreeTime()) {
+				for (int i = iCourses.size() - 1; i > 0; i--) {
+					deleteAlternative(i);
+				}				
 			}
 			CourseSelectionBox prev = getPrevious();
 			// if (rc == null && prev != null && !prev.getValue().isCourse()) setEnabled(false);

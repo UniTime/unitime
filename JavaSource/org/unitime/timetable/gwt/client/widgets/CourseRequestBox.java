@@ -464,8 +464,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 			iCourseFinder.addSelectionHandler(new SelectionHandler<RequestedCourse>() {
 				@Override
 				public void onSelection(SelectionEvent<RequestedCourse> event) {
-					if (isEnabled())
-						setValue(event.getSelectedItem(), true);
+					select(event.getSelectedItem());
 				}
 			});
 			if (iCourseFinder instanceof HasCloseHandlers) {
@@ -481,6 +480,11 @@ public class CourseRequestBox extends P implements CourseSelection {
 			}
 		}
 		return iCourseFinder;
+	}
+	
+	public void select(RequestedCourse rc) {
+		if (isEnabled())
+			setValue(rc, true);
 	}
 
 	@Override

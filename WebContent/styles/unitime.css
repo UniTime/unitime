@@ -6504,3 +6504,7 @@ unitime-RoomSharingWidget .legend .blank {
 	display: inline-block;
 	min-width: 180px;
 }
+
+.unitime-CourseFinderDialog .course-table .gwt-CheckBox {
+	white-space: nowrap;
+}

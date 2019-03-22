@@ -43,6 +43,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ScrollPanel;
 
@@ -199,4 +200,7 @@ public class CourseFinderFreeTime extends P implements CourseFinder.CourseFinder
 	public void setEnabled(boolean enabled) {
 		iFreeTimePicker.setEnabled(enabled);
 	}
+
+	@Override
+	public CheckBox getRequiredCheckbox() { return null; }
 }

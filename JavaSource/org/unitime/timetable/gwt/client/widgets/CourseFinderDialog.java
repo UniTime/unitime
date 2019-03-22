@@ -73,6 +73,7 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 	private UniTimeTabPanel iTabPanel = null;
 	private VerticalPanel iDialogPanel = null;
 	private Map<Character, Integer> iTabAccessKeys = new HashMap<Character, Integer>();
+	private String iLastFilter = null;
 	
 	public CourseFinderDialog() {
 		super(true, false);
@@ -118,9 +119,11 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
             @Override
             public void run() {
             	if (iTabs != null) {
+            		if (iLastFilter != null && iLastFilter.equals(iFilter.getValue())) return;
             		RequestedCourse rc = new RequestedCourse(); rc.setCourseName(iFilter.getValue());
 					for (CourseFinderTab tab: iTabs)
 						tab.setValue(rc, false);
+					iLastFilter = iFilter.getValue();
 				}
             }
 		};
@@ -314,6 +317,7 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 	@Override
 	public void setValue(final RequestedCourse value, boolean fireEvents) {
 		iFilter.setValue(value == null ? "" : value.toString(CONSTANTS), false);
+		iLastFilter = iFilter.getValue();
 		if (fireEvents)
 			ValueChangeEvent.fire(this, value);
 	}

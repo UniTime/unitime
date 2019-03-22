@@ -601,6 +601,11 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			return true;
 		}
 		
+		public void clearSelection() {
+			if (iSelectedClasses != null) iSelectedClasses.clear();
+			if (iSelectedIntructionalMethods != null) iSelectedIntructionalMethods.clear();
+		}
+		
 		@Override
 		public int hashCode() {
 			return (hasCourseId() ? getCourseId().hashCode() : getCourseName().hashCode());

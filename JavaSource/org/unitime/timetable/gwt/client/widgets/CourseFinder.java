@@ -28,6 +28,7 @@ import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.TakesValue;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.IsWidget;
@@ -46,6 +47,7 @@ public interface CourseFinder extends HasValue<RequestedCourse>, HasSelectionHan
 		public boolean isCourseSelection();
 		public void setCourseDetails(CourseFinderCourseDetails... details);
 		public void changeTip();
+		public CheckBox getRequiredCheckbox();
 	}
 		
 	public interface CourseFinderCourseDetails<T, E> extends TakesValue<T>, IsWidget, HasEnabled {
