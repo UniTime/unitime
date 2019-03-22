@@ -466,7 +466,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 		private FilterStatus iStatus;
 		private CourseFinderMultipleCourses iCourseFinderMultipleCourses;
 		
-		public CourseSelectionBox(boolean allowFreeTime, boolean alternative) {
+		public CourseSelectionBox(boolean allowFreeTime, final boolean alternative) {
 			super(CONSTANTS.showCourseTitle(), iSpecReg);
 			if (allowFreeTime) {
 				FreeTimeParser parser = new FreeTimeParser();
