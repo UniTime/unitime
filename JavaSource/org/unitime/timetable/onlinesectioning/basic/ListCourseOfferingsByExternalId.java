@@ -47,7 +47,10 @@ public class ListCourseOfferingsByExternalId extends ListCourseOfferings {
 
 	@Override
 	protected List<CourseAssignment> listCourses(OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		List<CourseAssignment> ret = new ArrayList<CourseAssignment>();
+		List<CourseAssignment> ret = customCourseLookup(server, helper);
+		if (ret != null && !ret.isEmpty()) return ret;
+
+		ret = new ArrayList<CourseAssignment>();
 		
 		Map<Long, CourseAssignment> courses = null;
 		if (iQuery != null && iQuery.length() >= 3) {

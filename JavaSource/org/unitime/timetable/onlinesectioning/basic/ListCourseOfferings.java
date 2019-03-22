@@ -29,6 +29,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.custom.CustomCourseLookupHolder;
 import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
@@ -68,13 +69,36 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 	}
 	
 	protected List<CourseAssignment> listCourses(OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		List<CourseAssignment> ret = new ArrayList<CourseAssignment>();
+		List<CourseAssignment> ret = customCourseLookup(server, helper);
+		if (ret != null && !ret.isEmpty()) return ret;
+				
+		ret = new ArrayList<CourseAssignment>();
 		for (XCourseId id: server.findCourses(iQuery, iLimit, iMatcher)) {
 			XCourse course = server.getCourse(id.getCourseId());
 			if (course != null)
 				ret.add(convert(course, server));
 		}
 		return ret;
+	}
+	
+	protected List<CourseAssignment> customCourseLookup(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		try {
+			if (iQuery != null && !iQuery.isEmpty() && CustomCourseLookupHolder.hasProvider()) {
+				List<XCourseId> courses = CustomCourseLookupHolder.getProvider().getCourses(server, helper, iQuery);
+				if (courses != null && !courses.isEmpty()) {
+					List<CourseAssignment> ret = new ArrayList<CourseAssignment>();
+					for (XCourseId c: courses) {
+						XCourse course = (c instanceof XCourse ? (XCourse)c : server.getCourse(c.getCourseId()));
+						if (course != null && (iMatcher == null || iMatcher.match(course)))
+							ret.add(convert(course, server));
+					}
+					return ret;
+				}
+			}
+		} catch (Exception e) {
+			helper.error("Failed to use the custom course lookup: " + e.getMessage(), e);
+		}
+		return null;
 	}
 	
 	protected CourseAssignment convert(XCourse c, OnlineSectioningServer server) {

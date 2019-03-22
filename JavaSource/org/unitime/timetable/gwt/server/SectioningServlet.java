@@ -136,6 +136,7 @@ import org.unitime.timetable.onlinesectioning.basic.ListEnrollments;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseMatcherProvider;
 import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.CriticalCourses;
+import org.unitime.timetable.onlinesectioning.custom.CustomCourseLookupHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsValidationHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomCriticalCoursesHolder;
@@ -282,6 +283,57 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		CourseMatcher matcher = getCourseMatcher(sessionId, server);
 		
 		if (server == null) {
+			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
+			if (query != null && !query.isEmpty() && CustomCourseLookupHolder.hasProvider()) {
+				try {
+					List<CourseOffering> courses = CustomCourseLookupHolder.getProvider().getCourses(new AcademicSessionInfo(SessionDAO.getInstance().get(sessionId, hibSession)), hibSession, query);
+					if (courses != null && !courses.isEmpty()) {
+						ArrayList<ClassAssignmentInterface.CourseAssignment> results = new ArrayList<ClassAssignmentInterface.CourseAssignment>();
+						for (CourseOffering c: courses) {
+							if (matcher.match(new XCourseId(c))) {
+								CourseAssignment course = new CourseAssignment();
+								course.setCourseId(c.getUniqueId());
+								course.setSubject(c.getSubjectAreaAbbv());
+								course.setCourseNbr(c.getCourseNbr());
+								course.setTitle(c.getTitle());
+								course.setNote(c.getScheduleBookNote());
+								if (c.getCredit() != null) {
+									course.setCreditText(c.getCredit().creditText());
+									course.setCreditAbbv(c.getCredit().creditAbbv());
+								}
+								course.setTitle(c.getTitle());
+								course.setHasUniqueName(true);
+								course.setHasCrossList(c.getInstructionalOffering().hasCrossList());
+								boolean unlimited = false;
+								int courseLimit = 0;
+								for (Iterator<InstrOfferingConfig> i = c.getInstructionalOffering().getInstrOfferingConfigs().iterator(); i.hasNext(); ) {
+									InstrOfferingConfig cfg = i.next();
+									if (cfg.isUnlimitedEnrollment()) unlimited = true;
+									if (cfg.getLimit() != null) courseLimit += cfg.getLimit();
+								}
+								if (c.getReservation() != null)
+									courseLimit = c.getReservation();
+					            if (courseLimit >= 9999) unlimited = true;
+								course.setLimit(unlimited ? -1 : courseLimit);
+								course.setProjected(c.getProjectedDemand());
+								course.setEnrollment(c.getEnrollment());
+								course.setLastLike(c.getDemand());
+								results.add(course);
+								for (InstrOfferingConfig config: c.getInstructionalOffering().getInstrOfferingConfigs()) {
+									if (config.getEffectiveInstructionalMethod() != null)
+										course.addInstructionalMethod(config.getEffectiveInstructionalMethod().getUniqueId(), config.getEffectiveInstructionalMethod().getLabel());
+									else
+										course.setHasNoInstructionalMethod(true);
+								}
+							}
+						}
+						if (!results.isEmpty()) return results;
+					}
+				} catch (Exception e) {
+					sLog.error("Failed to use the custom course lookup: " + e.getMessage(), e);
+				}
+			}
+			
 			String types = "";
 			for (String ref: matcher.getAllowedCourseTypes())
 				types += (types.isEmpty() ? "" : ", ") + "'" + ref + "'";
@@ -289,7 +341,6 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			
 			boolean excludeNotOffered = ApplicationProperty.CourseRequestsShowNotOffered.isFalse();
 			ArrayList<ClassAssignmentInterface.CourseAssignment> results = new ArrayList<ClassAssignmentInterface.CourseAssignment>();
-			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			org.unitime.timetable.onlinesectioning.match.CourseMatcher parent = matcher.getParentCourseMatcher();
 			for (CourseOffering c: (List<CourseOffering>)hibSession.createQuery(
 					"select c from CourseOffering c where " +
@@ -2717,6 +2768,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		CustomDegreePlansHolder.release();
 		CustomSpecialRegistrationHolder.release();
 		CustomCourseRequestsValidationHolder.release();
+		CustomCourseLookupHolder.release();
 	}
 
 	@Override

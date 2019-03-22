@@ -61,6 +61,7 @@ import org.unitime.timetable.onlinesectioning.custom.CourseRequestsProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseRequestsValidationProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider;
+import org.unitime.timetable.onlinesectioning.custom.CustomCourseLookup;
 import org.unitime.timetable.onlinesectioning.custom.DegreePlansProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.SectionUrlProvider;
@@ -1133,6 +1134,11 @@ public enum ApplicationProperty {
 	@Implements(CriticalCoursesProvider.class)
 	@Description("Customization: student critical courses provider (interface CriticalCoursesProvider, used by Course Requests and/or batch scheduling solver to identify critical courses)")
 	CustomizationCriticalCourses("unitime.custom.CriticalCoursesProvider"),
+	
+	@Type(Class.class)
+	@Implements(CustomCourseLookup.class)
+	@Description("Customization: additional courses course lookup provider (interface CustomCourseLookup, used by Course Finder to identify additional courses to be returned to the student)")
+	CustomizationCourseLookup("unitime.custom.CustomCourseLookup"),
 	
 	@Type(Class.class)
 	@Implements(CourseRequestsValidationProvider.class)
