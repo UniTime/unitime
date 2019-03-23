@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="JavaSource"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
 	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
-	
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/activation-1.1.jar" sourcepath="3rd_party/sources/activation-1.1-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-beanutils-1.8.0.jar" sourcepath="3rd_party/sources/commons-beanutils-1.8.0-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-chain-1.2.jar" sourcepath="3rd_party/sources/commons-chain-1.2-sources.jar"/>
@@ -33,7 +35,6 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/infinispan-commons-7.2.5.Final.jar" sourcepath="3rd_party/sources/infinispan-commons-7.2.5.Final-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jboss-marshalling-osgi-1.4.10.Final.jar" sourcepath="3rd_party/sources/jboss-marshalling-osgi-1.4.10.Final-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jbossjta-4.16.6.Final.jar" sourcepath="3rd_party/sources/jbossjta-4.16.6.Final-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-ldap-core-1.3.2.RELEASE.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jstl-1.2.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/antlr-2.7.7.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/aspectjrt-1.8.7.jar" sourcepath="3rd_party/sources/aspectjrt-1.8.7-sources.jar"/>
@@ -41,7 +42,6 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-fileupload-1.3.1.jar" sourcepath="3rd_party/sources/commons-fileupload-1.3.1-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/ehcache-core-2.6.11.jar" sourcepath="3rd_party/sources/ehcache-core-2.6.11-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/freemarker-2.3.23.jar" sourcepath="3rd_party/sources/freemarker-2.3.23-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/gwt-servlet-2.8.2.jar" sourcepath="3rd_party/sources/gwt-servlet-2.8.2-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/hibernate-commons-annotations-4.0.5.Final.jar" sourcepath="3rd_party/sources/hibernate-commons-annotations-4.0.5.Final-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/hibernate-core-4.3.11.Final.jar" sourcepath="3rd_party/sources/hibernate-core-4.3.11.Final-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/hibernate-ehcache-4.3.11.Final.jar" sourcepath="3rd_party/sources/hibernate-ehcache-4.3.11.Final-sources.jar"/>
@@ -55,28 +55,6 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/protobuf-java-2.6.1.jar" sourcepath="3rd_party/sources/protobuf-java-2.6.1-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/slf4j-api-1.7.12.jar" sourcepath="3rd_party/sources/slf4j-api-1.7.12-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/slf4j-log4j12-1.7.12.jar" sourcepath="3rd_party/sources/slf4j-log4j12-1.7.12-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-aop-3.2.14.RELEASE.jar" sourcepath="3rd_party/sources/spring-aop-3.2.14.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-beans-3.2.14.RELEASE.jar" sourcepath="3rd_party/sources/spring-beans-3.2.14.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-context-3.2.14.RELEASE.jar" sourcepath="3rd_party/sources/spring-context-3.2.14.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-context-support-3.2.11.RELEASE.jar" sourcepath="3rd_party/sources/spring-context-support-3.2.11.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-core-3.2.14.RELEASE.jar" sourcepath="3rd_party/sources/spring-core-3.2.14.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-expression-3.2.14.RELEASE.jar" sourcepath="3rd_party/sources/spring-expression-3.2.14.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-integration-core-3.0.7.RELEASE.jar" sourcepath="3rd_party/sources/spring-integration-core-3.0.7.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-integration-file-3.0.7.RELEASE.jar" sourcepath="3rd_party/sources/spring-integration-file-3.0.7.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-integration-mail-3.0.7.RELEASE.jar" sourcepath="3rd_party/sources/spring-integration-mail-3.0.7.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-jdbc-3.2.14.RELEASE.jar" sourcepath="3rd_party/sources/spring-jdbc-3.2.14.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-retry-1.0.3.RELEASE.jar" sourcepath="3rd_party/sources/spring-retry-1.0.3.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-security-acl-3.2.8.RELEASE.jar" sourcepath="3rd_party/sources/spring-security-acl-3.2.8.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-security-aspects-3.2.8.RELEASE.jar" sourcepath="3rd_party/sources/spring-security-aspects-3.2.8.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-security-config-3.2.8.RELEASE.jar" sourcepath="3rd_party/sources/spring-security-config-3.2.8.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-security-core-3.2.8.RELEASE.jar" sourcepath="3rd_party/sources/spring-security-core-3.2.8.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-security-ldap-3.2.8.RELEASE.jar" sourcepath="3rd_party/sources/spring-security-ldap-3.2.8.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-security-taglibs-3.2.8.RELEASE.jar" sourcepath="3rd_party/sources/spring-security-taglibs-3.2.8.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-security-web-3.2.8.RELEASE.jar" sourcepath="3rd_party/sources/spring-security-web-3.2.8.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-struts-3.2.14.RELEASE.jar" sourcepath="3rd_party/sources/spring-struts-3.2.14.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-tx-3.2.14.RELEASE.jar" sourcepath="3rd_party/sources/spring-tx-3.2.14.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-web-3.2.14.RELEASE.jar" sourcepath="3rd_party/sources/spring-web-3.2.14.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-webmvc-3.2.14.RELEASE.jar" sourcepath="3rd_party/sources/spring-webmvc-3.2.14.RELEASE-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/asm-5.0.3.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/cglib-3.1.jar" sourcepath="3rd_party/sources/cglib-3.1-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/ehcache-jgroupsreplication-1.7.jar" sourcepath="3rd_party/sources/ehcache-jgroupsreplication-1.7-sources.jar"/>
@@ -85,21 +63,75 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jandex-1.1.0.Final.jar" sourcepath="3rd_party/sources/jandex-1.1.0.Final-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jboss-logging-annotations-1.2.1.Final.jar" sourcepath="3rd_party/sources/jboss-logging-annotations-1.2.1.Final-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/cas-client-core-3.3.3.jar" sourcepath="3rd_party/sources/cas-client-core-3.3.3-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-security-cas-3.2.8.RELEASE.jar" sourcepath="3rd_party/sources/spring-security-cas-3.2.8.RELEASE-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/biweekly-0.4.3.jar" sourcepath="3rd_party/sources/biweekly-0.4.3-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jackson-core-2.6.1.jar" sourcepath="3rd_party/sources/jackson-core-2.6.1-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-codec-1.10.jar" sourcepath="3rd_party/sources/commons-codec-1.10-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-collections4-4.1.jar" sourcepath="3rd_party/sources/commons-collections4-4.1-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/poi-3.17.jar" sourcepath="3rd_party/sources/poi-3.17-sources.jar"/>
-	
 	<classpathentry kind="lib" path="3rd_party/ant-1.8.4.jar" sourcepath="3rd_party/sources/ant-1.8.4-sources.jar"/>
-	<!-- 
-	<classpathentry kind="lib" path="3rd_party/gwt-dev-2.8.2.jar" sourcepath="3rd_party/sources/gwt-dev-2.8.2-sources.jar"/>
-	<classpathentry kind="lib" path="3rd_party/gwt-user-2.8.2.jar" sourcepath="3rd_party/sources/gwt-user-2.8.2-sources.jar"/>
-	<classpathentry kind="lib" path="3rd_party/jsp-api-2.2.jar" sourcepath="3rd_party/sources/jsp-api-2.2-sources.jar"/>
-	<classpathentry kind="lib" path="3rd_party/javax.servlet-api-3.0.1.jar" sourcepath="3rd_party/sources/javax.servlet-api-3.0.1-sources.jar"/>
-	<classpathentry kind="lib" path="3rd_party/validation-api-1.0.0.GA.jar" sourcepath="3rd_party/sources/validation-api-1.0.0.GA-sources.jar"/>
-	 -->
-	
+	<classpathentry kind="lib" path="C:/Program Files/Apache Software Foundation/Tomcat 9.0/lib/jsp-api.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/Apache Software Foundation/Tomcat 9.0/lib/servlet-api.jar"/>
+	<classpathentry kind="lib" path="D:/EEeclipse-worksapce/unitime/3rd_party/jdtCompilerAdapter.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/Apache Software Foundation/Tomcat 9.0/lib/annotations-api.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Administrator/.p2/pool/plugins/com.gwtplugins.gwt.eclipse.sdkbundle.gwt27_2.7.0.201710131939/gwt-2.7.0/gwt-user.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/C:/Users/Administrator/.p2/pool/plugins/com.gwtplugins.gwt.eclipse.sdkbundle.gwt27_2.7.0.201710131939/gwt-2.7.0/doc/javadoc/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/Administrator/.p2/pool/plugins/com.gwtplugins.gwt.eclipse.sdkbundle.gwt27_2.7.0.201710131939/gwt-2.7.0/validation-api-1.0.0.GA-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Administrator/.p2/pool/plugins/com.gwtplugins.gwt.eclipse.sdkbundle.gwt27_2.7.0.201710131939/gwt-2.7.0/validation-api-1.0.0.GA.jar" sourcepath="C:/Users/Administrator/.p2/pool/plugins/com.gwtplugins.gwt.eclipse.sdkbundle.gwt27_2.7.0.201710131939/gwt-2.7.0/validation-api-1.0.0.GA-sources.jar"/>
+	<classpathentry kind="lib" path="D:/EEeclipse-worksapce/gwt-2.8.2/gwt-user.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/D:/EEeclipse-worksapce/gwt-2.8.2/doc/javadoc/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="D:/EEeclipse-worksapce/gwt-2.8.2/gwt-codeserver.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/D:/EEeclipse-worksapce/gwt-2.8.2/doc/javadoc/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="D:/EEeclipse-worksapce/gwt-2.8.2/gwt-dev.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/D:/EEeclipse-worksapce/gwt-2.8.2/doc/javadoc/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="D:/EEeclipse-worksapce/gwt-2.8.2/validation-api-1.0.0.GA-sources.jar"/>
+	<classpathentry kind="lib" path="D:/EEeclipse-worksapce/gwt-2.8.2/validation-api-1.0.0.GA.jar" sourcepath="D:/EEeclipse-worksapce/gwt-2.8.2/validation-api-1.0.0.GA-sources.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-context-5.1.5.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-aop-5.1.5.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-aspects-5.1.5.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-beans-5.1.5.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-context-indexer-5.1.5.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-context-support-5.1.5.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-core-5.1.5.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-expression-5.1.5.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-instrument-5.1.5.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-jcl-5.1.5.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-jdbc-5.1.5.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-jms-5.1.5.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-messaging-5.1.5.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-orm-5.1.5.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-oxm-5.1.5.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-test-5.1.5.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-tx-5.1.5.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-web-5.1.5.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-webflux-5.1.5.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-webmvc-5.1.5.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-websocket-5.1.5.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-ldap-core-1.3.2.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-integration-core-3.0.7.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-integration-file-3.0.7.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-integration-mail-3.0.7.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-security-acl-3.2.8.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-security-aspects-3.2.8.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-security-cas-3.2.8.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-security-config-3.2.8.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-security-core-3.2.8.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-security-ldap-3.2.8.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-security-taglibs-3.2.8.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-security-web-3.2.8.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-xml-3.0.7.RELEASE.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/mysql-connector-java-8.0.15.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-struts-3.2.14.RELEASE.jar"/>
 	<classpathentry kind="output" path="WebContent/WEB-INF/classes"/>
 </classpath>
