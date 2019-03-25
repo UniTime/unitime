@@ -228,7 +228,7 @@ public class OnlineSectioningHelper {
         }
     }
     
-    public boolean commitTransaction() {
+    public boolean commitTransaction() throws Exception {
         try {
         	if (iTx == null) return false;
             iTx.commit();
@@ -236,8 +236,8 @@ public class OnlineSectioningHelper {
             debug("Transaction committed.");
             return true;
         } catch (Exception e) {
-            fatal("Unable to commit transaction, reason: "+e.getMessage(),e);
-            return false;
+        	fatal("Unable to commit transaction, reason: "+e.getMessage(),e);
+        	throw e;
         } finally {
             if (sTransactionCreatesNewHibSession && iHibSession!=null && iHibSession.isOpen()) {
                 iHibSession.close();
