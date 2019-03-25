@@ -292,7 +292,8 @@
                 class="Session"
                 column="session_id"
                 not-null="false"
-                foreign-key="fk_sct_status_session"/>
+                foreign-key="fk_sct_status_session"
+                lazy="proxy"/>
 		</union-subclass>
         
         <union-subclass name="ExamType"

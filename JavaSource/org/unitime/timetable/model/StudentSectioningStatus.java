@@ -87,10 +87,16 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 	
 	public static StudentSectioningStatus getStatus(String reference, Long sessionId, org.hibernate.Session hibSession) {
 		if (reference != null) {
-			StudentSectioningStatus status = (StudentSectioningStatus)hibSession.createQuery("from StudentSectioningStatus s where s.reference = :reference and (s.session is null or s.session = :sessionId)")
-					.setString("reference", reference).setLong("sessionId", sessionId == null ? -1l : sessionId.longValue()).setMaxResults(1).setCacheable(true).uniqueResult();
+			StudentSectioningStatus status = (StudentSectioningStatus)hibSession.createQuery("from StudentSectioningStatus s where s.reference = :reference and s.session is null")
+					.setString("reference", reference).setMaxResults(1).setCacheable(true).uniqueResult();
 			if (status != null)
 				return status;
+			if (sessionId != null) {
+				status = (StudentSectioningStatus)hibSession.createQuery("from StudentSectioningStatus s where s.reference = :reference and s.session = :sessionId")
+						.setString("reference", reference).setLong("sessionId", sessionId).setMaxResults(1).setCacheable(true).uniqueResult();
+				if (status != null)
+					return status;
+			}
 		}
 		if (sessionId != null) {
 			StudentSectioningStatus status = (StudentSectioningStatus)hibSession.createQuery("select s.defaultSectioningStatus from Session s where s.uniqueId = :sessionId")
@@ -109,8 +115,7 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 		org.hibernate.Session hibSession = StudentSectioningStatusDAO.getInstance().createNewSession();
 		try {
 			Set<String> statuses = new HashSet<String>();
-			for (StudentSectioningStatus status: StudentSectioningStatusDAO.getInstance().findAll(hibSession)) {
-				if (status.getSession() != null && !sessionId.equals(status.getSession().getUniqueId())) continue;
+			for (StudentSectioningStatus status: StudentSectioningStatus.findAll(hibSession, sessionId)) {
 				if (status.hasOption(option) && status.isEffectiveNow())
 					statuses.add(status.getReference());
 			}
