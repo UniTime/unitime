@@ -117,7 +117,7 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 	
 	public static class DegreeGroupInterface extends DegreeItemInterface {
 		private static final long serialVersionUID = 1L;
-		private boolean iChoice = false;
+		private boolean iChoice = false, iPlaceHolder = false;;
 		List<DegreeCourseInterface> iCourses = null;
 		List<DegreeGroupInterface> iGroups = null;
 		List<DegreePlaceHolderInterface> iPlaceHolders = null;
@@ -128,6 +128,8 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 		
 		public boolean isChoice() { return iChoice; }
 		public void setChoice(boolean choice) { iChoice = choice; }
+		public boolean isPlaceHolder() { return iPlaceHolder; }
+		public void setPlaceHolder(boolean placeHolder) { iPlaceHolder = placeHolder; }
 		public boolean hasCourses() { return iCourses != null && !iCourses.isEmpty(); }
 		public boolean hasMultipleCourses() { 
 			if (iCourses == null) return false;
@@ -197,6 +199,7 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 		
 		@Override
 		public String toString() {
+			if (isPlaceHolder() && hasDescription()) return getDescription();
 			String ret = "";
 			if (iCourses != null)
 				for (DegreeCourseInterface course: iCourses)
@@ -211,6 +214,7 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 		}
 		
 		public String toString(StudentSectioningMessages MESSAGES) {
+			if (isPlaceHolder() && hasDescription()) return getDescription();
 			List<String> items = new ArrayList<String>();
 			if (iCourses != null)
 				for (DegreeCourseInterface course: iCourses)

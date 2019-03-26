@@ -20,7 +20,10 @@
 package org.unitime.timetable.onlinesectioning.custom.purdue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
@@ -63,13 +66,17 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 	
 	protected String getCourseLookupSQL() {
 		return ApplicationProperties.getProperty("banner.ucc.lookupSQL",
-				"select co.uniqueid " +
+				"select distinct co.uniqueid " +
 				"from timetable.szv_utm_attr a, course_offering co, instructional_offering io, subject_area sa " +
 				"where a.term_start <= :term and a.term_end >= :term and " +
 				"(lower(a.attribute_description) like concat(concat('uc-', :query), '%') or lower(a.attribute_description) like concat(concat('% ', :query), '%') or lower(a.course_attribute) = :query) and "+
 				"co.instr_offr_id = io.uniqueid and co.subject_area_id = sa.uniqueid and io.session_id = :sessionId and " +
-				"io.not_offered = 0 and sa.subject_area_abbreviation = a.subject and co.course_nbr like concat(a.course_number, '%') " +
-				"order by sa.subject_area_abbreviation, co.course_nbr");
+				"io.not_offered = 0 and sa.subject_area_abbreviation = a.subject and co.course_nbr like concat(a.course_number, '%')"
+				);
+	}
+	
+	protected String getPlaceHolderRegExp() {
+		return ApplicationProperties.getProperty("banner.ucc.placeholder", "UCC: ([^-]*[^- ]+)([ ]?-.*)?");
 	}
 
 	@Override
@@ -77,6 +84,12 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 		if ("oc".equalsIgnoreCase(query)) query = "oral communication";
 		if ("wc".equalsIgnoreCase(query)) query = "written communication";
 		if (query == null || query.length() <= 2) return null;
+		String regExp = getPlaceHolderRegExp();
+		if (regExp != null && !regExp.isEmpty()) {
+			Matcher m = Pattern.compile(regExp).matcher(query);
+			if (m.matches())
+				query = m.group(1);
+		}
 		List<XCourseId> ret = new ArrayList<XCourseId>();
 		for (Object courseId: helper.getHibSession().createSQLQuery(getCourseLookupSQL())
 				.setLong("sessionId", server.getAcademicSession().getUniqueId())
@@ -86,6 +99,7 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 			if (course != null)
 				ret.add(course);
 		}
+		Collections.sort(ret);
 		return ret;
 	}
 
@@ -98,6 +112,13 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 		if ("oc".equalsIgnoreCase(query)) query = "oral communication";
 		if ("wc".equalsIgnoreCase(query)) query = "written communication";
 		if (query == null || query.length() <= 2) return null;
+		String regExp = getPlaceHolderRegExp();
+		if (regExp != null && !regExp.isEmpty()) {
+			Matcher m = Pattern.compile(regExp).matcher(query);
+			if (m.matches())
+				query = m.group(1);
+		}
+
 		List courseIds = hibSession.createSQLQuery(getCourseLookupSQL())
 				.setLong("sessionId", session.getUniqueId())
 				.setString("term", getBannerTerm(session))
@@ -106,5 +127,4 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 		return (List<CourseOffering>)hibSession.createQuery("from CourseOffering where uniqueId in :courseIds order by subjectAreaAbbv, courseNbr")
 				.setParameterList("courseIds", courseIds, BigDecimalType.INSTANCE).setCacheable(true).list();
 	}
-
 }

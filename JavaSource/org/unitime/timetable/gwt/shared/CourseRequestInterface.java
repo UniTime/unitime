@@ -863,13 +863,15 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 				switch (iChoice) {
 				case 0: return MESSAGES.degreeRequestedAlternative(iPriority);
 				case 1: return MESSAGES.degreeRequestedAlternativeFirstAlt(iPriority);
-				default: return MESSAGES.degreeRequestedAlternativeSecondAlt(iPriority);
+				case 2: return MESSAGES.degreeRequestedAlternativeSecondAlt(iPriority);
+				default: return MESSAGES.degreeRequestedCourseAlt(iPriority, (iChoice > 26 ? "" + (char)('A' + (iChoice - 27) / 26) + (char)('A' + (iChoice - 1) % 26) : "" + (char)('A' + (iChoice - 1) % 26)));
 				}
 			} else {
 				switch (iChoice) {
 				case 0: return MESSAGES.degreeRequestedCourse(iPriority);
 				case 1: return MESSAGES.degreeRequestedCourseFirstAlt(iPriority);
-				default: return MESSAGES.degreeRequestedCourseSecondAlt(iPriority);
+				case 2: return MESSAGES.degreeRequestedCourseSecondAlt(iPriority);
+				default: return MESSAGES.degreeRequestedCourseAlt(iPriority,(iChoice > 26 ? "" + (char)('A' + (iChoice - 27) / 26) + (char)('A' + (iChoice - 1) % 26) : "" + (char)('A' + (iChoice - 1) % 26)));
 				}
 			}
 			

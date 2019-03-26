@@ -235,4 +235,8 @@ public interface StudentSectioningConstants extends Constants {
 	@DefaultIntValue(500)
 	@DoNotTranslate
 	int dashboardMaxLines();
+	
+	@DefaultIntValue(10)
+	@DoNotTranslate
+	int degreePlanMaxAlternatives();
 }

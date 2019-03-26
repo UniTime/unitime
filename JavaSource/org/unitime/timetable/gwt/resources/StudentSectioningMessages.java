@@ -1707,14 +1707,20 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("{0}B.")
 	String degreeRequestedCourseSecondAlt(int priority);
 	
-	@DefaultMessage("Alt {0}.")
+	@DefaultMessage("{0}{1}.")
+	String degreeRequestedCourseAlt(int priority, String alt);
+	
+	@DefaultMessage("Sub {0}.")
 	String degreeRequestedAlternative(int priority);
 	
-	@DefaultMessage("Alt {0}A.")
+	@DefaultMessage("Sub {0}A.")
 	String degreeRequestedAlternativeFirstAlt(int priority);
 	
-	@DefaultMessage("Alt {0}B.")
+	@DefaultMessage("Sub {0}B.")
 	String degreeRequestedAlternativeSecondAlt(int priority);
+	
+	@DefaultMessage("Sub {0}{1}.")
+	String degreeRequestedAlternativeAlt(int priority, String alt);
 	
 	@DefaultMessage("Class Schedule")
 	String headerClassSchedule();

@@ -671,17 +671,19 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 					}
 					CourseRequestInterface.Request r = new CourseRequestInterface.Request();
 					r.addRequestedCourse(rc);
-					for (DegreeCourseInterface alternative: alternatives) {
-						CourseAssignment altCa = alternative.getSelectedCourse(includeAlternatives);
-						if (altCa != null) {
-							RequestedCourse altRc = new RequestedCourse();
-							altRc.setCourseId(altCa.getCourseId());
-							altRc.setCourseName(CONSTANTS.showCourseTitle() ? MESSAGES.courseNameWithTitle(altCa.getSubject(), altCa.getCourseNbr(), altCa.getTitle()) : MESSAGES.course(altCa.getSubject(), altCa.getCourseNbr()));
-							altRc.setCourseTitle(altCa.getTitle());
-							altRc.setCredit(altCa.guessCreditRange());
-							r.addRequestedCourse(altRc);
+					if (r.getRequestedCourse().size() < CONSTANTS.degreePlanMaxAlternatives())
+						for (DegreeCourseInterface alternative: alternatives) {
+							CourseAssignment altCa = alternative.getSelectedCourse(includeAlternatives);
+							if (altCa != null) {
+								RequestedCourse altRc = new RequestedCourse();
+								altRc.setCourseId(altCa.getCourseId());
+								altRc.setCourseName(CONSTANTS.showCourseTitle() ? MESSAGES.courseNameWithTitle(altCa.getSubject(), altCa.getCourseNbr(), altCa.getTitle()) : MESSAGES.course(altCa.getSubject(), altCa.getCourseNbr()));
+								altRc.setCourseTitle(altCa.getTitle());
+								altRc.setCredit(altCa.guessCreditRange());
+								r.addRequestedCourse(altRc);
+								if (r.getRequestedCourse().size() >= CONSTANTS.degreePlanMaxAlternatives()) break;
+							}
 						}
-					}
 					requests.getCourses().add(r);
 				} else {
 					CourseRequestInterface.Request r = new CourseRequestInterface.Request();

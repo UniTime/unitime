@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,12 +36,14 @@ import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
@@ -49,11 +53,13 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.CourseRequestsProvider;
 import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider;
+import org.unitime.timetable.onlinesectioning.custom.CustomCourseLookupHolder;
 import org.unitime.timetable.onlinesectioning.custom.DegreePlansProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.purdue.XEInterface.PlaceHolder;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
@@ -67,6 +73,7 @@ import com.google.gson.GsonBuilder;
  */
 public class DegreeWorksCourseRequests implements CourseRequestsProvider, DegreePlansProvider, CriticalCoursesProvider {
 	private static Logger sLog = Logger.getLogger(DegreeWorksCourseRequests.class);
+	private static StudentSectioningConstants CONST = Localization.create(StudentSectioningConstants.class);
 
 	private Client iClient;
 	private ExternalTermProvider iExternalTermProvider;
@@ -165,6 +172,14 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 			builder.setUniqueId(courseId.getCourseId());
 		builder.setName(courseId.getCourseName());
 		builder.setExternalId(course.courseDiscipline + " " + course.courseNumber + (course.title != null && !course.title.isEmpty() ? " - " + course.title : ""));
+		return builder.build();
+	}
+	
+	protected OnlineSectioningLog.Entity toEntity(XCourseId courseId) {
+		OnlineSectioningLog.Entity.Builder builder = OnlineSectioningLog.Entity.newBuilder();
+		if (courseId.getCourseId() != null)
+			builder.setUniqueId(courseId.getCourseId());
+		builder.setName(courseId.getCourseName());
 		return builder.build();
 	}
 	
@@ -385,15 +400,61 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 										request.setAcademicSessionId(server.getAcademicSession().getUniqueId());
 										request.setStudentId(student.getStudentId());
 										fillInRequests(server, helper, request, t.group);
-										if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.includePlaceHolders", "true")))
-											for (PlaceHolder ph: t.group.plannedPlaceholders) {
+										for (PlaceHolder ph: t.group.plannedPlaceholders) {
+											List<XCourseId> phc = null;
+											if (CustomCourseLookupHolder.hasProvider())
+												phc = CustomCourseLookupHolder.getProvider().getCourses(server, helper, ph.placeholderValue);
+											List<XCourse> courses = null;
+											if (phc != null && !phc.isEmpty()) {
+												courses = new ArrayList<XCourse>();
+												String lastSubject = null, lastCourse = null;
+												for (XCourseId cid: phc) {
+													XCourse c = (cid instanceof XCourse ? (XCourse) cid : server.getCourse(cid.getCourseId()));
+													if (c == null) continue;
+													if (lastSubject != null && lastSubject.equals(c.getSubjectArea()) && lastCourse != null && c.getCourseNumber().startsWith(lastCourse)) continue;
+													courses.add(c);
+													lastSubject = iExternalTermProvider.getExternalSubject(server.getAcademicSession(), c.getSubjectArea(), c.getCourseNumber());
+													lastCourse = iExternalTermProvider.getExternalCourseNumber(server.getAcademicSession(), c.getSubjectArea(), c.getCourseNumber());
+												}
+											}
+											if (courses != null && !courses.isEmpty() && courses.size() <= CONST.degreePlanMaxAlternatives()) {
+												CourseRequestInterface.Request r = new CourseRequestInterface.Request();
+												OnlineSectioningLog.Request.Builder b = OnlineSectioningLog.Request.newBuilder().setPriority(request.getCourses().size()).setAlternative(false);
+												Collections.sort(courses, new Comparator<XCourse>() {
+													@Override
+													public int compare(XCourse c1, XCourse c2) {
+														int av1 = 4 * c1.getLimit();
+														for (XCourseRequest r: server.getRequests(c1.getOfferingId())) {
+															if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(c1.getCourseId())) av1-=3;
+															if (!r.isAlternative() && r.getEnrollment() == null && r.getCourseIds().get(0).equals(c1)) av1--;
+														}
+														int av2 = 4 * c2.getLimit();
+														for (XCourseRequest r: server.getRequests(c2.getOfferingId())) {
+															if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(c2.getCourseId())) av2-=3;
+															if (!r.isAlternative() && r.getEnrollment() == null && r.getCourseIds().get(0).equals(c2)) av2--;
+														}
+														return av1 > av2 ? -1 : av2 > av1 ? 1 : c1.compareTo(c2);
+													}
+												});
+												for (XCourse c: courses) {
+													RequestedCourse orc = new RequestedCourse();
+													orc.setCourseId(c.getCourseId());
+													orc.setCourseName(c.getCourseName());
+													orc.setCourseTitle(c.getTitle());
+													orc.setCredit(c.getMinCredit(), c.getMaxCredit());
+													r.addRequestedCourse(orc);
+													b.addCourse(toEntity(c));
+												}
+												helper.getAction().addRequest(b);
+												request.getCourses().add(r);
+											} else if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.includePlaceHolders", "true"))) {
 												CourseRequestInterface.Request r = new CourseRequestInterface.Request();
 												RequestedCourse rc = new RequestedCourse();
 												rc.setCourseName(ph.placeholderValue.trim());
 												r.addRequestedCourse(rc);
 												request.getCourses().add(r);
 											}
-										
+										}
 										if (helper.isDebugEnabled())
 											helper.debug("Course Requests: " + request);
 										
@@ -425,7 +486,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		}
 	}
 	
-	protected DegreePlanInterface.DegreeGroupInterface toGroup(OnlineSectioningServer server, XEInterface.Group g) {
+	protected DegreePlanInterface.DegreeGroupInterface toGroup(OnlineSectioningServer server, OnlineSectioningHelper helper, XEInterface.Group g) {
 		DegreePlanInterface.DegreeGroupInterface group = new DegreePlanInterface.DegreeGroupInterface();
 		group.setChoice(g.groupType != null && "CH".equals(g.groupType.code));
 		group.setDescription(g.summaryDescription);
@@ -471,15 +532,56 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 			}
 		if (g.plannedPlaceholders != null)
 			for (XEInterface.PlaceHolder ph: g.plannedPlaceholders) {
-				DegreePlanInterface.DegreePlaceHolderInterface placeHolder = new DegreePlanInterface.DegreePlaceHolderInterface();
-				placeHolder.setType(ph.placeholderType == null ? null : ph.placeholderType.description);
-				placeHolder.setName(ph.placeholderValue);
-				placeHolder.setId(ph.id);
-				group.addPlaceHolder(placeHolder);
+				List<XCourseId> phc = null;
+				if (CustomCourseLookupHolder.hasProvider())
+					phc = CustomCourseLookupHolder.getProvider().getCourses(server, helper, ph.placeholderValue);
+				if (phc != null && !phc.isEmpty()) {
+					DegreePlanInterface.DegreeGroupInterface phg = new DegreePlanInterface.DegreeGroupInterface();
+					phg.setChoice(true);
+					phg.setPlaceHolder(true);
+					phg.setDescription(ph.placeholderValue);
+					phg.setId(ph.id);
+					DegreePlanInterface.DegreeCourseInterface course = null;
+					for (XCourseId id: phc) {
+						XCourse xc = (id instanceof XCourse ? (XCourse) id : server.getCourse(id.getCourseId()));
+						if (xc == null) continue;
+						if (course == null || !course.getSubject().equals(xc.getSubjectArea()) || !xc.getCourseNumber().startsWith(course.getCourse())) {
+							course = new DegreePlanInterface.DegreeCourseInterface();
+							course.setSubject(iExternalTermProvider.getExternalSubject(server.getAcademicSession(), xc.getSubjectArea(), xc.getCourseNumber()));
+							course.setCourse(iExternalTermProvider.getExternalCourseNumber(server.getAcademicSession(), xc.getSubjectArea(), xc.getCourseNumber()));
+							course.setTitle(xc.getTitle());
+							course.setId(ph.id + "-" + xc.getCourseId());
+							course.setCourseId(xc.getCourseId());
+							phg.addCourse(course);
+						}
+						CourseAssignment ca = new CourseAssignment();
+						ca.setCourseId(xc.getCourseId());
+						ca.setSubject(xc.getSubjectArea());
+						ca.setCourseNbr(xc.getCourseNumber());
+						ca.setTitle(xc.getTitle());
+						ca.setNote(xc.getNote());
+						ca.setCreditAbbv(xc.getCreditAbbv());
+						ca.setCreditText(xc.getCreditText());
+						ca.setTitle(xc.getTitle());
+						ca.setHasUniqueName(xc.hasUniqueName());
+						ca.setLimit(xc.getLimit());
+						XOffering offering = server.getOffering(id.getCourseId());
+						if (offering != null)
+							ca.setAvailability(offering.getCourseAvailability(server.getRequests(id.getOfferingId()), xc));
+						course.addCourse(ca);
+					}
+					group.addGroup(phg);
+				} else {
+					DegreePlanInterface.DegreePlaceHolderInterface placeHolder = new DegreePlanInterface.DegreePlaceHolderInterface();
+					placeHolder.setType(ph.placeholderType == null ? null : ph.placeholderType.description);
+					placeHolder.setName(ph.placeholderValue);
+					placeHolder.setId(ph.id);
+					group.addPlaceHolder(placeHolder);
+				}
 			}
 		if (g.groups != null)
 			for (XEInterface.Group ch: g.groups) {
-				DegreePlanInterface.DegreeGroupInterface childGroup = toGroup(server, ch);
+				DegreePlanInterface.DegreeGroupInterface childGroup = toGroup(server, helper, ch);
 				if (childGroup.countItems() <= 1 || childGroup.isChoice() == group.isChoice()) {
 					group.merge(childGroup);
 				} else {
@@ -603,7 +705,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 						if (y.terms != null)
 							for (XEInterface.Term t: y.terms) {
 								if (t.term != null && term.equals(t.term.code) && t.group != null) {
-									plan.setGroup(toGroup(server, t.group));
+									plan.setGroup(toGroup(server, helper, t.group));
 								}
 							}
 					}
