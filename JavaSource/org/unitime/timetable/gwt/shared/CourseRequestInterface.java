@@ -708,6 +708,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		private Boolean iWaitList = false;
 		private Boolean iCritical = false;
 		private Date iTimeStamp = null;
+		private String iFilter = null;
 		
 		public Request() {}
 		
@@ -792,6 +793,10 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public boolean hasTimeStamp() { return iTimeStamp != null; }
 		public Date getTimeStamp() { return iTimeStamp; }
 		public void setTimeStamp(Date ts) { iTimeStamp = ts; }
+		
+		public boolean hasFilter() { return iFilter != null && !iFilter.isEmpty(); }
+		public String getFilter() { return iFilter; }
+		public void setFilter(String filter) { iFilter = filter; }
 		
 		public String toString() {
 			return (hasRequestedCourse() ? iRequestedCourse.toString() : "-") + (isWaitList() ? " (w)" : "");

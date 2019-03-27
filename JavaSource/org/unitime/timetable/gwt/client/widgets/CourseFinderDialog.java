@@ -348,4 +348,14 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 		else
 			setText(MESSAGES.courseSelectionDialogDisabled());
 	}
+
+	@Override
+	public void setFilter(String value) {
+		iFilter.setValue(value, true);
+	}
+
+	@Override
+	public String getFilter() {
+		return iFilter.getValue();
+	}
 }

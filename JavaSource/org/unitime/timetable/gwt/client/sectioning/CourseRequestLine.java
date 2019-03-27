@@ -372,6 +372,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			RequestedCourse rc = box.getValue();
 			if (!rc.isEmpty()) ret.addRequestedCourse(rc);
 		}
+		ret.setFilter(iCourses.get(0).getCourseFinder().getFilter());
 		if (iWaitList != null && iWaitList.isVisible()) {
 			ret.setWaitList(iWaitList.getValue());
 		}
@@ -433,6 +434,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			}
 			for (int i = iCourses.size() - 1; i >= index; i--)
 				deleteAlternative(i);
+			if (value.hasFilter()) iCourses.get(0).getCourseFinder().setFilter(value.getFilter());
 		}
 		if (iWaitList != null && iWaitList.isVisible()) {
 			iWaitList.setEnabled(value == null || !value.isReadOnly());
@@ -771,6 +773,28 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 				} else {
 					setValue(rc, true);
 				}
+			}
+		}
+		
+		@Override
+		protected void openDialog() {
+			if (iCourseFinderMultipleCourses != null && iCourseFinderMultipleCourses.getLastQuery() != null) {
+				getCourseFinder().setFilter(iCourseFinderMultipleCourses.getLastQuery());
+				List<RequestedCourse> list = new ArrayList<RequestedCourse>();
+				for (CourseSelectionBox box: iCourses) {
+					RequestedCourse rc = box.getValue();
+					if (rc != null && rc.isCourse())
+						list.add(rc);
+				}
+				if (iCourseFinderMultipleCourses.setCheckedCourses(list)) {
+					getCourseFinder().setEnabled(isEnabled());
+					getCourseFinder().findCourse();
+					iCourseFinderMultipleCourses.scrollToSelectedRow();
+				} else {
+					super.openDialog();
+				}
+			} else {
+				super.openDialog();
 			}
 		}
 		

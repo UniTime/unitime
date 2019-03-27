@@ -65,6 +65,9 @@ public interface CourseFinder extends HasValue<RequestedCourse>, HasSelectionHan
 		void onResponse(ResponseEvent event);
 	}
 	
+	public void setFilter(String value);
+	public String getFilter();
+	
 	public class ResponseEvent extends GwtEvent<ResponseHandler> {
 		static Type<ResponseHandler> TYPE = new Type<ResponseHandler>();
 		private boolean iValid;

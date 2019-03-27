@@ -44,7 +44,6 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -362,21 +361,10 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 		}
 	}
 
-	protected void scrollToSelectedRow() {
-		if (iCourses.getSelectedRow() < 0) return;
-		
-		Element scroll = iCoursesPanel.getElement();
-		
-		com.google.gwt.dom.client.Element item = iCourses.getRowFormatter().getElement(iCourses.getSelectedRow());
-		if (item==null) return;
-		
-		int realOffset = 0;
-		while (item !=null && !item.equals(scroll)) {
-			realOffset += item.getOffsetTop();
-			item = item.getOffsetParent();
-		}
-		
-		scroll.setScrollTop(realOffset - scroll.getOffsetHeight() / 2);
+	public void scrollToSelectedRow() {
+		int row = iCourses.getSelectedRow(); 
+		if (row >= 0)
+			iCourses.getRowFormatter().getElement(row).scrollIntoView();
 	}
 	
 	protected void updateCourseDetails() {
@@ -453,7 +441,9 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 					iInstructionalMethodsPanel.add(ch);
 				}
 			}
-			iInstructionalMethodsPanel.add(iRequired);
+			if (iRequired != null) {
+				iInstructionalMethodsPanel.add(iRequired);
+			}
 		}
 	}
 
@@ -565,6 +555,55 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 		return iCheckedCourses;
 	}
 	
+	public boolean setCheckedCourses(List<RequestedCourse> checkedCourses) {
+		iLastDetails = null;
+		iCheckedCourses = checkedCourses;
+		iSelectedMethods.clear();
+		if (iRequired != null) iRequired.setValue(false);
+		if (iDetails != null)
+			for (CourseFinderCourseDetails detail: iDetails)
+				detail.setValue(null);
+		if (iCourses.getSelectedRow() >= 0)
+			iCourses.setSelected(iCourses.getSelectedRow(), false);
+		if (!iCheckedCourses.isEmpty()) {
+			RequestedCourse value = iCheckedCourses.get(0);
+			if (value != null && value.hasSelectedIntructionalMethods())
+				for (Preference id: iCheckedCourses.get(0).getSelectedIntructionalMethods()) {
+					iSelectedMethods.add(id);
+					if (id.isRequired() && iRequired != null) iRequired.setValue(true);
+				}
+			if (value != null && value.hasSelectedClasses())
+				for (Preference p: value.getSelectedClasses())
+					if (p.isRequired() && iRequired != null) iRequired.setValue(true);
+			if (iDetails != null)
+				for (CourseFinderCourseDetails d: iDetails)
+					if (d instanceof CourseFinderClasses) {
+						Set<Preference> classes = ((CourseFinderClasses)d).getAllSelectedClasses();
+						classes.clear();
+						for (RequestedCourse rc: iCheckedCourses)
+							if (rc.hasSelectedClasses())
+								classes.addAll(rc.getSelectedClasses());
+					}
+		}
+		int checked = 0;
+		for (int r = 0; r < iCourses.getRowCount(); r++) {
+			CourseAssignment ca = iCourses.getData(r);
+			if (iCourses.getWidget(r, 0) instanceof CheckBox && ca != null) {
+				CheckBox c = (CheckBox)iCourses.getWidget(r, 0);
+				int idx = iCheckedCourses.indexOf(new RequestedCourse(ca, CONSTANTS.showCourseTitle()));
+				c.setValue(idx >= 0);
+				c.setText(idx >= 0 ? String.valueOf(idx + 1) : "");
+				if (idx >= 0) checked++;
+				if (!iCheckedCourses.isEmpty() && iCheckedCourses.get(0).equals(ca)) {
+					iCourses.setSelected(r, true);
+				}
+			}
+		}
+		scrollToSelectedRow();
+		updateCourseDetails();
+		return (checked == checkedCourses.size());
+	}
+	
 	public boolean isAllowMultiSelection() {
 		return iAllowMultiSelection;
 	}
@@ -573,4 +612,6 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 		iAllowMultiSelection = multi;
 		iCourses.setColumnVisible(0, iAllowMultiSelection);
 	}
+	
+	public String getLastQuery() { return iLastQuery; }
 }

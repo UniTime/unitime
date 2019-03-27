@@ -572,7 +572,7 @@ public class CourseRequestBox extends P implements CourseSelection {
         });
 	}
 	
-	private void openDialog() {
+	protected void openDialog() {
 		getCourseFinder().setValue(getValue(), true);
 		getCourseFinder().setEnabled(isEnabled());
 		getCourseFinder().findCourse();

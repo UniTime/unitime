@@ -409,4 +409,8 @@ public class CourseFinderClasses extends UniTimeTable<ClassAssignment> implement
 			return HasHorizontalAlignment.ALIGN_CENTER;
 		}
 	}
+	
+	public Set<Preference> getAllSelectedClasses() {
+		return iSelectedClasses;
+	}
 }
