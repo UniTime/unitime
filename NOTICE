@@ -257,35 +257,35 @@ SLF4J LOG4J-12 Binding (slf4j-log4j12-1.7.12.jar)
 	under MIT License
 	http://www.slf4j.org
 
-Spring AOP (spring-aop-4.3.17.RELEASE.jar)
+Spring AOP (spring-aop-4.3.18.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Beans (spring-beans-4.3.17.RELEASE.jar)
+Spring Beans (spring-beans-4.3.18.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Context (spring-context-4.3.17.RELEASE.jar)
+Spring Context (spring-context-4.3.18.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Context Support (spring-context-support-4.3.18.RELEASE.jar)
+Spring Context Support (spring-context-support-4.3.20.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Core (spring-core-4.3.17.RELEASE.jar)
+Spring Core (spring-core-4.3.18.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Expression Language (SpEL) (spring-expression-4.3.17.RELEASE.jar)
+Spring Expression Language (SpEL) (spring-expression-4.3.18.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring JDBC (spring-jdbc-4.3.17.RELEASE.jar)
+Spring JDBC (spring-jdbc-4.3.18.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Messaging (spring-messaging-4.3.18.RELEASE.jar)
+Spring Messaging (spring-messaging-4.3.20.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
@@ -293,11 +293,11 @@ Spring Struts (spring-struts-3.2.18.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/SpringSource/spring-framework
 
-Spring Transaction (spring-tx-4.3.17.RELEASE.jar)
+Spring Transaction (spring-tx-4.3.18.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Web (spring-web-4.3.17.RELEASE.jar)
+Spring Web (spring-web-4.3.18.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
@@ -305,15 +305,15 @@ Spring Web MVC (spring-webmvc-3.2.18.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/SpringSource/spring-framework
 
-Spring Integration Core (spring-integration-core-4.3.17.RELEASE.jar)
+Spring Integration Core (spring-integration-core-4.3.18.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://projects.spring.io/spring-integration
 
-Spring Integration File Support (spring-integration-file-4.3.17.RELEASE.jar)
+Spring Integration File Support (spring-integration-file-4.3.18.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://projects.spring.io/spring-integration
 
-Spring Integration Mail Support (spring-integration-mail-4.3.17.RELEASE.jar)
+Spring Integration Mail Support (spring-integration-mail-4.3.18.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://projects.spring.io/spring-integration
 
