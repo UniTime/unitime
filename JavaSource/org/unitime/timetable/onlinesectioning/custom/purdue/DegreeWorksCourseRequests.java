@@ -352,7 +352,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 	}
 	
 	@Override
-	public CourseRequestInterface getCourseRequests(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudentId student) throws SectioningException {
+	public CourseRequestInterface getCourseRequests(final OnlineSectioningServer server, OnlineSectioningHelper helper, XStudentId student) throws SectioningException {
 		try {
 			Query q = getStudentFilter();
 			if (q != null) {
