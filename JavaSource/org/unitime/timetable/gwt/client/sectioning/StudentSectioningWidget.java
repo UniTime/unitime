@@ -455,7 +455,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									iSectioningService.retrieveCourseDetails(iSessionSelector.getAcademicSessionId(), source.hasUniqueName() ? source.getCourseName() : source.getCourseNameWithTitle(), callback);
 								}
 							});
-							CourseFinderClasses classes = new CourseFinderClasses(true, iSpecRegCx);
+							CourseFinderClasses classes = new CourseFinderClasses(false, iSpecRegCx);
 							classes.setDataProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {
 								@Override
 								public void getData(CourseAssignment source, AsyncCallback<Collection<ClassAssignment>> callback) {

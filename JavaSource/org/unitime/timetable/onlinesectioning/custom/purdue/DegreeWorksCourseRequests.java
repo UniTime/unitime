@@ -60,7 +60,6 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.XEInterface.PlaceHol
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
-import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
@@ -419,6 +418,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 											}
 											if (courses != null && !courses.isEmpty() && courses.size() <= CONST.degreePlanMaxAlternatives()) {
 												CourseRequestInterface.Request r = new CourseRequestInterface.Request();
+												r.setFilter(ph.placeholderValue);
 												OnlineSectioningLog.Request.Builder b = OnlineSectioningLog.Request.newBuilder().setPriority(request.getCourses().size()).setAlternative(false);
 												Collections.sort(courses, new Comparator<XCourse>() {
 													@Override
@@ -517,9 +517,17 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 						ca.setTitle(xc.getTitle());
 						ca.setHasUniqueName(xc.hasUniqueName());
 						ca.setLimit(xc.getLimit());
-						XOffering offering = server.getOffering(id.getCourseId());
-						if (offering != null)
-							ca.setAvailability(offering.getCourseAvailability(server.getRequests(id.getOfferingId()), xc));
+						//XOffering offering = server.getOffering(id.getOfferingId());
+						//if (offering != null)
+						//	ca.setAvailability(offering.getCourseAvailability(server.getRequests(id.getOfferingId()), xc));
+						int firstChoiceReqs = 0;
+						int enrl = 0;
+						for (XCourseRequest r: server.getRequests(id.getOfferingId())) {
+							if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(id.getCourseId())) enrl ++;
+							if (!r.isAlternative() && r.getEnrollment() == null && r.getCourseIds().get(0).equals(id)) firstChoiceReqs ++;
+						}
+						ca.setEnrollment(enrl);
+						ca.setProjected(firstChoiceReqs);
 						course.addCourse(ca);
 					}
 				}
@@ -552,6 +560,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 							course.setTitle(xc.getTitle());
 							course.setId(ph.id + "-" + xc.getCourseId());
 							course.setCourseId(xc.getCourseId());
+							course.setSelected(false);
 							phg.addCourse(course);
 						}
 						CourseAssignment ca = new CourseAssignment();
@@ -565,9 +574,17 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 						ca.setTitle(xc.getTitle());
 						ca.setHasUniqueName(xc.hasUniqueName());
 						ca.setLimit(xc.getLimit());
-						XOffering offering = server.getOffering(id.getCourseId());
-						if (offering != null)
-							ca.setAvailability(offering.getCourseAvailability(server.getRequests(id.getOfferingId()), xc));
+						//XOffering offering = server.getOffering(id.getOfferingId());
+						//if (offering != null)
+						//	ca.setAvailability(offering.getCourseAvailability(server.getRequests(id.getOfferingId()), xc));
+						int firstChoiceReqs = 0;
+						int enrl = 0;
+						for (XCourseRequest r: server.getRequests(id.getOfferingId())) {
+							if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(id.getCourseId())) enrl ++;
+							if (!r.isAlternative() && r.getEnrollment() == null && r.getCourseIds().get(0).equals(id)) firstChoiceReqs ++;
+						}
+						ca.setEnrollment(enrl);
+						ca.setProjected(firstChoiceReqs);
 						course.addCourse(ca);
 					}
 					group.addGroup(phg);

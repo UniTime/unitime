@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.shared;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -104,6 +105,11 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 		return false;
 	}
 	
+	public String getPlaceHolder(DegreeCourseInterface course) {
+		if (iGroup != null) return iGroup.getPlaceHolder(course);
+		return null;
+	}
+	
 	@Override
 	public String toString() { return iName + ": " + iGroup; }
 	
@@ -141,6 +147,15 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 		public void addCourse(DegreeCourseInterface course) {
 			if (iCourses == null) iCourses = new ArrayList<DegreeCourseInterface>();
 			iCourses.add(course);
+		}
+		public DegreeCourseInterface pickCourse() {
+			if (iCourses == null) return null;
+			AvailabilityComparator cmp = new AvailabilityComparator();
+			DegreeCourseInterface ret = null;
+			for (DegreeCourseInterface course: iCourses)
+				if (ret == null || cmp.compare(course, ret) < 0)
+					ret = course;
+			return ret;
 		}
 		public boolean hasGroups() { return iGroups != null && !iGroups.isEmpty(); }
 		public List<DegreeGroupInterface> getGroups() { return iGroups; }
@@ -263,10 +278,23 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 						g.listSelected(requested, pickFirstWhenNoneSelected); hasSelection = true;
 					}
 			if (isChoice() && !hasSelection && pickFirstWhenNoneSelected) {
-				if (hasCourses())
-					requested.add(getCourses().get(0));
-				else if (hasGroups())
-					getGroups().get(0).listSelected(requested, pickFirstWhenNoneSelected);
+				if (isPlaceHolder() && hasDescription() && hasCourses() && getCourses().size() > 10) {
+					DegreeCourseInterface c = new DegreeCourseInterface();
+					c.setCourse(getDescription());
+					requested.add(c);
+				} else {
+					if (hasCourses())
+						requested.add(pickCourse());
+					else if (hasGroups())
+						getGroups().get(0).listSelected(requested, pickFirstWhenNoneSelected);
+				}
+			}
+			if (hasPlaceHolders() && pickFirstWhenNoneSelected) {
+				for (DegreePlaceHolderInterface h: getPlaceHolders()) {
+					DegreeCourseInterface c = new DegreeCourseInterface();
+					c.setCourse(h.getName());
+					requested.add(c);
+				}	
 			}
 		}
 		
@@ -278,6 +306,18 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 				for (DegreeGroupInterface g: getGroups())
 					if (g.hasCourse(course)) return true;
 			return false;
+		}
+		
+		public String getPlaceHolder(DegreeCourseInterface course) {
+			if (isPlaceHolder() && hasDescription() && hasCourses())
+				for (DegreeCourseInterface c: getCourses())
+					if (c.getId().equals(course.getId())) return getDescription();
+			if (hasGroups())
+				for (DegreeGroupInterface g: getGroups()) {
+					String ph = g.getPlaceHolder(course);
+					if (ph != null) return ph;
+				}
+			return null;
 		}
 		
 		protected void listAlternatives(List<DegreeCourseInterface> alternatives, DegreeCourseInterface course) {
@@ -396,7 +436,7 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 		public void setCourseId(Long courseId) { iCourseId = courseId; }
 		
 		public String getCourseName() {
-			return getSubject() + " " + getCourse();
+			return (getSubject() == null ? "" : getSubject() + " ") + getCourse();
 		}
 		public String getCourseNameWithTitle() {
 			return hasTitle() ? getSubject() + " " + getCourse() + " - " + getTitle() : getSubject() + " " + getCourse();
@@ -417,7 +457,16 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 			if (pickOneWhenNoneSelected && iCourses != null && !iCourses.isEmpty()) {
 				for (CourseAssignment course: iCourses)
 					if (getCourseName().equals(course.getCourseName())) return course;
-				return iCourses.get(0);
+				int bestAv = 0;
+				CourseAssignment best = null;
+				for (CourseAssignment course: iCourses) {
+					int av = AvailabilityComparator.value(course);
+					if (best == null || av > bestAv) {
+						best = course;
+						bestAv = av;
+					}
+				}
+				return (best != null ? best : iCourses.get(0));
 			}
 			return null;
 		}
@@ -444,5 +493,29 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 		
 		@Override
 		public String toString() { return iType; }
+	}
+	
+	public static class AvailabilityComparator implements Comparator<DegreeCourseInterface> {
+		
+		protected static int value(CourseAssignment ca) {
+			int av = 0;
+			if (ca.getLimit() != null)
+				av += 4 * (ca.getLimit() < 0 ? 9999 : ca.getLimit());
+			if (ca.getEnrollment() != null)
+				av -= 3 * ca.getEnrollment();
+			if (ca.getProjected() != null)
+				av -= ca.getProjected();
+			return av;
+		}
+		
+		@Override
+		public int compare(DegreeCourseInterface c1, DegreeCourseInterface c2) {
+			CourseAssignment ca1 = c1.getSelectedCourse(true);
+			CourseAssignment ca2 = c2.getSelectedCourse(true);
+			int av1 = (ca1 == null ? -1 : value(ca1));
+			int av2 = (ca2 == null ? -1 : value(ca2));
+			return (av1 > av2 ? -1 : av1 < av2 ? 1 : c1.getCourseName().compareTo(c2.getCourseName()));
+		}
+		
 	}
 }

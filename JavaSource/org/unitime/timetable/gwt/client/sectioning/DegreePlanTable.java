@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -662,6 +663,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 						continue selected;
 					}
 					List<DegreeCourseInterface> alternatives = iPlan.listAlternatives(course);
+					Collections.sort(alternatives, new DegreePlanInterface.AvailabilityComparator());
 					for (DegreeCourseInterface alternative: alternatives) {
 						p = requests.getRequestPriority(alternative);
 						if (p != null) {
@@ -671,7 +673,8 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 					}
 					CourseRequestInterface.Request r = new CourseRequestInterface.Request();
 					r.addRequestedCourse(rc);
-					if (r.getRequestedCourse().size() < CONSTANTS.degreePlanMaxAlternatives())
+					r.setFilter(iPlan.getPlaceHolder(course));
+					if (alternatives.size() < CONSTANTS.degreePlanMaxAlternatives())
 						for (DegreeCourseInterface alternative: alternatives) {
 							CourseAssignment altCa = alternative.getSelectedCourse(includeAlternatives);
 							if (altCa != null) {
@@ -681,7 +684,6 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 								altRc.setCourseTitle(altCa.getTitle());
 								altRc.setCredit(altCa.guessCreditRange());
 								r.addRequestedCourse(altRc);
-								if (r.getRequestedCourse().size() >= CONSTANTS.degreePlanMaxAlternatives()) break;
 							}
 						}
 					requests.getCourses().add(r);
@@ -690,6 +692,12 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 					r.addRequestedCourse(rc);
 					requests.getCourses().add(r);
 				}
+			} else if (includeAlternatives) {
+				RequestedCourse rc = new RequestedCourse();
+				rc.setCourseName(course.getCourseName());
+				CourseRequestInterface.Request r = new CourseRequestInterface.Request();
+				r.addRequestedCourse(rc);
+				requests.getCourses().add(r);
 			}
 		}
 		
